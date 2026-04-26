@@ -1,0 +1,16 @@
+     632 AGENTS.md
+      60 CLAUDE.md
+      46 .claude/rules/adr-audit.md
+      51 .claude/rules/brief-heading-conventions.md
+     137 .claude/rules/chores.md
+      88 .claude/rules/cli.md
+     127 .claude/rules/cross-platform.md
+      38 .claude/rules/gate5-runbook-code-covenant.md
+      39 .claude/rules/gh-cli.md
+      67 .claude/rules/governance-core.md
+      45 .claude/rules/models.md
+      61 .claude/rules/pythonic.md
+      86 .claude/rules/skill-surface-sync.md
+     212 .claude/rules/tests.md
+     112 .claude/rules/tool-skill-runbook-alignment.md
+    1801 total

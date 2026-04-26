@@ -155,12 +155,7 @@ enemy of gzkit and of GovZero.
 
 ### Relationship to the rest of the contract
 
-The other invariants in this contract — DO IT RIGHT 6g (verify the runtime
-surface), 6h (quote rules verbatim), § Behavior Rules — Always #7–#10 (90%
-confidence threshold, surface assumptions, STOP on inconsistencies, push
-back on flawed approaches), § Attestation (ARB receipts as observed
-evidence) — are this mantra rendered as mechanical checks. When those
-checks are silent, the mantra is the conscience.
+> See [Agent Contract — Rationale § Anti-vibing mantra — relationship to the rest of the contract](docs/governance/agent-contract-rationale.md#anti-vibing-mantra--relationship-to-the-rest-of-the-contract) for the cross-walk between this mantra and DO IT RIGHT 6g/6h, Behavior Rules — Always #7–#10, and § Attestation.
 
 ## STDLIB-FIRST DOCTRINE (DEPENDENCY POSTURE)
 
@@ -288,15 +283,7 @@ selection, redirection note).
 
 ### Why this is canon, not preference
 
-This is the interaction shape that produces witnessed, attestable,
-replayable governance work without consuming the operator's bandwidth as
-the bottleneck. Every other mode (operator drafts, agent reviews; bundled
-question intake; open-ended brainstorming without decision-shaping) either
-shifts the typing burden onto the operator or produces output the operator
-has to re-author into the canonical shape after the fact. Both modes are
-forms of vibing through the interaction layer — the agent appears active
-while pushing the substantive labor onto the human or producing artifacts
-that need to be redone.
+> See [Operator Economy of Effort — Why this is canon](docs/governance/operator-economy.md) for the inverted-mode anti-pattern catalogue, the upstream/downstream relationship to the anti-vibing mantra and § Attestation, and the bounded-applicability scope.
 
 ## Behavior Rules
 
@@ -534,20 +521,7 @@ Receipt IDs appear inline, e.g. `(lint: receipt arb-2026-04-14T12-34-56-ruff)`. 
 
 ### Worked example
 
-User says: `attest completed`
-
-Agent passes to `--attestation-text`:
-
-```
-attest completed — Confirm decision: gzkit cli_audit + doc_coverage surface
-architecturally superior (AST vs parser._actions private API, 5-surface
-manifest-driven coverage, 76 vs 1 tests, frozen Pydantic vs dict[str,Any]);
-no absorption of the external reference cli_audit module warranted.
-Receipts: lint arb-2026-04-14T12-34-56-ruff; types arb-2026-04-14T12-35-02-ty;
-tests arb-2026-04-14T12-36-18-unittest; coverage arb-2026-04-14T12-37-44-coverage.
-```
-
-See [`docs/governance/arb-middleware.md`](docs/governance/arb-middleware.md) for ARB middleware deep-dive: core concept, command surface, receipt schema and storage, exit codes, and rationale.
+> See [Agent Contract — Rationale § Attestation — worked example](docs/governance/agent-contract-rationale.md#attestation--worked-example) for a verbatim attestation-text demonstration with receipt-ID citations. The ARB middleware deep-dive lives at [`docs/governance/arb-middleware.md`](docs/governance/arb-middleware.md).
 
 ## Defect-fix routing
 
