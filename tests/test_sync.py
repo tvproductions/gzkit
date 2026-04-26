@@ -1323,17 +1323,13 @@ class TestSyncClaudeSettingsPreservesUserPhases(unittest.TestCase):
             for group in data["hooks"]["PreToolUse"]:
                 if group.get("matcher") == "ExitPlanMode":
                     group["hooks"][0]["command"] = "tampered"
-            settings_path.write_text(
-                json.dumps(data, indent=2) + "\n", encoding="utf-8"
-            )
+            settings_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
             sync_claude_settings(project_root, config)
 
             result = json.loads(settings_path.read_text(encoding="utf-8"))
             exit_plan_groups = [
-                g
-                for g in result["hooks"]["PreToolUse"]
-                if g.get("matcher") == "ExitPlanMode"
+                g for g in result["hooks"]["PreToolUse"] if g.get("matcher") == "ExitPlanMode"
             ]
             self.assertEqual(len(exit_plan_groups), 1)
             self.assertIn(

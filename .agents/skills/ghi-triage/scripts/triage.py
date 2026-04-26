@@ -371,9 +371,7 @@ def _validate_text_field(value: object, field: str, idx: int, max_chars: int) ->
         )
     bad = sorted({c for c in cleaned if c in _FORBIDDEN_CHARS})
     if bad:
-        raise RankInputError(
-            f"rankings[{idx}].{field} contains forbidden characters: {bad!r}"
-        )
+        raise RankInputError(f"rankings[{idx}].{field} contains forbidden characters: {bad!r}")
     return cleaned
 
 
@@ -406,9 +404,7 @@ def parse_rank_input(payload: object, known_numbers: set[int]) -> list[RankItem]
         seen.add(number)
         severity = entry.get("severity")  # ty: ignore[invalid-argument-type]
         if severity not in SEVERITY_VALUES:
-            raise RankInputError(
-                f"rankings[{idx}].severity must be one of {SEVERITY_VALUES}"
-            )
+            raise RankInputError(f"rankings[{idx}].severity must be one of {SEVERITY_VALUES}")
         raw_action = entry.get("action")  # ty: ignore[invalid-argument-type]
         raw_why = entry.get("why")  # ty: ignore[invalid-argument-type]
         action = _validate_text_field(raw_action, "action", idx, ACTION_MAX_CHARS)
@@ -439,8 +435,7 @@ def render_rank(
         title = issue_index[item.number].title
         route_label = routes.get(item.number, "—")
         lines.append(
-            f"{rank}. #{item.number} [{item.severity}] {route_label} "
-            f"— {item.action} — {item.why}"
+            f"{rank}. #{item.number} [{item.severity}] {route_label} — {item.action} — {item.why}"
         )
         lines.append(f"   ↳ {title}")
     lines.append("")
@@ -646,8 +641,7 @@ def main() -> int:
         precedent_ok = precedent >= 3
         issue_index = {issue.number: issue for issue in issues}
         routes = {
-            issue.number: ROUTE_LABEL[route(issue, precedent_ok, duplicates)]
-            for issue in issues
+            issue.number: ROUTE_LABEL[route(issue, precedent_ok, duplicates)] for issue in issues
         }
         sys.stdout.write(render_rank(items, issue_index, routes, precedent, len(issues)))
         return 0

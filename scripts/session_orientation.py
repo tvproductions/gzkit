@@ -210,9 +210,7 @@ def collect_remote_state() -> dict | None:
     """
     skip_fetch = os.environ.get("GZKIT_ORIENTATION_NO_FETCH") == "1"
     if not skip_fetch:
-        fetched = _git_run(
-            ["git", "fetch", "--quiet", "origin"], timeout=REMOTE_FETCH_TIMEOUT_SEC
-        )
+        fetched = _git_run(["git", "fetch", "--quiet", "origin"], timeout=REMOTE_FETCH_TIMEOUT_SEC)
         if fetched is None:
             # git missing entirely is a hard "no remote state available" signal.
             # Fetch failure with git present (no origin, offline) still leaves
