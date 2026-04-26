@@ -1,0 +1,88 @@
+{
+  "rankings": [
+    {
+      "number": 339,
+      "severity": "blocking",
+      "action": "fix agents.local.md double-load by moving to .gzkit/agents.local.md",
+      "why": "every session burns 6.7k extra context; small in-flight diff per body's own direct-fix routing prediction"
+    },
+    {
+      "number": 341,
+      "severity": "degrading",
+      "action": "add gz validate --orientation-freshness validator scope",
+      "why": "defense-in-depth so 338 hook-fetch fix cannot silently regress on future script edits"
+    },
+    {
+      "number": 330,
+      "severity": "degrading",
+      "action": "expand gz-patch-release trigger to foundation-ADR closeouts",
+      "why": "load-bearing for upcoming ADR-0.0.33 and ADR-0.0.34 paired foundation closeouts"
+    },
+    {
+      "number": 334,
+      "severity": "degrading",
+      "action": "codify foundation-vs-feature invariance test in ADR-0.0.18 amendment",
+      "why": "without it future kind classification stays case-by-case judgment instead of mechanical"
+    },
+    {
+      "number": 336,
+      "severity": "degrading",
+      "action": "audit OBPI-0.16.0-04 closeout drift; route fix to ADR-0.0.32 OBPI",
+      "why": "names the REQ-checkbox-without-OBJECTIVE delivery pattern; sister of 337"
+    },
+    {
+      "number": 337,
+      "severity": "degrading",
+      "action": "track agents.md template-shape defect for ADR-0.0.32 OBPI pickup",
+      "why": "sister to 336; file-shape gap that enabled the closeout drift"
+    },
+    {
+      "number": 320,
+      "severity": "latent",
+      "action": "add factual-vs-fabrication anchor to main-session and implementer personas",
+      "why": "small persona edit; orthogonal to 312 eval-awareness anchor"
+    },
+    {
+      "number": 331,
+      "severity": "latent",
+      "action": "enumerate ADR-0.14.0 closeout drift rows under artifacts/audits/",
+      "why": "historical drift; ADR-0.0.33 audit sweep can absorb when validators land"
+    },
+    {
+      "number": 332,
+      "severity": "latent",
+      "action": "enumerate ADR-0.16.0 closeout drift rows under artifacts/audits/",
+      "why": "historical drift companion to 331; same audit class, separate ADR scope"
+    },
+    {
+      "number": 283,
+      "severity": "latent",
+      "action": "add Opus 4.7 tuning section to CLAUDE.md",
+      "why": "governance hygiene; survives across sessions but no current breakage"
+    },
+    {
+      "number": 284,
+      "severity": "latent",
+      "action": "change git-sync-repo agent model from opus to inherit",
+      "why": "single-line frontmatter cost-tuning chore; matches other four subagents"
+    },
+    {
+      "number": 285,
+      "severity": "latent",
+      "action": "tighten always-loaded .claude/rules/ corpus scope frontmatter",
+      "why": "reduces always-loaded envelope; verify gz validate --advisory-scorecard still passes"
+    },
+    {
+      "number": 335,
+      "severity": "latent",
+      "action": "wire gz-context-diet skill to call surface-fidelity validators inline",
+      "why": "blocked on ADR-0.0.33 OBPIs landing the four validators plus composite scope"
+    },
+    {
+      "number": 333,
+      "severity": "latent",
+      "action": "design behavioral fidelity test layer golden-dataset schema",
+      "why": "blocked on 1mo ADR-0.0.33 structural-validator operational evidence baseline"
+    }
+  ]
+}
