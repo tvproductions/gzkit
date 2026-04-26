@@ -365,7 +365,7 @@ Receipts: lint arb-2026-04-14T12-34-56-ruff; types arb-2026-04-14T12-35-02-ty;
 tests arb-2026-04-14T12-36-18-unittest; coverage arb-2026-04-14T12-37-44-coverage.
 ```
 
-See [`docs/governance/arb-middleware.md`](docs/governance/arb-middleware.md) for ARB middleware deep-dive.
+See [`docs/governance/agent-contract-rationale.md#attestation--worked-example`](docs/governance/agent-contract-rationale.md#attestation--worked-example) for the lifted worked-example pedagogy and [`docs/governance/arb-middleware.md`](docs/governance/arb-middleware.md) for ARB middleware deep-dive.
 
 ## Defect-fix routing
 
