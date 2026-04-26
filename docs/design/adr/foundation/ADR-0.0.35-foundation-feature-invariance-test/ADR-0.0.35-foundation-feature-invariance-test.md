@@ -92,13 +92,13 @@ Land the Foundation/Feature Invariance Test as a binding kind-classification rul
 - Observability: 0
 - Lineage: 1
 - Dimension Total: 3
-- Baseline Range: 3-4
-- Baseline Selected: 4
-- Split Single-Narrative: 0
+- Baseline Range: 1-2
+- Baseline Selected: 2
+- Split Single-Narrative: 1
 - Split Surface Boundary: 1
 - Split State Anchor: 0
 - Split Testability Ceiling: 0
-- Split Total: 1
+- Split Total: 2
 - Final Target OBPI Count: 4
 
 ## Checklist
