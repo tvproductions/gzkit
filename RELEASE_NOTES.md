@@ -1,5 +1,72 @@
 # gzkit Release Notes
 
+## v0.25.17 (2026-04-26)
+
+Governance-surface integrity patch. Closes the silent-regression vector
+where `gz agent sync` stripped the CAP-13 orientation hook on every
+invocation, lands a maintained regenerator for the ADR status index so
+the Layer 3 view stops drifting against ledger truth, completes pass 1
+of the AGENTS.md context diet, rewrites `ghi-triage` to render its
+deliverable through a deterministic script, and authors the missing
+`git-sync` skill the runtime command was advertising.
+
+### Agent Surface Integrity
+
+- **#329** — `gz agent sync control-surfaces` now preserves the
+  `SessionStart` and `PreCompact` hook blocks in
+  `.claude/settings.json` (and the Codex equivalent) instead of
+  stripping them on every sync. The CAP-13 / GHI #326 mechanical
+  backstop for AGENTS.md re-reading was one sync away from silent
+  regression on every governance edit; the preservation rule is now
+  enforced and round-trip stable.
+
+### ADR Status Surface
+
+- **#322** — `docs/governance/GovZero/adr-status.md` is now regenerated
+  from filesystem + ledger truth by `gz register-adrs` and fail-closed
+  by `gz validate --adr-status-fresh` (wired into `gz check`).
+  Recovers the AGENTS.md § Architectural Boundaries item 6 invariant
+  after a hand-maintained drift had silently desynced ~5 ADRs (titles
+  and path layout) before discovery during the 2026-04-25
+  complexity-doctrine session.
+
+### Agent Contract Diet
+
+- **#327** — Pass 1 of the AGENTS.md context diet: pedagogical
+  narrative ("Why this is canon" codas, multi-paragraph rationale)
+  lifted from the per-turn contract surface to `docs/governance/`,
+  with binding bullets and one-line pointers retained. Per-turn
+  surface trimmed from 632 to 474 rendered lines without relaxing a
+  single binding invariant — the trim runs along the narrative axis
+  only, per anti-vibing operative claim 2 ("lighter ceremony is not
+  a tradeoff axis").
+
+### Triage Skill Rewrite
+
+- **#324** — `ghi-triage` rewritten v3 → v4. The script
+  (`.claude/skills/ghi-triage/scripts/triage.py`) now renders the
+  rank-ordered deliverable deterministically via `--format rank`;
+  the agent contributes structured rank input (severity + ≤80 char
+  action + ≤120 char why) validated at the rendering boundary.
+  Removes the inline-Python heredoc rendering pattern, the
+  Rich-only output contract that wrapped mid-glyph in chat surfaces,
+  and the three redundant views (per-GHI panels, recommended-order
+  table, rank list) that restated the same data. Cognitive freedom
+  on the input edge; determinism on the render edge.
+
+### CLI Fixes
+
+- **#315** — Authored the missing canonical `git-sync` skill
+  (`.gzkit/skills/git-sync/SKILL.md`) and mirrored it to vendor
+  surfaces. Closes the control-surface integrity gap where
+  `gz git-sync --skill` advertised a paired skill path that did not
+  exist in the installed inventory, leaving agents without the
+  workflow instructions the command claimed.
+
+### Stats
+
+- 5 GHIs closed
+
 ## v0.25.16 (2026-04-26)
 
 Quality-of-life patch covering the OBPI pipeline's rough edges, the chores
