@@ -282,6 +282,7 @@ def check(as_json: bool = False) -> None:
         run_cli_audit,
         run_drift_advisory,
         run_format_check,
+        run_orientation_freshness_audit,
         run_parity_check,
         run_preflight,
         run_readiness_audit,
@@ -304,6 +305,7 @@ def check(as_json: bool = False) -> None:
         ("CLI audit", run_cli_audit),
         ("Unscoped rules", run_unscoped_rules_audit),
         ("ADR status freshness", run_adr_status_fresh_audit),
+        ("Orientation freshness", run_orientation_freshness_audit),
         ("Preflight", run_preflight),
     ]
 
