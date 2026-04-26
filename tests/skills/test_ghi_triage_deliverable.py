@@ -114,9 +114,7 @@ class TestRankDeliverableIsByteStable(unittest.TestCase):
         self.assertIn("[blocking]", rendered)
         self.assertIn("direct-fix", rendered)
         self.assertIn("fix triage skill rendering", rendered)
-        self.assertIn(
-            "operator-facing surface degrades chat output every invocation", rendered
-        )
+        self.assertIn("operator-facing surface degrades chat output every invocation", rendered)
         self.assertIn("vibed deliverable contract", rendered)
 
 
@@ -150,9 +148,7 @@ class TestRankInputRenderingEdgeContract(unittest.TestCase):
 
     def test_why_with_newline_rejected(self) -> None:
         with self.assertRaises(_TRIAGE.RankInputError):
-            _TRIAGE.parse_rank_input(
-                self._payload(why="first clause\nsecond clause"), self.known
-            )
+            _TRIAGE.parse_rank_input(self._payload(why="first clause\nsecond clause"), self.known)
 
     def test_why_with_markdown_chars_rejected(self) -> None:
         for bad in ("**bold** thing", "list `code`", "head # one", "pipe | cell"):

@@ -308,9 +308,7 @@ def merge_settings(
     # get the merged content, user-only phases pass through unchanged.
     for phase, groups in existing_hooks.items():
         if phase in gzkit_owned_phases:
-            merged_hooks[phase] = _merge_hook_phase(
-                groups, gzkit_hooks.get(phase, []), hooks_dir
-            )
+            merged_hooks[phase] = _merge_hook_phase(groups, gzkit_hooks.get(phase, []), hooks_dir)
         else:
             merged_hooks[phase] = groups
 
