@@ -555,6 +555,19 @@ def run_adr_status_fresh_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --adr-status-fresh", cwd=project_root)
 
 
+def run_orientation_freshness_audit(project_root: Path) -> QualityResult:
+    """Run the SessionStart orientation hook freshness audit (GHI #341).
+
+    Fails closed when the SessionStart hook in `.claude/settings.json` or
+    `.codex/hooks.json` no longer invokes `scripts/session_orientation.py`,
+    or when the script drops the `Git remote state` heading or the
+    `collect_state` -> `collect_remote_state` wiring that GHI #338 added.
+    Recovery: `uv run gz agent sync control-surfaces` for hook drift; restore
+    the script edit for script drift.
+    """
+    return run_command("uv run gz validate --orientation-freshness", cwd=project_root)
+
+
 def run_preflight(project_root: Path) -> QualityResult:
     """Run preflight scan for stale pipeline markers and orphan receipts.
 
