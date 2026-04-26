@@ -302,7 +302,7 @@ that need to be redone.
 
 ### Always
 
-1. Read AGENTS.md before starting work
+1. Read AGENTS.md before starting work. Mechanical backstop: the SessionStart hook in `.claude/settings.json` (and `.codex/hooks.json` for Codex) auto-runs `scripts/session_orientation.py` to inject the most-recent handoff, open session-handoff GHIs, active OBPI claims, in-progress ADRs, recent ledger events, and open blockers as session context. Honor-system reading is the floor; the orientation hook is the ceiling. (CAP-13; GHI #326)
 2. Follow the gate covenant for all changes
 3. Record governance events in the ledger
 4. Preserve human intent across context boundaries

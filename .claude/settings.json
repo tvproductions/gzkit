@@ -3,6 +3,28 @@
     "superpowers@claude-plugins-official": false
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python scripts/session_orientation.py"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python scripts/session_orientation.py"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "ExitPlanMode",
