@@ -5,7 +5,7 @@ description: "Orchestrate the GHI-driven patch release ceremony: draft narrative
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.3.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -42,15 +42,39 @@ using GHI evidence and CLI outputs.
 ## When to Use
 
 - Operator says "patch release", "do a patch release", or equivalent
-- Qualifying GHIs exist (closed since last tag with runtime label + src diff)
-- The operator wants to cut a patch version bump driven by GHI completions
+- **Either qualifier holds:**
+  - **Behavior-level GHIs** closed since last tag with runtime label + src diff
+    (auto-discovered by `gz patch release --dry-run`)
+  - **Foundation-ADR closeouts** — a foundation ADR (`0.0.x`) reached
+    `Validated` status with all OBPIs `Validated` and Gate-5 attestation
+    evidence in the ledger since last tag (operator-asserted; the CLI does
+    not yet enumerate these)
+- The operator wants to cut a patch version bump driven by either qualifier
 
 ## When NOT to Use
 
 - For minor or major releases — use `gz closeout` ceremony instead
-- When no qualifying GHIs exist — `gz patch release --dry-run` will confirm
+- When neither qualifier holds — no closed GHIs surface in
+  `gz patch release --dry-run` AND no foundation ADR has reached `Validated`
+  since the last tag
 - When the operator wants to manually edit version files — this ceremony owns
   version sync via `sync_project_version`
+
+## Qualifier Doctrine
+
+Foundation ADRs codify app/system invariants and identity-shaping semantics.
+A foundation closeout (Validated, all OBPIs Validated, Gate-5 attestation in
+ledger) is a release-worthy event in its own right — the operator does not
+need to bundle it into an unrelated behavior-level GHI to ship it.
+
+| Qualifier | Source of truth | Discovery |
+|-----------|-----------------|-----------|
+| Behavior-level GHIs | `gh issue list` + commit cross-validation | `gz patch release --dry-run` |
+| Foundation-ADR closeout | ADR frontmatter `status: Validated` + ledger attestation events | Operator-asserted; cite ADR ID + closeout receipt in narrative |
+
+When the qualifier is a foundation-ADR closeout, the Step 2 narrative
+references the ADR ID and its decision rather than listing GHIs. The release
+flow (Steps 4a–4e) is identical regardless of which qualifier fired.
 
 ---
 
