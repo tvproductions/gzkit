@@ -1,5 +1,5 @@
 ---
-name: instructions-files-diet
+name: gz-diet
 persona: main-session
 description: Trim per-turn agent context weight by lifting pedagogical narrative from AGENTS.md, CLAUDE.md, and .claude/rules/** to docs/governance/, leaving binding bullets and one-line pointers behind. Use when the per-turn contract surface has accreted multi-paragraph rationale and "Why this is canon" codas, when an operator asks for a "diet" or "progressive disclosure" pass on the agent contract, or when the advisory scorecard surfaces Judgment-class duplicates that can be folded into Mechanical neighbors. Thin trigger-discovery wrapper for the `instructions-files-diet` chore — the chore's `CHORE.md` carries the procedure.
 category: code-quality
@@ -11,7 +11,7 @@ metadata:
   skill-version: "1.0.0"
 ---
 
-# instructions-files-diet
+# gz-diet
 
 ## Purpose
 
