@@ -1,15 +1,17 @@
 """Unit tests for scripts/session_orientation.py (GHI #326, SPEC-uplift CAP-13).
 
-The orientation script aggregates seven session-boot sections into a markdown
+The orientation script aggregates session-boot sections into a markdown
 digest used by SessionStart hooks. These tests pin the operator-facing
 contract:
 
-- All seven sections appear in the rendered output, in canonical order.
+- All canonical sections appear in the rendered output, in canonical order.
 - Freshness classification honors the gz-session-handoff Fresh / Slightly-Stale
   / Stale / Very-Stale buckets.
 - Empty state degrades gracefully — every section emits a "no data" line
   rather than disappearing or crashing the hook.
 - Output is deterministic for a given (state, now) pair.
+- Git-remote-state surfacing (GHI #338) names ahead/behind counts and emits
+  a binding nudge when the local clone is behind origin.
 """
 
 from __future__ import annotations
@@ -21,6 +23,7 @@ import tempfile
 import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "session_orientation.py"
@@ -36,6 +39,7 @@ def _load_orientation_module():
 
 
 SECTION_HEADINGS = (
+    "## Git remote state",
     "## Most-recent handoff",
     "## Open session-handoff GHIs",
     "## Active OBPI claims",
@@ -73,8 +77,9 @@ class TestRenderEmitsAllSections(unittest.TestCase):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
 
-    def test_all_seven_sections_present_with_empty_state(self):
+    def test_all_canonical_sections_present_with_empty_state(self):
         empty_state = {
+            "remote_state": None,
             "handoff": None,
             "session_handoff_ghis": [],
             "obpi_locks": [],
@@ -88,6 +93,7 @@ class TestRenderEmitsAllSections(unittest.TestCase):
 
     def test_sections_appear_in_canonical_order(self):
         empty_state = {
+            "remote_state": None,
             "handoff": None,
             "session_handoff_ghis": [],
             "obpi_locks": [],
@@ -105,6 +111,7 @@ class TestRenderEmitsAllSections(unittest.TestCase):
 
     def test_handoff_block_includes_freshness_and_resume_action(self):
         state = {
+            "remote_state": None,
             "handoff": {
                 "path": ".gzkit/handoffs/2026-04-25-test.md",
                 "freshness": "Fresh",
@@ -123,6 +130,7 @@ class TestRenderEmitsAllSections(unittest.TestCase):
 
     def test_render_is_deterministic(self):
         state = {
+            "remote_state": None,
             "handoff": None,
             "session_handoff_ghis": [{"number": 325, "title": "Session handoff X"}],
             "obpi_locks": [],
@@ -197,6 +205,167 @@ class TestCollectHandoff(unittest.TestCase):
             self.assertIn("new-handoff.md", result["path"])
             self.assertEqual(result["freshness"], "Fresh")
             self.assertEqual(result["first_action"], "Resume new work")
+
+
+class TestCollectRemoteState(unittest.TestCase):
+    """GHI #338 — orientation surfaces git-remote-divergence at session start."""
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+        self.now = datetime(2026, 4, 26, 12, 0, 0, tzinfo=UTC)
+
+    def _fake_run(self, mapping):
+        """Return a subprocess.run side-effect that maps argv prefix → CompletedProcess."""
+
+        def side_effect(args, **_kwargs):
+            for prefix, result in mapping.items():
+                if list(args[: len(prefix)]) == list(prefix):
+                    return result
+            raise AssertionError(f"unexpected git invocation: {args}")
+
+        return side_effect
+
+    def _completed(self, stdout="", returncode=0):
+        return subprocess_completed(stdout=stdout, returncode=returncode)
+
+    def test_clean_clone_reports_zero_behind(self):
+        mapping = {
+            ("git", "fetch"): self._completed(),
+            ("git", "rev-parse", "--abbrev-ref"): self._completed(stdout="main\n"),
+            ("git", "rev-list", "--left-right", "--count"): self._completed(stdout="0\t0\n"),
+        }
+        with (
+            mock.patch.object(self.mod.subprocess, "run", side_effect=self._fake_run(mapping)),
+            mock.patch.dict(self.mod.os.environ, {}, clear=False),
+        ):
+            self.mod.os.environ.pop("GZKIT_ORIENTATION_NO_FETCH", None)
+            state = self.mod.collect_remote_state()
+        self.assertIsNotNone(state)
+        assert state is not None
+        self.assertEqual(state["branch"], "main")
+        self.assertEqual(state["ahead"], 0)
+        self.assertEqual(state["behind"], 0)
+        self.assertFalse(state["is_behind"])
+
+    def test_behind_clone_reports_count_and_marks_behind(self):
+        mapping = {
+            ("git", "fetch"): self._completed(),
+            ("git", "rev-parse", "--abbrev-ref"): self._completed(stdout="main\n"),
+            # rev-list --left-right --count A...B prints "<left>\t<right>"
+            # left = ahead, right = behind for HEAD...origin/main? we ordered origin/main...HEAD
+            # so left = behind (commits in origin not in local), right = ahead
+            ("git", "rev-list", "--left-right", "--count"): self._completed(stdout="10\t0\n"),
+        }
+        with (
+            mock.patch.object(self.mod.subprocess, "run", side_effect=self._fake_run(mapping)),
+            mock.patch.dict(self.mod.os.environ, {}, clear=False),
+        ):
+            self.mod.os.environ.pop("GZKIT_ORIENTATION_NO_FETCH", None)
+            state = self.mod.collect_remote_state()
+        self.assertIsNotNone(state)
+        assert state is not None
+        self.assertEqual(state["behind"], 10)
+        self.assertEqual(state["ahead"], 0)
+        self.assertTrue(state["is_behind"])
+
+    def test_no_fetch_env_var_skips_fetch_subprocess(self):
+        called: list[tuple] = []
+
+        def record_run(args, **_kwargs):
+            called.append(tuple(args[:2]))
+            if args[:2] == ["git", "fetch"]:
+                raise AssertionError("fetch must be skipped when GZKIT_ORIENTATION_NO_FETCH=1")
+            if args[:3] == ["git", "rev-parse", "--abbrev-ref"]:
+                return self._completed(stdout="main\n")
+            if args[:4] == ["git", "rev-list", "--left-right", "--count"]:
+                return self._completed(stdout="0\t0\n")
+            raise AssertionError(f"unexpected git invocation: {args}")
+
+        with (
+            mock.patch.object(self.mod.subprocess, "run", side_effect=record_run),
+            mock.patch.dict(
+                self.mod.os.environ,
+                {"GZKIT_ORIENTATION_NO_FETCH": "1"},
+                clear=False,
+            ),
+        ):
+            state = self.mod.collect_remote_state()
+        self.assertIsNotNone(state)
+        self.assertNotIn(("git", "fetch"), called)
+
+    def test_git_unavailable_returns_none(self):
+        with mock.patch.object(
+            self.mod.subprocess,
+            "run",
+            side_effect=FileNotFoundError("git not on PATH"),
+        ):
+            state = self.mod.collect_remote_state()
+        self.assertIsNone(state)
+
+
+class TestRenderRemoteStateBlock(unittest.TestCase):
+    """GHI #338 — render emits a binding nudge when the clone is behind origin."""
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+        self.now = datetime(2026, 4, 26, 12, 0, 0, tzinfo=UTC)
+
+    def _state(self, remote_state):
+        return {
+            "remote_state": remote_state,
+            "handoff": None,
+            "session_handoff_ghis": [],
+            "obpi_locks": [],
+            "adr_pipeline": [],
+            "recent_events": [],
+            "blockers": [],
+        }
+
+    def test_clean_clone_shows_synced_line_no_nudge(self):
+        rendered = self.mod.render(
+            self._state(
+                {
+                    "branch": "main",
+                    "ahead": 0,
+                    "behind": 0,
+                    "is_behind": False,
+                }
+            ),
+            self.now,
+        )
+        self.assertIn("## Git remote state", rendered)
+        self.assertIn("ahead=0 behind=0", rendered)
+        # Binding nudge text MUST NOT appear when the clone is current.
+        self.assertNotIn("git pull --ff-only", rendered)
+
+    def test_behind_clone_includes_binding_nudge(self):
+        rendered = self.mod.render(
+            self._state(
+                {
+                    "branch": "main",
+                    "ahead": 0,
+                    "behind": 10,
+                    "is_behind": True,
+                }
+            ),
+            self.now,
+        )
+        self.assertIn("ahead=0 behind=10", rendered)
+        # The nudge names the remediation command and the binding language.
+        self.assertIn("git pull --ff-only", rendered)
+        self.assertIn("10 commits behind", rendered)
+
+    def test_remote_state_unavailable_emits_no_data_line(self):
+        rendered = self.mod.render(self._state(None), self.now)
+        self.assertIn("## Git remote state", rendered)
+        self.assertIn("(no remote state available)", rendered)
+
+
+def subprocess_completed(stdout: str = "", returncode: int = 0):
+    """Tiny stand-in for subprocess.CompletedProcess covering the fields we use."""
+    import subprocess as _sp
+
+    return _sp.CompletedProcess(args=[], returncode=returncode, stdout=stdout, stderr="")
 
 
 if __name__ == "__main__":
