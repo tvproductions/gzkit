@@ -1,5 +1,70 @@
 # gzkit Release Notes
 
+## v0.25.16 (2026-04-26)
+
+Quality-of-life patch covering the OBPI pipeline's rough edges, the chores
+registry's post-migration drift, ADR-report rollup correctness, and the
+session-orientation gap that left handoffs as write-only artifacts. Adds
+the SessionStart orientation hook (CAP-13), brings `gz-obpi-pipeline`
+verification to ARB-lint parity, and pins parent-ADR § Decision as the
+first Discovery Checklist read in OBPI briefs.
+
+### OBPI Pipeline & Verification
+
+- **#317** — `gz-obpi-pipeline` Stage 3 verification now invokes
+  `uv run gz arb ruff` for lint instead of `uv run gz lint`, restoring
+  parity with the canonical attestation contract. Previously the pipeline
+  could report Stage 3 PASS while ARB lint receipts came back red.
+- **#302** — `gz test --obpi` resolves `@covers`-tagged tests to dotted
+  module paths before handing them to the unittest loader; the absolute-
+  path leak that produced `FailedTest` errors and `AttributeError`
+  diagnostics is closed.
+- **#313** — `plan-audit-gate` hook self-resolves Claude Code auto-named
+  plan files under `~/.claude/plans/` and matches OBPI short-form IDs
+  (`OBPI-X.Y.Z-NN`) in addition to the canonicalized full slug. Heavy-lane
+  OBPI plan runs no longer hit hard BLOCKED on first `ExitPlanMode`.
+- **#321** — OBPI brief Discovery Checklist reordered so "Parent ADR §
+  Decision — quote the line this OBPI implements" is item #1, followed
+  by § Intent. Adds a STOP line below the checklist enforcing the read.
+
+### Governance Status & Reporting
+
+- **#279** — `gz adr create` and `gz adr report` canonicalize bare-ID vs.
+  slugged-ID ledger events; the duplicate `adr_created` emission that
+  produced shadow rows in the Foundation table (e.g. ADR-0.0.20 appearing
+  twice) is rejected at write time and rolled up at read time.
+- **#319** — Detailed governance status (`gz status --show-gates`,
+  `gz state --blocked`) renders as full Rich tables for OBPI and artifact
+  state instead of prose summaries or ellipsized IDs. Agents no longer
+  need to synthesize ad-hoc Markdown tables from `--json` output.
+
+### Chores Surface
+
+- **#304** — `src/gzkit/chores/registry.json` `path` fields updated to the
+  post-OBPI-0.0.21-01 layout (`src/gzkit/chores/<slug>/`). Previously
+  pointed at the legacy `ops/chores/` locations, producing incoherent
+  output in `gz chores show` and `gz chores plan`.
+
+### Session Orientation (CAP-13)
+
+- **#326** — SessionStart hook landed for both Claude Code
+  (`.claude/settings.json`) and Codex CLI (`.codex/hooks.json`), wired
+  to `scripts/session_orientation.py`. Aggregates seven sources on
+  session entry: most-recent handoff (with Fresh/Slightly-Stale/Stale
+  windowing), open `session-handoff`-labeled GHIs, active OBPI claims,
+  in-progress ADR pipeline state, recent ledger events (last 24h), open
+  blockers, and a post-compaction skill-awareness re-injection trigger.
+  Closes the write-only-artifact failure class for handoffs.
+
+### Stats
+
+- 8 GHIs closed (all runtime-affecting; `runtime` label backfilled
+  during this release's discovery sweep)
+- New session-orientation surface: `scripts/session_orientation.py`
+  + SessionStart hook configs for Claude Code and Codex
+- New CLI hook flags: `gz plan audit --plan-file`, `--save`
+- ADR-report duplicate-row regression closed (Defect 1+2 from #279)
+
 ## v0.25.15 (2026-04-23)
 
 Closes the OBPI human-attestation authenticity gap and restores agent+operator
