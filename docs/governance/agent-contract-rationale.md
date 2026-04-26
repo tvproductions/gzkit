@@ -111,6 +111,74 @@ observed evidence are post-hoc reasoning pathways, not verification
 pathways — in all three cases, the fix is to move the verification *before*
 the claim.
 
+## Why this contract is not minimal
+
+*Lifted from `AGENTS.md` § Why this contract is not minimal under GHI #327.*
+
+A reasonable reader comparing `AGENTS.md` to minimalist references — e.g.
+[forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills),
+a single 75-line `CLAUDE.md` distilling Karpathy's LLM-coding pitfalls into
+four principles — will notice that gzkit is the opposite shape: ~14 rule
+files, ~50 skills, five gates, three state tiers, a ledger, receipts, and a
+sync protocol. By the minimalist test ("would a senior engineer say this is
+overcomplicated?") gzkit's control surface is overcomplicated.
+
+The tradeoff is deliberate, and stating it is the fair thing to do:
+
+- **Minimalist references optimize for** a solo human + one agent, short
+  session, code-level hygiene. Behavior is the whole product; agent trust is
+  the mechanism; the cost of a missed-principle mistake is one discarded
+  diff.
+- **gzkit optimizes for** multi-agent, multi-session, auditable governance
+  where the proof-of-work must survive the agent that produced it.
+  Ledger-of-truth beats agent-trust; receipts beat narrative recall;
+  structural gates beat goodwill. The cost of a missed-principle mistake is
+  a corrupted artifact graph that reconciliation has to untangle months
+  later.
+
+Both shapes are defensible for their problem class. The four Karpathy
+principles (Think Before Coding, Simplicity First, Surgical Changes,
+Goal-Driven Execution) are all present in this contract with stronger
+mechanical backstops — see `AGENTS.md` § Behavior Rules (Judgment invariants
+7–10) and § DO IT RIGHT (#6a–6h), `.gzkit/rules/tests.md` Red-Green-Refactor,
+and the ARB receipt requirement in § Attestation. When in doubt about
+whether gzkit's surface is worth the cost, the answer is: it is worth the
+cost for work that must be audited across context boundaries, and it is
+heavier than necessary for a single trivial edit. Use judgment.
+
+## Anti-vibing mantra — relationship to the rest of the contract
+
+*Lifted from `AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT § Relationship
+to the rest of the contract under GHI #327.*
+
+The other invariants in `AGENTS.md` — DO IT RIGHT 6g (verify the runtime
+surface), 6h (quote rules verbatim), § Behavior Rules — Always #7–#10 (90%
+confidence threshold, surface assumptions, STOP on inconsistencies, push
+back on flawed approaches), § Attestation (ARB receipts as observed
+evidence) — are this mantra rendered as mechanical checks. When those
+checks are silent, the mantra is the conscience.
+
+## Attestation — worked example
+
+*Lifted from `AGENTS.md` § Attestation § Worked example under GHI #327.*
+
+User says: `attest completed`
+
+Agent passes to `--attestation-text`:
+
+```
+attest completed — Confirm decision: gzkit cli_audit + doc_coverage surface
+architecturally superior (AST vs parser._actions private API, 5-surface
+manifest-driven coverage, 76 vs 1 tests, frozen Pydantic vs dict[str,Any]);
+no absorption of the external reference cli_audit module warranted.
+Receipts: lint arb-2026-04-14T12-34-56-ruff; types arb-2026-04-14T12-35-02-ty;
+tests arb-2026-04-14T12-36-18-unittest; coverage arb-2026-04-14T12-37-44-coverage.
+```
+
+See [`docs/governance/arb-middleware.md`](arb-middleware.md) for ARB
+middleware deep-dive: core concept, command surface, receipt schema and
+storage, exit codes, and rationale.
+
 ## Attribution
 
 Consolidation pattern adapted from "Core Operating Behaviors" in
