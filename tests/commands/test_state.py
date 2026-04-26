@@ -77,8 +77,14 @@ class TestStateFullOutputForm(unittest.TestCase):
 
             result = runner.invoke(main, ["state", "--full"])
             self.assertEqual(result.exit_code, 0)
-            # Rich box-drawing markers (heavy box used by default Rich Table).
-            self.assertIn("┃", result.output)
+            # Rich box-drawing markers — heavy `┃` (U+2503) when rendered to a
+            # TTY, light `│` (U+2502) when Rich detects a captured pipe (e.g.
+            # under CliRunner). Either satisfies the rendering contract: the
+            # output is a Rich Table, not prose.
+            self.assertTrue(
+                "┃" in result.output or "│" in result.output,
+                "expected Rich box-drawing markers in --full output",
+            )
             self.assertIn("Artifact State", result.output)
 
 

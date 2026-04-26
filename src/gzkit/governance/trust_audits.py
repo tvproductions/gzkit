@@ -463,7 +463,7 @@ def _scan_doc_pipe_patterns(project_root: Path) -> list[ValidationError]:
                 content = path.read_text(encoding="utf-8")
             except UnicodeDecodeError:
                 continue
-            rel_path = path.relative_to(project_root)
+            rel_path = path.relative_to(project_root).as_posix()
             for lineno, line in enumerate(content.splitlines(), 1):
                 artifact = f"{rel_path}:{lineno}"
                 if artifact in _UTF8_PIPE_WAIVERS:
