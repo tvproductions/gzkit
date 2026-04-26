@@ -229,6 +229,7 @@ Capabilities that span the agent lifecycle.
 
 #### CAP-13: Session-Start Orientation Protocol
 
+**Status:** Implemented (GHI #326, 2026-04-25). `scripts/session_orientation.py` aggregates the seven required sections; SessionStart hooks fire on Claude Code (`.claude/settings.json`) and Codex CLI (`.codex/hooks.json`). PreCompact / UserPromptSubmit hooks cover post-compaction re-injection per the candidate-ADR-D scope.
 **Source:** superpowers (session-start hook), GSD (state loading)
 **Gap:** Agent orientation is honor-system ("read AGENTS.md before starting work"). No automated state synthesis. No hook enforcement.
 **Proposed change:**

@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "command": ["uv", "run", "python", "scripts/session_orientation.py"],
+        "inject": "additionalContext"
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "command": ["uv", "run", "python", "scripts/session_orientation.py"],
+        "inject": "additionalContext",
+        "guard": "post_compaction"
+      }
+    ]
+  }
+}

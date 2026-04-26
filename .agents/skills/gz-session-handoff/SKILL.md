@@ -5,7 +5,7 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.2.0"
+  skill-version: "6.3.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -135,6 +135,22 @@ print(result.file_path)
 ```
 
 ---
+
+## Auto-load on session start (CAP-13, GHI #326)
+
+A SessionStart hook (`.claude/settings.json` for Claude Code,
+`.codex/hooks.json` for Codex CLI) runs `scripts/session_orientation.py` on
+every session boot. The orientation script's "Most-recent handoff" section
+selects the newest file under `.gzkit/handoffs/` and classifies its age via
+the same Fresh / Slightly-Stale / Stale / Very-Stale buckets this skill
+uses. The hook output is injected as session context, so the resuming
+agent sees the handoff path, freshness bucket, and first-next-step before
+its first response without operator prompting.
+
+The hook is the mechanical floor; this skill's RESUME workflow remains the
+canonical path when an operator wants the full chain traversal, branch
+verification, or staleness gate. Operators who do not want orientation
+injection can disable the hook in their local settings.
 
 ## RESUME Procedure
 
