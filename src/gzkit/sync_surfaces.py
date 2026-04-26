@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from gzkit.config import GzkitConfig
-from gzkit.hooks.claude import generate_claude_settings, setup_claude_hooks
+from gzkit.hooks.claude import generate_claude_settings, merge_settings, setup_claude_hooks
 from gzkit.hooks.copilot import generate_copilotignore, setup_copilot_hooks
 from gzkit.rules import load_rules, render_rules_to_dir
 from gzkit.rules import sync_claude_rules as sync_claude_rules  # noqa: F401
@@ -393,14 +393,22 @@ def sync_claude_settings(project_root: Path, config: GzkitConfig) -> None:
         project_root: Project root directory.
         config: Project configuration.
 
+    Merges gzkit-owned hook phases into any existing settings file so
+    user-added phases (SessionStart, PreCompact, etc.) and user-added
+    top-level keys are preserved across sync. The CAP-13 / GHI #326
+    orientation hook is the canonical reason this merge cannot be
+    skipped — replacing the file with the bare gzkit subset silently
+    disables the AGENTS.md re-read backstop (GHI #329).
     """
-    settings = generate_claude_settings(config)
+    gzkit_settings = generate_claude_settings(config)
 
     settings_path = project_root / config.paths.claude_settings
     settings_path.parent.mkdir(parents=True, exist_ok=True)
 
+    merged = merge_settings(settings_path, gzkit_settings, config.paths.claude_hooks)
+
     with settings_path.open("w") as f:
-        json.dump(settings, f, indent=2)
+        json.dump(merged, f, indent=2)
         f.write("\n")
 
 
