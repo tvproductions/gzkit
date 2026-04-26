@@ -4,6 +4,7 @@ Skills are reusable agent instructions that can be triggered contextually.
 """
 
 from datetime import date
+from importlib.resources import files
 from pathlib import Path
 from typing import Any
 
@@ -90,6 +91,13 @@ CORE_SKILLS = {
         "behavior_description": "Check OBPIs have evidence, verify tests and docs exist.",
         "prerequisites": "ADR exists with implementation complete",
     },
+    # --- Agent & Repository ---
+    # git-sync ships its full workflow body as a packaged resource at
+    # gzkit/templates/skills/git-sync/SKILL.md, so consumers get the
+    # canonical guarded-sync ritual instead of a generic placeholder.
+    # The `gz git-sync --skill` flag advertises this path; without this
+    # entry the path doesn't exist on consumer projects (GHI #315).
+    "git-sync": {},
     # --- Quality ---
     "lint": {
         "skill_name": "Lint",
@@ -247,19 +255,35 @@ def _read_lifecycle_state(skill_file: Path) -> str:
     return frontmatter.get("lifecycle_state") or "active"
 
 
+def _load_packaged_skill_resource(dir_name: str) -> str | None:
+    """Return canonical SKILL.md content shipped with the wheel, if present.
+
+    Some core skills (e.g. ``git-sync``) ship their full workflow body as a
+    packaged resource at ``gzkit/templates/skills/<slug>/SKILL.md`` so that
+    ``gz init`` can deliver the canonical instructions verbatim instead of
+    rendering a generic ``Step 1 / Step 2 / Step 3`` placeholder. Returns
+    ``None`` when the slug has no packaged resource — caller falls back to
+    template rendering. (GHI #315)
+    """
+    resource = files("gzkit.templates").joinpath("skills", dir_name, "SKILL.md")
+    if not resource.is_file():
+        return None
+    return resource.read_text(encoding="utf-8")
+
+
 def scaffold_skill(
     project_root: Path,
     dir_name: str,
     skills_dir: str,
     **kwargs: str,
 ) -> Path:
-    """Scaffold a new skill from template.
+    """Scaffold a new skill from template or packaged resource.
 
     Args:
         project_root: Project root directory.
         dir_name: Directory name for the skill.
         skills_dir: Directory for skills relative to project root.
-        **kwargs: Template variables.
+        **kwargs: Template variables (ignored when a packaged resource exists).
 
     Returns:
         Path to the created SKILL.md file.
@@ -267,6 +291,13 @@ def scaffold_skill(
     """
     skill_path = project_root / skills_dir / dir_name
     skill_path.mkdir(parents=True, exist_ok=True)
+
+    skill_file = skill_path / "SKILL.md"
+
+    packaged = _load_packaged_skill_resource(dir_name)
+    if packaged is not None:
+        skill_file.write_text(packaged, encoding="utf-8")
+        return skill_file
 
     # Default values (skill_name in template is display name)
     defaults = {
@@ -292,8 +323,6 @@ def scaffold_skill(
 
     context = {**defaults, **kwargs}
     content = render_template("skill", **context)
-
-    skill_file = skill_path / "SKILL.md"
     skill_file.write_text(content, encoding="utf-8")
 
     return skill_file

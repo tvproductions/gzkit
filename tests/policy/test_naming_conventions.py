@@ -28,6 +28,7 @@ SNAKE_CASE_RE = re.compile(r"^[a-z_][a-z0-9_]*$")
 # (which must remain a valid Python package name).
 DATA_PACKAGE_CARVEOUTS = (
     SRC_ROOT / "chores",  # ADR-0.0.21 — chore slugs like 'coverage-40pct'
+    SRC_ROOT / "templates" / "skills",  # GHI #315 — skill slugs like 'git-sync'
 )
 
 

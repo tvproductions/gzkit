@@ -145,7 +145,13 @@ class TestSkillCommands(unittest.TestCase):
             self._mark_skill_retired("lint")
             result = runner.invoke(main, ["skill", "list"])
             self.assertEqual(result.exit_code, 0)
-            self.assertNotIn("lint", result.output)
+            # Assert the lint skill *row* is absent, not just any substring —
+            # other rows may legitimately mention "lint" in their description
+            # (e.g. git-sync mentions lint/test gates).
+            json_result = runner.invoke(main, ["skill", "list", "--json"])
+            self.assertEqual(json_result.exit_code, 0)
+            names = [s["name"] for s in json.loads(json_result.output)["skills"]]
+            self.assertNotIn("lint", names)
             self.assertIn("gz-adr-create", result.output)
 
     def test_skill_list_all_shows_retired_with_label(self) -> None:
@@ -204,6 +210,26 @@ class TestSkillCommands(unittest.TestCase):
         with _InitFromTemplate():
             self.assertTrue(Path(".gzkit/skills/gz-adr-create/SKILL.md").exists())
             self.assertFalse(Path(".gzkit/skills/gz-adr-manager").exists())
+
+    def test_init_scaffolds_git_sync_skill_with_canonical_body(self) -> None:
+        """gz init delivers the git-sync skill that ``gz git-sync --skill`` advertises.
+
+        Canonical contract: the path printed by ``gz git-sync --skill``
+        (``.gzkit/skills/git-sync/SKILL.md``) MUST exist on consumer projects
+        after ``gz init``, and the body MUST be the canonical workflow — not
+        the generic ``Step 1 / Step 2 / Step 3`` template placeholder, which
+        provides no operator value (GHI #315).
+        """
+        with _InitFromTemplate():
+            skill_file = Path(".gzkit/skills/git-sync/SKILL.md")
+            self.assertTrue(skill_file.exists())
+            content = skill_file.read_text(encoding="utf-8")
+            # Frontmatter resolves to the actual skill, not a placeholder.
+            self.assertIn("name: git-sync", content)
+            # Canonical body delivers the guarded-sync workflow, not the
+            # generic template's "Step 1 / Step 2 / Step 3" filler.
+            self.assertIn("uv run gz git-sync", content)
+            self.assertNotIn("1. Step 1\n2. Step 2\n3. Step 3", content)
 
     def test_skill_audit_passes_after_init(self) -> None:
         """skill audit passes for freshly initialized project."""
