@@ -1,0 +1,34 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run gz validate --advisory-scorecard",
+      "expected": 0,
+      "description": "Advisory scorecard audit passes; every binding bullet retained per scorecard"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run gz validate --documents --surfaces",
+      "expected": 0,
+      "description": "Documents and surfaces validate after the lift"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run gz lint",
+      "expected": 0,
+      "description": "Lint clean"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run mkdocs build --strict",
+      "expected": 0,
+      "description": "Docs build strict (lifted pedagogy pages render)"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run -m unittest -q",
+      "expected": 0,
+      "description": "Tests pass after the lift"
+    }
+  ]
+}

@@ -250,6 +250,13 @@
             "version": "1.0.0",
             "path": ".gzkit/chores/dependency-currency",
             "lane": "lite"
+        },
+        {
+            "slug": "instructions-files-diet",
+            "title": "Instructions & Memory Files Diet (Progressive Disclosure)",
+            "version": "1.0.0",
+            "path": ".gzkit/chores/instructions-files-diet",
+            "lane": "lite"
         }
     ]
 }
