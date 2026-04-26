@@ -1210,5 +1210,137 @@ class TestDetectClaudeSettingsDrift(unittest.TestCase):
             self.assertTrue(any("Missing" in d for d in diffs))
 
 
+class TestSyncClaudeSettingsPreservesUserPhases(unittest.TestCase):
+    """GHI #329: sync_claude_settings must preserve user-added hook phases.
+
+    The `setup_claude_hooks` writer in `gzkit.hooks.claude` correctly merges
+    user-added hooks via `_merge_settings`, but the parallel writer
+    `gzkit.sync.sync_claude_settings` (called by `gz agent sync
+    control-surfaces`) bypassed the merge and overwrote the file with the
+    bare gzkit-owned subset. That stripped any user-defined phases — most
+    importantly `SessionStart` and `PreCompact`, which AGENTS.md § Behavior
+    Rules — Always #1 names as the mechanical orientation backstop
+    (CAP-13; GHI #326). These tests pin the contract on the sync writer:
+    user phases survive, user top-level keys survive, and gzkit-owned
+    phases are still refreshed.
+    """
+
+    def _seed_user_settings(self, project_root: Path, config: GzkitConfig) -> Path:
+        import json
+
+        from gzkit.hooks.claude import generate_claude_settings
+
+        settings = generate_claude_settings(config)
+        settings.setdefault("hooks", {})["SessionStart"] = [
+            {
+                "matcher": "*",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "uv run python scripts/session_orientation.py",
+                    }
+                ],
+            }
+        ]
+        settings["hooks"]["PreCompact"] = [
+            {
+                "matcher": "*",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "uv run python scripts/session_orientation.py",
+                    }
+                ],
+            }
+        ]
+        settings["myCustomKey"] = "preserve-me"
+        settings_path = project_root / config.paths.claude_settings
+        settings_path.parent.mkdir(parents=True, exist_ok=True)
+        settings_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+        return settings_path
+
+    def test_session_start_phase_survives_sync(self) -> None:
+        import json
+
+        from gzkit.sync import sync_claude_settings
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            settings_path = self._seed_user_settings(project_root, config)
+
+            sync_claude_settings(project_root, config)
+
+            result = json.loads(settings_path.read_text(encoding="utf-8"))
+            self.assertIn("SessionStart", result.get("hooks", {}))
+            session_hooks = result["hooks"]["SessionStart"][0]["hooks"]
+            self.assertEqual(
+                session_hooks[0]["command"],
+                "uv run python scripts/session_orientation.py",
+            )
+
+    def test_pre_compact_phase_survives_sync(self) -> None:
+        import json
+
+        from gzkit.sync import sync_claude_settings
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            settings_path = self._seed_user_settings(project_root, config)
+
+            sync_claude_settings(project_root, config)
+
+            result = json.loads(settings_path.read_text(encoding="utf-8"))
+            self.assertIn("PreCompact", result.get("hooks", {}))
+
+    def test_user_top_level_key_survives_sync(self) -> None:
+        import json
+
+        from gzkit.sync import sync_claude_settings
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            settings_path = self._seed_user_settings(project_root, config)
+
+            sync_claude_settings(project_root, config)
+
+            result = json.loads(settings_path.read_text(encoding="utf-8"))
+            self.assertEqual(result.get("myCustomKey"), "preserve-me")
+
+    def test_gzkit_phases_refresh_after_tampering(self) -> None:
+        """gzkit-owned PreToolUse/PostToolUse hooks remain authoritative."""
+        import json
+
+        from gzkit.sync import sync_claude_settings
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            settings_path = self._seed_user_settings(project_root, config)
+            data = json.loads(settings_path.read_text(encoding="utf-8"))
+            for group in data["hooks"]["PreToolUse"]:
+                if group.get("matcher") == "ExitPlanMode":
+                    group["hooks"][0]["command"] = "tampered"
+            settings_path.write_text(
+                json.dumps(data, indent=2) + "\n", encoding="utf-8"
+            )
+
+            sync_claude_settings(project_root, config)
+
+            result = json.loads(settings_path.read_text(encoding="utf-8"))
+            exit_plan_groups = [
+                g
+                for g in result["hooks"]["PreToolUse"]
+                if g.get("matcher") == "ExitPlanMode"
+            ]
+            self.assertEqual(len(exit_plan_groups), 1)
+            self.assertIn(
+                "plan-audit-gate.py",
+                exit_plan_groups[0]["hooks"][0]["command"],
+            )
+
+
 if __name__ == "__main__":
     unittest.main()

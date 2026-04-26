@@ -271,7 +271,7 @@ def _merge_hook_phase(
     return merged
 
 
-def _merge_settings(
+def merge_settings(
     settings_path: Path,
     gzkit_settings: dict,
     hooks_dir: str,
@@ -297,21 +297,27 @@ def _merge_settings(
         if key != "hooks":
             merged[key] = value
 
-    # Merge hooks phase by phase
+    # Merge hooks phase by phase, preserving the existing file's phase
+    # order so a sync round-trip on an untouched file is byte-stable.
     existing_hooks = existing.get("hooks", {})
     gzkit_hooks = gzkit_settings.get("hooks", {})
+    gzkit_owned_phases = ("PreToolUse", "PostToolUse")
     merged_hooks: dict[str, list] = {}
 
-    # Process phases that gzkit defines
-    for phase in ("PreToolUse", "PostToolUse"):
-        existing_phase = existing_hooks.get(phase, [])
-        gzkit_phase = gzkit_hooks.get(phase, [])
-        merged_hooks[phase] = _merge_hook_phase(existing_phase, gzkit_phase, hooks_dir)
-
-    # Preserve user-defined phases gzkit doesn't touch
+    # Walk existing phases first to lock their order; gzkit-owned phases
+    # get the merged content, user-only phases pass through unchanged.
     for phase, groups in existing_hooks.items():
-        if phase not in merged_hooks:
+        if phase in gzkit_owned_phases:
+            merged_hooks[phase] = _merge_hook_phase(
+                groups, gzkit_hooks.get(phase, []), hooks_dir
+            )
+        else:
             merged_hooks[phase] = groups
+
+    # Append any gzkit-owned phases the existing file did not declare.
+    for phase in gzkit_owned_phases:
+        if phase not in merged_hooks:
+            merged_hooks[phase] = gzkit_hooks.get(phase, [])
 
     merged["hooks"] = merged_hooks
     return merged
@@ -390,7 +396,7 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
     settings_path = project_root / config.paths.claude_settings
     settings_path.parent.mkdir(parents=True, exist_ok=True)
 
-    merged = _merge_settings(settings_path, gzkit_settings, config.paths.claude_hooks)
+    merged = merge_settings(settings_path, gzkit_settings, config.paths.claude_hooks)
 
     with settings_path.open("w") as f:
         json.dump(merged, f, indent=2)
