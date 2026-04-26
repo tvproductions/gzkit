@@ -441,6 +441,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Flag if no reconcile event since HEAD (grace: 24h)",
     )
     p_validate.add_argument(
+        "--adr-status-fresh",
+        dest="check_adr_status_fresh",
+        action="store_true",
+        help="adr-status.md must agree with on-disk ADR canon (GHI #322)",
+    )
+    p_validate.add_argument(
         "--taxonomy",
         dest="check_taxonomy",
         action="store_true",
@@ -494,6 +500,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_skill_alignment=a.check_skill_alignment,
             check_advisory_scorecard=a.check_advisory_scorecard,
             check_reconcile_freshness=a.check_reconcile_freshness,
+            check_adr_status_fresh=a.check_adr_status_fresh,
             check_taxonomy=a.check_taxonomy,
             check_brief_headings=a.check_brief_headings,
             check_unscoped_rules=a.check_unscoped_rules or a.check_audits,

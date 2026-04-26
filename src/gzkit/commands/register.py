@@ -10,6 +10,7 @@ from gzkit.commands.common import (
     ensure_initialized,
     get_project_root,
 )
+from gzkit.governance.adr_status_index import regenerate_adr_status_md
 from gzkit.ledger import (
     Ledger,
     adr_created_event,
@@ -422,6 +423,7 @@ def register_adrs(
     if not to_register and not to_register_obpis:
         if not orphans:
             console.print("No unregistered ADRs or OBPIs found.")
+        _regenerate_adr_status_index(project_root, dry_run=dry_run)
         return
 
     if dry_run:
@@ -433,6 +435,7 @@ def register_adrs(
             )
         for obpi_id, parent in to_register_obpis:
             console.print(f"  Would append obpi_created: {obpi_id} (parent: {parent})")
+        _regenerate_adr_status_index(project_root, dry_run=True)
         return
 
     for adr_id, parent, adr_lane in to_register:
@@ -448,3 +451,22 @@ def register_adrs(
         f"{len(to_register)} adr_created event(s), "
         f"{len(to_register_obpis)} obpi_created event(s) recorded."
     )
+
+    _regenerate_adr_status_index(project_root, dry_run=False)
+
+
+def _regenerate_adr_status_index(project_root: Path, *, dry_run: bool) -> None:
+    """Regenerate `docs/governance/GovZero/adr-status.md` from on-disk truth.
+
+    GHI #322: the index is a Layer 3 derived view of the same canon
+    `register-adrs` reconciles against. Riding alongside reconciliation
+    gives the table a single ceremony, single source of truth.
+    """
+    if dry_run:
+        console.print(
+            "[yellow]Dry run:[/yellow] would regenerate docs/governance/GovZero/adr-status.md"
+        )
+        return
+    content = regenerate_adr_status_md(project_root, write=True)
+    row_count = content.count("\n| [")
+    console.print(f"Regenerated adr-status.md ({row_count} ADRs).")

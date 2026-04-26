@@ -5,7 +5,14 @@ paths:
 description: Non-negotiable governance workflow rules
 ---
 
+<!-- rule-version: 0.2.0 -->
+
 # Governance Core (gzkit)
+
+> **Rule version:** `0.2.0` — bumped under GHI #322 to canonize
+> `gz register-adrs` as the regenerator for `docs/governance/GovZero/adr-status.md`
+> and `gz validate --adr-status-fresh` as the drift fail-close. Prior
+> unversioned content treated as `0.1.0`.
 
 ## Non-negotiable rules
 
@@ -46,3 +53,20 @@ A `gz <verb>` reference that points at an unregistered or renamed CLI verb is th
 Enforced by `gz validate --cli-alignment`. Exit 3 on any unresolvable reference. Recovery: either register the verb, rename the reference to an existing verb, or file a GHI if the doc is describing a planned-but-unlanded CLI surface (and mark the reference as speculative so the check skips it — see the validator for the exact escape marker).
 
 This section is the canonical rule home; the validator implementation in `src/gzkit/trust_audits.py` (or wherever the scope function lives) is an enforcement artifact of this rule, not the rule itself.
+
+## ADR status index regeneration (binding)
+
+`docs/governance/GovZero/adr-status.md` is a Layer 3 derived view per
+`docs/governance/state-doctrine.md` — never source-of-truth, never
+hand-maintained. The canonical regenerator is **`uv run gz register-adrs`**:
+it walks on-disk ADR packages under `docs/design/adr/{foundation,pre-release}/`
+and rewrites the index from frontmatter + H1 truth, in the same ceremony as
+ledger reconciliation.
+
+Drift between the committed index and on-disk canon is fail-closed by
+**`uv run gz validate --adr-status-fresh`**, which is part of the default
+`uv run gz check` pipeline. Recovery from a flagged drift is a single
+command: `uv run gz register-adrs`.
+
+Authored under GHI #322 (Architectural Boundary 6 — *do not let derived
+views silently become source-of-truth*).

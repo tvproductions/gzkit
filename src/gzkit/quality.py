@@ -545,6 +545,16 @@ def run_unscoped_rules_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --unscoped-rules", cwd=project_root)
 
 
+def run_adr_status_fresh_audit(project_root: Path) -> QualityResult:
+    """Run the adr-status.md freshness audit (GHI #322 / Architectural Boundary 6).
+
+    Fails closed when `docs/governance/GovZero/adr-status.md` drifts from
+    on-disk ADR canon — the original surface that GHI #322 surfaced.
+    Recovery: `uv run gz register-adrs` regenerates the index.
+    """
+    return run_command("uv run gz validate --adr-status-fresh", cwd=project_root)
+
+
 def run_preflight(project_root: Path) -> QualityResult:
     """Run preflight scan for stale pipeline markers and orphan receipts.
 

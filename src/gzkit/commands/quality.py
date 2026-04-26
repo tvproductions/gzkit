@@ -278,6 +278,7 @@ def check(as_json: bool = False) -> None:
 
     from gzkit.cli.formatters import OutputFormatter
     from gzkit.quality import (
+        run_adr_status_fresh_audit,
         run_cli_audit,
         run_drift_advisory,
         run_format_check,
@@ -302,6 +303,7 @@ def check(as_json: bool = False) -> None:
         ("Readiness audit", run_readiness_audit),
         ("CLI audit", run_cli_audit),
         ("Unscoped rules", run_unscoped_rules_audit),
+        ("ADR status freshness", run_adr_status_fresh_audit),
         ("Preflight", run_preflight),
     ]
 
