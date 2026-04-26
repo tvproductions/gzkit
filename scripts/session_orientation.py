@@ -22,6 +22,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 SECTION_HEADINGS: tuple[str, ...] = (
+    "Git remote state",
     "Most-recent handoff",
     "Open session-handoff GHIs",
     "Active OBPI claims",
@@ -30,6 +31,9 @@ SECTION_HEADINGS: tuple[str, ...] = (
     "Open blockers",
     "Skill-awareness re-injection",
 )
+
+REMOTE_FETCH_TIMEOUT_SEC = 8
+REMOTE_QUERY_TIMEOUT_SEC = 4
 
 POST_COMPACTION_NOTE = (
     "Post-compaction trigger: if context budget falls below 50%, re-read "
@@ -180,9 +184,84 @@ def collect_recent_events(ledger_path: Path, now: datetime) -> list[dict]:
     return out
 
 
+def _git_run(args: list[str], timeout: int) -> subprocess.CompletedProcess[str] | None:
+    """Run a git subprocess; return None on any failure shape (missing git, timeout)."""
+    try:
+        return subprocess.run(
+            args,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=timeout,
+            check=False,
+        )
+    except (FileNotFoundError, subprocess.SubprocessError):
+        return None
+
+
+def collect_remote_state() -> dict | None:
+    """Surface git-remote-divergence so SessionStart agents see stale clones.
+
+    Reports `branch`, `ahead`, `behind`, and `is_behind`. Runs `git fetch`
+    against `origin` unless `GZKIT_ORIENTATION_NO_FETCH=1` is set (offline
+    operator escape hatch). Returns None when git is unavailable, the repo
+    has no `origin` remote, or any subprocess fails — orientation must
+    never crash the session-boot hook (GHI #338).
+    """
+    skip_fetch = os.environ.get("GZKIT_ORIENTATION_NO_FETCH") == "1"
+    if not skip_fetch:
+        fetched = _git_run(
+            ["git", "fetch", "--quiet", "origin"], timeout=REMOTE_FETCH_TIMEOUT_SEC
+        )
+        if fetched is None:
+            # git missing entirely is a hard "no remote state available" signal.
+            # Fetch failure with git present (no origin, offline) still leaves
+            # the local refs queryable — fall through to the count below.
+            probe = _git_run(["git", "--version"], timeout=REMOTE_QUERY_TIMEOUT_SEC)
+            if probe is None:
+                return None
+
+    branch_proc = _git_run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"], timeout=REMOTE_QUERY_TIMEOUT_SEC
+    )
+    if branch_proc is None or branch_proc.returncode != 0:
+        return None
+    branch = branch_proc.stdout.strip() or "?"
+
+    # `origin/main...HEAD` with --left-right --count prints "<behind>\t<ahead>":
+    #   left side = commits in origin/main not in HEAD (behind)
+    #   right side = commits in HEAD not in origin/main (ahead)
+    # We hard-code `origin/main` as the upstream reference because the
+    # "behind origin/main" warning class GHI #338 names is specific to the
+    # canonical branch — agents editing canonical surfaces against a stale
+    # main is the failure mode, not divergence on feature branches.
+    count_proc = _git_run(
+        ["git", "rev-list", "--left-right", "--count", "origin/main...HEAD"],
+        timeout=REMOTE_QUERY_TIMEOUT_SEC,
+    )
+    if count_proc is None or count_proc.returncode != 0:
+        return None
+    parts = count_proc.stdout.strip().split()
+    if len(parts) != 2:
+        return None
+    try:
+        behind = int(parts[0])
+        ahead = int(parts[1])
+    except ValueError:
+        return None
+
+    return {
+        "branch": branch,
+        "ahead": ahead,
+        "behind": behind,
+        "is_behind": behind > 0,
+    }
+
+
 def collect_state(repo_root: Path, now: datetime) -> dict:
     """Aggregate authoritative state. Best-effort; never raises."""
     return {
+        "remote_state": collect_remote_state(),
         "handoff": collect_handoff(repo_root / ".gzkit" / "handoffs", now),
         "session_handoff_ghis": collect_session_handoff_ghis(),
         "obpi_locks": [],
@@ -197,6 +276,25 @@ def render(state: dict, now: datetime) -> str:
         f"# gzkit session orientation — generated {now.isoformat(timespec='seconds')}",
         "",
     ]
+
+    lines.append("## Git remote state")
+    remote = state.get("remote_state")
+    if isinstance(remote, dict):
+        branch = remote.get("branch", "?")
+        ahead = remote.get("ahead", 0)
+        behind = remote.get("behind", 0)
+        lines.append(f"- Branch: {branch}")
+        lines.append(f"- Local: ahead={ahead} behind={behind}")
+        if remote.get("is_behind"):
+            lines.append(
+                f"- WARNING: this clone is {behind} commits behind origin. "
+                "Run `git pull --ff-only origin main` before editing "
+                "canonical surfaces, or surface the divergence to the "
+                "operator. (GHI #338)"
+            )
+    else:
+        lines.append("- (no remote state available)")
+    lines.append("")
 
     lines.append("## Most-recent handoff")
     handoff = state.get("handoff")
