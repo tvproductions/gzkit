@@ -52,7 +52,12 @@ def detect_project_name(project_root: Path) -> str:
 
 
 def load_local_content(project_root: Path) -> str:
-    """Load agents.local.md content if it exists.
+    """Load .gzkit/agents.local.md content if it exists.
+
+    The source lives under ``.gzkit/`` rather than the project root so it
+    stays out of Claude Code's memory auto-discovery path. A sibling at
+    project root would be loaded twice: once embedded in the rendered
+    AGENTS.md and once directly by the consumer (GHI #339).
 
     Args:
         project_root: Project root directory.
@@ -61,7 +66,7 @@ def load_local_content(project_root: Path) -> str:
         Local content or empty string.
 
     """
-    local_path = project_root / "agents.local.md"
+    local_path = project_root / ".gzkit" / "agents.local.md"
     if local_path.exists():
         return local_path.read_text(encoding="utf-8")
     return ""
@@ -351,7 +356,7 @@ def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
 
 
 def sync_claude_md(project_root: Path, config: GzkitConfig) -> None:
-    """Generate CLAUDE.md from template + agents.local.md.
+    """Generate CLAUDE.md from template + .gzkit/agents.local.md.
 
     Args:
         project_root: Project root directory.
@@ -366,7 +371,7 @@ def sync_claude_md(project_root: Path, config: GzkitConfig) -> None:
 
 
 def sync_copilot_instructions(project_root: Path, config: GzkitConfig) -> None:
-    """Generate copilot-instructions.md from template + agents.local.md.
+    """Generate copilot-instructions.md from template + .gzkit/agents.local.md.
 
     Args:
         project_root: Project root directory.

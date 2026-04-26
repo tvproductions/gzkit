@@ -288,5 +288,52 @@ class TestPersonaSyncMirrors(unittest.TestCase):
             self.assertEqual(canonical.read_text(encoding="utf-8"), self._PERSONA_CONTENT)
 
 
+class TestLoadLocalContentPath(unittest.TestCase):
+    """GHI #339: agents.local.md must live under .gzkit/ to avoid Claude Code double-load.
+
+    Co-locating the generator-input file with rendered AGENTS.md at project root
+    causes Claude Code's memory system to load the local content twice: once
+    embedded in AGENTS.md (via {local_content} substitution) and once directly
+    from the project-root sibling file. Moving the source under .gzkit/
+    keeps the input out of the consumer's auto-discovery path.
+    """
+
+    def test_load_local_content_reads_from_gzkit_subdir(self) -> None:
+        """load_local_content reads from .gzkit/agents.local.md, not project root."""
+        from gzkit.sync_surfaces import load_local_content
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            gzkit_dir = root / ".gzkit"
+            gzkit_dir.mkdir()
+            (gzkit_dir / "agents.local.md").write_text(
+                "# Project-local addendum\n", encoding="utf-8"
+            )
+
+            self.assertEqual(load_local_content(root), "# Project-local addendum\n")
+
+    def test_load_local_content_ignores_project_root_path(self) -> None:
+        """A stray agents.local.md at project root must NOT be loaded (GHI #339).
+
+        If the legacy path is still honored, the double-load defect persists:
+        Claude Code loads the project-root file directly AND through the
+        AGENTS.md {local_content} substitution.
+        """
+        from gzkit.sync_surfaces import load_local_content
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / "agents.local.md").write_text("LEGACY\n", encoding="utf-8")
+
+            self.assertEqual(load_local_content(root), "")
+
+    def test_load_local_content_empty_when_absent(self) -> None:
+        """load_local_content returns empty string when .gzkit/agents.local.md is absent."""
+        from gzkit.sync_surfaces import load_local_content
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self.assertEqual(load_local_content(Path(tmpdir)), "")
+
+
 if __name__ == "__main__":
     unittest.main()
