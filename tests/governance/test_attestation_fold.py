@@ -139,7 +139,10 @@ class TestAttestationFold(unittest.TestCase):
                 "Heavy lane",
                 "fail-closed",
             ),
-            "(e) worked example": ("attest completed", "Receipts"),
+            "(e) worked example": (
+                "Worked example",
+                "agent-contract-rationale.md#attestation--worked-example",
+            ),
         }
 
         missing: list[str] = []
