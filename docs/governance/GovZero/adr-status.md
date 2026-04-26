@@ -7,7 +7,7 @@ Status: Active
 
 Source-of-truth: filesystem under `docs/design/adr/{foundation,pre-release}/`; this table is a Layer 3 derived view per `docs/governance/state-doctrine.md`. Regenerate via `gz register-adrs` (which calls `regenerate_adr_status_md` after ledger reconciliation); drift is fail-closed by `gz validate --adr-status-fresh`.
 
-Last regenerated: 2026-04-26 (count: 64 ADRs).
+Last regenerated: 2026-04-26 (count: 67 ADRs).
 
 | ID | Title | Kind | Lane | Status | Date | Path |
 |---|---|---|---|---|---|---|
@@ -33,6 +33,9 @@ Last regenerated: 2026-04-26 (count: 64 ADRs).
 | [ADR-0.0.30-complexity-authoring-guidance](../../design/adr/foundation/ADR-0.0.30-complexity-authoring-guidance/ADR-0.0.30-complexity-authoring-guidance.md) | Complexity Authoring Guidance | foundation | heavy | Draft | 2026-04-25 | `design/adr/foundation/ADR-0.0.30-complexity-authoring-guidance/ADR-0.0.30-complexity-authoring-guidance.md` |
 | [ADR-0.0.31-distribution-invariant-doctrine](../../design/adr/foundation/ADR-0.0.31-distribution-invariant-doctrine/ADR-0.0.31-distribution-invariant-doctrine.md) | Distribution Invariant (T0 Doctrine) | foundation | lite | Draft | 2026-04-25 | `design/adr/foundation/ADR-0.0.31-distribution-invariant-doctrine/ADR-0.0.31-distribution-invariant-doctrine.md` |
 | [ADR-0.0.32-canonical-surface-packaging](../../design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/ADR-0.0.32-canonical-surface-packaging.md) | Canonical Surface Packaging | foundation | heavy | Draft | 2026-04-25 | `design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/ADR-0.0.32-canonical-surface-packaging.md` |
+| [ADR-0.0.33-agent-control-surface-fidelity](../../design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md) | Agent Control Surface Fidelity Doctrine | foundation | heavy | Draft | 2026-04-26 | `design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md` |
+| [ADR-0.0.34-agent-control-surface-rendering-substrate](../../design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md) | Agent Control Surface Rendering Substrate | foundation | heavy | Draft | 2026-04-26 | `design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md` |
+| [ADR-0.0.35-foundation-feature-invariance-test](../../design/adr/foundation/ADR-0.0.35-foundation-feature-invariance-test/ADR-0.0.35-foundation-feature-invariance-test.md) | Foundation/Feature Invariance Test | foundation | lite | Draft | 2026-04-26 | `design/adr/foundation/ADR-0.0.35-foundation-feature-invariance-test/ADR-0.0.35-foundation-feature-invariance-test.md` |
 | [ADR-0.2.0-gate-verification](../../design/adr/pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md) | Gate Verification + Dry Run | feature | heavy | Validated | 2026-01-29 | `design/adr/pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md` |
 | [ADR-0.3.0-airlineops-canon-reconciliation](../../design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) | AirlineOps Canon Reconciliation | feature | heavy | Validated | 2026-02-13 | `design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md` |
 | [ADR-0.4.0-skill-capability-mirroring](../../design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) | Skill Capability Mirroring | feature | heavy | Validated | 2026-02-17 | `design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md` |
