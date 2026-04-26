@@ -198,3 +198,56 @@ Plus one independent of the cluster (operator-tooling concern):
 | AGENTS.md template (canon source) | `src/gzkit/templates/agents.md` |
 | AGENTS.md (rendered) | `AGENTS.md` |
 | Session handoff (this file) | `.gzkit/handoffs/2026-04-25-complexity-doctrine-cluster.md` |
+
+---
+
+## 2026-04-26 update — agent control surface doctrine cluster authored
+
+Resumed and authored the two paired foundation ADRs surfaced during this handoff cluster, plus the six follow-up GHIs the rehydration brief named.
+
+### ADRs authored (Draft, foundation, heavy)
+
+| ADR | Title | OBPIs | Path |
+|---|---|---|---|
+| ADR-0.0.33 | Agent Control Surface Fidelity Doctrine | 5 | `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/` |
+| ADR-0.0.34 | Agent Control Surface Rendering Substrate | 8 | `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/` |
+
+ADR-0.0.33 OBPI sequence: bullet-retention validator, surface-weight validator, pointer-integrity validator, scenario-reachability validator (advisory Era-1), composite scope + CI wiring.
+
+ADR-0.0.34 OBPI sequence (1:1 with eight-component delivery): content model registry, rendering pipeline, reverse-parse migration, authoring CLI, light TUI affordances, validation hooks, migration layer, vendor manifest expansion.
+
+### Doctrine pages (canonical source)
+
+| Path | Role |
+|---|---|
+| `docs/governance/agent-control-surface-fidelity-doctrine.md` | ADR-0.0.33 canonical doctrine; Flag 1/2/3 picks applied (verbatim *"CMS process (the composition pipeline)"* hybrid landed) |
+| `docs/governance/agent-control-surface-rendering-substrate.md` | ADR-0.0.34 canonical doctrine; eight-component scope, headless-Django mapping, agent-mediated dialogical authoring, round-trip fidelity contract |
+
+### Follow-up GHIs filed
+
+| GHI | Title | Label |
+|---|---|---|
+| #330 | Patch-release qualifier expansion: foundation-ADR closeouts trigger releases | enhancement |
+| #331 | ADR-0.14.0 closeout drift: heavy-lane parent with self-closed lite-lane child OBPIs + dirty-worktree receipt | defect |
+| #332 | ADR-0.16.0 closeout drift: CMS-titled ADR shipped Pydantic registry without Jinja2 rendering substrate | defect |
+| #333 | Behavioral fidelity test layer (golden-dataset + LLM-as-judge) — deferred from ADR-0.0.33 | enhancement |
+| #334 | ADR-0.0.18 amendment: invariance test for foundation/feature classification | enhancement |
+| #335 | gz-context-diet skill update: invoke surface-fidelity validators inline once they land | chore |
+
+### Decisions seated
+
+- **Flag 1 (operator phrasing) → C.** Substrate page § Substrate-invariance: *"Errors of what is printed become feedback for the CMS process (the composition pipeline) regardless of which era's pipeline is active."* Verbatim *"CMS process"* preserved with composition-pipeline gloss.
+- **Flag 2 (ADR-0.0.33 slot collision with airlineops) → C.** Left as-is; the project-qualifier parenthetical is sufficient disambiguation in Related canon sections.
+- **Flag 3 (north-star duplication across both doctrine pages) → keep duplication.** AGENTS.md is the load-bearing per-turn surface; the doctrine pages keep their own copy of the north star so they stand alone for the auditor.
+- **OBPI sizing (Q1) → ADR-0.0.34 gets 8 OBPIs (1:1 with eight-component delivery scope).** Per OBPI Decomposition Mandate's right-sizing protocol; bundling collapses gate-firing points.
+- **Authoring order (Q2) → ADR-0.0.33 first, ADR-0.0.34 second, same session.** Fidelity is the structural backstop the substrate's renderer must satisfy.
+
+### GHI #325 — ready to close pending operator attestation
+
+This handoff GHI is the originating tracker for the cluster. Both ADRs and all six follow-up GHIs are filed; the Resume-action item *"Author 7 OBPI briefs for ADR-0.0.27 semantically"* preceded this update. Operator attests when ready; closure runs via `gh issue close 325 --comment "Resolved by ADR-0.0.33 + ADR-0.0.34 authoring cluster (commits TBD); follow-ups tracked under #330–#335."`
+
+### Deferred / out-of-scope this session
+
+- **GHI #327 pass-2 (further per-turn-surface lifts)** stays deferred until ADR-0.0.33's validators land; the *"tiny, scientific, intentional"* discipline requires the validators be in place before any further surface adjustment.
+- **AGENTS.md / CLAUDE.md / `.claude/rules/**` edits** — none in this session, per the rehydration brief's binding directive.
+- **Commit + git-sync** — both ADRs and the doctrine page edits are uncommitted. Operator decides whether to commit the cluster as one ceremony commit or run `gz git-sync` per the canonical surface-edit ceremony.
