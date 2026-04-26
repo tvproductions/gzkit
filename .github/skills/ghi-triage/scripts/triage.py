@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
-"""ghi-triage: fetch open GHIs, score routing, render table + short list.
+"""ghi-triage: fetch open GHIs, score routing, render deterministic deliverable.
 
 Self-contained to the skill directory. Uses Rich (already a gzkit project
-dependency) for table rendering. Invoke via:
+dependency) for the optional terminal-only table view. Invoke via:
 
     uv run python .claude/skills/ghi-triage/scripts/triage.py [args]
 
 Routing thresholds: AGENTS.md § Defect-fix routing.
+
+Output formats:
+  - markdown (default, chat-renderable) — the candidate-set table
+  - json — structured records for the agent's judgment pass
+  - rank — the deterministic rank-ordered deliverable (requires --rank-input)
+  - rich — terminal-only Rich table; explicit opt-in for TTY operators
 """
 
 from __future__ import annotations
@@ -19,11 +25,19 @@ import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
+from pathlib import Path
 
 from rich import box
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
+if hasattr(sys.stdin, "reconfigure"):
+    sys.stdin.reconfigure(encoding="utf-8")
 
 # --- Markdown renderer (default) ---------------------------------------------
 
@@ -162,8 +176,62 @@ def fetch(limit: int, label: str | None) -> list[Issue]:
     ]
 
 
+# --- Precedent count cache ---------------------------------------------------
+
+
+def _precedent_cache_path() -> Path:
+    return Path.home() / ".cache" / "gzkit" / "triage-precedent.json"
+
+
+def _git_head_sha() -> str | None:
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+            encoding="utf-8",
+        )
+        return out.stdout.strip() or None
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+
+
+def _load_precedent_cache(head: str) -> int | None:
+    path = _precedent_cache_path()
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return None
+    entry = payload.get(head)
+    if isinstance(entry, int):
+        return entry
+    return None
+
+
+def _store_precedent_cache(head: str, count: int) -> None:
+    path = _precedent_cache_path()
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(payload, dict):
+                payload = {}
+        except (FileNotFoundError, json.JSONDecodeError, OSError):
+            payload = {}
+        payload[head] = count
+        path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+    except OSError:
+        pass
+
+
 def fix_precedent_count() -> int:
     _require("git")
+    head = _git_head_sha()
+    if head is not None:
+        cached = _load_precedent_cache(head)
+        if cached is not None:
+            return cached
     out = subprocess.run(
         ["git", "log", "--since=60 days ago", "--oneline", "--grep=^fix("],
         capture_output=True,
@@ -171,7 +239,10 @@ def fix_precedent_count() -> int:
         check=True,
         encoding="utf-8",
     )
-    return sum(1 for line in out.stdout.splitlines() if line.strip())
+    count = sum(1 for line in out.stdout.splitlines() if line.strip())
+    if head is not None:
+        _store_precedent_cache(head, count)
+    return count
 
 
 def detect_duplicates(issues: list[Issue]) -> dict[int, int]:
@@ -264,6 +335,116 @@ CLASS_STYLE = {
     "chore": "dim",
     "unlabeled": "dim italic",
 }
+
+
+# --- Rank deliverable (the agent-fed deterministic output) -------------------
+
+
+SEVERITY_VALUES = ("blocking", "degrading", "latent")
+SEVERITY_RANK = {sev: idx for idx, sev in enumerate(SEVERITY_VALUES)}
+WHY_MAX_CHARS = 120
+ACTION_MAX_CHARS = 80
+_FORBIDDEN_CHARS = set("*_`#|<>\n\r\t")
+
+
+@dataclass(frozen=True)
+class RankItem:
+    number: int
+    severity: str
+    action: str
+    why: str
+
+
+class RankInputError(ValueError):
+    """Raised when --rank-input fails the rendering-edge contract."""
+
+
+def _validate_text_field(value: object, field: str, idx: int, max_chars: int) -> str:
+    if not isinstance(value, str):
+        raise RankInputError(f"rankings[{idx}].{field} must be a string")
+    cleaned = value.strip()
+    if not cleaned:
+        raise RankInputError(f"rankings[{idx}].{field} required")
+    if len(cleaned) > max_chars:
+        raise RankInputError(
+            f"rankings[{idx}].{field} exceeds {max_chars} chars (got {len(cleaned)})"
+        )
+    bad = sorted({c for c in cleaned if c in _FORBIDDEN_CHARS})
+    if bad:
+        raise RankInputError(
+            f"rankings[{idx}].{field} contains forbidden characters: {bad!r}"
+        )
+    return cleaned
+
+
+def parse_rank_input(payload: object, known_numbers: set[int]) -> list[RankItem]:
+    """Validate agent-supplied rank input.
+
+    Constrains WHY/ACTION shape at the rendering edge so determinism does not
+    leak through cognitive freedom on the input side (GHI #324, comment by
+    voidborne-d). Cognitive freedom on the input; determinism on the render.
+    """
+    if not isinstance(payload, dict):
+        raise RankInputError("--rank-input must be a JSON object")
+    rankings = payload.get("rankings")  # ty: ignore[invalid-argument-type]
+    if not isinstance(rankings, list) or not rankings:
+        raise RankInputError("--rank-input requires non-empty 'rankings' list")
+    items: list[RankItem] = []
+    seen: set[int] = set()
+    for idx, entry in enumerate(rankings):
+        if not isinstance(entry, dict):
+            raise RankInputError(f"rankings[{idx}] must be an object")
+        number = entry.get("number")  # ty: ignore[invalid-argument-type]
+        if not isinstance(number, int) or isinstance(number, bool):
+            raise RankInputError(f"rankings[{idx}].number must be int")
+        if number in seen:
+            raise RankInputError(f"rankings[{idx}].number={number} duplicates earlier entry")
+        if number not in known_numbers:
+            raise RankInputError(
+                f"rankings[{idx}].number={number} not present in fetched issue set"
+            )
+        seen.add(number)
+        severity = entry.get("severity")  # ty: ignore[invalid-argument-type]
+        if severity not in SEVERITY_VALUES:
+            raise RankInputError(
+                f"rankings[{idx}].severity must be one of {SEVERITY_VALUES}"
+            )
+        raw_action = entry.get("action")  # ty: ignore[invalid-argument-type]
+        raw_why = entry.get("why")  # ty: ignore[invalid-argument-type]
+        action = _validate_text_field(raw_action, "action", idx, ACTION_MAX_CHARS)
+        why = _validate_text_field(raw_why, "why", idx, WHY_MAX_CHARS)
+        items.append(RankItem(number=number, severity=severity, action=action, why=why))
+    return items
+
+
+def render_rank(
+    items: list[RankItem],
+    issue_index: dict[int, Issue],
+    routes: dict[int, str],
+    precedent: int,
+    total: int,
+) -> str:
+    """Render the rank-ordered deliverable.
+
+    Deterministic by construction: items render in caller-provided order
+    (the agent owns the ranking), every field is validated upstream by
+    parse_rank_input, and no formatting branches on environment.
+    """
+    lines = [
+        f"# GHI Triage Ranking — {len(items)} ranked of {total} open "
+        f"| fix() precedent (60d): {precedent}",
+        "",
+    ]
+    for rank, item in enumerate(items, start=1):
+        title = issue_index[item.number].title
+        route_label = routes.get(item.number, "—")
+        lines.append(
+            f"{rank}. #{item.number} [{item.severity}] {route_label} "
+            f"— {item.action} — {item.why}"
+        )
+        lines.append(f"   ↳ {title}")
+    lines.append("")
+    return "\n".join(lines)
 
 
 # --- Rendering ---------------------------------------------------------------
@@ -399,18 +580,39 @@ def render_json(issues: list[Issue], precedent: int, duplicates: dict[int, int])
     )
 
 
+def _read_rank_input(path: str | None) -> object:
+    if path is None or path == "-":
+        raw = sys.stdin.read()
+    else:
+        raw = Path(path).read_text(encoding="utf-8")
+    if not raw.strip():
+        raise RankInputError("--rank-input is empty")
+    return json.loads(raw)
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Triage open GHIs")
     p.add_argument("--limit", type=int, default=100)
     p.add_argument("--label", default=None, help="Filter by single label")
     p.add_argument(
         "--format",
-        choices=("rich", "markdown", "json"),
-        default="rich",
-        help="Output format. 'rich' (default) — box-drawing table with ANSI "
-        "color, the human pre-pass. 'markdown' — GitHub-flavored markdown. "
-        "'json' — structured records for agent-driven triage (includes full "
-        "issue bodies and detected file mentions).",
+        choices=("markdown", "json", "rank", "rich"),
+        default="markdown",
+        help="Output format. 'markdown' (default) — chat-renderable table for "
+        "operator skim. 'json' — structured records the agent reads to compose "
+        "rank input. 'rank' — the deterministic rank-ordered deliverable; "
+        "requires --rank-input. 'rich' — terminal-only Rich table with ANSI "
+        "color, opt-in for TTY operators.",
+    )
+    p.add_argument(
+        "--rank-input",
+        default=None,
+        help="Path to a JSON file containing the agent's rank input "
+        "({'rankings': [{number, severity, action, why}, ...]}); use '-' for "
+        "stdin. Required with --format rank. Validation rules: severity is "
+        f"one of {SEVERITY_VALUES}; action ≤{ACTION_MAX_CHARS} chars; "
+        f"why ≤{WHY_MAX_CHARS} chars; neither field may contain newlines or "
+        "markdown control characters.",
     )
     p.add_argument(
         "--width",
@@ -424,11 +626,31 @@ def main() -> int:
     if not issues:
         if args.format == "json":
             print(json.dumps({"precedent_60d": 0, "count": 0, "issues": []}))
+        elif args.format == "rank":
+            sys.stderr.write("ghi-triage: no open issues — nothing to rank.\n")
+            return 1
         else:
             print("No open issues.")
         return 0
     precedent = fix_precedent_count()
     duplicates = detect_duplicates(issues)
+
+    if args.format == "rank":
+        try:
+            payload = _read_rank_input(args.rank_input)
+            known = {issue.number for issue in issues}
+            items = parse_rank_input(payload, known)
+        except (RankInputError, json.JSONDecodeError, FileNotFoundError, OSError) as exc:
+            sys.stderr.write(f"ghi-triage: --rank-input invalid: {exc}\n")
+            return 1
+        precedent_ok = precedent >= 3
+        issue_index = {issue.number: issue for issue in issues}
+        routes = {
+            issue.number: ROUTE_LABEL[route(issue, precedent_ok, duplicates)]
+            for issue in issues
+        }
+        sys.stdout.write(render_rank(items, issue_index, routes, precedent, len(issues)))
+        return 0
     if args.format == "rich":
         render(issues, precedent, duplicates, width=args.width)
     elif args.format == "markdown":
