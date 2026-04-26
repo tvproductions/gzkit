@@ -1522,7 +1522,41 @@ def audit_brief_headings(project_root: Path) -> list[ValidationError]:
     return errors
 
 
+# ---------------------------------------------------------------------------
+# Audit: ADR status index freshness (GHI #322 / Architectural Boundary 6)
+# ---------------------------------------------------------------------------
+
+
+def audit_adr_status_fresh(project_root: Path) -> list[ValidationError]:
+    """Flag drift between on-disk ADR canon and ``adr-status.md``.
+
+    The status table is a Layer 3 derived view per
+    ``docs/governance/state-doctrine.md``; it must be regenerable from
+    Layer 1 (filesystem). GHI #322: drift across ~5 ADRs went undetected
+    because no maintained regenerator existed.  Recovery surface is
+    ``gz register-adrs`` (which now regenerates the index after ledger
+    reconciliation); this audit closes the loop by fail-closing on drift.
+    """
+    from gzkit.governance.adr_status_index import compute_drift  # noqa: PLC0415
+
+    drift = compute_drift(project_root)
+    if not drift:
+        return []
+    return [
+        ValidationError(
+            type="adr_status_fresh",
+            artifact=f"docs/governance/GovZero/adr-status.md::{entry.adr_id}",
+            message=(
+                f"[{entry.kind}] {entry.detail}. Recovery: "
+                "`uv run gz register-adrs` regenerates the index from on-disk truth."
+            ),
+        )
+        for entry in drift
+    ]
+
+
 __all__ = [
+    "audit_adr_status_fresh",
     "audit_adr_taxonomy",
     "audit_advisory_scorecard",
     "audit_behave_req_tags",

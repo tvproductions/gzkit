@@ -287,6 +287,7 @@ def _collect_errors(
     check_skill_alignment: bool = False,
     check_advisory_scorecard: bool = False,
     check_reconcile_freshness: bool = False,
+    check_adr_status_fresh: bool = False,
     check_taxonomy: bool = False,
     check_brief_headings: bool = False,
     check_unscoped_rules: bool = False,
@@ -326,6 +327,7 @@ def _collect_errors(
         "skill_alignment": check_skill_alignment,
         "advisory_scorecard": check_advisory_scorecard,
         "reconcile_freshness": check_reconcile_freshness,
+        "adr_status_fresh": check_adr_status_fresh,
         "brief_headings": check_brief_headings,
         "unscoped_rules": check_unscoped_rules,
     }
@@ -393,6 +395,7 @@ def _explicit_scope_runners(
         "skill_alignment": lambda: trust_audits.audit_skill_alignment(project_root),
         "advisory_scorecard": lambda: trust_audits.audit_advisory_scorecard(project_root),
         "reconcile_freshness": lambda: trust_audits.audit_reconcile_freshness(project_root),
+        "adr_status_fresh": lambda: trust_audits.audit_adr_status_fresh(project_root),
         "brief_headings": lambda: trust_audits.audit_brief_headings(project_root),
         "unscoped_rules": lambda: _unscoped_rules_runner(project_root),
     }
@@ -562,6 +565,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "skill_alignment",
         "advisory_scorecard",
         "reconcile_freshness",
+        "adr_status_fresh",
         "brief_headings",
         "unscoped_rules",
     ]
@@ -646,6 +650,7 @@ def validate(
     check_skill_alignment: bool = False,
     check_advisory_scorecard: bool = False,
     check_reconcile_freshness: bool = False,
+    check_adr_status_fresh: bool = False,
     check_taxonomy: bool = False,
     check_brief_headings: bool = False,
     check_unscoped_rules: bool = False,
@@ -698,6 +703,7 @@ def validate(
             check_skill_alignment,
             check_advisory_scorecard,
             check_reconcile_freshness,
+            check_adr_status_fresh,
             check_taxonomy,
             check_brief_headings,
         ]
@@ -740,6 +746,7 @@ def validate(
         check_skill_alignment=check_skill_alignment,
         check_advisory_scorecard=check_advisory_scorecard,
         check_reconcile_freshness=check_reconcile_freshness,
+        check_adr_status_fresh=check_adr_status_fresh,
         check_taxonomy=check_taxonomy,
         check_brief_headings=check_brief_headings,
         check_unscoped_rules=check_unscoped_rules,
@@ -793,6 +800,7 @@ def validate(
         "skill_alignment": check_skill_alignment,
         "advisory_scorecard": check_advisory_scorecard,
         "reconcile_freshness": check_reconcile_freshness,
+        "adr_status_fresh": check_adr_status_fresh,
         "taxonomy": check_taxonomy,
         "brief_headings": check_brief_headings,
         "unscoped_rules": check_unscoped_rules,
