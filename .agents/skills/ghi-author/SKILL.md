@@ -5,9 +5,9 @@ description: Author a GitHub Issue (GHI) for a defect, enhancement, or investiga
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-23
+last_reviewed: 2026-04-27
 metadata:
-  skill-version: "1.0.1"
+  skill-version: "1.1.0"
 ---
 
 # ghi-author
@@ -33,6 +33,52 @@ A GHI that exists only in session memory is not a GHI. The ledger-of-truth
 doctrine applies: if the finding has no `gh issue` number, downstream
 commits cannot cite it, `fix(<scope>): ... (GHI #N)` trailers cannot form,
 and the ARB receipt chain has no anchor.
+
+## Doctrine — A GHI's purpose is observation routing, not implementation tracking (binding)
+
+A GHI exists to **route an observation to a durable governance artifact**.
+Once the finding has been homed in a registered destination (a commit SHA,
+a foundation/feature ADR, a pool ADR, an OBPI brief, or a higher-numbered
+GHI that absorbs the scope), the GHI's purpose is **fulfilled** and the
+GHI is closable. Implementation lifecycle thereafter belongs to the
+destination artifact, not to the GHI.
+
+This rule closes a failure mode where GHIs accumulate as long-lived
+"wait-around trackers" that shadow-track work already owned by an ADR or
+OBPI. A pool ADR has its own promotion ceremony; a foundation ADR has its
+own gate covenant; an OBPI has its own pipeline. None of those need a
+GHI sitting open to remind anyone that they exist — the artifact graph
+already does that.
+
+**Operative consequences for the authoring pass:**
+
+1. **When a finding's right home is a pool ADR or OBPI brief, author the
+   destination in the same session as the GHI** — using `gz plan create
+   --kind pool ...` or `gz-design` → `gz-plan` → `gz-obpi-specify`. The
+   GHI then closes immediately with `superseded` disposition citing the
+   destination ID. One observation, one routing pass, one terminal state.
+2. **Pool ADRs count as registered destinations.** A pool ADR visible in
+   `uv run gz adr report` (Pool table) is a valid `superseded` upstream
+   under `ghi-close`'s rules — it is registered in the artifact graph
+   even if not yet promoted to foundation or feature kind. Promotion is
+   the destination's lifecycle, not the GHI's.
+3. **Multiple GHIs may share one destination.** A symptom GHI (concrete
+   reproduction), a class-of-failure GHI (broader pattern), and an
+   architectural-absence GHI (the missing artifact) can all close
+   `superseded` against one pool ADR — each GHI is a different cut into
+   the same finding, and the ADR carries them collectively.
+4. **GHIs that cannot be routed in-session stay open with a blocker
+   comment.** This is the inverse of dead-lettering (see `ghi-close` §
+   Doctrine — NEVER, EVER, EVER dead-letter a GHI). Open-with-blocker is
+   the honest state when the destination cannot yet be authored;
+   closed-with-route-promise is the corrupted-audit-trail state.
+
+**Anti-pattern:** Filing a GHI and treating it as a long-lived tracker
+that "closes when the work ships." The work shipping is the destination
+artifact's responsibility (its own gates, its own attestation, its own
+ledger events). A GHI that waits around to mirror the destination's
+status is duplicate state — the same shape Layer-3 derived views become
+when they silently shadow Layer-2 truth.
 
 ## Trigger
 
@@ -122,6 +168,17 @@ routing matrix will consume.
 
 6. **Record the issue number** in the session evidence so downstream commits and briefs can cite `(GHI #N)`. If the GHI was filed during an OBPI pipeline run, add it to the brief's evidence section.
 
+7. **Route to a destination, then close.** Per § Doctrine — A GHI's purpose is observation routing, decide whether the finding has a same-session destination:
+
+   | Finding shape | Destination | Same-session action |
+   |---|---|---|
+   | Direct-fix candidate (passes AGENTS.md § Defect-fix routing thresholds) | Commit SHA | Apply the fix, commit `fix(<scope>): … (GHI #N)`, close `fixed` citing the SHA |
+   | Architectural absence / new-capability finding | Pool ADR | `uv run gz plan create <slug> --kind pool --lane <lite|heavy> --title …`, then close `superseded` citing `ADR-pool.<slug>` |
+   | Bounded planned-increment finding under an existing active ADR | OBPI brief | `gz-obpi-specify` against the parent ADR, then close `superseded` citing the new OBPI ID |
+   | No same-session destination yet (genuinely needs operator design conversation) | None yet | Leave the GHI **open** with a blocker comment naming the next concrete operator action — see `ghi-close` § Doctrine — NEVER, EVER, EVER dead-letter a GHI |
+
+   Routing-and-closing is the normal completion path. Filing-and-leaving-open is the exception, not the default. A GHI sitting open without a blocker comment is a tracker waiting for a destination — author the destination or surface the blocker.
+
 ## Examples
 
 ### Example 1 — Defect surfaced mid-pipeline
@@ -142,6 +199,18 @@ routing matrix will consume.
 
 **Output**: File `investigation` GHI titled `reconcile: cache regenerates more often than expected`. Body skips "Expected vs. observed" (no canonical baseline yet); includes the cost signal, the observation window, and candidate hypotheses. The GHI is the home for the investigation itself — closing it will produce either a defect GHI with a known fix or a documentation update explaining the observed rate as correct.
 
+### Example 4 — Architectural absence, route to pool ADR + close in same session
+
+**Input**: During OBPI-0.0.21-08 closeout, the operator surfaced that gzkit's governance surface is "choreographed not state-machined" — there is no canonical state machine, no runtime invariant monitor, and silent state demotions go unnoticed (concrete symptom: `gz frontmatter reconcile` rewrote a hand-marked `Withdrawn` brief to `pending` because no withdrawal transition exists).
+
+**Output**: This is two findings — a concrete observed symptom and a class-level architectural absence. File **two GHIs**, one per finding shape:
+1. A `defect` GHI for the silent demotion (concrete reproduction, expected vs. observed, citation of ADR-0.0.9 Rule 1 the reconciler was honoring).
+2. An architectural-absence GHI listing the symptom-class with citations across `STATUS_VOCAB_MAPPING`, GHI #290/#292 bolted-on guards, reconcile-then-precomplete loops, frontmatter rewrite cascades.
+
+**Same-session routing:** the right destination is a pool ADR (the design conversation is genuinely architectural, but no existing ADR absorbs it). Author it via `uv run gz plan create obpi-state-machine --kind pool --lane heavy --title "OBPI State Machine and Runtime Invariant Monitor"`, populate Intent / Decision / four rejected alternatives / ADR relationship matrix / OBPI promotion plan grounded in the GHIs' evidence, commit. Then close **both** GHIs `superseded` citing the pool ADR ID. The GHIs' purpose (route the observations to a durable home) is fulfilled; the pool ADR's lifecycle (promotion → foundation gates → OBPI ceremony) owns implementation.
+
+**Anti-pattern this example replaces:** filing the architectural-absence GHI with an acceptance criterion of "closes when state machine ships" and leaving it open for months as a stale tracker. The pool ADR is the tracker; the GHI was the routing artifact, and routing is complete.
+
 ## Constraints
 
 - **Never author a GHI with the user's personal email in the body, title, or evidence block.** Use GitHub noreply or just a name; see `AGENTS.md` § Local Agent Rules.
@@ -160,6 +229,8 @@ These thoughts mean STOP — you are about to produce a low-quality GHI:
 | "This defect is obvious; I don't need to cite the rule" | The canonical contradiction is what makes it a defect rather than a taste call. Cite the rule, schema, or doc. |
 | "I'll combine both issues into one GHI to save numbers" | GHI numbers are free. Combining couples two routing decisions into one and corrupts the fix's scope boundary. |
 | "I can write 'see session log for details'" | Session logs are Layer-3 derived state and are not canonical. Paste the evidence into the GHI body. |
+| "I'll file this and let it track until the work ships" | A GHI is not an implementation tracker. The destination artifact (commit / ADR / OBPI) tracks implementation through its own lifecycle. File the GHI, route it to a destination in the same session, close it. If you cannot route in-session, open with a blocker comment — never open as a long-lived shadow tracker. |
+| "This finding is too big for a fix and there's no ADR yet — I'll just leave it open" | If the right home is a pool ADR, **author the pool ADR in the same session** via `uv run gz plan create <slug> --kind pool --lane <lane> --title "..."` populated with Intent / Decision / rejected alternatives grounded in the GHI's evidence. Then close `superseded` citing the pool ADR. Pool ADRs are valid `superseded` destinations because they are registered in `gz adr report`. |
 
 ## Red Flags
 
