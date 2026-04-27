@@ -2,7 +2,7 @@
 id: OBPI-0.31.0-02-complexity-check
 parent: ADR-0.31.0-new-cli-command-absorption
 item: 2
-status: Withdrawn
+status: pending
 lane: heavy
 date: 2026-03-21
 withdrawn_date: 2026-04-25
