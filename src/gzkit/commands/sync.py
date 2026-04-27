@@ -54,10 +54,18 @@ def _plan_git_sync(
 
     actions.append(f"git fetch --prune {remote}")
 
-    if apply and not blockers:
+    # Fetch unconditionally so ahead/behind reflects current remote state, not
+    # stale local refs (GHI #343). In apply-mode a fetch failure is a blocker;
+    # in dry-run it degrades to a warning so the planner still works offline
+    # while making the staleness window visible to the operator.
+    if not blockers:
         rc_fetch, _out_fetch, err_fetch = git_cmd(project_root, "fetch", "--prune", remote)
         if rc_fetch != 0:
-            blockers.append(err_fetch or f"Fetch failed for remote {remote}.")
+            msg = err_fetch or f"Fetch failed for remote {remote}."
+            if apply:
+                blockers.append(msg)
+            else:
+                warnings.append(f"{msg} ahead/behind may be stale.")
 
     sync_state = _compute_git_sync_state(project_root, target_branch, remote)
     warnings.extend(sync_state["warnings"])

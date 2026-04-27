@@ -3,6 +3,7 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.cli import main
 from tests.commands.common import (
@@ -97,6 +98,65 @@ class TestGitSyncCommand(unittest.TestCase):
             alias_result = runner.invoke(main, ["sync-repo"])
             self.assertNotEqual(alias_result.exit_code, 0)
             self.assertIn("invalid choice", alias_result.output.lower())
+
+    def test_git_sync_dry_run_fetches_before_reading_divergence(self) -> None:
+        """Dry-run must fetch from remote before reading ahead/behind (GHI #343).
+
+        Without a leading fetch, divergence numbers reflect stale local
+        ``refs/remotes/origin/<branch>`` cache. The observed failure mode is
+        silent: dry-run reports ``ahead=0 behind=0`` while the remote has
+        diverged, and the agent treats that as ground truth. The semantic
+        this test pins is the ordering invariant — a fetch must occur
+        before the first ``rev-list --count`` divergence read.
+        """
+        runner = CliRunner()
+        calls: list[tuple[str, ...]] = []
+
+        def tracking_git_cmd(project_root: Path, *args: str) -> tuple[int, str, str]:
+            calls.append(args)
+            if args == ("rev-parse", "--is-inside-work-tree"):
+                return (0, "true", "")
+            if args == ("rev-parse", "--abbrev-ref", "HEAD"):
+                return (0, "main", "")
+            if args == ("rev-parse", "--show-toplevel"):
+                return (0, str(project_root), "")
+            if args == ("status", "--porcelain"):
+                return (0, "", "")
+            if args[:1] == ("rev-parse",):
+                return (0, "abc1234", "")
+            if args[:1] == ("rev-list",):
+                return (0, "0", "")
+            if args[:1] == ("fetch",):
+                return (0, "", "")
+            return (0, "", "")
+
+        with _InitFromTemplate():
+            with (
+                patch("gzkit.utils.git_cmd", side_effect=tracking_git_cmd),
+                patch("gzkit.git_sync.git_cmd", side_effect=tracking_git_cmd),
+                patch("gzkit.commands.sync.git_cmd", side_effect=tracking_git_cmd),
+            ):
+                result = runner.invoke(main, ["git-sync"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+        fetch_indices = [i for i, c in enumerate(calls) if c[:1] == ("fetch",)]
+        self.assertTrue(
+            fetch_indices,
+            "dry-run must invoke `git fetch` before reading ahead/behind; "
+            "without it, divergence numbers reflect stale local cache (GHI #343)",
+        )
+        first_fetch_idx = fetch_indices[0]
+        divergence_reads = [(i, c) for i, c in enumerate(calls) if c[:2] == ("rev-list", "--count")]
+        self.assertTrue(
+            divergence_reads,
+            "test fixture should observe the planner reading ahead/behind",
+        )
+        for idx, c in divergence_reads:
+            self.assertGreater(
+                idx,
+                first_fetch_idx,
+                f"divergence read {c} occurred before fetch — staleness window open (GHI #343)",
+            )
 
     def test_git_sync_rejects_skip_that_disables_xenon(self) -> None:
         """git-sync blocks SKIP values that can bypass xenon complexity checks."""

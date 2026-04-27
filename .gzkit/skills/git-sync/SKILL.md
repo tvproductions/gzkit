@@ -6,9 +6,9 @@ category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-04-19
+last_reviewed: 2026-04-26
 metadata:
-  skill-version: "1.2.2"
+  skill-version: "1.2.3"
 ---
 
 # SKILL.md
@@ -41,6 +41,13 @@ Use the `gz git-sync` command flow (dry-run first, then apply as requested).
 3. Explicit redundant-gate invocation (edge cases only, e.g. verifying
    pre-commit config drift):
    `uv run gz git-sync --apply --lint --test`
+
+> Both dry-run and apply mode run `git fetch --prune <remote>` before
+> reading `ahead`/`behind`, so divergence numbers always reflect current
+> remote state — no separate pre-fetch needed (GHI #343). When the
+> network is unreachable the dry-run reports the fetch failure as a
+> warning and proceeds with cached refs; apply-mode treats it as a
+> blocker.
 
 > The pre-commit hook runs ruff, ty, unittest, and xenon on every commit.
 > `--lint` and `--test` re-run those gates at the `gz` level — redundant
