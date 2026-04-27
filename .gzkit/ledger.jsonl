@@ -4098,3 +4098,4 @@
 {"schema":"gzkit.ledger.v1","event":"task_started","id":"TASK-0.31.0-07-01-01","ts":"2026-04-27T00:19:26.394829+00:00","adr_id":"ADR-0.31.0","task_id":"TASK-0.31.0-07-01-01","obpi_id":"OBPI-0.31.0-07","agent":"claude-code"}
 {"schema":"gzkit.ledger.v1","event":"task_completed","id":"TASK-0.31.0-07-01-01","ts":"2026-04-27T00:19:35.506977+00:00","obpi_id":"OBPI-0.31.0-07","adr_id":"ADR-0.31.0","agent":"claude-code","task_id":"TASK-0.31.0-07-01-01"}
 {"schema":"gzkit.ledger.v1","event":"obpi_lock_released","id":"OBPI-0.31.0-07-mutate","ts":"2026-04-27T00:20:54.852814+00:00","agent":"main-session","force":false}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"CLAUDE.md","ts":"2026-04-27T00:25:57.420855+00:00","path":"CLAUDE.md"}
