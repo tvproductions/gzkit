@@ -77,6 +77,8 @@ audience split.
 | [`/gz-chore-runner`](gz-chore-runner.md) | Run a gzkit chore end-to-end (show, plan, advise, execute, validate) |
 | [`/gz-cli-audit`](gz-cli-audit.md) | Audit CLI documentation coverage and headings |
 | [`/gz-context-diet`](gz-context-diet.md) | Trim per-turn agent context weight by lifting narrative to docs/governance/ |
+| [`/gz-pythonic-pattern-detect`](gz-pythonic-pattern-detect.md) | Surface Pythonic-design-pattern refactor candidates after ADR closeout (AST scanner over `src/`) |
+| [`/gz-pythonic-pattern-apply`](gz-pythonic-pattern-apply.md) | Capture before/after evidence with mechanical-delta proof when a Pythonic-pattern rewrite is applied |
 | [`/gz-typecheck`](gz-typecheck.md) | Run static type checks |
 | [`/lint`](lint.md) | Run code linting with Ruff and PyMarkdown |
 | [`/test`](test.md) | Run unit tests with unittest |

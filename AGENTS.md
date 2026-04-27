@@ -233,7 +233,7 @@ Standardized and synchronized by `gz agent sync control-surfaces`.
 `ghi-author`, `ghi-close`, `ghi-triage`, `git-sync`, `gz-agent-sync`, `gz-arb`, `gz-check-config-paths`, `gz-migrate-semver`, `gz-session-handoff`, `gz-skill-router`, `gz-tidy`
 
 #### Code Quality
-`gz-check`, `gz-chore-runner`, `gz-cli-audit`, `gz-context-diet`
+`gz-check`, `gz-chore-runner`, `gz-cli-audit`, `gz-context-diet`, `gz-pythonic-pattern-apply`, `gz-pythonic-pattern-detect`
 
 #### Cross-Repository
 `airlineops-parity-scan`

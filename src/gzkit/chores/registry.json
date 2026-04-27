@@ -257,6 +257,20 @@
             "version": "1.0.0",
             "path": ".gzkit/chores/instructions-files-diet",
             "lane": "lite"
+        },
+        {
+            "slug": "pythonic-design-pattern-detection",
+            "title": "Pythonic Design Pattern Detection (AST Scanner + refactoring.guru Catalogue)",
+            "version": "1.0.0",
+            "path": ".gzkit/chores/pythonic-design-pattern-detection",
+            "lane": "lite"
+        },
+        {
+            "slug": "pythonic-design-pattern-application",
+            "title": "Pythonic Design Pattern Application (Before/After Evidence Capture)",
+            "version": "1.0.0",
+            "path": ".gzkit/chores/pythonic-design-pattern-application",
+            "lane": "lite"
         }
     ]
 }
