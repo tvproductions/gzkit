@@ -21,7 +21,7 @@ Capture before/after evidence with mechanical-delta proof when a Pythonic-patter
 
 ## What to Expect
 
-The skill reads its canonical execution contract from `.gzkit/skills/gz-pythonic-pattern-apply/SKILL.md` (mirrored into `.claude/skills/`, `.agents/skills/`, and `.github/skills/`). One evidence file per applied candidate lands at `.gzkit/chores/pythonic-design-pattern-application/proofs/application-YYYY-MM-DD-HHMMSS-<short-slug>.md`, citing pattern named, source candidate, refactoring.guru reference, before/after code, xenon + radon deltas, semantics tests, and the ARB GREEN receipt ID. The detection-report row is updated from `_[applied | deferred | not-pythonic-rewrite]_` to `applied: <evidence-file-path>`.
+The skill reads its canonical execution contract from `.gzkit/skills/gz-pythonic-pattern-apply/SKILL.md` (mirrored into `.claude/skills/`, `.agents/skills/`, and `.github/skills/`). One evidence file per applied candidate lands at `.gzkit/chores/pythonic-design-pattern-application/proofs/application-YYYY-MM-DD-HHMMSS-<short-slug>.md`, citing pattern named, source candidate, local Python example witness, example-derived role map, refactoring.guru reference, before/after code, xenon + radon deltas, semantics tests, and the ARB GREEN receipt ID. The detection-report row is updated from `_[applied | deferred | not-pythonic-rewrite]_` to `applied: <evidence-file-path>`.
 
 ## Invocation
 
@@ -42,6 +42,7 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-pythonic
 | `.agents/skills/gz-pythonic-pattern-apply/SKILL.md` | Codex mirror | Read |
 | `.github/skills/gz-pythonic-pattern-apply/SKILL.md` | Copilot mirror | Read |
 | `src/gzkit/chores/pythonic-design-pattern-application/CHORE.md` | Chore canon (evidence-file template) | Read |
+| `design-patterns-en.zip` | Local Python example corpus (`Python/src/<Pattern>/Conceptual/main.py`) | Read |
 
 ## Related Skills and Commands
 

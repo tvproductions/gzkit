@@ -3,7 +3,7 @@ id: OBPI-0.0.21-09-chores-doctor-command
 parent: ADR-0.0.21-chores-as-gzkit-surface
 item: 9
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.21-09-chores-doctor-command: Chores Doctor Command
@@ -198,28 +198,23 @@ uv run -m unittest tests.commands.test_chores -v 2>&1 | grep -E "doctor|OK|FAIL"
 Before: if `.gzkit/chores/` was corrupted or partial, the operator's only options were re-running `gz init` (which had subtle registry-merge interactions) or manually copying from `site-packages/`. After: `gz chores` `doctor` is the named, deterministic recovery path — one command, idempotent, non-destructive of project-local content and proofs.
 
 ### Key Proof
-```bash
+
 $ rm -rf .gzkit/chores/coverage-40pct
-$ uv run gz chores \
-    doctor
-                Chore Doctor
-╭─────────────────┬──────────┬──────────╮
-│ Slug            │ Before   │ After    │
-├─────────────────┼──────────┼──────────┤
-│ coverage-40pct  │ MISSING  │ HEALTHY  │
-│ <other slugs…>  │ HEALTHY  │ HEALTHY  │
-╰─────────────────┴──────────┴──────────╯
-1 chore repaired, 32 healthy, 0 project-local, 0 damaged.
-$ test -f .gzkit/chores/coverage-40pct/CHORE.md && echo OK
-OK
-```
+$ uv run gz chores doctor 2>&1 | grep -E "coverage-40pct|repaired"
+│ coverage-40pct                          │ MISSING │ HEALTHY │
+1 repaired, 34 healthy, 0 project-local, 0 damaged-remaining.
+$ test -f .gzkit/chores/coverage-40pct/CHORE.md && echo OK_REPAIRED
+OK_REPAIRED
+
+Receipts: lint arb-ruff-1d999b0fa232464bbfb6b418696578fe; types arb-step-typecheck-9a6e88e7dfbd479aa4e1bc1464a796e8; tests-scoped arb-step-unittest-7fd3a1d6d8f14b69b15e09198058d9a9 (33/33); tests-full arb-step-unittest-a4e608e867ef488c8a4019992bf046c4 (3688/3688); docs arb-step-mkdocs-ca188cb8fd1748feb50a0565f1dc16a6.
 
 ### Implementation Summary
-- Files created/modified: `src/gzkit/commands/chores.py`, `src/gzkit/cli/parser_artifacts.py`, `tests/commands/test_chores.py`
-- Tests added: 6 REQ-derived
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files modified: src/gzkit/commands/chores.py (+125 lines: chores_doctor handler, _classify_doctor_slug, _repair_damaged_doctor_slug, _render_doctor_table, status constants); src/gzkit/cli/parser_maintenance.py (+32 lines: chores_doctor lazy registration, doctor subparser with --dry-run/--json); tests/commands/test_chores.py (+209 lines: TestChoresDoctor 8 REQ-derived tests, TestChoresDoctorOutputForm Invariant 3 fixture); config/doc-coverage.json (+10 lines: chores doctor surface declaration)
+- Files created: docs/user/commands/chores-doctor.md (operator command page); docs/user/commands/index.md updated (+1 row); .claude/plans/OBPI-0.0.21-09-chores-doctor-command-plan.md (plan-audit PASS)
+- Tests added: 9 REQ-derived (8 behavior + 1 Invariant 3 output-form fixture); 9/9 REQs covered per gz covers OBPI-0.0.21-09 --json
+- Brief-scope deviation: Brief Denied Paths listed docs/**; gz cli audit cross-coverage (fail-closed in gz check) required per-subcommand docs/user/commands/chores-doctor.md and an index row that OBPI-06 did not author. Authored the two missing doc surfaces under Prime Directive scope-expansion (not scope creep)
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -227,14 +222,27 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: `<verbatim user words> — <session-grounded enrichment>`
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed - very thorough. — Confirm: gz chores doctor lands the
+2am-operator recovery path for ADR-0.0.21 § Decision #10. 9/9 REQs
+covered (gz covers OBPI-0.0.21-09 --json), 8 REQ-derived behavior tests
+plus 1 Invariant 3 output-form fixture in TestChoresDoctor /
+TestChoresDoctorOutputForm. Full unittest 3688/3688 pass; mkdocs strict
+green; gz cli audit 87/87 cross-coverage. Brief-scope deviation: authored
+docs/user/commands/chores-doctor.md and index.md row inside this OBPI
+under Prime Directive (gz cli audit fail-closed required surfaces OBPI-06
+did not deliver). Receipts: lint
+arb-ruff-1d999b0fa232464bbfb6b418696578fe; types
+arb-step-typecheck-9a6e88e7dfbd479aa4e1bc1464a796e8; tests-scoped
+arb-step-unittest-7fd3a1d6d8f14b69b15e09198058d9a9; tests-full
+arb-step-unittest-a4e608e867ef488c8a4019992bf046c4; docs
+arb-step-mkdocs-ca188cb8fd1748feb50a0565f1dc16a6.
+- Date: 2026-04-27
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-27
 
 **Evidence Hash:** -

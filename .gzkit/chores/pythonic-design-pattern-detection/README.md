@@ -2,6 +2,8 @@
 
 Scan the source tree for Java-flavored class shapes that have a cleaner Pythonic refactor target. Pair with `pythonic-design-pattern-application` for the evidence side.
 
+When `design-patterns-en.zip` is available, use its `Python/src/<Pattern>/Conceptual/main.py` examples as the required role-map witness for every disposition.
+
 ## Quick Start
 
 ```bash

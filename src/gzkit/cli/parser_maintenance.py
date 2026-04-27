@@ -27,6 +27,7 @@ from gzkit.skills import DEFAULT_MAX_REVIEW_AGE_DAYS
 _LAZY_HANDLERS: dict[str, str] = {
     "chores_advise": "gzkit.commands.chores",
     "chores_audit": "gzkit.commands.chores",
+    "chores_doctor": "gzkit.commands.chores",
     "chores_list": "gzkit.commands.chores",
     "chores_plan": "gzkit.commands.chores",
     "chores_run": "gzkit.commands.chores",
@@ -755,6 +756,33 @@ def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:
     chores_audit_target.add_argument("--slug", help="Audit a single chore by slug")
     p_chores_audit.set_defaults(
         func=lambda a: _lazy("chores_audit")(all_chores=a.all_chores, slug=a.slug)
+    )
+
+    p_chores_doctor = chores_commands.add_parser(
+        "doctor",
+        help="Re-scaffold missing or damaged canonical chores; preserve proofs/",
+        description=(
+            "Inspect .gzkit/chores/ for missing or damaged canonical slugs and "
+            "restore them from the package source. Project-local slugs and "
+            "proofs/ content are never modified."
+        ),
+        epilog=build_epilog(
+            ["gz chores doctor", "gz chores doctor --dry-run", "gz chores doctor --json"]
+        ),
+    )
+    p_chores_doctor.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Report what would be repaired without making any changes.",
+    )
+    p_chores_doctor.add_argument(
+        "--json",
+        dest="json_output",
+        action="store_true",
+        help="Emit one JSON record per slug to stdout (slug, before_status, after_status).",
+    )
+    p_chores_doctor.set_defaults(
+        func=lambda a: _lazy("chores_doctor")(dry_run=a.dry_run, json_output=a.json_output)
     )
 
 

@@ -2,6 +2,8 @@
 
 Capture before/after evidence with mechanical-delta proof when a Pythonic-pattern rewrite is applied. Pair with `pythonic-design-pattern-detection`.
 
+Every evidence file names the local Python example witness from `design-patterns-en.zip` and records the role map that the rewrite collapsed or preserved.
+
 ## Quick Start
 
 ```bash

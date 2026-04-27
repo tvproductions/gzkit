@@ -6,7 +6,7 @@ Surface Pythonic-design-pattern refactor candidates after ADR closeout. Use when
 
 ## Purpose
 
-`/gz-pythonic-pattern-detect` exposes the post-post-implementation pattern-shape audit. After idiom-level chores (`pythonic-refactoring`) and metric-level chores (`complexity-reduction-xenon`, `module-sloc-cap-radon`) have all passed, this skill drives the AST scanner over `src/` to flag class shapes whose Pythonic equivalent is cleaner. The 22 GoF patterns from `refactoring.guru/design-patterns/python` are the absorption surface — the scanner cites the canonical Python example URL for every flagged candidate so an agent can show the reference shape side-by-side with the Pythonic refactor target.
+`/gz-pythonic-pattern-detect` exposes the post-post-implementation pattern-shape audit. After idiom-level chores (`pythonic-refactoring`) and metric-level chores (`complexity-reduction-xenon`, `module-sloc-cap-radon`) have all passed, this skill drives the AST scanner over `src/` to flag class shapes whose Pythonic equivalent is cleaner. The 22 GoF patterns from `refactoring.guru/design-patterns/python` plus the local `design-patterns-en.zip` Python examples are the absorption surface — every disposition records the `Python/src/<Pattern>/Conceptual/main.py` witness, role map, and Pythonic collapse.
 
 ## When to Use
 
@@ -16,7 +16,7 @@ Surface Pythonic-design-pattern refactor candidates after ADR closeout. Use when
 
 ## What to Expect
 
-The skill reads its canonical execution contract from `.gzkit/skills/gz-pythonic-pattern-detect/SKILL.md` (mirrored into `.claude/skills/`, `.agents/skills/`, and `.github/skills/`). The scanner emits a candidates report at `.gzkit/chores/pythonic-design-pattern-detection/proofs/candidates-YYYY-MM-DD.md` listing every match with file:line, AST signal, Pythonic refactor target, and a `refactoring.guru/design-patterns/<slug>/python/example` URL. Reference-mode patterns (Bridge, Flyweight, Factory Method) are catalogued in `CHORE.md` for human-eye review since they admit no robust mechanical signal.
+The skill reads its canonical execution contract from `.gzkit/skills/gz-pythonic-pattern-detect/SKILL.md` (mirrored into `.claude/skills/`, `.agents/skills/`, and `.github/skills/`). The scanner emits a candidates report at `.gzkit/chores/pythonic-design-pattern-detection/proofs/candidates-YYYY-MM-DD.md` listing every match with file:line, AST signal, Pythonic refactor target, website URL, local Python example path, role map, and disposition. Reference-mode patterns (Bridge, Flyweight, Factory Method) are catalogued in `CHORE.md` for human-eye review since they admit no robust mechanical signal.
 
 ## Invocation
 
@@ -38,6 +38,7 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-pythonic
 | `.github/skills/gz-pythonic-pattern-detect/SKILL.md` | Copilot mirror | Read |
 | `src/gzkit/chores/pythonic-design-pattern-detection/scan.py` | AST scanner | Read |
 | `src/gzkit/chores/pythonic-design-pattern-detection/CHORE.md` | Chore canon (full 22-pattern catalogue) | Read |
+| `design-patterns-en.zip` | Local Python example corpus (`Python/src/<Pattern>/Conceptual/main.py`) | Read |
 
 ## Related Skills and Commands
 
