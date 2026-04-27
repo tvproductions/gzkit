@@ -1,5 +1,66 @@
 # gzkit Release Notes
 
+## v0.25.18 (2026-04-27)
+
+Session-start hygiene patch. Closes the "stale-clone vibe-cycle" failure class
+where the SessionStart orientation hook reported every load-bearing surface
+*except* git-remote divergence — agents on multi-machine clones edited canonical
+surfaces from stale baselines until a downstream `gz git-sync` surfaced the
+collision. Lands the operator-facing fix, the mechanical backstop preventing
+its silent regression, two adjacent agent-surface defect closures (Claude Code
+memory double-load, regressed attestation pointer), and the Opus 4.7 calibration
+section on `CLAUDE.md` so per-turn effort defaults survive context boundaries.
+
+### Session Orientation Integrity
+
+- **#338** — `scripts/session_orientation.py` now surfaces git-remote-divergence
+  state at session start. Multi-machine operators landing on a stale clone see
+  the `ahead=N behind=M` count *before* editing canonical surfaces, instead of
+  discovering the collision after a post-implementation `gz git-sync` failure
+  has already burned cycles on directionally-opposed work. Closes the silent
+  precondition behind the 2026-04-26 `templates/agents.md` collision (10
+  commits behind origin, ~215 lines of in-place compression discarded by
+  hard-reset recovery).
+- **#341** — `gz validate --orientation-freshness` validator scope wired into
+  the default `gz check` pipeline. Fail-closes (exit 3) if the SessionStart
+  hook drops the `collect_remote_state()` call, the fetch step, or either
+  vendor `settings.json` / `hooks.json` hook entry — defense-in-depth against
+  silent regression of the #338 fix. Same shape as `gz validate
+  --adr-status-fresh` (GHI #322) — Layer-3 fail-close on a load-bearing
+  mechanical backstop.
+
+### Agent Surface Hygiene
+
+- **#339** — Moved `agents.local.md` from project root to `.gzkit/agents.local.md`
+  to stop Claude Code's memory system from loading the file twice (once as a
+  `*.local.md` local-override convention, once as the embedded
+  `{local_content}` substitution inside the rendered `AGENTS.md`). Reclaims
+  ~5.3k characters of per-turn context cost; the Claude Code "Large AGENTS.md
+  will impact performance" warning at session start drops back below the 40k
+  threshold.
+- **#340** — Restored the `agent-contract-rationale.md#attestation--worked-example`
+  pointer in `src/gzkit/templates/agents.md` § Attestation, after the GHI
+  #327 diet pass dropped it. Re-greens the
+  `tests/governance/test_attestation_fold.py::test_agents_md_has_attestation_section`
+  fail-closed test that was blocking clean ARB receipts on `main`. Same class
+  as #327's diet-pattern partial execution: lift pedagogy *and* leave the
+  pointer line behind.
+
+### Claude Tuning Surface
+
+- **#283** — Added `## Opus 4.7 tuning` section to `CLAUDE.md` (mirrored to
+  `.claude/`). Codifies effort-level defaults (`xhigh` for agentic work under
+  gzkit; reserve `max` for genuinely hard problems per Anthropic's
+  overthinking-warning), explicit per-turn thinking prompts ("Think carefully
+  and step-by-step" vs "Prioritize responding quickly"), subagent fan-out
+  criteria, and the recalibration note for prompts authored under 4.6's fixed
+  thinking-token assumptions. Operator no longer has to remember the
+  calibration per session.
+
+### Stats
+
+- 5 GHIs closed (4 defect, 1 chore).
+
 ## v0.25.17 (2026-04-26)
 
 Governance-surface integrity patch. Closes the silent-regression vector
