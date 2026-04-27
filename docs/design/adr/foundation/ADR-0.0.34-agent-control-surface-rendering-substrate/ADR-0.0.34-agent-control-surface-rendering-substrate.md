@@ -215,6 +215,7 @@ this ADR's OBPIs.
 - [ ] Templates: `src/gzkit/content/templates/**`
 - [ ] CLI: `src/gzkit/commands/content/**`
 - [ ] Vendor manifest: `data/vendor-manifest.json`
+- [x] Partial-prior audit (ADR-0.16.0 historical-drift acknowledgement): `artifacts/audits/adr-0.16.0-closeout-drift-2026-04-26.md` (GHI #332 — Jinja2-templating substrate gap, heavy-parent lite-self-closed OBPIs, terminal-dirty receipts; scope generalized into this ADR's eight-component delivery rather than re-attesting the partial prior).
 
 ## Alternatives Considered
 
