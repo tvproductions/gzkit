@@ -162,7 +162,7 @@ test layer.
 - [ ] Docs: `docs/governance/agent-control-surface-fidelity-doctrine.md`
 - [ ] Validators: `src/gzkit/governance/trust_audits.py` (or successor module per existing pattern)
 - [ ] Snapshot data: `data/surface_weight_floor.json`, `data/surface_weight_waivers.json`, `data/agent-control-surface-scenarios.json` (Era-2)
-- [x] Historical-instance audits (cite-targets for first audit sweep): `artifacts/audits/adr-0.14.0-closeout-drift-2026-04-26.md` (GHI #331 — formal acknowledgement-of-historical-drift); ADR-0.16.0 instance audit deferred to GHI #332.
+- [x] Historical-instance audits (cite-targets for first audit sweep): `artifacts/audits/adr-0.14.0-closeout-drift-2026-04-26.md` (GHI #331 — formal acknowledgement-of-historical-drift); `artifacts/audits/adr-0.16.0-closeout-drift-2026-04-26.md` (GHI #332 — formal acknowledgement; partial-prior generalized into ADR-0.0.34).
 
 ## Alternatives Considered
 
