@@ -4,10 +4,10 @@ Walks a Python source tree and emits a markdown report enumerating
 candidates where a Java-flavored class shape has a cleaner Pythonic
 refactor target. Stdlib only; cross-platform; UTF-8 safe.
 
-Coverage targets all 22 GoF patterns catalogued at
-https://refactoring.guru/design-patterns/python — those that admit a
-mechanical AST signal are detected; the rest are catalogued in CHORE.md
-as reference-only entries with their `python/example` URL for absorption.
+Coverage targets the GoF pattern shapes represented in the local
+design-patterns-en.zip Python examples. Patterns that admit a mechanical AST
+signal are detected; the rest are listed in CHORE.md as example-only entries
+for human-eye review.
 
 Usage:
     python scan.py --root src --out proofs/candidates-YYYY-MM-DD.md
@@ -30,9 +30,6 @@ if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")  # ty: ignore[call-non-callable]
 
 
-REFACTORING_GURU = "https://refactoring.guru/design-patterns"
-
-
 class Candidate(NamedTuple):
     file: Path
     line: int
@@ -40,7 +37,8 @@ class Candidate(NamedTuple):
     pattern: str
     signal: str
     pythonic_target: str
-    guru_url: str
+    example_path: str
+    output_path: str
 
 
 def _public_methods(cls: ast.ClassDef) -> list[ast.FunctionDef | ast.AsyncFunctionDef]:
@@ -373,111 +371,146 @@ def _detect_adapter_or_proxy(cls: ast.ClassDef) -> str | None:
     return None
 
 
-CLASS_DETECTORS: tuple[tuple[str, object, str, str], ...] = (
+CLASS_DETECTORS: tuple[tuple[str, object, str, str, str], ...] = (
     (
         "Strategy",
         _detect_strategy,
         "First-class function or `Callable[..., R]`",
-        "/strategy/python/example",
+        "Python/src/Strategy/Conceptual/main.py",
+        "Python/src/Strategy/Conceptual/Output.txt",
     ),
     (
         "Singleton",
         _detect_singleton,
         "Module-level constant or `functools.cache`",
-        "/singleton/python/example",
+        "Python/src/Singleton/Conceptual/ThreadSafe/main.py",
+        "Python/src/Singleton/Conceptual/ThreadSafe/Output.txt",
     ),
     (
         "Abstract Factory",
         _detect_abstract_factory,
         "Module of factory functions or `dataclass` registry",
-        "/abstract-factory/python/example",
+        "Python/src/AbstractFactory/Conceptual/main.py",
+        "Python/src/AbstractFactory/Conceptual/Output.txt",
     ),
     (
         "Prototype",
         _detect_prototype,
         "`copy.deepcopy` or `dataclass.replace`",
-        "/prototype/python/example",
+        "Python/src/Prototype/Conceptual/main.py",
+        "Python/src/Prototype/Conceptual/Output.txt",
     ),
     (
         "Builder",
         _detect_builder_class,
         "`dataclass`/Pydantic + `@classmethod` factory",
-        "/builder/python/example",
+        "Python/src/Builder/Conceptual/main.py",
+        "Python/src/Builder/Conceptual/Output.txt",
     ),
-    ("Iterator", _detect_iterator, "Generator function (`yield`)", "/iterator/python/example"),
+    (
+        "Iterator",
+        _detect_iterator,
+        "Generator function (`yield`)",
+        "Python/src/Iterator/Conceptual/main.py",
+        "Python/src/Iterator/Conceptual/Output.txt",
+    ),
     (
         "Decorator (class)",
         _detect_decorator_class,
         "Function decorator + `functools.wraps`",
-        "/decorator/python/example",
+        "Python/src/Decorator/Conceptual/main.py",
+        "Python/src/Decorator/Conceptual/Output.txt",
     ),
     (
         "Context manager (class)",
         _detect_context_manager_class,
         "`@contextlib.contextmanager` generator (Python idiom — not GoF)",
-        "/decorator/python/example",
+        "Python/src/Decorator/Conceptual/main.py",
+        "Python/src/Decorator/Conceptual/Output.txt",
     ),
     (
         "Facade (static-only class)",
         _detect_facade_class,
         "Module-level functions",
-        "/facade/python/example",
+        "Python/src/Facade/Conceptual/main.py",
+        "Python/src/Facade/Conceptual/Output.txt",
     ),
     (
         "Adapter / Proxy",
         _detect_adapter_or_proxy,
         "`typing.Protocol` + duck typing or `__getattr__` forwarding",
-        "/adapter/python/example",
+        "Python/src/Adapter/Conceptual/object/main.py",
+        "Python/src/Adapter/Conceptual/object/Output.txt",
     ),
     (
         "Composite",
         _detect_composite,
         "Recursive `dataclass` tree (only when truly hierarchical)",
-        "/composite/python/example",
+        "Python/src/Composite/Conceptual/main.py",
+        "Python/src/Composite/Conceptual/Output.txt",
     ),
     (
         "Chain of Responsibility",
         _detect_chain_of_responsibility,
         "List of handler functions, iterated until one returns a non-`None` result",
-        "/chain-of-responsibility/python/example",
+        "Python/src/ChainOfResponsibility/Conceptual/main.py",
+        "Python/src/ChainOfResponsibility/Conceptual/Output.txt",
     ),
-    ("Command", _detect_command_class, "`functools.partial` or closure", "/command/python/example"),
+    (
+        "Command",
+        _detect_command_class,
+        "`functools.partial` or closure",
+        "Python/src/Command/Conceptual/main.py",
+        "Python/src/Command/Conceptual/Output.txt",
+    ),
     (
         "Mediator",
         _detect_mediator,
         "Module-level event bus or `asyncio.Queue`",
-        "/mediator/python/example",
+        "Python/src/Mediator/Conceptual/main.py",
+        "Python/src/Mediator/Conceptual/Output.txt",
     ),
     (
         "Memento",
         _detect_memento,
         "`copy.deepcopy` snapshot / `dataclass.replace`",
-        "/memento/python/example",
+        "Python/src/Memento/Conceptual/main.py",
+        "Python/src/Memento/Conceptual/Output.txt",
     ),
     (
         "Observer",
         _detect_observer_class,
         "Callable list or `weakref.WeakSet`",
-        "/observer/python/example",
+        "Python/src/Observer/Conceptual/main.py",
+        "Python/src/Observer/Conceptual/Output.txt",
     ),
-    ("State", _detect_state, "Plain attribute + `match`/dispatch table", "/state/python/example"),
+    (
+        "State",
+        _detect_state,
+        "Plain attribute + `match`/dispatch table",
+        "Python/src/State/Conceptual/main.py",
+        "Python/src/State/Conceptual/Output.txt",
+    ),
     (
         "Template Method",
         _detect_template_method,
         "Pass a callable; or use composition over inheritance",
-        "/template-method/python/example",
+        "Python/src/TemplateMethod/Conceptual/main.py",
+        "Python/src/TemplateMethod/Conceptual/Output.txt",
     ),
     (
         "Visitor (accept)",
         _detect_visitor_accept,
         "`@functools.singledispatch` or `match` statement",
-        "/visitor/python/example",
+        "Python/src/Visitor/Conceptual/main.py",
+        "Python/src/Visitor/Conceptual/Output.txt",
     ),
     (
         "Visitor (visit_* dispatch)",
         _detect_visitor_dispatch,
         "`@functools.singledispatch` or `match` statement",
-        "/visitor/python/example",
+        "Python/src/Visitor/Conceptual/main.py",
+        "Python/src/Visitor/Conceptual/Output.txt",
     ),
 )
 
@@ -509,7 +542,7 @@ def scan_file(path: Path, source: str) -> Iterator[Candidate]:
 
     for node in ast.walk(tree):
         if isinstance(node, ast.ClassDef):
-            for pattern, detector, target, suffix in CLASS_DETECTORS:
+            for pattern, detector, target, example_path, output_path in CLASS_DETECTORS:
                 signal = detector(node)  # type: ignore
                 if signal:
                     yield Candidate(
@@ -519,7 +552,8 @@ def scan_file(path: Path, source: str) -> Iterator[Candidate]:
                         pattern=pattern,
                         signal=signal,
                         pythonic_target=target,
-                        guru_url=REFACTORING_GURU + suffix,
+                        example_path=example_path,
+                        output_path=output_path,
                     )
 
         if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
@@ -532,7 +566,8 @@ def scan_file(path: Path, source: str) -> Iterator[Candidate]:
                     pattern="isinstance dispatch chain",
                     signal=chain,
                     pythonic_target="`match` statement or `@functools.singledispatch`",
-                    guru_url=REFACTORING_GURU + "/visitor/python/example",
+                    example_path="Python/src/Visitor/Conceptual/main.py",
+                    output_path="Python/src/Visitor/Conceptual/Output.txt",
                 )
 
 
@@ -567,9 +602,9 @@ def render_report(candidates: list[Candidate], root: Path, scanned_count: int) -
                 "`NO_CANDIDATES_DETECTED`",
                 "",
                 "No Java-flavored class shapes detected by mechanical signal. "
-                "The catalogue includes patterns whose detection is reference-only "
+                "The example corpus includes patterns whose detection is reference-only "
                 "(Bridge, Flyweight, Factory Method as a generic shape) — those "
-                "require human-eye review against `CHORE.md`'s catalogue table.",
+                "require human-eye review against `CHORE.md`'s example table.",
                 "",
             ]
         )
@@ -601,7 +636,10 @@ def render_report(candidates: list[Candidate], root: Path, scanned_count: int) -
                     f"- **{rel.as_posix()}:{c.line}** — `{c.class_name}`",
                     f"  - Signal: {c.signal}",
                     f"  - Pythonic target: {c.pythonic_target}",
-                    f"  - Absorption ref: {c.guru_url}",
+                    f"  - Example: `{c.example_path}`",
+                    f"  - Output: `{c.output_path}`",
+                    "  - Role map: _[fill in after reading example]_",
+                    "  - Pythonic collapse: _[fill in]_",
                     "  - Disposition: _[applied | deferred | not-pythonic-rewrite]_",
                     "  - Notes: _[fill in]_",
                     "",

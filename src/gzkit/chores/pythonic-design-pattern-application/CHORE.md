@@ -20,20 +20,19 @@ Every applied candidate writes an evidence file under `.gzkit/chores/pythonic-de
 2. **Source candidate** — file:line + class name from the detection report
 3. **Python example witness** — the local archive path read, e.g. `Python/src/Strategy/Conceptual/main.py`
 4. **Example-derived role map** — the pattern roles observed in that Python example and which roles the rewrite collapses
-5. **refactoring.guru reference** — the canonical Python example URL the rewrite is informed by
-6. **Before / After** — both forms shown with at least the function/class signature; full body if <=20 lines
-7. **Cyclomatic complexity delta** — xenon ranks before/after for the affected module
-8. **SLOC delta** — radon raw before/after; positive deltas require explicit rationale
-9. **Tests cited** — list of tests that pinned semantics across the rewrite (Red-Green-Refactor evidence)
-10. **TDD receipt** — `arb-step-unittest-*` receipt ID from the GREEN run (per AGENTS.md § Attestation)
-11. **Disposition link** — back-reference to the entry in the detection chore's candidates report
+5. **Before / After** — both forms shown with at least the function/class signature; full body if <=20 lines
+6. **Cyclomatic complexity delta** — xenon ranks before/after for the affected module
+7. **SLOC delta** — radon raw before/after; positive deltas require explicit rationale
+8. **Tests cited** — list of tests that pinned semantics across the rewrite (Red-Green-Refactor evidence)
+9. **TDD receipt** — `arb-step-unittest-*` receipt ID from the GREEN run (per AGENTS.md § Attestation)
+10. **Disposition link** — back-reference to the entry in the detection chore's candidates report
 
 The mechanical-delta requirement is the binding part: the rewrite must not regress xenon's complexity grade for the affected module, and SLOC must non-positive (or be justified inline).
 
 ## Python example corpus requirement
 
 Before applying a rewrite, read the matching Python example from the local
-Refactoring Guru archive when present:
+examples archive when present:
 
 ```bash
 export DESIGN_PATTERNS_ARCHIVE="/Users/jeff/Library/Mobile Documents/com~apple~CloudDocs/Design_Patterns_Book/design-patterns-en.zip"
@@ -55,7 +54,7 @@ shape with a concrete reason.
 - **TDD discipline binding** — Red-Green-Refactor per `.gzkit/rules/tests.md`; cite the GREEN receipt
 - **Complexity non-regression** — xenon C/C/C must hold post-rewrite (matches `complexity-reduction-xenon`)
 - **Detection back-link required** — the evidence file references the detection report row that flagged the candidate; orphan applications (no detection trail) are a defect
-- **Pythonic-target faithfulness** — if the catalogue says "first-class function", the after-form must actually be a first-class function (or a documented deviation explaining why the catalogue target was wrong for this case)
+- **Pythonic-target faithfulness** — if the detection row says "first-class function", the after-form must actually be a first-class function (or a documented deviation explaining why that target was wrong for this case)
 
 ## Workflow
 
@@ -119,8 +118,6 @@ Template (copy and fill):
 - **Detection report:** `.gzkit/chores/pythonic-design-pattern-detection/proofs/candidates-YYYY-MM-DD.md`
 - **Python example witness:** `Python/src/<Pattern>/Conceptual/main.py`
 - **Python example output:** `Python/src/<Pattern>/Conceptual/Output.txt`
-- **refactoring.guru reference:** https://refactoring.guru/design-patterns/<slug>/python/example
-
 ## Example-derived role map
 
 - **Example roles observed:** <Context / Strategy / ConcreteStrategy, etc.>
@@ -189,8 +186,8 @@ The chore intentionally does **not** mechanically gate on "evidence file exists 
 - Writing a string-shape semantics test instead of a behavior-pinning test (per `.gzkit/rules/tests.md` § Tests assert semantics, not strings — invariant 6f)
 - Citing a fabricated receipt ID — same fabrication failure as ARB receipt fabrication, applies here
 - Marking the rewrite "applied" when xenon regressed (the post-form is heavier than the pre-form by complexity)
-- Letting the catalogue's recommended target slip into a *"close enough"* shape — the rewrite is faithful to the catalogue's Pythonic answer, or it documents why the catalogue is wrong for this case
-- Applying from memory without reading the local Python example witness — this turns the pattern catalogue back into training-corpus recall instead of observed evidence
+- Letting the detection row's recommended target slip into a *"close enough"* shape — the rewrite is faithful to the named Pythonic answer, or it documents why that target is wrong for this case
+- Applying from memory without reading the local Python example witness — this turns the pattern examples back into training-corpus recall instead of observed evidence
 
 ## Run Log
 
