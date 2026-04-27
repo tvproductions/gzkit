@@ -1,7 +1,7 @@
 ---
 name: git-sync-repo
 description: "Use this agent for guarded repository sync operations in gzkit. Trigger phrases: 'git sync repo', 'sync changes', 'commit and push', 'sync the repo'. Goal: clean tree, synced branch, and passing gz quality gates."
-model: opus
+model: inherit
 color: cyan
 ---
 
