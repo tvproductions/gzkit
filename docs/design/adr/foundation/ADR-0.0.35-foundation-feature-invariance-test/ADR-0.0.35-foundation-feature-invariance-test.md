@@ -3,7 +3,7 @@ id: ADR-0.0.35-foundation-feature-invariance-test
 status: Draft
 kind: foundation
 semver: 0.0.35
-lane: heavy
+lane: lite
 parent: ADR-0.0.18
 date: 2026-04-26
 ---

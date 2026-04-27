@@ -3,7 +3,7 @@ id: OBPI-0.0.21-08-layout-validator
 parent: ADR-0.0.21-chores-as-gzkit-surface
 item: 8
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.21-08-layout-validator: Layout Validator
@@ -174,20 +174,50 @@ uv run -m unittest tests.governance.test_trust_audits -v 2>&1 | grep -E "chores_
 Before: re-emergence of `ops/chores/` in a future PR would pass review because no automated check fired. After: `gz validate --chores-layout` fails the PR with exit 3 and a message naming the stray path.
 
 ### Key Proof
+
+Fail-closed smoke (exit 3 confirmed):
+
 ```bash
-$ mkdir -p /tmp/drift/ops/chores/x && echo "bogus" > /tmp/drift/ops/chores/x/CHORE.md
-$ cd /tmp/drift && uv run gz validate --chores-layout; echo exit:$?
-validation failed: chores_layout
-  stray file: ops/chores/x/CHORE.md (canonical roots: src/gzkit/chores/, .gzkit/chores/)
+$ mkdir -p /tmp/layout-drift/ops/chores/bogus
+$ echo "# bogus" > /tmp/layout-drift/ops/chores/bogus/CHORE.md
+$ (cd /tmp/layout-drift && uv run --project /Users/jeff/Documents/Code/gzkit gz validate --chores-layout); echo "exit:$?"
+Validated: chores_layout
+
+Validation failed with 1 error(s):
+
+   ->  ops/chores/bogus/CHORE.md
+    stray CHORE.md outside canonical chores roots (src/gzkit/chores/, .gzkit/chores/).
+    ADR-0.0.21 Decision #9 forbids ad-hoc chore layouts.
+
 exit:3
 ```
 
+Clean tree (exit 0):
+
+```bash
+$ uv run gz validate --chores-layout
+Validated: chores_layout
+All validations passed (1 scopes).
+exit:0
+```
+
+Quality receipts (ARB-wrapped):
+- arb-ruff-5a35e6c5534240aba9bd7ed715a276b1 (lint)
+- arb-step-typecheck-5ba92ba1c17347f5a95436b9148e6eb0 (typecheck)
+- arb-step-unittest-234fa6acd5364a54b66d8c07a5d47f68 (10/10 tests, 0.224s)
+- arb-step-mkdocs-7cf595948d254211a3d25c9b81dafd63 (docs build, 2.19s)
+
+REQ -> @covers parity: 7/7 (100%) via `uv run gz covers OBPI-0.0.21-08 --json`.
+
 ### Implementation Summary
-- Files created/modified: `src/gzkit/governance/trust_audits.py`, `src/gzkit/commands/validate_cmd.py`, `src/gzkit/cli/parser_maintenance.py`, `tests/governance/test_trust_audits.py`, `data/chores_layout_waivers.json`
-- Tests added: 5 REQ-derived
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: tests/governance/test_audit_chores_layout.py (10 REQ-derived tests across 5 fixture classes), data/chores_layout_waivers.json (empty future-waiver scaffold)
+- Files modified: src/gzkit/governance/trust_audits.py (+86 lines: audit_chores_layout, _load_chores_layout_waivers, __all__ export), src/gzkit/commands/validate_cmd.py (+18 lines: 5-surface scope wiring + _POLICY_BREACH_ERROR_TYPES routing chores_layout drift to exit 3 per REQ-08-04), src/gzkit/cli/parser_maintenance.py (+7 lines: --chores-layout flag)
+- Tests added: 10 (StrayLayoutFlaggedTests x2, CanonicalRootsAcceptedTests x3, WaiversAndExclusionsTests x2, PerformanceBudgetTests x1, CliExitCodeTests x2)
+- @covers parity: 7/7 REQs covered (100%) via gz covers OBPI-0.0.21-08
+- Date completed: 2026-04-27
+- Attestation status: agent-relayed-operator-attestation (operator attested "attest completed" in Stage 4)
+- Defects noted: GHI #347 (STATUS_VOCAB_MAPPING missing 'Withdrawn') in-flight direct-fix bundled into Stage 5 commit per AGENTS.md Defect-fix routing
 
 ## Tracked Defects
 
@@ -195,14 +225,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: `<verbatim user words> — <session-grounded enrichment>`
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — Heavy + Foundation OBPI-0.0.21-08 lands the gz validate --chores-layout fail-closed mechanical backstop ADR-0.0.21 Decision #9 mandates: walker (audit_chores_layout) accepts the two canonical roots (src/gzkit/chores/ canonical-shipped + paths.chores project-overlay default .gzkit/chores/) and rejects any other CHORE.md/acceptance.json with type=chores_layout, exit 3 routed via new _POLICY_BREACH_ERROR_TYPES taxonomy honoring REQ-08-04. 7/7 REQs covered (gz covers OBPI-0.0.21-08), 10/10 tests green (arb-step-unittest-234fa6acd5364a54b66d8c07a5d47f68), lint+typecheck+mkdocs clean (arb-ruff-5a35e6c5534240aba9bd7ed715a276b1; arb-step-typecheck-5ba92ba1c17347f5a95436b9148e6eb0; arb-step-mkdocs-7cf595948d254211a3d25c9b81dafd63). Two-root design intentionally preserved (operator surveyed wheel-distribution architecture; ADR-0.0.31 distribution-invariant-doctrine + ADR-0.0.32 canonical-surface-packaging confirm chores precedent is the model skills/rules/personas should follow, not collapse). In-flight defect GHI #347 (STATUS_VOCAB_MAPPING missing Withdrawn term) directly fixed in same Stage 5 to unblock precomplete; bundled in commit per AGENTS.md § Defect-fix routing thresholds.
+- Date: 2026-04-27
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-27
 
 **Evidence Hash:** -

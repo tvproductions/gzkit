@@ -174,6 +174,7 @@ Frontmatter `status:` terms in circulation across gzkit (as of ADR-0.0.16 author
 | attested_completed | attested_completed | Canonical ledger term written verbatim in frontmatter post-attestation |
 | Attested | attested_completed | Operator-facing post-attestation term |
 | Superseded | abandoned | Replaced by later decision |
+| Withdrawn | abandoned | Operator-pulled before completion |
 | archived | abandoned | Retired; no longer active |
 
 Canonical targets are drawn from `OBPI_RUNTIME_STATES` (at `src/gzkit/ledger.py`) and ADR lifecycle states (`pending`/`validated`/`completed`/`abandoned`). Lookups are case-insensitive; consumers that encounter a frontmatter term not in this mapping MUST block with a clear error naming the unmapped term — they never silently skip.

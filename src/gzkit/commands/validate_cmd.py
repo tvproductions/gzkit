@@ -291,6 +291,7 @@ def _collect_errors(
     check_orientation_freshness: bool = False,
     check_taxonomy: bool = False,
     check_brief_headings: bool = False,
+    check_chores_layout: bool = False,
     check_unscoped_rules: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
@@ -331,6 +332,7 @@ def _collect_errors(
         "adr_status_fresh": check_adr_status_fresh,
         "orientation_freshness": check_orientation_freshness,
         "brief_headings": check_brief_headings,
+        "chores_layout": check_chores_layout,
         "unscoped_rules": check_unscoped_rules,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
@@ -400,6 +402,7 @@ def _explicit_scope_runners(
         "adr_status_fresh": lambda: trust_audits.audit_adr_status_fresh(project_root),
         "orientation_freshness": lambda: trust_audits.audit_orientation_freshness(project_root),
         "brief_headings": lambda: trust_audits.audit_brief_headings(project_root),
+        "chores_layout": lambda: trust_audits.audit_chores_layout(project_root),
         "unscoped_rules": lambda: _unscoped_rules_runner(project_root),
     }
 
@@ -571,6 +574,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "adr_status_fresh",
         "orientation_freshness",
         "brief_headings",
+        "chores_layout",
         "unscoped_rules",
     ]
 
@@ -585,6 +589,9 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
     return scopes
 
 
+_POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset({"frontmatter", "chores_layout"})
+
+
 def _print_validation_result(
     errors: list[ValidationError],
     scopes: list[str],
@@ -595,14 +602,19 @@ def _print_validation_result(
 
     Exit codes:
         * 0 — clean
-        * 1 — validation errors outside the frontmatter scope
-        * 3 — frontmatter drift only (policy breach)
+        * 1 — validation errors outside the policy-breach taxonomy
+        * 3 — policy breach only (frontmatter drift, chores layout drift)
+
+    Policy-breach error types (``_POLICY_BREACH_ERROR_TYPES``) route to
+    exit 3 per ``.gzkit/rules/cli.md``; mixed runs that contain at least
+    one non-policy-breach error continue to route to exit 1 so that
+    operator-fixable errors are not masked by the stricter policy code.
 
     When ``frontmatter_only`` and no drift is found, suppresses the success
     prose (REQ-01: empty-input / fully-coherent output is empty).
     """
-    frontmatter_errors = [e for e in errors if e.type == "frontmatter"]
-    other_errors = [e for e in errors if e.type != "frontmatter"]
+    policy_errors = [e for e in errors if e.type in _POLICY_BREACH_ERROR_TYPES]
+    other_errors = [e for e in errors if e.type not in _POLICY_BREACH_ERROR_TYPES]
 
     if not errors:
         if frontmatter_only:
@@ -622,7 +634,7 @@ def _print_validation_result(
 
     if other_errors:
         raise SystemExit(1)
-    if frontmatter_errors:
+    if policy_errors:
         raise SystemExit(3)
 
 
@@ -658,6 +670,7 @@ def validate(
     check_orientation_freshness: bool = False,
     check_taxonomy: bool = False,
     check_brief_headings: bool = False,
+    check_chores_layout: bool = False,
     check_unscoped_rules: bool = False,
     unscoped_rules_allowlist_only: bool = False,
     as_json: bool = False,
@@ -712,6 +725,7 @@ def validate(
             check_orientation_freshness,
             check_taxonomy,
             check_brief_headings,
+            check_chores_layout,
         ]
     )
     if check_unscoped_rules and not _other_scopes_active:
@@ -756,6 +770,7 @@ def validate(
         check_orientation_freshness=check_orientation_freshness,
         check_taxonomy=check_taxonomy,
         check_brief_headings=check_brief_headings,
+        check_chores_layout=check_chores_layout,
         check_unscoped_rules=check_unscoped_rules,
         frontmatter_adr=frontmatter_adr,
     )
@@ -811,6 +826,7 @@ def validate(
         "orientation_freshness": check_orientation_freshness,
         "taxonomy": check_taxonomy,
         "brief_headings": check_brief_headings,
+        "chores_layout": check_chores_layout,
         "unscoped_rules": check_unscoped_rules,
     }
     scopes = _resolve_scopes(checks)

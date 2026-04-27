@@ -29,6 +29,7 @@ EXTRA_OBSERVED_TERMS: frozenset[str] = frozenset(
         "Pool",
         "Promoted",
         "Superseded",
+        "Withdrawn",
     }
 )
 

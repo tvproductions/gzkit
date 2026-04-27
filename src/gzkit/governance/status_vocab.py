@@ -45,6 +45,7 @@ _RAW_MAPPING: dict[str, str] = {
     "attested_completed": "attested_completed",
     "Attested": "attested_completed",
     "Superseded": "abandoned",
+    "Withdrawn": "abandoned",
     "archived": "abandoned",
 }
 

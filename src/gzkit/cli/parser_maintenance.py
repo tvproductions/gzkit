@@ -465,6 +465,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Brief evidence sections must be H3, not H2 (GHI #238)",
     )
     p_validate.add_argument(
+        "--chores-layout",
+        dest="check_chores_layout",
+        action="store_true",
+        help="Forbid CHORE.md/acceptance.json outside canonical chores roots (ADR-0.0.21)",
+    )
+    p_validate.add_argument(
         "--unscoped-rules",
         dest="check_unscoped_rules",
         action="store_true",
@@ -510,6 +516,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_orientation_freshness=a.check_orientation_freshness,
             check_taxonomy=a.check_taxonomy,
             check_brief_headings=a.check_brief_headings,
+            check_chores_layout=a.check_chores_layout,
             check_unscoped_rules=a.check_unscoped_rules or a.check_audits,
             unscoped_rules_allowlist_only=a.unscoped_rules_allowlist_only,
             as_json=a.as_json,
