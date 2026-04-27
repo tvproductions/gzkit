@@ -13,6 +13,8 @@ from gzkit.commands.common import (
 from gzkit.governance.adr_status_index import regenerate_adr_status_md
 from gzkit.ledger import (
     Ledger,
+    _extract_bare_adr_semver,
+    _extract_bare_obpi_id,
     adr_created_event,
     artifact_renamed_event,
     obpi_created_event,
@@ -102,6 +104,51 @@ SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
 )
 
 
+def _collect_disk_drift_renames(
+    *,
+    ledger: Ledger,
+    artifacts: dict[str, list[Path]],
+    touched_ids: set[str],
+    existing_renames: set[tuple[str, str]],
+) -> list[tuple[str, str]]:
+    """Walk on-disk ADR/OBPI canon and emit bare→slug rename candidates.
+
+    GHI #345: replaces the recurring maintenance-chore loop on
+    ``SEMVER_ID_RENAMES`` for the bare→slug drift class. For each on-disk
+    artifact whose filename stem is the slug form, propose a rename
+    whenever the ledger holds an event for the bare form and that bare id
+    has not already been canonicalized away. Honors AGENTS.md
+    § Architectural Boundaries #4 (reconciliation as a continuous gated
+    operation, not a maintenance chore) and #6 (Layer-1 canon + Layer-2
+    ledger as joint truth, never the hand-curated tuple alone).
+    """
+    candidates: list[tuple[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+
+    def _consider(stem: str, bare: str | None) -> None:
+        if bare is None or bare == stem:
+            return
+        if bare not in touched_ids:
+            return
+        if (bare, stem) in existing_renames or (bare, stem) in seen:
+            return
+        if ledger.canonicalize_id(bare) != bare:
+            return
+        candidates.append((bare, stem))
+        seen.add((bare, stem))
+
+    for adr_file in artifacts.get("adrs", []):
+        stem = adr_file.stem
+        _consider(stem, _extract_bare_adr_semver(stem))
+
+    for obpi_file in artifacts.get("obpis", []):
+        stem = obpi_file.stem
+        _consider(stem, _extract_bare_obpi_id(stem))
+
+    candidates.sort(key=lambda item: item[0])
+    return candidates
+
+
 def migrate_semver(dry_run: bool) -> None:
     """Record SemVer artifact ID renames in the append-only ledger."""
     config = ensure_initialized()
@@ -122,12 +169,28 @@ def migrate_semver(dry_run: bool) -> None:
             existing_renames.add((event.id, new_id))
 
     pending: list[tuple[str, str]] = []
+    pending_seen: set[tuple[str, str]] = set()
     for old_id, new_id in SEMVER_ID_RENAMES:
         if (old_id, new_id) in existing_renames:
             continue
         if old_id not in touched_ids:
             continue
+        if (old_id, new_id) in pending_seen:
+            continue
         pending.append((old_id, new_id))
+        pending_seen.add((old_id, new_id))
+
+    artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
+    for old_id, new_id in _collect_disk_drift_renames(
+        ledger=ledger,
+        artifacts=artifacts,
+        touched_ids=touched_ids,
+        existing_renames=existing_renames,
+    ):
+        if (old_id, new_id) in pending_seen:
+            continue
+        pending.append((old_id, new_id))
+        pending_seen.add((old_id, new_id))
 
     if not pending:
         console.print("No applicable SemVer ID migrations found.")

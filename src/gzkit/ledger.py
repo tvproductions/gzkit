@@ -13,6 +13,7 @@ from typing import Any, ClassVar
 from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
 _ADR_SEMVER_RE = re.compile(r"^ADR-(\d+\.\d+\.\d+)(?:-.*)?$")
+_OBPI_BARE_RE = re.compile(r"^OBPI-(\d+\.\d+\.\d+-\d+)(?:-.*)?$")
 
 
 def _extract_bare_adr_semver(adr_id: str) -> str | None:
@@ -29,6 +30,22 @@ def _extract_bare_adr_semver(adr_id: str) -> str | None:
     if match is None:
         return None
     return f"ADR-{match.group(1)}"
+
+
+def _extract_bare_obpi_id(obpi_id: str) -> str | None:
+    """Return the bare ``OBPI-X.Y.Z-NN`` form for any indexed OBPI id.
+
+    Symmetric with :func:`_extract_bare_adr_semver` — used by the on-disk
+    drift detector in ``migrate_semver`` (GHI #345) to collapse bare-form
+    ``OBPI-0.1.0-01`` and slug-form ``OBPI-0.1.0-01-gz-init`` to the same
+    identity when reconciling ledger touched ids against on-disk canon.
+    Returns ``None`` for pool OBPIs and any id that does not match the
+    indexed semver shape.
+    """
+    match = _OBPI_BARE_RE.match(obpi_id)
+    if match is None:
+        return None
+    return f"OBPI-{match.group(1)}"
 
 
 LEDGER_SCHEMA = "gzkit.ledger.v1"
