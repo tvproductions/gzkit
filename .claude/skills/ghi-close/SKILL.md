@@ -5,9 +5,9 @@ description: Do the work described in a GHI, then close it with verifiable evide
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-23
+last_reviewed: 2026-04-26
 metadata:
-  skill-version: "2.2.0"
+  skill-version: "2.3.0"
 ---
 
 # ghi-close
@@ -37,6 +37,23 @@ The skill is not an evaluator-only surface. If it terminates without
 closing, the reason is a concrete blocker the agent cannot remove
 unilaterally — not a missing pre-existing commit. "No fix landed yet" is
 not an exit condition; it is the *trigger* to author the fix.
+
+### Doctrine — NEVER, EVER, EVER dead-letter a GHI (binding, top-priority)
+
+**A GHI is closed only when its scope has a real, citable landing site — a commit SHA, a registered ADR ID, a registered OBPI brief ID, or a higher-numbered GHI that absorbs the scope. "Go run /gz-design later" is NOT a landing site. "Operator should invoke X next" is NOT a landing site. "Re-route to design pipeline" without authoring the destination ADR in the same close action is NOT a landing site.**
+
+This rule is the highest-priority constraint in this skill and overrides every other instinct toward graceful exit. The failure mode it closes — "dead-lettering" — is the pattern where the skill posts a thoughtful disposition comment, names where the work *should* go, closes the issue, and leaves the scope orphaned with no audit trail forward to anything that actually exists. The GHI's number disappears from the open list; the work disappears from every tracker; the operator discovers months later that the doctrine correction never landed because every surface assumed the next surface was carrying it.
+
+**Dead-lettering is worse than leaving the GHI open.** An open GHI surfaces in triage, in session orientation, in `gh issue list`. A dead-lettered GHI is invisible — the close comment is searchable only if you already know to look for it. Open-with-blocker is the honest state when scope has no destination yet; closed-with-vague-redirect is the corrupted-audit-trail state.
+
+**Operative rules:**
+
+1. **`withdrawn` route correction requires the destination to exist before close.** If the GHI's prescribed work is genuinely new capability that should run through `gz-design` → `gz-plan` → `gz-obpi-specify`, then this skill's close action is to **author the foundation/feature ADR (or invoke the design pipeline) in the same session**, register it, and close the GHI as `superseded` citing the new ADR ID. `withdrawn` is reserved for the genuinely-rare case where the GHI's premise has evaporated (rule changed mid-flight, defect was a misread of working-as-designed behavior) — not for "this should be an ADR but I haven't authored one."
+2. **`superseded` requires a real, registered upstream.** A drafted but unregistered ADR file on disk is not enough. The upstream must appear in `gz adr status` / `gz state` output, or be a commit SHA, or be a higher-numbered GHI that exists. Vague references ("the eventual ADR for this") are dead-letter dressing.
+3. **If you cannot complete the destination authoring in the current session, the GHI stays open with a blocker comment.** Name the blocker, name the next concrete operator action, leave the issue open. Open-with-blocker is the correct state; closed-with-route-promise is the failure.
+4. **Operator-initiated close decisions still bind the destination rule.** Even if the operator says "close this and we'll handle it later," the skill's response is to surface that "later" needs a destination — author the ADR now, or leave the GHI open with the deferred-action comment. The skill does not execute "close it for now" as a valid request.
+
+This rule supersedes the v2.0.0 "analyze-and-leave-open is the anti-pattern" framing **only at the edge case where the destination cannot be created in-session**. The two rules compose: do the work and close it (v2.0.0), AND if the work routes elsewhere, create the elsewhere before closing (v2.3.0). Both rules together: the GHI's terminal state is closed-with-real-evidence, never closed-with-aspirational-redirect.
 
 ### Doctrine — defect remedies are direct fixes, NEVER new OBPIs
 
@@ -257,6 +274,7 @@ to produce one. Fix that instinct.
 
 ## Constraints
 
+- **NEVER, EVER, EVER dead-letter a GHI.** A close is valid only when the disposition cites a real, registered destination — commit SHA, registered ADR ID (visible in `gz adr status`), registered OBPI brief ID, or higher-numbered GHI that exists. "Operator should run /gz-design next" / "this should become an ADR" / "re-route to design pipeline" without authoring the destination in the same close action is a dead-letter and is forbidden. If the destination cannot be created in-session, the GHI stays open with a blocker comment naming the next concrete operator action. See § Doctrine — NEVER, EVER, EVER dead-letter a GHI for the binding rule.
 - **Never terminate without closing unless a Phase 2 escalation blocker holds.** "No commit found" is the trigger to author one, not the reason to stop.
 - **Never close on a narrative claim.** Cite a commit SHA, ADR ID, brief ID, or receipt ID — every close comment references a verifiable artifact.
 - **Never close with the operator's personal email in the comment.** `AGENTS.md` § Local Agent Rules applies to `gh` comments as much as to commits.
@@ -279,6 +297,9 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 | "The commit trailer is missing but the fix is obvious" | Missing trailer is a process defect. Amend via a new trailer-bearing commit. |
 | "Won't-fix without operator sign-off is fine for small ones" | Won't-fix is risk acceptance. Unilateral risk acceptance is the scope-creep anti-pattern in a different costume. |
 | "I analyzed the GHI, posted a thorough comment, and left it open — that's the right conservative move" | No. "Thorough analysis then leave it open" is the exact anti-pattern this skill's v2.0.0 rewrite closed. Analysis without execution is busywork. |
+| "I'll close it as `withdrawn` and route to /gz-design — the operator can author the ADR next" | **DEAD-LETTER.** The destination doesn't exist yet. Closing with a route-promise to an unauthored ADR makes the work invisible — gone from the open-issue list, gone from triage, gone from session orientation. The destination must be authored *in the same session as the close*, then cited by ID. If you cannot author it now, leave the GHI OPEN with a blocker comment. See § Doctrine — NEVER, EVER, EVER dead-letter a GHI. |
+| "The operator said 'close it for now and we'll handle it later'" | Surface that "later" needs a destination. Either author the ADR/brief now and cite it, or leave the GHI open with the deferred-action comment. The skill never executes a "close for now" request — that's the dead-letter pattern wearing the operator's voice. |
+| "Citing 'route to /gz-design' counts as a destination because it names a real skill" | A skill name is not a registered artifact. The destination must be a commit SHA, registered ADR ID (visible in `gz adr status`), registered OBPI brief ID, or higher-numbered GHI that exists. Skill names are pointers to *capability*, not landing sites for scope. |
 | "This defect touches a heavy-lane surface (CLI/schema/contract), so it needs an OBPI" | **Wrong.** Defect remedies are direct fixes regardless of surface. The "ceremony required" column in `AGENTS.md` § Defect-fix routing applies to *planned new-capability work*, not to closing surfaced defects. Ship the fix as `fix(<scope>): … (GHI #N)` with TDD evidence and (for heavy/foundation) ARB receipts in the close comment. |
 | "The fix is too large for a direct fix; let me author an OBPI to be safe" | **Size is a routing fact, not an OBPI trigger.** A 100-line defect remedy is a 100-line direct fix with a thorough commit body. Authoring an OBPI to ceremonialize a defect closure inverts the routing doctrine — OBPIs are for planned feature increments under an active ADR, not for retrofitting ceremony onto bug fixes. If size is genuinely making you uncertain, escalate to the operator with the routing facts. Do not list "author an OBPI" as one of the choices. |
 | "The GHI body literally says 'OBPI ceremony required'; I should specify an OBPI" | Re-read the body. If it actually prescribes new-capability scope rather than a defect remedy, the GHI is mis-labeled — close `withdrawn` and route to `gz-design`/`gz-plan`. If it prescribes a defect remedy that touches a heavy surface, it is still a direct fix; the GHI body's authoring-time language does not override doctrine. |
@@ -286,6 +307,8 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 
 ## Red Flags
 
+- **Close comment cites a destination that doesn't exist yet** — "the eventual ADR for this", "should become an OBPI", "operator will route to /gz-design next", "re-route to design pipeline" — these are dead-letter signatures. The destination must be a registered ADR ID, OBPI brief ID, commit SHA, or higher-numbered open GHI; if it's not, the close is invalid (DEAD-LETTER PROHIBITION, § Doctrine — NEVER, EVER, EVER dead-letter a GHI)
+- **`withdrawn` disposition without a same-session destination authoring** — `withdrawn` is for premise-evaporated GHIs, not for "this should be an ADR but I haven't authored one yet"
 - Agent posts a long analysis comment and does not close, when no escalation blocker holds
 - Close comment is "Done" or "Fixed" with no artifact reference
 - Close happens before verification steps 7a–7e run
