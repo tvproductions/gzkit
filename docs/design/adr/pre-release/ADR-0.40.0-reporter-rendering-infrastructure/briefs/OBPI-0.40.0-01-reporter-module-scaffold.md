@@ -73,8 +73,32 @@ Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
 
 ### Implementation Summary
 
-Created `src/gzkit/reporter/` module with four deterministic rendering presets (status_table, kv_table, list_table, ceremony_panel) backed by Pydantic ColumnDef model. All presets are stateless pure functions returning Rich renderables.
+- Module created: `src/gzkit/reporter/` with `__init__.py`, `presets.py`, `panels.py`
+- Presets exported: `status_table`, `kv_table`, `list_table`, `ceremony_panel` — each a stateless pure function returning a Rich renderable
+- Data model: Pydantic `ColumnDef` under `ConfigDict(frozen=True, extra="forbid")`
+- Box styles: `box.ROUNDED` for `status_table` / `kv_table` / `list_table`; `box.DOUBLE` for `ceremony_panel`
+- Purity invariant: no IO, no ledger reads, no business logic — verified by unit tests
+- Allowlist honored: writes confined to `src/gzkit/reporter/`, `tests/test_reporter.py`, `features/reporter_rendering.feature`, `features/steps/reporter_steps.py`, and `docs/user/concepts/reporter-architecture.md`
+- Validation commands run: `uv run -m unittest tests/test_reporter.py -v` (20/20 pass); `uv run behave features/reporter_rendering.feature` (6/6 pass)
 
 ### Key Proof
 
-20/20 unit tests pass, 6/6 BDD scenarios pass, all quality gates green. `uv run -m unittest tests/test_reporter.py -v`
+20/20 unit tests pass for all four reporter presets + `ColumnDef` model; 6/6 BDD scenarios pass against `features/reporter_rendering.feature`. All six REQ-0.40.0-01-NN acceptance criteria covered. Verification: `uv run -m unittest tests/test_reporter.py -v` and `uv run behave features/reporter_rendering.feature`.
+
+## Tracked Defects
+
+_No defects tracked._
+
+## Human Attestation
+
+- Attestor: `g0`
+- Attestation: attest completed — Heavy-lane OBPI-0.40.0-01 reporter module scaffold: four named presets (`status_table`, `kv_table`, `ceremony_panel`, `list_table`) implemented as stateless Rich-rendering pure functions backed by frozen `ColumnDef` Pydantic model. 20/20 unit tests pass, 6/6 BDD scenarios pass, all six REQ-0.40.0-01-NN acceptance criteria covered. Brief allowlist honored — writes confined to `src/gzkit/reporter/`, `tests/test_reporter.py`, `features/reporter_rendering.feature`, `features/steps/reporter_steps.py`, and `docs/user/concepts/reporter-architecture.md`. Anchored at commit `ca55bb3`.
+- Date: 2026-03-28
+
+---
+
+**Brief Status:** Completed
+
+**Date Completed:** 2026-03-28
+
+**Evidence Hash:** -
