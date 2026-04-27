@@ -21,7 +21,6 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 
 - `candidate`: a row from the most recent `pythonic-design-pattern-detection` candidates report (file:line + class name)
 - `pattern_target`: the Pythonic refactor target named in the report (e.g. *"first-class function"*, *"`@functools.singledispatch`"*)
-- `guru_url`: the canonical `refactoring.guru/design-patterns/<slug>/python/example` URL cited in the row
 - `python_example`: the local archive path (`Python/src/<Pattern>/Conceptual/main.py`) used as the role-map witness
 
 ## Outputs
@@ -33,7 +32,7 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 
 ## Procedure
 
-1. Open the chosen candidate's row in the most recent detection report. Note the `refactoring.guru/design-patterns/<slug>/python/example` URL and the local archive example path (`Python/src/<Pattern>/Conceptual/main.py`). Open both as absorption references for the rewrite shape.
+1. Open the chosen candidate's row in the most recent detection report. Note the local archive example path (`Python/src/<Pattern>/Conceptual/main.py`) used as the absorption reference for the rewrite shape.
 
 2. Read the local Python example and matching `Output.txt` from `design-patterns-en.zip`. Record the example's role map before editing: roles observed, roles preserved, roles collapsed, and the Python construct that will carry the behavior.
 
@@ -46,7 +45,7 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 
 4. Write a **semantics-pinning test** for the candidate's behavior — *not* its shape. The test must derive from the operator-facing purpose the code serves, per `.gzkit/rules/tests.md` § Tests assert semantics, not strings (invariant 6f). Run it; observe RED for any genuinely new behavior coverage, GREEN for behavior that was already covered.
 
-5. Apply the Pythonic rewrite. Match the target named in the candidate row. If the catalogue's recommended target turns out to be wrong for this case, do NOT settle for "close enough" — either pick a different catalogue target with an explicit rationale, or escalate to operator review.
+5. Apply the Pythonic rewrite. Match the target named in the candidate row. If the example-derived target turns out to be wrong for this case, do NOT settle for "close enough" — either pick a different Pythonic target with an explicit rationale, or escalate to operator review.
 
 6. Run the test under ARB to produce the GREEN receipt:
 
@@ -72,7 +71,6 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
    - Detection report back-reference
    - Local Python example witness and `Output.txt` path
    - Example-derived role map
-   - `refactoring.guru` URL
    - Before / After code blocks
    - xenon + radon deltas with notes
    - Tests cited (file:Test::test_method)
@@ -94,7 +92,7 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 - **GREEN receipt missing:** ran `unittest` directly instead of through `gz arb step`. The corpus needs the receipt ID, not a narrative claim. Re-run under ARB.
 - **Detection report row not updated:** orphan evidence file. Run an audit grep for the evidence-file path inside `candidates-*.md` files and back-link manually.
 - **Bundled refactors (multiple patterns in one evidence file):** split into one file per applied candidate. The corpus loses signal on bundles.
-- **Python example witness missing:** evidence was authored from memory or URL-only review. Read the archive example, add the role map, and update the detection row before continuing.
+- **Python example witness missing:** evidence was authored from memory. Read the archive example, add the role map, and update the detection row before continuing.
 
 ## Acceptance Rules
 
@@ -104,7 +102,6 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 - GREEN receipt ID is real (not fabricated) and corresponds to a passing run
 - Local Python example witness and role map are present
 - Detection report row back-linked to the evidence file path
-- `refactoring.guru` URL cited matches the catalogue entry from the detection report
 - Pythonic-target faithfulness is named explicitly: "yes" or "no with rationale"
 
 ## Common Rationalizations
@@ -117,7 +114,7 @@ These thoughts mean STOP — you are about to ship an evidence file that broke i
 | "xenon regressed by one rank, but the after-form is cleaner" | Cleaner-by-eye + heavier-by-metric is the precise failure mode this chore catches. Revert; pick a different target. |
 | "I'll bundle three Strategy-class rewrites into one file to save time" | One file per applied candidate is the canon. Bundles lose per-candidate signal. |
 | "I'll cite `unittest -q` exit-zero in lieu of an ARB receipt" | Same fabrication failure as ARB receipt fabrication elsewhere — the receipt ID is the proof, not the claim. |
-| "The catalogue says 'first-class function' but I made it a `@cache`d method" | Faithfulness to the catalogue target is the rule. If the catalogue is wrong for this case, name *why* in the rationale; do not silently deviate. |
+| "The detection row says 'first-class function' but I made it a `@cache`d method" | Faithfulness to the named target is the rule. If the target is wrong for this case, name *why* in the rationale; do not silently deviate. |
 | "I'll mark the detection row `applied` without back-linking the evidence" | Orphan applications break the audit trail. The two reports are paired; neither stands alone. |
 | "I already know Strategy/Visitor/etc.; I don't need the example" | The local Python example is the witness for role mapping. Without it, the evidence is narrative recall. |
 
@@ -130,13 +127,12 @@ These thoughts mean STOP — you are about to ship an evidence file that broke i
 - Candidate row in detection report not updated
 - Missing `Python/src/<Pattern>/Conceptual/main.py` witness in the evidence file
 - *"Pythonic-target faithful: yes"* without naming which target was met
-- *"Pythonic-target faithful: no"* without naming why the catalogue was wrong here
+- *"Pythonic-target faithful: no"* without naming why the target was wrong here
 
 ## Reference
 
 - Chore canon: `src/gzkit/chores/pythonic-design-pattern-application/CHORE.md`
 - Pair skill: `gz-pythonic-pattern-detect` (candidate surfacing)
-- Catalogue: `https://refactoring.guru/design-patterns/python`
 - Local example corpus: `design-patterns-en.zip` `Python/src/<Pattern>/Conceptual/main.py`
 - Doctrine: AGENTS.md § Attestation (receipt-vs-narrative discipline applied to refactors), `.gzkit/rules/tests.md` § Tests assert semantics, not strings (invariant 6f), `.gzkit/rules/tests.md` § Red-Green-Refactor TDD
 - Related: `complexity-reduction-xenon` (the non-regression check this skill cites), `gz-arb` (the receipt-emitting wrapper)

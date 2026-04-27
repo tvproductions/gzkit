@@ -16,13 +16,13 @@ Pair with `pythonic-design-pattern-application` — detection surfaces candidate
 
 ## Pythonic-first absorption stance
 
-The catalogue at `https://refactoring.guru/design-patterns/python` is the absorption surface for the GoF taxonomy. We **learn** from it; we do not **adopt** its class hierarchies. Each entry below cites the canonical Python example URL so an agent walking through a refactor can show the reference shape, then write the Pythonic equivalent.
+The local `design-patterns-en.zip` Python examples are the internal absorption surface for the GoF taxonomy. We **learn** from the examples; we do not **adopt** their class hierarchies. Each entry below cites the archive path so an agent walking through a refactor can inspect the example shape, map the roles, then write the Pythonic equivalent.
 
 This is the same relationship gzkit has with `click` (per AGENTS.md § Stdlib-First Doctrine): we measure the design metrics to inform doctrine; we do not depend on the surface.
 
 ## Python example corpus
 
-The local Refactoring Guru archive is the required example corpus when present:
+The local examples archive is the required example corpus when present:
 
 ```bash
 export DESIGN_PATTERNS_ARCHIVE="/Users/jeff/Library/Mobile Documents/com~apple~CloudDocs/Design_Patterns_Book/design-patterns-en.zip"
@@ -47,48 +47,48 @@ Do not mark a candidate `not-pythonic-rewrite` until the archive example has
 been read. Absence of an AST hit is not evidence of Pythonic shape; the example
 corpus is the human-eye review surface.
 
-## Full pattern catalogue (all 22)
+## Full pattern example table (all 22)
 
 Detection mode key:
 - **AST** — scanner has a mechanical detector; matches appear in the report automatically
-- **Reference** — pattern is in the catalogue for absorption but admits no robust mechanical signal; agent applies human-eye review
+- **Reference** — pattern is in the example corpus but admits no robust mechanical signal; agent applies human-eye review
 
 ### Creational
 
-| Pattern | Detection | Pythonic refactor target | Python archive example | refactoring.guru reference |
-|---------|-----------|---------------------------|------------------------|----------------------------|
-| Abstract Factory | AST | Module of factory functions or `dataclass` registry | `Python/src/AbstractFactory/Conceptual/main.py` | `/abstract-factory/python/example` |
-| Builder | AST | `dataclass`/Pydantic + `@classmethod` factory | `Python/src/Builder/Conceptual/main.py` | `/builder/python/example` |
-| Factory Method | Reference | Module-level factory function or `@classmethod.from_*` | `Python/src/FactoryMethod/Conceptual/main.py` | `/factory-method/python/example` |
-| Prototype | AST | `copy.deepcopy` or `dataclasses.replace` | `Python/src/Prototype/Conceptual/main.py` | `/prototype/python/example` |
-| Singleton | AST | Module-level constant or `functools.cache` | `Python/src/Singleton/Conceptual/ThreadSafe/main.py` and `Python/src/Singleton/Conceptual/NonThreadSafe/main.py` | `/singleton/python/example` |
+| Pattern | Detection | Pythonic refactor target | Python archive example |
+|---------|-----------|---------------------------|------------------------|
+| Abstract Factory | AST | Module of factory functions or `dataclass` registry | `Python/src/AbstractFactory/Conceptual/main.py` |
+| Builder | AST | `dataclass`/Pydantic + `@classmethod` factory | `Python/src/Builder/Conceptual/main.py` |
+| Factory Method | Reference | Module-level factory function or `@classmethod.from_*` | `Python/src/FactoryMethod/Conceptual/main.py` |
+| Prototype | AST | `copy.deepcopy` or `dataclasses.replace` | `Python/src/Prototype/Conceptual/main.py` |
+| Singleton | AST | Module-level constant or `functools.cache` | `Python/src/Singleton/Conceptual/ThreadSafe/main.py` and `Python/src/Singleton/Conceptual/NonThreadSafe/main.py` |
 
 ### Structural
 
-| Pattern | Detection | Pythonic refactor target | Python archive example | refactoring.guru reference |
-|---------|-----------|---------------------------|------------------------|----------------------------|
-| Adapter | AST (shared with Proxy) | `typing.Protocol` + duck typing or `__getattr__` forwarding | `Python/src/Adapter/Conceptual/object/main.py` and `Python/src/Adapter/Conceptual/class/main.py` | `/adapter/python/example` |
-| Bridge | Reference | Composition of independent abstractions; pass impl as parameter | `Python/src/Bridge/Conceptual/main.py` | `/bridge/python/example` |
-| Composite | AST | Recursive `dataclass` tree (only when truly hierarchical) | `Python/src/Composite/Conceptual/main.py` | `/composite/python/example` |
-| Decorator | AST (class form) | Function decorator + `functools.wraps` | `Python/src/Decorator/Conceptual/main.py` | `/decorator/python/example` |
-| Facade | AST (static-only) | Module-level functions | `Python/src/Facade/Conceptual/main.py` | `/facade/python/example` |
-| Flyweight | Reference | `functools.cache` / `weakref.WeakValueDictionary` | `Python/src/Flyweight/Conceptual/main.py` | `/flyweight/python/example` |
-| Proxy | AST (shared with Adapter) | `__getattr__` forwarding or `typing.Protocol` | `Python/src/Proxy/Conceptual/main.py` | `/proxy/python/example` |
+| Pattern | Detection | Pythonic refactor target | Python archive example |
+|---------|-----------|---------------------------|------------------------|
+| Adapter | AST (shared with Proxy) | `typing.Protocol` + duck typing or `__getattr__` forwarding | `Python/src/Adapter/Conceptual/object/main.py` and `Python/src/Adapter/Conceptual/class/main.py` |
+| Bridge | Reference | Composition of independent abstractions; pass impl as parameter | `Python/src/Bridge/Conceptual/main.py` |
+| Composite | AST | Recursive `dataclass` tree (only when truly hierarchical) | `Python/src/Composite/Conceptual/main.py` |
+| Decorator | AST (class form) | Function decorator + `functools.wraps` | `Python/src/Decorator/Conceptual/main.py` |
+| Facade | AST (static-only) | Module-level functions | `Python/src/Facade/Conceptual/main.py` |
+| Flyweight | Reference | `functools.cache` / `weakref.WeakValueDictionary` | `Python/src/Flyweight/Conceptual/main.py` |
+| Proxy | AST (shared with Adapter) | `__getattr__` forwarding or `typing.Protocol` | `Python/src/Proxy/Conceptual/main.py` |
 
 ### Behavioral
 
-| Pattern | Detection | Pythonic refactor target | Python archive example | refactoring.guru reference |
-|---------|-----------|---------------------------|------------------------|----------------------------|
-| Chain of Responsibility | AST | List of handler functions, iterated until one returns non-`None` | `Python/src/ChainOfResponsibility/Conceptual/main.py` | `/chain-of-responsibility/python/example` |
-| Command | AST | `functools.partial` or closure | `Python/src/Command/Conceptual/main.py` | `/command/python/example` |
-| Iterator | AST | Generator function (`yield`) | `Python/src/Iterator/Conceptual/main.py` | `/iterator/python/example` |
-| Mediator | AST | Module-level event bus or `asyncio.Queue` | `Python/src/Mediator/Conceptual/main.py` | `/mediator/python/example` |
-| Memento | AST | `copy.deepcopy` snapshot or `dataclasses.replace` | `Python/src/Memento/Conceptual/main.py` | `/memento/python/example` |
-| Observer | AST | Callable list or `weakref.WeakSet` | `Python/src/Observer/Conceptual/main.py` | `/observer/python/example` |
-| State | AST | Plain attribute + `match`/dispatch table | `Python/src/State/Conceptual/main.py` | `/state/python/example` |
-| Strategy | AST | First-class function or `Callable[..., R]` | `Python/src/Strategy/Conceptual/main.py` | `/strategy/python/example` |
-| Template Method | AST | Pass a callable; or use composition over inheritance | `Python/src/TemplateMethod/Conceptual/main.py` | `/template-method/python/example` |
-| Visitor | AST (two detectors) | `@functools.singledispatch` or `match` statement | `Python/src/Visitor/Conceptual/main.py` | `/visitor/python/example` |
+| Pattern | Detection | Pythonic refactor target | Python archive example |
+|---------|-----------|---------------------------|------------------------|
+| Chain of Responsibility | AST | List of handler functions, iterated until one returns non-`None` | `Python/src/ChainOfResponsibility/Conceptual/main.py` |
+| Command | AST | `functools.partial` or closure | `Python/src/Command/Conceptual/main.py` |
+| Iterator | AST | Generator function (`yield`) | `Python/src/Iterator/Conceptual/main.py` |
+| Mediator | AST | Module-level event bus or `asyncio.Queue` | `Python/src/Mediator/Conceptual/main.py` |
+| Memento | AST | `copy.deepcopy` snapshot or `dataclasses.replace` | `Python/src/Memento/Conceptual/main.py` |
+| Observer | AST | Callable list or `weakref.WeakSet` | `Python/src/Observer/Conceptual/main.py` |
+| State | AST | Plain attribute + `match`/dispatch table | `Python/src/State/Conceptual/main.py` |
+| Strategy | AST | First-class function or `Callable[..., R]` | `Python/src/Strategy/Conceptual/main.py` |
+| Template Method | AST | Pass a callable; or use composition over inheritance | `Python/src/TemplateMethod/Conceptual/main.py` |
+| Visitor | AST (two detectors) | `@functools.singledispatch` or `match` statement | `Python/src/Visitor/Conceptual/main.py` |
 
 Plus one Python-idiom signal not on the GoF list:
 
@@ -104,7 +104,7 @@ Plus one Python-idiom signal not on the GoF list:
 - **Pair-with-application:** every candidate that is applied must produce evidence under `pythonic-design-pattern-application`
 - **Per-candidate disposition:** every flagged candidate gets one of `applied` | `deferred` | `not-pythonic-rewrite` recorded inline in the candidates report
 - **Tests stay green:** scanner runs against the source tree; no source mutation
-- **Reference-mode patterns:** Bridge, Flyweight, Factory Method are catalogued for absorption; agent does eye-review against `CHORE.md` rather than expecting AST hits
+- **Reference-mode patterns:** Bridge, Flyweight, Factory Method are covered by the example corpus; agent does eye-review against `CHORE.md` rather than expecting AST hits
 
 ## Workflow
 
@@ -126,7 +126,7 @@ A scanner candidate that *also* shows up in xenon's B-band hotspot list jumps to
 
 ### 3. Reference-mode eye-review
 
-For Bridge, Flyweight, and Factory Method (catalogue-only patterns), open the relevant `refactoring.guru/design-patterns/<slug>/python/example` example and the matching `Python/src/<Pattern>/Conceptual/main.py` from the archive side-by-side with any module ranked B-or-worse by xenon. Note candidates inline in the same report under a `## Reference-mode candidates` section.
+For Bridge, Flyweight, and Factory Method (example-only patterns), open the matching `Python/src/<Pattern>/Conceptual/main.py` from the archive side-by-side with any module ranked B-or-worse by xenon. Note candidates inline in the same report under a `## Reference-mode candidates` section.
 
 ### 4. Triage and disposition
 
@@ -168,8 +168,8 @@ uv run python src/gzkit/chores/pythonic-design-pattern-detection/scan.py --self-
 - Treating the candidate list as a backlog to grind through — judgment per candidate, always
 - Backfilling a `not-pythonic-rewrite` disposition without naming the concrete reason
 - Running the scanner on `tests/` (test classes legitimately use `__init__` + single-test-method shape — already excluded by default)
-- Letting reference-mode patterns lapse to "we don't detect those" — the catalogue exists so the agent can eye-review against it; skipping the eye-review collapses the post-post-implementation contract back to mechanical-only
-- Citing only the website URL without reading the local Python example from the archive — the chore requires role-level comparison, not link decoration
+- Letting reference-mode patterns lapse to "we don't detect those" — the example corpus exists so the agent can eye-review against it; skipping the eye-review collapses the post-post-implementation contract back to mechanical-only
+- Citing pattern names without reading the local Python example from the archive — the chore requires role-level comparison, not memory recall
 
 ## Run Log
 
