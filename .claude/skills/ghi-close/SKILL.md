@@ -5,9 +5,9 @@ description: Do the work described in a GHI, then close it with verifiable evide
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-26
+last_reviewed: 2026-04-27
 metadata:
-  skill-version: "2.3.0"
+  skill-version: "2.4.0"
 ---
 
 # ghi-close
@@ -54,6 +54,51 @@ This rule is the highest-priority constraint in this skill and overrides every o
 4. **Operator-initiated close decisions still bind the destination rule.** Even if the operator says "close this and we'll handle it later," the skill's response is to surface that "later" needs a destination — author the ADR now, or leave the GHI open with the deferred-action comment. The skill does not execute "close it for now" as a valid request.
 
 This rule supersedes the v2.0.0 "analyze-and-leave-open is the anti-pattern" framing **only at the edge case where the destination cannot be created in-session**. The two rules compose: do the work and close it (v2.0.0), AND if the work routes elsewhere, create the elsewhere before closing (v2.3.0). Both rules together: the GHI's terminal state is closed-with-real-evidence, never closed-with-aspirational-redirect.
+
+### Doctrine — Routing fulfills a GHI's purpose (binding)
+
+A GHI is **observation routing**, not implementation tracking. When a GHI's
+finding has been homed in a registered destination — a commit SHA, a
+foundation/feature ADR, a pool ADR visible in `uv run gz adr report`, an
+OBPI brief, or a higher-numbered GHI that absorbs the scope — the GHI's
+purpose is **fulfilled** and `superseded` is the correct disposition.
+Implementation lifecycle thereafter belongs to the destination, not to
+the GHI.
+
+This rule is the dual of `ghi-author` § Doctrine — A GHI's purpose is
+observation routing. The two skills together produce a single contract:
+file → route → close. Routing-and-closing is the normal terminal state.
+GHIs that wait around for the destination's implementation to ship are
+shadow trackers — duplicate state of the same shape Layer-3 derived
+views become when they silently mirror Layer-2 truth (per
+`docs/governance/state-doctrine.md`).
+
+**Operative consequences:**
+
+1. **Pool ADRs count as registered destinations.** A pool ADR visible in
+   `uv run gz adr report` (Pool table) is a valid `superseded` upstream.
+   Pool status is the design-conversation home; promotion to foundation
+   or feature is the destination's lifecycle, not the GHI's.
+2. **An ADR or OBPI authored in the same session as the close is a valid
+   destination.** When a GHI surfaces a finding whose right home is a
+   new pool ADR (architectural absence) or a new OBPI (planned increment
+   under an existing ADR), authoring the destination + closing the GHI
+   `superseded` against it is one motion. This is *not* dead-lettering —
+   the destination is a real, registered artifact at close time.
+3. **Multiple GHIs may close `superseded` against one destination.** A
+   symptom GHI, a class-of-failure GHI, and an architectural-absence
+   GHI can all route to the same pool ADR — each is a different cut into
+   the finding, and the ADR carries them collectively. Close each
+   individually with its own routing-receipt comment; never batch-close.
+4. **The destination must exist before close, not be promised.** This is
+   the dead-letter prohibition reapplied: "the eventual ADR for this" is
+   not a destination; "the ADR I just authored at
+   `docs/design/adr/pool/ADR-pool.<slug>.md` and verified appears in
+   `uv run gz adr report`" is.
+
+This rule does not relax the dead-letter prohibition; it sharpens it.
+Routing to a real destination is the closing motion. Routing to a
+promised destination is the failure mode.
 
 ### Doctrine — defect remedies are direct fixes, NEVER new OBPIs
 
@@ -258,13 +303,23 @@ to produce one. Fix that instinct.
 
 **Process**: Phase 1 classifies as "already-resolved" → Phase 3 surfaces class-vs-instance drift at step 7b. Phase 2 reopens: either expand this GHI's fix to cover the class (every Python helper processing piped gz output), or file a follow-up GHI and keep this one open as parent. This skill applies the class fix (commits covering the remaining scripts with `(GHI #234)` trailers) then returns to Phase 3. Phase 4 closes when the class is truly covered.
 
-### Example 4 — Investigation GHI
+### Example 4 — Routed-to-pool-ADR GHI (architectural absence)
+
+**Input**: GHI #349 ("gzkit governance surface is choreographed, not state-machined") was filed during OBPI-0.0.21-08 closeout. Its body lists symptoms (vocab proliferation, silent state demotion in GHI #348, bolted-on transition guards, reconcile-then-precomplete loops) and states the finding is upstream of any specific defect. No commit can fix the architectural absence; the right home is a pool ADR for the design conversation.
+
+**Process**: Phase 1 classifies as "forward-reference tracker" (Phase-1 shape table) — but the upstream isn't an existing ADR/OBPI; it has to be authored. Phase 2 routes via the **same-session destination authoring** path: `uv run gz plan create obpi-state-machine --kind pool --lane heavy --title "OBPI State Machine and Runtime Invariant Monitor"` populates the pool ADR file; the agent fills Intent / Decision / four rejected alternatives / ADR relationship matrix grounded in GHI #349's evidence; commit. Verify the ADR appears in `uv run gz adr report` (Pool table). Phase 4 closes `superseded` citing `ADR-pool.obpi-state-machine`.
+
+**Why this is not dead-lettering**: the destination exists at close time, registered in `gz adr report`. The pool ADR has its own promotion ceremony, its own gate covenant on promotion, and will spawn its own OBPIs when the operator is ready to design. GHI #349's purpose was to route the architectural observation to a durable home; that purpose is fulfilled.
+
+**Sibling close**: GHI #348 (concrete observed symptom of the same architectural absence) closes `superseded` in the same session against the same pool ADR. One destination, multiple routing-receipt closes — each GHI captured a different cut into the finding.
+
+### Example 5 — Investigation GHI
 
 **Input**: GHI #<N> labeled `investigation` ("reconcile caches regenerating at 3x expected rate"), no prescriptive fix in body.
 
 **Process**: Phase 1 classifies as investigation. Phase 2 performs the investigation — instrument, measure, identify cause. If the finding is a defect: file a new `defect` GHI for the fix, commit the investigation artifact if any, close this GHI with `fixed` citing the finding and the follow-up GHI. If the finding is "working as designed": close with `withdrawn` citing the observed rate as correct + the documentation commit that clarifies the expectation.
 
-### Example 5 — Heavy-surface defect (still direct fix, not OBPI)
+### Example 6 — Heavy-surface defect (still direct fix, not OBPI)
 
 **Input**: GHI #N describes a defect in `gz validate --frontmatter` that fails to detect a specific schema-drift pattern. The fix touches `src/gzkit/governance/trust_audits.py` (validator), `src/gzkit/schemas/adr.json` (schema rule), and adds two new unit tests — roughly 80 lines across 3 files. Heavy-lane surface, foundation-adjacent.
 
@@ -322,7 +377,7 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 
 ## Related Skills
 
-- `ghi-author` — upstream authoring surface
+- `ghi-author` — upstream authoring surface; pairs with this skill's § Doctrine — Routing fulfills a GHI's purpose to produce the file→route→close contract
 - `gz-obpi-specify` + `gz-obpi-pipeline` — **NOT a destination from this skill's fix-execution path.** OBPIs are the unit of planned feature increments under an active ADR; defect remedies route to direct fix per § Purpose — Doctrine. Use these skills only after a `withdrawn` route correction when a GHI is mis-labeled feature work.
 - `gz-design` + `gz-plan` — the proper authoring surface when a GHI's prescribed work turns out to be new capability; reach via the `withdrawn` route correction, never as a continuation of fix execution
 - `gz-obpi-reconcile` — when an OBPI under an active ADR happens to mention a GHI in its evidence (e.g. brief notes "addresses GHI #N"), reconcile propagates the closure to brief evidence; this is downstream of the OBPI's own pipeline, not a Phase-2 route from `ghi-close`
