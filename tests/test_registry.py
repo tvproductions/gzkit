@@ -106,7 +106,7 @@ class TestValidateArtifact(unittest.TestCase):
 
     def test_valid_frontmatter_returns_empty(self) -> None:
         fm = {
-            "id": "ADR-0.1.0",
+            "id": "ADR-0.1.0-test-feature",
             "status": "Draft",
             "semver": "0.1.0",
             "lane": "lite",
@@ -186,7 +186,7 @@ class TestGlobalRegistry(unittest.TestCase):
 
     def test_validate_artifact_adr_valid(self) -> None:
         fm = {
-            "id": "ADR-0.1.0",
+            "id": "ADR-0.1.0-test-feature",
             "status": "Draft",
             "semver": "0.1.0",
             "lane": "lite",

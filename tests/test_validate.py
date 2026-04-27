@@ -96,7 +96,7 @@ class TestValidateDocument(unittest.TestCase):
         """Valid ADR passes validation."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write("""---
-id: ADR-0.1.0
+id: ADR-0.1.0-test-feature
 status: Draft
 semver: 0.1.0
 lane: lite

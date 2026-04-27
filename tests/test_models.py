@@ -18,7 +18,7 @@ class TestAdrFrontmatter(unittest.TestCase):
 
     def test_valid_adr(self) -> None:
         fm = AdrFrontmatter(
-            id="ADR-0.1.0",
+            id="ADR-0.1.0-test-feature",
             status="Draft",
             semver="0.1.0",
             lane="lite",
@@ -26,14 +26,14 @@ class TestAdrFrontmatter(unittest.TestCase):
             parent="OBPI-core",
             date="2026-01-01",
         )
-        self.assertEqual(fm.id, "ADR-0.1.0")
+        self.assertEqual(fm.id, "ADR-0.1.0-test-feature")
         self.assertEqual(fm.status, "Draft")
         self.assertEqual(fm.lane, "lite")
         self.assertEqual(fm.kind, "foundation")
 
     def test_extra_fields_allowed(self) -> None:
         fm = AdrFrontmatter(
-            id="ADR-0.1.0",
+            id="ADR-0.1.0-test-feature",
             status="Draft",
             semver="0.1.0",
             lane="lite",
@@ -42,11 +42,11 @@ class TestAdrFrontmatter(unittest.TestCase):
             date="2026-01-01",
             custom_field="allowed",  # type: ignore[unknown-argument]
         )
-        self.assertEqual(fm.id, "ADR-0.1.0")
+        self.assertEqual(fm.id, "ADR-0.1.0-test-feature")
 
     def test_frozen(self) -> None:
         fm = AdrFrontmatter(
-            id="ADR-0.1.0",
+            id="ADR-0.1.0-test-feature",
             status="Draft",
             semver="0.1.0",
             lane="lite",
@@ -55,7 +55,7 @@ class TestAdrFrontmatter(unittest.TestCase):
             date="2026-01-01",
         )
         with self.assertRaises(PydanticValidationError):
-            fm.id = "ADR-0.2.0"
+            fm.id = "ADR-0.2.0-other"
 
     def test_invalid_id_pattern(self) -> None:
         with self.assertRaises(PydanticValidationError) as ctx:
@@ -125,7 +125,7 @@ class TestAdrFrontmatter(unittest.TestCase):
     def test_all_status_values(self) -> None:
         for status in ("Draft", "Proposed", "Accepted", "Superseded", "Deprecated"):
             fm = AdrFrontmatter(
-                id="ADR-0.1.0",
+                id="ADR-0.1.0-test-feature",
                 status=status,
                 semver="0.1.0",
                 lane="heavy",
@@ -298,7 +298,7 @@ class TestValidateFrontmatterModel(unittest.TestCase):
 
     def test_valid_adr_returns_empty(self) -> None:
         fm = {
-            "id": "ADR-0.1.0",
+            "id": "ADR-0.1.0-test-feature",
             "status": "Draft",
             "semver": "0.1.0",
             "lane": "lite",
