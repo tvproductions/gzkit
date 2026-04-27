@@ -21,7 +21,9 @@ class AdrFrontmatter(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="allow")
 
-    id: str = Field(..., pattern=r"^ADR-[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9-]+)?$")
+    id: str = Field(
+        ..., pattern=r"^(?:ADR-pool\.[a-z0-9-]+|ADR-[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9-]+)$"
+    )
     status: Literal["Draft", "Proposed", "Accepted", "Superseded", "Deprecated"]
     semver: str = Field(..., pattern=r"^[0-9]+\.[0-9]+\.[0-9]+$")
     lane: Literal["lite", "heavy"]

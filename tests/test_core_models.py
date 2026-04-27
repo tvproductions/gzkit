@@ -2,6 +2,8 @@
 
 import unittest
 
+from pydantic import ValidationError
+
 from gzkit.core.models import (
     AdrFrontmatter,
     ObpiFrontmatter,
@@ -17,7 +19,7 @@ class TestCoreAdrFrontmatter(unittest.TestCase):
     @covers("REQ-0.0.3-02-04")
     def test_valid_adr_frontmatter(self) -> None:
         fm = AdrFrontmatter(
-            id="ADR-0.1.0",
+            id="ADR-0.1.0-test-slug",
             status="Draft",
             semver="0.1.0",
             lane="heavy",
@@ -25,8 +27,48 @@ class TestCoreAdrFrontmatter(unittest.TestCase):
             parent="",
             date="2026-01-01",
         )
-        self.assertEqual(fm.id, "ADR-0.1.0")
+        self.assertEqual(fm.id, "ADR-0.1.0-test-slug")
         self.assertEqual(fm.lane, "heavy")
+
+
+class TestAdrIdPatternRequiresSlugOrPool(unittest.TestCase):
+    """Bare-semver ADR ids must fail validation; slug-form and pool-form pass.
+
+    The schema's earlier ``(-[a-z0-9-]+)?`` quantifier permitted ``ADR-0.0.27``
+    (no slug) to validate clean even when the on-disk canonical identifier
+    carried the slug suffix. Tightening the pattern closes the
+    canonical-declaration class of failure named in GHI #346: any future
+    emission path producing a non-pool ADR with a slug-less ``id:`` must be
+    a Gate 1 blocker at the schema layer.
+    """
+
+    def _adr_payload(self, adr_id: str) -> dict:
+        return {
+            "id": adr_id,
+            "status": "Draft",
+            "semver": "0.0.27",
+            "lane": "lite",
+            "kind": "foundation",
+            "parent": "PRD-GZKIT-1.0.0",
+            "date": "2026-04-25",
+        }
+
+    def test_bare_semver_id_is_rejected(self) -> None:
+        with self.assertRaises(ValidationError):
+            AdrFrontmatter(**self._adr_payload("ADR-0.0.27"))
+
+    def test_slug_form_id_is_accepted(self) -> None:
+        fm = AdrFrontmatter(**self._adr_payload("ADR-0.0.27-exemplar-corpus-doctrine"))
+        self.assertEqual(fm.id, "ADR-0.0.27-exemplar-corpus-doctrine")
+
+    def test_pool_form_id_is_accepted(self) -> None:
+        payload = self._adr_payload("ADR-pool.skill-feedback-loop")
+        fm = AdrFrontmatter(**payload)
+        self.assertEqual(fm.id, "ADR-pool.skill-feedback-loop")
+
+    def test_uppercase_slug_is_rejected(self) -> None:
+        with self.assertRaises(ValidationError):
+            AdrFrontmatter(**self._adr_payload("ADR-0.0.27-Exemplar"))
 
 
 class TestCoreObpiFrontmatter(unittest.TestCase):

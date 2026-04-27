@@ -13,8 +13,8 @@
       "properties": {
         "id": {
           "type": "string",
-          "pattern": "^ADR-[0-9]+\\.[0-9]+\\.[0-9]+(-[a-z0-9-]+)?$",
-          "description": "ADR identifier (e.g., ADR-0.1.0)"
+          "pattern": "^(?:ADR-pool\\.[a-z0-9-]+|ADR-[0-9]+\\.[0-9]+\\.[0-9]+-[a-z0-9-]+)$",
+          "description": "ADR identifier. Non-pool ADRs require a slug suffix (e.g., ADR-0.1.0-feature-name); pool ADRs use ADR-pool.<slug>. The slug is mandatory on non-pool ADRs to prevent bare-semver drift between frontmatter and the canonical on-disk directory name (GHI #346)."
         },
         "status": {
           "type": "string",
