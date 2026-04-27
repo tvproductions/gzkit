@@ -17,25 +17,54 @@ _SEMVER_LITERAL_RE = re.compile(r"^\d+\.\d+\.\d+$")
 def _compose_canonical_adr_id(name: str, semver: str) -> str:
     """Compose the canonical ADR id from a CLI `name` argument and `semver`.
 
-    Three shapes of `name` are distinguished so bookings emit the fully
-    slugged canonical id whenever one is available:
+    Two shapes of `name` are accepted:
 
     - Already-prefixed (``name.startswith("ADR-")``): use verbatim.
-    - Bare-semver literal (``"0.1.0"`` etc.): caller passed the semver as
-      the positional name, no slug is available — fall back to ``ADR-<semver>``.
-    - Anything else (a real slug like ``"agent-rule-placement-invariant"``):
-      compose ``ADR-<semver>-<name>`` so the ledger, the on-disk directory,
-      and the file name all share the same canonical slugged form.
+    - Real slug (e.g. ``"agent-rule-placement-invariant"``): compose
+      ``ADR-<semver>-<name>`` so the ledger, the on-disk directory, and
+      the file name all share the same canonical slugged form.
 
-    Bare-semver-only emission is the shape that produced the GHI #279
-    shadow-row defect (bare ``adr_created`` event + slugged on-disk directory
-    = two rows in ``gz adr report``).
+    Bare-semver names (e.g. ``"0.0.27"``) are rejected with ``ValueError``.
+    Bare-semver-only emission produced the GHI #279 / GHI #344 shadow-row
+    defect: a bare ``adr_created`` event diverges from the slugged on-disk
+    directory and renders as two rows in ``gz adr report``. Closing the
+    class requires fail-fast at composition time, not catch-up renames.
     """
     if name.startswith("ADR-"):
         return name
     if _SEMVER_LITERAL_RE.match(name):
-        return f"ADR-{semver}"
+        raise ValueError(
+            f"name argument must be a descriptive slug, not a bare semver "
+            f"literal (got {name!r}). Bare-semver names emit unslugged "
+            f"adr_created events and produce shadow rows in `gz adr report` "
+            f"(GHI #279 / GHI #344). Pass a slug instead, e.g. "
+            f"`gz plan create my-doctrine-name --semver {semver}`."
+        )
     return f"ADR-{semver}-{name}"
+
+
+def _reject_bare_semver_name(name: str, kind: str) -> None:
+    """Reject bare-semver positional `name` for non-pool ADRs (GHI #344).
+
+    Pool ADRs route through ``ADR-pool.<slug>`` composition and are not
+    affected. For foundation/feature ADRs, a bare-semver positional name
+    silently discarded the slug under the prior contract; this gate exits
+    1 with operator-facing recovery before any file or ledger write.
+    """
+    if kind == "pool":
+        return
+    if _SEMVER_LITERAL_RE.match(name):
+        console.print(
+            f"[red]ERROR:[/red] name argument must be a descriptive slug, "
+            f"not a bare semver literal (got {name!r}). Bare-semver names "
+            "emit unslugged adr_created events and produce shadow rows in "
+            "`gz adr report` (GHI #279 / GHI #344)."
+        )
+        console.print(
+            "Pass a descriptive slug, e.g. "
+            "[bold]gz plan create my-doctrine-name --semver <X.Y.Z>[/bold]."
+        )
+        sys.exit(1)
 
 
 def _next_available_foundation_semver(foundation_root: Path) -> str:
@@ -244,6 +273,7 @@ def plan_cmd(
     _validate_kind_and_semver(kind, semver, adrs_root)
     # After _validate_kind_and_semver, kind is guaranteed non-None.
     assert kind is not None
+    _reject_bare_semver_name(name, kind)
 
     adr_title = title or name.replace("-", " ").title()
 

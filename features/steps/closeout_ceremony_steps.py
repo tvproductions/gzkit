@@ -38,11 +38,11 @@ def step_reviewer_assessment_exists(_context) -> None:  # type: ignore[no-untype
     adr_dir = Path(config.paths.adrs)
 
     # gather_reviewer_assessments() searches {adr_package_dir}/obpis/ and
-    # {adr_package_dir}/briefs/. After OBPI-0.0.17 made --kind required,
-    # `plan create 0.1.0 --kind feature` routes the ADR package dir under
-    # pre-release/ADR-0.1.0-0.1.0/, not the flat adr_dir. Write the review
-    # where the defense-brief gatherer actually looks.
-    adr_package_dir = adr_dir / "pre-release" / "ADR-0.1.0"
+    # {adr_package_dir}/briefs/. With the bare-semver name path closed
+    # (GHI #344), the heavy-ADR fixture invokes `plan create f --kind
+    # feature --lane heavy`, scaffolding pre-release/ADR-0.1.0-f/. Write
+    # the review where the defense-brief gatherer actually looks.
+    adr_package_dir = adr_dir / "pre-release" / "ADR-0.1.0-f"
     obpis_dir = adr_package_dir / "obpis"
     obpis_dir.mkdir(parents=True, exist_ok=True)
     review_path = obpis_dir / "REVIEW-OBPI-0.1.0-01-demo-feature.md"

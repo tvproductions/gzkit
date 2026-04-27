@@ -25,31 +25,31 @@ class TestObpiValidateCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
 
             self._git("init")
             self._git("config", "user.email", "test@example.com")
             self._git("config", "user.name", "Test User")
             self._commit_all("chore: initial")
 
-            obpi_path = Path("docs/design/adr/pre-release/ADR-0.1.0/obpis/OBPI-0.1.0-01-demo.md")
+            obpi_path = Path("docs/design/adr/pre-release/ADR-0.1.0-f/obpis/OBPI-0.1.0-01-demo.md")
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
             obpi_path.write_text(
                 "---\n"
                 "id: OBPI-0.1.0-01-demo\n"
-                "parent: ADR-0.1.0\n"
+                "parent: ADR-0.1.0-f\n"
                 "item: 1\n"
                 "lane: Lite\n"
                 "status: Completed\n"
                 "---\n\n"
                 "# OBPI-0.1.0-01-demo\n\n"
                 "## Allowed Paths\n"
-                "- `docs/design/adr/pre-release/ADR-0.1.0/**` - in scope\n\n"
+                "- `docs/design/adr/pre-release/ADR-0.1.0-f/**` - in scope\n\n"
                 "### Implementation Summary\n"
                 "- Files created/modified: "
-                "docs/design/adr/pre-release/ADR-0.1.0/obpis/OBPI-0.1.0-01-demo.md\n\n"
+                "docs/design/adr/pre-release/ADR-0.1.0-f/obpis/OBPI-0.1.0-01-demo.md\n\n"
                 "## Key Proof\n"
-                "uv run gz adr status ADR-0.1.0 --json\n",
+                "uv run gz adr status ADR-0.1.0-f --json\n",
                 encoding="utf-8",
             )
             Path("docs/outside.md").parent.mkdir(parents=True, exist_ok=True)
@@ -65,33 +65,33 @@ class TestObpiValidateCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
 
             self._git("init")
             self._git("config", "user.email", "test@example.com")
             self._git("config", "user.name", "Test User")
             self._commit_all("chore: initial")
 
-            obpi_path = Path("docs/design/adr/pre-release/ADR-0.1.0/obpis/OBPI-0.1.0-01-demo.md")
+            obpi_path = Path("docs/design/adr/pre-release/ADR-0.1.0-f/obpis/OBPI-0.1.0-01-demo.md")
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
             obpi_path.write_text(
                 "---\n"
                 "id: OBPI-0.1.0-01-demo\n"
-                "parent: ADR-0.1.0\n"
+                "parent: ADR-0.1.0-f\n"
                 "item: 1\n"
                 "lane: Lite\n"
                 "status: Completed\n"
                 "---\n\n"
                 "# OBPI-0.1.0-01-demo\n\n"
                 "## ADR Item\n"
-                "- **Source ADR:** ADR-0.1.0\n"
+                "- **Source ADR:** ADR-0.1.0-f\n"
                 "- **Checklist Item:** #1\n\n"
                 "## Objective\n"
                 "Demo objective.\n\n"
                 "## Lane\n"
                 "**Lite**\n\n"
                 "## Allowed Paths\n"
-                "- `docs/design/adr/pre-release/ADR-0.1.0/**` - in scope\n"
+                "- `docs/design/adr/pre-release/ADR-0.1.0-f/**` - in scope\n"
                 "- `src/**` - in scope\n\n"
                 "## Denied Paths\n"
                 "- None\n\n"
@@ -105,7 +105,7 @@ class TestObpiValidateCommand(unittest.TestCase):
                 "### Implementation Summary\n"
                 "- Files created/modified: src/demo.py\n\n"
                 "### Key Proof\n"
-                "uv run gz adr status ADR-0.1.0 --json\n",
+                "uv run gz adr status ADR-0.1.0-f --json\n",
                 encoding="utf-8",
             )
             Path("src").mkdir(exist_ok=True)
@@ -121,24 +121,24 @@ class TestObpiValidateCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
 
-            adr_dir = Path("design/adr/pre-release/ADR-0.1.0")
+            adr_dir = Path("design/adr/pre-release/ADR-0.1.0-f")
             obpi_dir = adr_dir / "obpis"
             obpi_dir.mkdir(parents=True, exist_ok=True)
 
             # One scaffold stub, one authored brief
             (obpi_dir / "OBPI-0.1.0-01-stub.md").write_text(
-                "---\nid: OBPI-0.1.0-01-stub\nparent: ADR-0.1.0\n"
+                "---\nid: OBPI-0.1.0-01-stub\nparent: ADR-0.1.0-f\n"
                 "item: 1\nlane: Lite\nstatus: Draft\n---\n\n"
                 "## Allowed Paths\n- `src/module/` - Reason\n\n"
                 "## Requirements (FAIL-CLOSED)\n1. REQUIREMENT: First constraint\n",
                 encoding="utf-8",
             )
             (obpi_dir / "OBPI-0.1.0-02-real.md").write_text(
-                "---\nid: OBPI-0.1.0-02-real\nparent: ADR-0.1.0\n"
+                "---\nid: OBPI-0.1.0-02-real\nparent: ADR-0.1.0-f\n"
                 "item: 2\nlane: Lite\nstatus: Draft\n---\n\n"
-                "## ADR Item\n- **Source ADR:** ADR-0.1.0\n"
+                "## ADR Item\n- **Source ADR:** ADR-0.1.0-f\n"
                 "- **Checklist Item:** #2\n\n"
                 "## Objective\nDefine port interfaces.\n\n"
                 "## Lane\n**Lite**\n\n"
@@ -152,7 +152,7 @@ class TestObpiValidateCommand(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            result = runner.invoke(main, ["obpi", "validate", "--adr", "ADR-0.1.0"])
+            result = runner.invoke(main, ["obpi", "validate", "--adr", "ADR-0.1.0-f"])
 
             self.assertEqual(result.exit_code, 1)
             self.assertIn("FAIL", result.output)
@@ -168,7 +168,7 @@ class TestObpiValidateCommand(unittest.TestCase):
             obpi_path.write_text(
                 "---\n"
                 "id: OBPI-0.1.0-01-demo\n"
-                "parent: ADR-0.1.0\n"
+                "parent: ADR-0.1.0-f\n"
                 "item: 1\n"
                 "lane: Lite\n"
                 "status: Draft\n"
@@ -196,13 +196,13 @@ class TestObpiValidateCommand(unittest.TestCase):
             obpi_path.write_text(
                 "---\n"
                 "id: OBPI-0.1.0-01-demo\n"
-                "parent: ADR-0.1.0\n"
+                "parent: ADR-0.1.0-f\n"
                 "item: 1\n"
                 "lane: Lite\n"
                 "status: Draft\n"
                 "---\n\n"
                 "# OBPI-0.1.0-01-demo\n\n"
-                "## ADR Item\n- **Source ADR:** ADR-0.1.0\n- **Checklist Item:** #1\n\n"
+                "## ADR Item\n- **Source ADR:** ADR-0.1.0-f\n- **Checklist Item:** #1\n\n"
                 "## Objective\nDefine typed port interfaces.\n\n"
                 "## Lane\n**Lite** - Internal Python contract.\n\n"
                 "## Allowed Paths\n- `src/gzkit/ports/` - in scope\n\n"

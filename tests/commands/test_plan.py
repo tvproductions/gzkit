@@ -231,10 +231,12 @@ class TestPlanCommand(unittest.TestCase):
             _quick_init()
             result = runner.invoke(
                 main,
-                ["plan", "create", "0.1.0", "--kind", "feature", "--semver", "0.1.0"],
+                ["plan", "create", "scorecard-feature", "--kind", "feature", "--semver", "0.1.0"],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
-            adr_path = Path("design/adr/pre-release/ADR-0.1.0/ADR-0.1.0.md")
+            adr_path = Path(
+                "design/adr/pre-release/ADR-0.1.0-scorecard-feature/ADR-0.1.0-scorecard-feature.md"
+            )
             self.assertTrue(adr_path.exists())
             content = adr_path.read_text(encoding="utf-8")
             self.assertIn("## Decomposition Scorecard", content)
@@ -304,13 +306,13 @@ class TestPlanCommand(unittest.TestCase):
 
 
 class TestPlanCanonicalIdComposition(unittest.TestCase):
-    """GHI #279 — gz plan create composes canonical slugged ADR ids.
+    """GHI #279 / #344 — gz plan create composes canonical slugged ADR ids.
 
-    Before this fix, `gz plan create <slug> --semver X.Y.Z` emitted an
-    `adr_created` event with bare-semver ID `ADR-X.Y.Z` AND scaffolded a
-    bare-semver directory, silently discarding the slug. The bare-ID
-    emission then double-counted against the slugged on-disk form in
-    `gz adr report`.
+    GHI #279 patched the instance for ADR-0.0.22; GHI #344 closes the class
+    by rejecting bare-semver positional names at composition time so the
+    bare ``adr_created`` event path no longer exists. The bridge in
+    ``Ledger.has_adr_created`` remains for historical ledgers that already
+    accumulated bare events before the path was closed.
     """
 
     def test_slug_name_produces_canonical_slugged_id(self) -> None:
@@ -343,62 +345,46 @@ class TestPlanCanonicalIdComposition(unittest.TestCase):
             self.assertEqual(len(adr_events), 1)
             self.assertEqual(adr_events[0].id, adr_id)
 
-    def test_bare_then_slugged_rebook_is_recognized_as_already_created(self) -> None:
-        """Reproduces the ADR-0.0.22 production failure mode (GHI #279 regression).
+    def test_bare_semver_name_is_rejected(self) -> None:
+        """GHI #344 — bare-semver positional name fails fast with no side effects.
 
-        Operator first runs `gz plan create 0.0.22 --kind foundation --semver 0.0.22`
-        (semver-as-name path; emits bare-ID `adr_created` for `ADR-0.0.22`), then
-        re-runs `gz plan create security-sensitivity-doctrine --kind foundation
-        --semver 0.0.22`. Without the bare↔slugged bridge in
-        `Ledger.has_adr_created`, the second booking emits a fresh `adr_created`
-        for the slugged form while the bare-ID event remains in the ledger —
-        `gz adr report` then renders two rows for one ADR.
+        Closes the GHI #279 class of failure: prior contract accepted
+        `gz plan create 0.0.22 --kind foundation --semver 0.0.22`, silently
+        discarded the slug, and emitted a bare-ID `adr_created` event whose
+        ledger row diverged from the slugged on-disk directory. The fix
+        rejects bare-semver names at composition time. The CLI must:
 
-        The bridge collapses both forms for the same semver, so the second
-        booking's idempotency check sees the prior bare emission and skips the
-        duplicate emission with the canonical "already has an adr_created event"
-        warning. The ledger must hold exactly one `adr_created` event across both
-        bookings.
+        - Exit 1 (user/config error per `.claude/rules/cli.md`)
+        - Name the operator-facing recovery in stderr/console output
+        - Write no ADR file
+        - Append no `adr_created` event to the ledger
         """
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            first = runner.invoke(
+            ledger_path = Path(".gzkit/ledger.jsonl")
+            events_before = [e.id for e in Ledger(ledger_path).read_all()]
+
+            result = runner.invoke(
                 main,
                 ["plan", "create", "0.0.22", "--kind", "foundation", "--semver", "0.0.22"],
             )
-            self.assertEqual(first.exit_code, 0, msg=first.output)
 
-            second = runner.invoke(
-                main,
-                [
-                    "plan",
-                    "create",
-                    "security-sensitivity-doctrine",
-                    "--kind",
-                    "foundation",
-                    "--semver",
-                    "0.0.22",
-                ],
+            self.assertEqual(result.exit_code, 1, msg=result.output)
+            unwrapped = result.output.replace("\n", " ")
+            self.assertIn("descriptive slug", unwrapped)
+            self.assertIn("0.0.22", unwrapped)
+
+            foundation_root = Path("design/adr/foundation")
+            self.assertFalse(
+                foundation_root.exists() and any(foundation_root.rglob("ADR-0.0.22*")),
+                msg="no ADR directory may be scaffolded on rejection",
             )
-            self.assertEqual(second.exit_code, 0, msg=second.output)
-            # Strip newlines because Rich wraps the warning line on narrow terminals
-            # when the ADR id is long (e.g. ADR-0.0.22-security-sensitivity-doctrine).
-            unwrapped = second.output.replace("\n", " ")
-            self.assertIn("already has an adr_created", unwrapped)
-            self.assertIn("skipping duplicate emission", unwrapped)
-
-            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            adr_events = [
-                e for e in ledger.read_all() if e.event == "adr_created" and "0.0.22" in e.id
-            ]
+            events_after = [e.id for e in Ledger(ledger_path).read_all()]
             self.assertEqual(
-                len(adr_events),
-                1,
-                msg=(
-                    "expected exactly one adr_created across bare and slugged "
-                    f"bookings; got: {[e.id for e in adr_events]}"
-                ),
+                events_after,
+                events_before,
+                msg="ledger must be untouched on bare-semver rejection",
             )
 
 

@@ -1,5 +1,5 @@
 ---
-id: ADR-0.0.30
+id: ADR-0.0.30-complexity-authoring-guidance
 status: Draft
 kind: foundation
 semver: 0.0.30

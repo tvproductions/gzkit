@@ -15,7 +15,7 @@ from tests.commands.common import CliRunner, _init_git_repo, _quick_init, _write
 
 
 def _make_proof_result(
-    *, success: bool, adr_id: str = "ADR-0.1.0", missing_count: int = 0
+    *, success: bool, adr_id: str = "ADR-0.1.0-f", missing_count: int = 0
 ) -> ProductProofResult:
     """Build a synthetic ProductProofResult for mocking."""
     proofs: list[ObpiProofStatus] = []
@@ -38,8 +38,8 @@ def _make_proof_result(
 
 
 def _scaffold_closeout_adr(*, lane: str = "Lite") -> None:
-    """Set up a minimal ADR-0.1.0 with a completed OBPI for closeout readiness."""
-    adr_dir = Path("docs/design/adr/ADR-0.1.0")
+    """Set up a minimal ADR-0.1.0-f with a completed OBPI for closeout readiness."""
+    adr_dir = Path("docs/design/adr/ADR-0.1.0-f")
     obpi_dir = adr_dir / "obpis"
     obpi_dir.mkdir(parents=True, exist_ok=True)
     _write_obpi(
@@ -74,9 +74,9 @@ class TestCloseoutMigrationEnforce(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             _scaffold_closeout_adr()
-            result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 1)
             self.assertIn("blocked", result.output.lower())
 
@@ -101,9 +101,9 @@ class TestCloseoutMigrationAdvisory(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             _scaffold_closeout_adr()
-            result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
             self.assertIn("advisory", result.output.lower())
 
@@ -127,9 +127,9 @@ class TestCloseoutMigrationProofPresent(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             _scaffold_closeout_adr()
-            result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
 
     @patch("gzkit.commands.closeout.get_decisions")
@@ -148,9 +148,9 @@ class TestCloseoutMigrationProofPresent(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             _scaffold_closeout_adr()
-            result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
 
 

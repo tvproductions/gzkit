@@ -59,6 +59,13 @@ SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
     # the slugged form was determined. The slug "security-sensitivity-doctrine"
     # was established in a second adr_created emission four minutes later.
     ("ADR-0.0.22", "ADR-0.0.22-security-sensitivity-doctrine"),
+    # Same GHI #279 regression class recurred for the complexity-doctrine
+    # cluster created on 2026-04-25; bare-ID adr_created events landed
+    # before the slugged form was determined.
+    ("ADR-0.0.27", "ADR-0.0.27-exemplar-corpus-doctrine"),
+    ("ADR-0.0.28", "ADR-0.0.28-complexity-threshold-doctrine"),
+    ("ADR-0.0.29", "ADR-0.0.29-complexity-advisor"),
+    ("ADR-0.0.30", "ADR-0.0.30-complexity-authoring-guidance"),
     ("ADR-0.41.0", "ADR-0.41.0-tdd-emission-and-graph-rot-remediation"),
     # ADR-0.20.0 promotion slug → brief slug reconciliation.
     (

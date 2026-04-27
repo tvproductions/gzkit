@@ -1,5 +1,5 @@
 ---
-id: ADR-0.0.16
+id: ADR-0.0.16-frontmatter-ledger-coherence-guard
 status: Validated
 kind: foundation
 semver: 0.0.16

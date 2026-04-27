@@ -1,5 +1,5 @@
 ---
-id: ADR-0.3.0
+id: ADR-0.3.0-airlineops-canon-reconciliation
 status: Validated
 kind: feature
 semver: 0.3.0

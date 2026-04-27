@@ -43,7 +43,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         implementation_line: str,
         *,
         lane: str = "Lite",
-        key_proof: str = "uv run gz adr status ADR-0.1.0 --json",
+        key_proof: str = "uv run gz adr status ADR-0.1.0-f --json",
         human_attestation: tuple[str, str, str] | None = None,
         allowed_paths: list[str] | None = None,
     ) -> None:
@@ -51,7 +51,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         lines = [
             "---",
             "id: OBPI-0.1.0-01-demo",
-            "parent: ADR-0.1.0",
+            "parent: ADR-0.1.0-f",
             "item: 1",
             f"lane: {lane}",
             f"status: {status}",
@@ -126,27 +126,27 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             _quick_init()
             _init_git_repo(Path.cwd())
             self._set_manifest_verification_noop()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
-            result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn("closeout_initiated", ledger_content)
             self.assertIn("attested", ledger_content)
             self.assertIn("lifecycle_transition", ledger_content)
             config = GzkitConfig.load(Path(".gzkit.json"))
-            adr_file = next(Path(config.paths.adrs).rglob("ADR-0.1.0.md"))
+            adr_file = next(Path(config.paths.adrs).rglob("ADR-0.1.0-f.md"))
             closeout_form = adr_file.parent / "ADR-CLOSEOUT-FORM.md"
             self.assertTrue(closeout_form.exists())
             closeout_content = closeout_form.read_text(encoding="utf-8")
-            self.assertIn("# ADR Closeout Form: ADR-0.1.0", closeout_content)
+            self.assertIn("# ADR Closeout Form: ADR-0.1.0-f", closeout_content)
             self.assertIn("**Status**: Phase 2 — Completed", closeout_content)
 
     def test_closeout_dry_run_writes_nothing(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
-            result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--dry-run"])
             self.assertEqual(result.exit_code, 0)
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertNotIn("closeout_initiated", ledger_content)
@@ -155,8 +155,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
-            result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--dry-run"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Completed - Partial: [reason]", result.output)
             self.assertIn("Dropped - [reason]", result.output)
@@ -165,8 +165,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init("heavy")
-            runner.invoke(main, ["plan", "create", "0.1.0", "--lane", "heavy", "--kind", "feature"])
-            result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run"])
+            runner.invoke(main, ["plan", "create", "f", "--lane", "heavy", "--kind", "feature"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--dry-run"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Gate 4 (BDD):", result.output)
             self.assertIn("uv run -m behave features/", result.output)
@@ -176,9 +176,9 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init("heavy")
-            runner.invoke(main, ["plan", "create", "0.1.0", "--lane", "heavy", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--lane", "heavy", "--kind", "feature"])
             Path("features").mkdir(exist_ok=True)
-            result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--dry-run"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Gate 4 (BDD):", result.output)
             self.assertIn("uv run -m behave features/", result.output)
@@ -198,7 +198,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -209,7 +209,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 implementation_line="src/module.py",
             )
 
-            result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
 
             self.assertEqual(result.exit_code, 1)
             self.assertIn("Closeout blocked:", result.output)
@@ -224,7 +224,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -235,7 +235,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 implementation_line="src/module.py",
             )
 
-            result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--json"])
 
             self.assertEqual(result.exit_code, 1)
             payload = json.loads(result.output)
@@ -253,7 +253,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init("heavy")
-            runner.invoke(main, ["plan", "create", "0.1.0", "--lane", "heavy", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--lane", "heavy", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -265,11 +265,11 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 lane="Heavy",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
@@ -277,7 +277,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 )
             )
 
-            result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
 
             self.assertEqual(result.exit_code, 1)
             self.assertIn(
@@ -289,8 +289,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
-            result = runner.invoke(main, ["audit", "ADR-0.1.0"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Audit blocked", result.output)
 
@@ -298,16 +298,16 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             self._set_manifest_verification_noop()
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
-            attestation = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
+            attestation = runner.invoke(main, ["attest", "ADR-0.1.0-f", "--status", "completed"])
             self.assertEqual(attestation.exit_code, 0)
 
-            result = runner.invoke(main, ["audit", "ADR-0.1.0"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0)
-            audit_dir = Path("design/adr/pre-release/ADR-0.1.0/audit")
+            audit_dir = Path("design/adr/pre-release/ADR-0.1.0-f/audit")
             self.assertTrue((audit_dir / "AUDIT.md").exists())
             self.assertTrue((audit_dir / "AUDIT_PLAN.md").exists())
             self.assertTrue((audit_dir / "proofs/test.txt").exists())
@@ -316,14 +316,14 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             self._set_manifest_verification_noop()
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
-            attestation = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
+            attestation = runner.invoke(main, ["attest", "ADR-0.1.0-f", "--status", "completed"])
             self.assertEqual(attestation.exit_code, 0)
 
-            result = runner.invoke(main, ["audit", "ADR-0.1.0", "--dry-run"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f", "--dry-run"])
             self.assertEqual(result.exit_code, 0)
             self.assertFalse(Path("design/adr/audit").exists())
 
@@ -340,7 +340,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -351,21 +351,21 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 implementation_line="src/module.py",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
                     evidence={
                         "value_narrative": "The OBPI completed with canonical receipt evidence.",
-                        "key_proof": "uv run gz adr status ADR-0.1.0 --json",
+                        "key_proof": "uv run gz adr status ADR-0.1.0-f --json",
                     },
                 )
             )
-            result = runner.invoke(main, ["adr", "audit-check", "ADR-0.1.0"])
+            result = runner.invoke(main, ["adr", "audit-check", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("PASS", result.output)
 
@@ -381,14 +381,14 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
             lines = [
                 "---",
                 "id: OBPI-0.1.0-01-demo",
-                "parent: ADR-0.1.0",
+                "parent: ADR-0.1.0-f",
                 "item: 1",
                 "lane: Lite",
                 "status: Completed",
@@ -409,7 +409,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 "- Date completed: 2026-04-21",
                 "",
                 "## Key Proof",
-                "uv run gz adr status ADR-0.1.0 --json",
+                "uv run gz adr status ADR-0.1.0-f --json",
                 "",
                 "## Acceptance Criteria",
                 "- [x] REQ-0.1.0-01-01: Docs invariant A",
@@ -419,21 +419,21 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             obpi_path.write_text("\n".join(lines) + "\n")
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
                     evidence={
                         "value_narrative": "OBPI completed with canonical receipt evidence.",
-                        "key_proof": "uv run gz adr status ADR-0.1.0 --json",
+                        "key_proof": "uv run gz adr status ADR-0.1.0-f --json",
                     },
                 )
             )
-            result = runner.invoke(main, ["adr", "audit-check", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["adr", "audit-check", "ADR-0.1.0-f", "--json"])
             self.assertEqual(
                 result.exit_code,
                 0,
@@ -450,7 +450,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -460,7 +460,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 brief_status="Draft",
                 implementation_line="",
             )
-            result = runner.invoke(main, ["adr", "audit-check", "ADR-0.1.0"])
+            result = runner.invoke(main, ["adr", "audit-check", "ADR-0.1.0-f"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("FAIL", result.output)
 
@@ -477,15 +477,15 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
-            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0-f"])
 
             tests_dir = Path("tests")
             tests_dir.mkdir(parents=True, exist_ok=True)
             (tests_dir / "test_traceability.py").write_text(
                 "\n".join(
                     [
-                        '@covers("ADR-0.1.0")',
+                        '@covers("ADR-0.1.0-f")',
                         '@covers("OBPI-0.1.0-01-demo")',
                         '@covers("REQ-0.1.0-01-01")',
                         '@covers("REQ-0.1.0-01-02")',
@@ -497,7 +497,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 )
             )
 
-            result = runner.invoke(main, ["adr", "covers-check", "ADR-0.1.0"])
+            result = runner.invoke(main, ["adr", "covers-check", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("PASS", result.output)
 
@@ -505,15 +505,15 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
-            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0-f"])
 
             tests_dir = Path("tests")
             tests_dir.mkdir(parents=True, exist_ok=True)
             (tests_dir / "test_traceability.py").write_text(
                 "\n".join(
                     [
-                        '@covers("ADR-0.1.0")',
+                        '@covers("ADR-0.1.0-f")',
                         "def test_traceability():",
                         "    pass",
                         "",
@@ -521,7 +521,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 )
             )
 
-            result = runner.invoke(main, ["adr", "covers-check", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["adr", "covers-check", "ADR-0.1.0-f", "--json"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn('"passed": false', result.output)
             self.assertIn("OBPI-0.1.0-01-demo", result.output)
@@ -530,8 +530,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
-            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0-f"])
 
             obpi_file = next(Path().rglob("OBPI-0.1.0-01-demo.md"))
             content = obpi_file.read_text(encoding="utf-8")
@@ -546,7 +546,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             (tests_dir / "test_traceability.py").write_text(
                 "\n".join(
                     [
-                        '@covers("ADR-0.1.0")',
+                        '@covers("ADR-0.1.0-f")',
                         '@covers("OBPI-0.1.0-01-demo")',
                         '@covers("REQ-0.1.0-01-02")',
                         '@covers("REQ-0.1.0-01-03")',
@@ -557,7 +557,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 )
             )
 
-            result = runner.invoke(main, ["adr", "covers-check", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["adr", "covers-check", "ADR-0.1.0-f", "--json"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn('"criteria_without_req_ids"', result.output)
 
@@ -565,13 +565,13 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             result = runner.invoke(
                 main,
                 [
                     "adr",
                     "emit-receipt",
-                    "ADR-0.1.0",
+                    "ADR-0.1.0-f",
                     "--event",
                     "validated",
                     "--attestor",
@@ -588,13 +588,13 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             result = runner.invoke(
                 main,
                 [
                     "adr",
                     "emit-receipt",
-                    "ADR-0.1.0",
+                    "ADR-0.1.0-f",
                     "--event",
                     "completed",
                     "--attestor",
@@ -610,13 +610,13 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             result = runner.invoke(
                 main,
                 [
                     "adr",
                     "emit-receipt",
-                    "ADR-0.1.0",
+                    "ADR-0.1.0-f",
                     "--event",
                     "completed",
                     "--attestor",
@@ -652,8 +652,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
-            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0-f"])
             result = runner.invoke(
                 main,
                 [
@@ -677,8 +677,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
-            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0-f"])
             result = runner.invoke(
                 main,
                 [
@@ -700,8 +700,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
-            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0-f"])
             result = runner.invoke(
                 main,
                 [
@@ -728,8 +728,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
-            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0-f"])
             result = runner.invoke(
                 main,
                 [
@@ -749,8 +749,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init("heavy")
-            runner.invoke(main, ["plan", "create", "0.1.0", "--lane", "heavy", "--kind", "feature"])
-            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0", "--lane", "heavy"])
+            runner.invoke(main, ["plan", "create", "f", "--lane", "heavy", "--kind", "feature"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0-f", "--lane", "heavy"])
             result = runner.invoke(
                 main,
                 [
@@ -764,7 +764,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--evidence-json",
                     (
                         '{"value_narrative":"capability now exists",'
-                        '"key_proof":"uv run gz adr status ADR-0.1.0 --json"}'
+                        '"key_proof":"uv run gz adr status ADR-0.1.0-f --json"}'
                     ),
                 ],
             )
@@ -775,8 +775,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init("heavy")
-            runner.invoke(main, ["plan", "create", "0.1.0", "--lane", "heavy", "--kind", "feature"])
-            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0", "--lane", "heavy"])
+            runner.invoke(main, ["plan", "create", "f", "--lane", "heavy", "--kind", "feature"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0-f", "--lane", "heavy"])
             result = runner.invoke(
                 main,
                 [
@@ -810,7 +810,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path())
             _quick_init("heavy")
-            runner.invoke(main, ["plan", "create", "0.1.0", "--lane", "heavy", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--lane", "heavy", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -823,7 +823,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 human_attestation=("human:jeff", "attest completed", "2026-03-21"),
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             result = runner.invoke(
                 main,
                 [
@@ -852,7 +852,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init("heavy")
-            runner.invoke(main, ["plan", "create", "0.1.0", "--lane", "heavy", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--lane", "heavy", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -861,14 +861,14 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 status="Completed",
                 brief_status="Completed",
                 implementation_line=(
-                    "docs/design/adr/pre-release/ADR-0.1.0/obpis/OBPI-0.1.0-01-demo.md"
+                    "docs/design/adr/pre-release/ADR-0.1.0-f/obpis/OBPI-0.1.0-01-demo.md"
                 ),
                 lane="Heavy",
                 human_attestation=("human:jeff", "attest completed", "2026-03-11"),
                 allowed_paths=[obpi_path.as_posix()],
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             evidence_json = json.dumps(
                 {
                     "value_narrative": ("manual completion now captures structured scope evidence"),

@@ -16,12 +16,12 @@ from tests.commands.common import CliRunner, _init_git_repo, _quick_init
 
 
 def _setup_adr_with_closeout(runner: CliRunner, project_root: Path) -> Ledger:
-    """Create ADR-0.1.0 via plan and append a closeout_initiated event."""
-    runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+    """Create ADR-0.1.0-f via plan and append a closeout_initiated event."""
+    runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
     ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
     ledger.append(
         closeout_initiated_event(
-            adr_id="ADR-0.1.0",
+            adr_id="ADR-0.1.0-f",
             by="Test User",
             mode="lite",
             evidence={"test": True},
@@ -46,7 +46,7 @@ class TestAttestDeprecationWarning(unittest.TestCase):
                 main,
                 [
                     "attest",
-                    "ADR-0.1.0",
+                    "ADR-0.1.0-f",
                     "--status",
                     "completed",
                     "--force",
@@ -65,13 +65,13 @@ class TestAttestDeprecationWarning(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
 
             result = runner.invoke(
                 main,
                 [
                     "attest",
-                    "ADR-0.1.0",
+                    "ADR-0.1.0-f",
                     "--status",
                     "completed",
                     "--force",
@@ -99,7 +99,7 @@ class TestAttestDeprecationContinuesNormally(unittest.TestCase):
                 main,
                 [
                     "attest",
-                    "ADR-0.1.0",
+                    "ADR-0.1.0-f",
                     "--status",
                     "completed",
                     "--force",
@@ -139,7 +139,7 @@ class TestAttestDeprecationDryRun(unittest.TestCase):
                 main,
                 [
                     "attest",
-                    "ADR-0.1.0",
+                    "ADR-0.1.0-f",
                     "--status",
                     "completed",
                     "--dry-run",

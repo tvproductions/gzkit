@@ -18,8 +18,8 @@ class TestAttestSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
-            result = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            result = runner.invoke(main, ["attest", "ADR-0.1.0-f", "--status", "completed"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Gate 2 must pass", result.output)
 
@@ -27,11 +27,11 @@ class TestAttestSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init("heavy")
-            runner.invoke(main, ["plan", "create", "0.1.0", "--lane", "heavy", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--lane", "heavy", "--kind", "feature"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
 
-            result = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
+            result = runner.invoke(main, ["attest", "ADR-0.1.0-f", "--status", "completed"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Gate 3 must pass", result.output)
 
@@ -39,12 +39,12 @@ class TestAttestSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init("heavy")
-            runner.invoke(main, ["plan", "create", "0.1.0", "--lane", "heavy", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--lane", "heavy", "--kind", "feature"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
-            ledger.append(gate_checked_event("ADR-0.1.0", 3, "pass", "docs", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 3, "pass", "docs", 0))
 
-            result = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
+            result = runner.invoke(main, ["attest", "ADR-0.1.0-f", "--status", "completed"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Gate 4 must pass", result.output)
 
@@ -52,10 +52,10 @@ class TestAttestSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             result = runner.invoke(
                 main,
-                ["attest", "ADR-0.1.0", "--status", "completed", "--force"],
+                ["attest", "ADR-0.1.0-f", "--status", "completed", "--force"],
             )
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("--reason required", result.output)
@@ -65,12 +65,12 @@ class TestAttestSemantics(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             result = runner.invoke(
                 main,
                 [
                     "attest",
-                    "ADR-0.1.0",
+                    "ADR-0.1.0-f",
                     "--status",
                     "completed",
                     "--force",
@@ -88,18 +88,18 @@ class TestAttestSemantics(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init("heavy")
-            runner.invoke(main, ["plan", "create", "0.1.0", "--lane", "heavy", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--lane", "heavy", "--kind", "feature"])
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
-            ledger.append(gate_checked_event("ADR-0.1.0", 3, "pass", "docs", 0))
-            ledger.append(gate_checked_event("ADR-0.1.0", 4, "pass", "bdd", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 3, "pass", "docs", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 4, "pass", "bdd", 0))
 
-            result = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
+            result = runner.invoke(main, ["attest", "ADR-0.1.0-f", "--status", "completed"])
             self.assertEqual(result.exit_code, 0)
 
             config = GzkitConfig.load(Path(".gzkit.json"))
-            adr_file = next(Path(config.paths.adrs).rglob("ADR-0.1.0.md"))
+            adr_file = next(Path(config.paths.adrs).rglob("ADR-0.1.0-f.md"))
             adr_content = adr_file.read_text(encoding="utf-8")
             self.assertIn("| 0.1.0 | Completed | Test User |", adr_content)
             self.assertNotIn("| 0.1.0 | Pending | | | |", adr_content)
@@ -152,25 +152,25 @@ class TestAttestSemantics(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
 
             # Register an OBPI so the ADR has incomplete work
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-test", "ADR-0.1.0"))
-            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-test", "ADR-0.1.0-f"))
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
 
             # Create the OBPI file in Draft status
             config = GzkitConfig.load(Path(".gzkit.json"))
-            adr_file = next(Path(config.paths.adrs).rglob("ADR-0.1.0*.md"))
+            adr_file = next(Path(config.paths.adrs).rglob("ADR-0.1.0-f*.md"))
             obpis_dir = adr_file.parent / "obpis"
             obpis_dir.mkdir(parents=True, exist_ok=True)
             obpi_file = obpis_dir / "OBPI-0.1.0-01-test.md"
             obpi_file.write_text(
-                "---\nid: OBPI-0.1.0-01-test\nparent: ADR-0.1.0\n"
+                "---\nid: OBPI-0.1.0-01-test\nparent: ADR-0.1.0-f\n"
                 "item: 1\nlane: lite\nstatus: Draft\n---\n\n# OBPI-0.1.0-01-test\n"
             )
 
-            result = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
+            result = runner.invoke(main, ["attest", "ADR-0.1.0-f", "--status", "completed"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("OBPI(s) are not completed", result.output)
 
@@ -182,19 +182,19 @@ class TestAttestSemantics(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-test", "ADR-0.1.0"))
-            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-test", "ADR-0.1.0-f"))
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
 
             config = GzkitConfig.load(Path(".gzkit.json"))
-            adr_file = next(Path(config.paths.adrs).rglob("ADR-0.1.0*.md"))
+            adr_file = next(Path(config.paths.adrs).rglob("ADR-0.1.0-f*.md"))
             obpis_dir = adr_file.parent / "obpis"
             obpis_dir.mkdir(parents=True, exist_ok=True)
             obpi_file = obpis_dir / "OBPI-0.1.0-01-test.md"
             obpi_file.write_text(
-                "---\nid: OBPI-0.1.0-01-test\nparent: ADR-0.1.0\n"
+                "---\nid: OBPI-0.1.0-01-test\nparent: ADR-0.1.0-f\n"
                 "item: 1\nlane: lite\nstatus: Draft\n---\n\n# OBPI-0.1.0-01-test\n"
             )
 
@@ -202,7 +202,7 @@ class TestAttestSemantics(unittest.TestCase):
                 main,
                 [
                     "attest",
-                    "ADR-0.1.0",
+                    "ADR-0.1.0-f",
                     "--status",
                     "completed",
                     "--force",

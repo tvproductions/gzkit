@@ -295,7 +295,7 @@ _TASK_FIELDS = {
     "id": "TASK-0.22.0-02-01-01",
     "task_id": "TASK-0.22.0-02-01-01",
     "obpi_id": "OBPI-0.22.0-02",
-    "adr_id": "ADR-0.22.0",
+    "adr_id": "ADR-0.22.0-f",
     "agent": "claude-code",
 }
 
@@ -332,7 +332,7 @@ class TestTaskStartedEvent(unittest.TestCase):
         self.assertIn("ts", data)
         self.assertEqual(data["task_id"], "TASK-0.22.0-02-01-01")
         self.assertEqual(data["obpi_id"], "OBPI-0.22.0-02")
-        self.assertEqual(data["adr_id"], "ADR-0.22.0")
+        self.assertEqual(data["adr_id"], "ADR-0.22.0-f")
         self.assertEqual(data["agent"], "claude-code")
 
     @covers("REQ-0.22.0-02-01")
@@ -379,7 +379,7 @@ class TestTaskCompletedEvent(unittest.TestCase):
         self.assertIn("ts", data)
         self.assertEqual(data["task_id"], "TASK-0.22.0-02-01-01")
         self.assertEqual(data["obpi_id"], "OBPI-0.22.0-02")
-        self.assertEqual(data["adr_id"], "ADR-0.22.0")
+        self.assertEqual(data["adr_id"], "ADR-0.22.0-f")
         self.assertEqual(data["agent"], "claude-code")
 
     @covers("REQ-0.22.0-02-01")
@@ -408,7 +408,7 @@ class TestTaskBlockedEvent(unittest.TestCase):
         self.assertEqual(data["reason"], "Missing dependency")
         self.assertEqual(data["task_id"], "TASK-0.22.0-02-01-01")
         self.assertEqual(data["obpi_id"], "OBPI-0.22.0-02")
-        self.assertEqual(data["adr_id"], "ADR-0.22.0")
+        self.assertEqual(data["adr_id"], "ADR-0.22.0-f")
         self.assertEqual(data["agent"], "claude-code")
 
     @covers("REQ-0.22.0-02-01")
@@ -727,10 +727,10 @@ def setUpModule() -> None:
     os.chdir(_module_workspace)
     code, out = _invoke(["init"])
     assert code == 0, out
-    code, out = _invoke(["plan", "create", "0.1.0", "--kind", "feature"])
+    code, out = _invoke(["plan", "create", "f", "--kind", "feature"])
     assert code == 0, out
     ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-    ledger.append(obpi_created_event("OBPI-0.1.0-01", "ADR-0.1.0"))
+    ledger.append(obpi_created_event("OBPI-0.1.0-01", "ADR-0.1.0-f"))
     _module_base_ledger = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
 
 
@@ -775,7 +775,7 @@ class _TaskCliBase(unittest.TestCase):
             extra={
                 "task_id": task_id,
                 "obpi_id": "OBPI-0.1.0-01",
-                "adr_id": "ADR-0.1.0",
+                "adr_id": "ADR-0.1.0-f",
                 "agent": "test",
             },
         )
@@ -1000,7 +1000,7 @@ class TestStatusTaskSummary(_TaskCliBase):
         code, out = _invoke(["status", "--json"])
         self.assertEqual(code, 0, out)
         data = json.loads(out)
-        adr_data = data["adrs"].get("ADR-0.1.0", {})
+        adr_data = data["adrs"].get("ADR-0.1.0-f", {})
         self.assertIn("task_summary", adr_data)
         ts = adr_data["task_summary"]
         self.assertEqual(ts["total"], 1)
@@ -1015,7 +1015,7 @@ class TestStatusTaskSummary(_TaskCliBase):
         code, out = _invoke(["status", "--json"])
         self.assertEqual(code, 0, out)
         data = json.loads(out)
-        adr_data = data["adrs"].get("ADR-0.1.0", {})
+        adr_data = data["adrs"].get("ADR-0.1.0-f", {})
         self.assertNotIn("task_summary", adr_data)
 
     @covers("REQ-0.22.0-05-01")
@@ -1052,7 +1052,7 @@ class TestStatusTaskSummary(_TaskCliBase):
         code, out = _invoke(["status", "--json"])
         self.assertEqual(code, 0, out)
         data = json.loads(out)
-        adr_data = data["adrs"].get("ADR-0.1.0", {})
+        adr_data = data["adrs"].get("ADR-0.1.0-f", {})
         ts = adr_data["task_summary"]
         self.assertIn("tracing_policy", ts)
         self.assertIn(ts["tracing_policy"], ("advisory", "required"))
