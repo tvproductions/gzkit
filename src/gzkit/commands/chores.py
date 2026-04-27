@@ -449,6 +449,149 @@ def chores_run(slug: str) -> None:
     )
 
 
+_PER_SLUG_CHORE_FILES = ("CHORE.md", "acceptance.json", "README.md")
+_DOCTOR_STATUS_HEALTHY = "HEALTHY"
+_DOCTOR_STATUS_MISSING = "MISSING"
+_DOCTOR_STATUS_DAMAGED = "DAMAGED"
+_DOCTOR_STATUS_PROJECT_LOCAL = "PROJECT-LOCAL"
+
+
+def _canonical_chore_slugs() -> list[str]:
+    """Return the canonical chore slugs shipped in the gzkit.chores package."""
+    root = importlib.resources.files("gzkit.chores")
+    slugs: list[str] = []
+    for entry in root.iterdir():
+        if not entry.is_dir() or entry.name.startswith("__"):
+            continue
+        if entry.joinpath("CHORE.md").is_file():
+            slugs.append(entry.name)
+    return sorted(slugs)
+
+
+def _classify_doctor_slug(slug: str, *, in_canonical: bool, project_dir: Path) -> str:
+    """Classify a slug as HEALTHY / MISSING / DAMAGED / PROJECT-LOCAL."""
+    if not in_canonical:
+        return _DOCTOR_STATUS_PROJECT_LOCAL
+    if not project_dir.is_dir():
+        return _DOCTOR_STATUS_MISSING
+    for filename in _PER_SLUG_CHORE_FILES:
+        candidate = project_dir / filename
+        if not candidate.is_file():
+            return _DOCTOR_STATUS_DAMAGED
+    acceptance_path = project_dir / "acceptance.json"
+    try:
+        json.loads(acceptance_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return _DOCTOR_STATUS_DAMAGED
+    return _DOCTOR_STATUS_HEALTHY
+
+
+def _repair_damaged_doctor_slug(slug: str, project_dir: Path) -> None:
+    """Restore canonical per-slug files inside an existing project slug directory.
+
+    Only files in `_PER_SLUG_CHORE_FILES` that are missing or whose canonical
+    counterpart differs by bytes are rewritten. `proofs/` is never touched
+    because it is not in `_PER_SLUG_CHORE_FILES`.
+    """
+    canonical_root = importlib.resources.files("gzkit.chores").joinpath(slug)
+    for filename in _PER_SLUG_CHORE_FILES:
+        source = canonical_root.joinpath(filename)
+        if not source.is_file():
+            continue
+        target = project_dir / filename
+        try:
+            existing = target.read_bytes() if target.is_file() else None
+        except OSError:
+            existing = None
+        canonical_bytes = source.read_bytes()
+        if existing != canonical_bytes:
+            target.write_bytes(canonical_bytes)
+
+
+def _render_doctor_table(rows: list[dict[str, str]]) -> None:
+    """Render the doctor summary as a Rich table to console."""
+    table = Table(title="Chore Doctor")
+    table.add_column("Slug", style="cyan")
+    table.add_column("Before")
+    table.add_column("After")
+    for row in rows:
+        table.add_row(row["slug"], row["before_status"], row["after_status"])
+    console.print(table)
+
+    counts = {
+        "repaired": sum(
+            1
+            for row in rows
+            if row["before_status"] in (_DOCTOR_STATUS_MISSING, _DOCTOR_STATUS_DAMAGED)
+            and row["after_status"] == _DOCTOR_STATUS_HEALTHY
+        ),
+        "healthy": sum(1 for row in rows if row["before_status"] == _DOCTOR_STATUS_HEALTHY),
+        "project-local": sum(
+            1 for row in rows if row["before_status"] == _DOCTOR_STATUS_PROJECT_LOCAL
+        ),
+        "damaged-remaining": sum(
+            1 for row in rows if row["after_status"] == _DOCTOR_STATUS_DAMAGED
+        ),
+    }
+    console.print(
+        f"{counts['repaired']} repaired, {counts['healthy']} healthy, "
+        f"{counts['project-local']} project-local, "
+        f"{counts['damaged-remaining']} damaged-remaining."
+    )
+
+
+def chores_doctor(*, dry_run: bool = False, json_output: bool = False) -> None:
+    """Re-scaffold missing or damaged canonical chores; preserve proofs/ and project-local."""
+    from gzkit.chores import scaffold_core_chores
+
+    project_root = get_project_root()
+    chores_root = _project_chores_root(project_root)
+    chores_root.mkdir(parents=True, exist_ok=True)
+
+    canonical_slugs = set(_canonical_chore_slugs())
+    project_slugs = (
+        {p.name for p in chores_root.iterdir() if p.is_dir()} if chores_root.is_dir() else set()
+    )
+    all_slugs = sorted(canonical_slugs | project_slugs)
+
+    before_states: dict[str, str] = {}
+    for slug in all_slugs:
+        before_states[slug] = _classify_doctor_slug(
+            slug,
+            in_canonical=slug in canonical_slugs,
+            project_dir=chores_root / slug,
+        )
+
+    if not dry_run:
+        config = load_config()
+        scaffold_core_chores(project_root, config, skip_existing=True)
+        for slug, status in before_states.items():
+            if status == _DOCTOR_STATUS_DAMAGED:
+                _repair_damaged_doctor_slug(slug, chores_root / slug)
+
+    rows: list[dict[str, str]] = []
+    for slug in all_slugs:
+        before = before_states[slug]
+        if dry_run:
+            after = (
+                _DOCTOR_STATUS_HEALTHY
+                if before in (_DOCTOR_STATUS_MISSING, _DOCTOR_STATUS_DAMAGED)
+                else before
+            )
+        else:
+            after = _classify_doctor_slug(
+                slug,
+                in_canonical=slug in canonical_slugs,
+                project_dir=chores_root / slug,
+            )
+        rows.append({"slug": slug, "before_status": before, "after_status": after})
+
+    if json_output:
+        console.print(json.dumps(rows))
+        return
+    _render_doctor_table(rows)
+
+
 def chores_audit(*, all_chores: bool, slug: str | None) -> None:
     """Audit chores for log presence."""
     project_root = get_project_root()

@@ -18,15 +18,35 @@ Every applied candidate writes an evidence file under `.gzkit/chores/pythonic-de
 
 1. **Pattern named** — Pythonic form chosen, e.g. *"Strategy class -> first-class function"*
 2. **Source candidate** — file:line + class name from the detection report
-3. **refactoring.guru reference** — the canonical Python example URL the rewrite is informed by
-4. **Before / After** — both forms shown with at least the function/class signature; full body if <=20 lines
-5. **Cyclomatic complexity delta** — xenon ranks before/after for the affected module
-6. **SLOC delta** — radon raw before/after; positive deltas require explicit rationale
-7. **Tests cited** — list of tests that pinned semantics across the rewrite (Red-Green-Refactor evidence)
-8. **TDD receipt** — `arb-step-unittest-*` receipt ID from the GREEN run (per AGENTS.md § Attestation)
-9. **Disposition link** — back-reference to the entry in the detection chore's candidates report
+3. **Python example witness** — the local archive path read, e.g. `Python/src/Strategy/Conceptual/main.py`
+4. **Example-derived role map** — the pattern roles observed in that Python example and which roles the rewrite collapses
+5. **refactoring.guru reference** — the canonical Python example URL the rewrite is informed by
+6. **Before / After** — both forms shown with at least the function/class signature; full body if <=20 lines
+7. **Cyclomatic complexity delta** — xenon ranks before/after for the affected module
+8. **SLOC delta** — radon raw before/after; positive deltas require explicit rationale
+9. **Tests cited** — list of tests that pinned semantics across the rewrite (Red-Green-Refactor evidence)
+10. **TDD receipt** — `arb-step-unittest-*` receipt ID from the GREEN run (per AGENTS.md § Attestation)
+11. **Disposition link** — back-reference to the entry in the detection chore's candidates report
 
 The mechanical-delta requirement is the binding part: the rewrite must not regress xenon's complexity grade for the affected module, and SLOC must non-positive (or be justified inline).
+
+## Python example corpus requirement
+
+Before applying a rewrite, read the matching Python example from the local
+Refactoring Guru archive when present:
+
+```bash
+export DESIGN_PATTERNS_ARCHIVE="/Users/jeff/Library/Mobile Documents/com~apple~CloudDocs/Design_Patterns_Book/design-patterns-en.zip"
+unzip -p "$DESIGN_PATTERNS_ARCHIVE" Python/src/Strategy/Conceptual/main.py | sed -n '1,220p'
+unzip -p "$DESIGN_PATTERNS_ARCHIVE" Python/src/Strategy/Conceptual/Output.txt
+```
+
+The archive example is not source material to copy into gzkit. It is a witness
+for the pattern's roles. The application evidence must show that the rewrite
+understood those roles and either collapsed them into Python constructs
+(`Callable`, generator, `functools.partial`, `contextlib.contextmanager`,
+`functools.cache`, `weakref`, `match`, `singledispatch`) or preserved the class
+shape with a concrete reason.
 
 ## Policy and Guardrails
 
@@ -47,14 +67,22 @@ ls .gzkit/chores/pythonic-design-pattern-detection/proofs/candidates-*.md
 
 Open the most recent report; pick a row marked `_[applied | deferred | not-pythonic-rewrite]_` and decide *applied*.
 
-### 2. Capture before-state metrics
+### 2. Read the Python example witness
+
+Open the candidate's `Python/src/<Pattern>/Conceptual/main.py` and `Output.txt`
+from `design-patterns-en.zip`. Record the example path and role map before
+editing code. If the detection report does not name the archive path, look it
+up in `pythonic-design-pattern-detection/CHORE.md` and update the report row
+before continuing.
+
+### 3. Capture before-state metrics
 
 ```bash
 uvx xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-before.txt 2>&1 || true
 uvx radon raw src/ -s > /tmp/radon-before.txt 2>&1 || true
 ```
 
-### 3. Apply the rewrite under TDD
+### 4. Apply the rewrite under TDD
 
 Per `.gzkit/rules/tests.md` Red-Green-Refactor:
 
@@ -66,7 +94,7 @@ Per `.gzkit/rules/tests.md` Red-Green-Refactor:
 
 The semantics test is the load-bearing artifact. A pattern rewrite that is semantically equivalent must pass the same test — which means the test must be written against the *purpose*, not the *shape*.
 
-### 4. Capture after-state metrics + GREEN receipt
+### 5. Capture after-state metrics + GREEN receipt
 
 ```bash
 uvx xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-after.txt 2>&1
@@ -76,7 +104,7 @@ uv run gz arb step --name unittest -- uv run -m unittest -q
 
 The ARB step run produces the GREEN receipt cited in the evidence file.
 
-### 5. Author the evidence file
+### 6. Author the evidence file
 
 Path: `.gzkit/chores/pythonic-design-pattern-application/proofs/application-YYYY-MM-DD-HHMMSS-<short-slug>.md`
 
@@ -89,7 +117,16 @@ Template (copy and fill):
 - **Pattern:** <e.g. "Strategy class -> first-class function">
 - **Source candidate:** `<src/path/to/file.py:LINE>` (class `<ClassName>`)
 - **Detection report:** `.gzkit/chores/pythonic-design-pattern-detection/proofs/candidates-YYYY-MM-DD.md`
+- **Python example witness:** `Python/src/<Pattern>/Conceptual/main.py`
+- **Python example output:** `Python/src/<Pattern>/Conceptual/Output.txt`
 - **refactoring.guru reference:** https://refactoring.guru/design-patterns/<slug>/python/example
+
+## Example-derived role map
+
+- **Example roles observed:** <Context / Strategy / ConcreteStrategy, etc.>
+- **Roles preserved:** <semantic roles still present after rewrite>
+- **Roles collapsed:** <class roles replaced by callables/functions/data/etc.>
+- **Reason this is Pythonic:** <stdlib/Python construct that carries the behavior with less structure>
 
 ## Before
 
@@ -124,11 +161,11 @@ Template (copy and fill):
 Pythonic target faithful: yes / no (with rationale)
 ```
 
-### 6. Update the detection report row
+### 7. Update the detection report row
 
 Mark the candidate's `Disposition:` from `_[applied | deferred | not-pythonic-rewrite]_` to `applied: <evidence-file-path>` so the detection report becomes self-referential.
 
-### 7. Validate
+### 8. Validate
 
 ```bash
 uv run -m unittest -q
@@ -153,6 +190,7 @@ The chore intentionally does **not** mechanically gate on "evidence file exists 
 - Citing a fabricated receipt ID — same fabrication failure as ARB receipt fabrication, applies here
 - Marking the rewrite "applied" when xenon regressed (the post-form is heavier than the pre-form by complexity)
 - Letting the catalogue's recommended target slip into a *"close enough"* shape — the rewrite is faithful to the catalogue's Pythonic answer, or it documents why the catalogue is wrong for this case
+- Applying from memory without reading the local Python example witness — this turns the pattern catalogue back into training-corpus recall instead of observed evidence
 
 ## Run Log
 

@@ -20,6 +20,33 @@ The catalogue at `https://refactoring.guru/design-patterns/python` is the absorp
 
 This is the same relationship gzkit has with `click` (per AGENTS.md § Stdlib-First Doctrine): we measure the design metrics to inform doctrine; we do not depend on the surface.
 
+## Python example corpus
+
+The local Refactoring Guru archive is the required example corpus when present:
+
+```bash
+export DESIGN_PATTERNS_ARCHIVE="/Users/jeff/Library/Mobile Documents/com~apple~CloudDocs/Design_Patterns_Book/design-patterns-en.zip"
+unzip -l "$DESIGN_PATTERNS_ARCHIVE" 'Python/src/*/Conceptual/*'
+```
+
+For every candidate, read the matching `Python/src/<Pattern>/Conceptual/main.py`
+and `Output.txt` from that archive before deciding disposition. The example is
+not a target to paste into gzkit. It is a role map: identify the pattern roles
+the example teaches, then decide which Python standard construct collapses those
+roles most honestly in gzkit code.
+
+Required per-candidate notes:
+
+- **Example path:** the `Python/src/.../main.py` path inspected
+- **Output path:** the matching `Output.txt` path, when present
+- **Role map:** the example's named roles in one sentence
+- **Pythonic collapse:** the stdlib/Python construct that replaces the class
+  structure, or the concrete reason the class structure remains warranted
+
+Do not mark a candidate `not-pythonic-rewrite` until the archive example has
+been read. Absence of an AST hit is not evidence of Pythonic shape; the example
+corpus is the human-eye review surface.
+
 ## Full pattern catalogue (all 22)
 
 Detection mode key:
@@ -28,40 +55,40 @@ Detection mode key:
 
 ### Creational
 
-| Pattern | Detection | Pythonic refactor target | refactoring.guru reference |
-|---------|-----------|---------------------------|----------------------------|
-| Abstract Factory | AST | Module of factory functions or `dataclass` registry | `/abstract-factory/python/example` |
-| Builder | AST | `dataclass`/Pydantic + `@classmethod` factory | `/builder/python/example` |
-| Factory Method | Reference | Module-level factory function or `@classmethod.from_*` | `/factory-method/python/example` |
-| Prototype | AST | `copy.deepcopy` or `dataclasses.replace` | `/prototype/python/example` |
-| Singleton | AST | Module-level constant or `functools.cache` | `/singleton/python/example` |
+| Pattern | Detection | Pythonic refactor target | Python archive example | refactoring.guru reference |
+|---------|-----------|---------------------------|------------------------|----------------------------|
+| Abstract Factory | AST | Module of factory functions or `dataclass` registry | `Python/src/AbstractFactory/Conceptual/main.py` | `/abstract-factory/python/example` |
+| Builder | AST | `dataclass`/Pydantic + `@classmethod` factory | `Python/src/Builder/Conceptual/main.py` | `/builder/python/example` |
+| Factory Method | Reference | Module-level factory function or `@classmethod.from_*` | `Python/src/FactoryMethod/Conceptual/main.py` | `/factory-method/python/example` |
+| Prototype | AST | `copy.deepcopy` or `dataclasses.replace` | `Python/src/Prototype/Conceptual/main.py` | `/prototype/python/example` |
+| Singleton | AST | Module-level constant or `functools.cache` | `Python/src/Singleton/Conceptual/ThreadSafe/main.py` and `Python/src/Singleton/Conceptual/NonThreadSafe/main.py` | `/singleton/python/example` |
 
 ### Structural
 
-| Pattern | Detection | Pythonic refactor target | refactoring.guru reference |
-|---------|-----------|---------------------------|----------------------------|
-| Adapter | AST (shared with Proxy) | `typing.Protocol` + duck typing or `__getattr__` forwarding | `/adapter/python/example` |
-| Bridge | Reference | Composition of independent abstractions; pass impl as parameter | `/bridge/python/example` |
-| Composite | AST | Recursive `dataclass` tree (only when truly hierarchical) | `/composite/python/example` |
-| Decorator | AST (class form) | Function decorator + `functools.wraps` | `/decorator/python/example` |
-| Facade | AST (static-only) | Module-level functions | `/facade/python/example` |
-| Flyweight | Reference | `functools.cache` / `weakref.WeakValueDictionary` | `/flyweight/python/example` |
-| Proxy | AST (shared with Adapter) | `__getattr__` forwarding or `typing.Protocol` | `/proxy/python/example` |
+| Pattern | Detection | Pythonic refactor target | Python archive example | refactoring.guru reference |
+|---------|-----------|---------------------------|------------------------|----------------------------|
+| Adapter | AST (shared with Proxy) | `typing.Protocol` + duck typing or `__getattr__` forwarding | `Python/src/Adapter/Conceptual/object/main.py` and `Python/src/Adapter/Conceptual/class/main.py` | `/adapter/python/example` |
+| Bridge | Reference | Composition of independent abstractions; pass impl as parameter | `Python/src/Bridge/Conceptual/main.py` | `/bridge/python/example` |
+| Composite | AST | Recursive `dataclass` tree (only when truly hierarchical) | `Python/src/Composite/Conceptual/main.py` | `/composite/python/example` |
+| Decorator | AST (class form) | Function decorator + `functools.wraps` | `Python/src/Decorator/Conceptual/main.py` | `/decorator/python/example` |
+| Facade | AST (static-only) | Module-level functions | `Python/src/Facade/Conceptual/main.py` | `/facade/python/example` |
+| Flyweight | Reference | `functools.cache` / `weakref.WeakValueDictionary` | `Python/src/Flyweight/Conceptual/main.py` | `/flyweight/python/example` |
+| Proxy | AST (shared with Adapter) | `__getattr__` forwarding or `typing.Protocol` | `Python/src/Proxy/Conceptual/main.py` | `/proxy/python/example` |
 
 ### Behavioral
 
-| Pattern | Detection | Pythonic refactor target | refactoring.guru reference |
-|---------|-----------|---------------------------|----------------------------|
-| Chain of Responsibility | AST | List of handler functions, iterated until one returns non-`None` | `/chain-of-responsibility/python/example` |
-| Command | AST | `functools.partial` or closure | `/command/python/example` |
-| Iterator | AST | Generator function (`yield`) | `/iterator/python/example` |
-| Mediator | AST | Module-level event bus or `asyncio.Queue` | `/mediator/python/example` |
-| Memento | AST | `copy.deepcopy` snapshot or `dataclasses.replace` | `/memento/python/example` |
-| Observer | AST | Callable list or `weakref.WeakSet` | `/observer/python/example` |
-| State | AST | Plain attribute + `match`/dispatch table | `/state/python/example` |
-| Strategy | AST | First-class function or `Callable[..., R]` | `/strategy/python/example` |
-| Template Method | AST | Pass a callable; or use composition over inheritance | `/template-method/python/example` |
-| Visitor | AST (two detectors) | `@functools.singledispatch` or `match` statement | `/visitor/python/example` |
+| Pattern | Detection | Pythonic refactor target | Python archive example | refactoring.guru reference |
+|---------|-----------|---------------------------|------------------------|----------------------------|
+| Chain of Responsibility | AST | List of handler functions, iterated until one returns non-`None` | `Python/src/ChainOfResponsibility/Conceptual/main.py` | `/chain-of-responsibility/python/example` |
+| Command | AST | `functools.partial` or closure | `Python/src/Command/Conceptual/main.py` | `/command/python/example` |
+| Iterator | AST | Generator function (`yield`) | `Python/src/Iterator/Conceptual/main.py` | `/iterator/python/example` |
+| Mediator | AST | Module-level event bus or `asyncio.Queue` | `Python/src/Mediator/Conceptual/main.py` | `/mediator/python/example` |
+| Memento | AST | `copy.deepcopy` snapshot or `dataclasses.replace` | `Python/src/Memento/Conceptual/main.py` | `/memento/python/example` |
+| Observer | AST | Callable list or `weakref.WeakSet` | `Python/src/Observer/Conceptual/main.py` | `/observer/python/example` |
+| State | AST | Plain attribute + `match`/dispatch table | `Python/src/State/Conceptual/main.py` | `/state/python/example` |
+| Strategy | AST | First-class function or `Callable[..., R]` | `Python/src/Strategy/Conceptual/main.py` | `/strategy/python/example` |
+| Template Method | AST | Pass a callable; or use composition over inheritance | `Python/src/TemplateMethod/Conceptual/main.py` | `/template-method/python/example` |
+| Visitor | AST (two detectors) | `@functools.singledispatch` or `match` statement | `Python/src/Visitor/Conceptual/main.py` | `/visitor/python/example` |
 
 Plus one Python-idiom signal not on the GoF list:
 
@@ -99,7 +126,7 @@ A scanner candidate that *also* shows up in xenon's B-band hotspot list jumps to
 
 ### 3. Reference-mode eye-review
 
-For Bridge, Flyweight, and Factory Method (catalogue-only patterns), open the relevant `refactoring.guru/design-patterns/<slug>/python/example` example side-by-side with any module ranked B-or-worse by xenon. Note candidates inline in the same report under a `## Reference-mode candidates` section.
+For Bridge, Flyweight, and Factory Method (catalogue-only patterns), open the relevant `refactoring.guru/design-patterns/<slug>/python/example` example and the matching `Python/src/<Pattern>/Conceptual/main.py` from the archive side-by-side with any module ranked B-or-worse by xenon. Note candidates inline in the same report under a `## Reference-mode candidates` section.
 
 ### 4. Triage and disposition
 
@@ -110,6 +137,16 @@ For each candidate (AST or reference-mode), mark one of:
 - `not-pythonic-rewrite` — class shape is genuinely the right fit (e.g. State machine with many states; Composite tree that is truly hierarchical)
 
 Empty triage is a defect: every flagged candidate gets a disposition before the chore is considered done for this period.
+
+Disposition rows must include the Python example evidence:
+
+```markdown
+- Example: `Python/src/Strategy/Conceptual/main.py`
+- Output: `Python/src/Strategy/Conceptual/Output.txt`
+- Role map: Context delegates ordering behavior to interchangeable strategy objects.
+- Pythonic collapse: replace strategy subclasses with named callables because gzkit only needs behavior injection, not stateful strategy objects.
+- Disposition: applied -> `.gzkit/chores/pythonic-design-pattern-application/proofs/application-...md`
+```
 
 ### 5. Validate
 
@@ -132,6 +169,7 @@ uv run python src/gzkit/chores/pythonic-design-pattern-detection/scan.py --self-
 - Backfilling a `not-pythonic-rewrite` disposition without naming the concrete reason
 - Running the scanner on `tests/` (test classes legitimately use `__init__` + single-test-method shape — already excluded by default)
 - Letting reference-mode patterns lapse to "we don't detect those" — the catalogue exists so the agent can eye-review against it; skipping the eye-review collapses the post-post-implementation contract back to mechanical-only
+- Citing only the website URL without reading the local Python example from the archive — the chore requires role-level comparison, not link decoration
 
 ## Run Log
 

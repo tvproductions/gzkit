@@ -732,6 +732,16 @@
       },
       "governance_relevant": false
     },
+    "chores doctor": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
     "skill new": {
       "surfaces": {
         "manpage": true,

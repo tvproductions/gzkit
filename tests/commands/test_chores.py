@@ -646,3 +646,229 @@ class TestChoreResolver(unittest.TestCase):
             self.assertEqual(result.exit_code, 0, msg=result.output)
             # No "Source" column header in default output.
             self.assertNotIn("Source", result.output)
+
+
+def _seed_canonical_chores_into_project() -> None:
+    """Scaffold every canonical chore into .gzkit/chores/ for a clean baseline."""
+    from gzkit.chores import scaffold_core_chores
+    from gzkit.config import GzkitConfig
+
+    project_root = Path.cwd()
+    cfg = GzkitConfig.load(project_root / ".gzkit.json")
+    scaffold_core_chores(project_root, cfg, skip_existing=False)
+
+
+def _first_canonical_slug() -> str:
+    """Return the first canonical chore slug (deterministic by sort)."""
+    import importlib.resources
+
+    root = importlib.resources.files("gzkit.chores")
+    slugs = sorted(
+        entry.name
+        for entry in root.iterdir()
+        if entry.is_dir()
+        and not entry.name.startswith("__")
+        and entry.joinpath("CHORE.md").is_file()
+    )
+    if not slugs:
+        raise RuntimeError("No canonical chore slugs found in gzkit.chores package.")
+    return slugs[0]
+
+
+class TestChoresDoctor(unittest.TestCase):
+    """REQ-derived tests for the gz chores doctor command (OBPI-0.0.21-09)."""
+
+    @covers("REQ-0.0.21-09-01")
+    def test_doctor_subcommand_registered(self) -> None:
+        """`gz chores doctor --help` exits 0 — the subcommand is registered."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            result = runner.invoke(main, ["chores", "doctor", "--help"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn("doctor", result.output.lower())
+
+    @covers("REQ-0.0.21-09-02")
+    def test_doctor_healthy_tree_is_noop(self) -> None:
+        """On a freshly-scaffolded tree, every slug shows HEALTHY/HEALTHY and no files change."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _seed_canonical_chores_into_project()
+            chores_dir = _project_chores_root()
+            before = sorted(p.relative_to(chores_dir).as_posix() for p in chores_dir.rglob("*"))
+
+            result = runner.invoke(main, ["chores", "doctor"])
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn("HEALTHY", result.output)
+            after = sorted(p.relative_to(chores_dir).as_posix() for p in chores_dir.rglob("*"))
+            self.assertEqual(before, after)
+
+    @covers("REQ-0.0.21-09-03")
+    @covers("REQ-0.0.21-09-09")
+    def test_doctor_repairs_missing_slug(self) -> None:
+        """A canonical slug whose directory is absent gets re-scaffolded; exit 0 on repair."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _seed_canonical_chores_into_project()
+            slug = _first_canonical_slug()
+            target = _project_chores_root() / slug
+            import shutil as _shutil
+
+            _shutil.rmtree(target)
+            self.assertFalse(target.exists())
+
+            result = runner.invoke(main, ["chores", "doctor"])
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertTrue((target / "CHORE.md").is_file())
+            self.assertTrue((target / "acceptance.json").is_file())
+            self.assertIn(slug, result.output)
+            self.assertIn("MISSING", result.output)
+
+    @covers("REQ-0.0.21-09-04")
+    def test_doctor_repairs_damaged_slug(self) -> None:
+        """A slug whose acceptance.json was deleted has the canonical bytes restored."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _seed_canonical_chores_into_project()
+            slug = _first_canonical_slug()
+            target = _project_chores_root() / slug
+            (target / "acceptance.json").unlink()
+            self.assertFalse((target / "acceptance.json").exists())
+
+            result = runner.invoke(main, ["chores", "doctor"])
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertTrue((target / "acceptance.json").is_file())
+            self.assertIn("DAMAGED", result.output)
+
+            import importlib.resources as _ir
+
+            canonical_bytes = (
+                _ir.files("gzkit.chores").joinpath(slug, "acceptance.json").read_bytes()
+            )
+            restored_bytes = (target / "acceptance.json").read_bytes()
+            self.assertEqual(canonical_bytes, restored_bytes)
+
+    @covers("REQ-0.0.21-09-05")
+    def test_doctor_preserves_proofs(self) -> None:
+        """Files under .gzkit/chores/<slug>/proofs/ are byte-identical before and after repair."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _seed_canonical_chores_into_project()
+            slug = _first_canonical_slug()
+            target = _project_chores_root() / slug
+            proofs_dir = target / "proofs"
+            proofs_dir.mkdir(exist_ok=True)
+            evidence = proofs_dir / "evidence.txt"
+            evidence_bytes = b"operator-attested-evidence-bytes-1234\n"
+            evidence.write_bytes(evidence_bytes)
+            (target / "CHORE.md").unlink()  # damage to force repair
+            self.assertFalse((target / "CHORE.md").exists())
+
+            result = runner.invoke(main, ["chores", "doctor"])
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertTrue((target / "CHORE.md").is_file())
+            self.assertEqual(evidence.read_bytes(), evidence_bytes)
+
+    @covers("REQ-0.0.21-09-06")
+    def test_doctor_untouches_project_local(self) -> None:
+        """A slug present in the project but absent from canonical is labelled PROJECT-LOCAL."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _seed_canonical_chores_into_project()
+            local_slug = "operator-only-local-chore"
+            local_dir = _project_chores_root() / local_slug
+            local_dir.mkdir(parents=True, exist_ok=True)
+            local_chore_md = local_dir / "CHORE.md"
+            local_chore_md.write_text("# operator-only chore\n", encoding="utf-8")
+            (local_dir / "acceptance.json").write_text(
+                json.dumps({"criteria": []}), encoding="utf-8"
+            )
+            before = local_chore_md.read_text(encoding="utf-8")
+
+            result = runner.invoke(main, ["chores", "doctor"])
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertTrue(local_chore_md.is_file())
+            self.assertEqual(local_chore_md.read_text(encoding="utf-8"), before)
+            self.assertIn("PROJECT-LOCAL", result.output)
+            self.assertIn(local_slug, result.output)
+
+    @covers("REQ-0.0.21-09-07")
+    def test_doctor_dry_run_makes_no_changes(self) -> None:
+        """`--dry-run` with a missing slug reports without touching the filesystem."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _seed_canonical_chores_into_project()
+            slug = _first_canonical_slug()
+            target = _project_chores_root() / slug
+            import shutil as _shutil
+
+            _shutil.rmtree(target)
+            chores_dir = _project_chores_root()
+            before = sorted(p.relative_to(chores_dir).as_posix() for p in chores_dir.rglob("*"))
+
+            result = runner.invoke(main, ["chores", "doctor", "--dry-run"])
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            after = sorted(p.relative_to(chores_dir).as_posix() for p in chores_dir.rglob("*"))
+            self.assertEqual(before, after)
+            self.assertFalse(target.exists())
+
+    @covers("REQ-0.0.21-09-08")
+    def test_doctor_json_output_parses(self) -> None:
+        """`--json` emits a list of {slug, before_status, after_status} records."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _seed_canonical_chores_into_project()
+            slug = _first_canonical_slug()
+            import shutil as _shutil
+
+            _shutil.rmtree(_project_chores_root() / slug)
+
+            result = runner.invoke(main, ["chores", "doctor", "--json"])
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            payload = json.loads(result.output)
+            self.assertIsInstance(payload, list)
+            slugs = {row["slug"]: row for row in payload}
+            self.assertIn(slug, slugs)
+            self.assertEqual(slugs[slug]["before_status"], "MISSING")
+            self.assertEqual(slugs[slug]["after_status"], "HEALTHY")
+            for row in payload:
+                self.assertIn("slug", row)
+                self.assertIn("before_status", row)
+                self.assertIn("after_status", row)
+
+
+class TestChoresDoctorOutputForm(unittest.TestCase):
+    """Output-form fixture: doctor's default rendering is a Rich table.
+
+    Pinned per `.gzkit/rules/tool-skill-runbook-alignment.md` Invariant 3 —
+    the manpage Output Contract for `gz chores doctor` is a summary table.
+    """
+
+    def test_doctor_renders_rich_table(self) -> None:
+        """Default doctor output contains box-drawing characters (Rich table form)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _seed_canonical_chores_into_project()
+            result = runner.invoke(main, ["chores", "doctor"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            # Rich's default box style emits these box-drawing chars.
+            box_chars = ("╭", "╰", "┬", "┴", "│")
+            self.assertTrue(
+                any(ch in result.output for ch in box_chars),
+                msg=f"doctor output lacks Rich-table box chars: {result.output!r}",
+            )
