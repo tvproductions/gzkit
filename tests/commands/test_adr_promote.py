@@ -190,13 +190,13 @@ class TestAdrPromoteCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.6.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             result = runner.invoke(
                 main,
                 [
                     "adr",
                     "promote",
-                    "ADR-0.6.0",
+                    "ADR-0.6.0-f",
                     "--semver",
                     "0.6.1",
                     "--kind",

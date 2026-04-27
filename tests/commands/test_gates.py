@@ -13,11 +13,11 @@ class TestGateCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             # Strip template's ``status: Draft`` — Gate 1 (OBPI-0.0.16-02) now
             # validates frontmatter-ledger coherence. This test asserts
             # gate_checked emission, not default-template frontmatter content.
-            adr_path = Path("design/adr/pre-release/ADR-0.1.0/ADR-0.1.0.md")
+            adr_path = Path("design/adr/pre-release/ADR-0.1.0-f/ADR-0.1.0-f.md")
             content = adr_path.read_text(encoding="utf-8")
             stripped = "\n".join(
                 line for line in content.splitlines() if not line.strip().startswith("status:")

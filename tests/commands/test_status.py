@@ -39,20 +39,20 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             result = runner.invoke(main, ["status"])
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("ADR-0.1.0", result.output)
+            self.assertIn("ADR-0.1.0-f", result.output)
 
     def test_status_show_gates_shows_gate2_pass_from_ledger(self) -> None:
         """status --show-gates shows Gate 2 PASS when latest gate check passed."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
 
             result = runner.invoke(main, ["status", "--show-gates"])
             self.assertEqual(result.exit_code, 0)
@@ -63,11 +63,11 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
-            ledger.append(gate_checked_event("ADR-0.1.0", 2, "fail", "test", 1))
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "fail", "test", 1))
 
             result = runner.invoke(main, ["status", "--show-gates"])
             self.assertEqual(result.exit_code, 0)
@@ -78,7 +78,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
 
             result = runner.invoke(main, ["status"])
             self.assertEqual(result.exit_code, 0)
@@ -90,7 +90,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
 
             result = runner.invoke(main, ["status", "--table"])
             self.assertEqual(result.exit_code, 0)
@@ -99,7 +99,7 @@ class TestStatusCommand(unittest.TestCase):
             self.assertIn("Lane", result.output)
             self.assertIn("Status", result.output)
             self.assertIn("Checks", result.output)
-            self.assertIn("ADR-0.1.0", result.output)
+            self.assertIn("ADR-0.1.0-f", result.output)
             self.assertIn("0/0", result.output)
             self.assertIn("TDD", result.output)
 
@@ -129,7 +129,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -138,7 +138,7 @@ class TestStatusCommand(unittest.TestCase):
                     [
                         "---",
                         "id: OBPI-0.1.0-01-demo",
-                        "parent: ADR-0.1.0",
+                        "parent: ADR-0.1.0-f",
                         "item: 1",
                         "lane: Lite",
                         "status: Draft",
@@ -158,11 +158,11 @@ class TestStatusCommand(unittest.TestCase):
                 + "\n"
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
 
             result = runner.invoke(main, ["status", "--table"])
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("ADR-0.1.0", result.output)
+            self.assertIn("ADR-0.1.0-f", result.output)
             self.assertIn("0/1", result.output)
             self.assertIn("PENDING", result.output)
             self.assertIn("OBPI completion", result.output)
@@ -176,7 +176,7 @@ class TestStatusCommand(unittest.TestCase):
             adr_dir = Path(config.paths.adrs)
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
 
-            for adr_id in ("ADR-0.10.0", "ADR-0.2.0", "ADR-0.9.0"):
+            for adr_id in ("ADR-0.10.0-f", "ADR-0.2.0-f", "ADR-0.9.0-f"):
                 adr_path = adr_dir / f"{adr_id}.md"
                 adr_path.parent.mkdir(parents=True, exist_ok=True)
                 adr_path.write_text(f"---\nid: {adr_id}\n---\n\n# {adr_id}\n")
@@ -188,7 +188,7 @@ class TestStatusCommand(unittest.TestCase):
             payload = json.loads(result.output)
             self.assertEqual(
                 list(payload["adrs"].keys()),
-                ["ADR-0.2.0", "ADR-0.9.0", "ADR-0.10.0"],
+                ["ADR-0.2.0-f", "ADR-0.9.0-f", "ADR-0.10.0-f"],
             )
 
     def test_status_shows_obpi_completion_summary(self) -> None:
@@ -196,7 +196,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -205,7 +205,7 @@ class TestStatusCommand(unittest.TestCase):
                     [
                         "---",
                         "id: OBPI-0.1.0-01-demo",
-                        "parent: ADR-0.1.0",
+                        "parent: ADR-0.1.0-f",
                         "item: 1",
                         "lane: Lite",
                         "status: Completed",
@@ -221,18 +221,18 @@ class TestStatusCommand(unittest.TestCase):
                         "- Files created/modified: src/module.py",
                         "",
                         "## Key Proof",
-                        "uv run gz adr status ADR-0.1.0 --json",
+                        "uv run gz adr status ADR-0.1.0-f --json",
                         "",
                     ]
                 )
                 + "\n"
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
@@ -240,7 +240,7 @@ class TestStatusCommand(unittest.TestCase):
                         "value_narrative": (
                             "The demo OBPI completed with canonical receipt evidence."
                         ),
-                        "key_proof": "uv run gz adr status ADR-0.1.0 --json",
+                        "key_proof": "uv run gz adr status ADR-0.1.0-f --json",
                     },
                 )
             )
@@ -256,7 +256,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -267,17 +267,17 @@ class TestStatusCommand(unittest.TestCase):
                 implementation_line="src/module.py",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
                     evidence={
                         "value_narrative": "The focused OBPI status is backed by receipt evidence.",
-                        "key_proof": "uv run gz adr status ADR-0.1.0 --json",
+                        "key_proof": "uv run gz adr status ADR-0.1.0-f --json",
                     },
                 )
             )
@@ -287,7 +287,7 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             self.assertEqual(payload["obpi"], "OBPI-0.1.0-01-demo")
-            self.assertEqual(payload["parent_adr"], "ADR-0.1.0")
+            self.assertEqual(payload["parent_adr"], "ADR-0.1.0-f")
             self.assertTrue(payload["found_file"])
             self.assertTrue(payload["completed"])
             self.assertEqual(payload["runtime_state"], "completed")
@@ -300,9 +300,9 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
 
             result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo", "--json"])
 
@@ -317,7 +317,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -334,7 +334,7 @@ class TestStatusCommand(unittest.TestCase):
             payload = json.loads(result.output)
             self.assertFalse(payload["linked_in_ledger"])
             self.assertTrue(payload["found_file"])
-            self.assertEqual(payload["parent_adr"], "ADR-0.1.0")
+            self.assertEqual(payload["parent_adr"], "ADR-0.1.0-f")
             self.assertEqual(payload["attestation_requirement"], "optional")
 
     def test_obpi_reconcile_json_passes_for_completed_obpi(self) -> None:
@@ -342,7 +342,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -353,17 +353,17 @@ class TestStatusCommand(unittest.TestCase):
                 implementation_line="src/module.py",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
                     evidence={
                         "value_narrative": "The reconcile path has canonical completion evidence.",
-                        "key_proof": "uv run gz adr status ADR-0.1.0 --json",
+                        "key_proof": "uv run gz adr status ADR-0.1.0-f --json",
                     },
                 )
             )
@@ -381,7 +381,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -393,11 +393,11 @@ class TestStatusCommand(unittest.TestCase):
                 key_proof="",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
@@ -425,7 +425,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -436,7 +436,7 @@ class TestStatusCommand(unittest.TestCase):
                 implementation_line="src/module.py",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
 
             result = runner.invoke(main, ["obpi", "reconcile", "OBPI-0.1.0-01-demo"])
 
@@ -450,7 +450,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -466,11 +466,11 @@ class TestStatusCommand(unittest.TestCase):
             anchor_commit = _init_git_repo(Path.cwd())
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
@@ -522,7 +522,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -542,17 +542,17 @@ class TestStatusCommand(unittest.TestCase):
             anchor_commit = _init_git_repo(Path.cwd())
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
                     evidence={
                         "value_narrative": "Anchor drift is tracked with linked defects.",
-                        "key_proof": "uv run gz adr status ADR-0.1.0 --json",
+                        "key_proof": "uv run gz adr status ADR-0.1.0-f --json",
                         "scope_audit": {
                             "allowlist": ["src/module.py"],
                             "changed_files": ["src/module.py"],
@@ -602,7 +602,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_dir = Path(config.paths.adrs) / "obpis"
             obpi_dir.mkdir(parents=True, exist_ok=True)
@@ -619,7 +619,7 @@ class TestStatusCommand(unittest.TestCase):
                     [
                         "---",
                         "id: OBPI-0.1.0-02-demo",
-                        "parent: ADR-0.1.0",
+                        "parent: ADR-0.1.0-f",
                         "item: 2",
                         "lane: Lite",
                         "status: Completed",
@@ -637,7 +637,7 @@ class TestStatusCommand(unittest.TestCase):
                         "- Date completed: 2026-02-14",
                         "",
                         "## Key Proof",
-                        "uv run gz adr status ADR-0.1.0 --json",
+                        "uv run gz adr status ADR-0.1.0-f --json",
                         "",
                     ]
                 )
@@ -650,12 +650,12 @@ class TestStatusCommand(unittest.TestCase):
             first_anchor = _init_git_repo(Path.cwd())
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-02-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-02-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
@@ -704,7 +704,7 @@ class TestStatusCommand(unittest.TestCase):
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-02-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
@@ -745,7 +745,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -761,11 +761,11 @@ class TestStatusCommand(unittest.TestCase):
             anchor_commit = _init_git_repo(Path.cwd())
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
@@ -806,7 +806,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -815,7 +815,7 @@ class TestStatusCommand(unittest.TestCase):
                     [
                         "---",
                         "id: OBPI-0.1.0-01-demo",
-                        "parent: ADR-0.1.0",
+                        "parent: ADR-0.1.0-f",
                         "item: 1",
                         "lane: Lite",
                         "status: Draft",
@@ -835,7 +835,7 @@ class TestStatusCommand(unittest.TestCase):
                 + "\n"
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
 
             result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo", "--json"])
 
@@ -849,7 +849,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -858,7 +858,7 @@ class TestStatusCommand(unittest.TestCase):
                     [
                         "---",
                         "id: OBPI-0.1.0-01-demo",
-                        "parent: ADR-0.1.0",
+                        "parent: ADR-0.1.0-f",
                         "item: 1",
                         "lane: Heavy",
                         "status: Completed",
@@ -885,11 +885,11 @@ class TestStatusCommand(unittest.TestCase):
                 + "\n"
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
@@ -909,7 +909,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -918,7 +918,7 @@ class TestStatusCommand(unittest.TestCase):
                     [
                         "---",
                         "id: OBPI-0.1.0-01-demo",
-                        "parent: ADR-0.1.0",
+                        "parent: ADR-0.1.0-f",
                         "item: 1",
                         "lane: Lite",
                         "status: Completed",
@@ -943,23 +943,23 @@ class TestStatusCommand(unittest.TestCase):
                 + "\n"
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
                 )
             )
-            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
+            ledger.append(attested_event("ADR-0.1.0-f", "completed", "human"))
 
             result = runner.invoke(main, ["status", "--json"])
 
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
-            adr_payload = payload["adrs"]["ADR-0.1.0"]
+            adr_payload = payload["adrs"]["ADR-0.1.0-f"]
             self.assertEqual(adr_payload["obpi_summary"]["completed"], 1)
             self.assertEqual(adr_payload["obpi_summary"]["unit_status"], "completed")
             self.assertEqual(adr_payload["lifecycle_status"], "Completed")
@@ -970,7 +970,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -979,7 +979,7 @@ class TestStatusCommand(unittest.TestCase):
                     [
                         "---",
                         "id: OBPI-0.1.0-01-demo",
-                        "parent: ADR-0.1.0",
+                        "parent: ADR-0.1.0-f",
                         "item: 1",
                         "lane: Heavy",
                         "status: Completed",
@@ -1007,11 +1007,11 @@ class TestStatusCommand(unittest.TestCase):
                 + "\n"
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
@@ -1030,7 +1030,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1039,7 +1039,7 @@ class TestStatusCommand(unittest.TestCase):
                     [
                         "---",
                         "id: OBPI-0.1.0-01-demo",
-                        "parent: ADR-0.1.0",
+                        "parent: ADR-0.1.0-f",
                         "item: 1",
                         "lane: Heavy",
                         "status: Completed",
@@ -1064,11 +1064,11 @@ class TestStatusCommand(unittest.TestCase):
                 + "\n"
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
@@ -1088,7 +1088,7 @@ class TestOrphanedAdrWarning(unittest.TestCase):
 
     def test_no_false_positive_when_stem_has_slug_but_ledger_has_bare_id(self) -> None:
         """ADR file with slugged stem (ADR-0.1.0-my-feature) should not warn
-        when the ledger has the bare ID (ADR-0.1.0).  GHI-166."""
+        when the ledger has the bare ID (ADR-0.1.0-f).  GHI-166."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -1102,13 +1102,13 @@ class TestOrphanedAdrWarning(unittest.TestCase):
             slug_dir.mkdir()
             adr_file = slug_dir / "ADR-0.1.0-my-feature.md"
             adr_file.write_text(
-                "---\nid: ADR-0.1.0\nstatus: Draft\nlane: lite\n---\n# ADR-0.1.0\n",
+                "---\nid: ADR-0.1.0-f\nstatus: Draft\nlane: lite\n---\n# ADR-0.1.0-f\n",
                 encoding="utf-8",
             )
 
             # Register with bare ID in ledger (as gz adr create does)
             ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
-            ledger.append(adr_created_event("ADR-0.1.0", "PRD-TEST-1.0.0", "lite"))
+            ledger.append(adr_created_event("ADR-0.1.0-f", "PRD-TEST-1.0.0", "lite"))
 
             # gz adr report should NOT warn about this ADR
             result = runner.invoke(main, ["adr", "report"])
@@ -1131,10 +1131,10 @@ class TestOrphanedAdrWarning(unittest.TestCase):
 
             adr_dir = project_root / config.paths.design_root / "adr" / "pre-release"
             adr_dir.mkdir(parents=True, exist_ok=True)
-            adr_file = adr_dir / "ADR-0.5.0.md"
+            adr_file = adr_dir / "ADR-0.5.0-f.md"
             adr_file.write_text(
                 "---\nid: ADR-0.5.0-skill-lifecycle\nstatus: Draft\nlane: lite\n---\n"
-                "# ADR-0.5.0: skill-lifecycle\n",
+                "# ADR-0.5.0-f: skill-lifecycle\n",
                 encoding="utf-8",
             )
 
@@ -1161,7 +1161,7 @@ class TestOrphanedAdrWarning(unittest.TestCase):
             slug_dir.mkdir()
             adr_file = slug_dir / "ADR-0.99.0-totally-orphaned.md"
             adr_file.write_text(
-                "---\nid: ADR-0.99.0\nstatus: Draft\nlane: lite\n---\n# ADR-0.99.0\n",
+                "---\nid: ADR-0.99.0-f\nstatus: Draft\nlane: lite\n---\n# ADR-0.99.0-f\n",
                 encoding="utf-8",
             )
 
@@ -1178,9 +1178,9 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
 
-            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0"])
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("ADR Overview", result.output)
             self.assertNotIn("Gate 2 (TDD):", result.output)
@@ -1196,10 +1196,10 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
 
-            status_result = runner.invoke(main, ["adr", "status", "ADR-0.1.0"])
-            report_result = runner.invoke(main, ["adr", "report", "ADR-0.1.0"])
+            status_result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f"])
+            report_result = runner.invoke(main, ["adr", "report", "ADR-0.1.0-f"])
 
             self.assertEqual(status_result.exit_code, 0)
             self.assertEqual(report_result.exit_code, 0)
@@ -1219,7 +1219,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                 "---\n"
                 "id: ADR-0.5.0-skill-lifecycle-governance\n"
                 "---\n\n"
-                "# ADR-0.5.0: skill-lifecycle-governance\n"
+                "# ADR-0.5.0-f: skill-lifecycle-governance\n"
             )
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
@@ -1233,9 +1233,9 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
 
-            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--show-gates"])
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--show-gates"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Gate 2 (TDD):", result.output)
 
@@ -1243,9 +1243,9 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init("heavy")
-            runner.invoke(main, ["plan", "create", "0.1.0", "--lane", "heavy", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--lane", "heavy", "--kind", "feature"])
 
-            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             self.assertEqual(payload["gates"]["4"], "pending")
@@ -1259,25 +1259,25 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             adr_path = Path(config.paths.adrs) / "ADR-0.2.0-gate-verification.md"
             adr_path.parent.mkdir(parents=True, exist_ok=True)
             adr_path.write_text(
-                "---\nid: ADR-0.2.0\nlane: heavy\n---\n\n# ADR-0.2.0: Gate Verification\n"
+                "---\nid: ADR-0.2.0-f\nlane: heavy\n---\n\n# ADR-0.2.0-f: Gate Verification\n"
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(adr_created_event("ADR-0.2.0", "", "heavy"))
+            ledger.append(adr_created_event("ADR-0.2.0-f", "", "heavy"))
 
-            result = runner.invoke(main, ["adr", "status", "ADR-0.2.0", "--json"])
+            result = runner.invoke(main, ["adr", "status", "ADR-0.2.0-f", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
-            self.assertEqual(payload["adr"], "ADR-0.2.0")
+            self.assertEqual(payload["adr"], "ADR-0.2.0-f")
 
     def test_adr_status_json_completed(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
+            ledger.append(attested_event("ADR-0.1.0-f", "completed", "human"))
 
-            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             self.assertEqual(payload["lifecycle_status"], "Completed")
@@ -1288,7 +1288,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1299,9 +1299,9 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                 implementation_line="",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
+            ledger.append(attested_event("ADR-0.1.0-f", "completed", "human"))
 
-            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             self.assertEqual(payload["lifecycle_status"], "Pending")
@@ -1313,7 +1313,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1324,9 +1324,9 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                 implementation_line="",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
 
-            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0"])
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("QC Readiness: PENDING (pending: OBPI completion)", result.output)
 
@@ -1334,7 +1334,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1345,7 +1345,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                 implementation_line="src/module.py",
             )
 
-            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0"])
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f"])
 
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Closeout Readiness: BLOCKED", result.output)
@@ -1358,7 +1358,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1378,17 +1378,17 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             anchor_commit = _init_git_repo(Path.cwd())
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
                     evidence={
                         "value_narrative": "Anchor drift is tracked with linked defects.",
-                        "key_proof": "uv run gz adr status ADR-0.1.0 --json",
+                        "key_proof": "uv run gz adr status ADR-0.1.0-f --json",
                         "scope_audit": {
                             "allowlist": ["src/module.py"],
                             "changed_files": ["src/module.py"],
@@ -1420,7 +1420,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                 text=True,
             )
 
-            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
 
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
@@ -1433,12 +1433,12 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
-            ledger.append(audit_receipt_emitted_event("ADR-0.1.0", "validated", "human"))
+            ledger.append(attested_event("ADR-0.1.0-f", "completed", "human"))
+            ledger.append(audit_receipt_emitted_event("ADR-0.1.0-f", "validated", "human"))
 
-            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             self.assertEqual(payload["lifecycle_status"], "Validated")
@@ -1449,11 +1449,11 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(attested_event("ADR-0.1.0", "dropped", "human", "out of scope"))
+            ledger.append(attested_event("ADR-0.1.0-f", "dropped", "human", "out of scope"))
 
-            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             self.assertEqual(payload["lifecycle_status"], "Abandoned")
@@ -1463,11 +1463,11 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(
                 audit_receipt_emitted_event(
-                    "ADR-0.1.0",
+                    "ADR-0.1.0-f",
                     "validated",
                     "human",
                     evidence={
@@ -1478,7 +1478,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                 )
             )
 
-            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             self.assertEqual(payload["lifecycle_status"], "Pending")
@@ -1489,14 +1489,14 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(attested_event("ADR-0.1.0", "partial", "human", "staged rollout"))
+            ledger.append(attested_event("ADR-0.1.0-f", "partial", "human", "staged rollout"))
 
             result = runner.invoke(main, ["status", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
-            adr_payload = payload["adrs"]["ADR-0.1.0"]
+            adr_payload = payload["adrs"]["ADR-0.1.0-f"]
             self.assertEqual(adr_payload["lifecycle_status"], "Completed")
             self.assertEqual(adr_payload["attestation_term"], "Completed - Partial")
 
@@ -1504,7 +1504,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1515,12 +1515,12 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                 implementation_line="",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
+            ledger.append(attested_event("ADR-0.1.0-f", "completed", "human"))
 
             result = runner.invoke(main, ["status", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
-            adr_payload = payload["adrs"]["ADR-0.1.0"]
+            adr_payload = payload["adrs"]["ADR-0.1.0-f"]
             self.assertEqual(adr_payload["lifecycle_status"], "Pending")
             self.assertEqual(adr_payload["closeout_phase"], "attested")
             self.assertEqual(adr_payload["attestation_term"], "Completed")
@@ -1530,7 +1530,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1544,7 +1544,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             result = runner.invoke(main, ["status", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
-            adr_payload = payload["adrs"]["ADR-0.1.0"]
+            adr_payload = payload["adrs"]["ADR-0.1.0-f"]
             self.assertIn("obpis", adr_payload)
             self.assertIn("obpi_summary", adr_payload)
             self.assertIn("closeout_ready", adr_payload)
@@ -1559,7 +1559,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1568,7 +1568,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                     [
                         "---",
                         "id: OBPI-0.1.0-01-demo",
-                        "parent: ADR-0.1.0",
+                        "parent: ADR-0.1.0-f",
                         "item: 1",
                         "lane: Lite",
                         "status: Completed",
@@ -1586,7 +1586,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                         "- Date completed:",
                         "",
                         "## Key Proof",
-                        "uv run gz adr status ADR-0.1.0 --json",
+                        "uv run gz adr status ADR-0.1.0-f --json",
                         "",
                     ]
                 )
@@ -1596,7 +1596,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             result = runner.invoke(main, ["status", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
-            adr_payload = payload["adrs"]["ADR-0.1.0"]
+            adr_payload = payload["adrs"]["ADR-0.1.0-f"]
             self.assertEqual(adr_payload["obpi_summary"]["completed"], 0)
             self.assertEqual(adr_payload["obpi_summary"]["unit_status"], "pending")
             self.assertIn(
@@ -1656,7 +1656,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1667,22 +1667,22 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                 implementation_line="src/module.py",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
             ledger.append(
                 obpi_receipt_emitted_event(
                     obpi_id="OBPI-0.1.0-01-demo",
-                    parent_adr="ADR-0.1.0",
+                    parent_adr="ADR-0.1.0-f",
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
                     evidence={
                         "value_narrative": "ADR status rows reflect canonical receipt evidence.",
-                        "key_proof": "uv run gz adr status ADR-0.1.0 --json",
+                        "key_proof": "uv run gz adr status ADR-0.1.0-f --json",
                     },
                 )
             )
 
-            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             self.assertIn("obpis", payload)
@@ -1703,11 +1703,11 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-core-feature", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-core-feature", "ADR-0.1.0-f"))
 
-            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             self.assertIn("obpis", payload)
@@ -1722,9 +1722,9 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
 
-            result = runner.invoke(main, ["adr", "report", "ADR-0.1.0"])
+            result = runner.invoke(main, ["adr", "report", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("ADR Overview", result.output)
             self.assertIn("OBPIs", result.output)
@@ -1736,15 +1736,15 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
             _write_obpi(obpi_path, "Draft", "draft", "Not started")
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
 
-            result = runner.invoke(main, ["adr", "report", "ADR-0.1.0"])
+            result = runner.invoke(main, ["adr", "report", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("OBPI-0.1.0-01-demo", result.output)
             self.assertIn("draft", result.output)
@@ -1754,11 +1754,11 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(obpi_created_event("OBPI-0.1.0-01-core-feature", "ADR-0.1.0"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-core-feature", "ADR-0.1.0-f"))
 
-            result = runner.invoke(main, ["adr", "report", "ADR-0.1.0"])
+            result = runner.invoke(main, ["adr", "report", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Issues", result.output)
             self.assertIn("ledger proof of completion is missing", result.output)
@@ -1768,7 +1768,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
 
             result = runner.invoke(main, ["adr", "report", "0.1.0"])
             self.assertEqual(result.exit_code, 0)
@@ -1779,27 +1779,27 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
 
             result = runner.invoke(main, ["adr", "report"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn(TABLE_TITLE_FEATURE, result.output)
-            self.assertIn("ADR-0.1.0", result.output)
+            self.assertIn("ADR-0.1.0-f", result.output)
             self.assertIn("Checks legend", result.output)
 
     def test_state_ready_json_only_includes_gate_ready_unattested_adrs(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
-            runner.invoke(main, ["plan", "create", "0.2.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
 
             result = runner.invoke(main, ["state", "--ready", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
-            self.assertIn("ADR-0.1.0", payload)
+            self.assertIn("ADR-0.1.0-f", payload)
 
 
 class TestStatusEpicFilter(unittest.TestCase):
@@ -1905,19 +1905,19 @@ class TestStatusEpicFilter(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             result = runner.invoke(main, ["status", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
-            self.assertIn("ADR-0.1.0", payload["adrs"])
+            self.assertIn("ADR-0.1.0-f", payload["adrs"])
             self.assertNotIn("warnings", payload)
-            self.assertNotIn("ADR-0.2.0", payload)
+            self.assertNotIn("ADR-0.2.0-f", payload)
 
 
-def _seed_adr_with_six_obpis(parent_adr: str = "ADR-0.1.0") -> None:
+def _seed_adr_with_six_obpis(parent_adr: str = "ADR-0.1.0-f") -> None:
     """Seed a feature ADR with six pending OBPI briefs.
 
-    Mirrors the RHEA reproduction case (ADR-0.0.0 with six OBPIs) that
+    Mirrors the RHEA reproduction case (ADR-0.0.0-f with six OBPIs) that
     triggered GHI #319 — used to exercise --full open-OBPI rendering.
     """
     runner_main = main
@@ -1979,7 +1979,7 @@ class TestStatusFullFlag(unittest.TestCase):
             runner.isolated_filesystem(),
         ):
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             _seed_adr_with_six_obpis()
 
             result = runner.invoke(main, ["status", "--show-gates", "--full"])
@@ -1994,7 +1994,7 @@ class TestStatusFullFlag(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             _seed_adr_with_six_obpis()
 
             result = runner.invoke(main, ["status", "--show-gates"])
@@ -2012,7 +2012,7 @@ class TestStatusFullOutputForm(unittest.TestCase):
             runner.isolated_filesystem(),
         ):
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             _seed_adr_with_six_obpis()
 
             result = runner.invoke(main, ["status", "--show-gates", "--full"])

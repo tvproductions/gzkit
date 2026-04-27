@@ -1,5 +1,5 @@
 ---
-id: ADR-0.0.28
+id: ADR-0.0.28-complexity-threshold-doctrine
 status: Draft
 kind: foundation
 semver: 0.0.28

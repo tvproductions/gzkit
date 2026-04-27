@@ -36,11 +36,11 @@ class TestDryRunCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
             result = runner.invoke(
-                main, ["attest", "ADR-0.1.0", "--status", "completed", "--dry-run"]
+                main, ["attest", "ADR-0.1.0-f", "--status", "completed", "--dry-run"]
             )
             self.assertEqual(result.exit_code, 0)
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")

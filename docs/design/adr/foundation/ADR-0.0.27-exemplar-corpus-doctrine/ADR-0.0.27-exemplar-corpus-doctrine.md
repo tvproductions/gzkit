@@ -1,5 +1,5 @@
 ---
-id: ADR-0.0.27
+id: ADR-0.0.27-exemplar-corpus-doctrine
 status: Draft
 kind: foundation
 semver: 0.0.27

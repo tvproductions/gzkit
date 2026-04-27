@@ -50,7 +50,7 @@ def _git_init() -> str:
 
 @given("a heavy ADR exists with an OBPI brief")
 def step_heavy_adr_with_obpi(context) -> None:  # type: ignore[no-untyped-def]
-    code, output = _invoke(["plan", "create", "0.1.0", "--lane", "heavy", "--kind", "feature"])
+    code, output = _invoke(["plan", "create", "f", "--lane", "heavy", "--kind", "feature"])
     assert code == 0, output
 
     # Create OBPI brief with allowed paths
@@ -63,7 +63,7 @@ def step_heavy_adr_with_obpi(context) -> None:  # type: ignore[no-untyped-def]
             [
                 "---",
                 "id: OBPI-0.1.0-01-demo-feature",
-                "parent: ADR-0.1.0",
+                "parent: ADR-0.1.0-f",
                 "item: 1",
                 "lane: Heavy",
                 "status: Completed",
@@ -107,11 +107,11 @@ def step_heavy_adr_with_obpi(context) -> None:  # type: ignore[no-untyped-def]
 
     # Register OBPI and emit completion receipt in ledger
     ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-    ledger.append(obpi_created_event("OBPI-0.1.0-01-demo-feature", "ADR-0.1.0"))
+    ledger.append(obpi_created_event("OBPI-0.1.0-01-demo-feature", "ADR-0.1.0-f"))
     ledger.append(
         obpi_receipt_emitted_event(
             obpi_id="OBPI-0.1.0-01-demo-feature",
-            parent_adr="ADR-0.1.0",
+            parent_adr="ADR-0.1.0-f",
             receipt_event="completed",
             attestor="human:bdd",
             obpi_completion="completed",

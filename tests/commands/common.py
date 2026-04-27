@@ -158,14 +158,14 @@ def _write_obpi(
     implementation_line: str,
     *,
     lane: str = "Lite",
-    key_proof: str = "uv run gz adr status ADR-0.1.0 --json",
+    key_proof: str = "uv run gz adr status ADR-0.1.0-f --json",
     human_attestation: tuple[str, str, str] | None = None,
     tracked_defects: list[str] | None = None,
 ) -> None:
     lines = [
         "---",
         "id: OBPI-0.1.0-01-demo",
-        "parent: ADR-0.1.0",
+        "parent: ADR-0.1.0-f",
         "item: 1",
         f"lane: {lane}",
         f"status: {status}",

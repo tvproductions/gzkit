@@ -70,10 +70,10 @@ def setUpModule() -> None:
     shutil.copytree(_BARE_TEMPLATE, _ATTESTED_TEMPLATE, dirs_exist_ok=True)
     os.chdir(_ATTESTED_TEMPLATE)
     try:
-        CliRunner().invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+        CliRunner().invoke(main, ["plan", "create", "f", "--kind", "feature"])
         ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-        ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
-        ledger.append(attested_event("ADR-0.1.0", "completed", "Test User"))
+        ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
+        ledger.append(attested_event("ADR-0.1.0-f", "completed", "Test User"))
     finally:
         os.chdir(orig)
 
@@ -137,8 +137,8 @@ class TestAuditAttestationGuard(unittest.TestCase):
     def test_audit_blocks_without_attestation(self):
         runner = CliRunner()
         with _bare_workspace():
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
-            result = runner.invoke(main, ["audit", "ADR-0.1.0"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 1)
             self.assertIn("attestation", result.output.lower())
 
@@ -152,9 +152,9 @@ class TestAuditArtifacts(unittest.TestCase):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
         with _attested_workspace():
-            result = runner.invoke(main, ["audit", "ADR-0.1.0"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
-            adr_dir = next(Path("design/adr").rglob("ADR-0.1.0*.md")).parent
+            adr_dir = next(Path("design/adr").rglob("ADR-0.1.0-f*.md")).parent
             audit_dir = adr_dir / "audit"
             self.assertTrue(audit_dir.exists())
             self.assertTrue((audit_dir / "AUDIT_PLAN.md").exists())
@@ -171,7 +171,7 @@ class TestAuditReceiptEmission(unittest.TestCase):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
         with _attested_workspace():
-            result = runner.invoke(main, ["audit", "ADR-0.1.0"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn("audit_receipt_emitted", ledger_text)
@@ -188,7 +188,7 @@ class TestAuditStatusTransition(unittest.TestCase):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
         with _attested_workspace():
-            result = runner.invoke(main, ["audit", "ADR-0.1.0"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn("lifecycle_transition", ledger_text)
@@ -204,7 +204,7 @@ class TestAuditFailureNoTransition(unittest.TestCase):
         mock_run.return_value = _make_qr(success=False, returncode=1)
         runner = CliRunner()
         with _attested_workspace():
-            result = runner.invoke(main, ["audit", "ADR-0.1.0"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 1)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             # Receipt should still be emitted (with failure recorded)
@@ -219,8 +219,8 @@ class TestAuditFailureNoTransition(unittest.TestCase):
         mock_run.return_value = _make_qr(success=False, returncode=1)
         runner = CliRunner()
         with _attested_workspace():
-            runner.invoke(main, ["audit", "ADR-0.1.0"])
-            adr_dir = next(Path("design/adr").rglob("ADR-0.1.0*.md")).parent
+            runner.invoke(main, ["audit", "ADR-0.1.0-f"])
+            adr_dir = next(Path("design/adr").rglob("ADR-0.1.0-f*.md")).parent
             self.assertTrue((adr_dir / "audit" / "AUDIT.md").exists())
 
 
@@ -231,7 +231,7 @@ class TestAuditDryRun(unittest.TestCase):
     def test_dry_run_shows_receipt_and_transition_plan(self):
         runner = CliRunner()
         with _attested_workspace():
-            result = runner.invoke(main, ["audit", "ADR-0.1.0", "--dry-run"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f", "--dry-run"])
             self.assertEqual(result.exit_code, 0, result.output)
             self.assertIn("Dry run", result.output)
             self.assertIn("receipt", result.output.lower())
@@ -243,7 +243,7 @@ class TestAuditDryRun(unittest.TestCase):
     def test_dry_run_json_includes_receipt_and_transition(self):
         runner = CliRunner()
         with _attested_workspace():
-            result = runner.invoke(main, ["audit", "ADR-0.1.0", "--dry-run", "--json"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f", "--dry-run", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
             self.assertIn("validation_receipt", data)
@@ -259,7 +259,7 @@ class TestAuditJsonOutput(unittest.TestCase):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
         with _attested_workspace():
-            result = runner.invoke(main, ["audit", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
             self.assertIn("results", data)
@@ -284,7 +284,7 @@ def _make_ledger_with_events(ledger_path: Path, adr_id: str) -> Ledger:
 
 def _call_write_audit_artifacts(
     tmp: Path,
-    adr_id: str = "ADR-0.19.0",
+    adr_id: str = "ADR-0.19.0-f",
     ledger: Ledger | None = None,
     result_rows: list | None = None,
     create_obpi_files: bool = False,
@@ -344,7 +344,7 @@ class TestAuditMdAttestationRecord(unittest.TestCase):
             tmp = Path(tmp_str)
             ledger_path = tmp / ".gzkit" / "ledger.jsonl"
             ledger_path.parent.mkdir(parents=True, exist_ok=True)
-            ledger = _make_ledger_with_events(ledger_path, "ADR-0.19.0")
+            ledger = _make_ledger_with_events(ledger_path, "ADR-0.19.0-f")
             _, audit_file, _ = _call_write_audit_artifacts(tmp, ledger=ledger)
             content = audit_file.read_text(encoding="utf-8")
             self.assertIn("## Attestation Record", content)
@@ -372,7 +372,7 @@ class TestAuditMdGateResults(unittest.TestCase):
             tmp = Path(tmp_str)
             ledger_path = tmp / ".gzkit" / "ledger.jsonl"
             ledger_path.parent.mkdir(parents=True, exist_ok=True)
-            ledger = _make_ledger_with_events(ledger_path, "ADR-0.19.0")
+            ledger = _make_ledger_with_events(ledger_path, "ADR-0.19.0-f")
             _, audit_file, _ = _call_write_audit_artifacts(tmp, ledger=ledger)
             content = audit_file.read_text(encoding="utf-8")
             self.assertIn("## Gate Results", content)
@@ -458,7 +458,7 @@ class TestAuditEnrichmentJsonKeys(unittest.TestCase):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
         with _attested_workspace():
-            result = runner.invoke(main, ["audit", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
             self.assertIn("attestation_record", data)
@@ -471,7 +471,7 @@ class TestAuditEnrichmentJsonKeys(unittest.TestCase):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
         with _attested_workspace():
-            result = runner.invoke(main, ["audit", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
             # Existing keys must be preserved unchanged
@@ -486,7 +486,7 @@ class TestAuditEnrichmentJsonKeys(unittest.TestCase):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
         with _attested_workspace():
-            result = runner.invoke(main, ["audit", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
             rec = data["attestation_record"]
@@ -501,7 +501,7 @@ class TestAuditEnrichmentJsonKeys(unittest.TestCase):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
         with _attested_workspace():
-            result = runner.invoke(main, ["audit", "ADR-0.1.0", "--json"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
             gate_results = data["gate_results"]
@@ -525,7 +525,7 @@ class TestAuditGeneratedLedgerEvent(unittest.TestCase):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
         with _attested_workspace():
-            result = runner.invoke(main, ["audit", "ADR-0.1.0"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn('"audit_generated"', ledger_text)
@@ -534,7 +534,7 @@ class TestAuditGeneratedLedgerEvent(unittest.TestCase):
             audit_events = [e for e in events if e["event"] == "audit_generated"]
             self.assertEqual(len(audit_events), 1)
             evt = audit_events[0]
-            self.assertEqual(evt["id"], "ADR-0.1.0")
+            self.assertEqual(evt["id"], "ADR-0.1.0-f")
             self.assertIn("AUDIT.md", evt["audit_file"])
             self.assertIn("AUDIT_PLAN.md", evt["audit_plan_file"])
             self.assertTrue(evt["passed"])
@@ -546,7 +546,7 @@ class TestAuditGeneratedLedgerEvent(unittest.TestCase):
         mock_run.return_value = _make_qr(success=False, returncode=1)
         runner = CliRunner()
         with _attested_workspace():
-            runner.invoke(main, ["audit", "ADR-0.1.0"])
+            runner.invoke(main, ["audit", "ADR-0.1.0-f"])
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             events = [json.loads(line) for line in ledger_text.strip().splitlines()]
             audit_events = [e for e in events if e["event"] == "audit_generated"]
@@ -558,7 +558,7 @@ class TestAuditGeneratedLedgerEvent(unittest.TestCase):
         """--dry-run does NOT append audit_generated event."""
         runner = CliRunner()
         with _attested_workspace():
-            result = runner.invoke(main, ["audit", "ADR-0.1.0", "--dry-run"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f", "--dry-run"])
             self.assertEqual(result.exit_code, 0, result.output)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertNotIn("audit_generated", ledger_text)
@@ -568,9 +568,9 @@ class TestAuditGeneratedLedgerEvent(unittest.TestCase):
         """Attestation blocker (exit 1) does NOT append audit_generated event."""
         runner = CliRunner()
         with _bare_workspace():
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             # No attestation — should block
-            result = runner.invoke(main, ["audit", "ADR-0.1.0"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 1)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertNotIn("audit_generated", ledger_text)
@@ -651,9 +651,9 @@ class TestAggregateAuditEvidence(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_str:
             ledger_path = Path(tmp_str) / ".gzkit" / "ledger.jsonl"
             ledger_path.parent.mkdir(parents=True, exist_ok=True)
-            ledger = _make_ledger_with_obpis(ledger_path, "ADR-0.19.0")
+            ledger = _make_ledger_with_obpis(ledger_path, "ADR-0.19.0-f")
             graph = ledger.get_artifact_graph()
-            result = aggregate_audit_evidence(ledger, "ADR-0.19.0", graph)
+            result = aggregate_audit_evidence(ledger, "ADR-0.19.0-f", graph)
             self.assertIn("obpi_completions", result)
             self.assertIn("gate_results", result)
             self.assertIn("attestation", result)
@@ -665,9 +665,9 @@ class TestAggregateAuditEvidence(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_str:
             ledger_path = Path(tmp_str) / ".gzkit" / "ledger.jsonl"
             ledger_path.parent.mkdir(parents=True, exist_ok=True)
-            ledger = _make_ledger_with_obpis(ledger_path, "ADR-0.19.0")
+            ledger = _make_ledger_with_obpis(ledger_path, "ADR-0.19.0-f")
             graph = ledger.get_artifact_graph()
-            result = aggregate_audit_evidence(ledger, "ADR-0.19.0", graph)
+            result = aggregate_audit_evidence(ledger, "ADR-0.19.0-f", graph)
             completions = result["obpi_completions"]
             self.assertEqual(len(completions), 3)
             completed_ids = [c["obpi_id"] for c in completions if c["ledger_completed"]]
@@ -682,9 +682,9 @@ class TestAggregateAuditEvidence(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_str:
             ledger_path = Path(tmp_str) / ".gzkit" / "ledger.jsonl"
             ledger_path.parent.mkdir(parents=True, exist_ok=True)
-            ledger = _make_ledger_with_obpis(ledger_path, "ADR-0.19.0")
+            ledger = _make_ledger_with_obpis(ledger_path, "ADR-0.19.0-f")
             graph = ledger.get_artifact_graph()
-            result = aggregate_audit_evidence(ledger, "ADR-0.19.0", graph)
+            result = aggregate_audit_evidence(ledger, "ADR-0.19.0-f", graph)
             self.assertEqual(len(result["gate_results"]), 2)
             for gr in result["gate_results"]:
                 self.assertIn("gate", gr)
@@ -696,9 +696,9 @@ class TestAggregateAuditEvidence(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_str:
             ledger_path = Path(tmp_str) / ".gzkit" / "ledger.jsonl"
             ledger_path.parent.mkdir(parents=True, exist_ok=True)
-            ledger = _make_ledger_with_obpis(ledger_path, "ADR-0.19.0")
+            ledger = _make_ledger_with_obpis(ledger_path, "ADR-0.19.0-f")
             graph = ledger.get_artifact_graph()
-            result = aggregate_audit_evidence(ledger, "ADR-0.19.0", graph)
+            result = aggregate_audit_evidence(ledger, "ADR-0.19.0-f", graph)
             att = result["attestation"]
             self.assertIsNotNone(att)
             self.assertEqual(att["by"], "human:Jeff")
@@ -709,9 +709,9 @@ class TestAggregateAuditEvidence(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_str:
             ledger_path = Path(tmp_str) / ".gzkit" / "ledger.jsonl"
             ledger_path.parent.mkdir(parents=True, exist_ok=True)
-            ledger = _make_ledger_with_obpis(ledger_path, "ADR-0.19.0")
+            ledger = _make_ledger_with_obpis(ledger_path, "ADR-0.19.0-f")
             graph = ledger.get_artifact_graph()
-            result = aggregate_audit_evidence(ledger, "ADR-0.19.0", graph)
+            result = aggregate_audit_evidence(ledger, "ADR-0.19.0-f", graph)
             co = result["closeout"]
             self.assertIsNotNone(co)
             self.assertEqual(co["by"], "agent")
@@ -723,10 +723,10 @@ class TestAggregateAuditEvidence(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_str:
             ledger_path = Path(tmp_str) / ".gzkit" / "ledger.jsonl"
             ledger_path.parent.mkdir(parents=True, exist_ok=True)
-            ledger = _make_ledger_with_obpis(ledger_path, "ADR-0.19.0")
+            ledger = _make_ledger_with_obpis(ledger_path, "ADR-0.19.0-f")
             graph = ledger.get_artifact_graph()
-            result1 = aggregate_audit_evidence(ledger, "ADR-0.19.0", graph)
-            result2 = aggregate_audit_evidence(ledger, "ADR-0.19.0", graph)
+            result1 = aggregate_audit_evidence(ledger, "ADR-0.19.0-f", graph)
+            result2 = aggregate_audit_evidence(ledger, "ADR-0.19.0-f", graph)
             self.assertEqual(result1, result2)
 
     def test_empty_ledger_returns_defaults(self):
@@ -735,7 +735,7 @@ class TestAggregateAuditEvidence(unittest.TestCase):
             ledger_path.parent.mkdir(parents=True, exist_ok=True)
             ledger = Ledger(ledger_path)
             graph = ledger.get_artifact_graph()
-            result = aggregate_audit_evidence(ledger, "ADR-0.19.0", graph)
+            result = aggregate_audit_evidence(ledger, "ADR-0.19.0-f", graph)
             self.assertEqual(result["obpi_completions"], [])
             self.assertEqual(result["gate_results"], [])
             self.assertIsNone(result["attestation"])
@@ -752,7 +752,7 @@ class TestAuditMdRenderedFromTemplate(unittest.TestCase):
             tmp = Path(tmp_str)
             ledger_path = tmp / ".gzkit" / "ledger.jsonl"
             ledger_path.parent.mkdir(parents=True, exist_ok=True)
-            ledger = _make_ledger_with_obpis(ledger_path, "ADR-0.19.0")
+            ledger = _make_ledger_with_obpis(ledger_path, "ADR-0.19.0-f")
             _, audit_file, _ = _call_write_audit_artifacts(tmp, ledger=ledger)
             content = audit_file.read_text(encoding="utf-8")
             self.assertIn("## OBPI Completion Summary", content)
@@ -765,7 +765,7 @@ class TestAuditMdRenderedFromTemplate(unittest.TestCase):
             tmp = Path(tmp_str)
             ledger_path = tmp / ".gzkit" / "ledger.jsonl"
             ledger_path.parent.mkdir(parents=True, exist_ok=True)
-            ledger = _make_ledger_with_events(ledger_path, "ADR-0.19.0")
+            ledger = _make_ledger_with_events(ledger_path, "ADR-0.19.0-f")
             _, audit_file, _ = _call_write_audit_artifacts(tmp, ledger=ledger)
             content = audit_file.read_text(encoding="utf-8")
             self.assertIn("Generated:", content)
@@ -779,7 +779,7 @@ class TestAuditMdRenderedFromTemplate(unittest.TestCase):
             ledger = Ledger(ledger_path)
             plan_file, _, _ = _call_write_audit_artifacts(tmp, ledger=ledger)
             content = plan_file.read_text(encoding="utf-8")
-            self.assertIn("# Audit Plan: ADR-0.19.0", content)
+            self.assertIn("# Audit Plan: ADR-0.19.0-f", content)
             self.assertIn("Generated:", content)
             self.assertIn("uv run gz lint", content)
 
@@ -789,7 +789,7 @@ class TestAuditMdRenderedFromTemplate(unittest.TestCase):
             tmp = Path(tmp_str)
             ledger_path = tmp / ".gzkit" / "ledger.jsonl"
             ledger_path.parent.mkdir(parents=True, exist_ok=True)
-            ledger = _make_ledger_with_events(ledger_path, "ADR-0.19.0")
+            ledger = _make_ledger_with_events(ledger_path, "ADR-0.19.0-f")
             _, audit_file, _ = _call_write_audit_artifacts(tmp, ledger=ledger)
             content = audit_file.read_text(encoding="utf-8")
             self.assertIn("## Verification Results", content)

@@ -13,12 +13,14 @@ class TestSpecifyCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             result = runner.invoke(
-                main, ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "1"]
+                main, ["specify", "core-feature", "--parent", "ADR-0.1.0-f", "--item", "1"]
             )
             self.assertEqual(result.exit_code, 0)
-            obpi_path = Path("design/adr/pre-release/ADR-0.1.0/obpis/OBPI-0.1.0-01-core-feature.md")
+            obpi_path = Path(
+                "design/adr/pre-release/ADR-0.1.0-f/obpis/OBPI-0.1.0-01-core-feature.md"
+            )
             self.assertTrue(obpi_path.exists())
             content = obpi_path.read_text(encoding="utf-8")
             self.assertIn('Checklist Item:** #1 - "OBPI-0.1.0-01:', content)
@@ -41,9 +43,9 @@ class TestSpecifyCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             result = runner.invoke(
-                main, ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "2"]
+                main, ["specify", "core-feature", "--parent", "ADR-0.1.0-f", "--item", "2"]
             )
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("out of range", result.output)
@@ -53,14 +55,16 @@ class TestSpecifyCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             result = runner.invoke(
-                main, ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "1"]
+                main, ["specify", "core-feature", "--parent", "ADR-0.1.0-f", "--item", "1"]
             )
             self.assertEqual(result.exit_code, 0)
             self.assertIn("populated from ADR content", result.output)
             self.assertIn("Review allowed paths", result.output)
-            obpi_path = Path("design/adr/pre-release/ADR-0.1.0/obpis/OBPI-0.1.0-01-core-feature.md")
+            obpi_path = Path(
+                "design/adr/pre-release/ADR-0.1.0-f/obpis/OBPI-0.1.0-01-core-feature.md"
+            )
             content = obpi_path.read_text(encoding="utf-8")
             self.assertNotIn("command --to --verify", content)
             self.assertNotIn("path/to/prerequisite", content)
@@ -71,15 +75,17 @@ class TestSpecifyCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
             result = runner.invoke(
                 main,
-                ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "1", "--author"],
+                ["specify", "core-feature", "--parent", "ADR-0.1.0-f", "--item", "1", "--author"],
             )
             self.assertEqual(result.exit_code, 0)
             self.assertIn("validated for pipeline entry", result.output)
 
-            obpi_path = Path("design/adr/pre-release/ADR-0.1.0/obpis/OBPI-0.1.0-01-core-feature.md")
+            obpi_path = Path(
+                "design/adr/pre-release/ADR-0.1.0-f/obpis/OBPI-0.1.0-01-core-feature.md"
+            )
             content = obpi_path.read_text(encoding="utf-8")
             self.assertNotIn("<!--", content)
 

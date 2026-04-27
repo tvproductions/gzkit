@@ -1,5 +1,5 @@
 ---
-id: ADR-0.2.0
+id: ADR-0.2.0-gate-verification
 status: Validated
 kind: feature
 semver: 0.2.0

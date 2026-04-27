@@ -83,21 +83,21 @@ def step_init_default_with_surfaces(_context) -> None:  # type: ignore[no-untype
 
 @given("a heavy ADR exists")
 def step_plan_heavy_adr(_context) -> None:  # type: ignore[no-untyped-def]
-    code, output = _invoke(["plan", "create", "0.1.0", "--lane", "heavy", "--kind", "feature"])
+    code, output = _invoke(["plan", "create", "f", "--lane", "heavy", "--kind", "feature"])
     assert code == 0, output
 
 
 @given("ADR-0.1.0 exists")
 def step_plan_default_adr(_context) -> None:  # type: ignore[no-untyped-def]
-    code, output = _invoke(["plan", "create", "0.1.0", "--kind", "feature"])
+    code, output = _invoke(["plan", "create", "f", "--kind", "feature"])
     assert code == 0, output
 
 
 @given("gate 2 and gate 3 are marked pass for ADR-0.1.0")
 def step_mark_gate23(_context) -> None:  # type: ignore[no-untyped-def]
     ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-    ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
-    ledger.append(gate_checked_event("ADR-0.1.0", 3, "pass", "docs", 0))
+    ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
+    ledger.append(gate_checked_event("ADR-0.1.0-f", 3, "pass", "docs", 0))
 
 
 @given("a completed OBPI with anchor-tracked receipt exists for OBPI-0.1.0-01-demo")
@@ -110,7 +110,7 @@ def step_completed_anchor_obpi(context) -> None:  # type: ignore[no-untyped-def]
             [
                 "---",
                 "id: OBPI-0.1.0-01-demo",
-                "parent: ADR-0.1.0",
+                "parent: ADR-0.1.0-f",
                 "item: 1",
                 "lane: Lite",
                 "status: Completed",
@@ -162,11 +162,11 @@ def step_completed_anchor_obpi(context) -> None:  # type: ignore[no-untyped-def]
     ).stdout.strip()
 
     ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-    ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+    ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
     ledger.append(
         obpi_receipt_emitted_event(
             obpi_id="OBPI-0.1.0-01-demo",
-            parent_adr="ADR-0.1.0",
+            parent_adr="ADR-0.1.0-f",
             receipt_event="completed",
             attestor="human:bdd",
             obpi_completion="completed",
