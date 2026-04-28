@@ -400,6 +400,65 @@ class TestRegisterAdrsCommand(unittest.TestCase):
             self.assertIn("ADR-pool.my-feature", result2.output)
             self.assertIn("ADR-0.5.0-my-feature", result2.output)
 
+    def test_register_adrs_quiet_on_archived_promoted_pool_file(self) -> None:
+        """register-adrs honors preserve doctrine: archived pool files do NOT warn (GHI #352)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            pool_dir = Path(config.paths.adrs) / "pool"
+            pool_dir.mkdir(parents=True, exist_ok=True)
+            pool_file = pool_dir / "ADR-pool.archived-feature.md"
+            pool_file.write_text(
+                "---\nid: ADR-pool.archived-feature\nstatus: Pool\nlane: lite\n---\n\n"
+                "# ADR-pool.archived-feature\n",
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(main, ["register-adrs"])
+            self.assertEqual(result.exit_code, 0)
+
+            versioned_dir = Path(config.paths.adrs) / "pre-release" / "ADR-0.6.0-archived-feature"
+            versioned_dir.mkdir(parents=True, exist_ok=True)
+            (versioned_dir / "ADR-0.6.0-archived-feature.md").write_text(
+                "---\nid: ADR-0.6.0-archived-feature\nparent: PRD-GZKIT-1.0.0\nlane: heavy\n---\n\n"
+                "# ADR-0.6.0: Archived Feature\n",
+                encoding="utf-8",
+            )
+
+            from gzkit.ledger import Ledger, adr_created_event, artifact_renamed_event
+
+            ledger = Ledger(Path(config.paths.ledger))
+            ledger.append(
+                adr_created_event("ADR-0.6.0-archived-feature", "PRD-GZKIT-1.0.0", "heavy")
+            )
+            ledger.append(
+                artifact_renamed_event(
+                    old_id="ADR-pool.archived-feature",
+                    new_id="ADR-0.6.0-archived-feature",
+                    reason="pool_promotion",
+                )
+            )
+
+            # Mark pool file as archived per _mark_pool_adr_promoted doctrine.
+            pool_file.write_text(
+                "---\n"
+                "id: ADR-pool.archived-feature\n"
+                "status: Superseded\n"
+                "lane: lite\n"
+                "promoted_to: ADR-0.6.0-archived-feature\n"
+                "---\n\n"
+                "# ADR-pool.archived-feature\n"
+                "> Promoted to `ADR-0.6.0-archived-feature` on 2026-04-28. "
+                "This pool file is retained as historical intake context.\n",
+                encoding="utf-8",
+            )
+
+            result2 = runner.invoke(main, ["register-adrs"])
+            self.assertEqual(result2.exit_code, 0)
+            self.assertNotIn("stale", result2.output)
+
     def test_register_adrs_warns_on_unresolvable_parent(self) -> None:
         """register-adrs warns when OBPI parent cannot be resolved."""
         runner = CliRunner()

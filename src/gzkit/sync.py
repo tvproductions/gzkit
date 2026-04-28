@@ -309,6 +309,14 @@ def _parse_frontmatter(lines: list[str], result: dict[str, str]) -> bool:
             lane = normalized_value.lower()
             if lane in ALLOWED_LANES:
                 result["lane"] = lane
+            continue
+
+        if normalized_key == "status":
+            result["status"] = normalized_value
+            continue
+
+        if normalized_key == "promoted_to" and normalized_value.startswith(ALLOWED_ID_PREFIXES):
+            result["promoted_to"] = normalized_value
 
     return has_frontmatter_id
 
