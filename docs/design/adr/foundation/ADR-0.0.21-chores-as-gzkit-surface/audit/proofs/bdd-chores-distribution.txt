@@ -1,0 +1,47 @@
+--- ADR-0.0.21 BDD scenarios ---
+USING RUNNER: behave.runner:Runner
+Feature: Chores distribution end-to-end # features/chores_distribution.feature:1
+  Heavy-lane Gate 4 proof for ADR-0.0.21 (chores as gzkit surface).
+  Exercises the install -> scaffold -> list -> repair lifecycle against the
+  real installed gzkit package (editable install in .venv resolves
+  importlib.resources('gzkit.chores') to the canonical source tree).
+  @REQ-0.0.21-07-01 @REQ-0.0.21-07-02 @REQ-0.0.21-07-06 @REQ-0.0.21-07-07
+  Scenario: Package fallback works without gz init           # features/chores_distribution.feature:11
+    Given a fresh empty project directory                    # features/steps/chores_distribution_steps.py:62
+    When I run "gz chores list" as a subprocess              # features/steps/chores_distribution_steps.py:98
+    Then the subprocess exits with code 0                    # features/steps/chores_distribution_steps.py:105
+    And the subprocess output contains "quality-check"       # features/steps/chores_distribution_steps.py:113
+    And the subprocess output contains "skill-manifest-sync" # features/steps/chores_distribution_steps.py:113
+
+  @REQ-0.0.21-07-03
+  Scenario: gz init populates project chores and --explain reports project source  # features/chores_distribution.feature:19
+    Given a fresh empty project directory                                          # features/steps/chores_distribution_steps.py:62
+    When I run "gz init --no-skeleton" as a subprocess                             # features/steps/chores_distribution_steps.py:98
+    And I run "gz chores list --explain" as a subprocess                           # features/steps/chores_distribution_steps.py:98
+    Then the subprocess exits with code 0                                          # features/steps/chores_distribution_steps.py:105
+    And the file ".gzkit/chores/quality-check/CHORE.md" exists                     # features/steps/gz_steps.py:230
+    And every chore row in the subprocess output reports "project" source          # features/steps/chores_distribution_steps.py:120
+
+  @REQ-0.0.21-07-04
+  Scenario: Re-running gz init preserves operator edits to a chore                                       # features/chores_distribution.feature:28
+    Given a fresh empty project directory                                                                # features/steps/chores_distribution_steps.py:62
+    And the workspace has been initialized via gz init                                                   # features/steps/chores_distribution_steps.py:71
+    And the operator edits ".gzkit/chores/quality-check/CHORE.md" with marker "OPERATOR-EDIT-MARKER-XYZ" # features/steps/chores_distribution_steps.py:77
+    When I run "gz init --no-skeleton" as a subprocess                                                   # features/steps/chores_distribution_steps.py:98
+    Then the subprocess exits with code 0                                                                # features/steps/chores_distribution_steps.py:105
+    And the file ".gzkit/chores/quality-check/CHORE.md" contains "OPERATOR-EDIT-MARKER-XYZ"              # features/steps/gz_steps.py:235
+
+  @REQ-0.0.21-07-05
+  Scenario: Merge diff fires for canonical-only slug and --yes writes the merge      # features/chores_distribution.feature:37
+    Given a fresh empty project directory                                            # features/steps/chores_distribution_steps.py:62
+    And the workspace has been initialized via gz init                               # features/steps/chores_distribution_steps.py:71
+    And the slug "quality-check" has been removed from ".gzkit/chores/registry.json" # features/steps/chores_distribution_steps.py:85
+    When I run "gz init --no-skeleton --yes" as a subprocess                         # features/steps/chores_distribution_steps.py:98
+    Then the subprocess exits with code 0                                            # features/steps/chores_distribution_steps.py:105
+    And the subprocess output contains "+ quality-check"                             # features/steps/chores_distribution_steps.py:113
+    And the registry ".gzkit/chores/registry.json" contains slug "quality-check"     # features/steps/chores_distribution_steps.py:135
+
+1 feature passed, 0 failed, 0 skipped
+4 scenarios passed, 0 failed, 0 skipped
+24 steps passed, 0 failed, 0 skipped
+Took 0min 1.421s

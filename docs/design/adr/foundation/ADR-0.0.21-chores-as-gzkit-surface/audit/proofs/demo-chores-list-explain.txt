@@ -1,0 +1,157 @@
+                                Chores Registry
+┏━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━━┓
+┃ Slug         ┃ Lane   ┃ Version ┃ Vendor ┃ Criteria ┃ Title        ┃ Source  ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━━━┩
+│ agents-md-a… │ lite   │ 1.0.0   │        │        7 │ Add          │ project │
+│              │        │         │        │          │ Architectur… │         │
+│              │        │         │        │          │ Boundaries   │         │
+│              │        │         │        │          │ to AGENTS.md │         │
+│ arb-pattern… │ lite   │ 1.0.0   │        │        1 │ ARB Pattern  │ project │
+│              │        │         │        │          │ Extraction   │         │
+│              │        │         │        │          │ (Code Style  │         │
+│              │        │         │        │          │ Feedback     │         │
+│              │        │         │        │          │ Loop)        │         │
+│ cli-contrac… │ heavy  │ 1.0.0   │        │        2 │ CLI Contract │ project │
+│              │        │         │        │          │ Governance   │         │
+│              │        │         │        │          │ (Drift &     │         │
+│              │        │         │        │          │ Evolution)   │         │
+│ complexity-… │ lite   │ 1.0.0   │        │        2 │ Complexity   │ project │
+│              │        │         │        │          │ Reduction    │         │
+│              │        │         │        │          │ (Xenon       │         │
+│              │        │         │        │          │ C/C/C)       │         │
+│ config-path… │ lite   │ 1.0.0   │        │        2 │ Config Paths │ project │
+│              │        │         │        │          │ Remediation  │         │
+│ control-sur… │ lite   │ 1.0.0   │        │        3 │ Control      │ project │
+│              │        │         │        │          │ Surface      │         │
+│              │        │         │        │          │ Audit —      │         │
+│              │        │         │        │          │ Rule-Pair    │         │
+│              │        │         │        │          │ Conflict     │         │
+│              │        │         │        │          │ Matrix (Pass │         │
+│              │        │         │        │          │ A)           │         │
+│ control-sur… │ lite   │ 1.0.0   │        │        5 │ Control      │ project │
+│              │        │         │        │          │ Surface      │         │
+│              │        │         │        │          │ Audit — Rule │         │
+│              │        │         │        │          │ Prose vs     │         │
+│              │        │         │        │          │ Promoted     │         │
+│              │        │         │        │          │ Check Parity │         │
+│              │        │         │        │          │ (Pass C)     │         │
+│ control-sur… │ lite   │ 1.0.0   │        │        4 │ Control      │ project │
+│              │        │         │        │          │ Surface      │         │
+│              │        │         │        │          │ Audit —      │         │
+│              │        │         │        │          │ Skill/Rule   │         │
+│              │        │         │        │          │ Reachability │         │
+│              │        │         │        │          │ Matrix (Pass │         │
+│              │        │         │        │          │ B)           │         │
+│ coverage-40… │ lite   │ 1.0.0   │        │        3 │ Coverage     │ project │
+│              │        │         │        │          │ >=40%        │         │
+│              │        │         │        │          │ Baseline     │         │
+│ cross-platf… │ medium │ 1.0.0   │        │        1 │ Cross-Platf… │ project │
+│              │        │         │        │          │ Test Cleanup │         │
+│              │        │         │        │          │ (Windows-Sa… │         │
+│              │        │         │        │          │ Patterns)    │         │
+│ dependency-… │ lite   │ 1.0.0   │        │        2 │ Dependency   │ project │
+│              │        │         │        │          │ Currency     │         │
+│              │        │         │        │          │ (Tooling     │         │
+│              │        │         │        │          │ Stack Drift  │         │
+│              │        │         │        │          │ Scan)        │         │
+│ doc-coverage │ heavy  │ 1.0.0   │        │        1 │ Documentati… │ project │
+│              │        │         │        │          │ Cross-Cover… │         │
+│              │        │         │        │          │ Enforcement  │         │
+│ evidence-in… │ lite   │ 1.0.0   │        │        1 │ OBPI         │ project │
+│              │        │         │        │          │ Evidence     │         │
+│              │        │         │        │          │ Integrity    │         │
+│              │        │         │        │          │ Audit        │         │
+│ exceptions-… │ lite   │ 1.0.0   │        │        2 │ Exceptions & │ project │
+│              │        │         │        │          │ Logging      │         │
+│              │        │         │        │          │ Rationaliza… │         │
+│ frontmatter… │ heavy  │ 2.0.0   │        │        1 │ Frontmatter… │ project │
+│              │        │         │        │          │ Reconciliat… │         │
+│              │        │         │        │          │ (ADR-0.0.16  │         │
+│              │        │         │        │          │ OBPI-03)     │         │
+│ hardcoded-r… │ lite   │ 1.0.0   │        │        6 │ Config-First │ project │
+│              │        │         │        │          │ Enforcement  │         │
+│              │        │         │        │          │ (Anti-Vibe-… │         │
+│ instruction… │ lite   │ 1.0.0   │        │        5 │ Instructions │ project │
+│              │        │         │        │          │ & Memory     │         │
+│              │        │         │        │          │ Files Diet   │         │
+│              │        │         │        │          │ (Progressive │         │
+│              │        │         │        │          │ Disclosure)  │         │
+│ memory-hygi… │ lite   │ 1.0.0   │ claude │        1 │ Audit        │ project │
+│              │        │         │        │          │ auto-memory  │         │
+│              │        │         │        │          │ for process  │         │
+│              │        │         │        │          │ drift into   │         │
+│              │        │         │        │          │ governed     │         │
+│              │        │         │        │          │ artifacts    │         │
+│ module-sloc… │ lite   │ 1.0.0   │        │        1 │ Module SLOC  │ project │
+│              │        │         │        │          │ Cap (Radon)  │         │
+│ pep257-docs… │ lite   │ 1.0.0   │        │        2 │ PEP 257      │ project │
+│              │        │         │        │          │ Docstring    │         │
+│              │        │         │        │          │ Compliance   │         │
+│              │        │         │        │          │ (Style +     │         │
+│              │        │         │        │          │ Coverage)    │         │
+│ pool-triage  │ lite   │ 0.1.0   │        │        3 │ Pool ADR     │ project │
+│              │        │         │        │          │ Drift Triage │         │
+│              │        │         │        │          │ (read-only;  │         │
+│              │        │         │        │          │ stopgap for  │         │
+│              │        │         │        │          │ ADR-pool.po… │         │
+│ pythonic-de… │ lite   │ 1.0.0   │        │        2 │ Pythonic     │ project │
+│              │        │         │        │          │ Design       │         │
+│              │        │         │        │          │ Pattern      │         │
+│              │        │         │        │          │ Application  │         │
+│              │        │         │        │          │ (Before/Aft… │         │
+│              │        │         │        │          │ Evidence     │         │
+│              │        │         │        │          │ Capture)     │         │
+│ pythonic-de… │ lite   │ 1.0.0   │        │        2 │ Pythonic     │ project │
+│              │        │         │        │          │ Design       │         │
+│              │        │         │        │          │ Pattern      │         │
+│              │        │         │        │          │ Detection    │         │
+│              │        │         │        │          │ (AST Scanner │         │
+│              │        │         │        │          │ +            │         │
+│              │        │         │        │          │ refactoring… │         │
+│              │        │         │        │          │ Catalogue)   │         │
+│ pythonic-re… │ lite   │ 1.0.0   │        │        3 │ Pythonic     │ project │
+│              │        │         │        │          │ Refactoring  │         │
+│              │        │         │        │          │ (ruff + ty)  │         │
+│ quality-che… │ lite   │ 2.0.0   │        │        1 │ Run full     │ project │
+│              │        │         │        │          │ quality      │         │
+│              │        │         │        │          │ gates        │         │
+│ repository-… │ lite   │ 1.0.0   │        │        2 │ Repository   │ project │
+│              │        │         │        │          │ Structure    │         │
+│              │        │         │        │          │ Normalizati… │         │
+│ schema-and-… │ lite   │ 1.0.0   │        │        1 │ Schema Drift │ project │
+│              │        │         │        │          │ / Config     │         │
+│              │        │         │        │          │ Drift Audit  │         │
+│ skill-autho… │ lite   │ 2.0.0   │        │        1 │ Skill        │ project │
+│              │        │         │        │          │ Authoring    │         │
+│              │        │         │        │          │ Quality      │         │
+│              │        │         │        │          │ (Agent-First │         │
+│              │        │         │        │          │ Best         │         │
+│              │        │         │        │          │ Practices)   │         │
+│ skill-comma… │ heavy  │ 1.0.0   │        │        3 │ Skill &      │ project │
+│              │        │         │        │          │ Command      │         │
+│              │        │         │        │          │ Documentati… │         │
+│              │        │         │        │          │ Parity       │         │
+│ skill-manif… │ lite   │ 1.0.0   │        │        2 │ Skill        │ project │
+│              │        │         │        │          │ Manifest     │         │
+│              │        │         │        │          │ Sync         │         │
+│ skill-trigg… │ lite   │ 1.0.0   │        │        1 │ Skill        │ project │
+│              │        │         │        │          │ Trigger &    │         │
+│              │        │         │        │          │ Output       │         │
+│              │        │         │        │          │ Testing      │         │
+│ sync-manpag… │ lite   │ 1.0.0   │        │        1 │ Sync Manpage │ project │
+│              │        │         │        │          │ Docstrings   │         │
+│              │        │         │        │          │ (One-Liner   │         │
+│              │        │         │        │          │ Alignment)   │         │
+│ test-isolat… │ lite   │ 2.0.0   │        │        2 │ Test         │ project │
+│              │        │         │        │          │ Isolation &  │         │
+│              │        │         │        │          │ Health       │         │
+│              │        │         │        │          │ Compliance   │         │
+│ test-manpag… │ heavy  │ 1.0.0   │        │        2 │ Test Manpage │ project │
+│              │        │         │        │          │ Examples     │         │
+│              │        │         │        │          │ (Executable  │         │
+│              │        │         │        │          │ Verificatio… │         │
+│ validate-ma… │ lite   │ 1.0.0   │        │        1 │ Validate     │ project │
+│              │        │         │        │          │ Manpages     │         │
+│              │        │         │        │          │ (Call Stack  │         │
+│              │        │         │        │          │ Alignment)   │         │
+└──────────────┴────────┴─────────┴────────┴──────────┴──────────────┴─────────┘

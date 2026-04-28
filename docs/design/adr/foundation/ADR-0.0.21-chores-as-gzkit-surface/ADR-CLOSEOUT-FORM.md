@@ -1,6 +1,6 @@
 # ADR Closeout Form: ADR-0.0.21-chores-as-gzkit-surface
 
-**Status:** Not Started
+**Status:** Validated (2026-04-28)
 **Kind:** foundation
 **Lane:** heavy
 **OBPI count:** 9
@@ -54,7 +54,7 @@ Closeout evidence verified:
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.21 | Draft | | | Awaiting OBPI implementation |
+| 0.0.21 | Validated | Jeffry Babb (agent-relayed) | 2026-04-28 | Closeout-form pre-attestation checklist verified; ledger receipt `audit_receipt_emitted` event=`validated` attestation_type=`agent-relayed-operator-attestation` landed via `gz adr audit-begin → emit-receipt --attestor-present → audit-end` ceremony |
 
 ## Downstream gates released on closeout
 
