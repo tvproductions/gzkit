@@ -7,7 +7,7 @@ Query ledger artifact relationships and derived ADR semantics.
 ## Usage
 
 ```bash
-gz state [--json] [--blocked] [--ready] [--include-withdrawn] [--repair]
+gz state [--json] [--blocked] [--ready] [--include-withdrawn] [--repair] [--full]
 ```
 
 ---
@@ -17,6 +17,7 @@ gz state [--json] [--blocked] [--ready] [--include-withdrawn] [--repair]
 - `--blocked`: show unattested artifacts.
 - `--ready`: show ADRs that are genuinely ready for attestation.
 - `--include-withdrawn`: include withdrawn OBPIs (hidden by default).
+- `--full`: preserve full IDs (no ellipsis truncation) and fold long table cells so the entire artifact graph remains readable on wide terminals.
 
 `--ready` means:
 

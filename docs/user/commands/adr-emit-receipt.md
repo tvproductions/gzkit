@@ -7,8 +7,20 @@ Emit a receipt event (`completed` or `validated`) for an ADR.
 ## Usage
 
 ```bash
-gz adr emit-receipt <ADR-ID> --event {completed,validated} --attestor <text> [--evidence-json <json>] [--dry-run]
+gz adr emit-receipt <ADR-ID> --event {completed,validated} --attestor <text> [--evidence-json <json>] [--attestor-present] [--dry-run]
 ```
+
+---
+
+## Options
+
+| Option | Description |
+|--------|-------------|
+| `--event` | Receipt event type (`completed` or `validated`) |
+| `--attestor` | Identity of the attestor |
+| `--evidence-json` | JSON payload with `value_narrative`, `key_proof`; Heavy/Foundation adds attestation fields |
+| `--attestor-present` | Agent-relayed operator attestation, gated on an active pipeline marker (GHI #292) |
+| `--dry-run` | Show planned actions without executing |
 
 ---
 
