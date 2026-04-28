@@ -4,6 +4,9 @@ parent: ADR-0.0.22-security-sensitivity-doctrine
 item: 3
 lane: Heavy
 status: Draft
+depends_on:
+  - OBPI-0.0.22-01-schema-frontmatter-field
+  - OBPI-0.0.22-02-security-surface-registry
 ---
 
 # OBPI-0.0.22-03-validate-sensitivity-scope: gz validate --sensitivity scope with --explain subform
@@ -34,7 +37,13 @@ status: Draft
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
 - `docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/ADR-0.0.22-security-sensitivity-doctrine.md` — parent ADR for intent and scope
-- `docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/**` — parent ADR package scope
+- `docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/obpis/OBPI-0.0.22-03-validate-sensitivity-scope.md` — this brief
+- `src/gzkit/governance/trust_audits.py` — `validate_sensitivity_binding` is added here
+- `src/gzkit/cli/parser_validate.py` — `--sensitivity` and `--explain` flag registration
+- `src/gzkit/cli/**` — adjacent CLI wiring (e.g. `gz check` integration)
+- `tests/governance/**` — validator unit tests (floor-fires, escalation-allowed, escape-blocked, registry-missing)
+- `tests/cli/**` — CLI flag and `--json` output tests
+- `data/behave_coverage_waivers.json` — waiver if BDD is deferred per existing pattern
 
 ## Denied Paths
 
@@ -46,37 +55,21 @@ status: Draft
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+<!-- Constraints that MUST hold for THIS brief's scope. Cross-brief invariants
+     live in the parent ADR Decision; per-brief requirements assert this brief's
+     contract only. -->
 
-1. REQUIREMENT: `gz validate --sensitivity` intersects each brief's `## ALLOWED PATHS` glob list with a registered security-surface registry (`data/security_surfaces.json`).
-1. REQUIREMENT: Any intersection forces `sensitivity: security` regardless of frontmatter (the auto-detect floor).
-1. REQUIREMENT: Frontmatter MAY declare `sensitivity: security` when paths don't trigger detection (escalation channel for cases the registry misses, e.g. test fixtures for new auth flows under `tests/**`).
-1. REQUIREMENT: Frontmatter MAY NOT declare a value lower than detected. Validator exits 3 on attempted escape.
-1. REQUIREMENT: Same enforcement shape as `kind` (declared in frontmatter, validated by `gz validate --taxonomy`), with the auto-detect floor added on top.
-1. REQUIREMENT: A new function `_requires_security_review_attestation` at `src/gzkit/commands/adr_audit.py` returns True when the brief carries `sensitivity: security` (whether declared or auto-detected).
-1. REQUIREMENT: This function ORs into the existing `_requires_human_obpi_attestation` predicate alongside the foundation-kind branch and the heavy-lane branch.
-1. REQUIREMENT: A `lite + feature + sensitivity:security` brief is no longer self-closeable. Gate 5 human attestation is required at the brief level.
-1. REQUIREMENT: The TTY + `ATTEST` confirmation gate at `_enforce_human_attestation_authenticity` (the GHI #290 closure) automatically applies because attestation is now required.
-1. REQUIREMENT: Heightened attestation walkthrough: TTY + `ATTEST` prompt enumerates a security-specific checklist (credential handling reviewed, subprocess input validated, crypto choices justified, boundary validation confirmed). The walkthrough is enumerated in the rule file, not authored ad-hoc per brief.
-1. REQUIREMENT: Scan receipt cited inline: attestation text MUST cite a fresh `arb-step-security-*` receipt produced by whatever scanner the feature ADR settles on. `CANONICAL_STEP_COMMANDS` at `src/gzkit/arb/validator.py` extends with the security-scan invocation slot; the slot is reserved by this ADR but the canonical command string is filled by the feature ADR that promotes the toolchain.
-1. REQUIREMENT: Same shape as today's heavy-lane attestation pattern (canonical receipts cited + attestation text), with the security-specific walkthrough added.
-1. REQUIREMENT: `src/gzkit/schemas/adr.json` and `src/gzkit/schemas/obpi.json`: add optional `sensitivity` enum field with values [`security`].
-1. REQUIREMENT: `data/security_surfaces.json` (new): registry of glob patterns + category labels. Edits governed by the doctrine itself.
-1. REQUIREMENT: `src/gzkit/governance/trust_audits.py`: add `validate_sensitivity_binding` for `gz validate --sensitivity` scope. Emits structured findings (file, declared_sensitivity, detected_sensitivity, intersecting_paths, registry_categories). Fail-closed (exit 3) on escape attempts and unwaived violations.
-1. REQUIREMENT: `src/gzkit/commands/adr_audit.py`: add `_requires_security_review_attestation`; OR into `_requires_human_obpi_attestation` alongside the existing foundation-kind and heavy-lane branches.
-1. REQUIREMENT: `src/gzkit/arb/validator.py`: extend `CANONICAL_STEP_COMMANDS` with the security-scan invocation slot (reserved name, command string filled by the toolchain feature ADR).
-1. REQUIREMENT: `src/gzkit/commands/obpi.py`: walkthrough prompt extension when the brief being completed carries `sensitivity: security`.
-1. REQUIREMENT: `data/behave_coverage_waivers.json` extension: foundation OBPIs deferring BDD per existing pattern.
-1. REQUIREMENT: `docs/governance/advisory-rules-audit.md`: scorecard entry classifying the new rule as Mechanical.
-1. REQUIREMENT: `.gzkit/rules/security-sensitivity.md` (new): canonical rule file declaring the invariant, the registry contract, the validate scope, the walkthrough enumeration, and the scanner-unavailable failure mode.
-1. REQUIREMENT: `AGENTS.md` § Lane & Kind & Sensitivity Attestation Matrix: add the third axis to the existing lane/kind matrix.
-1. REQUIREMENT: Does NOT author the security scanner toolchain (bandit/semgrep) — that's the feature ADR promoting `pool.agentic-security-review`.
-1. REQUIREMENT: Does NOT author content-layer injection scanning — that's `pool.content-injection-scanning`, complementary attack surface.
-1. REQUIREMENT: Does NOT add additional sensitivity values beyond `security` — privacy, compliance, safety-critical are separate foundation ADRs (YAGNI).
-1. REQUIREMENT: Does NOT enforce separation-of-duties (attestor != implementer) — appealing but adds multi-agent coordination requirement; follow-up ADR if drift observed.
-1. REQUIREMENT: Does NOT enforce allow-list expiry on the registry — registry edits are governed by the doctrine; no expiry mechanism in v1.
-1. REQUIREMENT: Does NOT change the existing `kind` or `lane` axes — sensitivity is purely additive.
+1. REQUIREMENT: A function `validate_sensitivity_binding` exists in `src/gzkit/governance/trust_audits.py` and intersects each brief's `## ALLOWED PATHS` glob list with `data/security_surfaces.json` to compute a `detected_sensitivity` value.
+1. REQUIREMENT: When path intersection is non-empty, the validator forces `sensitivity: security` regardless of frontmatter (the auto-detect floor).
+1. REQUIREMENT: Frontmatter MAY declare `sensitivity: security` when paths don't trigger detection — the validator accepts this as an escalation.
+1. REQUIREMENT: Frontmatter MAY NOT declare a value lower than detected — the validator exits 3 on attempted escape with a structured finding naming the brief, declared value, detected value, and intersecting paths.
+1. REQUIREMENT: When `data/security_surfaces.json` is missing, malformed, or unparseable, the validator fails closed with exit 3 (registry-missing fail-closed).
+1. REQUIREMENT: The CLI flag `--sensitivity` is registered in `src/gzkit/cli/parser_validate.py` and dispatches to `validate_sensitivity_binding`.
+1. REQUIREMENT: The subform `gz validate --sensitivity --explain ALLOWED_PATHS_LIST` accepts a path list (one per line or comma-separated, per existing CLI conventions) and prints the predicted classification (`detected_sensitivity` + matching category labels) without modifying any artifact.
+1. REQUIREMENT: `--json` produces machine-readable findings on stdout (one record per brief: `file`, `declared_sensitivity`, `detected_sensitivity`, `intersecting_paths`, `registry_categories`). Logs go to stderr per `.claude/rules/cli.md`.
+1. REQUIREMENT: `gz validate --all` invokes the sensitivity scope; `gz check` invokes `gz validate --all` per existing pipeline. No regression in either composite command's exit-code semantics.
+1. REQUIREMENT: TDD coverage for: floor-fires (path intersection forces detected=security), escalation-allowed (declared=security, detected=null), escape-blocked (declared=null, detected=security → exit 3), malformed-paths-tolerated (skips with structured finding, no crash), registry-missing-fail-closed (exit 3).
+1. REQUIREMENT: NEVER author the `_requires_security_review_attestation` predicate, the walkthrough extension, the ARB canonical command slot, the rule file, or the AGENTS.md matrix in this OBPI — those belong to OBPIs 04-06.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -164,9 +157,13 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.22-03-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.22-03-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.22-03-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.22-03-01: Given a brief whose `## ALLOWED PATHS` intersect a registry glob and whose frontmatter omits `sensitivity`, when `gz validate --sensitivity` runs, then the validator reports `detected_sensitivity: security`, `declared_sensitivity: null`, and forces classification to `security` (auto-detect floor).
+- [ ] REQ-0.0.22-03-02: Given a brief with `sensitivity: security` in frontmatter and no intersecting paths, when validated, then the validator accepts the declaration (escalation channel) and exits 0.
+- [ ] REQ-0.0.22-03-03: Given a brief with intersecting paths but `sensitivity` declared as anything below `security` (or omitted while paths intersect with `--strict-declared` semantics per the rule file), when validated, then the validator exits 3 with a structured finding naming the file, declared value, detected value, and intersecting paths.
+- [ ] REQ-0.0.22-03-04: Given a missing or malformed `data/security_surfaces.json`, when `gz validate --sensitivity` runs, then it exits 3 (registry-missing fail-closed) with a finding identifying the registry path.
+- [ ] REQ-0.0.22-03-05: Given `gz validate --sensitivity --explain <paths>`, when invoked with a comma-separated or newline-separated list of glob patterns, then the command prints the predicted `detected_sensitivity` + matching category labels to stdout and exits 0 without writing or modifying any artifact.
+- [ ] REQ-0.0.22-03-06: Given `gz validate --sensitivity --json`, when invoked, then stdout contains JSON-parseable records (one per brief) with fields `file`, `declared_sensitivity`, `detected_sensitivity`, `intersecting_paths`, `registry_categories`; logs are emitted on stderr.
+- [ ] REQ-0.0.22-03-07: Given `gz validate --all` and `gz check` after this OBPI lands, when invoked, then the sensitivity scope is included in the composite run and a sensitivity violation propagates a non-zero exit code through the composite.
 
 ## Completion Checklist
 
