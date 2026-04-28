@@ -5,6 +5,11 @@ from datetime import date
 from pathlib import Path
 from typing import Any, cast
 
+from gzkit.commands.closeout_ceremony import (
+    CeremonyStep,
+    ceremony_state_path,
+    load_ceremony_state,
+)
 from gzkit.commands.common import (
     GzCliError,
     _canonical_attestation_term,
@@ -182,6 +187,48 @@ def _closeout_gate_number(label: str) -> int:
         except (ValueError, IndexError):
             pass
     return 2  # Quality checks (lint, typecheck) default to gate 2
+
+
+def _parse_ceremony_attestation_text(text: str) -> tuple[str, str | None]:
+    """Derive ``(attest_status, reason)`` from a ceremony-recorded attestation string.
+
+    The ceremony's ``--attest "..."`` argument is freeform but conventionally
+    leads with one of the canonical tokens prescribed by Step 6
+    (``Completed`` / ``Completed - Partial: <reason>`` / ``Dropped - <reason>``)
+    or the AGENTS.md § Attestation pattern (``attest <token> - <enrichment>``).
+
+    The ``partial`` and ``dropped`` keywords are matched case-insensitively in
+    the attestation text's leading window. The full text is returned as the
+    reason for non-completed verdicts so the operator's verbatim attestation
+    flows through to the ledger and closeout form unchanged.
+    """
+    head_window = text.strip().lower()[:120]
+    if "dropped" in head_window:
+        return "dropped", text.strip()
+    if "partial" in head_window:
+        return "partial", text.strip()
+    return "completed", None
+
+
+def _consume_ceremony_attestation(
+    project_root: Path, adr_id: str
+) -> tuple[str, str | None, str] | None:
+    """Return ceremony-recorded attestation tuple, or ``None`` if absent.
+
+    GHI #351: when the ceremony has already captured the operator's verdict at
+    Step 6, the closeout pipeline must consume that decision rather than
+    re-prompting interactively. Returns ``(attest_status, reason,
+    raw_attestation_text)`` when consumable, ``None`` otherwise.
+    """
+    state = load_ceremony_state(project_root, adr_id)
+    if state is None:
+        return None
+    if state.current_step < int(CeremonyStep.ATTESTATION):
+        return None
+    if not state.attestation:
+        return None
+    attest_status, reason = _parse_ceremony_attestation_text(state.attestation)
+    return attest_status, reason, state.attestation
 
 
 def _prompt_closeout_attestation(*, quiet: bool = False) -> tuple[str, str | None]:
@@ -441,7 +488,18 @@ def _complete_closeout_pipeline(
 ) -> None:
     if not as_json:
         console.print("\n  All quality gates passed.")
-    attest_status, reason = _prompt_closeout_attestation(quiet=as_json)
+    consumed = _consume_ceremony_attestation(project_root, adr_id)
+    if consumed is not None:
+        attest_status, reason, ceremony_attestation_text = consumed
+        if not as_json:
+            ceremony_path = ceremony_state_path(project_root, adr_id).relative_to(project_root)
+            console.print(
+                f"  Attestation consumed from ceremony state ({ceremony_path}); "
+                "skipping interactive prompt."
+            )
+    else:
+        attest_status, reason = _prompt_closeout_attestation(quiet=as_json)
+        ceremony_attestation_text = None
     attester = get_git_user()
     ledger.append(attested_event(adr_id, attest_status, attester, reason))
 
@@ -454,7 +512,11 @@ def _complete_closeout_pipeline(
 
     canonical_term = _canonical_attestation_term(attest_status, reason)
     gate_statuses = ledger.get_latest_gate_statuses(adr_id)
-    attestation_text = _closeout_form_attestation_text(attest_status, reason)
+    attestation_text = (
+        ceremony_attestation_text
+        if ceremony_attestation_text is not None
+        else _closeout_form_attestation_text(attest_status, reason)
+    )
     timestamp_utc = _closeout_form_timestamp()
     _write_adr_closeout_form(
         project_root,
