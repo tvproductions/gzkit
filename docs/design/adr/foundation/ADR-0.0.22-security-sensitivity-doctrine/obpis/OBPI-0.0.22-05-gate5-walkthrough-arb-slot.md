@@ -4,6 +4,8 @@ parent: ADR-0.0.22-security-sensitivity-doctrine
 item: 5
 lane: Heavy
 status: Draft
+depends_on:
+  - OBPI-0.0.22-04-requires-security-review-attestation
 ---
 
 # OBPI-0.0.22-05-gate5-walkthrough-arb-slot: Gate 5 walkthrough extension and ARB canonical command slot
@@ -34,7 +36,12 @@ Gate 5 walkthrough extension + ARB canonical command slot — Walkthrough prompt
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
 - `docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/ADR-0.0.22-security-sensitivity-doctrine.md` — parent ADR for intent and scope
-- `docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/**` — parent ADR package scope
+- `docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/obpis/OBPI-0.0.22-05-gate5-walkthrough-arb-slot.md` — this brief
+- `src/gzkit/commands/obpi.py` — walkthrough prompt extension when brief carries `sensitivity: security`
+- `src/gzkit/arb/validator.py` — `CANONICAL_STEP_COMMANDS` extension with the reserved security-scan slot
+- `tests/commands/**` — walkthrough-fires, receipt-missing, receipt-stale tests
+- `tests/arb/**` — canonical-step-commands tests
+- `data/behave_coverage_waivers.json` — waiver if BDD is deferred per existing pattern
 
 ## Denied Paths
 
@@ -46,37 +53,19 @@ Gate 5 walkthrough extension + ARB canonical command slot — Walkthrough prompt
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+<!-- Constraints that MUST hold for THIS brief's scope. Cross-brief invariants
+     live in the parent ADR Decision; per-brief requirements assert this brief's
+     contract only. -->
 
-1. REQUIREMENT: `gz validate --sensitivity` intersects each brief's `## ALLOWED PATHS` glob list with a registered security-surface registry (`data/security_surfaces.json`).
-1. REQUIREMENT: Any intersection forces `sensitivity: security` regardless of frontmatter (the auto-detect floor).
-1. REQUIREMENT: Frontmatter MAY declare `sensitivity: security` when paths don't trigger detection (escalation channel for cases the registry misses, e.g. test fixtures for new auth flows under `tests/**`).
-1. REQUIREMENT: Frontmatter MAY NOT declare a value lower than detected. Validator exits 3 on attempted escape.
-1. REQUIREMENT: Same enforcement shape as `kind` (declared in frontmatter, validated by `gz validate --taxonomy`), with the auto-detect floor added on top.
-1. REQUIREMENT: A new function `_requires_security_review_attestation` at `src/gzkit/commands/adr_audit.py` returns True when the brief carries `sensitivity: security` (whether declared or auto-detected).
-1. REQUIREMENT: This function ORs into the existing `_requires_human_obpi_attestation` predicate alongside the foundation-kind branch and the heavy-lane branch.
-1. REQUIREMENT: A `lite + feature + sensitivity:security` brief is no longer self-closeable. Gate 5 human attestation is required at the brief level.
-1. REQUIREMENT: The TTY + `ATTEST` confirmation gate at `_enforce_human_attestation_authenticity` (the GHI #290 closure) automatically applies because attestation is now required.
-1. REQUIREMENT: Heightened attestation walkthrough: TTY + `ATTEST` prompt enumerates a security-specific checklist (credential handling reviewed, subprocess input validated, crypto choices justified, boundary validation confirmed). The walkthrough is enumerated in the rule file, not authored ad-hoc per brief.
-1. REQUIREMENT: Scan receipt cited inline: attestation text MUST cite a fresh `arb-step-security-*` receipt produced by whatever scanner the feature ADR settles on. `CANONICAL_STEP_COMMANDS` at `src/gzkit/arb/validator.py` extends with the security-scan invocation slot; the slot is reserved by this ADR but the canonical command string is filled by the feature ADR that promotes the toolchain.
-1. REQUIREMENT: Same shape as today's heavy-lane attestation pattern (canonical receipts cited + attestation text), with the security-specific walkthrough added.
-1. REQUIREMENT: `src/gzkit/schemas/adr.json` and `src/gzkit/schemas/obpi.json`: add optional `sensitivity` enum field with values [`security`].
-1. REQUIREMENT: `data/security_surfaces.json` (new): registry of glob patterns + category labels. Edits governed by the doctrine itself.
-1. REQUIREMENT: `src/gzkit/governance/trust_audits.py`: add `validate_sensitivity_binding` for `gz validate --sensitivity` scope. Emits structured findings (file, declared_sensitivity, detected_sensitivity, intersecting_paths, registry_categories). Fail-closed (exit 3) on escape attempts and unwaived violations.
-1. REQUIREMENT: `src/gzkit/commands/adr_audit.py`: add `_requires_security_review_attestation`; OR into `_requires_human_obpi_attestation` alongside the existing foundation-kind and heavy-lane branches.
-1. REQUIREMENT: `src/gzkit/arb/validator.py`: extend `CANONICAL_STEP_COMMANDS` with the security-scan invocation slot (reserved name, command string filled by the toolchain feature ADR).
-1. REQUIREMENT: `src/gzkit/commands/obpi.py`: walkthrough prompt extension when the brief being completed carries `sensitivity: security`.
-1. REQUIREMENT: `data/behave_coverage_waivers.json` extension: foundation OBPIs deferring BDD per existing pattern.
-1. REQUIREMENT: `docs/governance/advisory-rules-audit.md`: scorecard entry classifying the new rule as Mechanical.
-1. REQUIREMENT: `.gzkit/rules/security-sensitivity.md` (new): canonical rule file declaring the invariant, the registry contract, the validate scope, the walkthrough enumeration, and the scanner-unavailable failure mode.
-1. REQUIREMENT: `AGENTS.md` § Lane & Kind & Sensitivity Attestation Matrix: add the third axis to the existing lane/kind matrix.
-1. REQUIREMENT: Does NOT author the security scanner toolchain (bandit/semgrep) — that's the feature ADR promoting `pool.agentic-security-review`.
-1. REQUIREMENT: Does NOT author content-layer injection scanning — that's `pool.content-injection-scanning`, complementary attack surface.
-1. REQUIREMENT: Does NOT add additional sensitivity values beyond `security` — privacy, compliance, safety-critical are separate foundation ADRs (YAGNI).
-1. REQUIREMENT: Does NOT enforce separation-of-duties (attestor != implementer) — appealing but adds multi-agent coordination requirement; follow-up ADR if drift observed.
-1. REQUIREMENT: Does NOT enforce allow-list expiry on the registry — registry edits are governed by the doctrine; no expiry mechanism in v1.
-1. REQUIREMENT: Does NOT change the existing `kind` or `lane` axes — sensitivity is purely additive.
+1. REQUIREMENT: When `gz obpi complete` runs against a brief carrying `sensitivity: security` (declared or auto-detected), `src/gzkit/commands/obpi.py` extends the attestation walkthrough with a security-specific checklist enumerated in `.gzkit/rules/security-sensitivity.md` (authored by OBPI-06).
+1. REQUIREMENT: The security checklist enumerates at minimum: credential handling reviewed, subprocess input validated, crypto choices justified, boundary validation confirmed. The walkthrough reads the canonical list from the rule file at runtime; the list is NOT hardcoded into `obpi.py`.
+1. REQUIREMENT: `CANONICAL_STEP_COMMANDS` at `src/gzkit/arb/validator.py` is extended with one new entry — a reserved slot for the security-scan step. The slot reserves the receipt-name prefix `arb-step-security-` and a command-string placeholder; the actual canonical command is left unfilled in this OBPI (filled by the toolchain feature ADR that promotes `pool.agentic-security-review`).
+1. REQUIREMENT: When the canonical security-scan command is unset (placeholder state) and a brief carrying `sensitivity: security` reaches Gate 5, `gz obpi complete` fails closed (exit 3) with a finding that names the unfilled slot and the parent ADR.
+1. REQUIREMENT: When the canonical security-scan command is set but no fresh receipt exists in `.gzkit/arb/` (or wherever ARB receipts live), `gz obpi complete` fails closed with a "receipt-missing" finding.
+1. REQUIREMENT: When a security-scan receipt exists but is older than the canonical staleness threshold (24 hours per parent ADR Decision), `gz obpi complete` fails closed with a "receipt-stale" finding citing the receipt timestamp.
+1. REQUIREMENT: Behavioral tests confirm: walkthrough fires for `sensitivity: security` briefs and not for others; receipt-missing produces exit 3 with the documented finding shape; receipt-stale produces exit 3 with the documented finding shape; placeholder-slot produces exit 3 with the documented finding shape.
+1. REQUIREMENT: NEVER author the schema/frontmatter field, the registry, the validate scope, the audit OR predicate, the rule file, or the AGENTS.md matrix in this OBPI — those belong to OBPIs 01-04 and 06.
+1. REQUIREMENT: NEVER author the actual security-scan command string in this OBPI — that is the toolchain feature ADR's scope. Reserving the slot is in scope; filling it is not.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -164,9 +153,12 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.22-05-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.22-05-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.22-05-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.22-05-01: Given a brief with `sensitivity: security`, when `gz obpi complete` runs in a TTY, then the prompt enumerates the security checklist (credential handling, subprocess input, crypto choices, boundary validation) sourced from `.gzkit/rules/security-sensitivity.md`.
+- [ ] REQ-0.0.22-05-02: Given a brief without `sensitivity: security`, when `gz obpi complete` runs, then the security checklist is NOT presented (no false-positive walkthrough).
+- [ ] REQ-0.0.22-05-03: Given `CANONICAL_STEP_COMMANDS` after this OBPI lands, when inspected, then it contains a reserved entry whose receipt prefix is `arb-step-security-` and whose canonical command string is in a documented placeholder state awaiting the toolchain feature ADR.
+- [ ] REQ-0.0.22-05-04: Given a `sensitivity: security` brief and an unfilled canonical security-scan slot, when `gz obpi complete` is invoked, then it exits 3 with a finding identifying the unfilled slot and the parent ADR (placeholder-slot fail-closed).
+- [ ] REQ-0.0.22-05-05: Given a `sensitivity: security` brief, a filled canonical security-scan slot, and no matching ARB receipt under `.gzkit/arb/`, when `gz obpi complete` is invoked, then it exits 3 with a "receipt-missing" finding (receipt-missing fail-closed).
+- [ ] REQ-0.0.22-05-06: Given a `sensitivity: security` brief and an `arb-step-security-*` receipt older than the documented staleness threshold (24 hours), when `gz obpi complete` is invoked, then it exits 3 with a "receipt-stale" finding citing the receipt's timestamp.
 
 ## Completion Checklist
 

@@ -4,6 +4,7 @@ parent: ADR-0.0.22-security-sensitivity-doctrine
 item: 2
 lane: Heavy
 status: Draft
+depends_on: []
 ---
 
 # OBPI-0.0.22-02-security-surface-registry: Security-surface registry data file
@@ -34,7 +35,12 @@ Security-surface registry — Author `data/security_surfaces.json` with 9 initia
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
 - `docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/ADR-0.0.22-security-sensitivity-doctrine.md` — parent ADR for intent and scope
-- `data/security_surfaces.json` — explicitly referenced by the checklist item
+- `docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/obpis/OBPI-0.0.22-02-security-surface-registry.md` — this brief
+- `data/security_surfaces.json` — the registry data file authored by this OBPI
+- `src/gzkit/schemas/security_surfaces.json` — JSON schema fragment for the registry
+- `src/gzkit/models/**` — `SecuritySurfaceEntry` Pydantic model home
+- `tests/governance/**` — registry validation and glob-matching tests
+- `tests/models/**` — model-level tests if that directory pattern applies
 
 ## Denied Paths
 
@@ -46,37 +52,18 @@ Security-surface registry — Author `data/security_surfaces.json` with 9 initia
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+<!-- Constraints that MUST hold for THIS brief's scope. Cross-brief invariants
+     live in the parent ADR Decision; per-brief requirements assert this brief's
+     contract only. -->
 
-1. REQUIREMENT: `gz validate --sensitivity` intersects each brief's `## ALLOWED PATHS` glob list with a registered security-surface registry (`data/security_surfaces.json`).
-1. REQUIREMENT: Any intersection forces `sensitivity: security` regardless of frontmatter (the auto-detect floor).
-1. REQUIREMENT: Frontmatter MAY declare `sensitivity: security` when paths don't trigger detection (escalation channel for cases the registry misses, e.g. test fixtures for new auth flows under `tests/**`).
-1. REQUIREMENT: Frontmatter MAY NOT declare a value lower than detected. Validator exits 3 on attempted escape.
-1. REQUIREMENT: Same enforcement shape as `kind` (declared in frontmatter, validated by `gz validate --taxonomy`), with the auto-detect floor added on top.
-1. REQUIREMENT: A new function `_requires_security_review_attestation` at `src/gzkit/commands/adr_audit.py` returns True when the brief carries `sensitivity: security` (whether declared or auto-detected).
-1. REQUIREMENT: This function ORs into the existing `_requires_human_obpi_attestation` predicate alongside the foundation-kind branch and the heavy-lane branch.
-1. REQUIREMENT: A `lite + feature + sensitivity:security` brief is no longer self-closeable. Gate 5 human attestation is required at the brief level.
-1. REQUIREMENT: The TTY + `ATTEST` confirmation gate at `_enforce_human_attestation_authenticity` (the GHI #290 closure) automatically applies because attestation is now required.
-1. REQUIREMENT: Heightened attestation walkthrough: TTY + `ATTEST` prompt enumerates a security-specific checklist (credential handling reviewed, subprocess input validated, crypto choices justified, boundary validation confirmed). The walkthrough is enumerated in the rule file, not authored ad-hoc per brief.
-1. REQUIREMENT: Scan receipt cited inline: attestation text MUST cite a fresh `arb-step-security-*` receipt produced by whatever scanner the feature ADR settles on. `CANONICAL_STEP_COMMANDS` at `src/gzkit/arb/validator.py` extends with the security-scan invocation slot; the slot is reserved by this ADR but the canonical command string is filled by the feature ADR that promotes the toolchain.
-1. REQUIREMENT: Same shape as today's heavy-lane attestation pattern (canonical receipts cited + attestation text), with the security-specific walkthrough added.
-1. REQUIREMENT: `src/gzkit/schemas/adr.json` and `src/gzkit/schemas/obpi.json`: add optional `sensitivity` enum field with values [`security`].
-1. REQUIREMENT: `data/security_surfaces.json` (new): registry of glob patterns + category labels. Edits governed by the doctrine itself.
-1. REQUIREMENT: `src/gzkit/governance/trust_audits.py`: add `validate_sensitivity_binding` for `gz validate --sensitivity` scope. Emits structured findings (file, declared_sensitivity, detected_sensitivity, intersecting_paths, registry_categories). Fail-closed (exit 3) on escape attempts and unwaived violations.
-1. REQUIREMENT: `src/gzkit/commands/adr_audit.py`: add `_requires_security_review_attestation`; OR into `_requires_human_obpi_attestation` alongside the existing foundation-kind and heavy-lane branches.
-1. REQUIREMENT: `src/gzkit/arb/validator.py`: extend `CANONICAL_STEP_COMMANDS` with the security-scan invocation slot (reserved name, command string filled by the toolchain feature ADR).
-1. REQUIREMENT: `src/gzkit/commands/obpi.py`: walkthrough prompt extension when the brief being completed carries `sensitivity: security`.
-1. REQUIREMENT: `data/behave_coverage_waivers.json` extension: foundation OBPIs deferring BDD per existing pattern.
-1. REQUIREMENT: `docs/governance/advisory-rules-audit.md`: scorecard entry classifying the new rule as Mechanical.
-1. REQUIREMENT: `.gzkit/rules/security-sensitivity.md` (new): canonical rule file declaring the invariant, the registry contract, the validate scope, the walkthrough enumeration, and the scanner-unavailable failure mode.
-1. REQUIREMENT: `AGENTS.md` § Lane & Kind & Sensitivity Attestation Matrix: add the third axis to the existing lane/kind matrix.
-1. REQUIREMENT: Does NOT author the security scanner toolchain (bandit/semgrep) — that's the feature ADR promoting `pool.agentic-security-review`.
-1. REQUIREMENT: Does NOT author content-layer injection scanning — that's `pool.content-injection-scanning`, complementary attack surface.
-1. REQUIREMENT: Does NOT add additional sensitivity values beyond `security` — privacy, compliance, safety-critical are separate foundation ADRs (YAGNI).
-1. REQUIREMENT: Does NOT enforce separation-of-duties (attestor != implementer) — appealing but adds multi-agent coordination requirement; follow-up ADR if drift observed.
-1. REQUIREMENT: Does NOT enforce allow-list expiry on the registry — registry edits are governed by the doctrine; no expiry mechanism in v1.
-1. REQUIREMENT: Does NOT change the existing `kind` or `lane` axes — sensitivity is purely additive.
+1. REQUIREMENT: `data/security_surfaces.json` exists and validates against `src/gzkit/schemas/security_surfaces.json` after this OBPI lands.
+1. REQUIREMENT: The registry contains the nine initial categories named in the parent ADR Decision: `credential_handling`, `subprocess_user_input`, `crypto_primitives`, `auth_boundaries`, `external_api_surfaces`, `ledger_integrity`, `arb_receipt_chain`, `secret_handling`, `deserialization_user_input`. Each category has at least one glob pattern.
+1. REQUIREMENT: The JSON schema fragment at `src/gzkit/schemas/security_surfaces.json` declares `category` (enum), `globs` (non-empty array of strings), and `rationale` (non-empty string) as required fields and is `additionalProperties: false`.
+1. REQUIREMENT: The Pydantic model `SecuritySurfaceEntry` is defined with `ConfigDict(frozen=True, extra="forbid")` per `.claude/rules/models.md`; fields match the JSON schema.
+1. REQUIREMENT: A registry entry with a malformed glob, an unknown category, or an extra key fails Pydantic construction with a typed error.
+1. REQUIREMENT: The registry's governance contract — "edits to `data/security_surfaces.json` require a brief carrying `sensitivity: security`" — is documented inline (top-of-file comment or sibling README) and cites the parent ADR.
+1. REQUIREMENT: This OBPI's own brief is the bootstrap exception (registry doesn't exist before this OBPI commits); the rule file authored in OBPI-06 records the bootstrap waiver.
+1. REQUIREMENT: NEVER author the schema/frontmatter field, the validate scope, the audit OR, the walkthrough extension, the rule file, or the AGENTS.md matrix in this OBPI — those belong to OBPIs 01 and 03-06 respectively.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -166,9 +153,12 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.22-02-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.22-02-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.22-02-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.22-02-01: Given `data/security_surfaces.json` after this OBPI lands, when validated against `src/gzkit/schemas/security_surfaces.json`, then validation passes and the document parses as a list of `SecuritySurfaceEntry` records.
+- [ ] REQ-0.0.22-02-02: Given the registry, when iterated, then all nine canonical categories are present (`credential_handling`, `subprocess_user_input`, `crypto_primitives`, `auth_boundaries`, `external_api_surfaces`, `ledger_integrity`, `arb_receipt_chain`, `secret_handling`, `deserialization_user_input`), each with at least one glob pattern.
+- [ ] REQ-0.0.22-02-03: Given a registry entry with an unknown category, malformed glob, or extra key, when constructed via `SecuritySurfaceEntry(...)`, then Pydantic raises a typed validation error and the registry as a whole is rejected.
+- [ ] REQ-0.0.22-02-04: Given the `SecuritySurfaceEntry` model, when inspected at runtime, then `model_config` declares `frozen=True` and `extra="forbid"` per `.claude/rules/models.md`.
+- [ ] REQ-0.0.22-02-05: Given a brief whose `## ALLOWED PATHS` glob list intersects any registry glob, when matched against the registry by the helper function this OBPI exposes, then the matching category labels are returned (consumed by OBPI-03's `validate_sensitivity_binding`).
+- [ ] REQ-0.0.22-02-06: Given the registry file, when read, then a top-of-file comment (or sibling README) records the self-bootstrapping governance contract and the one-time bootstrap exception for this OBPI.
 
 ## Completion Checklist
 
