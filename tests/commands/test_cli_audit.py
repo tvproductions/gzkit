@@ -121,6 +121,51 @@ class TestPerFlagDocCoverage(unittest.TestCase):
         self.assertIn("--documents", flags["validate"])
         self.assertIn("--chores-layout", flags["validate"])
 
+    def test_discover_command_flags_scopes_parser_vars_per_register_function(self) -> None:
+        """Sibling _register_* helpers reuse local var ``p`` without flag collision (GHI #355).
+
+        Each ``_register_*(arb_commands)`` helper in ``parser_arb.py`` assigns
+        ``p = arb_commands.add_parser("<verb>", ...)`` and then registers its
+        flags via ``p.add_argument(...)``. With a global ``parser_vars`` dict,
+        the last function's binding for ``p`` wins and every sibling's flags
+        collapse onto that single leaf. Per-function scoping is the fix.
+        """
+        from gzkit.doc_coverage.flag_scanner import discover_command_flags  # noqa: PLC0415
+
+        source = textwrap.dedent(
+            """
+            def _build_parser():
+                parser = StableArgumentParser()
+                commands = parser.add_subparsers()
+
+            def register_arb_parsers(commands):
+                p_arb = commands.add_parser("arb")
+                arb_commands = p_arb.add_subparsers()
+                _register_ruff(arb_commands)
+                _register_step(arb_commands)
+                _register_patterns(arb_commands)
+
+            def _register_ruff(arb_commands):
+                p = arb_commands.add_parser("ruff")
+                p.add_argument("--fix", action="store_true")
+                p.add_argument("--soft-fail", action="store_true")
+
+            def _register_step(arb_commands):
+                p = arb_commands.add_parser("step")
+                p.add_argument("--name", required=True)
+                p.add_argument("--soft-fail", action="store_true")
+
+            def _register_patterns(arb_commands):
+                p = arb_commands.add_parser("patterns")
+                p.add_argument("--limit", type=int, default=500)
+                p.add_argument("--compact", action="store_true")
+            """
+        )
+        flags = discover_command_flags(source)
+        self.assertEqual(sorted(flags.get("arb ruff", [])), ["--fix", "--soft-fail"])
+        self.assertEqual(sorted(flags.get("arb step", [])), ["--name", "--soft-fail"])
+        self.assertEqual(sorted(flags.get("arb patterns", [])), ["--compact", "--limit"])
+
     def test_discover_command_flags_handles_short_and_long_pair(self) -> None:
         """When add_argument has both -x and --xxx, only the long form is captured."""
         from gzkit.doc_coverage.flag_scanner import discover_command_flags  # noqa: PLC0415
