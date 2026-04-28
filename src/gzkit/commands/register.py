@@ -247,6 +247,20 @@ def _adr_register_identity(
     return adr_id, canonical_candidates, is_pool_adr
 
 
+def _is_pool_archived(metadata: dict[str, str]) -> bool:
+    """Return True when a pool ADR file carries doctrine archive markers (GHI #352).
+
+    Pool source files are preserved post-promotion as historical intake context
+    per docs/governance/GovZero/adr-lifecycle.md. The archive state is signalled by
+    `status: Superseded` plus `promoted_to: ADR-X.Y.Z-...` frontmatter, written by
+    `_mark_pool_adr_promoted` in adr_promote_utils.py. Either marker alone is
+    insufficient — both must be present for the file to count as archived.
+    """
+    return metadata.get("status", "").lower() == "superseded" and metadata.get(
+        "promoted_to", ""
+    ).startswith("ADR-")
+
+
 def _collect_adrs_to_register(
     *,
     ledger: Ledger,
@@ -274,7 +288,7 @@ def _collect_adrs_to_register(
         canonical_adr_id = ledger.canonicalize_id(adr_id)
         eligible_parent_ids.add(canonical_adr_id)
         if known_adrs.intersection(canonical_candidates):
-            if is_pool_adr and canonical_adr_id != adr_id:
+            if is_pool_adr and canonical_adr_id != adr_id and not _is_pool_archived(metadata):
                 stale_pool_files.append((adr_id, canonical_adr_id))
             continue
 
