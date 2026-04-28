@@ -152,6 +152,26 @@
       },
       "governance_relevant": true
     },
+    "adr audit-begin": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "adr audit-end": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
     "adr audit-check": {
       "surfaces": {
         "manpage": true,
