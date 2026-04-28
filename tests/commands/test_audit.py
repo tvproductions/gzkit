@@ -72,8 +72,10 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, dst)
 
+        from gzkit.doc_coverage.flag_scanner import scan_command_flags
         from gzkit.doc_coverage.manifest import load_manifest
 
+        flags_by_command = scan_command_flags(_REAL_PROJECT_ROOT)
         index_path = Path("docs/user/commands/index.md")
         index_path.parent.mkdir(parents=True, exist_ok=True)
         manifest = load_manifest(Path("."))
@@ -84,7 +86,11 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
             doc_rel = manpage_path_for(command_name)
             doc_path = Path(doc_rel)
             doc_path.parent.mkdir(parents=True, exist_ok=True)
-            doc_path.write_text(f"# gz {command_name}\n\nStub\n")
+            flag_line = " ".join(flags_by_command.get(command_name, []))
+            stub = f"# gz {command_name}\n\nStub\n"
+            if flag_line:
+                stub += f"\nFlags: {flag_line}\n"
+            doc_path.write_text(stub)
             links.append(f"- [`gz {command_name}`]({doc_path.name})")
         index_path.write_text("# Commands Index\n\n" + "\n".join(links) + "\n")
         Path("README.md").write_text(

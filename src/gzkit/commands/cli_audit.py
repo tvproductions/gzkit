@@ -210,6 +210,15 @@ def cli_audit_cmd(as_json: bool) -> None:
     cc_issues, coverage_report = _collect_cross_coverage_issues(project_root)
     issues.extend(cc_issues)
 
+    from gzkit.doc_coverage.flag_scanner import (  # noqa: PLC0415
+        check_flag_doc_coverage,
+        scan_command_flags,
+    )
+
+    flags_by_command = scan_command_flags(project_root)
+    commands_dir = project_root / "docs" / "user" / "commands"
+    issues.extend(check_flag_doc_coverage(commands_dir, flags_by_command))
+
     result = {"valid": not issues, "issues": issues, "cross_coverage": coverage_report.model_dump()}
     if as_json:
         print(json.dumps(result, indent=2))  # noqa: T201
