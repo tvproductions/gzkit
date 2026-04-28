@@ -111,7 +111,6 @@ _PER_FLAG_DOC_WAIVERS: dict[str, frozenset[str]] = {
         {"--ceremony", "--next", "--ceremony-status", "--attest", "--pause", "--restart"}
     ),
     "covers": frozenset({"--features-dir", "--include-doc"}),
-    "init": frozenset({"--yes"}),
     "interview": frozenset({"--from"}),
     "obpi complete": frozenset({"--attestor-present"}),
     "obpi emit-receipt": frozenset({"--attestor-present"}),
