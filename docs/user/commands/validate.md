@@ -9,7 +9,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--instructions] [--briefs] [--personas]
             [--interviews] [--decomposition]
             [--requirements] [--commit-trailers]
-            [--taxonomy]
+            [--taxonomy] [--chores-layout]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
 ```
 
@@ -127,6 +127,34 @@ gz validate --frontmatter --adr ADR-0.1.0
 # Remediation guidance for a drifted ADR
 gz validate --frontmatter --explain ADR-0.1.0
 ```
+
+### `--chores-layout`
+
+Enforces the chores-tree layout invariant from
+[ADR-0.0.21](../../design/adr/foundation/ADR-0.0.21-chores-as-gzkit-surface/ADR-0.0.21-chores-as-gzkit-surface.md).
+Walks the working tree and flags any `CHORE.md` or `acceptance.json` file
+located outside the two canonical roots — `src/gzkit/chores/` (the packaged
+canonical source in this repo) and `.gzkit/chores/` (the project-local
+overlay in consumer projects, or the configured `paths.chores` value).
+
+Stray files outside those roots reproduce the pre-ADR-0.0.21 layout this
+audit exists to close. The walk skips `.git/`, `__pycache__/`, `.venv/`,
+`dist/`, `build/`, `node_modules/`, and any dotfile-hidden path. Explicit
+exemptions live in `data/chores_layout_waivers.json` — waiver drift across
+ADRs requires an explicit add rather than a silent skip.
+
+```bash
+# Fail-closed audit
+gz validate --chores-layout
+
+# Machine-readable result
+gz validate --chores-layout --json
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Clean tree (or all violations waived) | — |
+| 3 | One or more unwaived stray `CHORE.md` / `acceptance.json` | Move the file under `src/gzkit/chores/<slug>/` or `.gzkit/chores/<slug>/`, or add an explicit waiver entry |
 
 ### `--unscoped-rules`
 
