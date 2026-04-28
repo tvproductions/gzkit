@@ -104,25 +104,16 @@ def scan_command_flags(project_root: Path | None = None) -> dict[str, list[str]]
 # evidence captured in a stable surface), mirroring the precedent at
 # ``_UTF8_PIPE_WAIVERS`` in ``src/gzkit/governance/trust_audits.py``.
 _PER_FLAG_DOC_WAIVERS: dict[str, frozenset[str]] = {
-    "adr emit-receipt": frozenset({"--attestor-present"}),
-    "adr report": frozenset({"--type"}),
     "arb patterns": frozenset({"--fix", "--soft-fail", "--name"}),
     "closeout": frozenset(
         {"--ceremony", "--next", "--ceremony-status", "--attest", "--pause", "--restart"}
     ),
     "covers": frozenset({"--features-dir", "--include-doc"}),
-    "interview": frozenset({"--from"}),
     "obpi complete": frozenset({"--attestor-present"}),
     "obpi emit-receipt": frozenset({"--attestor-present"}),
     "obpi pipeline": frozenset(
         {"--attestor", "--evidence-json", "--clear-stale", "--no-subagents"}
     ),
-    "patch release": frozenset({"--full"}),
-    "skill new": frozenset({"--description"}),
-    "state": frozenset({"--full"}),
-    "status": frozenset({"--full"}),
-    "test": frozenset({"--bdd", "--obpi"}),
-    "tidy": frozenset({"--check", "--fix"}),
     "validate": frozenset(
         {
             "--version",

@@ -7,8 +7,10 @@ Display OBPI progress, lifecycle status, and gate readiness across ADRs.
 ## Usage
 
 ```bash
-gz status [--json] [--table] [--show-gates] [--epic SLUG]
+gz status [--json] [--table] [--show-gates] [--epic SLUG] [--full]
 ```
+
+`--full` renders every OBPI as its own Rich-table row and preserves full IDs (no ellipsis truncation), trading screen-width compactness for an unabridged view of the artifact graph.
 
 ---
 

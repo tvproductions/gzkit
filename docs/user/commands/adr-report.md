@@ -12,11 +12,22 @@ gz adr report
 
 # Focused detail for one ADR
 gz adr report <ADR-ID>
+
+# Filter by ADR type
+gz adr report --type {foundation,feature,pool}
 ```
 
 `<ADR-ID>` accepts full IDs (for example `ADR-0.5.0-skill-lifecycle-governance`) and
 unique SemVer prefixes (for example `0.5.0` or `ADR-0.5.0`) when exactly one ADR ID
 starts with that prefix.
+
+---
+
+## Options
+
+| Option | Description |
+|--------|-------------|
+| `--type` | Filter the summary to one ADR type: `foundation`, `feature`, or `pool` (equivalent to passing the type name as the positional argument) |
 
 ---
 

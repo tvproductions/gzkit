@@ -7,7 +7,7 @@ Run the GHI-driven patch release ceremony.
 ## Usage
 
 ```bash
-gz patch release [--dry-run] [--json]
+gz patch release [--dry-run] [--json] [--full]
 ```
 
 ---
@@ -34,6 +34,7 @@ When fully implemented, `gz patch release` will:
 |--------|-------------|
 | `--dry-run` | Show planned actions without executing |
 | `--json` | Output as JSON to stdout |
+| `--full` | Execute the full ceremony in one transaction: bump, draft release notes, commit, push (with lint/test gates), and create the GitHub release |
 
 ---
 
