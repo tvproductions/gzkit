@@ -641,3 +641,90 @@ def _is_human_attestation_receipt_event(receipt_event: str) -> bool:
     events require the authenticity check.
     """
     return receipt_event.strip().lower() in _HUMAN_ATTESTATION_RECEIPT_EVENTS
+
+
+def _adr_audit_marker_path(project_root: Path, adr_id: str) -> Path:
+    """Return the per-ADR audit-ceremony marker path."""
+    return project_root / ".claude" / "plans" / f".pipeline-active-{adr_id}.json"
+
+
+def adr_audit_begin_cmd(adr: str) -> None:
+    """Open an ADR audit ceremony — write the co-presence marker.
+
+    The marker is the same shape ``gz obpi pipeline`` writes for OBPI
+    ceremonies; ``_active_pipeline_marker_exists`` (GHI #292) accepts it
+    as proof that an operator-typed CLI entry-point opened the ceremony.
+    The skill ``/gz-adr-audit`` calls this verb at the start of Step 8 so
+    the agent-relayed Gate-5 emit can pass the authenticity gate without
+    fabricating the marker by hand.
+
+    Idempotent: a re-invocation refreshes ``updated_at`` and rewrites the
+    payload; the marker exists at most once per ADR.
+    """
+    from datetime import UTC, datetime
+
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    canonical_adr = ledger.canonicalize_id(adr_input)
+    adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
+    _reject_pool_adr_for_lifecycle(adr_id, "opened audit ceremonies")
+
+    marker_path = _adr_audit_marker_path(project_root, adr_id)
+    marker_path.parent.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    payload: dict[str, Any] = {
+        "obpi_id": adr_id,
+        "parent_adr": adr_id,
+        "lane": "audit",
+        "entry": "audit",
+        "execution_mode": "audit",
+        "current_stage": "audit",
+        "started_at": timestamp,
+        "updated_at": timestamp,
+        "receipt_state": "audit-active",
+        "blockers": [],
+        "required_human_action": (
+            "Operator verbal attestation expected at Gate-5 emit; agent relays."
+        ),
+        "next_command": f"uv run gz adr emit-receipt {adr_id} --event validated --attestor-present",
+        "resume_point": "emit-receipt",
+    }
+    marker_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    console.print("[green]ADR audit ceremony opened.[/green]")
+    console.print(f"  ADR: {adr_id}")
+    console.print(f"  Marker: {marker_path}")
+
+
+def adr_audit_end_cmd(adr: str) -> None:
+    """Close an ADR audit ceremony — remove the co-presence marker.
+
+    Called by the ``/gz-adr-audit`` skill after a successful Gate-5
+    emit. Marker hygiene matters: leaving the marker behind would make
+    a second agent-relayed emit succeed without a fresh operator
+    invocation, defeating the co-presence proof. Missing-marker is a
+    soft warning, not an error — closing an already-closed ceremony
+    is idempotent.
+    """
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    canonical_adr = ledger.canonicalize_id(adr_input)
+    adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
+
+    marker_path = _adr_audit_marker_path(project_root, adr_id)
+    if marker_path.is_file():
+        marker_path.unlink()
+        console.print("[green]ADR audit ceremony closed.[/green]")
+        console.print(f"  ADR: {adr_id}")
+        console.print(f"  Marker removed: {marker_path}")
+    else:
+        console.print("[yellow]No active ADR audit marker to close.[/yellow]")
+        console.print(f"  ADR: {adr_id}")
+        console.print(f"  Expected: {marker_path}")

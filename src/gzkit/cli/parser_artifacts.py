@@ -24,7 +24,9 @@ from gzkit.cli.helpers import (
 
 _LAZY_HANDLERS: dict[str, str] = {
     "justify_cmd": "gzkit.commands.justify_cmd",
+    "adr_audit_begin_cmd": "gzkit.commands.adr_audit",
     "adr_audit_check": "gzkit.commands.adr_audit",
+    "adr_audit_end_cmd": "gzkit.commands.adr_audit",
     "adr_covers_check": "gzkit.commands.adr_audit",
     "adr_emit_receipt_cmd": "gzkit.commands.adr_audit",
     "adr_eval_cmd": "gzkit.commands.adr_promote",
@@ -351,6 +353,32 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
             write_scorecard=a.write_scorecard,
         )
     )
+
+    p_adr_audit_begin = adr_commands.add_parser(
+        "audit-begin",
+        help="Open an ADR audit ceremony (writes co-presence marker for Gate-5 emit)",
+        description=(
+            "Open an ADR audit ceremony by writing the per-ADR co-presence "
+            "marker that the GHI #292 agent-relayed Gate-5 emit accepts. "
+            "Pair with 'gz adr audit-end' after the validated receipt lands."
+        ),
+        epilog=build_epilog(["gz adr audit-begin ADR-0.1.0"]),
+    )
+    p_adr_audit_begin.add_argument("adr", help="ADR identifier (e.g. ADR-0.0.4)")
+    p_adr_audit_begin.set_defaults(func=lambda a: _lazy("adr_audit_begin_cmd")(adr=a.adr))
+
+    p_adr_audit_end = adr_commands.add_parser(
+        "audit-end",
+        help="Close an ADR audit ceremony (removes the co-presence marker)",
+        description=(
+            "Close an ADR audit ceremony by removing the per-ADR marker "
+            "written by 'gz adr audit-begin'. Idempotent: missing-marker "
+            "is a soft warning, not an error."
+        ),
+        epilog=build_epilog(["gz adr audit-end ADR-0.1.0"]),
+    )
+    p_adr_audit_end.add_argument("adr", help="ADR identifier (e.g. ADR-0.0.4)")
+    p_adr_audit_end.set_defaults(func=lambda a: _lazy("adr_audit_end_cmd")(adr=a.adr))
 
     p_adr_audit_check = adr_commands.add_parser(
         "audit-check",
