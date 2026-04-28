@@ -34,6 +34,8 @@ Coverage reporting is informational and always exits with code 0.
 | `--plain` | One record per line (grep-friendly) |
 | `--adr-dir DIR` | Override ADR directory (default: `docs/design/adr`) |
 | `--test-dir DIR` | Override test directory (default: `tests`) |
+| `--features-dir DIR` | Override behave features directory (default: `features`); the scanner reads BDD scenario `@REQ-...` tags from this tree to mark requirements covered by behave alongside `@covers(REQ-...)` decorators in unit tests |
+| `--include-doc` | Include doc-kind REQs in the coverage scan (default: excluded — coverage reporting is for code REQs; doc REQs are tracked separately) |
 
 ## Exit Codes
 

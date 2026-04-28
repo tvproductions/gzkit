@@ -20,6 +20,7 @@ gz obpi complete OBPI-X.Y.Z-NN --attestor NAME --attestation-text TEXT
 | `--attestation-text TEXT` | Substantive attestation text (required) |
 | `--implementation-summary TEXT` | Implementation summary (reads from brief if omitted) |
 | `--key-proof TEXT` | Key proof text (reads from brief if omitted) |
+| `--attestor-present` | Agent-relayed operator attestation, gated on an active pipeline marker (GHI #292) |
 | `--json` | Machine-readable JSON output |
 | `--dry-run` | Show plan without writing files |
 

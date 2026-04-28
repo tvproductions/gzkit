@@ -8,6 +8,7 @@ Initiate closeout mode for an ADR and record `closeout_initiated` in the ledger.
 
 ```bash
 gz closeout <ADR-ID> [--json] [--dry-run]
+                     [--ceremony [--next | --ceremony-status | --attest TEXT | --pause | --restart]]
 ```
 
 ---
@@ -93,6 +94,24 @@ It still does not interpret the verification command outcomes themselves.
 |--------|-------------|
 | `--json` | Emit machine-readable closeout payload |
 | `--dry-run` | Show payload without writing ledger event |
+| `--ceremony` | Run the interactive closeout ceremony with deterministic step sequencing |
+| `--next` | Advance the ceremony to the next step (requires `--ceremony`) |
+| `--ceremony-status` | Show the current ceremony step (requires `--ceremony`) |
+| `--attest TEXT` | Record the operator's Gate-5 attestation at step 6 (e.g. `--attest "Completed"`) |
+| `--pause` | Pause the ceremony to revise-and-resubmit (preserves state for later resumption) |
+| `--restart` | Restart the ceremony from step 1 as a fresh attempt (discards prior in-flight ceremony state) |
+
+### Ceremony Sub-Flags
+
+The `--ceremony` flag opens the interactive Gate-5 attestation ceremony.
+The companion sub-flags (`--next`, `--ceremony-status`, `--attest`, `--pause`,
+`--restart`) drive the ceremony state machine:
+
+- `--ceremony --next` advances one step.
+- `--ceremony --ceremony-status` reports the active step without mutating state.
+- `--ceremony --attest "Completed"` records the canonical attestation at step 6.
+- `--ceremony --pause` checkpoints the ceremony for revise-and-resubmit cycles.
+- `--ceremony --restart` discards in-flight ceremony state and starts over.
 
 ---
 
