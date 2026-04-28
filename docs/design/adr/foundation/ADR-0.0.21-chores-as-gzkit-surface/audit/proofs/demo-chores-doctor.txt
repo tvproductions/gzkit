@@ -1,0 +1,41 @@
+                         Chore Doctor
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃ Slug                                    ┃ Before  ┃ After   ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│ agents-md-architectural-boundaries      │ HEALTHY │ HEALTHY │
+│ arb-pattern-extraction                  │ HEALTHY │ HEALTHY │
+│ cli-contract-governance                 │ HEALTHY │ HEALTHY │
+│ complexity-reduction-xenon              │ HEALTHY │ HEALTHY │
+│ config-paths-remediation                │ HEALTHY │ HEALTHY │
+│ control-surface-rule-conflicts          │ HEALTHY │ HEALTHY │
+│ control-surface-rule-vs-check-drift     │ HEALTHY │ HEALTHY │
+│ control-surface-skill-rule-reachability │ HEALTHY │ HEALTHY │
+│ coverage-40pct                          │ HEALTHY │ HEALTHY │
+│ cross-platform-test-cleanup             │ HEALTHY │ HEALTHY │
+│ dependency-currency                     │ HEALTHY │ HEALTHY │
+│ doc-coverage                            │ HEALTHY │ HEALTHY │
+│ evidence-integrity-audit                │ HEALTHY │ HEALTHY │
+│ exceptions-and-logging-rationalization  │ HEALTHY │ HEALTHY │
+│ frontmatter-ledger-coherence            │ HEALTHY │ HEALTHY │
+│ hardcoded-root-eradication              │ HEALTHY │ HEALTHY │
+│ instructions-files-diet                 │ HEALTHY │ HEALTHY │
+│ memory-hygiene                          │ HEALTHY │ HEALTHY │
+│ module-sloc-cap-radon                   │ HEALTHY │ HEALTHY │
+│ pep257-docstring-compliance             │ HEALTHY │ HEALTHY │
+│ pool-triage                             │ HEALTHY │ HEALTHY │
+│ pythonic-design-pattern-application     │ HEALTHY │ HEALTHY │
+│ pythonic-design-pattern-detection       │ HEALTHY │ HEALTHY │
+│ pythonic-refactoring                    │ HEALTHY │ HEALTHY │
+│ quality-check                           │ HEALTHY │ HEALTHY │
+│ repository-structure-normalization      │ HEALTHY │ HEALTHY │
+│ schema-and-config-drift-audit           │ HEALTHY │ HEALTHY │
+│ skill-authoring-quality                 │ HEALTHY │ HEALTHY │
+│ skill-command-doc-parity                │ HEALTHY │ HEALTHY │
+│ skill-manifest-sync                     │ HEALTHY │ HEALTHY │
+│ skill-trigger-testing                   │ HEALTHY │ HEALTHY │
+│ sync-manpage-docstrings                 │ HEALTHY │ HEALTHY │
+│ test-isolation-compliance               │ HEALTHY │ HEALTHY │
+│ test-manpage-examples                   │ HEALTHY │ HEALTHY │
+│ validate-manpages                       │ HEALTHY │ HEALTHY │
+└─────────────────────────────────────────┴─────────┴─────────┘
+0 repaired, 35 healthy, 0 project-local, 0 damaged-remaining.

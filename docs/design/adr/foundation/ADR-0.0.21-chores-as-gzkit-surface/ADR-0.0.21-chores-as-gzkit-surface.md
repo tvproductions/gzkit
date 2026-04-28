@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.21-chores-as-gzkit-surface
-status: Draft
+status: Validated
 kind: foundation
 semver: 0.0.21
 lane: heavy
@@ -445,4 +445,4 @@ the class of defect this ADR closes.
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.21 | Draft | | | Awaiting OBPI co-creation, evaluation, proposal, and closeout |
+| 0.0.21 | Validated | g0 (agent-relayed) | 2026-04-28 | All 9 OBPIs attested_completed; agent audit pass over evidence (3703 tests OK, mkdocs strict, BDD 4/4, layout validator clean, wheel ships 110 chores entries); operator verbal `attest completed`; agent-relayed Gate-5 emit via `gz adr audit-begin/audit-end` ceremony marker (GHI #292; sub-scope of GHI #354) |
