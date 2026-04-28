@@ -112,28 +112,6 @@ _PER_FLAG_DOC_WAIVERS: dict[str, frozenset[str]] = {
     # calls collapse onto one leaf command's flag list (currently `arb patterns`).
     # Waiver retained until GHI #355 scopes parser_vars per _register_* function.
     "arb patterns": frozenset({"--fix", "--soft-fail", "--name"}),
-    "validate": frozenset(
-        {
-            "--version",
-            "--type-ignores",
-            "--cli-alignment",
-            "--event-handlers",
-            "--validator-fields",
-            "--utf8-prefix",
-            "--test-tiers",
-            "--pydantic-models",
-            "--class-size",
-            "--version-release",
-            "--pool-adr-isolation",
-            "--behave-req-tags",
-            "--skill-alignment",
-            "--advisory-scorecard",
-            "--reconcile-freshness",
-            "--adr-status-fresh",
-            "--orientation-freshness",
-            "--brief-headings",
-        }
-    ),
 }
 
 

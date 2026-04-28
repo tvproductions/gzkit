@@ -185,6 +185,54 @@ No `--fix` variant: recovery is a judgment call (narrow vs. fold vs. allow-list)
 
 Included in `gz validate --audits` and `gz check` aggregate passes — future unscoped rules cannot silently accrete.
 
+## Scopes Reference
+
+The following table catalogs every audit scope the `gz validate` surface
+exposes. Scopes marked **default** run when no flag is supplied; the rest are
+opt-in. Each scope can be invoked individually for focused verification or as
+part of `gz validate --audits` / `gz check` aggregate passes.
+
+| Scope flag | Default? | Purpose |
+|------------|----------|---------|
+| `--manifest` | yes | Validate `.gzkit/manifest.json` against the manifest schema |
+| `--documents` | yes | Validate governance docs (PRDs, constitutions, ADRs, OBPI briefs) |
+| `--surfaces` | yes | Validate control-surface existence, frontmatter shape, and canonical sync parity |
+| `--ledger` | yes | Validate ledger integrity (event ordering, payload schema, append-only invariant) |
+| `--instructions` | yes | Validate agent-instruction surfaces (`AGENTS.md`, `CLAUDE.md`, hooks) |
+| `--briefs` | yes | Validate every OBPI brief against the canonical OBPI schema |
+| `--personas` | yes | Validate persona files in `.gzkit/personas/` |
+| `--interviews` | opt-in | Verify ADRs with OBPIs have interview-transcript artifacts |
+| `--decomposition` | opt-in | Validate ADR decomposition scorecards and checklist-to-brief alignment |
+| `--requirements` | opt-in | Flag OBPI briefs whose `## REQUIREMENTS` sections lack REQ-ID identifiers |
+| `--commit-trailers` | opt-in | Flag HEAD commits touching `src/` or `tests/` without a `Task:` trailer |
+| `--frontmatter` | opt-in | Validate the four governed frontmatter fields against the ledger graph (exits 3 on drift) |
+| `--taxonomy` | yes | Enforce ADR `kind`/`semver`/id-prefix consistency (ADR-0.0.17) |
+| `--chores-layout` | opt-in | Forbid `CHORE.md` / `acceptance.json` outside the canonical chore roots |
+| `--unscoped-rules` | opt-in | Flag agent rules with `paths: "**"` or missing `paths:` outside `AGENTS.md` (ADR-0.0.20) |
+| `--version` | opt-in | Validate version consistency across all version-bearing locations (`pyproject.toml`, `__init__.py`, README badge) |
+| `--type-ignores` | opt-in | Fail on `# type: ignore[<code>]` under `src/` (ty does not honor the bracketed-code form — see GHI #197) |
+| `--cli-alignment` | opt-in | Every `gz <verb>` reference in operator docs / features / skills must resolve to a registered parser verb |
+| `--event-handlers` | opt-in | Every ledger event type must be claimed by a graph handler |
+| `--validator-fields` | opt-in | Every validator `info.get(field)` lookup must have a matching graph writer |
+| `--utf8-prefix` | opt-in | Forbid the `PYTHONUTF8=1`-as-`uv-run-gz`-prefix anti-pattern in docs / skills / features (GHI #275) |
+| `--test-tiers` | opt-in | Forbid a third test tier under `tests/` (`integration`, `e2e`, `slow`, `bdd`) — runner boundary is the gate |
+| `--pydantic-models` | opt-in | Governance classes use Pydantic `BaseModel` + `ConfigDict`, not `@dataclass` |
+| `--class-size` | opt-in | Classes under `src/gzkit/` ≤300 lines unless explicitly waived |
+| `--version-release` | opt-in | `pyproject.toml` version has a matching `vX.Y.Z` git tag |
+| `--pool-adr-isolation` | opt-in | Pool ADRs never receive runtime-track lifecycle / gate events |
+| `--behave-req-tags` | opt-in | Heavy-lane / Completed OBPI REQs have matching `@REQ-X.Y.Z-NN-MM` scenario tags under `features/` (GHI #323 lifecycle scope) |
+| `--skill-alignment` | opt-in | Every CLI verb has a wielding skill (Tool / Skill / Runbook Alignment Invariant 1) |
+| `--advisory-scorecard` | opt-in | Every `.gzkit/rules/*` file appears in the advisory-rules-audit scorecard |
+| `--reconcile-freshness` | opt-in | Flag if no reconcile event has fired since HEAD (24-hour grace window) |
+| `--adr-status-fresh` | yes | `docs/governance/GovZero/adr-status.md` must agree with on-disk ADR canon (GHI #322) |
+| `--orientation-freshness` | opt-in | The SessionStart orientation hook + script must remain wired (GHI #341) |
+| `--brief-headings` | opt-in | OBPI brief evidence sections must be H3, not H2 (GHI #238) |
+| `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
+
+The `--allowlist-only` flag is a sub-modifier for `--unscoped-rules` —
+it lists current allow-list entries and exits 0 without running the
+full audit.
+
 ## Exit Codes
 
 Follows the CLI doctrine 4-code map:
