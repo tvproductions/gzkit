@@ -7,11 +7,24 @@ Launch the OBPI pipeline runtime surface for one OBPI.
 ## Usage
 
 ```bash
-gz obpi pipeline <OBPI-ID> [--from {verify,ceremony}]
+gz obpi pipeline <OBPI-ID> [--from {verify,ceremony,sync}] [--attestor NAME]
+                           [--evidence-json JSON] [--clear-stale] [--no-subagents]
 ```
 
 `<OBPI-ID>` accepts the full canonical identifier or the same identifier
 without the `OBPI-` prefix.
+
+---
+
+## Options
+
+| Option | Description |
+|--------|-------------|
+| `--from {verify,ceremony,sync}` | Resume the pipeline from the named stage (default: full launch) |
+| `--attestor NAME` | Attestor identity for Stage 5 (e.g. `jeff` or `human:Jeffry`); used by ceremony and sync stages when relaying the human attestation |
+| `--evidence-json JSON` | Inline evidence payload merged into the Stage 5 receipt (`value_narrative`, `key_proof`, attestation fields, etc.) |
+| `--clear-stale` | Remove pipeline markers older than 4 hours before launching (recovery path for crashed sessions) |
+| `--no-subagents` | Disable subagent dispatch and run every stage in-process (single-session fallback for environments that cannot spawn subagents) |
 
 ---
 

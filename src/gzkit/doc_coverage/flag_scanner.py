@@ -104,16 +104,14 @@ def scan_command_flags(project_root: Path | None = None) -> dict[str, list[str]]
 # evidence captured in a stable surface), mirroring the precedent at
 # ``_UTF8_PIPE_WAIVERS`` in ``src/gzkit/governance/trust_audits.py``.
 _PER_FLAG_DOC_WAIVERS: dict[str, frozenset[str]] = {
+    # arb patterns: scanner mis-attribution tracked by GHI #355. --fix and
+    # --soft-fail are on `arb ruff`, --name and --soft-fail on `arb step`,
+    # all already documented in their owning docs. The AST scanner walks every
+    # _register_*(arb_commands) function and binds local var `p` to whichever
+    # leaf parser the AST walk processes last, so sibling-arb add_argument
+    # calls collapse onto one leaf command's flag list (currently `arb patterns`).
+    # Waiver retained until GHI #355 scopes parser_vars per _register_* function.
     "arb patterns": frozenset({"--fix", "--soft-fail", "--name"}),
-    "closeout": frozenset(
-        {"--ceremony", "--next", "--ceremony-status", "--attest", "--pause", "--restart"}
-    ),
-    "covers": frozenset({"--features-dir", "--include-doc"}),
-    "obpi complete": frozenset({"--attestor-present"}),
-    "obpi emit-receipt": frozenset({"--attestor-present"}),
-    "obpi pipeline": frozenset(
-        {"--attestor", "--evidence-json", "--clear-stale", "--no-subagents"}
-    ),
     "validate": frozenset(
         {
             "--version",
