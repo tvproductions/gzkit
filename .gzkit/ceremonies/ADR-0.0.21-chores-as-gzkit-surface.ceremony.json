@@ -1,0 +1,53 @@
+{
+  "adr_id": "ADR-0.0.21-chores-as-gzkit-surface",
+  "current_step": 7,
+  "is_foundation": true,
+  "started_at": "2026-04-28T00:04:25Z",
+  "updated_at": "2026-04-28T01:23:02Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-04-28T00:04:25Z",
+      "acknowledged_at": "2026-04-28T00:06:53Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-04-28T00:06:53Z",
+      "acknowledged_at": "2026-04-28T00:07:11Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-04-28T00:07:11Z",
+      "acknowledged_at": "2026-04-28T00:07:37Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-04-28T00:07:37Z",
+      "acknowledged_at": "2026-04-28T00:08:05Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-04-28T00:08:05Z",
+      "acknowledged_at": "2026-04-28T00:40:18Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-04-28T00:40:18Z",
+      "acknowledged_at": "2026-04-28T00:43:03Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-04-28T00:43:03Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz chores list --help",
+    "uv run gz frontmatter reconcile --help"
+  ],
+  "walkthrough_index": 1,
+  "attestation": "attest completed — Confirm decision (g0): ADR-0.0.21 chores-as-gzkit-surface delivered. 9/9 OBPIs Completed with attestation recorded; physical migration (ops/chores → src/gzkit/chores) preserved git history; wheel packaging verified across pip/editable/pyinstaller; resolver implements project-first → importlib.resources fallback with --explain visibility; gz chores doctor + gz validate --chores-layout new surfaces both registered and behaving per REQs. Walkthrough green: 3688 unit tests OK (1 skip); 4/4 behave scenarios in features/chores_distribution.feature; mkdocs --strict clean; gz validate --documents --surfaces clean. Receipts: lint arb-ruff-1198693d00324ef0a8b40ab7371d7fc7; types arb-step-typecheck-1f9782e998e7476a915b8d6903d6901c; tests arb-step-unittest-94b598f241de4aa6bd1116d6bd98a4ef; docs arb-step-mkdocs-17de5dfdf47e4b56ba2969a137af7875. Defect surfaced and fixed in-flight: docs/user/commands/validate.md was missing the --chores-layout section the gz-chores manpage cross-linked to; section authored, doc surfaces re-validated. Class-of-failure tracked at GHI #350 (per-flag CLI audit gap) — not a blocker for this ADR.",
+  "completed_at": null,
+  "attempt": 1,
+  "paused_at": "2026-04-28T01:23:02Z"
+}
