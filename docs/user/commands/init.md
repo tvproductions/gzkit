@@ -19,6 +19,7 @@ gz init [OPTIONS]
 | `--mode` | `lite` \| `heavy` | `lite` | Governance mode |
 | `--force` | flag | — | Full reinitialize (overwrites config, re-scaffolds) |
 | `--no-skeleton` | flag | — | Skip Python project skeleton (pyproject.toml, src/, tests/) |
+| `--yes` | flag | — | Auto-accept registry-merge prompts during repair |
 | `--dry-run` | flag | — | Show actions without writing |
 
 ---
