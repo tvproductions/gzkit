@@ -16,7 +16,6 @@ from pathlib import Path
 
 from gzkit.commands.common import get_project_root
 from gzkit.doc_coverage.scanner import (
-    _find_build_parser_body,
     _find_root_parser_name,
     _handle_assignment,
     _ParserState,
@@ -35,47 +34,83 @@ def _collect_long_flags_from_call(call: ast.Call) -> list[str]:
     return long_flags
 
 
+def _parser_func_depth(name: str) -> int:
+    """Return processing depth for a parser-registration function.
+
+    ``_build_parser`` (root) is depth 0; ``register_X_parsers`` (subparser
+    group authors) is depth 1; ``_register_X`` (leaf flag registrations) is
+    depth 2. Lower depths must process before higher depths so that a
+    caller's ``X = parent.add_subparsers(...)`` lands in shared
+    ``subparser_vars`` before the callee's leaf-parser assignments resolve
+    against it.
+    """
+    if name == "_build_parser":
+        return 0
+    if name.startswith("_register_"):
+        return 2
+    return 1
+
+
 def discover_command_flags(source: str) -> dict[str, list[str]]:
     """Discover registered argparse long flags per leaf command.
 
     Walks parser-registration source and returns ``{command_name: [--flag, ...]}``
-    by joining ``state.parser_vars`` (parser variable -> command name) with
-    ``add_argument`` calls on those parser variables. Only explicit
-    ``p_xxx.add_argument("--flag", ...)`` shapes are captured; helper-mediated
-    flags (e.g. ``add_json_flag(parser)``) are out of scope and tracked
-    separately if a class-of-failure for them surfaces.
+    by joining parser-variable bindings to ``add_argument`` calls. Each
+    parser-registration function is processed in its OWN ``parser_vars``
+    scope: local variables like ``p`` in ``_register_ruff`` and
+    ``_register_step`` are isolated rather than colliding on the last write
+    (GHI #355). Subparser-group bindings remain shared across functions so
+    a caller's ``arb_commands = p_arb.add_subparsers(...)`` is visible in
+    the callee's ``arb_commands`` parameter.
     """
     tree = ast.parse(source)
-    body = _find_build_parser_body(tree)
-    if body is None:
+
+    parser_funcs = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.FunctionDef)
+        and (
+            node.name == "_build_parser"
+            or node.name.startswith("register_")
+            or node.name.startswith("_register_")
+        )
+    ]
+    if not parser_funcs:
         return {}
 
-    state = _ParserState(_find_root_parser_name(body))
-    for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and (
-            node.name.startswith("register_") or node.name.startswith("_register_")
-        ):
-            for arg in node.args.args:
-                state.subparser_vars[arg.arg] = ""
+    body_all: list[ast.stmt] = []
+    for fn in parser_funcs:
+        body_all.extend(fn.body)
 
-    for stmt in body:
-        if isinstance(stmt, ast.Assign):
-            _handle_assignment(stmt, state)
+    state = _ParserState(_find_root_parser_name(body_all))
+    for fn in parser_funcs:
+        for arg in fn.args.args:
+            state.subparser_vars.setdefault(arg.arg, "")
 
     flags_by_command: dict[str, list[str]] = {}
-    for node in ast.walk(tree):
-        if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)):
-            continue
-        if node.func.attr != "add_argument":
-            continue
-        if not isinstance(node.func.value, ast.Name):
-            continue
-        parser_var = node.func.value.id
-        command_name = state.parser_vars.get(parser_var)
-        if command_name is None:
-            continue
-        for flag in _collect_long_flags_from_call(node):
-            flags_by_command.setdefault(command_name, []).append(flag)
+    for fn in sorted(parser_funcs, key=lambda f: (_parser_func_depth(f.name), f.name)):
+        saved_parser_vars = state.parser_vars
+        state.parser_vars = dict(saved_parser_vars)
+
+        for stmt in fn.body:
+            if isinstance(stmt, ast.Assign):
+                _handle_assignment(stmt, state)
+
+        for node in ast.walk(fn):
+            if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)):
+                continue
+            if node.func.attr != "add_argument":
+                continue
+            if not isinstance(node.func.value, ast.Name):
+                continue
+            parser_var = node.func.value.id
+            command_name = state.parser_vars.get(parser_var)
+            if command_name is None:
+                continue
+            for flag in _collect_long_flags_from_call(node):
+                flags_by_command.setdefault(command_name, []).append(flag)
+
+        state.parser_vars = saved_parser_vars
 
     return flags_by_command
 
@@ -103,16 +138,7 @@ def scan_command_flags(project_root: Path | None = None) -> dict[str, list[str]]
 # the snapshot of "known historical drift" — Trust Doctrine T2 (unrepairable
 # evidence captured in a stable surface), mirroring the precedent at
 # ``_UTF8_PIPE_WAIVERS`` in ``src/gzkit/governance/trust_audits.py``.
-_PER_FLAG_DOC_WAIVERS: dict[str, frozenset[str]] = {
-    # arb patterns: scanner mis-attribution tracked by GHI #355. --fix and
-    # --soft-fail are on `arb ruff`, --name and --soft-fail on `arb step`,
-    # all already documented in their owning docs. The AST scanner walks every
-    # _register_*(arb_commands) function and binds local var `p` to whichever
-    # leaf parser the AST walk processes last, so sibling-arb add_argument
-    # calls collapse onto one leaf command's flag list (currently `arb patterns`).
-    # Waiver retained until GHI #355 scopes parser_vars per _register_* function.
-    "arb patterns": frozenset({"--fix", "--soft-fail", "--name"}),
-}
+_PER_FLAG_DOC_WAIVERS: dict[str, frozenset[str]] = {}
 
 
 def check_flag_doc_coverage(
