@@ -3,6 +3,7 @@
 import json
 import re
 import sys
+from collections.abc import Mapping
 from datetime import date
 from pathlib import Path
 from typing import Any, cast
@@ -259,18 +260,45 @@ def _is_foundation_adr(adr_id: str) -> bool:
     return re.match(r"^ADR-0\.0\.\d+(?:[.-].*)?$", adr_id) is not None
 
 
-def _requires_human_obpi_attestation(parent_adr: str | None, parent_lane: str) -> bool:
+def _requires_security_review_attestation(
+    brief_frontmatter: Mapping[str, Any] | None,
+) -> bool:
+    """Return True when a brief carries ``sensitivity: security`` (ADR-0.0.22).
+
+    Third axis of the (kind × lane × sensitivity) attestation matrix. Operates
+    on a parsed frontmatter mapping so call sites own parsing and unit tests
+    can construct synthetic dicts. The schema currently enumerates only
+    ``"security"`` for the ``sensitivity`` field; future values must declare
+    their own attestation rule rather than silently inheriting this one.
+    """
+    if not isinstance(brief_frontmatter, Mapping):
+        return False
+    return brief_frontmatter.get("sensitivity") == "security"
+
+
+def _requires_human_obpi_attestation(
+    parent_adr: str | None,
+    parent_lane: str,
+    brief_frontmatter: Mapping[str, Any] | None = None,
+) -> bool:
     """Return whether completed evidence must include human-attestation fields.
 
-    Foundation ADRs (0.0.x) always require human attestation.  For non-foundation
-    ADRs, the parent lane sets the compliance floor -- a Lite OBPI under a Heavy ADR
-    still requires attestation per AGENTS.md § Lane & Kind Attestation Matrix.
+    Foundation ADRs (0.0.x) always require human attestation. For non-foundation
+    ADRs, the parent lane sets the compliance floor -- a Lite OBPI under a Heavy
+    ADR still requires attestation per AGENTS.md
+    § Lane & Kind & Sensitivity Attestation Matrix. Briefs carrying
+    ``sensitivity: security`` (ADR-0.0.22) require attestation regardless of
+    lane or kind via :func:`_requires_security_review_attestation`. The
+    ``brief_frontmatter`` argument is optional so ADR-level callers (which do
+    not have per-brief frontmatter) can keep the two-argument call shape.
     """
     if not isinstance(parent_adr, str) or not parent_adr:
         return False
     if _is_foundation_adr(parent_adr):
         return True
-    return parent_lane == "heavy"
+    if parent_lane == "heavy":
+        return True
+    return _requires_security_review_attestation(brief_frontmatter)
 
 
 # ---------------------------------------------------------------------------

@@ -1328,5 +1328,219 @@ class TestAgentRelayedEscapePath(unittest.TestCase):
             self.assertEqual(result, ATTESTATION_TYPE_HUMAN)
 
 
+# ---------------------------------------------------------------------------
+# OBPI-0.0.22-04 — sensitivity:security forces TTY+ATTEST gate via OR
+# ---------------------------------------------------------------------------
+
+
+_SECURITY_BRIEF = """\
+---
+id: OBPI-0.99.0-sec-feature-test
+parent: ADR-0.99.0-some-feature
+item: 1
+lane: Lite
+status: Draft
+sensitivity: security
+---
+
+# OBPI-0.99.0-sec-feature-test: security-sensitive lite-feature brief
+
+## Objective
+
+Brief used by REQ-0.0.22-04-05 to confirm the OR composition reuses the
+existing TTY + ATTEST gate without any new TTY-gating code.
+
+## Allowed Paths
+
+- `tests/test_obpi_complete_cmd.py`
+
+## Requirements (FAIL-CLOSED)
+
+1. Test fixture only.
+
+## Acceptance Criteria
+
+- [ ] REQ-0.99.0-01-01: fixture-only
+
+## Evidence
+
+### Implementation Summary
+
+- Files created/modified: tests/test_obpi_complete_cmd.py
+- Tests added: REQ-0.0.22-04-05 behavioral test
+- Date completed: 2026-04-29
+- Attestation status: Pending TTY confirmation
+- Defects noted: None
+
+### Key Proof
+
+`gz obpi complete` exits 3 with no TTY when frontmatter declares
+`sensitivity: security`, even though the parent ADR is lite + feature.
+
+## Human Attestation
+
+- Attestor: `<name>` when required, otherwise `n/a`
+- Attestation: substantive attestation text or `n/a`
+- Date: YYYY-MM-DD or `n/a`
+
+---
+
+**Brief Status:** Draft
+
+**Date Completed:** -
+
+**Evidence Hash:** -
+"""
+
+
+def _mock_ledger_lite_feature(obpi_id: str, parent_adr: str):
+    """Mock ledger where the parent ADR is lite + feature (non-foundation)."""
+    ledger = MagicMock()
+    ledger.canonicalize_id.return_value = obpi_id
+    graph = {
+        obpi_id: {
+            "type": "obpi",
+            "parent": parent_adr,
+            "ledger_completed": False,
+        },
+        parent_adr: {
+            "type": "adr",
+            "lane": "lite",
+        },
+    }
+    ledger.get_artifact_graph.return_value = graph
+    return ledger
+
+
+@covers("OBPI-0.0.22-04")
+class TestObpiCompleteSecuritySensitivityGate(unittest.TestCase):
+    """REQ-0.0.22-04-05 — sensitivity:security activates the existing TTY gate.
+
+    The test uses the *real* ``_requires_human_obpi_attestation`` predicate
+    (not a mock) to prove the OR composition wires through end-to-end. A
+    ``lite + feature + sensitivity:security`` brief authored under a
+    non-TTY parent must be refused at ``_enforce_human_attestation_authenticity``
+    — the existing GHI #290 gate, reused via the OR alone.
+    """
+
+    @patch("gzkit.commands.obpi_complete.console", _quiet_console)
+    @patch("gzkit.commands.adr_audit._is_human_attestation_tty_available")
+    @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
+    @patch("gzkit.commands.obpi_complete.resolve_adr_file")
+    @patch("gzkit.commands.obpi_complete.get_project_root")
+    @patch("gzkit.commands.obpi_complete.ensure_initialized")
+    @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
+    @patch("gzkit.commands.obpi_complete.Ledger")
+    @covers("REQ-0.0.22-04-05")
+    def test_lite_feature_security_brief_refused_without_tty(
+        self,
+        mock_ledger_cls,
+        mock_resolve,
+        mock_init,
+        mock_root,
+        mock_adr_resolve,
+        mock_anchor,
+        mock_tty,
+    ):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            mock_root.return_value = root
+            cfg = _mock_config()
+            cfg.mode = "lite"
+            mock_init.return_value = cfg
+            mock_anchor.return_value = EventAnchor(commit="def5678", semver="0.99.0")
+            mock_tty.return_value = False
+
+            adr_dir = root / "adr"
+            obpis_dir = adr_dir / "obpis"
+            obpis_dir.mkdir(parents=True)
+            obpi_id = "OBPI-0.99.0-sec-feature-test"
+            adr_id = "ADR-0.99.0-some-feature"
+            obpi_file = obpis_dir / f"{obpi_id}.md"
+            obpi_file.write_text(_SECURITY_BRIEF, encoding="utf-8")
+            mock_resolve.return_value = (obpi_file, obpi_id)
+
+            ledger = _mock_ledger_lite_feature(obpi_id, adr_id)
+            mock_ledger_cls.return_value = ledger
+            mock_adr_resolve.return_value = (adr_dir / f"{adr_id}.md", adr_id)
+
+            with self.assertRaises(SystemExit) as ctx:
+                obpi_complete_cmd(
+                    obpi=obpi_id,
+                    attestor="g0",
+                    attestation_text="agent-synthesized payload",
+                    implementation_summary="- Files: tests/test_obpi_complete_cmd.py",
+                    key_proof="security gate refuses headless invocation",
+                    as_json=False,
+                    dry_run=False,
+                )
+            self.assertEqual(ctx.exception.code, 3)
+
+            # Brief must not have been mutated (atomic transaction held).
+            self.assertEqual(obpi_file.read_text(encoding="utf-8"), _SECURITY_BRIEF)
+            ledger.append.assert_not_called()
+
+    @patch("gzkit.commands.obpi_complete.console", _quiet_console)
+    @patch("gzkit.commands.adr_audit._is_human_attestation_tty_available")
+    @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
+    @patch("gzkit.commands.obpi_complete.resolve_adr_file")
+    @patch("gzkit.commands.obpi_complete.get_project_root")
+    @patch("gzkit.commands.obpi_complete.ensure_initialized")
+    @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
+    @patch("gzkit.commands.obpi_complete.Ledger")
+    @covers("REQ-0.0.22-04-03")
+    def test_lite_feature_no_sensitivity_remains_self_closeable_e2e(
+        self,
+        mock_ledger_cls,
+        mock_resolve,
+        mock_init,
+        mock_root,
+        mock_adr_resolve,
+        mock_anchor,
+        mock_tty,
+    ):
+        # Sister proof to REQ-05: the *same* lite + feature parent without
+        # the sensitivity field must NOT trip the gate. Demonstrates the
+        # security branch is the only thing that changed routing.
+        baseline_brief = _SECURITY_BRIEF.replace("sensitivity: security\n", "")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            mock_root.return_value = root
+            cfg = _mock_config()
+            cfg.mode = "lite"
+            mock_init.return_value = cfg
+            mock_anchor.return_value = EventAnchor(commit="def5678", semver="0.99.0")
+            mock_tty.return_value = False
+
+            adr_dir = root / "adr"
+            obpis_dir = adr_dir / "obpis"
+            obpis_dir.mkdir(parents=True)
+            obpi_id = "OBPI-0.99.0-sec-feature-test"
+            adr_id = "ADR-0.99.0-some-feature"
+            obpi_file = obpis_dir / f"{obpi_id}.md"
+            obpi_file.write_text(baseline_brief, encoding="utf-8")
+            mock_resolve.return_value = (obpi_file, obpi_id)
+
+            ledger = _mock_ledger_lite_feature(obpi_id, adr_id)
+            mock_ledger_cls.return_value = ledger
+            mock_adr_resolve.return_value = (adr_dir / f"{adr_id}.md", adr_id)
+
+            # Self-closeable path completes without TTY because the predicate
+            # returns False — no security axis, lite lane, feature kind.
+            obpi_complete_cmd(
+                obpi=obpi_id,
+                attestor="g0",
+                attestation_text="self-close evidence baseline",
+                implementation_summary="- Files: tests/test_obpi_complete_cmd.py",
+                key_proof="completion succeeds without TTY when no sensitivity",
+                as_json=False,
+                dry_run=False,
+            )
+            # The TTY mock must not have been queried, because the gate
+            # never fired — the predicate returned False at the call site
+            # in _resolve_and_validate.
+            mock_tty.assert_not_called()
+
+
 if __name__ == "__main__":
     unittest.main()

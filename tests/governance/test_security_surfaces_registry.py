@@ -213,14 +213,16 @@ class TestScopeDiscipline(unittest.TestCase):
                 "validate_sensitivity_binding", trust_audits.read_text(encoding="utf-8")
             )
 
-    def test_security_review_attestation_not_authored(self) -> None:
-        # OBPI-04's responsibility.
+    def test_security_review_attestation_authored_at_named_path(self) -> None:
+        # Forward-looking absence-guard converted to backward-looking
+        # presence-witness when OBPI-0.0.22-04 landed: the function
+        # exists at the path OBPI-04 was scoped to author at.
         adr_audit = REPO_ROOT / "src" / "gzkit" / "commands" / "adr_audit.py"
-        if adr_audit.is_file():
-            self.assertNotIn(
-                "_requires_security_review_attestation",
-                adr_audit.read_text(encoding="utf-8"),
-            )
+        self.assertTrue(adr_audit.is_file(), "adr_audit.py must exist")
+        self.assertIn(
+            "_requires_security_review_attestation",
+            adr_audit.read_text(encoding="utf-8"),
+        )
 
     def test_security_sensitivity_rule_not_authored(self) -> None:
         # OBPI-06's responsibility.

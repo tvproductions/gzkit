@@ -88,7 +88,14 @@ def _resolve_and_validate(
 
     _adr_file, resolved_parent = resolve_adr_file(project_root, config, parent_adr)
     parent_lane = resolve_adr_lane(graph.get(resolved_parent, {}), config.mode)
-    requires_human = _requires_human_obpi_attestation(resolved_parent, parent_lane)
+    # ADR-0.0.22 third axis: a brief carrying ``sensitivity: security`` requires
+    # attestation regardless of lane or kind via the OR in
+    # ``_requires_human_obpi_attestation``.
+    sensitivity = parse_frontmatter_value(original_content, "sensitivity")
+    brief_frontmatter = {"sensitivity": sensitivity} if sensitivity else None
+    requires_human = _requires_human_obpi_attestation(
+        resolved_parent, parent_lane, brief_frontmatter
+    )
     return obpi_file, obpi_id, original_content, resolved_parent, parent_lane, requires_human
 
 

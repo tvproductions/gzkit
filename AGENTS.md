@@ -288,22 +288,28 @@ Right-size implementation units per [OBPI Decomposition Matrix](docs/governance/
 
 Ceremony steps and stage sequencing in `gz-obpi-pipeline` skill. Read before presenting evidence.
 
-### Lane & Kind Attestation Matrix
+### Lane & Kind & Sensitivity Attestation Matrix
 
-`kind` and `lane` orthogonal. Either axis alone can force human attestation at brief level:
+`kind`, `lane`, and `sensitivity` are three orthogonal axes. Any one axis alone can force human attestation at brief level — the predicate is a three-way OR:
 
-| Parent Kind | Parent Lane | Brief-level Human Attestation | Source of truth |
-|-------------|-------------|-------------------------------|-----------------|
-| `foundation` | `lite` | **Required** | `_is_foundation_adr` branch |
-| `foundation` | `heavy` | **Required** | both branches |
-| `feature` | `heavy` | **Required** | lane branch |
-| `feature` | `lite` | Self-closeable after evidence | — |
+| Parent Kind | Parent Lane | Sensitivity | Brief-level Human Attestation | Source of truth |
+|-------------|-------------|-------------|-------------------------------|-----------------|
+| `foundation` | `lite`  | absent     | **Required** | `_is_foundation_adr` branch |
+| `foundation` | `lite`  | `security` | **Required** | foundation OR security |
+| `foundation` | `heavy` | absent     | **Required** | foundation AND lane |
+| `foundation` | `heavy` | `security` | **Required** | three-way OR |
+| `feature`    | `lite`  | absent     | Self-closeable after evidence | — |
+| `feature`    | `lite`  | `security` | **Required** | `_requires_security_review_attestation` branch (ADR-0.0.22) |
+| `feature`    | `heavy` | absent     | **Required** | lane branch |
+| `feature`    | `heavy` | `security` | **Required** | lane OR security |
 
-OBPI inside `heavy`-lane ADR inherits that lane's attestation rigor regardless of OBPI's own lane. OBPI inside `foundation`-kind ADR inherits foundation-kind rigor regardless of lane.
+OBPI inside a `heavy`-lane ADR inherits that lane's attestation rigor regardless of OBPI's own lane. OBPI inside a `foundation`-kind ADR inherits foundation-kind rigor regardless of lane. OBPI carrying `sensitivity: security` inherits security-grade rigor regardless of lane or kind.
 
 **Foundation-kind rigor (across lanes, at brief level).** Foundation-kind ADRs codify app/system invariants. Walkthrough discipline (ADR-0.0.18) fires at **brief level** (each OBPI's `Completed` transition) and at **ADR closeout**, regardless of lane — because doctrine drift is invariant drift. A `lite`-lane foundation OBPI is **not** self-closeable; this was the GHI #290 fabrication vector.
 
-Mechanical enforcement: `_requires_human_obpi_attestation` at `src/gzkit/commands/adr_audit.py` returns `True` whenever parent ADR matches `^ADR-0\.0\.\d+` (foundation) OR parent lane is `heavy`. TTY + `ATTEST` confirmation gate at `_enforce_human_attestation_authenticity` refuses to emit `human_attestation: true` from a headless process. Matrix above is a readable projection. If matrix and code disagree, code is source of truth; matrix is the defect.
+**Sensitivity rigor (third axis, ADR-0.0.22).** A brief carrying `sensitivity: security` is never self-closeable — security-relevant changes require human review even on lite-feature briefs that would otherwise be self-closeable. The same TTY + `ATTEST` confirmation gate at `_enforce_human_attestation_authenticity` is reused; no new gate is added. The axis is additive: heavy lane and security both flag attestation, neither suppresses the other.
+
+Mechanical enforcement: `_requires_human_obpi_attestation` at `src/gzkit/commands/adr_audit.py` returns `True` whenever parent ADR matches `^ADR-0\.0\.\d+` (foundation) OR parent lane is `heavy` OR `_requires_security_review_attestation(brief_frontmatter)` returns `True` (security axis). TTY + `ATTEST` confirmation gate at `_enforce_human_attestation_authenticity` refuses to emit `human_attestation: true` from a headless process. Matrix above is a readable projection of `_requires_human_obpi_attestation`. If matrix and code disagree, code is source of truth; matrix is the defect.
 
 ## Execution Rules
 
