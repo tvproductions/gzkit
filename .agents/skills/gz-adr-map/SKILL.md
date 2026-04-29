@@ -4,7 +4,7 @@ description: Build ADR-to-artifact traceability using gz state and repository se
 category: adr-operations
 compatibility: GovZero v6 framework; manual mapping workflow
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.2.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -25,8 +25,11 @@ Construct ADR traceability with the available `gz` and repo-local tooling.
 # 1) ADR/OBPI graph from ledger
 uv run gz state --json
 
-# 2) Test coverage hints
-rg -n '@covers\("ADR-' tests
+# 2) ADR -> REQ -> test coverage hop
+#    Decorators are REQ-level (`@covers("REQ-X.Y.Z-NN-MM")`), not ADR-level.
+#    Traceability hop is ADR -> OBPI briefs (Acceptance Criteria REQ IDs) -> @covers(REQ-...).
+uv run gz covers ADR-0.3.0            # canonical traceability walker (replace with target ADR)
+rg -n '@covers\("REQ-' tests          # raw REQ-decorator survey across the repo
 
 # 3) Validate a target ADR's linked briefs
 uv run gz adr audit-check ADR-0.3.0 --json
