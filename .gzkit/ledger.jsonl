@@ -4233,3 +4233,4 @@
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.0.22-security-sensitivity-doctrine","ts":"2026-04-29T10:59:55.063915+00:00","gate":4,"status":"pass","command":"uv run -m behave features/","returncode":0}
 {"schema":"gzkit.ledger.v1","event":"attested","id":"ADR-0.0.22-security-sensitivity-doctrine","ts":"2026-04-29T10:59:55.073096+00:00","status":"completed","by":"Jeffry"}
 {"schema":"gzkit.ledger.v1","event":"lifecycle_transition","id":"ADR-0.0.22-security-sensitivity-doctrine","ts":"2026-04-29T10:59:55.073347+00:00","content_type":"adr","from_state":"Proposed","to_state":"Completed"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"AGENTS.md","ts":"2026-04-29T11:48:37.658912+00:00","path":"AGENTS.md"}
