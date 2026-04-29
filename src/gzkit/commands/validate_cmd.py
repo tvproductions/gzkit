@@ -495,11 +495,13 @@ def _sensitivity_records(
     project_root: Path,
 ) -> tuple[list[dict[str, object]], list[ValidationError]]:
     """Walk briefs once and produce per-brief records + companion findings."""
-    from gzkit.governance.trust_audits import (  # noqa: PLC0415
+    from gzkit.governance.trust_audits.sensitivity import (  # noqa: PLC0415
         _SENSITIVITY_REGISTRY_REL,
         _extract_sensitivity_allowed_paths,
         _iter_sensitivity_briefs,
         _load_sensitivity_registry,
+    )
+    from gzkit.governance.trust_audits.taxonomy import (  # noqa: PLC0415
         _parse_adr_frontmatter,
     )
     from gzkit.models.security_surfaces import match_globs  # noqa: PLC0415

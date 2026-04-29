@@ -1,0 +1,88 @@
+"""Chores-layout drift trust audit (ADR-0.0.21 Decision #9)."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from gzkit.validate import ValidationError
+
+_CHORES_LAYOUT_FILES: frozenset[str] = frozenset({"CHORE.md", "acceptance.json"})
+
+_CHORES_LAYOUT_EXCLUDED_SEGMENTS: frozenset[str] = frozenset(
+    {"__pycache__", ".venv", "dist", "build", "node_modules"}
+)
+
+
+def audit_chores_layout(project_root: Path) -> list[ValidationError]:
+    """Flag ``CHORE.md`` / ``acceptance.json`` outside canonical chores roots.
+
+    ADR-0.0.21 Decision #9: chores live under exactly two roots —
+    ``src/gzkit/chores/`` (canonical, shipped in the wheel) and the
+    project-scoped ``paths.chores`` (default ``.gzkit/chores/``). Any
+    ``CHORE.md`` or ``acceptance.json`` discovered outside both roots is
+    layout drift (the ``ops/chores/`` re-emergence vector this ADR exists to
+    close) and the audit fails closed.
+
+    Walking semantics mirror the ``audit_utf8_prefix`` pattern: skip
+    dotfile-hidden segments, ``__pycache__``/``.venv``/``dist``/``build``/
+    ``node_modules``. Waiver entries in
+    ``data/chores_layout_waivers.json`` (a JSON list of POSIX path strings)
+    exempt explicitly-listed paths per trust-doctrine T2.
+    """
+    from gzkit.config import GzkitConfig  # noqa: PLC0415
+
+    config = GzkitConfig.load(project_root / ".gzkit.json")
+    project_chores_root = config.paths.chores.strip("/")
+    canonical_roots = ("src/gzkit/chores", project_chores_root)
+
+    waivers = _load_chores_layout_waivers(project_root)
+
+    errors: list[ValidationError] = []
+    for path in sorted(project_root.rglob("*")):
+        if not path.is_file():
+            continue
+        if path.name not in _CHORES_LAYOUT_FILES:
+            continue
+        rel = path.relative_to(project_root)
+        segments = rel.parts
+        if any(seg.startswith(".") for seg in segments[:-1]):
+            continue
+        if any(seg in _CHORES_LAYOUT_EXCLUDED_SEGMENTS for seg in segments):
+            continue
+        rel_posix = rel.as_posix()
+        if rel_posix in waivers:
+            continue
+        if any(rel_posix.startswith(f"{root}/") for root in canonical_roots):
+            continue
+        errors.append(
+            ValidationError(
+                type="chores_layout",
+                artifact=rel_posix,
+                message=(
+                    f"stray {path.name} outside canonical chores roots "
+                    f"(`src/gzkit/chores/`, `{project_chores_root}/`). "
+                    "ADR-0.0.21 Decision #9 forbids ad-hoc chore layouts."
+                ),
+            )
+        )
+    return errors
+
+
+def _load_chores_layout_waivers(project_root: Path) -> frozenset[str]:
+    """Load waiver paths from ``data/chores_layout_waivers.json``.
+
+    Returns an empty frozenset if the file is absent, empty, or
+    malformed — the audit fails open on waiver IO so a missing file does
+    not silently become a strict-mode escape hatch in either direction.
+    """
+    waiver_file = project_root / "data" / "chores_layout_waivers.json"
+    if not waiver_file.is_file():
+        return frozenset()
+    try:
+        payload = json.loads(waiver_file.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError, OSError):
+        return frozenset()
+    if not isinstance(payload, list):
+        return frozenset()
+    return frozenset(str(entry) for entry in payload if isinstance(entry, str))
