@@ -442,6 +442,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Flag if no reconcile event since HEAD (grace: 24h)",
     )
     p_validate.add_argument(
+        "--insights-shape",
+        dest="check_insights_shape",
+        action="store_true",
+        help="Validate `.gzkit/insights/agent-insights.jsonl` records (GHI #358)",
+    )
+    p_validate.add_argument(
         "--adr-status-fresh",
         dest="check_adr_status_fresh",
         action="store_true",
@@ -519,6 +525,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_skill_alignment=a.check_skill_alignment,
             check_advisory_scorecard=a.check_advisory_scorecard,
             check_reconcile_freshness=a.check_reconcile_freshness,
+            check_insights_shape=a.check_insights_shape,
             check_adr_status_fresh=a.check_adr_status_fresh,
             check_orientation_freshness=a.check_orientation_freshness,
             check_taxonomy=a.check_taxonomy,

@@ -22,6 +22,7 @@ from gzkit.governance.trust_audits import (
     audit_behave_req_tags,
     audit_brief_headings,
     audit_class_size,
+    audit_insights_shape,
     audit_pool_adr_isolation,
     audit_pydantic_models,
     audit_reconcile_freshness,
@@ -47,6 +48,9 @@ class PromotedAdvisoryAudits(unittest.TestCase):
 
     def test_utf8_prefix_rule_9(self) -> None:
         self._assert_clean(audit_utf8_prefix(_PROJECT_ROOT), "utf8_prefix")
+
+    def test_insights_shape_ghi_358(self) -> None:
+        self._assert_clean(audit_insights_shape(_PROJECT_ROOT), "insights_shape")
 
     def test_test_tiers_rule_37(self) -> None:
         self._assert_clean(audit_test_tiers(_PROJECT_ROOT), "test_tiers")

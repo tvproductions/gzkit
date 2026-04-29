@@ -59,6 +59,7 @@ This audit scores every rule by:
 | 15 | Do not bypass Gate 5 for heavy-lane or foundation-kind work | **Mechanical** | `gz closeout` pipeline enforces attestation before `Completed` lifecycle event |
 | 16 | Do not edit `.gzkit/ledger.jsonl` manually | **Mechanical** | Enforced by `.githooks/pre-commit-ledger-guard` (GHI #207) — rejects staged ledger edits that are not strict appends from a registered `gz` command |
 | 17 | Every defect must be trackable (GHI or agent-insights.jsonl) | **Judgment** | Enforcement is cultural; no reliable mechanical signal for "defect noticed but not tracked" |
+| 17a | `.gzkit/insights/agent-insights.jsonl` record shape (companion to Behavior Rule #11) | **Mechanical** | Enforced by `gz validate --insights-shape` (GHI #358) — every record validates against `gzkit.insights.InsightRecord` (`extra="forbid"`, ISO8601 `ts`, `type` enum, `evidence: list[str]`). Pre-lock entries waived by content hash in `_INSIGHTS_SHAPE_WAIVERS`; new writes must conform. Wired into `gz check`. |
 
 ### Pythonic Standards (`.gzkit/rules/pythonic.md`)
 
@@ -170,7 +171,7 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 - "Read AGENTS.md before starting work" — judgment
 - "If <90% sure, ask the human" — judgment
 - "On inconsistencies, STOP, name confusion, present tradeoff, wait" — judgment
-- "When the operator course-corrects in flight, append an `improvement` record to `.gzkit/insights/agent-insights.jsonl` before completing the corrected work" (Behavior Rules — Always #11, GHI #357) — **judgment** at authoring time (recognizing a correction); **promotable** via a `gz validate --insights-shape` schema check on the JSONL records themselves (filed separately as the schema-lock companion GHI)
+- "When the operator course-corrects in flight, append an `improvement` record to `.gzkit/insights/agent-insights.jsonl` before completing the corrected work" (Behavior Rules — Always #11, GHI #357) — **judgment** at authoring time (recognizing a correction); the schema-lock side is now mechanical via `gz validate --insights-shape` (GHI #358; see scorecard row 17a)
 
 **Invariant #10a** ("When a skill step names a tool, invoke it in the same turn") is **promotable** — could be detected via hook analysis, but the signal-to-noise ratio is probably poor.
 
