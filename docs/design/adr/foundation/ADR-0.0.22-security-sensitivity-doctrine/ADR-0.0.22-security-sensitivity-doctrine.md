@@ -317,4 +317,4 @@ Codify a third orthogonal classification axis `sensitivity` and mechanize it acr
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.22 | Pending | | | |
+| 0.0.22 | Completed | Jeffry | 2026-04-29 | attest completed — Foundation-kind heavy-lane doctrine landed: sensitivity third axis canonized across schema (OBPI-01), surface registry data/security_surfaces.json (OBPI-02), gz validate --sensitivity scope with --explain subform (OBPI-03; 587 briefs scanned, no escapes, registry healthy), _requires_security_review_attestation OR'd into _requires_human_obpi_attestation (OBPI-04), Gate 5 walkthrough + reserved arb-step-security- canonical slot (OBPI-05), and .gzkit/rules/security-sensitivity.md + AGENTS.md matrix + Mechanical scorecard entry (OBPI-06). All 6 OBPIs attested_completed. Receipts: lint arb-ruff-c0a477b263e24d70ba3a4c12a6eb0c9b; types arb-step-typecheck-59a09b5cb3184fb89afc736ecf2cb008; tests arb-step-unittest-ffa18f3cf496467881a57e3bcf19524b (3803 passed, 1 skipped); docs arb-step-mkdocs-9bb99769aa4a49aa851cf4b4d8736e5d. Out-of-scope BOM table rendering defect tracked GHI #362. |
