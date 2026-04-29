@@ -19,7 +19,11 @@ during this run.
 
 | Critical | High | Medium | Low | Total |
 |----------|------|--------|-----|-------|
-| 0 | 9 | 3 | 2 | 14 |
+| 0 | 9 | 3 | 3 | 15 |
+
+> **Revision 2026-04-29 (post-fix pass).** Two findings were re-graded after operator fix-pass review:
+> - `frontmatter-drift-obpi-05-allowed-paths` was a **false positive** — the brief already documents the path drift in its `## Tracked Defects` section and the Implementation Summary records the actual landing path. Discarded.
+> - A new **probe-health** finding (`tracked-defects-blindness`) was added: the skill's frontmatter-drift probe didn't read `## Tracked Defects` before grading, so it re-flagged an already-attested drift. Skill updated to read tracked-defects sections and suppress already-tracked drifts. Routed in-flight.
 
 ## Top findings
 
@@ -322,12 +326,12 @@ audit is fine, but it landed in modules that were already over cap.
 
 ## Recommended next operator action
 
-**Route the 9 High findings.** Most consolidate cleanly into one move:
+**One GHI, six chores, two in-flight fixes.** Per the skill's one-GHI-per-run budget:
 
-1. **Open one OBPI** (or refactor ADR) for the trust_audits split — picks up `size-cap-trust-audits` plus the 14-function complexity cluster in one stroke.
-2. **Queue 5 chores under `module-sloc-cap-radon`** for parser_artifacts, validate_cmd, parser_maintenance, init_cmd, common.
-3. **File 2 GHIs** for the chores.py size split + chores_doctor complexity (both directly tied to OBPI-0.0.21-09; small, scoped).
-4. **Apply the probe-health fix in-flight** to gz-tech-debt-review SKILL.md (replace ARB-wrapped coverage with a plain coverage probe).
-5. **File one frontmatter-drift GHI** for the OBPI-0.0.21-05 implementation note.
+1. **File the one GHI: trust_audits.py split.** Selected because (a) Critical-grade blast radius — every governance audit lives here, (b) single named module, (c) no chore covers a structural split this size, (d) no existing GHI open against the surface. Title: *"Split trust_audits.py (2129 LOC, 14 rank-C functions) into trust_audits/ package by audit family."*
+2. **Queue 6 chores under `module-sloc-cap-radon` and `complexity-reduction-xenon`** for parser_artifacts, validate_cmd, parser_maintenance, init_cmd, common, chores.py + chores_doctor + audit_adr_taxonomy. Bulk debt is the chore-runner's surface.
+3. **Apply the two in-flight skill fixes** — already landed: probe-health (ARB-wrap removal) and tracked-defects-blindness (frontmatter-drift probe reads `## Tracked Defects` before grading).
+4. **No second GHI.** The chores.py size split and chores_doctor complexity, originally proposed as separate GHIs, route to chore — they fit the existing chore lanes cleanly and don't earn queue slots.
+5. **No OBPI.** Even the trust_audits cluster — large enough that an OBPI feels appropriate — does not get one. If the operator decides the refactor merits an ADR, that's a `gz-plan` decision, not a debt-skill output.
 
 The Lows (one coverage gap, one optional-path note) bundle into existing chore lanes — no separate routing.

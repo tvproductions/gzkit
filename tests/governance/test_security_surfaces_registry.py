@@ -224,10 +224,23 @@ class TestScopeDiscipline(unittest.TestCase):
             adr_audit.read_text(encoding="utf-8"),
         )
 
-    def test_security_sensitivity_rule_not_authored(self) -> None:
-        # OBPI-06's responsibility.
+    def test_security_sensitivity_rule_authored_at_named_path(self) -> None:
+        # Forward-looking absence-guard converted to backward-looking
+        # presence-witness when OBPI-0.0.22-06 landed: the rule file
+        # exists at the path OBPI-06 was scoped to author at.
         rule = REPO_ROOT / ".gzkit" / "rules" / "security-sensitivity.md"
-        self.assertFalse(rule.is_file(), "OBPI-06 owns the rule file")
+        self.assertTrue(rule.is_file(), "OBPI-06 must author the rule file")
+        body = rule.read_text(encoding="utf-8")
+        self.assertIn(
+            "data/security_surfaces.json",
+            body,
+            "rule file must cite the security-surface registry",
+        )
+        self.assertIn(
+            "gz validate --sensitivity",
+            body,
+            "rule file must cite the validator scope",
+        )
 
 
 if __name__ == "__main__":

@@ -1,13 +1,13 @@
 ---
 name: gz-tech-debt-review
 persona: quality-reviewer
-description: Survey the codebase for technical debt and recommend resolutions. Synthesizes signals from existing gzkit chores, audits, and complexity tools (xenon, radon, ruff, ty, gz cli audit, gz validate, gz-pythonic-pattern-detect, doc-coverage, dependency-currency) into a single prioritized debt report with file:line evidence and recommended fixes. Use when the user asks to "review code for tech debt", "find tech debt", "audit the codebase for debt", "what's rotting", "where is the debt", or wants a debt assessment for an ADR/OBPI scope or a touched-files set. Also use proactively when an operator asks "what should we clean up next" or "is there debt accumulating in X". Distinct from `gz-obpi-simplify` (which fixes craft inside an active OBPI scope) and `gz-check` (which gates a single change) — this skill produces a *report* across many debt classes that the operator can route into GHIs, OBPIs, or chores.
+description: Survey the codebase for technical debt and recommend resolutions. Tidying-class skill — findings are quality-of-implementation defects, never new capability work. Synthesizes signals from existing gzkit chores, audits, and complexity tools (xenon, radon, ruff, ty, gz cli audit, gz validate, gz-pythonic-pattern-detect, doc-coverage, dependency-currency) into a single prioritized debt report with file:line evidence and recommended fixes. Use when the user asks to "review code for tech debt", "find tech debt", "audit the codebase for debt", "what's rotting", "where is the debt", or wants a debt assessment for an ADR/OBPI scope or a touched-files set. Also use proactively when an operator asks "what should we clean up next" or "is there debt accumulating in X". Distinct from `gz-obpi-simplify` (which fixes craft inside an active OBPI scope) and `gz-check` (which gates a single change) — this skill produces a *report* across many debt classes. Findings route to **chore, in-flight fix, or at most one GHI per skill run** — never to OBPI, never as a multi-GHI batch. (OBPI ceremony is for planned capability work; bulk debt is the chore-runner's surface; one GHI per run prevents queue pollution. The operator decides whether a cluster merits an ADR via `gz-plan` or `gz-design`.)
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-29
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.2.0"
 ---
 
 # gz-tech-debt-review
@@ -30,7 +30,7 @@ terminal scrollback.
 | `gz-obpi-simplify` | Craft gate *inside* an active OBPI scope | Reuse/quality/efficiency on Allowed Paths only |
 | `gz-check` | Pre-merge / pre-attestation gate on a single change | Pass-fail, not a debt inventory |
 | `gz-pythonic-pattern-detect` | One specific debt class (Java-shaped Python) | Single chore, one signal |
-| **`gz-tech-debt-review`** | **Cross-class debt inventory across many signals** | **Report-shaped, routes to GHIs/OBPIs/chores** |
+| **`gz-tech-debt-review`** | **Cross-class debt inventory across many signals** | **Report-shaped, routes to GHIs / chores / in-flight only — never OBPI** |
 | `gz-chore-runner` | Executes one chore at a time | Mechanical lane |
 
 ## Invocation
@@ -149,11 +149,11 @@ For each class, the canonical probe:
 | `lint` | `uv run ruff check <files> --output-format=json` | JSON for grouping. |
 | `types` | `uvx ty check <files>` | Capture stdout; cross-reference `tests/governance/test_type_ignore_syntax.py` for the suppression class. |
 | `pythonic` | `uv run gz chores run pythonic-design-pattern-detection` (only on `--scope all` or paths overlap; expensive) | Skip if scope is small and last run is <7 days old. |
-| `tests` | `uv run gz arb coverage run -m unittest discover -s tests -t .` then `uv run gz validate --requirements` and `uv run gz validate --behave-req-tags` | Coverage delta + REQ gaps. |
+| `tests` | `uv run coverage run -m unittest discover -s tests -t .` then `uv run coverage report --include=<scope-glob>` plus `uv run gz validate --requirements` and `uv run gz validate --behave-req-tags` | Coverage delta + REQ gaps. **Do not wrap with `gz arb step`** — debt review is diagnostic, not attestation. ARB receipts with `exit_status=1` (the default coverage-report exit when no target met) pollute the corpus per AGENTS.md § Attestation anti-patterns. ARB wrapping is reserved for the `--draft-ghis` path where receipt IDs go into GHI bodies. |
 | `dead-code` | `uv run ruff check --select F401,F811,F841 <files>` plus a `vulture` pass if installed | Vulture is best-effort; ruff's the hard floor. |
 | `cli-drift` | `uv run gz cli audit` and `uv run gz validate --cli-alignment` | Both must exit 0 to clear the class. |
 | `doc-drift` | `uv run gz chores run doc-coverage` and `uv run mkdocs build --strict` | Strict build catches link rot. |
-| `frontmatter-drift` | `uv run gz validate --frontmatter`, `uv run gz chores run frontmatter-ledger-coherence` | |
+| `frontmatter-drift` | `uv run gz validate --frontmatter`, `uv run gz chores run frontmatter-ledger-coherence` | **Tracked-defects awareness:** before grading a brief-level drift, parse the brief's `## Tracked Defects` H2 section. If the drift is already named there (Allowed Paths drift, Verification command drift, etc.), discard the finding — the brief already paid the audit-trail cost and re-flagging it is noise. Tracked-defects entries are operator-attested admission of drift; the skill respects that attestation. |
 | `dep-currency` | `uv run gz chores run dependency-currency` | |
 | `todo-rot` | `git grep -n -E '\b(TODO\|FIXME\|XXX\|HACK)\b' -- <files>` then `git blame` for age on each hit | Skip hits with a `(GHI #N)` reference — those are tracked. |
 | `governance` | `uv run gz validate --advisory-scorecard` | Promotable rules are flagged High. |
@@ -210,10 +210,55 @@ Diagnose, don't write the patch. Phrase as imperative:
 | Route | When |
 |-------|------|
 | `in-flight` | Severity Low/Medium AND inside the operator's current change scope AND fix is <10 lines AND meets `AGENTS.md § Defect-fix routing` thresholds. Fold into current commit. |
-| `GHI` | Severity High/Critical OR fix crosses brief boundaries OR fix is single-issue. Default for cross-cutting findings. |
-| `OBPI` | Cluster of related findings (≥3) under one capability or surface. The audit *is* the brief skeleton. |
-| `chore` | The class already has a chore (`module-sloc-cap-radon`, `pep257-docstring-compliance`, etc.) — recommend running it on the affected paths. |
+| `GHI` | The single most important finding from the run that the operator should track. **One GHI per skill run, maximum.** See § GHI budget below. |
+| `chore` | The class already has a chore (`module-sloc-cap-radon`, `complexity-reduction-xenon`, `pep257-docstring-compliance`, `coverage-40pct`, etc.) — recommend running it on the affected paths. Chores are the bulk-routing surface; most findings land here. |
 | `discard` | Probe-flagged but verified false positive. Note the reason in evidence. |
+
+### GHI budget — one per skill run (binding)
+
+A debt-review run produces at most **one** GHI recommendation, regardless
+of how many High/Critical findings surface. This is binding, not a
+heuristic.
+
+**Why.** A debt skill that emits 9 GHIs from one scan turns the skill
+into a GHI-spammer: the operator's queue floods with debt items the
+skill graded itself, the triage signal-to-noise ratio collapses, and
+the operator's tracking surface stops reflecting work-they-decided-to-do
+and starts reflecting work-the-skill-decided-was-important. That's the
+exact governance inversion the *MAKE LLM STOCHASTIC VIBES INERT* mantra
+defends against — the operator's typing budget and queue attention are
+the scarce resources, and a skill that converts them at 9× per run is
+exfiltrating attention, not preserving it.
+
+**How to pick the one GHI.** From the full finding set, choose the
+finding that:
+
+1. Is **Critical** if any Critical surfaced; otherwise the highest-severity
+   single finding the operator could not cleanly route to a chore.
+2. Is **scoped** — a single named module/function/surface, not a cluster.
+3. Has **no existing chore home** — if the finding fits an existing chore,
+   route to chore instead and pick a different GHI candidate.
+4. Has **no existing GHI** open against the same surface (check
+   `gh issue list --search '<surface>' --state open`).
+
+If no finding meets all four, emit zero GHIs and route everything else
+to chore / in-flight / discard. Zero GHIs is the right answer more often
+than agents instinctively believe.
+
+**Everything else routes to chore.** Bulk debt is a chore-runner problem,
+not a GHI problem. Chores already aggregate scope, schedule the work
+under a maintenance lane, and emit the receipts the operator wants —
+without polluting the issue queue.
+
+**Tidying-class only — do not route to OBPI.** This skill surfaces
+quality-of-implementation defects, not new capability work. OBPI ceremony
+exists for planned increments under an active ADR; debt findings are
+remediation, not new scope. Even when a finding cluster is large enough
+that a refactor brief feels appealing, the right operator response is
+*"file the one GHI; if the refactor merits an ADR, the operator opens
+one through `gz-plan` or `gz-design`"* — not *"the debt skill drafts an
+OBPI."* Routing debt findings to OBPI shifts capability-planning
+authority from operator to skill, which is the wrong governance shape.
 
 ---
 
@@ -266,11 +311,12 @@ After rendering, print to chat:
 1. The report path
 2. The Critical/High/Medium/Low counts
 3. The top three findings by severity (one line each)
-4. The recommended next operator action — one of:
-   - *"Route N Critical findings to GHIs now"* (if any Critical present)
-   - *"Run chore X on Y findings"* (if a chore-routable cluster dominates)
-   - *"Open OBPI for the X cluster"* (if a cluster ≥3 share a capability)
-   - *"Bundle Low findings into next opportunistic commit"* (if all-Low)
+4. **The single GHI candidate**, if any (per § GHI budget). If no finding meets the four selection criteria, say so explicitly: *"No GHI recommended; everything routes to chore or in-flight."*
+5. The recommended next operator action — one of:
+   - *"File the one GHI: `<title>`"* (if a GHI candidate was selected)
+   - *"Run chore X on the size-cap cluster"* (if a chore-routable cluster dominates)
+   - *"Bundle Low findings into the next opportunistic commit"* (if all-Low)
+   - *"Apply the in-flight fixes now"* (if the highest-severity finding meets in-flight thresholds)
 
 Do **not** auto-execute the next action. The skill diagnoses; the
 operator routes.
@@ -316,7 +362,8 @@ These thoughts mean STOP — you are about to ship a hollow review:
 ## Red flags
 
 - Report rendered without any line:column references — synthesis without evidence
-- Every finding routed to "GHI" — the skill became a GHI-spammer; route discipline broken
+- More than one finding routed to `GHI` in a single run — the skill became a GHI-spammer; the one-per-run budget is binding (§ GHI budget)
+- Multiple findings routed to `GHI` because they "feel important" rather than because they meet all four selection criteria
 - No Critical findings ever surface — severity grade-up rule is not being applied
 - Report rendered before all probes completed — partial audits are not audits
 - Recommendations that read "review this" or "consider X" — diagnostic discipline broken

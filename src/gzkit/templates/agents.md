@@ -287,6 +287,8 @@ OBPI inside a `heavy`-lane ADR inherits that lane's attestation rigor regardless
 
 Mechanical enforcement: `_requires_human_obpi_attestation` at `src/gzkit/commands/adr_audit.py` returns `True` whenever parent ADR matches `^ADR-0\.0\.\d+` (foundation) OR parent lane is `heavy` OR `_requires_security_review_attestation(brief_frontmatter)` returns `True` (security axis). TTY + `ATTEST` confirmation gate at `_enforce_human_attestation_authenticity` refuses to emit `human_attestation: true` from a headless process. Matrix above is a readable projection of `_requires_human_obpi_attestation`. If matrix and code disagree, code is source of truth; matrix is the defect.
 
+Doctrine home for the third axis: [`.gzkit/rules/security-sensitivity.md`](.gzkit/rules/security-sensitivity.md) — the canonical rule file naming the invariant, the registry contract at `data/security_surfaces.json`, the `gz validate --sensitivity` floor + escalate-not-escape behavior, the heightened Gate 5 walkthrough, and the scanner-unavailable failure mode. The matrix above is the AGENTS.md projection; the rule file is the single addressable home.
+
 ## Execution Rules
 
 Always use `uv run` for Python commands. `gz --help` for full catalog.

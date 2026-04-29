@@ -23,8 +23,8 @@
       "location": "src/gzkit/governance/trust_audits.py",
       "evidence": "radon raw: LOC=2129 (3.5x the 600 LOC module cap). Houses ~30 audit_* functions. ADR-0.0.21 added `audit_chores_layout` at line 1541.",
       "recommendation": "Split trust_audits.py by audit family. Suggested partitions: trust_audits/cli.py, trust_audits/governance.py, trust_audits/chores.py, trust_audits/sensitivity.py, trust_audits/__init__.py re-exports. ADR-0.0.21's audit_chores_layout is the trigger — file was already over cap before.",
-      "route": "OBPI",
-      "route_rationale": "Cluster of related functions; needs a refactor brief, not a single fix commit. Separate ADR or queue under existing module-sloc-cap-radon chore."
+      "route": "GHI",
+      "route_rationale": "Selected as the one GHI for this run. Largest single debt surface (3.5x cap, 14 rank-C functions), single named module, no existing chore covers a structural split this size. Other size-cap findings route to chore."
     },
     {
       "finding_id": "size-cap-parser-artifacts",
@@ -83,8 +83,8 @@
       "location": "src/gzkit/commands/chores.py",
       "evidence": "radon raw: LOC=625 (1.04x cap). Houses doctor handler (line 543, rank C), _render_doctor_table (line 511, rank C), _load_chores_registry (line 218, rank C). ADR-0.0.21-09 added the doctor command.",
       "recommendation": "Extract the doctor-related helpers (chores_doctor, _render_doctor_table, doctor option parsing) into `src/gzkit/commands/chores_doctor.py`. The doctor scope is self-contained per OBPI-0.0.21-09.",
-      "route": "GHI",
-      "route_rationale": "Newly introduced under ADR-0.0.21; tightly scoped fix; should be tracked because it directly relates to a Validated foundation ADR."
+      "route": "chore",
+      "route_rationale": "Re-routed from GHI under one-GHI-per-run rule. module-sloc-cap-radon chore covers the size split; ADR-0.0.21 connection is context, not justification for queue pollution."
     },
     {
       "finding_id": "complexity-validate-cmd",
@@ -113,8 +113,8 @@
       "location": "src/gzkit/commands/chores.py:543 chores_doctor",
       "evidence": "xenon: rank C. Newly added in OBPI-0.0.21-09; bundles fan-out over slugs, before/after diff, dry-run handling, JSON shaping.",
       "recommendation": "Pull the slug-iteration loop into `_doctor_iter_slugs(project_root, registry, dry_run)` returning records; keep `chores_doctor` to argument parsing + render call.",
-      "route": "GHI",
-      "route_rationale": "Direct from OBPI-0.0.21-09; small, scoped fix."
+      "route": "chore",
+      "route_rationale": "Re-routed from GHI under one-GHI-per-run rule. complexity-reduction-xenon chore covers it; bundle with the chores_doctor size split during the chore run."
     },
     {
       "finding_id": "complexity-trust-audits-cluster",
@@ -129,22 +129,32 @@
     {
       "finding_id": "frontmatter-drift-obpi-05-allowed-paths",
       "class": "frontmatter-drift",
-      "severity": "Medium",
+      "severity": "Low",
       "location": "docs/design/adr/foundation/ADR-0.0.21-chores-as-gzkit-surface/obpis/OBPI-0.0.21-05-scaffold-core-chores.md",
-      "evidence": "Brief Allowed Paths says `src/gzkit/chores.py — new module at this path (module-level scaffold_core_chores function...)`. Implementation landed at `src/gzkit/chores/__init__.py` (the package's init). Both produce the same `from gzkit.chores import scaffold_core_chores` surface — call sites at init_cmd.py:9, init_cmd.py:242, init_cmd.py:525, chores.py:545, chores.py:567 confirm. But the brief's Allowed Paths is now stale relative to disk.",
-      "recommendation": "Append a § Implementation Summary note to OBPI-0.0.21-05 stating: `scaffold_core_chores landed at src/gzkit/chores/__init__.py rather than the brief's planned src/gzkit/chores.py — the package form was required to ship per-slug subdirectories as importlib.resources data; import surface is identical.` Do not rewrite Allowed Paths — that would erase the brief-vs-disk audit trail. The trust-doctrine T2 invariant says the ledger is canon; the brief is Layer-1 authorship and a post-hoc note is the right shape.",
-      "route": "GHI",
-      "route_rationale": "ADR-0.0.21 is Validated; brief should retain the historical Allowed Paths and add an Implementation Summary clarification. File a defect-class GHI."
+      "evidence": "FALSE POSITIVE — verified during fix pass. Brief Allowed Paths says `src/gzkit/chores.py`; implementation landed at `src/gzkit/chores/__init__.py`. The drift is already documented in the brief's `## Tracked Defects` section (lines 220-230) under `Brief allowlist drift (in-flight, fixed via spirit reading)`, and the `### Implementation Summary` (line 208) correctly states `src/gzkit/chores/__init__.py`. Allowed Paths was deliberately left unrewritten to preserve audit trail per trust-doctrine T2. Skill missed the Tracked Defects signal.",
+      "recommendation": "No action on the brief — drift is already correctly documented. Update gz-tech-debt-review SKILL.md frontmatter-drift probe to skip findings whose drift is already noted in a brief's `## Tracked Defects` section before grading.",
+      "route": "discard",
+      "route_rationale": "Brief is correct as-is; skill probe should suppress already-tracked drifts. Tracked under skill defect (probe-health) below, not as a brief-side fix."
     },
     {
       "finding_id": "frontmatter-drift-obpi-05-test-paths",
       "class": "frontmatter-drift",
       "severity": "Low",
       "location": "docs/design/adr/foundation/ADR-0.0.21-chores-as-gzkit-surface/obpis/OBPI-0.0.21-05-scaffold-core-chores.md",
-      "evidence": "Brief Allowed Paths lists `tests/test_chores_scaffold.py — optional new test module if test_init.py becomes >600 lines`. tests/test_chores_scaffold.py does not exist; chores tests live under tests/commands/test_init.py and tests/governance/test_audit_chores_layout.py instead.",
-      "recommendation": "Bundle into the same Implementation Summary note as the path drift above. Optional Allowed Paths that did not materialize do not need separate tracking; one note covers both.",
+      "evidence": "Brief Allowed Paths lists `tests/test_chores_scaffold.py — optional new test module if test_init.py becomes >600 lines`. The optional module was not created; chores tests live under tests/commands/test_init.py instead. Per-design non-creation.",
+      "recommendation": "No action — the brief explicitly marked this path optional.",
       "route": "discard",
-      "route_rationale": "Optional path; non-creation is per design. Bundle context into the path-drift note."
+      "route_rationale": "Optional path; non-creation is per design."
+    },
+    {
+      "finding_id": "probe-health-tracked-defects-blindness",
+      "class": "probe-health",
+      "severity": "Medium",
+      "location": ".gzkit/skills/gz-tech-debt-review/SKILL.md (frontmatter-drift probe)",
+      "evidence": "First run surfaced a frontmatter-drift Medium finding for OBPI-0.0.21-05 path mismatch. The brief already documents the drift in its `## Tracked Defects` section and the `### Implementation Summary` records the actual landing path. The probe walked frontmatter and Allowed Paths but did not read `## Tracked Defects` to suppress already-tracked drifts. AGENTS.md § Prime Directive #6: `Untrackable defect = nonexistent defect` — the inverse holds for tracked defects: re-flagging them is noise, not signal.",
+      "recommendation": "In gz-tech-debt-review SKILL.md Step 2 (frontmatter-drift probe), add: before grading a brief drift, parse the brief's `## Tracked Defects` H2 section. If the drift's location/symptom is already named there, downgrade to Low or discard. The brief already paid the audit-trail cost; the skill should respect it.",
+      "route": "in-flight",
+      "route_rationale": "Skill defect surfaced by the skill's first run; ≤10 lines; meets Defect-fix routing threshold."
     },
     {
       "finding_id": "probe-health-coverage-arb-pollution",
