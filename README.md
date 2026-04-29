@@ -52,16 +52,17 @@ All three are necessary. Specification without governance drifts. Governance wit
 
 ## Boundary
 
-gzkit is not primarily an agent runner, workflow dashboard, or general automation
-harness. Those tools answer "what should run next?" gzkit answers "what was
-intended, what evidence exists, and who is authorized to call the work complete?"
+gzkit is a meta-harness and agent runner for governed human-AI work. Its
+runner surface is not a generic automation dashboard: it exists to preserve
+intent, execute within declared constraints, collect evidence, enforce gates,
+and reserve completion authority for human attestation.
 
-Agent harnesses may execute work; gzkit remains the governance and evidence
-layer underneath them: the source of truth for intent, constraints, gates,
-receipts, and human attestation. If gzkit grows a machine-readable workflow
-specification surface, its canonical form is JSON that describes gzkit stages,
-gate prerequisites, evidence requirements, and ledger events. It does not
-replace the covenant with an automation DSL.
+Other harnesses may execute discrete agent steps; gzkit governs whether the
+work is justified, verified, and complete. If gzkit grows a machine-readable
+workflow specification surface, its canonical form is JSON that describes
+gzkit stages, gate prerequisites, evidence requirements, and ledger events.
+Workflow specification should make the covenant more executable, not replace
+it with a YAML-style automation DSL.
 
 ## The Covenant
 
