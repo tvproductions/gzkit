@@ -1,0 +1,34 @@
+ERROR:xenon:block "src/gzkit/commands/chores.py:218 _load_chores_registry" has a rank of C
+ERROR:xenon:block "src/gzkit/commands/chores.py:543 chores_doctor" has a rank of C
+ERROR:xenon:block "src/gzkit/commands/chores.py:511 _render_doctor_table" has a rank of C
+ERROR:xenon:block "src/gzkit/commands/chores_exec.py:51 _parse_criterion" has a rank of C
+ERROR:xenon:block "src/gzkit/commands/chores_exec.py:254 _evaluate_criterion" has a rank of C
+ERROR:xenon:block "src/gzkit/commands/chores_exec.py:167 _parse_chore_pointer" has a rank of C
+ERROR:xenon:block "src/gzkit/commands/common.py:336 resolve_obpi" has a rank of C
+ERROR:xenon:block "src/gzkit/commands/common.py:212 resolve_adr_file" has a rank of C
+ERROR:xenon:block "src/gzkit/commands/init_cmd.py:265 _repair_missing_artifacts" has a rank of C
+ERROR:xenon:block "src/gzkit/commands/init_cmd.py:371 _register_existing_artifacts" has a rank of C
+ERROR:xenon:block "src/gzkit/commands/init_cmd.py:421 init" has a rank of C
+ERROR:xenon:block "src/gzkit/commands/validate_cmd.py:817 validate" has a rank of C
+ERROR:xenon:block "src/gzkit/commands/validate_cmd.py:188 _validate_decomposition" has a rank of C
+ERROR:xenon:block "src/gzkit/commands/validate_cmd.py:567 _run_sensitivity_scope" has a rank of C
+ERROR:xenon:block "src/gzkit/commands/validate_cmd.py:424 _run_unscoped_rules_scope" has a rank of C
+ERROR:xenon:block "src/gzkit/commands/validate_cmd.py:491 _sensitivity_records" has a rank of C
+ERROR:xenon:block "src/gzkit/commands/validate_cmd.py:771 _print_validation_result" has a rank of C
+ERROR:xenon:block "src/gzkit/governance/trust_audits.py:1345 audit_adr_taxonomy" has a rank of C
+ERROR:xenon:block "src/gzkit/governance/trust_audits.py:1969 audit_sensitivity_binding" has a rank of C
+ERROR:xenon:block "src/gzkit/governance/trust_audits.py:326 _collect_claimed_event_types" has a rank of C
+ERROR:xenon:block "src/gzkit/governance/trust_audits.py:449 _scan_doc_pipe_patterns" has a rank of C
+ERROR:xenon:block "src/gzkit/governance/trust_audits.py:1253 audit_reconcile_freshness" has a rank of C
+ERROR:xenon:block "src/gzkit/governance/trust_audits.py:1150 audit_skill_alignment" has a rank of C
+ERROR:xenon:block "src/gzkit/governance/trust_audits.py:1706 _script_section_headings" has a rank of C
+ERROR:xenon:block "src/gzkit/governance/trust_audits.py:209 audit_cli_alignment" has a rank of C
+ERROR:xenon:block "src/gzkit/governance/trust_audits.py:1006 _extract_heavy_obpi_briefs" has a rank of C
+ERROR:xenon:block "src/gzkit/governance/trust_audits.py:1441 _parse_adr_frontmatter" has a rank of C
+ERROR:xenon:block "src/gzkit/governance/trust_audits.py:1659 _settings_session_start_command_strings" has a rank of C
+ERROR:xenon:block "src/gzkit/governance/trust_audits.py:1753 audit_orientation_freshness" has a rank of C
+ERROR:xenon:block "src/gzkit/governance/trust_audits.py:637 audit_pydantic_models" has a rank of C
+ERROR:xenon:block "src/gzkit/governance/trust_audits.py:879 audit_pool_adr_isolation" has a rank of C
+ERROR:xenon:block "src/gzkit/governance/trust_audits.py:1541 audit_chores_layout" has a rank of C
+ERROR:xenon:average complexity is ranked B
+ERROR:xenon:module 'src/gzkit/commands/chores_exec.py' has a rank of C

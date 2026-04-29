@@ -1,0 +1,1893 @@
+{
+  "obpi_id": "OBPI-0.0.22-05-gate5-walkthrough-arb-slot",
+  "timestamp": "2026-04-29T07:32:32.648611+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.22-05-gate5-walkthrough-arb-slot.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.34.0",
+      "sibling_obpi": "OBPI-0.34.0-07-plan-audit-gate",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.34.0",
+      "sibling_obpi": "OBPI-0.34.0-04-instruction-router",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.34.0",
+      "sibling_obpi": "OBPI-0.34.0-10-hook-diag",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.34.0",
+      "sibling_obpi": "OBPI-0.34.0-13-insight-reminder",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.34.0",
+      "sibling_obpi": "OBPI-0.34.0-01-obpi-completion-validator",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.34.0",
+      "sibling_obpi": "OBPI-0.34.0-08-pipeline-gate",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.34.0",
+      "sibling_obpi": "OBPI-0.34.0-09-session-staleness-check",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.34.0",
+      "sibling_obpi": "OBPI-0.34.0-03-insight-harvester",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.34.0",
+      "sibling_obpi": "OBPI-0.34.0-12-pipeline-completion-reminder",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.34.0",
+      "sibling_obpi": "OBPI-0.34.0-05-post-edit-ruff",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.34.0",
+      "sibling_obpi": "OBPI-0.34.0-02-obpi-completion-recorder",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.34.0",
+      "sibling_obpi": "OBPI-0.34.0-11-dataset-guard",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.34.0",
+      "sibling_obpi": "OBPI-0.34.0-06-pipeline-router",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-06-metrics-report",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-01-sloc-scan",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-08-validate-manpages",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-10-interrogate",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-07-mutate",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-09-sync-manpage-docstrings",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-02-complexity-check",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-04-test-quality",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-03-test-times",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-05-metrics-scan",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.39.0",
+      "sibling_obpi": "OBPI-0.39.0-01-registry-schema-design",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.39.0",
+      "sibling_obpi": "OBPI-0.39.0-06-migration-tooling",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.39.0",
+      "sibling_obpi": "OBPI-0.39.0-04-conformance-validation",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.39.0",
+      "sibling_obpi": "OBPI-0.39.0-03-project-extension-mechanism",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.39.0",
+      "sibling_obpi": "OBPI-0.39.0-05-contradiction-detection",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.39.0",
+      "sibling_obpi": "OBPI-0.39.0-02-canonical-template-set",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.46.0",
+      "sibling_obpi": "OBPI-0.46.0-01-receipt-schema-and-capture",
+      "contested_paths": [
+        "src/gzkit/arb/validator.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.14.0",
+      "sibling_obpi": "OBPI-0.14.0-06-instruction-evals-and-readiness-checks",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-09-normalize-adr-h1",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-01-arb-ruff",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-13-validate-manpages",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-14-sync-manpage-docstrings",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-16-check-todos-fixmes",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-07-protect-copilot-instructions",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-06-xenon-complexity",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-11-forbid-prod-db-in-tests",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-03-ty-check",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-04-unittest",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-18-repo-canonicalization",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-08-forbid-pytest",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-10-generate-adr-docs",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-20-adr-drift-check",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-17-md-docs",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-05-arb-validate",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-15-interrogate",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-02-ruff-format",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-19-sync-claude-skills",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.35.0",
+      "sibling_obpi": "OBPI-0.35.0-12-cross-platform-sqlite-guard",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-03-config-chores-json",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-04-config-git-sync-json",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-01-config-schema",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-02-config-doctrine",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-08-config-settings-validation",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-05-config-test-suites-json",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-07-config-legacy-adapter",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-06-config-workspace-patterns",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-23-artifact-management-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-31-validation-receipts-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-10-errors-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-11-hooks-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-28-layout-verification-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-04-world-state-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-06-registry-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-14-os-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-29-ledger-schema-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-12-admission-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-26-drift-detection-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-21-adr-reconciliation-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-03-signature-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-02-progress-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-19-adr-audit-ledger-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-33-arb-analysis-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-01-attestation-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-24-cli-audit-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-13-qc-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-08-ledger-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-09-schema-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-20-adr-governance-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-05-dataset-version-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-32-handoff-validation-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-30-references-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-27-policy-guards-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-07-types-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-22-adr-traceability-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-17-console-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-15-manifests-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-25-docs-validation-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-18-adr-lifecycle-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-16-config-pattern",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-06-arb-tidy",
+      "contested_paths": [
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-11-arb-lint-receipt-schema",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-04-arb-advise",
+      "contested_paths": [
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-01-ruff-reporter",
+      "contested_paths": [
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-05-arb-patterns",
+      "contested_paths": [
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-07-arb-expunge",
+      "contested_paths": [
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-13-arb-cli-wiring",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-08-arb-github-issues",
+      "contested_paths": [
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-02-step-reporter",
+      "contested_paths": [
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-03-arb-validate",
+      "contested_paths": [
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-09-arb-supabase-sync",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-10-arb-paths",
+      "contested_paths": [
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-12-arb-step-receipt-schema",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-07-curation-guard",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-06-curation-inventory",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-02-refs-citations",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-01-refs-index",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-03-instrumentation-audit",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-09-governance-report",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-05-hygiene",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-08-governance-setup",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-10-governance-runners",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-04-agent-review",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.22.0",
+      "sibling_obpi": "OBPI-0.22.0-05-status-and-state-integration",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-06-tasks-discover",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-03-tasks-sync",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-02-tasks-show",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-01-tasks-list",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-07-tasks-tidy",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-04-tasks-verify",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-05-tasks-test",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-19-chores-config",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-04-chores-cli-run",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-01-chores-cli",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-02-chores-cli-core",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-14-chores-executor-recommendations",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-13-chores-executor-summary",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-18-chores-models",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-16-chores-planner",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-09-chores-cli-register",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-08-chores-cli-ack",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-07-chores-cli-status",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-10-chores-executor",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-06-chores-cli-audit",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-03-chores-cli-plan",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-05-chores-cli-advise",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-17-chores-parser",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-11-chores-executor-run",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-15-chores-executor-finalize",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-12-chores-executor-log",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-04-adr-audit-integration",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-03-adr-recon",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-12-docs-lib",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-05-ledger-schema",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-11-artifacts-lib",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-08-validation-receipt",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-01-adr-management",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-06-drift-detection",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-09-adr-audit-ledger",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-02-references",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-04-adr-governance",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-07-adr-traceability",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-10-cli-audit-lib",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.8.0",
+      "sibling_obpi": "OBPI-0.8.0-01-chores-registry",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-01-obpi-runtime-contract-and-state-model",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.38.0",
+      "sibling_obpi": "OBPI-0.38.0-10-guards-layout-verify",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.45.0",
+      "sibling_obpi": "OBPI-0.45.0-02-attestation-prefill",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-25-hooks-subcommands",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-02-lint",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-16-adr-recon-audit-receipt",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-15-adr-status-docs-map-check",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-04-test",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-24-yaml-guard",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-05-typecheck",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-08-tidy-clean",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-18-adr-eval-report",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-22-layout-verify",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-13-attest",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-03-format",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-23-cwd-guard",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-19-docs-md-tooling",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-20-sync-repo",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-07-cli-audit",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-06-check-config-paths",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-14-status-state",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-21-sync-skills",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-09-gates",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-10-implement",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-12-audit",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-01-git-sync",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-11-closeout",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-17-adr-evidence-autolink-sync",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-05-l3-gate-independence",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-06-marker-migration-path",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/ADR-0.0.22-security-sensitivity-doctrine.md",
+        "docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/obpis/OBPI-0.0.22-05-gate5-walkthrough-arb-slot.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-02-ledger-first-status-reads",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-04-lifecycle-auto-fix",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.20",
+      "sibling_obpi": "OBPI-0.0.20-03-fold-attestation-enrichment",
+      "contested_paths": [
+        "src/gzkit/arb/validator.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-01-three-tier-model-and-pool-archive",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/ADR-0.0.22-security-sensitivity-doctrine.md",
+        "docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/obpis/OBPI-0.0.22-05-gate5-walkthrough-arb-slot.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-04-git-clone-recovery",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/ADR-0.0.22-security-sensitivity-doctrine.md",
+        "docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/obpis/OBPI-0.0.22-05-gate5-walkthrough-arb-slot.md",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-02-identity-surfaces",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.24",
+      "sibling_obpi": "OBPI-0.0.24-02-wire-into-completion",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "src/gzkit/arb/validator.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.24",
+      "sibling_obpi": "OBPI-0.0.24-01-validator-scope",
+      "contested_paths": [
+        "src/gzkit/arb/validator.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-03-common-flags-option-factories",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-10-cli-consistency-tests",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-01-cli-module-restructure",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py",
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-07-exception-hierarchy-exit-codes",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-02-parser-infrastructure",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-06-output-formatter",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-09-progress-indication",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-05-epilog-templates",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-08-runtime-presentation",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-04-help-text-completeness",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.5",
+      "sibling_obpi": "OBPI-0.0.5-03-define-release-gates-based-on-eval-deltas-for-ai-sensitive-surfaces",
+      "contested_paths": [
+        "tests/commands/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.25",
+      "sibling_obpi": "OBPI-0.0.25-01-implement-coverage-gate",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.25",
+      "sibling_obpi": "OBPI-0.0.25-02-override-and-mirror",
+      "contested_paths": [
+        "src/gzkit/commands/obpi.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.7",
+      "sibling_obpi": "OBPI-0.0.7-04-hooks-module-migration",
+      "contested_paths": [
+        "tests/commands/**",
+        "tests/arb/**"
+      ]
+    }
+  ]
+}

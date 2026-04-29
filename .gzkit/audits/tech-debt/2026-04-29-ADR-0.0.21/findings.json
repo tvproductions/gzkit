@@ -1,0 +1,179 @@
+{
+  "scope": "ADR-0.0.21-chores-as-gzkit-surface",
+  "scope_mode": "adr",
+  "scope_resolution": "union of OBPI-0.0.21-01..09 Allowed Paths",
+  "audit_date": "2026-04-29",
+  "probes_run": [
+    "size-cap (radon raw)",
+    "complexity (xenon B/B/A; radon cc)",
+    "lint (ruff)",
+    "types (ty)",
+    "types-suppression (grep type:ignore[code])",
+    "governance (gz validate --frontmatter --requirements --behave-req-tags)",
+    "validators (gz validate --chores-layout --advisory-scorecard)",
+    "cli-drift (gz cli audit; gz validate --cli-alignment)",
+    "todo-rot (git grep TODO|FIXME|XXX|HACK)",
+    "tests (gz arb coverage)"
+  ],
+  "findings": [
+    {
+      "finding_id": "size-cap-trust-audits",
+      "class": "size-cap",
+      "severity": "High",
+      "location": "src/gzkit/governance/trust_audits.py",
+      "evidence": "radon raw: LOC=2129 (3.5x the 600 LOC module cap). Houses ~30 audit_* functions. ADR-0.0.21 added `audit_chores_layout` at line 1541.",
+      "recommendation": "Split trust_audits.py by audit family. Suggested partitions: trust_audits/cli.py, trust_audits/governance.py, trust_audits/chores.py, trust_audits/sensitivity.py, trust_audits/__init__.py re-exports. ADR-0.0.21's audit_chores_layout is the trigger — file was already over cap before.",
+      "route": "OBPI",
+      "route_rationale": "Cluster of related functions; needs a refactor brief, not a single fix commit. Separate ADR or queue under existing module-sloc-cap-radon chore."
+    },
+    {
+      "finding_id": "size-cap-parser-artifacts",
+      "class": "size-cap",
+      "severity": "High",
+      "location": "src/gzkit/cli/parser_artifacts.py",
+      "evidence": "radon raw: LOC=1057 (1.76x the 600 LOC module cap). Houses _register_* parser functions for every artifact subcommand.",
+      "recommendation": "Split per artifact family (adr, obpi, chores, ghi). Each `_register_<family>_parsers` becomes its own module under `src/gzkit/cli/parsers/<family>.py`; `parser_artifacts.py` becomes thin dispatcher.",
+      "route": "chore",
+      "route_rationale": "module-sloc-cap-radon chore exists for exactly this; queue under it."
+    },
+    {
+      "finding_id": "size-cap-validate-cmd",
+      "class": "size-cap",
+      "severity": "High",
+      "location": "src/gzkit/commands/validate_cmd.py",
+      "evidence": "radon raw: LOC=1032 (1.72x cap). Houses every `_run_<scope>_scope` and `_<scope>_records` helper for every gz validate flag.",
+      "recommendation": "Split per scope family. `validate_cmd.py` keeps the CLI handler + scope registry; each scope's _run/_records pair moves to `src/gzkit/commands/validate/<scope>.py`.",
+      "route": "chore",
+      "route_rationale": "module-sloc-cap-radon."
+    },
+    {
+      "finding_id": "size-cap-parser-maintenance",
+      "class": "size-cap",
+      "severity": "High",
+      "location": "src/gzkit/cli/parser_maintenance.py",
+      "evidence": "radon raw: LOC=1024 (1.71x cap). Houses _register_quality_parsers and the maintenance flag registrations including --chores-layout (line 385) added by OBPI-0.0.21-08.",
+      "recommendation": "Same pattern as parser_artifacts: split per family (quality, validate, maintenance, governance).",
+      "route": "chore",
+      "route_rationale": "module-sloc-cap-radon."
+    },
+    {
+      "finding_id": "size-cap-init-cmd",
+      "class": "size-cap",
+      "severity": "High",
+      "location": "src/gzkit/commands/init_cmd.py",
+      "evidence": "radon raw: LOC=676 (1.13x cap). ADR-0.0.21 added scaffold_core_chores call sites at lines 242 and 525.",
+      "recommendation": "Extract `_repair_missing_artifacts` (line 265, rank C) and `_register_existing_artifacts` (line 371, rank C) into `src/gzkit/commands/init_repair.py`. Keeps init_cmd.py focused on the init flow itself.",
+      "route": "chore",
+      "route_rationale": "module-sloc-cap-radon; the two C-rank functions are also complexity hot-spots so the split kills two findings at once."
+    },
+    {
+      "finding_id": "size-cap-common",
+      "class": "size-cap",
+      "severity": "High",
+      "location": "src/gzkit/commands/common.py",
+      "evidence": "radon raw: LOC=627 (1.05x cap). Houses resolve_obpi (line 336, rank C) and resolve_adr_file (line 212, rank C) — both flagged by xenon.",
+      "recommendation": "Split path-resolution helpers (resolve_obpi, resolve_adr_file, _confirm, console) into `src/gzkit/commands/resolve.py` and keep `common.py` for CLI utilities only.",
+      "route": "chore",
+      "route_rationale": "module-sloc-cap-radon."
+    },
+    {
+      "finding_id": "size-cap-chores",
+      "class": "size-cap",
+      "severity": "High",
+      "location": "src/gzkit/commands/chores.py",
+      "evidence": "radon raw: LOC=625 (1.04x cap). Houses doctor handler (line 543, rank C), _render_doctor_table (line 511, rank C), _load_chores_registry (line 218, rank C). ADR-0.0.21-09 added the doctor command.",
+      "recommendation": "Extract the doctor-related helpers (chores_doctor, _render_doctor_table, doctor option parsing) into `src/gzkit/commands/chores_doctor.py`. The doctor scope is self-contained per OBPI-0.0.21-09.",
+      "route": "GHI",
+      "route_rationale": "Newly introduced under ADR-0.0.21; tightly scoped fix; should be tracked because it directly relates to a Validated foundation ADR."
+    },
+    {
+      "finding_id": "complexity-validate-cmd",
+      "class": "complexity",
+      "severity": "High",
+      "location": "src/gzkit/commands/validate_cmd.py:817 validate",
+      "evidence": "xenon: rank C (CC=17). Top-level dispatch over every --<scope> flag.",
+      "recommendation": "Replace the if/elif/elif chain with a scope-name -> handler dispatch table. Each scope already has its own _run_<scope>_scope helper; the dispatch table makes adding a new scope additive instead of growing the C-rank function further.",
+      "route": "chore",
+      "route_rationale": "complexity-reduction-xenon chore exists; same partition as the size-cap split would resolve this naturally."
+    },
+    {
+      "finding_id": "complexity-trust-audits-taxonomy",
+      "class": "complexity",
+      "severity": "High",
+      "location": "src/gzkit/governance/trust_audits.py:1345 audit_adr_taxonomy",
+      "evidence": "xenon: rank C (CC=18, the highest C in the file). Audit logic for kind/lane/semver consistency is one fat function.",
+      "recommendation": "Extract three predicates: `_kind_semver_consistent`, `_lane_kind_consistent`, `_pool_no_kind_or_semver`. Each maps cleanly to one rule from § Kinds (pool, foundation, feature) in AGENTS.md.",
+      "route": "chore",
+      "route_rationale": "complexity-reduction-xenon."
+    },
+    {
+      "finding_id": "complexity-chores-doctor",
+      "class": "complexity",
+      "severity": "High",
+      "location": "src/gzkit/commands/chores.py:543 chores_doctor",
+      "evidence": "xenon: rank C. Newly added in OBPI-0.0.21-09; bundles fan-out over slugs, before/after diff, dry-run handling, JSON shaping.",
+      "recommendation": "Pull the slug-iteration loop into `_doctor_iter_slugs(project_root, registry, dry_run)` returning records; keep `chores_doctor` to argument parsing + render call.",
+      "route": "GHI",
+      "route_rationale": "Direct from OBPI-0.0.21-09; small, scoped fix."
+    },
+    {
+      "finding_id": "complexity-trust-audits-cluster",
+      "class": "complexity",
+      "severity": "Medium",
+      "location": "src/gzkit/governance/trust_audits.py (14 rank-C functions)",
+      "evidence": "xenon flags 14 rank-C functions in trust_audits.py: audit_sensitivity_binding (1969), _collect_claimed_event_types (326), _scan_doc_pipe_patterns (449), audit_reconcile_freshness (1253), audit_skill_alignment (1150), _script_section_headings (1706), audit_cli_alignment (209), _extract_heavy_obpi_briefs (1006), _parse_adr_frontmatter (1441), _settings_session_start_command_strings (1659), audit_orientation_freshness (1753), audit_pydantic_models (637), audit_pool_adr_isolation (879), audit_chores_layout (1541).",
+      "recommendation": "Address as part of the trust_audits split (size-cap-trust-audits). Each audit family becomes its own module; complex functions break naturally during the move.",
+      "route": "OBPI",
+      "route_rationale": "Cluster — single ticket per function loses the architectural opportunity. Combine with size-cap-trust-audits."
+    },
+    {
+      "finding_id": "frontmatter-drift-obpi-05-allowed-paths",
+      "class": "frontmatter-drift",
+      "severity": "Medium",
+      "location": "docs/design/adr/foundation/ADR-0.0.21-chores-as-gzkit-surface/obpis/OBPI-0.0.21-05-scaffold-core-chores.md",
+      "evidence": "Brief Allowed Paths says `src/gzkit/chores.py — new module at this path (module-level scaffold_core_chores function...)`. Implementation landed at `src/gzkit/chores/__init__.py` (the package's init). Both produce the same `from gzkit.chores import scaffold_core_chores` surface — call sites at init_cmd.py:9, init_cmd.py:242, init_cmd.py:525, chores.py:545, chores.py:567 confirm. But the brief's Allowed Paths is now stale relative to disk.",
+      "recommendation": "Append a § Implementation Summary note to OBPI-0.0.21-05 stating: `scaffold_core_chores landed at src/gzkit/chores/__init__.py rather than the brief's planned src/gzkit/chores.py — the package form was required to ship per-slug subdirectories as importlib.resources data; import surface is identical.` Do not rewrite Allowed Paths — that would erase the brief-vs-disk audit trail. The trust-doctrine T2 invariant says the ledger is canon; the brief is Layer-1 authorship and a post-hoc note is the right shape.",
+      "route": "GHI",
+      "route_rationale": "ADR-0.0.21 is Validated; brief should retain the historical Allowed Paths and add an Implementation Summary clarification. File a defect-class GHI."
+    },
+    {
+      "finding_id": "frontmatter-drift-obpi-05-test-paths",
+      "class": "frontmatter-drift",
+      "severity": "Low",
+      "location": "docs/design/adr/foundation/ADR-0.0.21-chores-as-gzkit-surface/obpis/OBPI-0.0.21-05-scaffold-core-chores.md",
+      "evidence": "Brief Allowed Paths lists `tests/test_chores_scaffold.py — optional new test module if test_init.py becomes >600 lines`. tests/test_chores_scaffold.py does not exist; chores tests live under tests/commands/test_init.py and tests/governance/test_audit_chores_layout.py instead.",
+      "recommendation": "Bundle into the same Implementation Summary note as the path drift above. Optional Allowed Paths that did not materialize do not need separate tracking; one note covers both.",
+      "route": "discard",
+      "route_rationale": "Optional path; non-creation is per design. Bundle context into the path-drift note."
+    },
+    {
+      "finding_id": "probe-health-coverage-arb-pollution",
+      "class": "probe-health",
+      "severity": "Medium",
+      "location": "scripts/audit harness; artifacts/receipts/arb-step-coverage-*.json",
+      "evidence": "Running `uv run gz arb coverage run -m unittest discover -s tests -t .` as a probe writes an ARB receipt with exit_status=1 (the coverage report exits 1 by default when no --fail-under is met or simply on no-source paths). AGENTS.md § Attestation anti-patterns: `Authoring arb-step-* receipts with exit_status=1 as 'RED receipts' — pollutes ARB corpus`. Receipt: arb-step-coverage-63f9be310af44cb9a85d43926a8a75ca.json was just created by this audit run.",
+      "recommendation": "In gz-tech-debt-review SKILL.md, change the tests probe to run unittest under coverage *without* the gz arb wrapper — debt review is diagnostic, not attestation; `uv run coverage run -m unittest discover -s tests -t . && uv run coverage report --include=<scope>` produces the same coverage data without ARB writes. Reserve `gz arb step` for attestation-bound contexts (the --draft-ghis path).",
+      "route": "in-flight",
+      "route_rationale": "Skill defect surfaced by the skill's first run; <10 lines; meets Defect-fix routing threshold."
+    },
+    {
+      "finding_id": "tests-coverage-validate-cmd",
+      "class": "tests",
+      "severity": "Low",
+      "location": "src/gzkit/commands/validate_cmd.py",
+      "evidence": "Scoped coverage: 69% (lowest in the in-scope set). Other scoped files: chores/__init__.py 93%, trust_audits.py 84%, chores.py 79%, chores_exec.py 77%, init_cmd.py 76%. Total scoped: 80% — well above the 40% floor.",
+      "recommendation": "Add unit tests covering the validate dispatch's `_print_validation_result` (line 771, also a complexity hot-spot) and the unhappy-path branches in _run_<scope>_scope. Bundle with the validate_cmd split (size-cap-validate-cmd).",
+      "route": "chore",
+      "route_rationale": "coverage-40pct chore is the natural home; combine with the validate_cmd split when that lands."
+    }
+  ],
+  "clean_classes": [
+    "lint (ruff)",
+    "types (ty)",
+    "types-suppression (no real # type: ignore[code] — only docstring/help-text matches)",
+    "governance (frontmatter, requirements, behave_req_tags)",
+    "validators (chores-layout, advisory-scorecard)",
+    "cli-drift (gz cli audit clean, --cli-alignment clean)",
+    "todo-rot (no TODO/FIXME/XXX/HACK in scope)"
+  ]
+}

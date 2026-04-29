@@ -1,0 +1,38 @@
+# Scope: ADR-0.0.21-chores-as-gzkit-surface (union of OBPI-01..09 Allowed Paths)
+# Resolved 2026-04-29
+
+# Source
+src/gzkit/chores/
+src/gzkit/chores.py
+src/gzkit/commands/chores.py
+src/gzkit/commands/chores_exec.py
+src/gzkit/commands/common.py
+src/gzkit/commands/init_cmd.py
+src/gzkit/commands/validate_cmd.py
+src/gzkit/governance/trust_audits.py
+src/gzkit/cli/parser_maintenance.py
+src/gzkit/cli/parser_artifacts.py
+src/gzkit/config.py
+
+# Tests
+tests/test_config.py
+tests/test_config_paths.py
+tests/test_packaging.py
+tests/commands/test_chores.py
+tests/commands/test_init.py
+tests/test_chores_scaffold.py
+tests/governance/test_trust_audits.py
+tests/test_trust_audits.py
+
+# Features / data
+features/chores_distribution.feature
+features/steps/chores_distribution.py
+data/behave_coverage_waivers.json
+data/chores_layout_waivers.json
+
+# Docs
+.gzkit/rules/chores.md
+docs/user/runbook.md
+docs/user/manpages/gz-chores.md
+src/gzkit/chores/README.md
+pyproject.toml
