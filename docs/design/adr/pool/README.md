@@ -82,6 +82,7 @@ lifecycle, graduated oversight, or audit can be designed properly.
 | Entry | Action | Sequencing | Dependency |
 |-------|--------|-----------|------------|
 | [ADR-pool.execution-memory-graph](ADR-pool.execution-memory-graph.md) | Promote (Heavy) | Phase N+1 [3] | ADR-0.0.9, ADR-0.0.10 |
+| [ADR-pool.workflow-specification](ADR-pool.workflow-specification.md) | Assess (Heavy) | Phase N+2 candidate | ADR-0.13.0, harness-aware execution modes |
 | [ADR-pool.prime-context-hooks](ADR-pool.prime-context-hooks.md) | Merge as OBPI under Graph Engine | Phase N+1 | Subsumed by [3] |
 | [ADR-pool.universal-agent-onboarding](ADR-pool.universal-agent-onboarding.md) | Merge as OBPI under Graph Engine | Phase N+1 | Subsumed by [3] |
 | [ADR-pool.structured-blocker-envelopes](ADR-pool.structured-blocker-envelopes.md) | Promote independently (Heavy) | Phase N+1 [4] | None (parallel with [3]) |
