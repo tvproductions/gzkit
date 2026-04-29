@@ -248,6 +248,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--skill-alignment` | opt-in | Every CLI verb has a wielding skill (Tool / Skill / Runbook Alignment Invariant 1) |
 | `--advisory-scorecard` | opt-in | Every `.gzkit/rules/*` file appears in the advisory-rules-audit scorecard |
 | `--reconcile-freshness` | opt-in | Flag if no reconcile event has fired since HEAD (24-hour grace window) |
+| `--insights-shape` | opt-in | Validate `.gzkit/insights/agent-insights.jsonl` records against the canonical `InsightRecord` schema (GHI #358) |
 | `--adr-status-fresh` | yes | `docs/governance/GovZero/adr-status.md` must agree with on-disk ADR canon (GHI #322) |
 | `--orientation-freshness` | opt-in | The SessionStart orientation hook + script must remain wired (GHI #341) |
 | `--brief-headings` | opt-in | OBPI brief evidence sections must be H3, not H2 (GHI #238) |

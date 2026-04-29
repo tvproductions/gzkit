@@ -555,6 +555,17 @@ def run_adr_status_fresh_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --adr-status-fresh", cwd=project_root)
 
 
+def run_insights_shape_audit(project_root: Path) -> QualityResult:
+    """Run the agent-insights.jsonl record-shape audit (GHI #358).
+
+    Fails closed (exit 3) when any line in `.gzkit/insights/agent-insights.jsonl`
+    drifts from the canonical `InsightRecord` schema. Pre-lock entries are
+    waived by content hash in `_INSIGHTS_SHAPE_WAIVERS`; new writes must
+    conform.
+    """
+    return run_command("uv run gz validate --insights-shape", cwd=project_root)
+
+
 def run_orientation_freshness_audit(project_root: Path) -> QualityResult:
     """Run the SessionStart orientation hook freshness audit (GHI #341).
 
