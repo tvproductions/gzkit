@@ -3,7 +3,7 @@ id: OBPI-0.0.22-02-security-surface-registry
 parent: ADR-0.0.22-security-sensitivity-doctrine
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 depends_on: []
 ---
 
@@ -18,9 +18,7 @@ depends_on: []
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Security-surface registry — Author `data/security_surfaces.json` with 9 initial categories; JSON schema fragment; Pydantic SecuritySurfaceEntry model with frozen+forbid; governance contract documented (self-bootstrapping); glob-matching tests.
+Author the canonical security-surface registry (`data/security_surfaces.json`) with the nine categories canonized in ADR-0.0.22, the JSON Schema fragment that validates it (`src/gzkit/schemas/security_surfaces.json`), the frozen+`extra="forbid"` Pydantic `SecuritySurfaceEntry` model with a stdlib-glob-aware `match_globs` helper for OBPI-03's `validate_sensitivity_binding` to consume, and a sibling README documenting the self-bootstrapping governance contract plus the one-time bootstrap exception — leaving the validate scope, audit OR, walkthrough extension, rule file, and AGENTS.md matrix to OBPIs 03–06.
 
 ## Lane
 
@@ -218,15 +216,42 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```python
+>>> from pathlib import Path
+>>> from gzkit.models import load_registry, match_globs
+>>> registry = load_registry(Path("data/security_surfaces.json"))
+>>> len(registry), {e.category for e in registry} == set([
+...     "credential_handling", "subprocess_user_input", "crypto_primitives",
+...     "auth_boundaries", "external_api_surfaces", "ledger_integrity",
+...     "arb_receipt_chain", "secret_handling", "deserialization_user_input"])
+(9, True)
+>>> match_globs(("src/gzkit/arb/validator.py", "src/gzkit/ledger.py"), registry)
+('ledger_integrity', 'arb_receipt_chain')
+>>> match_globs(("docs/**/*.md",), registry)
+()
+```
+
+The auto-detect floor (ADR-0.0.22 §Decision) is mechanically grounded: a brief whose `## ALLOWED PATHS` lists `src/gzkit/arb/**` or `src/gzkit/ledger.py` will be classified `sensitivity: security` once OBPI-03 wires `validate_sensitivity_binding`; a brief touching only `docs/**` returns no categories and remains unaffected.
+
+Quality receipts (Stage 3 ARB-wrapped):
+- Lint clean: `arb-ruff-ae458924858b4a6999e90836854a841f`
+- Typecheck clean: `arb-step-typecheck-4c27e795ae154c9798196e1c559a5b48`
+- Scoped unittest 32/32: `arb-step-unittest-5f4311e9375b465a94f0c21518bbd3bb`
+- Full unittest suite GREEN: `arb-step-unittest-6f556666bc704d26b83c11aa85f8e2a8`
+- mkdocs --strict GREEN: `arb-step-mkdocs-f90786ebd7344d14ab8765e2ab0e8adb`
+- Documents validated: `uv run gz validate --documents` → "All validations passed (1 scopes)"
+- REQ → @covers parity gate: `uv run gz covers OBPI-0.0.22-02 --json` → 6/6 REQs covered (100%)
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `src/gzkit/models/security_surfaces.py` (Pydantic `SecuritySurfaceEntry` + `load_registry` + `match_globs` + `CANONICAL_CATEGORIES` + `SecurityCategory` re-exports); `src/gzkit/schemas/security_surfaces.json` (JSON Schema 2020-12 fragment, `additionalProperties: false`, 9-category enum); `data/security_surfaces.json` (9 entries: `credential_handling`, `subprocess_user_input`, `crypto_primitives`, `auth_boundaries`, `external_api_surfaces`, `ledger_integrity`, `arb_receipt_chain`, `secret_handling`, `deserialization_user_input` — globs cross-checked against the live `src/gzkit` tree); `data/README-security-surfaces.md` (governance contract citing ADR-0.0.22 + bootstrap-exception narrative); `tests/models/test_security_surface_entry.py` (11 tests covering REQ-03 + REQ-04); `tests/governance/test_security_surfaces_registry.py` (21 tests covering REQ-01, REQ-02, REQ-05, REQ-06 + TestScopeDiscipline asserting OBPI-03/04/06 surfaces remain unauthored).
+- Files modified: `src/gzkit/models/__init__.py` (re-exports `SecuritySurfaceEntry`, `load_registry`, `match_globs`, `CANONICAL_CATEGORIES`, `SecurityCategory` so OBPI-03 can `from gzkit.models import match_globs`); `docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/obpis/OBPI-0.0.22-02-security-surface-registry.md` (Objective made substantive per `gz obpi precomplete` brief-readiness check).
+- Tests added: 32 unit tests (11 model-tier in `tests/models/`, 21 governance-tier in `tests/governance/`); full unittest suite GREEN; OBPI-scoped tests run in 5 ms.
+- Date completed: 2026-04-29.
+- Attestation status: human, operator-attested via `attest completed` at Stage 4; relayed through `gz obpi complete --attestor-present` per AGENTS.md GHI #292 (active pipeline marker at `.claude/plans/.pipeline-active-OBPI-0.0.22-02.json` satisfies the co-presence proxy).
+- Defects noted: none. One in-flight ruff catch (`B905` zip-without-strict) fixed before ARB receipt emission; ARB-ruff went `exit_status=1` → `exit_status=0` on re-run. No GHIs filed.
 
 ## Tracked Defects
 
@@ -237,14 +262,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — Confirmed at Stage 4 ceremony following 32/32 unittest GREEN, full suite GREEN, mkdocs --strict GREEN, gz validate --documents GREEN, and 6/6 REQ→@covers parity (100%). Registry data file authored with the nine canonical categories from ADR-0.0.22 §Decision; governance contract documented in sibling README per REQ-06; bootstrap exception narrated; cross-OBPI scope discipline mechanically asserted by TestScopeDiscipline (3 tests confirming OBPI-03/04/06 surfaces NOT authored). Receipts: lint arb-ruff-ae458924858b4a6999e90836854a841f; types arb-step-typecheck-4c27e795ae154c9798196e1c559a5b48; scoped tests arb-step-unittest-5f4311e9375b465a94f0c21518bbd3bb; full suite arb-step-unittest-6f556666bc704d26b83c11aa85f8e2a8; docs arb-step-mkdocs-f90786ebd7344d14ab8765e2ab0e8adb.
+- Date: 2026-04-29
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-29
 
 **Evidence Hash:** -

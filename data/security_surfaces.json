@@ -1,0 +1,90 @@
+[
+  {
+    "category": "credential_handling",
+    "globs": [
+      "src/gzkit/**/*credential*.py",
+      "src/gzkit/**/*token*.py"
+    ],
+    "rationale": "Credential and token helpers handle secrets at rest and in transit; vibe-coded leakage paths are the single most-reported AI failure class (Veracode 2026)."
+  },
+  {
+    "category": "subprocess_user_input",
+    "globs": [
+      "src/gzkit/utils.py",
+      "src/gzkit/git_sync.py",
+      "src/gzkit/quality.py",
+      "src/gzkit/hooks/scripts/quality.py",
+      "src/gzkit/hooks/guards.py",
+      "src/gzkit/justify/anchors.py",
+      "src/gzkit/lock_manager.py",
+      "src/gzkit/pipeline_markers.py"
+    ],
+    "rationale": "Modules that spawn subprocesses with caller-supplied arguments; injection of unsanitized input is the canonical attack surface."
+  },
+  {
+    "category": "crypto_primitives",
+    "globs": [
+      "src/gzkit/**/*hash*.py",
+      "src/gzkit/**/*crypto*.py",
+      "src/gzkit/**/*signing*.py"
+    ],
+    "rationale": "Hashing, signing, and crypto-primitive helpers; choice of algorithm and key handling are non-obvious and frequently mis-reached-for from training memory."
+  },
+  {
+    "category": "auth_boundaries",
+    "globs": [
+      "src/gzkit/commands/adr_audit.py",
+      "src/gzkit/commands/obpi_complete.py",
+      "src/gzkit/commands/obpi_cmd.py"
+    ],
+    "rationale": "Identity / attestation gates that decide who is allowed to attest, complete, or audit a brief; these enforce human-presence semantics that the GHI #290 closure pinned."
+  },
+  {
+    "category": "external_api_surfaces",
+    "globs": [
+      "src/gzkit/**/*http*.py",
+      "src/gzkit/**/*api_client*.py",
+      "src/gzkit/**/*github*.py"
+    ],
+    "rationale": "Modules issuing HTTP/network egress to external services; these cross trust boundaries and require timeout, TLS, and response-validation discipline."
+  },
+  {
+    "category": "ledger_integrity",
+    "globs": [
+      "src/gzkit/ledger.py",
+      "src/gzkit/ledger_events.py",
+      "src/gzkit/ledger_proof.py",
+      "src/gzkit/ledger_semantics.py"
+    ],
+    "rationale": "Append-only ledger writers and proof helpers; the ledger is gzkit's system-of-record and any non-monotonic write corrupts every downstream audit."
+  },
+  {
+    "category": "arb_receipt_chain",
+    "globs": [
+      "src/gzkit/arb/**/*.py"
+    ],
+    "rationale": "ARB receipt emission, validation, and canonical-command policy; receipts are the attestation evidence chain and fabrication anywhere in the chain breaks every claim that cites a receipt."
+  },
+  {
+    "category": "secret_handling",
+    "globs": [
+      "src/gzkit/**/*secret*.py",
+      "src/gzkit/**/*key*.py",
+      "src/gzkit/**/*password*.py"
+    ],
+    "rationale": "Modules that read, store, or transmit secrets; AI-generated code hard-codes credentials at twice the human-authored rate (Veracode 2026)."
+  },
+  {
+    "category": "deserialization_user_input",
+    "globs": [
+      "src/gzkit/personas.py",
+      "src/gzkit/config.py",
+      "src/gzkit/rules.py",
+      "src/gzkit/handoff_validation.py",
+      "src/gzkit/pipeline_dispatch.py",
+      "src/gzkit/sync_surfaces.py",
+      "src/gzkit/adr_eval_redteam.py"
+    ],
+    "rationale": "YAML / JSON / arbitrary-frontmatter loaders that read operator-supplied content; unsafe loaders execute attacker-controlled payloads, and gzkit's discipline mandates ``yaml.safe_load`` and Pydantic validation at every boundary."
+  }
+]
