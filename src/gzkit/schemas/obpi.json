@@ -45,6 +45,11 @@
             "withdrawn"
           ],
           "description": "OBPI status — accepts operator-facing terms and canonical OBPI_RUNTIME_STATES (ADR-0.0.16 STATUS_VOCAB_MAPPING)"
+        },
+        "sensitivity": {
+          "type": "string",
+          "enum": ["security"],
+          "description": "Security sensitivity classification (ADR-0.0.22). Optional; absent means no security gate. Auto-detect floor and validate scope land in OBPI-0.0.22-03."
         }
       },
       "additionalProperties": true

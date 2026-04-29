@@ -30,6 +30,7 @@ class AdrFrontmatter(BaseModel):
     kind: Literal["foundation", "feature"]
     parent: str
     date: str = Field(..., pattern=r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
+    sensitivity: Literal["security"] | None = None
 
 
 class ObpiFrontmatter(BaseModel):
@@ -54,6 +55,7 @@ class ObpiFrontmatter(BaseModel):
         "drift",
         "withdrawn",
     ]
+    sensitivity: Literal["security"] | None = None
 
 
 class PrdFrontmatter(BaseModel):

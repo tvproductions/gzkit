@@ -44,6 +44,11 @@
           "type": "string",
           "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
           "description": "ISO 8601 date"
+        },
+        "sensitivity": {
+          "type": "string",
+          "enum": ["security"],
+          "description": "Security sensitivity classification (ADR-0.0.22). Optional; absent means no security gate. Auto-detect floor and validate scope land in OBPI-0.0.22-03."
         }
       },
       "additionalProperties": true
