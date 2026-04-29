@@ -665,6 +665,13 @@ class ObpiProofStatus(BaseModel):
             "exists with substantive content for closeout-kind OBPIs"
         ),
     )
+    data_or_schema_artifact_found: bool = Field(
+        False,
+        description=(
+            "Data registry (data/**/*.json) or JSON-schema (src/gzkit/schemas/**/*.json) "
+            "artifact exists with substantive content"
+        ),
+    )
 
     @property
     def has_proof(self) -> bool:
@@ -680,6 +687,7 @@ class ObpiProofStatus(BaseModel):
             or self.concepts_page_found
             or self.decision_doc_found
             or self.closeout_artifact_found
+            or self.data_or_schema_artifact_found
         )
 
     @property
@@ -705,6 +713,8 @@ class ObpiProofStatus(BaseModel):
             return "decision_doc"
         if self.closeout_artifact_found:
             return "closeout_artifact"
+        if self.data_or_schema_artifact_found:
+            return "data_or_schema_artifact"
         return "MISSING"
 
 
@@ -717,6 +727,50 @@ class ProductProofResult(BaseModel):
     success: bool = Field(..., description="True if all OBPIs have proof")
     obpi_proofs: list[ObpiProofStatus] = Field(..., description="Per-OBPI proof status")
     missing_count: int = Field(..., description="Number of OBPIs without proof")
+
+
+def _expand_allowed_paths(allowed_paths: list[str], project_root: Path) -> list[str]:
+    """Expand glob patterns in allowed_paths to concrete relative file paths.
+
+    Brief authors commonly list ALLOWED PATHS as globs (`src/gzkit/models/**`,
+    `tests/governance/**`). Each downstream proof classifier filters by literal
+    prefix/suffix on the raw string, so unexpanded globs are silently invisible.
+    Expansion materializes each glob into the set of real files it matches and
+    leaves literal entries unchanged (GHI #363).
+    """
+    expanded: list[str] = []
+    for path_str in allowed_paths:
+        if "*" not in path_str:
+            expanded.append(path_str)
+            continue
+        try:
+            for matched in project_root.glob(path_str):
+                if matched.is_file():
+                    expanded.append(str(matched.relative_to(project_root)))
+        except (ValueError, OSError):
+            continue
+    return expanded
+
+
+def _check_data_or_schema_proof(allowed_paths: list[str], project_root: Path) -> bool:
+    """Check if a data registry or JSON-schema artifact is present with substantive content.
+
+    Schema-shaped and registry-shaped OBPIs (e.g. ADR-0.0.22-01 schema field
+    additions, ADR-0.0.22-02 data/security_surfaces.json) produce durable JSON
+    artifacts whose existence the prior proof types could not see (GHI #363).
+    """
+    for path_str in allowed_paths:
+        is_data = path_str.startswith("data/") and path_str.endswith(".json")
+        is_schema = path_str.startswith("src/gzkit/schemas/") and path_str.endswith(".json")
+        if not (is_data or is_schema):
+            continue
+        artifact_path = project_root / path_str
+        if not artifact_path.is_file():
+            continue
+        content = artifact_path.read_text(encoding="utf-8").strip()
+        if len(content) > 100:
+            return True
+    return False
 
 
 def _extract_allowed_paths(brief_text: str) -> list[str]:
@@ -963,7 +1017,8 @@ def check_product_proof(
     proofs: list[ObpiProofStatus] = []
     for obpi_id, brief_path in sorted(obpi_files.items()):
         brief_text = brief_path.read_text(encoding="utf-8")
-        allowed_paths = _extract_allowed_paths(brief_text)
+        raw_allowed_paths = _extract_allowed_paths(brief_text)
+        allowed_paths = _expand_allowed_paths(raw_allowed_paths, project_root)
         slug = _extract_obpi_slug(obpi_id)
 
         runbook_found = _check_runbook_proof(obpi_id, slug, runbook_text, allowed_paths)
@@ -976,6 +1031,7 @@ def check_product_proof(
         concepts_page_found = _check_concepts_page_proof(allowed_paths, project_root)
         decision_doc_found = _check_decision_doc_proof(brief_text)
         closeout_artifact_found = _check_closeout_artifact_proof(allowed_paths, project_root)
+        data_or_schema_artifact_found = _check_data_or_schema_proof(allowed_paths, project_root)
 
         proofs.append(
             ObpiProofStatus(
@@ -990,6 +1046,7 @@ def check_product_proof(
                 concepts_page_found=concepts_page_found,
                 decision_doc_found=decision_doc_found,
                 closeout_artifact_found=closeout_artifact_found,
+                data_or_schema_artifact_found=data_or_schema_artifact_found,
             )
         )
 

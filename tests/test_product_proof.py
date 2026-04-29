@@ -707,5 +707,134 @@ class TestCheckProductProof(unittest.TestCase):
             self.assertEqual(result.obpi_proofs[0].proof_type, "governance_artifact")
 
 
+class TestDataOrSchemaArtifactProof(unittest.TestCase):
+    """Tests for data/registry and JSON-schema artifact proof (GHI #363)."""
+
+    def _make_project(self, tmp: str) -> Path:
+        root = Path(tmp)
+        (root / "docs" / "user").mkdir(parents=True)
+        (root / "src" / "gzkit").mkdir(parents=True)
+        (root / "data").mkdir(parents=True)
+        (root / "src" / "gzkit" / "schemas").mkdir(parents=True)
+        return root
+
+    def _make_brief(self, root: Path, obpi_id: str, allowed_paths: list[str]) -> Path:
+        brief_dir = root / "briefs"
+        brief_dir.mkdir(exist_ok=True)
+        brief_path = brief_dir / f"{obpi_id}.md"
+        paths_section = "\n".join(f"- `{p}`" for p in allowed_paths)
+        brief_path.write_text(
+            f"# {obpi_id}\n\n## ALLOWED PATHS\n\n{paths_section}\n\n## REQUIREMENTS\n",
+            encoding="utf-8",
+        )
+        return brief_path
+
+    def test_data_registry_artifact_satisfies_proof(self) -> None:
+        """An OBPI authoring data/<file>.json passes via data_or_schema_artifact proof."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._make_project(tmp)
+            (root / "docs" / "user" / "runbook.md").write_text("Empty.\n", encoding="utf-8")
+            registry = root / "data" / "security_surfaces.json"
+            registry.write_text("{" + '"surfaces": []' + "}\n" + "x" * 200, encoding="utf-8")
+            brief = self._make_brief(
+                root,
+                "OBPI-0.0.22-02-security-surface-registry",
+                ["data/security_surfaces.json"],
+            )
+            obpi_files = {"OBPI-0.0.22-02-security-surface-registry": brief}
+            result = check_product_proof("ADR-0.0.22", obpi_files, root)
+            self.assertTrue(result.success)
+            self.assertEqual(result.obpi_proofs[0].proof_type, "data_or_schema_artifact")
+
+    def test_json_schema_artifact_satisfies_proof(self) -> None:
+        """An OBPI authoring src/gzkit/schemas/*.json passes via data_or_schema proof."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._make_project(tmp)
+            (root / "docs" / "user" / "runbook.md").write_text("Empty.\n", encoding="utf-8")
+            schema = root / "src" / "gzkit" / "schemas" / "obpi.json"
+            schema.write_text(
+                '{"$schema": "https://json-schema.org/draft/2020-12/schema",'
+                ' "type": "object"}\n' + "x" * 200,
+                encoding="utf-8",
+            )
+            brief = self._make_brief(
+                root,
+                "OBPI-0.0.22-01-schema-frontmatter-field",
+                ["src/gzkit/schemas/obpi.json"],
+            )
+            obpi_files = {"OBPI-0.0.22-01-schema-frontmatter-field": brief}
+            result = check_product_proof("ADR-0.0.22", obpi_files, root)
+            self.assertTrue(result.success)
+            self.assertEqual(result.obpi_proofs[0].proof_type, "data_or_schema_artifact")
+
+    def test_empty_data_file_not_substantive(self) -> None:
+        """Empty data/registry file does not satisfy proof."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._make_project(tmp)
+            (root / "docs" / "user" / "runbook.md").write_text("Empty.\n", encoding="utf-8")
+            (root / "data" / "x.json").write_text("{}", encoding="utf-8")
+            brief = self._make_brief(root, "OBPI-0.0.22-02-empty-registry", ["data/x.json"])
+            obpi_files = {"OBPI-0.0.22-02-empty-registry": brief}
+            result = check_product_proof("ADR-0.0.22", obpi_files, root)
+            self.assertFalse(result.success)
+            self.assertEqual(result.obpi_proofs[0].proof_type, "MISSING")
+
+
+class TestGlobAllowedPathsExpansion(unittest.TestCase):
+    """Glob entries in ALLOWED PATHS expand to concrete files before classification (GHI #363)."""
+
+    def _make_project(self, tmp: str) -> Path:
+        root = Path(tmp)
+        (root / "docs" / "user").mkdir(parents=True)
+        (root / "src" / "gzkit").mkdir(parents=True)
+        (root / "tests" / "governance").mkdir(parents=True)
+        return root
+
+    def _make_brief(self, root: Path, obpi_id: str, allowed_paths: list[str]) -> Path:
+        brief_dir = root / "briefs"
+        brief_dir.mkdir(exist_ok=True)
+        brief_path = brief_dir / f"{obpi_id}.md"
+        paths_section = "\n".join(f"- `{p}`" for p in allowed_paths)
+        brief_path.write_text(
+            f"# {obpi_id}\n\n## ALLOWED PATHS\n\n{paths_section}\n\n## REQUIREMENTS\n",
+            encoding="utf-8",
+        )
+        return brief_path
+
+    def test_test_glob_expands_to_real_test_file(self) -> None:
+        """`tests/governance/**` expands to a real `.py` file under that dir."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._make_project(tmp)
+            (root / "docs" / "user" / "runbook.md").write_text("Empty.\n", encoding="utf-8")
+            test_file = root / "tests" / "governance" / "test_foo.py"
+            test_file.write_text(
+                "import unittest\nclass T(unittest.TestCase):\n"
+                "    def test_x(self):\n        self.assertTrue(True)\n" + "# " + "x" * 200,
+                encoding="utf-8",
+            )
+            brief = self._make_brief(root, "OBPI-0.0.22-01-glob", ["tests/governance/**"])
+            obpi_files = {"OBPI-0.0.22-01-glob": brief}
+            result = check_product_proof("ADR-0.0.22", obpi_files, root)
+            self.assertTrue(result.success)
+            self.assertEqual(result.obpi_proofs[0].proof_type, "test_evidence")
+
+    def test_src_glob_expands_to_real_module_with_docstring(self) -> None:
+        """`src/gzkit/models/**` expands to a real `.py` file inside that dir."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._make_project(tmp)
+            (root / "src" / "gzkit" / "models").mkdir(parents=True)
+            (root / "docs" / "user" / "runbook.md").write_text("Empty.\n", encoding="utf-8")
+            module = root / "src" / "gzkit" / "models" / "frontmatter.py"
+            module.write_text(
+                'def public_function():\n    """Public function with docstring."""\n    pass\n',
+                encoding="utf-8",
+            )
+            brief = self._make_brief(root, "OBPI-0.0.22-01-models-glob", ["src/gzkit/models/**"])
+            obpi_files = {"OBPI-0.0.22-01-models-glob": brief}
+            result = check_product_proof("ADR-0.0.22", obpi_files, root)
+            self.assertTrue(result.success)
+            self.assertEqual(result.obpi_proofs[0].proof_type, "docstring")
+
+
 if __name__ == "__main__":
     unittest.main()
