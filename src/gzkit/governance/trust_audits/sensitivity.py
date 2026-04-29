@@ -98,6 +98,73 @@ def _iter_sensitivity_briefs(project_root: Path) -> list[Path]:
     return sorted(briefs)
 
 
+_DECLARED_SENSITIVITY_NULL_TOKENS: frozenset[str] = frozenset({"None", "null", "~"})
+
+
+def _normalize_declared_sensitivity(declared: object) -> str | None:
+    """Reduce a declared sensitivity field to ``None`` or a non-empty string."""
+    if not isinstance(declared, str):
+        return None
+    norm: str | None = declared.strip() or None
+    if norm in _DECLARED_SENSITIVITY_NULL_TOKENS:
+        return None
+    return norm
+
+
+def _classify_brief_sensitivity(
+    brief_path: Path,
+    brief_text: str,
+    project_root: Path,
+    registry: tuple[SecuritySurfaceEntry, ...],
+) -> ValidationError | None:
+    """Return the single finding (if any) implied by one brief's sensitivity binding."""
+    from gzkit.models.security_surfaces import match_globs
+
+    rel = brief_path.relative_to(project_root).as_posix()
+    frontmatter = _parse_adr_frontmatter(brief_path) or {}
+    declared_norm = _normalize_declared_sensitivity(frontmatter.get("sensitivity"))
+
+    allowed_paths = _extract_sensitivity_allowed_paths(brief_text)
+    try:
+        matching_categories = match_globs(allowed_paths, registry)
+    except (ValueError, TypeError):
+        return ValidationError(
+            type="sensitivity-malformed-allowlist",
+            artifact=rel,
+            message=(
+                "Allowed Paths contains an unparseable glob; sensitivity intersection skipped."
+            ),
+        )
+
+    if not matching_categories:
+        return None
+
+    if declared_norm not in (None, "security"):
+        return ValidationError(
+            type="sensitivity-escape-attempt",
+            artifact=rel,
+            message=(
+                f"Brief declares sensitivity={declared_norm!r} but allowed "
+                f"paths intersect security-sensitive surfaces "
+                f"(detected=security, categories={list(matching_categories)}, "
+                f"intersecting_paths={allowed_paths}). Escalate-not-escape: "
+                "remove the declaration or set sensitivity: security."
+            ),
+        )
+
+    if declared_norm is None:
+        return ValidationError(
+            type="sensitivity-floor-info",
+            artifact=rel,
+            message=(
+                f"Auto-detect floor active: detected_sensitivity=security, "
+                f"declared_sensitivity=None, intersecting_paths={allowed_paths}, "
+                f"registry_categories={list(matching_categories)}."
+            ),
+        )
+    return None
+
+
 def audit_sensitivity_binding(project_root: Path) -> list[ValidationError]:
     """Enforce ADR-0.0.22 sensitivity-binding (auto-detect floor + escalate-not-escape).
 
@@ -105,20 +172,8 @@ def audit_sensitivity_binding(project_root: Path) -> list[ValidationError]:
     ``docs/design/adr/**/{obpis,briefs}/*.md``. For each brief it intersects the
     bullet-quoted ``## ALLOWED PATHS`` glob list against the registry to compute
     a ``detected_sensitivity``; ``declared_sensitivity`` is read from frontmatter.
-
-    Decision matrix (ADR-0.0.22 Decision):
-
-    * detected ``security`` and declared in ``{None, security}`` -> ok (floor or
-      matched escalation). When ``declared is None`` the floor is reported as an
-      ``info``-class finding so ``--json`` consumers see it.
-    * detected ``security`` and declared anything else -> fail-closed
-      ``sensitivity-escape-attempt`` finding (exit 3).
-    * detected ``None`` and declared ``security`` -> ok (escalation channel).
-
-    Registry missing/malformed/schema-invalid -> single fail-closed finding.
+    The decision matrix (ADR-0.0.22) lives in ``_classify_brief_sensitivity``.
     """
-    from gzkit.models.security_surfaces import match_globs
-
     briefs = _iter_sensitivity_briefs(project_root)
     if not briefs:
         return []
@@ -134,68 +189,9 @@ def audit_sensitivity_binding(project_root: Path) -> list[ValidationError]:
             brief_text = brief_path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):
             continue
-        rel = brief_path.relative_to(project_root).as_posix()
-        frontmatter = _parse_adr_frontmatter(brief_path) or {}
-        declared = frontmatter.get("sensitivity")
-        if isinstance(declared, str):
-            declared_norm: str | None = declared.strip() or None
-            if declared_norm in {"None", "null", "~"}:
-                declared_norm = None
-        else:
-            declared_norm = None
-
-        allowed_paths = _extract_sensitivity_allowed_paths(brief_text)
-        try:
-            matching_categories = match_globs(allowed_paths, registry)
-        except (ValueError, TypeError):
-            # Malformed glob in brief allowlist — emit a structured finding
-            # but keep auditing other briefs.
-            errors.append(
-                ValidationError(
-                    type="sensitivity-malformed-allowlist",
-                    artifact=rel,
-                    message=(
-                        "Allowed Paths contains an unparseable glob; "
-                        "sensitivity intersection skipped."
-                    ),
-                )
-            )
-            continue
-
-        detected = "security" if matching_categories else None
-
-        if detected == "security" and declared_norm not in (None, "security"):
-            errors.append(
-                ValidationError(
-                    type="sensitivity-escape-attempt",
-                    artifact=rel,
-                    message=(
-                        f"Brief declares sensitivity={declared_norm!r} but allowed "
-                        f"paths intersect security-sensitive surfaces "
-                        f"(detected=security, categories={list(matching_categories)}, "
-                        f"intersecting_paths={allowed_paths}). Escalate-not-escape: "
-                        "remove the declaration or set sensitivity: security."
-                    ),
-                )
-            )
-            continue
-
-        if detected == "security" and declared_norm is None:
-            # Floor activated — info-class finding; severity convention here is
-            # ``info`` so the umbrella exit code stays 0 unless escape attempts
-            # exist. Consumers (e.g. --json) see the floor active record.
-            errors.append(
-                ValidationError(
-                    type="sensitivity-floor-info",
-                    artifact=rel,
-                    message=(
-                        f"Auto-detect floor active: detected_sensitivity=security, "
-                        f"declared_sensitivity=None, intersecting_paths={allowed_paths}, "
-                        f"registry_categories={list(matching_categories)}."
-                    ),
-                )
-            )
-
+        finding = _classify_brief_sensitivity(brief_path, brief_text, project_root, registry)
+        if finding is not None:
+            errors.append(finding)
     return errors
 
 

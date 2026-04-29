@@ -23,6 +23,49 @@ _DATACLASS_WAIVERS: dict[str, str] = {
 }
 
 
+def _audit_class_node(rel: str, node: ast.ClassDef) -> list[ValidationError]:
+    """Apply rules 25 and 26 to a single ClassDef."""
+    findings: list[ValidationError] = []
+    artifact_key = f"{rel}::{node.name}"
+    if _has_dataclass_decorator(node) and artifact_key not in _DATACLASS_WAIVERS:
+        findings.append(
+            ValidationError(
+                type="pydantic_models",
+                artifact=f"{rel}:{node.lineno}",
+                message=(
+                    f"Class `{node.name}` uses stdlib `@dataclass`. "
+                    "Governance data must use Pydantic `BaseModel` "
+                    "(`.gzkit/rules/models.md`)."
+                ),
+            )
+        )
+    if _extends_basemodel(node) and not _has_model_config(node):
+        findings.append(
+            ValidationError(
+                type="pydantic_models",
+                artifact=f"{rel}:{node.lineno}",
+                message=(
+                    f"BaseModel subclass `{node.name}` is missing "
+                    "`model_config = ConfigDict(...)` (rule 26)."
+                ),
+            )
+        )
+    return findings
+
+
+def _audit_one_py_file(py_file: Path, project_root: Path) -> list[ValidationError]:
+    try:
+        tree = ast.parse(py_file.read_text(encoding="utf-8"))
+    except SyntaxError:
+        return []
+    rel = py_file.relative_to(project_root).as_posix()
+    findings: list[ValidationError] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef):
+            findings.extend(_audit_class_node(rel, node))
+    return findings
+
+
 def audit_pydantic_models(project_root: Path) -> list[ValidationError]:
     """Fail on stdlib ``@dataclass`` in governance code and BaseModels missing ConfigDict.
 
@@ -34,38 +77,7 @@ def audit_pydantic_models(project_root: Path) -> list[ValidationError]:
         return []
     errors: list[ValidationError] = []
     for py_file in sorted(src_root.rglob("*.py")):
-        try:
-            tree = ast.parse(py_file.read_text(encoding="utf-8"))
-        except SyntaxError:
-            continue
-        rel = py_file.relative_to(project_root).as_posix()
-        for node in ast.walk(tree):
-            if not isinstance(node, ast.ClassDef):
-                continue
-            artifact_key = f"{rel}::{node.name}"
-            if _has_dataclass_decorator(node) and artifact_key not in _DATACLASS_WAIVERS:
-                errors.append(
-                    ValidationError(
-                        type="pydantic_models",
-                        artifact=f"{rel}:{node.lineno}",
-                        message=(
-                            f"Class `{node.name}` uses stdlib `@dataclass`. "
-                            "Governance data must use Pydantic `BaseModel` "
-                            "(`.gzkit/rules/models.md`)."
-                        ),
-                    )
-                )
-            if _extends_basemodel(node) and not _has_model_config(node):
-                errors.append(
-                    ValidationError(
-                        type="pydantic_models",
-                        artifact=f"{rel}:{node.lineno}",
-                        message=(
-                            f"BaseModel subclass `{node.name}` is missing "
-                            "`model_config = ConfigDict(...)` (rule 26)."
-                        ),
-                    )
-                )
+        errors.extend(_audit_one_py_file(py_file, project_root))
     for stale in sorted(_DATACLASS_WAIVERS.keys() - _extant_class_keys(src_root, project_root)):
         errors.append(
             ValidationError(

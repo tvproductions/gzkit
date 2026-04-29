@@ -98,28 +98,41 @@ def _collect_emitted_event_types(source: Path) -> set[str]:
     return emitted
 
 
+def _string_constant(node: ast.AST) -> str | None:
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
+    return None
+
+
+def _claimed_from_event_compare(node: ast.AST) -> set[str]:
+    """Pick string-literal RHS from ``event.event == "<literal>"`` comparisons."""
+    if not (
+        isinstance(node, ast.Compare)
+        and isinstance(node.left, ast.Attribute)
+        and node.left.attr == "event"
+        and isinstance(node.left.value, ast.Name)
+        and node.left.value.id == "event"
+    ):
+        return set()
+    return {v for c in node.comparators if (v := _string_constant(c)) is not None}
+
+
+def _claimed_from_collection(node: ast.AST) -> set[str]:
+    if not isinstance(node, (ast.Set, ast.List, ast.Tuple)):
+        return set()
+    return {
+        v
+        for elt in node.elts
+        if (v := _string_constant(elt)) is not None and _EVENT_TYPE_HEURISTIC.fullmatch(v)
+    }
+
+
 def _collect_claimed_event_types(source: Path) -> set[str]:
     tree = ast.parse(source.read_text(encoding="utf-8"))
     claimed: set[str] = set()
     for node in ast.walk(tree):
-        if (
-            isinstance(node, ast.Compare)
-            and isinstance(node.left, ast.Attribute)
-            and node.left.attr == "event"
-            and isinstance(node.left.value, ast.Name)
-            and node.left.value.id == "event"
-        ):
-            for comparator in node.comparators:
-                if isinstance(comparator, ast.Constant) and isinstance(comparator.value, str):
-                    claimed.add(comparator.value)
-        if isinstance(node, (ast.Set, ast.List, ast.Tuple)):
-            for elt in node.elts:
-                if (
-                    isinstance(elt, ast.Constant)
-                    and isinstance(elt.value, str)
-                    and _EVENT_TYPE_HEURISTIC.fullmatch(elt.value)
-                ):
-                    claimed.add(elt.value)
+        claimed.update(_claimed_from_event_compare(node))
+        claimed.update(_claimed_from_collection(node))
     return claimed
 
 
@@ -150,23 +163,26 @@ def audit_validator_fields(project_root: Path) -> list[ValidationError]:
     return errors
 
 
+def _info_get_field(node: ast.AST) -> str | None:
+    """Return the literal field name in ``info.get("<field>")`` calls, else None."""
+    if not isinstance(node, ast.Call) or not node.args:
+        return None
+    func = node.func
+    if not isinstance(func, ast.Attribute) or func.attr != "get":
+        return None
+    caller = func.value
+    if not isinstance(caller, ast.Name) or caller.id != "info":
+        return None
+    return _string_constant(node.args[0])
+
+
 def _collect_info_get_fields(source: Path) -> set[str]:
     tree = ast.parse(source.read_text(encoding="utf-8"))
     fields: set[str] = set()
     for node in ast.walk(tree):
-        if not isinstance(node, ast.Call):
-            continue
-        func = node.func
-        if not isinstance(func, ast.Attribute) or func.attr != "get":
-            continue
-        caller = func.value
-        if not isinstance(caller, ast.Name) or caller.id != "info":
-            continue
-        if not node.args:
-            continue
-        key = node.args[0]
-        if isinstance(key, ast.Constant) and isinstance(key.value, str):
-            fields.add(key.value)
+        field = _info_get_field(node)
+        if field is not None:
+            fields.add(field)
     return fields
 
 

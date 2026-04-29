@@ -14,6 +14,17 @@ _CHORES_LAYOUT_EXCLUDED_SEGMENTS: frozenset[str] = frozenset(
 )
 
 
+def _is_excluded_chore_path(rel_parts: tuple[str, ...]) -> bool:
+    """Skip dotfile-hidden ancestors and excluded build/venv segments."""
+    if any(seg.startswith(".") for seg in rel_parts[:-1]):
+        return True
+    return any(seg in _CHORES_LAYOUT_EXCLUDED_SEGMENTS for seg in rel_parts)
+
+
+def _is_canonical_chore_path(rel_posix: str, canonical_roots: tuple[str, ...]) -> bool:
+    return any(rel_posix.startswith(f"{root}/") for root in canonical_roots)
+
+
 def audit_chores_layout(project_root: Path) -> list[ValidationError]:
     """Flag ``CHORE.md`` / ``acceptance.json`` outside canonical chores roots.
 
@@ -40,20 +51,13 @@ def audit_chores_layout(project_root: Path) -> list[ValidationError]:
 
     errors: list[ValidationError] = []
     for path in sorted(project_root.rglob("*")):
-        if not path.is_file():
-            continue
-        if path.name not in _CHORES_LAYOUT_FILES:
+        if not path.is_file() or path.name not in _CHORES_LAYOUT_FILES:
             continue
         rel = path.relative_to(project_root)
-        segments = rel.parts
-        if any(seg.startswith(".") for seg in segments[:-1]):
-            continue
-        if any(seg in _CHORES_LAYOUT_EXCLUDED_SEGMENTS for seg in segments):
+        if _is_excluded_chore_path(rel.parts):
             continue
         rel_posix = rel.as_posix()
-        if rel_posix in waivers:
-            continue
-        if any(rel_posix.startswith(f"{root}/") for root in canonical_roots):
+        if rel_posix in waivers or _is_canonical_chore_path(rel_posix, canonical_roots):
             continue
         errors.append(
             ValidationError(

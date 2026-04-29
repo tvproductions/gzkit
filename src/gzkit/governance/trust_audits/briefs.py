@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from typing import Any
 
 from gzkit.validate import ValidationError
 
@@ -44,6 +45,41 @@ _BRIEF_EVIDENCE_H3_HEADINGS = (
 )
 
 
+def _canonical_h3_heading(line: str, canonical_forms: dict[str, str]) -> str | None:
+    """Return the canonical H3 form if ``line`` is a drifted ``## Heading`` match."""
+    if not line.startswith("## "):
+        return None
+    folded = line[3:].split("(")[0].strip().casefold()
+    return canonical_forms.get(folded)
+
+
+def _scan_one_brief_headings(
+    brief: Path, canonical_forms: dict[str, str], project_root: Path
+) -> list[ValidationError]:
+    try:
+        lines = brief.read_text(encoding="utf-8").splitlines()
+    except UnicodeDecodeError:
+        return []
+    rel = brief.relative_to(project_root).as_posix()
+    errors: list[ValidationError] = []
+    for lineno, raw in enumerate(lines, start=1):
+        canonical = _canonical_h3_heading(raw, canonical_forms)
+        if canonical is None:
+            continue
+        errors.append(
+            ValidationError(
+                type="brief_headings",
+                artifact=f"{rel}:{lineno}",
+                message=(
+                    f"Evidence section `{canonical}` must use H3 "
+                    f"(`### {canonical}`), not H2. Ceremony renderers "
+                    "and completion hooks look for H3 level."
+                ),
+            )
+        )
+    return errors
+
+
 def audit_brief_headings(project_root: Path) -> list[ValidationError]:
     """Brief evidence sections must use H3, not H2 (GHI #238).
 
@@ -54,43 +90,24 @@ def audit_brief_headings(project_root: Path) -> list[ValidationError]:
     that drifts one of these to ``##`` passes schema validation (the section
     exists) but the extractor stops at the next H2 boundary and yields an
     empty body — triggering mid-ceremony failures.
-
-    The audit flags any ``## Heading`` whose heading text equals one of the
-    canonical names exactly (after stripping a trailing ``(Lite)`` / ``(Heavy)``
-    parenthetical). Exact match is deliberate: ``## Acceptance Criteria`` is
-    a legitimate top-level H2 brief section and must not be conflated with
-    the per-pass evidence ``### ACCEPTANCE``.
     """
     adr_root = project_root / "docs" / "design" / "adr"
     if not adr_root.is_dir():
         return []
+    canonical_forms: dict[str, str] = {h.casefold(): h for h in _BRIEF_EVIDENCE_H3_HEADINGS}
     errors: list[ValidationError] = []
-    canonical_forms = {h.casefold() for h in _BRIEF_EVIDENCE_H3_HEADINGS}
     for brief in sorted(adr_root.rglob("OBPI-*.md")):
-        try:
-            lines = brief.read_text(encoding="utf-8").splitlines()
-        except UnicodeDecodeError:
-            continue
-        rel = brief.relative_to(project_root).as_posix()
-        for lineno, raw in enumerate(lines, start=1):
-            if not raw.startswith("## "):
-                continue
-            heading = raw[3:].split("(")[0].strip().casefold()
-            if heading not in canonical_forms:
-                continue
-            canonical = next(h for h in _BRIEF_EVIDENCE_H3_HEADINGS if h.casefold() == heading)
-            errors.append(
-                ValidationError(
-                    type="brief_headings",
-                    artifact=f"{rel}:{lineno}",
-                    message=(
-                        f"Evidence section `{canonical}` must use H3 "
-                        f"(`### {canonical}`), not H2. Ceremony renderers "
-                        "and completion hooks look for H3 level."
-                    ),
-                )
-            )
+        errors.extend(_scan_one_brief_headings(brief, canonical_forms, project_root))
     return errors
+
+
+def _waiver_rationale_code(entry: Any) -> str:
+    if isinstance(entry, dict):
+        rationale = entry.get("rationale")
+        return str(rationale) if rationale is not None else ""
+    if isinstance(entry, str):
+        return entry
+    return ""
 
 
 def _load_behave_coverage_waivers(project_root: Path) -> dict[str, str]:
@@ -115,13 +132,34 @@ def _load_behave_coverage_waivers(project_root: Path) -> dict[str, str]:
     for obpi_id, entry in waivers.items():
         if not isinstance(obpi_id, str) or not obpi_id.startswith("OBPI-"):
             continue
-        rationale_code = ""
-        if isinstance(entry, dict):
-            rationale_code = str(entry.get("rationale", ""))
-        elif isinstance(entry, str):
-            rationale_code = entry
-        out[obpi_id] = default_rationale.get(rationale_code, rationale_code)
+        code = _waiver_rationale_code(entry)
+        out[obpi_id] = default_rationale.get(code, code)
     return out
+
+
+def _extract_one_heavy_brief(brief: Path) -> tuple[Path, str, list[str]] | None:
+    """Return ``(brief, obpi_id, req_ids)`` if the brief is BDD-gated heavy, else None."""
+    try:
+        text = brief.read_text(encoding="utf-8")
+    except (UnicodeDecodeError, OSError):
+        return None
+    lane_match = _LANE_IN_FRONTMATTER.search(text)
+    if not lane_match or lane_match.group(1).lower() != "heavy":
+        return None
+    status_match = _STATUS_IN_FRONTMATTER.search(text)
+    status_value = status_match.group(1).lower() if status_match else ""
+    if status_value not in _BDD_GATED_BRIEF_STATUSES:
+        return None
+    id_match = _OBPI_ID_IN_FRONTMATTER.search(text)
+    if not id_match:
+        return None
+    accept_match = _ACCEPTANCE_SECTION.search(text)
+    if not accept_match:
+        return None
+    req_ids = sorted(set(_REQ_ID_IN_BRIEF.findall(accept_match.group(1))))
+    if not req_ids:
+        return None
+    return brief, id_match.group(1), req_ids
 
 
 def _extract_heavy_obpi_briefs(project_root: Path) -> list[tuple[Path, str, list[str]]]:
@@ -141,28 +179,9 @@ def _extract_heavy_obpi_briefs(project_root: Path) -> list[tuple[Path, str, list
     for brief in sorted(adr_root.rglob("OBPI-*.md")):
         if "pool" in brief.parts:
             continue
-        try:
-            text = brief.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
-            continue
-        lane_match = _LANE_IN_FRONTMATTER.search(text)
-        if not lane_match or lane_match.group(1).lower() != "heavy":
-            continue
-        status_match = _STATUS_IN_FRONTMATTER.search(text)
-        status_value = status_match.group(1).lower() if status_match else ""
-        if status_value not in _BDD_GATED_BRIEF_STATUSES:
-            continue
-        id_match = _OBPI_ID_IN_FRONTMATTER.search(text)
-        if not id_match:
-            continue
-        obpi_id = id_match.group(1)
-        accept_match = _ACCEPTANCE_SECTION.search(text)
-        if not accept_match:
-            continue
-        req_ids = sorted(set(_REQ_ID_IN_BRIEF.findall(accept_match.group(1))))
-        if not req_ids:
-            continue
-        briefs.append((brief, obpi_id, req_ids))
+        record = _extract_one_heavy_brief(brief)
+        if record is not None:
+            briefs.append(record)
     return briefs
 
 
