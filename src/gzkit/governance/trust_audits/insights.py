@@ -37,13 +37,43 @@ _INSIGHTS_SHAPE_WAIVERS: dict[str, str] = {
 }
 
 
-def audit_insights_shape(project_root: Path) -> list[ValidationError]:
-    """Validate every record in ``.gzkit/insights/agent-insights.jsonl``."""
-    import hashlib  # noqa: PLC0415
-
+def _validate_insight_line(raw: str, artifact: str) -> ValidationError | None:
+    """Return a finding if ``raw`` is a malformed/non-conforming insight line, else None."""
     from pydantic import ValidationError as PydanticValidationError  # noqa: PLC0415
 
     from gzkit.insights import InsightRecord  # noqa: PLC0415
+
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        return ValidationError(
+            type="insights_shape", artifact=artifact, message=f"line is not valid JSON: {exc.msg}"
+        )
+    if not isinstance(payload, dict):
+        return ValidationError(
+            type="insights_shape", artifact=artifact, message="line is JSON but not an object"
+        )
+    try:
+        InsightRecord.model_validate(payload)
+    except PydanticValidationError as exc:
+        return ValidationError(
+            type="insights_shape",
+            artifact=artifact,
+            message=(
+                "record fails InsightRecord schema "
+                f"({exc.error_count()} errors): "
+                + "; ".join(
+                    f"{'.'.join(str(p) for p in err['loc'])}: {err['msg']}"
+                    for err in exc.errors()[:3]
+                )
+            ),
+        )
+    return None
+
+
+def audit_insights_shape(project_root: Path) -> list[ValidationError]:
+    """Validate every record in ``.gzkit/insights/agent-insights.jsonl``."""
+    import hashlib  # noqa: PLC0415
 
     insights_path = project_root / _INSIGHTS_FILE
     if not insights_path.is_file():
@@ -56,42 +86,7 @@ def audit_insights_shape(project_root: Path) -> list[ValidationError]:
         digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
         if digest in _INSIGHTS_SHAPE_WAIVERS:
             continue
-        artifact = f"{artifact_root}:{lineno}"
-        try:
-            payload = json.loads(raw)
-        except json.JSONDecodeError as exc:
-            errors.append(
-                ValidationError(
-                    type="insights_shape",
-                    artifact=artifact,
-                    message=f"line is not valid JSON: {exc.msg}",
-                )
-            )
-            continue
-        if not isinstance(payload, dict):
-            errors.append(
-                ValidationError(
-                    type="insights_shape",
-                    artifact=artifact,
-                    message="line is JSON but not an object",
-                )
-            )
-            continue
-        try:
-            InsightRecord.model_validate(payload)
-        except PydanticValidationError as exc:
-            errors.append(
-                ValidationError(
-                    type="insights_shape",
-                    artifact=artifact,
-                    message=(
-                        "record fails InsightRecord schema "
-                        f"({exc.error_count()} errors): "
-                        + "; ".join(
-                            f"{'.'.join(str(p) for p in err['loc'])}: {err['msg']}"
-                            for err in exc.errors()[:3]
-                        )
-                    ),
-                )
-            )
+        finding = _validate_insight_line(raw, f"{artifact_root}:{lineno}")
+        if finding is not None:
+            errors.append(finding)
     return errors

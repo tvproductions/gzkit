@@ -56,8 +56,8 @@ _NO_SKILL_VERBS: dict[str, str] = {
 }
 
 
-def audit_cli_alignment(project_root: Path) -> list[ValidationError]:
-    """Enforce `.gzkit/rules/governance-core.md` § Operator-doc verb resolution (GHI #198)."""
+def _cli_alignment_sources(project_root: Path) -> list[Path]:
+    """Enumerate every operator-facing surface that may carry ``gz <verb>`` strings."""
     sources: list[Path] = []
     features_root = project_root / "features"
     if features_root.is_dir():
@@ -65,13 +65,15 @@ def audit_cli_alignment(project_root: Path) -> list[ValidationError]:
     runbook = project_root / "docs" / "user" / "runbook.md"
     if runbook.is_file():
         sources.append(runbook)
-    commands_root = project_root / "docs" / "user" / "commands"
-    if commands_root.is_dir():
-        sources.extend(sorted(commands_root.rglob("*.md")))
-    manpages_root = project_root / "docs" / "user" / "manpages"
-    if manpages_root.is_dir():
-        sources.extend(sorted(manpages_root.rglob("*.md")))
+    for sub in ("commands", "manpages"):
+        candidate = project_root / "docs" / "user" / sub
+        if candidate.is_dir():
+            sources.extend(sorted(candidate.rglob("*.md")))
+    return sources
 
+
+def _collect_verb_references(sources: list[Path], project_root: Path) -> dict[str, list[str]]:
+    """Return ``{verb: [<file:line>, …]}`` for every ``gz <verb>`` reference."""
     verbs_seen: dict[str, list[str]] = {}
     for source in sources:
         for lineno, line in enumerate(source.read_text(encoding="utf-8").splitlines(), 1):
@@ -79,13 +81,17 @@ def audit_cli_alignment(project_root: Path) -> list[ValidationError]:
             for pattern in (_BACKTICKED_INVOCATION, _QUOTED_INVOCATION, _STEP_DEF_FIXTURE):
                 for match in pattern.finditer(line):
                     verbs_seen.setdefault(match.group(1), []).append(rel)
+    return verbs_seen
 
+
+def audit_cli_alignment(project_root: Path) -> list[ValidationError]:
+    """Enforce `.gzkit/rules/governance-core.md` § Operator-doc verb resolution (GHI #198)."""
+    sources = _cli_alignment_sources(project_root)
+    verbs_seen = _collect_verb_references(sources, project_root)
     known_verbs = _known_cli_verbs()
     errors: list[ValidationError] = []
     for verb, locations in sorted(verbs_seen.items()):
-        if verb in _DOC_PROSE_VERBS:
-            continue
-        if verb in known_verbs:
+        if verb in _DOC_PROSE_VERBS or verb in known_verbs:
             continue
         errors.append(
             ValidationError(
@@ -115,6 +121,31 @@ def _known_cli_verbs() -> frozenset[str]:
     return frozenset(verbs)
 
 
+def _verb_referenced_in_skill(verb: str, content: str) -> bool:
+    """Return ``True`` if the SKILL.md content invokes or names the verb."""
+    escaped = re.escape(verb)
+    if re.search(rf"\bgz\s+{escaped}\b", content):
+        return True
+    return bool(re.search(rf"gz_command:\s*{escaped}\b", content))
+
+
+def _collect_skill_verb_refs(
+    skills_root: Path, known_verbs: frozenset[str], project_root: Path
+) -> dict[str, set[str]]:
+    """Return ``{verb: {skill-rel-path, …}}`` for every verb referenced by a skill."""
+    refs: dict[str, set[str]] = {verb: set() for verb in known_verbs}
+    for skill_md in sorted(skills_root.rglob("SKILL.md")):
+        try:
+            content = skill_md.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        rel = skill_md.relative_to(project_root).as_posix()
+        for verb in known_verbs:
+            if _verb_referenced_in_skill(verb, content):
+                refs[verb].add(rel)
+    return refs
+
+
 def audit_skill_alignment(project_root: Path) -> list[ValidationError]:
     """Invariant 1: every CLI verb is referenced by at least one skill.
 
@@ -131,24 +162,11 @@ def audit_skill_alignment(project_root: Path) -> list[ValidationError]:
     except Exception:
         return []
 
-    verb_refs: dict[str, set[str]] = {verb: set() for verb in known_verbs}
-    for skill_md in sorted(skills_root.rglob("SKILL.md")):
-        try:
-            content = skill_md.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
-            continue
-        rel = skill_md.relative_to(project_root).as_posix()
-        for verb in known_verbs:
-            if re.search(rf"\bgz\s+{re.escape(verb)}\b", content) or re.search(
-                rf"gz_command:\s*{re.escape(verb)}\b", content
-            ):
-                verb_refs[verb].add(rel)
+    verb_refs = _collect_skill_verb_refs(skills_root, known_verbs, project_root)
 
     errors: list[ValidationError] = []
     for verb in sorted(known_verbs):
-        if verb in _NO_SKILL_VERBS:
-            continue
-        if verb_refs[verb]:
+        if verb in _NO_SKILL_VERBS or verb_refs[verb]:
             continue
         errors.append(
             ValidationError(

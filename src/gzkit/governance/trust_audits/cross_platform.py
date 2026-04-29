@@ -85,75 +85,82 @@ def audit_utf8_prefix(project_root: Path) -> list[ValidationError]:
     return errors
 
 
-def _scan_doc_pipe_patterns(project_root: Path) -> list[ValidationError]:
-    """Scan docs/skills/features for gz-pipe anti-patterns."""
-    roots: list[Path] = []
-    for rel in ("docs", ".gzkit/skills", ".claude/skills", "features"):
+_DOC_PIPE_SCAN_ROOTS = ("docs", ".gzkit/skills", ".claude/skills", "features")
+_DOC_PIPE_SUFFIXES: frozenset[str] = frozenset({".md", ".feature", ".txt"})
+
+_PYTHONUTF8_MESSAGE = (
+    "`PYTHONUTF8=1` prefix on `uv run gz` is forbidden — "
+    "the CLI entrypoint configures UTF-8 at runtime "
+    "(CLAUDE.md local rule 9)."
+)
+_GZ_PIPE_PYTHON_MESSAGE = (
+    "`gz ... | python ...` is a fresh-interpreter pipe "
+    "(no runtime UTF-8 guard). Add "
+    "`sys.stdout.reconfigure(encoding='utf-8')` inside "
+    "the helper, or waive in `_UTF8_PIPE_WAIVERS` "
+    "(`.gzkit/rules/cross-platform.md`)."
+)
+_GZ_PIPE_NON_PYTHON_MESSAGE = (
+    "`gz ... | jq|awk|sed` pipes gz UTF-8 output through a "
+    "non-Python tool that crashes on cp1252. Use the "
+    "`--output path.json` handoff pattern "
+    "(`.gzkit/rules/cross-platform.md` § Windows-safe "
+    "helper patterns)."
+)
+
+
+def _doc_pipe_message(line: str) -> str | None:
+    """Return the violation message for a single doc line, or ``None`` if clean."""
+    if _PYTHONUTF8_PREFIX.search(line):
+        return _PYTHONUTF8_MESSAGE
+    if _GZ_PIPE_PYTHON.search(line) and not _STDOUT_RECONFIGURE.search(line):
+        return _GZ_PIPE_PYTHON_MESSAGE
+    if _GZ_PIPE_NON_PYTHON.search(line):
+        return _GZ_PIPE_NON_PYTHON_MESSAGE
+    return None
+
+
+def _iter_doc_pipe_paths(project_root: Path) -> list[Path]:
+    """Enumerate scannable doc/skill/feature files (excluding the prose carve-out)."""
+    paths: list[Path] = []
+    for rel in _DOC_PIPE_SCAN_ROOTS:
         candidate = project_root / rel
-        if candidate.is_dir():
-            roots.append(candidate)
-    errors: list[ValidationError] = []
-    for root in roots:
-        for path in sorted(root.rglob("*")):
-            if not path.is_file():
-                continue
-            if path.suffix.lower() not in {".md", ".feature", ".txt"}:
+        if not candidate.is_dir():
+            continue
+        for path in sorted(candidate.rglob("*")):
+            if not path.is_file() or path.suffix.lower() not in _DOC_PIPE_SUFFIXES:
                 continue
             # advisory-rules-audit.md documents the anti-pattern by name;
             # skip lines that cite it as prose rather than prescribe it.
             if path.name == "advisory-rules-audit.md":
                 continue
-            try:
-                content = path.read_text(encoding="utf-8")
-            except UnicodeDecodeError:
-                continue
-            rel_path = path.relative_to(project_root).as_posix()
-            for lineno, line in enumerate(content.splitlines(), 1):
-                artifact = f"{rel_path}:{lineno}"
-                if artifact in _UTF8_PIPE_WAIVERS:
-                    continue
-                if _PYTHONUTF8_PREFIX.search(line):
-                    errors.append(
-                        ValidationError(
-                            type="utf8_prefix",
-                            artifact=artifact,
-                            message=(
-                                "`PYTHONUTF8=1` prefix on `uv run gz` is forbidden — "
-                                "the CLI entrypoint configures UTF-8 at runtime "
-                                "(CLAUDE.md local rule 9)."
-                            ),
-                        )
-                    )
-                    continue
-                if _GZ_PIPE_PYTHON.search(line) and not _STDOUT_RECONFIGURE.search(line):
-                    errors.append(
-                        ValidationError(
-                            type="utf8_prefix",
-                            artifact=artifact,
-                            message=(
-                                "`gz ... | python ...` is a fresh-interpreter pipe "
-                                "(no runtime UTF-8 guard). Add "
-                                "`sys.stdout.reconfigure(encoding='utf-8')` inside "
-                                "the helper, or waive in `_UTF8_PIPE_WAIVERS` "
-                                "(`.gzkit/rules/cross-platform.md`)."
-                            ),
-                        )
-                    )
-                    continue
-                if _GZ_PIPE_NON_PYTHON.search(line):
-                    errors.append(
-                        ValidationError(
-                            type="utf8_prefix",
-                            artifact=artifact,
-                            message=(
-                                "`gz ... | jq|awk|sed` pipes gz UTF-8 output through a "
-                                "non-Python tool that crashes on cp1252. Use the "
-                                "`--output path.json` handoff pattern "
-                                "(`.gzkit/rules/cross-platform.md` § Windows-safe "
-                                "helper patterns)."
-                            ),
-                        )
-                    )
+            paths.append(path)
+    return paths
+
+
+def _scan_one_doc_pipe_file(path: Path, project_root: Path) -> list[ValidationError]:
+    try:
+        content = path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        return []
+    rel_path = path.relative_to(project_root).as_posix()
+    errors: list[ValidationError] = []
+    for lineno, line in enumerate(content.splitlines(), 1):
+        artifact = f"{rel_path}:{lineno}"
+        if artifact in _UTF8_PIPE_WAIVERS:
+            continue
+        message = _doc_pipe_message(line)
+        if message is None:
+            continue
+        errors.append(ValidationError(type="utf8_prefix", artifact=artifact, message=message))
+    return errors
+
+
+def _scan_doc_pipe_patterns(project_root: Path) -> list[ValidationError]:
+    """Scan docs/skills/features for gz-pipe anti-patterns."""
+    errors: list[ValidationError] = []
+    for path in _iter_doc_pipe_paths(project_root):
+        errors.extend(_scan_one_doc_pipe_file(path, project_root))
     return errors
 
 
@@ -192,23 +199,31 @@ def _scan_tools_scripts(project_root: Path) -> list[ValidationError]:
     return errors
 
 
+def _is_main_guard(node: ast.AST) -> bool:
+    """Return True for ``if __name__ == ...:`` nodes."""
+    if not isinstance(node, ast.If):
+        return False
+    test = node.test
+    return (
+        isinstance(test, ast.Compare)
+        and isinstance(test.left, ast.Name)
+        and test.left.id == "__name__"
+    )
+
+
+def _is_print_call(node: ast.AST) -> bool:
+    return (
+        isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "print"
+    )
+
+
 def _is_entry_point_script(tree: ast.Module) -> bool:
     """Return ``True`` if the module has ``if __name__ == '__main__':`` and calls ``print``."""
     has_main_guard = False
     has_print = False
     for node in ast.walk(tree):
-        if isinstance(node, ast.If):
-            test = node.test
-            if (
-                isinstance(test, ast.Compare)
-                and isinstance(test.left, ast.Name)
-                and test.left.id == "__name__"
-            ):
-                has_main_guard = True
-        if (
-            isinstance(node, ast.Call)
-            and isinstance(node.func, ast.Name)
-            and node.func.id == "print"
-        ):
+        if _is_main_guard(node):
+            has_main_guard = True
+        if _is_print_call(node):
             has_print = True
     return has_main_guard and has_print

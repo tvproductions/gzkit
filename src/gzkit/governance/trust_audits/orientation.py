@@ -10,7 +10,9 @@ from __future__ import annotations
 
 import ast
 import json
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 from gzkit.validate import ValidationError
 
@@ -20,51 +22,75 @@ _ORIENTATION_COLLECTOR = "collect_remote_state"
 _ORIENTATION_AGGREGATOR = "collect_state"
 
 
-def _settings_session_start_command_strings(settings_path: Path) -> list[str]:
-    """Return concatenated ``SessionStart`` command strings from settings.json."""
+def _read_session_start_blocks(path: Path) -> list[Any]:
+    """Load the ``hooks.SessionStart`` list from a JSON config, or return ``[]``."""
     try:
-        payload = json.loads(settings_path.read_text(encoding="utf-8"))
+        payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return []
     hooks = payload.get("hooks") if isinstance(payload, dict) else None
     sessions = hooks.get("SessionStart") if isinstance(hooks, dict) else None
-    if not isinstance(sessions, list):
-        return []
+    return sessions if isinstance(sessions, list) else []
+
+
+def _format_command(cmd: Any) -> str | None:
+    if isinstance(cmd, str):
+        return cmd
+    if isinstance(cmd, list):
+        return " ".join(str(part) for part in cmd)
+    return None
+
+
+def _settings_session_start_command_strings(settings_path: Path) -> list[str]:
+    """Return concatenated ``SessionStart`` command strings from settings.json."""
     out: list[str] = []
-    for matcher in sessions:
+    for matcher in _read_session_start_blocks(settings_path):
         if not isinstance(matcher, dict):
             continue
         for entry in matcher.get("hooks", []):
             if not isinstance(entry, dict):
                 continue
-            cmd = entry.get("command")
-            if isinstance(cmd, str):
-                out.append(cmd)
-            elif isinstance(cmd, list):
-                out.append(" ".join(str(part) for part in cmd))
+            formatted = _format_command(entry.get("command"))
+            if formatted is not None:
+                out.append(formatted)
     return out
 
 
 def _codex_session_start_command_strings(hooks_path: Path) -> list[str]:
     """Return concatenated ``SessionStart`` command strings from .codex/hooks.json."""
-    try:
-        payload = json.loads(hooks_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return []
-    hooks = payload.get("hooks") if isinstance(payload, dict) else None
-    sessions = hooks.get("SessionStart") if isinstance(hooks, dict) else None
-    if not isinstance(sessions, list):
-        return []
     out: list[str] = []
-    for entry in sessions:
+    for entry in _read_session_start_blocks(hooks_path):
         if not isinstance(entry, dict):
             continue
-        cmd = entry.get("command")
-        if isinstance(cmd, str):
-            out.append(cmd)
-        elif isinstance(cmd, list):
-            out.append(" ".join(str(part) for part in cmd))
+        formatted = _format_command(entry.get("command"))
+        if formatted is not None:
+            out.append(formatted)
     return out
+
+
+def _section_headings_assignment(
+    node: ast.AST,
+) -> tuple[list[ast.expr], ast.expr] | None:
+    """Return ``(targets, value)`` for module-level ``SECTION_HEADINGS = …``."""
+    if isinstance(node, ast.Assign):
+        return node.targets, node.value
+    if isinstance(node, ast.AnnAssign) and node.value is not None:
+        return [node.target], node.value
+    return None
+
+
+def _targets_section_headings(targets: list[ast.expr]) -> bool:
+    return any(isinstance(t, ast.Name) and t.id == "SECTION_HEADINGS" for t in targets)
+
+
+def _string_literals(value: ast.expr) -> list[str] | None:
+    if not isinstance(value, ast.Tuple | ast.List):
+        return None
+    return [
+        elt.value
+        for elt in value.elts
+        if isinstance(elt, ast.Constant) and isinstance(elt.value, str)
+    ]
 
 
 def _script_section_headings(script_path: Path) -> list[str] | None:
@@ -74,26 +100,21 @@ def _script_section_headings(script_path: Path) -> list[str] | None:
     except (OSError, SyntaxError):
         return None
     for node in tree.body:
-        targets: list[ast.expr] = []
-        value: ast.expr | None = None
-        if isinstance(node, ast.Assign):
-            targets = node.targets
-            value = node.value
-        elif isinstance(node, ast.AnnAssign) and node.value is not None:
-            targets = [node.target]
-            value = node.value
-        else:
+        assignment = _section_headings_assignment(node)
+        if assignment is None:
             continue
-        if not any(isinstance(t, ast.Name) and t.id == "SECTION_HEADINGS" for t in targets):
+        targets, value = assignment
+        if not _targets_section_headings(targets):
             continue
-        if not isinstance(value, ast.Tuple | ast.List):
-            return None
-        headings: list[str] = []
-        for elt in value.elts:
-            if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
-                headings.append(elt.value)
-        return headings
+        return _string_literals(value)
     return None
+
+
+def _node_references_collector(node: ast.AST) -> bool:
+    """True for ``Name``/``Attribute`` nodes referring to ``_ORIENTATION_COLLECTOR``."""
+    if isinstance(node, ast.Name) and node.id == _ORIENTATION_COLLECTOR:
+        return True
+    return isinstance(node, ast.Attribute) and node.attr == _ORIENTATION_COLLECTOR
 
 
 def _collect_state_references_collector(script_path: Path) -> bool | None:
@@ -105,12 +126,74 @@ def _collect_state_references_collector(script_path: Path) -> bool | None:
     for node in ast.walk(tree):
         if not isinstance(node, ast.FunctionDef) or node.name != _ORIENTATION_AGGREGATOR:
             continue
-        for sub in ast.walk(node):
-            if isinstance(sub, ast.Name) and sub.id == _ORIENTATION_COLLECTOR:
-                return True
-            if isinstance(sub, ast.Attribute) and sub.attr == _ORIENTATION_COLLECTOR:
-                return True
-        return False
+        return any(_node_references_collector(sub) for sub in ast.walk(node))
+    return None
+
+
+def _orientation_error(artifact: str, message: str) -> ValidationError:
+    return ValidationError(type="orientation_freshness", artifact=artifact, message=message)
+
+
+def _check_hook_wired(
+    config_path: Path,
+    artifact: str,
+    extract: Callable[[Path], list[str]],
+) -> ValidationError | None:
+    """Return a finding if the hook config is missing or no longer invokes the script."""
+    if not config_path.exists():
+        return _orientation_error(
+            artifact,
+            "SessionStart orientation hook is missing — "
+            f"{artifact} not found. Recovery: "
+            "`uv run gz agent sync control-surfaces`.",
+        )
+    commands = extract(config_path)
+    if any(_ORIENTATION_SCRIPT in cmd for cmd in commands):
+        return None
+    return _orientation_error(
+        artifact,
+        f"SessionStart hook does not invoke `{_ORIENTATION_SCRIPT}`. "
+        "Recovery: `uv run gz agent sync control-surfaces`.",
+    )
+
+
+def _check_orientation_headings(script: Path) -> ValidationError | None:
+    headings = _script_section_headings(script)
+    if headings is None:
+        return _orientation_error(
+            _ORIENTATION_SCRIPT,
+            "SECTION_HEADINGS tuple is missing or unparseable. "
+            "Restore the canonical tuple including "
+            f"`{_ORIENTATION_REMOTE_HEADING}`.",
+        )
+    if _ORIENTATION_REMOTE_HEADING not in headings:
+        return _orientation_error(
+            _ORIENTATION_SCRIPT,
+            f"SECTION_HEADINGS does not contain "
+            f"`{_ORIENTATION_REMOTE_HEADING}`. The remote-divergence "
+            "warning class (GHI #338) requires the heading to render. "
+            "Restore it in scripts/session_orientation.py.",
+        )
+    return None
+
+
+def _check_orientation_collector_wiring(script: Path) -> ValidationError | None:
+    referenced = _collect_state_references_collector(script)
+    if referenced is None:
+        return _orientation_error(
+            _ORIENTATION_SCRIPT,
+            f"`{_ORIENTATION_AGGREGATOR}` function not found. The "
+            "aggregator must wire `collect_remote_state` into the "
+            "session-start digest.",
+        )
+    if not referenced:
+        return _orientation_error(
+            _ORIENTATION_SCRIPT,
+            f"`{_ORIENTATION_AGGREGATOR}` does not reference "
+            f"`{_ORIENTATION_COLLECTOR}`. The remote-divergence "
+            "collector is not wired into the aggregated state — "
+            "GHI #338 fix has regressed.",
+        )
     return None
 
 
@@ -125,126 +208,38 @@ def audit_orientation_freshness(project_root: Path) -> list[ValidationError]:
     """
     errors: list[ValidationError] = []
 
-    claude_settings = project_root / ".claude" / "settings.json"
-    if not claude_settings.exists():
-        errors.append(
-            ValidationError(
-                type="orientation_freshness",
-                artifact=".claude/settings.json",
-                message=(
-                    "SessionStart orientation hook is missing — "
-                    ".claude/settings.json not found. Recovery: "
-                    "`uv run gz agent sync control-surfaces`."
-                ),
-            )
-        )
-    else:
-        commands = _settings_session_start_command_strings(claude_settings)
-        if not any(_ORIENTATION_SCRIPT in cmd for cmd in commands):
-            errors.append(
-                ValidationError(
-                    type="orientation_freshness",
-                    artifact=".claude/settings.json",
-                    message=(
-                        f"SessionStart hook does not invoke `{_ORIENTATION_SCRIPT}`. "
-                        "Recovery: `uv run gz agent sync control-surfaces`."
-                    ),
-                )
-            )
+    claude_err = _check_hook_wired(
+        project_root / ".claude" / "settings.json",
+        ".claude/settings.json",
+        _settings_session_start_command_strings,
+    )
+    if claude_err is not None:
+        errors.append(claude_err)
 
-    codex_hooks = project_root / ".codex" / "hooks.json"
-    if not codex_hooks.exists():
-        errors.append(
-            ValidationError(
-                type="orientation_freshness",
-                artifact=".codex/hooks.json",
-                message=(
-                    "SessionStart orientation hook is missing — "
-                    ".codex/hooks.json not found. Recovery: "
-                    "`uv run gz agent sync control-surfaces`."
-                ),
-            )
-        )
-    else:
-        commands = _codex_session_start_command_strings(codex_hooks)
-        if not any(_ORIENTATION_SCRIPT in cmd for cmd in commands):
-            errors.append(
-                ValidationError(
-                    type="orientation_freshness",
-                    artifact=".codex/hooks.json",
-                    message=(
-                        f"SessionStart hook does not invoke `{_ORIENTATION_SCRIPT}`. "
-                        "Recovery: `uv run gz agent sync control-surfaces`."
-                    ),
-                )
-            )
+    codex_err = _check_hook_wired(
+        project_root / ".codex" / "hooks.json",
+        ".codex/hooks.json",
+        _codex_session_start_command_strings,
+    )
+    if codex_err is not None:
+        errors.append(codex_err)
 
     script = project_root / _ORIENTATION_SCRIPT
     if not script.exists():
         errors.append(
-            ValidationError(
-                type="orientation_freshness",
-                artifact=_ORIENTATION_SCRIPT,
-                message=(
-                    f"`{_ORIENTATION_SCRIPT}` is missing. Restore the script "
-                    "or revert the deletion that removed it."
-                ),
+            _orientation_error(
+                _ORIENTATION_SCRIPT,
+                f"`{_ORIENTATION_SCRIPT}` is missing. Restore the script "
+                "or revert the deletion that removed it.",
             )
         )
         return errors
 
-    headings = _script_section_headings(script)
-    if headings is None:
-        errors.append(
-            ValidationError(
-                type="orientation_freshness",
-                artifact=_ORIENTATION_SCRIPT,
-                message=(
-                    "SECTION_HEADINGS tuple is missing or unparseable. "
-                    "Restore the canonical tuple including "
-                    f"`{_ORIENTATION_REMOTE_HEADING}`."
-                ),
-            )
-        )
-    elif _ORIENTATION_REMOTE_HEADING not in headings:
-        errors.append(
-            ValidationError(
-                type="orientation_freshness",
-                artifact=_ORIENTATION_SCRIPT,
-                message=(
-                    f"SECTION_HEADINGS does not contain "
-                    f"`{_ORIENTATION_REMOTE_HEADING}`. The remote-divergence "
-                    "warning class (GHI #338) requires the heading to render. "
-                    "Restore it in scripts/session_orientation.py."
-                ),
-            )
-        )
-
-    referenced = _collect_state_references_collector(script)
-    if referenced is None:
-        errors.append(
-            ValidationError(
-                type="orientation_freshness",
-                artifact=_ORIENTATION_SCRIPT,
-                message=(
-                    f"`{_ORIENTATION_AGGREGATOR}` function not found. The "
-                    "aggregator must wire `collect_remote_state` into the "
-                    "session-start digest."
-                ),
-            )
-        )
-    elif not referenced:
-        errors.append(
-            ValidationError(
-                type="orientation_freshness",
-                artifact=_ORIENTATION_SCRIPT,
-                message=(
-                    f"`{_ORIENTATION_AGGREGATOR}` does not reference "
-                    f"`{_ORIENTATION_COLLECTOR}`. The remote-divergence "
-                    "collector is not wired into the aggregated state — "
-                    "GHI #338 fix has regressed."
-                ),
-            )
-        )
+    for finding in (
+        _check_orientation_headings(script),
+        _check_orientation_collector_wiring(script),
+    ):
+        if finding is not None:
+            errors.append(finding)
 
     return errors
