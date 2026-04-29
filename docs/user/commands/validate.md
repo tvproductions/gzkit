@@ -185,6 +185,30 @@ No `--fix` variant: recovery is a judgment call (narrow vs. fold vs. allow-list)
 
 Included in `gz validate --audits` and `gz check` aggregate passes — future unscoped rules cannot silently accrete.
 
+### `--sensitivity`
+
+Enforces the ADR-0.0.22 security-sensitivity invariant. Reads `data/security_surfaces.json` (the canonical glob-to-category registry) and walks every OBPI brief's `## ALLOWED PATHS` block. Any intersection between a brief's allowlist and the registry forces `sensitivity: security` (the auto-detect floor); frontmatter MAY escalate to `sensitivity: security` when paths don't trigger detection, but MAY NOT declare a value below the detected floor (escalate-not-escape). Fail-closed when the registry is missing, malformed, or schema-invalid.
+
+```bash
+# Audit every brief against the registry
+gz validate --sensitivity
+
+# Machine-readable per-brief records
+gz validate --sensitivity --json
+
+# Predict classification for an ad-hoc path list (no artifact mutation)
+gz validate --sensitivity --explain "src/gzkit/ledger.py,tests/governance/**"
+```
+
+`--explain ALLOWED_PATHS_LIST` is the predictive sub-form (the 2am-operator pressure-relief valve): pass a comma- or newline-separated path list and the validator prints the predicted `detected_sensitivity` plus matching category labels without reading the on-disk brief tree. This is prediction, not bypass — the runtime validator still fails closed on actual escape attempts.
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Clean tree (auto-detect floor may have fired without escape) | — |
+| 3 | Escape attempt (brief declares less than detected) **or** registry missing/malformed | Set `sensitivity: security` in frontmatter, drop the lower-priority declaration, or restore `data/security_surfaces.json` |
+
+Included in `gz validate --audits` and `gz check` aggregate passes — sensitivity drift cannot silently land alongside other governance work.
+
 ## Scopes Reference
 
 The following table catalogs every audit scope the `gz validate` surface
@@ -227,6 +251,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--adr-status-fresh` | yes | `docs/governance/GovZero/adr-status.md` must agree with on-disk ADR canon (GHI #322) |
 | `--orientation-freshness` | opt-in | The SessionStart orientation hook + script must remain wired (GHI #341) |
 | `--brief-headings` | opt-in | OBPI brief evidence sections must be H3, not H2 (GHI #238) |
+| `--sensitivity` | opt-in | ADR-0.0.22 sensitivity-binding (auto-detect floor; escalate-not-escape against `data/security_surfaces.json`) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
 
 The `--allowlist-only` flag is a sub-modifier for `--unscoped-rules` —

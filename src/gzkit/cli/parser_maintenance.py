@@ -343,7 +343,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         "--explain",
         dest="frontmatter_explain",
         default=None,
-        help="Print step-by-step remediation commands per drifted field for one ADR",
+        help="ADR ID (--frontmatter) or path list (--sensitivity)",
     )
     p_validate.add_argument(
         "--version",
@@ -478,6 +478,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Fail on .gzkit/rules/*.md with paths: '**' or missing paths: (ADR-0.0.20)",
     )
     p_validate.add_argument(
+        "--sensitivity",
+        dest="check_sensitivity",
+        action="store_true",
+        help="Audit ADR-0.0.22 sensitivity binding (auto-detect floor)",
+    )
+    p_validate.add_argument(
         "--allowlist-only",
         dest="unscoped_rules_allowlist_only",
         action="store_true",
@@ -520,9 +526,11 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_chores_layout=a.check_chores_layout,
             check_unscoped_rules=a.check_unscoped_rules or a.check_audits,
             unscoped_rules_allowlist_only=a.unscoped_rules_allowlist_only,
+            check_sensitivity=a.check_sensitivity or a.check_audits,
+            sensitivity_explain=(a.frontmatter_explain if a.check_sensitivity else None),
             as_json=a.as_json,
             frontmatter_adr=a.frontmatter_adr,
-            frontmatter_explain=a.frontmatter_explain,
+            frontmatter_explain=(None if a.check_sensitivity else a.frontmatter_explain),
         )
     )
 

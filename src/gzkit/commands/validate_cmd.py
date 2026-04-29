@@ -293,6 +293,7 @@ def _collect_errors(
     check_brief_headings: bool = False,
     check_chores_layout: bool = False,
     check_unscoped_rules: bool = False,
+    check_sensitivity: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -334,6 +335,7 @@ def _collect_errors(
         "brief_headings": check_brief_headings,
         "chores_layout": check_chores_layout,
         "unscoped_rules": check_unscoped_rules,
+        "sensitivity": check_sensitivity,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
@@ -404,7 +406,19 @@ def _explicit_scope_runners(
         "brief_headings": lambda: trust_audits.audit_brief_headings(project_root),
         "chores_layout": lambda: trust_audits.audit_chores_layout(project_root),
         "unscoped_rules": lambda: _unscoped_rules_runner(project_root),
+        "sensitivity": lambda: _sensitivity_umbrella_runner(project_root),
     }
+
+
+def _sensitivity_umbrella_runner(project_root: Path) -> list[ValidationError]:
+    """Sensitivity audit for the --audits umbrella; floor-info findings filtered."""
+    from gzkit.governance import trust_audits  # noqa: PLC0415
+
+    return [
+        e
+        for e in trust_audits.audit_sensitivity_binding(project_root)
+        if e.type not in _SENSITIVITY_INFO_TYPES
+    ]
 
 
 def _run_unscoped_rules_scope(project_root: Path, *, as_json: bool, allowlist_only: bool) -> None:
@@ -461,6 +475,156 @@ def _run_unscoped_rules_scope(project_root: Path, *, as_json: bool, allowlist_on
         "in .gzkit/manifest.json (see ADR-0.0.20)."
     )
     raise SystemExit(3)
+
+
+def _parse_sensitivity_path_list(raw: str) -> tuple[str, ...]:
+    """Split comma- or newline-separated path lists into a tuple."""
+    pieces: list[str] = []
+    for chunk in raw.replace("\r", "\n").split("\n"):
+        for piece in chunk.split(","):
+            cleaned = piece.strip()
+            if cleaned:
+                pieces.append(cleaned)
+    return tuple(pieces)
+
+
+def _sensitivity_records(
+    project_root: Path,
+) -> tuple[list[dict[str, object]], list[ValidationError]]:
+    """Walk briefs once and produce per-brief records + companion findings."""
+    from gzkit.governance.trust_audits import (  # noqa: PLC0415
+        _SENSITIVITY_REGISTRY_REL,
+        _extract_sensitivity_allowed_paths,
+        _iter_sensitivity_briefs,
+        _load_sensitivity_registry,
+        _parse_adr_frontmatter,
+    )
+    from gzkit.models.security_surfaces import match_globs  # noqa: PLC0415
+
+    findings: list[ValidationError] = []
+    records: list[dict[str, object]] = []
+
+    registry, registry_error = _load_sensitivity_registry(project_root)
+    if registry_error is not None:
+        findings.append(registry_error)
+        return records, findings
+    assert registry is not None  # noqa: S101
+
+    for brief_path in _iter_sensitivity_briefs(project_root):
+        try:
+            brief_text = brief_path.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        rel = brief_path.relative_to(project_root).as_posix()
+        frontmatter = _parse_adr_frontmatter(brief_path) or {}
+        declared = frontmatter.get("sensitivity")
+        declared_norm = declared.strip() or None if isinstance(declared, str) else None
+        if declared_norm in {"None", "null", "~"}:
+            declared_norm = None
+
+        allowed_paths = _extract_sensitivity_allowed_paths(brief_text)
+        try:
+            matching_categories = match_globs(allowed_paths, registry)
+        except (ValueError, TypeError):
+            findings.append(
+                ValidationError(
+                    type="sensitivity-malformed-allowlist",
+                    artifact=rel,
+                    message="Allowed Paths contains an unparseable glob.",
+                )
+            )
+            continue
+
+        detected = "security" if matching_categories else None
+        records.append(
+            {
+                "file": rel,
+                "declared_sensitivity": declared_norm,
+                "detected_sensitivity": detected,
+                "intersecting_paths": allowed_paths,
+                "registry_categories": list(matching_categories),
+            }
+        )
+
+        if detected == "security" and declared_norm not in (None, "security"):
+            findings.append(
+                ValidationError(
+                    type="sensitivity-escape-attempt",
+                    artifact=rel,
+                    message=(
+                        f"declared={declared_norm!r} but detected=security; "
+                        f"categories={list(matching_categories)}; "
+                        f"intersecting_paths={allowed_paths}"
+                    ),
+                )
+            )
+
+    # Surface the registry-rel for callers that want to cite it in human output.
+    _ = _SENSITIVITY_REGISTRY_REL
+    return records, findings
+
+
+def _run_sensitivity_scope(
+    project_root: Path,
+    *,
+    as_json: bool,
+    explain: str | None,
+) -> None:
+    """Dedicated handler for `gz validate --sensitivity` (with optional --explain)."""
+    from gzkit.governance.trust_audits import (  # noqa: PLC0415
+        explain_sensitivity_for_paths,
+    )
+
+    if explain is not None:
+        path_list = _parse_sensitivity_path_list(explain)
+        payload = explain_sensitivity_for_paths(path_list, project_root)
+        detected = payload["detected_sensitivity"]
+        categories_raw = payload["matching_categories"]
+        categories = list(categories_raw) if isinstance(categories_raw, tuple) else []
+        input_raw = payload["input_globs"]
+        input_globs = list(input_raw) if isinstance(input_raw, tuple) else []
+        if as_json:
+            serializable: dict[str, object] = {
+                "detected_sensitivity": detected,
+                "matching_categories": categories,
+                "input_globs": input_globs,
+            }
+            if "error" in payload:
+                serializable["error"] = payload["error"]
+            print(json.dumps(serializable, indent=2))  # noqa: T201
+        else:
+            console.print("[bold]Sensitivity prediction[/bold]")
+            console.print(f"  detected_sensitivity: {detected}")
+            console.print(f"  matching_categories: {categories or '[]'}")
+            console.print(f"  input_globs: {input_globs}")
+            if "error" in payload:
+                console.print(f"  [yellow]registry error:[/yellow] {payload['error']}")
+        raise SystemExit(0)
+
+    records, findings = _sensitivity_records(project_root)
+
+    if as_json:
+        payload = {
+            "valid": len([f for f in findings if f.type in _POLICY_BREACH_ERROR_TYPES]) == 0,
+            "records": records,
+            "errors": [f.model_dump(exclude_none=True) for f in findings],
+        }
+        print(json.dumps(payload, indent=2))  # noqa: T201
+    else:
+        console.print("[bold]Validated:[/bold] sensitivity\n")
+        if not findings:
+            console.print(
+                f"[green]✓ {len(records)} brief(s) checked; no escape "
+                "attempts and registry healthy.[/green]"
+            )
+        else:
+            for finding in findings:
+                console.print(f"  [red]→[/red] [{finding.type}] {finding.artifact}")
+                console.print(f"      {finding.message}")
+
+    if any(f.type in _POLICY_BREACH_ERROR_TYPES for f in findings):
+        raise SystemExit(3)
+    raise SystemExit(0)
 
 
 def _unscoped_rules_runner(project_root: Path) -> list[ValidationError]:
@@ -576,6 +740,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "brief_headings",
         "chores_layout",
         "unscoped_rules",
+        "sensitivity",
     ]
 
     run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
@@ -589,7 +754,18 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
     return scopes
 
 
-_POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset({"frontmatter", "chores_layout"})
+_POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
+    {
+        "frontmatter",
+        "chores_layout",
+        "sensitivity-escape-attempt",
+        "sensitivity-registry-missing",
+        "sensitivity-registry-malformed",
+        "sensitivity-malformed-allowlist",
+    }
+)
+
+_SENSITIVITY_INFO_TYPES: frozenset[str] = frozenset({"sensitivity-floor-info"})
 
 
 def _print_validation_result(
@@ -673,6 +849,8 @@ def validate(
     check_chores_layout: bool = False,
     check_unscoped_rules: bool = False,
     unscoped_rules_allowlist_only: bool = False,
+    check_sensitivity: bool = False,
+    sensitivity_explain: str | None = None,
     as_json: bool = False,
     frontmatter_adr: str | None = None,
     frontmatter_explain: str | None = None,
@@ -733,6 +911,17 @@ def validate(
             project_root, as_json=as_json, allowlist_only=unscoped_rules_allowlist_only
         )
         return
+    if check_sensitivity and not _other_scopes_active:
+        _run_sensitivity_scope(
+            project_root,
+            as_json=as_json,
+            explain=sensitivity_explain,
+        )
+        return
+    if sensitivity_explain and not check_sensitivity:
+        # `--explain` without `--sensitivity` is the explain-only fast-path.
+        _run_sensitivity_scope(project_root, as_json=as_json, explain=sensitivity_explain)
+        return
     if unscoped_rules_allowlist_only:
         # --allowlist-only without --unscoped-rules still prints the listing.
         _run_unscoped_rules_scope(project_root, as_json=as_json, allowlist_only=True)
@@ -772,6 +961,7 @@ def validate(
         check_brief_headings=check_brief_headings,
         check_chores_layout=check_chores_layout,
         check_unscoped_rules=check_unscoped_rules,
+        check_sensitivity=check_sensitivity,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -828,6 +1018,7 @@ def validate(
         "brief_headings": check_brief_headings,
         "chores_layout": check_chores_layout,
         "unscoped_rules": check_unscoped_rules,
+        "sensitivity": check_sensitivity,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]
