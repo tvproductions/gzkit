@@ -11,8 +11,12 @@ Each OBPI must be fully readable.
 from __future__ import annotations
 
 import unittest
+from io import StringIO
 
-from gzkit.commands.ceremony_data import format_summary_table
+from rich.console import Console
+
+from gzkit.commands.ceremony_data import _SUMMARY_COLUMNS, format_summary_table
+from gzkit.reporter.presets import status_table
 from gzkit.traceability import covers
 
 
@@ -64,6 +68,63 @@ class TestFormatSummaryTableNoTruncation(unittest.TestCase):
         self.assertIn("Short text.", rendered)
         self.assertIn("Lite", rendered)
         self.assertIn("Pending", rendered)
+
+
+class TestSummaryTableColumnAllocation(unittest.TestCase):
+    """GHI #362: At constrained widths, the OBPI column must yield to Objective.
+
+    The renderer's allocation contract: when terminal width is constrained,
+    OBPI is allowed to wrap (its slug is recoverable from the brief filename),
+    so that Objective — which carries the operator's scope-review signal —
+    keeps enough horizontal room for sentence-friendly wrap.
+    """
+
+    @covers("REQ-0.23.0-04-13")
+    def test_obpi_column_wraps_under_squeeze_so_objective_gets_room(self) -> None:
+        # Post-_short_obpi_id form: long slug that would dominate the row at
+        # narrow widths if OBPI refused to wrap.
+        long_slug = "05-gate5-walkthrough-arb-slot"  # 29 chars
+        briefs = [
+            {
+                "id": long_slug,
+                "lane": "Heavy",
+                "status": "Completed",
+                "objective": (
+                    "Gate 5 walkthrough extension + ARB canonical command "
+                    "slot — Walkthrough prompt at the OBPI command surface; "
+                    "CANONICAL_STEP_COMMANDS extends with reserved "
+                    "security-scan slot."
+                ),
+            },
+        ]
+        # Render at a fixed narrow width — the live terminal size shutil
+        # reports is irrelevant here; we drive Console.width directly.
+        table = status_table(title="BOM", columns=_SUMMARY_COLUMNS, rows=briefs)
+        buf = StringIO()
+        Console(file=buf, force_terminal=False, width=60).print(table)
+        rendered = buf.getvalue()
+
+        # Behavior pin: at width=60 the long slug must be wrapped (split
+        # across multiple lines). If OBPI refused to wrap, the slug would
+        # appear on one line and Objective would be squeezed mid-token.
+        slug_appears_intact_on_one_line = any(long_slug in line for line in rendered.splitlines())
+        self.assertFalse(
+            slug_appears_intact_on_one_line,
+            (
+                "At width=60 the OBPI slug must wrap (yielding width to "
+                "Objective), not appear intact on one line. Rendered:\n" + rendered
+            ),
+        )
+
+        # Operator-facing recoverability: every hyphen-delimited segment of
+        # the slug must still appear in the rendered output even though the
+        # slug itself is wrapped across multiple lines.
+        for segment in long_slug.split("-"):
+            self.assertIn(
+                segment,
+                rendered,
+                f"OBPI slug segment {segment!r} missing from wrapped render.",
+            )
 
 
 if __name__ == "__main__":

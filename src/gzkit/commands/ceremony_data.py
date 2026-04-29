@@ -413,7 +413,9 @@ _READINESS_COLUMNS = [
 ]
 
 _SUMMARY_COLUMNS = [
-    ColumnDef(header="OBPI", key="id", style="bold", no_wrap=True),
+    # GHI #362: OBPI yields width to Objective at narrow terminals — slugs
+    # wrap at hyphens (overflow="fold") rather than monopolizing the row.
+    ColumnDef(header="OBPI", key="id", style="bold", overflow="fold"),
     ColumnDef(header="Lane", key="lane"),
     ColumnDef(header="Status", key="status"),
     ColumnDef(header="Objective", key="objective", overflow="fold"),
