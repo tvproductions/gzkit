@@ -3,7 +3,7 @@ id: OBPI-0.0.22-01-schema-frontmatter-field
 parent: ADR-0.0.22-security-sensitivity-doctrine
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 depends_on: []
 ---
 
@@ -18,9 +18,7 @@ depends_on: []
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Schema + frontmatter field — Add `sensitivity` enum to adr.json and obpi.json schemas; Pydantic model updates; table-driven TDD tests (declared:absent, declared:security, malformed); backwards-compatibility audit on ~150 existing briefs.
+Add an optional `sensitivity` enum field (values: `["security"]`) to both ADR and OBPI JSON schemas, mirror the field on the canonical Pydantic frontmatter models (`AdrFrontmatter`, `ObpiFrontmatter`) as `Literal["security"] | None = None`, prove the contract with table-driven tests (declared:absent, declared:security, malformed-rejected, immutability), and confirm every existing ADR/OBPI artifact under `docs/design/adr/**` validates without the field present (backwards-compatibility floor for ~150 briefs).
 
 ## Lane
 
@@ -214,15 +212,37 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+gz covers OBPI-0.0.22-01 --json reports 5/5 REQs covered (100.0%):
+
+  {"identifier": "OBPI-0.0.22-01", "total_reqs": 5, "covered_reqs": 5, "uncovered_reqs": 0, "coverage_percent": 100.0}
+
+Schema enforcement observable end-to-end:
+
+  >>> import jsonschema
+  >>> from gzkit.schemas import load_schema
+  >>> jsonschema.validate({"frontmatter": {"id":"ADR-0.0.99-x","status":"Draft","semver":"0.0.99","lane":"lite","kind":"foundation","parent":"PRD-GZKIT-1.0.0","date":"2026-04-29","sensitivity":"confidential"}, "headers": []}, load_schema("adr"))
+  Traceback (...): jsonschema.exceptions.ValidationError: 'confidential' is not one of ['security']
+
+Pydantic enforcement observable end-to-end:
+
+  >>> from gzkit.models.frontmatter import AdrFrontmatter
+  >>> AdrFrontmatter(id="ADR-0.0.99-x", status="Draft", semver="0.0.99", lane="lite", kind="foundation", parent="PRD-GZKIT-1.0.0", date="2026-04-29", sensitivity="confidential")
+  pydantic_core._pydantic_core.ValidationError: 1 validation error for AdrFrontmatter / sensitivity / Input should be 'security' [type=literal_error, input_value='confidential', input_type=str]
+
+Receipts: lint arb-ruff-bcc100c69bf34edda7a9d946d6babe33; types arb-step-typecheck-d5aba820501d406eb486083808e10140; tests arb-step-unittest-5b67c724ae1b4ff7ab3ea3e9ac796c54 (OBPI-scoped 15/15) + arb-step-unittest-b62f4566c19049b8ab5404a71b804c3f (full sweep); docs arb-step-mkdocs-311d9c4c4b9c4c7bbbb31a31619fead1.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: tests/governance/test_schema_sensitivity.py (REQ-01/02/03/05), tests/models/__init__.py, tests/models/test_frontmatter_sensitivity.py (REQ-04, 8 cases across AdrFrontmatter and ObpiFrontmatter)
+- Files modified: src/gzkit/schemas/adr.json (+5L sensitivity enum), src/gzkit/schemas/obpi.json (+5L same shape), src/gzkit/core/models.py (+2L Literal["security"] | None = None on both frontmatter models)
+- Brief edit: Objective body rewritten as substantive prose (HTML helper comment containing "One-sentence" was tripping placeholder heuristic at hooks/obpi.py:520-525)
+- Tests: 15/15 OBPI-scoped pass; full unittest sweep green; 63-test model<->schema cross-validation at tests/test_schemas.py still green
+- REQ coverage: 5/5 via gz covers OBPI-0.0.22-01 (100.0%)
+- Date completed: 2026-04-29
+- Attestation status: heavy + foundation brief-level human attestation supplied via --attestor-present (operator co-present per pipeline marker, GHI #292)
+- Defects noted: brief REQ-04 extra="forbid" drift (deferred); placeholder heuristic strips no HTML comments (deferred to OBPI-04 audit work)
 
 ## Tracked Defects
 
@@ -233,14 +253,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — OBPI-0.0.22-01 schema+frontmatter surface lands the optional `sensitivity` enum on both `src/gzkit/schemas/adr.json` and `src/gzkit/schemas/obpi.json`, mirrored on `AdrFrontmatter`/`ObpiFrontmatter` Pydantic models as `Literal["security"] | None = None`. 5/5 REQ-0.0.22-01-NN covered (gz covers OBPI-0.0.22-01: 100.0%). Receipts: lint arb-ruff-bcc100c69bf34edda7a9d946d6babe33; types arb-step-typecheck-d5aba820501d406eb486083808e10140; tests arb-step-unittest-5b67c724ae1b4ff7ab3ea3e9ac796c54 (15/15 OBPI-scoped) and arb-step-unittest-b62f4566c19049b8ab5404a71b804c3f (full sweep); docs arb-step-mkdocs-311d9c4c4b9c4c7bbbb31a31619fead1. Backwards-compat floor verified: zero existing artifacts under docs/design/adr/** carry an unregistered sensitivity value. Cross-validation tests at tests/test_schemas.py (63 tests) still pass — additive only, extra="allow" on models matches additionalProperties:true on schemas. Tracked drift: brief REQ-04 mentions extra="forbid" while live config is extra="allow" (would break existing briefs with dependencies/depends_on); placeholder heuristic at src/gzkit/hooks/obpi.py:520-525 rejects HTML helper comments containing "one-sentence" — both noted, neither blocks closure.
+- Date: 2026-04-29
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-29
 
 **Evidence Hash:** -
