@@ -496,22 +496,26 @@ def render_rule_for_claude(rule: CanonicalRule) -> str:
     """Render a canonical rule into Claude rules format.
 
     Global rules (paths: ["**/*"]) omit the frontmatter block.
-    Scoped rules get ``paths:`` YAML frontmatter.
+    Scoped rules get ``paths:`` YAML frontmatter on line 1 — Claude
+    Code's parser falls back to unconditional load when anything
+    (HTML comment included) precedes the opening ``---``.
     """
     is_global = rule.frontmatter.paths == ["**/*"]
     if is_global:
         return f"{_RENDER_HEADER}\n{rule.body}\n"
     paths_yaml = "\n".join(f'  - "{p}"' for p in rule.frontmatter.paths)
-    return f"{_RENDER_HEADER}---\npaths:\n{paths_yaml}\n---\n\n{rule.body}\n"
+    return f"---\npaths:\n{paths_yaml}\n---\n{_RENDER_HEADER}\n{rule.body}\n"
 
 
 def render_rule_for_copilot(rule: CanonicalRule) -> str:
     """Render a canonical rule into Copilot instructions format.
 
-    Produces ``applyTo:`` frontmatter with comma-separated glob patterns.
+    Produces ``applyTo:`` frontmatter on line 1; the generator header
+    follows the closing ``---`` so the frontmatter parser sees a
+    well-formed block (same constraint as Claude rules).
     """
     apply_to = ", ".join(rule.frontmatter.paths)
-    return f'{_RENDER_HEADER}---\napplyTo: "{apply_to}"\n---\n\n{rule.body}\n'
+    return f'---\napplyTo: "{apply_to}"\n---\n{_RENDER_HEADER}\n{rule.body}\n'
 
 
 def render_rules_to_dir(
