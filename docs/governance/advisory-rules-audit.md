@@ -170,6 +170,7 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 - "Read AGENTS.md before starting work" — judgment
 - "If <90% sure, ask the human" — judgment
 - "On inconsistencies, STOP, name confusion, present tradeoff, wait" — judgment
+- "When the operator course-corrects in flight, append an `improvement` record to `.gzkit/insights/agent-insights.jsonl` before completing the corrected work" (Behavior Rules — Always #11, GHI #357) — **judgment** at authoring time (recognizing a correction); **promotable** via a `gz validate --insights-shape` schema check on the JSONL records themselves (filed separately as the schema-lock companion GHI)
 
 **Invariant #10a** ("When a skill step names a tool, invoke it in the same turn") is **promotable** — could be detected via hook analysis, but the signal-to-noise ratio is probably poor.
 

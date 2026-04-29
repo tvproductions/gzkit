@@ -170,6 +170,7 @@ This is the interaction shape that produces witnessed, attestable, replayable go
 8. **Surface assumptions explicitly before implementing.** Building on unstated assumptions the human would have corrected is how confident-wrong-direction runs start. Name; let human ratify or replace. (Judgment 12)
 9. **On inconsistencies: STOP, name confusion, present tradeoff, wait.** Silently picking one interpretation is vibe-coding's judgment-time face. When brief, ADR, runbook, code disagree, the disagreement is the signal — raise it, don't resolve unilaterally. (Judgment 13)
 10. **Push back when an approach has clear problems.** Sycophantic agreement with a flawed plan is a trust defect. Say "this breaks X" or "this contradicts Y"; cite the rule or constraint. (Judgment 14)
+11. **When the operator course-corrects in flight, append an `improvement` record to `.gzkit/insights/agent-insights.jsonl` before completing the corrected work.** A course-correction is the operator naming a wrong assumption, redirecting an interpretation, or calling out drift. Required fields: `scope` (skill / rule / surface that drifted), `summary` (one sentence on what the correction was), `evidence` (file paths or commands proving the drift), `next_action` (what changes structurally to prevent recurrence). The record is the trackable trace of the correction; without it the lesson is unwitnessed and the loop depends on agent recall turn-by-turn. (GHI #357)
 
 ### Never
 
