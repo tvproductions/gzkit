@@ -9,10 +9,12 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
+from gzkit.arb.paths import receipts_root
+from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
 from gzkit.commands.adr_audit import (
     ATTESTATION_TYPE_HUMAN,
     _enforce_human_attestation_authenticity,
@@ -34,6 +36,184 @@ from gzkit.ledger import Ledger, parse_frontmatter_value, resolve_adr_lane
 # section_body is used in _has_human_attestation_content for H2 section extraction
 from gzkit.ledger_events import obpi_receipt_emitted_event
 from gzkit.utils import capture_validation_anchor
+
+# ---------------------------------------------------------------------------
+# OBPI-0.0.22-05 — Gate 5 security walkthrough + ARB receipt gate
+# ---------------------------------------------------------------------------
+
+_SECURITY_RULE_RELATIVE_PATH = Path(".gzkit") / "rules" / "security-sensitivity.md"
+_SECURITY_CHECKLIST_HEADING = re.compile(
+    r"^\s*#{2,3}\s+walkthrough\s+checklist\s*$",
+    re.IGNORECASE,
+)
+_SECURITY_RECEIPT_GLOB = "arb-step-security-*.json"
+_SECURITY_RECEIPT_MAX_AGE_HOURS = 24
+
+
+def _load_security_checklist(project_root: Path) -> list[str]:
+    """Return the security walkthrough checklist parsed from the rule file.
+
+    The checklist is enumerated in ``.gzkit/rules/security-sensitivity.md``
+    (authored by OBPI-0.0.22-06). Per REQ-0.0.22-05-02 the list is read at
+    runtime — never hardcoded into the OBPI command surface.
+    """
+    rule_path = project_root / _SECURITY_RULE_RELATIVE_PATH
+    if not rule_path.is_file():
+        msg = (
+            f"Security checklist rule file missing: {_SECURITY_RULE_RELATIVE_PATH} "
+            "(authored by OBPI-0.0.22-06). Land that OBPI before completing "
+            "any sensitivity:security brief."
+        )
+        raise GzCliError(msg)
+
+    text = rule_path.read_text(encoding="utf-8")
+    items: list[str] = []
+    in_section = False
+    for raw_line in text.splitlines():
+        line = raw_line.rstrip()
+        if _SECURITY_CHECKLIST_HEADING.match(line):
+            in_section = True
+            continue
+        if in_section and line.lstrip().startswith("#"):
+            break
+        if in_section and line.lstrip().startswith("- "):
+            items.append(line.lstrip()[2:].strip())
+    return items
+
+
+def _security_canonical_slot_filled() -> bool:
+    """Return True when the ``security`` slot in CANONICAL_STEP_COMMANDS is non-empty."""
+    return bool(CANONICAL_STEP_COMMANDS.get("security"))
+
+
+def _find_fresh_security_receipt(
+    receipts_dir: Path,
+    *,
+    max_age_hours: int = _SECURITY_RECEIPT_MAX_AGE_HOURS,
+) -> tuple[Path | None, Path | None]:
+    """Return (newest_receipt, fresh_receipt) for the security-scan stream.
+
+    ``newest_receipt`` is the most recent ``arb-step-security-*.json`` regardless
+    of age; ``fresh_receipt`` is the same receipt only when its
+    ``timestamp_utc`` is within ``max_age_hours``. Either is ``None`` when no
+    receipt exists or no fresh receipt exists, respectively.
+    """
+    if not receipts_dir.is_dir():
+        return None, None
+    candidates: list[tuple[datetime, Path]] = []
+    for path in receipts_dir.glob(_SECURITY_RECEIPT_GLOB):
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        ts = payload.get("timestamp_utc")
+        if not isinstance(ts, str):
+            continue
+        try:
+            created_at = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC)
+        except ValueError:
+            continue
+        candidates.append((created_at, path))
+    if not candidates:
+        return None, None
+    candidates.sort(key=lambda item: item[0], reverse=True)
+    newest_at, newest_path = candidates[0]
+    threshold = datetime.now(UTC) - timedelta(hours=max_age_hours)
+    fresh = newest_path if newest_at >= threshold else None
+    return newest_path, fresh
+
+
+def _render_security_walkthrough(
+    *,
+    obpi_id: str,
+    parent_adr: str,
+    checklist_items: list[str],
+) -> None:
+    """Render the security walkthrough panel ahead of the GHI #290 ATTEST gate."""
+    console.print("")
+    console.print("[bold yellow]=== Security Review Walkthrough (ADR-0.0.22) ===[/bold yellow]")
+    console.print(f"  OBPI:        {obpi_id}")
+    console.print(f"  Parent ADR:  {parent_adr}")
+    console.print("  The following security review items must be confirmed:")
+    for item in checklist_items:
+        console.print(f"    - {item}")
+    console.print("")
+
+
+def _enforce_security_review_gate(
+    *,
+    obpi_id: str,
+    parent_adr: str,
+    project_root: Path,
+    sensitivity: str | None,
+    as_json: bool,
+) -> None:
+    """Enforce REQ-0.0.22-05-{01,02,04,05,06}.
+
+    No-op when ``sensitivity`` is not ``"security"``. Otherwise:
+
+    1. Fail-closed (exit 3) when the canonical security-scan slot in
+       ``CANONICAL_STEP_COMMANDS`` is empty (REQ-0.0.22-05-04).
+    2. Fail-closed (exit 3) when no ``arb-step-security-*`` receipt exists
+       (REQ-0.0.22-05-05) — ``receipt-missing``.
+    3. Fail-closed (exit 3) when the newest receipt is older than 24 hours
+       (REQ-0.0.22-05-06) — ``receipt-stale``.
+    4. Render the rule-file-derived checklist before the GHI #290 ATTEST
+       gate runs (REQ-0.0.22-05-01).
+
+    ``_fail`` raises ``SystemExit``; this function therefore either returns
+    normally (security checks passed and walkthrough rendered) or terminates
+    the process via ``_fail``.
+    """
+    if sensitivity != "security":
+        return
+
+    if not _security_canonical_slot_filled():
+        _fail(
+            "Security-scan canonical slot in CANONICAL_STEP_COMMANDS is unfilled "
+            f"for parent ADR {parent_adr}; the toolchain feature ADR (promoting "
+            "pool.agentic-security-review) must fill it before sensitivity:security "
+            "briefs can be completed.",
+            exit_code=3,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
+
+    arb_dir = receipts_root(project_root=project_root)
+    newest, fresh = _find_fresh_security_receipt(arb_dir)
+    if newest is None:
+        _fail(
+            f"receipt-missing: no arb-step-security-* receipt under {arb_dir}; "
+            "sensitivity:security brief requires a fresh security-scan receipt "
+            f"within {_SECURITY_RECEIPT_MAX_AGE_HOURS}h.",
+            exit_code=3,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
+    if fresh is None:
+        # newest is non-None here but Path | None narrows are flow-sensitive;
+        # cast to Path so type checkers do not complain about ``newest.name``.
+        stale_path = cast(Path, newest)
+        try:
+            stale_payload = json.loads(stale_path.read_text(encoding="utf-8"))
+            stale_ts = stale_payload.get("timestamp_utc", "<unknown>")
+        except (OSError, json.JSONDecodeError):
+            stale_ts = "<unknown>"
+        _fail(
+            f"receipt-stale: newest arb-step-security-* receipt {stale_path.name} "
+            f"created {stale_ts} (> {_SECURITY_RECEIPT_MAX_AGE_HOURS}h old); "
+            "re-run the canonical security-scan command and retry.",
+            exit_code=3,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
+
+    checklist = _load_security_checklist(project_root)
+    _render_security_walkthrough(
+        obpi_id=obpi_id,
+        parent_adr=parent_adr,
+        checklist_items=checklist,
+    )
 
 
 def _resolve_and_validate(
@@ -183,6 +363,20 @@ def obpi_complete_cmd(
             exit_code=1,
             as_json=as_json,
             obpi_id=obpi_id,
+        )
+
+    # 4a. ADR-0.0.22 security gate: when the brief carries sensitivity:security
+    # (declared OR auto-detected), enforce the canonical-slot, receipt-freshness
+    # and rule-file-checklist contract before the GHI #290 ATTEST gate fires.
+    # Skipped for --dry-run so plans can be previewed headlessly.
+    if not dry_run:
+        sensitivity = parse_frontmatter_value(original_content, "sensitivity")
+        _enforce_security_review_gate(
+            obpi_id=obpi_id,
+            parent_adr=resolved_parent,
+            project_root=project_root,
+            sensitivity=sensitivity,
+            as_json=as_json,
         )
 
     # 4b. GHI #290 authenticity gate: no human-attestation receipt without TTY

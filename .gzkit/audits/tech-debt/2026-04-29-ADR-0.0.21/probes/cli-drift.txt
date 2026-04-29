@@ -1,0 +1,5 @@
+CLI audit passed.
+Cross-coverage: 89/89 commands fully covered.
+Validated: cli_alignment
+
+✓ All validations passed (1 scopes).

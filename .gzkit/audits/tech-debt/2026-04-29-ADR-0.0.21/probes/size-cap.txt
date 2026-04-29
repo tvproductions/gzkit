@@ -1,0 +1,120 @@
+src/gzkit/commands/chores.py
+    LOC: 625
+    LLOC: 417
+    SLOC: 479
+    Comments: 14
+    Single comments: 31
+    Multi: 9
+    Blank: 106
+    - Comment Stats
+        (C % L): 2%
+        (C % S): 3%
+        (C + M % L): 4%
+src/gzkit/commands/chores_exec.py
+    LOC: 412
+    LLOC: 207
+    SLOC: 337
+    Comments: 10
+    Single comments: 16
+    Multi: 3
+    Blank: 56
+    - Comment Stats
+        (C % L): 2%
+        (C % S): 3%
+        (C + M % L): 3%
+src/gzkit/commands/common.py
+    LOC: 627
+    LLOC: 381
+    SLOC: 430
+    Comments: 47
+    Single comments: 37
+    Multi: 52
+    Blank: 108
+    - Comment Stats
+        (C % L): 7%
+        (C % S): 11%
+        (C + M % L): 16%
+src/gzkit/commands/init_cmd.py
+    LOC: 676
+    LLOC: 347
+    SLOC: 494
+    Comments: 35
+    Single comments: 40
+    Multi: 32
+    Blank: 110
+    - Comment Stats
+        (C % L): 5%
+        (C % S): 7%
+        (C + M % L): 10%
+src/gzkit/commands/validate_cmd.py
+    LOC: 1032
+    LLOC: 392
+    SLOC: 865
+    Comments: 31
+    Single comments: 33
+    Multi: 33
+    Blank: 101
+    - Comment Stats
+        (C % L): 3%
+        (C % S): 4%
+        (C + M % L): 6%
+src/gzkit/governance/trust_audits.py
+    LOC: 2129
+    LLOC: 1000
+    SLOC: 1565
+    Comments: 124
+    Single comments: 125
+    Multi: 198
+    Blank: 241
+    - Comment Stats
+        (C % L): 6%
+        (C % S): 8%
+        (C + M % L): 15%
+src/gzkit/cli/parser_maintenance.py
+    LOC: 1024
+    LLOC: 264
+    SLOC: 951
+    Comments: 2
+    Single comments: 11
+    Multi: 9
+    Blank: 53
+    - Comment Stats
+        (C % L): 0%
+        (C % S): 0%
+        (C + M % L): 1%
+src/gzkit/cli/parser_artifacts.py
+    LOC: 1057
+    LLOC: 254
+    SLOC: 971
+    Comments: 3
+    Single comments: 8
+    Multi: 21
+    Blank: 57
+    - Comment Stats
+        (C % L): 0%
+        (C % S): 0%
+        (C + M % L): 2%
+src/gzkit/config.py
+    LOC: 233
+    LLOC: 142
+    SLOC: 140
+    Comments: 7
+    Single comments: 12
+    Multi: 27
+    Blank: 54
+    - Comment Stats
+        (C % L): 3%
+        (C % S): 5%
+        (C + M % L): 15%
+** Total **
+    LOC: 7815
+    LLOC: 3404
+    SLOC: 6232
+    Comments: 273
+    Single comments: 313
+    Multi: 384
+    Blank: 886
+    - Comment Stats
+        (C % L): 3%
+        (C % S): 4%
+        (C + M % L): 8%

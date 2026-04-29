@@ -1,0 +1,4 @@
+src/gzkit/cli/parser_maintenance.py:358:        help="Fail on `# type: ignore[<code>]` under src/ (ty-unhonored)",
+src/gzkit/governance/trust_audits.py:16:* ``audit_type_ignores`` — every ``# type: ignore[...]`` under ``src/`` must use
+src/gzkit/governance/trust_audits.py:169:    """Fail on any ``# type: ignore[<code>]`` under ``src/`` (GHI #197).
+src/gzkit/governance/trust_audits.py:196:                            "`# type: ignore[<code>]` is not honored by ty. Use "

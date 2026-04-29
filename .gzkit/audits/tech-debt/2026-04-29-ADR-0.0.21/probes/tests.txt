@@ -1,0 +1,159 @@
+.................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................s..........................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................FF....................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+======================================================================
+FAIL: test_every_active_skill_has_a_manpage (tests.test_skill_manpage_coverage.ActiveSkillManpageCoverageTest.test_every_active_skill_has_a_manpage)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/jeff/Documents/Code/gzkit/tests/test_skill_manpage_coverage.py", line 46, in test_every_active_skill_has_a_manpage
+    self.assertEqual([], missing, f"active skills missing manpages: {missing}")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != ['gz-tech-debt-review']
+
+Second list contains 1 additional elements.
+First extra element 0:
+'gz-tech-debt-review'
+
+- []
++ ['gz-tech-debt-review'] : active skills missing manpages: ['gz-tech-debt-review']
+
+======================================================================
+FAIL: test_every_active_skill_is_linked_from_index (tests.test_skill_manpage_coverage.ActiveSkillManpageCoverageTest.test_every_active_skill_is_linked_from_index)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/jeff/Documents/Code/gzkit/tests/test_skill_manpage_coverage.py", line 72, in test_every_active_skill_is_linked_from_index
+    self.assertEqual([], unlinked, f"active skills not linked from index: {unlinked}")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != ['gz-tech-debt-review']
+
+Second list contains 1 additional elements.
+First extra element 0:
+'gz-tech-debt-review'
+
+- []
++ ['gz-tech-debt-review'] : active skills not linked from index: ['gz-tech-debt-review']
+
+----------------------------------------------------------------------
+Ran 3794 tests in 34.029s
+
+FAILED (failures=2, skipped=1)
+Chores registry diff:
+  + agents-md-architectural-boundaries
+  + arb-pattern-extraction
+  + cli-contract-governance
+  + complexity-reduction-xenon
+  + config-paths-remediation
+  + control-surface-rule-conflicts
+  + control-surface-rule-vs-check-drift
+  + control-surface-skill-rule-reachability
+  + coverage-40pct
+  + cross-platform-test-cleanup
+  + dependency-currency
+  + doc-coverage
+  + evidence-integrity-audit
+  + exceptions-and-logging-rationalization
+  + frontmatter-ledger-coherence
+  + hardcoded-root-eradication
+  + instructions-files-diet
+  + memory-hygiene
+  + module-sloc-cap-radon
+  + pep257-docstring-compliance
+  + pool-triage
+  + pythonic-design-pattern-application
+  + pythonic-design-pattern-detection
+  + pythonic-refactoring
+  + quality-check
+  + repository-structure-normalization
+  + schema-and-config-drift-audit
+  + skill-authoring-quality
+  + skill-command-doc-parity
+  + skill-manifest-sync
+  + skill-trigger-testing
+  + sync-manpage-docstrings
+  + test-isolation-compliance
+  + test-manpage-examples
+  + validate-manpages
+  = only-local (local-only, preserved)
+Chores registry diff:
+  + agents-md-architectural-boundaries
+  + arb-pattern-extraction
+  + cli-contract-governance
+  + complexity-reduction-xenon
+  + config-paths-remediation
+  + control-surface-rule-conflicts
+  + control-surface-rule-vs-check-drift
+  + control-surface-skill-rule-reachability
+  + coverage-40pct
+  + cross-platform-test-cleanup
+  + dependency-currency
+  + doc-coverage
+  + evidence-integrity-audit
+  + exceptions-and-logging-rationalization
+  + frontmatter-ledger-coherence
+  + hardcoded-root-eradication
+  + instructions-files-diet
+  + memory-hygiene
+  + module-sloc-cap-radon
+  + pep257-docstring-compliance
+  + pool-triage
+  + pythonic-design-pattern-application
+  + pythonic-design-pattern-detection
+  + pythonic-refactoring
+  + quality-check
+  + repository-structure-normalization
+  + schema-and-config-drift-audit
+  + skill-authoring-quality
+  + skill-command-doc-parity
+  + skill-manifest-sync
+  + skill-trigger-testing
+  + sync-manpage-docstrings
+  + test-isolation-compliance
+  + test-manpage-examples
+  + validate-manpages
+  = only-local-slug (local-only, preserved)
+Chores registry diff:
+  + agents-md-architectural-boundaries
+  + arb-pattern-extraction
+  + cli-contract-governance
+  + complexity-reduction-xenon
+  + config-paths-remediation
+  + control-surface-rule-conflicts
+  + control-surface-rule-vs-check-drift
+  + control-surface-skill-rule-reachability
+  + coverage-40pct
+  + cross-platform-test-cleanup
+  + dependency-currency
+  + doc-coverage
+  + evidence-integrity-audit
+  + exceptions-and-logging-rationalization
+  + frontmatter-ledger-coherence
+  + hardcoded-root-eradication
+  + instructions-files-diet
+  + memory-hygiene
+  + module-sloc-cap-radon
+  + pep257-docstring-compliance
+  + pool-triage
+  + pythonic-design-pattern-application
+  + pythonic-design-pattern-detection
+  + pythonic-refactoring
+  + quality-check
+  + repository-structure-normalization
+  + schema-and-config-drift-audit
+  + skill-authoring-quality
+  + skill-command-doc-parity
+  + skill-manifest-sync
+  + skill-trigger-testing
+  + sync-manpage-docstrings
+  + test-isolation-compliance
+  + test-manpage-examples
+  + validate-manpages
+  = only-local (local-only, preserved)
+arb step name=coverage exit_status=1 receipt=/Users/jeff/Documents/Code/gzkit/artifacts/receipts/arb-step-coverage-63f9be310af44cb9a85d43926a8a75ca.json
+Name                                   Stmts   Miss  Cover
+----------------------------------------------------------
+src/gzkit/chores/__init__.py             101      7    93%
+src/gzkit/commands/chores.py             346     71    79%
+src/gzkit/commands/chores_exec.py        192     45    77%
+src/gzkit/commands/init_cmd.py           321     78    76%
+src/gzkit/commands/validate_cmd.py       342    106    69%
+src/gzkit/governance/trust_audits.py     899    144    84%
+----------------------------------------------------------
+TOTAL                                   2201    451    80%

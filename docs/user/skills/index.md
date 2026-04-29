@@ -79,6 +79,7 @@ audience split.
 | [`/gz-context-diet`](gz-context-diet.md) | Trim per-turn agent context weight by lifting narrative to docs/governance/ |
 | [`/gz-pythonic-pattern-detect`](gz-pythonic-pattern-detect.md) | Surface Pythonic-design-pattern refactor candidates after ADR closeout (AST scanner over `src/`) |
 | [`/gz-pythonic-pattern-apply`](gz-pythonic-pattern-apply.md) | Capture before/after evidence with mechanical-delta proof when a Pythonic-pattern rewrite is applied |
+| [`/gz-tech-debt-review`](gz-tech-debt-review.md) | Survey the codebase for technical debt and recommend resolutions across many debt classes |
 | [`/gz-typecheck`](gz-typecheck.md) | Run static type checks |
 | [`/lint`](lint.md) | Run code linting with Ruff and PyMarkdown |
 | [`/test`](test.md) | Run unit tests with unittest |

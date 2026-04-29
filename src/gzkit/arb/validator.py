@@ -54,6 +54,13 @@ CANONICAL_STEP_COMMANDS: dict[str, list[str]] = {
     "unittest": ["uv", "run", "-m", "unittest", "-q"],
     "coverage": ["coverage", "run", "-m", "unittest", "discover", "-s", "tests", "-t", "."],
     "mkdocs": ["uv", "run", "mkdocs", "build", "--strict"],
+    # Reserved by ADR-0.0.22 (security-sensitivity-doctrine), OBPI-05.
+    # The receipt-name prefix is ``arb-step-security-``; the canonical command
+    # string is left empty until the toolchain feature ADR (the one promoting
+    # ``pool.agentic-security-review``) fills it. While the slot is empty,
+    # ``gz obpi complete`` fails closed for any brief carrying
+    # ``sensitivity: security`` — that fail-closed posture is REQ-0.0.22-05-04.
+    "security": [],
 }
 
 

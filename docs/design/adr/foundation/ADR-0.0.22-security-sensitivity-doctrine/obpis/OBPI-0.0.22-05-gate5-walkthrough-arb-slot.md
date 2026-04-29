@@ -3,7 +3,7 @@ id: OBPI-0.0.22-05-gate5-walkthrough-arb-slot
 parent: ADR-0.0.22-security-sensitivity-doctrine
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 depends_on:
   - OBPI-0.0.22-04-requires-security-review-attestation
 ---
@@ -19,9 +19,7 @@ depends_on:
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Gate 5 walkthrough extension + ARB canonical command slot — Walkthrough prompt at obpi.py; checklist in rule file; `CANONICAL_STEP_COMMANDS` extends with reserved security-scan slot; fail-closed when receipt unavailable; behavioral tests for walkthrough-fires, receipt-missing, receipt-stale.
+Gate 5 walkthrough extension + ARB canonical command slot — Walkthrough prompt at the OBPI command surface; checklist read from `.gzkit/rules/security-sensitivity.md` at runtime; `CANONICAL_STEP_COMMANDS` extends with reserved security-scan slot (receipt-name prefix `arb-step-security-`, command string deferred to the toolchain feature ADR); fail-closed when slot is empty, receipt is missing, or receipt is older than 24h; behavioral tests cover walkthrough-fires, walkthrough-suppressed, placeholder-slot, receipt-missing, receipt-stale.
 
 ## Lane
 
@@ -218,15 +216,29 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+$ uv run gz covers OBPI-0.0.22-05 --json | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['summary'])"
+{'identifier': 'OBPI-0.0.22-05', 'total_reqs': 6, 'covered_reqs': 6, 'uncovered_reqs': 0, 'coverage_percent': 100.0}
+
+$ uv run gz arb step --name unittest -- uv run -m unittest tests.commands.test_obpi_complete_security tests.arb.test_validator_canonical_step_commands -v
+Ran 15 tests in 0.015s
+OK
+
+Receipts: lint arb-ruff-ad0dca2cf35a4b92acc14eaf1ffd3ef4; types arb-step-typecheck-e76a14f27cf24a5d87f2dd4bd14e29bf; tests arb-step-unittest-3937164020cb426c8d2c79301f62f34c; docs arb-step-mkdocs-2e7458d9ee4744d2ab40084e2b47256b.
 
 ### Implementation Summary
 
+
 - Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+  - src/gzkit/arb/validator.py (added "security": [] placeholder slot to CANONICAL_STEP_COMMANDS with comment naming parent ADR; receipt-name prefix arb-step-security- reserved)
+  - src/gzkit/commands/obpi_complete.py (added 5 helpers — _load_security_checklist, _security_canonical_slot_filled, _find_fresh_security_receipt, _render_security_walkthrough, _enforce_security_review_gate — and wired the gate into obpi_complete_cmd between step 4 validate and step 4b authenticity gate)
+  - tests/arb/test_validator_canonical_step_commands.py (REQ-3 coverage: 3 tests in TestSecurityCanonicalSlot)
+  - tests/commands/test_obpi_complete_security.py (REQ-1/2/4/5/6 coverage: 12 tests across 7 classes)
+  - docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/obpis/OBPI-0.0.22-05-gate5-walkthrough-arb-slot.md (Objective section: removed template-instruction HTML comment containing "one-sentence" so substantive-section validator no longer flags it as placeholder)
+- Tests added: 15 tests, all green via uv run gz arb step --name unittest -- uv run -m unittest tests.commands.test_obpi_complete_security tests.arb.test_validator_canonical_step_commands
+- Date completed: 2026-04-29
+- Attestation status: attested
+- Defects noted: GHI #359 (gz-tech-debt-review skill missing manpage + index link, surfaced during full sweep, pre-existing, out of scope)
 
 ## Tracked Defects
 
@@ -237,14 +249,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — Confirm OBPI-0.0.22-05 Gate 5 security walkthrough + ARB canonical command slot lands as designed: CANONICAL_STEP_COMMANDS["security"] reserves arb-step-security- prefix as []-placeholder; obpi_complete_cmd enforces a 4-step security gate (canonical-slot filled, receipt present, receipt fresh ≤24h, checklist rendered from .gzkit/rules/security-sensitivity.md) before the GHI #290 ATTEST gate; all four steps fail-closed exit 3 with documented finding shapes. 15 tests cover REQ-01..06 with 100% parity per gz covers. Receipts: lint arb-ruff-ad0dca2cf35a4b92acc14eaf1ffd3ef4; types arb-step-typecheck-e76a14f27cf24a5d87f2dd4bd14e29bf; tests arb-step-unittest-3937164020cb426c8d2c79301f62f34c; docs arb-step-mkdocs-2e7458d9ee4744d2ab40084e2b47256b. Out-of-scope drift filed as GHI #359.
+- Date: 2026-04-29
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-29
 
 **Evidence Hash:** -

@@ -1,0 +1,3 @@
+Validated: advisory_scorecard, chores_layout
+
+✓ All validations passed (2 scopes).
