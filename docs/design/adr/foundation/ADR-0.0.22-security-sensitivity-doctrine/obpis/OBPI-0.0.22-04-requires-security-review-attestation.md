@@ -3,7 +3,7 @@ id: OBPI-0.0.22-04-requires-security-review-attestation
 parent: ADR-0.0.22-security-sensitivity-doctrine
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
 depends_on:
   - OBPI-0.0.22-01-schema-frontmatter-field
 ---
@@ -18,8 +18,6 @@ depends_on:
 **Status:** Draft
 
 ## Objective
-
-<!-- One-sentence concrete outcome. What does "done" look like? -->
 
 `_requires_security_review_attestation` audit OR — Function at adr_audit.py; OR into `_requires_human_obpi_attestation`; behavioral tests confirm lite+feature+security brief not self-closeable; TTY+ATTEST gate activates correctly; matrix update at AGENTS.md.
 
@@ -222,15 +220,18 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+A `lite + feature + sensitivity:security` brief is now refused at headless invocation. tests/test_obpi_complete_cmd.py::TestObpiCompleteSecuritySensitivityGate::test_lite_feature_security_brief_refused_without_tty asserts SystemExit code 3 from obpi_complete_cmd against a brief whose frontmatter declares `sensitivity: security` under a non-foundation, lite-lane parent ADR with `_is_human_attestation_tty_available` mocked False — using the *real* `_requires_human_obpi_attestation` predicate (no mock) to prove the OR composition wires through end-to-end. The sister test test_lite_feature_no_sensitivity_remains_self_closeable_e2e shows the same setup without the sensitivity field completes successfully, isolating the security branch as the only routing change. Receipts: lint arb-ruff-be2e4ef4aaa5410999b656e559bb7bd2; types arb-step-typecheck-369360b84fcd406891a34abb0ca95b96; tests arb-step-unittest-b8245151594544c7a37d164c4b0715df (3778 tests OK); docs arb-step-mkdocs-17e7636329914b9db6d9d3845e3a89d9. REQ to @covers parity 6/6 (100%).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/commands/adr_audit.py grew _requires_security_review_attestation (12-line predicate); _requires_human_obpi_attestation extended to a 3-arg signature with default-None for ADR-level call-site compatibility; tests/test_adr_audit_predicates.py (13 unit tests across 3 classes for predicate, OR composition, AGENTS.md witness).
+- Files modified: src/gzkit/commands/obpi_complete.py threads parsed `sensitivity` frontmatter into the predicate at the existing call; tests/test_obpi_complete_cmd.py grew TestObpiCompleteSecuritySensitivityGate with 2 e2e tests (REQ-05 headless-refusal + REQ-03 self-closeable baseline); tests/governance/test_security_surfaces_registry.py converted OBPI-02's forward-looking absence-guard test_security_review_attestation_not_authored into the backward-looking presence-witness test_security_review_attestation_authored_at_named_path; AGENTS.md and src/gzkit/templates/agents.md replaced § "Lane & Kind Attestation Matrix" with § "Lane & Kind & Sensitivity Attestation Matrix" (8 cells; cites _requires_human_obpi_attestation as source of truth; describes additive third axis).
+- Tests added: 15 new unit/e2e tests; 1 absence-guard converted to presence-witness; 3778/3778 unittest sweep passes.
+- Date completed: 2026-04-29
+- Attestation status: TTY-typed by Jeffry Babb at Stage 4 ("attest completed").
+- Defects noted: None — REQ to @covers parity gate clean (6/6, 100%).
 
 ## Tracked Defects
 
@@ -241,14 +242,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — Confirm decision: third-axis (sensitivity) extension to `_requires_human_obpi_attestation` lands as a 3-line OR with default-None call-site compatibility for ADR-level callers; reuses existing GHI #290 TTY+ATTEST gate (no new authentication code) per REQ-04; AGENTS.md matrix repromoted to "Lane & Kind & Sensitivity Attestation Matrix" with 8 enumerated cells citing `_requires_human_obpi_attestation` as source of truth. 15 new tests authored, OBPI-02 forward-looking absence-guard converted to backward-looking presence-witness on landing. 3778/3778 unittest pass; REQ→@covers parity 6/6 (100%). Receipts: lint arb-ruff-be2e4ef4aaa5410999b656e559bb7bd2; types arb-step-typecheck-369360b84fcd406891a34abb0ca95b96; tests arb-step-unittest-b8245151594544c7a37d164c4b0715df; docs arb-step-mkdocs-17e7636329914b9db6d9d3845e3a89d9.
+- Date: 2026-04-29
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-29
 
 **Evidence Hash:** -
