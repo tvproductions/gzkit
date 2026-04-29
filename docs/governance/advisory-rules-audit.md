@@ -183,20 +183,26 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 
 *File merged 2026-04-21 — the former `.gzkit/rules/arb.md` carried a duplicate lane matrix that drifted from the canonical table in `attestation-enrichment.md`. The unique ARB material (core concept, available commands, receipt schema, exit codes) moved into `attestation-enrichment.md`; the duplicate lane matrix was dropped. The canonical invocations table lives at one home (scorecard rows above still apply; the file path changed but the mechanical enforcement did not).*
 
+### Security Sensitivity (`.gzkit/rules/security-sensitivity.md`)
+
+| # | Rule | Score | Why |
+|---|------|-------|-----|
+| 48 | Security work needs heightened review regardless of lane or kind — `sensitivity: security` floor (auto-detect against `data/security_surfaces.json`), escalate-not-escape, heightened Gate 5 walkthrough, scanner-unavailable fail-closed | **Mechanical** | Enforced by `gz validate --sensitivity` (ADR-0.0.22) — `audit_sensitivity_binding` in `src/gzkit/governance/trust_audits.py` runs floor + escalate-not-escape against the registry; audit OR-branch `_requires_security_review_attestation` at `src/gzkit/commands/adr_audit.py` forces brief-level human attestation on every `sensitivity: security` brief regardless of lane or kind; canonical security-scan ARB step is reserved in `CANONICAL_STEP_COMMANDS` so receipt absence fails Gate 5 walkthrough. Mirror discipline by `gz agent sync control-surfaces`. |
+
 ---
 
 ## Summary
 
-Counts updated 2026-04-18 after the GHI #202–#215 promotion wave landed.
+Counts updated 2026-04-29 after ADR-0.0.22 landed the security-sensitivity third axis.
 
 | Score | Count | % |
 |-------|-------|---|
-| **Mechanical** | 34 | 60% |
+| **Mechanical** | 35 | 61% |
 | **Promotable** | 5 | 9% |
-| **Judgment** | 18 | 32% |
+| **Judgment** | 18 | 31% |
 | **Ambiguous** | 0 | 0% |
 
-**The mechanical floor rose from 30 % to 60 %** under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules are now mechanized as `gz validate --<scope>` flags; two became pre-commit guards under `gzkit.hooks.guards`. The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.
+**The mechanical floor rose from 30 % to 60 %** under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules were mechanized as `gz validate --<scope>` flags and two became pre-commit guards under `gzkit.hooks.guards`. ADR-0.0.22 added the security-sensitivity third axis as `gz validate --sensitivity`, lifting the floor by a further point. The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.
 
 ---
 
@@ -223,6 +229,7 @@ Each promotion candidate has a tracking GHI. Close the GHI when the promotion la
 | 15 | brief-heading-conventions | [#238](https://github.com/tvproductions/gzkit/issues/238) | Brief evidence sections must use H3 (not H2) | `gz validate --brief-headings` |
 | 16 | 45a (scope-boundary subsection) | [#275](https://github.com/tvproductions/gzkit/issues/275) | Fresh-interpreter helpers + non-Python pipes + `tools/**/*.py` reconfigure | `gz validate --utf8-prefix` (extends row 5) |
 | 17 | 47 (ADR-0.0.20) | ADR-0.0.20 | Agent rule placement invariant: no `paths: "**"` under vendor rule dirs | `gz validate --unscoped-rules` |
+| 18 | 48 (ADR-0.0.22) | ADR-0.0.22 | Security-sensitivity third axis: floor + escalate-not-escape + heightened walkthrough | `gz validate --sensitivity` (+ `_requires_security_review_attestation` audit OR-branch + reserved `arb-step-security-scan-*` ARB slot) |
 
 Invariants 2 and 3 of the tool-skill-runbook rule (rows 29/30 above) remain Promotable — Invariant 1 landed first to establish the waiver shape for the harder body/output-form scans.
 

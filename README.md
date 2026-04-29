@@ -50,6 +50,19 @@ gzkit spans three distinct but interrelated concerns:
 
 All three are necessary. Specification without governance drifts. Governance without methodology is theater. Methodology without specification is arbitrary.
 
+## Boundary
+
+gzkit is not primarily an agent runner, workflow dashboard, or general automation
+harness. Those tools answer "what should run next?" gzkit answers "what was
+intended, what evidence exists, and who is authorized to call the work complete?"
+
+Agent harnesses may execute work; gzkit remains the governance and evidence
+layer underneath them: the source of truth for intent, constraints, gates,
+receipts, and human attestation. If gzkit grows a machine-readable workflow
+specification surface, its canonical form is JSON that describes gzkit stages,
+gate prerequisites, evidence requirements, and ledger events. It does not
+replace the covenant with an automation DSL.
+
 ## The Covenant
 
 gzkit implements a **development covenant**—a binding agreement between human and agent:
