@@ -3,7 +3,7 @@ id: ADR-0.0.23-agent-failure-mode-taxonomy
 status: Draft
 kind: foundation
 semver: 0.0.23
-lane: lite
+lane: heavy
 parent:
 date: 2026-04-25
 ---

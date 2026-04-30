@@ -1,0 +1,3 @@
+Validated: sensitivity
+
+✓ 587 brief(s) checked; no escape attempts and registry healthy.
