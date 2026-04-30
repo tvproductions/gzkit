@@ -3,6 +3,7 @@ id: OBPI-0.0.23-05-audit-check-covers-backfill-heuristic
 parent: ADR-0.0.23-agent-failure-mode-taxonomy
 item: 5
 lane: Heavy
+sensitivity: security
 status: Draft
 ---
 

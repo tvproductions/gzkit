@@ -1,0 +1,23 @@
+                                ADR Overview
+╭────────────┬───────┬───────────┬────────────────┬──────┬──────────┬───────╮
+│ ADR        │ Lane  │ Lifecycle │ Closeout Phase │ OBPI │ Closeout │ QC    │
+├────────────┼───────┼───────────┼────────────────┼──────┼──────────┼───────┤
+│ ADR-0.0.22 │ heavy │ Completed │ attested       │ 6/6  │ READY    │ READY │
+╰────────────┴───────┴───────────┴────────────────┴──────┴──────────┴───────╯
+                                     OBPIs
+╭────┬─────────────────────────────────┬────────────────────┬───────────┬──────╮
+│ #  │ OBPI ID                         │ State              │ Brief     │ Done │
+├────┼─────────────────────────────────┼────────────────────┼───────────┼──────┤
+│ 01 │ OBPI-0.0.22-01-schema-frontmatt │ attested_completed │ completed │ yes  │
+│    │ er-field                        │                    │           │      │
+│ 02 │ OBPI-0.0.22-02-security-surface │ attested_completed │ completed │ yes  │
+│    │ -registry                       │                    │           │      │
+│ 03 │ OBPI-0.0.22-03-validate-sensiti │ attested_completed │ completed │ yes  │
+│    │ vity-scope                      │                    │           │      │
+│ 04 │ OBPI-0.0.22-04-requires-securit │ attested_completed │ completed │ yes  │
+│    │ y-review-attestation            │                    │           │      │
+│ 05 │ OBPI-0.0.22-05-gate5-walkthroug │ attested_completed │ completed │ yes  │
+│    │ h-arb-slot                      │                    │           │      │
+│ 06 │ OBPI-0.0.22-06-rule-file-matrix │ attested_completed │ completed │ yes  │
+│    │ -scorecard                      │                    │           │      │
+╰────┴─────────────────────────────────┴────────────────────┴───────────┴──────╯

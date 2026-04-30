@@ -1,0 +1,16 @@
+ADR audit-check: ADR-0.0.22-security-sensitivity-doctrine
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.22-01-schema-frontmatter-field
+  - OBPI-0.0.22-02-security-surface-registry
+  - OBPI-0.0.22-03-validate-sensitivity-scope
+  - OBPI-0.0.22-04-requires-security-review-attestation
+  - OBPI-0.0.22-05-gate5-walkthrough-arb-slot
+  - OBPI-0.0.22-06-rule-file-matrix-scorecard
+
+Coverage: 36/36 REQs covered (100.0%)
+  OBPI-0.0.22-01: 5/5 (100.0%)
+  OBPI-0.0.22-02: 6/6 (100.0%)
+  OBPI-0.0.22-03: 7/7 (100.0%)
+  OBPI-0.0.22-04: 6/6 (100.0%)
+  OBPI-0.0.22-05: 6/6 (100.0%)
+  OBPI-0.0.22-06: 6/6 (100.0%)

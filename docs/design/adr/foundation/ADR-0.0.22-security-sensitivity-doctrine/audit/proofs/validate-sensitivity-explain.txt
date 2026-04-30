@@ -1,0 +1,13 @@
+Sensitivity prediction
+  detected_sensitivity: None
+  matching_categories: []
+  input_globs: ['src/gzkit/secrets/store.py']
+Sensitivity prediction
+  detected_sensitivity: security
+  matching_categories: ['arb_receipt_chain']
+  input_globs: ['src/gzkit/arb/validator.py']
+---
+Sensitivity prediction
+  detected_sensitivity: security
+  matching_categories: ['ledger_integrity']
+  input_globs: ['src/gzkit/ledger.py']

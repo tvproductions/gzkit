@@ -1,5 +1,77 @@
 # gzkit Release Notes
 
+## v0.25.19 (2026-04-30)
+
+Maintenance and governance-hardening release closing 17 defects and enhancements
+surfaced during ADR-0.0.20 / 0.0.21 / 0.0.22 closeout work — concentrated on
+ADR-id invariants, CLI per-flag doc coverage, closeout ceremony integration, and
+trust_audits.py decomposition.
+
+### ADR ID & Schema Hardening
+
+- **#344** — Fixed `gz plan create --name` accepting bare semver literals; the
+  canonical-id composer now refuses bare-semver-only emission, closing the
+  GHI #279 class recurrence.
+- **#345** — Replaced hand-curated `SEMVER_ID_RENAMES` with on-disk drift
+  auto-detection; `gz migrate-semver` walks ADR frontmatter and proposes
+  renames continuously instead of accumulating per-drift manual entries.
+- **#346** — Tightened `adr.json` schema so the slug suffix is mandatory on
+  non-pool ADRs; bare-id frontmatter now fails Gate 1 instead of validating
+  clean.
+- **#352** — `gz adr promote` deletes the source pool file after scaffolding
+  the canonical package, ending stale-pool-file accumulation.
+
+### CLI Per-Flag Doc Coverage
+
+- **#350** — Added per-flag doc coverage to `gz cli audit`; new flags on
+  existing subcommands require a section header in the corresponding command
+  doc.
+- **#353** — Drained `_PER_FLAG_DOC_WAIVERS` (48 historical per-flag doc gaps)
+  across 17 command docs.
+- **#355** — Fixed `flag_scanner` AST walk that mis-attributed flags across
+  sibling subparsers in `_register_*` helpers; `parser_vars` now scope per
+  function body.
+
+### Closeout Ceremony Integration
+
+- **#351** — `gz closeout` pipeline consumes ceremony-recorded attestation
+  instead of re-prompting; closes the GHI #292 OBPI-only surface gap at the
+  ADR-closeout layer.
+- **#354** — Split agent-emittable `audit-passed` receipt from operator-typed
+  `validated` Gate-5 receipt; lifecycle requires both to advance an ADR to
+  Validated.
+- **#362** — Improved Step 2 Bill-of-Materials table column scaling; OBPI
+  column sizes to longest slug, Objective column gets remaining width.
+- **#363** — Closeout product-proof classifier expands glob entries in
+  `## Allowed Paths` and recognizes `data/**/*.json` +
+  `src/gzkit/schemas/**/*.json` as proof artifacts.
+
+### Skill, Rule & Insights Surface
+
+- **#356** — Rewrote `gz-adr-map` skill Step 2 to walk ADR → REQ → test
+  (REQ-level `@covers` decorator pattern) instead of the obsolete ADR-level
+  grep.
+- **#357** — Added Behavior Rule binding the course-correction →
+  `agent-insights.jsonl` loop; agents must append an `improvement` record
+  before completing operator-corrected work.
+- **#358** — Locked `agent-insights.jsonl` record schema with a Pydantic model
+  and added `gz validate --insights-shape`.
+- **#361** — Fixed Claude-rules path-frontmatter parser failure caused by a
+  leading HTML comment; scoped rules correctly path-gate instead of
+  always-loading (~26k tokens of context recovered).
+
+### Infrastructure & Refactor
+
+- **#343** — `gz git-sync` dry-run runs `git fetch --prune origin` before
+  computing `ahead/behind`; closes the silent-stale-divergence failure mode.
+- **#360** — Split `trust_audits.py` (2129 LOC, 14 rank-C functions) into
+  `trust_audits/` package partitioned by audit family; every existing import
+  site preserved via `__init__.py` re-exports.
+
+### Stats
+
+- 17 GHIs closed
+
 ## v0.25.18 (2026-04-27)
 
 Session-start hygiene patch. Closes the "stale-clone vibe-cycle" failure class
