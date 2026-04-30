@@ -191,20 +191,26 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 |---|------|-------|-----|
 | 48 | Security work needs heightened review regardless of lane or kind — `sensitivity: security` floor (auto-detect against `data/security_surfaces.json`), escalate-not-escape, heightened Gate 5 walkthrough, scanner-unavailable fail-closed | **Mechanical** | Enforced by `gz validate --sensitivity` (ADR-0.0.22) — `audit_sensitivity_binding` in `src/gzkit/governance/trust_audits.py` runs floor + escalate-not-escape against the registry; audit OR-branch `_requires_security_review_attestation` at `src/gzkit/commands/adr_audit.py` forces brief-level human attestation on every `sensitivity: security` brief regardless of lane or kind; canonical security-scan ARB step is reserved in `CANONICAL_STEP_COMMANDS` so receipt absence fails Gate 5 walkthrough. Mirror discipline by `gz agent sync control-surfaces`. |
 
+### Agent Failure-Mode Taxonomy (`.gzkit/rules/agent-failure-modes.md`)
+
+| # | Rule | Score | Why |
+|---|------|-------|-----|
+| 49 | Six-pattern agent failure-mode vocabulary (`Safeguard circumvention` / `Reckless action` / `Fabrication` / `Skipped cheap verification` / `Correction fails` / `Dishonest when caught`) — drawn from Opus 4.7 § 2.3.6 (Anthropic, 2026-04-16) and corroborated by GPT-5.5 § 9.2 (OpenAI, 2026-04-23). Cited by name when reviewing PRs, filing defects, and extending the scorecard; routes the conversation directly to the engineered backstop instead of re-deriving the failure motivation each time. | **Judgment** | Vocabulary, not mechanical check. The mechanical defenses already exist as separate rules and gates — TTY + `ATTEST` authenticity gate at `_enforce_human_attestation_authenticity` (`src/gzkit/commands/adr_audit.py`), ARB receipt requirements (`AGENTS.md` § Attestation), hook fail-closed behavior, `gz validate --commit-trailers`, layered-trust T1/T2/T3 invariants — and this rule is the **shared name** they point at. Promotion candidate `gz validate --failure-mode-coverage` (a self-test confirming every scorecard row names the failure shape it backstops) tracked under follow-up GHIs #308–#312 per ADR-0.0.23 § Decision. |
+
 ---
 
 ## Summary
 
-Counts updated 2026-04-29 after ADR-0.0.22 landed the security-sensitivity third axis.
+Counts updated 2026-04-30 after ADR-0.0.22 landed the security-sensitivity third axis and OBPI-0.0.23-02 added the agent failure-mode taxonomy vocabulary row.
 
 | Score | Count | % |
 |-------|-------|---|
-| **Mechanical** | 35 | 61% |
-| **Promotable** | 5 | 9% |
-| **Judgment** | 18 | 31% |
+| **Mechanical** | 35 | 59% |
+| **Promotable** | 5 | 8% |
+| **Judgment** | 19 | 32% |
 | **Ambiguous** | 0 | 0% |
 
-**The mechanical floor rose from 30 % to 60 %** under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules were mechanized as `gz validate --<scope>` flags and two became pre-commit guards under `gzkit.hooks.guards`. ADR-0.0.22 added the security-sensitivity third axis as `gz validate --sensitivity`, lifting the floor by a further point. The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.
+**The mechanical floor rose from 30 % to 60 %** under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules were mechanized as `gz validate --<scope>` flags and two became pre-commit guards under `gzkit.hooks.guards`. ADR-0.0.22 added the security-sensitivity third axis as `gz validate --sensitivity`, lifting the floor by a further point. ADR-0.0.23 OBPI-02 added the **Judgment**-classed agent failure-mode taxonomy as shared reviewer vocabulary (mechanical promotion `gz validate --failure-mode-coverage` tracked under follow-up GHIs #308–#312). The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.
 
 ---
 

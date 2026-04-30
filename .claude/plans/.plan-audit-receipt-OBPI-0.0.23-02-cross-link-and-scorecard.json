@@ -1,0 +1,138 @@
+{
+  "obpi_id": "OBPI-0.0.23-02-cross-link-and-scorecard",
+  "timestamp": "2026-04-30T08:22:12.854229+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.23-02-cross-link-and-scorecard.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.24.0",
+      "sibling_obpi": "OBPI-0.24.0-01-documentation-taxonomy",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-04-validate-taxonomy",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-06-agents-md-correction",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-06-marker-migration-path",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md",
+        "docs/design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.31",
+      "sibling_obpi": "OBPI-0.0.31-02-register-t0-scorecard",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.30",
+      "sibling_obpi": "OBPI-0.0.30-04-editor-protocol-contract",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-06-rule-file-matrix-scorecard",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-07-validate-distribution",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-08-verdict-proof-binding",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.28",
+      "sibling_obpi": "OBPI-0.0.28-01-threshold-rule-file",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.28",
+      "sibling_obpi": "OBPI-0.0.28-03-threshold-validator",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.20",
+      "sibling_obpi": "OBPI-0.0.20-01-validator-and-allowlist",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-01-three-tier-model-and-pool-archive",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md",
+        "docs/design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-03-storage-catalog-and-escalation-governance",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-04-git-clone-recovery",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md",
+        "docs/design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-02-identity-surfaces",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-07-link-integrity-validator",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-01-selection-methodology",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    }
+  ]
+}

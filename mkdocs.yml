@@ -241,6 +241,9 @@ markdown_extensions:
   - attr_list
   - md_in_html
 
+extra_css:
+  - stylesheets/extra.css
+
 extra:
   gzkit_version: !ENV [GZKIT_DOCS_VERSION, "main"]
   social:

@@ -3,7 +3,7 @@ id: OBPI-0.0.23-02-cross-link-and-scorecard
 parent: ADR-0.0.23-agent-failure-mode-taxonomy
 item: 2
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.23-02-cross-link-and-scorecard: Cross-link from AGENTS.md + scorecard entry
@@ -48,10 +48,28 @@ Wire the new rule into the always-loaded contract surface (AGENTS.md) with a one
 
 ## Discovery Checklist
 
-- [ ] OBPI-0.0.23-01 evidence — confirm `.gzkit/rules/agent-failure-modes.md` exists
-- [ ] AGENTS.md § DO IT RIGHT — read existing structure to find correct insertion point
-- [ ] `docs/governance/advisory-rules-audit.md` — read existing scorecard rows for shape consistency
-- [ ] `.gzkit/rules/cross-platform.md` for an example scorecard row classified Mechanical
+**Governance (read once, cache):**
+
+- [x] `AGENTS.md` § DO IT RIGHT — canonical home for the cross-link pointer; read structure before insertion
+- [x] `AGENTS.md` § Lane & Kind & Sensitivity Attestation Matrix — confirms foundation-kind brief-level Gate 5
+
+**Context:**
+
+- [x] Parent ADR: `docs/design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/ADR-0.0.23-agent-failure-mode-taxonomy.md`
+- [x] Sibling OBPIs (01 rule authorship, 03 mirror sync, 04 cross-repo filing wrapper, 05 covers heuristic)
+
+**Prerequisites (check existence, STOP if missing):**
+
+- [x] OBPI-0.0.23-01 deliverable `.gzkit/rules/agent-failure-modes.md` exists (229 lines, version 0.1.0)
+- [x] AGENTS.md § DO IT RIGHT section present at line 60
+- [x] `docs/governance/advisory-rules-audit.md` Summary table present at lines 200–205 with a recognized count shape
+- [x] Plan-audit receipt for this OBPI at `.claude/plans/.plan-audit-receipt-OBPI-0.0.23-02-cross-link-and-scorecard.json` (verdict PASS)
+
+**Existing Code (understand current state):**
+
+- [x] `docs/governance/advisory-rules-audit.md` § Security Sensitivity row #48 — most recent foundation-rule scorecard precedent for shape consistency
+- [x] `.gzkit/rules/cross-platform.md` scorecard row precedent classified Mechanical — contrast pattern for the new Judgment row
+- [x] AGENTS.md line 76 `agent-contract-rationale.md` cross-reference — parallel-shape precedent for the new pointer line
 
 ## Quality Gates
 
@@ -126,13 +144,29 @@ grep -n "agent-failure-modes" docs/governance/advisory-rules-audit.md
 
 ### Key Proof
 
+
+```
+$ grep -n "agent-failure-modes" AGENTS.md docs/governance/advisory-rules-audit.md
+AGENTS.md:78:See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md) for the canonical six-pattern failure-mode taxonomy these invariants backstop ([ADR-0.0.23](docs/design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/ADR-0.0.23-agent-failure-mode-taxonomy.md)).
+docs/governance/advisory-rules-audit.md:194:### Agent Failure-Mode Taxonomy (`.gzkit/rules/agent-failure-modes.md`)
+
+$ uv run gz validate --advisory-scorecard
+Validated: advisory_scorecard
+✓ All validations passed (1 scopes).
+```
+
+Receipts: lint `arb-ruff-884764388c404a4b9e3ca12c7338ab6b`; documents validate `arb-step-validate-documents-328bd3667c5743639c91578d3d108c34`; advisory-scorecard validate `arb-step-validate-advisory-scorecard-f42880182c214204a807fdcf485383dd`.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added: n/a
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- AGENTS.md: one-line pointer added at line 78 in § DO IT RIGHT, parallel-shape with existing `agent-contract-rationale.md` cross-reference. Pointer cites `.gzkit/rules/agent-failure-modes.md` (relative path) and `ADR-0.0.23` (parent ADR). Satisfies REQ-01 + REQ-02.
+- docs/governance/advisory-rules-audit.md: new `### Agent Failure-Mode Taxonomy` section + row #49 classified Judgment; promotion candidate `gz validate --failure-mode-coverage` cited under follow-up GHIs #308–#312 per ADR-0.0.23 § Decision. Summary counts 18→19 Judgment, total 58→59. Satisfies REQ-03 + REQ-04.
+- Brief Discovery Checklist extended with Prerequisites and Existing Code subsections to satisfy `gz obpi precomplete brief_readiness` gate.
+- Tests added: n/a (REQ→@covers parity gate skipped per operator-decided route B, consolidating into follow-up doctrine-mechanization GHI).
+- Date completed: 2026-04-30
+- Attestation status: foundation-kind brief, agent-relayed-operator-attestation via `--attestor-present`. Stage-4 phrase: "attest completed".
+- Defects: one consolidated GHI to follow naming three gaps — parity gate not CLI-enforced; brief-template Allowed-Paths drift between siblings; `gz covers OBPI-X --json` short-form returns empty entries while parent-ADR view enumerates same OBPI.
 
 ## Tracked Defects
 
@@ -140,14 +174,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` (foundation-kind requires human)
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — Confirm OBPI-0.0.23-02-cross-link-and-scorecard: AGENTS.md § DO IT RIGHT carries one new pointer line (line 78) citing `.gzkit/rules/agent-failure-modes.md` and ADR-0.0.23 (REQ-01, REQ-02); `docs/governance/advisory-rules-audit.md` carries new `### Agent Failure-Mode Taxonomy` section row #49 classified Judgment with `gz validate --failure-mode-coverage` promotion path noted (REQ-03); Summary counts updated 18→19 Judgment, total 58→59. `uv run gz validate --advisory-scorecard` exits 0 (REQ-04). REQ-05 (no inlining) and REQ-06 (no operator PII) honored. Lite lane × foundation kind ⇒ brief-level Gate 5 attested. Receipts: lint arb-ruff-884764388c404a4b9e3ca12c7338ab6b; documents arb-step-validate-documents-328bd3667c5743639c91578d3d108c34; advisory-scorecard arb-step-validate-advisory-scorecard-f42880182c214204a807fdcf485383dd. Parity-gate skip (3 uncovered REQs) consolidated into follow-up GHI per operator-decided route B; mechanical verification via grep + advisory-scorecard validator.
+- Date: 2026-04-30
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-30
 
 **Evidence Hash:** -
