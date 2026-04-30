@@ -1,0 +1,30 @@
+/*
+ * mkdocs-material's `.md-source__fact--version` truncates the version chip
+ * with `text-overflow: ellipsis` when the source widget is narrow. Combined
+ * with our 19-char `repo_name` (tvproductions/gzkit), the version line
+ * collapses to "..." in the header. Override: let the version chip render
+ * at its natural width and widen the parent so it has room.
+ *
+ * Pairs with overrides/partials/source.html which renders the chip
+ * statically from extra.gzkit_version.
+ */
+.md-source {
+  max-width: none;
+  width: auto;
+}
+
+.md-source__repository {
+  max-width: none;
+  overflow: visible;
+}
+
+.md-source__facts {
+  overflow: visible;
+}
+
+.md-source__fact {
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
+}
