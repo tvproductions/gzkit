@@ -3,7 +3,7 @@ id: OBPI-0.0.23-01-author-failure-modes-rule
 parent: ADR-0.0.23-agent-failure-mode-taxonomy
 item: 1
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.23-01-author-failure-modes-rule: Author `.gzkit/rules/agent-failure-modes.md`
@@ -51,10 +51,32 @@ Create the canonical rule file enumerating the six-pattern agent-failure-mode ta
 
 ## Discovery Checklist
 
-- [ ] AGENTS.md § DO IT RIGHT (items 6a, 6c, 6g, 6h) — invariant text to cite as backstops
-- [ ] `.gzkit/rules/governance-core.md` — example of an existing rule file's shape
-- [ ] `.gzkit/rules/tool-skill-runbook-alignment.md` — example with citation discipline (GHI #149/#151)
-- [ ] Parent ADR § Decision
+<!-- What to read before implementation. Complete this checklist first. -->
+
+**Governance (read once, cache):**
+
+- [x] `AGENTS.md` § DO IT RIGHT (items 6a, 6c, 6g, 6h) — invariant text to cite as backstops
+- [x] `AGENTS.md` § Attestation — ARB receipt + TTY+ATTEST discipline backstopping `Fabrication`
+- [x] Parent ADR § Decision and § Q&A Transcript — taxonomy source and ordering
+
+**Context:**
+
+- [x] Parent ADR: `docs/design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/ADR-0.0.23-agent-failure-mode-taxonomy.md`
+- [x] Sibling OBPIs in same ADR (02 cross-link, 03 sync mirrors, 04 cross-repo filing, 05 audit-check heuristic)
+
+**Prerequisites (check existence, STOP if missing):**
+
+- [x] Required path exists or is intentionally created in this OBPI: `.gzkit/rules/agent-failure-modes.md`
+- [x] `.gzkit/rules/` directory present (existing canonical rules home)
+- [x] Parent ADR file present at `docs/design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/ADR-0.0.23-agent-failure-mode-taxonomy.md`
+- [x] Parent ADR evidence artifacts referenced by this brief are present (Decision, Q&A Transcript, Evidence)
+
+**Existing Code (understand current state):**
+
+- [x] `.gzkit/rules/governance-core.md` — canonical rule file shape and frontmatter conventions
+- [x] `.gzkit/rules/tool-skill-runbook-alignment.md` — canonical citation discipline pattern (GHI #149/#151)
+- [x] `.gzkit/rules/skill-surface-sync.md` — body-level `<!-- rule-version: X.Y.Z -->` marker convention (GHI #307)
+- [x] `.gzkit/rules/security-sensitivity.md` — recent foundation-kind rule precedent for shape and tone
 
 ## Quality Gates
 
@@ -127,13 +149,53 @@ uv run gz validate --documents
 
 ### Key Proof
 
+
+A reviewer can verify the rule's structural integrity in one command:
+
+```bash
+$ uv run gz validate --documents
+Validated: documents
+✓ All validations passed (1 scopes).
+```
+
+The six patterns are externally observable as H2 headings in the canonical Opus 4.7 § 2.3.6 order:
+
+```bash
+$ grep -n '^## ' .gzkit/rules/agent-failure-modes.md
+15:## Safeguard circumvention
+44:## Reckless action
+62:## Fabrication
+93:## Skipped cheap verification
+118:## Correction fails
+141:## Dishonest when caught
+166:## When to invoke this vocabulary
+192:## Loading posture
+210:## Related
+```
+
+ARB receipts for Stage 3 baseline:
+- Lint: `arb-ruff-f6b160b6bfea49e69df5d6840a56f825`
+- Typecheck: `arb-step-typecheck-a3f9b54f60214559a96a9563d63113e8`
+- Documents: `arb-step-validate-documents-adef9db4808344c58520848615495625`
+
+REQ coverage (verified by structural read; no `@covers` graph entries because the rule is content, per brief design):
+- REQ-0.0.23-01-01 — six patterns in prescribed order: confirmed by grep above.
+- REQ-0.0.23-01-02 — each pattern carries Definition / External citation / Backstop: confirmed by 18 matches (3 fields × 6 patterns) for `grep '^\*\*Definition:\*\*\|^\*\*External citation:\*\*\|^\*\*Backstop:\*\*'`.
+- REQ-0.0.23-01-03 — frontmatter `paths:` glob includes the three required surfaces: confirmed by `gz validate --documents` (RuleFrontmatter parses cleanly; paths field present and well-formed).
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added: n/a (rule authoring)
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created:
+  - `.gzkit/rules/agent-failure-modes.md` (229 lines) — canonical rule file with frontmatter `paths: ["AGENTS.md", ".gzkit/rules/**", "docs/governance/**"]`, body-level `<!-- rule-version: 0.1.0 -->` marker plus visible block quote, six H2 patterns in prescribed Opus 4.7 § 2.3.6 order, plus `## When to invoke this vocabulary`, `## Loading posture`, and `## Related` sections.
+- Per-pattern fields: each H2 carries **Definition** (one sentence), **External citation** (Opus 4.7 § 2.3.6 / GPT-5.5 § 9.2), and **Backstop** (pointer to AGENTS.md § DO IT RIGHT 6a/6g/6h, ARB receipts, Behavior Rules — Never #5/#6/Always #11, or trust-doctrine T1/T2/T3).
+- Worked examples cited only where gzkit history supplies them: GHI #290 (Fabrication), GHI #263 (Skipped cheap verification), GHI #261 (Dishonest when caught). The remaining three patterns omit worked examples per plan discipline (no fabrication).
+- Brief Discovery Checklist promoted to canonical Governance/Context/Prerequisites/Existing Code subsections so `gz obpi precomplete` cleared all 5 preconditions.
+- Vendor mirrors `.claude/rules/agent-failure-modes.md` and `.github/instructions/agent_failure_modes.instructions.md` were auto-generated by the project's `control-surface-sync.py` PostToolUse hook (running `gz agent sync control-surfaces` automatically). Not agent-edited; OBPI-03's per-harness load verification scope is unaffected.
+- Tests added: n/a (rule is content, not code; Gate 2 floor is `gz validate --documents`).
+- Date completed: 2026-04-30
+- Attestation status: foundation-kind brief, agent-relayed-operator-attestation via `--attestor-present` (Stage-4 attestation phrase: "attest completed").
+- Defects noted: none.
 
 ## Tracked Defects
 
@@ -141,14 +203,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` (foundation-kind requires human)
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — Foundation-kind brief OBPI-0.0.23-01-author-failure-modes-rule: authored .gzkit/rules/agent-failure-modes.md (229 lines) with the six-pattern Opus 4.7 § 2.3.6 / GPT-5.5 § 9.2 taxonomy in prescribed order, per-pattern Definition + External citation + gzkit-invariant Backstop, and worked examples drawn only from gzkit history (GHI #290 Fabrication, GHI #263 Skipped cheap verification, GHI #261 Dishonest when caught — the remaining three patterns omit worked examples rather than fabricate). Brief Discovery Checklist promoted to canonical Governance/Context/Prerequisites/Existing Code form so `gz obpi precomplete` cleared all five preconditions. Vendor mirrors at .claude/rules/agent-failure-modes.md and .github/instructions/agent_failure_modes.instructions.md were auto-generated by the project control-surface-sync PostToolUse hook (the same `gz agent sync control-surfaces` command OBPI-03 calls out); not agent-edited. Receipts: lint arb-ruff-f6b160b6bfea49e69df5d6840a56f825; typecheck arb-step-typecheck-a3f9b54f60214559a96a9563d63113e8; documents arb-step-validate-documents-adef9db4808344c58520848615495625.
+- Date: 2026-04-30
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-30
 
 **Evidence Hash:** -
