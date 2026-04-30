@@ -87,6 +87,14 @@ class TestForbidSkillSyncDrift(unittest.TestCase):
         with mock.patch.object(guards, "_run_git", return_value=names):
             self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 0)
 
+    def test_subtree_aggregator_agents_md_is_exempt(self) -> None:
+        """`.gzkit/rules/AGENTS.md` is the subtree-rules aggregator, not a per-rule
+        file. Sync regenerates it without per-vendor mirrors. The drift hook must
+        exempt it from the mirror requirement (GHI #370)."""
+        names = ".gzkit/rules/AGENTS.md\n"
+        with mock.patch.object(guards, "_run_git", return_value=names):
+            self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 0)
+
 
 if __name__ == "__main__":
     unittest.main()
