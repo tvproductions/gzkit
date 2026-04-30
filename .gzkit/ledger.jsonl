@@ -4278,3 +4278,5 @@
 {"schema":"gzkit.ledger.v1","event":"obpi_lock_released","id":"OBPI-0.0.23-03-sync-mirrors","ts":"2026-04-30T09:48:08.279805+00:00","agent":"unknown-52092","force":true}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.artifact-graph-navigation.md","ts":"2026-04-30T09:58:38.818713+00:00","path":"docs/design/adr/pool/ADR-pool.artifact-graph-navigation.md"}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.obpi-doctrine-mechanization-coherence.md","ts":"2026-04-30T09:58:49.132240+00:00","path":"docs/design/adr/pool/ADR-pool.obpi-doctrine-mechanization-coherence.md"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"AGENTS.md","ts":"2026-04-30T11:23:09.825405+00:00","path":"AGENTS.md"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"AGENTS.md","ts":"2026-04-30T11:23:49.758274+00:00","path":"AGENTS.md"}
