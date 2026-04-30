@@ -10,11 +10,7 @@ Universal agent contract for {project_name}.
 
 ## Why this contract is not minimal
 
-Minimalist references (e.g. Karpathy's 75-line `CLAUDE.md`) optimize for solo-human + one-agent + short-session + code-level hygiene; behavior is the product, agent-trust is the mechanism, missed-principle cost is one discarded diff.
-
-gzkit optimizes for multi-agent, multi-session, auditable governance where proof-of-work must survive the agent that produced it. Ledger-of-truth beats agent-trust; receipts beat narrative recall; structural gates beat goodwill. Missed-principle cost is a corrupted artifact graph reconciliation has to untangle months later.
-
-Karpathy's four principles (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution) are present here with stronger mechanical backstops — see § Behavior Rules (Judgment 7–10), § DO IT RIGHT (#6a–6h), `.gzkit/rules/tests.md` Red-Green-Refactor, ARB receipt requirements. gzkit's surface is worth its cost for work audited across context boundaries; heavier than necessary for a single trivial edit. Use judgment.
+gzkit optimizes for multi-agent, multi-session, auditable governance: ledger-of-truth beats agent-trust, receipts beat narrative recall, structural gates beat goodwill. Missed-principle cost is a corrupted artifact graph, not one discarded diff. See [`docs/governance/agent-contract-rationale.md` § Why this contract is not minimal](docs/governance/agent-contract-rationale.md#why-this-contract-is-not-minimal) for the Karpathy-comparison rationale and tradeoff articulation.
 
 ## Persona
 
@@ -64,7 +60,7 @@ The primary operator session is framed by the `main-session` persona — craftsp
 Ownership without craftsmanship produces confident-wrong-direction work — patching the symptom, leaving the class-of-failure intact. Vibe-coded shortcuts compound silently across a codebase the way template drift compounds across a doc surface, until an operator lands on one and the lineage collapses.
 
 1. **Fix the class of failure, not the instance.** Identify the failure family (unstated assumption? missing validation? untested derived path?). If a discovered CLI verb doesn't exist, the fix is "validate every derived verb against the registered parser," not "skip that one verb."
-1a. **Coupled-surface coherence — the lateral axis of #1.** When a change moves, renames, or reformats a surface that another surface reads, writes, or validates — generator ↔ validator, model ↔ writer, rule ↔ mirror, schema ↔ producer, template ↔ rendered file — name the coupled surface and verify its check is fail-closed against the new shape *in the same commit*. A silent reader is a defect the moving change inherits. #1 names the *vertical* axis (same defect across multiple inputs); 1a names the *lateral* axis (the symmetric defect on the surface that wasn't touched). Default failure mode: agent fixes the producer side and treats the consumer as someone else's problem; the consumer rots until an unrelated GHI surfaces it. **This is emphatic and explicit:** producer-side completion without re-running the coupled consumer's check is incomplete work, not "scope discipline." Canonical exemplars — GHI #361 (banner-position fix, generator) → GHI #368 (validator-strip-logic rot, ~3 weeks silent); GHI #358 (`InsightRecord` model lock) → GHI #371 (writer-side `schema`/`kind` envelope drift, hook fail-closed on an unrelated commit). Mechanical anchor (follow-up): `data/coupled_surfaces.json` registry + `gz validate --coupled-surfaces` audit fail-closing when one side of a registered pair changes without the other side's check passing (GHI #372).
+1a. **Coupled-surface coherence — the lateral axis of #1.** When a change moves, renames, or reformats a surface another surface reads, writes, or validates (generator ↔ validator, model ↔ writer, rule ↔ mirror, schema ↔ producer, template ↔ rendered file), name the coupled surface and verify its check is fail-closed against the new shape *in the same commit*. Producer-side completion without re-running the consumer's check is incomplete work, not "scope discipline." See [`docs/governance/agent-contract-rationale.md` § Rationale for 1a](docs/governance/agent-contract-rationale.md#rationale-for-1a-coupled-surface-coherence) for exemplars and the mechanical-anchor follow-up (GHI #372).
 2. **No vibe coding.** Vibe coding = plausible-looking code without reading the surface, without a failing test first, without tracing data flow, without observed-output checks. Passes review because it looks right; fails in production because it never was.
 3. **Prefer the more thorough fix.** Pick the class fix unless it has a concrete named downside larger than the class of failures it prevents. "Smaller diff" / "faster to land" / "less scary" are not concrete downsides.
 4. **Verify observed behavior, not assumed behavior.** Run the destination command, paste actual output. Narrative reconstruction from memory is not verification. Same rule as ARB receipt-IDs.
@@ -155,9 +151,7 @@ Canonical interaction mode for gzkit work — design, decision, doctrine authori
 - Reasoning without decision-shaped recommendation
 - **Agent asks operator to read raw JSON, YAML, or other machine-readable artifacts.** Machine-readable formats are agent-input surfaces, not review surfaces. Review surface is always human-readable prose summary in chat — table, bulleted summary, structured paragraphs naming substantive content. JSON/YAML/config is the artifact produced *from* approval, not read *for* approval.
 
-### Why this is canon, not preference
-
-This is the interaction shape that produces witnessed, attestable, replayable governance work without the operator's bandwidth as bottleneck. Other modes (operator drafts, agent reviews; bundled question intake; open-ended brainstorming without decision-shaping) shift typing burden onto operator or produce output requiring re-authoring after the fact — both are vibing through the interaction layer.
+See [`docs/governance/agent-contract-rationale.md` § Operator economy — why this is canon](docs/governance/agent-contract-rationale.md#operator-economy--why-this-is-canon) for the rationale (other interaction modes shift typing burden onto operator or produce output requiring re-authoring; both vibe through the interaction layer).
 
 ## Behavior Rules
 
@@ -173,7 +167,7 @@ This is the interaction shape that produces witnessed, attestable, replayable go
 8. **Surface assumptions explicitly before implementing.** Building on unstated assumptions the human would have corrected is how confident-wrong-direction runs start. Name; let human ratify or replace. (Judgment 12)
 9. **On inconsistencies: STOP, name confusion, present tradeoff, wait.** Silently picking one interpretation is vibe-coding's judgment-time face. When brief, ADR, runbook, code disagree, the disagreement is the signal — raise it, don't resolve unilaterally. (Judgment 13)
 10. **Push back when an approach has clear problems.** Sycophantic agreement with a flawed plan is a trust defect. Say "this breaks X" or "this contradicts Y"; cite the rule or constraint. (Judgment 14)
-11. **When the operator course-corrects in flight, append an `improvement` record to `.gzkit/insights/agent-insights.jsonl` before completing the corrected work.** A course-correction is the operator naming a wrong assumption, redirecting an interpretation, or calling out drift. Required fields: `scope` (skill / rule / surface that drifted), `summary` (one sentence on what the correction was), `evidence` (file paths or commands proving the drift), `next_action` (what changes structurally to prevent recurrence). The record is the trackable trace of the correction; without it the lesson is unwitnessed and the loop depends on agent recall turn-by-turn. (GHI #357)
+11. **When the operator course-corrects in flight, append an `improvement` record to `.gzkit/insights/agent-insights.jsonl` before completing the corrected work.** Required fields: `scope`, `summary`, `evidence`, `next_action`. See [`docs/governance/agent-contract-rationale.md` § Rationale for Behavior Rule 11](docs/governance/agent-contract-rationale.md#rationale-for-behavior-rule-11-course-correction--insights) (GHI #357).
 
 ### Never
 
@@ -364,20 +358,7 @@ Receipt IDs inline, e.g. `(lint: receipt arb-2026-04-14T12-34-56-ruff)`. Citing 
 
 ### Worked example
 
-User says: `attest completed`
-
-Agent passes to `--attestation-text`:
-
-```
-attest completed — Confirm decision: gzkit cli_audit + doc_coverage surface
-architecturally superior (AST vs parser._actions private API, 5-surface
-manifest-driven coverage, 76 vs 1 tests, frozen Pydantic vs dict[str,Any]);
-no absorption of external reference cli_audit module warranted.
-Receipts: lint arb-2026-04-14T12-34-56-ruff; types arb-2026-04-14T12-35-02-ty;
-tests arb-2026-04-14T12-36-18-unittest; coverage arb-2026-04-14T12-37-44-coverage.
-```
-
-See [`docs/governance/agent-contract-rationale.md#attestation--worked-example`](docs/governance/agent-contract-rationale.md#attestation--worked-example) for the lifted worked-example pedagogy and [`docs/governance/arb-middleware.md`](docs/governance/arb-middleware.md) for ARB middleware deep-dive.
+See [`docs/governance/agent-contract-rationale.md` § Attestation — worked example](docs/governance/agent-contract-rationale.md#attestation--worked-example) for the canonical worked example, and [`docs/governance/arb-middleware.md`](docs/governance/arb-middleware.md) for ARB middleware deep-dive.
 
 ## Defect-fix routing
 

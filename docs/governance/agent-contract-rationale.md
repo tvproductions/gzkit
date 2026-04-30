@@ -111,6 +111,93 @@ observed evidence are post-hoc reasoning pathways, not verification
 pathways — in all three cases, the fix is to move the verification *before*
 the claim.
 
+## Rationale for 1a (coupled-surface coherence)
+
+*Origin: GHI #372 (DO IT RIGHT invariant 1a — coupled-surface coherence,
+the lateral axis of #1). Lifted from `AGENTS.md` § DO IT RIGHT inline
+narrative under GHI #327 follow-up.*
+
+#1 names the *vertical* axis of "fix the class": the same defect across
+multiple inputs to a single surface. 1a names the *lateral* axis: the
+symmetric defect on the surface that wasn't touched. When a change moves,
+renames, or reformats one side of a coupled pair (generator ↔ validator,
+model ↔ writer, rule ↔ mirror, schema ↔ producer, template ↔ rendered
+file), the consumer's check stays silent against the new shape until an
+unrelated commit surfaces the rot.
+
+**Operator framing (GHI #372):** *"This is part of DO IT RIGHT — GHI it
+and add it, emphatically… explicitly."* Producer-side completion without
+re-running the coupled consumer's check is incomplete work, not "scope
+discipline."
+
+**Canonical exemplars (window: past 30 days at GHI #372 authorship):**
+
+- GHI #361 (banner-position fix, generator side) → GHI #368
+  (validator-strip-logic rot, ~3 weeks silent until the next commit
+  hit it). The producer-side fix landed; the validator on the
+  consumer side kept asserting the old shape. Caught only when an
+  unrelated change disturbed the validator.
+- GHI #358 (`InsightRecord` model lock) → GHI #371 (writer-side
+  `schema`/`kind` envelope drift). The model was locked at one
+  surface; the writer on the consumer side kept emitting the old
+  envelope. Hook fail-closed on an unrelated commit.
+- (Latent at authorship, not yet a GHI) `skill_surface_sync.instructions.md`
+  rule placement on the producer side without the consumer-side
+  AGENTS.md scaffold check.
+
+**Mechanical anchor (deliberately follow-up scope):**
+`data/coupled_surfaces.json` registry naming known generator/validator,
+model/writer, rule/mirror pairs, plus a `gz validate --coupled-surfaces`
+audit fail-closing when one side of a registered pair changes without
+the other side's check passing. Tracked under GHI #372 — the judgment
+invariant lands now; mechanical promotion follows the canonical
+advisory → mechanical pipeline (`docs/governance/advisory-rules-audit.md`).
+
+The same discipline applies recursively to AGENTS.md itself: edit
+`src/gzkit/templates/agents.md` (canonical) and let
+`gz agent sync control-surfaces` propagate to the rendered file.
+Editing the rendered file directly violates the very invariant 1a
+binds (template ↔ rendered file is a registered coupled-surface pair).
+
+## Rationale for Behavior Rule 11 (course-correction → insights)
+
+*Origin: GHI #357 (Behavior Rules — Always #11 — append improvement
+record on operator course-correction). Lifted from `AGENTS.md` §
+Behavior Rules — Always #11 inline narrative under GHI #327 follow-up.*
+
+A course-correction is the operator naming a wrong assumption,
+redirecting an interpretation, or calling out drift in flight. Without
+a trackable trace, the lesson is unwitnessed and the loop depends on
+agent recall turn-by-turn — exactly the failure shape `Correction fails`
+in `.gzkit/rules/agent-failure-modes.md` names. The improvement record
+under `.gzkit/insights/agent-insights.jsonl` is the mechanical floor:
+the correction lands at T2 (ledger-adjacent insight stream) where it
+can be reviewed, surfaced in subsequent sessions, and audited against
+recurrence.
+
+**Required fields:**
+
+- `scope` — skill / rule / surface that drifted
+- `summary` — one sentence on what the correction was
+- `evidence` — file paths or commands proving the drift
+- `next_action` — what changes structurally to prevent recurrence
+
+The `next_action` field is load-bearing: a correction without a
+structural follow-up is a one-shot patch, not a rule learning. If the
+next action is *"agent will be more careful next time,"* that is
+agent-trust posture (the failure mode the entire contract is engineered
+against). The next action should name a rule, validator, hook, or
+surface change that closes the drift mechanically.
+
+**Relationship to the rest of the contract:**
+
+Rule 11 supplies the trace that backstops `Correction fails` from
+`.gzkit/rules/agent-failure-modes.md`. The layered-trust T1/T2/T3
+invariants in `docs/governance/trust-doctrine.md` supply the structural
+defense — a correction that lands at T1 (canon edit) but not at T2
+(ledger / insight stream) or T3 (derived view) is the recurrence
+vector. Rule 11 is the T2 floor.
+
 ## Why this contract is not minimal
 
 *Lifted from `AGENTS.md` § Why this contract is not minimal under GHI #327.*
@@ -157,6 +244,30 @@ confidence threshold, surface assumptions, STOP on inconsistencies, push
 back on flawed approaches), § Attestation (ARB receipts as observed
 evidence) — are this mantra rendered as mechanical checks. When those
 checks are silent, the mantra is the conscience.
+
+## Operator economy — why this is canon
+
+*Lifted from `AGENTS.md` § OPERATOR ECONOMY OF EFFORT § Why this is
+canon, not preference under GHI #327 follow-up.*
+
+The draft-review-decide-attest interaction shape is the one that produces
+witnessed, attestable, replayable governance work without the operator's
+bandwidth as bottleneck. The contrast modes that the binding bullets rule
+out:
+
+- **Operator drafts; agent reviews.** Shifts typing burden onto operator;
+  the agent's reviewer-only role produces no substantive contribution to
+  the artifact.
+- **Bundled question intake.** Operator types one long bulleted answer
+  rolling several decisions together; the multiple-choice forcing
+  function is bypassed; decisions blur.
+- **Open-ended brainstorming without decision-shaping.** Produces text
+  that requires the operator to re-author after the fact to extract a
+  decision; the brainstorming output is not a deliverable.
+
+All three are vibing through the interaction layer — the failure mode
+the entire contract is engineered against. The operator-economy mode is
+the conscience that names the shape *before* it leaks through.
 
 ## Attestation — worked example
 
