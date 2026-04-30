@@ -75,6 +75,8 @@ Ownership without craftsmanship produces confident-wrong-direction work — patc
 
 See `docs/governance/agent-contract-rationale.md` § Rationale for 6g/6h (Lindsey et al. 2025 reporting-pathway citation).
 
+See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md) for the canonical six-pattern failure-mode taxonomy these invariants backstop ([ADR-0.0.23](docs/design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/ADR-0.0.23-agent-failure-mode-taxonomy.md)).
+
 ### Extracted pedagogy
 
 Anti-pattern canon (GHI #157) and TASK-driven workflow binding (GHI #160) live in [`docs/governance/agent-contract-rationale.md`](docs/governance/agent-contract-rationale.md). Both binding; this section points at canonical home. Invariants 1–6, 6c, 6g, 6h load per-turn; pedagogy is read at authoring time.
