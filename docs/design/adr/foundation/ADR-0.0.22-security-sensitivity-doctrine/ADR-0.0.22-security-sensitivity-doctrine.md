@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.22-security-sensitivity-doctrine
-status: Proposed
+status: Validated
 kind: foundation
 semver: 0.0.22
 lane: heavy
