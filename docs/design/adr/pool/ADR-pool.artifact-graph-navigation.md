@@ -72,9 +72,11 @@ post-1.0 dependency for other reasons.
   from the same graph view agents query through MCP; building both shares the
   underlying graph representation.
 
-- **Status quo.** `gz state --json | jq` and `gz status` cover most queries
-  today. This is the right answer until the scale threshold is crossed —
-  hence this ADR pools rather than activates.
+- **Status quo.** `gz state --json` (with file-handoff parsing per
+  `.gzkit/rules/cross-platform.md` § Windows-safe helper patterns) and
+  `gz status` cover most queries today. This is the right answer until
+  the scale threshold is crossed — hence this ADR pools rather than
+  activates.
 
 ## Notes
 

@@ -207,6 +207,8 @@ def forbid_skill_sync_drift(root: Path) -> int:
                 )
         if path.startswith(".gzkit/rules/") and path.endswith(".md"):
             rel = path[len(".gzkit/rules/") :]
+            if Path(rel).name == "AGENTS.md":
+                continue
             mirror_claude = f".claude/rules/{rel}"
             mirror_github = f".github/instructions/{rel}"
             if mirror_claude not in staged_paths and mirror_github not in staged_paths:
