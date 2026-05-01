@@ -14,6 +14,8 @@ from typing import Any
 from gzkit.config import GzkitConfig
 from gzkit.hooks.claude import generate_claude_settings, merge_settings, setup_claude_hooks
 from gzkit.hooks.copilot import generate_copilotignore, setup_copilot_hooks
+from gzkit.ledger import Ledger
+from gzkit.ledger_events import agent_sync_completed_event
 from gzkit.rules import load_rules, render_rules_to_dir
 from gzkit.rules import sync_claude_rules as sync_claude_rules  # noqa: F401
 from gzkit.rules import sync_nested_agents_md as sync_nested_agents_md  # noqa: F401
@@ -584,12 +586,29 @@ def sync_persona_mirrors(
 # ---------------------------------------------------------------------------
 
 
-def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]:
+def _count_canonical_rules(project_root: Path) -> int:
+    """Return the number of canonical rule files under ``.gzkit/rules``."""
+    rules_dir = project_root / ".gzkit" / "rules"
+    if not rules_dir.is_dir():
+        return 0
+    return sum(1 for path in rules_dir.glob("*.md") if path.is_file())
+
+
+def sync_all(
+    project_root: Path,
+    config: GzkitConfig | None = None,
+    *,
+    emit_event: bool = True,
+) -> list[str]:
     """Regenerate all control surfaces.
 
     Args:
         project_root: Project root directory.
         config: Optional configuration. Loaded from .gzkit.json if not provided.
+        emit_event: When True (default), append an ``agent_sync_completed``
+            ledger event after a successful sync (GHI #369). Snapshot-replay
+            callers (``plan_sync_all``) pass ``False`` to keep the dry-run
+            preview ledger-silent.
 
     Returns:
         List of files that were updated.
@@ -672,5 +691,10 @@ def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]
     # Normalize to forward-slash POSIX form so cross-platform consumers
     # (tests, drift reporters, operator output) see a stable shape. See
     # .gzkit/rules/cross-platform.md: no hard-coded path separators.
-    normalized = [Path(entry).as_posix() for entry in updated]
-    return sorted(set(normalized))
+    normalized = sorted({Path(entry).as_posix() for entry in updated})
+
+    if emit_event:
+        ledger = Ledger(project_root / config.paths.ledger)
+        ledger.append(agent_sync_completed_event(normalized, _count_canonical_rules(project_root)))
+
+    return normalized

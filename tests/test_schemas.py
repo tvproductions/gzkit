@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from gzkit.events import (
     AdrAnnotatedEvent,
     AdrCreatedEvent,
+    AgentSyncCompletedEvent,
     ArtifactEditedEvent,
     ArtifactRenamedEvent,
     AttestedEvent,
@@ -212,6 +213,7 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "artifact_renamed": ArtifactRenamedEvent,
     "adr_annotated": AdrAnnotatedEvent,
     "lifecycle_transition": LifecycleTransitionEvent,
+    "agent_sync_completed": AgentSyncCompletedEvent,
 }
 
 # Base fields present on _EventBase -- not event-specific

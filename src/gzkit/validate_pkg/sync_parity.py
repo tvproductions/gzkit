@@ -104,7 +104,7 @@ def plan_sync_all(project_root: Path, config: GzkitConfig | None = None) -> list
     created: set[Path] = set()
     planned: list[str] = []
     try:
-        raw_planned = list(sync_all(project_root, config))
+        raw_planned = list(sync_all(project_root, config, emit_event=False))
         for entry in raw_planned:
             candidate = Path(entry)
             if candidate.is_absolute():

@@ -415,6 +415,14 @@ class LifecycleTransitionEvent(_EventBase):
     to_state: str
 
 
+class AgentSyncCompletedEvent(_EventBase):
+    """agent_sync_completed event — mechanical witness for control-surface sync (GHI #369)."""
+
+    event: Literal["agent_sync_completed"]
+    updated_paths: list[str]
+    canonical_rule_count: int
+
+
 # ---------------------------------------------------------------------------
 # TASK ledger events (ADR-0.22.0 / OBPI-0.22.0-02)
 # ---------------------------------------------------------------------------

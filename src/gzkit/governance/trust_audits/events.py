@@ -36,6 +36,11 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "Consumed by _build_latest_gate_states during graph construction, "
         "not by a per-event handler."
     ),
+    "agent_sync_completed": (
+        "Mechanical witness for `gz agent sync control-surfaces` runs (GHI #369). "
+        "Records that canonical rules + mirrors regenerated; consumed by sync "
+        "audits and brief-level REQ proofs, not the artifact graph."
+    ),
 }
 
 _VALIDATOR_FIELD_WAIVERS: dict[str, str] = {}

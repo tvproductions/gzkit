@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import tempfile
@@ -301,6 +302,72 @@ class TestSyncCommand(unittest.TestCase):
             self.assertEqual(first.exit_code, 0)
             self.assertEqual(second.exit_code, 0)
             self.assertEqual(first.output, second.output)
+
+    def _read_agent_sync_events(self) -> list[dict[str, object]]:
+        ledger_path = Path(".gzkit/ledger.jsonl")
+        events: list[dict[str, object]] = []
+        if not ledger_path.exists():
+            return events
+        for line in ledger_path.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if not stripped:
+                continue
+            entry = json.loads(stripped)
+            if entry.get("event") == "agent_sync_completed":
+                events.append(entry)
+        return events
+
+    def test_agent_sync_emits_ledger_event_on_apply(self) -> None:
+        """Successful apply-mode sync writes one ``agent_sync_completed`` event (GHI #369)."""
+        runner = CliRunner()
+        with _InitFromTemplate():
+            before = self._read_agent_sync_events()
+            result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            after = self._read_agent_sync_events()
+            self.assertEqual(
+                len(after) - len(before),
+                1,
+                "exactly one agent_sync_completed event must land per successful sync",
+            )
+
+    def test_agent_sync_dry_run_does_not_emit_ledger_event(self) -> None:
+        """Dry-run preview must not emit an ``agent_sync_completed`` event (GHI #369)."""
+        runner = CliRunner()
+        with _InitFromTemplate():
+            before = self._read_agent_sync_events()
+            result = runner.invoke(main, ["agent", "sync", "control-surfaces", "--dry-run"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            after = self._read_agent_sync_events()
+            self.assertEqual(
+                len(after),
+                len(before),
+                "dry-run must leave the ledger event count unchanged",
+            )
+
+    def test_agent_sync_event_payload_records_paths_and_rule_count(self) -> None:
+        """The emitted event records updated paths and canonical rule count (GHI #369)."""
+        runner = CliRunner()
+        with _InitFromTemplate():
+            result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            events = self._read_agent_sync_events()
+            self.assertTrue(events, "expected at least one agent_sync_completed event")
+            event = events[-1]
+            self.assertEqual(event.get("event"), "agent_sync_completed")
+            self.assertTrue(
+                str(event.get("id", "")).startswith("agent-sync-"),
+                f"id must be namespaced as agent-sync-<ts>; got {event.get('id')!r}",
+            )
+            updated_paths = event.get("updated_paths")
+            self.assertIsInstance(updated_paths, list)
+            assert isinstance(updated_paths, list)
+            self.assertTrue(updated_paths, "updated_paths must not be empty after a real sync")
+            self.assertIn("AGENTS.md", updated_paths)
+            rule_count = event.get("canonical_rule_count")
+            self.assertIsInstance(rule_count, int)
+            assert isinstance(rule_count, int)
+            self.assertGreaterEqual(rule_count, 0)
 
     def test_agent_sync_regenerates_copilot_instructions_with_canonical_rules(self) -> None:
         """copilot-instructions.md regenerates from template even when canonical
