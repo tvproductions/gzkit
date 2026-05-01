@@ -160,6 +160,31 @@ def _extract_subtree_prefix(pattern: str) -> str | None:
     return "/".join(prefix_parts) if prefix_parts else None
 
 
+_VENDOR_MIRROR_ROOTS: tuple[str, ...] = (
+    ".claude",
+    ".agents",
+    ".github/instructions",
+    ".github/skills",
+)
+
+
+def _is_vendor_mirror_prefix(prefix: str) -> bool:
+    """Return True for prefixes that name a vendor-rendered output surface.
+
+    Vendor mirrors (.claude, .agents, .github/instructions, .github/skills)
+    are destinations gz writes generated content into — they are not
+    user-authored subtrees that take nested AGENTS.md guidance. A meta-rule
+    whose paths enumerate the vendor mirror it is itself rendered into
+    (e.g. skill-surface-sync includes .github/instructions/**) creates a
+    self-referential subtree the validator must waive (GHI #375).
+    """
+    normalized = prefix.replace("\\", "/").strip("/")
+    return any(
+        normalized == mirror or normalized.startswith(mirror + "/")
+        for mirror in _VENDOR_MIRROR_ROOTS
+    )
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -205,7 +230,9 @@ def classify_instruction_rules(project_root: Path) -> list[ClassifiedRule]:
         if not is_global:
             for p in patterns:
                 prefix = _extract_subtree_prefix(p)
-                if prefix and prefix not in subtree_prefixes:
+                if prefix is None or _is_vendor_mirror_prefix(prefix):
+                    continue
+                if prefix not in subtree_prefixes:
                     subtree_prefixes.append(prefix)
 
         rules.append(
