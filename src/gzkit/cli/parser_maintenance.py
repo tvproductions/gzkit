@@ -448,6 +448,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Validate `.gzkit/insights/agent-insights.jsonl` records (GHI #358)",
     )
     p_validate.add_argument(
+        "--instructions-files-budget",
+        dest="check_instructions_files_budget",
+        action="store_true",
+        help="AGENTS.md/CLAUDE.md/.claude/rules char budget (GHI #373)",
+    )
+    p_validate.add_argument(
         "--adr-status-fresh",
         dest="check_adr_status_fresh",
         action="store_true",
@@ -526,6 +532,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_advisory_scorecard=a.check_advisory_scorecard,
             check_reconcile_freshness=a.check_reconcile_freshness,
             check_insights_shape=a.check_insights_shape,
+            check_instructions_files_budget=a.check_instructions_files_budget,
             check_adr_status_fresh=a.check_adr_status_fresh,
             check_orientation_freshness=a.check_orientation_freshness,
             check_taxonomy=a.check_taxonomy,

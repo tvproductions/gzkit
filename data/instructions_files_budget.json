@@ -1,0 +1,13 @@
+{
+  "_doc": "Per-file char budgets for instructions/memory files (GHI #373). AGENTS.md and CLAUDE.md cap at Claude Code's 40k performance threshold. Rule-file cap is empirically set above current max (tool-skill-runbook-alignment.md = 15087 chars) with headroom; tighter rule-file targets are a follow-up after the next .gzkit/rules/ diet pass.",
+  "files": {
+    "AGENTS.md": 40000,
+    "CLAUDE.md": 40000
+  },
+  "globs": [
+    {
+      "pattern": ".claude/rules/*.md",
+      "max_chars_per_file": 16000
+    }
+  ]
+}

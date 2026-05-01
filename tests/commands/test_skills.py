@@ -347,6 +347,10 @@ class TestSkillCommands(unittest.TestCase):
                 patch("gzkit.quality.run_adr_status_fresh_audit", return_value=ok),
                 patch("gzkit.quality.run_orientation_freshness_audit", return_value=ok),
                 patch("gzkit.quality.run_insights_shape_audit", return_value=ok),
+                patch(
+                    "gzkit.quality.run_instructions_files_budget_audit",
+                    return_value=ok,
+                ),
                 patch("gzkit.quality.run_preflight", return_value=ok),
             ):
                 result = runner.invoke(main, ["check"])
