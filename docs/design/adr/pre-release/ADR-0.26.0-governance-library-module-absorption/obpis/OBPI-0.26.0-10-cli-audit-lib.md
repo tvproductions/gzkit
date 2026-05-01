@@ -5,6 +5,7 @@ item: 10
 status: Pending
 lane: heavy
 date: 2026-03-21
+paired_with: OBPI-0.25.0-24-cli-audit-pattern
 ---
 
 # OBPI-0.26.0-10: CLI Audit Library
