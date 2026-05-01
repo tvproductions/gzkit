@@ -12,10 +12,7 @@ build:
       - pip install -r requirements-docs.txt
     build:
       html:
-        - |
-          version=$(python -c "import tomllib, pathlib; print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])")
-          export GZKIT_DOCS_VERSION="v${version}"
-          mkdocs build --strict --site-dir $READTHEDOCS_OUTPUT/html
+        - mkdocs build --strict --site-dir $READTHEDOCS_OUTPUT/html
 
 mkdocs:
   configuration: mkdocs.yml

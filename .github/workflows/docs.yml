@@ -49,13 +49,6 @@ jobs:
       - name: Install docs dependencies
         run: uv pip install -r requirements-docs.txt
 
-      - name: Resolve docs version from pyproject.toml
-        id: docs_version
-        run: |
-          version=$(uv run python -c "import tomllib, pathlib; print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])")
-          echo "GZKIT_DOCS_VERSION=v${version}" >> "$GITHUB_ENV"
-          echo "Stamping docs with version v${version}"
-
       - name: Build docs (strict)
         run: uv run -m mkdocs build --strict
 
