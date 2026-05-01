@@ -6,6 +6,7 @@ status: Completed
 lane: heavy
 date: 2026-03-21
 decision: Absorb
+paired_with: OBPI-0.25.0-26-drift-detection-pattern
 ---
 
 # OBPI-0.26.0-06: Drift Detection

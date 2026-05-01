@@ -6,6 +6,7 @@ status: Completed
 lane: heavy
 date: 2026-03-21
 decision: Confirm
+paired_with: OBPI-0.25.0-20-adr-governance-pattern
 ---
 
 # OBPI-0.26.0-04: ADR Governance

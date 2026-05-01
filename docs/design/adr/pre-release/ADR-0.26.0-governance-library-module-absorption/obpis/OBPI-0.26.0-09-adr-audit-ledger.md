@@ -5,6 +5,7 @@ item: 9
 status: Pending
 lane: heavy
 date: 2026-03-21
+paired_with: OBPI-0.25.0-19-adr-audit-ledger-pattern
 ---
 
 # OBPI-0.26.0-09: ADR Audit Ledger

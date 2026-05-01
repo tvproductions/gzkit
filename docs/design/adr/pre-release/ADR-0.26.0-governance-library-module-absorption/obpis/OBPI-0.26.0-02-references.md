@@ -5,6 +5,7 @@ item: 2
 status: Completed
 lane: heavy
 date: 2026-03-21
+paired_with: OBPI-0.25.0-30-references-pattern
 ---
 
 # OBPI-0.26.0-02: References
