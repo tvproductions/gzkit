@@ -28,3 +28,15 @@
   text-overflow: clip;
   white-space: nowrap;
 }
+
+/*
+ * Removing container width/overflow constraints let the inline tag SVG
+ * render at its viewBox-natural size. Pin it back to the size mkdocs-material
+ * uses for source facts.
+ */
+.md-source__fact svg {
+  width: 0.7rem;
+  height: 0.7rem;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
