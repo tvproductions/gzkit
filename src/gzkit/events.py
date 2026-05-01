@@ -423,6 +423,61 @@ class AgentSyncCompletedEvent(_EventBase):
     canonical_rule_count: int
 
 
+class AdrEvalCompletedEvent(_EventBase):
+    """adr_eval_completed event — ADR evaluation scorecard summary."""
+
+    event: Literal["adr_eval_completed"]
+    verdict: str
+    adr_weighted_total: float
+    obpi_count: int
+    action_item_count: int
+
+
+class AuditGeneratedEvent(_EventBase):
+    """audit_generated event — heavy-lane ADR audit artifact creation."""
+
+    event: Literal["audit_generated"]
+    audit_file: str
+    audit_plan_file: str
+    passed: bool
+
+
+class ObpiLockClaimedEvent(_EventBase):
+    """obpi_lock_claimed event — multi-agent OBPI claim record."""
+
+    event: Literal["obpi_lock_claimed"]
+    agent: str
+    ttl_minutes: int
+    branch: str
+    session_id: str
+
+
+class ObpiLockReleasedEvent(_EventBase):
+    """obpi_lock_released event — OBPI lock release record."""
+
+    event: Literal["obpi_lock_released"]
+    agent: str
+    force: bool = False
+
+
+class ObpiWithdrawnEvent(_EventBase):
+    """obpi_withdrawn event — withdrawal record for a non-completing OBPI brief."""
+
+    event: Literal["obpi_withdrawn"]
+    reason: str
+
+
+class PatchReleaseEvent(_EventBase):
+    """patch-release event — GHI-driven patch release ceremony record."""
+
+    event: Literal["patch-release"]
+    version: str
+    previous_version: str
+    tag: str | None = None
+    ghi_summary: list[dict[str, Any]]
+    manifest_path: str
+
+
 # ---------------------------------------------------------------------------
 # TASK ledger events (ADR-0.22.0 / OBPI-0.22.0-02)
 # ---------------------------------------------------------------------------
@@ -479,6 +534,13 @@ TypedLedgerEvent = Annotated[
     | ArtifactRenamedEvent
     | AdrAnnotatedEvent
     | LifecycleTransitionEvent
+    | AgentSyncCompletedEvent
+    | AdrEvalCompletedEvent
+    | AuditGeneratedEvent
+    | ObpiLockClaimedEvent
+    | ObpiLockReleasedEvent
+    | ObpiWithdrawnEvent
+    | PatchReleaseEvent
     | TaskStartedEvent
     | TaskCompletedEvent
     | TaskBlockedEvent

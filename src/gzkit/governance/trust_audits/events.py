@@ -2,6 +2,9 @@
 
 * ``audit_event_handlers`` — every ledger event emitted has a graph handler
   claiming it, or an explicit ``_NO_GRAPH_IMPACT`` waiver with rationale.
+* ``audit_event_schemas`` — every ledger event emitted has a paired
+  ``schemas/ledger.json`` entry so ``gz validate --ledger`` does not
+  fail-close with ``Unknown event type`` (GHI #374 class).
 * ``audit_validator_fields`` — every validator ``info.get('<field>')`` read
   has a corresponding graph or creation-entry write.
 """
@@ -9,6 +12,7 @@
 from __future__ import annotations
 
 import ast
+import json
 import re
 from pathlib import Path
 
@@ -101,6 +105,89 @@ def _collect_emitted_event_types(source: Path) -> set[str]:
             if isinstance(value, ast.Constant) and isinstance(value.value, str):
                 emitted.add(value.value)
     return emitted
+
+
+def _collect_typed_model_event_types(source: Path) -> set[str]:
+    """Collect event-name literals from ``event: Literal["<name>"]`` annotations.
+
+    TASK ledger events (and similar Pydantic-direct emitters) declare their
+    event name on the model class, not via a factory call — they need to be
+    counted as emitted shapes for schema-coverage purposes.
+    """
+    tree = ast.parse(source.read_text(encoding="utf-8"))
+    typed: set[str] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.ClassDef):
+            continue
+        for item in node.body:
+            if not isinstance(item, ast.AnnAssign):
+                continue
+            target = item.target
+            if not (isinstance(target, ast.Name) and target.id == "event"):
+                continue
+            annotation = item.annotation
+            if not (
+                isinstance(annotation, ast.Subscript)
+                and isinstance(annotation.value, ast.Name)
+                and annotation.value.id == "Literal"
+            ):
+                continue
+            literal_arg = annotation.slice
+            if isinstance(literal_arg, ast.Constant) and isinstance(literal_arg.value, str):
+                typed.add(literal_arg.value)
+    return typed
+
+
+def audit_event_schemas(project_root: Path) -> list[ValidationError]:
+    """Fail on emitted ledger event types missing from ``schemas/ledger.json`` (GHI #374 class).
+
+    Walks ``src/gzkit/ledger_events.py`` for factory-call ``event="<name>"`` constants
+    and ``src/gzkit/events.py`` for typed-model ``event: Literal["<name>"]``
+    annotations. Compares the union against the events declared in
+    ``src/gzkit/schemas/ledger.json``. A factory or typed model without a paired
+    schema entry causes ``gz validate --ledger`` to emit ``Unknown event type``
+    once the event lands on the ledger — the same coupled-surface failure the
+    handler audit closes on the graph side.
+    """
+    ledger_events = project_root / "src" / "gzkit" / "ledger_events.py"
+    typed_events = project_root / "src" / "gzkit" / "events.py"
+    schema_file = project_root / "src" / "gzkit" / "schemas" / "ledger.json"
+    if not ledger_events.is_file() or not typed_events.is_file() or not schema_file.is_file():
+        return []
+
+    emitted = _collect_emitted_event_types(ledger_events)
+    emitted |= _collect_typed_model_event_types(typed_events)
+
+    schema = json.loads(schema_file.read_text(encoding="utf-8"))
+    declared = set(schema.get("events", {}).keys())
+
+    errors: list[ValidationError] = []
+    for missing in sorted(emitted - declared):
+        errors.append(
+            ValidationError(
+                type="event_schemas",
+                artifact=f"src/gzkit/schemas/ledger.json::{missing}",
+                message=(
+                    f"Ledger event `{missing}` is emitted but has no entry in "
+                    "src/gzkit/schemas/ledger.json. Add a schema entry naming "
+                    "required fields and property types so `gz validate --ledger` "
+                    "does not fail-close with `Unknown event type`."
+                ),
+            )
+        )
+    for stale in sorted(declared - emitted):
+        errors.append(
+            ValidationError(
+                type="event_schemas",
+                artifact=f"src/gzkit/schemas/ledger.json::{stale}",
+                message=(
+                    f"Schema declares event `{stale}` but no factory in "
+                    "src/gzkit/ledger_events.py and no typed model in "
+                    "src/gzkit/events.py emits it. Remove the stale schema entry."
+                ),
+            )
+        )
+    return errors
 
 
 def _string_constant(node: ast.AST) -> str | None:
