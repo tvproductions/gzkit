@@ -263,18 +263,19 @@ def detect_duplicates(issues: list[Issue]) -> dict[int, int]:
 
 
 def route(issue: Issue, precedent_ok: bool, duplicates: dict[int, int]) -> str:
+    """Triage routing for an open GHI.
+
+    GHIs are repair vessels for defects; the receipts left on the GHI itself
+    are the audit trail. Triage never routes to OBPI — OBPI ceremony is
+    reserved for new feature-shape work under an active ADR (operator-
+    directed via gz plan / gz-design), not produced from the issue queue.
+    Feature-shape signals on a GHI are surfaced through `rationale()` as
+    escalation hints for operator judgment, not as a routing flip.
+    """
     if issue.number in duplicates:
         return "close-dup"
     if not precedent_ok:
         return "ambiguous"
-    body = issue.body or ""
-    if any(p.search(body) or p.search(issue.title) for p in _OBPI_SIGNALS):
-        return "OBPI-ceremony"
-    paths = issue.unique_paths
-    if len(paths) > 3:
-        return "OBPI-ceremony"
-    if re.search(r"\bOBPI-\d+\.\d+\.\d+-\d+\b", issue.title) and "premise broken" in body.lower():
-        return "OBPI-ceremony"
     return "direct-fix"
 
 
@@ -315,7 +316,6 @@ def rationale(issue: Issue, route_label: str, duplicates: dict[int, int]) -> str
 URGENCY_RANK = {"now": 0, "soon": 1, "later": 2}
 ROUTE_LABEL = {
     "direct-fix": "direct-fix",
-    "OBPI-ceremony": "OBPI",
     "ambiguous": "ambiguous",
     "close-dup": "close",
 }
@@ -324,7 +324,6 @@ ROUTE_LABEL = {
 URGENCY_STYLE = {"now": "bold red", "soon": "yellow", "later": "dim"}
 ROUTE_STYLE = {
     "direct-fix": "green",
-    "OBPI": "magenta",
     "ambiguous": "yellow",
     "close": "dim",
 }

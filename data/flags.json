@@ -10,26 +10,6 @@
       "review_by": "2026-06-29",
       "linked_adr": "ADR-0.23.0",
       "linked_issue": "GHI-49"
-    },
-    {
-      "key": "migration.config_gates_to_flags",
-      "category": "migration",
-      "default": true,
-      "description": "Migration complete. The config.gates prototype has been removed; the flag service is the sole authority for gate enforcement levels.",
-      "owner": "governance",
-      "introduced_on": "2026-03-29",
-      "remove_by": "2026-05-01",
-      "linked_adr": "ADR-0.0.8"
-    },
-    {
-      "key": "release.drift_command",
-      "category": "release",
-      "default": false,
-      "description": "When enabled, the gz drift command is available in the CLI. When disabled, the command is hidden.",
-      "owner": "cli",
-      "introduced_on": "2026-03-29",
-      "remove_by": "2026-04-30",
-      "linked_adr": "ADR-0.20.0"
     }
   ]
 }
