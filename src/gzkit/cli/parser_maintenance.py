@@ -1029,7 +1029,7 @@ def _register_flag_parsers(commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(
             [
                 "gz flag explain ops.product_proof",
-                "gz flag explain migration.config_gates_to_flags --json",
+                "gz flag explain ops.product_proof --json",
             ]
         ),
     )

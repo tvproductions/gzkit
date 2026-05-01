@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-25
 metadata:
-  skill-version: "4.0.0"
+  skill-version: "4.1.0"
 ---
 
 # ghi-triage
@@ -143,11 +143,11 @@ neither is part of the agent's binding output.
 1. `gh issue list --state open --limit N --json number,title,labels,createdAt,updatedAt,body`
 2. `git log --since='60 days ago' --grep='^fix('` to compute precedent count (cached in `~/.cache/gzkit/triage-precedent.json` keyed by HEAD SHA — recomputed only when HEAD moves)
 3. Detects duplicates by identical title (canonical = lowest number)
-4. Routes each issue per `AGENTS.md` § Defect-fix routing thresholds:
-   - **direct-fix** when precedent ≥3 AND no OBPI signal AND ≤3 files mentioned
-   - **OBPI-ceremony** on schema/contract/scope-expansion/brief-boundary signals
+4. Routes each issue:
+   - **direct-fix** when precedent ≥3 (default — almost any defect can be corrected inside the GHI itself; the GHI is the repair vessel and its receipts are the audit trail)
    - **close-dup** when an earlier issue has the same title
-   - **ambiguous** when precedent is missing
+   - **ambiguous** when precedent is missing (operator decides direction)
+   - **Escalation rule (one-way only):** if a GHI's shape warrants architectural work, the operator authors a *new ADR* via `gz plan` / `gz-design`, and OBPI decomposition follows from that ADR. The path is GHI → ADR → OBPI; it is never GHI → OBPI. An OBPI without an ADR home is a definitional defect, not a destination. Triage cannot manufacture either escalation step — schema/contract/scope-expansion signals in a GHI body are surfaced through the rationale field as escalation hints for operator judgment, not as a routing flip, and the script will never emit an OBPI route.
 5. Scores urgency: `now` (blocking signal), `soon` (defect default), `later` (chore)
 6. Validates rank input (severity enum, action ≤80 chars, why ≤120 chars, no newlines, no markdown control chars) and renders the deterministic deliverable
 
