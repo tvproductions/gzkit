@@ -185,6 +185,35 @@ No `--fix` variant: recovery is a judgment call (narrow vs. fold vs. allow-list)
 
 Included in `gz validate --audits` and `gz check` aggregate passes — future unscoped rules cannot silently accrete.
 
+### `--absorption-duplicates`
+
+Detects parallel OBPI evaluations of the same opsdev/airlineops source
+module across different parent ADRs (GHI #376). Walks every OBPI brief
+under `docs/design/adr/**/obpis/`, extracts the opsdev source path from
+each brief's `## Source Material` block, and groups records by source
+path. When the same source path appears in briefs under two or more
+distinct parent ADRs, each unwaived brief is flagged.
+
+A legitimate by-reference closure (e.g. ADR-0.26.0 confirming a module
+ADR-0.25.0 already absorbed) opts out by declaring
+`paired_with: <prior-brief-id>` in frontmatter. Either side of the pair
+may carry the marker; pairing is mutual. A third brief arriving without
+its own pairing fires the audit on itself alone — the prior pair is an
+acknowledged closure, not a recurrence.
+
+```bash
+# Audit every brief tree against the duplicate-evaluation invariant
+gz validate --absorption-duplicates
+
+# Machine-readable per-brief records
+gz validate --absorption-duplicates --json
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | No cross-ADR duplicates, or all duplicates have a `paired_with:` waiver | — |
+| 3 | Same opsdev source path appears in OBPIs across distinct parent ADRs without a pairing | Add `paired_with: <prior-brief-id>` to the by-reference brief's frontmatter, or — if the second evaluation is genuinely independent — document the rationale and pair the briefs explicitly |
+
 ### `--sensitivity`
 
 Enforces the ADR-0.0.22 security-sensitivity invariant. Reads `data/security_surfaces.json` (the canonical glob-to-category registry) and walks every OBPI brief's `## ALLOWED PATHS` block. Any intersection between a brief's allowlist and the registry forces `sensitivity: security` (the auto-detect floor); frontmatter MAY escalate to `sensitivity: security` when paths don't trigger detection, but MAY NOT declare a value below the detected floor (escalate-not-escape). Fail-closed when the registry is missing, malformed, or schema-invalid.
@@ -254,6 +283,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--orientation-freshness` | opt-in | The SessionStart orientation hook + script must remain wired (GHI #341) |
 | `--brief-headings` | opt-in | OBPI brief evidence sections must be H3, not H2 (GHI #238) |
 | `--sensitivity` | opt-in | ADR-0.0.22 sensitivity-binding (auto-detect floor; escalate-not-escape against `data/security_surfaces.json`) |
+| `--absorption-duplicates` | opt-in | Same opsdev source path across parent ADRs needs `paired_with:` frontmatter waiver (GHI #376) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
 
 The `--allowlist-only` flag is a sub-modifier for `--unscoped-rules` —
