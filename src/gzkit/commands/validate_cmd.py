@@ -296,6 +296,7 @@ def _collect_errors(
     check_chores_layout: bool = False,
     check_unscoped_rules: bool = False,
     check_sensitivity: bool = False,
+    check_absorption_duplicates: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -340,6 +341,7 @@ def _collect_errors(
         "chores_layout": check_chores_layout,
         "unscoped_rules": check_unscoped_rules,
         "sensitivity": check_sensitivity,
+        "absorption_duplicates": check_absorption_duplicates,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
@@ -415,6 +417,7 @@ def _explicit_scope_runners(
         "chores_layout": lambda: trust_audits.audit_chores_layout(project_root),
         "unscoped_rules": lambda: _unscoped_rules_runner(project_root),
         "sensitivity": lambda: _sensitivity_umbrella_runner(project_root),
+        "absorption_duplicates": lambda: trust_audits.audit_absorption_duplicates(project_root),
     }
 
 
@@ -776,6 +779,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "sensitivity-registry-missing",
         "sensitivity-registry-malformed",
         "sensitivity-malformed-allowlist",
+        "absorption_duplicate",
     }
 )
 
@@ -867,6 +871,7 @@ def validate(
     unscoped_rules_allowlist_only: bool = False,
     check_sensitivity: bool = False,
     sensitivity_explain: str | None = None,
+    check_absorption_duplicates: bool = False,
     as_json: bool = False,
     frontmatter_adr: str | None = None,
     frontmatter_explain: str | None = None,
@@ -922,6 +927,7 @@ def validate(
             check_taxonomy,
             check_brief_headings,
             check_chores_layout,
+            check_absorption_duplicates,
         ]
     )
     if check_unscoped_rules and not _other_scopes_active:
@@ -982,6 +988,7 @@ def validate(
         check_chores_layout=check_chores_layout,
         check_unscoped_rules=check_unscoped_rules,
         check_sensitivity=check_sensitivity,
+        check_absorption_duplicates=check_absorption_duplicates,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -1041,6 +1048,7 @@ def validate(
         "chores_layout": check_chores_layout,
         "unscoped_rules": check_unscoped_rules,
         "sensitivity": check_sensitivity,
+        "absorption_duplicates": check_absorption_duplicates,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]

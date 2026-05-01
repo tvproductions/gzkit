@@ -501,6 +501,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="With --unscoped-rules: list current allowlist entries and exit 0",
     )
+    p_validate.add_argument(
+        "--absorption-duplicates",
+        dest="check_absorption_duplicates",
+        action="store_true",
+        help="Same opsdev source path across parent ADRs needs paired_with: (GHI #376)",
+    )
     add_json_flag(p_validate)
     p_validate.set_defaults(
         func=lambda a: _lazy("validate")(
@@ -542,6 +548,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             unscoped_rules_allowlist_only=a.unscoped_rules_allowlist_only,
             check_sensitivity=a.check_sensitivity or a.check_audits,
             sensitivity_explain=(a.frontmatter_explain if a.check_sensitivity else None),
+            check_absorption_duplicates=a.check_absorption_duplicates,
             as_json=a.as_json,
             frontmatter_adr=a.frontmatter_adr,
             frontmatter_explain=(None if a.check_sensitivity else a.frontmatter_explain),
