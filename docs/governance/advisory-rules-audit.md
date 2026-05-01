@@ -60,6 +60,7 @@ This audit scores every rule by:
 | 16 | Do not edit `.gzkit/ledger.jsonl` manually | **Mechanical** | Enforced by `.githooks/pre-commit-ledger-guard` (GHI #207) — rejects staged ledger edits that are not strict appends from a registered `gz` command |
 | 17 | Every defect must be trackable (GHI or agent-insights.jsonl) | **Judgment** | Enforcement is cultural; no reliable mechanical signal for "defect noticed but not tracked" |
 | 17a | `.gzkit/insights/agent-insights.jsonl` record shape (companion to Behavior Rule #11) | **Mechanical** | Enforced by `gz validate --insights-shape` (GHI #358) — every record validates against `gzkit.insights.InsightRecord` (`extra="forbid"`, ISO8601 `ts`, `type` enum, `evidence: list[str]`). Pre-lock entries waived by content hash in `_INSIGHTS_SHAPE_WAIVERS`; new writes must conform. Wired into `gz check`. |
+| 17b | Per-file char budget for AGENTS.md / CLAUDE.md / `.claude/rules/*.md` (companion to Anti-vibing operative claim 2) | **Mechanical** | Enforced by `gz validate --instructions-files-budget` (GHI #373) — each tracked file checked against budget in `data/instructions_files_budget.json` (defaults: 40k chars AGENTS.md/CLAUDE.md, 16k per rule file). Fail-closed (exit 3) on overrun with remediation pointer to `/gz-context-diet`. Wired into `gz check`. |
 
 ### Pythonic Standards (`.gzkit/rules/pythonic.md`)
 

@@ -41,6 +41,9 @@ from gzkit.governance.trust_audits.events import (
     audit_validator_fields,
 )
 from gzkit.governance.trust_audits.insights import audit_insights_shape
+from gzkit.governance.trust_audits.instructions_files_budget import (
+    audit_instructions_files_budget,
+)
 from gzkit.governance.trust_audits.models import audit_pydantic_models
 from gzkit.governance.trust_audits.orientation import audit_orientation_freshness
 from gzkit.governance.trust_audits.reconcile import audit_reconcile_freshness
@@ -69,6 +72,7 @@ __all__ = [
     "audit_cli_alignment",
     "audit_event_handlers",
     "audit_insights_shape",
+    "audit_instructions_files_budget",
     "audit_orientation_freshness",
     "audit_pool_adr_isolation",
     "audit_pydantic_models",

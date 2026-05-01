@@ -283,6 +283,7 @@ def check(as_json: bool = False) -> None:
         run_drift_advisory,
         run_format_check,
         run_insights_shape_audit,
+        run_instructions_files_budget_audit,
         run_orientation_freshness_audit,
         run_parity_check,
         run_preflight,
@@ -308,6 +309,7 @@ def check(as_json: bool = False) -> None:
         ("ADR status freshness", run_adr_status_fresh_audit),
         ("Orientation freshness", run_orientation_freshness_audit),
         ("Insights shape", run_insights_shape_audit),
+        ("Instructions files budget", run_instructions_files_budget_audit),
         ("Preflight", run_preflight),
     ]
 

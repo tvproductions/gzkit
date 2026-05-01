@@ -566,6 +566,16 @@ def run_insights_shape_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --insights-shape", cwd=project_root)
 
 
+def run_instructions_files_budget_audit(project_root: Path) -> QualityResult:
+    """Run the AGENTS.md/CLAUDE.md/.claude/rules char-budget audit (GHI #373).
+
+    Fails closed (exit 3) when any tracked instructions/memory file exceeds
+    its per-file char budget defined in `data/instructions_files_budget.json`.
+    Recovery: `/gz-context-diet` lifts inline pedagogy to `docs/governance/`.
+    """
+    return run_command("uv run gz validate --instructions-files-budget", cwd=project_root)
+
+
 def run_orientation_freshness_audit(project_root: Path) -> QualityResult:
     """Run the SessionStart orientation hook freshness audit (GHI #341).
 
