@@ -328,6 +328,34 @@ class TestValidateRulePlacement(unittest.TestCase):
             self.assertTrue(len(warnings) > 0)
             self.assertIn("claude-only", warnings[0])
 
+    def test_vendor_mirror_subtree_does_not_require_nested_agents_md(self) -> None:
+        """Self-referential vendor-mirror surfaces are output destinations, not
+        user-content subtrees. A rule whose paths enumerate the vendor-mirror
+        directory the rule itself is rendered into must not produce a
+        rule-placement warning for that directory (GHI #375).
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inst = root / ".github" / "instructions"
+            inst.mkdir(parents=True)
+            (inst / "skill_surface_sync.instructions.md").write_text(
+                _instruction_file(
+                    ".claude/**, .gzkit/skills/**, .github/skills/**, .github/instructions/**",
+                    "# Skill surface sync rule",
+                )
+            )
+            (root / ".gzkit" / "skills").mkdir(parents=True)
+            (root / ".github" / "skills").mkdir(parents=True)
+            (root / ".github" / "instructions").mkdir(parents=True, exist_ok=True)
+            (root / ".claude").mkdir()
+
+            warnings = validate_rule_placement(root)
+
+            for w in warnings:
+                self.assertNotIn(".claude", w)
+                self.assertNotIn(".github/instructions", w)
+                self.assertNotIn(".github/skills", w)
+
 
 # ---------------------------------------------------------------------------
 # Canonical rule tests (OBPI-0.16.0-02)
