@@ -6,6 +6,7 @@ under the 600-line module limit while preserving the same public API via
 re-exports.
 """
 
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from gzkit.ledger import LedgerEvent
@@ -285,6 +286,30 @@ def obpi_lock_released_event(
         event="obpi_lock_released",
         id=obpi_id,
         extra={"agent": agent, "force": force},
+    )
+
+
+def agent_sync_completed_event(
+    updated_paths: list[str],
+    canonical_rule_count: int,
+) -> LedgerEvent:
+    """Create an event recording a successful agent control-surface sync (GHI #369).
+
+    Mechanical witness for ``gz agent sync control-surfaces`` runs so brief-level
+    requirements (e.g. OBPI-0.0.23-03 REQ-04) can satisfy "sync ran" without
+    requiring an ARB receipt wrapper. The event is emitted on every real sync —
+    operator-initiated, hook-driven, or ``gz tidy --fix`` — and is suppressed in
+    snapshot-replay paths (``plan_sync_all`` in ``validate_pkg/sync_parity.py``).
+    """
+    timestamp = datetime.now(UTC).isoformat()
+    return LedgerEvent(
+        event="agent_sync_completed",
+        id=f"agent-sync-{timestamp}",
+        ts=timestamp,
+        extra={
+            "updated_paths": list(updated_paths),
+            "canonical_rule_count": canonical_rule_count,
+        },
     )
 
 
