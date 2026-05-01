@@ -225,6 +225,94 @@
         },
         "canonical_rule_count": { "type": "integer", "min": 0 }
       }
+    },
+    "adr_eval_completed": {
+      "required": ["verdict", "adr_weighted_total", "obpi_count", "action_item_count"],
+      "properties": {
+        "verdict": { "type": "string", "min_length": 1 },
+        "adr_weighted_total": { "type": "number" },
+        "obpi_count": { "type": "integer", "min": 0 },
+        "action_item_count": { "type": "integer", "min": 0 }
+      }
+    },
+    "audit_generated": {
+      "required": ["audit_file", "audit_plan_file", "passed"],
+      "properties": {
+        "audit_file": { "type": "string", "min_length": 1 },
+        "audit_plan_file": { "type": "string", "min_length": 1 },
+        "passed": { "type": "boolean" }
+      }
+    },
+    "obpi_lock_claimed": {
+      "required": ["agent", "ttl_minutes", "branch", "session_id"],
+      "properties": {
+        "agent": { "type": "string", "min_length": 1 },
+        "ttl_minutes": { "type": "integer", "min": 0 },
+        "branch": { "type": "string", "min_length": 1 },
+        "session_id": { "type": "string", "min_length": 1 }
+      }
+    },
+    "obpi_lock_released": {
+      "required": ["agent"],
+      "properties": {
+        "agent": { "type": "string", "min_length": 1 },
+        "force": { "type": "boolean" }
+      }
+    },
+    "obpi_withdrawn": {
+      "required": ["reason"],
+      "properties": {
+        "reason": { "type": "string", "min_length": 1 }
+      }
+    },
+    "patch-release": {
+      "required": ["version", "previous_version", "ghi_summary", "manifest_path"],
+      "properties": {
+        "version": { "type": "string", "min_length": 1 },
+        "previous_version": { "type": "string", "min_length": 1 },
+        "tag": {},
+        "ghi_summary": { "type": "array" },
+        "manifest_path": { "type": "string", "min_length": 1 }
+      }
+    },
+    "task_started": {
+      "required": ["task_id", "obpi_id", "adr_id", "agent"],
+      "properties": {
+        "task_id": { "type": "string", "min_length": 1 },
+        "obpi_id": { "type": "string", "min_length": 1 },
+        "adr_id": { "type": "string", "min_length": 1 },
+        "agent": { "type": "string", "min_length": 1 }
+      }
+    },
+    "task_completed": {
+      "required": ["task_id", "obpi_id", "adr_id", "agent"],
+      "properties": {
+        "task_id": { "type": "string", "min_length": 1 },
+        "obpi_id": { "type": "string", "min_length": 1 },
+        "adr_id": { "type": "string", "min_length": 1 },
+        "agent": { "type": "string", "min_length": 1 }
+      }
+    },
+    "task_blocked": {
+      "required": ["task_id", "obpi_id", "adr_id", "agent", "reason"],
+      "properties": {
+        "task_id": { "type": "string", "min_length": 1 },
+        "obpi_id": { "type": "string", "min_length": 1 },
+        "adr_id": { "type": "string", "min_length": 1 },
+        "agent": { "type": "string", "min_length": 1 },
+        "reason": { "type": "string", "min_length": 1 }
+      }
+    },
+    "task_escalated": {
+      "required": ["task_id", "obpi_id", "adr_id", "agent", "reason"],
+      "properties": {
+        "task_id": { "type": "string", "min_length": 1 },
+        "obpi_id": { "type": "string", "min_length": 1 },
+        "adr_id": { "type": "string", "min_length": 1 },
+        "agent": { "type": "string", "min_length": 1 },
+        "reason": { "type": "string", "min_length": 1 },
+        "escalated_to": { "type": "string", "min_length": 1 }
+      }
     }
   }
 }

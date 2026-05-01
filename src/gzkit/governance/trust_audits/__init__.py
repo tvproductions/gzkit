@@ -38,6 +38,7 @@ from gzkit.governance.trust_audits.code_quality import (
 from gzkit.governance.trust_audits.cross_platform import audit_utf8_prefix
 from gzkit.governance.trust_audits.events import (
     audit_event_handlers,
+    audit_event_schemas,
     audit_validator_fields,
 )
 from gzkit.governance.trust_audits.insights import audit_insights_shape
@@ -71,6 +72,7 @@ __all__ = [
     "audit_class_size",
     "audit_cli_alignment",
     "audit_event_handlers",
+    "audit_event_schemas",
     "audit_insights_shape",
     "audit_instructions_files_budget",
     "audit_orientation_freshness",
