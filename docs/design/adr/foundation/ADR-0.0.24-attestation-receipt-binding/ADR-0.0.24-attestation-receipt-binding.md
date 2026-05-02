@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.24-attestation-receipt-binding
-status: Draft
+status: Validated
 kind: foundation
 semver: 0.0.24
 lane: heavy
@@ -170,3 +170,4 @@ backstop is the ARB middleware, currently advisory at the citation layer.
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
 | 0.0.24 | Completed | Jeffry Babb | 2026-05-02 | Completed — ADR-0.0.24 ships the receipt-binding gate as a mechanical fail-closed check on heavy-lane and foundation-kind attestations, replacing the prior narrative-trust pathway. All four OBPIs Completed; gz validate --attestation-receipts registered with --lane and --kind axes. Closeout receipts: lint arb-ruff-ea49a20864a040bd91f641190bb8c093, tests arb-step-unittest-948af27ee6064019bff20ee5afe3ead0 (3946 tests OK), typecheck arb-step-typecheck-b6fba06b1efc4d98addf63b1ad03ad3b, mkdocs arb-step-mkdocs-899f852a2d5d4b6c824cd3984bc85d8d. In-flight defects fixed during evidence-gathering: insights record schema (line 25), gz-deps-upgrade operator manpage and skills-index link, test_instruction_audit cp1252-vs-utf8 write_text encoding (4 call sites), quality.py _expand_allowed_paths cross-platform path separator via as_posix(). |
+| 0.0.24 | Validated | Jeffry Babb | 2026-05-02 | accept audit — ADR-0.0.24 validated; ledger proof complete (4/4 OBPIs attested_completed), all five Decision-section capabilities demonstrated against live receipts (resolved arb-ruff-983215b7e2d64c15bded4f5ca5fe64bc, missing-fail-closed exit 3, lite-feature warn-only exit 0, claim/category mismatch exit 3, foundation-kind fail-closed regardless of lane exit 3). Audit-check exit 0 under interim covers-backfill heuristic demotion (commit dc52d537, GHI #385) with proper-fix tracked at GHI #386 (teach heuristic about Ceremony: gz-git-sync trailers). Mechanical checks: lint clean (arb-ruff-983215b7e2d64c15bded4f5ca5fe64bc), unittest 3946 OK (arb-step-unittest-74aad395ecee4b81910d50b3f61363c1). Coverage 14/19 REQs (73.7%) with 5 advisory uncovered REQs in OBPI-0.0.24-03 doc-update OBPI by design (doc REQs validated by mkdocs build --strict, not unit tests). AUDIT.md and 6 proof files captured under audit/. Audit-trail GHIs: GHI #385 (interim demotion, landed dc52d537), GHI #386 (proper roll-forward), GHI #387 (skill phrasing conflation: 'attest completed' vs 'accept audit'). |

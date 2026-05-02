@@ -1,0 +1,2 @@
+⚠ No ARB receipt IDs cited (lite + non-foundation: warning).
+exit=0

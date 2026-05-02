@@ -1,0 +1,2 @@
+❌ No ARB receipt IDs cited (heavy or foundation: fail-closed).
+exit=3
