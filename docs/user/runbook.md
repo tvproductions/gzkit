@@ -298,6 +298,27 @@ If `gz adr audit-check` reports missing or placeholder implementation evidence:
 2. Re-run `uv run gz adr status ADR-<X.Y.Z> --json`.
 3. Re-run `uv run gz adr audit-check ADR-<X.Y.Z>` until PASS.
 
+If `gz adr audit-check` flags a same-commit-window `@covers` backfill finding
+(blocking on heavy/foundation/`--strict`; warning on lite/feature default —
+exit 3 / exit 0 respectively):
+
+1. Locate the flagged decorator at the reported `file:line`.
+2. Re-derive the test's assertion from the REQ's semantics per
+   `.claude/rules/tests.md` § Invariant 6f — pin the operator-facing purpose
+   the REQ describes, not the bytes the code currently emits.
+3. Commit the rewritten test in a **new commit** (away from the closing
+   receipt's commit). Do NOT merely move the `@covers` decorator to a new
+   line in the same commit — the heuristic compares introducing-commit SHAs.
+4. Tune `data/audit_thresholds.json` (`max_covers_backfill_commits` /
+   `max_covers_backfill_days`) only if the legitimate-evolution baseline
+   for your project differs from the canon defaults (3 commits / 7 days).
+   Threshold edits are a doctrine surface — file a GHI explaining the
+   project's evidence for the divergence.
+5. Re-run `uv run gz adr audit-check ADR-<X.Y.Z> [--strict]` until PASS.
+
+See `docs/user/manpages/gz-adr-audit-check.md` for the severity matrix and
+exit-code semantics.
+
 Tracked automation defect: `https://github.com/tvproductions/gzkit/issues/3`.
 
 ---

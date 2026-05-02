@@ -395,8 +395,13 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_adr_audit_check.add_argument("adr", help="ADR identifier (e.g. ADR-0.0.4)")
     add_json_flag(p_adr_audit_check)
+    p_adr_audit_check.add_argument(
+        "--strict",
+        action="store_true",
+        help="Fail-close on covers-backfill findings (lite ADRs).",
+    )
     p_adr_audit_check.set_defaults(
-        func=lambda a: _lazy("adr_audit_check")(adr=a.adr, as_json=a.as_json)
+        func=lambda a: _lazy("adr_audit_check")(adr=a.adr, as_json=a.as_json, strict=a.strict)
     )
 
     p_adr_covers_check = adr_commands.add_parser(

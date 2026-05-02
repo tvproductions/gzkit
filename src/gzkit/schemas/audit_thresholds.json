@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gzkit.audit_thresholds.v1",
+  "title": "GovZero ADR audit-check thresholds",
+  "description": "Threshold knobs for `gz adr audit-check` heuristics. Authored under OBPI-0.0.23-05 to operationalize the Skipped cheap verification failure shape codified in .gzkit/rules/agent-failure-modes.md. The same-commit-window @covers backfill heuristic flags decorators introduced within max_covers_backfill_commits commits OR max_covers_backfill_days days of the closing receipt for the corresponding REQ.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["max_covers_backfill_commits", "max_covers_backfill_days"],
+  "properties": {
+    "max_covers_backfill_commits": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Maximum commit gap (introducing commit -> closing receipt) below which a @covers decorator is flagged as a same-commit-window backfill candidate."
+    },
+    "max_covers_backfill_days": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Maximum date gap in days (introducing commit date -> closing receipt date) below which a @covers decorator is flagged as a same-commit-window backfill candidate."
+    }
+  }
+}

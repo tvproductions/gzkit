@@ -341,6 +341,23 @@ def _quick_init(mode: str = "lite") -> None:
     for d in ["prd", "constitutions", "adr"]:
         (project_root / config.paths.design_root / d).mkdir(parents=True, exist_ok=True)
 
+    # data/audit_thresholds.json — required by gz adr audit-check covers-backfill
+    # heuristic (REQ-0.0.23-05-03). The heuristic refuses to fall back to
+    # compiled-in defaults, so every gzkit-shaped workspace must carry the
+    # canonical file. Production gz init scaffolds it; _quick_init mirrors.
+    data_dir = project_root / "data"
+    data_dir.mkdir(exist_ok=True)
+    audit_thresholds_path = data_dir / "audit_thresholds.json"
+    if not audit_thresholds_path.exists():
+        audit_thresholds_path.write_text(
+            json.dumps(
+                {"max_covers_backfill_commits": 3, "max_covers_backfill_days": 7},
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
     from gzkit.personas import scaffold_default_personas
 
     scaffold_default_personas(project_root)

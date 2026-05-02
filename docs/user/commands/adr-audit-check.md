@@ -7,8 +7,21 @@ Verify linked OBPIs for one ADR are completed and include implementation evidenc
 ## Usage
 
 ```bash
-gz adr audit-check <ADR-ID> [--json]
+gz adr audit-check <ADR-ID> [--json] [--strict]
 ```
+
+---
+
+## Flags
+
+- `--json` — emit the audit result as JSON (machine-readable; logs go to stderr).
+- `--strict` — fail-close on any same-commit-window `@covers` backfill finding,
+  even on lite-lane feature ADRs that would otherwise surface findings as
+  warnings. Heavy-lane and foundation-kind ADRs already fail-close on backfill
+  findings regardless of this flag (per `AGENTS.md` § OBPI Acceptance Protocol
+  matrix). The temporal heuristic flags decorators introduced within
+  `data/audit_thresholds.json` thresholds (default 3 commits / 7 days) of the
+  REQ's closing receipt.
 
 ---
 
@@ -19,6 +32,13 @@ gz adr audit-check <ADR-ID> [--json]
 - Presence of non-placeholder implementation summary evidence
 - Requirement coverage from `@covers` test annotations (advisory by default;
   severity is fail-open so Lite-lane docs-only OBPIs do not block the audit)
+- **Same-commit-window `@covers` backfill heuristic** — flags decorators
+  introduced within `max_covers_backfill_commits` commits OR
+  `max_covers_backfill_days` days of the REQ's closing receipt
+  (`data/audit_thresholds.json`). Catches the GHI #309 cosmetic-backfill
+  anti-pattern that would otherwise silence the audit. Warns by default on
+  lite-lane feature ADRs; fails-close (exit 3) on heavy-lane, foundation-kind,
+  or under `--strict`.
 
 Implementation-summary evidence is parsed from inline markdown bullets in
 `### Implementation Summary`, for example:
