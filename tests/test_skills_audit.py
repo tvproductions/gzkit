@@ -889,6 +889,45 @@ class TestSkillAuditMirrorPackageParity(unittest.TestCase):
                 )
             )
 
+    def test_canonical_pycache_files_are_not_collected(self) -> None:
+        """Bytecode caches under canonical skills must not be treated as canonical assets.
+
+        Python writes `__pycache__/*.pyc` files anywhere a script in a skill
+        directory is imported. Those caches are gitignored derived artifacts
+        (per docs/governance/state-doctrine.md Layer 3) and never live in the
+        mirror. The audit must skip them so a fresh invocation of any skill
+        script does not silently fail Gate 3 (GHI #379).
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root, config = self._base_project(tmpdir)
+            for mirror_rel in (
+                config.paths.codex_skills,
+                config.paths.claude_skills,
+                config.paths.copilot_skills,
+            ):
+                pycache = project_root / mirror_rel / "demo-skill" / "scripts" / "__pycache__"
+                self.assertFalse(
+                    pycache.exists(),
+                    "mirrors must never contain __pycache__ directories",
+                )
+            canonical_pycache = (
+                project_root / config.paths.skills / "demo-skill" / "scripts" / "__pycache__"
+            )
+            canonical_pycache.mkdir(parents=True, exist_ok=True)
+            (canonical_pycache / "helper.cpython-314.pyc").write_bytes(b"\x00\x00\x00")
+
+            report = audit_skills(project_root, config)
+            offending = [
+                issue
+                for issue in report.issues
+                if issue.code == "SKA-MIRROR-ASSET-MISSING" and "__pycache__" in issue.path
+            ]
+            self.assertEqual(
+                offending,
+                [],
+                "audit must not flag canonical __pycache__ assets as missing in mirrors",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
