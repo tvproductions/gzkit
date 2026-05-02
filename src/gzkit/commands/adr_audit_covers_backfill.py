@@ -408,9 +408,23 @@ def resolve_req_closing_receipts(
 # --------------------------------------------------------------------------- #
 
 
-def determine_severity(lane: str, kind: str, strict: bool) -> Literal["warning", "blocking"]:
-    """Escalate to ``blocking`` for heavy lane, foundation kind, or strict."""
-    if lane == "heavy" or kind == "foundation" or strict:
+def determine_severity(
+    lane: str,  # noqa: ARG001 — preserved in signature for forward compatibility (GHI #385)
+    kind: str,  # noqa: ARG001 — preserved in signature for forward compatibility (GHI #385)
+    strict: bool,
+) -> Literal["warning", "blocking"]:
+    """Escalate to ``blocking`` only under ``--strict``.
+
+    Demoted from "heavy lane OR foundation kind OR strict" to "strict only"
+    pending GHI #385: the same-commit-window heuristic false-positives on
+    every TDD-disciplined OBPI shipped via ``gz git-sync`` because the
+    introducing commit and the closing receipt are the same ceremony commit.
+    Until the heuristic learns to distinguish ceremony-bundled commits from
+    cosmetic backfills, default invocations of ``gz adr audit-check`` surface
+    findings as warnings (exit 0); operators who want fail-closed enforcement
+    pass ``--strict`` explicitly.
+    """
+    if strict:
         return "blocking"
     return "warning"
 

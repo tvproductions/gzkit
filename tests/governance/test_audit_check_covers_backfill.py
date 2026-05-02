@@ -352,19 +352,33 @@ class TestResolveReqClosingReceipts(unittest.TestCase):
 
 
 class TestDetermineSeverity(unittest.TestCase):
-    """Severity escalation per lane / kind / strict axis."""
+    """Severity escalation per strict axis (lane / kind demoted under GHI #385)."""
 
     @covers("REQ-0.0.23-05-03")
-    def test_heavy_lane_escalates_to_blocking(self) -> None:
-        self.assertEqual(determine_severity("heavy", "feature", strict=False), "blocking")
+    def test_heavy_lane_alone_no_longer_escalates_to_blocking(self) -> None:
+        # GHI #385: lane axis alone no longer escalates pending heuristic
+        # learning to distinguish gz-git-sync ceremony commits from cosmetic
+        # backfill. Operators who want fail-closed enforcement pass --strict.
+        self.assertEqual(determine_severity("heavy", "feature", strict=False), "warning")
 
     @covers("REQ-0.0.23-05-03")
-    def test_foundation_kind_escalates_to_blocking(self) -> None:
-        self.assertEqual(determine_severity("lite", "foundation", strict=False), "blocking")
+    def test_foundation_kind_alone_no_longer_escalates_to_blocking(self) -> None:
+        # GHI #385: kind axis alone no longer escalates pending heuristic
+        # learning to distinguish gz-git-sync ceremony commits from cosmetic
+        # backfill. Operators who want fail-closed enforcement pass --strict.
+        self.assertEqual(determine_severity("lite", "foundation", strict=False), "warning")
 
     @covers("REQ-0.0.23-05-03")
     def test_strict_escalates_to_blocking(self) -> None:
         self.assertEqual(determine_severity("lite", "feature", strict=True), "blocking")
+
+    @covers("REQ-0.0.23-05-03")
+    def test_strict_escalates_to_blocking_on_heavy_lane(self) -> None:
+        self.assertEqual(determine_severity("heavy", "feature", strict=True), "blocking")
+
+    @covers("REQ-0.0.23-05-03")
+    def test_strict_escalates_to_blocking_on_foundation_kind(self) -> None:
+        self.assertEqual(determine_severity("lite", "foundation", strict=True), "blocking")
 
     @covers("REQ-0.0.23-05-02")
     def test_lite_feature_without_strict_is_warning(self) -> None:
@@ -589,12 +603,14 @@ class TestEvaluateBackfillForAudit(unittest.TestCase):
                     },
                 }
             ]
-            # Foundation-kind (ADR-0.0.23) ⇒ blocking ⇒ exit 3.
+            # Per GHI #385: only --strict escalates to blocking now;
+            # foundation-kind alone no longer fails-closed pending the
+            # heuristic learning gz-git-sync ceremony semantics.
             result = evaluate_backfill_for_audit(
                 Path(tmp),
                 adr_lane="lite",
                 adr_kind="foundation",
-                strict=False,
+                strict=True,
                 covers_locations=[("REQ-0.0.23-05-01", "tests/x.py", 1)],
                 obpi_completion_events=events,
                 thresholds_path=path,
