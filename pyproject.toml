@@ -20,17 +20,17 @@ classifiers = [
 ]
 
 dependencies = [
-    "jsonschema>=4.23",
-    "pydantic>=2.12.5",
-    "pyyaml>=6.0",
-    "rich>=13.0",
-    "structlog>=24.0",
+    "jsonschema>=4.26",
+    "pydantic>=2.13.3",
+    "pyyaml>=6.0.3",
+    "rich>=15.0",
+    "structlog>=25.5",
 ]
 
 [project.optional-dependencies]
 docs = [
     "mkdocs==1.6.1",
-    "mkdocs-material==9.7.1",
+    "mkdocs-material==9.7.6",
 ]
 
 [project.scripts]
@@ -84,13 +84,13 @@ indent-style = "space"
 
 [dependency-groups]
 dev = [
-    "behave>=1.2.6",
-    "coverage>=7.13.4",
+    "behave>=1.3.3",
+    "coverage>=7.13.5",
     "mkdocs==1.6.1",
-    "mkdocs-material==9.7.1",
-    "pyinstaller>=6.19.0",
-    "ruff>=0.15",
-    "ty>=0.0.31",
+    "mkdocs-material==9.7.6",
+    "pyinstaller>=6.20.0",
+    "ruff>=0.15.12",
+    "ty>=0.0.34",
 ]
 
 # GHI #256: scope coverage to src/gzkit so ephemeral tempdir sources under
