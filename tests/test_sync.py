@@ -125,7 +125,7 @@ class TestDetectProjectName(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             pyproject = project_root / "pyproject.toml"
-            pyproject.write_text('[project]\nname = "my-project"\n')
+            pyproject.write_text('[project]\nname = "my-project"\n', encoding="utf-8")
 
             name = detect_project_name(project_root)
             self.assertEqual(name, "my-project")
@@ -245,7 +245,7 @@ class TestScanExistingArtifacts(unittest.TestCase):
             project_root = Path(tmpdir)
             prd_dir = project_root / "design" / "prd"
             prd_dir.mkdir(parents=True)
-            (prd_dir / "PRD-TEST-1.0.0.md").write_text("# PRD")
+            (prd_dir / "PRD-TEST-1.0.0.md").write_text("# PRD", encoding="utf-8")
 
             result = scan_existing_artifacts(project_root, "design")
 
@@ -258,7 +258,7 @@ class TestScanExistingArtifacts(unittest.TestCase):
             project_root = Path(tmpdir)
             adr_dir = project_root / "design" / "adr"
             adr_dir.mkdir(parents=True)
-            (adr_dir / "ADR-0.1.0.md").write_text("# ADR")
+            (adr_dir / "ADR-0.1.0.md").write_text("# ADR", encoding="utf-8")
 
             result = scan_existing_artifacts(project_root, "design")
 
@@ -271,7 +271,7 @@ class TestScanExistingArtifacts(unittest.TestCase):
             project_root = Path(tmpdir)
             adr_subdir = project_root / "design" / "adr" / "adr-0.1.x"
             adr_subdir.mkdir(parents=True)
-            (adr_subdir / "ADR-0.1.0-test.md").write_text("# ADR")
+            (adr_subdir / "ADR-0.1.0-test.md").write_text("# ADR", encoding="utf-8")
 
             result = scan_existing_artifacts(project_root, "design")
 
@@ -284,7 +284,7 @@ class TestScanExistingArtifacts(unittest.TestCase):
             project_root = Path(tmpdir)
             obpi_dir = project_root / "design" / "obpis"
             obpi_dir.mkdir(parents=True)
-            (obpi_dir / "OBPI-0.1.0-01-demo.md").write_text("# OBPI")
+            (obpi_dir / "OBPI-0.1.0-01-demo.md").write_text("# OBPI", encoding="utf-8")
 
             result = scan_existing_artifacts(project_root, "design")
 
@@ -296,7 +296,7 @@ class TestScanExistingArtifacts(unittest.TestCase):
             project_root = Path(tmpdir)
             obpi_dir = project_root / "design" / "adr" / "adr-0.1.x" / "ADR-0.1.0-demo" / "obpis"
             obpi_dir.mkdir(parents=True)
-            (obpi_dir / "OBPI-0.1.0-02-nested.md").write_text("# OBPI")
+            (obpi_dir / "OBPI-0.1.0-02-nested.md").write_text("# OBPI", encoding="utf-8")
 
             result = scan_existing_artifacts(project_root, "design")
 
@@ -309,7 +309,7 @@ class TestScanExistingArtifacts(unittest.TestCase):
             project_root = Path(tmpdir)
             prd_dir = project_root / "docs" / "design" / "prd"
             prd_dir.mkdir(parents=True)
-            (prd_dir / "PRD-MYAPP-1.0.0.md").write_text("# PRD")
+            (prd_dir / "PRD-MYAPP-1.0.0.md").write_text("# PRD", encoding="utf-8")
 
             result = scan_existing_artifacts(project_root, "docs/design")
 
@@ -321,9 +321,9 @@ class TestScanExistingArtifacts(unittest.TestCase):
             project_root = Path(tmpdir)
             prd_dir = project_root / "design" / "prd"
             prd_dir.mkdir(parents=True)
-            (prd_dir / "PRD-VALID.md").write_text("# PRD")
-            (prd_dir / "README.md").write_text("# README")
-            (prd_dir / "notes.txt").write_text("notes")
+            (prd_dir / "PRD-VALID.md").write_text("# PRD", encoding="utf-8")
+            (prd_dir / "README.md").write_text("# README", encoding="utf-8")
+            (prd_dir / "notes.txt").write_text("notes", encoding="utf-8")
 
             result = scan_existing_artifacts(project_root, "design")
 
@@ -363,7 +363,8 @@ class TestParseArtifactMetadata(unittest.TestCase):
             adr_path.write_text(
                 "# ADR-0.1.0: test description\n\n"
                 "**Status:** Draft\n"
-                "**Parent PRD:** [PRD-MYAPP-1.0.0](../prd/PRD-MYAPP-1.0.0.md)\n"
+                "**Parent PRD:** [PRD-MYAPP-1.0.0](../prd/PRD-MYAPP-1.0.0.md)\n",
+                encoding="utf-8",
             )
 
             result = parse_artifact_metadata(adr_path)
@@ -375,7 +376,7 @@ class TestParseArtifactMetadata(unittest.TestCase):
         """Falls back to filename when no parent found."""
         with tempfile.TemporaryDirectory() as tmpdir:
             adr_path = Path(tmpdir) / "ADR-0.2.0-orphan.md"
-            adr_path.write_text("# ADR-0.2.0: orphan\n\n**Status:** Draft\n")
+            adr_path.write_text("# ADR-0.2.0: orphan\n\n**Status:** Draft\n", encoding="utf-8")
 
             result = parse_artifact_metadata(adr_path)
 
@@ -386,7 +387,9 @@ class TestParseArtifactMetadata(unittest.TestCase):
         """Extracts PRD ID from header."""
         with tempfile.TemporaryDirectory() as tmpdir:
             prd_path = Path(tmpdir) / "PRD-MYAPP-1.0.0.md"
-            prd_path.write_text("# PRD-MYAPP-1.0.0: My Application\n\n## Overview\n")
+            prd_path.write_text(
+                "# PRD-MYAPP-1.0.0: My Application\n\n## Overview\n", encoding="utf-8"
+            )
 
             result = parse_artifact_metadata(prd_path)
 
@@ -405,7 +408,8 @@ class TestParseArtifactMetadata(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             adr_path = Path(tmpdir) / "ADR-0.3.0.md"
             adr_path.write_text(
-                "# ADR-0.3.0: feature\n\n**Parent:** [OBPI-core](../obpis/OBPI-core.md)\n"
+                "# ADR-0.3.0: feature\n\n**Parent:** [OBPI-core](../obpis/OBPI-core.md)\n",
+                encoding="utf-8",
             )
 
             result = parse_artifact_metadata(adr_path)
@@ -422,7 +426,8 @@ class TestParseArtifactMetadata(unittest.TestCase):
                 "parent: PRD-GZKIT-1.0.0\n"
                 "lane: Heavy\n"
                 "---\n\n"
-                "# ADR-0.3.0: pool.sample\n"
+                "# ADR-0.3.0: pool.sample\n",
+                encoding="utf-8",
             )
 
             result = parse_artifact_metadata(adr_path)
@@ -436,7 +441,8 @@ class TestParseArtifactMetadata(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             adr_path = Path(tmpdir) / "ADR-0.4.0-pool.heavy-lane.md"
             adr_path.write_text(
-                "---\nid: ADR-0.4.0-pool.heavy-lane\n---\n\n# ADR-0.4.0: pool.heavy-lane\n"
+                "---\nid: ADR-0.4.0-pool.heavy-lane\n---\n\n# ADR-0.4.0: pool.heavy-lane\n",
+                encoding="utf-8",
             )
 
             result = parse_artifact_metadata(adr_path)
@@ -495,7 +501,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
             skill_dir = project_root / config.paths.skills / "demo-skill"
             skill_dir.mkdir(parents=True, exist_ok=True)
             (skill_dir / "SKILL.md").write_text(
-                "# SKILL.md\n\n## Demo Skill\n\nRun the demo command.\n"
+                "# SKILL.md\n\n## Demo Skill\n\nRun the demo command.\n", encoding="utf-8"
             )
 
             sync_all(project_root, config)
@@ -523,7 +529,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
 
             skill_dir = project_root / config.paths.skills / "demo-skill"
             skill_dir.mkdir(parents=True, exist_ok=True)
-            (skill_dir / "SKILL.md").write_text(_skill_markdown("demo-skill"))
+            (skill_dir / "SKILL.md").write_text(_skill_markdown("demo-skill"), encoding="utf-8")
 
             sync_all(project_root, config)
 
@@ -540,7 +546,9 @@ class TestSyncControlSurfaces(unittest.TestCase):
             skill_dir = project_root / config.paths.skills / "audit-skill"
             skill_dir.mkdir(parents=True, exist_ok=True)
             source_file = skill_dir / "SKILL.md"
-            source_file.write_text("# SKILL.md\n\n## Audit Skill\n\nAudit behavior.\n")
+            source_file.write_text(
+                "# SKILL.md\n\n## Audit Skill\n\nAudit behavior.\n", encoding="utf-8"
+            )
 
             updated = sync_all(project_root, config)
             claude_mirror = project_root / config.paths.claude_skills / "audit-skill" / "SKILL.md"
@@ -566,7 +574,9 @@ class TestSyncControlSurfaces(unittest.TestCase):
 
             legacy_skill = project_root / config.paths.copilot_skills / "legacy-skill"
             legacy_skill.mkdir(parents=True, exist_ok=True)
-            (legacy_skill / "SKILL.md").write_text("# SKILL.md\n\n## Legacy Skill\n")
+            (legacy_skill / "SKILL.md").write_text(
+                "# SKILL.md\n\n## Legacy Skill\n", encoding="utf-8"
+            )
 
             sync_all(project_root, config)
 
@@ -581,8 +591,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
 
             skill_dir = project_root / config.paths.skills / "demo-skill"
             skill_dir.mkdir(parents=True, exist_ok=True)
-            (skill_dir / "SKILL.md").write_text(_skill_markdown("demo-skill"))
-            (skill_dir / "notes.md").write_text("extra canonical file\n")
+            (skill_dir / "SKILL.md").write_text(_skill_markdown("demo-skill"), encoding="utf-8")
+            (skill_dir / "notes.md").write_text("extra canonical file\n", encoding="utf-8")
 
             sync_all(project_root, config)
             second = sync_all(project_root, config)
@@ -599,15 +609,17 @@ class TestSyncControlSurfaces(unittest.TestCase):
 
             canonical_skill = project_root / config.paths.skills / "demo-skill"
             canonical_skill.mkdir(parents=True, exist_ok=True)
-            (canonical_skill / "SKILL.md").write_text(_skill_markdown("demo-skill"))
+            (canonical_skill / "SKILL.md").write_text(
+                _skill_markdown("demo-skill"), encoding="utf-8"
+            )
 
             stale_dir = project_root / config.paths.claude_skills / "stale-skill"
             stale_dir.mkdir(parents=True, exist_ok=True)
-            (stale_dir / "SKILL.md").write_text(_skill_markdown("stale-skill"))
+            (stale_dir / "SKILL.md").write_text(_skill_markdown("stale-skill"), encoding="utf-8")
 
             stale_file = project_root / config.paths.codex_skills / "demo-skill" / "extra.txt"
             stale_file.parent.mkdir(parents=True, exist_ok=True)
-            stale_file.write_text("stale file\n")
+            stale_file.write_text("stale file\n", encoding="utf-8")
 
             sync_all(project_root, config)
             stale_paths = find_stale_mirror_paths(project_root, config)
@@ -625,7 +637,9 @@ class TestSyncControlSurfaces(unittest.TestCase):
 
             broken_skill = project_root / config.paths.skills / "broken-skill"
             broken_skill.mkdir(parents=True, exist_ok=True)
-            (broken_skill / "SKILL.md").write_text("# SKILL.md\n\nMissing frontmatter.\n")
+            (broken_skill / "SKILL.md").write_text(
+                "# SKILL.md\n\nMissing frontmatter.\n", encoding="utf-8"
+            )
 
             blockers = collect_canonical_sync_blockers(project_root, config)
             self.assertTrue(
@@ -643,7 +657,9 @@ class TestSyncControlSurfaces(unittest.TestCase):
 
             legacy_skill = project_root / config.paths.copilot_skills / "legacy-skill"
             legacy_skill.mkdir(parents=True, exist_ok=True)
-            (legacy_skill / "SKILL.md").write_text(_skill_markdown("legacy-skill"))
+            (legacy_skill / "SKILL.md").write_text(
+                _skill_markdown("legacy-skill"), encoding="utf-8"
+            )
 
             blockers = collect_canonical_sync_blockers(project_root, config)
             self.assertEqual(blockers, [])
@@ -660,7 +676,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
                 _skill_markdown(
                     "broken-skill",
                     metadata={"govzero_layer": "Layer 99 - Unknown"},
-                )
+                ),
+                encoding="utf-8",
             )
 
             blockers = collect_canonical_sync_blockers(project_root, config)
@@ -680,7 +697,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
             broken_skill = project_root / config.paths.skills / "broken-skill"
             broken_skill.mkdir(parents=True, exist_ok=True)
             (broken_skill / "SKILL.md").write_text(
-                _skill_markdown("broken-skill", description="x" * 1025)
+                _skill_markdown("broken-skill", description="x" * 1025), encoding="utf-8"
             )
 
             blockers = collect_canonical_sync_blockers(project_root, config)
@@ -706,7 +723,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
                         "govzero_layer": "Layer 1 - Evidence Gathering",
                         "custom-key": "custom-value",
                     },
-                )
+                ),
+                encoding="utf-8",
             )
 
             blockers = collect_canonical_sync_blockers(project_root, config)
@@ -722,7 +740,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
             broken_skill = project_root / config.paths.skills / "broken-skill"
             broken_skill.mkdir(parents=True, exist_ok=True)
             (broken_skill / "SKILL.md").write_text(
-                _skill_markdown("broken-skill", last_reviewed=stale_date)
+                _skill_markdown("broken-skill", last_reviewed=stale_date), encoding="utf-8"
             )
 
             blockers = collect_canonical_sync_blockers(project_root, config)
@@ -737,7 +755,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
             broken_skill = project_root / config.paths.skills / "broken-skill"
             broken_skill.mkdir(parents=True, exist_ok=True)
             (broken_skill / "SKILL.md").write_text(
-                _skill_markdown("broken-skill", lifecycle_state="deprecated")
+                _skill_markdown("broken-skill", lifecycle_state="deprecated"), encoding="utf-8"
             )
 
             blockers = collect_canonical_sync_blockers(project_root, config)
@@ -764,7 +782,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
                     deprecation_migration="See migration guide",
                     deprecation_communication="Announced in release notes",
                     deprecation_announced_on=date.today().isoformat(),
-                )
+                ),
+                encoding="utf-8",
             )
 
             blockers = collect_canonical_sync_blockers(project_root, config)
@@ -785,7 +804,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
                     "broken-skill",
                     lifecycle_state="active",
                     lifecycle_transition_from="draft",
-                )
+                ),
+                encoding="utf-8",
             )
 
             blockers = collect_canonical_sync_blockers(project_root, config)
@@ -814,7 +834,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
                     deprecation_communication="Announced in release notes",
                     deprecation_announced_on=date.today().isoformat(),
                     retired_on=date.today().isoformat(),
-                )
+                ),
+                encoding="utf-8",
             )
 
             blockers = collect_canonical_sync_blockers(project_root, config)
@@ -833,7 +854,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
             (skill_dir / "SKILL.md").write_text(
                 "---\nname: gz-plan\ndescription: Create ADR artifacts.\n"
                 "category: adr-lifecycle\nlifecycle_state: active\n"
-                "owner: gzkit-governance\nlast_reviewed: 2026-03-15\n---\n"
+                "owner: gzkit-governance\nlast_reviewed: 2026-03-15\n---\n",
+                encoding="utf-8",
             )
 
             skills = collect_skills_catalog(project_root, config.paths.skills)
@@ -851,7 +873,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
             (active_skill / "SKILL.md").write_text(
                 "---\nname: gz-plan\ndescription: Create ADR artifacts.\n"
                 "category: adr-lifecycle\nlifecycle_state: active\n"
-                "owner: gzkit-governance\nlast_reviewed: 2026-03-15\n---\n"
+                "owner: gzkit-governance\nlast_reviewed: 2026-03-15\n---\n",
+                encoding="utf-8",
             )
 
             retired_skill = project_root / config.paths.skills / "old-skill"
@@ -865,7 +888,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
                     deprecation_communication="Consolidated",
                     deprecation_announced_on=date.today().isoformat(),
                     retired_on=date.today().isoformat(),
-                )
+                ),
+                encoding="utf-8",
             )
 
             skills = collect_skills_catalog(project_root, config.paths.skills)
@@ -882,7 +906,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
             # Active canonical skill
             active_skill = project_root / config.paths.skills / "demo-skill"
             active_skill.mkdir(parents=True, exist_ok=True)
-            (active_skill / "SKILL.md").write_text(_skill_markdown("demo-skill"))
+            (active_skill / "SKILL.md").write_text(_skill_markdown("demo-skill"), encoding="utf-8")
 
             # Retired canonical skill
             retired_skill = project_root / config.paths.skills / "old-skill"
@@ -896,7 +920,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
                     deprecation_communication="Consolidated",
                     deprecation_announced_on=date.today().isoformat(),
                     retired_on=date.today().isoformat(),
-                )
+                ),
+                encoding="utf-8",
             )
 
             # Mirror of retired skill (leftover from before filtering)
@@ -911,7 +936,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
                     deprecation_communication="Consolidated",
                     deprecation_announced_on=date.today().isoformat(),
                     retired_on=date.today().isoformat(),
-                )
+                ),
+                encoding="utf-8",
             )
 
             stale_paths = find_stale_mirror_paths(project_root, config)
@@ -925,7 +951,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
 
             active_skill = project_root / config.paths.skills / "demo-skill"
             active_skill.mkdir(parents=True, exist_ok=True)
-            (active_skill / "SKILL.md").write_text(_skill_markdown("demo-skill"))
+            (active_skill / "SKILL.md").write_text(_skill_markdown("demo-skill"), encoding="utf-8")
 
             retired_skill = project_root / config.paths.skills / "old-skill"
             retired_skill.mkdir(parents=True, exist_ok=True)
@@ -938,7 +964,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
                     deprecation_communication="Consolidated",
                     deprecation_announced_on=date.today().isoformat(),
                     retired_on=date.today().isoformat(),
-                )
+                ),
+                encoding="utf-8",
             )
 
             sync_all(project_root, config)
@@ -1035,7 +1062,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
             instructions_dir = project_root / ".github" / "instructions"
             instructions_dir.mkdir(parents=True, exist_ok=True)
             (instructions_dir / "tests.instructions.md").write_text(
-                '---\napplyTo: "tests/**"\n---\n\n# Test Policy\n\nUse unittest.\n'
+                '---\napplyTo: "tests/**"\n---\n\n# Test Policy\n\nUse unittest.\n',
+                encoding="utf-8",
             )
             sync_claude_rules(project_root)
             rules_file = project_root / ".claude" / "rules" / "tests.md"
@@ -1055,7 +1083,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
             instructions_dir = project_root / ".github" / "instructions"
             instructions_dir.mkdir(parents=True, exist_ok=True)
             (instructions_dir / "governance_core.instructions.md").write_text(
-                '---\napplyTo: "**/*"\n---\n\n# Governance Core\n\nRead AGENTS.md.\n'
+                '---\napplyTo: "**/*"\n---\n\n# Governance Core\n\nRead AGENTS.md.\n',
+                encoding="utf-8",
             )
             sync_claude_rules(project_root)
             rules_file = project_root / ".claude" / "rules" / "governance_core.md"
@@ -1073,7 +1102,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
             instructions_dir = project_root / ".github" / "instructions"
             instructions_dir.mkdir(parents=True, exist_ok=True)
             (instructions_dir / "gate5.instructions.md").write_text(
-                '---\napplyTo: "docs/**,src/gzkit/**"\n---\n\n# Gate 5\n'
+                '---\napplyTo: "docs/**,src/gzkit/**"\n---\n\n# Gate 5\n', encoding="utf-8"
             )
             sync_claude_rules(project_root)
             rules_file = project_root / ".claude" / "rules" / "gate5.md"
@@ -1090,7 +1119,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
             instructions_dir = project_root / ".github" / "instructions"
             instructions_dir.mkdir(parents=True, exist_ok=True)
             (instructions_dir / "review_only.instructions.md").write_text(
-                '---\napplyTo: "**/*"\nexcludeAgent: coding-agent\n---\n\n# Review Only\n'
+                '---\napplyTo: "**/*"\nexcludeAgent: coding-agent\n---\n\n# Review Only\n',
+                encoding="utf-8",
             )
             sync_claude_rules(project_root)
             rules_file = project_root / ".claude" / "rules" / "review_only.md"
@@ -1104,9 +1134,9 @@ class TestSyncControlSurfaces(unittest.TestCase):
             project_root = Path(tmpdir)
             instructions_dir = project_root / ".github" / "instructions"
             instructions_dir.mkdir(parents=True, exist_ok=True)
-            (instructions_dir / "README.md").write_text("# Instructions\n")
+            (instructions_dir / "README.md").write_text("# Instructions\n", encoding="utf-8")
             (instructions_dir / "tests.instructions.md").write_text(
-                '---\napplyTo: "tests/**"\n---\n\n# Tests\n'
+                '---\napplyTo: "tests/**"\n---\n\n# Tests\n', encoding="utf-8"
             )
             sync_claude_rules(project_root)
             rules_dir = project_root / ".claude" / "rules"
@@ -1123,11 +1153,11 @@ class TestSyncControlSurfaces(unittest.TestCase):
             instructions_dir = project_root / ".github" / "instructions"
             instructions_dir.mkdir(parents=True, exist_ok=True)
             (instructions_dir / "tests.instructions.md").write_text(
-                '---\napplyTo: "tests/**"\n---\n\n# Tests\n'
+                '---\napplyTo: "tests/**"\n---\n\n# Tests\n', encoding="utf-8"
             )
             rules_dir = project_root / ".claude" / "rules"
             rules_dir.mkdir(parents=True, exist_ok=True)
-            (rules_dir / "old_rule.md").write_text("# Stale\n")
+            (rules_dir / "old_rule.md").write_text("# Stale\n", encoding="utf-8")
             sync_claude_rules(project_root)
             self.assertTrue((rules_dir / "tests.md").exists())
             self.assertFalse((rules_dir / "old_rule.md").exists())
@@ -1140,7 +1170,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
             instructions_dir = project_root / ".github" / "instructions"
             instructions_dir.mkdir(parents=True, exist_ok=True)
             (instructions_dir / "tests.instructions.md").write_text(
-                '---\napplyTo: "tests/**"\n---\n\n# Test Policy\n'
+                '---\napplyTo: "tests/**"\n---\n\n# Test Policy\n', encoding="utf-8"
             )
             sync_all(project_root, config)
             rules_file = project_root / ".claude" / "rules" / "tests.md"

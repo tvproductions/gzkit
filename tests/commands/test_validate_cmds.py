@@ -40,7 +40,8 @@ Covenant here
 ## Execution Rules
 
 Rules here
-"""
+""",
+                encoding="utf-8",
             )
             result = runner.invoke(main, ["validate"])
             # May have some validation issues but should not crash

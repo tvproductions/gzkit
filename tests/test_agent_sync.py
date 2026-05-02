@@ -185,7 +185,7 @@ class TestRenderRulesToDir(unittest.TestCase):
             target = Path(tmpdir) / "rules"
             target.mkdir()
             manual = target / "custom.md"
-            manual.write_text("# Hand-authored rule\n")
+            manual.write_text("# Hand-authored rule\n", encoding="utf-8")
 
             rules = [_make_rule(rule_id="generated", body="# Gen")]
             render_rules_to_dir(rules, target, "claude")
@@ -240,7 +240,8 @@ class TestSyncAllVendorAware(unittest.TestCase):
             (skills_dir / "SKILL.md").write_text(
                 "---\nname: test-skill\ndescription: Demo\n"
                 "lifecycle_state: active\nowner: test\n"
-                "last_reviewed: 2026-03-18\n---\n\n# Test Skill\n"
+                "last_reviewed: 2026-03-18\n---\n\n# Test Skill\n",
+                encoding="utf-8",
             )
 
             sync_all(project_root, config)
@@ -290,7 +291,8 @@ class TestSyncAllVendorAware(unittest.TestCase):
             (skills_dir / "SKILL.md").write_text(
                 "---\nname: demo\ndescription: Demo\n"
                 "lifecycle_state: active\nowner: test\n"
-                "last_reviewed: 2026-03-18\n---\n\n# Demo\n"
+                "last_reviewed: 2026-03-18\n---\n\n# Demo\n",
+                encoding="utf-8",
             )
 
             sync_all(project_root, config)

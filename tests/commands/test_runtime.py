@@ -98,7 +98,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "",
                 ]
             )
-        path.write_text("\n".join(lines) + "\n")
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     @staticmethod
     def _set_manifest_verification_noop() -> None:
@@ -111,7 +111,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             "docs": "python -c \"print('ok')\"",
             "bdd": "python -c \"print('ok')\"",
         }
-        manifest_path.write_text(json.dumps(manifest, indent=2))
+        manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
     @staticmethod
     def _create_pool_adr(adr_id: str = "ADR-pool.sample") -> None:
@@ -119,7 +119,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         pool_dir = Path(config.paths.adrs) / "pool"
         pool_dir.mkdir(parents=True, exist_ok=True)
         pool_adr = pool_dir / f"{adr_id}.md"
-        pool_adr.write_text(f"---\nid: {adr_id}\n---\n\n# {adr_id}\n")
+        pool_adr.write_text(f"---\nid: {adr_id}\n---\n\n# {adr_id}\n", encoding="utf-8")
         ledger = Ledger(Path(".gzkit/ledger.jsonl"))
         ledger.append(adr_created_event(adr_id, "", "heavy"))
 
@@ -428,7 +428,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 "- [x] REQ-0.1.0-01-02: Docs invariant B",
                 "",
             ]
-            obpi_path.write_text("\n".join(lines) + "\n")
+            obpi_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
@@ -506,7 +506,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                         "    pass",
                         "",
                     ]
-                )
+                ),
+                encoding="utf-8",
             )
 
             result = runner.invoke(main, ["adr", "covers-check", "ADR-0.1.0-f"])
@@ -530,7 +531,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                         "    pass",
                         "",
                     ]
-                )
+                ),
+                encoding="utf-8",
             )
 
             result = runner.invoke(main, ["adr", "covers-check", "ADR-0.1.0-f", "--json"])
@@ -566,7 +568,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                         "    pass",
                         "",
                     ]
-                )
+                ),
+                encoding="utf-8",
             )
 
             result = runner.invoke(main, ["adr", "covers-check", "ADR-0.1.0-f", "--json"])
@@ -1019,7 +1022,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 "lane: Heavy\n"
                 "status: Completed\n"
                 "---\n\n"
-                "# OBPI-pool.sample-01-demo\n"
+                "# OBPI-pool.sample-01-demo\n",
+                encoding="utf-8",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-pool.sample-01-demo", "ADR-pool.sample"))

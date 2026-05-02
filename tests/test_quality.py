@@ -274,7 +274,8 @@ class TestAdrPathContractLint(unittest.TestCase):
             doc.parent.mkdir(parents=True, exist_ok=True)
             doc.write_text(
                 "[ADR-0.2.0](../adr/pre-release/ADR-0.2.0-gate-verification/"
-                "ADR-0.2.0-gate-verification.md)\n"
+                "ADR-0.2.0-gate-verification.md)\n",
+                encoding="utf-8",
             )
 
             result = run_adr_path_contract_lint(root)
@@ -289,7 +290,8 @@ class TestAdrPathContractLint(unittest.TestCase):
             doc.parent.mkdir(parents=True, exist_ok=True)
             doc.write_text(
                 "[ADR-0.2.0](../adr/adr-0.2.x/ADR-0.2.0-gate-verification/"
-                "ADR-0.2.0-gate-verification.md)\n"
+                "ADR-0.2.0-gate-verification.md)\n",
+                encoding="utf-8",
             )
 
             result = run_adr_path_contract_lint(root)
@@ -305,7 +307,8 @@ class TestAdrPathContractLint(unittest.TestCase):
             doc.parent.mkdir(parents=True, exist_ok=True)
             doc.write_text(
                 "The canonical example is "
-                "`airlineops/docs/design/adr/adr-0.0.x/ADR-0.0.0-reset-organizing-doctrine.md`.\n"
+                "`airlineops/docs/design/adr/adr-0.0.x/ADR-0.0.0-reset-organizing-doctrine.md`.\n",
+                encoding="utf-8",
             )
 
             result = run_adr_path_contract_lint(root)

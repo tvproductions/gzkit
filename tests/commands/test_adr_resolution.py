@@ -19,7 +19,7 @@ class TestAdrResolution(unittest.TestCase):
             adr_dir = Path(config.paths.adrs) / "pool"
             adr_dir.mkdir(parents=True, exist_ok=True)
             adr_path = adr_dir / "ADR-0.6.0-pool.gz-chores-system.md"
-            adr_path.write_text("# ADR-0.6.0: pool.gz-chores-system\n")
+            adr_path.write_text("# ADR-0.6.0: pool.gz-chores-system\n", encoding="utf-8")
 
             resolved_path, resolved_id = resolve_adr_file(
                 Path.cwd(), config, "ADR-0.6.0-pool.gz-chores-system"
@@ -41,7 +41,8 @@ class TestAdrResolution(unittest.TestCase):
                 "---\n"
                 "id: ADR-0.5.0-skill-lifecycle-governance\n"
                 "---\n\n"
-                "# ADR-0.5.0: skill-lifecycle-governance\n"
+                "# ADR-0.5.0: skill-lifecycle-governance\n",
+                encoding="utf-8",
             )
 
             resolved_path, resolved_id = resolve_adr_file(Path.cwd(), config, "ADR-0.5.0")
@@ -58,8 +59,8 @@ class TestAdrResolution(unittest.TestCase):
 
             adr_dir = Path(config.paths.adrs)
             adr_dir.mkdir(parents=True, exist_ok=True)
-            (adr_dir / "ADR-0.5.0-alpha.md").write_text("# ADR-0.5.0: alpha\n")
-            (adr_dir / "ADR-0.5.0-beta.md").write_text("# ADR-0.5.0: beta\n")
+            (adr_dir / "ADR-0.5.0-alpha.md").write_text("# ADR-0.5.0: alpha\n", encoding="utf-8")
+            (adr_dir / "ADR-0.5.0-beta.md").write_text("# ADR-0.5.0: beta\n", encoding="utf-8")
 
             with self.assertRaisesRegex(GzCliError, r"Multiple ADR files found for ADR-0\.5\.0"):
                 resolve_adr_file(Path.cwd(), config, "ADR-0.5.0")
@@ -73,7 +74,9 @@ class TestAdrResolution(unittest.TestCase):
 
             adr_path = Path(config.paths.adrs) / "ADR-0.2.0-gate-verification.md"
             adr_path.parent.mkdir(parents=True, exist_ok=True)
-            adr_path.write_text("---\nid: ADR-0.2.0\n---\n\n# ADR-0.2.0: Gate Verification\n")
+            adr_path.write_text(
+                "---\nid: ADR-0.2.0\n---\n\n# ADR-0.2.0: Gate Verification\n", encoding="utf-8"
+            )
 
             resolved_path, resolved_id = resolve_adr_file(Path.cwd(), config, "ADR-0.2.0")
 

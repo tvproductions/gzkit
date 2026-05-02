@@ -260,7 +260,9 @@ class TestSyncCommand(unittest.TestCase):
         """Sync blocks mirror propagation when canonical SKILL metadata is invalid."""
         runner = CliRunner()
         with _InitFromTemplate():
-            Path(".gzkit/skills/lint/SKILL.md").write_text("# SKILL.md\n\nbroken\n")
+            Path(".gzkit/skills/lint/SKILL.md").write_text(
+                "# SKILL.md\n\nbroken\n", encoding="utf-8"
+            )
 
             result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
 
@@ -282,7 +284,8 @@ class TestSyncCommand(unittest.TestCase):
                 "owner: gzkit-governance\n"
                 "last_reviewed: 2026-02-21\n"
                 "---\n\n"
-                "# SKILL.md\n"
+                "# SKILL.md\n",
+                encoding="utf-8",
             )
 
             result = runner.invoke(main, ["agent", "sync", "control-surfaces"])

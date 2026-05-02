@@ -25,31 +25,35 @@ def _instruction_file(apply_to: str, body: str, *, exclude_agent: str | None = N
 def _scaffold_project(root: Path) -> None:
     """Create minimal project structure for eval to pass."""
     # AGENTS.md with Project Identity
-    (root / "AGENTS.md").write_text("# Agents\n\n## Project Identity\n\ngzkit governance toolkit\n")
+    (root / "AGENTS.md").write_text(
+        "# Agents\n\n## Project Identity\n\ngzkit governance toolkit\n", encoding="utf-8"
+    )
     # CLAUDE.md
-    (root / "CLAUDE.md").write_text("# Claude\n\nGuidance here.\n")
+    (root / "CLAUDE.md").write_text("# Claude\n\nGuidance here.\n", encoding="utf-8")
     # .github/instructions with one instruction
     inst = root / ".github" / "instructions"
     inst.mkdir(parents=True)
     body = "# Governance Core\n\nRules here."
-    (inst / "governance_core.instructions.md").write_text(_instruction_file("**/*", body))
+    (inst / "governance_core.instructions.md").write_text(
+        _instruction_file("**/*", body), encoding="utf-8"
+    )
     # .claude/rules synced
     rules = root / ".claude" / "rules"
     rules.mkdir(parents=True)
-    (rules / "governance_core.md").write_text(body)
+    (rules / "governance_core.md").write_text(body, encoding="utf-8")
     # .gzkit/skills with one skill
     skill = root / ".gzkit" / "skills" / "gz-test"
     skill.mkdir(parents=True)
-    (skill / "SKILL.md").write_text("# gz-test skill\n")
+    (skill / "SKILL.md").write_text("# gz-test skill\n", encoding="utf-8")
     # docs/user/commands/index.md with quality references
     cmd_docs = root / "docs" / "user" / "commands"
     cmd_docs.mkdir(parents=True)
     (cmd_docs / "index.md").write_text(
-        "# Commands\n\n- readiness audit\n- parity check\n- skill audit\n"
+        "# Commands\n\n- readiness audit\n- parity check\n- skill audit\n", encoding="utf-8"
     )
     # src directory (for instruction reachability)
     (root / "src").mkdir(exist_ok=True)
-    (root / "src" / "main.py").write_text("")
+    (root / "src" / "main.py").write_text("", encoding="utf-8")
 
 
 class TestBaselineCases(unittest.TestCase):
@@ -177,7 +181,9 @@ class TestRunEvalSuite(unittest.TestCase):
             root = Path(tmp)
             _scaffold_project(root)
             # Rewrite index without quality command refs
-            (root / "docs" / "user" / "commands" / "index.md").write_text("# Commands\n")
+            (root / "docs" / "user" / "commands" / "index.md").write_text(
+                "# Commands\n", encoding="utf-8"
+            )
             result = run_eval_suite(root)
             docs_result = next(r for r in result.results if r.case_id == "workflow-docs-positive")
             self.assertFalse(docs_result.passed)

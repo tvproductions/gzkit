@@ -90,9 +90,9 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
             stub = f"# gz {command_name}\n\nStub\n"
             if flag_line:
                 stub += f"\nFlags: {flag_line}\n"
-            doc_path.write_text(stub)
+            doc_path.write_text(stub, encoding="utf-8")
             links.append(f"- [`gz {command_name}`]({doc_path.name})")
-        index_path.write_text("# Commands Index\n\n" + "\n".join(links) + "\n")
+        index_path.write_text("# Commands Index\n\n" + "\n".join(links) + "\n", encoding="utf-8")
         Path("README.md").write_text(
             "\n".join(
                 [
@@ -108,7 +108,8 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
                     "```",
                     "",
                 ]
-            )
+            ),
+            encoding="utf-8",
         )
 
     @staticmethod
@@ -123,10 +124,11 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
                 },
                 indent=2,
             )
-            + "\n"
+            + "\n",
+            encoding="utf-8",
         )
         Path("docs/governance/parity-intake-rubric.md").parent.mkdir(parents=True, exist_ok=True)
-        Path("docs/governance/parity-intake-rubric.md").write_text("# Rubric\n")
+        Path("docs/governance/parity-intake-rubric.md").write_text("# Rubric\n", encoding="utf-8")
         Path("docs/proposals/REPORT-TEMPLATE-airlineops-parity.md").parent.mkdir(
             parents=True, exist_ok=True
         )
@@ -143,7 +145,8 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
                     "## Next Actions",
                     "",
                 ]
-            )
+            ),
+            encoding="utf-8",
         )
         Path(".gzkit/skills/airlineops-parity-scan/SKILL.md").parent.mkdir(
             parents=True, exist_ok=True
@@ -158,7 +161,8 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
                     "uv run mkdocs build --strict",
                     "",
                 ]
-            )
+            ),
+            encoding="utf-8",
         )
         Path("docs/proposals/REPORT-airlineops-parity-2026-03-01.md").write_text(
             "\n".join(
@@ -168,7 +172,8 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
                     "## Next Actions",
                     "",
                 ]
-            )
+            ),
+            encoding="utf-8",
         )
 
     @staticmethod
@@ -183,19 +188,22 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
                     "human attestation remains required for completion.",
                     "",
                 ]
-            )
+            ),
+            encoding="utf-8",
         )
         Path("docs/governance/governance_runbook.md").parent.mkdir(parents=True, exist_ok=True)
-        Path("docs/governance/governance_runbook.md").write_text("# Governance Runbook\n")
+        Path("docs/governance/governance_runbook.md").write_text(
+            "# Governance Runbook\n", encoding="utf-8"
+        )
         Path("docs/user/concepts").mkdir(parents=True, exist_ok=True)
-        Path("docs/user/concepts/lanes.md").write_text("# Lanes\n")
+        Path("docs/user/concepts/lanes.md").write_text("# Lanes\n", encoding="utf-8")
         Path("docs/governance/GovZero/audits").mkdir(parents=True, exist_ok=True)
         Path("docs/governance/GovZero/audits/AUDIT-TEMPLATE-agent-readiness.md").write_text(
-            "# Agent Readiness Audit\n"
+            "# Agent Readiness Audit\n", encoding="utf-8"
         )
         Path("docs/user/reference").mkdir(parents=True, exist_ok=True)
         Path("docs/user/reference/agent-input-disciplines.md").write_text(
-            "# Agent Input Disciplines\n"
+            "# Agent Input Disciplines\n", encoding="utf-8"
         )
         Path("src/gzkit/templates").mkdir(parents=True, exist_ok=True)
         Path("src/gzkit/templates/obpi.md").write_text(
@@ -214,7 +222,8 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
                     "## Completion Checklist",
                     "",
                 ]
-            )
+            ),
+            encoding="utf-8",
         )
         Path(".gzkit/skills/gz-obpi-specify/assets").mkdir(parents=True, exist_ok=True)
         Path(".gzkit/skills/gz-obpi-specify/assets/OBPI_BRIEF-template.md").write_text(
@@ -227,21 +236,22 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
                     "Each brief targets exactly one OBPI entry",
                     "",
                 ]
-            )
+            ),
+            encoding="utf-8",
         )
         Path("docs/design/prd").mkdir(parents=True, exist_ok=True)
-        Path("docs/design/prd/PRD-GZKIT-1.0.0.md").write_text("# PRD\n")
+        Path("docs/design/prd/PRD-GZKIT-1.0.0.md").write_text("# PRD\n", encoding="utf-8")
         Path("tests").mkdir(parents=True, exist_ok=True)
-        Path("tests/test_cli.py").write_text("import unittest\n")
-        Path("tests/test_sync.py").write_text("import unittest\n")
+        Path("tests/test_cli.py").write_text("import unittest\n", encoding="utf-8")
+        Path("tests/test_sync.py").write_text("import unittest\n", encoding="utf-8")
         # Eval suite surfaces: synced instruction → rule pair
         Path(".github/instructions").mkdir(parents=True, exist_ok=True)
         body = "# Governance Core\n\nRules here."
         Path(".github/instructions/governance_core.instructions.md").write_text(
-            '---\napplyTo: "**/*"\n---\n\n' + body
+            '---\napplyTo: "**/*"\n---\n\n' + body, encoding="utf-8"
         )
         Path(".claude/rules").mkdir(parents=True, exist_ok=True)
-        Path(".claude/rules/governance_core.md").write_text(body)
+        Path(".claude/rules/governance_core.md").write_text(body, encoding="utf-8")
 
     def test_check_config_paths_passes_for_valid_layout(self) -> None:
         runner = CliRunner()
@@ -283,7 +293,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
             config_path = Path(".gzkit.json")
             config = json.loads(config_path.read_text(encoding="utf-8"))
             config["paths"]["obpis"] = "design/obpis"
-            config_path.write_text(json.dumps(config, indent=2) + "\n")
+            config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
             Path("design/obpis").mkdir(parents=True, exist_ok=True)
 
             result = runner.invoke(main, ["check-config-paths"])
@@ -295,7 +305,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
         with _InitFromTemplate():
             legacy_file = Path("design/obpis/OBPI-0.1.0-01-legacy.md")
             legacy_file.parent.mkdir(parents=True, exist_ok=True)
-            legacy_file.write_text("# legacy\n")
+            legacy_file.write_text("# legacy\n", encoding="utf-8")
 
             result = runner.invoke(main, ["check-config-paths"])
             self.assertNotEqual(result.exit_code, 0)
@@ -315,7 +325,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
             self._prepare_docs_surface()
             # Corrupt one heading to trigger mismatch.
             doc_rel = manpage_path_for("closeout")
-            Path(doc_rel).write_text("# wrong heading\n")
+            Path(doc_rel).write_text("# wrong heading\n", encoding="utf-8")
             result = runner.invoke(main, ["cli", "audit"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("failed", result.output.lower())
@@ -337,7 +347,8 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
                         "```",
                         "",
                     ]
-                )
+                ),
+                encoding="utf-8",
             )
             result = runner.invoke(main, ["cli", "audit"])
             self.assertNotEqual(result.exit_code, 0)

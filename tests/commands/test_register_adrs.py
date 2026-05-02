@@ -26,7 +26,8 @@ class TestRegisterAdrsCommand(unittest.TestCase):
                 "parent: PRD-GZKIT-1.0.0\n"
                 "lane: heavy\n"
                 "---\n\n"
-                "# ADR-0.3.0: pool.sample\n"
+                "# ADR-0.3.0: pool.sample\n",
+                encoding="utf-8",
             )
 
             dry_run = runner.invoke(main, ["register-adrs", "--dry-run"])
@@ -56,7 +57,7 @@ class TestRegisterAdrsCommand(unittest.TestCase):
             adr_dir.mkdir(parents=True, exist_ok=True)
 
             suffixed = adr_dir / "ADR-0.4.0-pool.heavy-lane.md"
-            suffixed.write_text("# ADR-0.4.0: pool.heavy-lane\n")
+            suffixed.write_text("# ADR-0.4.0: pool.heavy-lane\n", encoding="utf-8")
 
             non_semver_pool = adr_dir / "ADR-pool.go-runtime-parity.md"
             non_semver_pool.write_text(
@@ -65,11 +66,12 @@ class TestRegisterAdrsCommand(unittest.TestCase):
                 "parent: PRD-GZKIT-1.0.0\n"
                 "lane: lite\n"
                 "---\n\n"
-                "# ADR: pool.go-runtime-parity\n"
+                "# ADR: pool.go-runtime-parity\n",
+                encoding="utf-8",
             )
 
             closeout = Path(config.paths.adrs) / "ADR-CLOSEOUT-FORM.md"
-            closeout.write_text("# ADR Closeout Form\n")
+            closeout.write_text("# ADR Closeout Form\n", encoding="utf-8")
 
             result = runner.invoke(main, ["register-adrs"])
             self.assertEqual(result.exit_code, 0)
@@ -94,7 +96,8 @@ class TestRegisterAdrsCommand(unittest.TestCase):
             adr_one_dir = adr_root / "ADR-0.1.0" / "obpis"
             adr_one_dir.parent.mkdir(parents=True, exist_ok=True)
             (adr_one_dir.parent / "ADR-0.1.0.md").write_text(
-                "---\nid: ADR-0.1.0\nparent: PRD-GZKIT-1.0.0\nlane: lite\n---\n\n# ADR-0.1.0\n"
+                "---\nid: ADR-0.1.0\nparent: PRD-GZKIT-1.0.0\nlane: lite\n---\n\n# ADR-0.1.0\n",
+                encoding="utf-8",
             )
             adr_one_dir.mkdir(parents=True, exist_ok=True)
             (adr_one_dir / "OBPI-0.1.0-01-demo.md").write_text(
@@ -105,13 +108,15 @@ class TestRegisterAdrsCommand(unittest.TestCase):
                 "lane: Lite\n"
                 "status: Draft\n"
                 "---\n\n"
-                "# OBPI-0.1.0-01-demo\n"
+                "# OBPI-0.1.0-01-demo\n",
+                encoding="utf-8",
             )
 
             adr_two_dir = adr_root / "ADR-0.2.0" / "obpis"
             adr_two_dir.parent.mkdir(parents=True, exist_ok=True)
             (adr_two_dir.parent / "ADR-0.2.0.md").write_text(
-                "---\nid: ADR-0.2.0\nparent: PRD-GZKIT-1.0.0\nlane: lite\n---\n\n# ADR-0.2.0\n"
+                "---\nid: ADR-0.2.0\nparent: PRD-GZKIT-1.0.0\nlane: lite\n---\n\n# ADR-0.2.0\n",
+                encoding="utf-8",
             )
             adr_two_dir.mkdir(parents=True, exist_ok=True)
             (adr_two_dir / "OBPI-0.2.0-01-demo.md").write_text(
@@ -122,7 +127,8 @@ class TestRegisterAdrsCommand(unittest.TestCase):
                 "lane: Lite\n"
                 "status: Draft\n"
                 "---\n\n"
-                "# OBPI-0.2.0-01-demo\n"
+                "# OBPI-0.2.0-01-demo\n",
+                encoding="utf-8",
             )
 
             dry_run = runner.invoke(main, ["register-adrs", "ADR-0.1.0", "--all", "--dry-run"])
