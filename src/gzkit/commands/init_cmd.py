@@ -1,5 +1,6 @@
 """Init, PRD, and constitution command implementations."""
 
+import json
 import re
 import subprocess
 from datetime import date
@@ -180,6 +181,28 @@ venv/
 .DS_Store
 Thumbs.db
 """
+
+
+def _scaffold_audit_thresholds(project_root: Path) -> None:
+    """Write ``data/audit_thresholds.json`` with the canonical defaults.
+
+    Called from ``gz init``. Idempotent: skips when the file already exists.
+    The heuristic at ``gz adr audit-check`` refuses to silently fall back
+    to compiled-in defaults when the file is missing, so every gzkit-shaped
+    workspace MUST carry it.
+    """
+    target = project_root / "data" / "audit_thresholds.json"
+    if target.exists():
+        return
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(
+        json.dumps(
+            {"max_covers_backfill_commits": 3, "max_covers_backfill_days": 7},
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def _scaffold_gitignore(project_root: Path, *, dry_run: bool = False) -> str | None:
@@ -528,6 +551,12 @@ def init(
     # Scaffold default personas
     personas = scaffold_default_personas(project_root)
     console.print(f"  Scaffolded {len(personas)} default personas")
+
+    # Scaffold data/audit_thresholds.json — required by gz adr audit-check
+    # covers-backfill heuristic (REQ-0.0.23-05-03). The heuristic refuses to
+    # silent-fall-back to compiled-in defaults; every gzkit project must
+    # carry the canonical file.
+    _scaffold_audit_thresholds(project_root)
 
     # Sync control surfaces (including skill mirrors)
     updated = sync_all(project_root, config)

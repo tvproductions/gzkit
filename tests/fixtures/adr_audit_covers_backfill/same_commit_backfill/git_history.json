@@ -1,0 +1,21 @@
+{
+  "scenario": "same_commit_backfill",
+  "decorator_target": "REQ-0.99.0-01-01",
+  "decorator_file": "tests/test_decorator.py",
+  "decorator_line": 7,
+  "introducing_commit": {
+    "sha": "ccccccc",
+    "date": "2026-04-02T00:00:00+00:00"
+  },
+  "closing_receipt": {
+    "receipt_id": "evt-fixture-same-1",
+    "sha": "ccccccc",
+    "date": "2026-04-02T00:00:00+00:00"
+  },
+  "rev_list_count": 0,
+  "expected_flag": true,
+  "expected_exit_code_lite_default": 0,
+  "expected_exit_code_lite_strict": 3,
+  "expected_exit_code_heavy_or_foundation": 3,
+  "rationale": "Decorator + closing receipt landed in the same commit (sha == sha; gap = 0c / 0d). Heuristic MUST flag (REQ-0.0.23-05-01, REQ-0.0.23-05-02). Severity is warning on lite + feature + !strict (exit 0); blocking on heavy / foundation / strict (exit 3 per REQ-0.0.23-05-05)."
+}

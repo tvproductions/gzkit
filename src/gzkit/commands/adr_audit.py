@@ -8,6 +8,11 @@ from datetime import date
 from pathlib import Path
 from typing import Any, cast
 
+from gzkit.commands.adr_audit_covers_backfill import (
+    BackfillResult,
+    evaluate_backfill_for_audit,
+    format_backfill_finding,
+)
 from gzkit.commands.adr_coverage import (
     OBPI_SEMVER_ITEM_RE,
     REQ_ID_RE,
@@ -39,7 +44,9 @@ from gzkit.ledger import (
     Ledger,
     audit_receipt_emitted_event,
     normalize_req_proof_inputs,
+    parse_frontmatter_value,
 )
+from gzkit.traceability import find_covers_in_source
 from gzkit.utils import capture_validation_anchor
 
 # Re-export coverage symbols so existing imports keep working.
@@ -127,6 +134,7 @@ def _render_audit_check_result(
     coverage: dict[str, Any],
     coverage_blocking: list[dict[str, Any]],
     coverage_advisory: list[dict[str, Any]],
+    backfill: BackfillResult | None = None,
 ) -> None:
     """Print the human-readable audit-check summary."""
     console.print(f"[bold]ADR audit-check:[/bold] {adr_id}")
@@ -154,9 +162,80 @@ def _render_audit_check_result(
         for cf in coverage_advisory:
             console.print(f"  - {cf['id']}")
     _print_coverage_section(coverage, [])
+    if backfill is not None:
+        _render_backfill_section(backfill)
 
 
-def adr_audit_check(adr: str, as_json: bool) -> None:
+def _render_backfill_section(backfill: BackfillResult) -> None:
+    """Render the covers-backfill heuristic section after the Advisory block."""
+    if backfill.findings:
+        first_severity = backfill.findings[0].severity
+        count = len(backfill.findings)
+        if first_severity == "blocking":
+            header = f"[red]FAIL[/red] {count} covers-backfill finding(s):"
+        else:
+            header = f"[yellow]Backfill[/yellow] {count} covers-backfill warning(s):"
+        console.print(header)
+        for finding in backfill.findings:
+            console.print(f"  {format_backfill_finding(finding)}")
+    if backfill.unresolvable:
+        console.print(
+            f"[yellow]Unresolvable[/yellow] {len(backfill.unresolvable)} "
+            "covers-backfill location(s) not resolvable in git:"
+        )
+        for diag in backfill.unresolvable:
+            console.print(f"  {diag}")
+
+
+def _collect_covers_locations_for_adr(
+    project_root: Path,
+    adr_id: str,
+) -> list[tuple[str, str, int]]:
+    """Return (target, rel_file, line_no) triples for REQs matching this ADR.
+
+    Walks ``tests/**/*.py`` using :func:`~gzkit.traceability.find_covers_in_source`
+    and filters to REQ IDs whose prefix matches the ADR's semver (e.g.
+    ``REQ-0.0.23-`` for ``ADR-0.0.23``). Line numbers are 1-indexed.
+
+    The semver is extracted via the canonical ``_extract_adr_semver`` helper
+    so ``ADR-0.1.0-f`` resolves to ``0.1.0`` (not ``0.1.0-f``) and the
+    REQ-prefix filter correctly accepts ``REQ-0.1.0-NN-MM`` decorators.
+    """
+    from gzkit.commands.adr_coverage import _extract_adr_semver
+
+    semver = _extract_adr_semver(adr_id)
+    if semver is None:
+        return []
+    req_prefix = f"REQ-{semver}-"
+    tests_dir = project_root / "tests"
+    if not tests_dir.exists():
+        return []
+    locations: list[tuple[str, str, int]] = []
+    for test_file in sorted(tests_dir.rglob("*.py")):
+        content = test_file.read_text(encoding="utf-8")
+        rel_path = str(test_file.relative_to(project_root))
+        for req_id, line_no in find_covers_in_source(content):
+            if req_id.startswith(req_prefix):
+                locations.append((req_id, rel_path, line_no))
+    return locations
+
+
+def _collect_obpi_completion_events_for_adr(
+    ledger: Ledger,
+    obpi_ids: list[str],
+) -> list[Mapping[str, Any]]:
+    """Return ledger events for completed/attested_completed receipts for all OBPIs."""
+    _receipt_events = {"completed", "attested_completed"}
+    events: list[Mapping[str, Any]] = []
+    for obpi_id in obpi_ids:
+        for event in ledger.query(event_type="obpi_receipt_emitted", artifact_id=obpi_id):
+            receipt_event = (event.extra or {}).get("receipt_event", "")
+            if receipt_event in _receipt_events:
+                events.append(event.model_dump())
+    return events
+
+
+def adr_audit_check(adr: str, as_json: bool, strict: bool = False) -> None:
     """Verify linked OBPIs are complete and contain implementation evidence."""
     config = ensure_initialized()
     project_root = get_project_root()
@@ -177,6 +256,28 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
 
     passed = not findings and not coverage_blocking
 
+    # Derive lane and kind from the ADR's frontmatter.
+    adr_content = adr_file.read_text(encoding="utf-8")
+    adr_lane = parse_frontmatter_value(adr_content, "lane") or "lite"
+    if adr_lane not in {"lite", "heavy"}:
+        adr_lane = "lite"
+    adr_kind = "foundation" if _is_foundation_adr(adr_id) else "feature"
+
+    # Collect covers locations and OBPI completion events for the heuristic.
+    covers_locations = _collect_covers_locations_for_adr(project_root, adr_id)
+    all_obpi_ids = sorted(obpi_files.keys())
+    obpi_completion_events = _collect_obpi_completion_events_for_adr(ledger, all_obpi_ids)
+
+    backfill = evaluate_backfill_for_audit(
+        project_root,
+        adr_lane=adr_lane,
+        adr_kind=adr_kind,
+        strict=strict,
+        covers_locations=covers_locations,
+        obpi_completion_events=obpi_completion_events,
+        thresholds_path=project_root / "data" / "audit_thresholds.json",
+    )
+
     result = {
         "adr": adr_id,
         "passed": passed,
@@ -187,6 +288,8 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
         "coverage_findings": coverage_findings,
         "coverage_blocking": coverage_blocking,
         "coverage_advisory": coverage_advisory,
+        "covers_backfill_findings": [f.model_dump() for f in backfill.findings],
+        "covers_backfill_unresolvable": list(backfill.unresolvable),
     }
 
     if as_json:
@@ -200,10 +303,13 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
             coverage,
             coverage_blocking,
             coverage_advisory,
+            backfill=backfill,
         )
 
     if not passed:
         raise SystemExit(1)
+    if backfill.exit_code != 0:
+        raise SystemExit(backfill.exit_code)
 
 
 def adr_covers_check(adr: str, as_json: bool) -> None:

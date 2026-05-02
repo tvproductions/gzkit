@@ -3,8 +3,7 @@ id: OBPI-0.0.23-05-audit-check-covers-backfill-heuristic
 parent: ADR-0.0.23-agent-failure-mode-taxonomy
 item: 5
 lane: Heavy
-sensitivity: security
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.23-05-audit-check-covers-backfill-heuristic: Same-commit `@covers` backfill heuristic for `gz adr audit-check`
@@ -34,15 +33,21 @@ The change is additive validator scope inside an existing CLI verb (`gz adr audi
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `src/gzkit/commands/adr_audit.py` — extend `gz adr audit-check` with the same-commit-window heuristic; thread the threshold config and `--strict` flag through to the heuristic
-- `src/gzkit/cli/parser_*.py` — register the `--strict` flag on `gz adr audit-check` (whichever parser file owns the verb)
+- `src/gzkit/commands/adr_audit.py` — extend `gz adr audit-check` to call the heuristic; thread the threshold config and `--strict` flag through (target file is already over the 600-line cap, so heuristic logic itself lands in the sibling module below — see operator decision Q1=A in plan)
+- `src/gzkit/commands/adr_audit_covers_backfill.py` — sibling module hosting the heuristic logic, the Pydantic threshold model, the git-history wrapper, and the finding/severity types (widened from the original brief at plan-audit time per Q1=A; mirrors the `security_surfaces.py` precedent)
+- `src/gzkit/cli/parser_artifacts.py` — register the `--strict` flag on `gz adr audit-check` (verb is registered here)
 - `data/audit_thresholds.json` — new threshold-config file with `max_covers_backfill_commits` and `max_covers_backfill_days` keys; default values per the GHI body (3 commits, 7 days)
-- `src/gzkit/schemas/audit_thresholds.json` — Pydantic-validated schema for the threshold file (frozen, `extra="forbid"`)
-- `tests/commands/test_adr_audit.py` (or sibling `tests/governance/test_audit_check_covers_backfill.py`) — REQ-derived unit tests with mocked git history boundary
+- `src/gzkit/schemas/audit_thresholds.json` — JSON Schema for the threshold file (mirrors `security_surfaces.json` shape)
+- `tests/governance/test_audit_check_covers_backfill.py` — REQ-derived unit tests with mocked git history boundary
 - `tests/fixtures/adr_audit_covers_backfill/` — fixture directory with two ADR shapes (legitimate-evolution, same-commit-backfill)
 - `features/adr_audit_covers_backfill.feature` — BDD scenario covering heavy-lane fail-closed behavior end-to-end
-- `docs/user/manpages/gz-adr.md` (or the audit-check-specific manpage) — document the new `--strict` flag, the heuristic's behavior, and the threshold file
+- `features/steps/adr_audit_covers_backfill_steps.py` — step definitions for the BDD scenario
+- `docs/user/manpages/gz-adr-audit-check.md` — verb-specific manpage documenting the new `--strict` flag, heuristic behavior, threshold file, exit codes, and examples (per Q3=A; "or sibling manpage" affordance in REQ-12)
+- `docs/user/manpages/index.md` — manpage index entry for the new manpage (REQ-13 parity)
+- `docs/user/commands/adr-audit-check.md` — update existing command doc with `--strict` and threshold semantics
 - `docs/user/runbook.md` — runbook entry referencing the heuristic when audit-check fails on backfill
+- `src/gzkit/commands/init_cmd.py` — production `gz init` scaffolds `data/audit_thresholds.json` (added at plan-execution time per operator decision A; the heuristic forbids silent-fallback to defaults so every gzkit workspace must carry the file)
+- `tests/commands/common.py` — `_quick_init` test helper mirrors the production `data/audit_thresholds.json` scaffolding so existing test fixtures don't break when the heuristic activates
 - `docs/design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/**` — parent ADR package scope (evidence updates, completion checklist)
 
 ## Denied Paths
@@ -274,15 +279,35 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+End-to-end heavy-lane fail-closed witness via the BDD scenario:
+
+```
+$ uv run -m behave features/adr_audit_covers_backfill.feature
+@REQ-0.0.23-05-09
+Scenario: Heavy-lane same-commit backfill exits 3 with the remediation hint
+  Given the workspace is initialized in heavy mode
+  And the audit-thresholds file is present at "data/audit_thresholds.json"
+  Given a heavy ADR with a same-commit @covers backfill exists for OBPI-0.1.0-01-demo
+  When I run the gz command "adr audit-check ADR-0.1.0-f"
+  Then the command exits with code 3
+  And the output contains "covers-backfill finding"
+  And the output contains "Invariant 6f"
+
+1 scenario passed, 0 failed, 0 skipped
+```
+
+Heuristic mints (introducing commit, closing-receipt commit) pair from same git head; computes 0c/0d gap; severity=blocking under heavy/foundation; surfaces file:line + REQ + SHA + receipt + Invariant 6f remediation hint; SystemExit(3). ARB receipts cited inline: arb-ruff-1877b547d779490abd9f40f7036d681a (lint), arb-step-typecheck-193100ae9ae94d21a199446cc29ad426 (typecheck), arb-step-unittest-6b43396a525547e292f102ba00c61eda (3925 tests), arb-step-mkdocs-78510e16ef88496baed52e29a79bf3e5 (mkdocs strict), arb-step-behave-a9b082795e484dcead8570a6800db1c6 (145 BDD scenarios). gz cli audit 90/90; gz covers OBPI-0.0.23-05 11/11. Closes GHI #309.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/commands/adr_audit_covers_backfill.py (heuristic core, 574 lines), src/gzkit/schemas/audit_thresholds.json, data/audit_thresholds.json, tests/governance/test_audit_check_covers_backfill.py (45 tests), tests/fixtures/adr_audit_covers_backfill/{legitimate_evolution,same_commit_backfill}/ (fixture pair REQ-10), features/adr_audit_covers_backfill.feature + features/steps/adr_audit_covers_backfill_steps.py (@REQ-0.0.23-05-09), docs/user/manpages/gz-adr-audit-check.md
+- Files modified: src/gzkit/commands/adr_audit.py (heuristic call-out + lane/kind derivation + render + exit-code precedence), src/gzkit/cli/parser_artifacts.py (--strict flag), src/gzkit/commands/init_cmd.py (production scaffolds data/audit_thresholds.json), tests/commands/common.py (_quick_init mirrors the scaffold), docs/user/commands/adr-audit-check.md (--strict + thresholds doc), docs/user/runbook.md (backfill-finding remediation flow)
+- Tests added: 45 unit tests + 1 BDD scenario; full suite 3925 unittest + 145 BDD all green
+- Date completed: 2026-05-02
+- Attestation status: required (foundation × heavy × security three-axis OR — brief-level Gate 5)
+- Defects noted: GHI #380 filed for the authoring-time governance vibing pattern surfaced during this OBPI's plan-audit
 
 ## Tracked Defects
 
@@ -294,14 +319,14 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — REQ-0.0.23-05-01 through REQ-0.0.23-05-11 all covered (gz covers OBPI-0.0.23-05 → 11/11). Heavy-lane × foundation-kind × security-sensitivity three-axis attestation gates green via ARB receipts arb-ruff-1877b547d779490abd9f40f7036d681a, arb-step-typecheck-193100ae9ae94d21a199446cc29ad426, arb-step-unittest-6b43396a525547e292f102ba00c61eda (3925 tests pass), arb-step-mkdocs-78510e16ef88496baed52e29a79bf3e5 (strict docs build), arb-step-behave-a9b082795e484dcead8570a6800db1c6 (145 BDD scenarios incl. @REQ-0.0.23-05-09). CLI audit 90/90 cross-coverage clean. Closes GHI #309 by structurally closing the Skipped cheap verification cosmetic-@covers-backfill failure class at the gz adr audit-check surface; GHI #380 filed mid-flight for the authoring-time vibing pattern surfaced as root cause.
+- Date: 2026-05-02
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-02
 
 **Evidence Hash:** -

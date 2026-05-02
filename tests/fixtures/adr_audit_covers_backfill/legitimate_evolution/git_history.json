@@ -1,0 +1,19 @@
+{
+  "scenario": "legitimate_evolution",
+  "decorator_target": "REQ-0.99.0-01-01",
+  "decorator_file": "tests/test_decorator.py",
+  "decorator_line": 7,
+  "introducing_commit": {
+    "sha": "aaaaaaa",
+    "date": "2026-02-01T00:00:00+00:00"
+  },
+  "closing_receipt": {
+    "receipt_id": "evt-fixture-legit-1",
+    "sha": "bbbbbbb",
+    "date": "2026-04-02T00:00:00+00:00"
+  },
+  "rev_list_count": 30,
+  "expected_flag": false,
+  "expected_exit_code": 0,
+  "rationale": "Decorator landed 30 commits / 60 days before closing receipt — exceeds both default thresholds (3 commits / 7 days). Heuristic MUST NOT flag (REQ-0.0.23-05-04, REQ-0.0.23-05-07)."
+}
