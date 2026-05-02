@@ -188,6 +188,47 @@ uv run gz git-sync --apply --lint --test
 
 ---
 
+## Cross-Repo Defect Filing (gzkit-Owned Surfaces)
+
+When working **inside a gzkit-consuming repository** and you find a defect or
+enhancement against a **gzkit-owned surface** — the `gz` CLI itself, schemas in
+`src/gzkit/schemas/`, validator scopes (`gz validate --<scope>`), ledger event
+semantics, files under `.gzkit/**` or `src/gzkit/**`, or rules under
+`.gzkit/rules/**` — file the issue at `tvproductions/gzkit` (not at the
+consumer's tracker) using the canonical wrapper:
+
+```bash
+# Preview before live filing (recommended for first use)
+uv run gz issue file \
+  --title "validator scope X mishandles inherited frontmatter" \
+  --body "gz validate --documents miscounts adr-status drift in nested OBPIs" \
+  --defect \
+  --dry-run
+
+# Live file once the body looks right
+uv run gz issue file \
+  --title "validator scope X mishandles inherited frontmatter" \
+  --body "gz validate --documents miscounts adr-status drift in nested OBPIs" \
+  --defect
+```
+
+The wrapper auto-stamps a `Filed from <consumer-repo-slug> running gz vX.Y.Z`
+provenance trailer at the top of the body and routes the issue against
+`tvproductions/gzkit` regardless of the consuming repo's `git remote`. Bodies
+that reference no gzkit-owned surface marker (`gz <verb>`, `.gzkit/`,
+`src/gzkit/`, or `gzkit.<module>`) are **hard-rejected** with exit code 1 — the
+misrouting failure class is closed structurally per
+`.gzkit/rules/agent-failure-modes.md` § Safeguard circumvention.
+
+Defects in **consumer-repo** code, content, or governance go to the consumer's
+own tracker via plain `gh issue create`. The asymmetry is intentional: consumer
+repos own their remediation surface; gzkit owns its.
+
+Authoritative routing table: `.gzkit/rules/gh-cli.md` § Cross-repo filing.
+Manpage: `docs/user/manpages/gz-issue.md`.
+
+---
+
 ## Storage Tiers and Recovery
 
 The three tier model and pool archive governance is documented in

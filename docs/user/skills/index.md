@@ -107,6 +107,7 @@ audience split.
 | Skill | Description |
 |-------|-------------|
 | [`/ghi-author`](ghi-author.md) | Author a GitHub Issue for a defect, enhancement, or investigation surfaced in flight |
+| [`/gz-issue-file`](gz-issue-file.md) | Cross-repo defect/enhancement filing wrapper for gzkit-owned surfaces (routes to `tvproductions/gzkit`) |
 | [`/ghi-close`](ghi-close.md) | Do the work described in a GHI, verify artifacts, and close with evidence |
 | [`/ghi-triage`](ghi-triage.md) | Evaluate and triage all open GitHub Issues with routing + urgency scoring |
 | [`/git-sync`](git-sync.md) | Run the guarded repository sync ritual with lint/test gates |
