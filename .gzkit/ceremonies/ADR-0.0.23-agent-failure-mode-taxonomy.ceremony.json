@@ -1,0 +1,62 @@
+{
+  "adr_id": "ADR-0.0.23-agent-failure-mode-taxonomy",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-05-02T22:56:35Z",
+  "updated_at": "2026-05-02T23:13:42Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-05-02T22:56:35Z",
+      "acknowledged_at": "2026-05-02T22:56:55Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-05-02T22:56:55Z",
+      "acknowledged_at": "2026-05-02T23:01:31Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-05-02T23:01:31Z",
+      "acknowledged_at": "2026-05-02T23:02:09Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-05-02T23:02:09Z",
+      "acknowledged_at": "2026-05-02T23:05:09Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-05-02T23:05:09Z",
+      "acknowledged_at": "2026-05-02T23:07:58Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-05-02T23:07:58Z",
+      "acknowledged_at": "2026-05-02T23:10:26Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-05-02T23:10:26Z",
+      "acknowledged_at": "2026-05-02T23:11:57Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-05-02T23:11:57Z",
+      "acknowledged_at": "2026-05-02T23:13:42Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-05-02T23:13:42Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz adr --help"
+  ],
+  "walkthrough_index": 0,
+  "attestation": "Completed — six-pattern agent-failure-mode taxonomy codified at .gzkit/rules/agent-failure-modes.md, cross-linked from AGENTS.md, mirrored to .claude/rules and .github/instructions (OBPIs 01-03), cross-repo defect-filing wrapper shipped (OBPI-04, closes GHI #316), and gz adr audit-check covers-backfill temporal heuristic operationalized (OBPI-05, closes GHI #309); evidence: arb-ruff-f088e45f391549bfa3a613107bf4955a, arb-step-typecheck-7fee09e7fa214252a771f6502982ceab, arb-step-unittest-582a9b60dd534981a313e80df9ad4094 (3959 tests, 2 skipped), arb-step-mkdocs-52f743db38524cb38db01249f5ae247b",
+  "completed_at": "2026-05-02T23:13:42Z",
+  "attempt": 1,
+  "paused_at": null
+}

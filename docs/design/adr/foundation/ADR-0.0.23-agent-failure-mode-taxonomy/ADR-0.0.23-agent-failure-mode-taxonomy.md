@@ -148,4 +148,4 @@ six-pattern taxonomy this ADR codifies.
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.23 | Pending | | | |
+| 0.0.23 | Completed | g0 | 2026-05-02 | Completed — six-pattern agent-failure-mode taxonomy codified at .gzkit/rules/agent-failure-modes.md, cross-linked from AGENTS.md, mirrored to .claude/rules and .github/instructions (OBPIs 01-03), cross-repo defect-filing wrapper shipped (OBPI-04, closes GHI #316), and gz adr audit-check covers-backfill temporal heuristic operationalized (OBPI-05, closes GHI #309); evidence: arb-ruff-f088e45f391549bfa3a613107bf4955a, arb-step-typecheck-7fee09e7fa214252a771f6502982ceab, arb-step-unittest-582a9b60dd534981a313e80df9ad4094 (3959 tests, 2 skipped), arb-step-mkdocs-52f743db38524cb38db01249f5ae247b |
