@@ -169,4 +169,4 @@ backstop is the ARB middleware, currently advisory at the citation layer.
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.24 | Pending | | | |
+| 0.0.24 | Completed | g0 | 2026-05-02 | Completed — ADR-0.0.24 ships the receipt-binding gate as a mechanical fail-closed check on heavy-lane and foundation-kind attestations, replacing the prior narrative-trust pathway. All four OBPIs Completed; gz validate --attestation-receipts registered with --lane and --kind axes. Closeout receipts: lint arb-ruff-ea49a20864a040bd91f641190bb8c093, tests arb-step-unittest-948af27ee6064019bff20ee5afe3ead0 (3946 tests OK), typecheck arb-step-typecheck-b6fba06b1efc4d98addf63b1ad03ad3b, mkdocs arb-step-mkdocs-899f852a2d5d4b6c824cd3984bc85d8d. In-flight defects fixed during evidence-gathering: insights record schema (line 25), gz-deps-upgrade operator manpage and skills-index link, test_instruction_audit cp1252-vs-utf8 write_text encoding (4 call sites), quality.py _expand_allowed_paths cross-platform path separator via as_posix(). |

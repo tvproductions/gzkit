@@ -77,6 +77,7 @@ audience split.
 | [`/gz-chore-runner`](gz-chore-runner.md) | Run a gzkit chore end-to-end (show, plan, advise, execute, validate) |
 | [`/gz-cli-audit`](gz-cli-audit.md) | Audit CLI documentation coverage and headings |
 | [`/gz-context-diet`](gz-context-diet.md) | Trim per-turn agent context weight by lifting narrative to docs/governance/ |
+| [`/gz-deps-upgrade`](gz-deps-upgrade.md) | Refresh global uv tools, Python 3.13.x runtime, pyproject.toml pins/floors, and uv.lock to current PyPI latest |
 | [`/gz-pythonic-pattern-detect`](gz-pythonic-pattern-detect.md) | Surface Pythonic-design-pattern refactor candidates after ADR closeout (AST scanner over `src/`) |
 | [`/gz-pythonic-pattern-apply`](gz-pythonic-pattern-apply.md) | Capture before/after evidence with mechanical-delta proof when a Pythonic-pattern rewrite is applied |
 | [`/gz-tech-debt-review`](gz-tech-debt-review.md) | Survey the codebase for technical debt and recommend resolutions across many debt classes |

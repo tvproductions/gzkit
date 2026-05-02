@@ -1,0 +1,62 @@
+{
+  "adr_id": "ADR-0.0.24-attestation-receipt-binding",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-05-02T19:00:54Z",
+  "updated_at": "2026-05-02T20:48:28Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-05-02T19:00:54Z",
+      "acknowledged_at": "2026-05-02T19:01:01Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-05-02T19:01:01Z",
+      "acknowledged_at": "2026-05-02T19:02:27Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-05-02T19:02:27Z",
+      "acknowledged_at": "2026-05-02T19:10:37Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-05-02T19:10:37Z",
+      "acknowledged_at": "2026-05-02T19:24:13Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-05-02T19:24:13Z",
+      "acknowledged_at": "2026-05-02T19:24:35Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-05-02T19:24:35Z",
+      "acknowledged_at": "2026-05-02T20:46:13Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-05-02T20:46:13Z",
+      "acknowledged_at": "2026-05-02T20:48:09Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-05-02T20:48:09Z",
+      "acknowledged_at": "2026-05-02T20:48:28Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-05-02T20:48:28Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz validate --help"
+  ],
+  "walkthrough_index": 0,
+  "attestation": "Completed — ADR-0.0.24 ships the receipt-binding gate as a mechanical fail-closed check on heavy-lane and foundation-kind attestations, replacing the prior narrative-trust pathway. All four OBPIs Completed; gz validate --attestation-receipts registered with --lane and --kind axes. Closeout receipts: lint arb-ruff-ea49a20864a040bd91f641190bb8c093, tests arb-step-unittest-948af27ee6064019bff20ee5afe3ead0 (3946 tests OK), typecheck arb-step-typecheck-b6fba06b1efc4d98addf63b1ad03ad3b, mkdocs arb-step-mkdocs-899f852a2d5d4b6c824cd3984bc85d8d. In-flight defects fixed during evidence-gathering: insights record schema (line 25), gz-deps-upgrade operator manpage and skills-index link, test_instruction_audit cp1252-vs-utf8 write_text encoding (4 call sites), quality.py _expand_allowed_paths cross-platform path separator via as_posix().",
+  "completed_at": "2026-05-02T20:48:28Z",
+  "attempt": 1,
+  "paused_at": "2026-05-02T20:23:37Z"
+}
