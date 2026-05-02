@@ -1,0 +1,110 @@
+ADR audit-check: ADR-0.0.24-attestation-receipt-binding
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.24-01-validator-scope
+  - OBPI-0.0.24-02-wire-into-completion
+  - OBPI-0.0.24-03-doc-updates
+  - OBPI-0.0.24-04-bdd-coverage
+Advisory 5 REQ(s) without @covers traceability (non-blocking):
+  - REQ-0.0.24-03-01
+  - REQ-0.0.24-03-02
+  - REQ-0.0.24-03-03
+  - REQ-0.0.24-03-04
+  - REQ-0.0.24-03-05
+
+Coverage: 14/19 REQs covered (73.7%)
+  OBPI-0.0.24-01: 6/6 (100.0%)
+  OBPI-0.0.24-02: 5/5 (100.0%)
+  OBPI-0.0.24-03: 0/5 (0.0%)
+  OBPI-0.0.24-04: 3/3 (100.0%)
+Uncovered REQs (5):
+  - REQ-0.0.24-03-01
+  - REQ-0.0.24-03-02
+  - REQ-0.0.24-03-03
+  - REQ-0.0.24-03-04
+  - REQ-0.0.24-03-05
+FAIL 21 covers-backfill finding(s):
+  tests\commands\test_adr_emit_receipt.py:175 REQ REQ-0.0.24-02-05 introduced @
+0855c45 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-02-wire-into-completion:2026-05-02T15:57:06.57
+1581+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\commands\test_adr_emit_receipt.py:203 REQ REQ-0.0.24-02-05 introduced @
+0855c45 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-02-wire-into-completion:2026-05-02T15:57:06.57
+1581+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\commands\test_obpi_complete.py:197 REQ REQ-0.0.24-02-01 introduced @ 
+0855c45 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-02-wire-into-completion:2026-05-02T15:57:06.57
+1581+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\commands\test_obpi_complete.py:201 REQ REQ-0.0.24-02-01 introduced @ 
+0855c45 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-02-wire-into-completion:2026-05-02T15:57:06.57
+1581+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\commands\test_obpi_complete.py:342 REQ REQ-0.0.24-02-02 introduced @ 
+0855c45 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-02-wire-into-completion:2026-05-02T15:57:06.57
+1581+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\commands\test_obpi_complete.py:375 REQ REQ-0.0.24-02-02 introduced @ 
+0855c45 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-02-wire-into-completion:2026-05-02T15:57:06.57
+1581+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\commands\test_obpi_complete.py:406 REQ REQ-0.0.24-02-01 introduced @ 
+0855c45 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-02-wire-into-completion:2026-05-02T15:57:06.57
+1581+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\commands\test_obpi_complete.py:453 REQ REQ-0.0.24-02-01 introduced @ 
+0855c45 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-02-wire-into-completion:2026-05-02T15:57:06.57
+1581+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\commands\test_obpi_complete.py:501 REQ REQ-0.0.24-02-03 introduced @ 
+0855c45 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-02-wire-into-completion:2026-05-02T15:57:06.57
+1581+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\commands\test_obpi_complete.py:542 REQ REQ-0.0.24-02-04 introduced @ 
+0855c45 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-02-wire-into-completion:2026-05-02T15:57:06.57
+1581+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\governance\test_attestation_receipt_validator.py:83 REQ 
+REQ-0.0.24-01-01 introduced @ c86af60 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-01-validator-scope:2026-05-02T15:19:12.281344+
+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\governance\test_attestation_receipt_validator.py:95 REQ 
+REQ-0.0.24-01-02 introduced @ c86af60 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-01-validator-scope:2026-05-02T15:19:12.281344+
+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\governance\test_attestation_receipt_validator.py:105 REQ 
+REQ-0.0.24-01-03 introduced @ c86af60 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-01-validator-scope:2026-05-02T15:19:12.281344+
+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\governance\test_attestation_receipt_validator.py:115 REQ 
+REQ-0.0.24-01-04 introduced @ c86af60 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-01-validator-scope:2026-05-02T15:19:12.281344+
+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\governance\test_attestation_receipt_validator.py:128 REQ 
+REQ-0.0.24-01-05 introduced @ c86af60 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-01-validator-scope:2026-05-02T15:19:12.281344+
+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\governance\test_attestation_receipt_validator.py:146 REQ 
+REQ-0.0.24-01-06 introduced @ c86af60 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-01-validator-scope:2026-05-02T15:19:12.281344+
+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\governance\test_attestation_receipt_validator.py:155 REQ 
+REQ-0.0.24-01-06 introduced @ c86af60 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-01-validator-scope:2026-05-02T15:19:12.281344+
+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\governance\test_attestation_receipt_validator.py:162 REQ 
+REQ-0.0.24-01-06 introduced @ c86af60 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-01-validator-scope:2026-05-02T15:19:12.281344+
+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\governance\test_attestation_receipt_validator.py:169 REQ 
+REQ-0.0.24-01-01 introduced @ c86af60 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-01-validator-scope:2026-05-02T15:19:12.281344+
+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\governance\test_attestation_receipt_validator.py:184 REQ 
+REQ-0.0.24-01-01 introduced @ c86af60 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-01-validator-scope:2026-05-02T15:19:12.281344+
+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests\governance\test_attestation_receipt_validator.py:198 REQ 
+REQ-0.0.24-01-01 introduced @ c86af60 (0c / 0d before receipt 
+obpi_receipt_emitted:OBPI-0.0.24-01-validator-scope:2026-05-02T15:19:12.281344+
+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+exit=3
