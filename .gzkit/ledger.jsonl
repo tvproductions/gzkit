@@ -4454,3 +4454,6 @@
 {"schema":"gzkit.ledger.v1","event":"obpi_lock_released","id":"OBPI-0.0.23-05-audit-check-covers-backfill-heuristic","ts":"2026-05-02T12:49:26.383907+00:00","agent":"unknown-77604","force":true}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.obpi-pipeline-dispatch-attestation.md","ts":"2026-05-02T12:58:57.714782+00:00","path":"docs/design/adr/pool/ADR-pool.obpi-pipeline-dispatch-attestation.md"}
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.obpi-pipeline-dispatch-attestation","ts":"2026-05-02T12:59:52.423985+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.brief-authoring-evidence-checks.md","ts":"2026-05-02T13:05:58.043430+00:00","path":"docs/design/adr/pool/ADR-pool.brief-authoring-evidence-checks.md"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.brief-authoring-evidence-checks","ts":"2026-05-02T13:06:01.986315+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.contract-surface-mechanical-defenses.md","ts":"2026-05-02T13:06:56.999647+00:00","path":"docs/design/adr/pool/ADR-pool.contract-surface-mechanical-defenses.md"}
