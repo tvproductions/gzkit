@@ -94,13 +94,13 @@ def _print_pipeline_header(
     """Render the shared pipeline header."""
     console.print(f"[bold]OBPI pipeline:[/bold] {obpi_id}")
     console.print(f"  Parent ADR: {resolved_parent}")
-    console.print(f"  Brief: {obpi_file.relative_to(project_root)}")
+    console.print(f"  Brief: {obpi_file.relative_to(project_root).as_posix()}")
     console.print(f"  Lane: {lane}")
     console.print(f"  Entry: {start_from or 'full'}")
     console.print(f"  Receipt: {receipt_state.upper()}")
     console.print("  Stages: " + " -> ".join(stage_labels))
-    console.print(f"  Marker: {per_obpi_marker.relative_to(project_root)}")
-    console.print(f"  Legacy Marker: {legacy_marker.relative_to(project_root)}")
+    console.print(f"  Marker: {per_obpi_marker.relative_to(project_root).as_posix()}")
+    console.print(f"  Legacy Marker: {legacy_marker.relative_to(project_root).as_posix()}")
     if receipt and receipt.get("plan_file"):
         console.print(f"  Plan File: {receipt['plan_file']}")
     for warning in warnings:

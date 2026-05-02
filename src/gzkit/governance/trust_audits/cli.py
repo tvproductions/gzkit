@@ -77,7 +77,7 @@ def _collect_verb_references(sources: list[Path], project_root: Path) -> dict[st
     verbs_seen: dict[str, list[str]] = {}
     for source in sources:
         for lineno, line in enumerate(source.read_text(encoding="utf-8").splitlines(), 1):
-            rel = f"{source.relative_to(project_root)}:{lineno}"
+            rel = f"{source.relative_to(project_root).as_posix()}:{lineno}"
             for pattern in (_BACKTICKED_INVOCATION, _QUOTED_INVOCATION, _STEP_DEF_FIXTURE):
                 for match in pattern.finditer(line):
                     verbs_seen.setdefault(match.group(1), []).append(rel)

@@ -184,7 +184,7 @@ def _adr_obpi_status_rows(
                 "id": obpi_id,
                 "linked_in_ledger": obpi_id in expected_obpis,
                 "found_file": True,
-                "file": str(obpi_file.relative_to(project_root)),
+                "file": obpi_file.relative_to(project_root).as_posix(),
                 "completed": bool(inspection["completed"]),
                 "ledger_completed": bool(inspection["ledger_completed"]),
                 "file_completed": bool(inspection["file_completed"]),
@@ -334,7 +334,7 @@ def _build_obpi_status_entry(
         "parent_adr": parent_adr,
         "linked_in_ledger": linked_in_ledger,
         "found_file": obpi_file is not None,
-        "file": str(obpi_file.relative_to(project_root)) if obpi_file else None,
+        "file": obpi_file.relative_to(project_root).as_posix() if obpi_file else None,
     }
 
     if obpi_file is None:

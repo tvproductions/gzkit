@@ -434,7 +434,7 @@ def find_orphaned_docs(
             orphans.append(
                 OrphanedDoc(
                     surface="manpage",
-                    reference=str(md_file.relative_to(project_root)),
+                    reference=md_file.relative_to(project_root).as_posix(),
                     detail=f"Manpage '{md_file.name}' has no matching discovered command",
                 )
             )

@@ -541,7 +541,7 @@ def _build_obpi_plan(
         id=obpi_id,
         title=title,
         parent_adr=parent_adr_id,
-        parent_adr_path=str(adr_file.relative_to(project_root)),
+        parent_adr_path=adr_file.relative_to(project_root).as_posix(),
         item_number=str(item),
         checklist_item_text=checklist_item_text,
         lane=lane_cap,

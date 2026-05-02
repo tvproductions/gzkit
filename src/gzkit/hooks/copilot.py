@@ -28,7 +28,7 @@ def setup_copilot_hooks(project_root: Path, config: GzkitConfig | None = None) -
 
     # Write hook script (same format as Claude for now)
     script_path = write_hook_script(project_root, "copilot", config.paths.copilot_hooks)
-    created.append(str(script_path.relative_to(project_root)))
+    created.append(script_path.relative_to(project_root).as_posix())
 
     _ruff_format_dir(project_root / config.paths.copilot_hooks)
 

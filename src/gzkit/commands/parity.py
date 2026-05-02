@@ -92,7 +92,7 @@ def parity_check_cmd(as_json: bool) -> None:
         report_content = latest_report.read_text(encoding="utf-8")
         report_markers = ("Overall parity status:", "## Next Actions")
         missing_report_markers = _required_markers_missing(report_content, report_markers)
-        rel_latest = str(latest_report.relative_to(project_root))
+        rel_latest = latest_report.relative_to(project_root).as_posix()
         for marker in missing_report_markers:
             issues.append(
                 {
@@ -105,7 +105,9 @@ def parity_check_cmd(as_json: bool) -> None:
         "valid": not issues,
         "enforced": True,
         "latest_report": (
-            str(latest_report.relative_to(project_root)) if latest_report is not None else None
+            latest_report.relative_to(project_root).as_posix()
+            if latest_report is not None
+            else None
         ),
         "issues": issues,
     }
@@ -114,7 +116,7 @@ def parity_check_cmd(as_json: bool) -> None:
     elif not issues:
         console.print("[green]Parity check passed.[/green]")
         if latest_report is not None:
-            console.print(f"  Latest report: {latest_report.relative_to(project_root)}")
+            console.print(f"  Latest report: {latest_report.relative_to(project_root).as_posix()}")
     else:
         console.print("[red]Parity check failed.[/red]")
         for issue in issues:

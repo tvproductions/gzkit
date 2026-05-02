@@ -62,10 +62,10 @@ def _validate_interviews(project_root: Path) -> list[ValidationError]:
             errors.append(
                 ValidationError(
                     type="interview",
-                    artifact=str(adr_dir.relative_to(project_root)),
+                    artifact=adr_dir.relative_to(project_root).as_posix(),
                     message=(
                         f"No interview transcript found for {adr_id}"
-                        f" (expected {transcript_path.relative_to(project_root)})"
+                        f" (expected {transcript_path.relative_to(project_root).as_posix()})"
                     ),
                 )
             )
@@ -179,7 +179,7 @@ def _validate_requirements(project_root: Path) -> list[ValidationError]:
         errors.append(
             ValidationError(
                 type="requirements",
-                artifact=str(brief_path.relative_to(project_root)),
+                artifact=brief_path.relative_to(project_root).as_posix(),
                 message=(
                     "OBPI has a REQUIREMENTS section but no REQ-X.Y.Z-NN-MM "
                     "identifiers — requirements are invisible to gz covers."
@@ -217,7 +217,7 @@ def _validate_decomposition(project_root: Path) -> list[ValidationError]:
                 errors.append(
                     ValidationError(
                         type="decomposition",
-                        artifact=str(adr_md.relative_to(project_root)),
+                        artifact=adr_md.relative_to(project_root).as_posix(),
                         message=err,
                     )
                 )
@@ -230,7 +230,7 @@ def _validate_decomposition(project_root: Path) -> list[ValidationError]:
             errors.append(
                 ValidationError(
                     type="decomposition",
-                    artifact=str(adr_md.relative_to(project_root)),
+                    artifact=adr_md.relative_to(project_root).as_posix(),
                     message=(
                         f"Checklist count ({len(checklist_items)}) does not match "
                         f"scorecard target ({scorecard.final_target_obpi_count})."
@@ -252,7 +252,7 @@ def _validate_decomposition(project_root: Path) -> list[ValidationError]:
                 errors.append(
                     ValidationError(
                         type="decomposition",
-                        artifact=str(adr_md.relative_to(project_root)),
+                        artifact=adr_md.relative_to(project_root).as_posix(),
                         message=(
                             f"Checklist has {len(checklist_items)} items but no OBPI briefs found."
                         ),

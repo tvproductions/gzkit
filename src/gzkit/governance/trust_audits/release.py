@@ -102,7 +102,7 @@ def audit_advisory_scorecard(project_root: Path) -> list[ValidationError]:
         errors.append(
             ValidationError(
                 type="advisory_scorecard",
-                artifact=str(rule_md.relative_to(project_root)),
+                artifact=rule_md.relative_to(project_root).as_posix(),
                 message=(
                     f"Rule file `{rule_md.name}` is not referenced by the advisory "
                     "scorecard. Add a row to `docs/governance/advisory-rules-audit.md` "

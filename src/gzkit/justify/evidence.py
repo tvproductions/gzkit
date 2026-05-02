@@ -154,7 +154,7 @@ def _gather_matching_rules(
         matched.append(
             RuleCitation(
                 rule_id=rule_id,
-                path=str(rule_path.relative_to(project_root)),
+                path=rule_path.relative_to(project_root).as_posix(),
                 description=description,
                 paths_globs=tuple(matched_globs),
             )

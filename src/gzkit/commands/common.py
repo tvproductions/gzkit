@@ -226,11 +226,13 @@ def resolve_adr_file(project_root: Path, config: GzkitConfig, adr: str) -> tuple
                 return non_pool[0]
             if len(non_pool) > 1:
                 rels = ", ".join(
-                    str(path.relative_to(project_root)) for path, _resolved in non_pool
+                    path.relative_to(project_root).as_posix() for path, _resolved in non_pool
                 )
                 msg = f"Multiple ADR files found for {requested_id}: {rels}"
                 raise GzCliError(msg)  # noqa: TRY003
-            rels = ", ".join(str(path.relative_to(project_root)) for path, _resolved in candidates)
+            rels = ", ".join(
+                path.relative_to(project_root).as_posix() for path, _resolved in candidates
+            )
             msg = f"Multiple ADR files found for {requested_id}: {rels}"
             raise GzCliError(msg)  # noqa: TRY003
         return None
@@ -379,7 +381,7 @@ def resolve_obpi(
             matches.append(obpi_file)
 
     if len(matches) > 1:
-        rels = ", ".join(str(path.relative_to(project_root)) for path in matches)
+        rels = ", ".join(path.relative_to(project_root).as_posix() for path in matches)
         msg = f"Multiple OBPI files found for {canonical_obpi}: {rels}"
         raise GzCliError(msg)  # noqa: TRY003
 

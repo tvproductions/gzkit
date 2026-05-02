@@ -302,7 +302,7 @@ def sync_claude_rules(project_root: Path, config: GzkitConfig | None = None) -> 
 
             target = rules_dir / target_name
             target.write_text(output, encoding="utf-8")
-            updated.append(str(target.relative_to(project_root)))
+            updated.append(target.relative_to(project_root).as_posix())
 
     if rules_dir.exists():
         for existing in rules_dir.iterdir():
@@ -364,7 +364,7 @@ def sync_nested_agents_md(project_root: Path, config: GzkitConfig | None = None)
         )
 
         agents_path.write_text(content, encoding="utf-8")
-        updated.append(str(agents_path.relative_to(project_root)))
+        updated.append(agents_path.relative_to(project_root).as_posix())
 
     _cleanup_stale_nested_agents(project_root, expected_paths)
 
