@@ -4,6 +4,9 @@ status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
+inspired_by: openai/symphony
+amendments:
+  - 2026-05-02 — added § Amendment 2026-05-02 (per-lane concurrency caps as state-machine invariant)
 ---
 
 # ADR-pool.obpi-state-machine: OBPI State Machine and Runtime Invariant Monitor
@@ -220,3 +223,107 @@ runtime state machine that monitors — its all vibey."*
 - GHI #347 — STATUS_VOCAB_MAPPING missing 'Withdrawn' (vocab gap, fixed)
 - GHI #348 — frontmatter reconcile silently demoted Withdrawn → pending (symptom)
 - GHI #349 — gzkit governance surface is choreographed not state-machined (architectural absence; this ADR is the durable home)
+
+---
+
+## Amendment 2026-05-02: Per-lane concurrency caps as a state-machine invariant
+
+The `openai/symphony` SPEC.md (released 2026-04-23,
+[github.com/openai/symphony](https://github.com/openai/symphony)) names a
+mechanism gzkit currently lacks: `agent.max_concurrent_agents_by_state` —
+per-state dispatch caps that bound how many workers may occupy a given
+state simultaneously (e.g., limit `"In Progress"` to 3 concurrent agents
+while allowing 10 globally). The gzkit equivalent is **per-lane / per-kind
+concurrency caps** as a state-machine invariant rather than a runtime
+config knob.
+
+### Sixth state-machine property (added to § Decision)
+
+6. **Per-lane / per-kind / per-sensitivity concurrency invariants.** The
+   runtime monitor (rule 4) asserts dispatch caps as a precondition of the
+   `implementing` and `attested` transitions:
+
+   - **Heavy-lane single-flight.** At most one OBPI may occupy
+     `implementing` or `attested-pending` simultaneously when its parent
+     ADR is `lane: heavy`. The Gate-5 attestation surface is operator-
+     attention-bound; concurrent heavy attestations are an attention-race
+     defect, not a throughput optimization. Codifies what
+     [`heavy-lane`](ADR-pool.heavy-lane.md) implies but never names.
+   - **Foundation-kind single-flight.** Same invariant for `kind:
+     foundation` parent ADRs regardless of lane. Foundation-kind walkthrough
+     discipline (`AGENTS.md` § OBPI Acceptance Protocol) fires per-brief; two
+     foundation OBPIs in flight create the same attention race as two heavy
+     OBPIs.
+   - **Security-sensitivity single-flight.** Same invariant for OBPIs
+     carrying `sensitivity: security` per [ADR-0.0.22](../foundation/ADR-0.0.22-security-sensitivity-doctrine/ADR-0.0.22-security-sensitivity-doctrine.md).
+     The three-axis OR from `_requires_human_obpi_attestation` collapses to
+     one cap: any axis flagging brief-level attestation rigor binds the
+     same single-flight invariant.
+   - **Lite-feature parallelism is uncapped at the state-machine layer.**
+     [`wave-dependency-execution`](ADR-pool.wave-dependency-execution.md)
+     owns the wave-bounded parallelism story for lite work. The state
+     machine asserts only the attestation-attention invariant; throughput
+     is wave-orchestrator's surface.
+
+### Mechanical predicate (binding when promoted)
+
+The runtime monitor's transition guard for `obpi.transitioned.implementing`
+and `obpi.transitioned.attested` becomes a three-way OR rejecting dispatch
+when any axis is occupied:
+
+```
+deny if (
+    parent_lane == "heavy" and any_obpi_in_state(implementing|attested-pending, parent_lane="heavy")
+) or (
+    parent_kind == "foundation" and any_obpi_in_state(implementing|attested-pending, parent_kind="foundation")
+) or (
+    sensitivity == "security" and any_obpi_in_state(implementing|attested-pending, sensitivity="security")
+)
+```
+
+This is the same three-way OR as the Lane & Kind & Sensitivity Attestation
+Matrix in `AGENTS.md` § OBPI Acceptance Protocol, applied to dispatch
+admission rather than completion authorization. The matrix and the
+concurrency cap share one predicate; if matrix and cap disagree, code is
+source of truth (matrix and cap are projections).
+
+### Coupled-surface coherence
+
+- **[`wave-dependency-execution`](ADR-pool.wave-dependency-execution.md)** —
+  consumes this invariant. Wave 1 may contain N lite-feature OBPIs but at
+  most one heavy-or-foundation-or-security OBPI; wave planner respects the
+  cap rather than re-deriving it.
+- **[`change-isolation-workspace`](ADR-pool.change-isolation-workspace.md)
+  § Amendment 2026-05-02** — worktree spawn happens *after* the dispatch
+  guard fires green. A heavy OBPI lock-claim that violates the cap is
+  rejected before the worktree is created.
+- **[`obpi-pipeline-dispatch-attestation`](ADR-pool.obpi-pipeline-dispatch-attestation.md)** —
+  dispatch receipts include the cap-check evidence (which OBPIs are
+  currently occupying which axes), making the guard's decision auditable.
+- **[ADR-0.0.18](../foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md)
+  / ADR-0.0.22 / ADR-0.0.36** — the lane/kind/sensitivity axes of the
+  attestation matrix become the same axes of the concurrency matrix. One
+  doctrine surface, two enforcement points.
+
+### Distinct from Symphony
+
+- **Lane/kind/sensitivity, not workflow-state.** Symphony caps by
+  workflow-state (`"In Progress"`); gzkit caps by attestation-attention
+  axes. The choice is invariant-shaped, not throughput-shaped.
+- **State-machine property, not runtime config knob.** Symphony exposes
+  the cap via `WORKFLOW.md` for live reload; gzkit binds it as a transition
+  guard derived from foundation ADRs (0.0.18 / 0.0.22 / 0.0.36). Operators
+  cannot raise heavy-lane parallelism by editing config — they would have
+  to amend foundation doctrine.
+- **Fail-closed dispatch, not queueing.** Symphony queues blocked
+  dispatches for retry; gzkit rejects with a structured blocker envelope
+  ([`structured-blocker-envelopes`](ADR-pool.structured-blocker-envelopes.md))
+  naming which axis is occupied, by which OBPI, since when. Operator
+  course-correction surface, not invisible throughput shaping.
+
+### Inspired By (extended)
+
+[openai/symphony SPEC.md](https://github.com/openai/symphony/blob/main/SPEC.md)
+§ Per-State Concurrency Control (`agent.max_concurrent_agents_by_state`).
+The mechanism is generalizable; the axes (workflow-state vs. attestation-
+attention) are domain-specific.

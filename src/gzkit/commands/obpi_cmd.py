@@ -87,6 +87,52 @@ def obpi_withdraw_cmd(obpi: str, reason: str, dry_run: bool) -> None:
     console.print(f"  Reason: {reason}")
 
 
+def _gate_completed_receipt_binding(
+    *,
+    obpi_id: str,
+    parent_adr: Any,
+    parent_lane: str,
+    project_root: Path,
+    config: Any,
+    evidence: dict[str, Any] | None,
+    ledger: Ledger,
+    attestor: str,
+    dry_run: bool,
+) -> None:
+    """ADR-0.0.24-02 receipt-binding gate wrapper for the emit-receipt path.
+
+    Mirrors ``_gate_completed_receipt_authenticity`` (the GHI #290 gate
+    wrapper) so ``obpi_emit_receipt_cmd`` stays below the xenon C-rank
+    complexity ceiling. Resolves the parent ADR's ``kind`` from frontmatter
+    and dispatches to the shared helper in ``obpi_complete``.
+    """
+    if dry_run or not isinstance(parent_adr, str) or not parent_adr:
+        return
+    from gzkit.commands.obpi_complete import (
+        _enforce_attestation_receipt_gate,
+        _read_adr_kind,
+    )
+
+    adr_file_for_kind, _ = resolve_adr_file(project_root, config, parent_adr)
+    attestation_text_value = ""
+    if isinstance(evidence, dict):
+        value = evidence.get("attestation_text") or evidence.get("scope")
+        if isinstance(value, str):
+            attestation_text_value = value
+    _enforce_attestation_receipt_gate(
+        obpi_id=obpi_id,
+        parent_adr=parent_adr,
+        parent_lane=parent_lane,
+        parent_kind=_read_adr_kind(adr_file_for_kind),
+        attestation_text=attestation_text_value,
+        attestor=attestor,
+        ledger=ledger,
+        project_root=project_root,
+        as_json=False,
+        dry_run=dry_run,
+    )
+
+
 def _gate_completed_receipt_authenticity(
     *,
     obpi_id: str,
@@ -177,6 +223,22 @@ def obpi_emit_receipt_cmd(
             parent_adr=parent_adr if isinstance(parent_adr, str) else None,
             parent_lane=parent_lane,
             attestor=attestor,
+        )
+        # ADR-0.0.24-02 receipt-binding gate: heavy/foundation = fail-closed
+        # on unresolvable ARB receipts; lite-non-foundation = warn-only. Runs
+        # BEFORE the GHI #290 TTY gate at ``_gate_completed_receipt_authenticity``
+        # (REQ-0.0.24-02-07, mechanism for REQ-02). Closes the same-class
+        # fabrication vector on the lower-level emit-receipt path.
+        _gate_completed_receipt_binding(
+            obpi_id=obpi_id,
+            parent_adr=parent_adr,
+            parent_lane=parent_lane,
+            project_root=project_root,
+            config=config,
+            evidence=evidence,
+            ledger=ledger,
+            attestor=attestor,
+            dry_run=dry_run,
         )
         _gate_completed_receipt_authenticity(
             obpi_id=obpi_id,

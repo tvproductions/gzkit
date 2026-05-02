@@ -723,6 +723,38 @@ def adr_emit_receipt_cmd(
         anchor=anchor,
     )
 
+    # ADR-0.0.24-02 receipt-binding gate: heavy/foundation = fail-closed on
+    # unresolvable ARB receipts; lite-non-foundation = warn-only. Runs BEFORE
+    # the GHI #290 TTY gate so a mechanical-receipt failure short-circuits
+    # human prompting (REQ-0.0.24-02-07, mechanism for REQ-05).
+    if not dry_run and _is_human_attestation_receipt_event(receipt_event):
+        from gzkit.commands.obpi_complete import (
+            _enforce_attestation_receipt_gate,
+            _read_adr_kind,
+        )
+
+        adr_attestation_text = ""
+        if isinstance(evidence, dict):
+            candidate = evidence.get("attestation_text") or evidence.get("scope")
+            if isinstance(candidate, str):
+                adr_attestation_text = candidate
+        adr_lane_raw = (
+            parse_frontmatter_value(adr_file.read_text(encoding="utf-8"), "lane") or "lite"
+        )
+        adr_kind = _read_adr_kind(adr_file)
+        _enforce_attestation_receipt_gate(
+            obpi_id=None,
+            parent_adr=adr_id,
+            parent_lane=adr_lane_raw.strip().lower(),
+            parent_kind=adr_kind,
+            attestation_text=adr_attestation_text,
+            attestor=attestor,
+            ledger=ledger,
+            project_root=project_root,
+            as_json=False,
+            dry_run=dry_run,
+        )
+
     # GHI #290 authenticity gate: ADR-level human-attestation receipt events
     # (validated / attested / accepted) are the Gate 5 attestation surface.
     # Without a TTY gate, an agent could synthesize a validated ADR closeout

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import re
+import secrets
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
@@ -30,11 +31,15 @@ from gzkit.commands.common import (
     resolve_adr_file,
     resolve_obpi_file,
 )
+from gzkit.governance.trust_audits.attestation_receipts import (
+    AttestationReceiptValidationResult,
+    validate_attestation_receipts,
+)
 from gzkit.hooks.obpi import section_body
 from gzkit.ledger import Ledger, parse_frontmatter_value, resolve_adr_lane
 
 # section_body is used in _has_human_attestation_content for H2 section extraction
-from gzkit.ledger_events import obpi_receipt_emitted_event
+from gzkit.ledger_events import audit_receipt_emitted_event, obpi_receipt_emitted_event
 from gzkit.utils import capture_validation_anchor
 
 # ---------------------------------------------------------------------------
@@ -216,6 +221,139 @@ def _enforce_security_review_gate(
     )
 
 
+# ---------------------------------------------------------------------------
+# OBPI-0.0.24-02 — Attestation receipt-binding gate
+# ---------------------------------------------------------------------------
+
+
+def _read_adr_kind(adr_file: Path) -> str:
+    """Return the parent ADR's ``kind`` frontmatter value, lowercased.
+
+    Defaults to ``"feature"`` when the field is missing — preserving the
+    pre-ADR-0.0.17 behavior for any pre-kind-schema briefs still in flight.
+    """
+    if not adr_file.is_file():
+        return "feature"
+    content = adr_file.read_text(encoding="utf-8")
+    raw = parse_frontmatter_value(content, "kind")
+    if not raw:
+        return "feature"
+    return raw.strip().lower()
+
+
+def _build_meta_receipt_evidence(
+    *,
+    obpi_id: str | None,
+    parent_adr: str,
+    parent_lane: str,
+    parent_kind: str,
+    result: AttestationReceiptValidationResult,
+) -> dict[str, Any]:
+    """Construct the evidence payload for the meta-receipt-bind ledger event.
+
+    The ``run_id`` is a stable arb-step receipt-shape ID so downstream
+    tooling can resolve it the same way every other receipt resolves.
+    """
+    run_id = f"arb-meta-receipt-bind-{secrets.token_hex(16)}"
+    resolved_ids = [
+        entry.run_id for entry in result.entries if entry.status == "resolved" and entry.run_id
+    ]
+    payload: dict[str, Any] = {
+        "run_id": run_id,
+        "claim": "attestation receipts resolved",
+        "exit_status": 0,
+        "resolved_receipt_ids": resolved_ids,
+        "parent_adr": parent_adr,
+        "parent_lane": parent_lane,
+        "parent_kind": parent_kind,
+    }
+    if obpi_id is not None:
+        payload["obpi_id"] = obpi_id
+    return payload
+
+
+def _enforce_attestation_receipt_gate(
+    *,
+    obpi_id: str | None,
+    parent_adr: str,
+    parent_lane: str,
+    parent_kind: str,
+    attestation_text: str,
+    attestor: str,
+    ledger: Ledger,
+    project_root: Path,
+    as_json: bool,
+    dry_run: bool,
+) -> None:
+    """Run the receipt-binding gate; emit meta-receipt-bind on success.
+
+    Behavior matrix (REQ-0.0.24-02-02..04):
+
+    | Lane / Kind                       | Validator result | Outcome |
+    |-----------------------------------|------------------|---------|
+    | heavy / any                       | non-zero         | exit 3  |
+    | any / foundation                  | non-zero         | exit 3  |
+    | lite / non-foundation             | non-zero         | warning, proceed |
+    | any                               | zero, no warn    | emit meta-receipt-bind |
+    | lite / non-foundation             | zero, warn_only  | warning, proceed (no meta event) |
+
+    The gate runs BEFORE ``_enforce_human_attestation_authenticity``; a
+    mechanical-receipt failure short-circuits human prompting (REQ-07 in
+    the brief, mechanism for REQ-02).
+    """
+    if dry_run:
+        return
+    result = validate_attestation_receipts(
+        attestation_text,
+        lane=parent_lane,
+        kind=parent_kind,
+        project_root=project_root,
+    )
+    fail_closed = parent_lane.lower() == "heavy" or parent_kind.lower() == "foundation"
+
+    if result.exit_code != 0:
+        if fail_closed:
+            failure_lines = [
+                f"  - {entry.status}: {entry.message}" for entry in result.entries
+            ] or ["  - (no resolvable receipts cited)"]
+            detail = "\n".join(failure_lines)
+            _fail(
+                "Attestation receipt-binding gate failed (heavy/foundation policy).\n"
+                f"{detail}\n"
+                "Recovery: re-run the cited ARB commands and re-cite the resolved receipt IDs.",
+                exit_code=3,
+                as_json=as_json,
+                obpi_id=obpi_id or parent_adr,
+            )
+        console.print(
+            "[yellow]Warning:[/yellow] attestation receipt-binding produced unresolved "
+            "citations on lite-non-foundation; proceeding (warn-only)."
+        )
+        return
+
+    if result.warn_only:
+        console.print(
+            "[yellow]Warning:[/yellow] no ARB receipts cited in attestation "
+            "(lite-non-foundation policy)."
+        )
+        return
+
+    evidence = _build_meta_receipt_evidence(
+        obpi_id=obpi_id,
+        parent_adr=parent_adr,
+        parent_lane=parent_lane,
+        parent_kind=parent_kind,
+        result=result,
+    )
+    meta_event = audit_receipt_emitted_event(
+        adr_id=parent_adr,
+        receipt_event="meta-receipt-bind",
+        attestor=attestor,
+        evidence=evidence,
+    )
+    ledger.append(meta_event)
+
+
 def _resolve_and_validate(
     project_root: Path,
     config: Any,
@@ -378,6 +516,25 @@ def obpi_complete_cmd(
             sensitivity=sensitivity,
             as_json=as_json,
         )
+
+    # 4a-bis. ADR-0.0.24-02 receipt-binding gate: heavy/foundation = fail-closed
+    # on unresolvable ARB receipts; lite-non-foundation = warn-only. Runs
+    # BEFORE the GHI #290 TTY gate so a mechanical-receipt failure short-
+    # circuits human prompting (REQ-0.0.24-02-07, mechanism for REQ-02).
+    adr_file_for_kind, _ = resolve_adr_file(project_root, config, resolved_parent)
+    parent_kind = _read_adr_kind(adr_file_for_kind)
+    _enforce_attestation_receipt_gate(
+        obpi_id=obpi_id,
+        parent_adr=resolved_parent,
+        parent_lane=parent_lane,
+        parent_kind=parent_kind,
+        attestation_text=attestation_text,
+        attestor=attestor,
+        ledger=ledger,
+        project_root=project_root,
+        as_json=as_json,
+        dry_run=dry_run,
+    )
 
     # 4b. GHI #290 authenticity gate: no human-attestation receipt without TTY
     # confirmation. GHI #292 adds --attestor-present as an agent-relayed escape
