@@ -355,8 +355,13 @@ Locked by `CANONICAL_STEP_COMMANDS` in `src/gzkit/arb/validator.py`; `gz arb val
 
 ### Lane behavior
 
-- **Lite lane:** missing receipt IDs produce a warning; flagged narrative-only.
-- **Heavy lane:** missing receipt IDs are fail-closed; re-run under ARB and re-cite.
+The `gz validate --attestation-receipts` gate (ADR-0.0.24) parses every attestation string for `arb-…` receipt IDs, looks each up in `artifacts/receipts/`, and asserts file existence, `exit_status == 0`, and category match against the cited claim. The gate fires pre-emission inside `gz obpi complete --attestation-text …` and `gz adr emit-receipt … --attestor …`.
+
+- **Lite lane (non-foundation):** missing or unresolved receipt IDs produce a warning emitted by the gate; the attestation still records as narrative-only.
+- **Heavy lane:** missing or unresolved receipt IDs are fail-closed (exit 3) at the gate; the receipt event is not written. Re-run under ARB and re-cite.
+- **Foundation kind (any lane):** same as heavy — fail-closed at the gate, regardless of the OBPI's own lane (per § Lane & Kind & Sensitivity Attestation Matrix).
+
+When the gate ratifies an attestation it writes a self-attesting `arb-meta-receipt-bind-…` receipt to the ledger — the gate's own evidence trail. See [`docs/governance/arb-middleware.md`](docs/governance/arb-middleware.md) § Receipt-binding gate for the gate contract and failure-mode taxonomy.
 
 If no receipts exist, run relevant ARB-wrapped commands first, draft attestation citing fresh receipt IDs. Narrative substitutes are not acceptable.
 
@@ -369,7 +374,7 @@ Reference concrete session facts:
 - File references with paths and line numbers
 - Rationale citing named dimensions, not vague adjectives
 
-Receipt IDs inline, e.g. `(lint: receipt arb-2026-04-14T12-34-56-ruff)`. Citing agent must verify receipt exists and status matches the claim — fabricating a receipt ID is the same failure as fabricating the claim.
+Receipt IDs inline, e.g. `(lint: receipt arb-ruff-008dda0e47384e89bea69e3b8b5cb6d4)`. The `gz validate --attestation-receipts` gate (ADR-0.0.24) verifies each cited receipt exists in `artifacts/receipts/`, has `exit_status == 0`, and matches the cited claim category — heavy/foundation = fail-closed, lite-non-foundation = warn. Fabricating a receipt ID is still the same failure class as fabricating the claim, but the verification is now mechanical, not narrative discipline; the gate refuses to emit the receipt event when the cited IDs do not resolve.
 
 ### Anti-patterns
 

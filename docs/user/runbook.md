@@ -164,6 +164,9 @@ uv run gz lint
 #     — `AGENTS.md` § Attestation requires a receipt ID for every
 #     claim category cited in Heavy-lane attestations (lint, typecheck, tests,
 #     coverage). Run each wrapped QA step before drafting the attestation text.
+#     Citation is mechanically verified by `gz validate --attestation-receipts`
+#     inside `gz obpi complete` / `gz adr emit-receipt` on heavy or foundation
+#     work (fail-closed; ADR-0.0.24).
 uv run gz arb ruff src tests
 uv run gz arb typecheck
 uv run gz arb step --name unittest -- uv run -m unittest -q
