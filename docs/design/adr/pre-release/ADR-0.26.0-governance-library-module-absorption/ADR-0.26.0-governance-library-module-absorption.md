@@ -1,6 +1,6 @@
 ---
 id: ADR-0.26.0-governance-library-module-absorption
-status: Pending
+status: Validated
 kind: feature
 semver: 0.26.0
 lane: heavy
