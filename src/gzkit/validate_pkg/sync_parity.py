@@ -152,7 +152,7 @@ def compute_expected_surfaces(
     created: set[Path] = set()
     expected: dict[Path, bytes] = {}
     try:
-        sync_all(project_root, config)
+        sync_all(project_root, config, emit_event=False)
         post_files = _collect_files(project_root)
         created = post_files - pre_files
         for path in post_files:
@@ -265,7 +265,7 @@ def check_sync_parity(
     errors: list[ValidationError] = []
     created: set[Path] = set()
     try:
-        sync_all(project_root, config)
+        sync_all(project_root, config, emit_event=False)
         post_files = _collect_files(project_root)
         created = post_files - pre_files
         removed = pre_files - post_files

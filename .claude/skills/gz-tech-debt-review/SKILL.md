@@ -1,13 +1,13 @@
 ---
 name: gz-tech-debt-review
 persona: quality-reviewer
-description: Survey the codebase for technical debt and recommend resolutions. Tidying-class skill — findings are quality-of-implementation defects, never new capability work. Synthesizes signals from existing gzkit chores, audits, and complexity tools (xenon, radon, ruff, ty, gz cli audit, gz validate, gz-pythonic-pattern-detect, doc-coverage, dependency-currency) into a single prioritized debt report with file:line evidence and recommended fixes. Use when the user asks to "review code for tech debt", "find tech debt", "audit the codebase for debt", "what's rotting", "where is the debt", or wants a debt assessment for an ADR/OBPI scope or a touched-files set. Also use proactively when an operator asks "what should we clean up next" or "is there debt accumulating in X". Distinct from `gz-obpi-simplify` (which fixes craft inside an active OBPI scope) and `gz-check` (which gates a single change) — this skill produces a *report* across many debt classes. Findings route to **chore, in-flight fix, or at most one GHI per skill run** — never to OBPI, never as a multi-GHI batch. (OBPI ceremony is for planned capability work; bulk debt is the chore-runner's surface; one GHI per run prevents queue pollution. The operator decides whether a cluster merits an ADR via `gz-plan` or `gz-design`.)
+description: Survey scoped technical debt across existing gzkit probes and render a prioritized, line-grounded report with route recommendations. Use for tech-debt review requests across touched files, paths, ADRs, OBPIs, or the whole repo. Produces diagnosis only; findings route to chores, in-flight fixes, or at most one GHI per run, never directly to OBPI.
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-29
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.2.1"
 ---
 
 # gz-tech-debt-review

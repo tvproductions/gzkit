@@ -4,6 +4,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
+from gzkit.skill_contract import SKILL_DESCRIPTION_MAX_CHARS, SUPPORTED_SKILL_HARNESSES
 from gzkit.sync_skills import (
     DEFAULT_MAX_REVIEW_AGE_DAYS,
     SKILL_ALLOWED_TRANSITIONS,
@@ -30,6 +31,7 @@ def _validate_skill_frontmatter(
     """Collect canonical frontmatter validation errors for one skill file."""
     errors: list[str] = []
     errors.extend(_validate_required_frontmatter_fields(frontmatter, rel_file))
+    errors.extend(_validate_description_length(frontmatter, rel_file))
     errors.extend(_validate_frontmatter_name(frontmatter, rel_file, skill_name))
     errors.extend(_validate_lifecycle_field_values(frontmatter, rel_file))
     errors.extend(_validate_capability_field_values(frontmatter, rel_file))
@@ -45,6 +47,18 @@ def _validate_required_frontmatter_fields(frontmatter: dict[str, str], rel_file:
             continue
         errors.append(f"{rel_file}: missing frontmatter field '{field}'.")
     return errors
+
+
+def _validate_description_length(frontmatter: dict[str, str], rel_file: str) -> list[str]:
+    """Validate the strictest supported harness description limit."""
+    description = frontmatter.get("description", "")
+    if len(description) <= SKILL_DESCRIPTION_MAX_CHARS:
+        return []
+    return [
+        f"{rel_file}: frontmatter description is {len(description)} characters; "
+        f"maximum is {SKILL_DESCRIPTION_MAX_CHARS} for "
+        f"{SUPPORTED_SKILL_HARNESSES} compatibility."
+    ]
 
 
 def _validate_frontmatter_name(

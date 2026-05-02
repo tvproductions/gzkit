@@ -18,7 +18,10 @@ def skill_new(name: str, description: str | None) -> None:
     if description:
         kwargs["skill_description"] = description
 
-    skill_file = scaffold_skill(project_root, name, config.paths.skills, **kwargs)
+    try:
+        skill_file = scaffold_skill(project_root, name, config.paths.skills, **kwargs)
+    except ValueError as exc:
+        raise GzCliError(str(exc)) from exc
     console.print(f"Created skill: {skill_file}")
 
 

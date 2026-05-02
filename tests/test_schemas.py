@@ -69,6 +69,17 @@ def _pydantic_field_pattern(model: type[BaseModel], field: str) -> str | None:
     return None
 
 
+def _pydantic_field_max_length(model: type[BaseModel], field: str) -> int | None:
+    """Return the max_length constraint on a Pydantic field, if any."""
+    field_info = model.model_fields.get(field)
+    if field_info is None:
+        return None
+    for meta in field_info.metadata:
+        if hasattr(meta, "max_length"):
+            return meta.max_length
+    return None
+
+
 def _pydantic_literal_values(model: type[BaseModel], field: str) -> set[str] | None:
     """Return the set of Literal values for a field, or None if not Literal."""
     field_info = model.model_fields.get(field)
@@ -460,6 +471,24 @@ class TestSkillSchemaAlignment(unittest.TestCase):
                     field_schema["pattern"],
                     model_pattern,
                     f"SkillFrontmatter.{model_field} pattern diverges "
+                    f"from skill.schema.json '{schema_field}'",
+                )
+
+    @covers("REQ-0.17.0-04-05")
+    def test_max_length_constraints_match(self) -> None:
+        """maxLength constraints in schema match Pydantic field limits."""
+        schema_props = self.schema.get("properties", {})
+        for schema_field, field_schema in schema_props.items():
+            if "maxLength" not in field_schema:
+                continue
+            model_field = _resolve_field(self.model, schema_field)
+            self.assertIsNotNone(model_field)
+            model_max_length = _pydantic_field_max_length(self.model, model_field)
+            with self.subTest(field=schema_field):
+                self.assertEqual(
+                    field_schema["maxLength"],
+                    model_max_length,
+                    f"SkillFrontmatter.{model_field} max_length diverges "
                     f"from skill.schema.json '{schema_field}'",
                 )
 
