@@ -1,0 +1,213 @@
+⚠ Deprecated: `gz gates` will be removed in a future release. Use `gz closeout` instead.
+  ✓ Gate 1 (ADR): PASS
+(docs/design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/ADR-0.0.23-ag
+ent-failure-mode-taxonomy.md)
+Gate 2 (TDD): uv run gz test
+Running unit tests...
+Chores registry diff:
+  + agents-md-architectural-boundaries
+  + arb-pattern-extraction
+  + cli-contract-governance
+  + complexity-reduction-xenon
+  + config-paths-remediation
+  + control-surface-rule-conflicts
+  + control-surface-rule-vs-check-drift
+  + control-surface-skill-rule-reachability
+  + coverage-40pct
+  + cross-platform-test-cleanup
+  + dependency-currency
+  + doc-coverage
+  + evidence-integrity-audit
+  + exceptions-and-logging-rationalization
+  + frontmatter-ledger-coherence
+  + hardcoded-root-eradication
+  + instructions-files-diet
+  + memory-hygiene
+  + module-sloc-cap-radon
+  + pep257-docstring-compliance
+  + pool-triage
+  + pythonic-design-pattern-application
+  + pythonic-design-pattern-detection
+  + pythonic-refactoring
+  + quality-check
+  + repository-structure-normalization
+  + schema-and-config-drift-audit
+  + skill-authoring-quality
+  + skill-command-doc-parity
+  + skill-manifest-sync
+  + skill-trigger-testing
+  + sync-manpage-docstrings
+  + test-isolation-compliance
+  + test-manpage-examples
+  + validate-manpages
+  = only-local (local-only, preserved)
+Chores registry diff:
+  + agents-md-architectural-boundaries
+  + arb-pattern-extraction
+  + cli-contract-governance
+  + complexity-reduction-xenon
+  + config-paths-remediation
+  + control-surface-rule-conflicts
+  + control-surface-rule-vs-check-drift
+  + control-surface-skill-rule-reachability
+  + coverage-40pct
+  + cross-platform-test-cleanup
+  + dependency-currency
+  + doc-coverage
+  + evidence-integrity-audit
+  + exceptions-and-logging-rationalization
+  + frontmatter-ledger-coherence
+  + hardcoded-root-eradication
+  + instructions-files-diet
+  + memory-hygiene
+  + module-sloc-cap-radon
+  + pep257-docstring-compliance
+  + pool-triage
+  + pythonic-design-pattern-application
+  + pythonic-design-pattern-detection
+  + pythonic-refactoring
+  + quality-check
+  + repository-structure-normalization
+  + schema-and-config-drift-audit
+  + skill-authoring-quality
+  + skill-command-doc-parity
+  + skill-manifest-sync
+  + skill-trigger-testing
+  + sync-manpage-docstrings
+  + test-isolation-compliance
+  + test-manpage-examples
+  + validate-manpages
+  = only-local-slug (local-only, preserved)
+Chores registry diff:
+  + agents-md-architectural-boundaries
+  + arb-pattern-extraction
+  + cli-contract-governance
+  + complexity-reduction-xenon
+  + config-paths-remediation
+  + control-surface-rule-conflicts
+  + control-surface-rule-vs-check-drift
+  + control-surface-skill-rule-reachability
+  + coverage-40pct
+  + cross-platform-test-cleanup
+  + dependency-currency
+  + doc-coverage
+  + evidence-integrity-audit
+  + exceptions-and-logging-rationalization
+  + frontmatter-ledger-coherence
+  + hardcoded-root-eradication
+  + instructions-files-diet
+  + memory-hygiene
+  + module-sloc-cap-radon
+  + pep257-docstring-compliance
+  + pool-triage
+  + pythonic-design-pattern-application
+  + pythonic-design-pattern-detection
+  + pythonic-refactoring
+  + quality-check
+  + repository-structure-normalization
+  + schema-and-config-drift-audit
+  + skill-authoring-quality
+  + skill-command-doc-parity
+  + skill-manifest-sync
+  + skill-trigger-testing
+  + sync-manpage-docstrings
+  + test-isolation-compliance
+  + test-manpage-examples
+  + validate-manpages
+  = only-local (local-only, preserved)
+ADR audit-check: ADR-0.0.23
+PASS All linked OBPIs are completed with evidence.
+
+Coverage: No REQs found for this ADR.
+ADR audit-check: ADR-0.1.0
+PASS All linked OBPIs are completed with evidence.
+
+Coverage: No REQs found for this ADR.
+ADR audit-check: ADR-0.1.0
+PASS All linked OBPIs are completed with evidence.
+
+Coverage: No REQs found for this ADR.
+ADR audit-check: ADR-0.1.0
+PASS All linked OBPIs are completed with evidence.
+
+Coverage: No REQs found for this ADR.
+ADR audit-check: ADR-0.1.0
+PASS All linked OBPIs are completed with evidence.
+
+Coverage: No REQs found for this ADR.
+Backfill 1 covers-backfill warning(s):
+  tests/x.py:1 REQ REQ-0.1.0-01-01 introduced @ aaaaaaa (0c / 0d before receipt
+r1); see .claude/rules/tests.md § Invariant 6f for remediation
+ADR audit-check: ADR-0.1.0
+PASS All linked OBPIs are completed with evidence.
+
+Coverage: No REQs found for this ADR.
+Unresolvable 1 covers-backfill location(s) not resolvable in git:
+  tests/x.py:1 unresolvable
+ADR audit-check: ADR-0.1.0
+PASS All linked OBPIs are completed with evidence.
+
+Coverage: No REQs found for this ADR.
+FAIL 1 covers-backfill finding(s):
+  tests/x.py:1 REQ REQ-0.1.0-01-01 introduced @ aaaaaaa (0c / 0d before receipt
+r1); see .claude/rules/tests.md § Invariant 6f for remediation
+
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+..............................s.................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+.....
+----------------------------------------------------------------------
+Ran 3925 tests in 30.281s
+
+OK (skipped=1)
+
+Unit tests passed.
+
+  ✓ Gate 2 (TDD): PASS
+  ↳ Eval delta: skipped (no baselines) — 5 surfaces scored, overall 2.7/4.0

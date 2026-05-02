@@ -1,0 +1,405 @@
+ADR audit-check: ADR-0.0.23-agent-failure-mode-taxonomy
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.23-01-author-failure-modes-rule
+  - OBPI-0.0.23-02-cross-link-and-scorecard
+  - OBPI-0.0.23-03-sync-mirrors
+  - OBPI-0.0.23-04-cross-repo-defect-filing
+  - OBPI-0.0.23-05-audit-check-covers-backfill-heuristic
+Advisory 9 REQ(s) without @covers traceability (non-blocking):
+  - REQ-0.0.23-01-01
+  - REQ-0.0.23-01-02
+  - REQ-0.0.23-01-03
+  - REQ-0.0.23-02-01
+  - REQ-0.0.23-02-02
+  - REQ-0.0.23-02-03
+  - REQ-0.0.23-03-01
+  - REQ-0.0.23-03-02
+  - REQ-0.0.23-03-03
+
+Coverage: 21/30 REQs covered (70.0%)
+  OBPI-0.0.23-01: 0/3 (0.0%)
+  OBPI-0.0.23-02: 0/3 (0.0%)
+  OBPI-0.0.23-03: 0/3 (0.0%)
+  OBPI-0.0.23-04: 10/10 (100.0%)
+  OBPI-0.0.23-05: 11/11 (100.0%)
+Uncovered REQs (9):
+  - REQ-0.0.23-01-01
+  - REQ-0.0.23-01-02
+  - REQ-0.0.23-01-03
+  - REQ-0.0.23-02-01
+  - REQ-0.0.23-02-02
+  - REQ-0.0.23-02-03
+  - REQ-0.0.23-03-01
+  - REQ-0.0.23-03-02
+  - REQ-0.0.23-03-03
+FAIL 79 covers-backfill finding(s):
+  tests/commands/test_issue_cmd.py:33 REQ REQ-0.0.23-04-04 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:43 REQ REQ-0.0.23-04-04 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:53 REQ REQ-0.0.23-04-04 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:63 REQ REQ-0.0.23-04-04 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:75 REQ REQ-0.0.23-04-04 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:87 REQ REQ-0.0.23-04-04 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:98 REQ REQ-0.0.23-04-04 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:103 REQ REQ-0.0.23-04-04 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:111 REQ REQ-0.0.23-04-04 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:121 REQ REQ-0.0.23-04-06 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:126 REQ REQ-0.0.23-04-06 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:130 REQ REQ-0.0.23-04-06 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:134 REQ REQ-0.0.23-04-06 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:138 REQ REQ-0.0.23-04-06 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:175 REQ REQ-0.0.23-04-03 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:184 REQ REQ-0.0.23-04-04 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:204 REQ REQ-0.0.23-04-05 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:231 REQ REQ-0.0.23-04-06 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:250 REQ REQ-0.0.23-04-07 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:255 REQ REQ-0.0.23-04-09 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:283 REQ REQ-0.0.23-04-01 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:292 REQ REQ-0.0.23-04-02 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:311 REQ REQ-0.0.23-04-08 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:322 REQ REQ-0.0.23-04-08 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/commands/test_issue_cmd.py:335 REQ REQ-0.0.23-04-10 introduced @ 65c530e
+(0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-04-cross-repo-defect-filing:2026-05-02T10:18:22
+.379101+00:00); see .claude/rules/tests.md § Invariant 6f for remediation
+  tests/governance/test_audit_check_covers_backfill.py:8 REQ REQ-0.0.23-05-01
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:9 REQ REQ-0.0.23-05-02
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:10 REQ REQ-0.0.23-05-03
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:11 REQ REQ-0.0.23-05-04
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:12 REQ REQ-0.0.23-05-05
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:13 REQ REQ-0.0.23-05-06
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:14 REQ REQ-0.0.23-05-07
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:15 REQ REQ-0.0.23-05-08
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:116 REQ REQ-0.0.23-05-06
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:124 REQ REQ-0.0.23-05-06
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:133 REQ REQ-0.0.23-05-06
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:149 REQ REQ-0.0.23-05-05
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:157 REQ REQ-0.0.23-05-05
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:166 REQ REQ-0.0.23-05-05
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:175 REQ REQ-0.0.23-05-05
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:195 REQ REQ-0.0.23-05-01
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:204 REQ REQ-0.0.23-05-01
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:221 REQ REQ-0.0.23-05-07
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:233 REQ REQ-0.0.23-05-07
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:244 REQ REQ-0.0.23-05-08
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:266 REQ REQ-0.0.23-05-01
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:290 REQ REQ-0.0.23-05-01
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:311 REQ REQ-0.0.23-05-01
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:336 REQ REQ-0.0.23-05-01
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:357 REQ REQ-0.0.23-05-03
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:361 REQ REQ-0.0.23-05-03
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:365 REQ REQ-0.0.23-05-03
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:369 REQ REQ-0.0.23-05-02
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:382 REQ REQ-0.0.23-05-01
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:401 REQ REQ-0.0.23-05-01
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:418 REQ REQ-0.0.23-05-04
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:434 REQ REQ-0.0.23-05-01
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:445 REQ REQ-0.0.23-05-01
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:475 REQ REQ-0.0.23-05-01
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:495 REQ REQ-0.0.23-05-03
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:524 REQ REQ-0.0.23-05-04
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:542 REQ REQ-0.0.23-05-02
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:575 REQ REQ-0.0.23-05-03
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:607 REQ REQ-0.0.23-05-07
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:626 REQ REQ-0.0.23-05-07
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:644 REQ REQ-0.0.23-05-03
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:686 REQ REQ-0.0.23-05-05
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:713 REQ REQ-0.0.23-05-06
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:729 REQ REQ-0.0.23-05-10
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:740 REQ REQ-0.0.23-05-10
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:754 REQ REQ-0.0.23-05-11
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:867 REQ REQ-0.0.23-05-02
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:891 REQ REQ-0.0.23-05-03
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:918 REQ REQ-0.0.23-05-03
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:942 REQ REQ-0.0.23-05-02
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:959 REQ REQ-0.0.23-05-03
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:988 REQ REQ-0.0.23-05-07
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:1009 REQ REQ-0.0.23-05-02
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
+  tests/governance/test_audit_check_covers_backfill.py:1040 REQ REQ-0.0.23-05-05
+introduced @ db39f7f (0c / 0d before receipt
+obpi_receipt_emitted:OBPI-0.0.23-05-audit-check-covers-backfill-heuristic:2026-0
+5-02T12:49:10.760158+00:00); see .claude/rules/tests.md § Invariant 6f for
+remediation
