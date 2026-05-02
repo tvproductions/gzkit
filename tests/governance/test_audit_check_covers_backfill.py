@@ -352,24 +352,18 @@ class TestResolveReqClosingReceipts(unittest.TestCase):
 
 
 class TestDetermineSeverity(unittest.TestCase):
-    """Severity escalation per strict axis (lane / kind demoted under GHI #385)."""
+    """Severity escalation across (lane, kind, strict) axes."""
 
     @covers("REQ-0.0.23-05-03")
-    def test_heavy_lane_alone_no_longer_escalates_to_blocking(self) -> None:
-        # GHI #385: lane axis alone no longer escalates pending heuristic
-        # learning to distinguish gz-git-sync ceremony commits from cosmetic
-        # backfill. Operators who want fail-closed enforcement pass --strict.
-        self.assertEqual(determine_severity("heavy", "feature", strict=False), "warning")
+    def test_heavy_lane_escalates_to_blocking(self) -> None:
+        self.assertEqual(determine_severity("heavy", "feature", strict=False), "blocking")
 
     @covers("REQ-0.0.23-05-03")
-    def test_foundation_kind_alone_no_longer_escalates_to_blocking(self) -> None:
-        # GHI #385: kind axis alone no longer escalates pending heuristic
-        # learning to distinguish gz-git-sync ceremony commits from cosmetic
-        # backfill. Operators who want fail-closed enforcement pass --strict.
-        self.assertEqual(determine_severity("lite", "foundation", strict=False), "warning")
+    def test_foundation_kind_escalates_to_blocking(self) -> None:
+        self.assertEqual(determine_severity("lite", "foundation", strict=False), "blocking")
 
     @covers("REQ-0.0.23-05-03")
-    def test_strict_escalates_to_blocking(self) -> None:
+    def test_strict_escalates_to_blocking_on_lite_feature(self) -> None:
         self.assertEqual(determine_severity("lite", "feature", strict=True), "blocking")
 
     @covers("REQ-0.0.23-05-03")
@@ -476,6 +470,119 @@ class TestComputeBackfillFindings(unittest.TestCase):
         self.assertEqual(len(findings), 1)
         # commits gap rendered as a sentinel large int when rev-list failed.
         self.assertGreater(findings[0].gap_days, -1)
+
+
+# --------------------------------------------------------------------------- #
+# Legitimate-authoring guard (GHI #386 — ceremony trailer, file-creation)       #
+# --------------------------------------------------------------------------- #
+
+
+class TestLegitimateAuthoringExemption(unittest.TestCase):
+    """Same-commit-window decorators introduced under ceremony-bundling or
+    file-creation are legitimate authoring, not cosmetic backfill (GHI #386).
+
+    The cosmetic-backfill anti-pattern (GHI #272) is a *later* commit adding
+    ``@covers`` to a *pre-existing* test without re-deriving assertions.
+    Same-commit creation and ``Ceremony: <name>`` bundling are structurally
+    distinct and must not trip the heuristic.
+    """
+
+    @covers("REQ-0.0.23-05-01")
+    def test_ceremony_trailer_commit_is_not_flagged(self) -> None:
+        intro = _make_intro(sha="aaaaaaa", on=date(2026, 4, 1))
+        receipt = _make_receipt(sha="aaaaaaa", on=date(2026, 4, 1))
+        # intro_sha == receipt_sha short-circuits rev-list. Calls in order:
+        # file-creation log (different SHA -> no creation match),
+        # ceremony trailer log (returns 'gz-git-sync').
+        fake = FakeGit(
+            [
+                (0, "ffffff0000000000000000000000000000000000\n", ""),
+                (0, "gz-git-sync\n", ""),
+            ]
+        )
+        thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+        findings = compute_backfill_findings(
+            [intro],
+            {intro.target: receipt},
+            thresholds,
+            severity="blocking",
+            project_root=Path("/repo"),
+            git_runner=fake,
+        )
+        self.assertEqual(findings, ())
+
+    @covers("REQ-0.0.23-05-01")
+    def test_file_creation_commit_is_not_flagged(self) -> None:
+        intro = _make_intro(sha="aaaaaaa", on=date(2026, 4, 1))
+        receipt = _make_receipt(sha="aaaaaaa", on=date(2026, 4, 1))
+        # intro_sha == receipt_sha short-circuits rev-list. file-creation log
+        # returns a SHA whose 7-char prefix matches intro.commit_sha — the
+        # decorator was present from line one (GHI #382 case). Ceremony
+        # trailer is never queried because file-creation already exempts.
+        fake = FakeGit(
+            [
+                (0, "aaaaaaa1234567890abcdef0123456789abcdef\n", ""),
+            ]
+        )
+        thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+        findings = compute_backfill_findings(
+            [intro],
+            {intro.target: receipt},
+            thresholds,
+            severity="blocking",
+            project_root=Path("/repo"),
+            git_runner=fake,
+        )
+        self.assertEqual(findings, ())
+
+    @covers("REQ-0.0.23-05-01")
+    def test_later_commit_decoration_on_preexisting_file_still_flags(self) -> None:
+        # Cosmetic-backfill anti-pattern (GHI #272): a later commit decorates
+        # a pre-existing test. Introducing SHA differs from the file-creation
+        # SHA, and the introducing commit has no ceremony trailer — heuristic
+        # MUST flag.
+        intro = _make_intro(sha="aaaaaaa", on=date(2026, 4, 5))
+        receipt = _make_receipt(sha="bbbbbbb", on=date(2026, 4, 6))  # 1d gap
+        fake = FakeGit(
+            [
+                (0, "1\n", ""),
+                (0, "deadbee0000000000000000000000000000000000\n", ""),
+                (0, "\n", ""),
+            ]
+        )
+        thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+        findings = compute_backfill_findings(
+            [intro],
+            {intro.target: receipt},
+            thresholds,
+            severity="blocking",
+            project_root=Path("/repo"),
+            git_runner=fake,
+        )
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].severity, "blocking")
+
+    @covers("REQ-0.0.23-05-01")
+    def test_unregistered_ceremony_trailer_does_not_exempt(self) -> None:
+        intro = _make_intro(sha="aaaaaaa", on=date(2026, 4, 1))
+        receipt = _make_receipt(sha="bbbbbbb", on=date(2026, 4, 1))
+        fake = FakeGit(
+            [
+                (0, "1\n", ""),
+                (0, "deadbee0000000000000000000000000000000000\n", ""),
+                (0, "experimental-bundle\n", ""),
+            ]
+        )
+        thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+        findings = compute_backfill_findings(
+            [intro],
+            {intro.target: receipt},
+            thresholds,
+            severity="warning",
+            project_root=Path("/repo"),
+            git_runner=fake,
+        )
+        self.assertEqual(len(findings), 1)
 
 
 # --------------------------------------------------------------------------- #

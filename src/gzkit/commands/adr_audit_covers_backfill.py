@@ -409,24 +409,88 @@ def resolve_req_closing_receipts(
 
 
 def determine_severity(
-    lane: str,  # noqa: ARG001 — preserved in signature for forward compatibility (GHI #385)
-    kind: str,  # noqa: ARG001 — preserved in signature for forward compatibility (GHI #385)
+    lane: str,
+    kind: str,
     strict: bool,
 ) -> Literal["warning", "blocking"]:
-    """Escalate to ``blocking`` only under ``--strict``.
+    """Escalate to ``blocking`` on heavy lane, foundation kind, or ``--strict``.
 
-    Demoted from "heavy lane OR foundation kind OR strict" to "strict only"
-    pending GHI #385: the same-commit-window heuristic false-positives on
-    every TDD-disciplined OBPI shipped via ``gz git-sync`` because the
-    introducing commit and the closing receipt are the same ceremony commit.
-    Until the heuristic learns to distinguish ceremony-bundled commits from
-    cosmetic backfills, default invocations of ``gz adr audit-check`` surface
-    findings as warnings (exit 0); operators who want fail-closed enforcement
-    pass ``--strict`` explicitly.
+    Restored to the original three-axis predicate after GHI #386 taught the
+    heuristic to distinguish ``Ceremony: <name>`` ceremony-bundled commits
+    and same-commit file-creation from the GHI #272 cosmetic-backfill
+    anti-pattern. Lite-feature non-strict invocations remain warning-only.
     """
-    if strict:
+    if strict or lane == "heavy" or kind == "foundation":
         return "blocking"
     return "warning"
+
+
+# --------------------------------------------------------------------------- #
+# Legitimate-authoring guards (GHI #386 — ceremony-trailer + file-creation)     #
+# --------------------------------------------------------------------------- #
+
+# Ceremony-trailer values that mark a commit as a governance ceremony bundling
+# tests + implementation + receipt rather than a cosmetic-backfill decoration.
+# Canonized in `.claude/rules/tests.md` § TASK-Driven Workflow; `ghi-close` is
+# included for GHI-driven defect remedies that bundle the same triple.
+_EXEMPT_CEREMONIES: frozenset[str] = frozenset(
+    {"gz-git-sync", "obpi-reconcile", "adr-closeout", "ghi-close"}
+)
+
+
+def _file_creation_short_sha(
+    rel_file: str, project_root: Path, git_runner: GitRunner
+) -> str | None:
+    """Return the 7-char short SHA of the commit that first added ``rel_file``."""
+    rc, stdout, _stderr = git_runner(
+        ["log", "--diff-filter=A", "--format=%H", "--", rel_file],
+        project_root,
+    )
+    if rc != 0:
+        return None
+    for raw_line in stdout.splitlines():
+        candidate = raw_line.strip()
+        if candidate:
+            return candidate[:7]
+    return None
+
+
+def _ceremony_trailer(sha: str, project_root: Path, git_runner: GitRunner) -> str | None:
+    """Return the ``Ceremony:`` trailer value for ``sha`` (or ``None``)."""
+    rc, stdout, _stderr = git_runner(
+        ["log", "-1", "--format=%(trailers:key=Ceremony,valueonly=true)", sha],
+        project_root,
+    )
+    if rc != 0:
+        return None
+    value = stdout.strip()
+    return value or None
+
+
+def _is_legitimate_authoring(
+    intro: CoverIntroduction, project_root: Path, git_runner: GitRunner
+) -> bool:
+    """Return True when ``intro`` is same-commit creation or ceremony-bundled.
+
+    Two structurally distinct legitimate-authoring shapes are exempted from
+    the same-commit-window backfill heuristic:
+
+    - **Same-commit creation (GHI #382):** the file went 0->N lines in the
+      introducing commit, so ``@covers`` was present from line one.
+    - **Ceremony bundling (GHI #386):** the introducing commit carries a
+      ``Ceremony:`` trailer in :data:`_EXEMPT_CEREMONIES` (e.g.
+      ``Ceremony: gz-git-sync``), marking it as a governance ceremony commit
+      that bundles tests + implementation + receipt by design.
+
+    Any other shape (later-commit decoration on a pre-existing test) remains
+    flag-eligible — that is the GHI #272 cosmetic-backfill anti-pattern this
+    heuristic exists to catch.
+    """
+    creation_sha = _file_creation_short_sha(intro.file, project_root, git_runner)
+    if creation_sha is not None and creation_sha == intro.commit_sha:
+        return True
+    trailer = _ceremony_trailer(intro.commit_sha, project_root, git_runner)
+    return trailer is not None and trailer in _EXEMPT_CEREMONIES
 
 
 # --------------------------------------------------------------------------- #
@@ -484,6 +548,14 @@ def compute_backfill_findings(
         days_in_window = days_gap <= thresholds.max_covers_backfill_days
 
         if not (commits_in_window or days_in_window):
+            continue
+
+        # GHI #386 / GHI #382: same-commit-window decorators introduced under
+        # ceremony bundling or file-creation are legitimate authoring, not the
+        # GHI #272 cosmetic-backfill anti-pattern. Apply the legitimacy guard
+        # only when a finding is otherwise about to be flagged so the extra
+        # git boundary calls are paid only on candidate intros.
+        if _is_legitimate_authoring(intro, project_root, git_runner):
             continue
 
         rendered_commits = int(commits_gap) if commits_gap != math.inf else _SENTINEL_COMMITS
