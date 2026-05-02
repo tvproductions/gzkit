@@ -528,7 +528,7 @@ wheels = [
 
 [[package]]
 name = "py-gzkit"
-version = "0.25.19"
+version = "0.26.0"
 source = { editable = "." }
 dependencies = [
     { name = "jsonschema" },
