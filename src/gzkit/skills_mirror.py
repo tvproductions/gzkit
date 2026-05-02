@@ -140,8 +140,10 @@ def _validate_mirror_skill_body(
 def _collect_package_files(skill_dir: Path) -> dict[str, Path]:
     """Return mapping of rel-posix-path to absolute path for all files below skill_dir.
 
-    Excludes SKILL.md (handled separately) and any file named SKILL.md nested
-    inside asset directories to avoid double-counting.
+    Excludes SKILL.md (handled separately), any file named SKILL.md nested
+    inside asset directories to avoid double-counting, and Python bytecode
+    caches (``__pycache__/*.pyc`` and ``.pyo``) which are gitignored Layer 3
+    derived artifacts that never live in mirrors (GHI #379).
     """
     package: dict[str, Path] = {}
     if not skill_dir.exists():
@@ -150,6 +152,8 @@ def _collect_package_files(skill_dir: Path) -> dict[str, Path]:
         if not path.is_file():
             continue
         if path.name == "SKILL.md" and path.parent == skill_dir:
+            continue
+        if "__pycache__" in path.parts or path.suffix in {".pyc", ".pyo"}:
             continue
         rel = path.relative_to(skill_dir).as_posix()
         package[rel] = path
