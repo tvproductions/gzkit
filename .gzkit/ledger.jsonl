@@ -4457,3 +4457,4 @@
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.brief-authoring-evidence-checks.md","ts":"2026-05-02T13:05:58.043430+00:00","path":"docs/design/adr/pool/ADR-pool.brief-authoring-evidence-checks.md"}
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.brief-authoring-evidence-checks","ts":"2026-05-02T13:06:01.986315+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.contract-surface-mechanical-defenses.md","ts":"2026-05-02T13:06:56.999647+00:00","path":"docs/design/adr/pool/ADR-pool.contract-surface-mechanical-defenses.md"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.contract-surface-mechanical-defenses","ts":"2026-05-02T13:11:42.737789+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
