@@ -271,7 +271,7 @@ def state_repair(as_json: bool) -> None:
         changes.append(
             {
                 "obpi_id": short_id,
-                "file": str(brief_path.relative_to(project_root)),
+                "file": brief_path.relative_to(project_root).as_posix(),
                 "old_status": current_status,
                 "new_status": expected,
             }

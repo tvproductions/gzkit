@@ -278,7 +278,7 @@ def validate_frontmatter_coherence(
     ):
         scoped_files = _filter_artifact_files(files, artifact_type, adr_scope, graph, canon)
         for artifact_file, ledger_id in scoped_files:
-            rel_path = str(artifact_file.relative_to(project_root))
+            rel_path = artifact_file.relative_to(project_root).as_posix()
             if _is_pool_artifact(artifact_file, rel_path):
                 continue
             try:

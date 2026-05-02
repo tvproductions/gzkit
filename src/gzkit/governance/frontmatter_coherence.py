@@ -356,7 +356,7 @@ def _enumerate_pool_artifacts(project_root: Path) -> list[str]:
     for md_path in pool_dir.rglob("*.md"):
         if not md_path.is_file():
             continue
-        rel = str(md_path.relative_to(project_root))
+        rel = md_path.relative_to(project_root).as_posix()
         results.append(rel)
     return results
 

@@ -369,7 +369,7 @@ def _record_closeout_initiation(
 ) -> None:
     evidence = {
         "adr_file": gate_1_path,
-        "obpi_files": [str(path.relative_to(project_root)) for path in obpi_files.values()],
+        "obpi_files": [path.relative_to(project_root).as_posix() for path in obpi_files.values()],
         "obpi_summary": obpi_summary,
         "verification_steps": [
             {"label": label, "command": command} for label, command in verification_steps
@@ -607,7 +607,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         adr_id, cast(list[str], closeout_readiness.get("blocking_ids", []))
     )
 
-    gate_1_path = str(adr_file.relative_to(project_root))
+    gate_1_path = adr_file.relative_to(project_root).as_posix()
     attestation_choices = ["Completed", "Completed - Partial: [reason]", "Dropped - [reason]"]
 
     # --- Blocker check ---

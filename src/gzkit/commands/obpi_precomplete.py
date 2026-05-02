@@ -134,7 +134,7 @@ def _check_brief_readiness(project_root: Path, brief_path: Path) -> CheckResult:
             message=f"{len(errors)} validator error(s); first: {first}",
             remediation=(
                 f"Run `uv run gz obpi validate --authored "
-                f"{brief_path.relative_to(project_root)}` and address each error."
+                f"{brief_path.relative_to(project_root).as_posix()}` and address each error."
             ),
         )
     return CheckResult(
@@ -196,7 +196,7 @@ def _check_lock_held(project_root: Path, obpi_id: str) -> CheckResult:
     return CheckResult(
         name="lock_held",
         ok=True,
-        message=f"lock present at {candidates[0].relative_to(project_root)}",
+        message=f"lock present at {candidates[0].relative_to(project_root).as_posix()}",
     )
 
 

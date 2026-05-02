@@ -74,7 +74,7 @@ def render_step_2_summary(
         "",
         "Step 2 — Scope Review: does the delivered work match the ADR's intent?",
         "",
-        f"ADR: {adr_file.relative_to(project_root)}",
+        f"ADR: {adr_file.relative_to(project_root).as_posix()}",
         f"Lane: {lane}",
         "",
     ]

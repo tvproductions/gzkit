@@ -186,7 +186,7 @@ def _scan_tools_scripts(project_root: Path) -> list[ValidationError]:
         errors.append(
             ValidationError(
                 type="utf8_prefix",
-                artifact=str(path.relative_to(project_root)),
+                artifact=path.relative_to(project_root).as_posix(),
                 message=(
                     "`tools/` entry-point script prints without "
                     "`sys.stdout.reconfigure(encoding='utf-8')`. Fresh "

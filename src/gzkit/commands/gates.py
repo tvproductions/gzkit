@@ -108,7 +108,7 @@ def _run_gate_1(
         console.print(f"  [red]❌[/red] Gate 1 (ADR): [red]FAIL[/red] ({exc})")
         return "fail"
 
-    evidence = str(adr_file.relative_to(project_root))
+    evidence = adr_file.relative_to(project_root).as_posix()
     drift_errors = validate_frontmatter_coherence(project_root, adr_scope=adr_id)
     if drift_errors:
         _render_gate1_frontmatter_drift(drift_errors)

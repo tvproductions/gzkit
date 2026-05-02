@@ -92,7 +92,7 @@ def _collect_obpi_findings(
             findings.append(
                 {
                     "id": obpi_id,
-                    "file": str(obpi_file.relative_to(project_root)),
+                    "file": obpi_file.relative_to(project_root).as_posix(),
                     "issue": "; ".join(inspection["reasons"]),
                     "frontmatter_status": inspection["frontmatter_status"],
                     "brief_status": inspection["brief_status"],
@@ -213,7 +213,7 @@ def _collect_covers_locations_for_adr(
     locations: list[tuple[str, str, int]] = []
     for test_file in sorted(tests_dir.rglob("*.py")):
         content = test_file.read_text(encoding="utf-8")
-        rel_path = str(test_file.relative_to(project_root))
+        rel_path = test_file.relative_to(project_root).as_posix()
         for req_id, line_no in find_covers_in_source(content):
             if req_id.startswith(req_prefix):
                 locations.append((req_id, rel_path, line_no))

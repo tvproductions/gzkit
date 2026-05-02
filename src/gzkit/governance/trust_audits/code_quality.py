@@ -60,7 +60,7 @@ def audit_type_ignores(project_root: Path) -> list[ValidationError]:
                 errors.append(
                     ValidationError(
                         type="type_ignores",
-                        artifact=f"{py_file.relative_to(project_root)}:{tok.start[0]}",
+                        artifact=f"{py_file.relative_to(project_root).as_posix()}:{tok.start[0]}",
                         message=(
                             "`# type: ignore[<code>]` is not honored by ty. Use "
                             "bare `# type: ignore` or `# ty: ignore[<ty-code>]`."
@@ -141,7 +141,7 @@ def audit_test_tiers(project_root: Path) -> list[ValidationError]:
                 errors.append(
                     ValidationError(
                         type="test_tiers",
-                        artifact=str(path.relative_to(project_root)),
+                        artifact=path.relative_to(project_root).as_posix(),
                         message=(
                             f"Forbidden third test tier `tests/{name}/` — the "
                             "two runners are unittest and behave. See GHI #182."
@@ -161,7 +161,7 @@ def audit_test_tiers(project_root: Path) -> list[ValidationError]:
                     errors.append(
                         ValidationError(
                             type="test_tiers",
-                            artifact=str(py_file.relative_to(project_root)),
+                            artifact=py_file.relative_to(project_root).as_posix(),
                             message=(
                                 f"Forbidden test-tier flag `{flag}` registered "
                                 "on a parser — third test tier anti-pattern."

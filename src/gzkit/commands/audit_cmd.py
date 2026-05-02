@@ -47,7 +47,7 @@ def _run_audit_verifications(
                 "command": command,
                 "returncode": result.returncode,
                 "success": result.success,
-                "proof_file": str(proof_file.relative_to(project_root)),
+                "proof_file": proof_file.relative_to(project_root).as_posix(),
             }
         )
         if not result.success:
@@ -263,8 +263,8 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         dry_payload = {
             "adr": adr_id,
             "dry_run": True,
-            "audit_dir": str(audit_dir.relative_to(project_root)),
-            "proofs_dir": str(proofs_dir.relative_to(project_root)),
+            "audit_dir": audit_dir.relative_to(project_root).as_posix(),
+            "proofs_dir": proofs_dir.relative_to(project_root).as_posix(),
             "commands": [command for _label, command in commands],
             "validation_receipt": {"would_emit": True, "event": "validated"},
             "status_transition": {"from": "Completed", "to": "Validated"},
@@ -273,8 +273,8 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
             print(json.dumps(dry_payload, indent=2))  # noqa: T201
             return
         console.print("[yellow]Dry run:[/yellow] no files will be written.")
-        console.print(f"  Would create: {audit_dir.relative_to(project_root)}")
-        console.print(f"  Would create: {proofs_dir.relative_to(project_root)}")
+        console.print(f"  Would create: {audit_dir.relative_to(project_root).as_posix()}")
+        console.print(f"  Would create: {proofs_dir.relative_to(project_root).as_posix()}")
         for _label, command in commands:
             console.print(f"  Would run: {command}")
         console.print("  Would emit validation receipt to ledger")
@@ -297,8 +297,8 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     ledger.append(
         audit_generated_event(
             adr_id=adr_id,
-            audit_file=str(audit_file.relative_to(project_root)),
-            audit_plan_file=str(plan_file.relative_to(project_root)),
+            audit_file=audit_file.relative_to(project_root).as_posix(),
+            audit_plan_file=plan_file.relative_to(project_root).as_posix(),
             passed=failures == 0,
         )
     )
@@ -311,9 +311,9 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         "audit_date": date.today().isoformat(),
         "pass_count": pass_count,
         "fail_count": fail_count,
-        "audit_file": str(audit_file.relative_to(project_root)),
-        "audit_plan_file": str(plan_file.relative_to(project_root)),
-        "proofs_dir": str(proofs_dir.relative_to(project_root)),
+        "audit_file": audit_file.relative_to(project_root).as_posix(),
+        "audit_plan_file": plan_file.relative_to(project_root).as_posix(),
+        "proofs_dir": proofs_dir.relative_to(project_root).as_posix(),
     }
     ledger.append(
         audit_receipt_emitted_event(
@@ -349,8 +349,8 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
 
     output = {
         "adr": adr_id,
-        "audit_file": str(audit_file.relative_to(project_root)),
-        "audit_plan_file": str(plan_file.relative_to(project_root)),
+        "audit_file": audit_file.relative_to(project_root).as_posix(),
+        "audit_plan_file": plan_file.relative_to(project_root).as_posix(),
         "results": result_rows,
         "passed": failures == 0,
         "validation_receipt": {
@@ -370,8 +370,8 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         for row in result_rows:
             row_status = "[green]PASS[/green]" if row["success"] else "[red]FAIL[/red]"
             console.print(f"  {row['label']}: {row_status}")
-        console.print(f"Audit plan: {plan_file.relative_to(project_root)}")
-        console.print(f"Audit report: {audit_file.relative_to(project_root)}")
+        console.print(f"Audit plan: {plan_file.relative_to(project_root).as_posix()}")
+        console.print(f"Audit report: {audit_file.relative_to(project_root).as_posix()}")
         console.print(f"Validation receipt: emitted (by {auditor})")
         if status_transition:
             console.print("ADR status: Completed -> Validated")

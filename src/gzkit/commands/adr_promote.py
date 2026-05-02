@@ -195,8 +195,8 @@ def _adr_promotion_result(
         "lane": promotion_plan["promoted_lane"],
         "parent": promotion_plan["promoted_parent"],
         "obpis": [plan["obpi_id"] for plan in promotion_plan["obpi_plans"]],
-        "pool_file": str(pool_file.relative_to(project_root)),
-        "target_file": str(target_file.relative_to(project_root)),
+        "pool_file": pool_file.relative_to(project_root).as_posix(),
+        "target_file": target_file.relative_to(project_root).as_posix(),
         "dry_run": dry_run,
     }
 
@@ -212,11 +212,11 @@ def _print_adr_promotion_dry_run(project_root: Path, promotion_plan: dict[str, A
     console.print("[yellow]Dry run:[/yellow] no files or ledger events will be written.")
     console.print(f"  Pool ADR: {pool_adr_id}")
     console.print(f"  Target ADR: {target_adr_id}")
-    console.print(f"  Target file: {target_file.relative_to(project_root)}")
+    console.print(f"  Target file: {target_file.relative_to(project_root).as_posix()}")
     console.print(f"  Would create OBPIs: {len(obpi_plans)}")
     for plan in obpi_plans:
-        console.print(f"    - {cast(Path, plan['obpi_file']).relative_to(project_root)}")
-    console.print(f"  Would update pool file: {pool_file.relative_to(project_root)}")
+        console.print(f"    - {cast(Path, plan['obpi_file']).relative_to(project_root).as_posix()}")
+    console.print(f"  Would update pool file: {pool_file.relative_to(project_root).as_posix()}")
     console.print(
         "  Would append artifact_renamed: "
         f"{pool_adr_id} -> {target_adr_id} (reason: pool_promotion)"
@@ -262,11 +262,11 @@ def _print_adr_promotion_applied(project_root: Path, promotion_plan: dict[str, A
     pool_file = cast(Path, promotion_plan["pool_file"])
     obpi_plans = cast(list[dict[str, Any]], promotion_plan["obpi_plans"])
     console.print(f"[green]Promoted pool ADR:[/green] {pool_adr_id} -> {target_adr_id}")
-    console.print(f"  Created: {target_file.relative_to(project_root)}")
+    console.print(f"  Created: {target_file.relative_to(project_root).as_posix()}")
     console.print(f"  Created OBPIs: {len(obpi_plans)}")
     for plan in obpi_plans:
-        console.print(f"    - {cast(Path, plan['obpi_file']).relative_to(project_root)}")
-    console.print(f"  Updated: {pool_file.relative_to(project_root)}")
+        console.print(f"    - {cast(Path, plan['obpi_file']).relative_to(project_root).as_posix()}")
+    console.print(f"  Updated: {pool_file.relative_to(project_root).as_posix()}")
 
 
 def _check_scaffold_obpis(

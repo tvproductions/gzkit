@@ -343,23 +343,23 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
     # Write hook scripts
     instruction_router_path = hooks_path / "instruction-router.py"
     _write_hook_file(instruction_router_path, _instruction_router_script(), executable=True)
-    created.append(str(instruction_router_path.relative_to(project_root)))
+    created.append(instruction_router_path.relative_to(project_root).as_posix())
 
     post_edit_ruff_path = hooks_path / "post-edit-ruff.py"
     _write_hook_file(post_edit_ruff_path, _post_edit_ruff_script(), executable=True)
-    created.append(str(post_edit_ruff_path.relative_to(project_root)))
+    created.append(post_edit_ruff_path.relative_to(project_root).as_posix())
 
     plan_audit_gate_path = hooks_path / "plan-audit-gate.py"
     _write_hook_file(plan_audit_gate_path, _plan_audit_gate_script(), executable=True)
-    created.append(str(plan_audit_gate_path.relative_to(project_root)))
+    created.append(plan_audit_gate_path.relative_to(project_root).as_posix())
 
     pipeline_router_path = hooks_path / "pipeline-router.py"
     _write_hook_file(pipeline_router_path, _pipeline_router_script(), executable=True)
-    created.append(str(pipeline_router_path.relative_to(project_root)))
+    created.append(pipeline_router_path.relative_to(project_root).as_posix())
 
     pipeline_gate_path = hooks_path / "pipeline-gate.py"
     _write_hook_file(pipeline_gate_path, _pipeline_gate_script(), executable=True)
-    created.append(str(pipeline_gate_path.relative_to(project_root)))
+    created.append(pipeline_gate_path.relative_to(project_root).as_posix())
 
     pipeline_completion_reminder_path = hooks_path / "pipeline-completion-reminder.py"
     _write_hook_file(
@@ -367,27 +367,27 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
         _pipeline_completion_reminder_script(),
         executable=True,
     )
-    created.append(str(pipeline_completion_reminder_path.relative_to(project_root)))
+    created.append(pipeline_completion_reminder_path.relative_to(project_root).as_posix())
 
     session_staleness_path = hooks_path / "session-staleness-check.py"
     _write_hook_file(session_staleness_path, _session_staleness_check_script(), executable=True)
-    created.append(str(session_staleness_path.relative_to(project_root)))
+    created.append(session_staleness_path.relative_to(project_root).as_posix())
 
     obpi_validator_path = hooks_path / "obpi-completion-validator.py"
     _write_hook_file(obpi_validator_path, _obpi_completion_validator_script(), executable=True)
-    created.append(str(obpi_validator_path.relative_to(project_root)))
+    created.append(obpi_validator_path.relative_to(project_root).as_posix())
 
     ledger_writer_path = hooks_path / "ledger-writer.py"
     _write_hook_file(ledger_writer_path, _ledger_writer_script(), executable=True)
-    created.append(str(ledger_writer_path.relative_to(project_root)))
+    created.append(ledger_writer_path.relative_to(project_root).as_posix())
 
     control_surface_sync_path = hooks_path / "control-surface-sync.py"
     _write_hook_file(control_surface_sync_path, _control_surface_sync_script(), executable=True)
-    created.append(str(control_surface_sync_path.relative_to(project_root)))
+    created.append(control_surface_sync_path.relative_to(project_root).as_posix())
 
     readme_path = hooks_path / "README.md"
     _write_hook_file(readme_path, _claude_hooks_readme())
-    created.append(str(readme_path.relative_to(project_root)))
+    created.append(readme_path.relative_to(project_root).as_posix())
 
     # Write settings.json — merge to preserve user-added hooks
     gzkit_settings = generate_claude_settings(config)
@@ -400,7 +400,7 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
         json.dump(merged, f, indent=2)
         f.write("\n")
 
-    created.append(str(settings_path.relative_to(project_root)))
+    created.append(settings_path.relative_to(project_root).as_posix())
 
     _ruff_format_dir(hooks_path)
 

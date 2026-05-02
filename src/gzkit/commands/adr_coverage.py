@@ -214,7 +214,7 @@ def _collect_covers_annotations(project_root: Path) -> dict[str, list[str]]:
 
     for test_file in sorted(tests_dir.rglob("*.py")):
         content = test_file.read_text(encoding="utf-8")
-        rel_path = str(test_file.relative_to(project_root))
+        rel_path = test_file.relative_to(project_root).as_posix()
 
         # REQ-form references (decorator + docstring forms) via shared regex.
         for req_id, _line_num in find_covers_in_source(content):
@@ -319,7 +319,7 @@ def _extract_obpi_requirement_targets(
             criteria_without_req_ids.append(
                 {
                     "obpi": obpi_id,
-                    "file": str(obpi_file.relative_to(project_root)),
+                    "file": obpi_file.relative_to(project_root).as_posix(),
                     "line": line_no,
                     "text": criterion_text,
                 }
@@ -332,7 +332,7 @@ def _extract_obpi_requirement_targets(
                 invalid_requirement_targets.append(
                     {
                         "obpi": obpi_id,
-                        "file": str(obpi_file.relative_to(project_root)),
+                        "file": obpi_file.relative_to(project_root).as_posix(),
                         "line": line_no,
                         "req": req_id,
                         "expected_prefix": req_prefix,

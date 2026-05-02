@@ -70,7 +70,7 @@ def _build_violation(
 ) -> ValidationError:
     return ValidationError(
         type="absorption_duplicate",
-        artifact=str(brief_path.relative_to(project_root)),
+        artifact=brief_path.relative_to(project_root).as_posix(),
         message=(
             f"opsdev/lib/{source_module}.py is evaluated by {obpi_id} "
             f"({parent}) and another OBPI under a different parent ADR; "

@@ -88,7 +88,7 @@ def main():
             warnings.append(
                 f"Stale .pipeline-active.json: references {obpi_id} "
                 f"which is already Completed. "
-                f"Clean up: delete {marker_path.relative_to(cwd_path)}"
+                f"Clean up: delete {marker_path.relative_to(cwd_path).as_posix()}"
             )
 
     if receipt:
@@ -97,7 +97,7 @@ def main():
             warnings.append(
                 f"Stale .plan-audit-receipt.json: references {obpi_id} "
                 f"which is already Completed. "
-                f"Clean up: delete {receipt_path.relative_to(cwd_path)}"
+                f"Clean up: delete {receipt_path.relative_to(cwd_path).as_posix()}"
             )
 
     if warnings:

@@ -53,7 +53,7 @@ def _collect_manifest_artifact_issues(
     for artifact_name, artifact_cfg in manifest.get("artifacts", {}).items():
         artifact_path = project_root / artifact_cfg.get("path", "")
         if not artifact_path.exists():
-            rel = str(artifact_path.relative_to(project_root))
+            rel = artifact_path.relative_to(project_root).as_posix()
             _append_path_issue(issues, rel, f"manifest.artifacts.{artifact_name}.path missing")
 
         if artifact_name != "obpi":
@@ -142,7 +142,7 @@ def _collect_obpi_path_contract_issues(
     if legacy_obpi_files:
         _append_path_issue(
             issues,
-            str(legacy_obpi_dir.relative_to(project_root)),
+            legacy_obpi_dir.relative_to(project_root).as_posix(),
             ("legacy global OBPI directory contains OBPI files; move them under ADR-local obpis/"),
         )
 
