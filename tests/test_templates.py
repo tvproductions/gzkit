@@ -107,12 +107,14 @@ class TestAgentsTemplateSemantic(unittest.TestCase):
             "Follow the gate covenant for all changes",
             "Record governance events in the ledger",
             "Preserve human intent across context boundaries",
-            "offload online research, codebase exploration, and log analysis to subagents",
+            "Offload online research, codebase exploration, and log analysis to "
+            "subagents when work splits across independent items",
             "always include a 'Why' parameter in the subagent system prompt",
         ]
         for rule in always_rules:
             with self.subTest(rule=rule):
                 self.assertIn(rule, self.content)
+        self.assertNotIn("Aggressively offload", self.content)
 
     def test_never_rules_present(self) -> None:
         """All 4 'Never' rules are present in rendered AGENTS template."""

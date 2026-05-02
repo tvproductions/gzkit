@@ -90,11 +90,24 @@ Any stub detection is a **fail** — stubs fire in production with incomplete in
 
 Identify skills re-embedding governance doctrine from AGENTS.md.
 
-### 6. Mirror Sync
+### 6. Imperative Over-trigger Audit
+
+Flag `MUST`, `CRITICAL`, and `NEVER` language in `SKILL.md` bodies when the
+binding force belongs to an external rule or `AGENTS.md` section rather than
+the skill itself. The preferred shape is:
+
+- use normal routing language in the skill body (`use`, `consult`, `stop if`)
+- cite the external rule as the binding source
+- reserve imperative language for constraints the skill itself owns
+
+This closes the over-trigger class where mirrored doctrine makes an agent
+apply high-ceremony behavior outside the intended surface.
+
+### 7. Mirror Sync
 
 Verify `.github/skills/` and `.claude/skills/` are in sync.
 
-### 7. Validate
+### 8. Validate
 
 ```bash
 uv run -m unittest -q

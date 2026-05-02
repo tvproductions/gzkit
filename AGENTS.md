@@ -161,7 +161,7 @@ See [`docs/governance/agent-contract-rationale.md` § Operator economy — why t
 2. Follow the gate covenant for all changes
 3. Record governance events in the ledger
 4. Preserve human intent across context boundaries
-5. Aggressively offload online research, codebase exploration, and log analysis to subagents to preserve main context.
+5. Offload online research, codebase exploration, and log analysis to subagents when work splits across independent items, when direct `rg`/read commands would not suffice, or when context isolation is the goal. Do not spawn subagents for single-surface checks, direct grep/read tasks, or work whose next step depends on the result.
 6. When spawning a subagent, always include a 'Why' parameter in the subagent system prompt to filter signal from noise.
 7. **<90% sure of direction → ask the human.** Confident-wrong-direction runs are the most expensive failure mode — burn context, produce discarded work, erode trust. 30-second clarification beats 10-minute wrong-direction implementation. Applies to architectural choices, scope interpretation, file targeting, upstream comparison.
 8. **Surface assumptions explicitly before implementing.** Building on unstated assumptions the human would have corrected is how confident-wrong-direction runs start. Name; let human ratify or replace. (Judgment 12)
