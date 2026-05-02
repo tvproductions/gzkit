@@ -4,7 +4,7 @@ description: Gate-5 audit templates and procedure for ADR verification. GovZero 
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.7.0"
+  skill-version: "6.7.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -232,9 +232,16 @@ GHI #292 agent-relayed branch, using the `gz adr audit-begin` /
    `audit-begin`) is the legitimate co-presence proof the runtime
    accepts.
 2. **Operator verbal attestation.** Wait for the operator's verbal
-   ack (`attest completed` or equivalent). The verbal ack IS the
-   Gate-5 human-attestation event; the agent relays it into the
-   ledger receipt.
+   ack — `accept audit` or `verify audit`. This is the ADR
+   audit-validation acceptance, **not** OBPI Gate-5 closeout (which
+   already happened on each linked OBPI; by the time `/gz-adr-audit`
+   runs, every linked OBPI is `attested_completed` in the ledger).
+   The audit ceremony is a distinct operator moment — accepting the
+   audit's verification of the integrated ADR (ledger proof complete,
+   value demonstration ran, no shortfalls remain) — and wants its
+   own phrasing so the ledger's `attestation_text` field is
+   self-documenting. The verbal ack IS the Gate-5 human-attestation
+   event; the agent relays it into the ledger receipt.
 3. **Emit the receipt.**
 
    ```bash
@@ -324,7 +331,7 @@ report success to the operator until the report command confirms the change.
 | OBPI reconcile | `uv run gz audit <adr-id>` | L1+L2 |
 | Coverage discovery | `rg -n '@covers("ADR-' tests` | L1 |
 | **Open audit ceremony** | `uv run gz adr audit-begin <adr-id>` — writes per-ADR co-presence marker. | L1 |
-| **Emit receipt (agent-relayed)** | `uv run gz adr emit-receipt <adr-id> --event validated --attestor "<Operator Name>" --attestor-present` after operator's verbal `attest completed`. | L2 |
+| **Emit receipt (agent-relayed)** | `uv run gz adr emit-receipt <adr-id> --event validated --attestor "<Operator Name>" --attestor-present` after operator's verbal `accept audit` / `verify audit` (NOT OBPI-closeout `attest completed`). | L2 |
 | **Close audit ceremony** | `uv run gz adr audit-end <adr-id>` — removes marker. | L1 |
 
 **Layer key:** L1 = runs verification, L2 = reads ledger proof
