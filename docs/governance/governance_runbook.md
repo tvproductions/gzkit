@@ -81,6 +81,25 @@ uv run gz parity check
 uv run mkdocs build --strict
 ```
 
+### Cross-repo defect routing
+
+When a defect or enhancement against a gzkit-owned surface (the `gz` CLI,
+schemas under `src/gzkit/schemas/`, validator scopes, ledger event semantics,
+files under `.gzkit/**` or `src/gzkit/**`, rules under `.gzkit/rules/**`)
+is surfaced from inside a consuming repository, the canonical wrapper is:
+
+```bash
+uv run gz issue file --title T --body "<gzkit-surface description>" --defect [--dry-run]
+uv run gz issue file --title T --body "<gzkit-surface description>" --enhancement [--dry-run]
+```
+
+The wrapper auto-stamps a provenance trailer and routes against
+`tvproductions/gzkit` regardless of the consuming repo's `git remote`. Bodies
+without a gzkit-surface marker (`gz <verb>`, `.gzkit/`, `src/gzkit/`,
+`gzkit.<module>`) are hard-rejected with exit 1. Doctrine: `.gzkit/rules/gh-cli.md`
+§ Cross-repo filing. Operator runbook entry:
+[`docs/user/runbook.md` § Cross-Repo Defect Filing](../user/runbook.md#cross-repo-defect-filing-gzkit-owned-surfaces).
+
 ---
 
 ## Concepts

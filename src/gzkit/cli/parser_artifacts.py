@@ -1,6 +1,6 @@
 """Artifact-focused subparser registrations for gz CLI.
 
-Registers: adr subcommands, obpi subcommands, task subcommands.
+Registers: adr subcommands, obpi subcommands, task subcommands, issue subcommands.
 
 Command handlers are resolved on demand via ``_lazy`` so ``gz --help``
 avoids pulling heavy handler dependencies. Each handler's module lives in
@@ -51,6 +51,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "task_escalate_cmd": "gzkit.commands.task",
     "task_list_cmd": "gzkit.commands.task",
     "task_start_cmd": "gzkit.commands.task",
+    "issue_file_cmd": "gzkit.commands.issue_cmd",
 }
 
 _HANDLER_CACHE: dict[str, Callable[..., Any]] = {}
@@ -79,11 +80,12 @@ def _dispatch_adr_report(a: argparse.Namespace) -> None:
 
 
 def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
-    """Register adr, obpi, task, and justify sub-command groups on *commands*."""
+    """Register adr, obpi, task, justify, and issue sub-command groups on *commands*."""
     _register_adr_parsers(commands)
     _register_obpi_parsers(commands)
     _register_task_parsers(commands)
     _register_justify_parser(commands)
+    _register_issue_parsers(commands)
 
 
 def _register_justify_parser(commands: argparse._SubParsersAction) -> None:
@@ -1054,4 +1056,84 @@ def _register_task_parsers(commands: argparse._SubParsersAction) -> None:
         func=lambda a: _lazy("task_escalate_cmd")(
             task_id_str=a.task_id, reason=a.reason, as_json=a.as_json
         )
+    )
+
+
+def _register_issue_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register the top-level ``gz issue`` verb (ADR-0.0.23, OBPI-04).
+
+    ``gz issue file`` files a defect or enhancement at ``tvproductions/gzkit``
+    regardless of the consuming repo's git remote, with an auto-stamped
+    provenance trailer naming the consumer slug and the gzkit version.
+    Hard-rejects bodies that reference no gzkit-owned surface — closes the
+    misrouting failure class structurally per
+    ``.gzkit/rules/agent-failure-modes.md`` § Safeguard circumvention.
+    """
+    p_issue = commands.add_parser(
+        "issue",
+        help="Cross-repo defect/enhancement filing against gzkit's tracker",
+        description=(
+            "File a defect or enhancement at tvproductions/gzkit from any "
+            "consuming repository, with an auto-stamped provenance trailer."
+        ),
+        epilog=build_epilog(
+            [
+                'gz issue file --title "T" --body "gz validate fails" --defect',
+                'gz issue file --title "T" --body "gzkit.events crashes" --enhancement --dry-run',
+            ]
+        ),
+    )
+    issue_commands = p_issue.add_subparsers(dest="issue_command")
+    issue_commands.required = True
+
+    p_issue_file = issue_commands.add_parser(
+        "file",
+        help="File a GHI at tvproductions/gzkit with provenance trailer",
+        description=(
+            "Compose a GHI body with a 'Filed from <consumer-repo-slug> running "
+            "gz vX.Y.Z' trailer, validate that the body references a "
+            "gzkit-owned surface (gz <verb>, .gzkit/, src/gzkit/, gzkit.<module>), "
+            "and either preview (--dry-run) or invoke gh issue create against "
+            "tvproductions/gzkit. Exit codes: 0 success; 1 user/config error "
+            "(including hard-reject of bodies without a gzkit-surface "
+            "reference); 2 system/IO error (gh subprocess failure); 3 policy "
+            "breach (reserved)."
+        ),
+        epilog=build_epilog(
+            [
+                'gz issue file --title "T" --body "gz validate fails" --defect',
+                'gz issue file --title "T" --body "src/gzkit/x crashes" --enhancement --dry-run',
+            ]
+        ),
+    )
+    p_issue_file.add_argument("--title", required=True, help="Issue title")
+    p_issue_file.add_argument("--body", required=True, help="Issue body (markdown)")
+    label_group = p_issue_file.add_mutually_exclusive_group()
+    label_group.add_argument(
+        "--defect",
+        dest="label",
+        action="store_const",
+        const="defect",
+        help="Apply the 'defect' label (default)",
+    )
+    label_group.add_argument(
+        "--enhancement",
+        dest="label",
+        action="store_const",
+        const="enhancement",
+        help="Apply the 'enhancement' label",
+    )
+    p_issue_file.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview the composed body, target, and label without invoking gh",
+    )
+    p_issue_file.set_defaults(
+        label="defect",
+        func=lambda a: _lazy("issue_file_cmd")(
+            title=a.title,
+            body=a.body,
+            label=a.label,
+            dry_run=a.dry_run,
+        ),
     )

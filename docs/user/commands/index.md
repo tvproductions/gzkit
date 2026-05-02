@@ -62,6 +62,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz task complete`](task-complete.md) | Complete a task |
 | [`gz task block`](task-block.md) | Block a task with reason |
 | [`gz task escalate`](task-escalate.md) | Escalate a task with reason |
+| [`gz issue file`](issue-file.md) | Cross-repo defect/enhancement filing wrapper (provenance auto-stamp; routes to `tvproductions/gzkit`) |
 
 ---
 
