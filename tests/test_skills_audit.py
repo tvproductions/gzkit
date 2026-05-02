@@ -6,7 +6,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
-from gzkit.skills import audit_skills
+from gzkit.skills import audit_skills, scaffold_skill
 from gzkit.sync import sync_skill_mirrors
 
 
@@ -64,6 +64,24 @@ def _write_skill(
 
 class TestSkillAuditMirrorContracts(unittest.TestCase):
     """Validate fail-closed mirror identity contract behavior."""
+
+    def test_scaffold_rejects_overlong_description_before_template_write(self) -> None:
+        """The template path must not create invalid canonical skill frontmatter."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            with self.assertRaisesRegex(ValueError, "Claude Code, Codex, and GitHub Copilot"):
+                scaffold_skill(
+                    project_root,
+                    "demo-skill",
+                    config.paths.skills,
+                    skill_description="x" * 1025,
+                )
+
+            self.assertFalse(
+                (project_root / config.paths.skills / "demo-skill" / "SKILL.md").exists()
+            )
 
     def test_mirror_field_drift_blocks_audit(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -186,6 +204,34 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             self.assertFalse(report.valid)
             self.assertTrue(
                 any("Invalid metadata.govzero_layer" in issue.message for issue in report.issues)
+            )
+
+    def test_overlong_description_blocks_audit(self) -> None:
+        """Skill descriptions must fit every supported harness loader."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            frontmatter = _skill_frontmatter("demo-skill", description="x" * 1025)
+
+            _write_skill(project_root, config.paths.skills, "demo-skill", frontmatter=frontmatter)
+            _write_skill(
+                project_root, config.paths.codex_skills, "demo-skill", frontmatter=frontmatter
+            )
+            _write_skill(
+                project_root, config.paths.claude_skills, "demo-skill", frontmatter=frontmatter
+            )
+            _write_skill(
+                project_root, config.paths.copilot_skills, "demo-skill", frontmatter=frontmatter
+            )
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(
+                any(
+                    issue.code == "SKA-DESCRIPTION-TOO-LONG"
+                    and "Claude Code, Codex, and GitHub Copilot" in issue.message
+                    for issue in report.issues
+                )
             )
 
     def test_unknown_metadata_keys_are_allowed(self) -> None:

@@ -13,7 +13,7 @@
     "description": {
       "type": "string",
       "maxLength": 1024,
-      "description": "What the skill does and when to use it."
+      "description": "What the skill does and when to use it. Compatibility floor for Claude Code, Codex, and GitHub Copilot."
     },
     "category": {
       "type": "string",

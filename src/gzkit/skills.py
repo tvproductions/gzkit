@@ -11,6 +11,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 
 from gzkit.config import GzkitConfig
+from gzkit.skill_contract import SKILL_DESCRIPTION_MAX_CHARS, SUPPORTED_SKILL_HARNESSES
 from gzkit.templates import render_template
 
 # Core skills that are scaffolded by `gz init`.
@@ -271,6 +272,17 @@ def _load_packaged_skill_resource(dir_name: str) -> str | None:
     return resource.read_text(encoding="utf-8")
 
 
+def _validate_scaffold_description(description: str) -> None:
+    """Reject skill descriptions that cannot load in all supported harnesses."""
+    if len(description) <= SKILL_DESCRIPTION_MAX_CHARS:
+        return
+    msg = (
+        f"Skill description is {len(description)} characters; maximum is "
+        f"{SKILL_DESCRIPTION_MAX_CHARS} for {SUPPORTED_SKILL_HARNESSES} compatibility."
+    )
+    raise ValueError(msg)
+
+
 def scaffold_skill(
     project_root: Path,
     dir_name: str,
@@ -289,40 +301,39 @@ def scaffold_skill(
         Path to the created SKILL.md file.
 
     """
+    packaged = _load_packaged_skill_resource(dir_name)
+    if packaged is None:
+        # Default values (skill_name in template is display name)
+        defaults = {
+            "skill_slug": dir_name,
+            "skill_name": dir_name.replace("-", " ").title(),
+            "skill_description": "A custom skill for this project.",
+            "compatibility": "Project-local skill contract.",
+            "invocation": "Describe the CLI invocation used for this skill.",
+            "gz_command": "describe-command-surface",
+            "metadata_skill_version": "1.0.0",
+            "metadata_govzero_framework_version": "v6",
+            "metadata_govzero_author": "gzkit-governance",
+            "metadata_govzero_layer": "Layer 1 - Evidence Gathering",
+            "lifecycle_state": "active",
+            "owner": "gzkit-governance",
+            "last_reviewed": date.today().isoformat(),
+            "trigger_description": "When triggered by the user.",
+            "behavior_description": "Follow the steps below.",
+            "prerequisites": "None",
+            "example_input": "Example input",
+            "example_output": "Example output",
+        }
+
+        context = {**defaults, **kwargs}
+        _validate_scaffold_description(context["skill_description"])
+        content = render_template("skill", **context)
+    else:
+        content = packaged
+
     skill_path = project_root / skills_dir / dir_name
     skill_path.mkdir(parents=True, exist_ok=True)
-
     skill_file = skill_path / "SKILL.md"
-
-    packaged = _load_packaged_skill_resource(dir_name)
-    if packaged is not None:
-        skill_file.write_text(packaged, encoding="utf-8")
-        return skill_file
-
-    # Default values (skill_name in template is display name)
-    defaults = {
-        "skill_slug": dir_name,
-        "skill_name": dir_name.replace("-", " ").title(),
-        "skill_description": "A custom skill for this project.",
-        "compatibility": "Project-local skill contract.",
-        "invocation": "Describe the CLI invocation used for this skill.",
-        "gz_command": "describe-command-surface",
-        "metadata_skill_version": "1.0.0",
-        "metadata_govzero_framework_version": "v6",
-        "metadata_govzero_author": "gzkit-governance",
-        "metadata_govzero_layer": "Layer 1 - Evidence Gathering",
-        "lifecycle_state": "active",
-        "owner": "gzkit-governance",
-        "last_reviewed": date.today().isoformat(),
-        "trigger_description": "When triggered by the user.",
-        "behavior_description": "Follow the steps below.",
-        "prerequisites": "None",
-        "example_input": "Example input",
-        "example_output": "Example output",
-    }
-
-    context = {**defaults, **kwargs}
-    content = render_template("skill", **context)
     skill_file.write_text(content, encoding="utf-8")
 
     return skill_file

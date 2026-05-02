@@ -11,6 +11,8 @@ from typing import Any, Literal, get_args, get_origin
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic import ValidationError as PydanticValidationError
 
+from gzkit.skill_contract import SKILL_DESCRIPTION_MAX_CHARS
+
 # ---------------------------------------------------------------------------
 # Frontmatter models
 # ---------------------------------------------------------------------------
@@ -90,8 +92,8 @@ class SkillFrontmatter(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="allow", populate_by_name=True)
 
-    description: str
-    name: str | None = Field(None, pattern=r"^[a-z0-9-]+$")
+    description: str = Field(..., max_length=SKILL_DESCRIPTION_MAX_CHARS)
+    name: str | None = Field(None, pattern=r"^[a-z0-9-]+$", max_length=64)
     category: (
         Literal[
             "adr-lifecycle",

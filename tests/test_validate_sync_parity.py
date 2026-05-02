@@ -85,6 +85,20 @@ class SyncParityCleanTreeTest(_SyncParityBase):
             f"expected clean parity; got {[(e.artifact, e.message) for e in errors]}",
         )
 
+    def test_default_sync_parity_check_does_not_emit_ledger_event(self) -> None:
+        """Validation parity checks are read-only and must not attest sync."""
+        ledger = Path(".gzkit/ledger.jsonl")
+        before = ledger.read_text(encoding="utf-8")
+
+        check_sync_parity(Path.cwd())
+
+        after = ledger.read_text(encoding="utf-8")
+        self.assertEqual(
+            before,
+            after,
+            "check_sync_parity must call sync_all with emit_event=False",
+        )
+
 
 class SyncParityContentDriftTest(_SyncParityBase):
     """A hand-edited generated surface must surface as drift."""

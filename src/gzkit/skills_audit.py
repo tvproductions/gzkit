@@ -8,6 +8,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
+from gzkit.skill_contract import SKILL_DESCRIPTION_MAX_CHARS, SUPPORTED_SKILL_HARNESSES
 from gzkit.skills import SkillAuditIssue, SkillAuditReport, _parse_frontmatter
 
 KEBAB_CASE_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -158,6 +159,7 @@ def _validate_skill_metadata_fields(
 ) -> None:
     """Validate metadata fields for one canonical skill."""
     _validate_required_skill_fields(project_root, issues, skill_file, frontmatter)
+    _validate_description_length(project_root, issues, skill_file, frontmatter)
     _validate_lifecycle_field_values(
         project_root, issues, skill_file, frontmatter, max_review_age_days
     )
@@ -182,6 +184,29 @@ def _validate_required_skill_fields(
             skill_file,
             f"Missing frontmatter field: {field}.",
         )
+
+
+def _validate_description_length(
+    project_root: Path,
+    issues: list[SkillAuditIssue],
+    skill_file: Path,
+    frontmatter: dict[str, str],
+) -> None:
+    """Validate the strictest supported harness description limit."""
+    description = frontmatter.get("description", "")
+    if len(description) <= SKILL_DESCRIPTION_MAX_CHARS:
+        return
+    _append_audit_issue(
+        issues,
+        project_root,
+        "SKA-DESCRIPTION-TOO-LONG",
+        skill_file,
+        (
+            f"Frontmatter description is {len(description)} characters; "
+            f"maximum is {SKILL_DESCRIPTION_MAX_CHARS} for "
+            f"{SUPPORTED_SKILL_HARNESSES} compatibility."
+        ),
+    )
 
 
 def _validate_lifecycle_field_values(

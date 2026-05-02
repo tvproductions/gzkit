@@ -27,6 +27,7 @@ from gzkit.sync import (
 def _skill_markdown(
     name: str,
     *,
+    description: str = "Demo skill",
     lifecycle_state: str = "active",
     last_reviewed: str | None = None,
     lifecycle_transition_from: str | None = None,
@@ -46,7 +47,7 @@ def _skill_markdown(
     lines = [
         "---",
         f"name: {name}",
-        "description: Demo skill",
+        f"description: {description}",
         f"lifecycle_state: {lifecycle_state}",
         "owner: gzkit-governance",
         f"last_reviewed: {last_reviewed or date.today().isoformat()}",
@@ -666,6 +667,26 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertTrue(
                 any(
                     "invalid metadata.govzero_layer 'Layer 99 - Unknown'" in blocker
+                    for blocker in blockers
+                )
+            )
+
+    def test_canonical_sync_preflight_blocks_overlong_skill_description(self) -> None:
+        """Canonical descriptions must satisfy all mirrored harness metadata limits."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            broken_skill = project_root / config.paths.skills / "broken-skill"
+            broken_skill.mkdir(parents=True, exist_ok=True)
+            (broken_skill / "SKILL.md").write_text(
+                _skill_markdown("broken-skill", description="x" * 1025)
+            )
+
+            blockers = collect_canonical_sync_blockers(project_root, config)
+            self.assertTrue(
+                any(
+                    "maximum is 1024 for Claude Code, Codex, and GitHub Copilot" in blocker
                     for blocker in blockers
                 )
             )

@@ -14,6 +14,9 @@ from pathlib import Path
 # Re-export rules-based functions (originally imported and re-exported here)
 from gzkit.rules import sync_claude_rules as sync_claude_rules  # noqa: F401
 from gzkit.rules import sync_nested_agents_md as sync_nested_agents_md  # noqa: F401
+from gzkit.skill_contract import (
+    SKILL_DESCRIPTION_MAX_CHARS as SKILL_DESCRIPTION_MAX_CHARS,
+)
 from gzkit.sync_skill_validation import (
     collect_canonical_sync_blockers as collect_canonical_sync_blockers,
 )
