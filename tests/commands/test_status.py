@@ -115,7 +115,7 @@ class TestStatusCommand(unittest.TestCase):
             adr_id = "ADR-0.10.0-obpi-runtime-surface"
             adr_path = adr_dir / f"{adr_id}.md"
             adr_path.parent.mkdir(parents=True, exist_ok=True)
-            adr_path.write_text(f"---\nid: {adr_id}\n---\n\n# {adr_id}\n")
+            adr_path.write_text(f"---\nid: {adr_id}\n---\n\n# {adr_id}\n", encoding="utf-8")
             ledger.append(adr_created_event(adr_id, "", "heavy"))
 
             result = runner.invoke(main, ["status", "--table"])
@@ -155,7 +155,8 @@ class TestStatusCommand(unittest.TestCase):
                         "",
                     ]
                 )
-                + "\n"
+                + "\n",
+                encoding="utf-8",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
@@ -179,7 +180,7 @@ class TestStatusCommand(unittest.TestCase):
             for adr_id in ("ADR-0.10.0-f", "ADR-0.2.0-f", "ADR-0.9.0-f"):
                 adr_path = adr_dir / f"{adr_id}.md"
                 adr_path.parent.mkdir(parents=True, exist_ok=True)
-                adr_path.write_text(f"---\nid: {adr_id}\n---\n\n# {adr_id}\n")
+                adr_path.write_text(f"---\nid: {adr_id}\n---\n\n# {adr_id}\n", encoding="utf-8")
                 ledger.append(adr_created_event(adr_id, "", "lite"))
 
             result = runner.invoke(main, ["status", "--json"])
@@ -225,7 +226,8 @@ class TestStatusCommand(unittest.TestCase):
                         "",
                     ]
                 )
-                + "\n"
+                + "\n",
+                encoding="utf-8",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
@@ -832,7 +834,8 @@ class TestStatusCommand(unittest.TestCase):
                         "- Files created/modified: src/module.py",
                     ]
                 )
-                + "\n"
+                + "\n",
+                encoding="utf-8",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
@@ -882,7 +885,8 @@ class TestStatusCommand(unittest.TestCase):
                         "",
                     ]
                 )
-                + "\n"
+                + "\n",
+                encoding="utf-8",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
@@ -940,7 +944,8 @@ class TestStatusCommand(unittest.TestCase):
                         "",
                     ]
                 )
-                + "\n"
+                + "\n",
+                encoding="utf-8",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
@@ -1004,7 +1009,8 @@ class TestStatusCommand(unittest.TestCase):
                         "",
                     ]
                 )
-                + "\n"
+                + "\n",
+                encoding="utf-8",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
@@ -1061,7 +1067,8 @@ class TestStatusCommand(unittest.TestCase):
                         "",
                     ]
                 )
-                + "\n"
+                + "\n",
+                encoding="utf-8",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
@@ -1219,7 +1226,8 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                 "---\n"
                 "id: ADR-0.5.0-skill-lifecycle-governance\n"
                 "---\n\n"
-                "# ADR-0.5.0-f: skill-lifecycle-governance\n"
+                "# ADR-0.5.0-f: skill-lifecycle-governance\n",
+                encoding="utf-8",
             )
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
@@ -1259,7 +1267,8 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             adr_path = Path(config.paths.adrs) / "ADR-0.2.0-gate-verification.md"
             adr_path.parent.mkdir(parents=True, exist_ok=True)
             adr_path.write_text(
-                "---\nid: ADR-0.2.0-f\nlane: heavy\n---\n\n# ADR-0.2.0-f: Gate Verification\n"
+                "---\nid: ADR-0.2.0-f\nlane: heavy\n---\n\n# ADR-0.2.0-f: Gate Verification\n",
+                encoding="utf-8",
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(adr_created_event("ADR-0.2.0-f", "", "heavy"))
@@ -1590,7 +1599,8 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                         "",
                     ]
                 )
-                + "\n"
+                + "\n",
+                encoding="utf-8",
             )
 
             result = runner.invoke(main, ["status", "--json"])
@@ -1612,7 +1622,9 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             pool_dir = Path(config.paths.adrs) / "pool"
             pool_dir.mkdir(parents=True, exist_ok=True)
             pool_adr = pool_dir / "ADR-pool.sample.md"
-            pool_adr.write_text("---\nid: ADR-pool.sample\n---\n\n# ADR-pool.sample\n")
+            pool_adr.write_text(
+                "---\nid: ADR-pool.sample\n---\n\n# ADR-pool.sample\n", encoding="utf-8"
+            )
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(adr_created_event("ADR-pool.sample", "", "heavy"))
@@ -1636,7 +1648,9 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             pool_dir = Path(config.paths.adrs) / "pool"
             pool_dir.mkdir(parents=True, exist_ok=True)
             pool_adr = pool_dir / "ADR-pool.sample.md"
-            pool_adr.write_text("---\nid: ADR-pool.sample\n---\n\n# ADR-pool.sample\n")
+            pool_adr.write_text(
+                "---\nid: ADR-pool.sample\n---\n\n# ADR-pool.sample\n", encoding="utf-8"
+            )
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(adr_created_event("ADR-pool.sample", "", "heavy"))
@@ -1813,7 +1827,7 @@ class TestStatusEpicFilter(unittest.TestCase):
         if epic is not None:
             frontmatter += f"epic: {epic}\n"
         frontmatter += "---\n\n# ADR-pool." + slug + "\n"
-        (pool_dir / f"ADR-pool.{slug}.md").write_text(frontmatter)
+        (pool_dir / f"ADR-pool.{slug}.md").write_text(frontmatter, encoding="utf-8")
 
     @covers("REQ-0.0.18-04-05")
     def test_status_epic_flag_documented_in_help(self) -> None:

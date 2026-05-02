@@ -45,7 +45,8 @@ class TestAdrPromoteCommand(unittest.TestCase):
             "- Persist machine-readable stage state\n"
             "- Expose structured stage outputs\n\n"
             "## Non-Goals\n\n"
-            "- No external orchestrator\n"
+            "- No external orchestrator\n",
+            encoding="utf-8",
         )
         return pool_file
 

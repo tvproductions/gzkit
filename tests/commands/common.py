@@ -205,7 +205,7 @@ def _write_obpi(
                 "",
             ]
         )
-    path.write_text("\n".join(lines) + "\n")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 _uv_sync_patcher = patch("gzkit.commands.init_cmd._run_uv_sync", return_value=None)

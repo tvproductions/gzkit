@@ -119,7 +119,9 @@ class TestAttestSemantics(unittest.TestCase):
             pool_dir = Path(config.paths.adrs) / "pool"
             pool_dir.mkdir(parents=True, exist_ok=True)
             pool_adr = pool_dir / "ADR-pool.sample.md"
-            pool_adr.write_text("---\nid: ADR-pool.sample\n---\n\n# ADR-pool.sample\n")
+            pool_adr.write_text(
+                "---\nid: ADR-pool.sample\n---\n\n# ADR-pool.sample\n", encoding="utf-8"
+            )
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(adr_created_event("ADR-pool.sample", "", "heavy"))
@@ -167,7 +169,8 @@ class TestAttestSemantics(unittest.TestCase):
             obpi_file = obpis_dir / "OBPI-0.1.0-01-test.md"
             obpi_file.write_text(
                 "---\nid: OBPI-0.1.0-01-test\nparent: ADR-0.1.0-f\n"
-                "item: 1\nlane: lite\nstatus: Draft\n---\n\n# OBPI-0.1.0-01-test\n"
+                "item: 1\nlane: lite\nstatus: Draft\n---\n\n# OBPI-0.1.0-01-test\n",
+                encoding="utf-8",
             )
 
             result = runner.invoke(main, ["attest", "ADR-0.1.0-f", "--status", "completed"])
@@ -195,7 +198,8 @@ class TestAttestSemantics(unittest.TestCase):
             obpi_file = obpis_dir / "OBPI-0.1.0-01-test.md"
             obpi_file.write_text(
                 "---\nid: OBPI-0.1.0-01-test\nparent: ADR-0.1.0-f\n"
-                "item: 1\nlane: lite\nstatus: Draft\n---\n\n# OBPI-0.1.0-01-test\n"
+                "item: 1\nlane: lite\nstatus: Draft\n---\n\n# OBPI-0.1.0-01-test\n",
+                encoding="utf-8",
             )
 
             result = runner.invoke(

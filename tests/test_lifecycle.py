@@ -121,7 +121,7 @@ class TestLifecycleStateMachine(unittest.TestCase):
             sm = LifecycleStateMachine(ledger)
             sm.transition("ADR-0.16.0", "ADR", "Draft", "Proposed")
 
-            lines = ledger_path.read_text().strip().splitlines()
+            lines = ledger_path.read_text(encoding="utf-8").strip().splitlines()
             self.assertEqual(len(lines), 1)
 
             event = json.loads(lines[0])

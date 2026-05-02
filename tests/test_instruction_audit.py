@@ -40,10 +40,12 @@ class TestReachability(unittest.TestCase):
             root = Path(tmp)
             inst = root / ".github" / "instructions"
             inst.mkdir(parents=True)
-            (inst / "src.instructions.md").write_text(_instruction_file("src/**", "# Source rules"))
+            (inst / "src.instructions.md").write_text(
+                _instruction_file("src/**", "# Source rules"), encoding="utf-8"
+            )
             src = root / "src"
             src.mkdir()
-            (src / "main.py").write_text("print('hello')")
+            (src / "main.py").write_text("print('hello')", encoding="utf-8")
 
             errors = audit_instruction_reachability(root)
 
@@ -56,7 +58,7 @@ class TestReachability(unittest.TestCase):
             inst = root / ".github" / "instructions"
             inst.mkdir(parents=True)
             (inst / "missing.instructions.md").write_text(
-                _instruction_file("nonexistent/**", "# Missing target")
+                _instruction_file("nonexistent/**", "# Missing target"), encoding="utf-8"
             )
 
             errors = audit_instruction_reachability(root)
@@ -70,7 +72,9 @@ class TestReachability(unittest.TestCase):
             root = Path(tmp)
             inst = root / ".github" / "instructions"
             inst.mkdir(parents=True)
-            (inst / "global.instructions.md").write_text(_instruction_file("**/*", "# Global rule"))
+            (inst / "global.instructions.md").write_text(
+                _instruction_file("**/*", "# Global rule"), encoding="utf-8"
+            )
 
             errors = audit_instruction_reachability(root)
 
@@ -90,11 +94,11 @@ class TestReachability(unittest.TestCase):
             inst = root / ".github" / "instructions"
             inst.mkdir(parents=True)
             (inst / "multi.instructions.md").write_text(
-                _instruction_file("src/**,missing/**", "# Multi")
+                _instruction_file("src/**,missing/**", "# Multi"), encoding="utf-8"
             )
             src = root / "src"
             src.mkdir()
-            (src / "app.py").write_text("")
+            (src / "app.py").write_text("", encoding="utf-8")
 
             errors = audit_instruction_reachability(root)
 
@@ -111,7 +115,8 @@ class TestForeignReferences(unittest.TestCase):
             inst = root / ".github" / "instructions"
             inst.mkdir(parents=True)
             (inst / "clean.instructions.md").write_text(
-                _instruction_file("**/*", "# Clean gzkit rules\nNo foreign refs here.")
+                _instruction_file("**/*", "# Clean gzkit rules\nNo foreign refs here."),
+                encoding="utf-8",
             )
 
             errors = audit_foreign_references(root)
@@ -125,7 +130,7 @@ class TestForeignReferences(unittest.TestCase):
             inst = root / ".github" / "instructions"
             inst.mkdir(parents=True)
             (inst / "bad.instructions.md").write_text(
-                _instruction_file("**/*", "# Rules\nUse airlineops conventions.")
+                _instruction_file("**/*", "# Rules\nUse airlineops conventions."), encoding="utf-8"
             )
 
             errors = audit_foreign_references(root)
@@ -139,7 +144,7 @@ class TestForeignReferences(unittest.TestCase):
             inst = root / ".github" / "instructions"
             inst.mkdir(parents=True)
             (inst / "bad.instructions.md").write_text(
-                _instruction_file("**/*", "# Rules\nRun opsdev arb ruff.")
+                _instruction_file("**/*", "# Rules\nRun opsdev arb ruff."), encoding="utf-8"
             )
 
             errors = audit_foreign_references(root)
@@ -152,7 +157,7 @@ class TestForeignReferences(unittest.TestCase):
             root = Path(tmp)
             rules = root / ".claude" / "rules"
             rules.mkdir(parents=True)
-            (rules / "bad.md").write_text("# Rule\nReferences airlineops paths.")
+            (rules / "bad.md").write_text("# Rule\nReferences airlineops paths.", encoding="utf-8")
 
             errors = audit_foreign_references(root)
 
@@ -165,7 +170,7 @@ class TestForeignReferences(unittest.TestCase):
             inst = root / ".github" / "instructions"
             inst.mkdir(parents=True)
             (inst / "gzkit.instructions.md").write_text(
-                _instruction_file("**/*", "# gzkit-specific rules only")
+                _instruction_file("**/*", "# gzkit-specific rules only"), encoding="utf-8"
             )
 
             errors = audit_foreign_references(root)
@@ -189,9 +194,11 @@ class TestDrift(unittest.TestCase):
             rules.mkdir(parents=True)
 
             body = "# Global Rule\nContent here."
-            (inst / "global.instructions.md").write_text(_instruction_file("**/*", body))
+            (inst / "global.instructions.md").write_text(
+                _instruction_file("**/*", body), encoding="utf-8"
+            )
             # sync_claude_rules would produce body.lstrip("\n") for global
-            (rules / "global.md").write_text(body)
+            (rules / "global.md").write_text(body, encoding="utf-8")
 
             errors = audit_generated_surface_drift(root)
 
@@ -208,7 +215,7 @@ class TestDrift(unittest.TestCase):
             rules.mkdir(parents=True)
 
             (inst / "missing.instructions.md").write_text(
-                _instruction_file("**/*", "# Missing rule")
+                _instruction_file("**/*", "# Missing rule"), encoding="utf-8"
             )
             # Don't create the rule file
 
@@ -266,9 +273,9 @@ class TestDrift(unittest.TestCase):
             rules.mkdir(parents=True)
 
             (inst / "drift.instructions.md").write_text(
-                _instruction_file("**/*", "# Original content")
+                _instruction_file("**/*", "# Original content"), encoding="utf-8"
             )
-            (rules / "drift.md").write_text("# Modified content")
+            (rules / "drift.md").write_text("# Modified content", encoding="utf-8")
 
             errors = audit_generated_surface_drift(root)
 
@@ -285,7 +292,7 @@ class TestDrift(unittest.TestCase):
             rules.mkdir(parents=True)
 
             # Rule file with no source instruction
-            (rules / "orphan.md").write_text("# Orphan rule")
+            (rules / "orphan.md").write_text("# Orphan rule", encoding="utf-8")
 
             errors = audit_generated_surface_drift(root)
 
@@ -301,7 +308,9 @@ class TestDrift(unittest.TestCase):
             rules.mkdir(parents=True)
 
             body = "# Scoped Rule"
-            (inst / "scoped.instructions.md").write_text(_instruction_file("src/**", body))
+            (inst / "scoped.instructions.md").write_text(
+                _instruction_file("src/**", body), encoding="utf-8"
+            )
             # _extract_body_after_frontmatter returns "\n# Scoped Rule" (line after ---)
             # sync_claude_rules produces scoped format: ---\npaths\n---\n + extracted_body
             content = (inst / "scoped.instructions.md").read_text(encoding="utf-8")
@@ -309,7 +318,7 @@ class TestDrift(unittest.TestCase):
 
             extracted = _extract_body_after_frontmatter(content)
             expected = '---\npaths:\n  - "src/**"\n---\n' + extracted
-            (rules / "scoped.md").write_text(expected)
+            (rules / "scoped.md").write_text(expected, encoding="utf-8")
 
             errors = audit_generated_surface_drift(root)
 
@@ -324,7 +333,8 @@ class TestDrift(unittest.TestCase):
             rules.mkdir(parents=True)
 
             (inst / "excluded.instructions.md").write_text(
-                _instruction_file("**/*", "# Excluded", exclude_agent="coding-agent")
+                _instruction_file("**/*", "# Excluded", exclude_agent="coding-agent"),
+                encoding="utf-8",
             )
             # No rule file should be expected for excluded instructions
 
@@ -343,12 +353,14 @@ class TestCodeContract(unittest.TestCase):
             inst = root / ".github" / "instructions"
             inst.mkdir(parents=True)
             (inst / "models.instructions.md").write_text(
-                _instruction_file("**/*", "# Models\nUse Pydantic BaseModel only.")
+                _instruction_file("**/*", "# Models\nUse Pydantic BaseModel only."),
+                encoding="utf-8",
             )
             src = root / "src"
             src.mkdir()
             (src / "models.py").write_text(
-                "from pydantic import BaseModel\n\nclass Foo(BaseModel):\n    pass\n"
+                "from pydantic import BaseModel\n\nclass Foo(BaseModel):\n    pass\n",
+                encoding="utf-8",
             )
 
             errors = audit_code_contract_mismatches(root)
@@ -361,12 +373,14 @@ class TestCodeContract(unittest.TestCase):
             inst = root / ".github" / "instructions"
             inst.mkdir(parents=True)
             (inst / "models.instructions.md").write_text(
-                _instruction_file("**/*", "# Models\nUse Pydantic BaseModel only.")
+                _instruction_file("**/*", "# Models\nUse Pydantic BaseModel only."),
+                encoding="utf-8",
             )
             src = root / "src"
             src.mkdir()
             (src / "bad_model.py").write_text(
-                "from dataclasses import dataclass\n\n@dataclass\nclass Bar:\n    x: int\n"
+                "from dataclasses import dataclass\n\n@dataclass\nclass Bar:\n    x: int\n",
+                encoding="utf-8",
             )
 
             errors = audit_code_contract_mismatches(root)
@@ -408,14 +422,14 @@ class TestOrchestrator(unittest.TestCase):
 
             # Reachability error: unreachable glob
             (inst / "unreachable.instructions.md").write_text(
-                _instruction_file("nowhere/**", "# Unreachable")
+                _instruction_file("nowhere/**", "# Unreachable"), encoding="utf-8"
             )
             # Foreign reference error
             (inst / "foreign.instructions.md").write_text(
-                _instruction_file("**/*", "# Uses airlineops paths")
+                _instruction_file("**/*", "# Uses airlineops paths"), encoding="utf-8"
             )
             # Orphan rule (drift error)
-            (rules / "orphan.md").write_text("# Orphan")
+            (rules / "orphan.md").write_text("# Orphan", encoding="utf-8")
 
             errors = audit_instructions(root)
 
@@ -433,8 +447,10 @@ class TestOrchestrator(unittest.TestCase):
             rules.mkdir(parents=True)
 
             body = "# Clean Rule"
-            (inst / "clean.instructions.md").write_text(_instruction_file("**/*", body))
-            (rules / "clean.md").write_text(body)
+            (inst / "clean.instructions.md").write_text(
+                _instruction_file("**/*", body), encoding="utf-8"
+            )
+            (rules / "clean.md").write_text(body, encoding="utf-8")
 
             errors = audit_instructions(root)
 
