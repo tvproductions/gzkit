@@ -91,7 +91,7 @@ added at the same time as the test file came into existence.
 ## Shortfalls (surfaced for operator routing)
 
 Three findings worth distinct attention. Each is *characterized*, not
-remediated — Layer-2 reads ledger proof and surfaces; it does not
+remediated — as Layer 2 I read ledger proof and surface; I do not
 override Layer-1's verdict by re-reading test source and forming a new
 verdict (per § Trust Chain).
 
@@ -119,16 +119,16 @@ from Layer-2 evidence alone:
   with the decorators in the same commit that received the OBPI's
   closing receipt.
 
-Sampled evidence (`tests/commands/test_issue_cmd.py:30-101`) shows
-assertions that pin REQ-derived semantics (e.g. `derive_consumer_slug()`
-returning the correct slug across SSH, HTTPS, and no-suffix git remote
-forms) rather than string output from a prior implementation. **This is
-one class out of 79 sites; assertion-shape across the OBPI-05 file
-(`tests/governance/test_audit_check_covers_backfill.py`, 1086 lines,
-the bulk of the count) was not sampled.** Forming a verdict from the
+I sampled `tests/commands/test_issue_cmd.py:30-101` and saw assertions
+that pin REQ-derived semantics (e.g. `derive_consumer_slug()` returning
+the correct slug across SSH, HTTPS, and no-suffix git remote forms)
+rather than string output from a prior implementation. **That is one
+class out of 79 sites; I did not sample assertion-shape across the
+OBPI-05 file (`tests/governance/test_audit_check_covers_backfill.py`,
+1086 lines, the bulk of the count).** Forming a verdict from the
 sampled class would be the same confident-from-thin-evidence shape this
-ADR's taxonomy names — and would be Layer-2 over-ruling Layer-1, which
-is the trust-chain poisoning shape gzkit doctrine names.
+ADR's taxonomy names — and would be me as Layer-2 over-ruling Layer-1,
+which is the trust-chain poisoning shape gzkit doctrine names.
 
 ### Shortfall 3 — Self-referential signal worth doctrine-level attention
 
@@ -155,23 +155,23 @@ Two possible readings, both operator-relevant:
 
 Either reading routes to operator judgment, not to Layer-2 override.
 
-## What this audit explicitly did NOT do
+## What I explicitly did NOT do
 
-- **Did not run `audit-begin`/`audit-end`.** No co-presence marker was
-  written. The ceremony pair is for receipt emission; FAIL never reaches
-  receipt emission.
-- **Did not emit a `validated` receipt.** Per skill doctrine (Audit
-  fails → no receipt), the agent does not relay an attestation when
-  the audit cannot complete.
-- **Did not mark the ADR `Status: Validated`.** Lifecycle remains
+- **I did not run `audit-begin`/`audit-end`.** No co-presence marker
+  was written. The ceremony pair is for receipt emission; FAIL never
+  reaches receipt emission.
+- **I did not emit a `validated` receipt.** Per skill doctrine (Audit
+  fails → no receipt), I do not relay an attestation when the audit
+  cannot complete.
+- **I did not mark the ADR `Status: Validated`.** Lifecycle remains
   `Pending` (Completed but not Validated). `gz adr report ADR-0.0.23`
   will continue to show `Lifecycle: Pending`.
-- **Did not perform Step 3 Feature Demonstration.** The skill's
+- **I did not perform Step 3 Feature Demonstration.** The skill's
   mandatory Demonstrate Value step requires a passing Layer-2 verdict
   to proceed; capability demonstration without a passing audit would
   conflate verification (mechanical state PASS) with validation
   (Layer-2 trust gate FAIL).
-- **Did not re-read Layer-1 verification source for 79 sites.** That
+- **I did not re-read Layer-1 verification source for 79 sites.** That
   scope is Layer-1 work; performing it from `/gz-adr-audit` would be
   trust-chain poisoning. Operator routes the disposition.
 
@@ -202,19 +202,19 @@ These are *possible routes*, not pre-empted recommendations:
 
 ## Attestation
 
-Audit completed by agent (Claude Opus 4.7, model ID `claude-opus-4-7[1m]`).
-No human attestation relayed; FAIL state precluded receipt emission.
-Operator: Jeffry Babb. Date: 2026-05-02.
+I (Claude Opus 4.7, model ID `claude-opus-4-7[1m]`) ran this audit on
+behalf of Jeffry Babb on 2026-05-02. I did not relay any human
+attestation; the FAIL state precluded receipt emission.
 
-The agent's signature on this AUDIT.md attests only to:
+My signature on this AUDIT.md attests only to:
 
 - The Layer-1 mechanical state (unittest, mkdocs, gates) being PASS as
   captured in `proofs/`.
 - The Layer-2 audit-check exit-3 verdict being captured in
   `proofs/audit-check.txt`.
 - The above shortfalls being surfaced from observed evidence rather
-  than from a Layer-2 verdict overriding Layer-1.
+  than from me as Layer 2 overriding Layer-1.
 
-It does **not** attest the ADR as Validated; that requires Layer-1
-PASS plus operator-relayed Gate 5 attestation, neither of which is
-available at this time.
+I do **not** attest the ADR as Validated; that requires Layer-1 PASS
+plus operator-relayed Gate 5 attestation, neither of which is available
+at this time.
