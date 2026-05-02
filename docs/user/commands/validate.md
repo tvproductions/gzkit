@@ -32,8 +32,54 @@ from `artifacts/receipts/`, and asserts each cited receipt exists, has
 `exit_status == 0`, and matches the category named adjacent to the citation.
 Pair with `--lane` (default `heavy`) and `--kind` (default `feature`) so the
 zero-receipts policy fails closed on heavy or foundation work and warns on
-lite-non-foundation. Authored under ADR-0.0.24-attestation-receipt-binding;
-full operator prose lands in OBPI-03.
+lite-non-foundation. Authored under
+[ADR-0.0.24-attestation-receipt-binding](../../design/adr/foundation/ADR-0.0.24-attestation-receipt-binding/ADR-0.0.24-attestation-receipt-binding.md);
+the gate's invocation point, the `arb-meta-receipt-bind-…` self-attesting
+receipt family, and the failure-mode taxonomy live in
+[`docs/governance/arb-middleware.md` § Receipt-binding gate](../../governance/arb-middleware.md#receipt-binding-gate).
+
+The same gate fires pre-emission inside `gz obpi complete --attestation-text …`
+and `gz adr emit-receipt … --attestor …`, so an attestation string that fails
+this scope on heavy or foundation work will also fail the corresponding
+completion / receipt-emission command.
+
+#### Failure modes
+
+| Verdict | Cause |
+|---------|-------|
+| `no_ids` | Attestation contains zero `arb-…` citations |
+| `missing` | A cited receipt file is not present in `artifacts/receipts/` |
+| `status_mismatch` | A cited receipt has `exit_status != 0` |
+| `claim_mismatch` | A cited receipt's category does not match the category named adjacent to the citation (e.g. `lint:` adjacent to an `arb-step-typecheck-…` receipt) |
+
+On heavy lane or foundation kind, any verdict other than clean exits 3
+(fail-closed). On lite lane with feature kind and no security sensitivity,
+the same verdicts emit a warning and the attestation still records as
+narrative-only.
+
+#### Examples
+
+Heavy / foundation, citation resolves cleanly:
+
+```bash
+$ uv run gz validate --attestation-receipts \
+    "Tests pass — full unittest sweep clean (lint: receipt arb-ruff-008dda0e47384e89bea69e3b8b5cb6d4)" \
+    --lane heavy --kind foundation
+✓ 1 attestation receipt(s) resolved.
+$ echo $?
+0
+```
+
+Heavy / foundation, narrative-only attestation (zero citations) — fail-closed:
+
+```bash
+$ uv run gz validate --attestation-receipts \
+    "Implementation complete; all checks green." \
+    --lane heavy --kind foundation
+❌ No ARB receipt IDs cited (heavy or foundation: fail-closed).
+$ echo $?
+3
+```
 
 ### `--lane`
 

@@ -3,7 +3,7 @@ id: OBPI-0.0.24-03-doc-updates
 parent: ADR-0.0.24-attestation-receipt-binding
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.24-03-doc-updates: AGENTS.md + arb-middleware.md updates
@@ -54,10 +54,21 @@ Update AGENTS.md § Attestation prose to reflect that receipt binding is now mec
 
 ## Discovery Checklist
 
-- [ ] OBPI-0.0.24-01 + OBPI-0.0.24-02 evidence — confirm validator and gate are landed
-- [ ] AGENTS.md § Attestation, § Lane behavior, § Canonical invocations
-- [ ] `docs/governance/arb-middleware.md` existing structure
-- [ ] `.claude/rules/gate5-runbook-code-covenant.md` § Required updates when behavior changes
+**Prerequisites**
+
+- OBPI-0.0.24-01 (validator scope) is `attested_completed` per `gz adr status ADR-0.0.24` — confirms `gz validate --attestation-receipts` exists and parses inline `arb-(ruff|step-<name>)-[a-f0-9]{32}` IDs against `artifacts/receipts/`.
+- OBPI-0.0.24-02 (wire-into-completion) is `attested_completed` per `gz adr status ADR-0.0.24` — confirms the gate fires pre-emission inside `gz obpi complete` and `gz adr emit-receipt` with lane/kind-conditional fail/warn behavior and emits the `arb-meta-receipt-bind-…` self-attesting receipt family.
+- Real ARB receipts exist in `artifacts/receipts/` for the EXAMPLES block — `arb-ruff-008dda0e47384e89bea69e3b8b5cb6d4.json` confirmed present via session probe; suitable for the heavy/foundation PASS example.
+- `gz cli audit` baseline is currently green (90/90 commands fully covered) so the manpage edit can be verified non-regressing.
+- `mkdocs build --strict` baseline is currently green so the doc edits can be verified non-regressing.
+
+**Existing Code**
+
+- `AGENTS.md` § Attestation — current Lane behavior block (~line 356) still uses pre-mechanical narrative-trust language ("Citing agent must verify the receipt exists and status matches the claim"); the surface to rewrite per REQ-01/02 lives in two places: the Lane behavior bullets and the Receipt IDs sentence directly above § Anti-patterns.
+- `docs/governance/arb-middleware.md` — current structure (Core Concept → Available commands → Receipt schema and storage → Exit codes → Rationale) has no Receipt-binding gate section; insertion point for REQ-03 is between `## Receipt schema and storage` and `## Exit codes` — preserves the schema → storage → enforcement → consumption flow.
+- `docs/user/commands/validate.md` — current `### --attestation-receipts` section (lines 26-44) carries a placeholder ("full operator prose lands in OBPI-03") and no EXAMPLES block; this is the surface to expand per REQ-04 — the canonical home for `gz validate` documentation in this repo (no `docs/user/manpages/gz-validate.md` exists).
+- `docs/user/runbook.md` step 4b heavy-lane ARB receipts block (~line 163) — names `AGENTS.md` § Attestation but not the new mechanical gate; targeted one-line note insertion.
+- `.claude/rules/gate5-runbook-code-covenant.md` — already binding doctrine that documentation tracks behavior in the same patch set; consulted for coverage scope, no edits required.
 
 ## Quality Gates
 
@@ -150,13 +161,40 @@ grep -n "attestation-receipts" AGENTS.md docs/governance/arb-middleware.md docs/
 
 ### Key Proof
 
+
+Heavy/foundation gate accepts a real receipt citation:
+
+```
+$ uv run gz validate --attestation-receipts \
+    "Tests pass — full unittest sweep clean (lint: receipt arb-ruff-008dda0e47384e89bea69e3b8b5cb6d4)" \
+    --lane heavy --kind foundation
+✓ 1 attestation receipt(s) resolved.
+$ echo $?
+0
+```
+
+Heavy/foundation gate rejects narrative-only attestation (fail-closed):
+
+```
+$ uv run gz validate --attestation-receipts \
+    "Implementation complete; all checks green." \
+    --lane heavy --kind foundation
+❌ No ARB receipt IDs cited (heavy or foundation: fail-closed).
+$ echo $?
+3
+```
+
+These are the two EXAMPLES now pasted verbatim into `docs/user/commands/validate.md` § `--attestation-receipts` § Examples. Heavy-lane ARB evidence for this OBPI: lint receipt `arb-ruff-7b1d21ab042d4c0d90097e8c6ba88fa9` (exit 0); docs strict build receipt `arb-step-mkdocs-01fb9557cf9f4e31a6f221f4fdcb06ff` (exit 0); `gz cli audit` clean (90/90); `gz validate --documents` clean.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added: n/a (docs)
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files modified: `AGENTS.md` (§ Attestation Lane behavior block + Receipt IDs sentence rewritten to cite the mechanical `gz validate --attestation-receipts` gate and the `arb-meta-receipt-bind-…` family); `docs/governance/arb-middleware.md` (new `## Receipt-binding gate` subsection with invocation point, meta-receipt family, failure-mode table, lane/kind matrix, ADR-0.0.24 cross-link); `docs/user/commands/validate.md` (`--attestation-receipts` section expanded with failure-mode table and `#### Examples` block carrying two real session-captured PASS/FAIL invocations); `docs/user/runbook.md` (step 4b note that citation is mechanically verified inside `gz obpi complete` / `gz adr emit-receipt`).
+- Files created: `.claude/plans/OBPI-0.0.24-03-doc-updates.md` (approved plan, plan-audit verdict PASS).
+- Tests added: n/a (docs-only OBPI; BDD coverage deferred to OBPI-0.0.24-04 per parent ADR checklist item #4).
+- Date completed: 2026-05-02.
+- Attestation status: operator attested in Stage 4 ("attest completed"); foundation+heavy attestation rigor satisfied via `--attestor-present` co-presence proxy (active pipeline marker present per GHI #292).
+- Defects noted: none.
 
 ## Tracked Defects
 
@@ -164,14 +202,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` (heavy + foundation requires human)
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.24-03 doc-updates closes the docs-side gap of ADR-0.0.24's mechanical receipt-binding contract: AGENTS.md § Attestation now cites `gz validate --attestation-receipts` as the mechanical gate (no longer narrative discipline), `docs/governance/arb-middleware.md` carries the new § Receipt-binding gate subsection with invocation point + `arb-meta-receipt-bind-…` family + missing/status_mismatch/claim_mismatch failure modes, `docs/user/commands/validate.md` carries two real session-captured PASS/FAIL EXAMPLES (no placeholders, REQ-08), and `docs/user/runbook.md` step 4b notes the gate is mechanically enforced inside `gz obpi complete` / `gz adr emit-receipt`. Heavy-lane ARB evidence: lint clean (lint: receipt arb-ruff-7b1d21ab042d4c0d90097e8c6ba88fa9), docs strict build clean (mkdocs: receipt arb-step-mkdocs-01fb9557cf9f4e31a6f221f4fdcb06ff). `gz cli audit` clean (90/90 commands fully covered, REQ-05); `gz validate --documents` clean (REQ-06); PII grep clean across all four edited files (REQ-07). 4 files modified, 1 plan file created, 0 tests (docs-only; BDD deferred to OBPI-04 per parent ADR checklist).
+- Date: 2026-05-02
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-02
 
 **Evidence Hash:** -
