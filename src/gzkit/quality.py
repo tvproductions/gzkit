@@ -767,7 +767,7 @@ def _expand_allowed_paths(allowed_paths: list[str], project_root: Path) -> list[
         try:
             for matched in project_root.glob(path_str):
                 if matched.is_file():
-                    expanded.append(str(matched.relative_to(project_root)))
+                    expanded.append(matched.relative_to(project_root).as_posix())
         except (ValueError, OSError):
             continue
     return expanded
