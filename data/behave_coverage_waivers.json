@@ -1605,19 +1605,7 @@
       "rationale": "draft-brief-pre-implementation",
       "status_at_landing": "Draft"
     },
-    "OBPI-0.0.24-01-validator-scope": {
-      "rationale": "adr-0.0.24-0.0.25-uncommitted-draft",
-      "status_at_landing": "draft"
-    },
-    "OBPI-0.0.24-02-wire-into-completion": {
-      "rationale": "adr-0.0.24-0.0.25-uncommitted-draft",
-      "status_at_landing": "draft"
-    },
     "OBPI-0.0.24-03-doc-updates": {
-      "rationale": "adr-0.0.24-0.0.25-uncommitted-draft",
-      "status_at_landing": "draft"
-    },
-    "OBPI-0.0.24-04-bdd-coverage": {
       "rationale": "adr-0.0.24-0.0.25-uncommitted-draft",
       "status_at_landing": "draft"
     },
