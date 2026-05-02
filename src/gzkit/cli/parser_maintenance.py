@@ -507,6 +507,27 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Same opsdev source path across parent ADRs needs paired_with: (GHI #376)",
     )
+    p_validate.add_argument(
+        "--attestation-receipts",
+        dest="attestation_receipts",
+        default=None,
+        metavar="<text|@file>",
+        help="Validate ARB receipt citations in an attestation string (ADR-0.0.24)",
+    )
+    p_validate.add_argument(
+        "--lane",
+        dest="attestation_lane",
+        default="heavy",
+        choices=("heavy", "lite"),
+        help="Lane for --attestation-receipts (default: heavy)",
+    )
+    p_validate.add_argument(
+        "--kind",
+        dest="attestation_kind",
+        default="feature",
+        choices=("foundation", "feature"),
+        help="Kind for --attestation-receipts (default: feature)",
+    )
     add_json_flag(p_validate)
     p_validate.set_defaults(
         func=lambda a: _lazy("validate")(
@@ -549,6 +570,9 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_sensitivity=a.check_sensitivity or a.check_audits,
             sensitivity_explain=(a.frontmatter_explain if a.check_sensitivity else None),
             check_absorption_duplicates=a.check_absorption_duplicates,
+            attestation_receipts=a.attestation_receipts,
+            attestation_lane=a.attestation_lane,
+            attestation_kind=a.attestation_kind,
             as_json=a.as_json,
             frontmatter_adr=a.frontmatter_adr,
             frontmatter_explain=(None if a.check_sensitivity else a.frontmatter_explain),

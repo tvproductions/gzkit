@@ -47,7 +47,7 @@ Author behave scenarios that exercise the receipt-binding gate end-to-end agains
 6. REQUIREMENT: `uv run -m behave features/attestation_receipt_binding.feature` exits 0 with all scenarios passing.
 7. REQUIREMENT: NEVER spawn real `git` or `uv sync` — those are out of scope; this feature exercises CLI semantics only.
 8. REQUIREMENT: NEVER include the operator's personal email in scenario text or fixtures.
-9. REQUIREMENT: TTY + `ATTEST` interactive flow is exercised in scenarios that close foundation/heavy briefs (mock the TTY at the appropriate boundary).
+9. REQUIREMENT: TTY + `ATTEST` interactive flow is exercised in scenarios that close foundation/heavy briefs. Mock at the subprocess boundary using a `pexpect`-shaped fixture that feeds `ATTEST\n` to the spawned `gz obpi complete` process — DO NOT patch `_enforce_human_attestation_authenticity`'s PTY check internally; the BDD tier is end-to-end and must traverse the real PTY enforcement path. (Unit-tier patching of the PTY check is OBPI-02's surface, not this OBPI's.)
 
 > STOP-on-BLOCKERS: if OBPI-01, OBPI-02, OBPI-03 have not landed, STOP — there is nothing to exercise end-to-end.
 

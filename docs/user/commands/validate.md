@@ -11,6 +11,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--requirements] [--commit-trailers]
             [--taxonomy] [--chores-layout]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
+            [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
 ```
 
 ## Description
@@ -21,6 +22,26 @@ supplied, the manifest, documents, surfaces, ledger, instructions, briefs, and
 personas scopes all run. The `--interviews`, `--decomposition`,
 `--requirements`, and `--commit-trailers` scopes are opt-in and only run when
 explicitly requested.
+
+### `--attestation-receipts`
+
+Validate ARB receipt citations in an attestation string. Argument is either
+literal text or `@path` to a file whose content is the attestation. The scope
+parses inline `arb-(ruff|step-<name>)-[a-f0-9]{32}` IDs, reads each receipt
+from `artifacts/receipts/`, and asserts each cited receipt exists, has
+`exit_status == 0`, and matches the category named adjacent to the citation.
+Pair with `--lane` (default `heavy`) and `--kind` (default `feature`) so the
+zero-receipts policy fails closed on heavy or foundation work and warns on
+lite-non-foundation. Authored under ADR-0.0.24-attestation-receipt-binding;
+full operator prose lands in OBPI-03.
+
+### `--lane`
+
+Lane axis for `--attestation-receipts`: `heavy` (default) or `lite`.
+
+### `--kind`
+
+Kind axis for `--attestation-receipts`: `foundation` or `feature` (default).
 
 ### `--requirements`
 
