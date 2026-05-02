@@ -1,0 +1,4 @@
+❌ Attestation receipt validation failed (1 entry):
+  →  arb-ruff-deadbeef1234567890abcdef00000000
+      no receipt file at arb-ruff-deadbeef1234567890abcdef00000000.json
+exit=3

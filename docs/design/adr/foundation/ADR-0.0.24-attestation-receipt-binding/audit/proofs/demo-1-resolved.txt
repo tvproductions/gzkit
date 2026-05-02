@@ -1,0 +1,2 @@
+✓ 1 attestation receipt(s) resolved.
+exit=0

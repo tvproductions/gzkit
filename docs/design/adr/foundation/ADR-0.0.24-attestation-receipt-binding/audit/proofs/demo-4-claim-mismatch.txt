@@ -1,0 +1,4 @@
+❌ Attestation receipt validation failed (1 entry):
+  →  arb-step-unittest-74aad395ecee4b81910d50b3f61363c1
+      cited 'lint' but receipt is 'unittest'
+exit=3
