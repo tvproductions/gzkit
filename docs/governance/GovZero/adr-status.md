@@ -7,7 +7,7 @@ Status: Active
 
 Source-of-truth: filesystem under `docs/design/adr/{foundation,pre-release}/`; this table is a Layer 3 derived view per `docs/governance/state-doctrine.md`. Regenerate via `gz register-adrs` (which calls `regenerate_adr_status_md` after ledger reconciliation); drift is fail-closed by `gz validate --adr-status-fresh`.
 
-Last regenerated: 2026-04-30 (count: 68 ADRs).
+Last regenerated: 2026-05-02 (count: 68 ADRs).
 
 | ID | Title | Kind | Lane | Status | Date | Path |
 |---|---|---|---|---|---|---|
@@ -58,7 +58,7 @@ Last regenerated: 2026-04-30 (count: 68 ADRs).
 | [ADR-0.22.0-task-level-governance](../../design/adr/pre-release/ADR-0.22.0-task-level-governance/ADR-0.22.0-task-level-governance.md) | Task-Level Governance | feature | heavy | Validated | 2026-03-20 | `design/adr/pre-release/ADR-0.22.0-task-level-governance/ADR-0.22.0-task-level-governance.md` |
 | [ADR-0.24.0-skill-documentation-contract](../../design/adr/pre-release/ADR-0.24.0-skill-documentation-contract/ADR-0.24.0-skill-documentation-contract.md) | Skill Documentation Contract | feature | lite | Validated | 2026-03-21 | `design/adr/pre-release/ADR-0.24.0-skill-documentation-contract/ADR-0.24.0-skill-documentation-contract.md` |
 | [ADR-0.25.0-core-infrastructure-pattern-absorption](../../design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/ADR-0.25.0-core-infrastructure-pattern-absorption.md) | Core Infrastructure Pattern Absorption | feature | heavy | Validated | 2026-03-21 | `design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/ADR-0.25.0-core-infrastructure-pattern-absorption.md` |
-| [ADR-0.26.0-governance-library-module-absorption](../../design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/ADR-0.26.0-governance-library-module-absorption.md) | Governance Library Module Absorption | feature | heavy | Pending | 2026-03-21 | `design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/ADR-0.26.0-governance-library-module-absorption.md` |
+| [ADR-0.26.0-governance-library-module-absorption](../../design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/ADR-0.26.0-governance-library-module-absorption.md) | Governance Library Module Absorption | feature | heavy | Validated | 2026-03-21 | `design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/ADR-0.26.0-governance-library-module-absorption.md` |
 | [ADR-0.27.0-arb-receipt-system-absorption](../../design/adr/pre-release/ADR-0.27.0-arb-receipt-system-absorption/ADR-0.27.0-arb-receipt-system-absorption.md) | ARB Receipt System Absorption | feature | heavy | Pending | 2026-03-21 | `design/adr/pre-release/ADR-0.27.0-arb-receipt-system-absorption/ADR-0.27.0-arb-receipt-system-absorption.md` |
 | [ADR-0.28.0-chores-system-maturity-absorption](../../design/adr/pre-release/ADR-0.28.0-chores-system-maturity-absorption/ADR-0.28.0-chores-system-maturity-absorption.md) | Chores System Maturity Absorption | feature | heavy | Pending | 2026-03-21 | `design/adr/pre-release/ADR-0.28.0-chores-system-maturity-absorption/ADR-0.28.0-chores-system-maturity-absorption.md` |
 | [ADR-0.29.0-task-management-system-absorption](../../design/adr/pre-release/ADR-0.29.0-task-management-system-absorption/ADR-0.29.0-task-management-system-absorption.md) | Task Management System Absorption | feature | heavy | Pending | 2026-03-21 | `design/adr/pre-release/ADR-0.29.0-task-management-system-absorption/ADR-0.29.0-task-management-system-absorption.md` |
