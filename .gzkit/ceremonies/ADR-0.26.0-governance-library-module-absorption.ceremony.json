@@ -1,0 +1,67 @@
+{
+  "adr_id": "ADR-0.26.0-governance-library-module-absorption",
+  "current_step": 10,
+  "is_foundation": false,
+  "started_at": "2026-05-02T01:58:21Z",
+  "updated_at": "2026-05-02T02:19:18Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-05-02T01:58:21Z",
+      "acknowledged_at": "2026-05-02T02:10:20Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-05-02T02:10:20Z",
+      "acknowledged_at": "2026-05-02T02:11:38Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-05-02T02:11:38Z",
+      "acknowledged_at": "2026-05-02T02:13:23Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-05-02T02:13:23Z",
+      "acknowledged_at": "2026-05-02T02:14:40Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-05-02T02:14:40Z",
+      "acknowledged_at": "2026-05-02T02:15:39Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-05-02T02:15:39Z",
+      "acknowledged_at": "2026-05-02T02:17:50Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-05-02T02:17:50Z",
+      "acknowledged_at": "2026-05-02T02:18:36Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-05-02T02:18:36Z",
+      "acknowledged_at": "2026-05-02T02:18:43Z"
+    },
+    {
+      "step": 9,
+      "presented_at": "2026-05-02T02:18:43Z",
+      "acknowledged_at": "2026-05-02T02:19:18Z"
+    },
+    {
+      "step": 10,
+      "presented_at": "2026-05-02T02:19:18Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz adr status ADR-0.26.0-governance-library-module-absorption --json"
+  ],
+  "walkthrough_index": 0,
+  "attestation": "attest completed — ADR-0.26.0 governance-library-module-absorption closeout: all 12 OBPIs completed and human-attested by g0 (OBPI-0.26.0-01 through -12), per-module decisions recorded with code-level rationale evaluating ~6,200 lines of opsdev/lib across 12 modules; closeout ceremony walkthrough green — lint arb-ruff-9453b996c0424e49a0de093608f7ca9d, typecheck arb-step-typecheck-68c819510879480da0e9159264fe5d32, unittest arb-step-unittest-24779d6c71194f3eae87b4b3a731e3c2, mkdocs arb-step-mkdocs-0d69e336977a4624a738ee22484e7e19; gz validate --documents pass; gz adr status confirms 12/12 OBPIs linked_in_ledger=true, completed=true, human_attestation.valid=true.",
+  "completed_at": null,
+  "attempt": 1,
+  "paused_at": null
+}

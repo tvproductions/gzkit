@@ -1,5 +1,61 @@
 # gzkit Release Notes
 
+## v0.26.0 (2026-05-01)
+
+**ADR:** ADR-0.26.0-governance-library-module-absorption
+
+Item-by-item evaluation and absorption of 12 opsdev/lib governance modules
+(~6,200 lines) into gzkit. Each OBPI records a per-module decision (Absorb,
+Confirm, or Exclude) backed by code-level subtraction-test evidence.
+
+### Delivered
+
+- **OBPI-0.26.0-01-adr-management** — Confirm. opsdev/lib/adr.py (1,588 L)
+  evaluated against gzkit's distributed ADR management surface; gzkit superior
+  across 17 dimensions (Pydantic frozen models vs plain dicts, typed AdrId vs
+  4-digit regex, kind/semver binding, 5-gate pipeline, event-sourced ledger,
+  ARB receipts).
+- **OBPI-0.26.0-02-references** — decision recorded with code-level rationale
+  for cross-reference / link management surface.
+- **OBPI-0.26.0-03-adr-recon** — decision recorded comparing opsdev's
+  Layer-3 markdown-table patching to gzkit's Layer-1 rewriting + Layer-3
+  regeneration via `gz obpi reconcile`, `gz frontmatter reconcile`,
+  `gz register-adrs`, and `governance/adr_status_index.py`.
+- **OBPI-0.26.0-04-adr-governance** — decision recorded against gzkit's
+  ledger-centric policy enforcement surface.
+- **OBPI-0.26.0-05-ledger-schema** — decision recorded comparing opsdev's
+  dedicated schema module to gzkit's inline schema in `src/gzkit/ledger.py`.
+- **OBPI-0.26.0-06-drift-detection** — decision recorded for governance
+  drift-detection surface.
+- **OBPI-0.26.0-07-adr-traceability** — decision recorded for
+  ADR-to-artifact traceability-chain construction.
+- **OBPI-0.26.0-08-validation-receipt** — decision recorded comparing
+  opsdev's typed `ValidationAnchor` / `ValidationReceipt` to gzkit's
+  distributed receipt surface.
+- **OBPI-0.26.0-09-adr-audit-ledger** — Confirm reaffirmed against
+  ADR-0.25.0 precedent; gzkit's distributed Gate 5 audit surface
+  (commands/adr_audit.py 758 L + validate_pkg/ledger_check.py 379 L +
+  commands/obpi_audit_cmd.py 423 L = ~1,560 L) preserves the verdict.
+- **OBPI-0.26.0-10-cli-audit-lib** — Confirm reaffirmed; gzkit's
+  `commands/cli_audit.py` + `doc_coverage/` package (~1,300 L) preserves
+  the ADR-0.25.0 verdict.
+- **OBPI-0.26.0-11-artifacts-lib** — Exclude reaffirmed; gzkit's
+  `registry.py` + `sync.py` artifact-management surface preserves the
+  ADR-0.25.0 verdict.
+- **OBPI-0.26.0-12-docs-lib** — Confirm reaffirmed; gzkit's
+  `doc_coverage/` package (~802 L) plus `mkdocs build --strict`
+  integration preserves the ADR-0.25.0 verdict.
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied. Per-OBPI human attestation by g0 on
+all 12 briefs. Closeout walkthrough green: lint
+`arb-ruff-9453b996c0424e49a0de093608f7ca9d`, typecheck
+`arb-step-typecheck-68c819510879480da0e9159264fe5d32`, unittest
+`arb-step-unittest-24779d6c71194f3eae87b4b3a731e3c2`, mkdocs
+`arb-step-mkdocs-0d69e336977a4624a738ee22484e7e19`. `gz validate --documents`
+clean.
+
 ## v0.25.19 (2026-04-30)
 
 Maintenance and governance-hardening release closing 17 defects and enhancements
