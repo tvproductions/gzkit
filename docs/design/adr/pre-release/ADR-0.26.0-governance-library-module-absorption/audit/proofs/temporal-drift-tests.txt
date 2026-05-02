@@ -1,0 +1,30 @@
+test_anchor_is_ancestor_returns_commits_ahead (tests.test_temporal_drift.TestClassifyDriftCommitsAhead.test_anchor_is_ancestor_returns_commits_ahead) ... ok
+test_count_none_coerces_to_zero (tests.test_temporal_drift.TestClassifyDriftCommitsAhead.test_count_none_coerces_to_zero) ... ok
+test_anchor_not_ancestor_returns_diverged (tests.test_temporal_drift.TestClassifyDriftDiverged.test_anchor_not_ancestor_returns_diverged) ... ok
+test_anchor_not_in_repo_returns_diverged (tests.test_temporal_drift.TestClassifyDriftDiverged.test_anchor_not_in_repo_returns_diverged) ... ok
+test_drift_result_is_frozen (tests.test_temporal_drift.TestClassifyDriftFrozen.test_drift_result_is_frozen) ... ok
+test_same_commit_returns_none_status (tests.test_temporal_drift.TestClassifyDriftSameCommit.test_same_commit_returns_none_status) ... ok
+test_anchor_at_head_yields_none_status (tests.test_temporal_drift.TestDetectDriftOrchestrator.test_anchor_at_head_yields_none_status) ... ok
+test_anchor_two_commits_behind_yields_commits_ahead (tests.test_temporal_drift.TestDetectDriftOrchestrator.test_anchor_two_commits_behind_yields_commits_ahead) ... ok
+test_latest_anchored_event_wins (tests.test_temporal_drift.TestDetectDriftOrchestrator.test_latest_anchored_event_wins) ... ok
+test_returns_none_when_ledger_missing (tests.test_temporal_drift.TestDetectDriftOrchestrator.test_returns_none_when_ledger_missing) ... ok
+test_returns_none_when_no_anchored_audit_receipt (tests.test_temporal_drift.TestDetectDriftOrchestrator.test_returns_none_when_no_anchored_audit_receipt) ... ok
+test_unresolvable_anchor_yields_diverged (tests.test_temporal_drift.TestDetectDriftOrchestrator.test_unresolvable_anchor_yields_diverged) ... ok
+test_empty_when_no_obpi_receipts (tests.test_temporal_drift.TestDetectObpiDriftOrchestrator.test_empty_when_no_obpi_receipts) ... ok
+test_filter_by_obpi_id (tests.test_temporal_drift.TestDetectObpiDriftOrchestrator.test_filter_by_obpi_id) ... ok
+test_filters_by_parent_adr (tests.test_temporal_drift.TestDetectObpiDriftOrchestrator.test_filters_by_parent_adr) ... ok
+test_obpi_message_includes_obpi_id_prefix (tests.test_temporal_drift.TestDetectObpiDriftOrchestrator.test_obpi_message_includes_obpi_id_prefix) ... ok
+test_results_sorted_by_obpi_id (tests.test_temporal_drift.TestDetectObpiDriftOrchestrator.test_results_sorted_by_obpi_id) ... ok
+test_count_commits_between_linear (tests.test_temporal_drift.TestGitHelpersRealRepo.test_count_commits_between_linear) ... ok
+test_count_commits_between_unknown_returns_none (tests.test_temporal_drift.TestGitHelpersRealRepo.test_count_commits_between_unknown_returns_none) ... ok
+test_get_head_commit_returns_full_sha (tests.test_temporal_drift.TestGitHelpersRealRepo.test_get_head_commit_returns_full_sha) ... ok
+test_is_ancestor_linear_history (tests.test_temporal_drift.TestGitHelpersRealRepo.test_is_ancestor_linear_history) ... ok
+test_is_ancestor_unknown_commit_returns_none (tests.test_temporal_drift.TestGitHelpersRealRepo.test_is_ancestor_unknown_commit_returns_none) ... ok
+test_resolve_full_commit_from_short_sha (tests.test_temporal_drift.TestGitHelpersRealRepo.test_resolve_full_commit_from_short_sha) ... ok
+test_resolve_full_commit_unknown_returns_none (tests.test_temporal_drift.TestGitHelpersRealRepo.test_resolve_full_commit_unknown_returns_none) ... ok
+test_module_exports_match_documented_public_api (tests.test_temporal_drift.TestPublicSurface.test_module_exports_match_documented_public_api) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 1.626s
+
+OK

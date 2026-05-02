@@ -1,0 +1,619 @@
+{
+  "adr": "ADR-0.26.0-governance-library-module-absorption",
+  "mode": "lite",
+  "lane": "heavy",
+  "attested": true,
+  "attestation_status": "completed",
+  "attestation_term": "Completed",
+  "lifecycle_status": "Completed",
+  "closeout_phase": "attested",
+  "closeout_initiated": true,
+  "validated": false,
+  "gates": {
+    "1": "pass",
+    "2": "pass",
+    "3": "pass",
+    "4": "pass",
+    "5": "pass"
+  },
+  "obpis": [
+    {
+      "id": "OBPI-0.26.0-01-adr-management",
+      "linked_in_ledger": true,
+      "found_file": true,
+      "file": "docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-01-adr-management.md",
+      "completed": true,
+      "ledger_completed": true,
+      "file_completed": true,
+      "evidence_ok": true,
+      "implementation_evidence_ok": true,
+      "key_proof_ok": true,
+      "human_attestation": {
+        "present": true,
+        "valid": true,
+        "attestor": "g0",
+        "attestation_text": "attest completed \u2014 Confirm decision: gzkit's distributed ADR management surface is architecturally superior to opsdev/lib/adr.py across all 17 compared dimensions (data models: Pydantic frozen BaseModel vs plain dicts; error handling: strict pythonic.md vs broad except; ADR identity: typed AdrId X.Y.Z vs 4-digit legacy regex; kind/semver binding: _validate_kind_and_semver vs absent; 5-gate pipeline vs none; event-sourced ledger vs read-only receipts; ARB receipt system vs absent). Narrow-absorption probe on _relpath, _sort_key, _normalize_status, _extract_audit_date: zero helpers pass the subtraction test. No code absorbed; brief authored with Decision/Comparison Matrix/Gate 4 N/A/Implementation Summary/Key Proof/Closing Argument sections; 5/5 REQ parity via tests/test_adr_management_confirm.py (5 tests, Ran in 0.043s). Receipts: lint arb-ruff-b5e10cec07464420b8c0007cc8ee7dfc; typecheck arb-step-typecheck-fb3374999c1b4e588880428f8a2260d2; tests arb-step-unittest-078399afedc74ca09f66018f1100bace.",
+        "date": "2026-04-24"
+      },
+      "runtime_state": "attested_completed",
+      "proof_state": "recorded",
+      "attestation_requirement": "required",
+      "attestation_state": "recorded",
+      "req_proof_state": "recorded",
+      "req_proof_inputs": [
+        {
+          "name": "key_proof",
+          "kind": "legacy_key_proof",
+          "source": "The decision is recorded where every downstream consumer (brief reader,\n`gz adr report` lineage, ceremony template extractors, `rg`-based\nverification in the brief's Verification Commands section) can observe it\nwithout inference:\n\n```bash\n$ rg -n '^## Decision: (Absorb|Confirm|Exclude)' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-01-adr-management.md\n11:## Decision: Confirm\n```\n\nBaseline verification (ARB-wrapped per AGENTS.md \u00a7 Attestation):\n\n|",
+          "status": "present"
+        }
+      ],
+      "req_proof_summary": {
+        "total": 1,
+        "present": 1,
+        "missing": 0,
+        "state": "recorded"
+      },
+      "anchor_state": "not_tracked",
+      "anchor_commit": "07ae505",
+      "current_head": "52079e1",
+      "anchor_issues": [],
+      "anchor_drift_files": [],
+      "frontmatter_status": "completed",
+      "brief_status": null,
+      "reflection_issues": [],
+      "tracked_defects": [],
+      "issues": [],
+      "issue_details": []
+    },
+    {
+      "id": "OBPI-0.26.0-02-references",
+      "linked_in_ledger": true,
+      "found_file": true,
+      "file": "docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-02-references.md",
+      "completed": true,
+      "ledger_completed": true,
+      "file_completed": true,
+      "evidence_ok": true,
+      "implementation_evidence_ok": true,
+      "key_proof_ok": true,
+      "human_attestation": {
+        "present": true,
+        "valid": true,
+        "attestor": "g0",
+        "attestation_text": "attest completed \u2014 Exclude decision for ../airlineops/src/opsdev/lib/references.py (797 lines): module is airline-research-literature infrastructure (REF_DIR=docs/references/, hardcoded ROSETTA_REFERENCES_LIST of Belobaba/Bazargan/Abdelghany/Littlewood/Talluri airline OR texts at lines 57-62, pypdf-driven APA citation extraction at lines 617-670) and fails the subtraction test on all five dimensions (filesystem contract, airline-domain data, discipline-specific dependency, literature-management purpose, naming collision); gzkit has no docs/references/, no docs/REFERENCES.md, no docs/ANNOTATED_BIBLIOGRAPHY.md, no pypdf dep, and gzkit's governance cross-referencing already lives in src/gzkit/traceability.py, governance/trust_audits.py, commands/adr_autolink.py. No code landed under src/gzkit/; no new tests; Gate 4 N/A. Receipts: lint arb-ruff-3d48bc2412d041c2834eb2b58fbb9761; types arb-step-typecheck-18c1c51391b34b5e9455bfc40598f85f.",
+        "date": "2026-04-24"
+      },
+      "runtime_state": "attested_completed",
+      "proof_state": "recorded",
+      "attestation_requirement": "required",
+      "attestation_state": "recorded",
+      "req_proof_state": "recorded",
+      "req_proof_inputs": [
+        {
+          "name": "key_proof",
+          "kind": "legacy_key_proof",
+          "source": "Decision Exclude; proof is that the opsdev module cannot function without airline-research surfaces gzkit does not have. Observable:\n\n- `test -d docs/references` returns absent; `test -f docs/REFERENCES.md` returns absent; `test -f docs/ANNOTATED_BIBLIOGRAPHY.md` returns absent \u2014 none of the module-level filesystem constants at references.py:44-54 resolve in gzkit.\n- `rg -n 'Belobaba|Bazargan|Abdelghany|Littlewood|Talluri' ../airlineops/src/opsdev/lib/references.py` matches lines 57-62 \u2014 the har",
+          "status": "present"
+        }
+      ],
+      "req_proof_summary": {
+        "total": 1,
+        "present": 1,
+        "missing": 0,
+        "state": "recorded"
+      },
+      "anchor_state": "not_tracked",
+      "anchor_commit": "bdbed49",
+      "current_head": "52079e1",
+      "anchor_issues": [],
+      "anchor_drift_files": [],
+      "frontmatter_status": "completed",
+      "brief_status": null,
+      "reflection_issues": [],
+      "tracked_defects": [],
+      "issues": [],
+      "issue_details": []
+    },
+    {
+      "id": "OBPI-0.26.0-03-adr-recon",
+      "linked_in_ledger": true,
+      "found_file": true,
+      "file": "docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-03-adr-recon.md",
+      "completed": true,
+      "ledger_completed": true,
+      "file_completed": true,
+      "evidence_ok": true,
+      "implementation_evidence_ok": true,
+      "key_proof_ok": true,
+      "human_attestation": {
+        "present": true,
+        "valid": true,
+        "attestor": "g0",
+        "attestation_text": "attest completed \u2014 Exclude decision for ../airlineops/src/opsdev/lib/adr_recon.py (607 lines): module's central function update_obpi_table (lines 349-401) patches the ADR markdown OBPI Decomposition table Status column in place, which is editing a Layer-3 derived view forbidden by gzkit state-doctrine and AGENTS.md Architectural Boundary 6 (\"Do not let derived views silently become source-of-truth\"). gzkit reaches the same reconciliation outcome through six CLI surfaces (gz obpi reconcile, gz frontmatter reconcile, gz register-adrs, gz validate --reconcile-freshness, gz validate --adr-status-fresh, gz adr report/status) using Layer-1 rewriting and Layer-3 regeneration. opsdev module also chains three ops-internal absorption obligations (airlineops.paths.subpaths, opsdev.lib.ledger_schema = OBPI-0.26.0-05, opsdev.lib.drift_detection = OBPI-0.26.0-06) and uses stdlib dataclass / blanket exceptions where gzkit conventions require Pydantic and typed exceptions. No code landed under src/gzkit/; no new tests; Gate 4 N/A. Receipts: lint arb-ruff-3cc846f176024249bdd44f58ad3e7653; types arb-step-typecheck-a7a6c43b141b4afe85acdc1f474e212b; unittest arb-step-unittest-d031e68f00f94098a4f21aba71be9e10; mkdocs arb-step-mkdocs-e13de00b80164aa98aaf889b11877c16. Covers parity: total_reqs=0 uncovered_reqs=0.",
+        "date": "2026-05-01"
+      },
+      "runtime_state": "attested_completed",
+      "proof_state": "recorded",
+      "attestation_requirement": "required",
+      "attestation_state": "recorded",
+      "req_proof_state": "recorded",
+      "req_proof_inputs": [
+        {
+          "name": "key_proof",
+          "kind": "legacy_key_proof",
+          "source": "Decision Exclude; proof is that the opsdev module's central function is the gzkit state-doctrine anti-pattern, and gzkit already owns the reconciliation outcome through doctrinally-compatible Layer-1 and Layer-3-regeneration paths. Observable:\n\n- `rg -n 'Layer 2|Layer 3|sync.*table|update_obpi_table' ../airlineops/src/opsdev/lib/adr_recon.py` matches lines 1-12 (docstring), 349-401 (`update_obpi_table` direct markdown patcher) \u2014 opsdev's central function patches the ADR's Layer-3 OBPI Decomposit",
+          "status": "present"
+        }
+      ],
+      "req_proof_summary": {
+        "total": 1,
+        "present": 1,
+        "missing": 0,
+        "state": "recorded"
+      },
+      "anchor_state": "not_tracked",
+      "anchor_commit": "27c0a45",
+      "current_head": "52079e1",
+      "anchor_issues": [],
+      "anchor_drift_files": [],
+      "frontmatter_status": "completed",
+      "brief_status": null,
+      "reflection_issues": [],
+      "tracked_defects": [],
+      "issues": [],
+      "issue_details": []
+    },
+    {
+      "id": "OBPI-0.26.0-04-adr-governance",
+      "linked_in_ledger": true,
+      "found_file": true,
+      "file": "docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-04-adr-governance.md",
+      "completed": true,
+      "ledger_completed": true,
+      "file_completed": true,
+      "evidence_ok": true,
+      "implementation_evidence_ok": true,
+      "key_proof_ok": true,
+      "human_attestation": {
+        "present": true,
+        "valid": true,
+        "attestor": "g0",
+        "attestation_text": "attest completed \u2014 Confirm-by-reference to OBPI-0.25.0-20-adr-governance-pattern (Completed 2026-04-11) on identical opsdev source `lib/adr_governance.py` (535 lines). Per-subcommand mapping recorded: evidence_audit \u2192 `gz adr audit-check` (gzkit-superior), adr_autolink \u2192 `.gzkit/skills/gz-adr-autolink/SKILL.md` (gzkit-by-design doctrine), verification_report \u2192 `gz covers` / `gz adr covers-check` (gzkit-superior). Six-point rationale anchored on parsing, coverage, evidence, convention, autolink-doctrine, ops-internal-imports. Duplicate-OBPI defect filed as GHI #376. ARB receipts: ruff arb-ruff-b21f574537af4f239c6073d70479dcb7, typecheck arb-step-typecheck-5ce5e810debf43c5bef16d0e7bf2d303, unittest arb-step-unittest-4637896a55774cc8805fc4bff4707f5a, mkdocs arb-step-mkdocs-be9cfe8604484ab2b41f52558f2177c2. Canonical proof artifact `tests/test_adr_governance_confirm.py` runs 4/4 green. Heavy-lane Gate 5; no code under `src/gzkit/` or `tests/` modified \u2014 Gate 4 N/A documented inline.",
+        "date": "2026-05-01"
+      },
+      "runtime_state": "attested_completed",
+      "proof_state": "recorded",
+      "attestation_requirement": "required",
+      "attestation_state": "recorded",
+      "req_proof_state": "recorded",
+      "req_proof_inputs": [
+        {
+          "name": "key_proof",
+          "kind": "legacy_key_proof",
+          "source": "```bash\nuv run -m unittest tests/test_adr_governance_confirm.py -v\n# Ran 4 tests in 0.039s -- OK (pre-existing canonical witness for the Confirm decision, OBPI-0.25.0-20)\n# ARB receipts (Stage 3): arb-ruff-b21f574537af4f239c6073d70479dcb7, arb-step-typecheck-5ce5e810debf43c5bef16d0e7bf2d303, arb-step-unittest-4637896a55774cc8805fc4bff4707f5a, arb-step-mkdocs-be9cfe8604484ab2b41f52558f2177c2\n# REQ->@covers parity: uv run gz covers OBPI-0.26.0-04-adr-governance --json -> uncovered_reqs: 0 ([doc] R",
+          "status": "present"
+        }
+      ],
+      "req_proof_summary": {
+        "total": 1,
+        "present": 1,
+        "missing": 0,
+        "state": "recorded"
+      },
+      "anchor_state": "not_tracked",
+      "anchor_commit": "77b73a3",
+      "current_head": "52079e1",
+      "anchor_issues": [],
+      "anchor_drift_files": [],
+      "frontmatter_status": "completed",
+      "brief_status": null,
+      "reflection_issues": [],
+      "tracked_defects": [],
+      "issues": [],
+      "issue_details": []
+    },
+    {
+      "id": "OBPI-0.26.0-05-ledger-schema",
+      "linked_in_ledger": true,
+      "found_file": true,
+      "file": "docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-05-ledger-schema.md",
+      "completed": true,
+      "ledger_completed": true,
+      "file_completed": true,
+      "evidence_ok": true,
+      "implementation_evidence_ok": true,
+      "key_proof_ok": true,
+      "human_attestation": {
+        "present": true,
+        "valid": true,
+        "attestor": "g0",
+        "attestation_text": "attest completed \u2014 Exclude-by-reference to OBPI-0.25.0-29-ledger-schema-pattern (Completed/attested 2026-04-13) on identical opsdev source `lib/ledger_schema.py` (501 lines, govzero.ledger.v1, 4 audit entry types). Six-point rationale anchored on architectural-scope mismatch (per-ADR audit-only schema vs lifecycle-wide event stream), superset functionality (~25 typed event classes vs 4; declarative Field(..., pattern=...) ID validators at core/models.py:25,41,147,168 vs field_validator/regex pair; nested evidence models with cross-field validation at events.py:45,96,106,132 vs flat EvidencePayload; Ledger persistence class at ledger.py:170-728 that opsdev lacks entirely), storage-doctrine conflict (CLAUDE.md \u00a7 Architectural Boundaries item 6 prohibits per-ADR derived storage from becoming source-of-truth), no-narrow-idiom warranting standalone absorption, tooling-vs-consumer distinction (consumer-layer storage-layout assumption a tooling layer should not mandate), and duplicate-OBPI surface (second instance of the GHI #376 root-cause defect). Refreshed gzkit anchors: events.py 470\u2192556 L, ledger.py 598\u2192728 L; capability shape unchanged. ARB receipts: ruff arb-ruff-6db021c78698482e8f022dd0c3a9029e, typecheck arb-step-typecheck-f4eabbe920564e73a62aff613c5e7d09, unittest arb-step-unittest-5e8c640507c54a1dbeca6b7c99522039, mkdocs arb-step-mkdocs-721706b840914e9f9398cc89b9ea988b. REQ\u2192@covers parity gate green (uncovered_reqs=0; [doc] route via _synthesize_doc_proof_linkage). Pre-existing GHI #375 (validate --rule-placement) cited in evidence; not introduced by this brief. Heavy-lane Gate 5; no code under src/gzkit/ or tests/ modified \u2014 Gate 4 N/A documented inline. Brief-scaffold heading drift (ALL CAPS \u2192 title case, missing Lane/Denied Paths/Discovery Checklist) corrected in flight to satisfy `gz obpi validate --authored`.",
+        "date": "2026-05-01"
+      },
+      "runtime_state": "attested_completed",
+      "proof_state": "recorded",
+      "attestation_requirement": "required",
+      "attestation_state": "recorded",
+      "req_proof_state": "recorded",
+      "req_proof_inputs": [
+        {
+          "name": "key_proof",
+          "kind": "legacy_key_proof",
+          "source": "```bash\nrg -n '^decision: Exclude|^\\*\\*Exclude\\*\\*' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-05-ledger-schema.md\n# Confirms brief frontmatter and ## Decision body record the Exclude verdict.\n\nuv run gz covers OBPI-0.26.0-05-ledger-schema --json\n# Expected: {\"summary\": {\"total_reqs\": 0, \"uncovered_reqs\": 0, ...}} \u2014 vacuous parity-gate pass for [doc] REQs via _synthesize_doc_proof_linkage.\n\nuv run gz obpi validate --authored docs/design/adr/pre-",
+          "status": "present"
+        }
+      ],
+      "req_proof_summary": {
+        "total": 1,
+        "present": 1,
+        "missing": 0,
+        "state": "recorded"
+      },
+      "anchor_state": "not_tracked",
+      "anchor_commit": "e6d90f1",
+      "current_head": "52079e1",
+      "anchor_issues": [],
+      "anchor_drift_files": [],
+      "frontmatter_status": "completed",
+      "brief_status": null,
+      "reflection_issues": [],
+      "tracked_defects": [],
+      "issues": [],
+      "issue_details": []
+    },
+    {
+      "id": "OBPI-0.26.0-06-drift-detection",
+      "linked_in_ledger": true,
+      "found_file": true,
+      "file": "docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-06-drift-detection.md",
+      "completed": true,
+      "ledger_completed": true,
+      "file_completed": true,
+      "evidence_ok": true,
+      "implementation_evidence_ok": true,
+      "key_proof_ok": true,
+      "human_attestation": {
+        "present": true,
+        "valid": true,
+        "attestor": "g0",
+        "attestation_text": "attest completed \u2014 Absorb-by-reference to OBPI-0.25.0-26-drift-detection-pattern (attested 2026-04-09) on identical opsdev source lib/drift_detection.py (384 lines). gzkit's src/gzkit/temporal_drift.py (348 L) + tests/test_temporal_drift.py ship the absorbed surface with full opsdev public contract preserved (DriftStatus, DriftResult, ObpiDriftResult, classify_drift, detect_drift, detect_obpi_drift); two-layer-pure-plus-orchestrator architecture preserved; classify_drift byte-for-byte semantically equivalent (testable without mocks at tests/test_temporal_drift.py:73-118). gzkit-specific deltas confined to I/O orchestrators (gzkit.utils.git_cmd HEAD cache + UTF-8 contract; central .gzkit/ledger.jsonl reads instead of opsdev's per-ADR validation_receipt + obpi-audit.jsonl per CLAUDE.md Architectural Boundaries item 6) and the new _resolve_full_commit SHA-7 normalization helper. Six-point rationale anchored on canonical precedent (OBPI-0.25.0-26 attested on identical source 3 weeks 1 day earlier), already-shipped module, subtraction-test pass with storage re-architecture, pure-classifier preservation, gzkit-specific improvements as integration not novelty, and tooling-vs-consumer distinction resolved by re-architecture. ARB receipts: ruff arb-ruff-f639783ea13d4d80982a3207da2a7e02, typecheck arb-step-typecheck-386e3e7d002344ec9140a92bc7ac251f, unittest (OBPI-scoped, canonical, mirroring OBPI-05 precedent) arb-step-unittest-c3231c44dcdb4ca9a7fa2b08b1082428, mkdocs arb-step-mkdocs-f68fdcd8d38a49ca971d3b0e78869953. REQ\u2192@covers parity gate green (uncovered_reqs=0; [doc] route via _synthesize_doc_proof_linkage; gz covers parity-gate confirmation). Brief-scaffold drift corrected in flight: ALL-CAPS section headings renamed to title case; added Lane, Denied Paths, Discovery Checklist sections; status Pending corrected to lowercase pending; renamed Verification Commands (Concrete) to Verification with two OBPI-specific commands added. Duplicate-OBPI surface tracked under GHI #376 (third structural instance after OBPI-0.26.0-04 lib/adr_governance.py Confirm-by-reference and OBPI-0.26.0-05 lib/ledger_schema.py Exclude-by-reference); resolution is gh issue comment 376 in Stage 5, not parallel GHI. Pre-existing failures surfaced during Stage 3, both out of brief boundary, both filed today: GHI #377 (.gzkit/insights/agent-insights.jsonl:21 violates GHI #358 schema, regression of #358 hardening, authored 2026-05-01T01:50:00Z under OBPI-0.26.0-03), GHI #378 (release.drift_command flag past remove_by=2026-04-30, calendar boundary tipped today, OBPI ceremony routing). Course-correction insight (Behavior Rule 11): seven-weeks date-arithmetic error caught by operator at Stage 4, corrected in brief body line 287 (three weeks) and recorded in .gzkit/insights/agent-insights.jsonl:22. Heavy-lane Gate 5 attestation; no code under src/gzkit/ or tests/ modified by this brief \u2014 Gate 4 N/A documented inline; re-shipping the absorbed module would invalidate the 2026-04-09 OBPI-0.25.0-26 attestation.",
+        "date": "2026-05-01"
+      },
+      "runtime_state": "attested_completed",
+      "proof_state": "recorded",
+      "attestation_requirement": "required",
+      "attestation_state": "recorded",
+      "req_proof_state": "recorded",
+      "req_proof_inputs": [
+        {
+          "name": "key_proof",
+          "kind": "legacy_key_proof",
+          "source": "```bash\nrg -n '^decision: Absorb|^\\*\\*Absorb\\*\\*' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-06-drift-detection.md\n# Confirms brief frontmatter and ## Decision body record the Absorb verdict.\n\nrg -n 'OBPI-0.25.0-26' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-06-drift-detection.md\n# Confirms brief cites the canonical precedent in body and Closing Argument.\n\ntest -f src/gzkit/temporal_drift.py &&",
+          "status": "present"
+        }
+      ],
+      "req_proof_summary": {
+        "total": 1,
+        "present": 1,
+        "missing": 0,
+        "state": "recorded"
+      },
+      "anchor_state": "not_tracked",
+      "anchor_commit": "966e701",
+      "current_head": "52079e1",
+      "anchor_issues": [],
+      "anchor_drift_files": [],
+      "frontmatter_status": "completed",
+      "brief_status": null,
+      "reflection_issues": [],
+      "tracked_defects": [],
+      "issues": [],
+      "issue_details": []
+    },
+    {
+      "id": "OBPI-0.26.0-07-adr-traceability",
+      "linked_in_ledger": true,
+      "found_file": true,
+      "file": "docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-07-adr-traceability.md",
+      "completed": true,
+      "ledger_completed": true,
+      "file_completed": true,
+      "evidence_ok": true,
+      "implementation_evidence_ok": true,
+      "key_proof_ok": true,
+      "human_attestation": {
+        "present": true,
+        "valid": true,
+        "attestor": "g0",
+        "attestation_text": "attest completed \u2014 OBPI-0.26.0-07 Confirm-by-reference verdict on opsdev lib/adr_traceability.py (277 L). Anchored on OBPI-0.25.0-22-adr-traceability-pattern (attested 2026-04-09, identical 277-line source) and OBPI-0.26.0-04 sibling precedent for `decision: Confirm` despite stale brief Assumptions. Eight-dimension capability comparison authored at brief :238; seven-point rationale at :301; brief-scaffold-defect surfaced at :280 (third instance across ADR-0.26.0); Gate 4 N/A at :390 (zero operator-visible change). Heavy-lane Stage 3 ARB receipts cited inline in Key Proof: lint arb-ruff-879e001d0b4c4b049ed8c24c69738883, typecheck arb-step-typecheck-e48828d89a7643eab2f67982b8997c18, OBPI-scoped unittest arb-step-unittest-c3137487029644b7b2e5d035557d218a, mkdocs arb-step-mkdocs-3d48daf11a07408980e43eda6bb441b9. REQ\u2192@covers parity: 5\u00d7[doc] REQs, uncovered_reqs:0 via _synthesize_doc_proof_linkage. No `src/` or `tests/` edits (Confirm preserves OBPI-0.25.0-22 attestation). GHI #376 to be extended with fourth-instance comment in this ceremony.",
+        "date": "2026-05-01"
+      },
+      "runtime_state": "attested_completed",
+      "proof_state": "recorded",
+      "attestation_requirement": "required",
+      "attestation_state": "recorded",
+      "req_proof_state": "recorded",
+      "req_proof_inputs": [
+        {
+          "name": "key_proof",
+          "kind": "legacy_key_proof",
+          "source": "```bash\nrg -n '^decision: Confirm|^\\*\\*Confirm\\*\\*' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-07-adr-traceability.md\n# Confirms brief frontmatter and ## Decision body record the Confirm verdict.\n\nrg -c 'OBPI-0.25.0-22' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-07-adr-traceability.md\n# Expected: \u226510 \u2014 brief cites the canonical precedent across body, Decision rationale, Implementation Summary, C",
+          "status": "present"
+        }
+      ],
+      "req_proof_summary": {
+        "total": 1,
+        "present": 1,
+        "missing": 0,
+        "state": "recorded"
+      },
+      "anchor_state": "not_tracked",
+      "anchor_commit": "1d7cc68",
+      "current_head": "52079e1",
+      "anchor_issues": [],
+      "anchor_drift_files": [],
+      "frontmatter_status": "completed",
+      "brief_status": null,
+      "reflection_issues": [],
+      "tracked_defects": [],
+      "issues": [],
+      "issue_details": []
+    },
+    {
+      "id": "OBPI-0.26.0-08-validation-receipt",
+      "linked_in_ledger": true,
+      "found_file": true,
+      "file": "docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-08-validation-receipt.md",
+      "completed": true,
+      "ledger_completed": true,
+      "file_completed": true,
+      "evidence_ok": true,
+      "implementation_evidence_ok": true,
+      "key_proof_ok": true,
+      "human_attestation": {
+        "present": true,
+        "valid": true,
+        "attestor": "g0",
+        "attestation_text": "attest completed \u2014 OBPI-0.26.0-08 Confirm-by-reference verdict on opsdev lib/validation_receipt.py (274 L). Anchored on OBPI-0.25.0-31-validation-receipts-pattern (attested 2026-04-13, identical 274-line source) and OBPI-0.26.0-04/07 sibling precedents for `decision: Confirm` despite stale brief Source Material. Twelve-dimension capability comparison authored in brief ## Comparison; six-point rationale in ## Decision (rationale 6 records EventAnchor hardening at events.py:355 closing the prior narrow win since 2026-04-13); brief-scaffold-defect surfaced (fourth instance across ADR-0.26.0); Gate 4 N/A (zero operator-visible change). Heavy-lane Stage 3 ARB receipts cited inline in Key Proof: lint arb-ruff-f8c5232c699e437c9335015b90696ab8, typecheck arb-step-typecheck-4a0048e7bce44e09afb086533c724671, OBPI-scoped unittest arb-step-unittest-999c5e1fe9fc4dd2988f060d26f7114c, mkdocs arb-step-mkdocs-e002b267fe7d441ab88bf1cc98cc05de. REQ\u2192@covers parity: 5\u00d7[doc] REQs, uncovered_reqs:0 via _synthesize_doc_proof_linkage. No `src/` or `tests/` edits (Confirm preserves OBPI-0.25.0-31 attestation). GHI #376 fifth-instance comment deferred to explicit operator authorization (out of scope for `attest completed`).",
+        "date": "2026-05-01"
+      },
+      "runtime_state": "attested_completed",
+      "proof_state": "recorded",
+      "attestation_requirement": "required",
+      "attestation_state": "recorded",
+      "req_proof_state": "recorded",
+      "req_proof_inputs": [
+        {
+          "name": "key_proof",
+          "kind": "legacy_key_proof",
+          "source": "```bash\nrg -n '^decision: Confirm|^\\*\\*Confirm\\*\\*' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-08-validation-receipt.md\n# Confirms brief frontmatter and ## Decision body record the Confirm verdict.\n\nrg -c 'OBPI-0.25.0-31' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-08-validation-receipt.md\n# Expected: \u226510 \u2014 brief cites the canonical precedent across body, Decision rationale, Implementation Summar",
+          "status": "present"
+        }
+      ],
+      "req_proof_summary": {
+        "total": 1,
+        "present": 1,
+        "missing": 0,
+        "state": "recorded"
+      },
+      "anchor_state": "not_tracked",
+      "anchor_commit": "54d68fb",
+      "current_head": "52079e1",
+      "anchor_issues": [],
+      "anchor_drift_files": [],
+      "frontmatter_status": "completed",
+      "brief_status": null,
+      "reflection_issues": [],
+      "tracked_defects": [],
+      "issues": [],
+      "issue_details": []
+    },
+    {
+      "id": "OBPI-0.26.0-09-adr-audit-ledger",
+      "linked_in_ledger": true,
+      "found_file": true,
+      "file": "docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-09-adr-audit-ledger.md",
+      "completed": true,
+      "ledger_completed": true,
+      "file_completed": true,
+      "evidence_ok": true,
+      "implementation_evidence_ok": true,
+      "key_proof_ok": true,
+      "human_attestation": {
+        "present": true,
+        "valid": true,
+        "attestor": "g0",
+        "attestation_text": "attest completed \u2014 OBPI-0.26.0-09 Confirm-by-reference verdict on opsdev lib/adr_audit_ledger.py (249 L). Anchored on OBPI-0.25.0-19-adr-audit-ledger-pattern (attested 2026-04-11, identical 249-line source) and OBPI-0.26.0-04/07/08 sibling precedents for `decision: Confirm` despite stale brief Source Material asserting \"gzkit equivalent: None\" (and Assumption block foreclosing the Confirm path). Twelve-dimension capability comparison authored in brief ## Comparison; six-point rationale in ## Decision (rationale 6 records adr_audit.py 83% growth from 415 L to 758 L since 2026-04-11, layering ADR-0.0.22 three-axis attestation predicate, TTY gate, and --attestor-present co-presence proxy on the same architectural foundation \u2014 Confirm a fortiori). Brief-scaffold-defect surfaced (sixth instance across ADR-0.26.0); Gate 4 N/A (zero operator-visible change). Heavy-lane Stage 3 ARB receipts cited inline in Key Proof: lint arb-ruff-462d2e272f1e4fda9da8faab666ee9aa, typecheck arb-step-typecheck-05eada7eada74214b46312ca75cae0c0, OBPI-scoped unittest arb-step-unittest-67f6a900bcf84c4fb83c389811e4cddc, mkdocs arb-step-mkdocs-d205fd3f926042ff99da53150b63598e. REQ\u2192@covers parity: 5\u00d7[doc] REQs, uncovered_reqs:0 via _synthesize_doc_proof_linkage. No `src/` or `tests/` edits (Confirm preserves OBPI-0.25.0-19 attestation). GHI #376 sixth-instance comment deferred to explicit operator authorization (out of scope for `attest completed`).",
+        "date": "2026-05-02"
+      },
+      "runtime_state": "attested_completed",
+      "proof_state": "recorded",
+      "attestation_requirement": "required",
+      "attestation_state": "recorded",
+      "req_proof_state": "recorded",
+      "req_proof_inputs": [
+        {
+          "name": "key_proof",
+          "kind": "legacy_key_proof",
+          "source": "```bash\nrg -n '^decision: Confirm|^\\*\\*Confirm\\*\\*' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-09-adr-audit-ledger.md\n# Confirms brief frontmatter and ## Decision body record the Confirm verdict.\n\nrg -c 'OBPI-0.25.0-19' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-09-adr-audit-ledger.md\n# Expected: \u226510 \u2014 brief cites the canonical precedent across body, Decision rationale, Implementation Summary, C",
+          "status": "present"
+        }
+      ],
+      "req_proof_summary": {
+        "total": 1,
+        "present": 1,
+        "missing": 0,
+        "state": "recorded"
+      },
+      "anchor_state": "not_tracked",
+      "anchor_commit": "6f1b1db",
+      "current_head": "52079e1",
+      "anchor_issues": [],
+      "anchor_drift_files": [],
+      "frontmatter_status": "completed",
+      "brief_status": null,
+      "reflection_issues": [],
+      "tracked_defects": [],
+      "issues": [],
+      "issue_details": []
+    },
+    {
+      "id": "OBPI-0.26.0-10-cli-audit-lib",
+      "linked_in_ledger": true,
+      "found_file": true,
+      "file": "docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-10-cli-audit-lib.md",
+      "completed": true,
+      "ledger_completed": true,
+      "file_completed": true,
+      "evidence_ok": true,
+      "implementation_evidence_ok": true,
+      "key_proof_ok": true,
+      "human_attestation": {
+        "present": true,
+        "valid": true,
+        "attestor": "g0",
+        "attestation_text": "attest completed \u2014 OBPI-0.26.0-10 Confirm-by-reference verdict on opsdev lib/cli_audit.py (238 L). Anchored on OBPI-0.25.0-24-cli-audit-pattern (Decision: Confirm with six-point rationale: AST vs private API, 5-surface coverage vs parser-tree, manifest obligations vs hardcoded, Pydantic vs dict, 76 vs 1 tests, subtraction test) and OBPI-0.26.0-04/07/08/09 sibling precedents for `decision: Confirm` despite stale brief Source Material asserting \"Partial in src/gzkit/cli.py\". Seven-dimension capability comparison authored in brief ## Comparison; seven-point rationale in ## Decision (rationale 7 records doc_coverage/ +33% growth: ~802 L \u2192 1,065 L, with flag_scanner.py 182 L added and scanner.py expanded; commands/cli_audit.py +4% 226 L \u2192 235 L; total surface ~1,300 L vs ~1,028 L at precedent \u2014 Confirm a fortiori). Brief-scaffold-defect surfaced (seventh instance across ADR-0.26.0); Gate 4 N/A (zero operator-visible change). Heavy-lane Stage 3 ARB receipts cited in Key Proof: lint arb-ruff-0d343eca2698454aba9eee34ada58981, typecheck arb-step-typecheck-0c11d93360b14dabb9314a604a0355d0, OBPI-scoped unittest arb-step-unittest-d18d9bc89b274da7aa349beec1110fa5, mkdocs arb-step-mkdocs-0c884bdf87134a2f83e7c17f82c11d9f. REQ\u2192@covers parity: 5\u00d7[doc] REQs, uncovered_reqs:0 via _synthesize_doc_proof_linkage. No `src/` or `tests/` edits (Confirm preserves OBPI-0.25.0-24 attestation). GHI #376 seventh-instance comment deferred to explicit operator authorization.",
+        "date": "2026-05-02"
+      },
+      "runtime_state": "attested_completed",
+      "proof_state": "recorded",
+      "attestation_requirement": "required",
+      "attestation_state": "recorded",
+      "req_proof_state": "recorded",
+      "req_proof_inputs": [
+        {
+          "name": "key_proof",
+          "kind": "legacy_key_proof",
+          "source": "```bash\nrg -n '^decision: Confirm|^\\*\\*Confirm\\*\\*' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-10-cli-audit-lib.md\n# Confirms brief frontmatter and ## Decision body record the Confirm verdict.\n\nrg -c 'OBPI-0.25.0-24' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-10-cli-audit-lib.md\n# Expected: \u226510 \u2014 brief cites the canonical precedent across body, Decision rationale, Implementation Summary, Closing",
+          "status": "present"
+        }
+      ],
+      "req_proof_summary": {
+        "total": 1,
+        "present": 1,
+        "missing": 0,
+        "state": "recorded"
+      },
+      "anchor_state": "not_tracked",
+      "anchor_commit": "4906dfe",
+      "current_head": "52079e1",
+      "anchor_issues": [],
+      "anchor_drift_files": [],
+      "frontmatter_status": "completed",
+      "brief_status": null,
+      "reflection_issues": [],
+      "tracked_defects": [],
+      "issues": [],
+      "issue_details": []
+    },
+    {
+      "id": "OBPI-0.26.0-11-artifacts-lib",
+      "linked_in_ledger": true,
+      "found_file": true,
+      "file": "docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-11-artifacts-lib.md",
+      "completed": true,
+      "ledger_completed": true,
+      "file_completed": true,
+      "evidence_ok": true,
+      "implementation_evidence_ok": true,
+      "key_proof_ok": true,
+      "human_attestation": {
+        "present": true,
+        "valid": true,
+        "attestor": "g0",
+        "attestation_text": "attest completed \u2014 OBPI-0.26.0-11 Exclude-by-reference verdict on opsdev lib/artifacts.py (232 L). Anchored on OBPI-0.25.0-23-artifact-management-pattern (Decision: Exclude attested 2026-04-11) with eight-dimension subtraction-test rationale: physical-file-management vs governance-content-type-metadata, fundamentally different problems with zero functional overlap. opsdev module is purely airlineops-specific artifacts/ directory convention with hardcoded preserved files (live_ingest_report.json, attestations/) plus regex-based source-code scanning (ART_RX, QUOTED_SQLITE_RX) \u2014 gzkit has none of these surfaces. Convention violations preclude clean absorption: @dataclass Hit violates .claude/rules/models.md Pydantic policy; shutil.rmtree(ignore_errors=True) violates .claude/rules/cross-platform.md. Post-precedent surface state preserves verdict a fortiori: gzkit registry.py grew 220 L \u2192 232 L (+5%) on same Pydantic ContentType foundation; opsdev unchanged at 232 L. Eighth structural instance of ADR-0.26.0 \u2194 ADR-0.25.0 duplicate-OBPI pattern (after -04/-05/-06/-07/-08/-09/-10), mechanically suppressed by closed GHI #376 guard chain (gz validate --absorption-duplicates + paired_with frontmatter waiver populated under cdd8e396). Heavy-lane Stage 3 ARB receipts cited in Key Proof: lint arb-ruff-d3d211e5b52c40bb9adb28469fddb46e, typecheck arb-step-typecheck-f11444be558a4558979d1df46280076f, full unittest arb-step-unittest-d09a2e732fc8427e84917cf2ed0e69e6, OBPI-scoped unittest arb-step-unittest-ae0825d9d70544b696cc8e06bf91b13c, mkdocs arb-step-mkdocs-20128a74e0fd4f4ebeffbd758c6814ef. REQ\u2192@covers parity: 5\u00d7[doc] REQs, uncovered_reqs:0 via _synthesize_doc_proof_linkage. gz validate --absorption-duplicates / --brief-headings clean. No src/ or tests/ edits (Exclude preserves OBPI-0.25.0-23 attestation). Gate 4 N/A (zero operator-visible change).",
+        "date": "2026-05-02"
+      },
+      "runtime_state": "attested_completed",
+      "proof_state": "recorded",
+      "attestation_requirement": "required",
+      "attestation_state": "recorded",
+      "req_proof_state": "recorded",
+      "req_proof_inputs": [
+        {
+          "name": "key_proof",
+          "kind": "legacy_key_proof",
+          "source": "```bash\nrg -n '^decision: Exclude|^\\*\\*Exclude\\*\\*' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-11-artifacts-lib.md\n# Confirms brief frontmatter and ## Decision body record the Exclude verdict.\n\nrg -c 'OBPI-0.25.0-23' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-11-artifacts-lib.md\n# Expected: \u226510 \u2014 brief cites the canonical precedent across body, Decision rationale, Implementation Summary, Closing",
+          "status": "present"
+        }
+      ],
+      "req_proof_summary": {
+        "total": 1,
+        "present": 1,
+        "missing": 0,
+        "state": "recorded"
+      },
+      "anchor_state": "not_tracked",
+      "anchor_commit": "d10fc22",
+      "current_head": "52079e1",
+      "anchor_issues": [],
+      "anchor_drift_files": [],
+      "frontmatter_status": "completed",
+      "brief_status": null,
+      "reflection_issues": [],
+      "tracked_defects": [],
+      "issues": [],
+      "issue_details": []
+    },
+    {
+      "id": "OBPI-0.26.0-12-docs-lib",
+      "linked_in_ledger": true,
+      "found_file": true,
+      "file": "docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-12-docs-lib.md",
+      "completed": true,
+      "ledger_completed": true,
+      "file_completed": true,
+      "evidence_ok": true,
+      "implementation_evidence_ok": true,
+      "key_proof_ok": true,
+      "human_attestation": {
+        "present": true,
+        "valid": true,
+        "attestor": "g0",
+        "attestation_text": "attest completed \u2014 OBPI-0.26.0-12 Confirm-by-reference verdict on opsdev lib/docs.py (218 L). Anchored on OBPI-0.25.0-25-docs-validation-pattern (Decision: Confirm attested 2026-04-12) with eleven-dimension subtraction-test rationale: gzkit's doc_coverage/ surface (~802 L across scanner.py 496 L, models.py 93 L, manifest.py 85 L, runner.py 128 L) plus mkdocs build --strict integration via gz validate --documents and the canonical arb-step-mkdocs-* ARB receipt slot already covers every functional need that opsdev docs.py addresses. opsdev's only non-trivial capability (regex link validation + 2-click orphan walk) is mkdocs-redundant; the remainder (check_files + build_site_strict) is trivially subsumed by existing gzkit invocations. opsdev module self-declares \"ultra-minimal Docs gate during 0.0.0 \u2192 1.0.0 remodel\" temporary status. Convention violations preclude clean absorption: plain dict/set/list/tuple primitives violate .claude/rules/models.md Pydantic policy; sys.exit-coupled fail() helper violates structured-error testability doctrine. Post-precedent surface state preserves verdict a fortiori: gzkit doc_coverage/ continues hosting AST-driven CLI coverage validator on same Pydantic foundation; opsdev unchanged at 218 L. Ninth structural instance of ADR-0.26.0 \u2194 ADR-0.25.0 duplicate-OBPI pattern (after -04/-05/-06/-07/-08/-09/-10/-11), mechanically suppressed by closed GHI #376 guard chain (gz validate --absorption-duplicates + paired_with frontmatter waiver populated under cdd8e396). Heavy-lane Stage 3 ARB receipts: lint arb-ruff-40f723da80794805b1f30fbd22e53dfa, typecheck arb-step-typecheck-8085e6cebfde4e6eb39174efabf5ec17, full unittest arb-step-unittest-758684d150cf4772af21e99511aa7a94, OBPI-scoped unittest (80/80) arb-step-unittest-0721b7ab55794ed7882191c1333c3cf4, mkdocs strict (2.25s) arb-step-mkdocs-ffd00e3fa3974ec6bc593e367f476e37. REQ\u2192@covers parity: 5\u00d7[doc] REQs, uncovered_reqs:0 via _synthesize_doc_proof_linkage. gz validate --absorption-duplicates / --brief-headings clean; gz obpi precomplete READY (5/5). No src/ or tests/ edits (Confirm preserves OBPI-0.25.0-25 attestation). Gate 4 N/A (zero operator-visible behavior change). Brief-scaffold drift corrected in flight: ALL-CAPS headings \u2192 Title Case, status Pending \u2192 pending, added Lane / Denied Paths / Discovery Checklist / Comparison / Decision / Human Attestation sections, plus H3 evidence sections per .claude/rules/brief-heading-conventions.md.",
+        "date": "2026-05-02"
+      },
+      "runtime_state": "attested_completed",
+      "proof_state": "recorded",
+      "attestation_requirement": "required",
+      "attestation_state": "recorded",
+      "req_proof_state": "recorded",
+      "req_proof_inputs": [
+        {
+          "name": "key_proof",
+          "kind": "legacy_key_proof",
+          "source": "```bash\nrg -n '^decision: Confirm|^\\*\\*Confirm\\*\\*' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-12-docs-lib.md\n# Confirms brief frontmatter and ## Decision body record the Confirm verdict.\n\nrg -c 'OBPI-0.25.0-25' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/obpis/OBPI-0.26.0-12-docs-lib.md\n# Expected: \u226510 \u2014 brief cites the canonical precedent across body, Decision rationale, Implementation Summary, Closing Argument.",
+          "status": "present"
+        }
+      ],
+      "req_proof_summary": {
+        "total": 1,
+        "present": 1,
+        "missing": 0,
+        "state": "recorded"
+      },
+      "anchor_state": "not_tracked",
+      "anchor_commit": "b01c39d",
+      "current_head": "52079e1",
+      "anchor_issues": [],
+      "anchor_drift_files": [],
+      "frontmatter_status": "completed",
+      "brief_status": null,
+      "reflection_issues": [],
+      "tracked_defects": [],
+      "issues": [],
+      "issue_details": []
+    }
+  ],
+  "obpi_summary": {
+    "total": 12,
+    "completed": 12,
+    "incomplete": 0,
+    "missing_files": 0,
+    "unit_status": "completed",
+    "outstanding_ids": []
+  },
+  "closeout_ready": true,
+  "closeout_blockers": []
+}

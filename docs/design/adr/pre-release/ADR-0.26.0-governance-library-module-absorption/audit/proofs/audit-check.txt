@@ -1,0 +1,50 @@
+ADR audit-check: ADR-0.26.0-governance-library-module-absorption
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.26.0-01-adr-management
+  - OBPI-0.26.0-02-references
+  - OBPI-0.26.0-03-adr-recon
+  - OBPI-0.26.0-04-adr-governance
+  - OBPI-0.26.0-05-ledger-schema
+  - OBPI-0.26.0-06-drift-detection
+  - OBPI-0.26.0-07-adr-traceability
+  - OBPI-0.26.0-08-validation-receipt
+  - OBPI-0.26.0-09-adr-audit-ledger
+  - OBPI-0.26.0-10-cli-audit-lib
+  - OBPI-0.26.0-11-artifacts-lib
+  - OBPI-0.26.0-12-docs-lib
+Advisory 10 REQ(s) without @covers traceability (non-blocking):
+  - REQ-0.26.0-02-01
+  - REQ-0.26.0-02-02
+  - REQ-0.26.0-02-03
+  - REQ-0.26.0-02-04
+  - REQ-0.26.0-02-05
+  - REQ-0.26.0-03-01
+  - REQ-0.26.0-03-02
+  - REQ-0.26.0-03-03
+  - REQ-0.26.0-03-04
+  - REQ-0.26.0-03-05
+
+Coverage: 50/60 REQs covered (83.3%)
+  OBPI-0.26.0-01: 5/5 (100.0%)
+  OBPI-0.26.0-02: 0/5 (0.0%)
+  OBPI-0.26.0-03: 0/5 (0.0%)
+  OBPI-0.26.0-04: 5/5 (100.0%)
+  OBPI-0.26.0-05: 5/5 (100.0%)
+  OBPI-0.26.0-06: 5/5 (100.0%)
+  OBPI-0.26.0-07: 5/5 (100.0%)
+  OBPI-0.26.0-08: 5/5 (100.0%)
+  OBPI-0.26.0-09: 5/5 (100.0%)
+  OBPI-0.26.0-10: 5/5 (100.0%)
+  OBPI-0.26.0-11: 5/5 (100.0%)
+  OBPI-0.26.0-12: 5/5 (100.0%)
+Uncovered REQs (10):
+  - REQ-0.26.0-02-01
+  - REQ-0.26.0-02-02
+  - REQ-0.26.0-02-03
+  - REQ-0.26.0-02-04
+  - REQ-0.26.0-02-05
+  - REQ-0.26.0-03-01
+  - REQ-0.26.0-03-02
+  - REQ-0.26.0-03-03
+  - REQ-0.26.0-03-04
+  - REQ-0.26.0-03-05

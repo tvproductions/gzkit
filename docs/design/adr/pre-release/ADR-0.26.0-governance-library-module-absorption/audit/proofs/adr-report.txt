@@ -1,0 +1,23 @@
+                                 ADR Overview
+╭────────────┬───────┬───────────┬────────────────┬───────┬──────────┬───────╮
+│ ADR        │ Lane  │ Lifecycle │ Closeout Phase │ OBPI  │ Closeout │ QC    │
+├────────────┼───────┼───────────┼────────────────┼───────┼──────────┼───────┤
+│ ADR-0.26.0 │ heavy │ Completed │ attested       │ 12/12 │ READY    │ READY │
+╰────────────┴───────┴───────────┴────────────────┴───────┴──────────┴───────╯
+                                    OBPIs
+╭────┬───────────────────────────────────┬────────────────────┬───────┬──────╮
+│ #  │ OBPI ID                           │ State              │ Brief │ Done │
+├────┼───────────────────────────────────┼────────────────────┼───────┼──────┤
+│ 01 │ OBPI-0.26.0-01-adr-management     │ attested_completed │       │ yes  │
+│ 02 │ OBPI-0.26.0-02-references         │ attested_completed │       │ yes  │
+│ 03 │ OBPI-0.26.0-03-adr-recon          │ attested_completed │       │ yes  │
+│ 04 │ OBPI-0.26.0-04-adr-governance     │ attested_completed │       │ yes  │
+│ 05 │ OBPI-0.26.0-05-ledger-schema      │ attested_completed │       │ yes  │
+│ 06 │ OBPI-0.26.0-06-drift-detection    │ attested_completed │       │ yes  │
+│ 07 │ OBPI-0.26.0-07-adr-traceability   │ attested_completed │       │ yes  │
+│ 08 │ OBPI-0.26.0-08-validation-receipt │ attested_completed │       │ yes  │
+│ 09 │ OBPI-0.26.0-09-adr-audit-ledger   │ attested_completed │       │ yes  │
+│ 10 │ OBPI-0.26.0-10-cli-audit-lib      │ attested_completed │       │ yes  │
+│ 11 │ OBPI-0.26.0-11-artifacts-lib      │ attested_completed │       │ yes  │
+│ 12 │ OBPI-0.26.0-12-docs-lib           │ attested_completed │       │ yes  │
+╰────┴───────────────────────────────────┴────────────────────┴───────┴──────╯
