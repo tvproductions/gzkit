@@ -686,9 +686,13 @@ class TestObpiCompleteCmdHappyPath(unittest.TestCase):
 
     The authenticity gate (GHI #290) is patched to a no-op here because this
     test exercises the full transaction path with human attestation required;
-    the gate itself is tested in TestObpiCompleteAuthenticityGate below.
+    the gate itself is tested in TestObpiCompleteAuthenticityGate below. The
+    receipt-binding gate (ADR-0.0.24-02) is also patched to a no-op for the
+    same reason — it is tested in tests/commands/test_obpi_complete.py under
+    the new TestObpiCompleteHeavy* / TestObpiCompleteFoundation* classes.
     """
 
+    @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
     @patch("gzkit.commands.obpi_complete._enforce_human_attestation_authenticity")
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
     @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
@@ -711,7 +715,11 @@ class TestObpiCompleteCmdHappyPath(unittest.TestCase):
         mock_requires_human,
         mock_anchor,
         mock_gate,
+        mock_receipt_gate,
     ):
+        del mock_receipt_gate  # ADR-0.0.24-02 receipt-binding gate is patched
+        # to a no-op here; the new contract is exercised in
+        # tests/commands/test_obpi_complete.py.
         # Gate returns the resolved attestation_type (GHI #292);
         # default to the canonical 'human' path for happy-path coverage.
         mock_gate.return_value = "human"
@@ -768,8 +776,14 @@ class TestObpiCompleteCmdHappyPath(unittest.TestCase):
 
 @covers("OBPI-0.0.14-02")
 class TestObpiCompleteCmdRollback(unittest.TestCase):
-    """Test rollback when main ledger append fails."""
+    """Test rollback when main ledger append fails.
 
+    The receipt-binding gate (ADR-0.0.24-02) is patched to a no-op so the
+    rollback test exercises the I/O-failure path under its original contract;
+    the new gate is covered in tests/commands/test_obpi_complete.py.
+    """
+
+    @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
     @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
     @patch("gzkit.commands.obpi_complete._requires_human_obpi_attestation")
@@ -788,7 +802,9 @@ class TestObpiCompleteCmdRollback(unittest.TestCase):
         mock_adr_resolve,
         mock_requires_human,
         mock_anchor,
+        mock_receipt_gate,
     ):
+        del mock_receipt_gate  # see class docstring
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             mock_root.return_value = root
@@ -952,6 +968,7 @@ class TestObpiCompleteAuthenticityGate(unittest.TestCase):
             self.assertEqual(obpi_file.read_text(encoding="utf-8"), _MINIMAL_BRIEF)
             ledger.append.assert_not_called()
 
+    @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
     @patch("gzkit.commands.adr_audit.console", _quiet_console)
     @patch("gzkit.commands.adr_audit.input", create=True)
@@ -974,7 +991,11 @@ class TestObpiCompleteAuthenticityGate(unittest.TestCase):
         mock_anchor,
         mock_tty,
         mock_input,
+        mock_receipt_gate,
     ):
+        del mock_receipt_gate  # ADR-0.0.24-02 receipt-binding gate is
+        # patched to no-op; the new gate's contract is exercised in
+        # tests/commands/test_obpi_complete.py.
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             mock_root.return_value = root

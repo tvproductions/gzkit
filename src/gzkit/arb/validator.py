@@ -61,6 +61,13 @@ CANONICAL_STEP_COMMANDS: dict[str, list[str]] = {
     # ``gz obpi complete`` fails closed for any brief carrying
     # ``sensitivity: security`` — that fail-closed posture is REQ-0.0.22-05-04.
     "security": [],
+    # Reserved by ADR-0.0.24 (attestation-receipt-binding), OBPI-02. Receipts
+    # in the ``arb-meta-receipt-bind-`` family are emitted internally when
+    # the receipt-binding gate fires successfully inside ``gz obpi complete``
+    # and ``gz adr emit-receipt``. The slot is empty because the receipt is
+    # not produced by a user-runnable invocation; provenance is enforced by
+    # ``step.command == []`` on the emitted receipt.
+    "meta-receipt-bind": [],
 }
 
 

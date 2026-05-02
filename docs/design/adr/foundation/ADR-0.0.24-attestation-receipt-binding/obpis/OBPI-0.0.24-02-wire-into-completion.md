@@ -3,7 +3,7 @@ id: OBPI-0.0.24-02-wire-into-completion
 parent: ADR-0.0.24-attestation-receipt-binding
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.24-02-wire-into-completion: Wire gate into obpi complete + adr emit-receipt
@@ -59,10 +59,41 @@ Invoke `validate_attestation_receipts` (from OBPI-01) inside `gz obpi complete` 
 
 ## Discovery Checklist
 
-- [ ] OBPI-0.0.24-01 evidence — confirm `validate_attestation_receipts` exists and tests pass
-- [ ] `src/gzkit/commands/adr_audit.py` — read `_requires_human_obpi_attestation` and `_enforce_human_attestation_authenticity` for ordering
-- [ ] AGENTS.md § Lane & Kind Attestation Matrix
-- [ ] Existing `obpi complete` flow for receipt emission ordering
+**Prerequisites**
+
+- OBPI-0.0.24-01 has landed — `validate_attestation_receipts` exists at
+  `src/gzkit/governance/trust_audits/attestation_receipts.py:171` with the
+  signature `(text, *, lane, kind, project_root) -> AttestationReceiptValidationResult`
+  and 11 REQ-pinned tests passing (ledger event 4495 records the OBPI-01 completion
+  receipt at 2026-05-02T15:19:12Z).
+- `CANONICAL_STEP_COMMANDS` in `src/gzkit/arb/validator.py` accepts additive
+  extension via the same reserved-slot pattern used by ADR-0.0.22 (`security: []`).
+- Heavy-lane / foundation-kind attestation rigor codified in
+  `_requires_human_obpi_attestation` (`src/gzkit/commands/adr_audit.py:385`)
+  and `_enforce_human_attestation_authenticity` (line 444); the new gate
+  must run BEFORE the latter so a mechanical-receipt failure short-circuits
+  TTY prompting (REQ-07).
+
+**Existing Code**
+
+- `src/gzkit/commands/obpi_complete.py:obpi_complete_cmd` (line 322) — primary
+  surface. Inserts the gate between step 4a (security gate) and step 4b
+  (TTY authenticity gate).
+- `src/gzkit/commands/adr_audit.py:adr_emit_receipt_cmd` (line 686) — ADR
+  audit-receipt path. Inserts the gate before `_enforce_human_attestation_authenticity`
+  (line 739) for the human-attestation events `validated`/`attested`/`accepted`
+  enumerated by `_HUMAN_ATTESTATION_RECEIPT_EVENTS`.
+- `src/gzkit/commands/obpi_cmd.py:obpi_emit_receipt_cmd` (line 125) — sister
+  emit-receipt path. Inserts the gate before `_gate_completed_receipt_authenticity`
+  (line 181) when `receipt_event == "completed"`.
+- `gzkit.ledger_events.audit_receipt_emitted_event` constructor — vehicle for
+  the meta-receipt-bind ledger event (`receipt_event="meta-receipt-bind"`,
+  `evidence={claim, exit_status, run_id, resolved_receipt_ids, ...}`); chosen
+  over a new typed event class so `gzkit.events`/`gzkit.ledger_events` stay
+  out of this OBPI's allowlist.
+- AGENTS.md § Lane & Kind & Sensitivity Attestation Matrix — projection of
+  the three-axis attestation predicate that the gate's fail-closed posture
+  parallels (heavy lane OR foundation kind → fail-closed).
 
 ## Quality Gates
 
@@ -148,13 +179,46 @@ uv run gz arb step --name unittest -- uv run -m unittest tests/commands/test_obp
 
 ### Key Proof
 
+
+Heavy/foundation fail-closed and gate-before-TTY ordering:
+
+```
+$ uv run -m unittest tests.commands.test_obpi_complete.TestObpiCompleteHeavyMissingReceipt tests.commands.test_obpi_complete.TestObpiCompleteGateRunsBeforeTtyGate -v
+test_heavy_lane_missing_receipt_exits_3 ... ok
+test_tty_gate_not_called_when_receipt_binding_fails ... ok
+# observed: SystemExit(3); ledger.append never called; TTY mock asserted not_called
+```
+
+Heavy success → meta-receipt-bind event recorded:
+
+```
+$ uv run -m unittest tests.commands.test_obpi_complete.TestObpiCompleteMetaReceiptBindEvent -v
+test_meta_receipt_bind_event_payload ... ok
+# observed: event.event=="audit_receipt_emitted",
+#           event.extra["receipt_event"]=="meta-receipt-bind",
+#           evidence.run_id starts "arb-meta-receipt-bind-",
+#           evidence.claim=="attestation receipts resolved", exit_status==0
+```
+
+ADR-level mirror (REQ-05):
+
+```
+$ uv run -m unittest tests.commands.test_adr_emit_receipt -v
+test_heavy_lane_validated_with_missing_receipt_exits_3 ... ok
+test_heavy_lane_validated_with_valid_receipt_emits_both ... ok
+```
+
+Quality gates (lint: receipt arb-ruff-cbf6764cf9f241e6bfd377f2f2940ade; typecheck: receipt arb-step-typecheck-c0a0573cc3f446cb9bd4b33d64702e35; unittest: receipt arb-step-unittest-3947d0c134ca422b9ff81dc8cf703f58; mkdocs: receipt arb-step-mkdocs-b20d0e1d3c2e40ce9819006b770b0c20) — 3946/3946 tests pass, 1 skipped.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files modified: `src/gzkit/arb/validator.py` (added `meta-receipt-bind: []` reserved slot to `CANONICAL_STEP_COMMANDS`); `src/gzkit/commands/obpi_complete.py` (added `_read_adr_kind`, `_build_meta_receipt_evidence`, `_enforce_attestation_receipt_gate` helpers; wired between security gate 4a and TTY gate 4b in `obpi_complete_cmd`); `src/gzkit/commands/adr_audit.py` (wired the gate into `adr_emit_receipt_cmd` before `_enforce_human_attestation_authenticity` for `validated`/`attested`/`accepted`); `src/gzkit/commands/obpi_cmd.py` (wired the gate into `obpi_emit_receipt_cmd` for `--event completed` to close the sister-path fabrication vector); `tests/test_obpi_complete_cmd.py` (no-op patches in 3 pre-existing tests under Behavior Rule 1a coupled-surface coherence); `tests/commands/test_runtime.py` (added `setUp` patcher for the new gate covering all 38 end-to-end tests).
+- Files created: `tests/commands/test_obpi_complete.py` (7 tests pinning REQ-01..04 + slot/ordering/payload via the auxiliary REQUIREMENTs); `tests/commands/test_adr_emit_receipt.py` (2 tests pinning REQ-05 fail-closed + success-with-meta-bind).
+- Tests added: 10 OBPI-scoped tests; full sweep 3946/3946 pass (1 skipped).
+- Date completed: 2026-05-02.
+- Attestation status: `attest completed` — operator-typed.
+- Defects noted: none.
 
 ## Tracked Defects
 
@@ -162,14 +226,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` (heavy + foundation requires human)
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — OBPI-0.0.24-02-wire-into-completion landed the receipt-binding gate across all three completion-emitting CLI surfaces (`gz obpi complete`, `gz adr emit-receipt --event {validated,attested,accepted}`, `gz obpi emit-receipt --event completed`). The gate runs BEFORE `_enforce_human_attestation_authenticity` at every site so a mechanical-receipt failure short-circuits TTY prompting (REQ-07). Heavy-lane OR foundation-kind = exit 3 fail-closed on unresolvable ARB receipts (REQ-02, REQ-04); lite + non-foundation = warn-only proceed (REQ-03). Successful gate firings emit a self-attesting `audit_receipt_emitted` event with `receipt_event="meta-receipt-bind"`, `evidence={run_id: "arb-meta-receipt-bind-<32hex>", claim: "attestation receipts resolved", exit_status: 0, resolved_receipt_ids: [...]}` (REQ-05 mechanism). `CANONICAL_STEP_COMMANDS` extended with reserved `meta-receipt-bind: []` slot mirroring the ADR-0.0.22 `security: []` pattern (REQ-06). 5/5 formal acceptance criteria covered by 10 REQ-decorated tests; full sweep 3946/3946 pass (lint: receipt arb-ruff-cbf6764cf9f241e6bfd377f2f2940ade; typecheck: receipt arb-step-typecheck-c0a0573cc3f446cb9bd4b33d64702e35; unittest: receipt arb-step-unittest-3947d0c134ca422b9ff81dc8cf703f58; mkdocs: receipt arb-step-mkdocs-b20d0e1d3c2e40ce9819006b770b0c20).
+- Date: 2026-05-02
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-02
 
 **Evidence Hash:** -

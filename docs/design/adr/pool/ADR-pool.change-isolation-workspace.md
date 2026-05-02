@@ -4,7 +4,9 @@ status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: lite
 enabler: null
-inspired_by: openspec
+inspired_by: openspec, openai/symphony
+amendments:
+  - 2026-05-02 — added § Amendment 2026-05-02 (per-OBPI git-worktree isolation)
 ---
 
 # ADR-pool.change-isolation-workspace: Filesystem Change Isolation
@@ -15,7 +17,7 @@ Pool
 
 ## Date
 
-2026-03-08
+2026-03-08 (original) / 2026-05-02 (worktree amendment — see Amendment History)
 
 ## Parent PRD
 
@@ -78,3 +80,107 @@ for isolating pending modifications from current system state.
 - OpenSpec's killer feature — prevents AI context drift by physical separation
 - Must preserve backward compatibility: existing pool/ ADRs and direct creation still work
 - Consider: should `changes/` be gitignored or committed? (Committed — it's documentation)
+
+---
+
+## Amendment 2026-05-02: Per-OBPI git-worktree isolation
+
+The original scope isolates *documents* (ADR / tasks / scratchpad) under
+`changes/<adr-slug>/`. The `openai/symphony` SPEC.md (released 2026-04-23,
+[github.com/openai/symphony](https://github.com/openai/symphony)) supplies
+the missing axis: isolate the *code workspace* per implementation unit, not
+just the design artifacts. Each open issue in Symphony maps to a per-issue
+filesystem directory under a configurable workspace root, with prefix-checked
+`cwd`, sanitized workspace key, and lifecycle hooks.
+
+The gzkit appropriation is **per-OBPI git worktrees**, not Symphony's plain
+filesystem dirs — gzkit already has [`atomic-obpi-commits`](ADR-pool.atomic-obpi-commits.md)
+proposing per-OBPI commit boundaries on the active branch, and worktrees are
+the strict superset (per-OBPI branch isolation + per-OBPI commit boundary +
+filesystem `cwd` separation in one mechanism). Worktrees are also stdlib-first
+relative to alternatives — git is already a hard dependency, no new tool is
+adopted.
+
+### Extended Target Scope
+
+In addition to the original document-isolation scope:
+
+- **Worktree spawn on OBPI lock claim.** When `gz-obpi-lock` claims an OBPI,
+  the runtime spawns `worktrees/OBPI-X.Y.Z-NN/` via `git worktree add` on a
+  branch named `obpi/<OBPI-ID>` rooted at the lock-claim commit. The
+  `obpi_lock_claimed` ledger event records the worktree path and base SHA.
+- **Sanitized worktree key.** OBPI ID is the worktree key; only
+  `[A-Za-z0-9._-]` permitted; other chars rejected, not silently rewritten
+  (gzkit is fail-closed where Symphony is permissive). Path validated as a
+  prefix of the configured worktree root.
+- **`gz-obpi-pipeline` runs in the worktree `cwd`.** Stages 1-4 (implement,
+  verify, present evidence, attest) execute with `cwd` = worktree path. The
+  runtime asserts the prefix invariant before each stage; out-of-prefix
+  writes are a fail-closed pipeline error, not a warning.
+- **Stage 5 sync = `gz git-sync` flushes worktree → main, then prunes.**
+  The existing `gz git-sync --apply --lint --test` pipeline becomes the
+  worktree-merge surface. Atomic-commit metadata from
+  [`atomic-obpi-commits`](ADR-pool.atomic-obpi-commits.md) is produced inside
+  the worktree; the merge to main carries the structured trailer through.
+- **Worktree pruning on lock release.** `obpi_lock_released` triggers
+  `git worktree remove`; the branch persists for audit replay until a
+  configurable retention horizon, then is pruned by the same Stage-5 ceremony.
+- **Allowed-Paths becomes a fail-closed filesystem invariant, not a brief
+  rule.** Symphony's prefix check is the model: a write outside the brief's
+  Allowed Paths is impossible because the worktree is the prefix. The
+  honor-system reading of Allowed Paths is retired in favor of the structural
+  invariant.
+
+### Coupled-surface coherence
+
+- **[`atomic-obpi-commits`](ADR-pool.atomic-obpi-commits.md)** — stacked
+  enabler. Worktree gives the per-OBPI branch; atomic-obpi-commits gives the
+  per-OBPI commit shape inside it. Promote together or sequence
+  worktree-first.
+- **[`obpi-state-machine`](ADR-pool.obpi-state-machine.md)** — the
+  `obpi_lock_claimed` / `obpi_lock_released` events become the canonical
+  transitions that emit worktree spawn/prune as postconditions.
+- **[`sandboxed-delegation`](ADR-pool.sandboxed-delegation.md)** — its
+  explicit non-goal *"No container-level isolation — gzkit subagents run in
+  the same filesystem"* still holds. Worktrees are filesystem-separated
+  paths inside the same mount, not container/VM isolation.
+- **[`filesystem-checkpoints`](ADR-pool.filesystem-checkpoints.md)** —
+  orthogonal. Checkpoints are per-operation rollback safety net; worktrees
+  are per-OBPI scope-fence. Both can coexist.
+- **[`pause-resume-handoff-runtime`](ADR-pool.pause-resume-handoff-runtime.md)** —
+  worktree path becomes a first-class field in the handoff schema; resume
+  re-attaches to the existing worktree rather than re-deriving working set
+  from commits-since-handoff.
+
+### Non-Goals (extended)
+
+- No container or VM isolation (deferred to
+  [`controlled-agency-recovery`](ADR-pool.controlled-agency-recovery.md)).
+- No per-OBPI virtual environment — the parent project's `uv`-managed venv
+  is shared across worktrees (consistent with [`sandboxed-delegation`](ADR-pool.sandboxed-delegation.md)
+  same-filesystem posture).
+- No mid-pipeline worktree relocation — the worktree path is fixed at
+  lock-claim time and immutable until lock-release. Hot-relocation is the
+  Symphony hot-reload pattern gzkit deliberately rejects (doctrine drift =
+  invariant drift, `AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT operative
+  claim 3).
+
+### Distinct from Symphony
+
+- **Worktree, not plain dir.** Gives branch isolation + replay-able audit
+  trail for free.
+- **Fail-closed, not permissive.** Symphony silently rewrites invalid
+  workspace keys with `_`; gzkit rejects them. Anti-vibing posture.
+- **Single shared venv, not per-workspace process tree.** Symphony spawns
+  `codex app-server` per workspace; gzkit's runtime is one Python process
+  navigating worktrees as `cwd`.
+- **No hot reload of WORKFLOW.md analog.** Symphony reloads `WORKFLOW.md`
+  live; gzkit's `.gzkit/manifest.json` + `.claude/rules/` are deliberately
+  pinned for the duration of the pipeline run.
+
+### Inspired By (extended)
+
+[openai/symphony SPEC.md](https://github.com/openai/symphony/blob/main/SPEC.md)
+§ Workspace Manager and § Agent Runner — per-issue workspace as a first-class
+isolation primitive. Apache-2.0; reference-implementation posture, not a
+maintained product.
