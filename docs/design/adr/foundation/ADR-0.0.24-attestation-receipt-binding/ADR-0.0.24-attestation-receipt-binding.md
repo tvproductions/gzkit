@@ -38,11 +38,15 @@ ARB middleware; this ADR makes the binding fail-closed instead of advisory.
 
 1. Extend `gz validate` with `--attestation-receipts` scope that, given an
    attestation string, parses it for `arb-…` receipt IDs, looks each up in
-   `.gzkit/ledger.jsonl`, and asserts:
-   - The receipt exists in the ledger
+   the ARB receipts directory (`artifacts/receipts/<run_id>.json` resolved
+   via `gzkit.arb.paths.receipts_root()`), and asserts:
+   - The receipt file exists and parses as JSON conforming to its declared
+     schema (`gzkit.arb.lint_receipt.v1` or `gzkit.arb.step_receipt.v1`)
    - Its `exit_status == 0`
-   - Its `claim` text matches the canonical claim category named adjacent
-     to the citation (e.g., `lint:` adjacent to an `arb-ruff-…` receipt).
+   - Its canonical claim category — derived from the receipt shape
+     (`arb-ruff-*` => `lint`; `arb-step-<name>-*` => `<name>` keyed to
+     `CANONICAL_STEP_COMMANDS`) — matches the category named adjacent to
+     the citation (e.g., `lint:` adjacent to an `arb-ruff-…` receipt).
 2. Wire the new scope into `gz obpi complete --attestation-text …` and
    `gz adr emit-receipt … --attestor …` as a pre-emission gate.
 3. Lane behavior:
@@ -59,6 +63,23 @@ ARB middleware; this ADR makes the binding fail-closed instead of advisory.
 5. Receipts the gate cites for its own enforcement appear in the ledger
    under a new `arb-meta-receipt-bind-…` family — self-attesting evidence
    that the gate fired on the attestation it ratified.
+
+## Non-Goals
+
+1. **No emergency-skip flag.** No `--skip-receipt-binding` or equivalent
+   bypass. The gate is the contract; an emergency-skip path reintroduces the
+   narrative-trust pathway this ADR exists to close. A future GHI may revisit
+   if operational evidence forces it.
+2. **No git-pre-receive enforcement.** Receipt binding lands at the same
+   layer as receipt emission (the ledger entry itself), not at the push that
+   records it. Pre-receive hooks are Layer-3 derived checks per
+   `docs/governance/state-doctrine.md`; this ADR keeps enforcement at
+   Layer 2.
+3. **No fail-closed on lite-lane non-foundation.** Lite-lane attestation
+   today legitimately accepts narrative-only for non-contract work.
+   Tightening lite without prior narrative-to-receipt migration breaks
+   existing flows. Warn-only on lite preserves the existing covenant while
+   tightening heavy/foundation.
 
 ## Consequences
 

@@ -21,7 +21,7 @@ Update AGENTS.md § Attestation prose to reflect that receipt binding is now mec
 
 ## Lane
 
-**Heavy** — Documentation updates accompanying a contract change. Per `.gzkit/rules/gate5-runbook-code-covenant.md`, docs track behavior in the same patch set; this OBPI is the docs side of OBPI-01 and OBPI-02.
+**Heavy** — Although AGENTS.md § Lane Rules treats documentation/process/template-only changes as Lite by default, this OBPI inherits the parent ADR's foundation-kind rigor regardless of its own surface (per AGENTS.md § Lane & Kind & Sensitivity Attestation Matrix — foundation-kind brief-level attestation fires on every OBPI's `Completed` transition, including doc-only OBPIs, because doctrine drift is invariant drift). Per `.gzkit/rules/gate5-runbook-code-covenant.md`, docs track behavior in the same patch set; this OBPI is the docs side of OBPI-01 and OBPI-02.
 
 ## Allowed Paths
 

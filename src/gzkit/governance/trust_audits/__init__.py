@@ -24,6 +24,12 @@ from __future__ import annotations
 from gzkit.governance.trust_audits.absorption_duplicates import (
     audit_absorption_duplicates,
 )
+from gzkit.governance.trust_audits.attestation_receipts import (
+    AttestationReceiptEntry,
+    AttestationReceiptValidationResult,
+    audit_attestation_receipts,
+    validate_attestation_receipts,
+)
 from gzkit.governance.trust_audits.briefs import (
     audit_behave_req_tags,
     audit_brief_headings,
@@ -66,10 +72,13 @@ from gzkit.governance.trust_audits.taxonomy import (
 )
 
 __all__ = [
+    "AttestationReceiptEntry",
+    "AttestationReceiptValidationResult",
     "audit_absorption_duplicates",
     "audit_adr_status_fresh",
     "audit_adr_taxonomy",
     "audit_advisory_scorecard",
+    "audit_attestation_receipts",
     "audit_behave_req_tags",
     "audit_brief_headings",
     "audit_chores_layout",
@@ -91,4 +100,5 @@ __all__ = [
     "audit_validator_fields",
     "audit_version_release",
     "explain_sensitivity_for_paths",
+    "validate_attestation_receipts",
 ]

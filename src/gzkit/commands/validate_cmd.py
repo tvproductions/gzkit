@@ -12,6 +12,10 @@ from gzkit.commands.validate_frontmatter import (
     validate_frontmatter_coherence,
 )
 from gzkit.commands.version_sync import validate_version_consistency
+from gzkit.governance.trust_audits import (
+    AttestationReceiptValidationResult,
+    validate_attestation_receipts,
+)
 from gzkit.instruction_audit import audit_instructions
 from gzkit.models.persona import discover_persona_files, validate_persona_structure
 from gzkit.tasks import parse_ceremony_trailers, parse_task_trailers
@@ -832,6 +836,67 @@ def _print_validation_result(
         raise SystemExit(3)
 
 
+def _resolve_attestation_text(value: str, project_root: Path) -> str:
+    """Return the attestation text, expanding ``@path`` references."""
+    if value.startswith("@"):
+        target = Path(value[1:])
+        if not target.is_absolute():
+            target = project_root / target
+        return target.read_text(encoding="utf-8")
+    return value
+
+
+def _render_attestation_result(
+    result: AttestationReceiptValidationResult,
+    *,
+    as_json: bool,
+) -> None:
+    if as_json:
+        payload = {
+            "exit_code": result.exit_code,
+            "warn_only": result.warn_only,
+            "entries": [entry.model_dump() for entry in result.entries],
+        }
+        print(json.dumps(payload, indent=2))  # noqa: T201
+        return
+    if not result.entries:
+        if result.warn_only:
+            console.print(
+                "[yellow]⚠ No ARB receipt IDs cited (lite + non-foundation: warning).[/yellow]"
+            )
+        else:
+            console.print(
+                "[red]❌ No ARB receipt IDs cited (heavy or foundation: fail-closed).[/red]"
+            )
+        return
+    if result.exit_code == 0:
+        console.print(f"[green]✓ {len(result.entries)} attestation receipt(s) resolved.[/green]")
+        return
+    console.print(
+        f"[red]❌ Attestation receipt validation failed ({len(result.entries)} entry):[/red]"
+    )
+    for entry in result.entries:
+        marker = "[green]✓[/green]" if entry.status == "resolved" else "[red]→[/red]"
+        run_id = entry.run_id or "<malformed>"
+        console.print(f"  {marker} [{entry.status}] {run_id}")
+        console.print(f"      {entry.message}")
+
+
+def _run_attestation_receipts_scope(
+    project_root: Path,
+    *,
+    attestation_text: str,
+    lane: str,
+    kind: str,
+    as_json: bool,
+) -> None:
+    text = _resolve_attestation_text(attestation_text, project_root)
+    result = validate_attestation_receipts(text, lane=lane, kind=kind, project_root=project_root)
+    _render_attestation_result(result, as_json=as_json)
+    if result.exit_code != 0:
+        raise SystemExit(result.exit_code)
+
+
 def validate(
     check_manifest: bool,
     check_documents: bool,
@@ -872,6 +937,9 @@ def validate(
     check_sensitivity: bool = False,
     sensitivity_explain: str | None = None,
     check_absorption_duplicates: bool = False,
+    attestation_receipts: str | None = None,
+    attestation_lane: str = "heavy",
+    attestation_kind: str = "feature",
     as_json: bool = False,
     frontmatter_adr: str | None = None,
     frontmatter_explain: str | None = None,
@@ -885,6 +953,15 @@ def validate(
         * 3 — frontmatter-ledger policy breach (drift found)
     """
     project_root = get_project_root()
+    if attestation_receipts is not None:
+        _run_attestation_receipts_scope(
+            project_root,
+            attestation_text=attestation_receipts,
+            lane=attestation_lane,
+            kind=attestation_kind,
+            as_json=as_json,
+        )
+        return
     # --explain implies --frontmatter and scope
     if frontmatter_explain:
         check_frontmatter = True
