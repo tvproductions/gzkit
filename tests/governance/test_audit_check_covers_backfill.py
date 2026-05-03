@@ -566,6 +566,68 @@ class TestLegitimateAuthoringExemption(unittest.TestCase):
         self.assertEqual(findings[0].severity, "blocking")
 
     @covers("REQ-0.0.23-05-01")
+    def test_pre_trailer_subject_marker_exempts_legitimate_authoring(self) -> None:
+        """Pre-GHI #201 ceremony commits (before the `Ceremony:` git trailer was
+        introduced) carry the ceremony marker only in the parenthesized subject
+        suffix, e.g. ``chore: update ... (gz git-sync)``. The trailer-only
+        check would miss them entirely and flag the bundled @covers as
+        cosmetic backfill (GHI #390 Case B). The subject-suffix fallback maps
+        the historical marker to the same canonical exempt set.
+        """
+        intro = _make_intro(sha="aaaaaaa", on=date(2026, 4, 18))
+        receipt = _make_receipt(sha="bbbbbbb", on=date(2026, 4, 17))
+        fake = FakeGit(
+            [
+                (0, "1\n", ""),  # rev-list: 1-commit gap
+                (0, "deadbee0000000000000000000000000000000000\n", ""),  # creation: different SHA
+                (0, "\n", ""),  # trailer: empty (pre-trailer-convention commit)
+                (
+                    0,
+                    "chore: update .claude (2 files), .gzkit (3 files) +5 more (gz git-sync)\n",
+                    "",
+                ),  # subject: carries historical marker at end
+            ]
+        )
+        thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+        findings = compute_backfill_findings(
+            [intro],
+            {intro.target: receipt},
+            thresholds,
+            severity="blocking",
+            project_root=Path("/repo"),
+            git_runner=fake,
+        )
+        self.assertEqual(findings, ())
+
+    @covers("REQ-0.0.23-05-01")
+    def test_subject_marker_must_be_at_subject_end_to_exempt(self) -> None:
+        """The historical marker pattern is anchored to subject end so a
+        future commit titled e.g. ``fix: stop bypassing (gz git-sync) trailer
+        check`` cannot accidentally exempt itself by mentioning the suffix
+        mid-line.
+        """
+        intro = _make_intro(sha="aaaaaaa", on=date(2026, 4, 18))
+        receipt = _make_receipt(sha="bbbbbbb", on=date(2026, 4, 17))
+        fake = FakeGit(
+            [
+                (0, "1\n", ""),
+                (0, "deadbee0000000000000000000000000000000000\n", ""),
+                (0, "\n", ""),
+                (0, "fix: stop bypassing (gz git-sync) trailer check (GHI #999)\n", ""),
+            ]
+        )
+        thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+        findings = compute_backfill_findings(
+            [intro],
+            {intro.target: receipt},
+            thresholds,
+            severity="blocking",
+            project_root=Path("/repo"),
+            git_runner=fake,
+        )
+        self.assertEqual(len(findings), 1)
+
+    @covers("REQ-0.0.23-05-01")
     def test_unregistered_ceremony_trailer_does_not_exempt(self) -> None:
         intro = _make_intro(sha="aaaaaaa", on=date(2026, 4, 1))
         receipt = _make_receipt(sha="bbbbbbb", on=date(2026, 4, 1))
