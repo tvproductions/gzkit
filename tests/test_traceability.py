@@ -630,6 +630,50 @@ class TestFindCoversInSource(unittest.TestCase):
     def test_empty_source(self):
         self.assertEqual(find_covers_in_source(""), [])
 
+    def test_string_literal_fixture_content_is_not_returned_as_covers_hit(self):
+        """A ``@covers(...)`` reference inside a non-docstring string literal
+        (e.g. ``write_text(textwrap.dedent("@covers(\\"REQ-...\\")"))`` in a
+        test fixture) must NOT register as a real coverage anchor — AST never
+        parses it as a decorator and the legacy regex post-pass over raw
+        source produced false positives that flagged ADR-0.0.16's audit even
+        though the fixture is not a real coverage site (GHI #390 Case A).
+        """
+        source = (
+            "import textwrap\n"
+            "def make_fixture():\n"
+            '    payload = textwrap.dedent("""\n'
+            '        @covers("REQ-0.0.16-01-05")\n'
+            "        def t():\n"
+            "            pass\n"
+            '    """)\n'
+            "    return payload\n"
+        )
+        self.assertEqual(find_covers_in_source(source), [])
+
+    def test_module_docstring_covers_reference_still_returned(self):
+        """Module-level docstring ``@covers REQ-...`` references remain
+        in scope — docstrings are the legitimate AST-invisible site the
+        regex post-pass exists to cover.
+        """
+        source = '"""Module purpose.\n\n@covers REQ-0.15.0-03-01\n"""\n'
+        hits = find_covers_in_source(source)
+        self.assertIn(("REQ-0.15.0-03-01", 3), hits)
+
+    def test_function_docstring_covers_reference_still_returned(self):
+        """Function-level docstring ``@covers REQ-...`` references remain
+        in scope — same docstring carve-out as module level.
+        """
+        source = (
+            "def helper():\n"
+            '    """Helper purpose.\n'
+            "\n"
+            "    @covers REQ-0.15.0-03-02\n"
+            '    """\n'
+            "    return None\n"
+        )
+        hits = find_covers_in_source(source)
+        self.assertIn(("REQ-0.15.0-03-02", 4), hits)
+
 
 class TestComputeCoverage(unittest.TestCase):
     """Coverage rollup computation at ADR, OBPI, and REQ levels."""
