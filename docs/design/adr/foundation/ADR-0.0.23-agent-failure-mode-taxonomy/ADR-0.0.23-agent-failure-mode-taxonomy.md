@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.23-agent-failure-mode-taxonomy
-status: Draft
+status: Validated
 kind: foundation
 semver: 0.0.23
 lane: lite
