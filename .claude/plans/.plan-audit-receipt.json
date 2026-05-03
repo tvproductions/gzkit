@@ -1,0 +1,8 @@
+{
+  "obpi_id": "OBPI-0.0.25-02-override-and-mirror",
+  "timestamp": "2026-05-02T01:00:00Z",
+  "verdict": "PASS",
+  "plan_file": "staged-percolating-seahorse.md",
+  "gaps_found": 0,
+  "notes": "Brief allowed-paths corrected (obpi.py→obpi_complete.py, adr_emit_receipt.py→adr_audit.py). Plan produced and approved."
+}

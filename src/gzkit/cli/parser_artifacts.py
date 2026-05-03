@@ -444,8 +444,8 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
         "--event",
         dest="receipt_event",
         required=True,
-        choices=["completed", "validated"],
-        help="Receipt event type (completed|validated)",
+        choices=["completed", "validated", "closed"],
+        help="Receipt event type (completed|validated|closed)",
     )
     p_adr_emit.add_argument("--attestor", required=True, help="Identity of the attestor")
     p_adr_emit.add_argument(
@@ -779,6 +779,22 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Agent-relayed operator attestation, gated on active pipeline marker (GHI #292)",
     )
+    p_obpi_complete.add_argument(
+        "--accept-uncovered",
+        action="append",
+        dest="accept_uncovered",
+        metavar="REQ_ID",
+        default=None,
+        help="Waive an uncovered REQ (repeatable). Requires --accept-uncovered-reason.",
+    )
+    p_obpi_complete.add_argument(
+        "--accept-uncovered-reason",
+        action="append",
+        dest="accept_uncovered_reason",
+        metavar="REASON",
+        default=None,
+        help="Rationale for --accept-uncovered (repeatable, 1:1 positional pairing).",
+    )
     add_json_flag(p_obpi_complete)
     add_dry_run_flag(p_obpi_complete)
     p_obpi_complete.set_defaults(
@@ -789,6 +805,8 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
             implementation_summary=a.implementation_summary,
             key_proof=a.key_proof,
             attestor_present=a.attestor_present,
+            accept_uncovered=a.accept_uncovered,
+            accept_uncovered_reason=a.accept_uncovered_reason,
             as_json=a.as_json,
             dry_run=a.dry_run,
         )

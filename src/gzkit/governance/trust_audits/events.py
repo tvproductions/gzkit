@@ -45,6 +45,11 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "Records that canonical rules + mirrors regenerated; consumed by sync "
         "audits and brief-level REQ proofs, not the artifact graph."
     ),
+    "obpi_completion_uncovered_accept": (
+        "REQ-coverage waiver record (ADR-0.0.25-02). Consumed by "
+        "_check_adr_obpi_coverage_gaps for ADR closeout gap subtraction; "
+        "does not add or modify artifact graph nodes."
+    ),
 }
 
 _VALIDATOR_FIELD_WAIVERS: dict[str, str] = {}

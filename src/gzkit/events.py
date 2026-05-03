@@ -467,6 +467,17 @@ class ObpiWithdrawnEvent(_EventBase):
     reason: str
 
 
+class ObpiCompletionUncoveredAcceptEvent(_EventBase):
+    """obpi_completion_uncovered_accept event — records one REQ-coverage waiver (ADR-0.0.25-02)."""
+
+    event: Literal["obpi_completion_uncovered_accept"]
+    obpi_id: str
+    req_id: str
+    operator: str
+    rationale: str
+    acceptance_type: str
+
+
 class PatchReleaseEvent(_EventBase):
     """patch-release event — GHI-driven patch release ceremony record."""
 
@@ -540,6 +551,7 @@ TypedLedgerEvent = Annotated[
     | ObpiLockClaimedEvent
     | ObpiLockReleasedEvent
     | ObpiWithdrawnEvent
+    | ObpiCompletionUncoveredAcceptEvent
     | PatchReleaseEvent
     | TaskStartedEvent
     | TaskCompletedEvent

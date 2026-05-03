@@ -243,6 +243,19 @@
         "passed": { "type": "boolean" }
       }
     },
+    "obpi_completion_uncovered_accept": {
+      "required": ["obpi_id", "req_id", "operator", "rationale", "acceptance_type"],
+      "properties": {
+        "obpi_id": { "type": "string", "min_length": 1 },
+        "req_id": { "type": "string", "min_length": 1 },
+        "operator": { "type": "string", "min_length": 1 },
+        "rationale": { "type": "string", "min_length": 1 },
+        "acceptance_type": {
+          "type": "string",
+          "enum": ["human", "agent-relayed-operator-attestation", "lite-auto"]
+        }
+      }
+    },
     "obpi_lock_claimed": {
       "required": ["agent", "ttl_minutes", "branch", "session_id"],
       "properties": {

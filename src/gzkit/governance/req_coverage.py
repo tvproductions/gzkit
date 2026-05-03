@@ -97,3 +97,15 @@ def discover_covers(req_id: str, tests_root: Path) -> list[TestRef]:
             )
         )
     return refs
+
+
+class UncoveredAcceptanceRecord(BaseModel):
+    """One accepted-uncovered REQ waiver, before writing to the ledger (ADR-0.0.25-02)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    obpi_id: str = Field(..., description="OBPI brief identifier")
+    req_id: str = Field(..., description="REQ-ID being waived")
+    operator: str = Field(..., description="Operator identity (name only, no email)")
+    rationale: str = Field(..., description="Mandatory waiver rationale")
+    acceptance_type: str = Field(..., description="human or agent-relayed-operator-attestation")
