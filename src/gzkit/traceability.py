@@ -9,9 +9,11 @@ gz adr audit-check). Both decorator-call and docstring/comment forms of
 from __future__ import annotations
 
 import ast
+import io
 import logging
 import pathlib
 import re
+import tokenize
 import types
 from collections.abc import Callable
 from typing import TypeVar
@@ -52,13 +54,93 @@ def find_covers_in_source(content: str) -> list[tuple[str, int]]:
     audit-check. Handles both decorator-call and docstring/comment forms so
     every coverage-aware command sees the same set of references (see #120).
     Line numbers are 1-indexed.
+
+    String literals that are NOT docstrings (e.g. ``@covers("REQ-...")`` text
+    embedded in ``write_text(textwrap.dedent("..."))`` test fixtures) are
+    masked out so the regex post-pass cannot pick up phantom coverage anchors
+    from inside them (GHI #390 Case A). Module / class / function docstrings
+    remain in scope — they are the legitimate AST-invisible site this scanner
+    exists to cover.
     """
+    excluded = _non_docstring_string_ranges(content)
     hits: list[tuple[str, int]] = []
     for match in _COVERS_REF_PATTERN.finditer(content):
+        if _offset_inside_any_range(match.start(), excluded):
+            continue
         req_id = match.group(1)
         line_num = content[: match.start()].count("\n") + 1
         hits.append((req_id, line_num))
     return hits
+
+
+def _offset_inside_any_range(offset: int, ranges: list[tuple[int, int]]) -> bool:
+    """Return True when ``offset`` falls inside any ``(start, end)`` range."""
+    return any(start <= offset < end for start, end in ranges)
+
+
+def _non_docstring_string_ranges(content: str) -> list[tuple[int, int]]:
+    """Return char-offset ranges of every string literal that is NOT a docstring.
+
+    Walks the AST to identify docstring lines (the first ``Expr(Constant(str))``
+    statement of the module, every ``ClassDef``, and every ``FunctionDef`` /
+    ``AsyncFunctionDef`` body) so those literals stay in scope. All other
+    ``tokenize.STRING`` tokens (test-fixture payloads, error message strings,
+    f-string LITERAL portions ignored — see GHI #390 deferred note) are
+    returned as ``(start_offset, end_offset)`` exclusion ranges.
+
+    Falls back to ``[]`` on any AST/tokenize error so callers preserve their
+    historical behavior of "regex over raw source" when the file cannot be
+    parsed (e.g. deliberate-syntax-error fixtures under ``tests/fakes/``).
+    """
+    try:
+        tree = ast.parse(content)
+    except (SyntaxError, ValueError):
+        return []
+
+    docstring_lines: set[int] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            continue
+        body = getattr(node, "body", None) or []
+        if not body:
+            continue
+        first = body[0]
+        if not isinstance(first, ast.Expr):
+            continue
+        value = first.value
+        if not (isinstance(value, ast.Constant) and isinstance(value.value, str)):
+            continue
+        end_lineno = first.end_lineno or first.lineno
+        for ln in range(first.lineno, end_lineno + 1):
+            docstring_lines.add(ln)
+
+    line_offsets = _build_line_offsets(content)
+    excluded: list[tuple[int, int]] = []
+    try:
+        token_iter = tokenize.tokenize(io.BytesIO(content.encode("utf-8")).readline)
+        for tok in token_iter:
+            if tok.type != tokenize.STRING:
+                continue
+            start_line, start_col = tok.start
+            end_line, end_col = tok.end
+            if start_line in docstring_lines:
+                continue
+            if start_line >= len(line_offsets) or end_line >= len(line_offsets):
+                continue
+            start_off = line_offsets[start_line - 1] + start_col
+            end_off = line_offsets[end_line - 1] + end_col
+            excluded.append((start_off, end_off))
+    except (tokenize.TokenError, IndentationError, SyntaxError, ValueError):
+        return []
+    return excluded
+
+
+def _build_line_offsets(content: str) -> list[int]:
+    """Return cumulative character offsets so ``offset[line - 1] + col`` lands on the right char."""
+    offsets = [0]
+    for line in content.splitlines(keepends=True):
+        offsets.append(offsets[-1] + len(line))
+    return offsets
 
 
 # ---------------------------------------------------------------------------
