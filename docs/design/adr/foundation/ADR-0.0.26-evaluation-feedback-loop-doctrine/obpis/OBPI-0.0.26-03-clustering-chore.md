@@ -3,7 +3,7 @@ id: OBPI-0.0.26-03-clustering-chore
 parent: ADR-0.0.26-evaluation-feedback-loop-doctrine
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.26-03-clustering-chore: `eval-feedback-cluster` chore
@@ -59,11 +59,19 @@ Author a chore that periodically scans recent `adr-evaluation` ledger events and
 
 ## Discovery Checklist
 
-- [ ] Parent ADR § Decision item 3
-- [ ] OBPI-0.0.26-01 evidence — confirm event shape
-- [ ] `.claude/rules/chores.md` § Two-Surface Layout (ADR-0.0.21)
-- [ ] `src/gzkit/chores/<existing-chore>/` — example of an existing chore's structure
-- [ ] `.gzkit/skills/gz-justify/SKILL.md` — confirm artifact path convention
+**Prerequisites**
+
+- [x] Parent ADR § Decision item 3 read; chore scope is periodic clustering of `adr-evaluation` events and `gz-justify` artifacts.
+- [x] OBPI-0.0.26-01 evidence confirmed: `adr-evaluation` events shape stable (`artifact_id`, `dimensions: dict[str,float]`, `scores`, `weighted_total`, `red_team_challenges_fired: list[str]`).
+- [x] `.claude/rules/chores.md` § Two-Surface Layout (ADR-0.0.21) read; canonical at `src/gzkit/chores/<slug>/`, project-local overlay at `.gzkit/chores/<slug>/`.
+- [x] `AGENTS.md` § foundation+heavy lane → brief-level Gate 5 attestation required.
+
+**Existing Code**
+
+- [x] `src/gzkit/chores/registry.json` — chore registration format confirmed (`slug`, `title`, `version`, `path`, `lane` required fields).
+- [x] `src/gzkit/chores/` — existing chore package layout reviewed (CHORE.md, acceptance.json, README.md pattern).
+- [x] `.gzkit/skills/gz-justify/SKILL.md` — artifact path convention confirmed (`artifacts/justify/<slug>-<ts>.md`).
+- [x] `data/eval_feedback_thresholds.json` — existing threshold data file holding `low_score_threshold` and `red_team_count_threshold`; `cluster_min_recurrence` added here.
 
 ## Quality Gates
 
@@ -115,12 +123,18 @@ uv run gz chores run eval-feedback-cluster
 
 ### Gate 2 (TDD)
 ```text
-# RGR observations + unittest output
+RED: 8 tests added for REQ-01–05 before implementation; all failed import-error.
+GREEN: eval_feedback_cluster_lib.py + chore scaffolding; 8/8 pass.
+
+Ran 8 tests in 1.196s OK
+arb-step-unittest-a40ac6337dd442e680e8fe6db6207b0e (exit_status=0)
 ```
 
 ### Code Quality
 ```text
-# lint/typecheck output
+arb-ruff-9b6eae35d4cf41c5b858be5ef8bec418 (exit_status=0)
+arb-step-typecheck-a53b9ba335f64202a848f916c15008d2 (exit_status=0)
+arb-step-unittest-a40ac6337dd442e680e8fe6db6207b0e (exit_status=0)
 ```
 
 ### Gate 5 (Human)
@@ -130,15 +144,38 @@ uv run gz chores run eval-feedback-cluster
 
 ### Value Narrative
 
+The `eval-feedback-cluster` chore closes the feedback loop established by ADR-0.0.26:
+`adr-evaluation` events now have a downstream consumer that surfaces recurring
+weak-dimension patterns, enabling governance to self-identify where doctrine
+needs reinforcement. The chore is idempotent, read-only outside its proofs
+directory, and threshold-configurable — zero novel runtime dependencies.
+
 ### Key Proof
+
+
+`gz covers OBPI-0.0.26-03-clustering-chore --json` → `uncovered_reqs: 0`,
+`coverage_percent: 100.0` (5/5 REQs). All three ARB gates green. Chore
+registered in `src/gzkit/chores/registry.json`; layout validated by
+`gz validate --chores-layout` (exit 0).
 
 ### Implementation Summary
 
+
 - Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+  - `src/gzkit/chores/eval_feedback_cluster_lib.py` (new — clustering lib)
+  - `src/gzkit/chores/eval-feedback-cluster/CHORE.md` (new)
+  - `src/gzkit/chores/eval-feedback-cluster/acceptance.json` (new)
+  - `src/gzkit/chores/eval-feedback-cluster/README.md` (new)
+  - `.gzkit/chores/eval-feedback-cluster/proofs/.gitkeep` (new)
+  - `src/gzkit/chores/registry.json` (modified — added entry)
+  - `data/eval_feedback_thresholds.json` (modified — added `cluster_min_recurrence`)
+  - `src/gzkit/commands/covers.py` (bug fix — slug stripping in `_req_belongs_to_obpi`)
+  - `tests/chores/test_eval_feedback_cluster.py` (new — 8 tests)
+  - `.gzkit/insights/agent-insights.jsonl` (fixed pre-existing schema violation)
+- Tests added: 8 (covers REQ-01 through REQ-05)
+- Date completed: 2026-05-03
+- Attestation status: Awaiting Gate 5
+- Defects noted: covers.py slug bug (in-flight, fixed inline); insight schema violation (pre-existing, fixed inline)
 
 ## Tracked Defects
 
@@ -146,14 +183,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` (heavy + foundation requires human)
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — eval-feedback-cluster chore implemented and verified: 8/8 tests pass covering all 5 REQs (100% coverage, uncovered_reqs=0); three ARB gates green (arb-ruff-9b6eae35d4cf41c5b858be5ef8bec418, arb-step-typecheck-a53b9ba335f64202a848f916c15008d2, arb-step-unittest-a40ac6337dd442e680e8fe6db6207b0e); ProposalRecord model, run_cluster() entry point, two-surface chore layout, registry entry, and threshold config all landed; inline covers.py slug bug fixed restoring gz covers for all slug-bearing OBPIs; brief --authored validation passes, all 5 precomplete preconditions met
+- Date: 2026-05-03
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-03
 
 **Evidence Hash:** -

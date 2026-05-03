@@ -1,0 +1,62 @@
+# CHORE: eval-feedback-cluster — Evaluation Feedback Clustering
+
+**Version:** 1.0.0
+**Lane:** Medium
+**Slug:** `eval-feedback-cluster`
+
+---
+
+## Overview
+
+Periodically scan recent `adr-evaluation` ledger events and `gz-justify`
+artifacts, cluster by recurring weak-dimension or confusion-shape patterns,
+and emit structured proposal records when a pattern recurs ≥3 times across
+distinct artifacts (ADR-0.0.26 Decision §3).
+
+## Policy and Guardrails
+
+- **Lane:** Medium — reads ledger and justify artifacts; no network required.
+- **Read-only** at `.gzkit/ledger.jsonl` and `docs/design/adr/**`; only writes to its own proofs directory.
+- No duplicate proposals: idempotent by content hash over `(cluster_key, sorted source_artifact_ids)`.
+- Threshold configurable via `data/eval_feedback_thresholds.json` (`cluster_min_recurrence`, default 3).
+
+## Workflow
+
+### 1. Run clustering
+
+```bash
+uv run -m unittest tests/chores/test_eval_feedback_cluster.py -q
+```
+
+### 2. Review proposals
+
+```bash
+ls .gzkit/chores/eval-feedback-cluster/proofs/
+```
+
+Proposals are JSON files: `proposal-<timestamp>.json` with schema:
+`cluster_key`, `recurrence_count`, `source_artifact_ids`, `source_artifact_paths`,
+`summary`, `proposed_rule_target`.
+
+### 3. Validate layout
+
+```bash
+uv run gz validate --chores-layout
+```
+
+## Acceptance Criteria
+
+| Type | Command | Expected |
+|------|---------|----------|
+| exitCodeEquals | `uv run -m unittest tests/chores/test_eval_feedback_cluster.py -q` | 0 |
+| exitCodeEquals | `uv run gz validate --chores-layout` | 0 |
+
+## Evidence Commands
+
+```bash
+ls .gzkit/chores/eval-feedback-cluster/proofs/
+```
+
+---
+
+**End of CHORE: eval-feedback-cluster**

@@ -271,6 +271,13 @@
             "version": "1.0.0",
             "path": ".gzkit/chores/pythonic-design-pattern-application",
             "lane": "lite"
+        },
+        {
+            "slug": "eval-feedback-cluster",
+            "title": "Evaluation Feedback Clustering (ADR-0.0.26)",
+            "version": "1.0.0",
+            "path": ".gzkit/chores/eval-feedback-cluster",
+            "lane": "medium"
         }
     ]
 }
