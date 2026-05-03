@@ -468,7 +468,10 @@ def _ceremony_trailer(sha: str, project_root: Path, git_runner: GitRunner) -> st
 
 
 def _is_legitimate_authoring(
-    intro: CoverIntroduction, project_root: Path, git_runner: GitRunner
+    intro: CoverIntroduction,
+    project_root: Path,
+    git_runner: GitRunner,
+    receipt_commit_sha: str | None = None,
 ) -> bool:
     """Return True when ``intro`` is same-commit creation or ceremony-bundled.
 
@@ -482,12 +485,21 @@ def _is_legitimate_authoring(
       ``Ceremony: gz-git-sync``), marking it as a governance ceremony commit
       that bundles tests + implementation + receipt by design.
 
+    The same-commit-creation exemption does NOT apply when the receipt is also
+    anchored to the same commit — that triple (file-create + @covers + receipt
+    all in one commit) is the GHI #309 cosmetic-backfill pattern regardless of
+    file-creation status.
+
     Any other shape (later-commit decoration on a pre-existing test) remains
     flag-eligible — that is the GHI #272 cosmetic-backfill anti-pattern this
     heuristic exists to catch.
     """
     creation_sha = _file_creation_short_sha(intro.file, project_root, git_runner)
-    if creation_sha is not None and creation_sha == intro.commit_sha:
+    if (
+        creation_sha is not None
+        and creation_sha == intro.commit_sha
+        and (receipt_commit_sha is None or receipt_commit_sha != intro.commit_sha)
+    ):
         return True
     trailer = _ceremony_trailer(intro.commit_sha, project_root, git_runner)
     return trailer is not None and trailer in _EXEMPT_CEREMONIES
@@ -555,7 +567,9 @@ def compute_backfill_findings(
         # GHI #272 cosmetic-backfill anti-pattern. Apply the legitimacy guard
         # only when a finding is otherwise about to be flagged so the extra
         # git boundary calls are paid only on candidate intros.
-        if _is_legitimate_authoring(intro, project_root, git_runner):
+        if _is_legitimate_authoring(
+            intro, project_root, git_runner, receipt_commit_sha=receipt.commit_sha
+        ):
             continue
 
         rendered_commits = int(commits_gap) if commits_gap != math.inf else _SENTINEL_COMMITS

@@ -512,16 +512,19 @@ class TestLegitimateAuthoringExemption(unittest.TestCase):
         self.assertEqual(findings, ())
 
     @covers("REQ-0.0.23-05-01")
-    def test_file_creation_commit_is_not_flagged(self) -> None:
+    def test_file_creation_same_commit_as_receipt_is_flagged(self) -> None:
         intro = _make_intro(sha="aaaaaaa", on=date(2026, 4, 1))
         receipt = _make_receipt(sha="aaaaaaa", on=date(2026, 4, 1))
-        # intro_sha == receipt_sha short-circuits rev-list. file-creation log
-        # returns a SHA whose 7-char prefix matches intro.commit_sha — the
-        # decorator was present from line one (GHI #382 case). Ceremony
-        # trailer is never queried because file-creation already exempts.
+        # intro_sha == receipt_sha == file-creation SHA: the triple
+        # (file-create + @covers + receipt all in one commit) is the GHI #309
+        # cosmetic-backfill pattern regardless of file-creation status
+        # (ADR-0.0.25 refinement of GHI #382). The file-creation exemption is
+        # suppressed when receipt SHA matches; ceremony-trailer check fires
+        # next and returns empty (no trailer), so the finding IS added.
         fake = FakeGit(
             [
                 (0, "aaaaaaa1234567890abcdef0123456789abcdef\n", ""),
+                (0, "", ""),
             ]
         )
         thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
@@ -533,7 +536,7 @@ class TestLegitimateAuthoringExemption(unittest.TestCase):
             project_root=Path("/repo"),
             git_runner=fake,
         )
-        self.assertEqual(findings, ())
+        self.assertEqual(len(findings), 1)
 
     @covers("REQ-0.0.23-05-01")
     def test_later_commit_decoration_on_preexisting_file_still_flags(self) -> None:

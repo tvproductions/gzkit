@@ -1,0 +1,62 @@
+{
+  "adr_id": "ADR-0.0.25-obpi-completion-req-coverage-gate",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-05-03T07:21:51Z",
+  "updated_at": "2026-05-03T08:00:22Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-05-03T07:21:51Z",
+      "acknowledged_at": "2026-05-03T07:21:56Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-05-03T07:21:56Z",
+      "acknowledged_at": "2026-05-03T07:22:47Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-05-03T07:22:47Z",
+      "acknowledged_at": "2026-05-03T07:34:20Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-05-03T07:34:20Z",
+      "acknowledged_at": "2026-05-03T07:34:40Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-05-03T07:34:40Z",
+      "acknowledged_at": "2026-05-03T07:36:36Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-05-03T07:36:36Z",
+      "acknowledged_at": "2026-05-03T07:39:05Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-05-03T07:39:05Z",
+      "acknowledged_at": "2026-05-03T07:57:49Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-05-03T07:57:49Z",
+      "acknowledged_at": "2026-05-03T08:00:22Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-05-03T08:00:22Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz obpi --help"
+  ],
+  "walkthrough_index": 0,
+  "attestation": "Completed",
+  "completed_at": "2026-05-03T08:00:22Z",
+  "attempt": 1,
+  "paused_at": null
+}
