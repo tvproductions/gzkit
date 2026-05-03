@@ -107,6 +107,9 @@ from gzkit.commands.chores_exec import (  # noqa: E402
     _parse_chore_pointer,
     _write_chore_log,
 )
+from gzkit.commands.chores_propose_ghi_cmd import (  # noqa: E402
+    chores_propose_ghi as chores_propose_ghi,
+)
 
 
 def _detect_active_harness() -> str | None:

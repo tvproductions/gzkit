@@ -92,6 +92,32 @@ gz chores doctor [--dry-run] [--json]
 `--json` emits one record per slug to stdout with `slug`, `before_status`,
 and `after_status` fields.
 
+### propose-ghi
+
+File GitHub issues for unfiled cluster proposal records found in a chore's
+`proofs/` directory.
+
+```bash
+gz chores propose-ghi <slug>
+```
+
+Reads `proposal-*.json` files from `.gzkit/chores/<slug>/proofs/`. In TTY
+mode, prompts `PROPOSE/skip` for each unfiled record and calls `gh issue create`
+on confirmation. In headless mode, marks records `advisory=true` without filing.
+Already-filed records (where `filed: true`) are skipped on re-run. Requires
+`gh` CLI available in `$PATH` for issue creation.
+
+**TTY gating.** The command detects `sys.stdin.isatty() and sys.stdout.isatty()`
+before prompting. Non-interactive (CI) environments receive advisory-only output
+and no GHI is created.
+
+**Example:**
+
+```bash
+# File proposals from the eval-feedback-cluster chore
+uv run gz chores propose-ghi eval-feedback-cluster
+```
+
 ## Options
 
 | Flag | Applies To | Description |
@@ -141,6 +167,9 @@ uv run gz chores doctor --dry-run
 
 # Machine-readable doctor output
 uv run gz chores doctor --json
+
+# File GHI proposals from the eval-feedback-cluster chore (TTY mode)
+uv run gz chores propose-ghi eval-feedback-cluster
 ```
 
 ## Files
@@ -172,3 +201,4 @@ uv run gz chores doctor --json
 - [chores-advise](../commands/chores-advise.md)
 - [chores-run](../commands/chores-run.md)
 - [chores-audit](../commands/chores-audit.md)
+- [chores-propose-ghi](../commands/chores-propose-ghi.md)

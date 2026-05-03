@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.26-03-clustering-chore",
-  "timestamp": "2026-05-03T19:37:00Z",
+  "obpi_id": "OBPI-0.0.26-04-ghi-promotion-and-trailer",
+  "timestamp": "2026-05-03T20:54:49Z",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.26-03-clustering-chore.md",
+  "plan_file": "plan-OBPI-0.0.26-04-ghi-promotion-and-trailer.md",
   "gaps_found": 0,
-  "notes": "ADR<->OBPI alignment: 7/7 checks aligned. Plan authored in-session covering all 13 REQs across 8 ordered steps with TDD-first ordering. Scope-collision warnings (advisory) are for completed ADRs sharing test directories \u2014 not alignment gaps."
+  "notes": "ADR<->OBPI alignment: 7/7 checks aligned. Plan authored in-session covering all 12 REQs across 5 ordered implementation steps with TDD-first discipline. Scope-collision warnings (advisory) are for completed ADRs sharing test directories \u2014 not alignment gaps. Path drift noted: brief lists trust_audits.py (monolithic) but actual is validate_cmd.py; brief lists .claude/rules/tests.md but canonical edit surface is .gzkit/rules/tests.md."
 }

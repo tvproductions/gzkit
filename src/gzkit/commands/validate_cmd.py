@@ -18,7 +18,11 @@ from gzkit.governance.trust_audits import (
 )
 from gzkit.instruction_audit import audit_instructions
 from gzkit.models.persona import discover_persona_files, validate_persona_structure
-from gzkit.tasks import parse_ceremony_trailers, parse_task_trailers
+from gzkit.tasks import (
+    parse_ceremony_trailers,
+    parse_eval_feedback_source_trailers,
+    parse_task_trailers,
+)
 from gzkit.validate import (
     ValidationError,
     validate_document,
@@ -138,7 +142,11 @@ def _validate_commit_trailers(project_root: Path) -> list[ValidationError]:
     code_files = [f for f in files if f.startswith(_CODE_PATH_PREFIXES)]
     if not code_files:
         return []
-    if parse_task_trailers(message) or parse_ceremony_trailers(message):
+    if (
+        parse_task_trailers(message)
+        or parse_ceremony_trailers(message)
+        or parse_eval_feedback_source_trailers(message)
+    ):
         return []
     short_sha = subprocess.run(
         ["git", "rev-parse", "--short=7", "HEAD"],
@@ -157,6 +165,67 @@ def _validate_commit_trailers(project_root: Path) -> list[ValidationError]:
                 "trailer — TASK chain is broken. Expected 'Task: TASK-X.Y.Z-NN-MM-PP' "
                 "for task-scoped work or 'Ceremony: <name>' for chore/sync commits "
                 "(e.g. 'Ceremony: gz-git-sync')."
+            ),
+        )
+    ]
+
+
+_RULE_PATH_PREFIXES = (".gzkit/rules/", "AGENTS.md")
+_CLOSES_RE = re.compile(r"(?:closes|fixes)\s+#(\d+)", re.IGNORECASE)
+_EVAL_FEEDBACK_LABEL = "eval-feedback"
+
+
+def _validate_eval_feedback_trailer(project_root: Path) -> list[ValidationError]:
+    """Flag rule-edit commits closing an eval-feedback GHI without Eval-feedback-source: trailer."""
+    head = _head_commit_message_and_files(project_root)
+    if head is None:
+        return []
+    message, files = head
+    rule_files = [f for f in files if any(f.startswith(p) for p in _RULE_PATH_PREFIXES)]
+    if not rule_files:
+        return []
+    issue_numbers = _CLOSES_RE.findall(message)
+    if not issue_numbers:
+        return []
+    has_eval_feedback_close = False
+    for num in issue_numbers:
+        result = subprocess.run(
+            ["gh", "issue", "view", num, "--json", "labels"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+            cwd=project_root,
+        )
+        if result.returncode == 0:
+            try:
+                data = json.loads(result.stdout)
+                labels = [lbl.get("name", "") for lbl in data.get("labels", [])]
+                if _EVAL_FEEDBACK_LABEL in labels:
+                    has_eval_feedback_close = True
+                    break
+            except (json.JSONDecodeError, AttributeError):
+                pass
+    if not has_eval_feedback_close:
+        return []
+    if parse_eval_feedback_source_trailers(message):
+        return []
+    short_sha = subprocess.run(
+        ["git", "rev-parse", "--short=7", "HEAD"],
+        cwd=project_root,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    ).stdout.strip()
+    return [
+        ValidationError(
+            type="commit_trailers",
+            artifact=short_sha or "HEAD",
+            message=(
+                "Commit touches rule files and closes an eval-feedback GHI "
+                "but has no Eval-feedback-source: trailer. Add "
+                "'Eval-feedback-source: <event-id-or-artifact-path>' to the commit trailer."
             ),
         )
     ]
@@ -398,7 +467,9 @@ def _explicit_scope_runners(
         "interviews": lambda: _validate_interviews(project_root),
         "decomposition": lambda: _validate_decomposition(project_root),
         "requirements": lambda: _validate_requirements(project_root),
-        "commit_trailers": lambda: _validate_commit_trailers(project_root),
+        "commit_trailers": lambda: (
+            _validate_commit_trailers(project_root) + _validate_eval_feedback_trailer(project_root)
+        ),
         "type_ignores": lambda: trust_audits.audit_type_ignores(project_root),
         "cli_alignment": lambda: trust_audits.audit_cli_alignment(project_root),
         "event_handlers": lambda: trust_audits.audit_event_handlers(project_root),

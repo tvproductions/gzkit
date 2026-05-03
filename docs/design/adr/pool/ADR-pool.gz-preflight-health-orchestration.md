@@ -1,6 +1,6 @@
 ---
+id: ADR-pool.gz-preflight-health-orchestration
 status: Superseded
-promotes_to: ADR-0.40.0
 date_added: 2026-03-27
 promoted_to: ADR-0.42.0-gz-preflight-health-orchestration
 ---

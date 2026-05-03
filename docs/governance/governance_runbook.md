@@ -555,6 +555,7 @@ uv run gz chores advise <slug>             # Dry-run criteria and report status
 uv run gz chores plan <slug>               # Show plan details for one chore
 uv run gz chores run <slug>                # Execute and log one chore
 uv run gz chores audit --all               # Audit log presence for all chores
+uv run gz chores propose-ghi <slug>        # File GHIs for unfiled cluster proposals in proofs/
 ```
 
 Frontmatter-ledger reconciliation (ADR-0.0.16 OBPI-03):
