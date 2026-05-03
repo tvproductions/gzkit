@@ -3,7 +3,7 @@ id: OBPI-0.0.25-03-bdd-and-doc
 parent: ADR-0.0.25-obpi-completion-req-coverage-gate
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.25-03-bdd-and-doc: BDD scenarios + AGENTS.md update
@@ -162,13 +162,18 @@ uv run gz validate --behave-req-tags
 
 ### Key Proof
 
+
+gz covers OBPI-0.0.25-03: 4/4 REQs covered (100.0%); gz adr audit-check ADR-0.0.25: 15/15 REQs covered; behave features/obpi_completion_coverage_gate.feature: 15 passed 0 failed; arb-step-mkdocs-2d2c3a321d6144f095d45bf3f68cf014 exit 0
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added (BDD scenarios):
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- features/obpi_completion_coverage_gate.feature: 15 BDD scenarios tagged @REQ-0.0.25-01-NN through @REQ-0.0.25-03-NN covering all gate behaviors
+- features/steps/obpi_completion_coverage_gate_steps.py: step definitions with fixture seeding, gz obpi complete dispatch, ledger assertion, ADR receipt emission
+- AGENTS.md: REQ-coverage gate paragraph added to OBPI Acceptance Protocol section
+- docs/user/commands/obpi-complete.md: exit code 3 added, --accept-uncovered example added
+- docs/user/runbook.md: REQ-coverage gate note added to Notes section
+- docs/governance/governance_runbook.md: REQ-coverage gate note added to ADR closeout Notes
 
 ## Tracked Defects
 
@@ -176,14 +181,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` (heavy + foundation requires human)
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry`
+- Attestation: attest completed — 15 BDD scenarios pass covering all 15 REQs across ADR-0.0.25 (OBPI-01 6/6, OBPI-02 5/5, OBPI-03 4/4); AGENTS.md OBPI Acceptance Protocol updated naming REQ-coverage gate; obpi-complete.md, runbook.md, governance_runbook.md updated with gate semantics and override path; lint/typecheck/unittest/mkdocs all exit 0 (receipts: arb-ruff-cda7089ae57c4ef1aafc4e4ba851bdf4, arb-step-typecheck-b0f339231ba04aa58362acf0ac733c97, arb-step-unittest-e4aa649c9fd94e18bc0515edec48adff, arb-step-mkdocs-2d2c3a321d6144f095d45bf3f68cf014); pre-existing behave failure tracked at GHI #388
+- Date: 2026-05-03
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-03
 
 **Evidence Hash:** -
