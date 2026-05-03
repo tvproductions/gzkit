@@ -776,6 +776,7 @@ uv run gz chores run <slug>          # Execute and log one chore
 uv run gz chores audit --all         # Audit log presence for all chores
 uv run gz chores doctor              # Repair missing canonical scaffold under .gzkit/chores/
 uv run gz chores doctor --dry-run    # Report-only; no file changes
+uv run gz chores propose-ghi <slug>  # File GHIs for unfiled cluster proposals in proofs/
 uv run gz validate --chores-layout   # Fail closed (exit 3) on stray CHORE.md or acceptance.json
 ```
 

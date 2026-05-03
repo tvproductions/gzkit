@@ -103,7 +103,6 @@ class LifecycleStateMachine:
 
         # Gate: evaluation-justify-binding fires when advancing past Pending
         if from_state in ("Pending", "Draft"):
-
             from gzkit.commands.common import get_project_root  # noqa: PLC0415
             from gzkit.governance.trust_audits.evaluation_justify_binding import (  # noqa: PLC0415
                 validate_evaluation_justify_binding,

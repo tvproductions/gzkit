@@ -194,3 +194,10 @@ the GREEN side (`arb-step-unittest-*`); the RED side is recorded as
 per-increment observed-output pasted into the commit body or OBPI
 verification section, under the same observed-evidence discipline that
 governs routing-skill output claims.
+
+### Eval-feedback-source trailer (ADR-0.0.26)
+
+Rule edits that land as a result of the evaluation feedback loop carry an
+`Eval-feedback-source: <event-id-or-artifact-path>` commit trailer alongside
+the existing `Task:` / `Ceremony:` trailers. The trailer is validated by
+`gz validate --commit-trailers`. See ADR-0.0.26 for the full loop doctrine.

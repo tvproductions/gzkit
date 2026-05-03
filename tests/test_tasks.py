@@ -29,6 +29,7 @@ from gzkit.tasks import (
     create_task_from_plan_step,
     format_commit_trailer,
     parse_ceremony_trailers,
+    parse_eval_feedback_source_trailers,
     parse_task_trailers,
     resolve_task_chain,
 )
@@ -652,6 +653,36 @@ class TestParseCeremonyTrailers(unittest.TestCase):
     def test_coexists_with_task_trailer(self) -> None:
         msg = "fix: patch\n\nTask: TASK-0.20.0-01-01-01\nCeremony: obpi-reconcile\n"
         self.assertEqual(parse_ceremony_trailers(msg), ["obpi-reconcile"])
+
+
+class TestParseEvalFeedbackSourceTrailers(unittest.TestCase):
+    """Eval-feedback-source: trailer extraction (REQ-0.0.26-04-05)."""
+
+    @covers("REQ-0.0.26-04-05")
+    def test_parse_eval_feedback_source_trailers_returns_values(self) -> None:
+        """Single Eval-feedback-source trailer is extracted."""
+        msg = "feat: add rule\n\nEval-feedback-source: evt-123\n"
+        result = parse_eval_feedback_source_trailers(msg)
+        self.assertEqual(result, ["evt-123"])
+
+    @covers("REQ-0.0.26-04-05")
+    def test_parse_eval_feedback_source_trailers_repeatable(self) -> None:
+        """Two Eval-feedback-source trailers both extracted."""
+        msg = (
+            "feat: add rule\n"
+            "\n"
+            "Eval-feedback-source: evt-123\n"
+            "Eval-feedback-source: artifacts/justify/ADR-0.1.0-20260101.md\n"
+        )
+        result = parse_eval_feedback_source_trailers(msg)
+        self.assertEqual(result, ["evt-123", "artifacts/justify/ADR-0.1.0-20260101.md"])
+
+    @covers("REQ-0.0.26-04-05")
+    def test_parse_eval_feedback_source_trailers_empty_when_absent(self) -> None:
+        """Commit with no Eval-feedback-source trailer returns empty list."""
+        msg = "feat: add rule\n\nTask: TASK-0.1.0-01-01-01\n"
+        result = parse_eval_feedback_source_trailers(msg)
+        self.assertEqual(result, [])
 
 
 class TestResolveTaskChain(unittest.TestCase):

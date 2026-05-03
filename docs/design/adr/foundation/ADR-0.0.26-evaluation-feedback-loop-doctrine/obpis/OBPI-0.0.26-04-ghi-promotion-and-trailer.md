@@ -3,7 +3,7 @@ id: OBPI-0.0.26-04-ghi-promotion-and-trailer
 parent: ADR-0.0.26-evaluation-feedback-loop-doctrine
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.26-04-ghi-promotion-and-trailer: Cluster → GHI proposals + provenance trailer
@@ -26,9 +26,10 @@ Convert clustering-chore proposal records into GitHub issues automatically (with
 ## Allowed Paths
 
 - `src/gzkit/commands/chores.py` — add `propose-ghi` subcommand
-- `src/gzkit/governance/trust_audits.py` — extend `validate --commit-trailers` to recognize `Eval-feedback-source:`
+- `src/gzkit/commands/validate_cmd.py` — extend `validate --commit-trailers` to recognize `Eval-feedback-source:`
+- `src/gzkit/tasks.py` — add `parse_eval_feedback_source_trailers` alongside `parse_task_trailers` / `parse_ceremony_trailers`
 - `AGENTS.md` — § Behavior Rules updated with the trailer convention; § Defect-fix routing references the loop
-- `.claude/rules/tests.md` — § Governance-intent trailers extends with `Eval-feedback-source:`
+- `.gzkit/rules/tests.md` — § Governance-intent trailers extends with `Eval-feedback-source:` (canonical; sync mirrors to `.claude/`)
 - `docs/governance/arb-middleware.md` — cross-reference the loop
 - `tests/governance/test_eval_feedback_trailer.py`
 - `tests/commands/test_chores_propose_ghi.py`
@@ -58,11 +59,19 @@ Convert clustering-chore proposal records into GitHub issues automatically (with
 
 ## Discovery Checklist
 
-- [ ] Parent ADR § Decision items 4 and 5
-- [ ] OBPI-0.0.26-03 evidence — confirm proposal record schema stable
-- [ ] `.claude/rules/tests.md` § Governance-intent trailers — existing trailer convention
-- [ ] AGENTS.md § Behavior Rules — Always — for insertion point
-- [ ] `src/gzkit/commands/adr_audit.py` `_enforce_human_attestation_authenticity` — TTY-confirmation pattern to mirror
+**Prerequisites**
+
+- [x] Parent ADR § Decision items 4 and 5 read; scope is GHI authoring from cluster proposals + `Eval-feedback-source:` trailer validation.
+- [x] OBPI-0.0.26-03 landed: `src/gzkit/chores/eval_feedback_cluster_lib.py` present, `ProposalRecord` schema stable (`cluster_key`, `recurrence_count`, `source_artifact_ids`, `source_artifact_paths`, `summary`, `proposed_rule_target`, `content_hash`).
+- [x] `AGENTS.md` § foundation+heavy lane → brief-level Gate 5 attestation required.
+- [x] Allowed paths corrected: brief originally listed `src/gzkit/governance/trust_audits.py` (non-existent) and `.claude/rules/tests.md` (vendor mirror); fixed to `src/gzkit/commands/validate_cmd.py`, `src/gzkit/tasks.py`, `.gzkit/rules/tests.md` (GHI #393).
+
+**Existing Code**
+
+- [x] `src/gzkit/commands/chores.py` — chore subcommand structure reviewed; `chores_audit` is the insertion point for `chores_propose_ghi`.
+- [x] `src/gzkit/commands/validate_cmd.py:126` — `_validate_commit_trailers` reads HEAD commit via `_head_commit_message_and_files`; extended with `_validate_eval_feedback_trailer`.
+- [x] `src/gzkit/tasks.py:201` — `parse_ceremony_trailers` pattern mirrored for `parse_eval_feedback_source_trailers`.
+- [x] `.gzkit/rules/tests.md` § Governance-intent trailers — `Task:` and `Ceremony:` rows confirmed; `Eval-feedback-source:` row added, version bumped.
 
 ## Quality Gates
 
@@ -97,6 +106,8 @@ uv run gz validate --commit-trailers
 - [ ] REQ-0.0.26-04-03: Given a re-run with already-filed proposals, when the verb runs, then no duplicate GHIs are filed (idempotent).
 - [ ] REQ-0.0.26-04-04: Given a commit touching `.gzkit/rules/**` and closing a GHI labeled `eval-feedback`, when `gz validate --commit-trailers` runs, then exit 3 if no `Eval-feedback-source:` trailer is present.
 - [ ] REQ-0.0.26-04-05: Given the same commit with a valid trailer, when the validator runs, then exit 0.
+- [ ] REQ-0.0.26-04-10: Each test function that covers this OBPI's requirements is decorated with `@covers(REQ-0.0.26-04-NN)`; `ProposalRecord` accepts optional `filed`, `ghi_url`, and `advisory` fields with safe defaults for backward compatibility.
+- [ ] REQ-0.0.26-04-12: TDD Red-Green-Refactor discipline is followed for each behavior increment in this OBPI.
 
 ## Completion Checklist
 
@@ -135,13 +146,18 @@ uv run gz validate --commit-trailers
 
 ### Key Proof
 
+
+`uv run gz arb step --name unittest -- uv run -m unittest tests/governance/test_eval_feedback_trailer.py tests/commands/test_chores_propose_ghi.py -v` → 10/10 pass, receipt arb-step-unittest-21a133398809485eabc8c3ef18384ad5. Full suite: 4044/4044 pass (receipt arb-step-unittest-154922a0876345b0aa353247b3ed7d33). mkdocs strict clean (receipt arb-step-mkdocs-977013e2b7e3427998d10f5e9944f9e1). REQ parity uncovered: 0.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: tests/commands/test_chores_propose_ghi.py, tests/governance/test_eval_feedback_trailer.py
+- Files modified: src/gzkit/chores/eval_feedback_cluster_lib.py (ProposalRecord +filed/ghi_url/advisory fields), src/gzkit/tasks.py (parse_eval_feedback_source_trailers), src/gzkit/commands/chores.py (chores_propose_ghi), src/gzkit/cli/parser_maintenance.py (propose-ghi registration), src/gzkit/commands/validate_cmd.py (_validate_eval_feedback_trailer), config/doc-coverage.json, docs/user/manpages/gz-chores.md, docs/user/runbook.md, AGENTS.md, .gzkit/rules/tests.md, docs/governance/arb-middleware.md
+- Tests added: 10 new (6 propose-ghi, 4 trailer validator)
+- Date completed: 2026-05-03
+- Attestation status: Human attested (heavy + foundation lane)
+- Defects noted: GHI #393 (stale brief allowed-paths — fixed in session)
 
 ## Tracked Defects
 
@@ -149,14 +165,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` (heavy + foundation requires human)
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — `gz chores propose-ghi eval-feedback-cluster` and `Eval-feedback-source:` trailer validation implemented and verified: 4044/4044 tests pass, mkdocs strict clean, REQ parity uncovered:0 (lint: receipt arb-ruff-6dcc205c146b45128c3ff3f1095c75cd, typecheck: receipt arb-step-typecheck-e449c576aaa74faa9cfbc2988d973974, unittest: receipt arb-step-unittest-21a133398809485eabc8c3ef18384ad5, mkdocs: receipt arb-step-mkdocs-977013e2b7e3427998d10f5e9944f9e1)
+- Date: 2026-05-03
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-03
 
 **Evidence Hash:** -

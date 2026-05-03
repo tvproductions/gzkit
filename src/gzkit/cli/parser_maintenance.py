@@ -30,6 +30,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "chores_doctor": "gzkit.commands.chores",
     "chores_list": "gzkit.commands.chores",
     "chores_plan": "gzkit.commands.chores",
+    "chores_propose_ghi": "gzkit.commands.chores",
     "chores_run": "gzkit.commands.chores",
     "chores_show": "gzkit.commands.chores",
     "cli_audit_cmd": "gzkit.commands.cli_audit",
@@ -846,6 +847,19 @@ def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:
     p_chores_doctor.set_defaults(
         func=lambda a: _lazy("chores_doctor")(dry_run=a.dry_run, json_output=a.json_output)
     )
+
+    p_chores_propose_ghi = chores_commands.add_parser(
+        "propose-ghi",
+        help="File GHI proposals for unfiled cluster proposal records",
+        description=(
+            "Read proposal-*.json files from a chore's proofs/ directory and file "
+            "GitHub issues for unfiled proposals (TTY mode) or mark them advisory-only "
+            "(headless mode). Requires a TTY and PROPOSE confirmation to create issues."
+        ),
+        epilog=build_epilog(["gz chores propose-ghi eval-feedback-cluster"]),
+    )
+    p_chores_propose_ghi.add_argument("slug", help="Chore slug identifier")
+    p_chores_propose_ghi.set_defaults(func=lambda a: _lazy("chores_propose_ghi")(slug=a.slug))
 
 
 def _register_skill_parsers(commands: argparse._SubParsersAction) -> None:

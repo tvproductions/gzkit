@@ -64,6 +64,9 @@ class ProposalRecord(BaseModel):
     summary: str = Field(..., description="Human-readable summary of the cluster")
     proposed_rule_target: str = Field(..., description="Suggested rule or doctrine target")
     content_hash: str = Field(..., description="SHA-256 content dedup fingerprint (first 16 chars)")
+    filed: bool = Field(default=False, description="Whether a GHI has been filed for this proposal")
+    ghi_url: str | None = Field(default=None, description="GitHub issue URL if filed")
+    advisory: bool = Field(default=False, description="Marked advisory-only in headless run")
 
 
 # ---------------------------------------------------------------------------

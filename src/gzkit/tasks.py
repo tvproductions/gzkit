@@ -226,6 +226,33 @@ def parse_ceremony_trailers(commit_message: str) -> list[str]:
     ]
 
 
+_EVAL_FEEDBACK_SOURCE_TRAILER_RE = re.compile(r"^Eval-feedback-source:\s*(?P<value>\S+)\s*$")
+
+
+def parse_eval_feedback_source_trailers(commit_message: str) -> list[str]:
+    """Extract Eval-feedback-source: values from a commit's trailer block.
+
+    Repeatable trailer. Format: Eval-feedback-source: <event-id-or-artifact-path>.
+    Used to trace rule edits back to the evaluation feedback loop source artifacts.
+    """
+    lines = commit_message.rstrip("\n").split("\n")
+    trailer_start = len(lines)
+    for i in range(len(lines) - 1, -1, -1):
+        line = lines[i]
+        if not line.strip():
+            break
+        if re.match(r"^[\w-]+:\s", line):
+            trailer_start = i
+        else:
+            trailer_start = len(lines)
+            break
+    return [
+        m.group("value")
+        for line in lines[trailer_start:]
+        if (m := _EVAL_FEEDBACK_SOURCE_TRAILER_RE.match(line))
+    ]
+
+
 def resolve_task_chain(task_id: TaskId) -> dict[str, str]:
     """Resolve the four-tier traceability chain from a TASK identifier.
 

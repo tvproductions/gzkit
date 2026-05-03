@@ -280,7 +280,6 @@ class TestEvalFeedbackCluster(unittest.TestCase):
                     msg=f"Chore wrote outside proofs_dir: {new_file}",
                 )
 
-
     @covers("REQ-0.0.26-03-01")
     def test_chore_registered_in_registry(self) -> None:
         """Chore registration: eval-feedback-cluster slug appears in chores registry."""
@@ -295,14 +294,52 @@ class TestEvalFeedbackCluster(unittest.TestCase):
         """Layout validation: eval-feedback-cluster two-surface layout has no violations."""
         project_root = get_project_root()
         errors = audit_chores_layout(project_root)
-        cluster_errors = [
-            e for e in errors if "eval-feedback-cluster" in str(e)
-        ]
+        cluster_errors = [e for e in errors if "eval-feedback-cluster" in str(e)]
         self.assertEqual(
             cluster_errors,
             [],
             msg=f"Chores layout violations for eval-feedback-cluster: {cluster_errors}",
         )
+
+
+class TestProposalRecordFiledFields(unittest.TestCase):
+    """Tests for optional filed/ghi_url/advisory fields on ProposalRecord (REQ-0.0.26-04-10)."""
+
+    @covers("REQ-0.0.26-04-10")
+    def test_proposal_record_filed_fields(self) -> None:
+        """ProposalRecord accepts optional filed/ghi_url/advisory fields."""
+        record = ProposalRecord(
+            cluster_key="dim:clarity:low",
+            recurrence_count=3,
+            source_artifact_ids=["ADR-0.1.0", "ADR-0.2.0", "ADR-0.3.0"],
+            source_artifact_paths=["path/a", "path/b", "path/c"],
+            summary="Clarity scored low across 3 artifacts.",
+            proposed_rule_target=".gzkit/rules/clarity-improvement.md",
+            content_hash="abcdef1234567890",
+            filed=True,
+            ghi_url="https://github.com/va/gzkit/issues/999",
+            advisory=False,
+        )
+        self.assertTrue(record.filed)
+        self.assertEqual(record.ghi_url, "https://github.com/va/gzkit/issues/999")
+        self.assertFalse(record.advisory)
+
+    @covers("REQ-0.0.26-04-10")
+    def test_proposal_record_backward_compat(self) -> None:
+        """ProposalRecord with no filed/ghi_url/advisory fields parses with defaults."""
+        data = {
+            "cluster_key": "dim:clarity:low",
+            "recurrence_count": 3,
+            "source_artifact_ids": ["ADR-0.1.0", "ADR-0.2.0", "ADR-0.3.0"],
+            "source_artifact_paths": ["path/a", "path/b", "path/c"],
+            "summary": "Clarity scored low across 3 artifacts.",
+            "proposed_rule_target": ".gzkit/rules/clarity-improvement.md",
+            "content_hash": "abcdef1234567890",
+        }
+        record = ProposalRecord(**data)
+        self.assertFalse(record.filed)
+        self.assertIsNone(record.ghi_url)
+        self.assertFalse(record.advisory)
 
 
 if __name__ == "__main__":  # pragma: no cover
