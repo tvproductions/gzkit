@@ -546,6 +546,94 @@ def _enforce_human_attestation_authenticity(
     raise GzCliError(msg)
 
 
+_UNCOVERED_ACCEPTANCE_CONFIRMATION = "ACCEPT"
+
+
+def _enforce_uncovered_acceptance_confirmation(
+    *,
+    obpi_id: str,
+    parent_adr: str,
+    req_ids: list[str],
+    attestor: str,
+    attestor_present: bool = False,
+    project_root: Path | None = None,
+) -> str:
+    """Gate the --accept-uncovered override for heavy/foundation parents.
+
+    Three-branch mirror of ``_enforce_human_attestation_authenticity``:
+
+    1. **TTY path.** stdin AND stdout are attached to a real TTY; operator
+       types ``ACCEPT`` to confirm each waiver. Returns
+       :data:`ATTESTATION_TYPE_HUMAN`.
+    2. **Agent-relayed path.** No TTY but ``attestor_present=True`` AND an
+       active pipeline marker exists. Returns
+       :data:`ATTESTATION_TYPE_AGENT_RELAYED`.
+    3. **Fail-closed.** Headless + no marker → raises :class:`GzCliError`.
+    """
+    req_list = ", ".join(req_ids)
+    if _is_human_attestation_tty_available():
+        console.print("")
+        console.print("[bold yellow]=== Uncovered REQ Acceptance (ADR-0.0.25) ===[/bold yellow]")
+        console.print(f"  OBPI:     {obpi_id}")
+        console.print(f"  ADR:      {parent_adr}")
+        console.print(f"  Attestor: {attestor}")
+        console.print(f"  Waiving:  {req_list}")
+        console.print("")
+        console.print(
+            f"Type the word [bold]{_UNCOVERED_ACCEPTANCE_CONFIRMATION}[/bold] "
+            "(uppercase, no quotes) to confirm you accept these uncovered REQs, "
+            "or anything else to abort:"
+        )
+        try:
+            response = input("> ").strip()
+        except (EOFError, KeyboardInterrupt) as exc:
+            msg = "Uncovered-REQ acceptance aborted (no confirmation received)."
+            raise GzCliError(msg) from exc
+        if response != _UNCOVERED_ACCEPTANCE_CONFIRMATION:
+            msg = (
+                f"Uncovered-REQ acceptance declined (expected "
+                f"{_UNCOVERED_ACCEPTANCE_CONFIRMATION!r}, got {response!r})."
+            )
+            raise GzCliError(msg)
+        return ATTESTATION_TYPE_HUMAN
+
+    if attestor_present:
+        if project_root is None:
+            msg = (
+                "--attestor-present requires project context to verify the "
+                "pipeline marker; internal caller did not pass project_root."
+            )
+            raise GzCliError(msg)
+        if not _active_pipeline_marker_exists(project_root, obpi_id):
+            msg = (
+                "--attestor-present requires an active pipeline marker at "
+                f".claude/plans/.pipeline-active-{obpi_id}.json, but none was found. "
+                f"Start the pipeline with 'uv run gz obpi pipeline {obpi_id}' first."
+            )
+            raise GzCliError(msg)
+        console.print("")
+        console.print(
+            "[bold yellow]=== Agent-Relayed Uncovered REQ Acceptance (ADR-0.0.25) ===[/bold yellow]"
+        )
+        console.print(f"  OBPI:     {obpi_id}")
+        console.print(f"  ADR:      {parent_adr}")
+        console.print(f"  Attestor: {attestor}")
+        console.print(f"  Waiving:  {req_list}")
+        console.print(
+            "  [dim]Co-presence proxy: active pipeline marker "
+            f".claude/plans/.pipeline-active-{obpi_id}.json[/dim]"
+        )
+        return ATTESTATION_TYPE_AGENT_RELAYED
+
+    msg = (
+        "--accept-uncovered requires interactive TTY confirmation for heavy/foundation OBPIs. "
+        "stdin/stdout is not a TTY and --attestor-present was not set (or the pipeline marker "
+        f"is missing). Run from an interactive shell or start the pipeline with "
+        f"'uv run gz obpi pipeline {obpi_id}' first (GHI #292)."
+    )
+    raise GzCliError(msg)
+
+
 def _validate_obpi_completed_required_fields(evidence: dict[str, Any]) -> None:
     """Validate baseline completed-receipt evidence fields."""
     required_fields = ("value_narrative", "key_proof")
@@ -683,6 +771,182 @@ def _validate_obpi_completion_evidence(
     return enriched_evidence, completion_term, anchor
 
 
+def _check_adr_obpi_coverage_gaps(
+    adr_id: str,
+    project_root: Path,
+    ledger: "Ledger",
+) -> list[tuple[str, list[str]]]:
+    """Return (obpi_id, unwaived_gap_req_ids) pairs for the closing ADR (ADR-0.0.25-02).
+
+    Walks the ADR package directory, parses each OBPI brief's REQs, checks
+    coverage structurally (no test re-run), then subtracts any REQ waivers
+    recorded via ``obpi_completion_uncovered_accept`` ledger events. Returns
+    an empty list when all OBPIs have full or waived coverage.
+    """
+    import json as _json
+
+    from gzkit.governance.req_coverage import discover_covers, parse_brief_reqs
+
+    adr_dirs = list(project_root.glob(f"docs/design/adr/**/{adr_id}*"))
+    if not adr_dirs:
+        return []
+    adr_dir = adr_dirs[0]
+
+    brief_paths = sorted(adr_dir.rglob("OBPI-*.md"))
+    if not brief_paths:
+        return []
+
+    tests_root = project_root / "tests"
+
+    # Load acceptance waivers from ledger JSONL
+    waived: set[tuple[str, str]] = set()
+    ledger_path = getattr(ledger, "path", None)
+    if ledger_path and Path(str(ledger_path)).is_file():
+        with Path(str(ledger_path)).open(encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    evt = _json.loads(line)
+                except (ValueError, KeyError):
+                    continue
+                if evt.get("event") == "obpi_completion_uncovered_accept":
+                    extra = evt.get("extra", {})
+                    oid = extra.get("obpi_id", "")
+                    rid = extra.get("req_id", "")
+                    if oid and rid:
+                        waived.add((oid, rid))
+
+    result: list[tuple[str, list[str]]] = []
+    for brief_path in brief_paths:
+        reqs = parse_brief_reqs(brief_path)
+        if not reqs:
+            continue
+        obpi_id = brief_path.stem
+        gaps: list[str] = []
+        for req in reqs:
+            refs = discover_covers(req, tests_root)
+            if not refs and (obpi_id, req) not in waived:
+                gaps.append(req)
+        if gaps:
+            result.append((obpi_id, gaps))
+
+    return result
+
+
+def _apply_human_attestation_gates(
+    *,
+    adr_id: str,
+    adr_file: Path,
+    receipt_event: str,
+    attestor: str,
+    attestor_present: bool,
+    evidence: dict[str, Any] | None,
+    ledger: "Ledger",
+    project_root: Path,
+    dry_run: bool,
+) -> None:
+    """Run ADR-0.0.24-02 receipt-binding gate then GHI #290 TTY authenticity gate."""
+    from gzkit.commands.obpi_complete import _enforce_attestation_receipt_gate, _read_adr_kind
+
+    adr_attestation_text = ""
+    if isinstance(evidence, dict):
+        candidate = evidence.get("attestation_text") or evidence.get("scope")
+        if isinstance(candidate, str):
+            adr_attestation_text = candidate
+    adr_lane_raw = parse_frontmatter_value(adr_file.read_text(encoding="utf-8"), "lane") or "lite"
+    adr_kind = _read_adr_kind(adr_file)
+    _enforce_attestation_receipt_gate(
+        obpi_id=None,
+        parent_adr=adr_id,
+        parent_lane=adr_lane_raw.strip().lower(),
+        parent_kind=adr_kind,
+        attestation_text=adr_attestation_text,
+        attestor=attestor,
+        ledger=ledger,
+        project_root=project_root,
+        as_json=False,
+        dry_run=dry_run,
+    )
+    attestation_text = adr_attestation_text
+    attestation_type = _enforce_human_authenticity_gate(
+        adr_id=adr_id,
+        receipt_event=receipt_event,
+        attestor=attestor,
+        attestor_present=attestor_present,
+        evidence=evidence,
+        project_root=project_root,
+        attestation_text=attestation_text,
+    )
+    if isinstance(evidence, dict):
+        evidence["attestation_type"] = attestation_type
+
+
+def _enforce_human_authenticity_gate(
+    *,
+    adr_id: str,
+    receipt_event: str,
+    attestor: str,
+    attestor_present: bool,
+    evidence: dict[str, Any] | None,
+    project_root: Path,
+    attestation_text: str,
+) -> str:
+    """Run the GHI #290 TTY gate; return the resolved attestation_type."""
+    text = attestation_text
+    if isinstance(evidence, dict):
+        candidate = evidence.get("attestation_text") or evidence.get("scope")
+        if isinstance(candidate, str):
+            text = candidate
+    return _enforce_human_attestation_authenticity(
+        obpi_id=adr_id,
+        parent_adr=adr_id,
+        attestor=attestor,
+        attestation_text=text or f"{receipt_event} {adr_id}",
+        attestor_present=attestor_present,
+        project_root=project_root,
+    )
+
+
+def _emit_adr_closeout_receipt(
+    *,
+    adr_id: str,
+    project_root: Path,
+    ledger: "Ledger",
+    attestor: str,
+    dry_run: bool,
+) -> None:
+    """Emit a ``closed`` receipt after verifying no unwaived REQ gaps remain."""
+    gaps = _check_adr_obpi_coverage_gaps(adr_id, project_root, ledger)
+    if gaps:
+        lines = "\n".join(f"  {obpi_id}: {', '.join(reqs)}" for obpi_id, reqs in gaps)
+        msg = (
+            f"ADR closeout blocked — unwaived REQ coverage gaps in {adr_id}:\n"
+            f"{lines}\n"
+            "Waive each gap with `gz obpi complete --accept-uncovered <REQ-ID> "
+            "--accept-uncovered-reason <REASON>` before closing the ADR."
+        )
+        console.print(f"[red]Error:[/red] {msg}")
+        raise SystemExit(3)
+    anchor = capture_validation_anchor(project_root, adr_id)
+    close_event = audit_receipt_emitted_event(
+        adr_id=adr_id,
+        receipt_event="closed",
+        attestor=attestor,
+        evidence=None,
+        anchor=anchor,
+    )
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")
+        console.print(json.dumps(close_event.model_dump(), indent=2))
+        return
+    ledger.append(close_event)
+    console.print("[green]ADR closeout receipt emitted.[/green]")
+    console.print(f"  ADR: {adr_id}")
+    console.print("  Event: closed")
+
+
 def adr_emit_receipt_cmd(
     adr: str,
     receipt_event: str,
@@ -701,6 +965,18 @@ def adr_emit_receipt_cmd(
     adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
     adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
     _reject_pool_adr_for_lifecycle(adr_id, "issued receipts")
+
+    # ADR-0.0.25-02: --event closed triggers a structural REQ-coverage gate
+    # across all OBPI briefs before emitting the closeout receipt.
+    if receipt_event == "closed":
+        _emit_adr_closeout_receipt(
+            adr_id=adr_id,
+            project_root=project_root,
+            ledger=ledger,
+            attestor=attestor,
+            dry_run=dry_run,
+        )
+        return
 
     evidence: dict[str, Any] | None = None
     if evidence_json:
@@ -723,61 +999,18 @@ def adr_emit_receipt_cmd(
         anchor=anchor,
     )
 
-    # ADR-0.0.24-02 receipt-binding gate: heavy/foundation = fail-closed on
-    # unresolvable ARB receipts; lite-non-foundation = warn-only. Runs BEFORE
-    # the GHI #290 TTY gate so a mechanical-receipt failure short-circuits
-    # human prompting (REQ-0.0.24-02-07, mechanism for REQ-05).
     if not dry_run and _is_human_attestation_receipt_event(receipt_event):
-        from gzkit.commands.obpi_complete import (
-            _enforce_attestation_receipt_gate,
-            _read_adr_kind,
-        )
-
-        adr_attestation_text = ""
-        if isinstance(evidence, dict):
-            candidate = evidence.get("attestation_text") or evidence.get("scope")
-            if isinstance(candidate, str):
-                adr_attestation_text = candidate
-        adr_lane_raw = (
-            parse_frontmatter_value(adr_file.read_text(encoding="utf-8"), "lane") or "lite"
-        )
-        adr_kind = _read_adr_kind(adr_file)
-        _enforce_attestation_receipt_gate(
-            obpi_id=None,
-            parent_adr=adr_id,
-            parent_lane=adr_lane_raw.strip().lower(),
-            parent_kind=adr_kind,
-            attestation_text=adr_attestation_text,
+        _apply_human_attestation_gates(
+            adr_id=adr_id,
+            adr_file=adr_file,
+            receipt_event=receipt_event,
             attestor=attestor,
+            attestor_present=attestor_present,
+            evidence=evidence,
             ledger=ledger,
             project_root=project_root,
-            as_json=False,
             dry_run=dry_run,
         )
-
-    # GHI #290 authenticity gate: ADR-level human-attestation receipt events
-    # (validated / attested / accepted) are the Gate 5 attestation surface.
-    # Without a TTY gate, an agent could synthesize a validated ADR closeout
-    # the same way OBPI-0.0.20-03 was fabricated. GHI #292 adds
-    # --attestor-present as an agent-relayed escape path; the resolved
-    # attestation_type is written into the evidence dict so the ledger receipt
-    # records which gate path fired. Skipped for --dry-run.
-    if not dry_run and _is_human_attestation_receipt_event(receipt_event):
-        attestation_text = ""
-        if isinstance(evidence, dict):
-            candidate = evidence.get("attestation_text") or evidence.get("scope")
-            if isinstance(candidate, str):
-                attestation_text = candidate
-        attestation_type = _enforce_human_attestation_authenticity(
-            obpi_id=adr_id,
-            parent_adr=adr_id,
-            attestor=attestor,
-            attestation_text=attestation_text or f"{receipt_event} {adr_id}",
-            attestor_present=attestor_present,
-            project_root=project_root,
-        )
-        if isinstance(evidence, dict):
-            evidence["attestation_type"] = attestation_type
 
     if dry_run:
         console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")

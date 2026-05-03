@@ -1,0 +1,7 @@
+{
+  "obpi_id": "OBPI-0.0.25-02-override-and-mirror",
+  "parent_adr": "ADR-0.0.25-obpi-completion-req-coverage-gate",
+  "lane": "heavy",
+  "current_stage": "2",
+  "started_at": "2026-05-02T01:00:00Z"
+}

@@ -712,6 +712,7 @@ from gzkit.ledger_events import (  # noqa: E402, F401
     constitution_created_event,
     gate_checked_event,
     lifecycle_transition_event,
+    obpi_completion_uncovered_accept_event,
     obpi_created_event,
     obpi_receipt_emitted_event,
     obpi_withdrawn_event,

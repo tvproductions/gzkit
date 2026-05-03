@@ -20,6 +20,7 @@ from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
 from gzkit.commands.adr_audit import (
     ATTESTATION_TYPE_HUMAN,
     _enforce_human_attestation_authenticity,
+    _enforce_uncovered_acceptance_confirmation,
     _requires_human_obpi_attestation,
 )
 from gzkit.commands.closeout_form import _upsert_frontmatter_value
@@ -41,7 +42,11 @@ from gzkit.hooks.obpi import section_body
 from gzkit.ledger import Ledger, parse_frontmatter_value, resolve_adr_lane
 
 # section_body is used in _has_human_attestation_content for H2 section extraction
-from gzkit.ledger_events import audit_receipt_emitted_event, obpi_receipt_emitted_event
+from gzkit.ledger_events import (
+    audit_receipt_emitted_event,
+    obpi_completion_uncovered_accept_event,
+    obpi_receipt_emitted_event,
+)
 from gzkit.utils import capture_validation_anchor
 
 # ---------------------------------------------------------------------------
@@ -408,6 +413,58 @@ def _any_covering_test_passes(refs: list[TestRef], project_root: Path) -> bool:
     return False
 
 
+def _apply_uncovered_waivers(
+    *,
+    gaps: list[str],
+    accept_uncovered: list[str],
+    accept_uncovered_reason: list[str],
+    fail_closed: bool,
+    obpi_id: str,
+    parent_adr: str,
+    attestor: str,
+    attestor_present: bool,
+    project_root: Path,
+    as_json: bool,
+    ledger: Any,
+) -> list[str]:
+    """Apply --accept-uncovered waivers to gaps; emit ledger events. Returns remaining gaps."""
+    accepted_set = set(accept_uncovered)
+    waivable = accepted_set & set(gaps)
+    if not waivable:
+        return [g for g in gaps if g not in accepted_set]
+    if fail_closed:
+        try:
+            acceptance_type = _enforce_uncovered_acceptance_confirmation(
+                obpi_id=obpi_id,
+                parent_adr=parent_adr,
+                req_ids=sorted(waivable),
+                attestor=attestor,
+                attestor_present=attestor_present,
+                project_root=project_root,
+            )
+        except GzCliError as exc:
+            _fail(str(exc), exit_code=3, as_json=as_json, obpi_id=obpi_id)
+            return gaps  # unreachable; _fail raises SystemExit
+    else:
+        acceptance_type = "lite-auto"
+    if ledger is not None:
+        reason_map = {
+            req: accept_uncovered_reason[i] if i < len(accept_uncovered_reason) else ""
+            for i, req in enumerate(accept_uncovered)
+        }
+        for req in sorted(waivable):
+            ledger.append(
+                obpi_completion_uncovered_accept_event(
+                    obpi_id=obpi_id,
+                    req_id=req,
+                    operator=attestor,
+                    rationale=reason_map.get(req, ""),
+                    acceptance_type=acceptance_type,
+                )
+            )
+    return [g for g in gaps if g not in accepted_set]
+
+
 def _enforce_req_coverage_gate(
     *,
     obpi_id: str | None,
@@ -418,6 +475,11 @@ def _enforce_req_coverage_gate(
     project_root: Path,
     as_json: bool,
     dry_run: bool,
+    accept_uncovered: list[str] | None = None,
+    accept_uncovered_reason: list[str] | None = None,
+    attestor: str = "",
+    attestor_present: bool = False,
+    ledger: Any = None,
 ) -> None:
     """Refuse completion when any brief REQ has no passing covering test.
 
@@ -429,6 +491,12 @@ def _enforce_req_coverage_gate(
     | any / foundation                  | gap or red test  | exit 3  |
     | lite / non-foundation             | gap or red test  | warning, proceed |
     | any                               | all REQs green   | proceed |
+
+    ``accept_uncovered`` (ADR-0.0.25-02) names REQ-IDs whose coverage gaps the
+    operator explicitly waives. Heavy/foundation waivers require TTY+``ACCEPT``
+    confirmation. Each waiver emits a ``obpi_completion_uncovered_accept`` ledger
+    event. Only gap-REQs (no covering tests) can be waived; failing-cover REQs
+    cannot.
 
     Runs AFTER the ADR-0.0.24 receipt-binding gate so a missing receipt
     short-circuits the (slower) test-discovery + scoped-run path
@@ -451,10 +519,27 @@ def _enforce_req_coverage_gate(
         if not _any_covering_test_passes(refs, project_root):
             failing.append(req)
 
+    fail_closed = parent_lane.lower() == "heavy" or parent_kind.lower() == "foundation"
+
+    # OBPI-0.0.25-02: process --accept-uncovered waivers before checking remaining gaps
+    if accept_uncovered:
+        gaps = _apply_uncovered_waivers(
+            gaps=gaps,
+            accept_uncovered=accept_uncovered,
+            accept_uncovered_reason=accept_uncovered_reason or [],
+            fail_closed=fail_closed,
+            obpi_id=obpi_id or parent_adr,
+            parent_adr=parent_adr,
+            attestor=attestor,
+            attestor_present=attestor_present,
+            project_root=project_root,
+            as_json=as_json,
+            ledger=ledger,
+        )
+
     if not gaps and not failing:
         return
 
-    fail_closed = parent_lane.lower() == "heavy" or parent_kind.lower() == "foundation"
     diagnostic_lines = [f"  - uncovered: {req}" for req in gaps]
     diagnostic_lines.extend(f"  - failing-cover: {req}" for req in failing)
     detail = "\n".join(diagnostic_lines)
@@ -582,6 +667,8 @@ def obpi_complete_cmd(
     as_json: bool,
     dry_run: bool,
     attestor_present: bool = False,
+    accept_uncovered: list[str] | None = None,
+    accept_uncovered_reason: list[str] | None = None,
 ) -> None:
     """Atomically complete an OBPI: validate, write evidence, flip status, emit receipt."""
     config = ensure_initialized()
@@ -657,10 +744,30 @@ def obpi_complete_cmd(
         dry_run=dry_run,
     )
 
+    # OBPI-0.0.25-02: validate --accept-uncovered pairing before the gate
+    if accept_uncovered and not dry_run:
+        if not accept_uncovered_reason:
+            _fail(
+                "--accept-uncovered requires --accept-uncovered-reason "
+                "(one reason per waived REQ).",
+                exit_code=1,
+                as_json=as_json,
+                obpi_id=obpi_id,
+            )
+        reasons_list: list[str] = accept_uncovered_reason or []
+        if len(accept_uncovered) != len(reasons_list):
+            _fail(
+                f"--accept-uncovered and --accept-uncovered-reason counts must match "
+                f"({len(accept_uncovered)} vs {len(reasons_list)}).",
+                exit_code=1,
+                as_json=as_json,
+                obpi_id=obpi_id,
+            )
+
     # 4a-ter. ADR-0.0.25-01 REQ-coverage gate: heavy/foundation = fail-closed
     # on any uncovered or failing-covered REQ; lite-non-foundation = warn-only.
-    # Runs AFTER the receipt-binding gate (ADR-0.0.24) — receipt-resolution
-    # is cheap, REQ test discovery + scoped runs are the expensive step.
+    # ADR-0.0.25-02 adds --accept-uncovered override path with TTY gate and
+    # ledger-event recording. Runs AFTER the receipt-binding gate (ADR-0.0.24).
     _enforce_req_coverage_gate(
         obpi_id=obpi_id,
         parent_adr=resolved_parent,
@@ -670,6 +777,11 @@ def obpi_complete_cmd(
         project_root=project_root,
         as_json=as_json,
         dry_run=dry_run,
+        accept_uncovered=accept_uncovered,
+        accept_uncovered_reason=accept_uncovered_reason,
+        attestor=attestor,
+        attestor_present=attestor_present,
+        ledger=ledger,
     )
 
     # 4b. GHI #290 authenticity gate: no human-attestation receipt without TTY

@@ -21,6 +21,8 @@ gz obpi complete OBPI-X.Y.Z-NN --attestor NAME --attestation-text TEXT
 | `--implementation-summary TEXT` | Implementation summary (reads from brief if omitted) |
 | `--key-proof TEXT` | Key proof text (reads from brief if omitted) |
 | `--attestor-present` | Agent-relayed operator attestation, gated on an active pipeline marker (GHI #292) |
+| `--accept-uncovered REQ_ID` | Explicitly waive an uncovered REQ (repeatable; requires `--accept-uncovered-reason`) |
+| `--accept-uncovered-reason REASON` | Rationale for the corresponding `--accept-uncovered` entry (repeatable, 1:1 pairing) |
 | `--json` | Machine-readable JSON output |
 | `--dry-run` | Show plan without writing files |
 

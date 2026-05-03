@@ -238,6 +238,29 @@ def adr_eval_completed_event(
     )
 
 
+def obpi_completion_uncovered_accept_event(
+    *,
+    obpi_id: str,
+    req_id: str,
+    operator: str,
+    rationale: str,
+    acceptance_type: str,
+) -> LedgerEvent:
+    """Create an event recording one accepted-uncovered REQ waiver (ADR-0.0.25-02)."""
+    return LedgerEvent(
+        event="obpi_completion_uncovered_accept",
+        id=obpi_id,
+        parent=obpi_id,
+        extra={
+            "obpi_id": obpi_id,
+            "req_id": req_id,
+            "operator": operator,
+            "rationale": rationale,
+            "acceptance_type": acceptance_type,
+        },
+    )
+
+
 def lifecycle_transition_event(
     artifact_id: str,
     content_type: str,
