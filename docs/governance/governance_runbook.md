@@ -519,6 +519,7 @@ Rules:
 - Do not run `gz audit` before attestation.
 - Do not treat passing checks as implied attestation.
 - Record attestation terms explicitly (`Completed`, `Completed — Partial: <reason>`, `Dropped — <reason>`).
+- **REQ-coverage gate (ADR-0.0.25):** `gz obpi complete` exits 3 when any REQ in the closing brief's `## Acceptance Criteria` lacks a passing `@covers`-decorated test. Use `uv run gz covers OBPI-<X.Y.Z-NN>` to check coverage before invoking completion. The same gate mirrors to `gz adr emit-receipt --event closed`: an ADR cannot close while any OBPI has an unwaived REQ gap. Override: `--accept-uncovered REQ-ID --accept-uncovered-reason REASON` (requires `--attestor-present`; records `obpi_completion_uncovered_accept` ledger event).
 
 ---
 

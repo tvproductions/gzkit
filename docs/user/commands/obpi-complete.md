@@ -41,8 +41,9 @@ If any step fails, all changes are rolled back (no partial writes).
 | Code | Meaning |
 |------|---------|
 | 0 | OBPI completed successfully |
-| 1 | Validation failure (missing brief, already completed, insufficient evidence) |
+| 1 | Validation failure (missing brief, already completed, insufficient evidence, or `--accept-uncovered` without `--accept-uncovered-reason`) |
 | 2 | I/O error |
+| 3 | REQ-coverage gate: one or more REQs in `## Acceptance Criteria` lack a passing `@covers`-decorated test (heavy-lane or foundation-kind briefs); or `--accept-uncovered` override refused (no active pipeline marker / headless invocation) |
 
 ## Examples
 
@@ -62,4 +63,12 @@ gz obpi complete OBPI-0.0.14-01 \
   --attestor jeff \
   --attestation-text "Verified" \
   --dry-run
+
+# Accept an uncovered REQ with a recorded rationale (requires active pipeline marker)
+gz obpi complete OBPI-0.0.14-01 \
+  --attestor jeff \
+  --attestation-text "Verified" \
+  --accept-uncovered REQ-0.0.14-01-03 \
+  --accept-uncovered-reason "REQ validated by manual integration walkthrough; no unit harness exists" \
+  --attestor-present
 ```
