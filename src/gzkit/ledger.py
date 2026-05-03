@@ -67,6 +67,11 @@ OBPI_RUNTIME_STATES = {
     "withdrawn",
 }
 OBPI_COMPLETED_RUNTIME_STATES = {"completed", "attested_completed", "validated"}
+# ADR-level audit receipt events that represent human Gate 5 attestation —
+# mirrors ``_HUMAN_ATTESTATION_RECEIPT_EVENTS`` in
+# ``src/gzkit/commands/adr_audit.py`` (the emit-side authority). Defined
+# locally to keep ``ledger.py`` free of command-module imports (GHI #391).
+_AUDIT_HUMAN_ATTESTATION_EVENTS = frozenset({"validated", "attested", "accepted"})
 OBPI_PROOF_STATES = {"missing", "partial", "recorded", "validated"}
 OBPI_ATTESTATION_REQUIREMENTS = {"required", "optional"}
 OBPI_ATTESTATION_STATES = {"not_required", "missing", "recorded"}
@@ -525,6 +530,13 @@ class Ledger:
         adr_completion = evidence.get("adr_completion") if isinstance(evidence, dict) else None
         if receipt_event == "validated" and adr_completion != "not_completed":
             graph[canonical_id]["validated"] = True
+        if isinstance(receipt_event, str) and receipt_event in _AUDIT_HUMAN_ATTESTATION_EVENTS:
+            graph[canonical_id]["attested"] = True
+            evidence_dict = evidence if isinstance(evidence, dict) else {}
+            graph[canonical_id]["attestation_status"] = (
+                evidence_dict.get("attestation_text") or receipt_event
+            )
+            graph[canonical_id]["attestation_by"] = event.extra.get("attestor")
 
     @staticmethod
     def _apply_obpi_receipt_metadata(
