@@ -437,6 +437,18 @@ _EXEMPT_CEREMONIES: frozenset[str] = frozenset(
     {"gz-git-sync", "obpi-reconcile", "adr-closeout", "ghi-close"}
 )
 
+# Pre-GHI #201 ceremony commits (before `Ceremony:` git trailer convention)
+# carry the marker only in the parenthesized subject suffix, e.g.
+# `chore: update ... (gz git-sync)`. Anchored to subject end so a future
+# commit titled `fix: stop bypassing (gz git-sync) trailer check` cannot
+# accidentally exempt itself by mentioning the suffix mid-line (GHI #390).
+_HISTORICAL_CEREMONY_SUBJECT_PATTERNS: dict[str, re.Pattern[str]] = {
+    "gz-git-sync": re.compile(r"\(gz[\s-]git[\s-]sync\)\s*$"),
+    "obpi-reconcile": re.compile(r"\(obpi[\s-]reconcile\)\s*$"),
+    "adr-closeout": re.compile(r"\(adr[\s-]closeout\)\s*$"),
+    "ghi-close": re.compile(r"\(ghi[\s-]close\)\s*$"),
+}
+
 
 def _file_creation_short_sha(
     rel_file: str, project_root: Path, git_runner: GitRunner
@@ -465,6 +477,29 @@ def _ceremony_trailer(sha: str, project_root: Path, git_runner: GitRunner) -> st
         return None
     value = stdout.strip()
     return value or None
+
+
+def _ceremony_subject_marker(sha: str, project_root: Path, git_runner: GitRunner) -> str | None:
+    """Return the canonical ceremony name when ``sha``'s subject carries the historical
+    parenthesized suffix (e.g. ``(gz git-sync)``) at end of line.
+
+    Pre-GHI #201 ceremony commits embedded the marker in the subject suffix
+    rather than the ``Ceremony:`` trailer; ADR-0.0.16 and other foundation-kind
+    ADRs closed under that window failed audit-check despite legitimate
+    cross-OBPI coverage extension being bundled into a single ``gz git-sync``
+    commit. Maps the historical suffix to the same canonical names that
+    :data:`_EXEMPT_CEREMONIES` enumerates.
+    """
+    rc, stdout, _stderr = git_runner(["log", "-1", "--format=%s", sha], project_root)
+    if rc != 0:
+        return None
+    subject = stdout.strip()
+    if not subject:
+        return None
+    for canonical, pattern in _HISTORICAL_CEREMONY_SUBJECT_PATTERNS.items():
+        if pattern.search(subject):
+            return canonical
+    return None
 
 
 def _is_legitimate_authoring(
@@ -502,7 +537,15 @@ def _is_legitimate_authoring(
     ):
         return True
     trailer = _ceremony_trailer(intro.commit_sha, project_root, git_runner)
-    return trailer is not None and trailer in _EXEMPT_CEREMONIES
+    if trailer is not None and trailer in _EXEMPT_CEREMONIES:
+        return True
+    # GHI #390 Case B: pre-GHI #201 ceremony commits carry the marker only in
+    # the parenthesized subject suffix (e.g. `(gz git-sync)` at end of subject)
+    # rather than a `Ceremony:` trailer. Fall back to subject-suffix detection
+    # so heavy-lane / foundation-kind ADRs closed under the pre-trailer window
+    # don't permanently fail audit-check on cross-OBPI coverage extension.
+    subject_marker = _ceremony_subject_marker(intro.commit_sha, project_root, git_runner)
+    return subject_marker is not None and subject_marker in _EXEMPT_CEREMONIES
 
 
 # --------------------------------------------------------------------------- #
