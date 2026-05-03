@@ -154,7 +154,7 @@ def _build_adr_status_entry(
     """Build enriched ADR status payload for one ADR."""
     entry = dict(info)
     lane = resolve_adr_lane(entry, config.mode)
-    gate_statuses = ledger.get_latest_gate_statuses(adr_id)
+    gate_statuses = ledger.get_effective_gate_statuses(adr_id)
     gate4_na = _gate4_na_reason(project_root, lane)
     entry["lane"] = lane
     entry["gates"] = {
@@ -436,7 +436,7 @@ def _build_adr_status_result(adr: str) -> dict[str, Any]:
         raise GzCliError(msg)  # noqa: TRY003
 
     lane = resolve_adr_lane(info, config.mode)
-    gate_statuses = ledger.get_latest_gate_statuses(adr_id)
+    gate_statuses = ledger.get_effective_gate_statuses(adr_id)
     gate4_na = _gate4_na_reason(project_root, lane)
     semantics = Ledger.derive_adr_semantics(info)
     result: dict[str, Any] = {

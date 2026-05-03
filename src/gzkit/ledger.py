@@ -406,6 +406,72 @@ class Ledger:
 
         return latest
 
+    def get_effective_gate_statuses(self, adr_id: str) -> dict[int, str]:
+        """Return gate statuses honoring lifecycle authority for display.
+
+        Identical to `get_latest_gate_statuses` except that within a
+        Validated/Completed lifecycle epoch, `gate_checked: fail` events are
+        treated as observational noise — lifecycle is the authoritative source
+        for validation status (state-doctrine; GHI #392).
+
+        Rules:
+        - If the latest `lifecycle_transition` event for the canonical ADR
+          places it in `{Completed, Validated}` and no subsequent rollback
+          transition fires, any `gate_checked: fail` event after that
+          lifecycle event yields `pass` for that gate.
+        - A subsequent `lifecycle_transition` away from the validated states
+          opens a new epoch — observations within the new epoch apply normally.
+        - Pre-validation observations (and ADRs with no lifecycle transition)
+          fall through to raw `get_latest_gate_statuses` semantics.
+
+        Use this for display surfaces (`gz adr report`, `gz adr status`).
+        Use raw `get_latest_gate_statuses` for prerequisite checks
+        (`_attestation_gate_snapshot`) where lifecycle isn't yet validated.
+        """
+        events = self.read_all()
+        rename_map = self._build_rename_map(events)
+        target_id = self._canonicalize_with_map(adr_id, rename_map)
+
+        validated_states = {"Completed", "Validated"}
+        validated_since: str | None = None
+        for event in events:
+            if event.event != "lifecycle_transition":
+                continue
+            if self._canonicalize_with_map(event.id, rename_map) != target_id:
+                continue
+            to_state = event.extra.get("to_state")
+            if isinstance(to_state, str) and to_state in validated_states:
+                validated_since = event.ts
+            else:
+                validated_since = None
+
+        latest: dict[int, str] = {}
+        for event in events:
+            if event.event != "gate_checked":
+                continue
+            if self._canonicalize_with_map(event.id, rename_map) != target_id:
+                continue
+
+            gate_value = event.extra.get("gate")
+            status = event.extra.get("status")
+
+            gate: int | None = None
+            if isinstance(gate_value, int):
+                gate = gate_value
+            elif isinstance(gate_value, str) and gate_value.isdigit():
+                gate = int(gate_value)
+
+            if gate is None or not isinstance(status, str):
+                continue
+
+            if status == "fail" and validated_since is not None and event.ts > validated_since:
+                latest[gate] = "pass"
+                continue
+
+            latest[gate] = status
+
+        return latest
+
     @staticmethod
     def _artifact_creation_entry(
         event: LedgerEvent,
