@@ -235,6 +235,19 @@
         "action_item_count": { "type": "integer", "min": 0 }
       }
     },
+    "adr-evaluation": {
+      "required": ["artifact_id", "artifact_type", "dimensions", "scores", "weighted_total", "red_team_challenges_fired", "evaluator_persona", "timestamp"],
+      "properties": {
+        "artifact_id": { "type": "string", "min_length": 1 },
+        "artifact_type": { "type": "string", "min_length": 1 },
+        "dimensions": { "type": "object" },
+        "scores": { "type": "object" },
+        "weighted_total": { "type": "number" },
+        "red_team_challenges_fired": { "type": "array" },
+        "evaluator_persona": { "type": "string", "min_length": 1 },
+        "timestamp": { "type": "string", "min_length": 1 }
+      }
+    },
     "audit_generated": {
       "required": ["audit_file", "audit_plan_file", "passed"],
       "properties": {

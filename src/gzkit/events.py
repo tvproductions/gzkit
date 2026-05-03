@@ -433,6 +433,20 @@ class AdrEvalCompletedEvent(_EventBase):
     action_item_count: int
 
 
+class AdrEvaluationEvent(_EventBase):
+    """adr-evaluation event — full per-dimension scores (ADR-0.0.26-01)."""
+
+    event: Literal["adr-evaluation"]
+    artifact_id: str
+    artifact_type: str
+    dimensions: dict[str, float]
+    scores: dict[str, float]
+    weighted_total: float
+    red_team_challenges_fired: list[str]
+    evaluator_persona: str
+    timestamp: str
+
+
 class AuditGeneratedEvent(_EventBase):
     """audit_generated event — heavy-lane ADR audit artifact creation."""
 
@@ -547,6 +561,7 @@ TypedLedgerEvent = Annotated[
     | LifecycleTransitionEvent
     | AgentSyncCompletedEvent
     | AdrEvalCompletedEvent
+    | AdrEvaluationEvent
     | AuditGeneratedEvent
     | ObpiLockClaimedEvent
     | ObpiLockReleasedEvent

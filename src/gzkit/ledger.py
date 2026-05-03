@@ -703,6 +703,7 @@ class Ledger:
 from gzkit.ledger_events import (  # noqa: E402, F401
     adr_created_event,
     adr_eval_completed_event,
+    adr_evaluation_event,
     artifact_edited_event,
     artifact_renamed_event,
     attested_event,

@@ -3,7 +3,7 @@ id: OBPI-0.0.26-01-persist-evaluation-events
 parent: ADR-0.0.26-evaluation-feedback-loop-doctrine
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.26-01-persist-evaluation-events: Persist `gz-adr-evaluate` scores as ledger events
@@ -56,10 +56,24 @@ Bind every `gz-adr-evaluate` invocation to a canonical `adr-evaluation` ledger e
 
 ## Discovery Checklist
 
-- [ ] Parent ADR § Decision item 1 — read first per OBPI-brief authoring discipline
-- [ ] AGENTS.md § Behavior Rules — Always item 3 (record governance events in ledger)
-- [ ] `src/gzkit/governance/` — existing event registration shape
-- [ ] `.gzkit/ledger.jsonl` — sample existing event shapes for consistency
+- [x] Parent ADR § Decision item 1 — read first per OBPI-brief authoring discipline
+- [x] AGENTS.md § Behavior Rules — Always item 3 (record governance events in ledger)
+- [x] `src/gzkit/governance/` — existing event registration shape
+- [x] `.gzkit/ledger.jsonl` — sample existing event shapes for consistency
+
+**Prerequisites (check existence, STOP if missing):**
+
+- [x] Parent ADR Decision item 1 confirmed: "emit a canonical `adr-evaluation` ledger event with payload `{artifact_id, dimensions, scores, red_team_challenges_fired, timestamp}`"
+- [x] AGENTS.md § Behavior Rules — Always item 3 confirmed: all governance events must go through `Ledger.append`
+
+**Existing Code (understand current state):**
+
+- [x] `src/gzkit/ledger_events.py` — existing `adr_eval_completed_event` factory reviewed; `adr_evaluation_event` follows same LedgerEvent construction and extra payload pattern
+- [x] `src/gzkit/events.py` — `AdrEvalCompletedEvent` typed model reviewed; `AdrEvaluationEvent` follows same Literal union registration pattern
+- [x] `src/gzkit/schemas/ledger.json` — `adr_eval_completed` schema entry reviewed as reference for `adr-evaluation` schema shape
+- [x] `src/gzkit/governance/trust_audits/events.py` — `_NO_GRAPH_IMPACT` dict reviewed; `adr-evaluation` waiver follows `adr_eval_completed` pattern
+- [x] `src/gzkit/commands/adr_promote.py::adr_eval_cmd` — emission site confirmed; new event wired before `adr_eval_completed_event` call
+- [x] `LedgerEvent._serialize` confirmed: `extra` is flattened to top-level fields in JSONL output
 
 ## Quality Gates
 
@@ -97,7 +111,7 @@ uv run gz typecheck
 uv run gz test
 uv run gz arb step --name unittest -- uv run -m unittest tests/governance/test_evaluation_event.py tests/commands/test_adr_evaluate_emission.py -v
 # Smoke
-uv run gz adr-evaluate <fixture-adr-path> && tail -1 .gzkit/ledger.jsonl | grep adr-evaluation
+uv run gz adr evaluate ADR-0.0.26 && tail -1 .gzkit/ledger.jsonl | grep adr-evaluation
 ```
 
 ## Acceptance Criteria
@@ -138,13 +152,25 @@ uv run gz adr-evaluate <fixture-adr-path> && tail -1 .gzkit/ledger.jsonl | grep 
 
 ### Key Proof
 
+
+arb:unittest — 4004/4004 tests pass, receipt arb-step-unittest-bdc9602b3d9e4397960fd9fe23072047
+
+validate --documents passes with new event shape recognized:
+  $ uv run gz validate --documents
+  Validated: documents
+  ✓ All validations passed (1 scopes).
+
+TestAdrEvalCmdEmission.test_successful_eval_emits_exactly_one_adr_evaluation_event: adr_eval_cmd with mocked evaluate_adr emits exactly 1 "adr-evaluation" event to tempfile ledger with artifact_id, dimensions, evaluator_persona fields present (lint: arb-ruff-ea2903ed5c9e4d0992253ee7da292560, typecheck: arb-step-typecheck-3d41814b7ecb4feaa194b58940ef43e9)
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: tests/governance/test_evaluation_event.py (11 tests: event factory shape, schema registration, multi-append); tests/commands/test_adr_evaluate_emission.py (6 tests: command emission, exception no-emit, NO_GO emits)
+- Files modified: src/gzkit/ledger_events.py (adr_evaluation_event factory), src/gzkit/events.py (AdrEvaluationEvent + union), src/gzkit/schemas/ledger.json (adr-evaluation schema), src/gzkit/governance/trust_audits/events.py (_NO_GRAPH_IMPACT waiver), src/gzkit/commands/adr_promote.py (emission wired in adr_eval_cmd), src/gzkit/ledger.py (re-export), tests/test_schemas.py (AdrEvaluationEvent in schema map)
+- Tests added: 17 (lint: arb-ruff-ea2903ed5c9e4d0992253ee7da292560, unittest: arb-step-unittest-bdc9602b3d9e4397960fd9fe23072047)
+- Date completed: 2026-05-03
+- Attestation status: attested by Jeffry ("attest completed")
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -152,14 +178,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` (heavy + foundation requires human)
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — adr-evaluation ledger event emitted on every successful gz adr evaluate invocation with full per-dimension payload (artifact_id, artifact_type, dimensions, scores, weighted_total, red_team_challenges_fired, evaluator_persona, timestamp); gz validate --documents passes; 17 new tests covering all 4 REQs pass in 4004-test suite (lint: arb-ruff-ea2903ed5c9e4d0992253ee7da292560, typecheck: arb-step-typecheck-3d41814b7ecb4feaa194b58940ef43e9, unittest: arb-step-unittest-bdc9602b3d9e4397960fd9fe23072047)
+- Date: 2026-05-03
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-03
 
 **Evidence Hash:** -

@@ -1,0 +1,17 @@
+Error: ADR closeout blocked — unwaived REQ coverage gaps in ADR-9.9.9-fixture:
+  OBPI-9.9.9-99-fixture: REQ-9.9.9-99-01
+Waive each gap with `gz obpi complete --accept-uncovered <REQ-ID>
+--accept-uncovered-reason <REASON>` before closing the ADR.
+ADR closeout receipt emitted.
+  ADR: ADR-9.9.9-fixture
+  Event: closed
+ADR closeout receipt emitted.
+  ADR: ADR-9.9.9-fixture
+  Event: closed
+Skipping unparseable file: /var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/tmpv8vxpmia/test_broken.py
+Malformed REQ line (skipped): - [ ] REQ-X-Y-Z: Malformed (non-numeric).
+Malformed REQ line (skipped): - [ ] REQ-: Empty body.
+----------------------------------------------------------------------
+Ran 25 tests in 0.062s
+
+OK

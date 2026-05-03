@@ -30,6 +30,11 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
     ),
     "audit_generated": "Heavy-lane audit trail; consumed by gz adr audit tooling, not graph.",
     "adr_eval_completed": "Evaluation scorecard; consumed by gz adr evaluate, not graph.",
+    "adr-evaluation": (
+        "Full per-dimension evaluation scores (ADR-0.0.26-01). "
+        "Consumed by eval-feedback-cluster chore and gz validate --evaluation-justify-binding; "
+        "not a direct artifact graph node."
+    ),
     "lifecycle_transition": (
         "Transition log for state-doctrine audits; consumed by gz state, not graph directly."
     ),

@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.25-obpi-completion-req-coverage-gate
-status: Draft
+status: Validated
 kind: foundation
 semver: 0.0.25
 lane: heavy

@@ -1,0 +1,35 @@
+usage: gz adr emit-receipt [-h] --event {completed,validated,closed}
+                           --attestor ATTESTOR [--evidence-json EVIDENCE_JSON]
+                           [--attestor-present] [--dry-run] [--quiet |
+                           --verbose] [--debug]
+                           adr
+
+Record a receipt event in the ledger for an ADR. Required --evidence-json fields for completed: value_narrative, key_proof. Heavy/Foundation also require: human_attestation (true), attestation_text, attestation_date (YYYY-MM-DD).
+
+positional arguments:
+  adr                   ADR identifier (e.g. ADR-0.0.4)
+
+options:
+  -h, --help            show this help message and exit
+  --event {completed,validated,closed}
+                        Receipt event type (completed|validated|closed)
+  --attestor ATTESTOR   Identity of the attestor
+  --evidence-json EVIDENCE_JSON
+                        JSON with value_narrative, key_proof; Heavy adds
+                        attestation fields
+  --attestor-present    Agent-relayed operator attestation, gated on active
+                        pipeline marker (GHI #292)
+  --dry-run             Show planned actions without executing
+  --quiet, -q           Suppress non-error output
+  --verbose, -v         Enable verbose output
+  --debug               Enable debug mode with full tracebacks
+
+Examples
+    gz adr emit-receipt ADR-0.1.0 --event completed --attestor "Jane Doe"
+    gz adr emit-receipt ADR-0.1.0 --event validated --attestor "Jane Doe" --dry-run
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach
