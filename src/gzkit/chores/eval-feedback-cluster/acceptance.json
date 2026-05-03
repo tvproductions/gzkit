@@ -1,0 +1,14 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run -m unittest tests/chores/test_eval_feedback_cluster.py -q",
+      "expected": 0
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run gz validate --chores-layout",
+      "expected": 0
+    }
+  ]
+}

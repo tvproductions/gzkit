@@ -11,6 +11,7 @@ plain output modes.
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -85,13 +86,16 @@ def _filter_report(report: CoverageReport, target: str) -> CoverageReport:
     return CoverageReport(by_adr=by_adr, by_obpi=by_obpi, entries=filtered, summary=summary)
 
 
+_OBPI_NUMERIC_PREFIX_RE = re.compile(r"^(\d+\.\d+\.\d+-\d+)")
+
+
 def _req_belongs_to_obpi(req_id: str, obpi_prefix: str) -> bool:
-    """Check if REQ-X.Y.Z-NN-MM belongs to OBPI prefix X.Y.Z-NN."""
+    """Check if REQ-X.Y.Z-NN-MM belongs to OBPI prefix X.Y.Z-NN[-slug]."""
     stripped = req_id.removeprefix("REQ-")
-    # REQ-0.15.0-03-01 → stripped = "0.15.0-03-01"
-    # OBPI prefix = "0.15.0-03"
-    # Match: stripped starts with "0.15.0-03-"
-    return stripped.startswith(f"{obpi_prefix}-")
+    # Strip any slug from prefix: "0.0.26-03-CLUSTERING-CHORE" → "0.0.26-03"
+    m = _OBPI_NUMERIC_PREFIX_RE.match(obpi_prefix)
+    numeric_prefix = m.group(1) if m else obpi_prefix
+    return stripped.startswith(f"{numeric_prefix}-")
 
 
 def _format_human(report: CoverageReport) -> str:
