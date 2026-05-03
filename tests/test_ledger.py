@@ -488,6 +488,86 @@ class TestLedger(unittest.TestCase):
             graph = ledger.get_artifact_graph()
             self.assertFalse(graph["OBPI-0.7.1-01"]["attested"])
 
+    def test_get_artifact_graph_marks_adr_attested_from_audit_receipt_validated(
+        self,
+    ) -> None:
+        """ADR-level audit_receipt_emitted with human-attestation receipt_event
+        flips ``attested=True`` (GHI #391 regression).
+
+        ``gz adr emit-receipt --event validated`` (and the agent-relayed
+        equivalent landed under GHI #354 sub-scope, ``audit-begin`` →
+        ``emit-receipt --attestor-present`` → ``audit-end``) writes
+        ``audit_receipt_emitted`` with ``receipt_event`` in
+        ``_HUMAN_ATTESTATION_RECEIPT_EVENTS`` (``validated`` / ``attested`` /
+        ``accepted``). The graph builder MUST recognize this as canonical
+        Gate 5 attestation and set ``attested=True`` on the ADR. Before
+        GHI #391's fix, the lifecycle resolver advanced the ADR to Validated
+        but the QC roll-up read ``attested=False`` and reported Gate 5
+        PENDING — Layer-3 derived view contradicting Layer-2 ledger truth
+        (AGENTS.md § Architectural Boundaries #6).
+
+        ADR-0.0.21-chores-as-gzkit-surface was the first surfaced casualty
+        (per GHI #354 disposition note: first emit through the
+        ``audit-begin``/``audit-end`` ceremony path).
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.7.2", "", "heavy"))
+            ledger.append(
+                audit_receipt_emitted_event(
+                    "ADR-0.7.2",
+                    "validated",
+                    "Jeffry Babb",
+                    evidence={
+                        "gate": 5,
+                        "attestation_text": "attest completed — operator ack",
+                        "attestation_type": "agent-relayed-operator-attestation",
+                    },
+                )
+            )
+
+            graph = ledger.get_artifact_graph()
+            adr = graph["ADR-0.7.2"]
+            self.assertTrue(
+                adr["attested"],
+                "audit_receipt_emitted with receipt_event=validated must set "
+                "attested=True; otherwise QC roll-up reads PENDING despite "
+                "canonical Gate 5 evidence (GHI #391, Layer-3 derived-view "
+                "drift from Layer-2 ledger truth).",
+            )
+            self.assertEqual(adr["attestation_by"], "Jeffry Babb")
+            self.assertTrue(adr["validated"])
+
+    def test_get_artifact_graph_does_not_mark_adr_attested_for_non_attestation_audit_receipts(
+        self,
+    ) -> None:
+        """Audit receipts whose ``receipt_event`` is not a human-attestation
+        event MUST leave ``attested=False`` (GHI #391 negative-case lock).
+
+        ``_HUMAN_ATTESTATION_RECEIPT_EVENTS = {"validated", "attested",
+        "accepted"}``. Other receipt events (``emitted``, ``corrected``,
+        ``superseded``, etc.) are informational or derived facts and must
+        not be misread as Gate 5 attestation.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.7.3", "", "heavy"))
+            ledger.append(
+                audit_receipt_emitted_event(
+                    "ADR-0.7.3",
+                    "emitted",
+                    "Jeffry Babb",
+                    evidence={"audit": "informational"},
+                )
+            )
+
+            graph = ledger.get_artifact_graph()
+            self.assertFalse(graph["ADR-0.7.3"]["attested"])
+
     def test_derive_obpi_semantics_withdrawn_returns_withdrawn_state(self) -> None:
         """Withdrawn OBPIs return runtime_state='withdrawn' and completed=False."""
         info: dict[str, Any] = {"withdrawn": True, "type": "obpi"}
