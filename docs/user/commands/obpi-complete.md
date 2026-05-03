@@ -43,7 +43,7 @@ If any step fails, all changes are rolled back (no partial writes).
 | 0 | OBPI completed successfully |
 | 1 | Validation failure (missing brief, already completed, insufficient evidence, or `--accept-uncovered` without `--accept-uncovered-reason`) |
 | 2 | I/O error |
-| 3 | REQ-coverage gate: one or more REQs in `## Acceptance Criteria` lack a passing `@covers`-decorated test (heavy-lane or foundation-kind briefs); or `--accept-uncovered` override refused (no active pipeline marker / headless invocation) |
+| 3 | REQ-coverage gate: one or more REQs in `## Acceptance Criteria` lack a passing `@covers`-decorated unit test or `@REQ-*` BDD scenario tag (heavy-lane or foundation-kind briefs); or `--accept-uncovered` override refused (no active pipeline marker / headless invocation) |
 
 ## Examples
 
