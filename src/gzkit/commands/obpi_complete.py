@@ -509,10 +509,11 @@ def _enforce_req_coverage_gate(
 
     reqs = parse_brief_reqs(brief_path)
     tests_root = project_root / "tests"
+    features_root = project_root / "features"
     gaps: list[str] = []
     failing: list[str] = []
     for req in reqs:
-        refs = discover_covers(req, tests_root)
+        refs = discover_covers(req, tests_root, features_root=features_root)
         if not refs:
             gaps.append(req)
             continue

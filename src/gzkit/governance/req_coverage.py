@@ -6,10 +6,12 @@ REQ-coverage gate (ADR-0.0.25, OBPI-01):
 * ``parse_brief_reqs(Path) -> list[str]`` — extract REQ-IDs from a
   brief's ``## Acceptance Criteria`` section, tolerating the canonical
   ``- [ ] REQ-X.Y.Z-NN-MM: <text>`` shape and skipping malformed rows.
-* ``discover_covers(req_id, Path) -> list[TestRef]`` — return every
-  test decorated ``@covers(REQ-...)`` for the given REQ under
-  ``tests_root``. AST-based; never imports the test module under audit
-  (REQ-0.0.25-01-05; underwrites the ``.claude/rules/pythonic.md``
+* ``discover_covers(req_id, Path, *, features_root) -> list[TestRef]`` —
+  return every covering reference for the given REQ: ``@covers``-decorated
+  unit tests under ``tests_root`` unioned with ``@REQ-*`` BDD scenario
+  tags under ``features_root`` (when supplied). AST-based for Python
+  tests; feature-file scan for BDD. Never imports test modules under
+  audit (REQ-0.0.25-01-05; underwrites ``.claude/rules/pythonic.md``
   imports rule and the ``@covers`` discovery contract from #120).
 
 The implementation reuses existing primitives:
@@ -30,7 +32,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.traceability import scan_test_tree
+from gzkit.traceability import scan_feature_tree, scan_test_tree
 from gzkit.triangle import extract_reqs_from_brief
 
 
@@ -67,22 +69,31 @@ def parse_brief_reqs(brief_path: Path) -> list[str]:
     return [str(r.id) for r in reqs]
 
 
-def discover_covers(req_id: str, tests_root: Path) -> list[TestRef]:
-    """Return every test decorated ``@covers(<req_id>)`` under ``tests_root``.
+def discover_covers(
+    req_id: str,
+    tests_root: Path,
+    *,
+    features_root: Path | None = None,
+) -> list[TestRef]:
+    """Return every covering reference for ``req_id`` under ``tests_root`` and
+    optionally ``features_root``.
 
-    AST-based: relies on ``gzkit.traceability.scan_test_tree`` so every
-    consumer (audit-check, drift, ``gz covers``, this gate) sees the same
-    set of @covers references (#120). No test modules are imported during
-    discovery — REQ-0.0.25-01-05.
+    Unions ``scan_test_tree(tests_root)`` (``@covers``-decorated unit tests)
+    with ``scan_feature_tree(features_root)`` (``@REQ-*`` BDD scenario tags)
+    when ``features_root`` is supplied — matching the ``gz covers`` behaviour
+    (covers.py:174). No test modules are imported during discovery —
+    REQ-0.0.25-01-05.
 
     File paths are rendered with ``Path.as_posix()`` so cross-platform
     consumers (ledger artifacts, JSON, downstream string comparisons) see
     forward-slash separators on every platform per
     ``.claude/rules/cross-platform.md``.
     """
-    if not tests_root.is_dir():
-        return []
-    records = scan_test_tree(tests_root)
+    records = []
+    if tests_root.is_dir():
+        records.extend(scan_test_tree(tests_root))
+    if features_root is not None and features_root.is_dir():
+        records.extend(scan_feature_tree(features_root))
     refs: list[TestRef] = []
     for record in records:
         if record.target.identifier != req_id:

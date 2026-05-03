@@ -797,6 +797,7 @@ def _check_adr_obpi_coverage_gaps(
         return []
 
     tests_root = project_root / "tests"
+    features_root = project_root / "features"
 
     # Load acceptance waivers from ledger JSONL
     waived: set[tuple[str, str]] = set()
@@ -826,7 +827,7 @@ def _check_adr_obpi_coverage_gaps(
         obpi_id = brief_path.stem
         gaps: list[str] = []
         for req in reqs:
-            refs = discover_covers(req, tests_root)
+            refs = discover_covers(req, tests_root, features_root=features_root)
             if not refs and (obpi_id, req) not in waived:
                 gaps.append(req)
         if gaps:

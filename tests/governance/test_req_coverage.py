@@ -158,11 +158,11 @@ class TestDiscoverCoversFinds(unittest.TestCase):
 
     @covers("REQ-0.0.25-01-01")
     def test_returns_ref_for_matching_decorator(self) -> None:
-        body = '\n'.join(
+        body = "\n".join(
             [
                 '    @covers("REQ-9.9.9-99-01")',
-                '    def test_one(self):',
-                '        self.assertTrue(True)',
+                "    def test_one(self):",
+                "        self.assertTrue(True)",
             ]
         )
         with tempfile.TemporaryDirectory() as tmp:
@@ -178,11 +178,11 @@ class TestDiscoverCoversFinds(unittest.TestCase):
 
     @covers("REQ-0.0.25-01-01")
     def test_returns_empty_when_no_match(self) -> None:
-        body = '\n'.join(
+        body = "\n".join(
             [
                 '    @covers("REQ-9.9.9-99-01")',
-                '    def test_one(self):',
-                '        pass',
+                "    def test_one(self):",
+                "        pass",
             ]
         )
         with tempfile.TemporaryDirectory() as tmp:
@@ -203,15 +203,15 @@ class TestDiscoverCoversMultiple(unittest.TestCase):
 
     @covers("REQ-0.0.25-01-06")
     def test_two_tests_decorated_for_same_req(self) -> None:
-        body = '\n'.join(
+        body = "\n".join(
             [
                 '    @covers("REQ-9.9.9-99-01")',
-                '    def test_alpha(self):',
-                '        pass',
-                '',
+                "    def test_alpha(self):",
+                "        pass",
+                "",
                 '    @covers("REQ-9.9.9-99-01")',
-                '    def test_beta(self):',
-                '        pass',
+                "    def test_beta(self):",
+                "        pass",
             ]
         )
         with tempfile.TemporaryDirectory() as tmp:
@@ -234,17 +234,67 @@ class TestDiscoverCoversAstSafety(unittest.TestCase):
             _write_test_file(
                 tests_root,
                 "test_valid.py",
-                '\n'.join(
+                "\n".join(
                     [
                         '    @covers("REQ-9.9.9-99-02")',
-                        '    def test_x(self):',
-                        '        pass',
+                        "    def test_x(self):",
+                        "        pass",
                     ]
                 ),
             )
             refs = discover_covers("REQ-9.9.9-99-02", tests_root)
         self.assertEqual(len(refs), 1)
         self.assertTrue(refs[0].file_path.endswith("test_valid.py"))
+
+
+_FEATURE_TEMPLATE = """\
+Feature: Fixture feature for BDD coverage
+
+  @{req_id}
+  Scenario: Fixture scenario for {req_id}
+    Given a synthetic step
+    Then the requirement is satisfied
+"""
+
+
+class TestDiscoverCoversBddFeatureTree(unittest.TestCase):
+    """REQ-0.0.25-01-01 — discover_covers unions features_root BDD scenario tags."""
+
+    @covers("REQ-0.0.25-01-01")
+    def test_returns_ref_for_bdd_scenario_tag(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tests_root = Path(tmp) / "tests"
+            tests_root.mkdir()
+            features_root = Path(tmp) / "features"
+            features_root.mkdir()
+            (features_root / "fixture.feature").write_text(
+                _FEATURE_TEMPLATE.format(req_id="REQ-9.9.9-99-01"), encoding="utf-8"
+            )
+            refs = discover_covers("REQ-9.9.9-99-01", tests_root, features_root=features_root)
+        self.assertGreater(len(refs), 0)
+        self.assertTrue(any("fixture" in r.file_path for r in refs))
+
+    @covers("REQ-0.0.25-01-01")
+    def test_bdd_ref_not_returned_without_features_root(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tests_root = Path(tmp) / "tests"
+            tests_root.mkdir()
+            features_root = Path(tmp) / "features"
+            features_root.mkdir()
+            (features_root / "fixture.feature").write_text(
+                _FEATURE_TEMPLATE.format(req_id="REQ-9.9.9-99-01"), encoding="utf-8"
+            )
+            refs = discover_covers("REQ-9.9.9-99-01", tests_root)
+        self.assertEqual(refs, [])
+
+    @covers("REQ-0.0.25-01-01")
+    def test_missing_features_root_returns_empty(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tests_root = Path(tmp) / "tests"
+            tests_root.mkdir()
+            missing = Path(tmp) / "no-such-features"
+            refs = discover_covers("REQ-9.9.9-99-01", tests_root, features_root=missing)
+        self.assertEqual(refs, [])
 
 
 if __name__ == "__main__":
