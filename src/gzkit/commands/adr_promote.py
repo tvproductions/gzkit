@@ -394,6 +394,7 @@ def adr_eval_cmd(adr_id: str, as_json: bool, write_scorecard: bool) -> None:
         resolve_adr_package,
     )
     from gzkit.ledger import adr_eval_completed_event  # noqa: PLC0415
+    from gzkit.ledger_events import adr_evaluation_event  # noqa: PLC0415
 
     config = ensure_initialized()
     project_root = get_project_root()
@@ -407,6 +408,20 @@ def adr_eval_cmd(adr_id: str, as_json: bool, write_scorecard: bool) -> None:
         scorecard_path.write_text(render_scorecard_markdown(result), encoding="utf-8")
 
     ledger = Ledger(project_root / config.paths.ledger)
+    ledger.append(
+        adr_evaluation_event(
+            artifact_id=adr_input,
+            artifact_type="ADR",
+            dimensions={d.dimension: float(d.score) for d in result.adr_dimensions},
+            scores={d.dimension: d.weighted for d in result.adr_dimensions},
+            weighted_total=result.adr_weighted_total,
+            red_team_challenges_fired=[
+                r.challenge_name for r in (result.red_team_results or []) if not r.passed
+            ],
+            evaluator_persona="gz-adr-evaluate",
+            timestamp=result.timestamp,
+        )
+    )
     ledger.append(
         adr_eval_completed_event(
             adr_id=adr_input,

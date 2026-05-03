@@ -238,6 +238,34 @@ def adr_eval_completed_event(
     )
 
 
+def adr_evaluation_event(
+    *,
+    artifact_id: str,
+    artifact_type: str,
+    dimensions: dict[str, float],
+    scores: dict[str, float],
+    weighted_total: float,
+    red_team_challenges_fired: list[str],
+    evaluator_persona: str,
+    timestamp: str,
+) -> LedgerEvent:
+    """Create a full per-dimension adr-evaluation event (ADR-0.0.26 Decision item 1)."""
+    return LedgerEvent(
+        event="adr-evaluation",
+        id=artifact_id,
+        extra={
+            "artifact_id": artifact_id,
+            "artifact_type": artifact_type,
+            "dimensions": dimensions,
+            "scores": scores,
+            "weighted_total": weighted_total,
+            "red_team_challenges_fired": red_team_challenges_fired,
+            "evaluator_persona": evaluator_persona,
+            "timestamp": timestamp,
+        },
+    )
+
+
 def obpi_completion_uncovered_accept_event(
     *,
     obpi_id: str,

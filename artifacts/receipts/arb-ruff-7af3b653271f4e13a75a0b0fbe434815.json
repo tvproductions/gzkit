@@ -1,0 +1,1 @@
+{"exit_status":0,"findings":[],"findings_total":0,"findings_truncated":false,"git":{"branch":"main","commit":"4c76eff6441ef2f658d9c821caeca8741a886f32","dirty":true},"run_id":"arb-ruff-7af3b653271f4e13a75a0b0fbe434815","schema":"gzkit.arb.lint_receipt.v1","timestamp_utc":"2026-05-03T10:23:24Z","tool":{"name":"ruff","version":"ruff 0.15.12"}}

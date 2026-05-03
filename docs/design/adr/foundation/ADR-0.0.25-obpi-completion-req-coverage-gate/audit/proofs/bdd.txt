@@ -1,0 +1,134 @@
+USING RUNNER: behave.runner:Runner
+Feature: OBPI completion REQ-coverage gate # features/obpi_completion_coverage_gate.feature:1
+  gz obpi complete refuses completion when any REQ in the closing brief's
+  Heavy and foundation-kind briefs are fail-closed; lite-non-foundation briefs
+  emit a warning and proceed. The override path (--accept-uncovered) records a
+  ledger event and requires --attestor-present for agent-relayed acceptance.
+  @REQ-0.0.25-01-01
+  Scenario: Gate passes when all REQs have passing covering tests                                                                                      # features/obpi_completion_coverage_gate.feature:9
+    Given the workspace is initialized in heavy mode                                                                                                   # features/steps/gz_steps.py:60
+    And a heavy-foundation OBPI "OBPI-FIXTURE-01-01" with REQ "REQ-0.0.98-01-01" exists                                                                # features/steps/obpi_completion_coverage_gate_steps.py:333
+    And a covering test for "REQ-0.0.98-01-01" that passes exists                                                                                      # features/steps/obpi_completion_coverage_gate_steps.py:358
+    And a valid arb step receipt "arb-step-unittest-00000000000000000000000000000001" exists                                                           # features/steps/obpi_completion_coverage_gate_steps.py:381
+    And a pipeline marker for "OBPI-FIXTURE-01-01" is active                                                                                           # features/steps/attestation_receipt_binding_steps.py:309
+    When I complete coverage-gate OBPI "OBPI-FIXTURE-01-01" citing receipt "arb-step-unittest-00000000000000000000000000000001" using attestor-present # features/steps/obpi_completion_coverage_gate_steps.py:412
+    Then the exit code is 0                                                                                                                            # features/steps/obpi_completion_coverage_gate_steps.py:512
+
+  @REQ-0.0.25-01-02
+  Scenario: Gate exits 3 when heavy-lane REQ has no covering test                                                                                      # features/obpi_completion_coverage_gate.feature:19
+    Given the workspace is initialized in heavy mode                                                                                                   # features/steps/gz_steps.py:60
+    And a heavy-foundation OBPI "OBPI-FIXTURE-01-02" with REQ "REQ-0.0.98-01-02" exists                                                                # features/steps/obpi_completion_coverage_gate_steps.py:333
+    And a valid arb step receipt "arb-step-unittest-00000000000000000000000000000002" exists                                                           # features/steps/obpi_completion_coverage_gate_steps.py:381
+    And a pipeline marker for "OBPI-FIXTURE-01-02" is active                                                                                           # features/steps/attestation_receipt_binding_steps.py:309
+    When I complete coverage-gate OBPI "OBPI-FIXTURE-01-02" citing receipt "arb-step-unittest-00000000000000000000000000000002" using attestor-present # features/steps/obpi_completion_coverage_gate_steps.py:412
+    Then the exit code is 3                                                                                                                            # features/steps/obpi_completion_coverage_gate_steps.py:512
+    And the output mentions "REQ-0.0.98-01-02"                                                                                                         # features/steps/obpi_completion_coverage_gate_steps.py:520
+
+  @REQ-0.0.25-01-03
+  Scenario: Foundation-kind lite-lane brief exits 3 for uncovered REQ                                                                                  # features/obpi_completion_coverage_gate.feature:29
+    Given the workspace is initialized in heavy mode                                                                                                   # features/steps/gz_steps.py:60
+    And a foundation-lite OBPI "OBPI-FIXTURE-01-03" with REQ "REQ-0.0.98-01-03" exists                                                                 # features/steps/obpi_completion_coverage_gate_steps.py:346
+    And a valid arb step receipt "arb-step-unittest-00000000000000000000000000000003" exists                                                           # features/steps/obpi_completion_coverage_gate_steps.py:381
+    And a pipeline marker for "OBPI-FIXTURE-01-03" is active                                                                                           # features/steps/attestation_receipt_binding_steps.py:309
+    When I complete coverage-gate OBPI "OBPI-FIXTURE-01-03" citing receipt "arb-step-unittest-00000000000000000000000000000003" using attestor-present # features/steps/obpi_completion_coverage_gate_steps.py:412
+    Then the exit code is 3                                                                                                                            # features/steps/obpi_completion_coverage_gate_steps.py:512
+
+  @REQ-0.0.25-01-04
+  Scenario: Lite-non-foundation brief warns and proceeds for uncovered REQ                                                                             # features/obpi_completion_coverage_gate.feature:38
+    Given the workspace is initialized in heavy mode                                                                                                   # features/steps/gz_steps.py:60
+    And a lite-feature OBPI "OBPI-FIXTURE-01-04" with REQ "REQ-0.0.98-01-04" exists                                                                    # features/steps/obpi_completion_coverage_gate_steps.py:352
+    And a valid arb step receipt "arb-step-unittest-00000000000000000000000000000004" exists                                                           # features/steps/obpi_completion_coverage_gate_steps.py:381
+    And a pipeline marker for "OBPI-FIXTURE-01-04" is active                                                                                           # features/steps/attestation_receipt_binding_steps.py:309
+    When I complete coverage-gate OBPI "OBPI-FIXTURE-01-04" citing receipt "arb-step-unittest-00000000000000000000000000000004" using attestor-present # features/steps/obpi_completion_coverage_gate_steps.py:412
+    Then the exit code is 0                                                                                                                            # features/steps/obpi_completion_coverage_gate_steps.py:512
+    And the output mentions "Warning"                                                                                                                  # features/steps/obpi_completion_coverage_gate_steps.py:520
+
+  @REQ-0.0.25-01-05
+  Scenario: Gate exits 3 when covering test fails                                                                                                      # features/obpi_completion_coverage_gate.feature:48
+    Given the workspace is initialized in heavy mode                                                                                                   # features/steps/gz_steps.py:60
+    And a heavy-foundation OBPI "OBPI-FIXTURE-01-05" with REQ "REQ-0.0.98-01-05" exists                                                                # features/steps/obpi_completion_coverage_gate_steps.py:333
+    And a covering test for "REQ-0.0.98-01-05" that fails exists                                                                                       # features/steps/obpi_completion_coverage_gate_steps.py:365
+    And a valid arb step receipt "arb-step-unittest-00000000000000000000000000000005" exists                                                           # features/steps/obpi_completion_coverage_gate_steps.py:381
+    And a pipeline marker for "OBPI-FIXTURE-01-05" is active                                                                                           # features/steps/attestation_receipt_binding_steps.py:309
+    When I complete coverage-gate OBPI "OBPI-FIXTURE-01-05" citing receipt "arb-step-unittest-00000000000000000000000000000005" using attestor-present # features/steps/obpi_completion_coverage_gate_steps.py:412
+    Then the exit code is 3                                                                                                                            # features/steps/obpi_completion_coverage_gate_steps.py:512
+
+  @REQ-0.0.25-01-06
+  Scenario: Any one passing covering test satisfies the REQ                                                                                            # features/obpi_completion_coverage_gate.feature:58
+    Given the workspace is initialized in heavy mode                                                                                                   # features/steps/gz_steps.py:60
+    And a heavy-foundation OBPI "OBPI-FIXTURE-01-06" with REQ "REQ-0.0.98-01-06" exists                                                                # features/steps/obpi_completion_coverage_gate_steps.py:333
+    And a covering test for "REQ-0.0.98-01-06" that passes exists                                                                                      # features/steps/obpi_completion_coverage_gate_steps.py:358
+    And a second covering test for "REQ-0.0.98-01-06" that fails exists                                                                                # features/steps/obpi_completion_coverage_gate_steps.py:372
+    And a valid arb step receipt "arb-step-unittest-00000000000000000000000000000006" exists                                                           # features/steps/obpi_completion_coverage_gate_steps.py:381
+    And a pipeline marker for "OBPI-FIXTURE-01-06" is active                                                                                           # features/steps/attestation_receipt_binding_steps.py:309
+    When I complete coverage-gate OBPI "OBPI-FIXTURE-01-06" citing receipt "arb-step-unittest-00000000000000000000000000000006" using attestor-present # features/steps/obpi_completion_coverage_gate_steps.py:412
+    Then the exit code is 0                                                                                                                            # features/steps/obpi_completion_coverage_gate_steps.py:512
+
+  @REQ-0.0.25-02-01
+  Scenario: Override path proceeds and records ledger event via attestor-present                                                                                                                                  # features/obpi_completion_coverage_gate.feature:69
+    Given the workspace is initialized in heavy mode                                                                                                                                                              # features/steps/gz_steps.py:60
+    And a heavy-foundation OBPI "OBPI-FIXTURE-02-01" with REQ "REQ-0.0.98-02-01" exists                                                                                                                           # features/steps/obpi_completion_coverage_gate_steps.py:333
+    And a valid arb step receipt "arb-step-unittest-00000000000000000000000000000007" exists                                                                                                                      # features/steps/obpi_completion_coverage_gate_steps.py:381
+    And a pipeline marker for "OBPI-FIXTURE-02-01" is active                                                                                                                                                      # features/steps/attestation_receipt_binding_steps.py:309
+    When I complete coverage-gate OBPI "OBPI-FIXTURE-02-01" accepting "REQ-0.0.98-02-01" reason "agent-relayed TTY-path proxy" citing "arb-step-unittest-00000000000000000000000000000007" using attestor-present # features/steps/obpi_completion_coverage_gate_steps.py:418
+    Then the exit code is 0                                                                                                                                                                                       # features/steps/obpi_completion_coverage_gate_steps.py:512
+    And the ledger contains an "obpi_completion_uncovered_accept" event                                                                                                                                           # features/steps/obpi_completion_coverage_gate_steps.py:526
+
+  @REQ-0.0.25-02-02
+  Scenario: Headless override without pipeline marker is refused                                                                                                                                 # features/obpi_completion_coverage_gate.feature:79
+    Given the workspace is initialized in heavy mode                                                                                                                                             # features/steps/gz_steps.py:60
+    And a heavy-foundation OBPI "OBPI-FIXTURE-02-02" with REQ "REQ-0.0.98-02-02" exists                                                                                                          # features/steps/obpi_completion_coverage_gate_steps.py:333
+    And a valid arb step receipt "arb-step-unittest-00000000000000000000000000000008" exists                                                                                                     # features/steps/obpi_completion_coverage_gate_steps.py:381
+    When I complete coverage-gate OBPI "OBPI-FIXTURE-02-02" accepting "REQ-0.0.98-02-02" reason "no-marker" citing "arb-step-unittest-00000000000000000000000000000008" without attestor-present # features/steps/obpi_completion_coverage_gate_steps.py:434
+    Then the exit code is 3                                                                                                                                                                      # features/steps/obpi_completion_coverage_gate_steps.py:512
+
+  @REQ-0.0.25-02-03
+  Scenario: Partial accept-uncovered still fails for unwaived REQ                                                                                                                                 # features/obpi_completion_coverage_gate.feature:87
+    Given the workspace is initialized in heavy mode                                                                                                                                              # features/steps/gz_steps.py:60
+    And a heavy-foundation OBPI "OBPI-FIXTURE-02-03" with REQs "REQ-0.0.98-03-01" and "REQ-0.0.98-03-02" exists                                                                                   # features/steps/obpi_completion_coverage_gate_steps.py:340
+    And a valid arb step receipt "arb-step-unittest-00000000000000000000000000000009" exists                                                                                                      # features/steps/obpi_completion_coverage_gate_steps.py:381
+    And a pipeline marker for "OBPI-FIXTURE-02-03" is active                                                                                                                                      # features/steps/attestation_receipt_binding_steps.py:309
+    When I complete coverage-gate OBPI "OBPI-FIXTURE-02-03" accepting only "REQ-0.0.98-03-01" reason "partial" citing "arb-step-unittest-00000000000000000000000000000009" using attestor-present # features/steps/obpi_completion_coverage_gate_steps.py:450
+    Then the exit code is 3                                                                                                                                                                       # features/steps/obpi_completion_coverage_gate_steps.py:512
+
+  @REQ-0.0.25-02-04
+  Scenario: gz adr emit-receipt --event closed blocked when OBPI has unwaived REQ gap                                              # features/obpi_completion_coverage_gate.feature:96
+    Given the workspace is initialized in heavy mode                                                                               # features/steps/gz_steps.py:60
+    And a heavy ADR "ADR-FIXTURE-02-04" with a completed OBPI "OBPI-FIXTURE-02-04" carrying unwaived REQ "REQ-0.0.98-02-04" exists # features/steps/obpi_completion_coverage_gate_steps.py:387
+    When I emit ADR receipt for "ADR-FIXTURE-02-04" event "closed" attestor "BDD User" text "closing"                              # features/steps/obpi_completion_coverage_gate_steps.py:491
+    Then the exit code is 3                                                                                                        # features/steps/obpi_completion_coverage_gate_steps.py:512
+
+  @REQ-0.0.25-02-05
+  Scenario: accept-uncovered without accept-uncovered-reason exits 1                                                                                                                       # features/obpi_completion_coverage_gate.feature:103
+    Given the workspace is initialized in heavy mode                                                                                                                                       # features/steps/gz_steps.py:60
+    And a heavy-foundation OBPI "OBPI-FIXTURE-02-05" with REQ "REQ-0.0.98-02-05" exists                                                                                                    # features/steps/obpi_completion_coverage_gate_steps.py:333
+    And a valid arb step receipt "arb-step-unittest-0000000000000000000000000000000a" exists                                                                                               # features/steps/obpi_completion_coverage_gate_steps.py:381
+    And a pipeline marker for "OBPI-FIXTURE-02-05" is active                                                                                                                               # features/steps/attestation_receipt_binding_steps.py:309
+    When I complete coverage-gate OBPI "OBPI-FIXTURE-02-05" accepting "REQ-0.0.98-02-05" without reason citing "arb-step-unittest-0000000000000000000000000000000a" using attestor-present # features/steps/obpi_completion_coverage_gate_steps.py:466
+    Then the exit code is 1                                                                                                                                                                # features/steps/obpi_completion_coverage_gate_steps.py:512
+
+  @REQ-0.0.25-03-01
+  Scenario: This feature file exists with scenario tags for all covered REQs  # features/obpi_completion_coverage_gate.feature:112
+    Given the workspace is the live repository                                # features/steps/attestation_receipt_binding_steps.py:314
+    Then the file "features/obpi_completion_coverage_gate.feature" exists     # features/steps/gz_steps.py:230
+
+  @REQ-0.0.25-03-02
+  Scenario: AGENTS.md OBPI Acceptance Protocol names the REQ-coverage gate         # features/obpi_completion_coverage_gate.feature:117
+    Given the workspace is the live repository                                     # features/steps/attestation_receipt_binding_steps.py:314
+    Then AGENTS.md "OBPI Acceptance Protocol" section mentions "REQ-coverage gate" # features/steps/obpi_completion_coverage_gate_steps.py:539
+
+  @REQ-0.0.25-03-03
+  Scenario: obpi-complete manpage documents the accept-uncovered flag                 # features/obpi_completion_coverage_gate.feature:122
+    Given the workspace is the live repository                                        # features/steps/attestation_receipt_binding_steps.py:314
+    Then the file "docs/user/commands/obpi-complete.md" contains "--accept-uncovered" # features/steps/gz_steps.py:235
+
+  @REQ-0.0.25-03-04
+  Scenario: CLI audit passes in the live repository post-edit  # features/obpi_completion_coverage_gate.feature:127
+    Given the workspace is the live repository                 # features/steps/attestation_receipt_binding_steps.py:314
+    When I run the gz command "cli audit"                      # features/steps/gz_steps.py:209
+    Then the exit code is 0                                    # features/steps/obpi_completion_coverage_gate_steps.py:512
+
+1 feature passed, 0 failed, 0 skipped
+15 scenarios passed, 0 failed, 0 skipped
+79 steps passed, 0 failed, 0 skipped
+Took 0min 1.701s

@@ -1,0 +1,49 @@
+usage: gz obpi complete [-h] --attestor ATTESTOR
+                        --attestation-text ATTESTATION_TEXT
+                        [--implementation-summary IMPLEMENTATION_SUMMARY]
+                        [--key-proof KEY_PROOF] [--attestor-present]
+                        [--accept-uncovered REQ_ID]
+                        [--accept-uncovered-reason REASON] [--json]
+                        [--dry-run] [--quiet | --verbose] [--debug]
+                        obpi
+
+All-or-nothing OBPI completion: validates the brief, writes evidence sections, flips status to Completed, records attestation in the audit ledger, and emits a completion receipt. If any step fails, no files or ledger entries are modified.
+
+positional arguments:
+  obpi                  OBPI identifier (e.g. OBPI-0.0.14-01)
+
+options:
+  -h, --help            show this help message and exit
+  --attestor ATTESTOR   Identity of the attestor (required)
+  --attestation-text ATTESTATION_TEXT
+                        Substantive attestation text (required)
+  --implementation-summary IMPLEMENTATION_SUMMARY
+                        Implementation summary text (falls back to brief;
+                        fails closed if empty)
+  --key-proof KEY_PROOF
+                        Key proof text (falls back to brief; fails closed if
+                        empty)
+  --attestor-present    Agent-relayed operator attestation, gated on active
+                        pipeline marker (GHI #292)
+  --accept-uncovered REQ_ID
+                        Waive an uncovered REQ (repeatable). Requires
+                        --accept-uncovered-reason.
+  --accept-uncovered-reason REASON
+                        Rationale for --accept-uncovered (repeatable, 1:1
+                        positional pairing).
+  --json                Output as JSON
+  --dry-run             Show planned actions without executing
+  --quiet, -q           Suppress non-error output
+  --verbose, -v         Enable verbose output
+  --debug               Enable debug mode with full tracebacks
+
+Examples
+    gz obpi complete OBPI-0.1.0-01 --attestor jeff --attestation-text "Verified"
+    gz obpi complete OBPI-0.1.0-01 --attestor jeff --attestation-text "Verified" --json
+    gz obpi complete OBPI-0.1.0-01 --attestor jeff --attestation-text "Verified" --dry-run
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach

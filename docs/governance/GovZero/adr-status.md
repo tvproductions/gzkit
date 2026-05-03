@@ -7,7 +7,7 @@ Status: Active
 
 Source-of-truth: filesystem under `docs/design/adr/{foundation,pre-release}/`; this table is a Layer 3 derived view per `docs/governance/state-doctrine.md`. Regenerate via `gz register-adrs` (which calls `regenerate_adr_status_md` after ledger reconciliation); drift is fail-closed by `gz validate --adr-status-fresh`.
 
-Last regenerated: 2026-05-02 (count: 68 ADRs).
+Last regenerated: 2026-05-03 (count: 68 ADRs).
 
 | ID | Title | Kind | Lane | Status | Date | Path |
 |---|---|---|---|---|---|---|
@@ -23,7 +23,7 @@ Last regenerated: 2026-05-02 (count: 68 ADRs).
 | [ADR-0.0.20-agent-rule-placement-invariant](../../design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-0.0.20-agent-rule-placement-invariant.md) | Agent Rule Placement Invariant | foundation | lite | Validated | 2026-04-21 | `design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-0.0.20-agent-rule-placement-invariant.md` |
 | [ADR-0.0.21-chores-as-gzkit-surface](../../design/adr/foundation/ADR-0.0.21-chores-as-gzkit-surface/ADR-0.0.21-chores-as-gzkit-surface.md) | Chores as a .gzkit/ Surface | foundation | heavy | Validated | 2026-04-24 | `design/adr/foundation/ADR-0.0.21-chores-as-gzkit-surface/ADR-0.0.21-chores-as-gzkit-surface.md` |
 | [ADR-0.0.22-security-sensitivity-doctrine](../../design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/ADR-0.0.22-security-sensitivity-doctrine.md) | Security Sensitivity Doctrine | foundation | heavy | Validated | 2026-04-24 | `design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/ADR-0.0.22-security-sensitivity-doctrine.md` |
-| [ADR-0.0.23-agent-failure-mode-taxonomy](../../design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/ADR-0.0.23-agent-failure-mode-taxonomy.md) | Agent Failure-Mode Taxonomy | foundation | lite | Completed | 2026-04-25 | `design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/ADR-0.0.23-agent-failure-mode-taxonomy.md` |
+| [ADR-0.0.23-agent-failure-mode-taxonomy](../../design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/ADR-0.0.23-agent-failure-mode-taxonomy.md) | Agent Failure-Mode Taxonomy | foundation | lite | Validated | 2026-04-25 | `design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/ADR-0.0.23-agent-failure-mode-taxonomy.md` |
 | [ADR-0.0.24-attestation-receipt-binding](../../design/adr/foundation/ADR-0.0.24-attestation-receipt-binding/ADR-0.0.24-attestation-receipt-binding.md) | Attestation Receipt Binding | foundation | heavy | Validated | 2026-04-25 | `design/adr/foundation/ADR-0.0.24-attestation-receipt-binding/ADR-0.0.24-attestation-receipt-binding.md` |
 | [ADR-0.0.25-obpi-completion-req-coverage-gate](../../design/adr/foundation/ADR-0.0.25-obpi-completion-req-coverage-gate/ADR-0.0.25-obpi-completion-req-coverage-gate.md) | OBPI Completion REQ-Coverage Gate | foundation | heavy | Draft | 2026-04-25 | `design/adr/foundation/ADR-0.0.25-obpi-completion-req-coverage-gate/ADR-0.0.25-obpi-completion-req-coverage-gate.md` |
 | [ADR-0.0.26-evaluation-feedback-loop-doctrine](../../design/adr/foundation/ADR-0.0.26-evaluation-feedback-loop-doctrine/ADR-0.0.26-evaluation-feedback-loop-doctrine.md) | Evaluation Feedback-Loop Doctrine | foundation | heavy | Draft | 2026-04-25 | `design/adr/foundation/ADR-0.0.26-evaluation-feedback-loop-doctrine/ADR-0.0.26-evaluation-feedback-loop-doctrine.md` |
