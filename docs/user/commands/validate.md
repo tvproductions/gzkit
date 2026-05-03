@@ -281,6 +281,29 @@ gz validate --absorption-duplicates --json
 | 0 | No cross-ADR duplicates, or all duplicates have a `paired_with:` waiver | — |
 | 3 | Same opsdev source path appears in OBPIs across distinct parent ADRs without a pairing | Add `paired_with: <prior-brief-id>` to the by-reference brief's frontmatter, or — if the second evaluation is genuinely independent — document the rationale and pair the briefs explicitly |
 
+### `--evaluation-justify-binding`
+
+Enforces the ADR-0.0.26 evaluation feedback-loop doctrine (§ Decision #2). Reads the most
+recent `adr-evaluation` ledger event for the specified artifact (or all artifacts when no ID
+is given). If any dimension score is below `low_score_threshold` **or** the number of
+red-team challenges fired is at or above `red_team_count_threshold` (both configured in
+`data/eval_feedback_thresholds.json`, defaults 3.0 / 3), a qualifying `gz-justify` artifact
+must exist at `artifacts/justify/`. The gate is also called automatically before any artifact
+advances past `Pending` lifecycle state.
+
+```bash
+# Check a specific artifact
+gz validate --evaluation-justify-binding ADR-0.0.26
+
+# Check all artifacts that have adr-evaluation events
+gz validate --evaluation-justify-binding
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | No violations — gate not triggered, or trigger + justify artifact present | — |
+| 3 | Gate triggered (low score or high red-team count) with no qualifying `gz-justify` artifact | Run `uv run -m gzkit justify <artifact-id> --save` then commit the filled artifact |
+
 ### `--sensitivity`
 
 Enforces the ADR-0.0.22 security-sensitivity invariant. Reads `data/security_surfaces.json` (the canonical glob-to-category registry) and walks every OBPI brief's `## ALLOWED PATHS` block. Any intersection between a brief's allowlist and the registry forces `sensitivity: security` (the auto-detect floor); frontmatter MAY escalate to `sensitivity: security` when paths don't trigger detection, but MAY NOT declare a value below the detected floor (escalate-not-escape). Fail-closed when the registry is missing, malformed, or schema-invalid.
@@ -351,6 +374,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--brief-headings` | opt-in | OBPI brief evidence sections must be H3, not H2 (GHI #238) |
 | `--sensitivity` | opt-in | ADR-0.0.22 sensitivity-binding (auto-detect floor; escalate-not-escape against `data/security_surfaces.json`) |
 | `--absorption-duplicates` | opt-in | Same opsdev source path across parent ADRs needs `paired_with:` frontmatter waiver (GHI #376) |
+| `--evaluation-justify-binding` | opt-in | Fail-closed gate: `gz-justify` artifact required when evaluation scores are low (ADR-0.0.26) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
 
 The `--allowlist-only` flag is a sub-modifier for `--unscoped-rules` —

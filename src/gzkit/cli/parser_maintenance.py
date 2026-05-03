@@ -508,6 +508,14 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Same opsdev source path across parent ADRs needs paired_with: (GHI #376)",
     )
     p_validate.add_argument(
+        "--evaluation-justify-binding",
+        dest="check_evaluation_justify_binding",
+        nargs="?",
+        const="__all__",
+        metavar="ARTIFACT_ID",
+        help="Require gz-justify artifact for low eval scores (ADR-0.0.26).",
+    )
+    p_validate.add_argument(
         "--attestation-receipts",
         dest="attestation_receipts",
         default=None,
@@ -570,6 +578,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_sensitivity=a.check_sensitivity or a.check_audits,
             sensitivity_explain=(a.frontmatter_explain if a.check_sensitivity else None),
             check_absorption_duplicates=a.check_absorption_duplicates,
+            check_evaluation_justify_binding=(a.check_evaluation_justify_binding),
             attestation_receipts=a.attestation_receipts,
             attestation_lane=a.attestation_lane,
             attestation_kind=a.attestation_kind,

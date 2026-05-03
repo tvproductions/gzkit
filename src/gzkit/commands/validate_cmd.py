@@ -301,6 +301,7 @@ def _collect_errors(
     check_unscoped_rules: bool = False,
     check_sensitivity: bool = False,
     check_absorption_duplicates: bool = False,
+    check_evaluation_justify_binding: str | None = None,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -346,6 +347,7 @@ def _collect_errors(
         "unscoped_rules": check_unscoped_rules,
         "sensitivity": check_sensitivity,
         "absorption_duplicates": check_absorption_duplicates,
+        "evaluation_justify_binding": check_evaluation_justify_binding is not None,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
@@ -422,6 +424,9 @@ def _explicit_scope_runners(
         "unscoped_rules": lambda: _unscoped_rules_runner(project_root),
         "sensitivity": lambda: _sensitivity_umbrella_runner(project_root),
         "absorption_duplicates": lambda: trust_audits.audit_absorption_duplicates(project_root),
+        "evaluation_justify_binding": lambda: _evaluation_justify_binding_runner(
+            project_root, None
+        ),
     }
 
 
@@ -434,6 +439,67 @@ def _sensitivity_umbrella_runner(project_root: Path) -> list[ValidationError]:
         for e in trust_audits.audit_sensitivity_binding(project_root)
         if e.type not in _SENSITIVITY_INFO_TYPES
     ]
+
+
+def _evaluation_justify_binding_runner(
+    project_root: Path, artifact_id_or_sentinel: str | None
+) -> list[ValidationError]:
+    """Run evaluation-justify-binding for all artifacts or a specific one."""
+    from gzkit.governance.trust_audits.evaluation_justify_binding import (  # noqa: PLC0415
+        validate_evaluation_justify_binding,
+    )
+
+    if artifact_id_or_sentinel in (None, "__all__"):
+        return _scan_all_evaluation_justify_binding(project_root)
+    return validate_evaluation_justify_binding(artifact_id_or_sentinel, project_root)
+
+
+def _scan_all_evaluation_justify_binding(project_root: Path) -> list[ValidationError]:
+    """Check evaluation-justify-binding for all artifacts with adr-evaluation events."""
+    import json as _json  # noqa: PLC0415
+
+    from gzkit.governance.trust_audits.evaluation_justify_binding import (  # noqa: PLC0415
+        validate_evaluation_justify_binding,
+    )
+
+    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+    if not ledger_path.exists():
+        return []
+    seen: set[str] = set()
+    errors: list[ValidationError] = []
+    for line in ledger_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            ev = _json.loads(line)
+        except _json.JSONDecodeError:
+            continue
+        if ev.get("event") == "adr-evaluation":
+            artifact_id = ev.get("id", "")
+            if artifact_id and artifact_id not in seen:
+                seen.add(artifact_id)
+                errors.extend(validate_evaluation_justify_binding(artifact_id, project_root))
+    return errors
+
+
+def _run_evaluation_justify_binding_solo(
+    project_root: Path, artifact_id_or_sentinel: str | None, *, as_json: bool
+) -> None:
+    """Dedicated handler for `gz validate --evaluation-justify-binding` (exit 0/3)."""
+    errors = _evaluation_justify_binding_runner(project_root, artifact_id_or_sentinel)
+    if as_json:
+        print(json.dumps([e.model_dump(exclude_none=True) for e in errors], indent=2))  # noqa: T201
+        raise SystemExit(3 if errors else 0)
+    if not errors:
+        console.print("[bold]Validated:[/bold] evaluation-justify-binding\n")
+        console.print("[green]✓ No evaluation-justify-binding violations.[/green]")
+        raise SystemExit(0)
+    console.print("[bold]Validated:[/bold] evaluation-justify-binding\n")
+    console.print(f"[red]❌ {len(errors)} violation(s):[/red]\n")
+    for e in errors:
+        console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
+    raise SystemExit(3)
 
 
 def _run_unscoped_rules_scope(project_root: Path, *, as_json: bool, allowlist_only: bool) -> None:
@@ -760,6 +826,8 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "chores_layout",
         "unscoped_rules",
         "sensitivity",
+        "absorption_duplicates",
+        "evaluation_justify_binding",
     ]
 
     run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
@@ -937,6 +1005,7 @@ def validate(
     check_sensitivity: bool = False,
     sensitivity_explain: str | None = None,
     check_absorption_duplicates: bool = False,
+    check_evaluation_justify_binding: str | None = None,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1005,8 +1074,14 @@ def validate(
             check_brief_headings,
             check_chores_layout,
             check_absorption_duplicates,
+            check_evaluation_justify_binding is not None,
         ]
     )
+    if check_evaluation_justify_binding is not None and not _other_scopes_active:
+        _run_evaluation_justify_binding_solo(
+            project_root, check_evaluation_justify_binding, as_json=as_json
+        )
+        return
     if check_unscoped_rules and not _other_scopes_active:
         _run_unscoped_rules_scope(
             project_root, as_json=as_json, allowlist_only=unscoped_rules_allowlist_only
@@ -1066,6 +1141,7 @@ def validate(
         check_unscoped_rules=check_unscoped_rules,
         check_sensitivity=check_sensitivity,
         check_absorption_duplicates=check_absorption_duplicates,
+        check_evaluation_justify_binding=check_evaluation_justify_binding,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -1126,6 +1202,7 @@ def validate(
         "unscoped_rules": check_unscoped_rules,
         "sensitivity": check_sensitivity,
         "absorption_duplicates": check_absorption_duplicates,
+        "evaluation_justify_binding": check_evaluation_justify_binding is not None,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]

@@ -45,6 +45,9 @@ from gzkit.governance.trust_audits.code_quality import (
     audit_type_ignores,
 )
 from gzkit.governance.trust_audits.cross_platform import audit_utf8_prefix
+from gzkit.governance.trust_audits.evaluation_justify_binding import (
+    validate_evaluation_justify_binding,
+)
 from gzkit.governance.trust_audits.events import (
     audit_event_handlers,
     audit_event_schemas,
@@ -101,4 +104,5 @@ __all__ = [
     "audit_version_release",
     "explain_sensitivity_for_paths",
     "validate_attestation_receipts",
+    "validate_evaluation_justify_binding",
 ]

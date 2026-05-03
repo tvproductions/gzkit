@@ -101,6 +101,20 @@ class LifecycleStateMachine:
         if to_state not in allowed:
             raise InvalidTransitionError(content_type, from_state, to_state, allowed)
 
+        # Gate: evaluation-justify-binding fires when advancing past Pending
+        if from_state in ("Pending", "Draft"):
+            from pathlib import Path  # noqa: PLC0415, F811
+
+            from gzkit.governance.trust_audits.evaluation_justify_binding import (  # noqa: PLC0415
+                validate_evaluation_justify_binding,
+            )
+
+            _project_root = Path(__file__).parents[2]
+            gate_errors = validate_evaluation_justify_binding(artifact_id, _project_root)
+            if gate_errors:
+                error = gate_errors[0]
+                raise ValueError(f"Lifecycle gate blocked for {artifact_id}: {error.message}")
+
         if self._ledger is not None:
             from gzkit.ledger import lifecycle_transition_event  # noqa: PLC0415
 
