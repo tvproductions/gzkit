@@ -17,6 +17,7 @@ from gzkit.ledger import (
     constitution_created_event,
     derive_obpi_semantics,
     gate_checked_event,
+    lifecycle_transition_event,
     normalize_req_proof_inputs,
     obpi_created_event,
     obpi_receipt_emitted_event,
@@ -341,6 +342,78 @@ class TestLedger(unittest.TestCase):
 
             statuses = ledger.get_latest_gate_statuses("ADR-0.6.0-pool.gz-chores-system")
             self.assertEqual(statuses, {2: "pass"})
+
+    def test_effective_gate_statuses_suppresses_post_validation_fail(self) -> None:
+        """Post-validation gate_checked: fail events are stale observations.
+
+        A Validated/Completed ADR that recorded a gate_checked: fail AFTER its
+        lifecycle_transition to Completed (with no rollback transition) treats
+        the fail as observational noise — lifecycle is the authoritative source
+        for validation status per state-doctrine. Without this rule, a single
+        transient fail event between attestation and the next gate re-run
+        permanently displays QC: PENDING for the ADR (the ADR-0.0.16 witness,
+        GHI #392).
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.1.0", "", "heavy"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "uv run gz test", 0))
+            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
+            ledger.append(lifecycle_transition_event("ADR-0.1.0", "adr", "Proposed", "Completed"))
+            # Stale post-validation fail observation, no rollback transition.
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "fail", "uv run gz test", 1))
+
+            effective = ledger.get_effective_gate_statuses("ADR-0.1.0")
+            self.assertEqual(effective.get(2), "pass")
+
+            # Raw reader preserves observation history for audit/closeout callers.
+            raw = ledger.get_latest_gate_statuses("ADR-0.1.0")
+            self.assertEqual(raw.get(2), "fail")
+
+    def test_effective_gate_statuses_preserves_pre_validation_fail(self) -> None:
+        """Pre-validation fails are authoritative — lifecycle isn't validated yet."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.1.0", "", "heavy"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "fail", "uv run gz test", 1))
+
+            effective = ledger.get_effective_gate_statuses("ADR-0.1.0")
+            self.assertEqual(effective.get(2), "fail")
+
+    def test_effective_gate_statuses_honors_rollback_epoch(self) -> None:
+        """Rollback transitions open a new epoch; fails after rollback are authoritative."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.1.0", "", "heavy"))
+            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
+            ledger.append(lifecycle_transition_event("ADR-0.1.0", "adr", "Proposed", "Completed"))
+            ledger.append(lifecycle_transition_event("ADR-0.1.0", "adr", "Completed", "Proposed"))
+            # Fail after rollback is in the new (non-validated) epoch.
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "fail", "uv run gz test", 1))
+
+            effective = ledger.get_effective_gate_statuses("ADR-0.1.0")
+            self.assertEqual(effective.get(2), "fail")
+
+    def test_effective_gate_statuses_post_validation_pass_preserved(self) -> None:
+        """Post-validation pass observations override prior fails normally."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.1.0", "", "heavy"))
+            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
+            ledger.append(lifecycle_transition_event("ADR-0.1.0", "adr", "Proposed", "Completed"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "fail", "uv run gz test", 1))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "uv run gz test", 0))
+
+            effective = ledger.get_effective_gate_statuses("ADR-0.1.0")
+            self.assertEqual(effective.get(2), "pass")
 
     def test_get_artifact_graph_tracks_closeout_and_validation_receipt(self) -> None:
         """Graph captures closeout initiation and validation receipts for ADR semantics."""
