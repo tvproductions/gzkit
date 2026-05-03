@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import re
 import secrets
+import subprocess
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
@@ -31,6 +32,7 @@ from gzkit.commands.common import (
     resolve_adr_file,
     resolve_obpi_file,
 )
+from gzkit.governance.req_coverage import TestRef, discover_covers, parse_brief_reqs
 from gzkit.governance.trust_audits.attestation_receipts import (
     AttestationReceiptValidationResult,
     validate_attestation_receipts,
@@ -354,6 +356,125 @@ def _enforce_attestation_receipt_gate(
     ledger.append(meta_event)
 
 
+# ---------------------------------------------------------------------------
+# OBPI-0.0.25-01 — REQ-coverage gate
+# ---------------------------------------------------------------------------
+
+
+def _qualified_to_unittest_target(ref: TestRef, project_root: Path) -> str | None:
+    """Render a ``TestRef`` as a unittest dotted target.
+
+    ``ref.qualified_name`` is ``ClassName.method_name`` or ``func_name`` from
+    the AST scanner. The unittest runner needs ``module.path.ClassName.method``
+    relative to the project root. Returns ``None`` when the file path falls
+    outside ``project_root`` or cannot be expressed as a Python module.
+    """
+    try:
+        rel = Path(ref.file_path).resolve().relative_to(project_root.resolve())
+    except (ValueError, OSError):
+        return None
+    parts = list(rel.with_suffix("").parts)
+    if not parts:
+        return None
+    module = ".".join(parts)
+    return f"{module}.{ref.qualified_name}"
+
+
+def _any_covering_test_passes(refs: list[TestRef], project_root: Path) -> bool:
+    """Return True iff at least one discovered covering test passes.
+
+    Each ref is invoked under ``uv run -m unittest <target>`` in a subprocess
+    so a buggy covering test cannot poison the parent CLI process. One green
+    observation satisfies the REQ (REQ-0.0.25-01-06 / FAIL-CLOSED REQUIREMENT
+    #7).
+    """
+    for ref in refs:
+        target = _qualified_to_unittest_target(ref, project_root)
+        if target is None:
+            continue
+        try:
+            completed = subprocess.run(
+                ["uv", "run", "-m", "unittest", target],
+                cwd=str(project_root),
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError):
+            continue
+        if completed.returncode == 0:
+            return True
+    return False
+
+
+def _enforce_req_coverage_gate(
+    *,
+    obpi_id: str | None,
+    parent_adr: str,
+    parent_lane: str,
+    parent_kind: str,
+    brief_path: Path,
+    project_root: Path,
+    as_json: bool,
+    dry_run: bool,
+) -> None:
+    """Refuse completion when any brief REQ has no passing covering test.
+
+    Behavior matrix (REQ-0.0.25-01-02..04, mirrors the receipt-binding gate):
+
+    | Lane / Kind                       | Coverage outcome | Outcome |
+    |-----------------------------------|------------------|---------|
+    | heavy / any                       | gap or red test  | exit 3  |
+    | any / foundation                  | gap or red test  | exit 3  |
+    | lite / non-foundation             | gap or red test  | warning, proceed |
+    | any                               | all REQs green   | proceed |
+
+    Runs AFTER the ADR-0.0.24 receipt-binding gate so a missing receipt
+    short-circuits the (slower) test-discovery + scoped-run path
+    (FAIL-CLOSED REQUIREMENT #11 in the brief acknowledges the ordering as
+    parallel-or-sequential; sequential-after-receipt-binding is chosen for
+    cost discipline).
+    """
+    if dry_run:
+        return
+
+    reqs = parse_brief_reqs(brief_path)
+    tests_root = project_root / "tests"
+    gaps: list[str] = []
+    failing: list[str] = []
+    for req in reqs:
+        refs = discover_covers(req, tests_root)
+        if not refs:
+            gaps.append(req)
+            continue
+        if not _any_covering_test_passes(refs, project_root):
+            failing.append(req)
+
+    if not gaps and not failing:
+        return
+
+    fail_closed = parent_lane.lower() == "heavy" or parent_kind.lower() == "foundation"
+    diagnostic_lines = [f"  - uncovered: {req}" for req in gaps]
+    diagnostic_lines.extend(f"  - failing-cover: {req}" for req in failing)
+    detail = "\n".join(diagnostic_lines)
+
+    if fail_closed:
+        _fail(
+            "OBPI completion REQ-coverage gate failed (heavy/foundation policy).\n"
+            f"{detail}\n"
+            "Recovery: add a `@covers(REQ-X.Y.Z-NN-MM)` test for each gap, "
+            "or fix the failing covering tests, then re-run completion.",
+            exit_code=3,
+            as_json=as_json,
+            obpi_id=obpi_id or parent_adr,
+        )
+    console.print(
+        "[yellow]Warning:[/yellow] REQ-coverage gate reported gaps "
+        "(lite-non-foundation; warn-only):\n" + detail
+    )
+
+
 def _resolve_and_validate(
     project_root: Path,
     config: Any,
@@ -531,6 +652,21 @@ def obpi_complete_cmd(
         attestation_text=attestation_text,
         attestor=attestor,
         ledger=ledger,
+        project_root=project_root,
+        as_json=as_json,
+        dry_run=dry_run,
+    )
+
+    # 4a-ter. ADR-0.0.25-01 REQ-coverage gate: heavy/foundation = fail-closed
+    # on any uncovered or failing-covered REQ; lite-non-foundation = warn-only.
+    # Runs AFTER the receipt-binding gate (ADR-0.0.24) — receipt-resolution
+    # is cheap, REQ test discovery + scoped runs are the expensive step.
+    _enforce_req_coverage_gate(
+        obpi_id=obpi_id,
+        parent_adr=resolved_parent,
+        parent_lane=parent_lane,
+        parent_kind=parent_kind,
+        brief_path=obpi_file,
         project_root=project_root,
         as_json=as_json,
         dry_run=dry_run,

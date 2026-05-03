@@ -46,6 +46,16 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         )
         receipt_gate_patcher.start()
         self.addCleanup(receipt_gate_patcher.stop)
+        # OBPI-0.0.25-01: REQ-coverage gate runs after the receipt-binding gate;
+        # the contract is covered by the new wire-test module. Patch it to
+        # no-op here so existing CliRunner flows that exercise unrelated
+        # behavior do not need to seed a tests/ tree of @covers fixtures.
+        coverage_gate_patcher = patch(
+            "gzkit.commands.obpi_complete._enforce_req_coverage_gate",
+            return_value=None,
+        )
+        coverage_gate_patcher.start()
+        self.addCleanup(coverage_gate_patcher.stop)
 
     @staticmethod
     def _write_obpi(

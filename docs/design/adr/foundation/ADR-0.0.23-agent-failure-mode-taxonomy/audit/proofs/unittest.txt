@@ -1,3 +1,7 @@
+Error: Attestation receipt-binding gate failed (heavy/foundation policy).
+  - missing: no receipt file at 
+arb-step-unittest-dddddddddddddddddddddddddddddddd.json
+Recovery: re-run the cited ARB commands and re-cite the resolved receipt IDs.
 Chores registry diff:
   + agents-md-architectural-boundaries
   + arb-pattern-extraction
@@ -145,7 +149,22 @@ Coverage: No REQs found for this ADR.
 FAIL 1 covers-backfill finding(s):
   tests/x.py:1 REQ REQ-0.1.0-01-01 introduced @ aaaaaaa (0c / 0d before receipt
 r1); see .claude/rules/tests.md § Invariant 6f for remediation
+Exception in thread Thread-493 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\Jeff\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\Jeff\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Jeff\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\subprocess.py", line 1615, in _readerthread
+    buffer.append(fh.read())
+                  ~~~~~~~^^
+  File "C:\Users\Jeff\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d in position 29: character maps to <undefined>
 ----------------------------------------------------------------------
-Ran 3925 tests in 29.636s
+Ran 3959 tests in 71.595s
 
-OK (skipped=1)
+OK (skipped=2)

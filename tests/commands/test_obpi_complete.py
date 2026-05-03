@@ -292,6 +292,15 @@ class _ObpiCompleteWireFixture(unittest.TestCase):
                     "gzkit.commands.obpi_complete._enforce_human_attestation_authenticity",
                     tty_mock,
                 ),
+                # Bypass the OBPI-0.0.25-01 REQ-coverage gate so the
+                # receipt-binding gate is exercised in isolation. The
+                # coverage gate runs AFTER the receipt-binding gate, so
+                # tests for the receipt gate's behavior do not need its
+                # outcome to interfere here.
+                patch(
+                    "gzkit.commands.obpi_complete._enforce_req_coverage_gate",
+                    MagicMock(return_value=None),
+                ),
                 # Patch receipts_root at the validator's binding site so the
                 # validator's _load_receipt finds our temp-dir fixtures.
                 patch(

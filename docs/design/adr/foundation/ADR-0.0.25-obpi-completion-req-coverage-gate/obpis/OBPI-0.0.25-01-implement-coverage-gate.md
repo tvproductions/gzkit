@@ -3,7 +3,7 @@ id: OBPI-0.0.25-01-implement-coverage-gate
 parent: ADR-0.0.25-obpi-completion-req-coverage-gate
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.25-01-implement-coverage-gate: REQ-coverage gate inside `gz obpi complete`
@@ -57,11 +57,21 @@ Add a pre-emission check inside `gz obpi complete` that parses the brief's `## A
 
 ## Discovery Checklist
 
-- [ ] AGENTS.md § OBPI Acceptance Protocol
-- [ ] `.claude/rules/tests.md` § TASK-Driven Workflow (REQ-derivation rule)
-- [ ] `src/gzkit/commands/obpi.py` — existing `complete` subcommand structure
-- [ ] `tests/governance/` — example of an existing AST-based audit (e.g., `test_type_ignore_syntax.py`)
-- [ ] An existing brief's `## Acceptance Criteria` section as input fixture template
+**Prerequisites**
+
+- [x] AGENTS.md § OBPI Acceptance Protocol read; foundation+heavy ⇒ brief-level Gate 5 attestation required.
+- [x] `.claude/rules/tests.md` § TASK-Driven Workflow + REQ-derivation rule read; tests assert REQ semantics, not strings.
+- [x] `.claude/rules/pythonic.md` § Imports rule read; AST-based discovery satisfies "no lazy/runtime introspection".
+- [x] `.claude/rules/cross-platform.md` v0.2.0 read; relative paths render via `.as_posix()`.
+
+**Existing Code**
+
+- [x] `src/gzkit/commands/obpi_complete.py` — actual `gz obpi complete` handler (brief allowlist names `obpi.py` re-exporter; routing rationale in plan).
+- [x] `src/gzkit/commands/obpi_complete.py:275-354` — `_enforce_attestation_receipt_gate` precedent for shape, ordering, fail-closed predicate.
+- [x] `src/gzkit/traceability.py:209` — `scan_test_tree` AST scanner reused by `discover_covers`.
+- [x] `src/gzkit/triangle.py:182` — `extract_reqs_from_brief` REQ parser reused by `parse_brief_reqs`.
+- [x] `tests/governance/test_type_ignore_syntax.py` — exemplar of an existing AST-based audit pattern.
+- [x] `tests/commands/test_obpi_complete.py` — fixture/mock-rig precedent for OBPI-0.0.24-02 wire tests.
 
 ## Quality Gates
 
@@ -149,13 +159,19 @@ uv run gz arb step --name unittest -- uv run -m unittest tests/governance/test_r
 
 ### Key Proof
 
+
+gz covers OBPI-0.0.25-01 --json reports total_reqs=6, covered_reqs=6, uncovered_reqs=0, coverage_percent=100.0. Full unittest sweep clean (receipt arb-step-unittest-047406a8259a4f708aceceef1e0bb2e2). Lint clean (arb-ruff-d03778f1c09946b0bec1b2ba22eaef85). Typecheck clean (arb-step-typecheck-4a6ec87d5dc34c48a3720374fb6e2db5). mkdocs --strict clean in 3.77s (arb-step-mkdocs-77755a52cb71448a982a37eaab653aa0). gz validate --documents passes 1 scope. gz obpi precomplete reports READY: 5/5 preconditions met.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Module: src/gzkit/governance/req_coverage.py — new module exporting parse_brief_reqs(Path) -> list[str], discover_covers(req_id, Path) -> list[TestRef], frozen Pydantic TestRef. Reuses traceability.scan_test_tree for AST-safe @covers discovery and triangle.extract_reqs_from_brief for canonical REQ-line parsing.
+- Wire: src/gzkit/commands/obpi_complete.py — added _qualified_to_unittest_target, _any_covering_test_passes, _enforce_req_coverage_gate; wired the gate into obpi_complete_cmd as section 4a-ter (between receipt-binding gate and TTY gate). Heavy/foundation = exit 3 on uncovered or failing-cover REQ; lite-non-foundation = warn-only.
+- Tests added: tests/governance/test_req_coverage.py (10 unit tests), tests/commands/test_obpi_complete_coverage_gate.py (6 wire tests covering REQ-01..06).
+- Tests modified: tests/commands/test_obpi_complete.py, tests/commands/test_runtime.py, tests/test_obpi_complete_cmd.py — patched out the new gate in 5 pre-existing fixtures.
+- Date completed: 2026-05-03
+- Attestation status: attested (operator: g0)
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -163,14 +179,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` (heavy + foundation requires human)
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.25-01 wires the REQ-coverage gate into gz obpi complete: parse_brief_reqs + discover_covers in the new src/gzkit/governance/req_coverage.py compose with _enforce_req_coverage_gate inserted at section 4a-ter, fail-closed on heavy/foundation, warn-only on lite-non-foundation. 6/6 REQ acceptance criteria covered (gz covers reports uncovered_reqs=0). Full ARB sweep green: ruff (arb-ruff-d03778f1c09946b0bec1b2ba22eaef85), typecheck (arb-step-typecheck-4a6ec87d5dc34c48a3720374fb6e2db5), unittest (arb-step-unittest-047406a8259a4f708aceceef1e0bb2e2), mkdocs --strict (arb-step-mkdocs-77755a52cb71448a982a37eaab653aa0). Plan-audit receipt PASS; precomplete 5/5 preconditions ready.
+- Date: 2026-05-03
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-03
 
 **Evidence Hash:** -
