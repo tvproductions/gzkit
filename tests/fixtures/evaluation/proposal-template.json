@@ -1,0 +1,20 @@
+{
+  "cluster_key": "dim:clarity:low",
+  "recurrence_count": 3,
+  "source_artifact_ids": [
+    "ADR-0.99.0-fixture-a",
+    "ADR-0.99.0-fixture-b",
+    "ADR-0.99.0-fixture-c"
+  ],
+  "source_artifact_paths": [
+    "artifacts/justify/ADR-0.99.0-fixture-a.md",
+    "artifacts/justify/ADR-0.99.0-fixture-b.md",
+    "artifacts/justify/ADR-0.99.0-fixture-c.md"
+  ],
+  "summary": "Dimension 'clarity' scored in the 'low' band across 3 distinct artifacts: ADR-0.99.0-fixture-a, ADR-0.99.0-fixture-b, ADR-0.99.0-fixture-c",
+  "proposed_rule_target": "docs/governance/clarity-low-improvement.md",
+  "content_hash": "fixture0000000aa",
+  "filed": false,
+  "ghi_url": null,
+  "advisory": false
+}
