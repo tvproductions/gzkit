@@ -1,0 +1,396 @@
+{
+  "schema_version": "1.0.0",
+  "corpus_revision": 1,
+  "projects": [
+    {
+      "name": "django",
+      "canonical_url": "https://github.com/django/django",
+      "commit_sha": "50bbf71bbd51616e2ce48785336ca3746fbe5f24",
+      "archetypal_cell": 1,
+      "cell_label": "Framework — sync web",
+      "included_paths": [
+        "django/forms/**/*.py",
+        "django/template/**/*.py",
+        "django/views/generic/**/*.py",
+        "django/utils/**/*.py",
+        "django/middleware/**/*.py"
+      ],
+      "excluded_paths_with_rationale": [
+        {
+          "glob": "django/db/models/sql/compiler.py",
+          "exclusion_rationale": "ORM query compiler — irreducible algorithmic complexity per ADR-0.0.27 anti-pattern; would pull metric distributions toward leniency if measured."
+        },
+        {
+          "glob": "django/contrib/**/*.py",
+          "exclusion_rationale": "Third-party-style contrib apps; not core framework design surface."
+        },
+        {
+          "glob": "django/db/backends/**/*.py",
+          "exclusion_rationale": "Backend adapters mirror upstream DB driver shapes; coupling profile is upstream-driven, not Django craft."
+        }
+      ],
+      "path_filter_rationale": "Measure forms / templates / generic views / utils / middleware — the stable framework-design surfaces that have aged across 5.x. Exclude ORM compiler (algorithmic complexity), contrib (separate quality bar), DB backends (upstream-shaped).",
+      "longevity_evidence": "Active development since 2005 (first public release 2005-07-21); 20+ years of continuous Python evolution.",
+      "maintenance_health_evidence": "Latest release 5.2.5 on 2025-08-06; 5.x series ships LTS and feature releases on a bounded cadence; security updates current.",
+      "practitioner_reputation_citation": "Cited in *Two Scoops of Django* (Greenfeld & Roy); PEP 3333 (WSGI) discussion; foundational reference for Python web framework design.",
+      "pure_python_loc_ratio": 0.96,
+      "craftsmanship_signal_narrative": "Maintainer cohort includes Russell Keith-Magee, Carlton Gibson, and Jacob Kaplan-Moss — all PyCon-talk regulars and project-governance authors; team-shaped review discipline rather than dictator pattern; LTS release cadence demonstrates calibrated stability/innovation balance.",
+      "project_doctrine_fitness_narrative": "Pure-Python web framework, no Rust/C extensions in measured paths, ORM is opt-in (not coupled to non-DB usage), respects stdlib idioms in utils. Does not violate Stdlib-First (gzkit does not depend on Django; corpus is learning relationship, not adoption)."
+    },
+    {
+      "name": "starlette",
+      "canonical_url": "https://github.com/encode/starlette",
+      "commit_sha": "7793b925a88ed98f3482325b0eca00b433123030",
+      "archetypal_cell": 2,
+      "cell_label": "Framework — async web",
+      "included_paths": [
+        "starlette/**/*.py"
+      ],
+      "excluded_paths_with_rationale": [
+        {
+          "glob": "starlette/_compat.py",
+          "exclusion_rationale": "Python-version compatibility shim; coupling profile is shim-driven, not framework craft."
+        }
+      ],
+      "path_filter_rationale": "Whole-project measurement appropriate — Starlette is small, focused, and every module is core ASGI framework design surface; only compat shim excluded.",
+      "longevity_evidence": "Active development since 2018-08; 7+ years; ASGI reference implementation across the Python async era.",
+      "maintenance_health_evidence": "Latest release 2026-03-22; bounded release cadence aligned with httpx / uvicorn ecosystem.",
+      "practitioner_reputation_citation": "Tom Christie author; ASGI specification reference implementation; PEP 3333 successor discussion in PyCon EU async-Python sessions.",
+      "pure_python_loc_ratio": 0.99,
+      "craftsmanship_signal_narrative": "Tom Christie maintains a coherent async-first design philosophy across encode org (httpx, starlette, uvicorn family); minimal-deps discipline; small focused modules; ASGI spec authorship.",
+      "project_doctrine_fitness_narrative": "Pure-Python async framework, minimal dependency surface, no transitive Rust core. Aligns with Stdlib-First disposition (uses asyncio not third-party event loops)."
+    },
+    {
+      "name": "urllib3",
+      "canonical_url": "https://github.com/urllib3/urllib3",
+      "commit_sha": "e90af45bb006c3a452a3a21644a2681523f5c7fc",
+      "archetypal_cell": 3,
+      "cell_label": "HTTP library",
+      "included_paths": [
+        "src/urllib3/connection.py",
+        "src/urllib3/connectionpool.py",
+        "src/urllib3/poolmanager.py",
+        "src/urllib3/response.py",
+        "src/urllib3/util/**/*.py"
+      ],
+      "excluded_paths_with_rationale": [
+        {
+          "glob": "src/urllib3/contrib/**/*.py",
+          "exclusion_rationale": "Optional integrations (pyopenssl, securetransport) — coupling profile shaped by external libraries, not core HTTP design."
+        },
+        {
+          "glob": "src/urllib3/_collections.py",
+          "exclusion_rationale": "Internal collection helpers; small but tangential to HTTP-design discipline."
+        }
+      ],
+      "path_filter_rationale": "Measure connection / pooling / response / util — the load-bearing HTTP-primitive design surface that has aged across the 1.x→2.x boundary. Substituted for httpx (cell 3) which currently fails the 12-month maintenance-health criterion.",
+      "longevity_evidence": "Active development since 2008; 17+ years; foundational HTTP library underpinning requests, pip, and most of the Python HTTP ecosystem.",
+      "maintenance_health_evidence": "Latest release 2.6.3 on 2026-01-07; ongoing 2.x series with bounded cadence; security-team responsive.",
+      "practitioner_reputation_citation": "Andrey Petrov + Seth Michael Larson maintainers; PEP 543 (TLS API) co-authorship; cited in *Architecture Patterns with Python* and core in-pip packaging documentation.",
+      "pure_python_loc_ratio": 0.98,
+      "craftsmanship_signal_narrative": "Seth Michael Larson is a PSF security developer-in-residence; core HTTP design has aged across major Python releases; type-annotation rigor; explicit deprecation cycles.",
+      "project_doctrine_fitness_narrative": "Pure-Python HTTP primitives, no monkey-patched globals (unlike requests), minimal optional-dep surface. Respects Stdlib-First — wraps stdlib `http.client` rather than reimplementing the protocol stack."
+    },
+    {
+      "name": "click",
+      "canonical_url": "https://github.com/pallets/click",
+      "commit_sha": "fed9049f7a07550d560a91b30c5b0b3e17d54981",
+      "archetypal_cell": 4,
+      "cell_label": "CLI tooling",
+      "included_paths": [
+        "src/click/core.py",
+        "src/click/decorators.py",
+        "src/click/types.py",
+        "src/click/parser.py",
+        "src/click/exceptions.py"
+      ],
+      "excluded_paths_with_rationale": [
+        {
+          "glob": "src/click/_termui_impl.py",
+          "exclusion_rationale": "Terminal-IO platform shims (POSIX/Windows-specific); coupling profile is OS-driven, not CLI-design craft."
+        },
+        {
+          "glob": "src/click/shell_completion.py",
+          "exclusion_rationale": "Shell-completion code generation; output-shaped not design-shaped."
+        }
+      ],
+      "path_filter_rationale": "Measure core / decorators / types / parser / exceptions — the CLI-design surface gzkit measures to inform argparse-based design (corpus ≠ dependency adoption).",
+      "longevity_evidence": "Active development since 2014-04; 11+ years; reference Python CLI library across the ecosystem.",
+      "maintenance_health_evidence": "Latest release 2026-04-22; ongoing 8.x series with bounded release cadence under pallets stewardship.",
+      "practitioner_reputation_citation": "Armin Ronacher author; canonical reference in Real Python CLI tutorials and *Python in a Nutshell*; PyCon CLI-design talk corpus.",
+      "pure_python_loc_ratio": 0.99,
+      "craftsmanship_signal_narrative": "Armin Ronacher's design philosophy (Flask, Jinja2, click) is canon-shaping; pallets project governance is mature; type-annotation modernization across 8.x demonstrates calibrated evolution.",
+      "project_doctrine_fitness_narrative": "Pure-Python CLI library; gzkit explicitly does NOT depend on click (gzkit uses argparse per ADR-0.0.2 Stdlib-First). Corpus inclusion records the learning relationship — gzkit measures click's CLI-design metrics to inform argparse-based design discipline."
+    },
+    {
+      "name": "attrs",
+      "canonical_url": "https://github.com/python-attrs/attrs",
+      "commit_sha": "69a9729a6879b37cee4930c85017da5dbc5fb6dd",
+      "archetypal_cell": 5,
+      "cell_label": "Type-strict data modeling",
+      "included_paths": [
+        "src/attr/_make.py",
+        "src/attr/validators.py",
+        "src/attr/converters.py",
+        "src/attr/_next_gen.py",
+        "src/attr/setters.py"
+      ],
+      "excluded_paths_with_rationale": [
+        {
+          "glob": "src/attr/_compat.py",
+          "exclusion_rationale": "Python-version compatibility shim; coupling profile is shim-driven."
+        },
+        {
+          "glob": "src/attr/_funcs.py",
+          "exclusion_rationale": "Module of small free functions; tangential to class-construction design surface."
+        }
+      ],
+      "path_filter_rationale": "Measure _make / validators / converters / next_gen / setters — the class-construction design surface that influenced PEP 557 (dataclasses) and gzkit's Pydantic-immutable-model discipline.",
+      "longevity_evidence": "Active development since 2015-02; 10+ years; cited as inspiration for PEP 557 (dataclasses).",
+      "maintenance_health_evidence": "Latest release 2026-03-19; bounded release cadence; type-stubs and Python-version support kept current.",
+      "practitioner_reputation_citation": "Hynek Schlawack author; PEP 557 cites attrs as design inspiration; *Fluent Python* 2e ch. 5 (Class Builders).",
+      "pure_python_loc_ratio": 0.98,
+      "craftsmanship_signal_narrative": "Hynek Schlawack's class-construction discipline directly shaped Python's stdlib dataclasses; type-correctness obsession; explicit API-stability contracts; PyCon talks on idiomatic Python class authorship.",
+      "project_doctrine_fitness_narrative": "Pure-Python class-construction library; aligns with Stdlib-First disposition (PEP 557 absorbed many of its ideas into stdlib). gzkit uses Pydantic for runtime models (named departure), but attrs's design discipline is the corpus-side learning."
+    },
+    {
+      "name": "cpython-stdlib-subset",
+      "canonical_url": "https://github.com/python/cpython",
+      "commit_sha": "246fe14e7ccfdea62c7d92b49a272abd55acc850",
+      "archetypal_cell": 6,
+      "cell_label": "Stdlib-style core library",
+      "included_paths": [
+        "Lib/pathlib.py",
+        "Lib/dataclasses.py",
+        "Lib/functools.py",
+        "Lib/contextlib.py"
+      ],
+      "excluded_paths_with_rationale": [
+        {
+          "glob": "Lib/test/**/*.py",
+          "exclusion_rationale": "Test corpus, not stdlib-design surface."
+        },
+        {
+          "glob": "Modules/**",
+          "exclusion_rationale": "C extension modules; not Python design surface."
+        },
+        {
+          "glob": "Lib/**/*.py",
+          "exclusion_rationale": "Whole-stdlib measurement out of scope; only the four PEP-anchored modules above carry the cell-6 design signal."
+        }
+      ],
+      "path_filter_rationale": "Measure the four PEP-anchored stdlib modules (pathlib / dataclasses / functools / contextlib) that exemplify Python stdlib-style design discipline — each is the reference for its idiom and each ships PEP-grounded API decisions. One corpus entry, four files, single craftsmanship narrative.",
+      "longevity_evidence": "CPython itself is the language; selected modules (functools, contextlib) date back 15+ years; pathlib (PEP 428, 2014); dataclasses (PEP 557, 2017).",
+      "maintenance_health_evidence": "Latest CPython release v3.15.0a8 on 2026-04-07; alpha series active; release cycle is the ecosystem's heartbeat.",
+      "practitioner_reputation_citation": "PEP 343 (contextlib), PEP 428 (pathlib), PEP 557 (dataclasses); core-developer authorship across these modules.",
+      "pure_python_loc_ratio": 1.0,
+      "craftsmanship_signal_narrative": "Each selected module is the reference for its idiom — pathlib is the Path-object canon; dataclasses is the class-builder canon; functools.partial / lru_cache / singledispatch are higher-order-function canon; contextlib is the resource-management canon. PEP-driven authorship discipline.",
+      "project_doctrine_fitness_narrative": "Stdlib itself — the canonical reference for Stdlib-First. Pure-Python by definition for these modules. The most foundational craft signal in the corpus."
+    },
+    {
+      "name": "hypothesis",
+      "canonical_url": "https://github.com/HypothesisWorks/hypothesis",
+      "commit_sha": "84f92dcf29229e37f822ba3ba5eea4212d2abf35",
+      "archetypal_cell": 7,
+      "cell_label": "Testing / property-based",
+      "included_paths": [
+        "hypothesis-python/src/hypothesis/strategies/**/*.py",
+        "hypothesis-python/src/hypothesis/core.py",
+        "hypothesis-python/src/hypothesis/stateful.py",
+        "hypothesis-python/src/hypothesis/internal/conjecture/**/*.py"
+      ],
+      "excluded_paths_with_rationale": [
+        {
+          "glob": "hypothesis-python/src/hypothesis/extra/**/*.py",
+          "exclusion_rationale": "Third-party-library adapters (django, numpy, pandas); coupling profile is adapter-driven."
+        }
+      ],
+      "path_filter_rationale": "Measure strategies / core / stateful / conjecture — the property-based-testing design surface that exemplifies a non-pytest testing idiom (Stdlib-First-aligned).",
+      "longevity_evidence": "Active development since 2013-03; 12+ years; the canonical Python property-based testing library.",
+      "maintenance_health_evidence": "Latest release 2026-04-27; very high release cadence (often weekly); maintainer-cohort active.",
+      "practitioner_reputation_citation": "David MacIver author + maintainer cohort; cited in *Fluent Python* 2e (testing chapter); PyCon UK property-based-testing talk corpus.",
+      "pure_python_loc_ratio": 0.99,
+      "craftsmanship_signal_narrative": "David MacIver's property-based-testing design rigor; explicit shrinking strategy semantics; conjecture engine is one of the most thoughtful test-generation architectures in any language.",
+      "project_doctrine_fitness_narrative": "Pure-Python testing library; works with stdlib unittest (plus pytest, but not pytest-locked); does NOT replicate pytest's plugin / conftest discovery / fixture-injection patterns. Respects Stdlib-First (gzkit uses unittest; hypothesis is a learning relationship, not adoption)."
+    },
+    {
+      "name": "rich",
+      "canonical_url": "https://github.com/Textualize/rich",
+      "commit_sha": "46cebbb032f920eb096efbaf23cdc6fe9dd541f7",
+      "archetypal_cell": 8,
+      "cell_label": "Console rendering / TUI",
+      "included_paths": [
+        "rich/console.py",
+        "rich/table.py",
+        "rich/progress.py",
+        "rich/syntax.py",
+        "rich/live.py",
+        "rich/text.py"
+      ],
+      "excluded_paths_with_rationale": [
+        {
+          "glob": "rich/_win32_console.py",
+          "exclusion_rationale": "Windows console platform shim; coupling profile is OS-driven."
+        },
+        {
+          "glob": "rich/cells.py",
+          "exclusion_rationale": "Unicode width tables (data tables in code form), not design surface."
+        },
+        {
+          "glob": "rich/_emoji_codes.py",
+          "exclusion_rationale": "Emoji code-point data tables, not design surface."
+        }
+      ],
+      "path_filter_rationale": "Measure console / table / progress / syntax / live / text — the rendering-design surface gzkit's own console output uses.",
+      "longevity_evidence": "Active development since 2019-12; 6+ years; canonical Python console-rendering library.",
+      "maintenance_health_evidence": "Latest release 2026-04-12; bounded release cadence under Textualize org governance.",
+      "practitioner_reputation_citation": "Will McGugan author; PyCon and PyData rich-rendering talk corpus; widely adopted across Python tooling (pip, mypy, gzkit itself).",
+      "pure_python_loc_ratio": 0.98,
+      "craftsmanship_signal_narrative": "Will McGugan's rendering-architecture clarity; ANSI-escape abstraction discipline; the codebase reads as a worked example of the renderer pattern.",
+      "project_doctrine_fitness_narrative": "Pure-Python rendering library; gzkit DOES depend on rich at runtime (legitimate dep). Corpus inclusion is the learning relationship — even though gzkit imports rich, the corpus measures rich's design metrics for cell-8 calibration."
+    },
+    {
+      "name": "mypy",
+      "canonical_url": "https://github.com/python/mypy",
+      "commit_sha": "0ea16df0c86243e095b4aab1b45e0179dd4c3f14",
+      "archetypal_cell": 9,
+      "cell_label": "Static analysis / type checker",
+      "included_paths": [
+        "mypy/checker.py",
+        "mypy/semanal.py",
+        "mypy/types.py",
+        "mypy/messages.py",
+        "mypy/nodes.py"
+      ],
+      "excluded_paths_with_rationale": [
+        {
+          "glob": "mypy/checkexpr.py",
+          "exclusion_rationale": "Expression-checking layer hosts unification core — irreducible algorithmic complexity per ADR-0.0.27 anti-pattern."
+        },
+        {
+          "glob": "mypy/typeshed/**",
+          "exclusion_rationale": "Vendored type stubs; data files in code form, not design surface."
+        },
+        {
+          "glob": "mypyc/**",
+          "exclusion_rationale": "Compiler subsystem; separate concern from type-checker design."
+        }
+      ],
+      "path_filter_rationale": "Measure checker / semanal / types / messages / nodes — the type-checking design surface. Exclude expression-checker (algorithmic complexity), typeshed (data), and mypyc (separate subsystem).",
+      "longevity_evidence": "Active development since 2012-12; 13+ years; the reference Python static type checker.",
+      "maintenance_health_evidence": "Latest release v1.20.2 on 2026-04-21; ongoing 1.20.x series; active maintainer cohort.",
+      "practitioner_reputation_citation": "Jukka Lehtosalo author; PEP 484 (type hints) co-author; *Type Hints* documentation corpus; PyCon static-typing talk corpus.",
+      "pure_python_loc_ratio": 0.97,
+      "craftsmanship_signal_narrative": "Jukka Lehtosalo and the mypy team shaped Python's type system itself via PEP 484 / 526 / 561 / 612; the codebase's separation between semantic analysis and type checking is the canon for static-analyzer architecture.",
+      "project_doctrine_fitness_narrative": "Pure-Python type checker; gzkit uses ty (Astral) for typecheck per pythonic.md, not mypy. Corpus inclusion is learning relationship — measuring how the canonical type-checker shapes its codebase informs gzkit's static-analysis idioms."
+    },
+    {
+      "name": "flit",
+      "canonical_url": "https://github.com/pypa/flit",
+      "commit_sha": "ef7f31925305a50bd097f06b913717192490ad44",
+      "archetypal_cell": 10,
+      "cell_label": "Build / packaging",
+      "included_paths": [
+        "flit/**/*.py",
+        "flit_core/flit_core/**/*.py"
+      ],
+      "excluded_paths_with_rationale": [],
+      "path_filter_rationale": "Whole-project measurement appropriate — flit and flit_core are small, focused, and every module is core packaging-design surface.",
+      "longevity_evidence": "Active development since 2015-02; 10+ years; PEP 517/518/621 reference implementation.",
+      "maintenance_health_evidence": "Latest release 4.0.0 on 2026-04-29; recent major release demonstrates active design evolution.",
+      "practitioner_reputation_citation": "Thomas Kluyver author; PEP 517 / 621 reference implementation; PyCon packaging-talk corpus; Jupyter project alumnus.",
+      "pure_python_loc_ratio": 1.0,
+      "craftsmanship_signal_narrative": "Thomas Kluyver's minimal-surface packaging discipline; flit_core deliberately stays small enough to bootstrap from a tarball; explicit tradeoff against setuptools complexity is the design lesson.",
+      "project_doctrine_fitness_narrative": "Pure-Python build backend; aligns with Stdlib-First disposition (minimal dep tree, uses stdlib tomllib in modern Python). Reference implementation of PEP-grounded packaging."
+    },
+    {
+      "name": "textual",
+      "canonical_url": "https://github.com/Textualize/textual",
+      "commit_sha": "5fdea0dd0538451399762dcb75efefde7f6ddcdc",
+      "archetypal_cell": 8,
+      "cell_label": "Console rendering / TUI (second candidate)",
+      "included_paths": [
+        "src/textual/app.py",
+        "src/textual/widget.py",
+        "src/textual/dom.py",
+        "src/textual/reactive.py",
+        "src/textual/message_pump.py"
+      ],
+      "excluded_paths_with_rationale": [
+        {
+          "glob": "src/textual/_terminal_features.py",
+          "exclusion_rationale": "Terminal-feature platform detection; coupling profile is OS-driven."
+        },
+        {
+          "glob": "src/textual/widgets/**/*.py",
+          "exclusion_rationale": "Widget library; downstream of the core reactive-framework design surface."
+        }
+      ],
+      "path_filter_rationale": "Measure app / widget / dom / reactive / message_pump — the reactive-framework design surface that complements rich's rendering surface in cell 8.",
+      "longevity_evidence": "Active development since 2021-04; 4+ years; the modern Python reactive-TUI canon.",
+      "maintenance_health_evidence": "Latest release 2026-04-30 (very recent); high release cadence under Textualize org governance.",
+      "practitioner_reputation_citation": "Will McGugan + Textualize team; PyCon and Textualize.show talk corpus; widely adopted in modern terminal applications.",
+      "pure_python_loc_ratio": 0.98,
+      "craftsmanship_signal_narrative": "Reactive-framework architecture in Python is hard; textual's CSS-styled DOM-style API demonstrates the design rigor needed to bring modern UI patterns to terminal contexts.",
+      "project_doctrine_fitness_narrative": "Pure-Python reactive TUI; aligns with Stdlib-First disposition (uses asyncio, no Rust core). gzkit does not depend on textual; corpus inclusion is the learning relationship for cell-8 second-candidate diversity."
+    },
+    {
+      "name": "flask",
+      "canonical_url": "https://github.com/pallets/flask",
+      "commit_sha": "7374c85ddefc3f4b177a698ab9f0cbb6a5c0b392",
+      "archetypal_cell": 1,
+      "cell_label": "Framework — sync web (second candidate, micro-framework)",
+      "included_paths": [
+        "src/flask/app.py",
+        "src/flask/blueprints.py",
+        "src/flask/views.py",
+        "src/flask/wrappers.py",
+        "src/flask/sessions.py"
+      ],
+      "excluded_paths_with_rationale": [
+        {
+          "glob": "src/flask/cli.py",
+          "exclusion_rationale": "click bindings; coupling profile is dependency-shaped, not framework craft."
+        }
+      ],
+      "path_filter_rationale": "Measure app / blueprints / views / wrappers / sessions — the micro-framework design surface that complements Django's macro-framework surface in cell 1.",
+      "longevity_evidence": "Active development since 2010-04; 15+ years; the canonical Python micro-framework.",
+      "maintenance_health_evidence": "Latest release 2026-02-19; ongoing 3.x series under pallets stewardship.",
+      "practitioner_reputation_citation": "Armin Ronacher author; *Flask Mega-Tutorial* (Grinberg); PEP 3333 reference; Real Python WSGI tutorial corpus.",
+      "pure_python_loc_ratio": 0.99,
+      "craftsmanship_signal_narrative": "Armin Ronacher's design philosophy carries across Flask / Jinja2 / click / Werkzeug; the application-context pattern is a worked example of explicit-state-management discipline.",
+      "project_doctrine_fitness_narrative": "Pure-Python micro-framework; aligns with Stdlib-First disposition. gzkit does not depend on Flask; corpus inclusion is learning relationship for cell-1 second-candidate (macro vs. micro framework diversity)."
+    },
+    {
+      "name": "pip",
+      "canonical_url": "https://github.com/pypa/pip",
+      "commit_sha": "4943e17e7dd079b3f58e88009d10308f2c55a3ed",
+      "archetypal_cell": 10,
+      "cell_label": "Build / packaging (second candidate, installer)",
+      "included_paths": [
+        "src/pip/_internal/req/**/*.py",
+        "src/pip/_internal/resolution/**/*.py",
+        "src/pip/_internal/network/**/*.py",
+        "src/pip/_internal/operations/**/*.py"
+      ],
+      "excluded_paths_with_rationale": [
+        {
+          "glob": "src/pip/_vendor/**/*.py",
+          "exclusion_rationale": "Vendored third-party dependencies (requests, certifi, etc.); coupling profile is upstream-shaped."
+        },
+        {
+          "glob": "src/pip/_internal/cli/**/*.py",
+          "exclusion_rationale": "CLI entry-point glue; output-shaped not design-shaped."
+        }
+      ],
+      "path_filter_rationale": "Measure req / resolution / network / operations — the installer-design surface that complements flit's build-backend surface in cell 10.",
+      "longevity_evidence": "Active development since 2008-10; 17+ years; the canonical Python package installer.",
+      "maintenance_health_evidence": "Latest release 26.1 on 2026-04-26; stable release cadence under PyPA stewardship.",
+      "practitioner_reputation_citation": "PyPA stewardship; PEP 517 / 518 / 621 / 660 implementer; canonical reference for Python packaging.",
+      "pure_python_loc_ratio": 0.97,
+      "craftsmanship_signal_narrative": "Resolver redesign (2020) is one of the most disciplined large-scale refactors in Python OSS history; explicit deprecation cycles; vendored-deps strategy demonstrates calibrated isolation discipline.",
+      "project_doctrine_fitness_narrative": "Pure-Python installer; aligns with Stdlib-First disposition (no compiled core). gzkit uses uv (not pip), but pip's design is the canonical packaging reference."
+    }
+  ],
+  "vacant_cells": []
+}

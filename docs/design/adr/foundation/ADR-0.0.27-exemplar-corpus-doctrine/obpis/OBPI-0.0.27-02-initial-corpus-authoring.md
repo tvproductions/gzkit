@@ -3,7 +3,7 @@ id: OBPI-0.0.27-02-initial-corpus-authoring
 parent: ADR-0.0.27
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.27-02-initial-corpus-authoring: Initial Corpus Authoring
@@ -63,11 +63,21 @@ Pin the initial 12-15-project exemplar corpus across the ten archetypal cells wi
 
 ## Discovery Checklist
 
-- [ ] OBPI-01 (`.gzkit/rules/complexity-doctrine.md`) — selection criteria + anti-patterns canonized
-- [ ] Parent ADR § Decision — ten archetypal cells, locked per-cell candidates, corpus size target
-- [ ] Handoff `.gzkit/handoffs/2026-04-25-complexity-doctrine-cluster.md` — locked per-cell projects (Django, Starlette, httpx, click, attrs, CPython subsets, hypothesis, rich, mypy, flit)
-- [ ] `.claude/rules/models.md` — Pydantic immutable model patterns
-- [ ] Existing pool ADRs under `docs/design/adr/pool/` — file shape and frontmatter convention
+**Prerequisites**
+
+- [x] OBPI-0.0.27-01 `Completed` — `.gzkit/rules/complexity-doctrine.md` (rule v0.1.0) is canon; selection criteria, corpus anti-patterns, distillation cadence, citation contract, and project-doctrine-fitness criterion all in place.
+- [x] Parent ADR-0.0.27 § Decision — ten archetypal cells, locked per-cell candidates, corpus-size target 12-15.
+- [x] Handoff `.gzkit/handoffs/2026-04-25-complexity-doctrine-cluster.md` — locked per-cell projects (Django, Starlette, httpx, click, attrs, CPython subsets, hypothesis, rich, mypy, flit).
+- [x] `.gzkit/rules/models.md` — Pydantic immutable-model contract (`frozen=True, extra="forbid"`, no `Optional`/`List`, no implicit defaults).
+- [x] `.claude/rules/cross-platform.md` — UTF-8 encoding + `pathlib.Path` discipline for file IO.
+
+**Existing Code**
+
+- [x] `src/gzkit/models/security_surfaces.py` — pattern reference for `frozen=True, extra="forbid"` model + `TypeAdapter` loader (OBPI-0.0.22-02 precedent).
+- [x] `tests/models/test_security_surface_entry.py` — pattern reference for `@covers`-decorated REQ-derived model tests.
+- [x] `src/gzkit/schemas/security_surfaces.json` — JSON Schema (Draft 2020-12) structural template with `additionalProperties: false`.
+- [x] `src/gzkit/commands/validate_cmd.py:840` `_validate_manifest_documents` — extension point for fold-in corpus validation under the `--documents` scope.
+- [x] `docs/design/adr/pool/ADR-pool.adr-amendment-tracking.md` — canonical pool-ADR shape + frontmatter convention for the six new pool stubs.
 
 ## Quality Gates
 
@@ -152,23 +162,83 @@ ls docs/design/adr/pool/ADR-pool.{attestation-quality-measurement,doctrine-amend
 
 ### Value Narrative
 
-<!-- Problem before: corpus methodology was rule prose with no pinned authoritative list; nominations could drift session-to-session. Capability now: 12-15 projects pinned at SHA with explicit path filters and craftsmanship justifications, validated by a frozen Pydantic schema, with six forward-reference pool stubs making the citation graph honest from day one. -->
+Before this OBPI, the corpus methodology lived only in rule prose (`.gzkit/rules/complexity-doctrine.md` from OBPI-01) with no pinned authoritative list — nominations could drift session-to-session and downstream foundation ADRs (0.0.28 / 0.0.29 / 0.0.30) had no empirical anchor to cite. After this OBPI, 13 projects are pinned at 40-char-hex commit SHAs across all 10 archetypal cells, validated by a frozen `ExemplarProject` Pydantic model + JSON Schema mirror that fail-closes drift through `gz validate --documents`, with six forward-reference pool stubs making the citation graph honest from day one.
 
 ### Key Proof
 
-<!-- Paste a representative entry from data/exemplar_corpus.json and the listing of six pool-stub files. -->
+
+```bash
+$ uv run gz validate --documents
+Validated: documents
+✓ All validations passed (1 scopes).
+
+$ uv run python -c "import sys; sys.stdout.reconfigure(encoding='utf-8'); from pathlib import Path; from gzkit.models.exemplar import load_corpus; c = load_corpus(Path('data/exemplar_corpus.json')); print(f'projects={len(c.projects)}, vacant={len(c.vacant_cells)}, cells={sorted({p.archetypal_cell for p in c.projects})}')"
+projects=13, vacant=0, cells=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+$ ls docs/design/adr/pool/ADR-pool.{attestation-quality-measurement,doctrine-amendment-protocol,complexity-doctrine-validate-suite,canon-pillar-codification,complexity-doctrine-meets-chore-system,complexity-guide-obpi-authoring-integration}.md
+docs/design/adr/pool/ADR-pool.attestation-quality-measurement.md
+docs/design/adr/pool/ADR-pool.canon-pillar-codification.md
+docs/design/adr/pool/ADR-pool.complexity-doctrine-meets-chore-system.md
+docs/design/adr/pool/ADR-pool.complexity-doctrine-validate-suite.md
+docs/design/adr/pool/ADR-pool.complexity-guide-obpi-authoring-integration.md
+docs/design/adr/pool/ADR-pool.doctrine-amendment-protocol.md
+```
+
+Representative entry — Django (cell 1):
+
+```json
+{
+  "name": "django",
+  "canonical_url": "https://github.com/django/django",
+  "commit_sha": "50bbf71bbd51616e2ce48785336ca3746fbe5f24",
+  "archetypal_cell": 1,
+  "included_paths": ["django/forms/**/*.py", "django/template/**/*.py", "..."],
+  "excluded_paths_with_rationale": [
+    {"glob": "django/db/models/sql/compiler.py",
+     "exclusion_rationale": "ORM query compiler — irreducible algorithmic complexity per ADR-0.0.27 anti-pattern"}
+  ],
+  "pure_python_loc_ratio": 0.96,
+  "...": "..."
+}
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created:
+  - `src/gzkit/models/exemplar.py` — `ExemplarProject`, `ExcludedPath`, `VacantCell`, `ExemplarCorpus` Pydantic models (`frozen=True, extra="forbid"`); `load_corpus(Path)` loader
+  - `src/gzkit/schemas/exemplar_corpus.json` — JSON Schema (Draft 2020-12) mirror with `additionalProperties: false` on every object schema
+  - `data/exemplar_corpus.json` — 13 pinned projects covering all 10 archetypal cells; `corpus_revision: 1`
+  - `tests/models/test_exemplar.py` — 48 tests (model frozen-contract, SHA validation, path-filter requiredness, vacant-cell shape, JSON-Schema parity, loader, validate-cmd integration)
+  - `tests/governance/test_exemplar_corpus.py` — 14 tests asserting REQ-derived semantics on the on-disk corpus
+  - `docs/design/adr/pool/ADR-pool.attestation-quality-measurement.md`
+  - `docs/design/adr/pool/ADR-pool.doctrine-amendment-protocol.md`
+  - `docs/design/adr/pool/ADR-pool.complexity-doctrine-validate-suite.md`
+  - `docs/design/adr/pool/ADR-pool.canon-pillar-codification.md`
+  - `docs/design/adr/pool/ADR-pool.complexity-doctrine-meets-chore-system.md`
+  - `docs/design/adr/pool/ADR-pool.complexity-guide-obpi-authoring-integration.md`
+- Files modified:
+  - `src/gzkit/commands/validate_cmd.py` — `_validate_exemplar_corpus()` wired into `_validate_manifest_documents` so `gz validate --documents` fail-closes on corpus drift (REQ-08)
+  - `data/behave_coverage_waivers.json` — Gate 4 BDD waiver entry under `adr-0.0.27-foundation-bdd-deferred` rationale (data-contract-only OBPI; CLI exposure deferred to OBPI-0.0.27-07)
+  - `.gzkit/insights/agent-insights.jsonl:29` — in-flight shape fix (route-A side fix per operator direction; pre-existing record had `timestamp`/`evidence`-as-string drift)
+
+- Tests added: 62 total — 48 in `tests/models/test_exemplar.py`, 14 in `tests/governance/test_exemplar_corpus.py`. All `@covers`-decorated against acceptance-criteria REQs (`gz covers OBPI-0.0.27-02 --json` reports 8/8 covered, `uncovered_reqs == 0`).
+
+- Rejection records (REQ-04, REQ-05): two doctrine-incompatible candidates were considered and rejected during slate authoring; rejections are recorded here per the brief's "rejection recorded in brief evidence, not silently filtered" wording.
+
+  **pytest** — rejected on project-doctrine-fitness criterion (`.gzkit/rules/complexity-doctrine.md` § criterion 6). pytest is widely-used and well-architected by conventional metrics, but its plugin architecture, fixture injection, and magic `conftest.py` discovery contradict gzkit's Stdlib-First doctrine and `forbid-pytest` pre-commit hook. The pytest-mention demerit during the ADR-0.0.27 design dialogue is the canonical lesson this rejection records.
+
+  **Pydantic** — rejected on pure-Python predominance criterion (`.gzkit/rules/complexity-doctrine.md` § criterion 4). Pydantic v2 moved its validation core to Rust (`pydantic-core`); the Python part is glue, well below the ≥80% pure-Python LOC threshold. gzkit *uses* Pydantic at runtime (Stdlib-First named departure with rationale per `.gzkit/rules/models.md`), but Pydantic is not a *learning* relationship for Python design metrics — its design now lives in Rust.
+
+  **httpx** — initially nominated for cell 3 (HTTP) but rejected on maintenance-health criterion (criterion 2): latest stable release 0.28.1 from 2024-12-06 is 17 months from the corpus-authoring date and the project does not declare a done state. Substituted with `urllib3` (latest 2.6.3 on 2026-01-07; passes all seven criteria).
+
+- Date completed: 2026-05-04
+- Attestation status: pending Gate 5 (Heavy + Foundation — TTY + `ATTEST` confirmation)
+- Defects noted: none in scope. In-flight side fix to `.gzkit/insights/agent-insights.jsonl:29` brought the pre-existing `gz validate --insights-shape` failure to green; recorded above.
 
 ### Closing Argument
 
-<!-- One paragraph: why operator-witnessed nominations beat agent-supplied lists, how the per-project path filter closes the corpus-contamination class, and why pool-stub forward-references are the right shape for the citation graph. -->
+The operator-witnessed-nomination doctrine is the load-bearing structural defense of the entire complexity-doctrine cluster. An agent-only-authored corpus is `.gzkit/rules/complexity-doctrine.md` Anti-Pattern #6 by name — the same failure class as agent-synthesized attestation, because the corpus is doctrine and doctrine drift is invariant drift. This OBPI's slate was drafted by the agent against the seven criteria, but every nomination's craftsmanship narrative, every excluded path's rationale, and every pinned SHA passed through Stage 4 walkthrough before the brief was attested — Gate 5's TTY + `ATTEST` is the structural witness, not narrative recall. The per-project path-filter discipline closes the corpus-contamination class flagged in pre-mortem #1 of ADR-0.0.27: strategically-complex modules (Django ORM compiler, mypy expression-checker unification core) are excluded with named rationale rather than silently averaged into metric distributions that would drift toward leniency. The six pool-stub forward-references make the citation graph honest from day one — every anticipated amendment path has a named home, so future foundation drift surfaces as an activation event rather than a surprise.
 
 ## Tracked Defects
 
@@ -176,14 +246,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` (heavy + foundation requires TTY + ATTEST)
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.27-02 lands the empirical anchor of the complexity-doctrine cluster: 13 projects pinned at 40-char-hex SHAs across all 10 archetypal cells, immutable ExemplarProject Pydantic model with ConfigDict(frozen=True, extra="forbid"), JSON Schema mirror folded into gz validate --documents, and six pool-stub forward-references. 62/62 OBPI-scoped tests pass; gz covers OBPI-0.0.27-02 reports 8/8 REQs covered (uncovered_reqs=0). Lint: arb-ruff-dd688c2b9f6e4e6a9084d79368c12259. Typecheck: arb-step-typecheck-622545e590b744359adb0519dbcdd50c. OBPI tests: arb-step-unittest-caeba048a48d4e53a71bb462962868a3. Full unittest: arb-step-unittest-b50a7c08c7704d3dafb3a795d9b9c979. Mkdocs strict: arb-step-mkdocs-60f32dbdfc414082bd07733cf5595657. pytest + Pydantic + httpx rejection records present in brief Implementation Summary per .gzkit/rules/complexity-doctrine.md criteria 4 and 6.
+- Date: 2026-05-04
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-04
 
 **Evidence Hash:** -
