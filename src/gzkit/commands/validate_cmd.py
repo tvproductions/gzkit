@@ -6,6 +6,8 @@ import subprocess
 from collections.abc import Callable
 from pathlib import Path
 
+from pydantic import ValidationError as PydanticValidationError
+
 from gzkit.commands.common import console, get_project_root
 from gzkit.commands.validate_frontmatter import (
     _render_frontmatter_explain,
@@ -17,6 +19,7 @@ from gzkit.governance.trust_audits import (
     validate_attestation_receipts,
 )
 from gzkit.instruction_audit import audit_instructions
+from gzkit.models.exemplar import ExemplarCorpus
 from gzkit.models.persona import discover_persona_files, validate_persona_structure
 from gzkit.tasks import (
     parse_ceremony_trailers,
@@ -837,6 +840,47 @@ def _run_scope_checks(
     return errors
 
 
+def _validate_exemplar_corpus(project_root: Path) -> list[ValidationError]:
+    """Validate data/exemplar_corpus.json against the ExemplarCorpus Pydantic model.
+
+    Returns an empty list when the file is absent (the corpus is authored in a
+    later OBPI stage).  Returns one ValidationError per Pydantic validation
+    failure, or a single ValidationError on JSON parse failure.
+    """
+    corpus_path = project_root / "data" / "exemplar_corpus.json"
+    if not corpus_path.is_file():
+        return []
+
+    artifact = corpus_path.relative_to(project_root).as_posix()
+    errors: list[ValidationError] = []
+    try:
+        raw = json.loads(corpus_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        errors.append(
+            ValidationError(
+                type="exemplar_corpus",
+                artifact=artifact,
+                message=f"exemplar_corpus.json is not valid JSON: {exc}",
+            )
+        )
+        return errors
+
+    try:
+        ExemplarCorpus.model_validate(raw)
+    except PydanticValidationError as exc:
+        for err in exc.errors():
+            field = ".".join(str(loc) for loc in err["loc"])
+            errors.append(
+                ValidationError(
+                    type="exemplar_corpus",
+                    artifact=artifact,
+                    message=err["msg"],
+                    field=field or None,
+                )
+            )
+    return errors
+
+
 def _validate_manifest_documents(project_root: Path) -> list[ValidationError]:
     """Validate documents declared in the manifest."""
     manifest_path = project_root / ".gzkit" / "manifest.json"
@@ -852,6 +896,7 @@ def _validate_manifest_documents(project_root: Path) -> list[ValidationError]:
         if artifact_dir.exists():
             for doc in artifact_dir.glob("*.md"):
                 errors.extend(validate_document(doc, schema_name))
+    errors.extend(_validate_exemplar_corpus(project_root))
     return errors
 
 

@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gzkit.exemplar_corpus.v1",
+  "title": "GovZero Exemplar Corpus",
+  "description": "Registry of pinned exemplar projects across the ten archetypal complexity cells (ADR-0.0.27). Validated by gz validate --documents; drift from the Pydantic model is fail-closed.",
+  "type": "object",
+  "required": ["schema_version", "corpus_revision", "projects", "vacant_cells"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Schema version string for the corpus file format."
+    },
+    "corpus_revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Monotonically increasing revision number for the corpus content."
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ExemplarProject"
+      },
+      "description": "Ordered array of pinned exemplar projects."
+    },
+    "vacant_cells": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/VacantCell"
+      },
+      "description": "Cells with no qualifying project; rationale required for each."
+    }
+  },
+  "$defs": {
+    "ExemplarProject": {
+      "type": "object",
+      "required": [
+        "name",
+        "canonical_url",
+        "commit_sha",
+        "archetypal_cell",
+        "cell_label",
+        "included_paths",
+        "excluded_paths_with_rationale",
+        "path_filter_rationale",
+        "longevity_evidence",
+        "maintenance_health_evidence",
+        "practitioner_reputation_citation",
+        "pure_python_loc_ratio",
+        "craftsmanship_signal_narrative",
+        "project_doctrine_fitness_narrative"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Canonical project name."
+        },
+        "canonical_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Canonical repository URL."
+        },
+        "commit_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "description": "Pinned 40-character lowercase hex commit SHA."
+        },
+        "archetypal_cell": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Archetypal cell index (1-10) from ADR-0.0.27 Decision."
+        },
+        "cell_label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable label for the archetypal cell."
+        },
+        "included_paths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Glob patterns for paths included in measurement (at least one required)."
+        },
+        "excluded_paths_with_rationale": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExcludedPath"
+          },
+          "description": "Paths excluded from measurement with per-path rationale."
+        },
+        "path_filter_rationale": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Overall rationale for the included/excluded path selection."
+        },
+        "longevity_evidence": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Evidence the project has been active for 5+ years."
+        },
+        "maintenance_health_evidence": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Evidence of healthy maintenance (e.g. recent release date)."
+        },
+        "practitioner_reputation_citation": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Specific citation (PEP number, book title, talk name) grounding reputation."
+        },
+        "pure_python_loc_ratio": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Fraction of included LOC that is pure Python (0.0-1.0)."
+        },
+        "craftsmanship_signal_narrative": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Narrative explaining the craftsmanship signal this project exemplifies."
+        },
+        "project_doctrine_fitness_narrative": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Narrative explaining why this project fits the corpus doctrine."
+        }
+      }
+    },
+    "ExcludedPath": {
+      "type": "object",
+      "required": ["glob", "exclusion_rationale"],
+      "additionalProperties": false,
+      "properties": {
+        "glob": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Glob pattern excluded from measurement."
+        },
+        "exclusion_rationale": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Why this path is excluded (e.g. irreducible algorithmic complexity, generated code)."
+        }
+      }
+    },
+    "VacantCell": {
+      "type": "object",
+      "required": ["archetypal_cell", "vacancy_rationale"],
+      "additionalProperties": false,
+      "properties": {
+        "archetypal_cell": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Archetypal cell index (1-10) that has no qualifying project."
+        },
+        "vacancy_rationale": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Why no project was found that satisfies the selection criteria for this cell."
+        }
+      }
+    }
+  }
+}

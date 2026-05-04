@@ -1657,6 +1657,10 @@
     "OBPI-0.0.27-01-selection-methodology": {
       "rationale": "adr-0.0.27-foundation-bdd-deferred",
       "status_at_landing": "Draft"
+    },
+    "OBPI-0.0.27-02-initial-corpus-authoring": {
+      "rationale": "adr-0.0.27-foundation-bdd-deferred",
+      "status_at_landing": "Draft"
     }
   }
 }
