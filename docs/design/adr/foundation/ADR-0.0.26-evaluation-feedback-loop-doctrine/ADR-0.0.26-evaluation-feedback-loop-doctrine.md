@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.26-evaluation-feedback-loop-doctrine
-status: Completed
+status: Validated
 kind: foundation
 semver: 0.0.26
 lane: heavy
