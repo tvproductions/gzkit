@@ -183,4 +183,4 @@ the same epistemology this doctrine encodes at the governance layer.
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.26 | Pending | | | |
+| 0.0.26 | Completed | Jeffry Babb | 2026-05-03 | Completed - ADR-0.0.26 evaluation feedback loop doctrine: 5/5 OBPIs attested_completed, 24/24 REQs covered (gz adr audit-check PASS); canonical ARB receipts green: arb-ruff-c2d484dd4d3143ba840add9d1f073393, arb-step-typecheck-e840d9b03a5c46d3891881789efbf47d, arb-step-unittest-022716b2c905401cabc78d589b5577c1 (4047 tests OK), arb-step-mkdocs-043d2598003543b892c719dcd477e8ad (strict); 20/20 behave scenarios pass in evaluation_feedback_loop.feature; gz validate --documents clean; tracked defects #394 (validate evaluation-justify-binding solo handler exit-code drift) and #395 (obpi-complete REQ-coverage behave dispatch) carry forward with documented workarounds applied in OBPI-05. |
