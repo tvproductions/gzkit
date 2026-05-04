@@ -20,9 +20,7 @@ from pathlib import Path
 from gzkit.traceability import covers
 
 _FEATURE_PATH = (
-    Path(__file__).resolve().parents[2]
-    / "features"
-    / "evaluation_feedback_loop.feature"
+    Path(__file__).resolve().parents[2] / "features" / "evaluation_feedback_loop.feature"
 )
 
 

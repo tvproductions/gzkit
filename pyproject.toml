@@ -25,6 +25,14 @@ dependencies = [
     "pyyaml>=6.0.3",
     "rich>=15.0",
     "structlog>=25.5",
+    # Stdlib-First named departures (ADR-0.0.27 § Decision; AGENTS.md
+    # § STDLIB-FIRST DOCTRINE § "Existing dependencies inherit this rule").
+    # Stdlib does not expose cyclomatic complexity, nesting depth, or LCOM4;
+    # these deps are corpus-measurement-only and consumed exclusively by
+    # src/gzkit/complexity/measurement.py.
+    "radon>=6.0,<7.0",
+    "lizard>=1.17,<2.0",
+    "cohesion>=1.0,<2.0",
 ]
 
 [project.optional-dependencies]

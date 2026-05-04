@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gzkit.complexity_baseline.v1",
+  "title": "GovZero Complexity Baseline",
+  "description": "Per-project + cross-project baseline distribution artifact (ADR-0.0.27, OBPI-0.0.27-03). Mirrors gzkit.complexity.baseline.BaselineArtifact field-by-field; drift is fail-closed.",
+  "type": "object",
+  "required": [
+    "corpus_revision",
+    "corpus_schema_version",
+    "tool_versions",
+    "projects",
+    "cross_project"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "corpus_revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Echo of the corpus's monotonically-increasing revision number."
+    },
+    "corpus_schema_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Echo of the corpus's schema_version field."
+    },
+    "tool_versions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Mapping of tool name -> installed version string (radon / lizard / cohesion)."
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ProjectBaseline"
+      },
+      "description": "Ordered array of per-project baselines (corpus order)."
+    },
+    "cross_project": {
+      "$ref": "#/$defs/CrossProjectAggregate",
+      "description": "Across-projects aggregates for each canonical metric."
+    }
+  },
+  "$defs": {
+    "MetricDistribution": {
+      "type": "object",
+      "required": [
+        "metric_key",
+        "p50",
+        "p75",
+        "p90",
+        "p95",
+        "p99",
+        "sample_count"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "metric_key": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Canonical metric key."
+        },
+        "p50": {
+          "type": "number",
+          "description": "Median (50th percentile)."
+        },
+        "p75": {
+          "type": "number",
+          "description": "75th percentile."
+        },
+        "p90": {
+          "type": "number",
+          "description": "90th percentile."
+        },
+        "p95": {
+          "type": "number",
+          "description": "95th percentile."
+        },
+        "p99": {
+          "type": "number",
+          "description": "99th percentile."
+        },
+        "sample_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of raw values aggregated into this distribution."
+        }
+      }
+    },
+    "ProjectBaseline": {
+      "type": "object",
+      "required": ["name", "commit_sha", "archetypal_cell", "metrics"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Canonical project name."
+        },
+        "commit_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "description": "Pinned 40-character lowercase hex commit SHA."
+        },
+        "archetypal_cell": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Archetypal cell index (1-10) from ADR-0.0.27."
+        },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MetricDistribution"
+          },
+          "description": "Per-metric percentile distributions (canonical-metric order)."
+        }
+      }
+    },
+    "CrossMetricAggregate": {
+      "type": "object",
+      "required": [
+        "metric_key",
+        "p50",
+        "p75",
+        "p90",
+        "p95",
+        "p99",
+        "inter_project_variance",
+        "project_count"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "metric_key": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Canonical metric key."
+        },
+        "p50": {
+          "type": "number",
+          "description": "Cross-project pooled median."
+        },
+        "p75": {
+          "type": "number",
+          "description": "Cross-project pooled 75th percentile."
+        },
+        "p90": {
+          "type": "number",
+          "description": "Cross-project pooled 90th percentile."
+        },
+        "p95": {
+          "type": "number",
+          "description": "Cross-project pooled 95th percentile."
+        },
+        "p99": {
+          "type": "number",
+          "description": "Cross-project pooled 99th percentile."
+        },
+        "inter_project_variance": {
+          "type": "number",
+          "description": "statistics.variance of the per-project p50 medians."
+        },
+        "project_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of projects contributing to this aggregate."
+        }
+      }
+    },
+    "CrossProjectAggregate": {
+      "type": "object",
+      "required": ["metrics"],
+      "additionalProperties": false,
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CrossMetricAggregate"
+          },
+          "description": "Per-metric cross-project aggregates (canonical-metric order)."
+        }
+      }
+    }
+  }
+}
