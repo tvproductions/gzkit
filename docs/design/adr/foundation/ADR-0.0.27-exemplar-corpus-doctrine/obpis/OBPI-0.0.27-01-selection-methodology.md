@@ -3,7 +3,7 @@ id: OBPI-0.0.27-01-selection-methodology
 parent: ADR-0.0.27
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.27-01-selection-methodology: Selection Methodology Rule File
@@ -29,6 +29,7 @@ Author `.gzkit/rules/complexity-doctrine.md` codifying the seven selection crite
 - `.claude/rules/complexity-doctrine.md`, `.agents/rules/complexity-doctrine.md`, `.github/instructions/complexity-doctrine.md` — vendor mirrors emitted by `gz agent sync control-surfaces`
 - `docs/governance/advisory-rules-audit.md` — scorecard entry classifying the new rule as Mechanical
 - `tests/governance/test_complexity_doctrine_rule.py` — REQ-derived assertions on rule content
+- `data/behave_coverage_waivers.json` — BDD waiver registration (Gate 4 requires it per Completion Checklist)
 - `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/**` — brief evidence updates only
 
 ## Denied Paths
@@ -60,11 +61,17 @@ Author `.gzkit/rules/complexity-doctrine.md` codifying the seven selection crite
 
 ## Discovery Checklist
 
-- [ ] Parent ADR § Decision — selection methodology block, anti-patterns block, cadence block, citation contract block
-- [ ] `.gzkit/rules/skill-surface-sync.md` — body-level `<!-- rule-version: ... -->` marker convention
-- [ ] `src/gzkit/rules.py` — current rule frontmatter schema (extra="forbid")
-- [ ] `docs/governance/advisory-rules-audit.md` — scorecard format and classification taxonomy
-- [ ] `AGENTS.md` § Governance doctrine surfaces — `gz validate --advisory-scorecard` semantics
+**Prerequisites**
+
+- [x] Parent ADR § Decision read — selection methodology block (7 criteria), anti-patterns block (7 patterns), cadence block (annual + drift > 25% + judgment + 6-month minimum), citation contract, project-doctrine-fitness criterion all confirmed verbatim.
+- [x] `.gzkit/rules/skill-surface-sync.md` consulted — body-level `<!-- rule-version: X.Y.Z -->` HTML comment + visible `> **Rule version:** \`X.Y.Z\`` block quote convention confirmed; `skill-version:` MUST NOT appear in rule frontmatter.
+- [x] `AGENTS.md` § Governance doctrine surfaces — `gz validate --advisory-scorecard` semantics confirmed; new rule without a scorecard entry fails the audit.
+
+**Existing Code**
+
+- [x] `src/gzkit/rules.py:433` — `RuleFrontmatter` schema reviewed: required fields `id` (kebab-case str), `paths` (list[str], min_length=1), `description` (str); `ConfigDict(frozen=True, extra="forbid")` — `skill-version` key is rejected by schema.
+- [x] `docs/governance/advisory-rules-audit.md` — scorecard format reviewed: `| # | Rule | Score | Why |` columns in `### <Section>` subsections; highest existing rule number is 49; new rule lands as 50; Summary table must be updated.
+- [x] `tests/governance/test_security_sensitivity_rule.py` — reference test pattern reviewed: file-system-loaded content, `@covers` decorators, `_parse_canonical_frontmatter`, `audit_advisory_scorecard` import pattern confirmed.
 
 ## Quality Gates
 
@@ -156,15 +163,19 @@ uv run gz arb step --name unittest -- uv run -m unittest tests/governance/test_c
 
 ### Key Proof
 
-<!-- Paste the diff hunk showing the seven criteria as named headings and the scorecard entry classification. -->
+
+`uv run gz validate --advisory-scorecard` exits 0: "Validated: advisory_scorecard — All validations passed (1 scopes)" — complexity-doctrine entry 50 classified Mechanical under `### Exemplar Corpus Doctrine` section (lint: arb-ruff-17909a5048384175b3960a58eaebe7c9; typecheck: arb-step-typecheck-bf8101c42e9745a4b106fa0471f40600; tests: arb-step-unittest-scoped-278314f8c3b1409ba198918f7ebbcd53 — 11/11 pass; mkdocs: arb-step-mkdocs-b0ce42965ca74e1f99da9b5c0e481fdc)
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `.gzkit/rules/complexity-doctrine.md` (canonical rule — 7 selection criteria, 7 corpus anti-patterns, 3 cadence triggers + 6-month minimum, citation contract, project-doctrine-fitness criterion with pytest-mention demerit lesson); `tests/governance/test_complexity_doctrine_rule.py` (11 REQ-derived tests, all `@covers` decorated)
+- Files created via sync: `.claude/rules/complexity-doctrine.md`, `.github/instructions/complexity_doctrine.instructions.md`
+- Files modified: `docs/governance/advisory-rules-audit.md` (rule 50 Mechanical); `data/behave_coverage_waivers.json` (adr-0.0.27-foundation-bdd-deferred rationale + OBPI-01 waiver)
+- Tests added: 11 in `tests/governance/test_complexity_doctrine_rule.py`
+- Date completed: 2026-05-04
+- Attestation status: Human attested "attest completed"
+- Defects noted: None
 
 ### Closing Argument
 
@@ -176,14 +187,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` (heavy + foundation requires TTY + ATTEST)
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — .gzkit/rules/complexity-doctrine.md shipped with all 7 selection criteria (longevity, maintenance health, practitioner reputation NOT GitHub-star count, 80% pure-Python, author craftsmanship, project doctrine fitness, pinned commit SHA), 7 corpus anti-patterns, 3 cadence triggers (annual, drift >25% with 6-month minimum, operator judgment), citation contract naming distilled-characteristics as the cited artifact, and project-doctrine-fitness criterion with pytest-mention demerit lesson; advisory scorecard entry 50 classified Mechanical; gz validate --advisory-scorecard exits 0; 11/11 tests pass (arb-step-unittest-21ca4a33c7344e1489b3759c230784ba); lint arb-ruff-17909a5048384175b3960a58eaebe7c9, typecheck arb-step-typecheck-bf8101c42e9745a4b106fa0471f40600, mkdocs arb-step-mkdocs-b0ce42965ca74e1f99da9b5c0e481fdc
+- Date: 2026-05-04
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-04
 
 **Evidence Hash:** -
