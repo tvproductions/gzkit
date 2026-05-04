@@ -210,7 +210,7 @@ class _CoverageGateWireFixture(unittest.TestCase):
                 # Hook the scoped-run outcome predicate.
                 patch(
                     "gzkit.commands.obpi_complete._any_covering_test_passes",
-                    side_effect=lambda refs, project_root: any(
+                    side_effect=lambda refs, project_root, **_kw: any(
                         passing_predicate(r.qualified_name) for r in refs
                     ),
                 ),
@@ -599,7 +599,7 @@ class _OverrideGateWireFixture(_CoverageGateWireFixture):
                 ),
                 patch(
                     "gzkit.commands.obpi_complete._any_covering_test_passes",
-                    side_effect=lambda refs, project_root: any(
+                    side_effect=lambda refs, project_root, **_kw: any(
                         passing_predicate(r.qualified_name) for r in refs
                     ),
                 ),
