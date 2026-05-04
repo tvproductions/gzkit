@@ -1,0 +1,10 @@
+    And gh issue create returns "https://github.com/owner/repo/issues/555" ... passed in 0.000s
+    When I invoke chores_propose_ghi for "eval-feedback-cluster" ... passed in 0.006s
+    Then the most recent proposal record has "filed" equal to true ... passed in 0.004s
+    And the most recent proposal record has "ghi_url" equal to "https://github.com/owner/repo/issues/555" ... passed in 0.000s
+
+1 feature passed, 0 failed, 0 skipped
+20 scenarios passed, 0 failed, 0 skipped
+114 steps passed, 0 failed, 0 skipped
+Took 0min 0.964s
+arb step name=behave exit_status=0 receipt=C:\Users\Jeff\source\repos\va\gzkit\artifacts\receipts\arb-step-behave-4a836b1dbd7846b586f58dc92f2b060f.json

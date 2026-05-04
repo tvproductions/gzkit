@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.26-evaluation-feedback-loop-doctrine
-status: Draft
+status: Completed
 kind: foundation
 semver: 0.0.26
 lane: heavy
@@ -184,3 +184,4 @@ the same epistemology this doctrine encodes at the governance layer.
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
 | 0.0.26 | Completed | g0 | 2026-05-03 | Completed - ADR-0.0.26 evaluation feedback loop doctrine: 5/5 OBPIs attested_completed, 24/24 REQs covered (gz adr audit-check PASS); canonical ARB receipts green: arb-ruff-c2d484dd4d3143ba840add9d1f073393, arb-step-typecheck-e840d9b03a5c46d3891881789efbf47d, arb-step-unittest-022716b2c905401cabc78d589b5577c1 (4047 tests OK), arb-step-mkdocs-043d2598003543b892c719dcd477e8ad (strict); 20/20 behave scenarios pass in evaluation_feedback_loop.feature; gz validate --documents clean; tracked defects #394 (validate evaluation-justify-binding solo handler exit-code drift) and #395 (obpi-complete REQ-coverage behave dispatch) carry forward with documented workarounds applied in OBPI-05. |
+| 0.0.26 | Validated | g0 | 2026-05-03 | accept audit — ADR-0.0.26 evaluation feedback-loop doctrine validated end-to-end: live `gz adr evaluate ADR-0.0.26` emitted canonical `adr-evaluation` event with full per-dimension payload (3.70/4.0 weighted, GO); justify-binding gate + clustering chore + propose-ghi + commit-trailer surfaces all demonstrated working; 5/5 OBPIs attested_completed, 24/24 REQs covered, all 5 gates PASS; two audit-time shortfalls (R1 frontmatter drift, R2 self-inflicted utf8_prefix) remediated; tracked GHI #394/#395 carry forward with documented workarounds; canonical ARB receipts arb-ruff-2b0a9a98f9564cef9204441ae69d1776, arb-step-typecheck-105b1625fce24bca8316bc006c8acb4c, arb-step-unittest-96aa3a15d53a421497d981e5eeec5aa7, arb-step-mkdocs-14c9804d35124926aabd064c384a6b94, arb-step-behave-4a836b1dbd7846b586f58dc92f2b060f all exit 0. Audit artifacts at `audit/AUDIT.md` + 25 proofs under `audit/proofs/`. |

@@ -1,0 +1,10 @@
+    And the operator confirms with "PROPOSE" ... passed in 0.000s
+    And gh issue create returns "https://github.com/owner/repo/issues/555" ... passed in 0.000s
+    When I invoke chores_propose_ghi for "eval-feedback-cluster" ... passed in 0.002s
+    Then the most recent proposal record has "filed" equal to true ... passed in 0.001s
+    And the most recent proposal record has "ghi_url" equal to "https://github.com/owner/repo/issues/555" ... passed in 0.000s
+
+1 feature passed, 0 failed, 0 skipped
+20 scenarios passed, 0 failed, 0 skipped
+114 steps passed, 0 failed, 0 skipped
+Took 0min 0.951s

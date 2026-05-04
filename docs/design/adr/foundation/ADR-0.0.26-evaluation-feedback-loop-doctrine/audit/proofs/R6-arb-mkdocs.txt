@@ -1,0 +1,5 @@
+  - user\skills\gz-skill-router.md
+  - user\skills\gz-tech-debt-review.md
+  - user\skills\gz-tidy.md
+INFO    -  Documentation built in 3.68 seconds
+arb step name=mkdocs exit_status=0 receipt=C:\Users\Jeff\source\repos\va\gzkit\artifacts\receipts\arb-step-mkdocs-14c9804d35124926aabd064c384a6b94.json

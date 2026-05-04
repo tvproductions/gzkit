@@ -1,0 +1,10 @@
+Unresolvable 1 covers-backfill location(s) not resolvable in git:
+  tests/x.py:1 unresolvable
+ADR audit-check: ADR-0.1.0
+PASS All linked OBPIs are completed with evidence.
+
+Coverage: No REQs found for this ADR.
+FAIL 1 covers-backfill finding(s):
+  tests/x.py:1 REQ REQ-0.1.0-01-01 introduced @ aaaaaaa (0c / 0d before receipt
+r1); see .claude/rules/tests.md § Invariant 6f for remediation
+arb step name=unittest exit_status=0 receipt=C:\Users\Jeff\source\repos\va\gzkit\artifacts\receipts\arb-step-unittest-96aa3a15d53a421497d981e5eeec5aa7.json

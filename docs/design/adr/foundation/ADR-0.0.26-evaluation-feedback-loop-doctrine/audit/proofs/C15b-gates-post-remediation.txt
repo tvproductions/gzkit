@@ -1,0 +1,15 @@
+    And the output contains "--plain"                # 
+features/steps/gz_steps.py:225
+
+28 features passed, 0 failed, 0 skipped
+193 scenarios passed, 0 failed, 0 skipped
+1028 steps passed, 0 failed, 0 skipped
+Took 0min 13.894s
+
+LOG_WARNING:gzkit.triangle: Malformed REQ line (skipped): - [ ] 
+REQ-FIXTURE-01-01: gate fires.
+LOG_WARNING:gzkit.triangle: Malformed REQ line (skipped): - [ ] 
+REQ-FIXTURE-01-01: gate fires.
+
+  ✓ Gate 4 (BDD): PASS
+  ⚠ Gate 5 (Human): PENDING (manual)

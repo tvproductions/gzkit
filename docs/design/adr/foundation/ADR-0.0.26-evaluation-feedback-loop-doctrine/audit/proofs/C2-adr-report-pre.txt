@@ -1,0 +1,20 @@
+                                ADR Overview                                 
+┌────────────┬───────┬───────────┬────────────────┬──────┬──────────┬───────┐
+│ ADR        │ Lane  │ Lifecycle │ Closeout Phase │ OBPI │ Closeout │ QC    │
+├────────────┼───────┼───────────┼────────────────┼──────┼──────────┼───────┤
+│ ADR-0.0.26 │ heavy │ Completed │ attested       │ 5/5  │ READY    │ READY │
+└────────────┴───────┴───────────┴────────────────┴──────┴──────────┴───────┘
+                                     OBPIs                                     
+┌────┬────────────────────────────────┬────────────────────┬───────────┬──────┐
+│ #  │ OBPI ID                        │ State              │ Brief     │ Done │
+├────┼────────────────────────────────┼────────────────────┼───────────┼──────┤
+│ 01 │ OBPI-0.0.26-01-persist-evaluat │ attested_completed │ completed │ yes  │
+│    │ ion-events                     │                    │           │      │
+│ 02 │ OBPI-0.0.26-02-justify-binding │ attested_completed │ completed │ yes  │
+│    │ -gate                          │                    │           │      │
+│ 03 │ OBPI-0.0.26-03-clustering-chor │ attested_completed │ completed │ yes  │
+│    │ e                              │                    │           │      │
+│ 04 │ OBPI-0.0.26-04-ghi-promotion-a │ attested_completed │ completed │ yes  │
+│    │ nd-trailer                     │                    │           │      │
+│ 05 │ OBPI-0.0.26-05-bdd-coverage    │ attested_completed │ completed │ yes  │
+└────┴────────────────────────────────┴────────────────────┴───────────┴──────┘
