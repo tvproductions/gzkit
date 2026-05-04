@@ -57,3 +57,68 @@ The `unittest` gate fails on a pre-existing baseline failure unrelated to this c
 
 - **Lift 3:** `AGENTS.md` § Stdlib-First § Highly-opinionated defaults bind consuming projects + § Relationship to the corpus — has invariant-adjacent language (binding-rule scope assertions); needs focused operator review before lifting.
 - **Lift 7:** `.gzkit/rules/tool-skill-runbook-alignment.md` § Commit-message discipline + § Rationale — contains the GHI #151 binding commit-message contract woven into rationale narrative; needs structural separation before lifting (split bullets from rationale first, then lift only the rationale).
+
+---
+
+# Bullet Retention Audit — Run 4 (Pass 3: narrative lift + rule compression)
+
+**Date:** 2026-05-04
+**Pass:** Pass 3 (Run 4)
+**Origin GHI:** #327 follow-up
+**Session baseline:** 2200 lines (AGENTS.md + CLAUDE.md + `.claude/rules/**`)
+
+## Lift inventory
+
+| # | Origin | Class lifted | Destination | Lines removed | Pointer left |
+|---|---|---|---|---|---|
+| A | `src/gzkit/templates/agents.md` § Anti-vibing — "Ownership and craftsmanship pillars…" paragraph | Judgment cross-ref narrative | `docs/governance/agent-contract-rationale.md` § Anti-vibing mantra — relationship to the rest of the contract | ~5 lines → 0 (pointer already existed) | Yes (existing) |
+| B | `src/gzkit/templates/agents.md` § Stdlib-First — "LLM training corpus is biased…" opener | Judgment corpus-bias narrative | `docs/governance/agent-contract-rationale.md` § Stdlib-First doctrine — rationale (new) | ~5 lines → 0 (pointer added) | Yes |
+| C | `src/gzkit/templates/agents.md` § Stdlib-First § Highly-opinionated defaults bind consuming projects | Judgment opinionated-defaults framing (2 paragraphs) | `docs/governance/agent-contract-rationale.md` § Stdlib-First doctrine — rationale (same section) | ~8 lines → 0 (pointer added) | Yes |
+| D | `src/gzkit/templates/agents.md` § Stdlib-First § Relationship to the corpus | Judgment meta-commentary (1 paragraph) | `docs/governance/agent-contract-rationale.md` § Stdlib-First doctrine — rationale (same section) | ~3 lines → 0 (pointer covers) | Yes |
+| E | `src/gzkit/templates/agents.md` § Operator economy — "Canonical interaction mode…" framing paragraph | Judgment framing coda | `docs/governance/agent-contract-rationale.md` § Operator economy — why this is canon (existing) | ~4 lines → 0 | Yes (existing) |
+| F | `.gzkit/rules/agent-failure-modes.md` — 6× repeated citation block | Citation deduplication (identical mechanical text) | Consolidated to single `[1]` footnote in header | ~30 lines → 6 × 1 (≈−24) | N/A (source note in header) |
+| G | `.gzkit/rules/agent-failure-modes.md` — 3× worked examples (GHI #290, #263, #261) | Judgment worked examples | `docs/governance/agent-contract-rationale.md` § Failure-mode worked examples (new) | ~18 lines → 3 pointers | Yes |
+| H | `.gzkit/rules/agent-failure-modes.md` § Loading posture | Judgment advisory commentary + promotion roadmap | `docs/governance/agent-contract-rationale.md` § Agent failure-mode taxonomy — loading posture and worked examples (new) | ~17 lines → 5-line binding summary + pointer | Yes |
+
+## Mechanical/Promotable bullet preservation
+
+The advisory-scorecard validator (`uv run gz validate --advisory-scorecard`) result: **exit 0, all scopes valid (5/5 PASS).**
+
+All lifted content was Judgment-class:
+
+- **Lifts A–E** removed Judgment narrative paragraphs and framing codas around binding Operative Claims bullets. The Operative Claims numbered lists (1–4 in § Anti-vibing; 1–5 in § Stdlib-First; 1–6 in § Operator economy) remain per-turn intact.
+- **Lift F** deduplicated identical citation text — the citation is still cited once (footnote `[1]`) per pattern, not removed. No rule content removed.
+- **Lift G** replaced worked examples (Judgment, pedagogical) with pointers. The backstop bullets naming the enforcing invariants (DO IT RIGHT 6g, 6h; Behavior Rules — Never #6; ARB discipline) remain intact in each pattern's `**Backstop:**` block.
+- **Lift H** compressed § Loading posture advisory commentary. The binding summary retained: "This rule is **advisory** at authoring time — the vocabulary, not a mechanical gate." No backstop description removed.
+
+**Conclusion:** zero Mechanical or Promotable bullets removed. Zero scorecard-listed entries silenced. All lifts were strictly Judgment-class narrative, rationale exposition, worked examples, or duplicate citation text.
+
+**Note on Pass 1 Lift 3 deferral:** Lifts C and D in this pass correspond to the previously-deferred Lift 3 ("Stdlib-First § Highly-opinionated defaults bind consuming projects" and "§ Relationship to the corpus"). Operator review confirmed these sections are Judgment-class (framing and meta-commentary, not binding invariants) — cleared for lift.
+
+## Pointer discipline
+
+Every lift left a `> See [...]` one-line pointer at the origin site, or relied on an existing pointer (Lifts A, E). GFM anchors verified against actual H2/H3 headings in `docs/governance/agent-contract-rationale.md`:
+
+- `#anti-vibing-mantra--relationship-to-the-rest-of-the-contract` ✓
+- `#stdlib-first-doctrine--rationale` ✓ (new section)
+- `#agent-failure-mode-taxonomy--loading-posture-and-worked-examples` ✓ (new section)
+- `#failure-mode-worked-examples` ✓ (H3 renamed from `### Worked examples` to `### Failure-mode worked examples` to match the pointer slug)
+
+## Validation gates (post-trim)
+
+| Gate | Command | Result |
+|---|---|---|
+| Advisory scorecard | `uv run gz validate --advisory-scorecard` | exit 0 |
+| Documents + surfaces | `uv run gz validate --documents --surfaces` | exit 0 |
+| Lint | `uv run gz lint` | exit 0 |
+| Docs build strict | `uv run mkdocs build --strict` | exit 0 |
+| Unit tests | `uv run -m unittest -q` | exit 0 (4049 tests) |
+
+## Line-count delta
+
+| Surface | Before | After | Δ |
+|---|---|---|---|
+| `AGENTS.md` | 470 | 454 | −16 |
+| `.claude/rules/agent-failure-modes.md` | 228 | 200 | −28 |
+| Other rule files | unchanged | unchanged | 0 |
+| **Total per-turn** | **2200** | **2156** | **−44** |

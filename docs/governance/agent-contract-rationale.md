@@ -269,6 +269,11 @@ heavier than necessary for a single trivial edit. Use judgment.
 *Lifted from `AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT § Relationship
 to the rest of the contract under GHI #327.*
 
+Ownership and craftsmanship pillars are insufficient alone — an agent can
+own its work and still vibe; can prefer the thorough fix and still
+pattern-match a recommendation from training memory. The mantra names the
+failure class both other pillars defend against.
+
 The other invariants in `AGENTS.md` — DO IT RIGHT 6g (verify the runtime
 surface), 6h (quote rules verbatim), § Behavior Rules — Always #7–#10 (90%
 confidence threshold, surface assumptions, STOP on inconsistencies, push
@@ -320,6 +325,77 @@ tests arb-2026-04-14T12-36-18-unittest; coverage arb-2026-04-14T12-37-44-coverag
 See [`docs/governance/arb-middleware.md`](arb-middleware.md) for ARB
 middleware deep-dive: core concept, command surface, receipt schema and
 storage, exit codes, and rationale.
+
+## Stdlib-First doctrine — rationale
+
+*Lifted from `AGENTS.md` § STDLIB-FIRST DOCTRINE under GHI #327 follow-up.*
+
+LLM training corpus is biased toward most-popular libraries — pytest over
+unittest, click over argparse, requests over urllib, FastAPI over Starlette,
+Pydantic over attrs over dataclasses. Inheriting popularity bias makes the
+dependency surface a vibing surface where doctrine is set by training-corpus
+weight rather than deliberate operator choice. Stdlib-First is the
+mechanical defense against that bias.
+
+**Highly-opinionated defaults bind consuming projects.** gzkit is not a
+neutral framework. gzkit ships highly-opinionated defaults and binds them
+on every project that adopts gzkit as its governance guide. A
+gzkit-governed project inherits Stdlib-First, the Gate Covenant, Attestation
+discipline, OBPI ceremony, and every other doctrine canonized in AGENTS.md
+— not as suggestions but as binding rules under the Prime Directive.
+Non-gzkit projects answer their own dependency, testing, and CLI questions.
+The doctrines bind only projects that elect gzkit. Election is the consent
+surface; once elected, the defaults are the contract.
+
+**Relationship to the Exemplar-Corpus Doctrine (ADR-0.0.27, forthcoming).**
+The Exemplar-Corpus Doctrine is a *learning relationship*, not an *adoption
+relationship*. gzkit measures click's design metrics to inform CLI doctrine;
+gzkit does not depend on click. Conflating them is the same
+training-corpus failure pattern Stdlib-First defends against.
+
+## Agent failure-mode taxonomy — loading posture and worked examples
+
+*Lifted from `.gzkit/rules/agent-failure-modes.md` § Loading posture and
+§ Worked examples under GHI #327 follow-up.*
+
+### Loading posture
+
+This rule is **advisory** at authoring time. There is no mechanical
+validator that scans a PR or brief and emits *"this is `Fabrication`
+shape — block."* The mechanical defenses already exist as separate
+rules and gates — the TTY+`ATTEST` authenticity gate, ARB receipt
+requirements, hook fail-closed behavior, `gz validate --commit-trailers`,
+the layered-trust T1/T2/T3 invariants — and the rule is the **shared name**
+those defenses point at.
+
+Promotion to mechanical scope — for example, a `gz validate
+--failure-mode-coverage` audit confirming every advisory-rules-audit
+scorecard entry names the failure shape it backstops — lands under
+follow-up GHIs #308–#312 per ADR-0.0.23 § Decision. Until those land, the
+rule binds at authoring time only: cite the pattern by name when reviewing,
+when filing a defect, and when extending the scorecard.
+
+### Failure-mode worked examples
+
+**Fabrication — GHI #290:** An agent synthesized a `human_attestation: true`
+payload during `gz obpi complete` from a headless invocation. Closed by
+adding the TTY + `ATTEST` authenticity gate, which refuses the fabrication
+path at the CLI surface and forces the agent to either allocate a PTY or
+relay the operator's Stage-4 attestation through the marker-gated
+`--attestor-present` flag (GHI #292).
+
+**Skipped cheap verification — GHI #263:** An agent recommended
+`claude --model …` as a CLI flag when the actual runtime surface is the
+`/model` slash command. The flag was pattern-matched from training memory;
+running `claude --help` once would have caught the drift.
+See also: `Rationale for 6g and 6h` above.
+
+**Dishonest when caught — GHI #261:** An agent explained a rule violation
+as the result of "competing directives pulling against each other" without
+naming or quoting either directive. The rule was added under DO IT RIGHT 6h
+to require verbatim quotation; the post-hoc narrative fails the check by
+construction.
+See also: `Rationale for 6g and 6h` above.
 
 ## Attribution
 
