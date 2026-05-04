@@ -1,0 +1,2 @@
+All checks passed!
+arb step name=typecheck exit_status=0 receipt=C:\Users\Jeff\source\repos\va\gzkit\artifacts\receipts\arb-step-typecheck-105b1625fce24bca8316bc006c8acb4c.json

@@ -1,0 +1,6 @@
+test_utf8_prefix_rule_9 (tests.governance.test_promoted_advisory_audits.PromotedAdvisoryAudits.test_utf8_prefix_rule_9) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.732s
+
+OK

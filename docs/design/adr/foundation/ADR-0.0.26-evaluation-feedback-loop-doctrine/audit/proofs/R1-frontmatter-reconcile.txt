@@ -1,0 +1,10 @@
+Frontmatter-ledger reconciliation applied
+  ledger cursor:     
+sha256:82f0c71b8ca6ff8fd5509cd86a812a893efe0f30ab111faa3233a45f65d870f4
+  started / ended:   2026-05-04T00:20:11.883132+00:00 / 
+2026-05-04T00:20:12.514372+00:00
+  files rewritten:   1
+  pool ADRs skipped: 88
+    docs/design/adr/foundation/ADR-0.0.26-evaluation-feedback-loop-doctrine/ADR
+-0.0.26-evaluation-feedback-loop-doctrine.md
+      status: 'Draft' -> 'Completed'

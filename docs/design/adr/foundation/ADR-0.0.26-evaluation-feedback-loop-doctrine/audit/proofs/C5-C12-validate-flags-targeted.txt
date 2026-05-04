@@ -1,0 +1,9 @@
+usage: gz validate [-h] [--manifest] [--documents] [--surfaces] [--ledger]
+                   [--decomposition] [--requirements] [--commit-trailers]
+                   [--brief-headings] [--chores-layout] [--unscoped-rules]
+                   [--evaluation-justify-binding [ARTIFACT_ID]]
+  --documents           Validate governance docs
+  --commit-trailers     Flag HEAD commits touching src/ or tests/ without a
+  --chores-layout       Forbid CHORE.md/acceptance.json outside canonical
+  --evaluation-justify-binding [ARTIFACT_ID]
+    gz validate --documents --surfaces

@@ -1,0 +1,3 @@
+ADR Eval: ADR-0.0.26 -- GO
+  Weighted total: 3.70/4.0
+  OBPIs scored: 5

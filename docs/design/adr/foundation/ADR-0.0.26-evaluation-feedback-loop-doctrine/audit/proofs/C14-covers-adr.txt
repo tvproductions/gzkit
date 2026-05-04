@@ -1,0 +1,274 @@
+{
+  "by_adr": [
+    {
+      "identifier": "ADR-0.0.26",
+      "total_reqs": 24,
+      "covered_reqs": 24,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    }
+  ],
+  "by_obpi": [
+    {
+      "identifier": "OBPI-0.0.26-01",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.26-02",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.26-03",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.26-04",
+      "total_reqs": 7,
+      "covered_reqs": 7,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.26-05",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    }
+  ],
+  "entries": [
+    {
+      "req_id": "REQ-0.0.26-01-01",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::Successful evaluations append distinct adr-evaluation events",
+        "TestAdrEvalCmdEmission.test_emitted_event_dimensions_maps_dimension_name_to_score",
+        "TestAdrEvalCmdEmission.test_emitted_event_has_artifact_id",
+        "TestAdrEvalCmdEmission.test_emitted_event_has_evaluator_persona",
+        "TestAdrEvalCmdEmission.test_no_go_verdict_still_emits_adr_evaluation_event",
+        "TestAdrEvalCmdEmission.test_successful_eval_emits_exactly_one_adr_evaluation_event",
+        "TestAdrEvaluationEventFactory.test_dimensions_is_name_to_score_map",
+        "TestAdrEvaluationEventFactory.test_empty_red_team_when_all_challenges_pass",
+        "TestAdrEvaluationEventFactory.test_event_id_matches_artifact_id",
+        "TestAdrEvaluationEventFactory.test_event_name_is_adr_evaluation",
+        "TestAdrEvaluationEventFactory.test_payload_contains_all_required_fields",
+        "TestAdrEvaluationEventFactory.test_payload_contains_artifact_id",
+        "TestAdrEvaluationEventFactory.test_red_team_challenges_fired_is_list_of_strings"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-01-02",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::A malformed evaluation does not emit an adr-evaluation event",
+        "TestAdrEvalCmdEmission.test_evaluate_adr_exception_does_not_emit_adr_evaluation_event"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-01-03",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::gz validate --documents accepts the adr-evaluation event shape",
+        "TestAdrEvaluationEventSchema.test_schema_entry_exists",
+        "TestAdrEvaluationEventSchema.test_schema_has_required_fields"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-01-04",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::Successful evaluations append distinct adr-evaluation events",
+        "TestAdrEvaluationMultipleAppend.test_ledger_replay_reproduces_score_history",
+        "TestAdrEvaluationMultipleAppend.test_two_evaluations_produce_two_distinct_events"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-02-01",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::Binding gate fails closed on a low dimension score with no justify artifact",
+        "TestEvaluationJustifyBindingGate.test_low_score_no_justify_artifact_exits_3"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-02-02",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::Binding gate fails closed on three or more red-team challenges",
+        "TestEvaluationJustifyBindingGate.test_red_team_count_no_justify_artifact_exits_3"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-02-03",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::Binding gate exits 0 when a qualifying justify artifact is present",
+        "TestEvaluationJustifyBindingGate.test_trigger_fires_justify_artifact_present_exits_0"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-02-04",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::Binding gate exits 0 when scores are healthy and no challenges fired",
+        "TestEvaluationJustifyBindingGate.test_no_trigger_all_scores_high_exits_0"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-02-05",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::Threshold config drives binding gate behavior",
+        "TestEvaluationJustifyBindingGate.test_threshold_config_reflected"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-03-01",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::eval-feedback-cluster appears in gz chores list",
+        "TestEvalFeedbackCluster.test_chore_registered_in_registry"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-03-02",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::Clustering chore emits no proposal below the recurrence threshold",
+        "TestEvalFeedbackCluster.test_below_threshold_no_proposal",
+        "TestEvalFeedbackCluster.test_zero_evidence_no_proposals"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-03-03",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::Clustering chore emits one proposal at the recurrence threshold",
+        "TestEvalFeedbackCluster.test_at_threshold_emits_proposal",
+        "TestEvalFeedbackCluster.test_multiple_clusters_multiple_proposals"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-03-04",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::Clustering chore re-run is idempotent (content-hash dedup)",
+        "TestEvalFeedbackCluster.test_idempotent_rerun",
+        "TestEvalFeedbackCluster.test_readonly_no_writes_outside_proofs"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-03-05",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::gz validate --chores-layout passes for the eval-feedback-cluster chore",
+        "TestEvalFeedbackCluster.test_chores_layout_validation_passes"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-04-01",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::TTY plus PROPOSE confirmation files a GHI via mocked gh",
+        "TestChoreProposeGhiTtyConfirm.test_ghi_body_includes_required_fields",
+        "TestChoreProposeGhiTtyConfirm.test_ghi_title_pattern",
+        "TestChoreProposeGhiTtyConfirm.test_tty_confirm_files_ghi"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-04-02",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::A headless run marks the proposal advisory-only",
+        "TestChoreProposeGhiHeadless.test_headless_advisory_only"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-04-03",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::A propose-ghi re-run does not refile an already-filed proposal",
+        "TestChoreProposeGhiIdempotent.test_no_proposals_exits_cleanly",
+        "TestChoreProposeGhiIdempotent.test_refile_idempotent"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-04-04",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::Trailer validator fails closed on a rule-edit commit closing an eval-feedback GHI without trailer",
+        "TestEvalFeedbackTrailerValidation.test_fails_rule_edit_closing_eval_feedback_ghi_without_trailer"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-04-05",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::Trailer validator passes when the rule-edit commit carries an Eval-feedback-source trailer",
+        "TestEvalFeedbackTrailerValidation.test_eval_feedback_source_trailer_alone_satisfies_code_commit",
+        "TestEvalFeedbackTrailerValidation.test_passes_rule_edit_closing_eval_feedback_ghi_with_trailer",
+        "TestEvalFeedbackTrailerValidation.test_recognizes_eval_feedback_source_trailer",
+        "TestParseEvalFeedbackSourceTrailers.test_parse_eval_feedback_source_trailers_empty_when_absent",
+        "TestParseEvalFeedbackSourceTrailers.test_parse_eval_feedback_source_trailers_repeatable",
+        "TestParseEvalFeedbackSourceTrailers.test_parse_eval_feedback_source_trailers_returns_values"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-04-10",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::ProposalRecord deserializes with default optional fields",
+        "TestProposalRecordFiledFields.test_proposal_record_backward_compat",
+        "TestProposalRecordFiledFields.test_proposal_record_filed_fields"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-04-12",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::TTY plus PROPOSE confirmation files a GHI via mocked gh",
+        "TestChoreProposeGhiTtyConfirm.test_tty_confirm_files_ghi"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-05-01",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::Full evaluation-feedback loop traverses every transition end-to-end",
+        "TestEvaluationFeedbackLoopBddTagPresence.test_full_loop_scenario_tag_present"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-05-02",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::Full evaluation-feedback loop traverses every transition end-to-end",
+        "TestEvaluationFeedbackLoopBddTagPresence.test_full_loop_transitions_scenario_tag_present"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.26-05-03",
+      "covered": true,
+      "covering_tests": [
+        "Evaluation feedback loop end-to-end (ADR-0.0.26 / OBPI-0.0.26-05)::Trailer validator fails closed on a rule-edit commit closing an eval-feedback GHI without trailer",
+        "TestEvaluationFeedbackLoopBddTagPresence.test_trailer_validator_scenario_tag_present"
+      ]
+    }
+  ],
+  "summary": {
+    "identifier": "ADR-0.0.26",
+    "total_reqs": 24,
+    "covered_reqs": 24,
+    "uncovered_reqs": 0,
+    "coverage_percent": 100.0
+  }
+}

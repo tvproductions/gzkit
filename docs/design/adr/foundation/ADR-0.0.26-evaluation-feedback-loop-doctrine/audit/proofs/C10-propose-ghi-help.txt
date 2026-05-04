@@ -1,0 +1,21 @@
+usage: gz chores propose-ghi [-h] [--quiet | --verbose] [--debug] slug
+
+Read proposal-*.json files from a chore's proofs/ directory and file GitHub issues for unfiled proposals (TTY mode) or mark them advisory-only (headless mode). Requires a TTY and PROPOSE confirmation to create issues.
+
+positional arguments:
+  slug           Chore slug identifier
+
+options:
+  -h, --help     show this help message and exit
+  --quiet, -q    Suppress non-error output
+  --verbose, -v  Enable verbose output
+  --debug        Enable debug mode with full tracebacks
+
+Examples
+    gz chores propose-ghi eval-feedback-cluster
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach

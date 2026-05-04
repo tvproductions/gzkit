@@ -1,0 +1,5 @@
+{
+  "low_score_threshold": 3.0,
+  "red_team_count_threshold": 3,
+  "cluster_min_recurrence": 3
+}
