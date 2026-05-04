@@ -253,9 +253,7 @@ _EVENT_WITH_TOTAL = (
 @given(_EVENT_WITH_TOTAL)
 def step_event_with_total(context, artifact_id: str, weighted: float, timestamp: str) -> None:  # type: ignore[no-untyped-def]
     _append_event(
-        _make_event(
-            artifact_id, score=weighted, weighted_total=weighted, timestamp=timestamp
-        )
+        _make_event(artifact_id, score=weighted, weighted_total=weighted, timestamp=timestamp)
     )
 
 
@@ -564,8 +562,7 @@ def step_rule_edit_no_trailer(context, number: int) -> None:  # type: ignore[no-
 
 
 _RULE_EDIT_WITH_TRAILER = (
-    "a git repo with a rule-edit commit closing GHI {number:d} "
-    "with an Eval-feedback-source trailer"
+    "a git repo with a rule-edit commit closing GHI {number:d} with an Eval-feedback-source trailer"
 )
 
 
