@@ -385,15 +385,34 @@ def _qualified_to_unittest_target(ref: TestRef, project_root: Path) -> str | Non
     return f"{module}.{ref.qualified_name}"
 
 
-def _any_covering_test_passes(refs: list[TestRef], project_root: Path) -> bool:
+def _behave_ref_passes(ref: TestRef, project_root: Path, req_id: str) -> bool:
+    """Run the behave scenario tagged ``req_id`` and return True iff exit code is 0."""
+    try:
+        completed = subprocess.run(
+            ["uv", "run", "-m", "behave", ref.file_path, "--tags", f"@{req_id}", "--no-summary"],
+            cwd=str(project_root),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return completed.returncode == 0
+
+
+def _any_covering_test_passes(refs: list[TestRef], project_root: Path, *, req_id: str) -> bool:
     """Return True iff at least one discovered covering test passes.
 
-    Each ref is invoked under ``uv run -m unittest <target>`` in a subprocess
-    so a buggy covering test cannot poison the parent CLI process. One green
-    observation satisfies the REQ (REQ-0.0.25-01-06 / FAIL-CLOSED REQUIREMENT
-    #7).
+    Behave refs (``.feature`` file paths) are dispatched through
+    ``_behave_ref_passes``; all other refs run under ``uv run -m unittest``.
+    One green observation satisfies the REQ (REQ-0.0.25-01-06).
     """
     for ref in refs:
+        if ref.file_path.endswith(".feature"):
+            if _behave_ref_passes(ref, project_root, req_id):
+                return True
+            continue
         target = _qualified_to_unittest_target(ref, project_root)
         if target is None:
             continue
@@ -517,7 +536,7 @@ def _enforce_req_coverage_gate(
         if not refs:
             gaps.append(req)
             continue
-        if not _any_covering_test_passes(refs, project_root):
+        if not _any_covering_test_passes(refs, project_root, req_id=req):
             failing.append(req)
 
     fail_closed = parent_lane.lower() == "heavy" or parent_kind.lower() == "foundation"

@@ -51,6 +51,18 @@ _UTF8_PIPE_WAIVERS: dict[str, str] = {
         "Audit-proof captures the --utf8-prefix validator's own help text, "
         "which describes the anti-pattern it forbids. GHI #299."
     ),
+    (
+        "docs/design/adr/foundation/ADR-0.0.26-evaluation-feedback-loop-doctrine/audit/AUDIT.md:229"
+    ): (
+        "ADR-0.0.26 audit document describes the anti-pattern in the context of "
+        "a remediated Gate 2 shortfall (R2) — meta-documentation, not actual usage."
+    ),
+    (
+        "docs/design/adr/foundation/ADR-0.0.26-evaluation-feedback-loop-doctrine/audit/AUDIT.md:323"
+    ): (
+        "ADR-0.0.26 audit document explains why the anti-pattern appeared in audit "
+        "proof text — meta-documentation of the rule, not actual usage."
+    ),
 }
 
 _PYTHONUTF8_PREFIX = re.compile(r"PYTHONUTF8=1\s+uv\s+run\s+(?:gz|-m\s+gzkit)")
