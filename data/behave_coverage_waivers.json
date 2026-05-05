@@ -1671,6 +1671,10 @@
     "OBPI-0.0.27-04-distillation-pass": {
       "rationale": "adr-0.0.27-04-bdd-deferred-to-obpi-06",
       "status_at_landing": "Draft"
+    },
+    "OBPI-0.0.27-05-citation-contract": {
+      "rationale": "adr-0.0.27-foundation-bdd-deferred",
+      "status_at_landing": "Draft"
     }
   }
 }
