@@ -81,6 +81,15 @@ uv run gz obpi pipeline OBPI-<X.Y.Z-NN> --from=ceremony
 > The CLI and generated Claude hooks share the same runtime engine in
 > `src/gzkit/pipeline_runtime.py`. Treat active pipeline markers as
 > runtime-managed state; do not clear them by hand.
+>
+> Stale-marker self-heal (GHI #399): if a previous pipeline run was
+> interrupted before Stage 5 cleanup fired, its `.pipeline-active-*`
+> marker survives as an orphan. The launcher now auto-purges any
+> orphaned marker whose OBPI is `attested_completed` in the ledger
+> before running the concurrency check, and records the cleanup as a
+> `pipeline_marker_purged` ledger event. Operators no longer need to
+> `rm` marker files; just re-invoke `uv run gz obpi pipeline …` and
+> the orphan clears itself.
 
 ```bash
 
@@ -786,7 +795,7 @@ uv run gz validate --chores-layout   # Fail closed (exit 3) on stray CHORE.md or
 uv run gz validate --complexity-doctrine-links  # ADR-0.0.27 citation link integrity
 ```
 
-Fail-closed (exit 3) audit of every citation in cluster ADRs (0.0.27 / 0.0.28 / 0.0.29 / 0.0.30) plus `.gzkit/rules/complexity-doctrine.md` and any document under `docs/governance/complexity/`. Recovery on a flagged citation: re-author the citation against the current `corpus_revision` and `distilled-characteristics-*.md` file, or amend the citing ADR through its own ceremony per `ADR-pool.doctrine-amendment-protocol`. Closes the 2am-Scenario-2 failure mode (advisor diagnosis references missing artifact). Included in `gz check`. See [`gz validate --complexity-doctrine-links`](commands/validate.md#--complexity-doctrine-links) for the speculative-citation marker (used when an ADR forward-references a planned-but-unlanded distillation).
+Fail-closed (exit 3) audit of every citation in cluster ADRs (0.0.27 / 0.0.28 / 0.0.29 / 0.0.30) plus `.gzkit/rules/complexity-doctrine.md` and any document under `docs/governance/complexity/`. Recovery on a flagged citation: re-author the citation against the current `corpus_revision` and `distilled-characteristics-*.md` file, or amend the citing ADR through its own ceremony per `ADR-pool.doctrine-amendment-protocol`. Closes the 2am-Scenario-2 failure mode (advisor diagnosis references missing artifact). Included in `gz check`. See [`gz validate --complexity-doctrine-links`](commands/validate.md#-complexity-doctrine-links) for the speculative-citation marker (used when an ADR forward-references a planned-but-unlanded distillation).
 
 ### Frontmatter-Ledger Reconciliation
 

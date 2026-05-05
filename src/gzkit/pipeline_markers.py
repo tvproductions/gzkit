@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import os
 import re
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
@@ -332,6 +333,51 @@ def pipeline_concurrency_blockers(plans_dir: Path, obpi_id: str) -> list[str]:
         if active_obpi and active_obpi != obpi_id:
             blockers.append(f"another OBPI is already active: {active_obpi}")
     return blockers
+
+
+def purge_orphaned_active_markers(
+    plans_dir: Path,
+    artifact_graph: Mapping[str, Mapping[str, Any]],
+) -> list[tuple[Path, str, str]]:
+    """Remove ``.pipeline-active-*`` markers whose OBPI is already attested_completed (GHI #399).
+
+    The pipeline runtime writes a marker in Stage 1 and is contracted to remove
+    it in Stage 5 step 4. When Stage 5 doesn't fire (session interruption, hook
+    abort, harness restart) the marker becomes a stale orphan that fail-closes
+    every future ``gz obpi pipeline`` invocation. This helper, called from the
+    launcher before the concurrency check, scans the marker set and removes any
+    marker whose OBPI's ledger state is ``attested_completed`` — provably
+    orphaned and safe to clear.
+
+    The caller emits a ``pipeline_marker_purged`` ledger event for each entry
+    in the returned list so the cleanup is auditable and not a silent unlink.
+    The function itself does not import the ledger; it consumes the
+    pre-computed artifact-graph mapping the caller already loaded.
+    """
+    purged: list[tuple[Path, str, str]] = []
+
+    candidates: list[Path] = sorted(plans_dir.glob(".pipeline-active-*.json"))
+    legacy_path = plans_dir / PIPELINE_LEGACY_MARKER
+    if legacy_path.exists():
+        candidates.append(legacy_path)
+
+    for marker_path in candidates:
+        marker = load_pipeline_json(marker_path)
+        if marker is None:
+            continue
+        marker_obpi = str(marker.get("obpi_id") or "")
+        if not marker_obpi:
+            continue
+        info = artifact_graph.get(marker_obpi)
+        if info is None or info.get("type") != "obpi":
+            continue
+        if info.get("obpi_completion") != "attested_completed":
+            continue
+        marker_path.unlink(missing_ok=True)
+        parent_adr = str(info.get("parent") or "")
+        purged.append((marker_path, marker_obpi, parent_adr))
+
+    return purged
 
 
 def pipeline_receipt_path(plans_dir: Path, obpi_id: str) -> Path:

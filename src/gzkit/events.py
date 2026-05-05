@@ -503,6 +503,14 @@ class PatchReleaseEvent(_EventBase):
     manifest_path: str
 
 
+class PipelineMarkerPurgedEvent(_EventBase):
+    """pipeline_marker_purged event — auto-purge of orphaned pipeline-active marker (GHI #399)."""
+
+    event: Literal["pipeline_marker_purged"]
+    reason: str
+    marker_path: str
+
+
 # ---------------------------------------------------------------------------
 # TASK ledger events (ADR-0.22.0 / OBPI-0.22.0-02)
 # ---------------------------------------------------------------------------
@@ -568,6 +576,7 @@ TypedLedgerEvent = Annotated[
     | ObpiWithdrawnEvent
     | ObpiCompletionUncoveredAcceptEvent
     | PatchReleaseEvent
+    | PipelineMarkerPurgedEvent
     | TaskStartedEvent
     | TaskCompletedEvent
     | TaskBlockedEvent
