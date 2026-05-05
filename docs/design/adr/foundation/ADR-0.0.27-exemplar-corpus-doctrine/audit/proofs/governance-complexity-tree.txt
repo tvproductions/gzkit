@@ -1,0 +1,6 @@
+data/exemplar_corpus.json
+
+docs/governance/complexity/:
+AGENTS.md
+baselines
+distilled-characteristics-2026-05-04.md

@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.27-exemplar-corpus-doctrine
-status: Draft
+status: Validated
 kind: foundation
 semver: 0.0.27
 lane: heavy
@@ -470,4 +470,4 @@ Aggregate per-project, then aggregate across projects: per-metric percentiles (p
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.27 | Pending | | | |
+| 0.0.27 | Validated | Jeffry Babb | 2026-05-05 | Audit accepted — see `audit/AUDIT.md`; all 7 OBPIs attested-completed, 50/50 REQs covered, validator scopes clean, value demonstrated. |

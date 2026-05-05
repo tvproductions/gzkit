@@ -1,0 +1,86 @@
+{
+  "adr": "ADR-0.0.27-exemplar-corpus-doctrine",
+  "passed": true,
+  "checked_obpis": [
+    "OBPI-0.0.27-01-selection-methodology",
+    "OBPI-0.0.27-02-initial-corpus-authoring",
+    "OBPI-0.0.27-03-measurement-pipeline",
+    "OBPI-0.0.27-04-distillation-pass",
+    "OBPI-0.0.27-05-citation-contract",
+    "OBPI-0.0.27-06-distill-skill",
+    "OBPI-0.0.27-07-link-integrity-validator"
+  ],
+  "complete_obpis": [
+    "OBPI-0.0.27-01-selection-methodology",
+    "OBPI-0.0.27-02-initial-corpus-authoring",
+    "OBPI-0.0.27-03-measurement-pipeline",
+    "OBPI-0.0.27-04-distillation-pass",
+    "OBPI-0.0.27-05-citation-contract",
+    "OBPI-0.0.27-06-distill-skill",
+    "OBPI-0.0.27-07-link-integrity-validator"
+  ],
+  "findings": [],
+  "coverage": {
+    "total_reqs": 50,
+    "covered_reqs": 50,
+    "uncovered_reqs": 0,
+    "coverage_percent": 100.0,
+    "by_obpi": [
+      {
+        "obpi": "OBPI-0.0.27-01",
+        "total_reqs": 8,
+        "covered_reqs": 8,
+        "uncovered_reqs": 0,
+        "coverage_percent": 100.0
+      },
+      {
+        "obpi": "OBPI-0.0.27-02",
+        "total_reqs": 8,
+        "covered_reqs": 8,
+        "uncovered_reqs": 0,
+        "coverage_percent": 100.0
+      },
+      {
+        "obpi": "OBPI-0.0.27-03",
+        "total_reqs": 7,
+        "covered_reqs": 7,
+        "uncovered_reqs": 0,
+        "coverage_percent": 100.0
+      },
+      {
+        "obpi": "OBPI-0.0.27-04",
+        "total_reqs": 7,
+        "covered_reqs": 7,
+        "uncovered_reqs": 0,
+        "coverage_percent": 100.0
+      },
+      {
+        "obpi": "OBPI-0.0.27-05",
+        "total_reqs": 7,
+        "covered_reqs": 7,
+        "uncovered_reqs": 0,
+        "coverage_percent": 100.0
+      },
+      {
+        "obpi": "OBPI-0.0.27-06",
+        "total_reqs": 6,
+        "covered_reqs": 6,
+        "uncovered_reqs": 0,
+        "coverage_percent": 100.0
+      },
+      {
+        "obpi": "OBPI-0.0.27-07",
+        "total_reqs": 7,
+        "covered_reqs": 7,
+        "uncovered_reqs": 0,
+        "coverage_percent": 100.0
+      }
+    ],
+    "uncovered": []
+  },
+  "coverage_findings": [],
+  "coverage_blocking": [],
+  "coverage_advisory": [],
+  "covers_backfill_findings": [],
+  "covers_backfill_unresolvable": []
+}

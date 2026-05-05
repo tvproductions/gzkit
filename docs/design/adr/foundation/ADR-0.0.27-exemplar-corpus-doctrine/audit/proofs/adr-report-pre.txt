@@ -1,0 +1,25 @@
+                                 ADR Overview
+╭────────────┬───────┬───────────┬────────────────┬──────┬──────────┬─────────╮
+│ ADR        │ Lane  │ Lifecycle │ Closeout Phase │ OBPI │ Closeout │ QC      │
+├────────────┼───────┼───────────┼────────────────┼──────┼──────────┼─────────┤
+│ ADR-0.0.27 │ heavy │ Pending   │ pre_closeout   │ 7/7  │ READY    │ PENDING │
+╰────────────┴───────┴───────────┴────────────────┴──────┴──────────┴─────────╯
+                                     OBPIs
+╭────┬─────────────────────────────────┬────────────────────┬───────────┬──────╮
+│ #  │ OBPI ID                         │ State              │ Brief     │ Done │
+├────┼─────────────────────────────────┼────────────────────┼───────────┼──────┤
+│ 01 │ OBPI-0.0.27-01-selection-method │ attested_completed │ completed │ yes  │
+│    │ ology                           │                    │           │      │
+│ 02 │ OBPI-0.0.27-02-initial-corpus-a │ attested_completed │ completed │ yes  │
+│    │ uthoring                        │                    │           │      │
+│ 03 │ OBPI-0.0.27-03-measurement-pipe │ attested_completed │ completed │ yes  │
+│    │ line                            │                    │           │      │
+│ 04 │ OBPI-0.0.27-04-distillation-pas │ attested_completed │ completed │ yes  │
+│    │ s                               │                    │           │      │
+│ 05 │ OBPI-0.0.27-05-citation-contrac │ attested_completed │ completed │ yes  │
+│    │ t                               │                    │           │      │
+│ 06 │ OBPI-0.0.27-06-distill-skill    │ attested_completed │ completed │ yes  │
+│ 07 │ OBPI-0.0.27-07-link-integrity-v │ attested_completed │ completed │ yes  │
+│    │ alidator                        │                    │           │      │
+╰────┴─────────────────────────────────┴────────────────────┴───────────┴──────╯
+QC Readiness: PENDING (pending: TDD, Docs, BDD, Human attestation)
