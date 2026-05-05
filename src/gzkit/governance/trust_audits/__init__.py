@@ -44,6 +44,9 @@ from gzkit.governance.trust_audits.code_quality import (
     audit_test_tiers,
     audit_type_ignores,
 )
+from gzkit.governance.trust_audits.complexity_doctrine_links import (
+    validate_complexity_doctrine_links,
+)
 from gzkit.governance.trust_audits.cross_platform import audit_utf8_prefix
 from gzkit.governance.trust_audits.evaluation_justify_binding import (
     validate_evaluation_justify_binding,
@@ -104,5 +107,6 @@ __all__ = [
     "audit_version_release",
     "explain_sensitivity_for_paths",
     "validate_attestation_receipts",
+    "validate_complexity_doctrine_links",
     "validate_evaluation_justify_binding",
 ]

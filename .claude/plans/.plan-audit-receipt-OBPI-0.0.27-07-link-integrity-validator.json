@@ -1,0 +1,50 @@
+{
+  "obpi_id": "OBPI-0.0.27-07-link-integrity-validator",
+  "timestamp": "2026-05-05T08:23:47Z",
+  "verdict": "PASS",
+  "plan_file": "plan-OBPI-0.0.27-07-link-integrity-validator.md",
+  "gaps_found": 0,
+  "cli_structural_gaps_observed": 3,
+  "cli_structural_gaps_classification": "expected-new-paths",
+  "cli_structural_gaps_detail": [
+    {
+      "path": "src/gzkit/governance/trust_audits/complexity_doctrine_links.py",
+      "reason": "authored at Stage 2 step 2"
+    },
+    {
+      "path": "tests/governance/test_complexity_doctrine_links.py",
+      "reason": "authored at Stage 2 step 1 (RED tests)"
+    },
+    {
+      "path": "features/complexity_doctrine_links.feature",
+      "reason": "authored at Stage 2 step 6"
+    }
+  ],
+  "sibling_overlap_advisories": 270,
+  "sibling_overlap_classification": "pending-sibling-ADRs-forward-references",
+  "manual_alignment_review": {
+    "adr_obpi_alignment": {
+      "objective_match": "aligned",
+      "scope_match": "aligned (after brief allowed-path amendment to reflect repo structure post-GHI-#360)",
+      "requirements_coverage": "aligned (13 REQs cover citation parsing, file/anchor/portability resolution, escape marker, validate-all + gz-check integration, BDD coverage, function-size discipline, no-PII)",
+      "lane_consistency": "aligned (both Heavy)",
+      "attestation_rule": "aligned (foundation-kind brief-level Gate 5 + heavy lane)",
+      "no_scope_creep": "aligned",
+      "no_scope_gap": "aligned"
+    },
+    "plan_obpi_alignment": {
+      "plan_exists": true,
+      "obpi_reference": "aligned",
+      "requirements_coverage": "aligned (every REQ-01..13 mapped to a plan step)",
+      "allowed_paths": "aligned (plan only touches files in brief allowlist)",
+      "denied_paths": "aligned (plan does not touch citation.py, exemplar_corpus.json, measurement.py, distilled-characteristics-*.md, gz-complexity-distill skill, or sibling ADR bodies)",
+      "verification": "aligned (plan includes brief verification commands + adds ARB-wrapped variants)",
+      "no_gold_plating": "aligned",
+      "feasibility": "aligned (every code surface has a canonical peer pattern)"
+    },
+    "destination_in_mind": "New submodule under trust_audits/ mirroring audit_advisory_scorecard shape.",
+    "rejected_alternatives": "4 alternatives recorded in plan (single-file at original path, manpage at original path, inline citation handling, defer gz-check integration)."
+  },
+  "brief_amendment_summary": "Allowed paths corrected: trust_audits.py -> trust_audits/complexity_doctrine_links.py; commands/validate.py -> commands/validate_cmd.py; cli/parser_artifacts.py -> cli/parser_maintenance.py; docs/user/manpages/gz-validate.md -> docs/user/commands/validate.md; added quality.py and commands/quality.py for gz check integration.",
+  "follow_up_ghi_recommended": "fix(adr-0.0.27): correct Decision section line 95 path drift (trust_audits.py -> trust_audits/ subpackage). Out of scope for this OBPI per defect-fix routing."
+}
