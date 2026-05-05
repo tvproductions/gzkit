@@ -92,7 +92,13 @@ def _canned_outputs() -> dict[tuple[str, str], str]:
             }
         ),
         ("radon", "raw"): json.dumps({"alpha.py": {"sloc": 80, "lloc": 60}}),
-        ("lizard", "alpha.py"): "10,3,40,2,12,alpha.py:do_thing,1,1,2\n",
+        # Lizard ``-End --csv`` layout (12 cols): NLOC,CCN,token,PARAM,length,
+        # location,file,name,signature,start,end,ND.  ND must be the trailing
+        # column for ``_absorb_lizard_row`` to populate ``lizard_nesting_depth``
+        # (GHI #398).
+        ("lizard", "alpha.py"): (
+            '10,3,40,2,12,"do_thing@1-2@alpha.py","alpha.py","do_thing","do_thing()",1,2,3\n'
+        ),
         ("cohesion", "alpha.py"): "Class: A\n  Total: 75.0%\n",
     }
 
