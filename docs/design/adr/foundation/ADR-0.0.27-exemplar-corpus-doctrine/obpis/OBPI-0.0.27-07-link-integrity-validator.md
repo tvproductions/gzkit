@@ -3,7 +3,7 @@ id: OBPI-0.0.27-07-link-integrity-validator
 parent: ADR-0.0.27
 item: 7
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.27-07-link-integrity-validator: gz validate --complexity-doctrine-links
@@ -25,15 +25,20 @@ Implement `validate_complexity_doctrine_links` in `src/gzkit/governance/trust_au
 
 ## Allowed Paths
 
-- `src/gzkit/governance/trust_audits.py` — add `validate_complexity_doctrine_links` (function-size discipline: split helpers as needed)
-- `src/gzkit/cli/parser_artifacts.py` — register `--complexity-doctrine-links` flag on `gz validate`
-- `src/gzkit/commands/validate.py` (or wherever the validate command dispatcher lives) — wire the flag to the new validator
-- `tests/governance/test_complexity_doctrine_links.py` — REQ-derived assertions
-- `features/complexity_doctrine_links.feature` — BDD scenario tagged with REQ IDs
-- `docs/user/manpages/gz-validate.md` — manpage section for the new flag (per `.gzkit/rules/gate5-runbook-code-covenant.md`)
-- `docs/user/runbook.md` — runbook entry under "Governance doctrine surfaces"
-- `docs/governance/advisory-rules-audit.md` — promote the OBPI-01 entry to "promoted/Mechanical" with this validator as the enforcement artifact
-- `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/**` — brief evidence updates only
+- `src/gzkit/governance/trust_audits/complexity_doctrine_links.py` — new submodule housing `validate_complexity_doctrine_links` and its named helpers (citation extraction, parsing, file resolution, anchor resolution, portability check). Mirrors the `release.py` / `audit_advisory_scorecard` precedent.
+- `src/gzkit/governance/trust_audits/__init__.py` — re-export `validate_complexity_doctrine_links` so `from gzkit.governance.trust_audits import validate_complexity_doctrine_links` keeps working alongside `audit_advisory_scorecard`.
+- `src/gzkit/cli/parser_maintenance.py` — register the `--complexity-doctrine-links` flag on `gz validate` (peer to `--advisory-scorecard`, `--brief-headings`, `--sensitivity`).
+- `src/gzkit/commands/validate_cmd.py` — wire the flag through `_explicit_scope_runners`, `_resolve_scopes`, and the `validate(...)` entry signature so it integrates with `gz validate --all`.
+- `src/gzkit/quality.py` — add `run_complexity_doctrine_links_audit(project_root)` runner alongside the peer governance-audit runners.
+- `src/gzkit/commands/quality.py` — add the new runner to the `gz check` `steps` list so it fires as part of pre-commit / pre-merge gates.
+- `tests/governance/test_complexity_doctrine_links.py` — REQ-derived assertions (REQ-01 through REQ-08 unit coverage; REQ-06 integration assertions cover `--all` and `gz check` aggregation).
+- `features/complexity_doctrine_links.feature` — BDD scenario tagged with REQ IDs `@REQ-0.0.27-07-{01..04}` covering the four canonical failure paths.
+- `docs/user/commands/validate.md` — canonical command-doc surface (peer to `--advisory-scorecard` documentation); per `.gzkit/rules/gate5-runbook-code-covenant.md`, command docs and runbook track behavior changes in the same patch.
+- `docs/user/runbook.md` — runbook entry under "Governance doctrine surfaces" naming the new `gz validate --complexity-doctrine-links` scope and its recovery hint.
+- `docs/governance/advisory-rules-audit.md` — promote the OBPI-01 `complexity-doctrine.md` scorecard row to `promoted/Mechanical` with this validator as the enforcement artifact.
+- `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/**` — brief evidence updates only.
+
+> **Allowed-path drift note (resolved 2026-05-05):** Earlier draft of this brief named `src/gzkit/governance/trust_audits.py`, `src/gzkit/commands/validate.py`, `src/gzkit/cli/parser_artifacts.py`, and `docs/user/manpages/gz-validate.md`. The repo has since refactored `trust_audits` into a subpackage (GHI #360); the validate CLI dispatcher lives at `commands/validate_cmd.py`; flag registration moved to `cli/parser_maintenance.py`; flag-level documentation lives at `docs/user/commands/validate.md` per the Gate5-Runbook-Code Covenant rule. Allowed paths corrected to canonical locations before plan authoring. ADR-0.0.27 Decision text (line 95) carries the same drift; tracking via `fix(adr-0.0.27)` follow-up commit per the defect-fix routing thresholds — out of scope for this OBPI which is scoped to validator + CLI + tests + docs only.
 
 ## Denied Paths
 
@@ -65,12 +70,27 @@ Implement `validate_complexity_doctrine_links` in `src/gzkit/governance/trust_au
 
 ## Discovery Checklist
 
-- [ ] OBPI-05 parser surface (`src/gzkit/complexity/citation.py`)
-- [ ] OBPI-04 first distilled-characteristics document — concrete artifact for the validator's resolution checks
-- [ ] `src/gzkit/governance/trust_audits.py` — existing validator patterns (e.g. `validate_brief_headings`, `validate_advisory_scorecard`) for shape consistency
-- [ ] `.gzkit/rules/cli.md` — exit-code map (3 = policy breach)
-- [ ] `.claude/rules/governance-core.md` — speculative-marker precedent for skip semantics
-- [ ] `docs/user/manpages/gz-validate.md` — manpage shape for the new flag
+**Prerequisites**
+
+- [x] OBPI-0.0.27-05 `attested_completed` — `src/gzkit/complexity/citation.py` exposes `parse_citation`, `is_portable`, the frozen `Citation` Pydantic model, and `DEFAULT_SUPPORTED_WINDOW = 2`. The validator consumes this surface (REQ-02, REQ-04); does not re-author the canonical regex.
+- [x] OBPI-0.0.27-04 `attested_completed` — `docs/governance/complexity/distilled-characteristics-2026-05-04.md` (frontmatter `corpus_revision: 1`) is the concrete first artifact resolution checks run against. Headings are `## Metric: \`<name>\``; the backtick-fenced identifier slugifies (with `_`→`-`) to the canonical anchor consumed by the citation contract (REQ-03).
+- [x] OBPI-0.0.27-01 `attested_completed` — `.gzkit/rules/complexity-doctrine.md` is in scope of the validator (cluster body); the rule's "Citation contract" section names the canonical `path § anchor (corpus revision N)` form `parse_citation` accepts.
+- [x] AGENTS.md § Lane & Kind & Sensitivity Attestation Matrix — foundation + heavy → brief-level Gate 5 walkthrough required regardless of axis-overlap; `_requires_human_obpi_attestation` returns True via the foundation branch + the lane branch.
+- [x] `.gzkit/rules/cli.md` — exit-code map (3 = policy breach) — validator emits `ValidationError(type="complexity_doctrine_links", ...)`; `_POLICY_BREACH_ERROR_TYPES` registration in `validate_cmd.py` makes the CLI exit 3 on any error (REQ-02/03/04).
+- [x] `.claude/rules/governance-core.md` — Operator-doc verb resolution rule names speculative-marker semantics; the canonical mechanism is HTML-comment `<!-- gz-validate-skip: complexity-doctrine-links -->` on the line preceding a citation (REQ-05). Convention authored in this OBPI; no per-citation marker existed in `audit_cli_alignment` (which uses a global allowlist instead).
+- [x] `.gzkit/rules/gate5-runbook-code-covenant.md` — command docs at `docs/user/commands/**` and runbook at `docs/user/runbook.md` track behavior changes in the same patch; flag-level documentation lives at `docs/user/commands/validate.md` (peer to `--advisory-scorecard`, `--brief-headings`, `--sensitivity`), not at `docs/user/manpages/gz-validate.md` (which does not exist; brief amended).
+
+**Existing Code**
+
+- [x] `src/gzkit/governance/trust_audits/release.py` (`audit_advisory_scorecard` at line 83) — canonical peer pattern: file scan + `ValidationError` list return + early-return on missing fixtures. The new `validate_complexity_doctrine_links` mirrors this shape.
+- [x] `src/gzkit/governance/trust_audits/__init__.py` — re-export pattern: `audit_advisory_scorecard` imported at line 64, declared in `__all__` at line 83. Same shape applied for `validate_complexity_doctrine_links`.
+- [x] `src/gzkit/cli/parser_maintenance.py:433-438` (`--advisory-scorecard` declaration) and lines 562-590 (kwargs threading) — flag-registration peer pattern. New `--complexity-doctrine-links` follows the same shape.
+- [x] `src/gzkit/commands/validate_cmd.py:488` (`"advisory_scorecard": lambda: ...` dispatch entry), `:911-947` (`_resolve_scopes` `run_all_scopes` / `opt_in_scopes` lists), `:1085+` (`validate(...)` signature) — all peer scoping surfaces wired identically.
+- [x] `src/gzkit/quality.py:513+` (peer `run_*_audit` runners) and `src/gzkit/commands/quality.py:298-314` (`gz check` steps tuple) — `run_complexity_doctrine_links_audit` slots in. Steps tuple extracted to module-scope `_build_check_steps()` in this patch so `gz_check_cmd.steps` is introspectable per REQ-06.
+- [x] `tests/governance/` peer tests (e.g. `test_advisory_scorecard.py`, `test_brief_headings.py`) — `tempfile.TemporaryDirectory` + per-fixture cluster ADR layout pattern. New `tests/governance/test_complexity_doctrine_links.py` mirrors the discipline.
+- [x] `gzkit.testing.covers.@covers` — REQ-tag decoration validated against extracted brief Acceptance Criteria; consumed by `gz covers OBPI-... --json` parity gate at Stage 3 Phase 1b. REQ-pattern is `^REQ-<semver>-<digits>-<digits>$` (alphabetic suffixes rejected — direct-fixed at Stage 2 from initial Task A drift).
+- [x] `gzkit.core.validation_rules.parse_frontmatter` — reused for `_read_current_corpus_revision` (no re-authored YAML parsing).
+- [x] `_POLICY_BREACH_ERROR_TYPES` (`src/gzkit/commands/validate_cmd.py:966`) — the frozen set determining which error types trigger exit 3 vs exit 0 with warnings; `complexity_doctrine_links` registered alongside `frontmatter`, `chores_layout`, etc.
 
 ## Quality Gates
 
@@ -163,15 +183,48 @@ uv run -m behave features/complexity_doctrine_links.feature
 
 ### Key Proof
 
-<!-- Paste the validator output for the four canonical failure paths and the integration into `gz check`. -->
+
+```bash
+$ uv run gz validate --complexity-doctrine-links
+Validated: complexity_doctrine_links
+✓ All validations passed (1 scopes).
+$ echo $?
+0
+```
+
+Exit 0 against the actual repo (zero broken citations across cluster ADRs 0.0.27 / 0.0.28 / 0.0.29 / 0.0.30 + `.gzkit/rules/complexity-doctrine.md` + `docs/governance/complexity/`). Validator scans 73 in-scope artifacts, applies four checks per citation (parse, file resolution, anchor resolution, portability), emits `ValidationError(type="complexity_doctrine_links", ...)` on any breach. `_POLICY_BREACH_ERROR_TYPES` registration drives exit 3 on flag fire.
+
+ARB receipts (Stage 3, all green):
+
+- `arb-ruff-ee7358f5a7ec4652b3d2ec14ede599fe` — lint clean
+- `arb-step-typecheck-0f4de98efc0c459b9cce8390bc3607dd` — ty clean
+- `arb-step-unittest-100b1f75310e4903b2da1ce10486c97d` — 10/10 OBPI-scoped unit tests pass
+- `arb-step-behave-c999283506db4e5085ef41299ad7ddbc` — 4/4 BDD scenarios tagged `@REQ-0.0.27-07-{01..04}` pass
+- `arb-step-mkdocs-656b056a67254000a0b73f8f59de2aca` — `mkdocs build --strict` clean
+
+End-to-end integration:
+
+```bash
+$ uv run gz check 2>&1 | grep "Complexity-doctrine"
+[15/16] Complexity-doctrine links
+  ✓ Complexity-doctrine links
+
+$ uv run gz cli audit
+CLI audit passed.
+Cross-coverage: 91/91 commands fully covered.
+```
+
+Two-signal heuristic gates citation candidates: a line is treated as a citation only when it contains BOTH `§` AND `(corpus revision`. Bare path references in prose, allowed-path lists, code-fences, and ADR `§ <heading>` cross-references are not flagged. Speculative-skip marker `<!-- gz-validate-skip: complexity-doctrine-links -->` on the preceding line escapes a per-citation forward-reference (used for planned-but-unlanded distillations under `ADR-pool.doctrine-amendment-protocol`).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `src/gzkit/governance/trust_audits/complexity_doctrine_links.py` (validator + 7 helpers, ≤50 lines/function); `tests/governance/test_complexity_doctrine_links.py` (10 `@covers`-decorated unit tests); `features/complexity_doctrine_links.feature` + `features/steps/complexity_doctrine_links_steps.py` (4 BDD scenarios tagged `@REQ-0.0.27-07-{01..04}`)
+- Files modified: `src/gzkit/governance/trust_audits/__init__.py` (re-export `validate_complexity_doctrine_links`); `src/gzkit/cli/parser_maintenance.py` (`--complexity-doctrine-links` flag declaration + kwargs threading); `src/gzkit/commands/validate_cmd.py` (signature + dispatch + `_resolve_scopes` opt-in + `_POLICY_BREACH_ERROR_TYPES` registration); `src/gzkit/quality.py` (`run_complexity_doctrine_links_audit` runner); `src/gzkit/commands/quality.py` (`_build_check_steps()` extracted to module scope, `gz_check_cmd.steps` introspection seam, new step in tuple); `docs/user/commands/validate.md` (flag-detail section + scopes-reference row); `docs/user/runbook.md` ("Governance Doctrine Surfaces" section); `docs/governance/advisory-rules-audit.md` (scorecard citation refreshed to subpackage path); brief Allowed Paths corrected for repo-structure drift (trust_audits subpackage post-GHI-#360, validate_cmd.py, parser_maintenance.py, docs/user/commands/validate.md)
+- Tests added: 10 unit (8 REQ-decorated + 2 integration tests + 1 functional fixture) + 4 BDD scenarios; all green
+- Date completed: 2026-05-05
+- Attestation status: operator attested via Stage 4 evidence ceremony — `attest completed`
+- Defects noted: 3 in-flight test/validator drifts direct-fixed during TDD cycle (REQ ID alphabetic-suffix pattern; `_resolve_scopes` kwargs-vs-dict signature; citation-extraction whole-line false positives). 1 follow-up GHI to file at Stage 5 close: ADR-0.0.27 Decision text line 95 still names `src/gzkit/governance/trust_audits.py` single-file path (`fix(adr-0.0.27)` thresholds met — ≤10 lines, single-surface, in-flight trigger).
 
 ### Closing Argument
 
@@ -183,14 +236,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` (heavy + foundation requires TTY + ATTEST)
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.27-07-link-integrity-validator delivered the closing brief of the ADR-0.0.27 exemplar-corpus-doctrine cluster: gz validate --complexity-doctrine-links wired through src/gzkit/governance/trust_audits/complexity_doctrine_links.py (validator + 7 helpers, all ≤50 lines/function), registered on parser_maintenance.py, dispatched through validate_cmd.py + quality.py, integrated into gz check (step 15/16 ✓), with 10/10 unit tests pass (receipt arb-step-unittest-100b1f75310e4903b2da1ce10486c97d), 4/4 BDD scenarios tagged @REQ-0.0.27-07-{01..04} pass (receipt arb-step-behave-c999283506db4e5085ef41299ad7ddbc), ruff clean (receipt arb-ruff-ee7358f5a7ec4652b3d2ec14ede599fe), ty clean (receipt arb-step-typecheck-0f4de98efc0c459b9cce8390bc3607dd), mkdocs --strict clean (receipt arb-step-mkdocs-656b056a67254000a0b73f8f59de2aca), CLI audit 91/91. Two-signal heuristic (§ + "(corpus revision") gates citation candidates; speculative-skip marker supported. Closes 2am-Scenario-2 failure mode. Foundation-kind brief-level Gate 5 attestation under TTY+ATTEST gate via --attestor-present co-presence proxy backed by the active pipeline marker at .claude/plans/.pipeline-active-OBPI-0.0.27-07.json.
+- Date: 2026-05-05
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-05
 
 **Evidence Hash:** -

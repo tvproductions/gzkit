@@ -576,6 +576,16 @@ def run_instructions_files_budget_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --instructions-files-budget", cwd=project_root)
 
 
+def run_complexity_doctrine_links_audit(project_root: Path) -> QualityResult:
+    """Run the ADR-0.0.27 complexity-doctrine link-integrity audit.
+
+    Fails closed when any citation in the cluster ADRs (0.0.27 / 0.0.28 /
+    0.0.29 / 0.0.30) or the rule body references a missing file, unresolved
+    anchor, or non-portable corpus revision.
+    """
+    return run_command("uv run gz validate --complexity-doctrine-links", cwd=project_root)
+
+
 def run_orientation_freshness_audit(project_root: Path) -> QualityResult:
     """Run the SessionStart orientation hook freshness audit (GHI #341).
 

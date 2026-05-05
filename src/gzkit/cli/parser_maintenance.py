@@ -437,6 +437,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Every .gzkit/rules file appears in advisory-rules-audit scorecard",
     )
     p_validate.add_argument(
+        "--complexity-doctrine-links",
+        dest="check_complexity_doctrine_links",
+        action="store_true",
+        help="Audit ADR-0.0.27 complexity-doctrine citations resolve (link integrity)",
+    )
+    p_validate.add_argument(
         "--reconcile-freshness",
         dest="check_reconcile_freshness",
         action="store_true",
@@ -566,6 +572,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_behave_req_tags=a.check_behave_req_tags,
             check_skill_alignment=a.check_skill_alignment,
             check_advisory_scorecard=a.check_advisory_scorecard,
+            check_complexity_doctrine_links=a.check_complexity_doctrine_links,
             check_reconcile_freshness=a.check_reconcile_freshness,
             check_insights_shape=a.check_insights_shape,
             check_instructions_files_budget=a.check_instructions_files_budget,

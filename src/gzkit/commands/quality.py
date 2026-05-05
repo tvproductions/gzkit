@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import pathlib
 import subprocess
+from collections.abc import Callable
+from typing import Any
 
 from gzkit.commands.common import console, get_project_root
 from gzkit.quality import (
@@ -18,6 +20,8 @@ from gzkit.quality import (
     run_tests,
     run_typecheck,
 )
+
+CheckStepRunner = Callable[[pathlib.Path], Any]
 
 
 def lint() -> None:
@@ -271,16 +275,14 @@ def typecheck() -> None:
         raise SystemExit(result.returncode)
 
 
-def check(as_json: bool = False) -> None:
-    """Run all quality checks (lint + format + typecheck + test + governance audits)."""
-    import json
-    import sys
-
-    from gzkit.cli.formatters import OutputFormatter
+def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
+    """Build the canonical `gz check` steps list. Module-scope-importable so
+    tests and external callers can introspect the aggregator without invoking
+    the full check pipeline (REQ-0.0.27-07-06)."""
     from gzkit.quality import (
         run_adr_status_fresh_audit,
         run_cli_audit,
-        run_drift_advisory,
+        run_complexity_doctrine_links_audit,
         run_format_check,
         run_insights_shape_audit,
         run_instructions_files_budget_audit,
@@ -292,10 +294,7 @@ def check(as_json: bool = False) -> None:
         run_unscoped_rules_audit,
     )
 
-    project_root = get_project_root()
-    fmt = OutputFormatter()
-
-    steps = [
+    return [
         ("Lint", run_lint),
         ("Format", run_format_check),
         ("Typecheck", run_typecheck),
@@ -310,8 +309,23 @@ def check(as_json: bool = False) -> None:
         ("Orientation freshness", run_orientation_freshness_audit),
         ("Insights shape", run_insights_shape_audit),
         ("Instructions files budget", run_instructions_files_budget_audit),
+        ("Complexity-doctrine links", run_complexity_doctrine_links_audit),
         ("Preflight", run_preflight),
     ]
+
+
+def check(as_json: bool = False) -> None:
+    """Run all quality checks (lint + format + typecheck + test + governance audits)."""
+    import json
+    import sys
+
+    from gzkit.cli.formatters import OutputFormatter
+    from gzkit.quality import run_drift_advisory
+
+    project_root = get_project_root()
+    fmt = OutputFormatter()
+
+    steps = _build_check_steps()
 
     results: list[tuple[str, bool]] = []
     with fmt.progress_context(len(steps), "Running quality checks") as progress:
@@ -419,3 +433,21 @@ def _render_flag_health(health: object | None) -> None:
         f"{health.approaching_count} approaching "
         f"[dim](advisory — does not affect exit code)[/dim]"
     )
+
+
+# Module-scope alias exposing `gz check` aggregator for test introspection.
+# Tests assert that `gz_check_cmd.steps` includes specific runner tuples
+# (e.g. REQ-0.0.27-07-06 — complexity-doctrine-links must fire as part of
+# the `gz check` aggregate). The function attribute is populated lazily on
+# first access via property-like getter to avoid circular imports at module
+# load.
+gz_check_cmd = check
+
+
+def _gz_check_cmd_steps() -> list[tuple[str, CheckStepRunner]]:
+    return _build_check_steps()
+
+
+# Attach steps as a function attribute so tests can introspect the aggregator
+# without invoking it. Computed once at module import time.
+gz_check_cmd.steps = _build_check_steps()  # type: ignore

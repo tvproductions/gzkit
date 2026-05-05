@@ -328,6 +328,33 @@ gz validate --sensitivity --explain "src/gzkit/ledger.py,tests/governance/**"
 
 Included in `gz validate --audits` and `gz check` aggregate passes — sensitivity drift cannot silently land alongside other governance work.
 
+### `--complexity-doctrine-links`
+
+Enforces the ADR-0.0.27 citation contract: every citation in cluster ADRs (0.0.27 / 0.0.28 / 0.0.29 / 0.0.30) plus `.gzkit/rules/complexity-doctrine.md` and any document under `docs/governance/complexity/` must resolve. The validator parses each citation via the canonical `parse_citation` surface (OBPI-0.0.27-05) and asserts: (a) the cited distilled-characteristics file exists, (b) the section anchor resolves to a heading in that file, and (c) the cited `corpus_revision` is portable against the most recent distilled-characteristics document's frontmatter (default supported window: 2 revisions). Closes the 2am-Scenario-2 failure mode — an operator following an advisor diagnosis cannot silently land on a missing or stale artifact.
+
+A line is treated as a citation candidate only when it carries both the section marker `§` and the canonical `(corpus revision` token. Bare path mentions in prose, allowed-path lists, code-fences, and ADR `§ <heading-name>` cross-references are not flagged.
+
+```bash
+# Audit every citation in the cluster
+gz validate --complexity-doctrine-links
+```
+
+**Speculative-citation marker.** When a citing ADR forward-references a planned-but-unlanded distillation (rare; reserved for cluster-internal coordination), prefix the citation line with the HTML-comment marker on the line above:
+
+```markdown
+<!-- gz-validate-skip: complexity-doctrine-links -->
+docs/governance/complexity/distilled-characteristics-2027-01-15.md § new-metric (corpus revision 2)
+```
+
+The marker is a per-citation escape, not a global allowlist. Use only when the parent ADR's amendment ceremony explicitly tracks the unlanded reference.
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every citation resolves (file + anchor + portable revision) | — |
+| 3 | Missing file, unresolved anchor, non-portable revision, or malformed canonical form | Re-author the citation against the current distilled-characteristics document, or amend the citing ADR through `ADR-pool.doctrine-amendment-protocol` |
+
+Included in `gz check` (step "Complexity-doctrine links") and runnable as `gz validate --complexity-doctrine-links` directly. Pre-commit / pre-merge gates fire automatically.
+
 ## Scopes Reference
 
 The following table catalogs every audit scope the `gz validate` surface
@@ -366,6 +393,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--behave-req-tags` | opt-in | Heavy-lane / Completed OBPI REQs have matching `@REQ-X.Y.Z-NN-MM` scenario tags under `features/` (GHI #323 lifecycle scope) |
 | `--skill-alignment` | opt-in | Every CLI verb has a wielding skill (Tool / Skill / Runbook Alignment Invariant 1) |
 | `--advisory-scorecard` | opt-in | Every `.gzkit/rules/*` file appears in the advisory-rules-audit scorecard |
+| `--complexity-doctrine-links` | opt-in | ADR-0.0.27 complexity-doctrine citation link integrity (closes 2am-Scenario-2) |
 | `--reconcile-freshness` | opt-in | Flag if no reconcile event has fired since HEAD (24-hour grace window) |
 | `--insights-shape` | opt-in | Validate `.gzkit/insights/agent-insights.jsonl` records against the canonical `InsightRecord` schema (GHI #358) |
 | `--instructions-files-budget` | opt-in | AGENTS.md / CLAUDE.md / `.claude/rules/*.md` must stay within per-file char budgets defined in `data/instructions_files_budget.json` (GHI #373) |

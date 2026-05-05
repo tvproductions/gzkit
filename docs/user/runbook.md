@@ -780,6 +780,14 @@ uv run gz chores propose-ghi <slug>  # File GHIs for unfiled cluster proposals i
 uv run gz validate --chores-layout   # Fail closed (exit 3) on stray CHORE.md or acceptance.json
 ```
 
+### Governance Doctrine Surfaces
+
+```bash
+uv run gz validate --complexity-doctrine-links  # ADR-0.0.27 citation link integrity
+```
+
+Fail-closed (exit 3) audit of every citation in cluster ADRs (0.0.27 / 0.0.28 / 0.0.29 / 0.0.30) plus `.gzkit/rules/complexity-doctrine.md` and any document under `docs/governance/complexity/`. Recovery on a flagged citation: re-author the citation against the current `corpus_revision` and `distilled-characteristics-*.md` file, or amend the citing ADR through its own ceremony per `ADR-pool.doctrine-amendment-protocol`. Closes the 2am-Scenario-2 failure mode (advisor diagnosis references missing artifact). Included in `gz check`. See [`gz validate --complexity-doctrine-links`](commands/validate.md#--complexity-doctrine-links) for the speculative-citation marker (used when an ADR forward-references a planned-but-unlanded distillation).
+
 ### Frontmatter-Ledger Reconciliation
 
 ```bash
