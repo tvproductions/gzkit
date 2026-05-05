@@ -8,6 +8,15 @@ build:
   tools:
     python: "3.13"
   jobs:
+    # Skip non-tag builds (branch pushes) so RTD only rebuilds on releases.
+    # Exit code 183 is RTD's documented "cancel build" signal.
+    # See https://docs.readthedocs.io/en/stable/build-customization.html#cancel-build-based-on-a-condition
+    pre_build:
+      - |
+        if [ "$READTHEDOCS_VERSION_TYPE" != "tag" ]; then
+          echo "Skipping non-tag build (READTHEDOCS_VERSION_TYPE=$READTHEDOCS_VERSION_TYPE)"
+          exit 183
+        fi
     install:
       - pip install -r requirements-docs.txt
     build:
