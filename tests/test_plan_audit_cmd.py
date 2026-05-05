@@ -411,6 +411,12 @@ class TestPlanAuditCmdScopeCollision(unittest.TestCase):
                 encoding="utf-8",
             )
 
+            # GHI #393: allowed paths must resolve so the validity scan
+            # does not turn this advisory-collision fixture into a FAIL.
+            arb_dir = root / "src" / "gzkit" / "arb"
+            arb_dir.mkdir(parents=True)
+            (arb_dir / "validator.py").write_text("", encoding="utf-8")
+
             plans_dir = root / ".claude" / "plans"
             plans_dir.mkdir(parents=True)
             (plans_dir / "plan.md").write_text(
@@ -483,6 +489,7 @@ class TestPlanAuditCmdPass(unittest.TestCase):
             obpis_dir.mkdir(parents=True)
             brief = obpis_dir / "OBPI-0.1.0-01-feature.md"
             brief.write_text("# Brief\n## Allowed Paths\n- `src/`\n", encoding="utf-8")
+            (root / "src").mkdir()  # GHI #393: allowed path must resolve
 
             # Create plans directory with plan file
             plans_dir = root / ".claude" / "plans"
@@ -579,6 +586,212 @@ class TestPlanAuditCmdJson(unittest.TestCase):
             self.assertEqual(data["verdict"], "PASS")
             self.assertIn("timestamp", data)
             self.assertIn("gaps_found", data)
+
+
+class TestVendorMirrorCanonical(unittest.TestCase):
+    """@covers GHI #393 — flag vendor-mirror allowed paths and suggest canonical."""
+
+    def test_flags_claude_rules_path(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _vendor_mirror_canonical
+
+        self.assertEqual(
+            _vendor_mirror_canonical(".claude/rules/tests.md"),
+            ".gzkit/rules/tests.md",
+        )
+
+    def test_flags_claude_skills_path(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _vendor_mirror_canonical
+
+        self.assertEqual(
+            _vendor_mirror_canonical(".claude/skills/foo/SKILL.md"),
+            ".gzkit/skills/foo/SKILL.md",
+        )
+
+    def test_flags_github_instructions_path(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _vendor_mirror_canonical
+
+        self.assertEqual(
+            _vendor_mirror_canonical(".github/instructions/agents.md"),
+            ".gzkit/rules/agents.md",
+        )
+
+    def test_flags_github_skills_path(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _vendor_mirror_canonical
+
+        self.assertEqual(
+            _vendor_mirror_canonical(".github/skills/foo/SKILL.md"),
+            ".gzkit/skills/foo/SKILL.md",
+        )
+
+    def test_flags_agents_skills_path(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _vendor_mirror_canonical
+
+        self.assertEqual(
+            _vendor_mirror_canonical(".agents/skills/foo/SKILL.md"),
+            ".gzkit/skills/foo/SKILL.md",
+        )
+
+    def test_returns_none_for_canonical_path(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _vendor_mirror_canonical
+
+        self.assertIsNone(_vendor_mirror_canonical(".gzkit/rules/tests.md"))
+
+    def test_returns_none_for_source_path(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _vendor_mirror_canonical
+
+        self.assertIsNone(_vendor_mirror_canonical("src/gzkit/foo.py"))
+
+    def test_returns_none_for_claude_plans_path(self) -> None:
+        # .claude/plans/ is the operator-local plan home, not a vendor mirror.
+        from gzkit.commands.plan_audit_cmd import _vendor_mirror_canonical
+
+        self.assertIsNone(_vendor_mirror_canonical(".claude/plans/foo.md"))
+
+
+class TestAllowedPathResolves(unittest.TestCase):
+    """@covers GHI #393 — verify allowed paths refer to real files/dirs or glob roots."""
+
+    def test_existing_file_resolves(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _allowed_path_resolves
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "src" / "foo.py").write_text("", encoding="utf-8")
+            self.assertTrue(_allowed_path_resolves(root, "src/foo.py"))
+
+    def test_existing_directory_resolves(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _allowed_path_resolves
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src" / "gzkit").mkdir(parents=True)
+            self.assertTrue(_allowed_path_resolves(root, "src/gzkit/"))
+
+    def test_glob_with_existing_root_resolves(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _allowed_path_resolves
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src" / "gzkit").mkdir(parents=True)
+            self.assertTrue(_allowed_path_resolves(root, "src/gzkit/**/*.py"))
+
+    def test_glob_with_missing_root_does_not_resolve(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _allowed_path_resolves
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.assertFalse(_allowed_path_resolves(root, "src/missing/**/*.py"))
+
+    def test_template_placeholder_treated_as_glob(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _allowed_path_resolves
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".gzkit" / "skills").mkdir(parents=True)
+            self.assertTrue(_allowed_path_resolves(root, ".gzkit/skills/<slug>/SKILL.md"))
+
+    def test_missing_file_does_not_resolve(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _allowed_path_resolves
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.assertFalse(_allowed_path_resolves(root, "src/gzkit/governance/trust_audits.py"))
+
+    def test_cli_flag_token_skipped(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _allowed_path_resolves
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.assertTrue(_allowed_path_resolves(root, "--skill"))
+
+
+class TestPlanAuditCmdBriefPathGaps(unittest.TestCase):
+    """@covers GHI #393 — plan-audit FAILs on stale or vendor-mirror allowed paths."""
+
+    def test_fails_on_nonexistent_allowed_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            adr_dir = root / "docs/design/adr/foundation/ADR-0.1.0-feature"
+            obpis_dir = adr_dir / "obpis"
+            obpis_dir.mkdir(parents=True)
+            brief = obpis_dir / "OBPI-0.1.0-01-feature.md"
+            brief.write_text(
+                "# Brief\n## Allowed Paths\n- `src/missing/ghost.py`\n",
+                encoding="utf-8",
+            )
+
+            plans_dir = root / ".claude" / "plans"
+            plans_dir.mkdir(parents=True)
+            (plans_dir / "plan.md").write_text(
+                "# Plan for OBPI-0.1.0-01\nModify src/missing/ghost.py\n",
+                encoding="utf-8",
+            )
+            (root / ".gzkit.json").write_text("{}", encoding="utf-8")
+
+            quiet_console = Console(file=StringIO(), quiet=True)
+            with (
+                patch("gzkit.commands.plan_audit_cmd.console", quiet_console),
+                patch("gzkit.commands.common.get_project_root", return_value=root),
+                patch("gzkit.commands.common.ensure_initialized"),
+                self.assertRaises(SystemExit) as ctx,
+            ):
+                plan_audit_cmd(obpi_id="OBPI-0.1.0-01", as_json=False)
+
+            self.assertEqual(ctx.exception.code, 1)
+            receipt = json.loads(
+                (plans_dir / ".plan-audit-receipt-OBPI-0.1.0-01.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(receipt["verdict"], "FAIL")
+            self.assertTrue(
+                any("does not exist" in g and "src/missing/ghost.py" in g for g in receipt["gaps"]),
+                f"expected non-existence gap citing the stale path, got {receipt['gaps']}",
+            )
+
+    def test_fails_on_vendor_mirror_allowed_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            adr_dir = root / "docs/design/adr/foundation/ADR-0.1.0-feature"
+            obpis_dir = adr_dir / "obpis"
+            obpis_dir.mkdir(parents=True)
+            brief = obpis_dir / "OBPI-0.1.0-01-feature.md"
+            brief.write_text(
+                "# Brief\n## Allowed Paths\n- `.claude/rules/tests.md`\n",
+                encoding="utf-8",
+            )
+            # Materialize the mirror so the gap fires on the
+            # non-canonical-edit-surface signal, not on missing-path.
+            (root / ".claude" / "rules").mkdir(parents=True)
+            (root / ".claude" / "rules" / "tests.md").write_text("", encoding="utf-8")
+
+            plans_dir = root / ".claude" / "plans"
+            plans_dir.mkdir(parents=True)
+            (plans_dir / "plan.md").write_text(
+                "# Plan for OBPI-0.1.0-01\nEdit .claude/rules/tests.md\n",
+                encoding="utf-8",
+            )
+            (root / ".gzkit.json").write_text("{}", encoding="utf-8")
+
+            quiet_console = Console(file=StringIO(), quiet=True)
+            with (
+                patch("gzkit.commands.plan_audit_cmd.console", quiet_console),
+                patch("gzkit.commands.common.get_project_root", return_value=root),
+                patch("gzkit.commands.common.ensure_initialized"),
+                self.assertRaises(SystemExit) as ctx,
+            ):
+                plan_audit_cmd(obpi_id="OBPI-0.1.0-01", as_json=False)
+
+            self.assertEqual(ctx.exception.code, 1)
+            receipt = json.loads(
+                (plans_dir / ".plan-audit-receipt-OBPI-0.1.0-01.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(receipt["verdict"], "FAIL")
+            gaps = receipt["gaps"]
+            self.assertTrue(
+                any("vendor mirror" in g for g in gaps)
+                and any(".gzkit/rules/tests.md" in g for g in gaps),
+                f"expected vendor-mirror gap citing canonical edit surface, got {gaps}",
+            )
 
 
 if __name__ == "__main__":
