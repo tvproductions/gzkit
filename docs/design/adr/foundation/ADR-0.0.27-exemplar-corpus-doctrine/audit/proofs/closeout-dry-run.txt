@@ -1,0 +1,40 @@
+    OBPI-0.0.27-06-distill-skill: governance_artifact
+    OBPI-0.0.27-07-link-integrity-validator: runbook
+Dry run: no ledger event will be written.
+  Would initiate closeout for: ADR-0.0.27-exemplar-corpus-doctrine
+  Gate 1 (ADR):
+docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exempl
+ar-corpus-doctrine.md
+  OBPI Completion: 7/7 complete
+  Gate 2 (TDD): uv run gz test
+  Quality (Lint): uv run gz lint
+  Quality (Typecheck): uv run gz typecheck
+  Gate 3 (Docs): uv run mkdocs build --strict
+  Gate 4 (BDD): uv run -m behave features/
+  Gate 5 (Human): Awaiting explicit attestation
+    - Completed
+    - Completed - Partial: [reason]
+    - Dropped - [reason]
+
+  Defense Brief (preview)
+  ## Defense Brief
+
+  ### Closing Arguments
+
+  *No closing arguments found.*
+
+  ### Product Proof
+
+  | OBPI | Proof Type | Status |
+  |------|-----------|--------|
+  | OBPI-0.0.27-01-selection-methodology | governance_artifact | FOUND |
+  | OBPI-0.0.27-02-initial-corpus-authoring | docstring | FOUND |
+  | OBPI-0.0.27-03-measurement-pipeline | docstring | FOUND |
+  | OBPI-0.0.27-04-distillation-pass | docstring | FOUND |
+  | OBPI-0.0.27-05-citation-contract | docstring | FOUND |
+  | OBPI-0.0.27-06-distill-skill | governance_artifact | FOUND |
+  | OBPI-0.0.27-07-link-integrity-validator | runbook | FOUND |
+
+  ### Reviewer Assessment
+
+  *No reviewer assessments found.*
