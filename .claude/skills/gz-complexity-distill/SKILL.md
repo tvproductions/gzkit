@@ -6,11 +6,10 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-05-05
 metadata:
-  skill-version: "0.1.0"
+  skill-version: "0.2.0"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
-gz_command_status: deferred
-deferred_gh_issue: 400
+gz_command: complexity distill
 ---
 
 # gz-complexity-distill
@@ -111,35 +110,30 @@ anchor, corpus_revision)` tuple.
 
 ## Workflow
 
-When the destination CLI verb lands (tracked at GHI #400), the operator
-runs:
+The operator runs:
 
 ```bash
 uv run gz complexity distill --corpus data/exemplar_corpus.json
 ```
 
-Until GHI #400 closes, this skill is in a deferred-verb waiver state
-(see § Tracked Status below). The operator can still execute the
-distillation directly against the existing
-`src/gzkit/complexity/distillation.py` engine — `render_document`,
-`render_diff_section`, `render_metric_triple`, `_DOCTRINAL_FRAMES` —
-following the OBPI-04 brief evidence as the worked-example reference.
+The verb composes the OBPI-0.0.27-03 measurement pipeline with the
+OBPI-0.0.27-04 distillation render and writes a dated
+`distilled-characteristics-{YYYY-MM-DD}.md` under
+`docs/governance/complexity/`. Operator follow-up at Gate 5 fills the
+per-metric **Practitioner-eye observation** placeholders the verb
+leaves intact (REQ-0.0.27-04-10 — the OEE seam, the agent never
+fabricates that block).
 
-## Tracked Status
+Common invocations (full options + exit codes in the
+[`gz-complexity-distill` manpage](../../docs/user/manpages/gz-complexity-distill.md)):
 
-This skill ships under the `gz_command_status: deferred` waiver path
-declared by OBPI-0.0.27-06 REQUIREMENT 9. The destination CLI verb has
-not yet been authored; **GHI #400** tracks its registration, manpage,
-runbook entry, and Output Contract conformance test. On GHI #400
-closeout, this skill's frontmatter is amended:
+```bash
+uv run gz complexity distill                    # default run against canonical corpus
+uv run gz complexity distill --no-prior         # cold-start (skip prior auto-detect)
+uv run gz complexity distill --allow-dated-sibling   # write -1 sibling on collision
+```
 
-- `gz_command_status: deferred` is removed
-- `deferred_gh_issue: 400` is removed
-- `gz_command:` is populated with the registered verb
-
-Tests under `tests/skills/test_gz_complexity_distill.py` are amended in
-the same patch: REQ-05 assertions migrate from waiver-shape (declared
-deferral fields) to verb resolution (parser registration check).
+The verb closed the OBPI-0.0.27-06 waiver path tracked by GHI #400.
 
 ## References
 

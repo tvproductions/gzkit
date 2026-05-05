@@ -77,12 +77,18 @@ class TestSkillFrontmatter(unittest.TestCase):
         self.assertRegex(str(fm.get("last_reviewed", "")), r"^\d{4}-\d{2}-\d{2}$")
 
     @covers("REQ-0.0.27-06-01")
-    def test_skill_version_is_initial_release(self) -> None:
+    def test_skill_version_landed_at_post_waiver_release(self) -> None:
         fm = _parse_frontmatter(_read_skill_text())
         metadata = fm.get("metadata")
         self.assertIsInstance(metadata, dict)
         meta = cast(dict[str, object], metadata)
-        self.assertEqual(str(meta.get("skill-version", "")), "0.1.0")
+        self.assertEqual(
+            str(meta.get("skill-version", "")),
+            "0.2.0",
+            "skill-version bumped from 0.1.0 → 0.2.0 on GHI #400 close "
+            "(deferred verb landed, capability resolution = minor bump per "
+            "skill-surface-sync rule)",
+        )
 
     @covers("REQ-0.0.27-06-01")
     def test_description_triggers_on_operator_phrases(self) -> None:
@@ -183,11 +189,13 @@ class TestCorpusReference(unittest.TestCase):
         )
 
 
-class TestOutputContractWaiver(unittest.TestCase):
-    """REQ-0.0.27-06-04 — Output Contract section declares the deferred verb's form.
+class TestOutputContract(unittest.TestCase):
+    """REQ-0.0.27-06-04 — Output Contract section declares the verb's form.
 
-    Waiver path (gz_command_status: deferred): the Output Contract section
-    declares the form the verb is required to produce on GHI #400 closeout.
+    GHI #400 closed the deferral; this class formerly named
+    ``TestOutputContractWaiver`` and asserted the contract against the
+    deferred state. The contract assertions remain — only the waiver
+    framing is gone.
     """
 
     @covers("REQ-0.0.27-06-04")
@@ -232,40 +240,52 @@ class TestOutputContractWaiver(unittest.TestCase):
         )
 
 
-class TestDeferredCommandWaiver(unittest.TestCase):
-    """REQ-0.0.27-06-05 — gz_command resolves OR waiver shape is declared.
+class TestVerbResolution(unittest.TestCase):
+    """REQ-0.0.27-06-05 — gz_command resolves to the registered CLI verb.
 
-    OBPI-06 ships under the waiver path tracked by GHI #400 (REQUIREMENT 9).
-    On GHI #400 closeout, the frontmatter migrates to a live `gz_command:`
-    and these tests are amended to assert verb resolution instead.
+    GHI #400 closed the deferral; the ``gz_command_status: deferred`` /
+    ``deferred_gh_issue: 400`` waiver fields are removed and ``gz_command:``
+    is populated. This class asserts the post-close skill shape and that
+    the declared verb resolves through the live argparse parser.
     """
 
     @covers("REQ-0.0.27-06-05")
-    def test_gz_command_status_declared_deferred(self) -> None:
+    def test_gz_command_field_resolves_to_complexity_distill_verb(self) -> None:
         fm = _parse_frontmatter(_read_skill_text())
         self.assertEqual(
-            fm.get("gz_command_status"),
-            "deferred",
-            "Waiver path: gz_command_status must be 'deferred' until GHI #400 lands",
+            fm.get("gz_command"),
+            "complexity distill",
+            "gz_command must declare the registered CLI verb after GHI #400 closeout",
         )
 
     @covers("REQ-0.0.27-06-05")
-    def test_deferred_gh_issue_references_open_tracking_issue(self) -> None:
+    def test_waiver_fields_removed_from_frontmatter(self) -> None:
         fm = _parse_frontmatter(_read_skill_text())
-        deferred = fm.get("deferred_gh_issue")
-        self.assertEqual(
-            deferred,
-            400,
-            "Waiver path: deferred_gh_issue must reference GHI #400",
+        self.assertNotIn(
+            "gz_command_status",
+            fm,
+            "gz_command_status: deferred field must be removed on GHI #400 closeout",
+        )
+        self.assertNotIn(
+            "deferred_gh_issue",
+            fm,
+            "deferred_gh_issue: 400 field must be removed on GHI #400 closeout",
         )
 
     @covers("REQ-0.0.27-06-05")
-    def test_skill_body_discloses_waiver_to_operator(self) -> None:
-        text = _read_skill_text()
-        self.assertRegex(
-            text,
-            r"(?i)deferred|waiver|GHI\s*#?\s*400",
-            "Skill body must disclose the deferred-verb waiver to the operator",
+    def test_declared_verb_resolves_in_live_argparse_parser(self) -> None:
+        from gzkit.cli.main import _build_parser
+
+        parser = _build_parser()
+        # Parse the declared verb with --help to confirm subparser registration.
+        # SystemExit(0) on --help is the success signal; SystemExit(2) means the
+        # verb did not resolve.
+        with self.assertRaises(SystemExit) as captured:
+            parser.parse_args(["complexity", "distill", "--help"])
+        self.assertEqual(
+            captured.exception.code,
+            0,
+            "gz_command 'complexity distill' must resolve to a registered subparser",
         )
 
 
