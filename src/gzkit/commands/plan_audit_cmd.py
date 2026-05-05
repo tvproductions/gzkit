@@ -74,31 +74,21 @@ def plan_audit_cmd(obpi_id: str, as_json: bool) -> None:
     if not plan_file:
         gaps.append(f"No plan file found for {obpi_id} in .claude/plans/ or ~/.claude/plans/")
 
-    # 5. Path overlap check (plan files must stay within brief allowed paths)
+    # 5+6. Path overlap (GHI #152) + allowed-path validity (GHI #393)
     target_allowed: list[str] | None = None
-    if brief_path and plan_file:
-        target_allowed = _extract_allowed_paths(brief_path)
-        if target_allowed is not None:
-            plan_paths = _extract_plan_paths(plan_file)
-            for p in plan_paths:
-                if not _path_within_allowed(p, target_allowed):
-                    gaps.append(f"Plan references path outside brief scope: {p}")
+    if brief_path:
+        brief_gaps, target_allowed = _gather_brief_path_gaps(project_root, brief_path, plan_file)
+        gaps.extend(brief_gaps)
 
-    # 6. Sibling-ADR scope-collision scan (GHI #152 — advisory, not gap-producing).
+    # 7. Sibling-ADR scope-collision scan (GHI #152 — advisory, not gap-producing).
     collisions: list[dict[str, str | list[str]]] = []
-    if brief_path and adr_id:
-        allowed_for_scan = (
-            target_allowed
-            if target_allowed is not None
-            else (_extract_allowed_paths(brief_path) or [])
+    if brief_path and adr_id and target_allowed:
+        collisions = _scan_sibling_adr_collisions(
+            project_root=project_root,
+            target_adr_id=adr_id,
+            target_obpi_id=obpi_id,
+            target_allowed=target_allowed,
         )
-        if allowed_for_scan:
-            collisions = _scan_sibling_adr_collisions(
-                project_root=project_root,
-                target_adr_id=adr_id,
-                target_obpi_id=obpi_id,
-                target_allowed=allowed_for_scan,
-            )
 
     # Write receipt and emit output
     _emit_result(obpi_id, gaps, plans_dir, plan_file, as_json, collisions)
@@ -394,3 +384,101 @@ def _path_within_allowed(path: str, allowed: list[str]) -> bool:
         if path == allowed_clean or path.startswith(allowed_clean + "/"):
             return True
     return True  # If we can't determine, don't block
+
+
+# Vendor-mirror prefixes per .gzkit/rules/skill-surface-sync.md § Surface
+# layout. A brief listing one of these as an allowed path routes an agent
+# to a generated mirror; the next ``gz agent sync control-surfaces``
+# overwrites the change.
+_VENDOR_MIRROR_TO_CANONICAL: tuple[tuple[str, str], ...] = (
+    (".claude/rules/", ".gzkit/rules/"),
+    (".claude/skills/", ".gzkit/skills/"),
+    (".github/skills/", ".gzkit/skills/"),
+    (".github/instructions/", ".gzkit/rules/"),
+    (".agents/skills/", ".gzkit/skills/"),
+)
+
+_GLOB_MARKER_CHARS = "*?[<"
+
+
+def _has_glob_chars(token: str) -> bool:
+    return any(ch in token for ch in _GLOB_MARKER_CHARS)
+
+
+def _glob_root(path: str) -> str:
+    """Return the longest leading literal-component prefix of a glob path.
+
+    ``src/gzkit/**/*.py`` -> ``src/gzkit``;
+    ``.gzkit/skills/<slug>/SKILL.md`` -> ``.gzkit/skills``;
+    ``*.md`` -> ``""`` (caller treats as project root).
+    """
+    literal: list[str] = []
+    for part in path.split("/"):
+        if _has_glob_chars(part):
+            break
+        literal.append(part)
+    return "/".join(literal)
+
+
+def _vendor_mirror_canonical(path: str) -> str | None:
+    """Return the canonical edit surface for a vendor-mirror path, else None."""
+    normalized = path.rstrip("/") + "/"
+    for prefix, canonical in _VENDOR_MIRROR_TO_CANONICAL:
+        if normalized.startswith(prefix):
+            tail = path[len(prefix) :].rstrip("/")
+            return canonical + tail if tail else canonical.rstrip("/")
+    return None
+
+
+def _allowed_path_resolves(project_root: Path, path: str) -> bool:
+    """Return True when an allowed path resolves to a real file/dir or its glob root exists."""
+    if path.startswith("-"):
+        # CLI flag tokens (e.g. ``--skill``) accidentally caught by the
+        # bullet regex are not path-shaped; existence is meaningless.
+        return True
+    candidate = path.rstrip("/")
+    if not candidate:
+        return False
+    if _has_glob_chars(candidate):
+        root = _glob_root(candidate)
+        if not root:
+            return True
+        return (project_root / root).exists()
+    return (project_root / candidate).exists()
+
+
+def _gather_brief_path_gaps(
+    project_root: Path,
+    brief_path: Path,
+    plan_file: Path | None,
+) -> tuple[list[str], list[str] | None]:
+    """Plan-overlap (#152) and allowed-path validity (#393) gaps for one brief.
+
+    Returns the gap list and the cached ``target_allowed`` value so the
+    caller can reuse it for the sibling-ADR scope-collision scan without
+    re-parsing the brief.
+    """
+    target_allowed = _extract_allowed_paths(brief_path)
+    gaps: list[str] = []
+    if target_allowed is not None and plan_file is not None:
+        for p in _extract_plan_paths(plan_file):
+            if not _path_within_allowed(p, target_allowed):
+                gaps.append(f"Plan references path outside brief scope: {p}")
+    gaps.extend(_check_brief_path_validity(project_root, target_allowed or []))
+    return gaps, target_allowed
+
+
+def _check_brief_path_validity(project_root: Path, allowed: list[str]) -> list[str]:
+    """Return gap messages for non-existent or vendor-mirror allowed paths (GHI #393)."""
+    gaps: list[str] = []
+    for path in allowed:
+        canonical = _vendor_mirror_canonical(path)
+        if canonical is not None:
+            gaps.append(
+                "Allowed path is a generated vendor mirror; edit canonical "
+                f"surface instead: {path} -> {canonical}"
+            )
+            continue
+        if not _allowed_path_resolves(project_root, path):
+            gaps.append(f"Allowed path does not exist in repository: {path}")
+    return gaps
