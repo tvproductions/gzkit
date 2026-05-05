@@ -76,6 +76,7 @@ audience split.
 | [`/gz-check`](gz-check.md) | Run full quality checks in one pass |
 | [`/gz-chore-runner`](gz-chore-runner.md) | Run a gzkit chore end-to-end (show, plan, advise, execute, validate) |
 | [`/gz-cli-audit`](gz-cli-audit.md) | Audit CLI documentation coverage and headings |
+| [`/gz-complexity-distill`](gz-complexity-distill.md) | Run a complexity distillation pass against the exemplar corpus to refresh distilled-characteristics doctrine |
 | [`/gz-context-diet`](gz-context-diet.md) | Trim per-turn agent context weight by lifting narrative to docs/governance/ |
 | [`/gz-deps-upgrade`](gz-deps-upgrade.md) | Refresh global uv tools, Python 3.13.x runtime, pyproject.toml pins/floors, and uv.lock to current PyPI latest |
 | [`/gz-pythonic-pattern-detect`](gz-pythonic-pattern-detect.md) | Surface Pythonic-design-pattern refactor candidates after ADR closeout (AST scanner over `src/`) |
