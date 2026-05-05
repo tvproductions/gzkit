@@ -1,5 +1,44 @@
 # gzkit Release Notes
 
+## v0.26.1 (2026-05-05)
+
+Patch release closing fifteen behavior-level defects across the covers-backfill heuristic, REQ-coverage gate, validator wiring, ledger graph, pipeline runtime, and cross-platform path handling — surfaced and resolved during ADR-0.0.27 (Exemplar Corpus Doctrine) audit and OBPI-0.0.27 closeout work.
+
+### Covers-Backfill Heuristic
+
+- **#382** — Fixed false-positive flagging of same-commit-creation as backfill, eliminating 79 spurious failures on ADR-0.0.23 audit.
+- **#385** — Stopped over-flagging `gz-git-sync` ceremony commits that were blocking the ADR-0.0.24 audit.
+- **#386** — Taught the heuristic to distinguish `Ceremony: gz-git-sync` bundles from cosmetic backfill.
+- **#390** — Stopped over-flagging string-literal fixtures and pre-trailer ceremony commits.
+
+### REQ-Coverage Gate (`gz obpi complete`)
+
+- **#389** — Made the completion gate honor `features/` BDD scenario tags (`@REQ-*`); previously it only walked `tests/` decorators and silently dropped BDD-only coverage.
+- **#395** — Stopped marking BDD-only REQs as `failing-cover` when behave references were being run through unittest.
+
+### Validator and Ledger Wiring
+
+- **#391** — Propagated the `attested` flag for `audit_receipt_emitted` events with `receipt_event=validated`; the QC roll-up was reading Gate 5 as PENDING on Validated ADRs.
+- **#392** — Stopped stale post-validation `gate_checked:fail` events from poisoning the QC display on Validated ADRs.
+- **#394** — Made `gz validate --evaluation-justify-binding` reachable as a solo handler and corrected its exit code drift from 1 back to the canonical 3.
+
+### Pipeline Runtime and Skill Audit
+
+- **#399** — Self-healed orphaned `.pipeline-active-{OBPI}.json` markers when Stage 5 is interrupted; `gz obpi reconcile` now removes provably stale markers when ledger state is `attested_completed`.
+- **#379** — Excluded `__pycache__/*.pyc` from canonical skill-asset collection so `gz gates --adr` stops failing Gate 3 on regenerable bytecode caches.
+- **#400** — Authored the destination CLI verb for the `gz-complexity-distill` skill (deferred from OBPI-0.0.27-06).
+
+### Cross-Platform and Brief Hygiene
+
+- **#383** — Replaced backslash-emitting `str(path.relative_to(...))` sites under `src/gzkit/quality.py` with forward-slash `as_posix()` so glob-expanded paths match canonical prefix literals on Windows.
+- **#393** — Corrected stale OBPI-0.0.26-04 brief allowed-paths from the refactored `trust_audits.py` module to the actual `validate_cmd.py` + `tasks.py` targets.
+- **#398** — Fixed `_absorb_lizard_row` measurement parsers that were silently emitting zero for `lizard_nesting_depth` and `cohesion_lcom4` across the entire exemplar corpus.
+
+### Stats
+
+- 15 GHIs closed
+- Foundation ADR-0.0.27 (Exemplar Corpus Doctrine) reached Validated since v0.26.0 — patch ships its Decision-text correction (#401) under the same release.
+
 ## v0.26.0 (2026-05-01)
 
 **ADR:** ADR-0.26.0-governance-library-module-absorption
