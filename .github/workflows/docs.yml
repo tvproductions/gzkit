@@ -1,25 +1,8 @@
 name: Docs
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "docs/**"
-      - "mkdocs.yml"
-      - "requirements-docs.txt"
-      - ".github/workflows/docs.yml"
-      - "RELEASE_NOTES.md"
-      - "README.md"
-      # Transitive-dep changes reach the mkdocs build through uv.lock and
-      # the `docs` optional-dependency group in pyproject.toml. Without
-      # these entries, dependabot PRs that bump docs-critical libraries
-      # (pygments, pymdown-extensions, mkdocs-material, markdown, etc.)
-      # merge without ever exercising `mkdocs build --strict`, and the
-      # first strict build runs post-merge on main — exactly the path
-      # that produced the GHI #281 regression. See GHI #282.
-      - "uv.lock"
-      - "pyproject.toml"
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
