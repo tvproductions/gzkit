@@ -384,16 +384,18 @@ def _run_radon_raw(path: Path) -> dict[str, list[float]]:
 
 
 def _run_lizard(path: Path) -> dict[str, list[float]]:
-    """Run ``lizard --csv`` and split into nloc/param/nesting/ccn lists.
+    """Run ``lizard -End --csv`` and split into nloc/param/nesting/ccn lists.
 
-    ``lizard --csv`` emits ``NLOC,CCN,token,PARAM,length,location,...`` per
-    function row.  Some lizard versions emit ``ND`` (nesting depth) as a
-    column; when absent, nesting depth is left as an empty list — the
-    aggregator then records sample_count == 0, which surfaces the gap to
-    the operator.
+    The ``-End`` extension flag activates lizard's nesting-depth analyzer
+    (``lizard_ext.lizardnd``), which appends ``ND`` as a trailing column.
+    Without it, lizard 1.22.1's CSV layout has 11 columns and exposes no
+    nesting-depth signal at all — column 6 is the file path string, not
+    nesting depth (GHI #398).  The resulting layout is 12 columns:
+    NLOC, CCN, token_count, PARAM, length, location, file, name,
+    signature, start_line, end_line, ND.
     """
     completed = subprocess.run(
-        ["lizard", "--csv", str(path)],
+        ["lizard", "-End", "--csv", str(path)],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -414,28 +416,26 @@ def _run_lizard(path: Path) -> dict[str, list[float]]:
 
 
 def _absorb_lizard_row(row: list[str], out: dict[str, list[float]]) -> None:
-    """Parse one lizard CSV row and append to *out* if numeric."""
-    if len(row) < 4:
+    """Parse one lizard ``-End --csv`` row; ND is the trailing 12th column."""
+    if len(row) < 12:
         return
     _append_if_numeric_str(out["nloc"], row[0])
     _append_if_numeric_str(out["ccn"], row[1])
     _append_if_numeric_str(out["param_count"], row[3])
-    if len(row) >= 7:
-        _append_if_numeric_str(out["nesting_depth"], row[6])
+    _append_if_numeric_str(out["nesting_depth"], row[11])
 
 
 def _run_cohesion(path: Path) -> list[float]:
-    """Run ``cohesion -d <path>`` and return per-class LCOM4 values.
+    """Run ``cohesion -f <path>`` and return per-class LCOM4 values.
 
-    ``cohesion`` does not have a JSON mode; it prints text of the shape
-    ``Class: <name> ... Total: <pct>%``.  We parse the percentage tail as
-    a float; a path that contains no classes returns an empty list.  Per
-    the brief's REQ-04, ``cohesion_lcom4`` is one of the canonical 12 —
-    on a tool version where parsing changes upstream, the empty list
-    surfaces sample_count == 0 to the operator instead of asserting.
+    The ``-f``/``--files`` flag is cohesion's file-input mode.  The
+    earlier ``-d`` invocation invoked the directory mode, which rejects a
+    file path with a usage error and produces empty stdout, silently
+    yielding zero samples for every project (GHI #398).  Cohesion has no
+    JSON mode; output is text of shape ``Class: <name> ... Total: <pct>%``.
     """
     completed = subprocess.run(
-        ["cohesion", "-d", str(path)],
+        ["cohesion", "-f", str(path)],
         capture_output=True,
         text=True,
         encoding="utf-8",

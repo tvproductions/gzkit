@@ -350,6 +350,123 @@ class TestSubprocessHasNoShellTrue(unittest.TestCase):
             )
 
 
+class TestLizardCohesionParserArgvRegression(unittest.TestCase):
+    """GHI #398: lizard CSV mode and cohesion ``-d``/file produced silent zeros.
+
+    Lizard 1.22.1's default ``--csv`` layout does not include nesting depth;
+    the ``-End`` extension flag is required to surface ND as the trailing
+    column.  Cohesion's ``-d`` flag is the directory mode; passing a file
+    to it returns empty stdout and the parser silently records sample_count
+    of zero.  Both cases were structurally invisible at the OBPI-03 test
+    tier because the canned subprocess outputs accidentally satisfied the
+    parser shape.  These argv-level regressions pin the call shape so a
+    flag regression is caught at unit test time.
+    """
+
+    @covers("REQ-0.0.27-03-04")
+    def test_lizard_argv_carries_nd_extension(self) -> None:
+        """Captured lizard argv contains ``-End`` so ND is emitted as the 12th column."""
+        with (
+            stubbed_pipeline_environment() as (_tree, spy),
+            tempfile.TemporaryDirectory() as out,
+        ):
+            measure_corpus(stub_corpus(), Path(out), cache_root=Path(out) / "cache")
+        lizard_calls = [c for c in spy.calls if c["argv"] and c["argv"][0] == "lizard"]
+        self.assertGreater(len(lizard_calls), 0, msg="no lizard subprocess calls captured")
+        for call in lizard_calls:
+            self.assertIn(
+                "-End",
+                call["argv"],
+                msg=f"lizard argv missing -End extension flag: {call['argv']!r}",
+            )
+
+    @covers("REQ-0.0.27-03-04")
+    def test_cohesion_argv_uses_files_flag_not_directory(self) -> None:
+        """Captured cohesion argv carries ``-f`` and never ``-d``."""
+        with (
+            stubbed_pipeline_environment() as (_tree, spy),
+            tempfile.TemporaryDirectory() as out,
+        ):
+            measure_corpus(stub_corpus(), Path(out), cache_root=Path(out) / "cache")
+        cohesion_calls = [c for c in spy.calls if c["argv"] and c["argv"][0] == "cohesion"]
+        self.assertGreater(len(cohesion_calls), 0, msg="no cohesion subprocess calls captured")
+        for call in cohesion_calls:
+            self.assertIn(
+                "-f",
+                call["argv"],
+                msg=f"cohesion argv missing -f files flag: {call['argv']!r}",
+            )
+            self.assertNotIn(
+                "-d",
+                call["argv"],
+                msg=f"cohesion argv must not use -d directory flag on a file: {call['argv']!r}",
+            )
+
+
+class TestLizardCohesionRealParserOutput(unittest.TestCase):
+    """GHI #398 remediation: parsers populate ND and LCOM4 against real tool output.
+
+    These tests deliberately bypass the subprocess stub harness and invoke
+    the real ``lizard`` and ``cohesion`` binaries against tempdir fixtures.
+    The discipline carve-out is intentional: the original defect was
+    structurally invisible at the unit tier precisely because every test
+    mocked the subprocess seam.  Verifying the parser-tool contract
+    requires running the actual tools.  Fast (<1s on a typical workstation)
+    because each fixture is a single small file.
+    """
+
+    @covers("REQ-0.0.27-03-04")
+    def test_lizard_parser_extracts_nesting_depth_from_real_output(self) -> None:
+        """A deeply nested function yields ``nesting_depth`` samples > 0."""
+        from gzkit.complexity.measurement import _run_lizard
+
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "nested.py"
+            target.write_text(
+                "def deeply_nested():\n"
+                "    for a in range(10):\n"
+                "        for b in range(10):\n"
+                "            for c in range(10):\n"
+                "                for d in range(10):\n"
+                "                    if a == b == c == d:\n"
+                "                        return a\n",
+                encoding="utf-8",
+            )
+            result = _run_lizard(target)
+        self.assertGreater(
+            len(result["nesting_depth"]),
+            0,
+            msg="nesting_depth list must contain at least one sample for a real file",
+        )
+        self.assertGreater(
+            max(result["nesting_depth"]),
+            0,
+            msg="deepest function's nesting depth must exceed zero (5 control levels in fixture)",
+        )
+
+    @covers("REQ-0.0.27-03-04")
+    def test_cohesion_parser_extracts_lcom4_from_real_output(self) -> None:
+        """A class fixture file yields at least one ``cohesion_lcom4`` sample."""
+        from gzkit.complexity.measurement import _run_cohesion
+
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "klass.py"
+            target.write_text(
+                "class Sample:\n"
+                "    def __init__(self):\n"
+                "        self.x = 1\n"
+                "    def use_x(self):\n"
+                "        return self.x\n",
+                encoding="utf-8",
+            )
+            result = _run_cohesion(target)
+        self.assertGreater(
+            len(result),
+            0,
+            msg="cohesion lcom4 list must contain at least one sample for a class file",
+        )
+
+
 if __name__ == "__main__":  # pragma: no cover - convenience runner
     unittest.main()
 
