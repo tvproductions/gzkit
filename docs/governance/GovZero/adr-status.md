@@ -7,7 +7,7 @@ Status: Active
 
 Source-of-truth: filesystem under `docs/design/adr/{foundation,pre-release}/`; this table is a Layer 3 derived view per `docs/governance/state-doctrine.md`. Regenerate via `gz register-adrs` (which calls `regenerate_adr_status_md` after ledger reconciliation); drift is fail-closed by `gz validate --adr-status-fresh`.
 
-Last regenerated: 2026-05-04 (count: 68 ADRs).
+Last regenerated: 2026-05-05 (count: 68 ADRs).
 
 | ID | Title | Kind | Lane | Status | Date | Path |
 |---|---|---|---|---|---|---|
@@ -27,7 +27,7 @@ Last regenerated: 2026-05-04 (count: 68 ADRs).
 | [ADR-0.0.24-attestation-receipt-binding](../../design/adr/foundation/ADR-0.0.24-attestation-receipt-binding/ADR-0.0.24-attestation-receipt-binding.md) | Attestation Receipt Binding | foundation | heavy | Validated | 2026-04-25 | `design/adr/foundation/ADR-0.0.24-attestation-receipt-binding/ADR-0.0.24-attestation-receipt-binding.md` |
 | [ADR-0.0.25-obpi-completion-req-coverage-gate](../../design/adr/foundation/ADR-0.0.25-obpi-completion-req-coverage-gate/ADR-0.0.25-obpi-completion-req-coverage-gate.md) | OBPI Completion REQ-Coverage Gate | foundation | heavy | Validated | 2026-04-25 | `design/adr/foundation/ADR-0.0.25-obpi-completion-req-coverage-gate/ADR-0.0.25-obpi-completion-req-coverage-gate.md` |
 | [ADR-0.0.26-evaluation-feedback-loop-doctrine](../../design/adr/foundation/ADR-0.0.26-evaluation-feedback-loop-doctrine/ADR-0.0.26-evaluation-feedback-loop-doctrine.md) | Evaluation Feedback-Loop Doctrine | foundation | heavy | Validated | 2026-04-25 | `design/adr/foundation/ADR-0.0.26-evaluation-feedback-loop-doctrine/ADR-0.0.26-evaluation-feedback-loop-doctrine.md` |
-| [ADR-0.0.27-exemplar-corpus-doctrine](../../design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md) | Exemplar-Corpus Doctrine | foundation | heavy | Draft | 2026-04-25 | `design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md` |
+| [ADR-0.0.27-exemplar-corpus-doctrine](../../design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md) | Exemplar-Corpus Doctrine | foundation | heavy | Validated | 2026-04-25 | `design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md` |
 | [ADR-0.0.28-complexity-threshold-doctrine](../../design/adr/foundation/ADR-0.0.28-complexity-threshold-doctrine/ADR-0.0.28-complexity-threshold-doctrine.md) | Complexity Threshold Doctrine | foundation | heavy | Draft | 2026-04-25 | `design/adr/foundation/ADR-0.0.28-complexity-threshold-doctrine/ADR-0.0.28-complexity-threshold-doctrine.md` |
 | [ADR-0.0.29-complexity-advisor](../../design/adr/foundation/ADR-0.0.29-complexity-advisor/ADR-0.0.29-complexity-advisor.md) | Complexity Advisor | foundation | heavy | Draft | 2026-04-25 | `design/adr/foundation/ADR-0.0.29-complexity-advisor/ADR-0.0.29-complexity-advisor.md` |
 | [ADR-0.0.30-complexity-authoring-guidance](../../design/adr/foundation/ADR-0.0.30-complexity-authoring-guidance/ADR-0.0.30-complexity-authoring-guidance.md) | Complexity Authoring Guidance | foundation | heavy | Draft | 2026-04-25 | `design/adr/foundation/ADR-0.0.30-complexity-authoring-guidance/ADR-0.0.30-complexity-authoring-guidance.md` |
