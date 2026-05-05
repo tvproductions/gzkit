@@ -62,13 +62,13 @@ class ComplexityDoctrineRuleAuthorship(unittest.TestCase):
     def test_rule_body_carries_version_marker_and_block_quote(self) -> None:
         _, body = _parse_canonical_frontmatter(_RULE_PATH)
         self.assertIn(
-            "<!-- rule-version: 0.1.0 -->",
+            "<!-- rule-version: 0.2.0 -->",
             body,
             "body must carry the canonical body-level rule-version HTML comment",
         )
         self.assertRegex(
             body,
-            r">\s+\*\*Rule version:\*\*\s+`0\.1\.0`",
+            r">\s+\*\*Rule version:\*\*\s+`0\.2\.0`",
             "body must carry the visible rule-version block quote",
         )
 
@@ -205,7 +205,7 @@ class ComplexityDoctrineCrossSurfaceBindings(unittest.TestCase):
                     f"vendor mirror missing: {mirror.relative_to(_PROJECT_ROOT).as_posix()}",
                 )
                 self.assertIn(
-                    "<!-- rule-version: 0.1.0 -->",
+                    "<!-- rule-version: 0.2.0 -->",
                     mirror.read_text(encoding="utf-8"),
                     "vendor mirror must carry the body-level rule-version marker",
                 )

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gzkit.complexity_citation.v1",
+  "title": "Complexity Citation Tuple",
+  "description": "Canonical citation form by which downstream foundation ADRs (0.0.28 / 0.0.29 / 0.0.30) reference distilled-characteristics documents (ADR-0.0.27, OBPI-0.0.27-05). Mirrors the Pydantic model at src/gzkit/complexity/citation.py with extra='forbid'; consumed by the link-integrity validator (OBPI-0.0.27-07).",
+  "type": "object",
+  "required": ["distilled_characteristics_path", "section_anchor", "corpus_revision"],
+  "additionalProperties": false,
+  "properties": {
+    "distilled_characteristics_path": {
+      "type": "string",
+      "pattern": "^docs/governance/complexity/.+\\.md$",
+      "description": "Relative path to the cited distilled-characteristics document; must live under docs/governance/complexity/."
+    },
+    "section_anchor": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Slugified anchor identifying the metric section within the document."
+    },
+    "corpus_revision": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "description": "Corpus revision the citation was authored against (positive integer)."
+    }
+  }
+}

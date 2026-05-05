@@ -8,16 +8,20 @@ paths:
 description: Exemplar-corpus selection methodology, distillation cadence, and citation contract for gzkit complexity calibration
 ---
 
-<!-- rule-version: 0.1.0 -->
+<!-- rule-version: 0.2.0 -->
 
 # Complexity Doctrine (gzkit)
 
-> **Rule version:** `0.1.0` — authored under OBPI-0.0.27-01 to codify the
-> exemplar-corpus selection methodology, seven selection criteria, seven
-> corpus anti-patterns, distillation cadence triggers, citation contract, and
-> project-doctrine-fitness criterion as a Mechanical-class rule consumed by
-> downstream foundation ADRs (0.0.28 / 0.0.29 / 0.0.30) and by the
-> link-integrity validator (OBPI-0.0.27-07).
+> **Rule version:** `0.2.0` — bumped under OBPI-0.0.27-05 to formalize the
+> citation tuple `(distilled_characteristics_path, section_anchor,
+> corpus_revision)`, codify the percentile + absolute-number pairing rule,
+> and name the refresh-portability rule the link-integrity validator
+> (OBPI-0.0.27-07) consumes. Prior version `0.1.0` authored under
+> OBPI-0.0.27-01 codified the exemplar-corpus selection methodology, seven
+> selection criteria, seven corpus anti-patterns, distillation cadence
+> triggers, citation contract, and project-doctrine-fitness criterion as
+> a Mechanical-class rule consumed by downstream foundation ADRs
+> (0.0.28 / 0.0.29 / 0.0.30).
 
 ## Invariant
 
@@ -147,19 +151,74 @@ Downstream foundation ADRs (0.0.28 / 0.0.29 / 0.0.30) **MUST** cite the
 distilled-characteristics document, **NOT** the raw distributions and **NOT**
 the corpus (`data/exemplar_corpus.json`) directly.
 
-Citation form: file path + section anchor + corpus revision number. Example:
+### Canonical tuple (binding)
+
+The citation is a three-field tuple
+`(distilled_characteristics_path, section_anchor, corpus_revision)`,
+codified by the Pydantic `Citation` model at
+`src/gzkit/complexity/citation.py` (frozen, `extra="forbid"`) and mirrored
+by the JSON Schema at `src/gzkit/schemas/complexity_citation.json`
+(`additionalProperties: false`). The tuple is the only valid citation
+shape; raw distributions, the corpus registry, and free-form prose
+references are explicitly forbidden.
+
+Canonical string form (consumed by `parse_citation`):
 
 ```
-docs/governance/complexity/distilled-characteristics-2026-05.md § Cyclomatic
-Complexity (corpus revision 1)
+docs/governance/complexity/distilled-characteristics-2026-05-04.md § radon-cc (corpus revision 1)
 ```
+
+Field constraints:
+
+- `distilled_characteristics_path` is a relative path under
+  `docs/governance/complexity/` ending in `.md`.
+- `section_anchor` is a slugified anchor string identifying the metric
+  section within the cited document.
+- `corpus_revision` is a positive integer matching the
+  `corpus_revision` frontmatter of the cited document.
+
+### Percentile + absolute pairing (binding)
+
+Every cited boundary MUST appear as **both** a percentile-of-corpus
+**AND** the absolute-number-at-that-percentile, paired together. The
+two forms are not alternatives — they are required together, so that
+boundaries remain readable across corpus refresh even when absolute
+numbers shift.
+
+Worked example (sourced from the landed `radon_cc` boundary at
+`distilled-characteristics-2026-05-04.md`):
+
+> at-or-below the corpus p90 = 7 the band is investigate; above it the
+> band escalates to refactor
+
+The percentile (`p90`) carries the semantic load — "tail of the
+corpus" — and survives refresh; the absolute number (`= 7`) carries
+the diagnostic load — "what does that look like at this revision" —
+and shifts with refresh. Citing either form alone is a contract
+violation.
+
+### Refresh portability (binding)
+
+A citation written against `corpus_revision = N` remains valid at
+`current_revision = N` and `current_revision = N + 1` (the default
+**supported window** is two revisions, set by
+`DEFAULT_SUPPORTED_WINDOW` at `src/gzkit/complexity/citation.py`). At
+`current_revision >= N + 2` the citation is out of date.
+
+The link-integrity validator (`gz validate --complexity-doctrine-links`,
+**OBPI-0.0.27-07**) **flags** out-of-date citations for amendment but
+does **NOT** auto-rewrite them — citations remain stable until the
+citing ADR is amended through its own ceremony. The flag-not-rewrite
+verdict is the binding contract: silent rewrite would shift downstream
+ADR text without a witness, which is the doctrine-drift class the
+parent foundation rule (`MAKE LLM STOCHASTIC VIBES INERT`) forbids.
 
 The rationale: the distilled-characteristics document is the reviewed,
 attested, operator-witnessed doctrine artifact. The raw distributions are
 measurement evidence; the corpus is the source registry. Citing raw
 distributions or the corpus directly would bypass the distillation ceremony
 and the Gate 5 attestation that made the doctrine trustworthy. The
-link-integrity validator (`gz validate --complexity-doctrine-links`, OBPI-07)
+link-integrity validator (`gz validate --complexity-doctrine-links`, OBPI-0.0.27-07)
 fails closed when a downstream ADR cites a document that does not exist or
 is out of date.
 
