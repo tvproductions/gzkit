@@ -1,5 +1,24 @@
 # Read the Docs configuration file
 # See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+#
+# Trigger contract (release-only docs builds): mirrors the GitHub Actions
+# `.github/workflows/docs.yml` `on: release: published` trigger. Achieving
+# parity with GH Actions requires BOTH the file-level backstop below AND
+# three one-time toggles in the RTD project admin UI — RTD's webhook
+# subscription is admin-side, not file-side, so .readthedocs.yaml alone
+# cannot prevent webhook ingestion.
+#
+# RTD admin (one-time, https://app.readthedocs.org/projects/gzkit/):
+#   1. Settings → uncheck "Build versions automatically"
+#      (stops RTD from auto-building newly pushed branches at ingestion)
+#   2. Versions → mark every branch-version Inactive; activate only `latest`
+#      and the tag versions you want published
+#   3. Automation Rules → add rule: match=tag, version-type=tag,
+#      action="Activate version + Build" (auto-activates new tags)
+#
+# After those toggles, RTD short-circuits non-release webhooks at ingestion
+# (cheap). The pre_build hook below remains as belt-and-suspenders so the
+# file-level contract is enforced even if the admin config drifts.
 
 version: 2
 
