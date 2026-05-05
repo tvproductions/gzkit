@@ -3,7 +3,7 @@ id: OBPI-0.0.27-04-distillation-pass
 parent: ADR-0.0.27
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.27-04-distillation-pass: First Distillation Pass
@@ -25,6 +25,8 @@ Run the first distillation pass against the OBPI-03 baseline and author `docs/go
 
 ## Allowed Paths
 
+- `docs/governance/complexity/baselines/{YYYY-MM-DD}/baseline.json` — first dated baseline artifact (produced at OBPI-04 invocation per OBPI-03 brief intent; OBPI-03 scaffolded the directory and the pipeline, OBPI-04 lands the first measurement output)
+- `docs/governance/complexity/baselines/{YYYY-MM-DD}/baseline.summary.md` — companion summary document for the same dated baseline
 - `docs/governance/complexity/distilled-characteristics-{YYYY-MM-DD}.md` — first distilled doctrine document
 - `docs/governance/complexity/distilled-characteristics.md` — symlink or pointer file naming the current distillation (optional; pattern decided in this OBPI)
 - `src/gzkit/complexity/distillation.py` — diff-narration mechanism (no-op on first run; full diff in subsequent runs)
@@ -57,11 +59,23 @@ Run the first distillation pass against the OBPI-03 baseline and author `docs/go
 
 ## Discovery Checklist
 
-- [ ] OBPI-03 baseline artifact and schema
-- [ ] Parent ADR § Decision — distillation pass shape (six-step joint authoring sequence)
-- [ ] AGENTS.md § OPERATOR ECONOMY OF EFFORT — agent-drafts / operator-reviews / verbatim-preservation rules
-- [ ] AGENTS.md § Lane & Kind Attestation Matrix — foundation-kind Gate 5 walkthrough at brief level
-- [ ] Authority canon: Fowler *Refactoring* 2e, Martin SOLID, Page-Jones connascence, Constantine coupling/cohesion — for the doctrinal-frame field
+**Prerequisites**
+
+- [x] OBPI-0.0.27-03 `attested_completed` — `src/gzkit/complexity/measurement.py` (`measure_corpus()` entrypoint), `src/gzkit/complexity/baseline.py` (`BaselineArtifact`, `CrossProjectAggregate`, `ProjectBaseline`, `MetricDistribution`, `CrossMetricAggregate` frozen Pydantic models), and `src/gzkit/complexity/measurement.CANONICAL_METRICS` (12-key tuple) provide the measurement contract this distillation pass consumes. Brief amendment 2026-05-04 expanded OBPI-04 Allowed Paths to include `docs/governance/complexity/baselines/{YYYY-MM-DD}/baseline.json` + `baseline.summary.md` so OBPI-04 invokes `measure_corpus()` to land the first dated baseline (OBPI-03 brief line 35: "first dated baseline lands at OBPI-04 invocation").
+- [x] Parent ADR-0.0.27 § Decision — distillation pass shape (six-step joint authoring sequence: agent-drafts metric-aggregate prose → operator practitioner-eye observation → joint per-metric triple authoring → agent-proposed classifier rule-table updates → diff against prior distillation > 10% → output to `docs/governance/complexity/distilled-characteristics-{date}.md` with prior preserved).
+- [x] AGENTS.md § OPERATOR ECONOMY OF EFFORT — agent drafts substantively, operator reviews; verbatim phrasing preserved; raw machine-readable formats are agent-input surfaces only. Practitioner-eye block is the canonical OEE seam — agent never authors its prose (REQ-10).
+- [x] AGENTS.md § Lane & Kind & Sensitivity Attestation Matrix — foundation+heavy → brief-level Gate 5 walkthrough required regardless of axis-overlap; `_requires_human_obpi_attestation` returns True via the foundation branch.
+- [x] `.gzkit/rules/complexity-doctrine.md` — citation contract binding for downstream foundation ADRs (0.0.28 / 0.0.29 / 0.0.30); the distilled document is the load-bearing surface, not the raw distributions or the corpus registry.
+- [x] Authority canon: Fowler *Refactoring* 2e (long-method / large-class / divergent-change smell aggregate), Martin *Clean Code* (single-responsibility cyclomatic ceiling, long-parameter-list, nesting-depth), Page-Jones (connascence), Constantine (cohesion / coupling foundations) — distributed across the 12 canonical metrics in `_DOCTRINAL_FRAMES` per the per-metric triple's doctrinal-frame field (REQ-02).
+
+**Existing Code**
+
+- [x] `src/gzkit/complexity/measurement.py` — `measure_corpus(corpus, output_dir, *, cache_root=None) -> BaselineArtifact` orchestrates radon/lizard/cohesion against pinned-SHA clones; `CANONICAL_METRICS` is the 12-key tuple consumed by this distillation pass.
+- [x] `src/gzkit/complexity/baseline.py` — `BaselineArtifact` (corpus_revision + corpus_schema_version + tool_versions + projects + cross_project), `CrossProjectAggregate.metrics`, `CrossMetricAggregate` (per-metric pXX percentiles + inter_project_variance + project_count); all frozen + `extra="forbid"` so the distillation pass cannot drift from the measurement contract.
+- [x] `data/exemplar_corpus.json` — 13 pinned-SHA projects (`schema_version=1.0.0`, `corpus_revision=1`); `gzkit.models.exemplar.load_corpus(Path)` returns the validated `ExemplarCorpus`.
+- [x] `src/gzkit/traceability.covers` — `@covers("REQ-X.Y.Z-NN-MM")` decorator for REQ-derived parity (consumed by `gz covers OBPI-... --json` parity gate at Stage 3 Phase 1b).
+- [x] `data/behave_coverage_waivers.json` — existing waiver shape (rationale-key + per-OBPI entry); precedents at OBPI-0.0.27-01 / -02 / -03 for the same parent ADR. OBPI-04 entry under `adr-0.0.27-04-bdd-deferred-to-obpi-06` rationale defers BDD to OBPI-06's skill-invocation surface per brief REQ-07.
+- [x] `src/gzkit/complexity/__init__.py` — re-exports `measure_corpus`, `CANONICAL_METRICS`, `BaselineArtifact` so the distillation module imports from the package surface, not deeper internal modules.
 
 ## Quality Gates
 
@@ -150,15 +164,40 @@ uv run gz arb step --name unittest -- uv run -m unittest tests/complexity/test_d
 
 ### Key Proof
 
-<!-- Paste two representative per-metric blocks from the distilled document showing the triple shape (boundary as percentile + absolute, band, doctrinal frame) and the operator's practitioner-eye observation. -->
+
+```
+$ uv run gz arb step --name unittest -- uv run -m unittest tests.complexity.test_distillation -v
+Ran 8 tests in 0.004s — OK
+arb step name=unittest exit_status=0 receipt=arb-step-unittest-9cebe48046234a21946b70d1763d20f5
+
+$ uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
+Documentation built in 2.51 seconds
+arb step name=mkdocs exit_status=0 receipt=arb-step-mkdocs-1bd6a551c30243ca9fdbfaf36df18eb5
+
+$ uv run gz covers OBPI-0.0.27-04-distillation-pass --json
+parity gate: 7/7 (100.0%) — uncovered=0
+
+$ head -6 docs/governance/complexity/distilled-characteristics-2026-05-04.md
+---
+corpus_revision: 1
+baseline_artifact_path: "docs/governance/complexity/baselines/2026-05-04/baseline.json"
+distillation_date: "2026-05-04"
+prior_distillation_path: null
+---
+```
+
+Receipts: `arb-ruff-d1d8078547d84e92a957a3d0defebaad`, `arb-step-typecheck-114164f0a4ac48549c05734cfc2c759e`, `arb-step-unittest-9cebe48046234a21946b70d1763d20f5`, `arb-step-mkdocs-1bd6a551c30243ca9fdbfaf36df18eb5`.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `src/gzkit/complexity/distillation.py` (render_document, render_diff_section, render_metric_triple, _DOCTRINAL_FRAMES per-metric attribution citing Fowler/Martin/Page-Jones/Constantine, DocumentExistsError no-overwrite guard, PerMetricTriple frozen+forbid Pydantic model); `tests/complexity/test_distillation.py` (8 REQ-derived tests, each `@covers(REQ-0.0.27-04-NN)`); `docs/governance/complexity/baselines/2026-05-04/baseline.json` + `baseline.summary.md` (first dated baseline produced by `measure_corpus()` against the live 13-project corpus); `docs/governance/complexity/distilled-characteristics-2026-05-04.md` (192-line first distilled doctrine document, frontmatter + 12 metric sections + cold-start diff sentinel + citation form).
+- Tests added: 8 (1 per Acceptance Criterion REQ-01 through REQ-07 + a defensive frozen+forbid model test); parity gate 7/7 (100.0%) verified by `gz covers OBPI-0.0.27-04-distillation-pass --json`.
+- Brief amendment: 2026-05-04 added `docs/governance/complexity/baselines/{YYYY-MM-DD}/baseline.json` + `baseline.summary.md` to Allowed Paths under operator-selected Option B; resolved OBPI-03↔04 scaffold-time contradiction (commit `29a96358` authored both contradictory lines in a single sweep). Discovery Checklist expanded with substantive Prerequisites + Existing Code per `gz obpi validate --authored`.
+- BDD waiver: `data/behave_coverage_waivers.json` adds `adr-0.0.27-04-bdd-deferred-to-obpi-06` rationale + per-OBPI entry per brief REQ-07.
+- Date completed: 2026-05-04
+- Attestation status: operator attested at Stage 4 (`attest completed`); Gate 5 fired foundation+heavy via brief-level walkthrough; the 12 per-metric practitioner-eye blocks remain operator-authored placeholders by design (REQ-10 — agent never fabricates).
+- Defects noted: `lizard_nesting_depth` and `cohesion_lcom4` baselines are all-zero across the corpus — surfaces a candidate measurement-pipeline parser defect against OBPI-03 worth a follow-up GHI rather than an OBPI-04 blocker.
 
 ### Closing Argument
 
@@ -170,14 +209,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` (heavy + foundation requires TTY + ATTEST per metric)
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — Stage 4 ceremony presented per the canonical foundation+heavy template; operator witnessed the corpus-p90 boundary table for all 12 canonical metrics, the per-metric triple shape, and the cold-start diff sentinel. Tests 8/8 (receipt arb-step-unittest-9cebe48046234a21946b70d1763d20f5); lint clean (arb-ruff-d1d8078547d84e92a957a3d0defebaad); typecheck clean (arb-step-typecheck-114164f0a4ac48549c05734cfc2c759e); mkdocs --strict clean (arb-step-mkdocs-1bd6a551c30243ca9fdbfaf36df18eb5); REQ→@covers parity 7/7. Brief amendment 2026-05-04 closed the OBPI-03↔04 scaffold-time contradiction under Option B; BDD coverage waived to OBPI-06 per brief REQ-07.
+- Date: 2026-05-05
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-05
 
 **Evidence Hash:** -
