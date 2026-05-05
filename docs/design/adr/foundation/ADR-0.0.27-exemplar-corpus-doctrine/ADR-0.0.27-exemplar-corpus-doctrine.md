@@ -92,7 +92,7 @@ Aggregate per-project, then aggregate across projects: per-metric percentiles (p
 - `pyproject.toml`: pinned major versions of `radon`, `lizard`, `cohesion` as runtime dependencies (Stdlib-First named departures with rationale: stdlib does not provide cyclomatic complexity / nesting depth / LCOM4 metrics).
 - `.gzkit/skills/gz-complexity-distill/` (new): operator-runnable skill carrying corpus list, per-project path filters, methodology rationale, distillation cadence triggers; mirrored to `.claude/skills/`, `.agents/skills/`, `.github/skills/` per skill-surface-sync rules.
 - `docs/governance/complexity/` (new directory): home for raw baseline artifacts and dated distilled-characteristics documents.
-- `src/gzkit/governance/trust_audits.py`: add `validate_complexity_doctrine_links` for `gz validate --complexity-doctrine-links` scope; fail-closed (exit 3) on broken cross-references.
+- `src/gzkit/governance/trust_audits/complexity_doctrine_links.py`: add `validate_complexity_doctrine_links` for `gz validate --complexity-doctrine-links` scope; fail-closed (exit 3) on broken cross-references.
 - `.gzkit/rules/complexity-doctrine.md` (new): canonical rule file declaring corpus methodology, distillation cadence, citation contract.
 - `docs/governance/advisory-rules-audit.md`: scorecard entry classifying the new rule as Mechanical.
 
@@ -110,7 +110,7 @@ Aggregate per-project, then aggregate across projects: per-metric percentiles (p
 
 **OBPI-0.0.27-06 — `gz-complexity-distill` skill (ad-hoc + scheduled invocation):** Skill at `.gzkit/skills/gz-complexity-distill/`; carries corpus list + path filters + methodology rationale; operator-invocable ad-hoc; documents calendar (annual) + signal (drift > 25%) + judgment (ground-breaking project) triggers; output to `docs/governance/complexity/`; `gz agent sync control-surfaces` propagates to vendor mirrors.
 
-**OBPI-0.0.27-07 — `gz validate --complexity-doctrine-links` validator (link-integrity scope, 2am-scenario amelioration):** `validate_complexity_doctrine_links` at `src/gzkit/governance/trust_audits.py`; CLI flag registration; fail-closed (exit 3) when downstream ADRs cite documents that do not exist or are out of date; integrates into `gz validate --all` and `gz check`; closes the 2am-Scenario-2 failure mode (advisor diagnosis references missing artifact).
+**OBPI-0.0.27-07 — `gz validate --complexity-doctrine-links` validator (link-integrity scope, 2am-scenario amelioration):** `validate_complexity_doctrine_links` at `src/gzkit/governance/trust_audits/complexity_doctrine_links.py`; CLI flag registration; fail-closed (exit 3) when downstream ADRs cite documents that do not exist or are out of date; integrates into `gz validate --all` and `gz check`; closes the 2am-Scenario-2 failure mode (advisor diagnosis references missing artifact).
 
 **Sequencing:** OBPI-01 → OBPI-02 → OBPI-03 → OBPI-04 → OBPI-05 → OBPI-06 → OBPI-07. OBPI-02 books the six pool stubs as forward-references at land time.
 
@@ -312,7 +312,7 @@ Aggregate per-project, then aggregate across projects: per-metric percentiles (p
 - `pyproject.toml`: pinned major versions of `radon`, `lizard`, `cohesion` as runtime dependencies (Stdlib-First named departures with rationale: stdlib does not provide cyclomatic complexity / nesting depth / LCOM4 metrics).
 - `.gzkit/skills/gz-complexity-distill/` (new): operator-runnable skill carrying corpus list, per-project path filters, methodology rationale, distillation cadence triggers; mirrored to `.claude/skills/`, `.agents/skills/`, `.github/skills/` per skill-surface-sync rules.
 - `docs/governance/complexity/` (new directory): home for raw baseline artifacts and dated distilled-characteristics documents.
-- `src/gzkit/governance/trust_audits.py`: add `validate_complexity_doctrine_links` for `gz validate --complexity-doctrine-links` scope; fail-closed (exit 3) on broken cross-references.
+- `src/gzkit/governance/trust_audits/complexity_doctrine_links.py`: add `validate_complexity_doctrine_links` for `gz validate --complexity-doctrine-links` scope; fail-closed (exit 3) on broken cross-references.
 - `.gzkit/rules/complexity-doctrine.md` (new): canonical rule file declaring corpus methodology, distillation cadence, citation contract.
 - `docs/governance/advisory-rules-audit.md`: scorecard entry classifying the new rule as Mechanical.
 
@@ -330,7 +330,7 @@ Aggregate per-project, then aggregate across projects: per-metric percentiles (p
 
 **OBPI-0.0.27-06 — `gz-complexity-distill` skill (ad-hoc + scheduled invocation):** Skill at `.gzkit/skills/gz-complexity-distill/`; carries corpus list + path filters + methodology rationale; operator-invocable ad-hoc; documents calendar (annual) + signal (drift > 25%) + judgment (ground-breaking project) triggers; output to `docs/governance/complexity/`; `gz agent sync control-surfaces` propagates to vendor mirrors.
 
-**OBPI-0.0.27-07 — `gz validate --complexity-doctrine-links` validator (link-integrity scope, 2am-scenario amelioration):** `validate_complexity_doctrine_links` at `src/gzkit/governance/trust_audits.py`; CLI flag registration; fail-closed (exit 3) when downstream ADRs cite documents that do not exist or are out of date; integrates into `gz validate --all` and `gz check`; closes the 2am-Scenario-2 failure mode (advisor diagnosis references missing artifact).
+**OBPI-0.0.27-07 — `gz validate --complexity-doctrine-links` validator (link-integrity scope, 2am-scenario amelioration):** `validate_complexity_doctrine_links` at `src/gzkit/governance/trust_audits/complexity_doctrine_links.py`; CLI flag registration; fail-closed (exit 3) when downstream ADRs cite documents that do not exist or are out of date; integrates into `gz validate --all` and `gz check`; closes the 2am-Scenario-2 failure mode (advisor diagnosis references missing artifact).
 
 **Sequencing:** OBPI-01 → OBPI-02 → OBPI-03 → OBPI-04 → OBPI-05 → OBPI-06 → OBPI-07. OBPI-02 books the six pool stubs as forward-references at land time.
 
