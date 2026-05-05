@@ -301,6 +301,13 @@
         "manifest_path": { "type": "string", "min_length": 1 }
       }
     },
+    "pipeline_marker_purged": {
+      "required": ["reason", "marker_path"],
+      "properties": {
+        "reason": { "type": "string", "min_length": 1 },
+        "marker_path": { "type": "string", "min_length": 1 }
+      }
+    },
     "task_started": {
       "required": ["task_id", "obpi_id", "adr_id", "agent"],
       "properties": {

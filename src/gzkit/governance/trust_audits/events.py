@@ -55,6 +55,13 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "_check_adr_obpi_coverage_gaps for ADR closeout gap subtraction; "
         "does not add or modify artifact graph nodes."
     ),
+    "pipeline_marker_purged": (
+        "Runtime cleanup record (GHI #399) — emitted when the pipeline launcher "
+        "auto-purges a stale .pipeline-active-* marker whose OBPI is already "
+        "attested_completed in the ledger. Audits the cleanup itself; does not "
+        "modify the artifact graph (the OBPI's attested_completed state is "
+        "already established by the upstream obpi_receipt_emitted event)."
+    ),
 }
 
 _VALIDATOR_FIELD_WAIVERS: dict[str, str] = {}

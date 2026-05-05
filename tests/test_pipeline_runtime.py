@@ -3,8 +3,10 @@ import tempfile
 import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
+from gzkit.ledger import pipeline_marker_purged_event
 from gzkit.pipeline_runtime import (
     clear_stale_pipeline_markers,
     extract_brief_status,
@@ -19,6 +21,7 @@ from gzkit.pipeline_runtime import (
     pipeline_receipt_path,
     pipeline_resume_command,
     pipeline_router_message,
+    purge_orphaned_active_markers,
     remove_pipeline_artifacts,
 )
 from gzkit.traceability import covers
@@ -356,6 +359,132 @@ class TestPipelineRuntime(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             plans_dir = Path(tmpdir)
             remove_pipeline_artifacts(plans_dir, "OBPI-0.13.0-05")
+
+    # --- GHI #399: self-heal orphaned active markers when ledger says attested_completed ---
+
+    def test_pipeline_marker_purged_event_records_obpi_parent_reason_and_marker(self) -> None:
+        """Event factory pins the (id, parent, reason, marker_path) shape per GHI #399."""
+        event = pipeline_marker_purged_event(
+            obpi_id="OBPI-0.0.25-02-override-and-mirror",
+            parent_adr="ADR-0.0.25",
+            reason="attested_completed",
+            marker_path=".claude/plans/.pipeline-active-OBPI-0.0.25-02-override-and-mirror.json",
+        )
+        self.assertEqual(event.event, "pipeline_marker_purged")
+        self.assertEqual(event.id, "OBPI-0.0.25-02-override-and-mirror")
+        self.assertEqual(event.parent, "ADR-0.0.25")
+        self.assertEqual(event.extra["reason"], "attested_completed")
+        self.assertEqual(
+            event.extra["marker_path"],
+            ".claude/plans/.pipeline-active-OBPI-0.0.25-02-override-and-mirror.json",
+        )
+
+    def test_purge_orphaned_active_markers_removes_attested_completed_marker(self) -> None:
+        """A per-OBPI marker is purged when its OBPI's ledger state is attested_completed."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            obpi_id = "OBPI-0.0.25-02-override-and-mirror"
+            marker_path = plans_dir / f".pipeline-active-{obpi_id}.json"
+            marker_path.write_text(json.dumps({"obpi_id": obpi_id}) + "\n", encoding="utf-8")
+            graph = {
+                obpi_id: {
+                    "type": "obpi",
+                    "parent": "ADR-0.0.25",
+                    "obpi_completion": "attested_completed",
+                },
+            }
+
+            purged = purge_orphaned_active_markers(plans_dir, graph)
+
+            self.assertFalse(marker_path.exists())
+            self.assertEqual(len(purged), 1)
+            self.assertEqual(purged[0], (marker_path, obpi_id, "ADR-0.0.25"))
+
+    def test_purge_orphaned_active_markers_leaves_pending_marker_untouched(self) -> None:
+        """A live marker for a still-pending OBPI is left alone (no purge, no event)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            obpi_id = "OBPI-0.0.27-05-citation-contract"
+            marker_path = plans_dir / f".pipeline-active-{obpi_id}.json"
+            marker_path.write_text(json.dumps({"obpi_id": obpi_id}) + "\n", encoding="utf-8")
+            graph = {
+                obpi_id: {
+                    "type": "obpi",
+                    "parent": "ADR-0.0.27",
+                    "obpi_completion": "pending",
+                },
+            }
+
+            purged = purge_orphaned_active_markers(plans_dir, graph)
+
+            self.assertTrue(marker_path.exists())
+            self.assertEqual(purged, [])
+
+    def test_purge_orphaned_active_markers_handles_legacy_marker(self) -> None:
+        """The legacy .pipeline-active.json is purged when its OBPI is attested_completed."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            obpi_id = "OBPI-0.0.25-03-bdd-and-doc"
+            legacy_path = plans_dir / ".pipeline-active.json"
+            legacy_path.write_text(json.dumps({"obpi_id": obpi_id}) + "\n", encoding="utf-8")
+            graph = {
+                obpi_id: {
+                    "type": "obpi",
+                    "parent": "ADR-0.0.25",
+                    "obpi_completion": "attested_completed",
+                },
+            }
+
+            purged = purge_orphaned_active_markers(plans_dir, graph)
+
+            self.assertFalse(legacy_path.exists())
+            self.assertEqual(len(purged), 1)
+            self.assertEqual(purged[0][1], obpi_id)
+            self.assertEqual(purged[0][2], "ADR-0.0.25")
+
+    def test_purge_orphaned_active_markers_skips_marker_when_obpi_absent_from_graph(self) -> None:
+        """Defensive: an unknown-to-ledger OBPI is left alone, never purged."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            obpi_id = "OBPI-0.99.0-99-orphaned"
+            marker_path = plans_dir / f".pipeline-active-{obpi_id}.json"
+            marker_path.write_text(json.dumps({"obpi_id": obpi_id}) + "\n", encoding="utf-8")
+            graph: dict[str, dict[str, Any]] = {}
+
+            purged = purge_orphaned_active_markers(plans_dir, graph)
+
+            self.assertTrue(marker_path.exists())
+            self.assertEqual(purged, [])
+
+    def test_purge_orphaned_active_markers_purges_only_attested_when_mixed(self) -> None:
+        """Mixed plans_dir: only attested_completed markers are purged; pending stays."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            attested = "OBPI-0.0.25-02-override-and-mirror"
+            pending = "OBPI-0.0.27-05-citation-contract"
+            attested_marker = plans_dir / f".pipeline-active-{attested}.json"
+            attested_marker.write_text(json.dumps({"obpi_id": attested}) + "\n", encoding="utf-8")
+            pending_marker = plans_dir / f".pipeline-active-{pending}.json"
+            pending_marker.write_text(json.dumps({"obpi_id": pending}) + "\n", encoding="utf-8")
+            graph = {
+                attested: {
+                    "type": "obpi",
+                    "parent": "ADR-0.0.25",
+                    "obpi_completion": "attested_completed",
+                },
+                pending: {
+                    "type": "obpi",
+                    "parent": "ADR-0.0.27",
+                    "obpi_completion": "pending",
+                },
+            }
+
+            purged = purge_orphaned_active_markers(plans_dir, graph)
+
+            self.assertFalse(attested_marker.exists())
+            self.assertTrue(pending_marker.exists())
+            self.assertEqual(len(purged), 1)
+            self.assertEqual(purged[0][1], attested)
 
 
 class TestPlanFileDualScan(unittest.TestCase):

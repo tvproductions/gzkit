@@ -340,6 +340,28 @@ def obpi_lock_released_event(
     )
 
 
+def pipeline_marker_purged_event(
+    obpi_id: str,
+    parent_adr: str,
+    reason: str,
+    marker_path: str,
+) -> LedgerEvent:
+    """Record auto-purge of a stale pipeline-active marker (GHI #399).
+
+    Emitted by the pipeline launcher when it discovers a ``.pipeline-active-*``
+    marker whose OBPI is already ``attested_completed`` in the ledger — the
+    marker is provably orphaned (Stage 5 cleanup never fired) and is removed
+    so the next pipeline invocation isn't fail-closed by it. Recording the
+    cleanup as a ledger event keeps the runtime's marker mutations auditable.
+    """
+    return LedgerEvent(
+        event="pipeline_marker_purged",
+        id=obpi_id,
+        parent=parent_adr,
+        extra={"reason": reason, "marker_path": marker_path},
+    )
+
+
 def agent_sync_completed_event(
     updated_paths: list[str],
     canonical_rule_count: int,

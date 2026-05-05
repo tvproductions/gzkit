@@ -37,6 +37,7 @@ from gzkit.ledger import (
     normalize_req_proof_inputs,
     obpi_receipt_emitted_event,
     obpi_withdrawn_event,
+    pipeline_marker_purged_event,
     resolve_adr_lane,
 )
 from gzkit.pipeline_runtime import (
@@ -46,6 +47,7 @@ from gzkit.pipeline_runtime import (
     pipeline_marker_payload,
     pipeline_plans_dir,
     pipeline_stage_labels,
+    purge_orphaned_active_markers,
     write_pipeline_markers,
 )
 from gzkit.utils import capture_validation_anchor
@@ -340,6 +342,20 @@ def obpi_pipeline_cmd(
         raise SystemExit(1)
 
     plans_dir = pipeline_plans_dir(project_root)
+    for purged_path, purged_obpi, purged_parent in purge_orphaned_active_markers(plans_dir, graph):
+        relative = purged_path.relative_to(project_root).as_posix()
+        ledger.append(
+            pipeline_marker_purged_event(
+                obpi_id=purged_obpi,
+                parent_adr=purged_parent,
+                reason="attested_completed",
+                marker_path=relative,
+            )
+        )
+        console.print(
+            f"Purged stale pipeline marker: {relative} (OBPI {purged_obpi} is "
+            f"attested_completed in the ledger)"
+        )
     blockers = pipeline_concurrency_blockers(plans_dir, obpi_id)
     receipt_state, warnings, receipt = load_plan_audit_receipt(plans_dir, obpi_id)
     if receipt_state == "fail":
