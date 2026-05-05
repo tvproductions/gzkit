@@ -5,7 +5,7 @@ description: "Orchestrate the GHI-driven patch release ceremony: draft narrative
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.3.0"
+  skill-version: "1.4.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -119,6 +119,49 @@ Present the output to the operator. This shows:
 
 If no GHIs qualify (all excluded), inform the operator and stop. There is no
 release to make.
+
+#### Step 1a: Labeling-recovery (binding when `diff_only` GHIs surface)
+
+`diff_only` means a closed GHI's commits touched `src/gzkit/` but the GHI
+itself lacks the `runtime` label — the strict qualifier (`runtime` ∩ src
+diff) drops it, and substantive runtime fixes silently fall out of the
+release narrative. This is an authoring-side labeling-discipline defect
+canonized in `ghi-author` § Step 1 (secondary labels) — the GHI #402
+mechanism. The recovery is binding before the ceremony proceeds:
+
+1. Enumerate `diff_only` GHIs:
+
+   ```bash
+   uv run gz patch release --dry-run --json \
+     | jq -r '.qualifications[] | select(.status == "diff_only") | .ghi.number'
+   ```
+
+2. For each enumerated GHI, read the body to confirm the `runtime`
+   predicate fires per `ghi-author` § Step 1 — body cites `src/gzkit/`,
+   symptom is `gz <verb>` runtime, or remedy shape is `fix(...)`. Confirm
+   case-by-case; do not blanket-apply.
+
+3. Backfill the label with operator confirmation per GHI batch:
+
+   ```bash
+   gh issue edit <N> --add-label runtime
+   ```
+
+4. Re-run `uv run gz patch release --dry-run` and verify the previously
+   `diff_only` GHIs now report `qualified`.
+
+5. Proceed to Step 2.
+
+If a `diff_only` GHI's body does NOT cite a runtime surface (e.g. the
+commit happened to brush `src/gzkit/` cosmetically while the GHI was a
+docs-only change), do not backfill — the `excluded` bucket is the right
+home and the operator should re-classify with `--remove-label runtime`
+on any erroneous prior label. The labeling-recovery is not a license to
+silence warnings; it is a corrective for the authoring-discipline defect.
+
+When `diff_only` is a chronic pattern across consecutive releases, file
+a `defect`-labeled GHI against `ghi-author` discipline rather than
+absorbing the recovery cost every cycle (canonical home: GHI #402).
 
 ### Step 2: Narrative Drafting
 

@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-27
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.2.0"
 ---
 
 # ghi-author
@@ -112,6 +112,17 @@ routing matrix will consume.
    | Enhancement | `enhancement` | Surface works as designed; the design could be tighter |
    | Investigation | `investigation` | Unknown root cause; the GHI is to find it, not fix it |
 
+   **Secondary labels (binding — additive, not exclusive):** apply each label below whose predicate fires. Multiple secondary labels may co-apply with one primary class.
+
+   | Label | Apply when | Why it matters |
+   |-------|------------|----------------|
+   | `runtime` | The GHI's evidence cites a path under `src/gzkit/`, OR the symptom is observable behavior change at the `gz` CLI / runtime surface, OR the prescribed remedy is a `fix(...)` commit landing under `src/gzkit/` | `gz patch release --dry-run` qualifies behavior-level GHIs by `runtime` label ∩ src diff. A runtime-touching GHI without this label lands in the `diff_only` bucket and silently drops out of the patch-release narrative — the strict qualifier returns 0 even when 16 substantive runtime fixes have shipped (canonical violation: GHI #402, 2026-05-05) |
+   | `tech-debt` | The fix is a remediation of accumulated drift rather than a new defect | Routes the GHI into tech-debt sweeps and chore plans |
+   | `security` | The surface is registered in `data/security_surfaces.json` or the symptom has an attack-surface dimension | Triggers heightened Gate 5 walkthrough per `.gzkit/rules/security-sensitivity.md` |
+   | `eval-feedback` | The GHI was authored from an evaluation-feedback loop event | Required for the `Eval-feedback-source:` commit trailer per ADR-0.0.26 |
+
+   **Predicate heuristics for `runtime`** (any one fires the label): GHI body contains `src/gzkit/` as a path; the "Affected surfaces" section names a Python module under `src/`; the symptom block shows `uv run gz <verb>` output disagreeing with canonical intent; the prescribed remedy is shaped as `fix(<scope>): … (GHI #N)`. If the predicate fires, `--label runtime` is mandatory at `gh issue create` time, not deferrable to later operator triage.
+
 2. **Gather evidence.** For a defect, the minimum is:
    - The exact command run and its observed output (paste, don't paraphrase)
    - The canonical source of truth the output contradicts (file path + line, or rule citation)
@@ -154,11 +165,15 @@ routing matrix will consume.
    - <linked GHIs, ADRs, briefs, rule files>
    ```
 
-5. **Create the issue.**
+5. **Create the issue.** Include the primary class label AND every secondary label whose Step-1 predicate fired. Repeat `--label` per label; a runtime-touching defect that also remediates accumulated drift would carry `--label defect --label runtime --label tech-debt`.
 
    ```bash
    gh issue create \
      --label <defect|enhancement|investigation> \
+     [--label runtime] \
+     [--label tech-debt] \
+     [--label security] \
+     [--label eval-feedback] \
      --title "<surface>: <symptom>" \
      --body "$(cat <<'EOF'
    ...body from step 4...
@@ -217,6 +232,7 @@ routing matrix will consume.
 - **Never paraphrase observed output.** Paste verbatim or cite the file:line. Narrative reconstruction is the reporting-pathway drift `AGENTS.md` § DO IT RIGHT 6h exists to prevent.
 - **Never bundle unrelated defects into one GHI.** One GHI, one class of failure. Bundling creates a routing ambiguity the matrix cannot resolve.
 - **Never author a GHI to substitute for fixing something you could fix now.** The Prime Directive #4 (scope expansion is not scope creep) takes precedence — file a GHI only when the fix genuinely cannot land in-patch.
+- **Never omit a secondary label whose Step-1 predicate fired.** Missing `runtime` on a runtime-touching GHI silently drops it from `gz patch release` qualification; missing `security` defeats the Gate-5 walkthrough trigger; missing `eval-feedback` breaks the commit-trailer requirement under ADR-0.0.26. Secondary labels are not optional triage hints — they are mechanical inputs to downstream gates.
 
 ## Common Rationalizations
 
@@ -238,6 +254,7 @@ These thoughts mean STOP — you are about to produce a low-quality GHI:
 - Body contains "TODO add evidence" or equivalent placeholder
 - Multiple unrelated defects bundled into one GHI
 - No label applied (breaks `gh issue list --label <class>` triage)
+- Body cites `src/gzkit/` paths, `gz <verb>` runtime symptoms, or a `fix(...)` remedy shape but the `gh issue create` invocation omits `--label runtime` — this is the GHI #402 silent-qualifier-drift signature
 - Personal email or other PII in the body
 - Filed as a replacement for a fix that was in-scope and skipped
 
