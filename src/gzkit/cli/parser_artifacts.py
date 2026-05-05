@@ -52,6 +52,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "task_list_cmd": "gzkit.commands.task",
     "task_start_cmd": "gzkit.commands.task",
     "issue_file_cmd": "gzkit.commands.issue_cmd",
+    "complexity_distill_cmd": "gzkit.commands.complexity_distill_cmd",
 }
 
 _HANDLER_CACHE: dict[str, Callable[..., Any]] = {}
@@ -80,12 +81,127 @@ def _dispatch_adr_report(a: argparse.Namespace) -> None:
 
 
 def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
-    """Register adr, obpi, task, justify, and issue sub-command groups on *commands*."""
+    """Register adr, obpi, task, justify, issue, and complexity sub-command groups."""
     _register_adr_parsers(commands)
     _register_obpi_parsers(commands)
     _register_task_parsers(commands)
     _register_justify_parser(commands)
     _register_issue_parsers(commands)
+    _register_complexity_parsers(commands)
+
+
+def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register the ``gz complexity`` sub-command group (GHI #400).
+
+    Currently exposes the single subverb ``distill`` that wraps the
+    OBPI-0.0.27-04 distillation engine for ad-hoc operator invocation by
+    the ``gz-complexity-distill`` skill. Future complexity-cluster verbs
+    (``advise``, ``guide``) will land alongside under this group.
+    """
+    p_complexity = commands.add_parser(
+        "complexity",
+        help="Complexity-doctrine surfaces (distill, advise, guide)",
+        description=(
+            "Operator surface for the four-ADR complexity-doctrine cluster "
+            "(ADR-0.0.27 / 0.0.28 / 0.0.29 / 0.0.30). Currently exposes the "
+            "'distill' subverb that runs the measurement pipeline and emits "
+            "a dated distilled-characteristics document."
+        ),
+        epilog=build_epilog(
+            [
+                "gz complexity distill",
+                "gz complexity distill --corpus data/exemplar_corpus.json",
+                "gz complexity distill --baseline-json fixtures/baseline.json --no-prior",
+            ]
+        ),
+    )
+    complexity_commands = p_complexity.add_subparsers(dest="complexity_command")
+    complexity_commands.required = True
+
+    p_distill = complexity_commands.add_parser(
+        "distill",
+        help="Run a distillation pass and write a distilled-characteristics document",
+        description=(
+            "Compose the OBPI-0.0.27-03 measurement pipeline with the "
+            "OBPI-0.0.27-04 distillation render. Loads the corpus from "
+            "--corpus, runs measurement to --baseline-dir, and writes a dated "
+            "distilled-characteristics-{YYYY-MM-DD}.md under --output-dir. "
+            "Use --baseline-json to inject a pre-built baseline and skip "
+            "measurement (test path; agent-runs use --corpus)."
+        ),
+        epilog=build_epilog(
+            [
+                "gz complexity distill",
+                "gz complexity distill --corpus data/exemplar_corpus.json",
+                "gz complexity distill --baseline-json baseline.json --no-prior",
+                "gz complexity distill --today 2026-05-05 --allow-dated-sibling",
+            ]
+        ),
+    )
+    p_distill.add_argument(
+        "--corpus",
+        default=None,
+        help=f"Corpus JSON path (default: {DEFAULT_CORPUS_PATH_DISPLAY})",
+    )
+    p_distill.add_argument(
+        "--baseline-json",
+        dest="baseline_json",
+        default=None,
+        help="Pre-built baseline JSON (skip measurement; mutually exclusive with --corpus run)",
+    )
+    p_distill.add_argument(
+        "--output-dir",
+        dest="output_dir",
+        default=None,
+        help=f"Distilled-document output directory (default: {DEFAULT_OUTPUT_DIR_DISPLAY})",
+    )
+    p_distill.add_argument(
+        "--baseline-dir",
+        dest="baseline_dir",
+        default=None,
+        help="Baseline output directory (default: <output-dir>/baselines/<today>/)",
+    )
+    p_distill.add_argument(
+        "--prior",
+        default=None,
+        help="Prior distilled-characteristics document path (default: latest in output-dir)",
+    )
+    p_distill.add_argument(
+        "--no-prior",
+        dest="no_prior",
+        action="store_true",
+        help="Treat as cold start; skip prior auto-detection",
+    )
+    p_distill.add_argument(
+        "--allow-dated-sibling",
+        dest="allow_dated_sibling",
+        action="store_true",
+        help="On same-date collision, write a -1-suffixed sibling instead of failing",
+    )
+    p_distill.add_argument(
+        "--today",
+        dest="today_override",
+        default=None,
+        help="Override today's date (YYYY-MM-DD; for testing)",
+    )
+    p_distill.set_defaults(
+        func=lambda a: _lazy("complexity_distill_cmd")(
+            corpus=a.corpus,
+            baseline_json=a.baseline_json,
+            output_dir=a.output_dir,
+            baseline_dir=a.baseline_dir,
+            prior=a.prior,
+            no_prior=a.no_prior,
+            allow_dated_sibling=a.allow_dated_sibling,
+            today_override=a.today_override,
+        )
+    )
+
+
+# Display strings for help text — live values are re-imported in the handler so
+# the parser does not pull the heavy complexity stack at ``gz --help`` time.
+DEFAULT_CORPUS_PATH_DISPLAY = "data/exemplar_corpus.json"
+DEFAULT_OUTPUT_DIR_DISPLAY = "docs/governance/complexity"
 
 
 def _register_justify_parser(commands: argparse._SubParsersAction) -> None:

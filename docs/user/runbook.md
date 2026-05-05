@@ -793,9 +793,14 @@ uv run gz validate --chores-layout   # Fail closed (exit 3) on stray CHORE.md or
 
 ```bash
 uv run gz validate --complexity-doctrine-links  # ADR-0.0.27 citation link integrity
+uv run gz complexity distill                     # Run a distillation pass against the corpus
+uv run gz complexity distill --no-prior          # Cold-start invocation
+uv run gz complexity distill --allow-dated-sibling # Same-date sibling on collision
 ```
 
 Fail-closed (exit 3) audit of every citation in cluster ADRs (0.0.27 / 0.0.28 / 0.0.29 / 0.0.30) plus `.gzkit/rules/complexity-doctrine.md` and any document under `docs/governance/complexity/`. Recovery on a flagged citation: re-author the citation against the current `corpus_revision` and `distilled-characteristics-*.md` file, or amend the citing ADR through its own ceremony per `ADR-pool.doctrine-amendment-protocol`. Closes the 2am-Scenario-2 failure mode (advisor diagnosis references missing artifact). Included in `gz check`. See [`gz validate --complexity-doctrine-links`](commands/validate.md#-complexity-doctrine-links) for the speculative-citation marker (used when an ADR forward-references a planned-but-unlanded distillation).
+
+`gz complexity distill` is the destination CLI verb for the [`gz-complexity-distill`](../../.gzkit/skills/gz-complexity-distill/SKILL.md) skill (parent ADR-0.0.27, OBPI-0.0.27-06). It composes the OBPI-03 measurement pipeline with the OBPI-04 distillation render and emits a dated `distilled-characteristics-{YYYY-MM-DD}.md` under `docs/governance/complexity/`. Operator follow-up at Gate 5 fills the per-metric Practitioner-eye observation blocks the verb leaves as placeholders (REQ-0.0.27-04-10, the OEE seam). See [`gz complexity distill`](commands/complexity-distill.md) for full options and exit codes.
 
 ### Frontmatter-Ledger Reconciliation
 

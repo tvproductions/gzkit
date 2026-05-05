@@ -81,6 +81,25 @@ uv run gz parity check
 uv run mkdocs build --strict
 ```
 
+### Complexity doctrine surfaces (ADR-0.0.27 cluster)
+
+```bash
+uv run gz validate --complexity-doctrine-links  # Citation link integrity
+uv run gz complexity distill                     # Run a distillation pass
+uv run gz complexity distill --no-prior          # Cold-start invocation
+uv run gz complexity distill --allow-dated-sibling  # Same-date sibling
+```
+
+`gz complexity distill` is the destination CLI verb for the
+[`gz-complexity-distill`](../../.gzkit/skills/gz-complexity-distill/SKILL.md)
+skill (parent ADR-0.0.27, OBPI-0.0.27-06). It composes the OBPI-03
+measurement pipeline with the OBPI-04 distillation render and emits a
+dated `distilled-characteristics-{YYYY-MM-DD}.md` under
+`docs/governance/complexity/`. Operator follow-up at Gate 5 fills the
+per-metric Practitioner-eye observation placeholders the verb leaves
+intact (REQ-0.0.27-04-10 — the OEE seam). Full options + exit codes in
+[`gz complexity distill`](../user/commands/complexity-distill.md).
+
 ### Cross-repo defect routing
 
 When a defect or enhancement against a gzkit-owned surface (the `gz` CLI,
