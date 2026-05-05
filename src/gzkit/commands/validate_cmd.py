@@ -968,6 +968,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "sensitivity-registry-malformed",
         "sensitivity-malformed-allowlist",
         "absorption_duplicate",
+        "evaluation-justify-binding",
     }
 )
 
@@ -1190,7 +1191,6 @@ def validate(
             check_brief_headings,
             check_chores_layout,
             check_absorption_duplicates,
-            check_evaluation_justify_binding is not None,
         ]
     )
     if check_evaluation_justify_binding is not None and not _other_scopes_active:
