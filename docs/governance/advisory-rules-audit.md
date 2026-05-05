@@ -204,20 +204,26 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 |---|------|-------|-----|
 | 50 | Complexity calibration is grounded in an empirically-measured exemplar corpus: selection requires all seven criteria (longevity ≥ 5 yrs, maintenance health, practitioner reputation NOT GitHub-star count, pure-Python ≥ 80% LOC, author craftsmanship signal, project doctrine fitness, pinned commit SHA); corpus anti-patterns are explicitly prohibited; distillation cadence fires on annual calendar, drift > 25%, or operator judgment (6-month minimum re-distillation guard); downstream foundation ADRs cite the distilled-characteristics document, not raw distributions or the corpus directly; link-integrity validator enforced by `gz validate --complexity-doctrine-links` (OBPI-0.0.27-07). | **Mechanical** | Enforced by `gz validate --complexity-doctrine-links` (OBPI-0.0.27-07, `src/gzkit/governance/trust_audits/complexity_doctrine_links.py`) — fails closed (exit 3) when cluster ADRs (0.0.27/0.0.28/0.0.29/0.0.30) or `.gzkit/rules/complexity-doctrine.md` cite distilled-characteristics documents that do not exist, anchors that do not resolve, or `corpus_revision` values outside the supported portability window. Two-signal heuristic (`§` + `(corpus revision`) gates the citation candidate set; HTML-comment speculative-skip marker (`<!-- gz-validate-skip: complexity-doctrine-links -->`) supported. Wired into `gz check` via the "Complexity-doctrine links" runner so pre-merge gates fire automatically. Selection methodology criteria are pinned in `.gzkit/rules/complexity-doctrine.md` and validated by `tests/governance/test_complexity_doctrine_rule.py`. Scorecard citation: ADR-0.0.27 (parent), OBPI-0.0.27-07 (link-integrity enforcement). |
 
+### Complexity Thresholds (`.gzkit/rules/complexity-thresholds.md`)
+
+| # | Rule | Score | Why |
+|---|------|-------|-----|
+| 51 | gzkit publishes one canonical threshold table whose every entry is a `(metric, percentile-band, absolute-number, trigger-semantic)` tuple cited from the current distilled-characteristics document. The trigger-semantic vocabulary is fixed at three values (`block` / `warn` / `advise`); the per-metric mapping is operator-amendable doctrine. Every metric MUST carry a `block` band; every band carries the percentile + absolute-number pairing. Bootstrap-absolutes carve-out covers exactly the metrics with unresolved upstream defects (currently `radon_mi` per GHI #405, `lizard_nesting_depth` and `cohesion_lcom4` per GHI #404) and is one-shot per defect. | **Mechanical** | Enforced by `gz validate --complexity-thresholds` (OBPI-0.0.28-03 — forthcoming `validate_complexity_thresholds` in `src/gzkit/governance/trust_audits.py`) — fails closed (exit 3) on missing `block` band per metric, missing percentile + absolute pairing, trigger-semantic outside the three-value enum, unparseable citation tuple, or unmapped band introduced by corpus refresh. The `ThresholdTable` Pydantic loader at `src/gzkit/complexity/thresholds.py` (OBPI-0.0.28-02) is the runtime contract that ADR-0.0.29 advisor and ADR-0.0.30 authoring-guidance bind against. Selection-methodology and citation-tuple form inherited from `.gzkit/rules/complexity-doctrine.md` (rule 50) — the threshold table cites that doctrine's distilled-characteristics document at corpus revision 1. Rule body validated by `tests/governance/test_complexity_thresholds_rule.py`. Scorecard citation: ADR-0.0.28 (parent), OBPI-0.0.28-03 (validator-as-enforcement). |
+
 ---
 
 ## Summary
 
-Counts updated 2026-05-04 after ADR-0.0.27 OBPI-01 landed the exemplar-corpus selection methodology as a Mechanical-class rule.
+Counts updated 2026-05-05 after ADR-0.0.28 OBPI-01 landed the per-metric complexity-threshold rule as a Mechanical-class rule.
 
 | Score | Count | % |
 |-------|-------|---|
-| **Mechanical** | 36 | 59% |
+| **Mechanical** | 37 | 60% |
 | **Promotable** | 5 | 8% |
 | **Judgment** | 19 | 31% |
 | **Ambiguous** | 0 | 0% |
 
-**The mechanical floor rose from 30 % to 60 %** under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules were mechanized as `gz validate --<scope>` flags and two became pre-commit guards under `gzkit.hooks.guards`. ADR-0.0.22 added the security-sensitivity third axis as `gz validate --sensitivity`, lifting the floor by a further point. ADR-0.0.23 OBPI-02 added the **Judgment**-classed agent failure-mode taxonomy as shared reviewer vocabulary (mechanical promotion `gz validate --failure-mode-coverage` tracked under follow-up GHIs #308–#312). ADR-0.0.27 OBPI-01 added the **Mechanical**-classed exemplar-corpus doctrine rule. The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.
+**The mechanical floor rose from 30 % to 60 %** under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules were mechanized as `gz validate --<scope>` flags and two became pre-commit guards under `gzkit.hooks.guards`. ADR-0.0.22 added the security-sensitivity third axis as `gz validate --sensitivity`, lifting the floor by a further point. ADR-0.0.23 OBPI-02 added the **Judgment**-classed agent failure-mode taxonomy as shared reviewer vocabulary (mechanical promotion `gz validate --failure-mode-coverage` tracked under follow-up GHIs #308–#312). ADR-0.0.27 OBPI-01 added the **Mechanical**-classed exemplar-corpus doctrine rule. ADR-0.0.28 OBPI-01 added the **Mechanical**-classed complexity-thresholds rule (forthcoming `gz validate --complexity-thresholds` validator under OBPI-0.0.28-03). The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.
 
 ---
 
