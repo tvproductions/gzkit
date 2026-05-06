@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.28-complexity-threshold-doctrine
-status: Draft
+status: Validated
 kind: foundation
 semver: 0.0.28
 lane: heavy

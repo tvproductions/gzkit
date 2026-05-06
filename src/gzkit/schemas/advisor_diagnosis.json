@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gzkit.advisor_diagnosis.v1",
+  "title": "Advisor Diagnosis",
+  "description": "Canonical structural mirror of the AdvisorDiagnosis Pydantic model at src/gzkit/complexity/advisor/diagnosis.py (ADR-0.0.29 / OBPI-0.0.29-01). The data contract every downstream OBPI in ADR-0.0.29 binds against; consumers MUST validate against this schema rather than re-deriving the shape. Cross-field constraints (end_line >= start_line) are enforced by Pydantic only — JSON Schema Draft 2020-12 has no portable cross-field comparator.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "metric",
+    "crossing_band",
+    "crossing_value",
+    "archetype",
+    "doctrinal_frame",
+    "proof",
+    "recommended_move"
+  ],
+  "properties": {
+    "metric": {
+      "type": "string",
+      "description": "Complexity metric key (e.g. 'radon_cc', 'radon_mi')."
+    },
+    "crossing_band": {
+      "type": "string",
+      "enum": ["block", "warn", "advise"],
+      "description": "Threshold band the metric crossed. One of the three trigger-semantic values."
+    },
+    "crossing_value": {
+      "type": "number",
+      "description": "Observed metric value that triggered the diagnosis."
+    },
+    "archetype": {
+      "$ref": "#/$defs/RefactorArchetype"
+    },
+    "doctrinal_frame": {
+      "$ref": "#/$defs/DoctrinalFrame"
+    },
+    "proof": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/ProofRange"},
+      "description": "Non-empty array of file-range proof items for this diagnosis."
+    },
+    "recommended_move": {
+      "type": "string",
+      "description": "Human-readable refactoring recommendation."
+    },
+    "intrinsic_attestation": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/IntrinsicAttestationRef"}
+      ],
+      "description": "Optional intrinsic attestation reference; populated by OBPI-07."
+    }
+  },
+  "$defs": {
+    "RefactorArchetype": {
+      "type": "string",
+      "enum": [
+        "long_parameter_list",
+        "arrowhead",
+        "switch_on_type",
+        "feature_envy",
+        "large_class",
+        "divergent_change",
+        "shotgun_surgery",
+        "primitive_obsession",
+        "data_clumps",
+        "message_chain"
+      ],
+      "description": "Canonical ten-value refactor archetype enumeration. Amendments require ADR-0.0.29 ceremony."
+    },
+    "DoctrinalFrame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authority", "citation", "excerpt"],
+      "properties": {
+        "authority": {
+          "type": "string",
+          "enum": ["fowler", "martin", "page_jones", "constantine"],
+          "description": "One of the four canonical doctrinal authorities."
+        },
+        "citation": {
+          "type": "string",
+          "description": "Free-form citation string (book title, chapter, page)."
+        },
+        "excerpt": {
+          "type": "string",
+          "description": "Brief excerpt from the cited authority supporting the diagnosis."
+        }
+      }
+    },
+    "ProofRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file_path", "start_line", "end_line", "ast_node_kind"],
+      "properties": {
+        "file_path": {
+          "type": "string",
+          "description": "Relative path to the source file (from repo root)."
+        },
+        "start_line": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "First line of the proof range (1-indexed, inclusive)."
+        },
+        "end_line": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Last line of the proof range (1-indexed, inclusive). Must be >= start_line (enforced by Pydantic only)."
+        },
+        "ast_node_kind": {
+          "type": "string",
+          "description": "AST node kind at this range (e.g. 'FunctionDef', 'ClassDef')."
+        }
+      }
+    },
+    "IntrinsicAttestationRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attestation_id"],
+      "properties": {
+        "attestation_id": {
+          "type": "string",
+          "description": "Opaque attestation identifier; resolved by OBPI-07."
+        }
+      }
+    }
+  }
+}
