@@ -1,0 +1,47 @@
+=== Capability 1 — Canonical rule file (.gzkit/rules/complexity-thresholds.md) ===
+
+-- file presence --
+-rw-r--r--@ 1 jeff  staff  17763 May  5 19:01 .gzkit/rules/complexity-thresholds.md
+
+-- doctrine head (frontmatter + rule-version marker) --
+---
+id: complexity-thresholds
+paths:
+  - ".gzkit/rules/complexity-thresholds.md"
+  - "src/gzkit/complexity/thresholds.py"
+  - "src/gzkit/schemas/complexity_thresholds.json"
+  - "docs/governance/complexity/**"
+description: Per-metric threshold table mapping percentile + absolute boundaries to fixed three-value trigger semantics (block / warn / advise) for the gzkit complexity-doctrine cluster
+---
+
+<!-- rule-version: 0.1.0 -->
+
+# Complexity Thresholds (gzkit)
+
+> **Rule version:** `0.1.0` — authored under OBPI-0.0.28-01 to codify the
+> per-metric threshold table for ADR-0.0.28's complexity-doctrine cluster:
+> twelve canonical metrics, mandatory `block` band per metric, fixed three-
+> value trigger-semantic vocabulary (`block` / `warn` / `advise`),
+> percentile + absolute-number pairing per band, citation tuple anchored
+> to `docs/governance/complexity/distilled-characteristics-2026-05-04.md`
+> at corpus revision 1, and the bootstrap-absolutes carve-out for the
+> three known-bootstrap metrics (`radon_mi`, `lizard_nesting_depth`,
+> `cohesion_lcom4`) tracked under GHI #404 (parser defect) and GHI #405
+> (polarity-aware threshold model).
+
+## Citation
+
+This rule binds to the corpus-measured boundaries in
+[`docs/governance/complexity/distilled-characteristics-2026-05-04.md`](../../docs/governance/complexity/distilled-characteristics-2026-05-04.md)
+at `corpus_revision: 1`. Each per-metric table below carries the canonical
+
+-- vendor mirrors (per gz agent sync control-surfaces) --
+-rw-r--r--@ 1 jeff  staff  17603 May  5 20:19 .claude/rules/complexity-thresholds.md
+-rw-r--r--@ 1 jeff  staff  17586 May  5 20:19 .github/instructions/complexity_thresholds.instructions.md
+
+-- cluster citation anchor --
+20:> to `docs/governance/complexity/distilled-characteristics-2026-05-04.md`
+29:[`docs/governance/complexity/distilled-characteristics-2026-05-04.md`](../../docs/governance/complexity/distilled-characteristics-2026-05-04.md)
+30:at `corpus_revision: 1`. Each per-metric table below carries the canonical
+31:citation tuple `(distilled_characteristics_path, section_anchor, corpus_revision)`
+38:docs/governance/complexity/distilled-characteristics-2026-05-04.md § radon-cc (corpus revision 1)
