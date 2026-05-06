@@ -1,0 +1,113 @@
+[
+  {
+    "archetype": "long_parameter_list",
+    "metric_predicate": {
+      "metrics": ["lizard_param_count"],
+      "bands": ["warn", "block"]
+    },
+    "ast_predicate": {
+      "node_kind": "FunctionDef",
+      "min_param_count": 4
+    },
+    "doctrinal_frame": {
+      "authority": "fowler",
+      "citation": "Refactoring 2e, ch. 11 — Long Parameter List",
+      "excerpt": "Long parameter lists obscure the relationship between caller and callee; introduce a Parameter Object or Preserve Whole Object to recover intent."
+    }
+  },
+  {
+    "archetype": "arrowhead",
+    "metric_predicate": {
+      "metrics": ["lizard_nesting_depth", "radon_cc"],
+      "bands": ["warn", "block"]
+    },
+    "ast_predicate": {
+      "node_kind": "FunctionDef",
+      "min_branch_count": 3
+    },
+    "doctrinal_frame": {
+      "authority": "martin",
+      "citation": "Clean Code, ch. 7 — Boundary Conditions",
+      "excerpt": "Deeply nested control flow signals missing guard clauses; collapse the arrowhead with early returns and extracted predicates."
+    }
+  },
+  {
+    "archetype": "switch_on_type",
+    "metric_predicate": {
+      "metrics": ["radon_cc", "lizard_ccn"],
+      "bands": ["warn", "block"]
+    },
+    "ast_predicate": {
+      "node_kind": "Match",
+      "min_branch_count": 4
+    },
+    "doctrinal_frame": {
+      "authority": "fowler",
+      "citation": "Refactoring 2e, ch. 10 — Switch Statements",
+      "excerpt": "A switch keyed on type or tag is the primary signal for Replace Conditional with Polymorphism; the cases want to be subclasses or strategy callables."
+    }
+  },
+  {
+    "archetype": "large_class",
+    "metric_predicate": {
+      "metrics": ["radon_raw_nloc", "radon_raw_lloc"],
+      "bands": ["warn", "block"]
+    },
+    "ast_predicate": {
+      "node_kind": "ClassDef",
+      "min_class_attributes": 7
+    },
+    "doctrinal_frame": {
+      "authority": "fowler",
+      "citation": "Refactoring 2e, ch. 3 — Large Class",
+      "excerpt": "A class accreting attributes and behavior past the comfortable-craft band has acquired multiple responsibilities; extract collaborators along the responsibility seams."
+    }
+  },
+  {
+    "archetype": "feature_envy",
+    "metric_predicate": {
+      "metrics": ["radon_cc", "lizard_ccn"],
+      "bands": ["warn", "block"]
+    },
+    "ast_predicate": {
+      "node_kind": "FunctionDef",
+      "min_method_calls": 6
+    },
+    "doctrinal_frame": {
+      "authority": "fowler",
+      "citation": "Refactoring 2e, ch. 3 — Feature Envy",
+      "excerpt": "A method that talks more to another object than to itself is asking to be moved; relocate the behavior to where the data lives."
+    }
+  },
+  {
+    "archetype": "primitive_obsession",
+    "metric_predicate": {
+      "metrics": ["lizard_param_count", "radon_cc"],
+      "bands": ["warn", "block"]
+    },
+    "ast_predicate": {
+      "node_kind": "FunctionDef",
+      "min_argument_count": 5
+    },
+    "doctrinal_frame": {
+      "authority": "page_jones",
+      "citation": "What Every Programmer Should Know About Object-Oriented Design — Connascence of Type",
+      "excerpt": "Strings and ints standing in for domain concepts produce connascence of type across the call graph; introduce small value objects to localize the connascence."
+    }
+  },
+  {
+    "archetype": "data_clumps",
+    "metric_predicate": {
+      "metrics": ["lizard_param_count"],
+      "bands": ["warn", "block"]
+    },
+    "ast_predicate": {
+      "min_param_count": 3
+    },
+    "doctrinal_frame": {
+      "authority": "constantine",
+      "citation": "Structured Design — Data Coupling",
+      "excerpt": "Parameters that travel together signal a missing record type; bundling them as a value object reduces the data-coupling surface across the call graph."
+    }
+  }
+]

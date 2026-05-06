@@ -1,5 +1,5 @@
 ---
-id: ADR-0.0.37-constitutional-invariant-composition
+id: ADR-0.0.37
 status: Draft
 kind: foundation
 semver: 0.0.37

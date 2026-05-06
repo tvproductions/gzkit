@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gzkit.advisor_archetype_rules.v1",
+  "title": "Advisor Archetype Rules",
+  "description": "Canonical rule table consumed by the complexity advisor's diagnosis engine (ADR-0.0.29 / OBPI-0.0.29-02). Each rule binds a refactor archetype, a metric/band predicate, and an AST-shape predicate to a doctrinal frame. The rule table is doctrine, not configuration; amendments flow through the doctrine-amendment-protocol pool stub forward-referenced from ADR-0.0.27. The engine evaluates rules in declared order; the first matching rule wins. When no rule matches, the engine falls back to RefactorArchetype.LONG_PARAMETER_LIST and the per-metric doctrinal frame parsed from the cited distilled-characteristics document.",
+  "type": "array",
+  "minItems": 1,
+  "items": {"$ref": "#/$defs/Rule"},
+  "$defs": {
+    "Rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["archetype", "metric_predicate", "ast_predicate", "doctrinal_frame"],
+      "properties": {
+        "archetype": {"$ref": "#/$defs/RefactorArchetype"},
+        "metric_predicate": {"$ref": "#/$defs/MetricPredicate"},
+        "ast_predicate": {"$ref": "#/$defs/AstPredicate"},
+        "doctrinal_frame": {"$ref": "#/$defs/DoctrinalFrame"}
+      }
+    },
+    "RefactorArchetype": {
+      "type": "string",
+      "enum": [
+        "long_parameter_list",
+        "arrowhead",
+        "switch_on_type",
+        "feature_envy",
+        "large_class",
+        "divergent_change",
+        "shotgun_surgery",
+        "primitive_obsession",
+        "data_clumps",
+        "message_chain"
+      ],
+      "description": "One of the ten canonical refactor archetypes. Mirrors gzkit.complexity.advisor.diagnosis.RefactorArchetype."
+    },
+    "MetricPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metrics", "bands"],
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1},
+          "description": "Non-empty list of metric keys this rule applies to (e.g. 'lizard_param_count')."
+        },
+        "bands": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "enum": ["block", "warn", "advise"]},
+          "description": "Non-empty list of trigger-semantic bands this rule applies to."
+        }
+      }
+    },
+    "AstPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "anyOf": [
+        {"required": ["node_kind"]},
+        {"required": ["min_param_count"]},
+        {"required": ["min_branch_count"]},
+        {"required": ["min_argument_count"]},
+        {"required": ["min_class_attributes"]},
+        {"required": ["min_method_calls"]}
+      ],
+      "properties": {
+        "node_kind": {
+          "type": "string",
+          "enum": [
+            "FunctionDef",
+            "AsyncFunctionDef",
+            "ClassDef",
+            "If",
+            "For",
+            "While",
+            "Match",
+            "Call",
+            "Attribute",
+            "BinOp",
+            "Module"
+          ],
+          "description": "AST node-class name the rule matches against."
+        },
+        "min_param_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Minimum number of positional/keyword parameters for FunctionDef/AsyncFunctionDef matches."
+        },
+        "min_branch_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Minimum number of nested control-flow nodes (If/For/While/Match) under the target node."
+        },
+        "min_argument_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Minimum number of arguments at a Call site."
+        },
+        "min_class_attributes": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Minimum number of class-level attribute assignments under a ClassDef."
+        },
+        "min_method_calls": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Minimum number of Call nodes inside the target function (rough cohesion proxy)."
+        }
+      }
+    },
+    "DoctrinalFrame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authority", "citation", "excerpt"],
+      "properties": {
+        "authority": {
+          "type": "string",
+          "enum": ["fowler", "martin", "page_jones", "constantine"],
+          "description": "One of the four canonical doctrinal authorities (mirrors DoctrinalFrame.authority Literal)."
+        },
+        "citation": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Free-form citation string (book title, chapter, page)."
+        },
+        "excerpt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Brief excerpt (paraphrase preferred; primary-source authorial voice avoided to minimize licensing concerns)."
+        }
+      }
+    }
+  }
+}
