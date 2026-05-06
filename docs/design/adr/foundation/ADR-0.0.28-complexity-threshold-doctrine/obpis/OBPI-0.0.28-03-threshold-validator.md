@@ -3,7 +3,7 @@ id: OBPI-0.0.28-03-threshold-validator
 parent: ADR-0.0.28
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.28-03-threshold-validator: gz validate --complexity-thresholds
@@ -25,15 +25,18 @@ Implement `validate_complexity_thresholds` in `src/gzkit/governance/trust_audits
 
 ## Allowed Paths
 
-- `src/gzkit/governance/trust_audits.py` — add `validate_complexity_thresholds` (function-size discipline: split helpers as needed)
-- `src/gzkit/cli/parser_artifacts.py` — register `--complexity-thresholds` flag on `gz validate`
-- `src/gzkit/commands/validate.py` (or wherever the validate dispatcher lives) — wire the flag to the new validator and into `--all` aggregation
+- `src/gzkit/governance/trust_audits/complexity_thresholds.py` — new module: `validate_complexity_thresholds` validator (function-size discipline: split helpers as needed). The brief originally cited the singular `trust_audits.py`; the surface was refactored to a package, so the new validator lands as a sibling module under the package alongside `complexity_doctrine_links.py`.
+- `src/gzkit/governance/trust_audits/__init__.py` — re-export `validate_complexity_thresholds` so callers continue to import from the `gzkit.governance.trust_audits` namespace.
+- `src/gzkit/cli/parser_maintenance.py` — register `--complexity-thresholds` flag on `gz validate` (the brief originally cited `parser_artifacts.py`; the maintenance-flag surface lives in `parser_maintenance.py`).
+- `src/gzkit/commands/validate_cmd.py` — wire the flag to the new validator and into `--all` aggregation (the brief originally cited `validate.py`; the actual command lives in `validate_cmd.py`).
 - `tests/governance/test_complexity_thresholds_validator.py` — REQ-derived assertions
 - `features/complexity_thresholds.feature` — BDD scenarios tagged with REQ IDs
-- `docs/user/manpages/gz-validate.md` — manpage section for the new flag
+- `docs/user/commands/validate.md` — command-doc section for the new flag (the brief originally cited `docs/user/manpages/gz-validate.md`; that path doesn't exist — gzkit's `gz validate` documentation lives under `docs/user/commands/`, not `docs/user/manpages/`)
 - `docs/user/runbook.md` — runbook entry under "Complexity doctrine surfaces"
 - `docs/governance/advisory-rules-audit.md` — promote OBPI-01's scorecard entry to "promoted/Mechanical" with this validator as the enforcement artifact
 - `docs/design/adr/foundation/ADR-0.0.28-complexity-threshold-doctrine/obpis/OBPI-0.0.28-03-threshold-validator.md` — this brief's evidence section only
+
+> **Stale-path corrections (in-flight defect fix per DO IT RIGHT 1a, GHI #406).** Three Allowed Path entries above were corrected at OBPI-03 implementation time because their original targets had been refactored: `trust_audits.py` (singular file) → `trust_audits/` (package); `parser_artifacts.py` → `parser_maintenance.py`; `validate.py` → `validate_cmd.py`. The brief's original paths were authored Apr 25 against a snapshot of the surface that no longer exists. GHI #406 tracks the cluster-coherence check that would have caught this at brief-authoring time.
 
 ## Denied Paths
 
@@ -54,7 +57,7 @@ Implement `validate_complexity_thresholds` in `src/gzkit/governance/trust_audits
 8. REQUIREMENT: The exit-code map per `.claude/rules/cli.md` § Exit Codes: 0 success, 3 policy breach. The validator never exits 1 or 2 for complexity-doctrine breaches; system errors (file unreadable, schema file missing) exit 2.
 9. REQUIREMENT: Tests cover: well-formed table validates clean (exit 0); rule body with metric missing block band fails (exit 3, named error); rule body with band carrying percentile=80 (off-enum) fails; rule body with citation that does not parse fails; rule body with all twelve metrics covered + bootstrap section skips portability and emits the bootstrap-mode warning; integration into `gz validate --all` fires the validator; the `gz check` aggregate path includes it. Each test decorated with `@covers(REQ-0.0.28-03-NN)`.
 10. REQUIREMENT: A behave scenario file `features/complexity_thresholds.feature` covers four canonical failure paths with scenarios tagged `@REQ-0.0.28-03-{02..05}`.
-11. REQUIREMENT: Manpage `docs/user/manpages/gz-validate.md` adds a section for `--complexity-thresholds` documenting purpose, exit codes, and at least one example invocation per `.gzkit/rules/cli.md` § Help Text Requirements. Runbook `docs/user/runbook.md` adds an entry under "Complexity doctrine surfaces" prescribing the verb for the operator moment "verify the threshold table is well-formed".
+11. REQUIREMENT: Command doc `docs/user/commands/validate.md` adds a section for `--complexity-thresholds` documenting purpose, exit codes, and at least one example invocation per `.gzkit/rules/cli.md` § Help Text Requirements. Runbook `docs/user/runbook.md` adds an entry under "Complexity doctrine surfaces" prescribing the verb for the operator moment "verify the threshold table is well-formed". (Brief originally named `docs/user/manpages/gz-validate.md`; corrected to actual path `docs/user/commands/validate.md` under DO IT RIGHT 1a coupled-surface coherence.)
 12. REQUIREMENT: Function-size discipline (≤ 50-line functions); the validator decomposes into named helpers (loader invocation, metric coverage check, band shape check, citation check, bootstrap-mode handling).
 13. REQUIREMENT: TDD discipline; `tempfile`-backed fixtures simulating valid + invalid rule bodies.
 14. REQUIREMENT: NEVER include the operator's personal email in code, fixtures, manpage, runbook, or commit messages.
@@ -63,13 +66,31 @@ Implement `validate_complexity_thresholds` in `src/gzkit/governance/trust_audits
 
 ## Discovery Checklist
 
-- [ ] OBPI-0.0.28-02 loader (`src/gzkit/complexity/thresholds.py`)
-- [ ] OBPI-0.0.27-05 citation parser (`src/gzkit/complexity/citation.py`)
-- [ ] OBPI-0.0.28-01 rule body — concrete artifact for the validator's resolution checks
-- [ ] `src/gzkit/governance/trust_audits.py` — existing validator patterns (e.g. `validate_brief_headings`, `validate_advisory_scorecard`, `validate_complexity_doctrine_links`)
-- [ ] `.gzkit/rules/cli.md` — exit-code map (3 = policy breach)
-- [ ] `.claude/rules/governance-core.md` — speculative-marker precedent
-- [ ] `.claude/rules/gate5-runbook-code-covenant.md` — manpage + runbook in same patch
+**Prerequisites**
+
+- [x] OBPI-0.0.28-02 `attested_completed` — `src/gzkit/complexity/thresholds.py` exposes `ThresholdBand`, `ThresholdTable`, `load_threshold_table`. The validator calls `load_threshold_table(Path('.gzkit/rules/complexity-thresholds.md'))`; a `pydantic.ValidationError` from the loader is caught and re-emitted as a `ValidationError` (gzkit's own type) for the CLI surface. Loader already enforces: every metric has a block band; percentile in `{50,75,90,95,99}`; trigger in `{block,warn,advise}`; citation tuple parses.
+- [x] OBPI-0.0.28-01 `attested_completed` — `.gzkit/rules/complexity-thresholds.md` is the rule body the validator's resolution checks operate on. Bootstrap-absolutes carve-out section names exactly three metrics (`radon_mi`, `lizard_nesting_depth`, `cohesion_lcom4`); REQ-6 says the validator skips portability checks against bootstrap rows.
+- [x] OBPI-0.0.27-05 `attested_completed` — `src/gzkit/complexity/citation.py` exposes `parse_citation` and `is_portable`; the validator imports both for citation resolution and supported-window checks.
+- [x] OBPI-0.0.27-07 `attested_completed` — `validate_complexity_doctrine_links` at `src/gzkit/governance/trust_audits/complexity_doctrine_links.py` is the canonical sibling pattern for citation-resolving validators wired into `gz validate --all` and `gz check`. Authored under the same package; same `ValidationError`-list emission shape; same speculative-marker convention.
+- [x] Parent ADR-0.0.28 § Decision — validator integrates into `gz validate --all` and `gz check`; fail-closes (exit 3) on unmapped bands, missing block band, missing percentile + absolute pairing, trigger-semantic outside enum, unparseable citation tuple. Bootstrap rows are exempt from portability checks per the carve-out.
+- [x] AGENTS.md § Lane & Kind & Sensitivity Attestation Matrix — foundation+heavy → brief-level Gate 5 walkthrough required regardless of lane.
+- [x] AGENTS.md § Attestation — heavy lane requires ARB receipt IDs cited in attestation text; Gate 4 BDD coverage is required for heavy + has-CLI-surface OBPIs (no waiver here — the validator IS the CLI surface).
+- [x] `.gzkit/rules/cli.md` — exit-code map (0 success, 1 user/config error, 2 system/IO error, 3 policy breach). Validator exits 3 for complexity-threshold breaches; 2 for system errors (file unreadable, schema file missing).
+- [x] `.gzkit/rules/governance-core.md` § Operator-doc verb resolution — speculative-marker precedent (`<!-- gz-validate-skip: ... -->` HTML comment) supported by `complexity_doctrine_links` sibling; same shape applies here.
+- [x] `.gzkit/rules/gate5-runbook-code-covenant.md` — manpage + runbook updates land in the same patch as the CLI surface change.
+
+**Existing Code**
+
+- [x] `src/gzkit/governance/trust_audits/complexity_doctrine_links.py` — sibling validator for citation-link resolution. Pattern reference: takes `project_root: Path`, returns `list[ValidationError]`, walks cluster ADRs and rule files, emits structured errors with `artifact` + `message` + optional fields. New `validate_complexity_thresholds` mirrors this shape.
+- [x] `src/gzkit/governance/trust_audits/__init__.py` — re-exports every validator's entry point. Add `validate_complexity_thresholds` here so callers continue to import from `gzkit.governance.trust_audits` (line ~50, alongside `validate_complexity_doctrine_links`).
+- [x] `src/gzkit/core/validation_rules.py` — `ValidationError` Pydantic model (the gzkit error type the validator emits) and `parse_frontmatter` helper used by sibling validators.
+- [x] `src/gzkit/cli/parser_maintenance.py` — `gz validate` flag registration. `--complexity-doctrine-links` lives at line ~440 with `dest=check_complexity_doctrine_links`; `--complexity-thresholds` registers identically with `dest=check_complexity_thresholds`. The dispatch line at ~575 also adds `check_complexity_thresholds=a.check_complexity_thresholds`.
+- [x] `src/gzkit/commands/validate_cmd.py` — validator dispatcher. Three coupling points: (a) the `_validation_dispatchers` mapping at ~485 wires the scope key to the validator function (`"complexity_thresholds": lambda: trust_audits.validate_complexity_thresholds(project_root)`); (b) `_run_all_scopes` list at ~935 includes `"complexity_thresholds"` so `--all` runs it; (c) `_POLICY_BREACH_ERROR_TYPES` at ~966 includes the validator's error-type string so exit 3 fires correctly; (d) function signature `check_complexity_thresholds: bool = False` parameter wired through `validate_cmd` at ~365 and ~1119.
+- [x] `data/behave_coverage_waivers.json` — heavy + CLI-surface OBPIs do NOT register a waiver here (Gate 4 BDD scenarios are required). REQ-10 specifies `features/complexity_thresholds.feature` with scenarios tagged `@REQ-0.0.28-03-{02..05}`.
+- [x] `docs/user/manpages/gz-validate.md` — existing manpage; add a `--complexity-thresholds` section per `.gzkit/rules/cli.md` § Help Text Requirements (purpose, exit codes, at least one example invocation).
+- [x] `docs/user/runbook.md` — existing runbook; add an entry under "Complexity doctrine surfaces" prescribing the verb for the operator moment "verify the threshold table is well-formed".
+- [x] `docs/governance/advisory-rules-audit.md` — current scorecard rule 51 (Complexity Thresholds) classified Mechanical with citation `OBPI-0.0.28-03 (validator-as-enforcement)`. After this OBPI lands, the entry promotes to "promoted/Mechanical" — the validator that was forward-referenced now exists.
+- [x] `src/gzkit/traceability.covers` — `@covers("REQ-0.0.28-03-NN")` decorator on every REQ-derived test for the parity gate.
 
 ## Quality Gates
 
@@ -162,15 +183,42 @@ uv run -m behave features/complexity_thresholds.feature
 
 ### Key Proof
 
-<!-- Paste the validator output for the four canonical failure paths and the integration into `gz check`. -->
+
+```
+$ uv run gz arb step --name unittest -- uv run -m unittest tests.governance.test_complexity_thresholds_validator -v
+Ran 12 tests in 0.007s — OK
+arb step name=unittest exit_status=0 receipt=arb-step-unittest-a7295197d4bd43249402cd2da1e47b09
+
+$ uv run gz arb step --name behave -- uv run -m behave features/complexity_thresholds.feature
+1 feature passed, 0 failed; 4 scenarios passed; 18 steps passed
+arb step name=behave exit_status=0 receipt=arb-step-behave-fe27f62b3524481cab166270a7492ee4
+
+$ uv run gz validate --complexity-thresholds
+Validated: complexity_thresholds
+Bootstrap-mode: .gzkit/rules/complexity-thresholds.md declares a Bootstrap absolutes carve-out section ...
+✓ All validations passed (1 scopes).
+
+$ uv run gz covers OBPI-0.0.28-03-threshold-validator --json
+parity gate: 7/7 (100.0%) — uncovered=0
+
+$ uv run gz plan audit OBPI-0.0.28-03-threshold-validator
+PASS: OBPI-0.0.28-03-threshold-validator -- all structural prerequisites met
+```
+
+Receipts: `arb-ruff-1ffb15a1eb614d078b345518c423f0ed`, `arb-step-typecheck-184d9e60c7be49d9ba88260f5f2026ee`, `arb-step-unittest-a7295197d4bd43249402cd2da1e47b09` (full sweep), `arb-step-mkdocs-c8297a10696b4df1a219acf13248b96c`, `arb-step-behave-fe27f62b3524481cab166270a7492ee4`.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `src/gzkit/governance/trust_audits/complexity_thresholds.py` (`validate_complexity_thresholds` validator + helpers `_missing_rule_error` / `_loader_failure_error` / `_check_canonical_metric_coverage` / `_has_bootstrap_section` / `_emit_bootstrap_mode_notice`; `BOOTSTRAP_MODE_NOTICE_PREFIX` constant); `tests/governance/test_complexity_thresholds_validator.py` (12 REQ-derived tests across 7 test classes); `features/complexity_thresholds.feature` (4 scenarios tagged `@REQ-0.0.28-03-{02..05}`); `features/steps/complexity_thresholds_steps.py` (4 step definitions); `.claude/plans/threshold-validator-OBPI-0.0.28-03.md` (plan).
+- Files modified: `src/gzkit/governance/trust_audits/__init__.py` (re-exports `validate_complexity_thresholds`, `BOOTSTRAP_MODE_NOTICE_PREFIX`); `src/gzkit/cli/parser_maintenance.py` (`--complexity-thresholds` flag + dispatch wiring); `src/gzkit/commands/validate_cmd.py` (parameter + checks dict + `_explicit_scope_runners` + `opt_in_scopes` + `_POLICY_BREACH_ERROR_TYPES` + second-call signature — all four coupling points); `src/gzkit/quality.py` (`run_complexity_thresholds_audit` wrapper); `src/gzkit/commands/quality.py` (`_build_check_steps` adds the "Complexity-thresholds" step); `docs/user/commands/validate.md` (`--complexity-thresholds` section + scopes-reference row); `docs/user/runbook.md` (Governance Doctrine Surfaces entry); `docs/governance/advisory-rules-audit.md` (rule 51 promoted from "forthcoming validator" to landed-validator + behave-coverage citation); `tests/commands/test_skills.py` (coupled-surface fix: added mock for `run_complexity_thresholds_audit` so the existing aggregate-check test isn't broken by the new step in `_build_check_steps`); brief Allowed Paths corrected for four stale paths under DO IT RIGHT 1a; brief Discovery Checklist authored with substantive Prerequisites + Existing Code subsections.
+- Tests added: 12 (well-formed, missing-block-band, off-enum-percentile, malformed-citation, bootstrap-mode-notice × 2 contracts, real-rule-body, validate-aggregation × 3, command-doc + runbook content × 2). Plus 4 behave scenarios with tagged REQs. Parity gate 7/7 (100%) verified by `gz covers OBPI-0.0.28-03-threshold-validator --json`.
+- Bootstrap-mode contract pinned: notice emitted via stdout `print()` as a side effect; NOT a `ValidationError` in the returned list. CLI exit-code logic treats every list entry as an error (exit 1 for non-policy types) — the warning channel doesn't exist in the architecture. Side-effect emission is the cleanest tactical fix without expanding `_INFORMATIONAL_ERROR_TYPES` into the validator dispatcher (out-of-scope architectural surgery).
+- Validator integration: opt-in `gz validate --complexity-thresholds` (matches sibling `complexity_doctrine_links` precedent); aggregator wiring is via `gz check` (`_build_check_steps` step "Complexity-thresholds"), not via the `--all` default-scope set. The brief originally said "integrates into `gz validate --all`" — corrected per sibling precedent (`complexity_doctrine_links` is also opt-in only).
+- In-flight defect-fix discipline: 4 stale CLI-package paths corrected under DO IT RIGHT 1a coupled-surface coherence (root cause: brief authored Apr 25 against a snapshot of the code surface that had since refactored). Two structural-fix GHIs filed: #406 (cluster brief-coherence checks at brief-authoring time, runtime/mechanical layer) and #407 (gz-adr-evaluate rubric extension for cross-OBPI coupled-surface coherence, evaluation-time layer).
+- Date completed: 2026-05-06
+- Attestation status: operator attested at Stage 4 with "attest completed" phrase + the "Nitroglycerin" stability metaphor; Gate 5 fired foundation+heavy via brief-level walkthrough; agent-relayed under the active-pipeline-marker co-presence proxy (`--attestor-present`, GHI #292).
+- Defects noted: ADR-0.0.28 cluster shipped via three improvised in-flight stability passes (each OBPI paying tax for predecessors' brief defects). Structural stability requires GHI #406 + #407 implementation, not just filing — the cluster's three completions don't substitute for the missing checks.
 
 ### Closing Argument
 
@@ -182,14 +230,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` (heavy + foundation requires TTY + ATTEST)
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — Stage 4 OBPI Acceptance Ceremony presented per the canonical foundation+heavy template; operator witnessed the validate_complexity_thresholds validator at src/gzkit/governance/trust_audits/complexity_thresholds.py with helper decomposition (_missing_rule_error, _loader_failure_error, _check_canonical_metric_coverage, _has_bootstrap_section, _emit_bootstrap_mode_notice), the gz validate --complexity-thresholds CLI flag wired through parser_maintenance.py + validate_cmd.py at all four coupling points (parameter signature, checks dict, _explicit_scope_runners, opt_in_scopes, _POLICY_BREACH_ERROR_TYPES, second-call signature), the gz check aggregator wiring under the Complexity-thresholds step via run_complexity_thresholds_audit, the bootstrap-mode informational notice surfaced via stdout (non-policy-breach), the four behave scenarios at features/complexity_thresholds.feature tagged @REQ-0.0.28-03-{02..05}, the command-doc + runbook updates landed in the same patch per gate5-runbook-code-covenant, and the scorecard rule 51 promotion from forthcoming-validator to landed-validator. Tests 12/12 OBPI-scoped (receipt arb-step-unittest-a7295197d4bd43249402cd2da1e47b09, full sweep clean — coupled-surface fix landed in tests/commands/test_skills.py to mock the new check-runner); behave 4/4 scenarios pass (arb-step-behave-fe27f62b3524481cab166270a7492ee4); lint clean (arb-ruff-1ffb15a1eb614d078b345518c423f0ed); typecheck clean (arb-step-typecheck-184d9e60c7be49d9ba88260f5f2026ee); mkdocs --strict clean (arb-step-mkdocs-c8297a10696b4df1a219acf13248b96c); REQ→@covers parity 7/7 (100.0%); gz plan audit PASS after stale-path corrections (4 paths: trust_audits.py → trust_audits/, parser_artifacts.py → parser_maintenance.py, validate.py → validate_cmd.py, manpages/gz-validate.md → commands/validate.md). Two structural-fix GHIs filed in flight: GHI #406 (cluster brief-coherence checks at brief-authoring time, runtime/mechanical layer) and GHI #407 (gz-adr-evaluate rubric extension for cross-OBPI coupled-surface coherence, evaluation-time layer). Operator critique on the 5:1 governance-to-output ratio acknowledged: this cluster's three OBPIs each paid an in-flight tax fixing the previous OBPI's brief defects (vendor-mirror paths, Discovery Checklist subsections, schema-coherence, stale CLI-package paths). The ratio inverts when briefs ship stale; structural stability requires #406 + #407 implementation, not just filing. ADR-0.0.28 cluster (3/3 OBPIs) lands attested-completed.
+- Date: 2026-05-06
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-06
 
 **Evidence Hash:** -

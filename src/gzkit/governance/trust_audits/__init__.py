@@ -47,6 +47,10 @@ from gzkit.governance.trust_audits.code_quality import (
 from gzkit.governance.trust_audits.complexity_doctrine_links import (
     validate_complexity_doctrine_links,
 )
+from gzkit.governance.trust_audits.complexity_thresholds import (
+    BOOTSTRAP_MODE_NOTICE_PREFIX,
+    validate_complexity_thresholds,
+)
 from gzkit.governance.trust_audits.cross_platform import audit_utf8_prefix
 from gzkit.governance.trust_audits.evaluation_justify_binding import (
     validate_evaluation_justify_binding,
@@ -106,7 +110,9 @@ __all__ = [
     "audit_validator_fields",
     "audit_version_release",
     "explain_sensitivity_for_paths",
+    "BOOTSTRAP_MODE_NOTICE_PREFIX",
     "validate_attestation_receipts",
     "validate_complexity_doctrine_links",
+    "validate_complexity_thresholds",
     "validate_evaluation_justify_binding",
 ]

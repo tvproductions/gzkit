@@ -355,6 +355,10 @@ class TestSkillCommands(unittest.TestCase):
                     "gzkit.quality.run_complexity_doctrine_links_audit",
                     return_value=ok,
                 ),
+                patch(
+                    "gzkit.quality.run_complexity_thresholds_audit",
+                    return_value=ok,
+                ),
                 patch("gzkit.quality.run_preflight", return_value=ok),
             ):
                 result = runner.invoke(main, ["check"])

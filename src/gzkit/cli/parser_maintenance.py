@@ -443,6 +443,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Audit ADR-0.0.27 complexity-doctrine citations resolve (link integrity)",
     )
     p_validate.add_argument(
+        "--complexity-thresholds",
+        dest="check_complexity_thresholds",
+        action="store_true",
+        help="Audit ADR-0.0.28 complexity-thresholds rule body shape and citation",
+    )
+    p_validate.add_argument(
         "--reconcile-freshness",
         dest="check_reconcile_freshness",
         action="store_true",
@@ -573,6 +579,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_skill_alignment=a.check_skill_alignment,
             check_advisory_scorecard=a.check_advisory_scorecard,
             check_complexity_doctrine_links=a.check_complexity_doctrine_links,
+            check_complexity_thresholds=a.check_complexity_thresholds,
             check_reconcile_freshness=a.check_reconcile_freshness,
             check_insights_shape=a.check_insights_shape,
             check_instructions_files_budget=a.check_instructions_files_budget,
