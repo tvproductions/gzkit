@@ -32,11 +32,55 @@ __all__ = [
     "load_archetype_rules",
 ]
 
-_PROJECT_ROOT: Path = Path(__file__).resolve().parents[4]
-CANONICAL_RULE_TABLE_PATH: Path = _PROJECT_ROOT / "data" / "advisor_archetype_rules.json"
-CANONICAL_SCHEMA_PATH: Path = (
-    _PROJECT_ROOT / "src" / "gzkit" / "schemas" / "advisor_archetype_rules.json"
-)
+_CANONICAL_DATA_FILE = "advisor_archetype_rules.json"
+
+
+def _resolve_canonical_rule_table_path() -> Path:
+    """Resolve the canonical archetype-rules table path at call time.
+
+    Looks under ``importlib.resources.files("gzkit")`` parents — the
+    package install location — to locate ``data/`` relative to the
+    distribution. Falls back to ``Path("data")`` if package resolution
+    fails (editable install in-tree). Lazy resolution (call-time, not
+    import-time) keeps path identity stable across CWD changes that
+    legitimately fire during tests and pipelines.
+    """
+    from importlib.resources import files  # noqa: PLC0415
+
+    try:
+        package_dir = Path(str(files("gzkit")))
+        # Package is at <root>/src/gzkit; data/ is at <root>/data/
+        candidate = package_dir.parent.parent / "data" / _CANONICAL_DATA_FILE
+        if candidate.exists():
+            return candidate
+    except (ModuleNotFoundError, TypeError):
+        pass
+    return Path("data") / _CANONICAL_DATA_FILE
+
+
+def _resolve_canonical_schema_path() -> Path:
+    """Package-resource path to the JSON Schema mirror for the rule table."""
+    from importlib.resources import files  # noqa: PLC0415
+
+    return Path(str(files("gzkit.schemas").joinpath(_CANONICAL_DATA_FILE)))
+
+
+def _canonical_rule_table_path() -> Path:
+    """Lazy accessor for the canonical archetype-rules table path."""
+    return _resolve_canonical_rule_table_path()
+
+
+def _canonical_schema_path() -> Path:
+    """Lazy accessor for the JSON Schema mirror path."""
+    return _resolve_canonical_schema_path()
+
+
+# Module-level aliases retained for backwards compatibility with callers that
+# reference these names directly. These are eagerly resolved once at import
+# time; tests that change CWD between processes use ``load_archetype_rules``'s
+# explicit ``path`` kwarg instead.
+CANONICAL_RULE_TABLE_PATH: Path = _resolve_canonical_rule_table_path()
+CANONICAL_SCHEMA_PATH: Path = _resolve_canonical_schema_path()
 
 
 class MetricPredicate(BaseModel):

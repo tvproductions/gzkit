@@ -79,6 +79,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz typecheck`](typecheck.md) | Run static type checks |
 | [`gz validate`](validate.md) | Validate governance artifacts |
 | [`gz complexity distill`](complexity-distill.md) | Run a complexity distillation pass and emit a distilled-characteristics document |
+| [`gz complexity advise`](complexity-advise.md) | Run the trigger-time complexity advisor against a file or directory and emit AdvisorDiagnosis output |
 | [`gz skill audit`](skill-audit.md) | Audit skill lifecycle metadata and mirror parity |
 | [`gz skill list`](skill-list.md) | List all discovered skills and their metadata |
 | [`gz skill new`](skill-new.md) | Create a new skill scaffold |

@@ -53,6 +53,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "task_start_cmd": "gzkit.commands.task",
     "issue_file_cmd": "gzkit.commands.issue_cmd",
     "complexity_distill_cmd": "gzkit.commands.complexity_distill_cmd",
+    "complexity_advise_cmd": "gzkit.commands.complexity_advise",
 }
 
 _HANDLER_CACHE: dict[str, Callable[..., Any]] = {}
@@ -194,6 +195,72 @@ def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:
             no_prior=a.no_prior,
             allow_dated_sibling=a.allow_dated_sibling,
             today_override=a.today_override,
+        )
+    )
+
+    p_advise = complexity_commands.add_parser(
+        "advise",
+        help="Run the complexity advisor against a file or directory",
+        description=(
+            "Runs the OBPI-0.0.29-02 diagnosis engine against the file or "
+            "directory at PATH. Loads the canonical threshold table from "
+            ".gzkit/rules/complexity-thresholds.md (ADR-0.0.28), measures "
+            "per-function radon_cc via radon's Python API, and emits an "
+            "AdvisorDiagnosis for every band crossing. Default output is "
+            "structured prose; --json emits the canonical Pydantic "
+            "serialization. Exit codes: 0 success or warn-band crossings, "
+            "1 user/config error, 2 system/IO error, 3 block-band crossing."
+        ),
+        epilog=build_epilog(
+            [
+                "gz complexity advise src/gzkit/commands/validate.py",
+                "gz complexity advise src/gzkit/ --json",
+                "gz complexity advise tests/ --quiet",
+            ]
+        ),
+    )
+    p_advise.add_argument(
+        "path",
+        help="File or directory to analyze (recursive on directories)",
+    )
+    p_advise.add_argument(
+        "--json",
+        dest="json_output",
+        action="store_true",
+        help="Emit AdvisorDiagnosis list as a JSON array (machine-readable)",
+    )
+    p_advise.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Errors only (no progress output)",
+    )
+    p_advise.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Debug output (per-file analysis trace)",
+    )
+    add_dry_run_flag(p_advise)
+    p_advise.add_argument(
+        "--auto-chain",
+        dest="auto_chain",
+        action="store_true",
+        help="Reserved for OBPI-05 (xenon-as-gate auto-fire); no-op here",
+    )
+    p_advise.add_argument(
+        "--rule-path",
+        dest="rule_path",
+        default=None,
+        help="Override threshold rule path (default: .gzkit/rules/complexity-thresholds.md)",
+    )
+    p_advise.set_defaults(
+        func=lambda a: _lazy("complexity_advise_cmd")(
+            path=a.path,
+            json_output=a.json_output,
+            quiet=a.quiet,
+            verbose=a.verbose,
+            dry_run=a.dry_run,
+            auto_chain=a.auto_chain,
+            rule_path=a.rule_path,
         )
     )
 
