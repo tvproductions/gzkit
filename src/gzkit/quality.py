@@ -586,6 +586,17 @@ def run_complexity_doctrine_links_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --complexity-doctrine-links", cwd=project_root)
 
 
+def run_complexity_thresholds_audit(project_root: Path) -> QualityResult:
+    """Run the ADR-0.0.28 complexity-thresholds rule-body audit.
+
+    Fails closed when the rule body fails to parse into a ``ThresholdTable``,
+    or when any canonical metric is missing a per-metric section. Emits a
+    ``bootstrap-mode`` warning (non-policy-breach) when the rule body
+    declares the bootstrap-absolutes carve-out section.
+    """
+    return run_command("uv run gz validate --complexity-thresholds", cwd=project_root)
+
+
 def run_orientation_freshness_audit(project_root: Path) -> QualityResult:
     """Run the SessionStart orientation hook freshness audit (GHI #341).
 

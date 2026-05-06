@@ -283,6 +283,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_adr_status_fresh_audit,
         run_cli_audit,
         run_complexity_doctrine_links_audit,
+        run_complexity_thresholds_audit,
         run_format_check,
         run_insights_shape_audit,
         run_instructions_files_budget_audit,
@@ -310,6 +311,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Insights shape", run_insights_shape_audit),
         ("Instructions files budget", run_instructions_files_budget_audit),
         ("Complexity-doctrine links", run_complexity_doctrine_links_audit),
+        ("Complexity-thresholds", run_complexity_thresholds_audit),
         ("Preflight", run_preflight),
     ]
 

@@ -355,6 +355,22 @@ The marker is a per-citation escape, not a global allowlist. Use only when the p
 
 Included in `gz check` (step "Complexity-doctrine links") and runnable as `gz validate --complexity-doctrine-links` directly. Pre-commit / pre-merge gates fire automatically.
 
+### `--complexity-thresholds`
+
+Enforces the ADR-0.0.28 complexity-thresholds rule body shape. Loads `.gzkit/rules/complexity-thresholds.md` via OBPI-0.0.28-02's `load_threshold_table`, which fail-closes (Pydantic `ValidationError`) on: missing `block` band per metric, percentile outside the canonical `{50, 75, 90, 95, 99}` enum, trigger-semantic outside `{block, warn, advise}`, missing percentile + absolute pairing, or unparseable citation tuple. The validator also asserts every canonical metric (the twelve metrics from `gzkit.complexity.measurement.CANONICAL_METRICS`) has at least one band in the loaded table. When the rule body declares the `## Bootstrap absolutes` carve-out section, the validator emits a `complexity_thresholds_bootstrap_mode` warning to operator-facing diagnostic — informational, non-policy-breach — naming the GHIs (#404, #405) that track resolution of the underlying upstream defects.
+
+```bash
+# Audit the threshold table is well-formed
+gz validate --complexity-thresholds
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Rule body parses; every canonical metric has at least one band; citation tuple round-trips | — |
+| 3 | Loader fail (missing block band, off-enum percentile, malformed citation, etc.) or canonical metric coverage gap | Re-author the rule body to match the schema; consult ADR-0.0.28 § Threshold table shape for the worked example |
+
+Included in `gz check` (step "Complexity-thresholds") and runnable as `gz validate --complexity-thresholds` directly. The bootstrap-mode warning surfaces in operator output but does not fail the build — the carve-out is one-shot, named per metric in the rule body, and exempts portability checks against bootstrap rows until the upstream defect resolves.
+
 ## Scopes Reference
 
 The following table catalogs every audit scope the `gz validate` surface
@@ -394,6 +410,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--skill-alignment` | opt-in | Every CLI verb has a wielding skill (Tool / Skill / Runbook Alignment Invariant 1) |
 | `--advisory-scorecard` | opt-in | Every `.gzkit/rules/*` file appears in the advisory-rules-audit scorecard |
 | `--complexity-doctrine-links` | opt-in | ADR-0.0.27 complexity-doctrine citation link integrity (closes 2am-Scenario-2) |
+| `--complexity-thresholds` | opt-in | ADR-0.0.28 complexity-thresholds rule body shape + canonical-metric coverage |
 | `--reconcile-freshness` | opt-in | Flag if no reconcile event has fired since HEAD (24-hour grace window) |
 | `--insights-shape` | opt-in | Validate `.gzkit/insights/agent-insights.jsonl` records against the canonical `InsightRecord` schema (GHI #358) |
 | `--instructions-files-budget` | opt-in | AGENTS.md / CLAUDE.md / `.claude/rules/*.md` must stay within per-file char budgets defined in `data/instructions_files_budget.json` (GHI #373) |
