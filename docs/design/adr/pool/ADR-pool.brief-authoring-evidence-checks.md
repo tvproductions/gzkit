@@ -158,6 +158,22 @@ that closes the drift class `gz plan audit` cannot detect.
 
 ## Notes
 
+**Sibling routing receipts:**
+
+- GHI #406 (cluster-brief coupled-surface coherence at brief-authoring time)
+  closes `superseded` against this ADR. Adds cluster-level dimensions to the
+  per-brief defenses above: (a) cross-OBPI schema-coherence — REQ enum
+  constraints in OBPI-N+1 applied to predecessor OBPI-N's deliverable shape
+  (e.g. ADR-0.0.28's `radon_mi` p85/p65/p40 vs `corpus_percentile ∈
+  {50,75,90,95,99}`); (b) Discovery Checklist substantive-subsection check
+  at authoring time (port `gz obpi validate --authored` from precomplete to
+  authoring); (c) vendor-mirror exclusion in Allowed Paths
+  (`.claude/rules/`, `.claude/skills/`, `.agents/`, `.github/instructions/`,
+  `.github/skills/` are sync targets, not edit surfaces); (d) sibling-OBPI
+  deliverable-shape consistency. Promotion-time decision: fold these into a
+  fifth defense ("Pre-author cross-OBPI cluster-coherence check"), or split
+  into a sibling pool ADR — the operator chooses at `gz adr promote`.
+
 Pool ADRs are backlog items — they carry no `semver:` or `kind:` frontmatter.
 Promotion into the active tree (foundation or feature) is performed via
 `gz adr promote`, which rewrites the frontmatter with the chosen taxonomy.

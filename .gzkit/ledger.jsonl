@@ -4923,3 +4923,4 @@
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/foundation/ADR-0.0.28-complexity-threshold-doctrine/audit/AUDIT.md","ts":"2026-05-06T01:42:03.853120+00:00","path":"docs/design/adr/foundation/ADR-0.0.28-complexity-threshold-doctrine/audit/AUDIT.md"}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.polarity-aware-threshold-model.md","ts":"2026-05-06T02:11:15.188306+00:00","path":"docs/design/adr/pool/ADR-pool.polarity-aware-threshold-model.md"}
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.polarity-aware-threshold-model","ts":"2026-05-06T02:11:18.551278+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.brief-authoring-evidence-checks.md","ts":"2026-05-06T02:20:20.754707+00:00","path":"docs/design/adr/pool/ADR-pool.brief-authoring-evidence-checks.md"}
