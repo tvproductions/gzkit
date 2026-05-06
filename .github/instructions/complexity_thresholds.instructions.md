@@ -94,19 +94,22 @@ Citation: `docs/governance/complexity/distilled-characteristics-2026-05-04.md §
 
 | Trigger | Corpus percentile | Absolute number | Cited section            |
 |---------|-------------------|-----------------|--------------------------|
-| advise  | p85               | 85.00           | Bootstrap (GHI #405)     |
-| warn    | p65               | 70.00           | Bootstrap (GHI #405)     |
-| block   | p40               | 50.00           | Bootstrap (GHI #405)     |
+| advise  | p75               | 85.00           | Bootstrap (GHI #405)     |
+| warn    | p90               | 70.00           | Bootstrap (GHI #405)     |
+| block   | p95               | 50.00           | Bootstrap (GHI #405)     |
 
 `radon_mi` is **inverted polarity** (lower values are worse). The
 corpus distillation at `corpus_revision: 1` shows clamping above p90
 (p90/p95/p99 all = 100.00) and a long tail below — the diagnostic signal
 lives below the corpus median, which the current `band_for(metric, value)`
 contract (high-is-worse) cannot express. Bootstrap absolutes are chosen
-conservatively below the corpus p50 (59.53). The polarity-aware model
-amendment is tracked under GHI #405; once the model lands and a fresh
-distillation is taken, this metric's rows graduate from bootstrap to
-cited.
+conservatively below the corpus p50 (59.53); the percentile column uses
+the canonical p75/p90/p95 vocabulary as required by the
+`ThresholdBand.corpus_percentile` enum (the percentile names a position
+in the canonical band ladder, not a corpus measurement, while the
+metric is in bootstrap). The polarity-aware model amendment is tracked
+under GHI #405; once the model lands and a fresh distillation is taken,
+this metric's rows graduate from bootstrap to cited.
 
 ### Metric: `radon_hal_volume`
 
