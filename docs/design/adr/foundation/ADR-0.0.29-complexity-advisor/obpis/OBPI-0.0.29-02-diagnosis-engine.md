@@ -3,7 +3,7 @@ id: OBPI-0.0.29-02-diagnosis-engine
 parent: ADR-0.0.29
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.29-02-diagnosis-engine: Diagnosis Engine
@@ -30,6 +30,7 @@ Implement the diagnosis engine at `src/gzkit/complexity/advisor/engine.py` that,
 - `data/advisor_archetype_rules.json`
 - `src/gzkit/schemas/advisor_archetype_rules.json` — JSON Schema for the rule file
 - `tests/complexity/advisor/test_engine.py`, `tests/complexity/advisor/test_archetype_rules.py`
+- `data/behave_coverage_waivers.json` — coupled-surface coherence per ADR-0.0.37 § Decision (CIC-2 brief↔reality coherence): waiver entry required so the behave-req-tags validator passes on the Completed transition (engine-internal OBPI; user-facing scenarios at OBPI-03 CLI). Operator-attested amendment 2026-05-06 under the foundation frame ADR-0.0.37 establishes; absent the mechanical reconciliation surface that OBPI-0.0.37-06 will introduce, the amendment is recorded here as in-place evidence
 - `docs/design/adr/foundation/ADR-0.0.29-complexity-advisor/obpis/OBPI-0.0.29-02-diagnosis-engine.md` — this brief's evidence section only
 
 ## Denied Paths
@@ -60,12 +61,33 @@ Implement the diagnosis engine at `src/gzkit/complexity/advisor/engine.py` that,
 
 ## Discovery Checklist
 
-- [ ] OBPI-01 schema (`src/gzkit/complexity/advisor/diagnosis.py`)
-- [ ] ADR-0.0.28-02 `ThresholdTable` (`src/gzkit/complexity/thresholds.py`)
-- [ ] OBPI-0.0.27-04 distilled-characteristics document — concrete artifact engine reads
-- [ ] OBPI-0.0.27-05 `parse_citation` (`src/gzkit/complexity/citation.py`)
-- [ ] Parent ADR § Decision — engine binding, archetype rules data-driven
-- [ ] `.claude/rules/pythonic.md` — function-size discipline
+**Parent ADR (read first):**
+
+- [ ] Parent ADR § Decision — engine binding to `ThresholdTable`, archetype rules data-driven, verdict ↔ proof binding mandatory
+- [ ] Parent ADR § Intent — the trigger-time response surface this engine implements
+- [ ] Parent ADR file: `docs/design/adr/foundation/ADR-0.0.29-complexity-advisor/ADR-0.0.29-complexity-advisor.md`
+
+**Governance (read once, cache):**
+
+- [ ] `.claude/rules/pythonic.md` — function-size discipline (≤50 lines/function, ≤600 lines/module)
+- [ ] `.claude/rules/models.md` — `ConfigDict(frozen=True, extra="forbid")` for all Pydantic models
+- [ ] `.claude/rules/cross-platform.md` — `pathlib.Path`, `encoding="utf-8"`, `.as_posix()` for relative paths
+- [ ] `.claude/rules/tests.md` — `unittest`-only, `@covers` decoration on REQ-derived tests, `tempfile`-backed fixtures
+
+**Prerequisites (check existence, STOP if missing):**
+
+- [ ] OBPI-01 schema present at `src/gzkit/complexity/advisor/diagnosis.py` exporting `AdvisorDiagnosis`, `RefactorArchetype`, `DoctrinalFrame`, `ProofRange`, `IntrinsicAttestationRef`
+- [ ] ADR-0.0.28-02 `ThresholdTable` importable from `gzkit.complexity.thresholds` with `band_for(metric, value)` returning `ThresholdBand | None`
+- [ ] OBPI-0.0.27-05 `parse_citation` importable from `gzkit.complexity.citation` returning `Citation`
+- [ ] OBPI-0.0.27-04 distilled-characteristics document present at `docs/governance/complexity/distilled-characteristics-2026-05-04.md` with per-metric `## Metric:` sections, `**Doctrinal frame:**` lines, and `### Practitioner-eye observation` subsections
+- [ ] STOP-on-BLOCKERS clause: if any of the above is missing, halt and surface to operator before authoring code
+
+**Existing Code (understand current state):**
+
+- [ ] `src/gzkit/complexity/citation.py` reviewed — `Citation` model + `parse_citation` factory; structural template for `archetype_rules.py` loader pattern
+- [ ] `src/gzkit/complexity/thresholds.py` reviewed — `ThresholdTable` + `ThresholdBand` Pydantic models, `band_for` semantics, `load_threshold_table` factory; the engine consumes `band_for` directly per ADR § Decision rationale #1
+- [ ] `src/gzkit/complexity/advisor/diagnosis.py` reviewed — five frozen Pydantic models the engine binds against; the engine never re-declares any of them
+- [ ] Existing tests adjacent to allowed paths reviewed: `tests/complexity/test_citation.py`, `tests/complexity/test_thresholds.py` for the `@covers`-decoration + `tempfile`-fixture conventions this OBPI mirrors
 
 ## Quality Gates
 
@@ -149,13 +171,43 @@ uv run gz arb step --name unittest -- uv run -m unittest tests/complexity/adviso
 
 ### Key Proof
 
+
+```bash
+uv run gz arb step --name unittest -- uv run -m unittest tests.complexity.advisor.test_engine tests.complexity.advisor.test_archetype_rules -v
+# 29/29 PASS — receipt arb-step-unittest-fc16384bacbb4757b36b48f0c41d4201
+
+uv run gz covers OBPI-0.0.29-02 --json
+# {"by_obpi": [{"identifier": "OBPI-0.0.29-02", "total_reqs": 6, "covered_reqs": 6, "uncovered_reqs": 0, "coverage_percent": 100.0}]}
+
+uv run gz arb ruff && uv run gz arb typecheck
+# clean — arb-ruff-bb7fa64b85c249ccbed17bf627a1cba8 + arb-step-typecheck-e556b04286af4e5298bcd6627b1787cb
+
+uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
+# clean — arb-step-mkdocs-eea05aed04534dafb62e44f9a2eea3bb
+
+uv run gz validate --documents && uv run gz validate --behave-req-tags
+# both PASS
+```
+
+Engine surface ready for OBPI-03 (`gz complexity-advise` CLI) and OBPI-05 (auto-chain hook) to consume.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created:
+  - `src/gzkit/complexity/advisor/engine.py` — diagnosis engine: `AstContext`, `EngineError`, `DiagnosisEngine`, module-level `diagnose()`; six private helpers. Longest function `DiagnosisEngine.diagnose` at 35 lines (≤50-line cap per `.claude/rules/pythonic.md`); module 282 lines.
+  - `src/gzkit/complexity/advisor/archetype_rules.py` — frozen Pydantic loader: `MetricPredicate`, `AstPredicate`, `ArchetypeRule` + `load_archetype_rules()` + five private AST counters; canonical paths anchored to `Path(__file__).resolve().parents[4]`.
+  - `data/advisor_archetype_rules.json` — 7 seed rules covering long_parameter_list, arrowhead, switch_on_type, large_class, feature_envy, primitive_obsession, data_clumps; excerpts paraphrase the four-authority canon (Fowler / Martin / Page-Jones / Constantine).
+  - `src/gzkit/schemas/advisor_archetype_rules.json` — Draft 2020-12 JSON Schema with `additionalProperties: false`, `minItems: 1` on top-level array, ten-value `archetype` enum, four-value `authority` enum, `anyOf`-required AST predicate clauses.
+  - `tests/complexity/advisor/test_engine.py` — 11 REQ-derived `@covers`-decorated tests; `tempfile.TemporaryDirectory` fixtures only (no live corpus).
+  - `tests/complexity/advisor/test_archetype_rules.py` — 18 tests covering loader validation, predicate semantics, canonical seed round-trip.
+- Files modified:
+  - `data/behave_coverage_waivers.json` — added waiver entry under `adr-0.0.29-foundation-bdd-deferred`; in Allowed Paths via brief amendment under ADR-0.0.37 § CIC-2.
+  - This brief's own Allowed Paths and Discovery Checklist (Parent ADR + Governance + Prerequisites + Existing Code subsections added for authored-readiness).
+- Tests added: 29 (11 engine + 18 loader); all GREEN; full unittest sweep clean.
+- Date completed: 2026-05-06.
+- Attestation status: operator-attested 2026-05-06 ("attest completed"); relayed via `--attestor-present` co-presence proxy.
+- Defects noted: none. The brief-amendment-under-ADR-0.0.37-frame is itself the working evidence for ADR-0.0.37's recurring-failure-mode section; OBPI-0.0.37-06 will replace this in-place pattern with the mechanical `brief reconcile --apply` surface.
 
 ### Closing Argument
 
@@ -165,14 +217,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — operator-attested completion of OBPI-0.0.29-02-diagnosis-engine on 2026-05-06: engine + loader + JSON Schema + seeded rule table + 29 REQ-derived tests landed (11 engine, 18 loader; all GREEN); 6/6 brief Acceptance Criteria REQs covered (REQ-0.0.29-02-01..06; receipt arb-step-unittest-fc16384bacbb4757b36b48f0c41d4201); lint and typecheck clean (arb-ruff-bb7fa64b85c249ccbed17bf627a1cba8, arb-step-typecheck-e556b04286af4e5298bcd6627b1787cb); heavy-lane Gate 3 docs build clean (arb-step-mkdocs-eea05aed04534dafb62e44f9a2eea3bb); Gate 4 BDD waiver registered in data/behave_coverage_waivers.json under adr-0.0.29-foundation-bdd-deferred rationale (engine-internal OBPI; user-facing scenarios at OBPI-03 CLI); brief Allowed Paths amended in-place to include data/behave_coverage_waivers.json under the foundation frame ADR-0.0.37 § CIC-2 (brief↔reality coherence) authored earlier this session, pending the mechanical reconciliation surface OBPI-0.0.37-06 will introduce.
+- Date: 2026-05-06
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-06
 
 **Evidence Hash:** -
