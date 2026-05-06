@@ -1,0 +1,45 @@
+ThresholdTable loaded: 36 bands across 12 metrics
+Corpus revision: 1
+
+All canonical metrics:
+  - cohesion_lcom4
+  - lizard_ccn
+  - lizard_nesting_depth
+  - lizard_nloc
+  - lizard_param_count
+  - radon_cc
+  - radon_hal_difficulty
+  - radon_hal_effort
+  - radon_hal_volume
+  - radon_mi
+  - radon_raw_lloc
+  - radon_raw_nloc
+
+Sample lookup -- radon_cc (cyclomatic complexity):
+  p75 -> CC=4.0    -> trigger=advise
+  p90 -> CC=7.0    -> trigger=warn
+  p95 -> CC=11.0   -> trigger=block
+
+band_for(radon_cc, value=20):
+  -> trigger=block, percentile=p95, absolute=11.0
+
+band_for(radon_cc, value=4):
+  -> trigger=advise (below all bands -> None expected)
+
+Frozen contract verification:
+  ThresholdTable model_config.frozen = True
+  ThresholdTable model_config.extra   = forbid
+
+Mandatory block band per metric (REQ from ADR Decision):
+  cohesion_lcom4           block-band? True
+  lizard_ccn               block-band? True
+  lizard_nesting_depth     block-band? True
+  lizard_nloc              block-band? True
+  lizard_param_count       block-band? True
+  radon_cc                 block-band? True
+  radon_hal_difficulty     block-band? True
+  radon_hal_effort         block-band? True
+  radon_hal_volume         block-band? True
+  radon_mi                 block-band? True
+  radon_raw_lloc           block-band? True
+  radon_raw_nloc           block-band? True

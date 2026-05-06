@@ -1,0 +1,4 @@
+Bootstrap-mode: /Users/jeff/Documents/Code/gzkit/.gzkit/rules/complexity-thresholds.md declares a Bootstrap absolutes carve-out section; portability checks against bootstrap rows are skipped per ADR-0.0.28 § Bootstrap absolutes (REQ-11). This is informational, not a policy breach — review tracked GHIs (#404 parser zeros, #405 polarity-aware model) for resolution.
+Validated: complexity_thresholds
+
+✓ All validations passed (1 scopes).
