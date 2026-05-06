@@ -459,17 +459,67 @@ def _gather_brief_path_gaps(
     re-parsing the brief.
     """
     target_allowed = _extract_allowed_paths(brief_path)
+    creates_paths = _extract_plan_creates_paths(plan_file) if plan_file else set()
     gaps: list[str] = []
     if target_allowed is not None and plan_file is not None:
         for p in _extract_plan_paths(plan_file):
             if not _path_within_allowed(p, target_allowed):
                 gaps.append(f"Plan references path outside brief scope: {p}")
-    gaps.extend(_check_brief_path_validity(project_root, target_allowed or []))
+    gaps.extend(_check_brief_path_validity(project_root, target_allowed or [], creates_paths))
     return gaps, target_allowed
 
 
-def _check_brief_path_validity(project_root: Path, allowed: list[str]) -> list[str]:
-    """Return gap messages for non-existent or vendor-mirror allowed paths (GHI #393)."""
+_CREATES_PATH_PREFIXES: tuple[str, ...] = (
+    "src/",
+    "tests/",
+    "docs/",
+    ".gzkit/",
+    ".claude/",
+    ".agents/",
+    ".github/",
+    "data/",
+    "features/",
+)
+
+
+def _extract_plan_creates_paths(plan_file: Path) -> set[str]:
+    """Return paths the plan declares it creates (GHI #403).
+
+    Recognizes paths within either of two patterns: lines that contain the
+    literal token ``**CREATE**``, or any line under a heading whose text
+    contains ``creates these files`` (case-insensitive). The union of those
+    contexts is mined for path-shaped tokens, normalized to leading-slash-
+    free relative paths, and returned as a set used by
+    :func:`_check_brief_path_validity` to suppress the GHI #393
+    non-existent-allowed-path gap on net-new files the OBPI is creating.
+    """
+    content = plan_file.read_text(encoding="utf-8")
+    paths: set[str] = set()
+    in_creates_section = False
+    for line in content.splitlines():
+        if line.lstrip().startswith("#"):
+            in_creates_section = "creates these files" in line.lower()
+        if not (in_creates_section or "**CREATE**" in line):
+            continue
+        for token in line.split():
+            cleaned = token.strip("`*,()[]<>").lstrip("./")
+            if any(cleaned.startswith(prefix) for prefix in _CREATES_PATH_PREFIXES):
+                paths.add(cleaned)
+    return paths
+
+
+def _check_brief_path_validity(
+    project_root: Path,
+    allowed: list[str],
+    creates_paths: set[str] | None = None,
+) -> list[str]:
+    """Return gap messages for non-existent or vendor-mirror allowed paths (GHI #393).
+
+    Net-new paths the plan explicitly declares it creates (GHI #403) are
+    exempt from the non-existence check — they exist in contract before
+    they exist on disk.
+    """
+    creates = creates_paths or set()
     gaps: list[str] = []
     for path in allowed:
         canonical = _vendor_mirror_canonical(path)
@@ -480,5 +530,7 @@ def _check_brief_path_validity(project_root: Path, allowed: list[str]) -> list[s
             )
             continue
         if not _allowed_path_resolves(project_root, path):
+            if path.lstrip("./").rstrip("/") in creates:
+                continue
             gaps.append(f"Allowed path does not exist in repository: {path}")
     return gaps
