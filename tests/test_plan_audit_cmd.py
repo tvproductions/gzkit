@@ -794,5 +794,141 @@ class TestPlanAuditCmdBriefPathGaps(unittest.TestCase):
             )
 
 
+class TestPlanCreatesPathsSuppression(unittest.TestCase):
+    """@covers GHI #403 — net-new paths declared in the plan are not stale-path defects."""
+
+    def test_extracts_paths_from_create_marker(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _extract_plan_creates_paths
+
+        with tempfile.TemporaryDirectory() as tmp:
+            plan = Path(tmp) / "plan.md"
+            plan.write_text(
+                "# Plan: OBPI-0.1.0-01\n"
+                "\n"
+                "## Allowed Files\n"
+                "\n"
+                "- **CREATE** `src/gzkit/foo/bar.py` — new package member.\n"
+                "- **CREATE** `tests/foo/test_bar.py` — REQ-derived tests.\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                _extract_plan_creates_paths(plan),
+                {"src/gzkit/foo/bar.py", "tests/foo/test_bar.py"},
+            )
+
+    def test_extracts_paths_from_creates_section_heading(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _extract_plan_creates_paths
+
+        with tempfile.TemporaryDirectory() as tmp:
+            plan = Path(tmp) / "plan.md"
+            plan.write_text(
+                "# Plan\n"
+                "\n"
+                "## Files (creates these files)\n"
+                "\n"
+                "- `src/gzkit/foo/bar.py` — new module.\n"
+                "- `src/gzkit/schemas/foo.json` — JSON Schema mirror.\n"
+                "\n"
+                "## Allowed Files\n"
+                "- `src/gzkit/already_existing.py` — pre-existing edit target.\n",
+                encoding="utf-8",
+            )
+            paths = _extract_plan_creates_paths(plan)
+            self.assertIn("src/gzkit/foo/bar.py", paths)
+            self.assertIn("src/gzkit/schemas/foo.json", paths)
+            self.assertNotIn("src/gzkit/already_existing.py", paths)
+
+    def test_returns_empty_when_no_creates_declarations(self) -> None:
+        from gzkit.commands.plan_audit_cmd import _extract_plan_creates_paths
+
+        with tempfile.TemporaryDirectory() as tmp:
+            plan = Path(tmp) / "plan.md"
+            plan.write_text(
+                "# Plan: OBPI-0.1.0-01\n## Allowed Files\n- `src/gzkit/foo.py` — edit.\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(_extract_plan_creates_paths(plan), set())
+
+    def test_suppresses_existence_gap_for_declared_net_new_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            adr_dir = root / "docs/design/adr/foundation/ADR-0.1.0-feature"
+            obpis_dir = adr_dir / "obpis"
+            obpis_dir.mkdir(parents=True)
+            brief = obpis_dir / "OBPI-0.1.0-01-feature.md"
+            brief.write_text(
+                "# Brief\n## Allowed Paths\n- `src/gzkit/newpkg/__init__.py`\n",
+                encoding="utf-8",
+            )
+
+            plans_dir = root / ".claude" / "plans"
+            plans_dir.mkdir(parents=True)
+            (plans_dir / "plan.md").write_text(
+                "# Plan for OBPI-0.1.0-01\n"
+                "## Files (creates these files)\n"
+                "- **CREATE** `src/gzkit/newpkg/__init__.py` — new package marker.\n",
+                encoding="utf-8",
+            )
+            (root / ".gzkit.json").write_text("{}", encoding="utf-8")
+
+            quiet_console = Console(file=StringIO(), quiet=True)
+            with (
+                patch("gzkit.commands.plan_audit_cmd.console", quiet_console),
+                patch("gzkit.commands.common.get_project_root", return_value=root),
+                patch("gzkit.commands.common.ensure_initialized"),
+            ):
+                plan_audit_cmd(obpi_id="OBPI-0.1.0-01", as_json=False)
+
+            receipt = json.loads(
+                (plans_dir / ".plan-audit-receipt-OBPI-0.1.0-01.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(receipt["verdict"], "PASS", receipt.get("gaps"))
+
+    def test_preserves_existence_gap_for_undeclared_stale_path(self) -> None:
+        """Regression guard for GHI #393 — undeclared stale paths still FAIL."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            adr_dir = root / "docs/design/adr/foundation/ADR-0.1.0-feature"
+            obpis_dir = adr_dir / "obpis"
+            obpis_dir.mkdir(parents=True)
+            brief = obpis_dir / "OBPI-0.1.0-01-feature.md"
+            brief.write_text(
+                "# Brief\n## Allowed Paths\n- `src/gzkit/stale/ghost.py`\n",
+                encoding="utf-8",
+            )
+
+            plans_dir = root / ".claude" / "plans"
+            plans_dir.mkdir(parents=True)
+            (plans_dir / "plan.md").write_text(
+                "# Plan for OBPI-0.1.0-01\n"
+                "## Steps\n"
+                "Modify src/gzkit/stale/ghost.py to add a method.\n",
+                encoding="utf-8",
+            )
+            (root / ".gzkit.json").write_text("{}", encoding="utf-8")
+
+            quiet_console = Console(file=StringIO(), quiet=True)
+            with (
+                patch("gzkit.commands.plan_audit_cmd.console", quiet_console),
+                patch("gzkit.commands.common.get_project_root", return_value=root),
+                patch("gzkit.commands.common.ensure_initialized"),
+                self.assertRaises(SystemExit) as ctx,
+            ):
+                plan_audit_cmd(obpi_id="OBPI-0.1.0-01", as_json=False)
+
+            self.assertEqual(ctx.exception.code, 1)
+            receipt = json.loads(
+                (plans_dir / ".plan-audit-receipt-OBPI-0.1.0-01.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(receipt["verdict"], "FAIL")
+            self.assertTrue(
+                any(
+                    "does not exist" in g and "src/gzkit/stale/ghost.py" in g
+                    for g in receipt["gaps"]
+                ),
+                f"expected non-existence gap citing stale path, got {receipt['gaps']}",
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
