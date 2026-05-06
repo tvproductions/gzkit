@@ -34,9 +34,18 @@ from gzkit.complexity.measurement import (
     WholeProjectMeasurementRejectedError,
     measure_corpus,
 )
+from gzkit.complexity.thresholds import (
+    CANONICAL_PERCENTILES,
+    TRIGGER_VOCABULARY,
+    ThresholdBand,
+    ThresholdTable,
+    load_threshold_table,
+)
 
 __all__ = [
     "CANONICAL_METRICS",
+    "CANONICAL_PERCENTILES",
+    "TRIGGER_VOCABULARY",
     "BaselineArtifact",
     "CorpusLoaderError",
     "CrossMetricAggregate",
@@ -44,7 +53,10 @@ __all__ = [
     "MetricDistribution",
     "MissingMeasurementToolError",
     "ProjectBaseline",
+    "ThresholdBand",
+    "ThresholdTable",
     "WholeProjectMeasurementRejectedError",
+    "load_threshold_table",
     "measure_corpus",
     "render_summary",
     "serialize_baseline",

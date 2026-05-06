@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gzkit.tvproductions.dev/schemas/complexity_thresholds.json",
+  "title": "ThresholdTable",
+  "description": "JSON Schema mirror of the gzkit.complexity.thresholds.ThresholdTable Pydantic model (OBPI-0.0.28-02).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["corpus_revision", "bands", "citation"],
+  "properties": {
+    "corpus_revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Corpus revision the bands were authored against."
+    },
+    "bands": {
+      "type": "array",
+      "description": "Per-metric (percentile, absolute, trigger) rows.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["metric", "corpus_percentile", "absolute_number", "trigger_semantic"],
+        "properties": {
+          "metric": {
+            "type": "string",
+            "minLength": 1
+          },
+          "corpus_percentile": {
+            "type": "integer",
+            "enum": [50, 75, 90, 95, 99]
+          },
+          "absolute_number": {
+            "type": "number",
+            "minimum": 0
+          },
+          "trigger_semantic": {
+            "type": "string",
+            "enum": ["block", "warn", "advise"]
+          }
+        }
+      }
+    },
+    "citation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["distilled_characteristics_path", "section_anchor", "corpus_revision"],
+      "properties": {
+        "distilled_characteristics_path": {
+          "type": "string",
+          "pattern": "^docs/governance/complexity/.+\\.md$"
+        },
+        "section_anchor": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "corpus_revision": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}

@@ -1685,6 +1685,10 @@
     "OBPI-0.0.28-01-threshold-rule-file": {
       "rationale": "adr-0.0.28-foundation-bdd-deferred",
       "status_at_landing": "Draft"
+    },
+    "OBPI-0.0.28-02-threshold-loader": {
+      "rationale": "adr-0.0.28-foundation-bdd-deferred",
+      "status_at_landing": "Draft"
     }
   }
 }
