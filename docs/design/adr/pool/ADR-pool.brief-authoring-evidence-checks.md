@@ -174,6 +174,46 @@ that closes the drift class `gz plan audit` cannot detect.
   fifth defense ("Pre-author cross-OBPI cluster-coherence check"), or split
   into a sibling pool ADR — the operator chooses at `gz adr promote`.
 
+- GHI #407 (cross-OBPI coupled-surface coherence at **evaluation time**)
+  closes `superseded` against this ADR. Same root-cause class as GHI #380
+  and GHI #406, **new ceremony surface**: the `gz-adr-evaluate` rubric and
+  its CLI pre-screen (`uv run gz adr evaluate ADR-X.Y.Z`), distinct from
+  the four enumerated authoring-time defenses and from GHI #406's
+  cluster-validate/brief-authoring-time additions. The evidence is
+  ADR-0.0.28 receiving 4.00/4.0 GO at evaluation while four classes of
+  coupled-surface defect surfaced as in-flight fixes within hours: (i)
+  vendor-mirror Allowed Paths in two of three OBPI briefs; (ii) missing
+  Discovery Checklist Prerequisites + Existing Code subsections across the
+  cluster; (iii) cross-OBPI schema-shape divergence (radon_mi p85/p65/p40
+  vs `corpus_percentile ∈ {50,75,90,95,99}`); (iv) stale CLI-package
+  Allowed Paths after weeks-old refactors. The current rubric is organized
+  around two units of analysis (the ADR's 8 dimensions, the OBPI's 5
+  dimensions) plus 10 red-team challenges — none probe the cluster
+  boundary where OBPI-N's deliverable becomes OBPI-N+1's input. Adds
+  evaluation-time dimensions: (a) new ADR Dimension 9 — Cross-OBPI
+  Coupled-Surface Coherence — scoring REQ-constraint verifiability against
+  upstream deliverable shape, vendor-mirror exclusion, Discovery
+  Checklist substantive-subsection presence, Allowed-Path existence; (b)
+  new red-team Challenge 11 — Cluster-Boundary Challenge — walking every
+  (N, N+1) sequential pair for contract-constraint collision and every
+  Allowed Path for codebase resolution; (c) `gz adr evaluate` CLI
+  pre-screen extension counting vendor-mirror entries, non-existent
+  Allowed-Path entries, missing Discovery Checklist subsections, and
+  emitting Dimension 9 deterministically.
+
+  **Three-surface promotion-time fork (was two, now three):** with
+  GHI #407 added, the operator at `gz adr promote` chooses how to
+  decompose: (a) brief-authoring-time defenses (the four originating
+  defenses for GHI #380); (b) cluster-validate/brief-authoring-time
+  cluster-level defenses (GHI #406's four cluster dimensions); (c)
+  evaluation-time rubric + CLI pre-screen extensions (GHI #407's
+  Dimension 9 + Challenge 11 + `gz adr evaluate` heuristics). Options are
+  fold all three into a single feature ADR with three OBPI lanes; split
+  into sibling pool ADRs along the ceremony-surface boundary; or
+  intermediate. The pool stage absorbs the dimensions collectively per
+  AGENTS.md § Architectural Boundaries (pool is design-conversation
+  home, not promotion).
+
 Pool ADRs are backlog items — they carry no `semver:` or `kind:` frontmatter.
 Promotion into the active tree (foundation or feature) is performed via
 `gz adr promote`, which rewrites the frontmatter with the chosen taxonomy.
