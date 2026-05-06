@@ -88,6 +88,8 @@ uv run gz validate --complexity-doctrine-links  # Citation link integrity
 uv run gz complexity distill                     # Run a distillation pass
 uv run gz complexity distill --no-prior          # Cold-start invocation
 uv run gz complexity distill --allow-dated-sibling  # Same-date sibling
+uv run gz complexity advise <path>               # Trigger-time advisor diagnosis
+uv run gz complexity advise <path> --json        # Machine-readable JSON
 ```
 
 `gz complexity distill` is the destination CLI verb for the
@@ -99,6 +101,19 @@ dated `distilled-characteristics-{YYYY-MM-DD}.md` under
 per-metric Practitioner-eye observation placeholders the verb leaves
 intact (REQ-0.0.27-04-10 — the OEE seam). Full options + exit codes in
 [`gz complexity distill`](../user/commands/complexity-distill.md).
+
+`gz complexity advise` (ADR-0.0.29, OBPI-0.0.29-03) is the trigger-time
+response surface that consumes the threshold table at
+`.gzkit/rules/complexity-thresholds.md` and emits an `AdvisorDiagnosis`
+for every per-function `radon_cc` band crossing. Each diagnosis names the
+canonical refactor archetype, the cited doctrinal authority
+(Fowler / Martin / Page-Jones / Constantine), a non-empty proof tuple
+linking to AST nodes, and the recommended-move excerpt sourced from the
+active distilled-characteristics document. Operator moment: preview
+advisor diagnosis on a file before commit. Exit codes follow the
+four-code map: `0` clean or warn-band, `3` block-band crossing. Full
+options + exit codes in
+[`gz complexity advise`](../user/commands/complexity-advise.md).
 
 ### Cross-repo defect routing
 
