@@ -1,16 +1,19 @@
 ---
 id: ADR-pool.evidence-vs-authority-doctrine
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: lite
 enabler: null
+promoted_to: ADR-0.0.38-evidence-authority-projection-doctrine
 ---
 
 # ADR-pool.evidence-vs-authority-doctrine: Evidence-vs-authority doctrine
+> Promoted to `ADR-0.0.38-evidence-authority-projection-doctrine` on 2026-05-06. This pool file is retained as historical intake context.
+
 
 ## Status
 
-Pool
+Superseded
 
 ## Intent
 
@@ -56,6 +59,20 @@ naming:
   is producing **evidence, not authority**, even though its receipt
   shape is identical to an authoritative surface's. The receipt-ID
   contract is shared; the binding semantics are not.
+
+## Target Scope
+
+- **rule-and-schema** — Author the canonical rule file at `.gzkit/rules/evidence-vs-authority.md` codifying the three-axis taxonomy (Authoritative / Evidentiary / Projection); register the rule in the advisory-rules-audit scorecard; define the axis-declaration schema fields surfaces must carry (frontmatter for skills/rules; module-level constant for code-level surfaces; CLI registration metadata for validator scopes).
+- **surface-axis-validator** — Implement `gz validate --surface-axis` enumerating every surface against the canonical inventory, fail-closing on (a) any surface missing an axis declaration, (b) any caller treating a Projection-tagged surface as a gate input, (c) any Evidentiary-to-Authoritative promotion lacking a foundation-kind ADR justification.
+- **retroactive-classification** — One-time audit pass classifying every existing skill, rule, validator scope, code-level fail-closed function (e.g. `_enforce_human_attestation_authenticity`), and Layer-3 derived view (e.g. `gz status` output, `docs/governance/GovZero/adr-status.md`); emit a `surface_axis_classified` ledger event per surface naming axis + rationale; produce `artifacts/audits/surface-axis-2026-05-06.md`.
+
+## Proposed OBPI Decomposition
+
+| Slug | Description |
+|---|---|
+| `rule-and-schema` | Author `.gzkit/rules/evidence-vs-authority.md` (three-axis taxonomy: Authoritative / Evidentiary / Projection) + register in advisory-rules-audit scorecard + define axis-declaration schema for every surface kind (skill frontmatter, rule body marker, code-level module constant, validator-scope registration) |
+| `surface-axis-validator` | Implement `gz validate --surface-axis` (Heavy-lane CLI surface) — enumerates surfaces, fail-closes on missing declarations, on Projection-as-gate-input call shapes, and on Evidentiary→Authoritative promotion without foundation-kind ADR |
+| `retroactive-classification` | Classify every existing surface (skills, rules, validator scopes, fail-closed functions, derived views); emit `surface_axis_classified` ledger event per surface; produce `artifacts/audits/surface-axis-2026-05-06.md` baseline |
 
 ## Alternatives Considered
 

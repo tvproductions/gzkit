@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.26-04-ghi-promotion-and-trailer",
-  "timestamp": "2026-05-03T20:54:49Z",
+  "obpi_id": "OBPI-0.0.29-04-complexity-advisor-skill",
+  "timestamp": "2026-05-07T00:00:00Z",
   "verdict": "PASS",
-  "plan_file": "plan-OBPI-0.0.26-04-ghi-promotion-and-trailer.md",
+  "plan_file": "plan-OBPI-0.0.29-04-complexity-advisor-skill.md",
   "gaps_found": 0,
-  "notes": "ADR<->OBPI alignment: 7/7 checks aligned. Plan authored in-session covering all 12 REQs across 5 ordered implementation steps with TDD-first discipline. Scope-collision warnings (advisory) are for completed ADRs sharing test directories \u2014 not alignment gaps. Path drift noted: brief lists trust_audits.py (monolithic) but actual is validate_cmd.py; brief lists .claude/rules/tests.md but canonical edit surface is .gzkit/rules/tests.md."
+  "notes": "ADR<->OBPI alignment: 7/7 checks aligned. Minor note: ADR mentions OBPI-09 timeout-handling description in skill body — plan includes dedicated Timeout section. gz_command uses space format (complexity advise) matching existing cluster convention. STOP-on-BLOCKERS resolved: CLI verb registered. Plan authored with TDD-first discipline covering all 9 REQs across 5 ordered steps. Allowed paths (.gzkit/skills/complexity-advisor/SKILL.md, tests/skills/test_complexity_advisor.py) are deliverables — not-yet-existing is expected."
 }
