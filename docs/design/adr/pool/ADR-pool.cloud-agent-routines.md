@@ -132,10 +132,10 @@ file as a GHI.
    should the routine file a GHI, post to a notification channel, or both?
    GHI is durable and auditable; notification is faster but ephemeral.
 
-3. **ADR status index regen** — in airlineops this is wired into ADR
-   closeout ceremony. In gzkit, `gz register-adrs` is never called during
-   closeout. Resolution pending: wire into closeout (code change, no
-   routine needed), add as a routine backstop, or both.
+3. **ADR status index regen** — **resolved.** Wired into
+   `_complete_closeout_pipeline` in `src/gzkit/commands/closeout.py` as a
+   direct code change (Option A). `regenerate_adr_status_md` now runs after
+   OBPI auto-fix, matching airlineops parity. No routine needed.
 
 4. **AirlineOps parity scan** — currently exists as a skill
    (`airlineops-parity-scan`) but is expected to fall away as gzkit
