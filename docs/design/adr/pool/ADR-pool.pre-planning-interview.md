@@ -85,6 +85,10 @@ Alternative interview path where the agent analyzes the existing codebase and pr
 - **Output:** Same interview transcript format, but annotated with `source: agent-proposed` or `source: human-corrected` per answer
 - **When to use:** Incremental changes to an established codebase where the agent has enough context to make informed proposals. Not suitable for greenfield ADRs or novel architectural decisions where the agent lacks domain knowledge.
 - **Value:** Faster interview cycles for experienced codebases. The agent does the research legwork; the human provides judgment. Surfaces assumptions the agent makes that the human wouldn't have noticed to challenge.
+- **Witness requirement:** Every agent-proposed answer cites at least one source
+  artifact, command output, or explicit inference label. An uncited proposal is
+  rejected by the transcript validator because it moves operator effort from
+  answering to fact-checking vibes.
 
 **Inspired by:** [GSD](https://github.com/gsd-build/get-shit-done) assumptions mode in `/gsd-discuss-phase` — analyzes existing code and surfaces what it would do, asking only for corrections rather than full decisions.
 
@@ -140,6 +144,8 @@ This pool ADR can be promoted when all are true:
 4. Assumptions mode: agent proposal format and source annotation schema are defined.
 5. Assumptions mode: at least 3 real interviews are run in assumptions mode to validate proposal quality vs. standard mode.
 6. Response posture rules ("Never say / Always do") evaluated for canonization into AGENTS.md § Behavior Rules — Always or kept scoped to interview ceremony only.
+7. Agent-proposed answer citation rules and transcript validator behavior are
+   accepted.
 
 ---
 

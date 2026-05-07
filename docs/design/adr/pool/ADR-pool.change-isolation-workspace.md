@@ -184,3 +184,32 @@ In addition to the original document-isolation scope:
 § Workspace Manager and § Agent Runner — per-issue workspace as a first-class
 isolation primitive. Apache-2.0; reference-implementation posture, not a
 maintained product.
+
+---
+
+## Amendment 2026-05-07: Operator-first spec workspace
+
+Spec Kit, Kiro, and betterspec-style tools are strongest at the front door:
+they let the operator begin with an intent packet and get a visible
+spec/plan/tasks workspace quickly. gzkit should absorb that strength here, not
+by reducing ceremony, but by making the workspace the first witnessed object in
+the governance chain.
+
+### Additional target scope
+
+- `gz plan workspace <slug>` creates a change workspace with `intent.md`,
+  `spec.md`, `plan.md`, `tasks.md`, and `witness.json`.
+- `witness.json` records the source prompt hash, operator-confirmed scope,
+  generated artifact paths, and the target destination (`pool`, `foundation`,
+  or `feature`) once chosen.
+- Promotion from the workspace into ADR/OBPI artifacts requires
+  `gz workflow validate` once `ADR-pool.workflow-specification` lands; until
+  then, the workspace carries an explicit manual checklist proving spec, plan,
+  and tasks are in sync.
+- The workspace is additive. It does not replace ADR promotion, OBPI briefs,
+  ledger events, receipts, or Gate 5.
+
+### Identity-preserving rule
+
+A workspace that improves operator ergonomics but lacks `witness.json` is not a
+gzkit workspace. It is a scratch folder and cannot be promoted.

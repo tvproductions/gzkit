@@ -28,13 +28,11 @@ audience split.
 
 | Skill | Description |
 |-------|-------------|
-| [`/gz-adr-autolink`](gz-adr-autolink.md) | Maintain ADR verification links by scanning @covers decorators |
 | [`/gz-adr-check`](gz-adr-check.md) | Run blocking ADR evidence checks for a target ADR |
 | [`/gz-adr-emit-receipt`](gz-adr-emit-receipt.md) | Emit ADR receipt events with scoped evidence payloads |
 | [`/gz-adr-manager`](gz-adr-manager.md) | Compatibility alias for gz-adr-create |
 | [`/gz-adr-map`](gz-adr-map.md) | Build ADR-to-artifact traceability using gz state and repository search |
-| [`/gz-adr-recon`](gz-adr-recon.md) | Reconcile ADR/OBPI evidence state from ledger-driven outputs |
-| [`/gz-adr-sync`](gz-adr-sync.md) | Reconcile ADR files with ledger registration and status views |
+| [`/gz-adr-sync`](gz-adr-sync.md) | End-to-end ADR governance sync — evidence discovery, ledger reconciliation, and registration (Layers 1-3) |
 | [`/gz-adr-verification`](gz-adr-verification.md) | Verify ADR evidence and linkage using ADR/status checks |
 
 ---

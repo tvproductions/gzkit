@@ -118,11 +118,17 @@ Separate upstream capability maturity from gzkit readiness:
 |---|---|
 | `upstream_maturity` | `stable`, `beta`, `experimental`, `preview`, `unavailable`, `unknown` |
 | `gzkit_support` | `unsupported`, `observed`, `documented`, `generated`, `validated`, `enforced` |
+| `borrowed_workflow_support` | `not_applicable`, `referenced`, `scaffolded`, `receipt_bound`, `validator_enforced` |
 
 This split prevents a disabled feature flag from implying that a vendor lacks a
 capability. For example, `vendor.codex.automations.worktrees_allowed = false`
 means gzkit policy disallows that operating mode; it does not mean Codex lacks
 automation support.
+
+The added `borrowed_workflow_support` axis prevents a second conflation: a
+competitor may have a useful workflow pattern even when gzkit has no mechanical
+witness for it yet. "Referenced" is not support. The matrix should show the
+path from reference to scaffold to receipt-bound to validator-enforced.
 
 ### Feature Flag Boundary
 
@@ -154,6 +160,8 @@ Validation should fail on:
 - missing or malformed `source_url`
 - stale or missing `source_checked_at`
 - invalid `upstream_maturity` or `gzkit_support` enum
+- invalid `borrowed_workflow_support` enum or a `receipt_bound` /
+  `validator_enforced` claim without a linked gzkit receipt/validator surface
 - referenced `feature_flag` absent from `data/flags.json`
 - `policy_default: true` on `experimental` capability without explicit
   justification

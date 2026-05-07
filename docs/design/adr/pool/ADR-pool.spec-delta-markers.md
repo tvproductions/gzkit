@@ -38,8 +38,12 @@ make ADR reviews clearer and align with spec-driven development conventions.
   - `ADDED: <description>` — new capability introduced
   - `MODIFIED: <description>` — existing behavior changed
   - `REMOVED: <description>` — capability or contract removed
+- Add `UNCHANGED: <description>` for bugfix/spec-delta workflows where the
+  important claim is that an existing contract remains intact.
 - Update `gz plan` to include the section in generated ADRs
 - Optional: `gz diff <adr-id>` to summarize changes in terminal output
+- Add `source:` and `witness:` fields per delta item so external-contract
+  changes cite the GHI, ADR/OBPI, test, or receipt proving the delta.
 
 ---
 
@@ -65,6 +69,8 @@ This pool ADR can be promoted when all are true:
 1. Human assigns a SemVer ADR ID for active implementation.
 2. Delta marker format is accepted.
 3. Template change scope (ADR only vs. ADR + OBPI) is decided.
+4. `UNCHANGED`, `source`, and `witness` fields are accepted for bugfix and
+   external-contract deltas.
 
 ---
 

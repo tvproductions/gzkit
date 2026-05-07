@@ -129,6 +129,13 @@ This is the largest ADR by OBPI count in the absorption series. Every CLI comman
 
 opsdev's tools directory contains 25 commands that overlap with gzkit's CLI surface. Many of these opsdev implementations are significantly larger and more mature than their gzkit equivalents. The git-sync disparity (682 vs 199 lines) is emblematic: gzkit may be missing error recovery, edge-case handling, or features that opsdev has developed through operational use. Rather than assuming gzkit is sufficient, this ADR mandates honest code-level comparison of every overlapping command, ensuring gzkit absorbs any improvements that make the governance toolkit more robust. Two opsdev-only commands (cwd-guard, yaml-guard) are evaluated for inclusion in gzkit.
 
+## Comparator Uplift (2026-05-07)
+
+Comparator workflows often look simple because overlapping commands hide
+ceremony. This ADR should make overlap comparisons preserve gzkit's heavier
+identity: if two commands can do similar work, the preferred command is the one
+with clearer lineage, receipts, validators, and attestation boundaries.
+
 ## Consequences
 
 - gzkit's CLI implementations become at least as robust as opsdev's for all shared commands

@@ -112,6 +112,13 @@ Templates and scaffolds are the DNA of governance artifacts. Every ADR, OBPI, cl
 
 Templates are the most leveraged artifacts in a governance system. A single improvement to an ADR template improves every future ADR. A missing section in an OBPI template means every future OBPI lacks that section. airlineops and gzkit have evolved their templates independently, and each may have developed strengths the other lacks. This ADR ensures the best of both ends up in gzkit as the canonical template set. The agent contract comparison (AGENTS.md, copilot-instructions.md) ensures gzkit's agent guidance is comprehensive. The guards/layout comparison ensures structural enforcement is robust.
 
+## Comparator Uplift (2026-05-07)
+
+Spec Kit/Kiro-style scaffolds are valuable at artifact birth. This ADR should
+make generated templates include witness slots from the start: source prompt
+hash, assumptions, expected receipts, validation commands, delta markers, and
+human-attestation placeholders.
+
 ## Consequences
 
 - gzkit owns the canonical, highest-quality version of every governance template

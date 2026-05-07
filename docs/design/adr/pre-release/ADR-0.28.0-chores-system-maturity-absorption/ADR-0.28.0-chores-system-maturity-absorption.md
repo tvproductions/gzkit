@@ -118,6 +118,13 @@ gzkit's chores system is a 667-line monolith handling CLI, planning, execution, 
 
 opsdev's chores system represents ~3,750 lines of battle-tested, properly decomposed infrastructure. gzkit currently has a 667-line monolith that handles everything in a single file — CLI parsing, planning, execution, output — with none of the executor pipeline depth (logging, summary, recommendations, finalization) that opsdev provides. The ratio is roughly 5.6:1 in opsdev's favor, suggesting gzkit is missing significant functionality. The decomposition alone (19 focused modules vs 1 monolith) represents a maturity gap that affects testability, maintainability, and extensibility.
 
+## Comparator Uplift (2026-05-07)
+
+Competitors win adoption by making the next maintenance action obvious. This
+ADR should make chores the compounding-loop carrier: recurring review findings,
+skill-feedback queues, stale vendor-capability sources, and pattern-corpus
+refreshes become chore entries with receipts, not ad-hoc reminders.
+
 ## Consequences
 
 - gzkit's chores system achieves production-grade decomposition and executor pipeline depth

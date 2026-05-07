@@ -45,6 +45,10 @@ time-to-productive-work and ensures consistent constraint delivery.
 - Output format: single markdown document optimized for agent context injection.
 - Optional `--resume <handoff-id>` flag to combine onboarding with handoff resumption.
 - Onboarding payload is deterministic and reproducible (same inputs produce same output).
+- Onboarding payload includes a `witnesses` block: source artifacts read,
+  ledger events consulted, active ADR/OBPI IDs, and any stale or unavailable
+  evidence. A payload without witnessed sources is orientation prose, not
+  gzkit onboarding.
 
 ### Bootstrap Chain (`gz bootstrap`)
 
@@ -93,6 +97,8 @@ This pool ADR can be promoted when all are true:
 3. Vendor adaptation strategy (compile-time templates vs. runtime flags) is decided.
 4. Bootstrap chain: step sequence and resumability mechanism are validated against at least 2 real project bootstraps.
 5. Bootstrap chain: relationship to `gz init` (existing scaffolding) is clearly delineated — no overlapping responsibilities.
+6. Onboarding witness block format is accepted, including stale-evidence
+   reporting and source-artifact hashes.
 
 ---
 

@@ -180,7 +180,7 @@ Standardized and synchronized by `gz agent sync control-surfaces`.
 `gz-adr-create`, `gz-adr-evaluate`, `gz-adr-promote`, `gz-adr-status`, `gz-design`, `gz-plan`
 
 #### ADR Operations
-`gz-adr-autolink`, `gz-adr-emit-receipt`, `gz-adr-map`, `gz-adr-recon`, `gz-adr-sync`
+`gz-adr-emit-receipt`, `gz-adr-map`, `gz-adr-sync`
 
 #### ADR Audit & Closeout
 `gz-adr-audit`, `gz-adr-closeout-ceremony`, `gz-patch-release`

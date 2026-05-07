@@ -39,6 +39,14 @@ agent's context window.
 - Define trust tiers for skill sources: `canonical` (`.gzkit/skills/` — trusted, scan advisory), `user` (user-contributed — scan enforced, findings block load), `external` (third-party — scan enforced, dangerous findings block load).
 - Add `gz scan <path>` CLI surface for on-demand content scanning.
 - Emit scan results as structured findings (pattern ID, category, severity, file, line, matched text).
+- Add a GSD-inspired governance-artifact path set: `.planning/`, `changes/`,
+  `docs/design/adr/pool/`, `docs/design/adr/**/obpis/`, `.gzkit/skills/`,
+  `.agents/skills/`, `.claude/skills/`, and `.github/skills/`. Any artifact in
+  this set can become future agent context, so scan policy applies before load
+  and before generated mirror sync.
+- Emit a scan receipt when a finding blocks load, including the artifact hash,
+  pattern id, trust tier, and disposition. Advisory scans may remain stdout-only;
+  blocking scans are ledger-significant.
 
 ---
 
@@ -66,6 +74,7 @@ This pool ADR can be promoted when all are true:
 1. Human assigns a SemVer ADR ID for active implementation.
 2. Pattern categories and severity thresholds are agreed upon.
 3. Trust tier model for skill sources is accepted.
+4. Governance-artifact path set and blocking-scan receipt shape are accepted.
 
 ---
 

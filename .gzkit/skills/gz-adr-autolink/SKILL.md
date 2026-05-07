@@ -1,44 +1,19 @@
 ---
 name: gz-adr-autolink
-description: Maintain ADR verification links by scanning @covers decorators and updating docs.
-category: adr-operations
-compatibility: GovZero v6 framework; manual linkage workflow
-metadata:
-  skill-version: "1.1.0"
-  govzero-framework-version: "v6"
-  govzero-author: "GovZero governance team"
-  govzero_layer: "Layer 1 - Evidence Gathering"
-gz_command: workflow
-invocation: rg -n '@covers\("ADR-' tests
-lifecycle_state: active
+description: "ARCHIVED: Consolidated into gz-adr-sync. Use /gz-adr-sync for @covers discovery and ADR linkage."
+lifecycle_state: retired
+archived_into: gz-adr-sync
+deprecation_replaced_by: gz-adr-sync
+deprecation_migration: "Use /gz-adr-sync or /gz-adr-sync ADR-<X.Y.Z> — @covers discovery is now Layer 1 of the unified sync."
+deprecation_communication: "Consolidated into gz-adr-sync during skill consolidation 2026-05-07."
+deprecation_announced_on: "2026-05-07"
+retired_on: "2026-05-07"
 owner: gzkit-governance
-last_reviewed: 2026-02-18
-model: haiku
+last_reviewed: 2026-05-07
 ---
 
-# gz-adr-autolink
+# gz-adr-autolink (ARCHIVED)
 
-Maintain ADR-to-test linkage using current repository workflows.
+This skill has been consolidated into **gz-adr-sync**.
 
-## Procedure
-
-```bash
-# 1) Discover coverage annotations
-rg -n '@covers\("ADR-' tests
-
-# 2) Validate linkage for target ADR
-uv run gz adr audit-check ADR-0.3.0 --json
-
-# 3) Re-lint after doc updates
-uv run gz lint
-```
-
-## Notes
-
-- There is no dedicated `gz adr autolink` command in this repository.
-- Update ADR verification sections manually based on discovered coverage.
-
-## References
-
-- Command implementation: `src/gzkit/cli.py`
-- Related docs: `docs/user/commands/adr-audit-check.md`
+- For @covers discovery and ADR linkage: `/gz-adr-sync` (full) or `/gz-adr-sync ADR-<X.Y.Z>` (scoped)

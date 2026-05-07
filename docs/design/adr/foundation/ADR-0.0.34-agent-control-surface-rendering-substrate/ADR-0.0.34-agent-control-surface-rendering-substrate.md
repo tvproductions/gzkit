@@ -110,6 +110,15 @@ Era 2 (substrate landed) → Era 3 (progressive disclosure) — *errors of
 what is printed become feedback for the CMS process (the composition
 pipeline) regardless of which era's pipeline is active*.
 
+## Comparator Uplift (2026-05-07)
+
+Kiro, Spec Kit, BMAD, Superpowers, and Compound Engineering all improve the
+human-facing entry point. gzkit should absorb the UX lesson through this
+substrate: better rendered panels, tighter generated prompts, and package-aware
+skill surfaces. The rendering substrate remains headless and governed; polish is
+acceptable only when the rendered output remains byte-stable, parseable, and
+validator-bound.
+
 ## Consequences
 
 ### Positive

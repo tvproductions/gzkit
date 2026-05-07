@@ -97,6 +97,15 @@ Codify the advisor as one CLI verb (`gz complexity-advise`), one operator-runnab
 - Does NOT specify the refactor-archetype detection rules' empirical validation — the rules are doctrine; their empirical fit is measured at the next distillation pass per ADR-0.0.27 OBPI-04.
 - Does NOT vendor or reimplement xenon — xenon-as-gate remains the chosen substrate per ADR-0.0.28's scope boundary.
 
+## Comparator Uplift (2026-05-07)
+
+Spec-driven competitors are strongest when they make the next action obvious to
+the operator. This ADR should make complexity guidance a front-door signal, not
+a post-hoc scolding: advisor output should name the next governed move
+(`direct-fix`, `OBPI`, `chore`, `GHI`, or `stop-and-clarify`) and cite the
+complexity evidence that supports it. The advisor must not recommend lighter
+ceremony; it recommends the smallest vibing surface with a receiptable route.
+
 ## Consequences
 
 ### Positive

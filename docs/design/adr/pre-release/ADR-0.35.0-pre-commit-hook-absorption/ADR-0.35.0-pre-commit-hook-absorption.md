@@ -124,6 +124,13 @@ gzkit must own all reusable enforcement hooks. opsdev's `.pre-commit-config.yaml
 
 opsdev's `.pre-commit-config.yaml` represents a mature enforcement layer with 20 hooks covering code quality, governance compliance, documentation validation, and repository hygiene. gzkit currently has partial overlap (7 hooks exist in some form) but lacks 13 hooks entirely. The enforcement timing dimension (pre-commit vs. Claude hooks) adds complexity: some checks are cheap and should run on every commit, while others need agent context or are expensive enough to run only during agent sessions. This ADR ensures every hook is evaluated individually with the timing question answered explicitly.
 
+## Comparator Uplift (2026-05-07)
+
+Pre-commit can enforce the borrowed-workflow floor before a branch leaves the
+developer machine. This ADR should include checks for generated-surface drift,
+prompt-injection findings in agent-loaded artifacts, receipt-bound examples,
+and stale vendor-capability source dates once those surfaces land.
+
 ## Consequences
 
 - gzkit's enforcement layer becomes comprehensive across both pre-commit and Claude hook surfaces

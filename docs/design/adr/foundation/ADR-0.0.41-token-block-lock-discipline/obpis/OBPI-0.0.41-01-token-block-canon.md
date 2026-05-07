@@ -183,7 +183,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
-## Implementation Summary
+### Implementation Summary
 
 Parent ADR § Decision item (quoted verbatim):
 
@@ -199,7 +199,7 @@ Parent ADR § Decision item (quoted verbatim):
 
 Vocabulary section (token, issue, register entry, traversal, abandonment, reaping) establishes shared semantics before code changes. Cross-links to AGENTS.md, state-doctrine.md, and ADR-0.0.41.
 
-## Key Proof
+### Key Proof
 
 Rule file exists and contains all five binding sub-invariants in fail-closed language:
 
@@ -252,9 +252,15 @@ Validated: documents
 ✓ Lint checks passed
 ```
 
-## Closing Argument
+### Closing Argument
 
 OBPI-0.0.41-01 establishes the governance vocabulary and binding sub-invariants that gzkit will enforce structurally in OBPI-02/03/04. The rule file is authoritative for the entire discipline: five fail-closed invariants (abandon categories, minimum-information, reaping protocol, TTL canon, release precondition) grounded in railway absolute-block working and adapted to governance work. No code changes; pure documentation. All validation passes. Ready for OBPI-0.0.41-02 (structural enforcement implementation).
+
+## Human Attestation
+
+- Attestor: Jeffry
+- Attestation: OBPI-0.0.41-01 completes doctrine canon: `.gzkit/rules/token-block-discipline.md` authored with five binding sub-invariants (auditable abandon categories, register-entry minimum-information, reaping protocol, TTL canon, release precondition), vocabulary section, and cross-links to AGENTS.md and state-doctrine.md. Lite lane, self-closeable. All validations pass (commit 3c5f1d54).
+- Date: 2026-05-07
 ```
 
 ### Gate 3 (Docs)

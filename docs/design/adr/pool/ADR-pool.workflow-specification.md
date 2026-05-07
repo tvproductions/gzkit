@@ -76,6 +76,26 @@ before it allows user-authored workflow execution. Export-first prevents the
 schema from being invented as an aspirational design disconnected from the
 runtime gzkit already has.
 
+## Amendment 2026-05-07: Borrowed workflows require witnesses
+
+The competitor-strength intake makes this pool ADR the home for absorbing Spec
+Kit/Kiro/GSD-style staged workflows without copying their lighter trust model.
+The schema must carry an explicit `borrowed_workflow_witnesses` block for any
+stage pattern imported from another framework:
+
+- `source`: the prior-art reference and exact workflow lesson being borrowed
+- `gzkit_identity_preserved`: the ledger/receipt/validator/attestation invariant
+  that prevents the borrowed pattern from becoming honor-system process
+- `required_receipts`: receipts that prove the stage ran and produced observed
+  output
+- `failure_close_policy`: the blocker state emitted when the stage cannot be
+  witnessed
+
+This makes "front-door improvement" an executable contract. A future `gz
+workflow inspect` view should show not only the stage order, but which parts are
+native gzkit doctrine, which parts were borrowed, and how each borrowed part is
+mechanically witnessed.
+
 ## Alternatives Considered
 
 - **Adopt a YAML DAG DSL.** Rejected. YAML DAGs are useful for generic workflow

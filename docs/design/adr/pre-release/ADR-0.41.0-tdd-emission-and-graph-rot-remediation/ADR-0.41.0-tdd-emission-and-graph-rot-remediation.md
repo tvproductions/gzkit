@@ -56,6 +56,13 @@ OBPI-01: typed ledger events + schema. OBPI-02: `gz tdd` CLI verified emission. 
 - Smallest version: if we had half the time, we would cut `gz tdd chain` and ship only `red` + `green`. Chain is a convenience reporter, not the core decision.
 - 2am operator question: 'The ceremony is blocked because a REQ has no RED event. Where do I look?' — Answer: `gz tdd chain <req-id>` shows the gap. If the chain is empty and the REQ has test coverage (`gz covers --req`), the agent skipped emission — fix by running the tests under `gz tdd green` retroactively (which will emit GREEN without requiring a prior RED for already-covered REQs, but will flag the missing-RED condition in the attestation-enrichment rule).
 
+## Comparator Uplift (2026-05-07)
+
+Superpowers' TDD discipline and Specmatic's executable-contract posture both
+belong here. TDD emissions should bind not only red/green proof, but the spec,
+contract surface, or workflow stage they protect, so graph rot is visible before
+review or attestation tries to rely on stale proof.
+
 ## Consequences
 
 ### Positive

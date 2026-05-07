@@ -77,6 +77,13 @@ the corroborating principle.
    directory is gitignored *except* when explicitly committed as part
    of a manpage's binding (the receipt-citation comment is the bind).
 
+## Comparator Uplift (2026-05-07)
+
+Specmatic-style executable contracts belong beyond APIs. This ADR should make
+CLI examples, runbook snippets, and workflow-stage output claims executable
+contracts by binding them to captured stdout/stderr hashes. Borrowed workflows
+that promise output must prove the bytes, not just describe the shape.
+
 ## Consequences
 
 ### Positive

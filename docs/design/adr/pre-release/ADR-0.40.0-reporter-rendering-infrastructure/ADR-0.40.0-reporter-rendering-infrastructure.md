@@ -113,6 +113,13 @@ Establish a centralized rendering layer (`src/gzkit/reporter/`) that owns all fo
 
 gzkit's CLI output is currently fragmented: commands construct Rich tables ad-hoc with inconsistent box styles, and ceremony outputs use hand-padded Unicode strings in skill templates. The airlineops reporter system demonstrates that a rendering layer with presets and helpers eliminates alignment bugs, ensures visual consistency, and makes output deterministic. Appropriating the portable rendering patterns (not the full manifest/schema/eligibility infrastructure) gives gzkit a proven foundation without overengineering for a simpler output surface.
 
+## Comparator Uplift (2026-05-07)
+
+The front door improves when status is legible. This ADR should render
+comparator-strength status explicitly: which borrowed patterns are merely
+referenced, which are scaffolded, which are receipt-bound, and which are
+validator-enforced.
+
 ## Consequences
 
 - All CLI output has consistent visual styling (box.ROUNDED for tables, box.DOUBLE for ceremony panels)

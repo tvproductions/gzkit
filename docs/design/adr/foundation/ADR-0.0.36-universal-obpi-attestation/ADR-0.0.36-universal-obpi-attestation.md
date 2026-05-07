@@ -70,6 +70,14 @@ This ADR sits inside the same lineage as the OBPI completion / attestation found
 
 The exemplar pattern across this lineage: doctrine in `AGENTS.md`, mechanical defense in a `gz validate --<scope>` flag, runtime-gate simplification in the relevant command module, fail-closed exit 3 on breach. This ADR follows that pattern exactly.
 
+## Comparator Uplift (2026-05-07)
+
+Borrowed workflow strengths increase, rather than reduce, the need for
+attestation. If gzkit imports staged specs, task waves, fresh subagent reviews,
+or compounding pattern capture, each imported step must still terminate in
+human-witnessed OBPI completion. Universal attestation is the guardrail that
+keeps ergonomic front doors from becoming self-close paths.
+
 ## Consequences
 
 ### Positive

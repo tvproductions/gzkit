@@ -39,6 +39,26 @@ queue that closes the learning loop without autonomous self-modification.
 - Define the review workflow: human reads feedback, edits the canonical skill in `.gzkit/skills/`, bumps `skill-version`, runs sync.
 - Integrate feedback emission into the OBPI pipeline's post-implementation stage — if a skill was wielded and the agent encountered friction, emit feedback before completing.
 
+## Amendment 2026-05-07: Compound loop witness
+
+Compound Engineering's useful lesson is not speed; it is that plan, work,
+review, and learning form a loop where later work benefits from earlier
+evidence. gzkit's adaptation must make the learning step witnessed:
+
+- `skill_feedback` events include `trigger_stage` (`plan`, `implement`,
+  `verify`, `review`, `attest`, `closeout`) so learning is tied to a concrete
+  pipeline moment.
+- Feedback emitted from a review must cite the review receipt or GHI that found
+  the issue; feedback without primary evidence is rejected.
+- The report groups feedback by recurring failure class, not only by skill, so
+  a pattern can route to `ADR-pool.solved-problem-pattern-corpus` when it
+  repeats.
+- Human review disposition is explicit: `accepted`, `rejected`,
+  `merged_into_pattern`, or `routed_to_ghi`.
+
+This keeps the compounding loop under ledger discipline. Agents may propose
+learning, but only witnessed, reviewed learning becomes canon.
+
 ---
 
 ## Non-Goals
@@ -65,6 +85,7 @@ This pool ADR can be promoted when all are true:
 1. Human assigns a SemVer ADR ID for active implementation.
 2. Ledger event schema for `skill_feedback` is accepted.
 3. Review workflow (feedback queue → human edit → version bump → sync) is agreed upon.
+4. Human review dispositions and receipt-citation requirements are accepted.
 
 ---
 

@@ -98,6 +98,14 @@ across many future packaging-surface evolutions, mirroring the same
 split between ADR-0.0.18 (taxonomy doctrine) and ADR-0.0.17 (taxonomy
 mechanical enforcement).
 
+## Comparator Uplift (2026-05-07)
+
+Multi-runtime frameworks such as GSD and Compound Engineering make portability a
+product strength. This ADR should frame distribution as an invariant: every
+generated surface, installed skill, and vendor mirror must prove which canonical
+input produced it and which validation command can rebuild or reject it. Ported
+workflow files that lack that proof are distribution drift, not parity.
+
 ## Consequences
 
 ### Positive

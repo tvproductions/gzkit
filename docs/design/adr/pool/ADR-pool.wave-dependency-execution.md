@@ -43,6 +43,10 @@ orchestrates parallel execution within each wave.
 - **Wave 2+:** Launch parallel sessions for next wave, repeat
 - **Failure handling:** If an OBPI in Wave N fails, dependent OBPIs in Wave N+1 are held. Independent OBPIs in Wave N+1 proceed.
 - **Progress reporting:** `gz waves --status --adr ADR-X.Y.Z` shows wave completion state
+- **Wave receipts:** Each wave emits `wave_planned`, `wave_started`,
+  `wave_barrier_passed`, and `wave_barrier_failed` receipts. A later wave cannot
+  start on narrative confidence that earlier work is done; it starts only from
+  ledger-observed completion and verification receipts.
 
 ### Brief Frontmatter Extension
 
@@ -87,6 +91,8 @@ This pool ADR can be promoted when all are true:
 4. OBPI brief frontmatter schema extension (`depends_on`) is accepted.
 5. Failure propagation rules are defined — when does a Wave N failure block Wave N+1
    vs. allow independent OBPIs to proceed?
+6. Wave receipt names and barrier-freshness rules are accepted, including the
+   rule that failed or stale barriers block dependent waves.
 
 ## Inspired By
 

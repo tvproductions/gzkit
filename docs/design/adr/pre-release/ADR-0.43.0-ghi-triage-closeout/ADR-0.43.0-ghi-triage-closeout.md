@@ -27,6 +27,13 @@ Promoted from `ADR-pool.ghi-triage-closeout` for active implementation.
 
 Add a `gz ghi` subcommand group that wraps `gh` CLI calls and correlates issues against ADR identifiers for triage and closeout workflows. Per the three-layer tool/skill/runbook alignment rule (`tool-skill-runbook-alignment.md`), the CLI verbs ship alongside operator-facing skills (`gz-ghi-fix`, `gz-ghi-triage`) and runbook entries so every invariant (tool-wielded-by-skill, skill-matches-runbook-moment, output-form-honored) is satisfied on landing. Scope is merged from the original tool-layer proposal (2026-03-29) and the skill-layer/runbook complements surfaced during the 2026-04-19 `/insights` session.
 
+## Comparator Uplift (2026-05-07)
+
+Closed ADR improvement opportunities should route through GHIs when the ADR is
+validated. This ADR should make triage able to label such findings as
+`adr-amendment`, `competitor-uplift`, or `pool-routed`, then close the GHI only
+after the destination artifact is explicit.
+
 ## Consequences
 
 ### Positive

@@ -109,6 +109,13 @@ opsdev contains quality tooling commands that are genuinely governance-generic -
 
 opsdev's quality tooling represents approximately 3,100+ lines of governance-generic code that every project benefits from. SLOC analysis, complexity checking, test quality metrics, mutation testing, and manpage validation are not airline-specific --- they are fundamental code quality tools. gzkit as a governance framework must own these tools so that any gzkit-governed project gets quality tooling out of the box, rather than each project reimplementing these capabilities. This ADR depends on ADR-0.25.0 (core infrastructure) and ADR-0.30.0 (config schema) because ported commands consume infrastructure and configuration provided by those ADRs.
 
+## Comparator Uplift (2026-05-07)
+
+Front-door improvements need command surfaces operators can discover. This ADR
+should bias new commands toward witnessed entry points such as `workspace`,
+`workflow inspect`, `vendor matrix`, `skill feedback-report`, and `uat`, with
+manpage examples bound to captured output where ADR-0.46.0 applies.
+
 ## Consequences
 
 - gzkit gains 10 new CLI commands, significantly expanding its quality tooling surface

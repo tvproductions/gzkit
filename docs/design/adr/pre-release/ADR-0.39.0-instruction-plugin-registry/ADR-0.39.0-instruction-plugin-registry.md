@@ -111,6 +111,13 @@ gzkit ships canonical instruction files that govern agent behavior: cross-platfo
 
 Instruction files are the mechanism through which gzkit governs agent behavior across projects. Without a registry, there is no way to distinguish canonical instructions from project-local modifications, no way to detect when a project's instructions contradict gzkit's rules, and no way to distribute instruction updates to downstream projects. The plugin registry solves all three problems: it establishes canonical vs. extension boundaries, provides conformance checking, and enables controlled distribution of instruction updates.
 
+## Comparator Uplift (2026-05-07)
+
+BMAD, GSD, Superpowers, and Compound Engineering all benefit from installable
+workflow packages. This ADR should make the registry capable of describing
+packages as governed surfaces: provenance, trust boundary, load budget,
+mirrors, supported vendors, and validators required before activation.
+
 ## Consequences
 
 - Projects gain a formal mechanism to extend gzkit's instructions for domain-specific needs

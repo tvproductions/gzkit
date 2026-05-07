@@ -63,6 +63,14 @@ Land the Foundation/Feature Invariance Test as a binding kind-classification rul
 - Does NOT replace ADR-0.0.18's worked examples or decision narrative. ADR-0.0.18 remains the canonical playbook; this ADR adds the invariance test as a sharper resolution rule for edge cases the playbook leaves ambiguous.
 - Does NOT backfill the Why-foundation-tier section into existing foundation ADRs. The convention is forward-applicable; backfill is a separate sweep tracked as a follow-up chore (not gated by this ADR's closeout).
 
+## Comparator Uplift (2026-05-07)
+
+The comparator review pressures gzkit to distinguish enduring identity from
+borrowed capability. This ADR should make that distinction testable: a
+competitor lesson that changes what gzkit is must route to foundation with
+structural witness; a lesson that adds a user-invoked workflow routes to feature
+or pool. "Other tools do this" is never a kind argument.
+
 ## Consequences
 
 ### Positive

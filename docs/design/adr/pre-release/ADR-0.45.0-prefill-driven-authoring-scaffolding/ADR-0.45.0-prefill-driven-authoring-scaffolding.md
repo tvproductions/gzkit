@@ -76,6 +76,14 @@ canonical structure.
    canonical opening lines exactly (no agent-paraphrased section names).
    Drift exits 3.
 
+## Comparator Uplift (2026-05-07)
+
+Spec Kit and Kiro win the blank-page moment by turning intent into scaffolded
+specs and tasks. This ADR should absorb that at the authoring boundary:
+prefills should include witness slots for source prompt hash, assumption labels,
+delta markers, and expected receipts while leaving substantive content for the
+agent/operator loop.
+
 ## Consequences
 
 ### Positive

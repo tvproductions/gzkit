@@ -82,6 +82,23 @@ All three scopes wire into the default `uv run gz check` pipeline once they
 land. The existing `--advisory-scorecard` keeps its current narrow coverage
 predicate; the three new scopes layer alongside it.
 
+## Amendment 2026-05-07: Executable-contract posture
+
+Specmatic's durable lesson is that external behavior must be verified as an
+executable contract, not described as prose. This ADR should therefore treat
+AGENTS.md/CLAUDE.md invariants as contract surfaces with three properties:
+
+1. **Declared contract:** the invariant text and its scorecard row.
+2. **Executable witness:** the validator, test, receipt, or ledger event that
+   proves the invariant is enforced.
+3. **Compatibility result:** whether a proposed edit preserves, tightens, or
+   breaks the contract.
+
+Promotion should reject any new contract-surface rule that has no executable
+witness unless it is explicitly classified as Judgment with a tracking GHI for
+mechanization. This absorbs executable-contract rigor without narrowing gzkit to
+API contracts alone.
+
 ## Alternatives Considered
 
 **A. Expand `--advisory-scorecard` to cover AGENTS.md and CLAUDE.md.** Rejected.

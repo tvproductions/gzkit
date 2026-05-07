@@ -84,6 +84,15 @@ Translated to gzkit:
    `handoff_path` payload field, or referencing a path that does not
    exist or whose frontmatter timestamp predates the matching claim.
 
+## Comparator Uplift (2026-05-07)
+
+Spec Kit/GSD-style long workflows and compaction-prone sessions make lock
+discipline more important. This ADR should treat token-block locks as the
+front-door/compounding safety net: before a compacted or resumed session
+continues, the lock release must prove which intent, artifact set, and
+handoff-register entry survived. A failed compact cannot silently erase the
+governance witness.
+
 ## Consequences
 
 ### Positive

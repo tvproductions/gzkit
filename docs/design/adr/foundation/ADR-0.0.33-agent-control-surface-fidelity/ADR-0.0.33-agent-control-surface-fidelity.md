@@ -83,6 +83,14 @@ The doctrine names the failure pattern (D2 framing); the audit names the
 historical instances. Specific drift findings on ADR-0.14.0 and ADR-0.16.0
 are tracked as separate GHIs, not embedded in this ADR's body.
 
+## Comparator Uplift (2026-05-07)
+
+Competitors with polished workflows still depend on agents correctly reading
+their loaded context. This ADR should treat comparator-inspired workflow
+surfaces as fidelity-critical: if a borrowed workflow adds a section, marker,
+role, or command promise to an agent-loaded surface, the fidelity validators
+must prove the rendered surface preserves it and rejects partial mirrors.
+
 ## Consequences
 
 ### Positive

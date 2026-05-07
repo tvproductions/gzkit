@@ -1,43 +1,20 @@
 ---
 name: gz-adr-recon
-description: Reconcile ADR/OBPI evidence state from ledger-driven gz outputs.
-category: adr-operations
-compatibility: GovZero v6 framework with OBPI briefs
-metadata:
-  skill-version: "1.1.0"
-  govzero-framework-version: "v6"
-  govzero-author: "GovZero governance team"
-  skill-type: "reconciler"
-  govzero_layer: "Layer 2 - Ledger Consumption"
-lifecycle_state: active
+description: "ARCHIVED: Consolidated into gz-adr-sync. Use /gz-adr-sync [ADR-ID] for ADR/OBPI reconciliation."
+lifecycle_state: retired
+archived_into: gz-adr-sync
+deprecation_replaced_by: gz-adr-sync
+deprecation_migration: "Use /gz-adr-sync ADR-<X.Y.Z> for scoped reconciliation, or /gz-adr-sync for full sync."
+deprecation_communication: "Consolidated into gz-adr-sync during skill consolidation 2026-05-07."
+deprecation_announced_on: "2026-05-07"
+retired_on: "2026-05-07"
 owner: gzkit-governance
-last_reviewed: 2026-02-18
-model: haiku
+last_reviewed: 2026-05-07
 ---
 
-# gz-adr-recon
+# gz-adr-recon (ARCHIVED)
 
-Use ledger-first `gz` commands to reconcile ADR and OBPI status.
+This skill has been consolidated into **gz-adr-sync**.
 
-## Procedure
-
-```bash
-# 1) ADR-focused reconciliation view
-uv run gz adr status ADR-0.3.0 --json
-
-# 2) Blocking evidence check for linked briefs
-uv run gz adr audit-check ADR-0.3.0 --json
-
-# 3) Global lifecycle and gate context
-uv run gz status --json
-```
-
-## Notes
-
-- This repo does not expose `gz adr recon`; use the workflow above.
-- Apply any required markdown table updates manually, then run `uv run gz lint`.
-
-## References
-
-- Command implementation: `src/gzkit/cli.py`
-- User docs: `docs/user/commands/adr-status.md`, `docs/user/commands/adr-audit-check.md`
+- For scoped ADR/OBPI reconciliation: `/gz-adr-sync ADR-<X.Y.Z>`
+- For full governance sync: `/gz-adr-sync`

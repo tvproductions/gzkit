@@ -115,6 +115,13 @@ airlineops has 13 Claude hook scripts in `.claude/hooks/` that have been develop
 
 Claude hooks are the enforcement mechanism for agent governance. They intercept agent actions in real-time, validate compliance, record evidence, and route workflows. airlineops has 13 hooks developed through months of operational use; gzkit has 5 hook modules that generate hooks for governed repositories. The gap between 13 operational hooks and 5 generating modules suggests gzkit may be missing critical enforcement behaviors. This ADR ensures every airlineops hook behavior is accounted for in gzkit's infrastructure -- either already covered, newly absorbed, or explicitly excluded as domain-specific.
 
+## Comparator Uplift (2026-05-07)
+
+GSD's prompt guard and Superpowers' hard stops show that hooks are valuable only
+when they close specific failure classes. This ADR should classify every hook by
+failure class, portability, blocking semantics, and receipt output; hook parity
+without those fields is false assurance.
+
 ## Consequences
 
 - gzkit's hook infrastructure becomes comprehensive for governance enforcement

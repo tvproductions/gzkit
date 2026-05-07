@@ -41,6 +41,13 @@ Promote `ADR-pool.gz-preflight-health-orchestration` into active implementation 
 - Receipt artifact
 - Advisory gate
 
+## Comparator Uplift (2026-05-07)
+
+Preflight is the practical front door for an existing repository. It should
+summarize not only broken checks, but whether the current workspace has a
+witnessed spec/plan/tasks chain, fresh vendor-capability sources, injection-scan
+clearance, and known compounding-loop follow-ups.
+
 ## Consequences
 
 ### Positive

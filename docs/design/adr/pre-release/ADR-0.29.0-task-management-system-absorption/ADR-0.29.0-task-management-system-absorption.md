@@ -105,6 +105,13 @@ opsdev contains a mature task management CLI (`tasks.py`, 1,174 lines) with 7 su
 
 opsdev's `tasks.py` at 1,174 lines represents a substantial task management system. Before absorbing or dismissing it, gzkit must honestly evaluate whether its existing governance surfaces (chores, OBPIs, ADRs, gates) already cover the same ground. If task management is genuinely orthogonal to these surfaces --- managing discrete work items that don't map cleanly to OBPIs or chores --- then gzkit has a real gap. If task management substantially overlaps, the evaluation should document why and recommend whether the concept adds value even as a different interface to the same data.
 
+## Comparator Uplift (2026-05-07)
+
+Spec Kit, Kiro, GSD, and BMAD all expose task lists as the operator-visible
+front door. This ADR should ensure gzkit tasks are not detached todos: each task
+must point to ADR/OBPI lineage, expected receipts, dependency wave position, and
+completion gate state.
+
 ## Consequences
 
 - If absorbed: gzkit gains task management capabilities, expanding its governance surface
