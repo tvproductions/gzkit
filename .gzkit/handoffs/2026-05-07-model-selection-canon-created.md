@@ -1,7 +1,7 @@
 # Forward Hydration: Model Selection Canon
 
 **Date:** 2026-05-07
-**Status:** Canon created; integration pending
+**Status:** Integrated — all 67 skills declare model tier; 9 opus skills self-escalate
 **Token constraint:** 20x max subscription hitting walls; model routing is now a core resource allocation strategy.
 
 ## What was done

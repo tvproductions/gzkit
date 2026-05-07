@@ -8,6 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-03-16
 metadata:
   skill-version: "6.0.2"
+model: haiku
 ---
 
 # gz-obpi-lock

@@ -20,6 +20,9 @@ model: opus
 
 ## Purpose
 
+
+> **Self-Escalation (opus-tier).** Spawn an `Agent` with `model="opus"` to execute this skill. Pass the operator's request verbatim, any relevant context (ADR IDs, OBPI IDs, design topic, prior decisions), and instruct the subagent to read `.gzkit/skills/gz-adr-create/SKILL.md` for the full workflow. Relay the subagent's output to the operator.
+
 Create GovZero-compliant ADR files with proper SemVer versioning, OBPI briefs, and registry booking.
 
 **This skill enforces GovZero v6 compliance rules internally and is portable to any GovZero-compliant repository.**

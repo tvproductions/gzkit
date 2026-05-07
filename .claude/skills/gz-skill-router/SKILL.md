@@ -9,6 +9,7 @@ last_reviewed: 2026-04-19
 metadata:
   skill-version: "6.0.3"
   govzero-framework-version: "v6"
+model: haiku
 ---
 
 # gz-skill-router

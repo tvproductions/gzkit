@@ -318,6 +318,7 @@ def scaffold_skill(
             "lifecycle_state": "active",
             "owner": "gzkit-governance",
             "last_reviewed": date.today().isoformat(),
+            "model": "sonnet",
             "trigger_description": "When triggered by the user.",
             "behavior_description": "Follow the steps below.",
             "prerequisites": "None",

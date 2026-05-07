@@ -13,7 +13,7 @@ metadata:
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-22
-model: opus
+model: sonnet
 ---
 
 # gz-adr-evaluate (v6.0.0)

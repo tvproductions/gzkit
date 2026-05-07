@@ -9,11 +9,15 @@ metadata:
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-03-27
+model: opus
 ---
 
 # gz-design
 
 Collaborative design dialogue that exits into GovZero artifacts — not superpowers specs, not flat plans.
+
+
+> **Self-Escalation (opus-tier).** Spawn an `Agent` with `model="opus"` to execute this skill. Pass the operator's request verbatim, any relevant context (ADR IDs, OBPI IDs, design topic, prior decisions), and instruct the subagent to read `.gzkit/skills/gz-design/SKILL.md` for the full workflow. Relay the subagent's output to the operator.
 
 ### Common Rationalizations
 

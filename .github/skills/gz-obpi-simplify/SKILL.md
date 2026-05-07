@@ -8,6 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-04-03
 metadata:
   skill-version: "6.0.4"
+model: sonnet
 ---
 
 # gz-obpi-simplify

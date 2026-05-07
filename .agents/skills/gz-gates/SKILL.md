@@ -8,6 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-04-19
 metadata:
   skill-version: "1.0.0"
+model: haiku
 ---
 
 # gz gates

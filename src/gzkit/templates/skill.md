@@ -12,6 +12,7 @@ metadata:
 lifecycle_state: {lifecycle_state}
 owner: {owner}
 last_reviewed: {last_reviewed}
+model: {model}
 ---
 
 # SKILL.md

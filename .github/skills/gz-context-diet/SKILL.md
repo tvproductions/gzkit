@@ -9,6 +9,7 @@ last_reviewed: 2026-04-26
 gz_command: chores show instructions-files-diet
 metadata:
   skill-version: "1.0.0"
+model: sonnet
 ---
 
 # gz-context-diet

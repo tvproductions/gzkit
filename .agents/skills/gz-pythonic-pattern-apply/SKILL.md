@@ -9,6 +9,7 @@ last_reviewed: 2026-04-26
 metadata:
   skill-version: "1.0.0"
 gz_command: chores run pythonic-design-pattern-application
+model: sonnet
 ---
 
 # pythonic-pattern-apply

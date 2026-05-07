@@ -8,6 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-04-21
 metadata:
   skill-version: "1.2.0"
+model: sonnet
 ---
 
 # gz adr promote

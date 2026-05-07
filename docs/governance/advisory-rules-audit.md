@@ -198,6 +198,12 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 |---|------|-------|-----|
 | 49 | Six-pattern agent failure-mode vocabulary (`Safeguard circumvention` / `Reckless action` / `Fabrication` / `Skipped cheap verification` / `Correction fails` / `Dishonest when caught`) — drawn from Opus 4.7 § 2.3.6 (Anthropic, 2026-04-16) and corroborated by GPT-5.5 § 9.2 (OpenAI, 2026-04-23). Cited by name when reviewing PRs, filing defects, and extending the scorecard; routes the conversation directly to the engineered backstop instead of re-deriving the failure motivation each time. | **Judgment** | Vocabulary, not mechanical check. The mechanical defenses already exist as separate rules and gates — TTY + `ATTEST` authenticity gate at `_enforce_human_attestation_authenticity` (`src/gzkit/commands/adr_audit.py`), ARB receipt requirements (`AGENTS.md` § Attestation), hook fail-closed behavior, `gz validate --commit-trailers`, layered-trust T1/T2/T3 invariants — and this rule is the **shared name** they point at. Promotion candidate `gz validate --failure-mode-coverage` (a self-test confirming every scorecard row names the failure shape it backstops) tracked under follow-up GHIs #308–#312 per ADR-0.0.23 § Decision. |
 
+### Model Selection (`.gzkit/rules/model-selection.md`)
+
+| # | Rule | Score | Why |
+|---|------|-------|-----|
+| 52 | Every skill SKILL.md declares `model: haiku\|sonnet\|opus` frontmatter; `SkillFrontmatter.skill_model` is `Literal["haiku", "sonnet", "opus"]` (required). Routing matrix maps decision complexity to model tier. Subagents use effort levels, not hardcoded model IDs. | **Mechanical** | Enforced by `gz validate --surfaces` via `SkillFrontmatter` Pydantic validation — missing or invalid `model:` fails closed. All 67 skills declare tier (GHI #409). |
+
 ### Exemplar Corpus Doctrine (`.gzkit/rules/complexity-doctrine.md`)
 
 | # | Rule | Score | Why |
@@ -214,13 +220,13 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 
 ## Summary
 
-Counts updated 2026-05-05 after ADR-0.0.28 OBPI-01 landed the per-metric complexity-threshold rule as a Mechanical-class rule.
+Counts updated 2026-05-07 after model-selection rule landed as a Mechanical-class rule (GHI #409).
 
 | Score | Count | % |
 |-------|-------|---|
-| **Mechanical** | 37 | 60% |
+| **Mechanical** | 38 | 60% |
 | **Promotable** | 5 | 8% |
-| **Judgment** | 19 | 31% |
+| **Judgment** | 19 | 30% |
 | **Ambiguous** | 0 | 0% |
 
 **The mechanical floor rose from 30 % to 60 %** under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules were mechanized as `gz validate --<scope>` flags and two became pre-commit guards under `gzkit.hooks.guards`. ADR-0.0.22 added the security-sensitivity third axis as `gz validate --sensitivity`, lifting the floor by a further point. ADR-0.0.23 OBPI-02 added the **Judgment**-classed agent failure-mode taxonomy as shared reviewer vocabulary (mechanical promotion `gz validate --failure-mode-coverage` tracked under follow-up GHIs #308–#312). ADR-0.0.27 OBPI-01 added the **Mechanical**-classed exemplar-corpus doctrine rule. ADR-0.0.28 OBPI-01 added the **Mechanical**-classed complexity-thresholds rule (forthcoming `gz validate --complexity-thresholds` validator under OBPI-0.0.28-03). The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.

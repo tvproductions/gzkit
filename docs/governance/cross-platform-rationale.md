@@ -47,7 +47,7 @@ The runtime guard covers **only** `uv run gz ...` and `uv run -m gzkit ...`.
 It does **not** cover:
 
 - `python -c "<script>"` one-liners (fresh interpreter, no reconfigure)
-- `python tools/<helper>.py` / `uv run python <script>` (fresh interpreter)
+- `python scripts/<helper>.py` / `uv run python <script>` (fresh interpreter)
 - `jq` / `awk` / `sed` / other non-Python tools in the pipeline
 
 Each is a fresh process defaulting to `cp1252` on Windows.
@@ -57,7 +57,7 @@ Each is a fresh process defaulting to `cp1252` on Windows.
 | Invocation shape | Windows-safe form |
 |---|---|
 | `python -c "..."` processing gz output | Prefer a gz-native path first; if not, use `uv run python -c "import sys; sys.stdout.reconfigure(encoding='utf-8'); ..."` |
-| Ad-hoc helper script `tools/<name>.py` | `sys.stdout.reconfigure` / `sys.stdin.reconfigure` at top |
+| Ad-hoc helper script `scripts/<name>.py` | `sys.stdout.reconfigure` / `sys.stdin.reconfigure` at top |
 | `jq` / `awk` on Windows | Pipe to file (`--output path.json`) and parse the file |
 
 **Preference order:** gz-native extraction > reconfigured `uv run python` > raw `python -c`.
@@ -69,7 +69,7 @@ uv run gz validate --utf8-prefix
 ```
 
 Scope (GHI #275): `PYTHONUTF8=1` prefix on `uv run gz` invocations, gz-to-python
-pipe patterns without reconfigure, `tools/**/*.py` entry-points without
+pipe patterns without reconfigure, `scripts/**/*.py` entry-points without
 reconfigure. Waivers in `_UTF8_PIPE_WAIVERS`. Exits 3 on unwaived violations.
 
 ## Origin

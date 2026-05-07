@@ -23,6 +23,9 @@ model: opus
 
 Execute reproducible ADR verification to move from COMPLETED → VALIDATED.
 
+
+> **Self-Escalation (opus-tier).** Spawn an `Agent` with `model="opus"` to execute this skill. Pass the operator's request verbatim, any relevant context (ADR IDs, OBPI IDs, design topic, prior decisions), and instruct the subagent to read `.gzkit/skills/gz-adr-audit/SKILL.md` for the full workflow. Relay the subagent's output to the operator.
+
 ### Common Rationalizations
 
 | Thought | Reality |

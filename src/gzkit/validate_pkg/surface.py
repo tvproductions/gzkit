@@ -134,6 +134,8 @@ def _validate_skill_frontmatter(project_root: Path) -> list[ValidationError]:
         try:
             content = skill_file.read_text(encoding="utf-8")
             fm, _ = parse_frontmatter(content)
+            if fm.get("lifecycle_state") == "retired":
+                continue
         except (OSError, ValueError) as e:
             errors.append(
                 ValidationError(

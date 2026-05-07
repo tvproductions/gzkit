@@ -8,6 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-04-29
 metadata:
   skill-version: "1.2.1"
+model: sonnet
 ---
 
 # gz-tech-debt-review
