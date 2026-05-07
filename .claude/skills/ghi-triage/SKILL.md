@@ -8,6 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-04-25
 metadata:
   skill-version: "4.1.0"
+model: sonnet
 ---
 
 # ghi-triage

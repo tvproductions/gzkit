@@ -13,6 +13,7 @@ invocation: uv run gz register-adrs
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18
+model: haiku
 ---
 
 # gz-adr-sync

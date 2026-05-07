@@ -9,6 +9,7 @@ owner: gzkit-governance
 last_reviewed: 2026-04-26
 metadata:
   skill-version: "1.2.3"
+model: haiku
 ---
 
 # SKILL.md

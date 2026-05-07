@@ -9,9 +9,9 @@ description: Token-efficient model routing across skills, subagents, and work su
 
 # Model Selection (gzkit)
 
-<!-- rule-version: 0.1.0 -->
+<!-- rule-version: 0.2.0 -->
 
-> **Rule version:** `0.1.0` — initial canon for token-efficient model routing across skills, subagents, and work surfaces (GHI #TBD).
+> **Rule version:** `0.2.0` — skill `model:` frontmatter required + Literal-validated; all 67 skills declare tier (GHI #409).
 
 ## Operative claims (binding)
 

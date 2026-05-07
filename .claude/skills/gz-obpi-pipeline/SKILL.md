@@ -7,6 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 skill-version: "6.14.2"
 last_reviewed: 2026-04-25
+model: sonnet
 ---
 
 # gz-obpi-pipeline

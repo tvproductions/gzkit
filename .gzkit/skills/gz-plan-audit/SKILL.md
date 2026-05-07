@@ -12,6 +12,7 @@ metadata:
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
+model: sonnet
 ---
 
 # gz-plan-audit (v6.0.0)

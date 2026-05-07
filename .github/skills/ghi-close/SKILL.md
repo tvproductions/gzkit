@@ -8,6 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-04-27
 metadata:
   skill-version: "2.4.0"
+model: opus
 ---
 
 # ghi-close

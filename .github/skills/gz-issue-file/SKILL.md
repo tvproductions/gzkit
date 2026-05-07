@@ -9,6 +9,7 @@ last_reviewed: 2026-05-02
 metadata:
   skill-version: "1.0.0"
   govzero-framework-version: "v6"
+model: sonnet
 ---
 
 # gz-issue-file

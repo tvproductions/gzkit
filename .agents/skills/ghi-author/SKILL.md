@@ -8,6 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-04-27
 metadata:
   skill-version: "1.2.0"
+model: sonnet
 ---
 
 # ghi-author

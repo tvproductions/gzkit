@@ -13,6 +13,7 @@ metadata:
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-03
+model: sonnet
 ---
 
 # gz-obpi-reconcile (v2.0.0)

@@ -5,6 +5,7 @@ category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18
+model: haiku
 ---
 
 # gz migrate-semver

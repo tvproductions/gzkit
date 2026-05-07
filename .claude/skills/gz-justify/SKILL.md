@@ -12,11 +12,15 @@ metadata:
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
+model: opus
 ---
 
 # gz-justify
 
 Pre-execution reasoning walkthrough. Run it when confidence is low, when scope is unclear, or when a prior evaluation (gz-adr-evaluate) flagged structural weakness. The verb renders a grounded scaffold from anchor evidence; the skill instructs you to fill it honestly, not to invent.
+
+
+> **Self-Escalation (opus-tier).** Spawn an `Agent` with `model="opus"` to execute this skill. Pass the operator's request verbatim, any relevant context (ADR IDs, OBPI IDs, design topic, prior decisions), and instruct the subagent to read `.gzkit/skills/gz-justify/SKILL.md` for the full workflow. Relay the subagent's output to the operator.
 
 ## Purpose
 

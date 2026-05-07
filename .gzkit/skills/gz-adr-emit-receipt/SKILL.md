@@ -7,6 +7,7 @@ owner: gzkit-governance
 last_reviewed: 2026-04-18
 metadata:
   skill-version: "1.0.1"
+model: haiku
 ---
 
 # gz adr emit-receipt

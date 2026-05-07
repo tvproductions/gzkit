@@ -13,7 +13,7 @@ metadata:
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-20
-model: opus
+model: sonnet
 ---
 
 # gz-session-handoff (v6.0.0)

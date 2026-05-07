@@ -14,7 +14,7 @@ metadata:
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-20
-model: opus
+model: sonnet
 ---
 
 # gz-patch-release

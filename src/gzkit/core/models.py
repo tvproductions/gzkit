@@ -114,7 +114,7 @@ class SkillFrontmatter(BaseModel):
     disable_model_invocation: bool | None = Field(None, alias="disable-model-invocation")
     argument_hint: str | None = Field(None, alias="argument-hint")
     allowed_tools: str | None = Field(None, alias="allowed-tools")
-    skill_model: str | None = Field(None, alias="model")
+    skill_model: Literal["haiku", "sonnet", "opus"] = Field(..., alias="model")
     context: Literal["fork"] | None = None
     agent: str | None = None
 

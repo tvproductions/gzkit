@@ -10,6 +10,7 @@ metadata:
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity advise
+model: opus
 ---
 
 # complexity-advisor

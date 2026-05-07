@@ -10,6 +10,7 @@ metadata:
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity distill
+model: opus
 ---
 
 # gz-complexity-distill
@@ -19,6 +20,9 @@ document by measuring the gzkit exemplar corpus and joint-authoring the
 output with the operator. The skill is the canonical operator surface for
 the four-ADR complexity-doctrine cluster's distillation cadence
 (ADR-0.0.27 → ADR-0.0.28 → ADR-0.0.29 → ADR-0.0.30).
+
+
+> **Self-Escalation (opus-tier).** Spawn an `Agent` with `model="opus"` to execute this skill. Pass the operator's request verbatim, any relevant context (ADR IDs, OBPI IDs, design topic, prior decisions), and instruct the subagent to read `.gzkit/skills/gz-complexity-distill/SKILL.md` for the full workflow. Relay the subagent's output to the operator.
 
 ## When to Use
 
