@@ -471,8 +471,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertIn("uv run gz check", agents)
             self.assertIn("Documentation/process/template-only changes stay", agents)
             self.assertNotIn("uv run -m unittest discover tests", agents)
-            # Slim CLAUDE.md delegates governance to .claude/rules/
-            self.assertIn(".claude/rules/", claude)
+            # Slim CLAUDE.md delegates governance via @AGENTS.md directive
             self.assertIn("AGENTS.md", claude)
             self.assertIn("uv run gz obpi pipeline <OBPI-ID>", copilot)
             self.assertIn("AGENTS.md", copilot)
@@ -515,7 +514,6 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertIn(".gzkit/skills/<skill-name>/", agents)
             # Slim CLAUDE.md no longer includes skill catalog
             self.assertNotIn("`demo-skill`", claude)
-            self.assertIn(".claude/skills/", claude)
             # Slim copilot no longer includes skill catalog
             self.assertNotIn("`demo-skill`", copilot)
             self.assertIn("AGENTS.md", copilot)

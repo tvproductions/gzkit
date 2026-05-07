@@ -62,13 +62,13 @@ class SecuritySensitivityRuleAuthorship(unittest.TestCase):
     def test_rule_body_carries_version_marker_and_block_quote(self) -> None:
         _, body = _parse_canonical_frontmatter(_RULE_PATH)
         self.assertIn(
-            "<!-- rule-version: 0.1.0 -->",
+            "<!-- rule-version: 0.2.0 -->",
             body,
             "body must carry the canonical body-level rule-version HTML comment",
         )
         self.assertRegex(
             body,
-            r">\s+\*\*Rule version:\*\*\s+`0\.1\.0`",
+            r">\s+\*\*Rule version:\*\*\s+`0\.2\.0`",
             "body must carry the visible rule-version block quote",
         )
 
@@ -80,7 +80,6 @@ class SecuritySensitivityRuleAuthorship(unittest.TestCase):
             "registry contract": r"^##+\s+Registry contract\b",
             "validate scope": r"^##+\s+`gz validate --sensitivity`",
             "walkthrough enumeration": r"^##+\s+Heightened walkthrough\b",
-            "scanner-unavailable failure mode": r"^##+\s+Scanner-unavailable\b",
         }
         for label, pattern in required_section_patterns.items():
             with self.subTest(section=label):
@@ -89,6 +88,16 @@ class SecuritySensitivityRuleAuthorship(unittest.TestCase):
                     re.compile(pattern, re.MULTILINE),
                     f"section heading missing: {label} ({pattern!r})",
                 )
+        # Scanner-unavailable was folded into the Heightened walkthrough
+        # section during the diet pass (GHI #327). The binding invariant is
+        # that scanner-unavailable behavior is documented as fail-closed,
+        # not that it has its own heading.
+        with self.subTest(section="scanner-unavailable failure mode"):
+            self.assertRegex(
+                body,
+                re.compile(r"Scanner-unavailable.*fail-closed", re.IGNORECASE | re.DOTALL),
+                "scanner-unavailable fail-closed behavior must be documented in the rule body",
+            )
 
 
 class SecuritySensitivityCrossSurfaceBindings(unittest.TestCase):
@@ -168,7 +177,7 @@ class SecuritySensitivityCrossSurfaceBindings(unittest.TestCase):
                     f"vendor mirror missing: {mirror.relative_to(_PROJECT_ROOT)}",
                 )
                 self.assertIn(
-                    "<!-- rule-version: 0.1.0 -->",
+                    "<!-- rule-version: 0.2.0 -->",
                     mirror.read_text(encoding="utf-8"),
                     "vendor mirror must carry the body-level rule-version marker",
                 )

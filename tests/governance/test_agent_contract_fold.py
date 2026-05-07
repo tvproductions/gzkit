@@ -125,23 +125,13 @@ class TestAgentContractFold(unittest.TestCase):
         claude_md = (REPO_ROOT / "CLAUDE.md").read_text(encoding="utf-8")
         agents_md = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
 
-        claude_addendum_idx = claude_md.find("## Claude Code addendum")
-        self.assertNotEqual(
-            claude_addendum_idx,
-            -1,
-            "CLAUDE.md missing '## Claude Code addendum' section",
-        )
-
-        same_turn_idx = claude_md.find("invoke it in the same turn")
-        self.assertNotEqual(
-            same_turn_idx,
-            -1,
-            "CLAUDE.md addendum missing 10a ('invoke it in the same turn')",
-        )
-        self.assertGreater(
-            same_turn_idx,
-            claude_addendum_idx,
-            "10a text must appear at/after the 'Claude Code addendum' heading",
+        # The slim CLAUDE.md template may use a comment or heading for the
+        # Claude-specific section.  The binding invariant is that the 10a
+        # same-turn text lives in CLAUDE.md (not AGENTS.md).
+        self.assertIn(
+            "invoke it in the same turn",
+            claude_md,
+            "CLAUDE.md must carry 10a ('invoke it in the same turn')",
         )
 
         self.assertNotIn(
