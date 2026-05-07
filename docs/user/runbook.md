@@ -809,6 +809,8 @@ Fail-closed (exit 3) audit of every citation in cluster ADRs (0.0.27 / 0.0.28 / 
 
 `gz complexity advise` (ADR-0.0.29, OBPI-0.0.29-03) is the trigger-time advisor surface. It runs the OBPI-0.0.29-02 diagnosis engine against `<path>`, measures per-function `radon_cc` via radon's Python API, and emits an `AdvisorDiagnosis` (canonical refactor archetype, doctrinal authority, non-empty proof tuple linking to AST nodes, recommended-move excerpt) for every band crossing in the threshold table at `.gzkit/rules/complexity-thresholds.md`. Operator moment: preview advisor diagnosis on a file before commit. Default output is structured prose; `--json` emits the canonical Pydantic serialization. Exit codes follow the four-code map: `0` clean or warn-band, `3` block-band crossing. See [`gz-complexity-advise`](manpages/gz-complexity-advise.md) for the full manpage.
 
+**Advisor timeout primitive** (ADR-0.0.29, OBPI-0.0.29-09): The `run_with_timeout` primitive at `src/gzkit/complexity/advisor/timeout.py` wraps advisor invocations with a configurable timeout (default 30s). On timeout, the primitive returns `TimeoutTimedOut` (fail-open — commit proceeds) and logs a JSONL entry to `.gzkit/insights/advisor-failures.jsonl`. The auto-chain hook (OBPI-05) consumes this primitive; the hook never blocks a commit indefinitely. Config override: set `advisor_timeout_seconds` in `.gzkit.json` (e.g. `{"advisor_timeout_seconds": 15}`). The SKIP environment variable (inherited from the `complexity-reduction-xenon` chore) bypasses both xenon and the advisor entirely — the timeout only governs the non-SKIP path.
+
 ### Frontmatter-Ledger Reconciliation
 
 ```bash

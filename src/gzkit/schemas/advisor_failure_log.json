@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "AdvisorFailureLogEntry",
+  "description": "One JSONL entry in .gzkit/insights/advisor-failures.jsonl emitted when the advisor timeout primitive fires.",
+  "type": "object",
+  "required": ["timestamp", "callable_name", "timeout_s", "elapsed_s", "context"],
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 timestamp with timezone when timeout occurred"
+    },
+    "callable_name": {
+      "type": "string",
+      "description": "Name of the callable that timed out"
+    },
+    "timeout_s": {
+      "type": "number",
+      "description": "Configured timeout threshold in seconds"
+    },
+    "elapsed_s": {
+      "type": "number",
+      "description": "Elapsed seconds before timeout fired"
+    },
+    "context": {
+      "type": "object",
+      "required": ["file_paths", "invocation"],
+      "properties": {
+        "file_paths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Files being analyzed when timeout occurred"
+        },
+        "invocation": {
+          "type": "string",
+          "enum": ["auto-chain", "ad-hoc"],
+          "description": "Whether the advisor was invoked via auto-chain hook or ad-hoc CLI"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
