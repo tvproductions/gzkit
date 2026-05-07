@@ -90,6 +90,7 @@ nav:
       - /gz-gates: user/skills/gz-gates.md
       - /gz-check: user/skills/gz-check.md
       - /gz-arb: user/skills/gz-arb.md
+      - /complexity-advisor: user/skills/complexity-advisor.md
     - Status & Review:
       - /gz-status: user/skills/gz-status.md
       - /gz-adr-status: user/skills/gz-adr-status.md

@@ -1,16 +1,19 @@
 ---
 id: ADR-pool.advisory-judge-surface
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: lite
 enabler: null
+promoted_to: ADR-0.0.39-llm-as-judge-doctrine
 ---
 
 # ADR-pool.advisory-judge-surface: Advisory LLM-as-judge surface (non-gating)
+> Promoted to `ADR-0.0.39-llm-as-judge-doctrine` on 2026-05-06. This pool file is retained as historical intake context.
+
 
 ## Status
 
-Pool
+Superseded
 
 ## Intent
 
@@ -64,6 +67,20 @@ invariants):
 Possible CLI shape: `gz judge prose <path>`, `gz judge dedup
 <corpus>`, `gz judge grounding <attestation-text>`. All emit receipts
 under `artifacts/receipts/judge-*.json`.
+
+## Target Scope
+
+- **rule-and-doctrine** — Author the canonical rule file at `.gzkit/rules/llm-as-judge.md` codifying the survey-aligned framework: three-axis declaration (what/how/where) per [arxiv 2411.15594](https://arxiv.org/abs/2411.15594); named bias roster (position bias, verbosity bias, self-preference bias, preference leakage); methodology menu with rationale-of-choice (single-grading, pairwise, list-wise, reference-based, criteria-decomposed, ensemble); output-format discipline (explanation-precedes-verdict; no naked verdict); meta-evaluation cadence (sample human-agreement N times per 100 verdicts); inheritance from ADR-0.0.38 Evidentiary axis.
+- **judge-invocation-schema** — Define the judge-invocation declaration schema (Pydantic + JSON Schema) every LLM-as-judge surface must populate at invocation time: `judge_model`, `judge_model_family`, `candidate_provenance` (model + family of the artifact under judgment), `methodology`, `what_axis` (judged content type), `how_axis` (judging technique), `where_axis` (application domain), `bias_mitigations` (named mitigations applied), `explanation_text`, `verdict`, `prompt_hash`, `input_hash`. Receipts that fail to populate any required field are rejected by the existing ARB validator.
+- **existing-judge-surface-classification** — Classify every existing LLM-as-judge surface in gzkit (`gz-adr-evaluate --red-team`, runtime `advisor()` tool, `gz-complexity-distill` advisor verdicts) under the three-axis taxonomy; emit `judge_surface_classified` ledger event per surface; produce baseline at `artifacts/audits/judge-surface-classification-2026-05-06.md`; supersede the three pool ADRs governed by this doctrine (`advisory-judge-surface` self-supersession at promotion; `attestation-advisory-agent` and `lightweight-pre-implementation-challenger` marked as governed-by-ADR-0.0.39 in their pool frontmatter, remaining in pool until later promotion).
+
+## Proposed OBPI Decomposition
+
+| Slug | Description |
+|---|---|
+| `rule-and-doctrine` | Author `.gzkit/rules/llm-as-judge.md` codifying the survey-aligned framework (three-axis what/how/where, named bias roster, methodology menu, explanation-then-verdict output discipline, meta-eval cadence); register in advisory-rules-audit scorecard as **Mechanical** (forward-reference to ADR-0.0.40 validators); declare own `surface_axis: authoritative` per ADR-0.0.38 |
+| `judge-invocation-schema` | Define `JudgeInvocation` Pydantic model + `judge_invocation.json` JSON Schema mirror covering every field the doctrine requires (judge_model, judge_model_family, candidate_provenance, methodology, three-axis, bias_mitigations, explanation_text, verdict, hashes); extend ARB receipt validator to require these fields on judge-prefixed receipts; tests assert schema validation passes for compliant invocations and fails for missing/off-enum values |
+| `existing-judge-surface-classification` | Retroactively classify every existing judge surface under the three-axis taxonomy with cited rationale anchors; emit `judge_surface_classified` ledger event per surface; produce `artifacts/audits/judge-surface-classification-2026-05-06.md` baseline; mark dependent pool ADRs (`attestation-advisory-agent`, `lightweight-pre-implementation-challenger`) as governed-by-ADR-0.0.39 in their frontmatter; Gate 5 walkthrough confirms each classification |
 
 ## Alternatives Considered
 

@@ -1698,6 +1698,10 @@
     "OBPI-0.9.0-05-parity-qc-and-closeout-readiness": {
       "rationale": "ghi-276-historical",
       "status_at_landing": "Completed"
+    },
+    "OBPI-0.0.29-04-complexity-advisor-skill": {
+      "rationale": "Skill-only OBPI; CLI scenarios covered at OBPI-0.0.29-03. No additional BDD surface.",
+      "status_at_landing": "Completed"
     }
   }
 }
