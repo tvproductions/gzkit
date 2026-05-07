@@ -111,6 +111,14 @@ Codify two co-load-bearing foundation invariants in one ADR:
 - Does NOT modify the ledger event schema beyond the new event family added here — broader ledger schema changes are out of scope.
 - Does NOT introduce a new attestation type — the existing `human` / `agent-relayed-operator-attestation` / `self-close-exception` taxonomy carries through.
 
+## Comparator Uplift (2026-05-07)
+
+Comparator lessons must not enter gzkit as prose pasted into AGENTS.md. This ADR
+is the intake gate: any borrowed doctrine that claims to shape gzkit identity
+must become a constitutional invariant with schema, validator, ledger event, and
+rendered projection. Workflow conveniences remain feature or pool work until
+they have a foundation invariant to defend.
+
 ## Consequences
 
 ### Positive

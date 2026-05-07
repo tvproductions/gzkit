@@ -44,6 +44,8 @@ a structured evidence trail for attestation.
    - Evidence captured (command output, screenshots, operator notes)
    - Fix plans for failures (if any)
    - Summary: "N of M deliverables passed, K skipped, J failed"
+   - Receipt bindings for every passed machine-verifiable item; operator-only
+     observations cite attestation text and any attached screenshot/video proof
 
 ### Auto-Diagnosis
 
@@ -96,6 +98,8 @@ This pool ADR can be promoted when all are true:
 4. UAT report format is accepted and integrates cleanly with existing audit artifacts.
 5. At least 2 real ADR closeouts are run with the UAT walkthrough to validate the
    operator experience — is it helpful or bureaucratic?
+6. Pass/fail evidence binding is defined so the walkthrough cannot launder a
+   checklist click into proof.
 
 ## Inspired By
 

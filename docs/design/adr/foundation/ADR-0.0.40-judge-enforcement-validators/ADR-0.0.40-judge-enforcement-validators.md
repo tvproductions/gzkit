@@ -66,6 +66,15 @@ Sketch:
 - **ADR-0.0.27 (exemplar-corpus-doctrine)** anchors brief-level Gate 5 walkthroughs on every foundation-kind ADR; OBPI-0.0.40-05's retrofit walkthrough is especially load-bearing because it is the highest-risk OBPI per Claim 3 above.
 - **arxiv 2411.15594 § Preference Leakage** and **llm-as-a-judge.github.io J-Detector framing** are the canonical literature sources; the leakage validator's diagnostic explicitly cites the paper.
 
+## Comparator Uplift (2026-05-07)
+
+Superpowers-style review stages and Compound Engineering review loops are useful
+only when review artifacts cannot float free of enforcement. This ADR should add
+validator coverage for review receipts that name `spec_compliance`, `quality`,
+`security`, or `performance`: the receipt schema, prompt leakage checks, and
+integration citation must all validate before the review can influence
+completion.
+
 ## Consequences
 
 ### Positive

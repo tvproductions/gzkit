@@ -40,10 +40,25 @@ Confirmed references to anchor the bibliography at promotion:
 - Anthropic — [Project Sustainable Model](https://alignment.anthropic.com/2026/psm/)
 - Anthropic — [Abstractive Red-Teaming](https://alignment.anthropic.com/2026/abstractive-red-teaming/)
 - Anthropic — [Effective Context Engineering for AI Agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+- GitHub — [Spec Kit](https://github.com/github/spec-kit)
+- AWS / Kiro — [Kiro documentation](https://kiro.dev/docs/)
+- Tessl — [Spec Driven Development registry tile](https://tessl.io/registry/tessl-labs/spec-driven-development)
+- Specmatic — [Contract Driven Development](https://docs.specmatic.io/contract_driven_development)
+- BMAD Method — [BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD)
+- GSD — [get-shit-done](https://github.com/gsd-build/get-shit-done)
+- Superpowers — [Claude plugin](https://claude.com/plugins/superpowers)
+- EveryInc — [compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin)
 
-These three have already grounded substantial gzkit design reviews and
+The first three have already grounded substantial gzkit design reviews and
 establish the kind of material the bibliography should curate: practical
 engineering guidance for building governance and agent systems.
+
+The comparator entries added on 2026-05-07 are not cited as trend-chasing
+authority. They are prior-art anchors for bounded lessons: front-door ergonomics,
+workflow staging, executable contracts, context-package portability, prompt
+injection defense, review discipline, and compounding learning loops. The
+annotated bibliography should name the specific gzkit destination ADR for each
+lesson and reject any citation whose only value is popularity.
 
 ## Non-Goals
 
@@ -80,6 +95,8 @@ This pool ADR can be promoted when all are true:
    cite the bibliography without fragile hand-copied URLs?
 5. AUTO-marker block convention is chosen — borrow the twelve-line
    `_replace_block` pattern from airlineops or re-derive it in gzkit style.
+6. Comparator entries are annotated with an "absorbed lesson" and a "rejected
+   imitation" field so references cannot be used as vague authority.
 
 ## Notes
 

@@ -106,6 +106,25 @@ rather than a parallel system:
    `Failure Modes`, and `Circuit Breakers` as the placement home for
    anti-rationalization patterns.
 
+## Amendment 2026-05-07: Context package contract
+
+Tessl, BMAD, GSD, Superpowers, and Compound Engineering all package reusable
+agent context. gzkit's version should treat each serious skill as a governed
+context package, not just a markdown instruction file.
+
+Add optional but validated package metadata at promotion:
+
+- `context_inputs`: artifacts the skill is allowed to load by default
+- `context_outputs`: artifacts, receipts, or reports the skill may produce
+- `source_provenance`: canonical source plus mirror destinations
+- `load_budget`: intended per-turn size class and progressive-disclosure notes
+- `trust_boundary`: whether the skill can mutate repo state, emit ledger
+  events, or only advise
+
+The purpose is better front-door routing and safer reuse. It is not a license
+for skills to become autonomous plugins; every mutating package still inherits
+Gate 5, Allowed Paths, and mirror-sync discipline.
+
 ## Alternatives Considered
 
 1. Fold this into `ADR-pool.skill-behavioral-hardening` - rejected. Behavioral
@@ -157,6 +176,8 @@ This pool ADR can be promoted when all are true:
    forced into artificial bulk.
 5. Chore-level acceptance checks can be specified without making existing
    skills fail before a staged migration exists.
+6. Context-package metadata fields are accepted, including load budget and
+   trust-boundary semantics.
 
 ## Design Notes
 

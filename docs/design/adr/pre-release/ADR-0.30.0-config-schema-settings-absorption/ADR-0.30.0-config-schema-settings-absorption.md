@@ -107,6 +107,13 @@ opsdev contains a mature configuration infrastructure spanning 1,335 lines acros
 
 The 171-line vs 1,335-line disparity between gzkit and opsdev's configuration layers is the most significant infrastructure gap identified in the absorption audit. opsdev's `schema.py` provides Pydantic-based settings models that validate configuration at load time --- gzkit has no equivalent. opsdev's `doctrine.py` enforces governance doctrine rules programmatically --- gzkit relies on documentation alone. The config data files (`chores.json`, `git_sync.json`, `test_suites.json`) demonstrate a pattern of schema-validated, file-driven configuration that gzkit should adopt for governance generality. Closing this gap is prerequisite to absorbing CLI commands (ADR-0.31.0) that depend on robust configuration.
 
+## Comparator Uplift (2026-05-07)
+
+GSD and Compound Engineering are strong at cross-runtime installation because
+configuration is explicit. This ADR should make config schema the place where
+borrowed workflow support states are declared: `referenced`, `scaffolded`,
+`receipt_bound`, or `validator_enforced`, never implied by installed files.
+
 ## Consequences
 
 - gzkit's config layer becomes comprehensive, supporting Pydantic settings models and doctrine enforcement

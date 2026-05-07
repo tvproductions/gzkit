@@ -199,6 +199,13 @@ classification baseline are 0.0.40's input.
 - **ADR-0.0.5 (evaluation-infrastructure)** explicitly **rejected** LLM-as-judge for deterministic regression scoring; this ADR honors that boundary — the doctrine governs judge surfaces that are *already evidentiary* (gz-adr-evaluate red-team, advisor, complexity-distill), not the deterministic scoring path 0.0.5 named.
 - **arxiv 2411.15594** and **llm-as-a-judge.github.io** are the canonical literature sources; the three-axis taxonomy, bias roster, methodology menu, output discipline, and meta-eval cadence are all sourced from them.
 
+## Comparator Uplift (2026-05-07)
+
+External frameworks increasingly include AI review and quality scoring. This ADR
+should make clear that judge outputs are advisory until a validator binds their
+input corpus, rubric, output schema, and leakage controls. Review polish is not
+authority; receipt-bound judge discipline is the only acceptable absorption.
+
 ## Consequences
 
 ### Positive

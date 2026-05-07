@@ -292,7 +292,7 @@ always recompute truth from `gz` status surfaces before closeout:
 Skill shortcuts for drift detection and reconciliation:
 
 - [`/gz-adr-check`](skills/gz-adr-check.md) — run blocking ADR evidence checks for a target ADR
-- [`/gz-adr-recon`](skills/gz-adr-recon.md) — reconcile ADR/OBPI evidence state from ledger outputs
+- [`/gz-adr-sync`](skills/gz-adr-sync.md) — end-to-end ADR governance sync (evidence, reconciliation, registration)
 - [`/gz-adr-status`](skills/gz-adr-status.md) — focused ADR drilldown with lifecycle and OBPI detail
 
 ```bash

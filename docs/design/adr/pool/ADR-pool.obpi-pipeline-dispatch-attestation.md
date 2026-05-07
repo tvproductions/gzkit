@@ -78,6 +78,24 @@ and complexity score. Without the receipt, the claim is fabrication and the
 validator flags it. This binds the narrative-recall failure mode to a
 mechanical evidence floor.
 
+### 5. Two-stage review dispatch receipts
+
+Superpowers' strongest transfer pattern is not "use more subagents"; it is the
+ordered review split: spec-compliance review first, code-quality review second.
+gzkit should absorb that through dispatch receipts:
+
+- `pipeline_review_dispatched` event with `review_kind:
+  spec_compliance|quality|security|performance`
+- spec-compliance review must cite the OBPI brief hash and REQ IDs reviewed
+- quality review cannot start until spec-compliance review has passed or emitted
+  a blocker envelope
+- integration decision cites both review receipts when both are required by lane
+  or sensitivity
+
+This prevents review from becoming ritual theater. A fresh reviewer context is
+useful only when the output is bound back to the ledger and the integration
+decision can prove which review passed.
+
 ## Non-Goals
 
 - No new dispatch infrastructure — this ADR scopes attestation and enforcement
@@ -85,6 +103,8 @@ mechanical evidence floor.
 - No model-floor reclassification — `DISPATCH_MODEL_MAP` is the existing
   source of truth and stays. This ADR observes and gates against it; it does
   not redefine it.
+- No reviewer prestige hierarchy. Review kinds are evidence roles, not trust in
+  a particular model or vendor.
 - No bundled close of GHI #380. The authoring-time sibling closes against its
   own destination in a separate ceremony. Each routing-receipt close is
   individual per `ghi-close` doctrine.

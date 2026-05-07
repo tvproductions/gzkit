@@ -258,6 +258,25 @@ Spec compliance must pass *before* code quality review begins. This ordering
 is critical: there is no point reviewing code quality for work that doesn't
 match the spec.
 
+### Comparator uplift (2026-05-07)
+
+The current comparator set confirms that ARF should be the assurance layer for
+borrowed agent workflows:
+
+- **Spec Kit / Kiro / GSD:** staged workflows only count as reliable when every
+  stage emits a receipt or validator result.
+- **Superpowers:** fresh-context task execution and two-stage review map to ARF
+  review evidence, not to informal agent confidence.
+- **Compound Engineering:** lessons learned during review become reliability
+  inputs only after they cite source evidence and pass human review.
+- **BMAD:** persona/workflow packaging is adoption UX; ARF remains the trust
+  floor that decides whether the produced artifact is acceptable.
+
+Promotion should add a `borrowed_workflow_assurance` field to GBOM/ARF design:
+the field names the prior-art workflow pattern, the gzkit witness that preserves
+identity, and the AR level achieved after the pattern runs. This gives gzkit a
+way to learn from competitors without making vendor popularity a trust signal.
+
 gzkit's gate system partially implements this — scope audit (verification)
 runs before human attestation (validation). ARF should formalize the
 ordering: at AR2+, verification gates must pass before validation gates

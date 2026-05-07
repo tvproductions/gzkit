@@ -111,6 +111,13 @@ opsdev contains 10 specialized governance commands that have no direct equivalen
 
 opsdev's specialized commands represent mature governance tooling that has evolved through operational use. The reference system (refs-index + refs-citations) provides documentation cross-referencing. The instrumentation-audit verifies that code instrumentation (logging, metrics) meets governance standards. Agent-review validates AI agent configurations. Hygiene enforces repository cleanliness standards. Curation manages content inventories and guards. The governance trio (setup/report/runners) orchestrates the entire governance lifecycle. These are not airline-specific -- they are governance-generic patterns that any governed codebase needs.
 
+## Comparator Uplift (2026-05-07)
+
+Specialized commands are where gzkit can copy competitor speed without copying
+their looseness. Any absorbed command should declare its witness contract:
+which ledger event, receipt, validator, or human-attestation gate proves the
+command's result is not just a convenient narrative.
+
 ## Consequences
 
 - gzkit's CLI surface expands with new specialized commands

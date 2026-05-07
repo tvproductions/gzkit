@@ -87,6 +87,14 @@ first; if absent, fall back to the package canonical content via
 edits to project-local copies while letting fresh installs receive
 canonical content from the wheel.
 
+## Comparator Uplift (2026-05-07)
+
+Tessl/BMAD/GSD package context so agents can enter a workflow quickly. gzkit's
+packaging bar is higher: packages are canonical source plus generated mirrors,
+versioned metadata, trust boundary, load budget, and validation result. This ADR
+should make that package shape the default for skills, rules, personas, and
+future context packages so portability never means hand-copied markdown.
+
 ## Consequences
 
 ### Positive

@@ -125,6 +125,13 @@ gzkit must be the authoritative source for GovZero methodology documentation. Bo
 
 GovZero methodology documentation is the foundation of gzkit's governance model. Both airlineops and gzkit maintain copies of these documents, but they have evolved independently. airlineops may have updated documents based on operational experience (e.g., audit protocol improvements discovered during real audits), while gzkit may have refined documents based on tooling evolution (e.g., new gate architectures). Without systematic comparison, stale or incomplete documentation in gzkit undermines the tooling it governs. This ADR ensures every methodology document is compared and the best content lives in gzkit.
 
+## Comparator Uplift (2026-05-07)
+
+Methodology docs should explain why gzkit stays heavier while improving the
+front door. This ADR should add narrative coverage for the operator-approved
+posture: absorb competitor strengths through witnessed workflows, not lighter
+ceremony, and show concrete paths through pool/open ADR destinations.
+
 ## Consequences
 
 - gzkit becomes the single authoritative source for all GovZero methodology documentation

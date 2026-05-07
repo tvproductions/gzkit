@@ -230,6 +230,14 @@ validator → retroactive baseline → Gate 5 walkthrough.** This ADR
 follows that pattern fully; OBPI-0.0.38-01/02/03 land each layer in
 sequence.
 
+## Comparator Uplift (2026-05-07)
+
+Specmatic-style executable contracts and GSD-style workflow receipts both make
+the same demand: authority must project from evidence, not from tool branding.
+This ADR should classify comparator references as low authority until they are
+backed by gzkit-local receipts, tests, validators, or ledger events. A borrowed
+pattern becomes authoritative only through local evidence projection.
+
 ## Consequences
 
 ### Positive

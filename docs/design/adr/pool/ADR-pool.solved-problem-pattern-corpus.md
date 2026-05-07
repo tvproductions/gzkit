@@ -51,6 +51,25 @@ Possible storage path: `.gzkit/patterns/solved-problem-patterns.jsonl`.
 Skill: `gz-pattern-record` to write entries (with mandatory citation),
 `gz-pattern-search` to read.
 
+## Amendment 2026-05-07: Pattern entries as compounding capital
+
+The corpus absorbs Compound Engineering and Superpowers strengths only when a
+pattern entry proves it made future work more governable. Promotion design
+should add fields beyond the initial sketch:
+
+- `failure_class`: taxonomy value from ADR-0.0.23 or a GHI-linked extension
+- `source_evidence`: non-empty array of GHIs, receipts, commits, or ADR/OBPI IDs
+- `resolution_shape`: the reusable move that solved the problem
+- `future_trigger`: concrete condition telling a later agent when to load the
+  pattern
+- `canonization_status`: `candidate`, `human_reviewed`, `promoted_to_skill`,
+  `promoted_to_rule`, or `archived`
+
+The key comparator lesson is the compounding loop; the gzkit-specific
+constraint is that compounding cannot become a free-form memory dump. Pattern
+entries are useful only when they are searchable, evidenced, and subject to
+human-reviewed promotion or archival.
+
 ## Alternatives Considered
 
 1. **Free-form learnings dump (compound-engineering shape).** Rejected

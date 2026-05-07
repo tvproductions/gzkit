@@ -362,7 +362,7 @@ All other rows already match.
 | `gz-obpi-pipeline` | Calls this skill at Stage 5 |
 | `gz-obpi-lock` | Coordinates multi-agent access to briefs |
 | `gz-adr-audit` | Gate 5 closeout (uses reconcile for evidence) |
-| `gz-adr-recon` | ADR-level reconciliation (Layer 2, ledger-driven) |
+| `gz-adr-sync` | ADR-level reconciliation and full governance sync (Layers 1-3) |
 
 ---
 

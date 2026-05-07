@@ -1,48 +1,74 @@
 ---
 name: gz-adr-sync
-description: Reconcile ADR files with ledger registration and status views.
+description: End-to-end ADR governance sync — discover @covers evidence, reconcile OBPI ledger state, and register ADR files. Accepts an optional ADR-ID for scoped reconciliation.
 category: adr-operations
-compatibility: GovZero v6 framework; uses register-adrs + status commands
+compatibility: GovZero v6 framework
 metadata:
-  skill-version: "6.1.0"
+  skill-version: "7.0.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
-  govzero_layer: "Layer 3 - File Sync"
 gz_command: register-adrs
 invocation: uv run gz register-adrs
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-02-18
+last_reviewed: 2026-05-07
 model: haiku
 ---
 
 # gz-adr-sync
 
-Sync ADR governance state using current `gz` capabilities.
+End-to-end ADR governance sync. Absorbs `gz-adr-autolink` (Layer 1), `gz-adr-recon` (Layer 2), and the original `gz-adr-sync` (Layer 3) into a single operator-facing skill. Run after multi-session work, after importing pool ADRs, or before requesting ADR closeout.
 
-## Semantics
+## Modes
 
-In gzkit, ADR sync is ledger registration plus status refresh.
+### Full sync (no ADR-ID)
 
-## Procedure
+Runs all three layers in trust order.
 
 ```bash
-# Preview ADR registration drift
+# Layer 1 — discover @covers annotations
+rg -n '@covers\("ADR-' tests
+
+# Layer 2 — global ledger reconciliation
+uv run gz status --json
+
+# Layer 3 — register and refresh
 uv run gz register-adrs --dry-run
-
-# Register ADR files missing from ledger state
 uv run gz register-adrs
-
-# Confirm reconciled status
 uv run gz status
+```
+
+### Scoped (with ADR-ID)
+
+Reconciles a single ADR and its OBPIs. Use when verifying evidence gaps or preparing a specific ADR for closeout.
+
+```bash
+# Layer 1 — discover coverage for target
+rg -n '@covers\("ADR-<X.Y.Z>"' tests
+
+# Layer 2 — ledger reconciliation for target
+uv run gz adr status ADR-<X.Y.Z> --json
+uv run gz adr audit-check ADR-<X.Y.Z> --json
+
+# After any doc updates, re-lint
+uv run gz lint
 ```
 
 ## Notes
 
-- `gzkit` does not expose a standalone `adr-docs` command.
-- Use this workflow after adding/moving ADR files or importing pool ADRs.
+- `gz-adr-recon` and `gz-adr-autolink` are archived; this skill is their successor.
+- The runbook prescribes full sync before closeout; scoped mode is for targeted investigation.
+- Apply markdown table updates manually after evidence discovery, then run `uv run gz lint`.
+
+## Archived predecessors
+
+| Archived skill | Absorbed as |
+|---|---|
+| `gz-adr-autolink` | Layer 1 phase (evidence gathering) |
+| `gz-adr-recon` | Layer 2 phase (ledger reconciliation) |
+| `gz-register-adrs` | Layer 3 phase (registration) |
 
 ## References
 
 - Command implementation: `src/gzkit/cli.py`
-- User docs: `docs/user/commands/register-adrs.md`, `docs/user/commands/status.md`
+- User docs: `docs/user/commands/register-adrs.md`, `docs/user/commands/adr-status.md`, `docs/user/commands/adr-audit-check.md`

@@ -47,9 +47,8 @@ Task arrives
     │   ├── Promote a pool ADR to canonical ────────→ gz-adr-promote
     │   ├── Evaluate ADR quality (scoring) ─────────→ gz-adr-evaluate
     │   ├── Check ADR lifecycle/OBPI status ────────→ gz-adr-status
-    │   ├── Sync ADR index/status registries ───────→ gz-adr-sync
+    │   ├── Sync ADR governance state (all layers) ─→ gz-adr-sync
     │   ├── Build ADR-to-artifact traceability ─────→ gz-adr-map
-    │   ├── Scan @covers tags and update links ─────→ gz-adr-autolink
     │   └── Emit a receipt event to the ledger ─────→ gz-adr-emit-receipt
     │
     ├── Working on an OBPI?

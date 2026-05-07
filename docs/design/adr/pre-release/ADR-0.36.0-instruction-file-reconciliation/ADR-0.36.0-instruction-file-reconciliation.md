@@ -117,6 +117,13 @@ gzkit must own all reusable agent governance patterns. airlineops's `.github/ins
 
 airlineops's `.github/instructions/` and gzkit's `.claude/rules/` serve the same purpose: governing agent behavior during development sessions. They evolved independently and have never been systematically reconciled. The 10 overlapping files may have content gaps in either direction — airlineops may have added sections that gzkit lacks, or vice versa. The 3 airlineops-only files (sql_hygiene, warehouse, calendars) are nominally domain-specific but may contain generic patterns (e.g., SQL injection prevention, data pipeline testing, date handling) that belong in gzkit's governance surface. This ADR ensures nothing is missed by examining every file individually.
 
+## Comparator Uplift (2026-05-07)
+
+Competitor strength often enters through instruction files. This ADR should
+require reconciliation notes for any external workflow phrase added to
+AGENTS.md, CLAUDE.md, or vendor mirrors: source, absorbed lesson, rejected
+imitation, and local mechanical witness.
+
 ## Consequences
 
 - gzkit's rules surface becomes the authoritative source for all generic agent governance

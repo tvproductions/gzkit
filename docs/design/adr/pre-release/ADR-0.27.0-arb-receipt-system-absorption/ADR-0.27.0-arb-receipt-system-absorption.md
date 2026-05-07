@@ -114,6 +114,14 @@ gzkit must decide whether to absorb opsdev's full ARB (Agent Self-Reporting) rec
 
 opsdev's `arb/` package represents ~1,630 lines of battle-tested QA middleware. It goes significantly beyond gzkit's current skill-only ARB approach by providing: structured JSON receipts with schema validation, persistent receipt storage and lifecycle management, pattern analysis across receipt history, and external integrations (GitHub issues, Supabase sync). The governance question is whether structured receipts provide deterministic validation evidence that raw command output cannot, or whether the simpler approach is sufficient. This ADR ensures every module is examined individually with an honest complexity-vs-value assessment.
 
+## Comparator Uplift (2026-05-07)
+
+Compound Engineering and Superpowers both depend on review artifacts becoming
+future learning. ADR-0.27.0 should treat ARB receipts as the substrate for that
+loop: review, UAT, pattern-capture, and skill-feedback receipts should be
+eligible for ARB validation so learned improvements cite primary evidence
+rather than session memory.
+
 ## Consequences
 
 - If absorbed: gzkit gains a full receipt subsystem with deterministic validation, pattern analysis, and audit trails

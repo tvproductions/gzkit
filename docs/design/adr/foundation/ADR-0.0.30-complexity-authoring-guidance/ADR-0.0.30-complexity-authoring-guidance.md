@@ -87,6 +87,14 @@ Codify the complexity-authoring-guidance surface as one CLI verb (`gz complexity
 - Does NOT introduce new ledger event families — authoring hints are diagnostic-only and do not land in `.gzkit/ledger.jsonl`.
 - Does NOT vendor or reimplement LSP — gzkit's protocol is LSP-style for shape similarity but is its own contract; an editor implementing the gzkit protocol does NOT need a full LSP runtime.
 
+## Comparator Uplift (2026-05-07)
+
+Kiro/Spec Kit-style front doors reduce operator blank-page cost. This ADR should
+absorb that as authoring guidance that drafts complexity-aware decomposition,
+tradeoffs, and verification hooks for operator review. Each generated hint must
+carry a source anchor or explicit inference label so "helpful guidance" cannot
+become plausible but unwitnessed planning prose.
+
 ## Consequences
 
 ### Positive

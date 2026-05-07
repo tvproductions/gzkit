@@ -18,6 +18,51 @@ Groupings and sequencing derive from the [Architecture Planning Memo](../../ARCH
 
 ---
 
+## Comparator-Strength Intake (2026-05-07)
+
+Operator-approved posture:
+
+> gzkit should not chase competitors by becoming lighter. Its edge is heavier:
+> ledger, receipts, validators, doctrine, attestation. The way to absorb
+> competitor strengths is to improve the front door and the compounding loop
+> while making every borrowed workflow mechanically witnessed.
+
+This intake does not promote any pool item. It sharpens existing destinations so
+future promotion absorbs external strengths without weakening gzkit's identity.
+
+| Strength | Comparator signal | Existing destination |
+|---|---|---|
+| Operator-simple spec entry | GitHub Spec Kit, Kiro, betterspec/specledger | `ADR-pool.operator-first-spec-workspace`, `ADR-pool.change-isolation-workspace`, `ADR-pool.spec-delta-markers`, `ADR-pool.pre-planning-interview`, `ADR-0.45.0` |
+| Workflow as structured runtime | GitHub Spec Kit, Kiro, GSD | `ADR-pool.workflow-specification`, `ADR-pool.harness-agnostic-plan-capture`, `ADR-pool.agent-execution-intelligence` |
+| Parallel task waves | Kiro, GSD, Superpowers | `ADR-pool.wave-dependency-execution`, `ADR-pool.obpi-pipeline-dispatch-attestation`, `ADR-0.44.0` |
+| Content and prompt injection defense | GSD, broader agent-security practice | `ADR-pool.content-injection-scanning`, `ADR-pool.agentic-security-review`, `ADR-0.0.40` |
+| Context packages and portable agent surfaces | Tessl, BMAD, GSD, Compound Engineering | `ADR-pool.context-package-registry`, `ADR-pool.skill-control-surface-contract`, `ADR-pool.vendor-capability-matrix`, `ADR-0.0.32`, `ADR-0.44.0` |
+| Executable contracts | Specmatic, OpenAPI-style ecosystems | `ADR-pool.contract-surface-mechanical-defenses`, `ADR-pool.tdd-receipt-stream`, `ADR-0.46.0` |
+| Review-to-learning compounding | Compound Engineering, Superpowers | `ADR-pool.review-receipt-taxonomy`, `ADR-pool.skill-feedback-loop`, `ADR-pool.solved-problem-pattern-corpus`, `ADR-0.27.0`, `ADR-0.41.0` |
+| Persona/workflow adoption UX | BMAD, Superpowers | `ADR-pool.universal-agent-onboarding`, `ADR-pool.agent-reliability-framework`, `ADR-0.0.34` |
+| Bugfix-spec routing | Kiro, Spec Kit, GSD, Superpowers | `ADR-pool.bugfix-spec-routing`, `ADR-pool.spec-delta-markers`, `ADR-0.43.0` |
+| Borrowed-workflow doctrine | All comparators | `ADR-pool.external-strength-absorption-doctrine`, `ADR-pool.workflow-specification`, `ADR-pool.design-references-bibliography` |
+
+New pool destinations created by this intake:
+
+- `ADR-pool.external-strength-absorption-doctrine` — foundation candidate for
+  witnessed borrowing doctrine.
+- `ADR-pool.operator-first-spec-workspace` — feature candidate for the
+  operator-simple front door.
+- `ADR-pool.bugfix-spec-routing` — feature candidate for observed/expected/
+  unchanged defect specs tied to GHI/direct-fix/OBPI routing.
+- `ADR-pool.review-receipt-taxonomy` — foundation or feature candidate for typed
+  review evidence and compounding destinations.
+- `ADR-pool.context-package-registry` — feature candidate for governed context
+  packages and portable agent surfaces.
+
+Validated ADRs are not edited for this intake. If a future improvement requires
+changing a validated ADR rather than consuming it from an open ADR or pool
+destination, route the change through a GHI and an explicit amendment or follow-up
+ADR. Closed-surface comparator uplift is tracked under GHI #416.
+
+---
+
 ## Promotion
 
 When a pool entry is prioritized:

@@ -204,6 +204,12 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 |---|------|-------|-----|
 | 52 | Every skill SKILL.md declares `model: haiku\|sonnet\|opus` frontmatter; `SkillFrontmatter.skill_model` is `Literal["haiku", "sonnet", "opus"]` (required). Routing matrix maps decision complexity to model tier. Subagents use effort levels, not hardcoded model IDs. | **Mechanical** | Enforced by `gz validate --surfaces` via `SkillFrontmatter` Pydantic validation — missing or invalid `model:` fails closed. All 67 skills declare tier (GHI #409). |
 
+### Token Block Discipline (`.gzkit/rules/token-block-discipline.md`)
+
+| # | Rule | Score | Why |
+|---|------|-------|-----|
+| 53 | Lock release is coupled to a handoff/register entry: abandon categories are closed, register entries carry minimum information, reaping creates a degenerate register entry, TTL/reap discipline is explicit, and release becomes fail-closed when no valid handoff exists. | **Promotable** | Doctrine exists in the rule file and parent ADR-0.0.41, but OBPI-0.0.41-02/03/04 are still pending for runtime warning/fail-closed enforcement and `gz validate --lock-handoff-coupling`. Until those land, this is a promotable rule with a clear mechanical path rather than already-mechanical enforcement. |
+
 ### Exemplar Corpus Doctrine (`.gzkit/rules/complexity-doctrine.md`)
 
 | # | Rule | Score | Why |
@@ -220,12 +226,12 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 
 ## Summary
 
-Counts updated 2026-05-07 after model-selection rule landed as a Mechanical-class rule (GHI #409).
+Counts updated 2026-05-07 after token-block discipline landed as a Promotable-class rule (ADR-0.0.41 / OBPI-0.0.41-01).
 
 | Score | Count | % |
 |-------|-------|---|
 | **Mechanical** | 38 | 60% |
-| **Promotable** | 5 | 8% |
+| **Promotable** | 6 | 10% |
 | **Judgment** | 19 | 30% |
 | **Ambiguous** | 0 | 0% |
 

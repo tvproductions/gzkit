@@ -130,6 +130,14 @@ Anti-patterns this ADR rejects:
 - Ignoring the instruction-budget risk from a root `AGENTS.md` larger than
   Codex's documented default project-doc budget.
 
+## Comparator Uplift (2026-05-07)
+
+GSD and Compound Engineering show that cross-runtime workflow packaging is an
+adoption strength. This ADR should make Codex alignment consume the vendor
+capability matrix and context-package contract rather than duplicating current
+facts in prose. Codex support is first-class only when generated config,
+skills, personas, subagents, hooks, and pipeline markers validate together.
+
 ## Consequences
 
 ### Positive
