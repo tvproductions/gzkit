@@ -811,6 +811,14 @@ Fail-closed (exit 3) audit of every citation in cluster ADRs (0.0.27 / 0.0.28 / 
 
 **Advisor timeout primitive** (ADR-0.0.29, OBPI-0.0.29-09): The `run_with_timeout` primitive at `src/gzkit/complexity/advisor/timeout.py` wraps advisor invocations with a configurable timeout (default 30s). On timeout, the primitive returns `TimeoutTimedOut` (fail-open — commit proceeds) and logs a JSONL entry to `.gzkit/insights/advisor-failures.jsonl`. The auto-chain hook (OBPI-05) consumes this primitive; the hook never blocks a commit indefinitely. Config override: set `advisor_timeout_seconds` in `.gzkit.json` (e.g. `{"advisor_timeout_seconds": 15}`). The SKIP environment variable (inherited from the `complexity-reduction-xenon` chore) bypasses both xenon and the advisor entirely — the timeout only governs the non-SKIP path.
 
+**Auto-chain hook** (ADR-0.0.29, OBPI-0.0.29-05): The pre-commit hook at `.gzkit/hooks/pre-commit-complexity-advisor` fires `gz complexity advise --auto-chain` when xenon-as-gate exits non-zero. The hook is **opt-in** — it is not installed by `gz init` (rationale: pre-commit hook interaction is fragile per ADR § Negative #6). Install it by running:
+
+```bash
+python -m gzkit.hooks.install_complexity_advisor --install
+```
+
+This replaces the `xenon-complexity` entry in `.pre-commit-config.yaml` with a composite `complexity-advisor-auto-chain` hook that runs xenon first, then chains to the advisor on failure. The advisor invocation is wrapped in the OBPI-09 timeout primitive (default 30s, fail-open with logged warning). Exit codes: block-band crossing exits 1 (commit blocked); warn-band crossing exits 0 with diagnosis printed to stderr. To skip both xenon and the advisor: `SKIP=complexity-advisor-auto-chain git commit`. To revert: restore the original `xenon-complexity` entry in `.pre-commit-config.yaml` (the installer prints what it replaced).
+
 ### Frontmatter-Ledger Reconciliation
 
 ```bash
