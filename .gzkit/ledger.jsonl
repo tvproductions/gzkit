@@ -5082,3 +5082,4 @@
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.cloud-agent-routines.md","ts":"2026-05-07T09:15:52.677880+00:00","path":"docs/design/adr/pool/ADR-pool.cloud-agent-routines.md"}
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.cloud-agent-routines","ts":"2026-05-07T09:15:57.033255+00:00","parent":"PRD-GZKIT-1.0.0","lane":"lite"}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.cloud-agent-routines.md","ts":"2026-05-07T09:25:29.659082+00:00","path":"docs/design/adr/pool/ADR-pool.cloud-agent-routines.md"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.managed-agents-outcome-integration.md","ts":"2026-05-07T09:43:21.897316+00:00","path":"docs/design/adr/pool/ADR-pool.managed-agents-outcome-integration.md"}
