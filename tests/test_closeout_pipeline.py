@@ -232,6 +232,42 @@ class TestCloseoutJsonOutput(unittest.TestCase):
             self.assertTrue(data["halted"])
 
 
+class TestCloseoutAdrStatusRegen(unittest.TestCase):
+    """Closeout regenerates adr-status.md after completing (GHI #322)."""
+
+    @patch("gzkit.cli.main.run_command")
+    @patch("builtins.input", return_value="1")
+    def test_adr_status_index_regenerated_on_closeout(self, _mock_input, mock_run):
+        mock_run.return_value = _make_qr()
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            status_path = Path("docs/governance/GovZero/adr-status.md")
+            status_path.parent.mkdir(parents=True, exist_ok=True)
+            status_path.write_text("stale content\n", encoding="utf-8")
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
+            self.assertEqual(result.exit_code, 0, result.output)
+            content = status_path.read_text(encoding="utf-8")
+            self.assertNotEqual(content, "stale content\n")
+            self.assertIn("ADR Status Table", content)
+
+    @patch("gzkit.cli.main.run_command")
+    @patch("builtins.input", return_value="1")
+    def test_json_output_includes_adr_status_regen(self, _mock_input, mock_run):
+        mock_run.return_value = _make_qr()
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--json"])
+            self.assertEqual(result.exit_code, 0, result.output)
+            data = json.loads(result.output)
+            self.assertIn("adr_status_regen", data)
+
+
 class TestCloseoutExitCodes(unittest.TestCase):
     """Exit code 0 = full success, exit code 1 = failure (REQ-10)."""
 

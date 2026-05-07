@@ -546,6 +546,12 @@ def _complete_closeout_pipeline(
 
     auto_fix_obpi_rows(project_root, obpi_rows)
 
+    # Regenerate ADR status index (Layer 3 derived view, GHI #322)
+    from gzkit.governance.adr_status_index import regenerate_adr_status_md
+
+    regen_content = regenerate_adr_status_md(project_root, write=True)
+    regen_count = regen_content.count("\n| [")
+
     if as_json:
         output = {
             "adr": adr_id,
@@ -565,6 +571,9 @@ def _complete_closeout_pipeline(
                 "from": "Proposed",
                 "to": to_state,
             },
+            "adr_status_regen": {
+                "adr_count": regen_count,
+            },
         }
         print(json.dumps(output, indent=2))  # noqa: T201
         return
@@ -574,6 +583,7 @@ def _complete_closeout_pipeline(
     if version_updated:
         console.print(f"  Version sync: {current_ver} -> {adr_ver} ({', '.join(version_updated)})")
     console.print(f"  ADR status: {to_state}")
+    console.print(f"  ADR status index: regenerated ({regen_count} ADRs)")
 
 
 def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
