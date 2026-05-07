@@ -1,0 +1,8 @@
+{
+  "obpi_id": "OBPI-0.0.29-09-advisor-timeout-fallback",
+  "timestamp": "2026-05-07T01:02:17Z",
+  "verdict": "PASS",
+  "plan_file": "plan-OBPI-0.0.29-09-advisor-timeout-fallback.md",
+  "gaps_found": 0,
+  "notes": "ADR<->OBPI alignment: 7/7 checks aligned. ADR checklist item #9 maps 1:1 to brief objective. CLI structural check flagged 5 not-yet-existing allowed paths (greenfield \u2014 expected for implementation OBPI). Scope collisions are advisory from broad-glob OBPIs. Semantic alignment is clean; plan authored with TDD-first discipline across 12 REQs in 8 ordered steps."
+}

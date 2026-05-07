@@ -3,7 +3,7 @@ id: OBPI-0.0.29-09-advisor-timeout-fallback
 parent: ADR-0.0.29
 item: 9
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.29-09-advisor-timeout-fallback: Pre-commit Timeout / Fallback / Failure-logging
@@ -61,11 +61,20 @@ Implement the timeout primitive at `src/gzkit/complexity/advisor/timeout.py` con
 
 ## Discovery Checklist
 
-- [ ] Existing `.gzkit/insights/` conventions (e.g. `agent-insights.jsonl`)
-- [ ] Existing gzkit config surface and config-loading patterns
-- [ ] `.claude/rules/cross-platform.md` — POSIX signal vs Windows watchdog
-- [ ] `.claude/rules/pythonic.md` — function-size discipline
-- [ ] AGENTS.md § STDLIB-FIRST DOCTRINE — stdlib `signal` / `threading` are the right choices
+**Prerequisites (check existence, STOP if missing):**
+
+- [x] OBPI-03 CLI verb `gz complexity advise --auto-chain` flag registered
+- [x] `.gzkit/insights/` directory exists with `agent-insights.jsonl` convention
+- [x] Existing gzkit config surface at `src/gzkit/config.py` (`.gzkit.json` loader)
+- [x] `.claude/rules/cross-platform.md` — POSIX signal vs Windows watchdog guidance
+
+**Existing Code (understand current state):**
+
+- [x] `src/gzkit/insights/__init__.py` — InsightRecord model; new failure-log is a sibling surface
+- [x] `src/gzkit/config.py` — GzkitConfig with `extra="forbid"`; config reader uses raw JSON
+- [x] `src/gzkit/complexity/advisor/engine.py` — diagnosis engine this timeout wraps
+- [x] `.claude/rules/pythonic.md` — function-size ≤50 lines discipline
+- [x] AGENTS.md § STDLIB-FIRST DOCTRINE — stdlib `signal` / `threading` confirmed
 
 ## Quality Gates
 
@@ -150,13 +159,21 @@ uv run -m behave features/advisor_timeout.feature
 
 ### Key Proof
 
+
+- `uv run -m unittest tests/complexity/advisor/test_timeout.py -v` — 14/14 pass (receipt `arb-step-unittest-dd377ad562b24c39b7177fa87c40f6c5`)
+- `uv run -m behave features/advisor_timeout.feature` — 2/2 scenarios pass (receipt `arb-step-behave-b7aed86d1b0449feb6e2b3f2598a297f`)
+- Lint clean (receipt `arb-ruff-3a3ad1f5e1944ca58d5240af122e86e8`), typecheck clean (receipt `arb-step-typecheck-0a78c47495d040debc8d031658c66251`)
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Timeout primitive: `src/gzkit/complexity/advisor/timeout.py` — `run_with_timeout[T]()` with cross-platform implementation (POSIX `signal.SIGALRM`, Windows `threading.Timer`)
+- Result model: discriminated `TimeoutOk | TimeoutTimedOut` frozen Pydantic union
+- Config reader: `src/gzkit/complexity/advisor/config.py` — reads `advisor_timeout_seconds` from `.gzkit.json` (default 30s)
+- Failure-log schema: `src/gzkit/schemas/advisor_failure_log.json` — canonical JSONL shape
+- Tests: 14 unit tests with `@covers` decorators, 100% REQ coverage (5/5)
+- BDD: 2 scenarios at `features/advisor_timeout.feature` tagged `@REQ-0.0.29-09-{02,03}`
+- Docs: runbook entry documenting timeout, log location, config override, fail-open contract
 
 ### Closing Argument
 
@@ -166,14 +183,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — timeout primitive implemented with TDD discipline: 14/14 unit tests + 2/2 BDD scenarios pass, 100% REQ coverage (5/5), cross-platform signal/threading implementation, configurable 30s default, JSONL failure-log emission, all ARB receipts green (lint: arb-ruff-3a3ad1f5e1944ca58d5240af122e86e8, typecheck: arb-step-typecheck-0a78c47495d040debc8d031658c66251, unittest: arb-step-unittest-dd377ad562b24c39b7177fa87c40f6c5, mkdocs: arb-step-mkdocs-53d4db926b944e869ca2bc1cafb75dce, behave: arb-step-behave-b7aed86d1b0449feb6e2b3f2598a297f)
+- Date: 2026-05-07
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-07
 
 **Evidence Hash:** -
