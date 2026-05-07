@@ -14,15 +14,7 @@ gzkit optimizes for multi-agent, multi-session, auditable governance: ledger-of-
 
 ## Persona
 
-Agent identity is behavioral framing, not expertise claims. Persona files live in `.gzkit/personas/` as YAML-frontmatter markdown specifying composable traits, anti-traits, and a grounding statement. The persona frame describes how the agent relates to the work — values, craftsmanship standards, and behavioral anchors — never generic expertise claims ("You are an expert X developer").
-
-**Rules:**
-
-- Every agent context frame MUST include a Persona section
-- Virtue-ethics-based behavioral identity, never motivational copy or job descriptions
-- Traits compose orthogonally
-
-The primary operator session is framed by the `main-session` persona — craftsperson who writes Python the way it was meant to be written, sees modules whole before touching a line, treats governance not as overhead but as the discipline that keeps work honest.
+Behavioral framing via `.gzkit/personas/` (YAML-frontmatter markdown). Every agent frame MUST include a Persona. Traits compose orthogonally; never generic expertise claims ("You are an expert X developer"). The `main-session` persona: craftsperson, treats governance not as overhead but as the discipline that keeps work honest.
 
 | Persona | Role | Traits |
 |---------|------|--------|
@@ -57,26 +49,18 @@ The primary operator session is framed by the `main-session` persona — craftsp
 
 **The most thorough and comprehensive fix is always preferred.**
 
-Ownership without craftsmanship produces confident-wrong-direction work — patching the symptom, leaving the class-of-failure intact. Vibe-coded shortcuts compound silently across a codebase the way template drift compounds across a doc surface, until an operator lands on one and the lineage collapses.
+1. **Fix the class of failure, not the instance.** Identify the failure family, not the instance.
+1a. **Coupled-surface coherence.** When a change touches a surface another surface reads/validates, verify the consumer's check in the same commit. See [`docs/governance/agent-contract-rationale.md` § Rationale for 1a](docs/governance/agent-contract-rationale.md#rationale-for-1a-coupled-surface-coherence).
+2. **No vibe coding.** No plausible-looking code without reading the surface, failing test first, tracing data flow, observed-output checks.
+3. **Prefer the more thorough fix.** "Smaller diff" / "faster to land" are not concrete downsides.
+4. **Verify observed behavior, not assumed behavior.** Run the command, paste actual output.
+5. **Read the code before you change it.** Read the surface. Trace callers. Then change.
+6. **Tests assert semantics, not strings.** Assertions derive from the REQ, not from a run of the code.
+7. **Invariant 6c — choose fix scope per § Defect-fix routing thresholds, not intuition.** Run `git log --since='60 days ago' --oneline --grep='^fix('` before deciding.
+8. **Invariant 6g — verify the runtime surface before recommending an incantation.** Run, observe, paste, recommend.
+9. **Invariant 6h — quote the rule and the conflicting directive verbatim.** No unquoted "competing directives" narrative.
 
-1. **Fix the class of failure, not the instance.** Identify the failure family (unstated assumption? missing validation? untested derived path?). If a discovered CLI verb doesn't exist, the fix is "validate every derived verb against the registered parser," not "skip that one verb."
-1a. **Coupled-surface coherence — the lateral axis of #1.** When a change moves, renames, or reformats a surface another surface reads, writes, or validates (generator ↔ validator, model ↔ writer, rule ↔ mirror, schema ↔ producer, template ↔ rendered file), name the coupled surface and verify its check is fail-closed against the new shape *in the same commit*. Producer-side completion without re-running the consumer's check is incomplete work, not "scope discipline." See [`docs/governance/agent-contract-rationale.md` § Rationale for 1a](docs/governance/agent-contract-rationale.md#rationale-for-1a-coupled-surface-coherence) for exemplars and the mechanical-anchor follow-up (GHI #372).
-2. **No vibe coding.** Vibe coding = plausible-looking code without reading the surface, without a failing test first, without tracing data flow, without observed-output checks. Passes review because it looks right; fails in production because it never was.
-3. **Prefer the more thorough fix.** Pick the class fix unless it has a concrete named downside larger than the class of failures it prevents. "Smaller diff" / "faster to land" / "less scary" are not concrete downsides.
-4. **Verify observed behavior, not assumed behavior.** Run the destination command, paste actual output. Narrative reconstruction from memory is not verification. Same rule as ARB receipt-IDs.
-5. **Read the code before you change it.** Read the surface. Trace callers. Understand the contract. Then change.
-6. **Tests assert semantics, not strings.** A test pinning current observed output to a string tests state, not purpose. GHI-153 and GHI-155 both slipped past tests asserting "table renders without truncation" instead of "table exposes the OBPI objective for operator review."
-7. **Invariant 6c — choose fix scope per § Defect-fix routing thresholds, not intuition.** Default-to-ceremony for a 5-line in-flight defect isn't "thorough"; default-to-direct-fix for cross-brief work isn't "surgical." Run the precedent count (`git log --since='60 days ago' --oneline --grep='^fix('`) before deciding (GHI #195).
-8. **Invariant 6g — verify the runtime surface before recommending an incantation.** Pattern-matching from training memory is vibe-coding's recommendation-time face. Recommending `claude --model ...` as a CLI flag when the actual surface is the `/model` slash command is canonical. Run, observe, paste, recommend (GHI #263).
-9. **Invariant 6h — when reporting why a rule was violated, quote the rule and the conflicting directive verbatim.** Post-hoc "competing directives" narrative without verbatim quotes is reporting-pathway drift. "Competing directives," "pulled against," "no clear resolution" without quotable text mean the conflict is invented (GHI #261).
-
-See `docs/governance/agent-contract-rationale.md` § Rationale for 6g/6h (Lindsey et al. 2025 reporting-pathway citation).
-
-See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md) for the canonical six-pattern failure-mode taxonomy these invariants backstop ([ADR-0.0.23](docs/design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/ADR-0.0.23-agent-failure-mode-taxonomy.md)).
-
-### Extracted pedagogy
-
-Anti-pattern canon (GHI #157) and TASK-driven workflow binding (GHI #160) live in [`docs/governance/agent-contract-rationale.md`](docs/governance/agent-contract-rationale.md). Both binding; this section points at canonical home. Invariants 1–6, 6c, 6g, 6h load per-turn; pedagogy is read at authoring time.
+See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md) for the six-pattern failure-mode taxonomy. See [`docs/governance/agent-contract-rationale.md`](docs/governance/agent-contract-rationale.md) for pedagogy, worked examples, and rationale for 6g/6h.
 
 ## MAKE LLM STOCHASTIC VIBES INERT (ANTI-VIBING MANTRA)
 
@@ -86,10 +70,10 @@ Anti-pattern canon (GHI #157) and TASK-driven workflow binding (GHI #160) live i
 
 ### Operative claims (binding)
 
-1. **5:1 governance-to-output ratio is the product, not overhead.** Gates, receipts, attestations, brief-level Gate 5 witnesses convert *"the agent claims X"* into *"X is observable, dated, signed, replayable."* Treat the ratio as the deliverable.
-2. **Every option is framed by smallest-vibing-surface, never maintenance burden or velocity.** "Lighter ceremony," "faster to land," "less to maintain" are not legitimate axes. Legitimate axes: which option closes the most failure classes, produces the most witness-able evidence, has the smallest unattested surface.
-3. **Doctrine drift is invariant drift.** Silent rule/classifier/threshold changes between releases shift every agent decision under the operator's feet without a witness. Foundation-kind brief-level attestation and ledger-of-truth are mechanical defenses; this mantra is their philosophical root.
-4. **Stochastic LLM vibing is the named failure class.** Pattern-matching plausible code from training memory; reconstructing claims from narrative recall instead of receipts; offering "graceful degradation" exits where doctrine's verdict varies by environment; bundling Gate 5 attestations to ship faster — not edge cases. The failure mode the entire surface (gates, receipts, ledger, ARB, OBPI ceremony, brief-level attestation) exists to close.
+1. **5:1 governance-to-output ratio is the product, not overhead.**
+2. **Every option is framed by smallest-vibing-surface, never maintenance burden or velocity.**
+3. **Doctrine drift is invariant drift.** Silent rule/threshold changes without a witness are the root failure.
+4. **Stochastic LLM vibing is the named failure class.** Pattern-matching from training memory, narrative-recall claims, "graceful degradation" exits, bundled Gate 5 attestations.
 
 ## STDLIB-FIRST DOCTRINE (DEPENDENCY POSTURE)
 
@@ -126,22 +110,17 @@ Anti-pattern canon (GHI #157) and TASK-driven workflow binding (GHI #160) live i
 
 ### Anti-patterns
 
-- Agent asks operator to draft substantive prose
-- Bundled clarifying questions (*"what about X, Y, and Z?"*)
-- Open prompts when multiple-choice would suffice
-- Operator's verbatim phrasing rewritten or paraphrased into agent voice
-- Agent re-asks confirmation of a decision already made
-- Drafts without grounding reasoning
-- Reasoning without decision-shaped recommendation
-- **Agent asks operator to read raw JSON, YAML, or other machine-readable artifacts.** Machine-readable formats are agent-input surfaces, not review surfaces. Review surface is always human-readable prose summary in chat — table, bulleted summary, structured paragraphs naming substantive content. JSON/YAML/config is the artifact produced *from* approval, not read *for* approval.
+- Asking operator to draft prose, read raw JSON/YAML, or re-state prior decisions
+- Bundled clarifying questions; open prompts when multiple-choice would suffice
+- Rewriting operator's verbatim phrasing; drafts without grounding; reasoning without recommendation
 
-See [`docs/governance/agent-contract-rationale.md` § Operator economy — why this is canon](docs/governance/agent-contract-rationale.md#operator-economy--why-this-is-canon) for the rationale (other interaction modes shift typing burden onto operator or produce output requiring re-authoring; both vibe through the interaction layer).
+> See [`docs/governance/agent-contract-rationale.md` § Operator economy](docs/governance/agent-contract-rationale.md#operator-economy--why-this-is-canon) for rationale.
 
 ## Behavior Rules
 
 ### Always
 
-1. Read AGENTS.md before starting work. Mechanical backstop: SessionStart hook in `.claude/settings.json` (and `.codex/hooks.json`) auto-runs `scripts/session_orientation.py` injecting most-recent handoff, open session-handoff GHIs, active OBPI claims, in-progress ADRs, recent ledger events, blockers. Honor-system reading is the floor; orientation hook is the ceiling. (CAP-13; GHI #326)
+1. Read AGENTS.md before starting work. Mechanical backstop: SessionStart hook auto-runs `scripts/session_orientation.py`.
 2. Follow the gate covenant for all changes
 3. Record governance events in the ledger
 4. Preserve human intent across context boundaries
@@ -241,13 +220,11 @@ Right-size implementation units per [OBPI Decomposition Matrix](docs/governance/
 
 ## OBPI Acceptance Protocol
 
-**Agent MUST NOT mark an OBPI brief as `Completed` without explicit human attestation when the parent ADR is `heavy`-lane OR `foundation`-kind.** Attestation rigor attaches to **both axes**: any `heavy`-lane ADR (foundation or feature) gates OBPI completion on Gate 5 attestation; any `foundation`-kind ADR (lite or heavy) gates OBPI completion on Gate 5 attestation at the brief level — not only at ADR closeout. Foundation-kind ADRs codify app-system invariants; doctrine drift is invariant drift; lite lane does not relax this. Canonical at [ADR-0.0.18](docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md), enforced by `_requires_human_obpi_attestation` (`src/gzkit/commands/adr_audit.py`). Interactive TTY + `ATTEST` confirmation gate in `gz obpi complete`, `gz obpi emit-receipt`, `gz adr emit-receipt` closes the agent-synthesized-payload vector (GHI #290).
+**Agent MUST NOT mark an OBPI brief as `Completed` without explicit human attestation when the parent ADR is `heavy`-lane OR `foundation`-kind.** Both axes gate independently. Enforced by `_requires_human_obpi_attestation` + TTY `ATTEST` gate.
 
-**REQ-coverage gate (ADR-0.0.25).** OBPI completion is fail-closed on the REQ-coverage gate: every REQ enumerated in a brief's REQUIREMENTS section must have at least one covering passing test (unittest `@covers(REQ-...)` or behave `@REQ-...` scenario tag) before `gz obpi complete` will record the `Completed` transition. Uncovered REQs require an explicit waiver path — `gz obpi complete --accept-uncovered <REQ-ID> --accept-uncovered-reason <REASON>` — that records the gap to the ledger. `failing-cover` REQs (covering test exists but exits non-zero) cannot be waived; they must pass. Enforced by `_enforce_req_coverage_gate` (`src/gzkit/commands/obpi_complete.py`); doctrine canonized at [ADR-0.0.25](docs/design/adr/foundation/ADR-0.0.25-obpi-completion-req-coverage-gate/ADR-0.0.25-obpi-completion-req-coverage-gate.md).
+**REQ-coverage gate (ADR-0.0.25).** Every REQ must have a covering passing test before `gz obpi complete`. Uncovered REQs require `--accept-uncovered <REQ-ID> --accept-uncovered-reason <REASON>`. Failing-cover REQs cannot be waived.
 
-**Pipeline mandate:** After plan approval for OBPI work, agents MUST start the canonical runtime `uv run gz obpi pipeline <OBPI-ID>` instead of implementing directly. The `gz-obpi-pipeline` skill is a thin alias only. Runtime owns stage sequencing, marker state, re-entry semantics. Preserves verify -> ceremony -> guarded git sync -> completion accounting order, with `uv run gz git-sync --apply --lint --test` required before final OBPI completion receipt emission and brief/ADR sync. Freeform implementation without runtime invocation is a process defect.
-
-Ceremony steps and stage sequencing in `gz-obpi-pipeline` skill. Read before presenting evidence.
+**Pipeline mandate:** After plan approval, agents MUST run `uv run gz obpi pipeline <OBPI-ID>`. The `gz-obpi-pipeline` skill is a thin alias; runtime owns stage sequencing and preserves verify -> ceremony -> guarded git sync -> completion order, with `uv run gz git-sync --apply --lint --test` before final accounting. Freeform implementation without runtime invocation is a process defect.
 
 ### Lane & Kind & Sensitivity Attestation Matrix
 
@@ -264,15 +241,7 @@ Ceremony steps and stage sequencing in `gz-obpi-pipeline` skill. Read before pre
 | `feature`    | `heavy` | absent     | **Required** | lane branch |
 | `feature`    | `heavy` | `security` | **Required** | lane OR security |
 
-OBPI inside a `heavy`-lane ADR inherits that lane's attestation rigor regardless of OBPI's own lane. OBPI inside a `foundation`-kind ADR inherits foundation-kind rigor regardless of lane. OBPI carrying `sensitivity: security` inherits security-grade rigor regardless of lane or kind.
-
-**Foundation-kind rigor (across lanes, at brief level).** Foundation-kind ADRs codify app/system invariants. Walkthrough discipline (ADR-0.0.18) fires at **brief level** (each OBPI's `Completed` transition) and at **ADR closeout**, regardless of lane — because doctrine drift is invariant drift. A `lite`-lane foundation OBPI is **not** self-closeable; this was the GHI #290 fabrication vector.
-
-**Sensitivity rigor (third axis, ADR-0.0.22).** A brief carrying `sensitivity: security` is never self-closeable — security-relevant changes require human review even on lite-feature briefs that would otherwise be self-closeable. The same TTY + `ATTEST` confirmation gate at `_enforce_human_attestation_authenticity` is reused; no new gate is added. The axis is additive: heavy lane and security both flag attestation, neither suppresses the other.
-
-Mechanical enforcement: `_requires_human_obpi_attestation` at `src/gzkit/commands/adr_audit.py` returns `True` whenever parent ADR matches `^ADR-0\.0\.\d+` (foundation) OR parent lane is `heavy` OR `_requires_security_review_attestation(brief_frontmatter)` returns `True` (security axis). TTY + `ATTEST` confirmation gate at `_enforce_human_attestation_authenticity` refuses to emit `human_attestation: true` from a headless process. Matrix above is a readable projection of `_requires_human_obpi_attestation`. If matrix and code disagree, code is source of truth; matrix is the defect.
-
-Doctrine home for the third axis: [`.gzkit/rules/security-sensitivity.md`](.gzkit/rules/security-sensitivity.md) — the canonical rule file naming the invariant, the registry contract at `data/security_surfaces.json`, the `gz validate --sensitivity` floor + escalate-not-escape behavior, the heightened Gate 5 walkthrough, and the scanner-unavailable failure mode. The matrix above is the AGENTS.md projection; the rule file is the single addressable home.
+Inheritance: heavy-lane OBPI inherits lane rigor; foundation-kind OBPI inherits kind rigor; `sensitivity: security` OBPI inherits security rigor. A lite-lane foundation OBPI is **not** self-closeable. If matrix and code disagree, code (`_requires_human_obpi_attestation`) is source of truth. Third-axis doctrine: [`.gzkit/rules/security-sensitivity.md`](.gzkit/rules/security-sensitivity.md).
 
 ## Execution Rules
 
@@ -287,15 +256,7 @@ uv run gz agent sync control-surfaces  # Regenerate surfaces
 
 ## Attestation
 
-Binding rules for attestation text, commit-message enrichment, ARB receipt citation.
-
-### Pattern (binding)
-
-```
-<user's verbatim words> — <concrete characterization grounded in session evidence>
-```
-
-User's words retain provenance; em-dash enrichment supplies the weight. Pass user's token through unchanged, then append concrete session-grounded characterization.
+**Pattern:** `<user's verbatim words> — <concrete characterization grounded in session evidence>`. Pass user's token unchanged; append concrete enrichment citing receipt IDs, test counts, file paths.
 
 ### Canonical invocations (binding)
 
@@ -307,81 +268,45 @@ User's words retain provenance; em-dash enrichment supplies the weight. Pass use
 | Coverage floor | `uv run gz arb coverage run -m unittest discover -s tests -t .` | `arb-step-coverage-` |
 | Docs build clean | `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict` | `arb-step-mkdocs-` |
 
-Locked by `CANONICAL_STEP_COMMANDS` in `src/gzkit/arb/validator.py`; `gz arb validate` flags drift as non-canonical provenance. Extend (don't shrink) the table.
+Locked by `CANONICAL_STEP_COMMANDS`; `gz arb validate` flags drift. Applies to `uv run gz obpi complete`, `uv run gz adr emit-receipt`, any `gz` CLI attestation string, and `git commit -m` messages.
 
-### Applies to
-
-- `uv run gz obpi complete --attestation-text ...`
-- `uv run gz adr emit-receipt ... --attestor ...`
-- Any `gz` CLI accepting an attestation string
-- `git commit -m "..."` messages (including HEREDOC form)
-
-### Lane behavior
-
-- **Lite lane:** missing receipt IDs produce a warning; flagged narrative-only.
-- **Heavy lane:** missing receipt IDs are fail-closed; re-run under ARB and re-cite.
-
-If no receipts exist, run relevant ARB-wrapped commands first, draft attestation citing fresh receipt IDs. Narrative substitutes are not acceptable.
-
-### Enrichment content
-
-Reference concrete session facts:
-
-- Decisions recorded (Absorb/Confirm/Exclude, chosen approach, rejected alternatives)
-- Concrete evidence: test counts, coverage deltas, line counts, files changed
-- File references with paths and line numbers
-- Rationale citing named dimensions, not vague adjectives
-
-Receipt IDs inline, e.g. `(lint: receipt arb-2026-04-14T12-34-56-ruff)`. Citing agent must verify receipt exists and status matches the claim — fabricating a receipt ID is the same failure as fabricating the claim.
-
-### Anti-patterns
-
-- Passing only user's brief token without enrichment — loses signal
-- Replacing user's words with agent-generated sentence — loses provenance
-- Adding enrichment not grounded in concrete session evidence — fabrication
-- Vague adjectives ("good", "clean", "comprehensive") without naming facts
-- Enriching with information from other sessions or unrelated work
-- Authoring `arb-step-*` receipts with `exit_status=1` as "RED receipts" — pollutes ARB corpus
+**Lane behavior:** **Lite lane:** missing receipt IDs produce a warning. **Heavy lane:** missing receipt IDs are fail-closed. Fabricating a receipt ID is the same failure as fabricating the claim.
 
 ### Worked example
 
-See [`docs/governance/agent-contract-rationale.md` § Attestation — worked example](docs/governance/agent-contract-rationale.md#attestation--worked-example) for the canonical worked example, and [`docs/governance/arb-middleware.md`](docs/governance/arb-middleware.md) for ARB middleware deep-dive.
+See [`docs/governance/agent-contract-rationale.md` § Attestation — worked example](docs/governance/agent-contract-rationale.md#attestation--worked-example) for the canonical worked example, and [`docs/governance/arb-middleware.md`](docs/governance/arb-middleware.md) for ARB deep-dive.
 
 ## Defect-fix routing
 
-Routing decision (direct `fix(...)` commit vs. full OBPI ceremony) must be made against explicit thresholds, not agent judgment. Default failure mode = **over-applying ceremony**: agents author OBPI briefs for trivial patches because OBPI is the most-rehearsed pattern. Wastes session context and operator attention on overhead producing no audit benefit a `fix(...)` commit doesn't already produce.
+Route by thresholds, not judgment. Default failure mode = over-applying ceremony.
 
 ### Direct fix is the right route when ALL hold
 
 | Criterion | Threshold |
 |---|---|
-| Diff size | ≤10 source lines (excluding tests + comments) OR ≤2 source files |
-| Scope | Well-bounded to a single named module or surface |
-| Precedent | `git log --since='60 days ago' --oneline --grep='^fix('` returns ≥3 commits (mechanical count, no subjective shape-matching). <3 → route to OBPI or surface to operator. |
-| Trigger | Defect surfaced in flight (during execution of different brief, or during operator use), not as part of new feature work |
-| Coverage | Unit test (TDD red→green) can validate without new BDD scenario or contract change |
+| Diff size | ≤10 source lines OR ≤2 source files |
+| Scope | Single named module or surface |
+| Precedent | `git log --since='60 days ago' --oneline --grep='^fix('` ≥3 commits |
+| Trigger | Defect surfaced in flight, not new feature work |
+| Coverage | Unit test validates without new BDD scenario |
 
 ### OBPI ceremony is required when ANY hold
 
-| Trigger | Why ceremony matters |
-|---|---|
-| Crosses ADR or active-OBPI brief boundaries | Bundling violates brief-boundary anti-pattern (Behavior Rules — Never #5) |
-| Adds/changes CLI surface, schema, public contract, runtime invariant | Heavy-lane gates (3 docs, 4 BDD, 5 attestation) need to fire |
-| Operator explicitly directs OBPI route | Operator intent overrides thresholds |
-| Fix is part of new feature work (planned increment, not defect closure) | Feature work is OBPI's purpose |
-| Diff size or scope exceeds the direct-fix thresholds above | Triggers Heavy-lane review reflexes |
+- Crosses brief boundaries
+- Adds/changes CLI surface, schema, or runtime contract
+- Operator explicitly directs OBPI route
+- Fix is new feature work
+- Diff size or scope exceeds the direct-fix thresholds above
 
 ### Decision protocol
 
-When a defect surfaces and both routes are *plausible*:
+1. **Compute the routing facts** (diff size, scope, precedent, trigger, coverage).
+2. **Apply the criteria** mechanically.
+3. **If direct fix**: `fix(<scope>): <summary> (GHI #N)` with TDD evidence.
+4. **If OBPI ceremony**: open the brief and follow `gz-obpi-pipeline`.
+5. **If ambiguous**: surface routing facts to operator; do NOT default to ceremony.
 
-1. **Compute the routing facts**: estimated diff size, scope (files), recent precedent (`git log --grep='^fix('`), trigger (in-flight vs feature), coverage shape (unit vs integration vs BDD).
-2. **Apply the criteria above** mechanically. Do not skip step 1.
-3. **If criteria resolve to direct fix**: commit `fix(<scope>): <summary> (GHI #N)` with TDD evidence in commit body. No brief, no ADR amendment, no withdraw dance.
-4. **If criteria resolve to OBPI ceremony**: open the OBPI brief and follow `gz-obpi-pipeline`.
-5. **If ambiguous** (e.g., 8 lines crossing 2 modules with mixed precedent): surface to operator with routing facts as evidence; do NOT default to ceremony.
-
-See [`docs/governance/defect-fix-routing.md`](docs/governance/defect-fix-routing.md) for baseline precedents (GHI #186-#189, #191, #192), anti-pattern catalog, GHI #195 origin history.
+> See [`docs/governance/defect-fix-routing.md`](docs/governance/defect-fix-routing.md) for precedent catalog, anti-patterns, and GHI #195 origin.
 
 ## Control Surfaces
 
