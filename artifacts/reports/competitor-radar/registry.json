@@ -1,0 +1,523 @@
+{
+  "schema_version": "1",
+  "registry_updated": "2026-05-07",
+  "discovery_posture": "B+ - seeded registry plus active discovery; admit new candidates when evidence names a gzkit-relevant strength, rejection, or route.",
+  "execution_posture": "B- - reports may suggest moves, then open grill/design discussion before any governance mutation.",
+  "report_structure": "C - product snapshots plus strength-pattern mapping.",
+  "competitors": [
+    {
+      "id": "openspec",
+      "name": "OpenSpec",
+      "category": "spec-driven framework",
+      "watch_level": "primary",
+      "status": "active",
+      "trajectory": "rising",
+      "links": {
+        "homepage": "https://openspec.dev/",
+        "repository": "https://github.com/Fission-AI/OpenSpec/"
+      },
+      "known_strengths": [
+        "Repo-resident specs by capability",
+        "Spec deltas for review intent",
+        "Proposal/design/tasks front door across many agent runtimes"
+      ],
+      "explicit_rejections": [
+        "Do not collapse gzkit's ADR and ledger model into a single lightweight spec folder."
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.operator-first-spec-workspace",
+        "ADR-pool.spec-delta-markers",
+        "ADR-pool.external-strength-absorption-doctrine"
+      ]
+    },
+    {
+      "id": "github-spec-kit",
+      "name": "GitHub Spec Kit",
+      "category": "spec-driven framework",
+      "watch_level": "primary",
+      "status": "active",
+      "trajectory": "rising",
+      "links": {
+        "homepage": "https://speckit.org/",
+        "repository": "https://github.com/github/spec-kit"
+      },
+      "known_strengths": [
+        "Simple specify-plan-tasks-implement operator path",
+        "Brownfield examples and community extension catalog",
+        "Bugfix and workflow extension ecosystem"
+      ],
+      "explicit_rejections": [
+        "Do not treat extension popularity as authority without gzkit witnesses."
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.operator-first-spec-workspace",
+        "ADR-pool.workflow-specification",
+        "ADR-pool.bugfix-spec-routing"
+      ]
+    },
+    {
+      "id": "kiro",
+      "name": "Kiro",
+      "category": "agentic IDE",
+      "watch_level": "primary",
+      "status": "active",
+      "trajectory": "rising",
+      "links": {
+        "homepage": "https://kiro.dev/",
+        "docs": "https://kiro.dev/docs/specs/feature-specs/"
+      },
+      "known_strengths": [
+        "Requirements-design-tasks experience",
+        "Feature-spec UX polish",
+        "Product-shaped onboarding"
+      ],
+      "explicit_rejections": [
+        "Do not trade ledger-backed governance for IDE polish."
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.operator-first-spec-workspace",
+        "ADR-pool.wave-dependency-execution",
+        "ADR-pool.bugfix-spec-routing"
+      ]
+    },
+    {
+      "id": "tessl",
+      "name": "Tessl",
+      "category": "spec registry and framework",
+      "watch_level": "secondary",
+      "status": "active",
+      "trajectory": "steady",
+      "links": {
+        "homepage": "https://tessl.io/",
+        "docs": "https://tessl.io/registry/tessl-labs/spec-driven-development"
+      },
+      "known_strengths": [
+        "Registry-shaped context packages",
+        "Framework specs with tests",
+        "Reusable methodology tiles"
+      ],
+      "explicit_rejections": [
+        "Do not import context packages without provenance and injection scanning."
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.context-package-registry",
+        "ADR-pool.skill-control-surface-contract",
+        "ADR-pool.vendor-capability-matrix"
+      ]
+    },
+    {
+      "id": "specmatic",
+      "name": "Specmatic",
+      "category": "contract-driven development",
+      "watch_level": "primary",
+      "status": "active",
+      "trajectory": "steady",
+      "links": {
+        "homepage": "https://specmatic.io/",
+        "docs": "https://docs.specmatic.io/contract_driven_development"
+      },
+      "known_strengths": [
+        "API specifications as executable contracts",
+        "Backward compatibility checks",
+        "Service virtualization from specs"
+      ],
+      "explicit_rejections": [
+        "Do not limit gzkit contracts to APIs; gzkit also owns CLI, schema, ledger, and skill contracts."
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.contract-surface-mechanical-defenses",
+        "ADR-pool.tdd-receipt-stream",
+        "ADR-0.46.0"
+      ]
+    },
+    {
+      "id": "bmad-method",
+      "name": "BMAD Method",
+      "category": "agentic agile workflow",
+      "watch_level": "secondary",
+      "status": "active",
+      "trajectory": "rising",
+      "links": {
+        "homepage": "https://docs.bmad-method.org/",
+        "repository": "https://github.com/bmad-code-org/BMAD-METHOD"
+      },
+      "known_strengths": [
+        "Specialized agents and workflow packaging",
+        "Scale-adaptive planning tracks",
+        "Beginner-friendly menu and help flow"
+      ],
+      "explicit_rejections": [
+        "Do not let persona ritual replace mechanical receipts."
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.universal-agent-onboarding",
+        "ADR-pool.context-package-registry",
+        "ADR-pool.workflow-specification"
+      ]
+    },
+    {
+      "id": "gsd",
+      "name": "GSD",
+      "category": "multi-runtime spec workflow",
+      "watch_level": "primary",
+      "status": "active",
+      "trajectory": "rising",
+      "links": {
+        "repository": "https://github.com/gsd-build/get-shit-done"
+      },
+      "known_strengths": [
+        "Multi-runtime install parity",
+        "Configurable planning and verification agents",
+        "Context-rot posture and worktree execution controls"
+      ],
+      "explicit_rejections": [
+        "Do not copy autonomous chaining without gzkit attestation and gate receipts."
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.vendor-capability-matrix",
+        "ADR-pool.wave-dependency-execution",
+        "ADR-pool.content-injection-scanning"
+      ]
+    },
+    {
+      "id": "superpowers",
+      "name": "Superpowers",
+      "category": "agent skills framework",
+      "watch_level": "primary",
+      "status": "active",
+      "trajectory": "rising",
+      "links": {
+        "repository": "https://github.com/obra/superpowers",
+        "docs": "https://github.com/obra/superpowers/blob/main/skills/subagent-driven-development/SKILL.md"
+      },
+      "known_strengths": [
+        "Fresh subagent per task",
+        "Spec-compliance review before code-quality review",
+        "Design-before-code and TDD skill posture"
+      ],
+      "explicit_rejections": [
+        "Do not weaken gzkit's subagent policy or receipt requirements to chase fast dispatch."
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.obpi-pipeline-dispatch-attestation",
+        "ADR-pool.review-receipt-taxonomy",
+        "ADR-pool.agent-role-specialization"
+      ]
+    },
+    {
+      "id": "compound-engineering",
+      "name": "Compound Engineering",
+      "category": "agent skill workflow",
+      "watch_level": "secondary",
+      "status": "active",
+      "trajectory": "watch",
+      "links": {
+        "repository": "https://github.com/EveryInc/compound-engineering-plugin/tree/main/plugins/compound-engineering/skills/ce-compound"
+      },
+      "known_strengths": [
+        "Review and lesson compounding loop",
+        "Solved-problem pattern reuse",
+        "Work-product memory as future context"
+      ],
+      "explicit_rejections": [
+        "Do not treat agent memory as canon without human review and mechanical provenance."
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.skill-feedback-loop",
+        "ADR-pool.solved-problem-pattern-corpus",
+        "ADR-pool.execution-memory-graph"
+      ]
+    },
+    {
+      "id": "mattpocock-skills",
+      "name": "Matt Pocock Skills",
+      "category": "skill design reference",
+      "watch_level": "reference",
+      "status": "active",
+      "trajectory": "rising",
+      "links": {
+        "repository": "https://github.com/mattpocock/skills",
+        "docs": "https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md"
+      },
+      "known_strengths": [
+        "Small sharp skill primitives",
+        "Grill-me forcing-function dialogue",
+        "Skill-as-working-method packaging"
+      ],
+      "explicit_rejections": [
+        "Do not ask the operator to author report artifacts; grill answers feed agent-authored JSON."
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.pre-planning-interview",
+        "ADR-pool.skill-feedback-loop",
+        "ADR-pool.skill-control-surface-contract"
+      ]
+    },
+    {
+      "id": "agent-skills",
+      "name": "Agent Skills",
+      "category": "skill packaging standard",
+      "watch_level": "reference",
+      "status": "active",
+      "trajectory": "mature",
+      "links": {
+        "homepage": "https://agentskills.io/home",
+        "docs": "https://agentskills.io/specification"
+      },
+      "known_strengths": [
+        "Portable skill directory structure",
+        "Progressive disclosure across SKILL.md, scripts, references, and assets",
+        "Concise frontmatter-driven activation"
+      ],
+      "explicit_rejections": [
+        "Do not place deterministic skill automation in repo-global scripts when it belongs in the portable skill package."
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.skill-control-surface-contract",
+        "ADR-pool.context-package-registry",
+        "ADR-pool.content-injection-scanning"
+      ]
+    },
+    {
+      "id": "better-spec",
+      "name": "Better Spec",
+      "category": "spec-driven toolkit",
+      "watch_level": "secondary",
+      "status": "active",
+      "trajectory": "watch",
+      "links": {
+        "homepage": "https://better-spec.com/"
+      },
+      "known_strengths": [
+        "Low-friction spec bootstrap",
+        "Spec Kit source compatibility signal",
+        "Operator-friendly CLI framing"
+      ],
+      "explicit_rejections": [
+        "Do not flatten gzkit's governed ADR/OBPI path into a prompt-only bootstrap."
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.operator-first-spec-workspace",
+        "ADR-pool.change-isolation-workspace"
+      ]
+    },
+    {
+      "id": "specledger",
+      "name": "Specledger",
+      "category": "spec-driven platform",
+      "watch_level": "secondary",
+      "status": "active",
+      "trajectory": "rising",
+      "links": {
+        "homepage": "https://specledger.io/",
+        "repository": "https://pkg.go.dev/github.com/specledger/specledger"
+      },
+      "known_strengths": [
+        "Traceable spec deltas and checkpoints",
+        "Session indexing and context compounding",
+        "Multi-repo specification coordination"
+      ],
+      "explicit_rejections": [
+        "Do not outsource gzkit's ledger-of-truth to a dashboard or session index."
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.cross-session-search",
+        "ADR-pool.execution-memory-graph",
+        "ADR-pool.workflow-specification"
+      ]
+    },
+    {
+      "id": "openapi",
+      "name": "OpenAPI",
+      "category": "durable specification ecosystem",
+      "watch_level": "reference",
+      "status": "active",
+      "trajectory": "mature",
+      "links": {
+        "docs": "https://spec.openapis.org/oas/"
+      },
+      "known_strengths": [
+        "Versioned specification as cross-implementation truth",
+        "Schema ecosystem and compatibility semantics",
+        "Independent tooling around one spec"
+      ],
+      "explicit_rejections": [
+        "Do not copy API-only assumptions into governance-contract surfaces."
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.contract-surface-mechanical-defenses",
+        "ADR-pool.design-references-bibliography"
+      ]
+    },
+    {
+      "id": "opentelemetry",
+      "name": "OpenTelemetry",
+      "category": "durable specification ecosystem",
+      "watch_level": "reference",
+      "status": "active",
+      "trajectory": "mature",
+      "links": {
+        "docs": "https://opentelemetry.io/docs/specs/",
+        "repository": "https://github.com/open-telemetry/opentelemetry-specification"
+      },
+      "known_strengths": [
+        "Specification status summary",
+        "Semantic-convention versioning",
+        "Vendor-neutral cross-implementation governance"
+      ],
+      "explicit_rejections": [
+        "Do not confuse broad ecosystem adoption with gzkit-specific proof."
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.design-references-bibliography",
+        "ADR-pool.contract-surface-mechanical-defenses"
+      ]
+    }
+  ],
+  "strength_patterns": [
+    {
+      "id": "operator-first-front-door",
+      "name": "Operator-first spec front door",
+      "competitor_examples": [
+        "OpenSpec",
+        "GitHub Spec Kit",
+        "Kiro",
+        "Better Spec"
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.operator-first-spec-workspace",
+        "ADR-pool.change-isolation-workspace",
+        "ADR-pool.pre-planning-interview"
+      ],
+      "mechanical_witness": "Change workspace JSON plus ADR/OBPI promotion receipt."
+    },
+    {
+      "id": "spec-delta-intent-review",
+      "name": "Spec delta intent review",
+      "competitor_examples": [
+        "OpenSpec",
+        "Specledger",
+        "GitHub Spec Kit"
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.spec-delta-markers",
+        "ADR-pool.workflow-specification"
+      ],
+      "mechanical_witness": "Delta markers with changed/unchanged/source/witness fields."
+    },
+    {
+      "id": "workflow-as-data",
+      "name": "Workflow as validated data",
+      "competitor_examples": [
+        "GitHub Spec Kit",
+        "GSD",
+        "BMAD Method"
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.workflow-specification",
+        "ADR-pool.harness-agnostic-plan-capture"
+      ],
+      "mechanical_witness": "Workflow schema validation and ledger event coverage."
+    },
+    {
+      "id": "task-wave-execution",
+      "name": "Task wave execution",
+      "competitor_examples": [
+        "Kiro",
+        "GSD",
+        "Superpowers"
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.wave-dependency-execution",
+        "ADR-pool.obpi-pipeline-dispatch-attestation"
+      ],
+      "mechanical_witness": "Wave dependency graph, lock receipts, sync barrier receipts."
+    },
+    {
+      "id": "review-receipts",
+      "name": "Typed review receipts",
+      "competitor_examples": [
+        "Superpowers",
+        "Compound Engineering",
+        "BMAD Method"
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.review-receipt-taxonomy",
+        "ADR-pool.skill-feedback-loop"
+      ],
+      "mechanical_witness": "Spec-compliance, code-quality, security, overbuild, and integration decision receipts."
+    },
+    {
+      "id": "context-packages",
+      "name": "Portable context packages",
+      "competitor_examples": [
+        "Tessl",
+        "GSD",
+        "BMAD Method",
+        "Agent Skills"
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.context-package-registry",
+        "ADR-pool.skill-control-surface-contract",
+        "ADR-pool.content-injection-scanning"
+      ],
+      "mechanical_witness": "Package manifest, provenance, injection scan, and sync receipts."
+    },
+    {
+      "id": "bugfix-spec-routing",
+      "name": "Bugfix spec routing",
+      "competitor_examples": [
+        "GitHub Spec Kit",
+        "Kiro",
+        "GSD"
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.bugfix-spec-routing",
+        "ADR-pool.spec-delta-markers"
+      ],
+      "mechanical_witness": "Observed/expected/unchanged behavior record with GHI linkage."
+    },
+    {
+      "id": "executable-contracts",
+      "name": "Executable contracts",
+      "competitor_examples": [
+        "Specmatic",
+        "OpenAPI",
+        "OpenTelemetry"
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.contract-surface-mechanical-defenses",
+        "ADR-pool.tdd-receipt-stream"
+      ],
+      "mechanical_witness": "Contract proof receipts for CLI, API, schema, ledger, and skill surfaces."
+    },
+    {
+      "id": "compounding-feedback",
+      "name": "Compounding feedback",
+      "competitor_examples": [
+        "Compound Engineering",
+        "Specledger",
+        "Matt Pocock Skills"
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.skill-feedback-loop",
+        "ADR-pool.solved-problem-pattern-corpus",
+        "ADR-pool.cross-session-search"
+      ],
+      "mechanical_witness": "Human-reviewed lesson events and governed pattern corpus entries."
+    },
+    {
+      "id": "injection-security",
+      "name": "Content and prompt injection defense",
+      "competitor_examples": [
+        "GSD",
+        "Agent Skills ecosystem"
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.content-injection-scanning",
+        "ADR-pool.agentic-security-review"
+      ],
+      "mechanical_witness": "Deterministic scan result before loading or syncing external content."
+    }
+  ]
+}

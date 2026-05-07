@@ -114,6 +114,7 @@ audience split.
 | [`/git-sync`](git-sync.md) | Run the guarded repository sync ritual with lint/test gates |
 | [`/gz-agent-sync`](gz-agent-sync.md) | Synchronize generated control surfaces and skill mirrors |
 | [`/gz-check-config-paths`](gz-check-config-paths.md) | Validate configured and manifest path coherence |
+| [`/gz-competitor-radar`](gz-competitor-radar.md) | Track competitor status, trajectory, and gzkit improvement opportunities |
 | [`/gz-migrate-semver`](gz-migrate-semver.md) | Record semver identifier migration events |
 | [`/gz-register-adrs`](gz-register-adrs.md) | Register existing ADR files missing from ledger state |
 | [`/gz-patch-release`](gz-patch-release.md) | Orchestrate the GHI-driven patch release ceremony |

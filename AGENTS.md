@@ -192,7 +192,7 @@ Standardized and synchronized by `gz agent sync control-surfaces`.
 `gz-constitute`, `gz-gates`, `gz-implement`, `gz-init`, `gz-prd`, `gz-state`, `gz-status`, `gz-validate`
 
 #### Agent & Repository Operations
-`ghi-author`, `ghi-close`, `ghi-triage`, `git-sync`, `gz-agent-sync`, `gz-arb`, `gz-check-config-paths`, `gz-issue-file`, `gz-migrate-semver`, `gz-session-handoff`, `gz-skill-router`, `gz-tidy`
+`ghi-author`, `ghi-close`, `ghi-triage`, `git-sync`, `gz-agent-sync`, `gz-arb`, `gz-check-config-paths`, `gz-competitor-radar`, `gz-issue-file`, `gz-migrate-semver`, `gz-session-handoff`, `gz-skill-router`, `gz-tidy`
 
 #### Code Quality
 `complexity-advisor`, `gz-check`, `gz-chore-runner`, `gz-cli-audit`, `gz-complexity-distill`, `gz-context-diet`, `gz-deps-upgrade`, `gz-pythonic-pattern-apply`, `gz-pythonic-pattern-detect`, `gz-tech-debt-review`
