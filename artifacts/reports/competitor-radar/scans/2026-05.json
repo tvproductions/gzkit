@@ -1,0 +1,505 @@
+{
+  "schema_version": "1",
+  "month": "2026-05",
+  "scan_mode": "baseline",
+  "created_at": "2026-05-07",
+  "competitor_snapshots": [
+    {
+      "competitor_id": "openspec",
+      "status": "in-development, active public framework",
+      "trajectory": "rising",
+      "status_delta": "Added to primary watch after operator caught earlier omission.",
+      "evidence": [
+        {
+          "label": "OpenSpec homepage",
+          "url": "https://openspec.dev/",
+          "summary": "Official site describes repo-resident specs, proposals, designs, tasks, spec deltas, and broad agent support."
+        }
+      ],
+      "agent_analysis": "OpenSpec is the clearest front-door competitor for gzkit: it makes change intent reviewable before implementation. gzkit should borrow spec-delta ergonomics while preserving ADR, OBPI, ledger, and receipt rigor."
+    },
+    {
+      "competitor_id": "github-spec-kit",
+      "status": "active open-source toolkit",
+      "trajectory": "rising",
+      "status_delta": "Seeded as primary comparator; extension catalog makes trajectory worth monthly tracking.",
+      "evidence": [
+        {
+          "label": "GitHub Spec Kit repository",
+          "url": "https://github.com/github/spec-kit",
+          "summary": "Repository includes specify-plan-tasks workflows, brownfield examples, and community extensions."
+        },
+        {
+          "label": "Spec Kit site",
+          "url": "https://speckit.org/",
+          "summary": "Official site frames Spec Kit as GitHub-maintained SDD tooling."
+        }
+      ],
+      "agent_analysis": "Spec Kit has stronger adoption UX and public extension gravity. gzkit should answer with a better operator entry point and structured workflow data, not weaker governance."
+    },
+    {
+      "competitor_id": "kiro",
+      "status": "active product",
+      "trajectory": "rising",
+      "status_delta": "Seeded as primary UX comparator for requirements-design-tasks flow.",
+      "evidence": [
+        {
+          "label": "Kiro homepage",
+          "url": "https://kiro.dev/",
+          "summary": "Official page emphasizes requirements, system design, and tasks before implementation."
+        },
+        {
+          "label": "Kiro feature specs docs",
+          "url": "https://kiro.dev/docs/specs/feature-specs/",
+          "summary": "Feature-spec documentation describes product-driven requirements and implementation tasks."
+        }
+      ],
+      "agent_analysis": "Kiro's strength is not deeper truth; it is less friction at the moment of intent capture. gzkit can close that gap with operator-first workspace flow and bugfix-spec routing."
+    },
+    {
+      "competitor_id": "tessl",
+      "status": "active registry/framework product",
+      "trajectory": "steady",
+      "status_delta": "Seeded as context-package and spec-registry comparator.",
+      "evidence": [
+        {
+          "label": "Tessl SDD registry tile",
+          "url": "https://tessl.io/registry/tessl-labs/spec-driven-development",
+          "summary": "Registry tile packages a spec-driven development methodology."
+        },
+        {
+          "label": "Tessl SDD launch post",
+          "url": "https://tessl.io/blog/tessl-launches-spec-driven-framework-and-registry",
+          "summary": "Launch post explains framework and registry positioning."
+        }
+      ],
+      "agent_analysis": "Tessl is a clean signal that reusable context packages matter. gzkit's version must add manifest, provenance, injection scanning, and receipt evidence."
+    },
+    {
+      "competitor_id": "specmatic",
+      "status": "mature contract-driven development tool",
+      "trajectory": "steady",
+      "status_delta": "Seeded as executable-contract reference.",
+      "evidence": [
+        {
+          "label": "Specmatic CDD docs",
+          "url": "https://docs.specmatic.io/contract_driven_development",
+          "summary": "Docs frame API specs as executable contracts with compatibility checks and service virtualization."
+        }
+      ],
+      "agent_analysis": "Specmatic is narrower than gzkit but more mature where it operates. gzkit should make every external contract surface mechanically witnessed, including CLI, schemas, ledger, skills, and docs examples."
+    },
+    {
+      "competitor_id": "bmad-method",
+      "status": "active open-source agentic agile framework",
+      "trajectory": "rising",
+      "status_delta": "Seeded as persona/workflow-packaging comparator.",
+      "evidence": [
+        {
+          "label": "BMAD Method repository",
+          "url": "https://github.com/bmad-code-org/BMAD-METHOD",
+          "summary": "Repository presents scale-adaptive planning tracks, specialized agents, and workflow modules."
+        }
+      ],
+      "agent_analysis": "BMAD's advantage is guided adoption and workflow menus. gzkit should improve skill routing and onboarding, but not confuse persona ceremony with receipt-backed state."
+    },
+    {
+      "competitor_id": "gsd",
+      "status": "active multi-runtime workflow system",
+      "trajectory": "rising",
+      "status_delta": "Promoted from missed comparator to primary watch.",
+      "evidence": [
+        {
+          "label": "GSD repository",
+          "url": "https://github.com/gsd-build/get-shit-done",
+          "summary": "Repository advertises multi-runtime installs, planning/verification agents, context warnings, and worktree execution controls."
+        }
+      ],
+      "agent_analysis": "GSD is stronger on runtime portability and fast workflow controls. gzkit should copy multi-runtime parity pressure and security posture while rejecting un-witnessed auto-chaining."
+    },
+    {
+      "competitor_id": "superpowers",
+      "status": "active skills framework and methodology",
+      "trajectory": "rising",
+      "status_delta": "Promoted from missed comparator to primary watch.",
+      "evidence": [
+        {
+          "label": "Superpowers repository",
+          "url": "https://github.com/obra/superpowers",
+          "summary": "Repository describes an agentic skills framework and software development methodology."
+        },
+        {
+          "label": "Subagent-driven development skill",
+          "url": "https://github.com/obra/superpowers/blob/main/skills/subagent-driven-development/SKILL.md",
+          "summary": "Skill specifies fresh subagent per task and two-stage spec/code review."
+        }
+      ],
+      "agent_analysis": "Superpowers has a crisp review architecture. gzkit should encode that as typed review receipts and pipeline dispatch attestation, not as narrative review claims."
+    },
+    {
+      "competitor_id": "compound-engineering",
+      "status": "active skill/workflow signal",
+      "trajectory": "watch",
+      "status_delta": "Added as compounding-loop comparator.",
+      "evidence": [
+        {
+          "label": "ce-compound skill listing",
+          "url": "https://eliteai.tools/agent-skills/cecompound",
+          "summary": "Listing points to EveryInc's compound-engineering skill package."
+        }
+      ],
+      "agent_analysis": "Compound Engineering's core lesson is that review outcomes should become future working memory. gzkit should make that human-reviewed and ledger-witnessed."
+    },
+    {
+      "competitor_id": "mattpocock-skills",
+      "status": "active public skills corpus",
+      "trajectory": "rising",
+      "status_delta": "Added as skill-design and grill-dialogue reference.",
+      "evidence": [
+        {
+          "label": "grill-me skill",
+          "url": "https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md",
+          "summary": "Skill packages a forcing-function review dialogue."
+        }
+      ],
+      "agent_analysis": "The relevant borrowing is the questioning tactic, not the artifact shape. gzkit's grill answers should update JSON and then generated reports."
+    },
+    {
+      "competitor_id": "agent-skills",
+      "status": "active open skill packaging standard",
+      "trajectory": "mature",
+      "status_delta": "Added as reference standard after operator explicitly required following agentskills.io.",
+      "evidence": [
+        {
+          "label": "Agent Skills home",
+          "url": "https://agentskills.io/home",
+          "summary": "Home page describes skills as folders of instructions, scripts, and resources."
+        },
+        {
+          "label": "Agent Skills specification",
+          "url": "https://agentskills.io/specification",
+          "summary": "Specification defines SKILL.md plus optional scripts, references, and assets directories."
+        }
+      ],
+      "agent_analysis": "Agent Skills is the packaging reference for this radar skill. Its concrete lesson is portable execution assets and progressive disclosure, not repo-global automation."
+    },
+    {
+      "competitor_id": "better-spec",
+      "status": "active lightweight toolkit",
+      "trajectory": "watch",
+      "status_delta": "Added as low-friction bootstrap comparator.",
+      "evidence": [
+        {
+          "label": "Better Spec homepage",
+          "url": "https://better-spec.com/",
+          "summary": "Homepage advertises initialization from GitHub Spec Kit."
+        }
+      ],
+      "agent_analysis": "Better Spec is a front-door signal. gzkit should improve entry friction but explicitly reject prompt-only source-of-truth."
+    },
+    {
+      "competitor_id": "specledger",
+      "status": "active platform and CLI",
+      "trajectory": "rising",
+      "status_delta": "Added as platform/context-compounding comparator.",
+      "evidence": [
+        {
+          "label": "Specledger homepage",
+          "url": "https://specledger.io/",
+          "summary": "Homepage emphasizes spec deltas, checkpoints, session indexing, and multi-repo coordination."
+        },
+        {
+          "label": "Specledger Go package",
+          "url": "https://pkg.go.dev/github.com/specledger/specledger",
+          "summary": "Package docs describe CLI commands for specs, issues, dependencies, and context."
+        }
+      ],
+      "agent_analysis": "Specledger overlaps with gzkit's ledger instinct but productizes recall and dashboards. gzkit should keep the ledger local and auditable while improving searchable report and memory surfaces."
+    },
+    {
+      "competitor_id": "openapi",
+      "status": "mature specification ecosystem",
+      "trajectory": "mature",
+      "status_delta": "Seeded as durable spec-governance reference, not direct SDD product.",
+      "evidence": [
+        {
+          "label": "OpenAPI specification",
+          "url": "https://spec.openapis.org/oas/",
+          "summary": "Official site hosts the versioned OpenAPI Specification."
+        }
+      ],
+      "agent_analysis": "OpenAPI shows durable specs win by becoming multi-implementation truth. gzkit should use this as a maturity reference for its CLI/schema/ledger/skill contract surfaces."
+    },
+    {
+      "competitor_id": "opentelemetry",
+      "status": "mature specification ecosystem",
+      "trajectory": "mature",
+      "status_delta": "Seeded as durable cross-vendor specification reference.",
+      "evidence": [
+        {
+          "label": "OpenTelemetry specifications",
+          "url": "https://opentelemetry.io/docs/specs/",
+          "summary": "Official docs list specification, protocol, agent-management protocol, and semantic-convention versions."
+        }
+      ],
+      "agent_analysis": "OpenTelemetry is a reference for governed vocabulary, compatibility, and cross-implementation semantics. gzkit's analog is not telemetry; it is governance proof semantics."
+    }
+  ],
+  "operator_decisions": [
+    {
+      "id": "DISCOVERY-BPLUS",
+      "decision": "B+ - seeded registry plus active discovery because we do not know what we do not know.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-05-07"
+    },
+    {
+      "id": "EXECUTION-BMINUS",
+      "decision": "B- - report with suggested moves, then design discussion to modify recommendations before governance mutation.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-05-07"
+    },
+    {
+      "id": "REPORT-C",
+      "decision": "C - report includes both product snapshots and strength-pattern mapping.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-05-07"
+    },
+    {
+      "id": "JSON-GOVERNS-MD",
+      "decision": "Markdown is governed by JSON for key fields; Python may accompany the skill to enforce projection.",
+      "source": "operator correction",
+      "recorded_at": "2026-05-07"
+    },
+    {
+      "id": "SKILL-PORTABILITY",
+      "decision": "Scripts stay portable with the skill; deterministic execution assets belong under the skill package.",
+      "source": "operator correction",
+      "recorded_at": "2026-05-07"
+    },
+    {
+      "id": "ARTIFACTS-REPORTS",
+      "decision": "The competitor radar report lives under artifacts/reports.",
+      "source": "operator correction",
+      "recorded_at": "2026-05-07"
+    },
+    {
+      "id": "AGENT-AUTHORS-REPORT",
+      "decision": "The operator authors nothing; the report is agent-authored from evidence JSON and grill answers.",
+      "source": "operator correction",
+      "recorded_at": "2026-05-07"
+    }
+  ],
+  "suggested_moves": [
+    {
+      "id": "MOVE-001",
+      "title": "Make external-strength absorption a recurring foundation doctrine candidate",
+      "route": "existing-pool-adr",
+      "destination": "ADR-pool.external-strength-absorption-doctrine",
+      "source_competitors": [
+        "openspec",
+        "github-spec-kit",
+        "kiro",
+        "tessl",
+        "gsd",
+        "superpowers"
+      ],
+      "recommendation": "Keep as pool for now; monthly reports should cite it as the doctrine home for borrowed workflow pressure.",
+      "mechanical_witness": "Monthly report checksum plus evidence URLs; future promotion adds schema/validator/ledger witness for comparator intake.",
+      "decision_status": "pending-grill",
+      "rationale": "This move protects gzkit's identity: borrow mechanisms only when they become ledger/receipt/validator/attestation surfaces.",
+      "grill_questions": [
+        {
+          "question": "Are we copying a product or absorbing a mechanism?",
+          "recommended_answer": "Absorbing mechanisms only: front-door clarity, compounding feedback, and contract proof.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "Which gzkit invariant must not weaken?",
+          "recommended_answer": "Ledger-of-truth beats agent-trust; reports cannot mutate governance without design approval.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-002",
+      "title": "Build an operator-first spec workspace without lightening governance",
+      "route": "existing-pool-adr",
+      "destination": "ADR-pool.operator-first-spec-workspace",
+      "source_competitors": [
+        "openspec",
+        "github-spec-kit",
+        "kiro",
+        "better-spec"
+      ],
+      "recommendation": "Promote later as feature work only after the radar grill confirms exact workflow and witness requirements.",
+      "mechanical_witness": "Workspace JSON with proposal/design/tasks/spec-delta fields and ADR/OBPI routing receipts.",
+      "decision_status": "pending-grill",
+      "rationale": "Competitors are better at the first 10 minutes. gzkit should make entry smoother while preserving heavier downstream gates.",
+      "grill_questions": [
+        {
+          "question": "What is the smallest front-door improvement that still leaves a receipt trail?",
+          "recommended_answer": "A generated change workspace with spec delta, unchanged behavior, evidence, destination route, and suggested OBPI split.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "What would make this unsafe?",
+          "recommended_answer": "Treating the workspace as source-of-truth instead of an intake artifact routed to ADR/OBPI/ledger surfaces.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-003",
+      "title": "Add bugfix-spec routing for observed/expected/unchanged behavior",
+      "route": "existing-pool-adr",
+      "destination": "ADR-pool.bugfix-spec-routing",
+      "source_competitors": [
+        "github-spec-kit",
+        "kiro",
+        "gsd"
+      ],
+      "recommendation": "Keep as feature-pool candidate; require explicit unchanged-behavior witness and GHI linkage.",
+      "mechanical_witness": "Bugfix spec JSON or Markdown frontmatter with observed, expected, unchanged, tests, route facts, and linked GHI.",
+      "decision_status": "pending-grill",
+      "rationale": "Bugfix UX is a competitor strength because it captures intent cheaply. gzkit can make that safer with routing thresholds and witnesses.",
+      "grill_questions": [
+        {
+          "question": "Should bugfix specs ever bypass ADR/OBPI ceremony?",
+          "recommended_answer": "Only when defect-fix routing thresholds mechanically allow direct fix; otherwise route to OBPI.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "What field blocks behavior laundering?",
+          "recommended_answer": "UNCHANGED behavior, backed by tests or explicit waivers.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-004",
+      "title": "Turn two-stage review into typed gzkit receipts",
+      "route": "existing-pool-adr",
+      "destination": "ADR-pool.review-receipt-taxonomy",
+      "source_competitors": [
+        "superpowers",
+        "compound-engineering",
+        "bmad-method"
+      ],
+      "recommendation": "Treat as foundation-or-feature candidate during design; the taxonomy affects proof semantics, while CLI/reporting is feature work.",
+      "mechanical_witness": "Receipt types for spec-compliance, code-quality, security, performance, overbuild, and integration decision.",
+      "decision_status": "pending-grill",
+      "rationale": "Superpowers' two-stage review is strong, but gzkit's stronger version is not 'review happened'; it is typed, queryable review evidence.",
+      "grill_questions": [
+        {
+          "question": "Is this foundation or feature?",
+          "recommended_answer": "Split: foundation for review-proof semantics, feature for emit/list/validate commands.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "Which review types must exist first?",
+          "recommended_answer": "Spec compliance, code quality, security sensitivity, overbuild, and integration decision.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-005",
+      "title": "Create governed context-package registry semantics",
+      "route": "existing-pool-adr",
+      "destination": "ADR-pool.context-package-registry",
+      "source_competitors": [
+        "tessl",
+        "gsd",
+        "bmad-method",
+        "mattpocock-skills"
+      ],
+      "recommendation": "Keep as feature-pool candidate tied to skill-control-surface contract and content-injection scanning.",
+      "mechanical_witness": "Context package manifest with source URL, version/ref, checksum, scan status, allowed consumers, and sync receipts.",
+      "decision_status": "pending-grill",
+      "rationale": "Competitors are packaging reusable context. gzkit should do the same only when provenance, scan, and consumer controls are first-class.",
+      "grill_questions": [
+        {
+          "question": "What cannot be trusted from a context package by default?",
+          "recommended_answer": "Instructions, examples, hidden scripts, and transitive references; all require provenance and scan evidence.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "What is the first safe package shape?",
+          "recommended_answer": "Skill-compatible package with manifest, references, scripts, checksum, and allowed-tool declaration.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-006",
+      "title": "Make monthly competitor radar a generated report artifact",
+      "route": "discussion-only",
+      "destination": "artifacts/reports/competitor-radar",
+      "source_competitors": [
+        "mattpocock-skills",
+        "agent-skills"
+      ],
+      "recommendation": "Land this skill and report artifact now; schedule monthly scans after validation.",
+      "mechanical_witness": "Portable skill scripts validate registry, scan JSON, and generated Markdown byte-for-byte.",
+      "decision_status": "accepted-in-this-pass",
+      "rationale": "The report itself is the first improvement loop: a governed input to future design discussions, not a one-off chat artifact.",
+      "grill_questions": [
+        {
+          "question": "Who authors the report?",
+          "recommended_answer": "The agent authors it from evidence and grill answers; the operator only answers forcing-function questions.",
+          "answer": "The agent authors it from evidence and grill answers; the operator does not edit JSON or Markdown.",
+          "status": "answered"
+        }
+      ]
+    }
+  ],
+  "discovered_candidates": [
+    {
+      "name": "OpenSpec",
+      "evidence": "Operator noted it was missed; official site confirms broad SDD positioning.",
+      "recommended_action": "Promoted directly into primary registry watch."
+    },
+    {
+      "name": "GSD",
+      "evidence": "Operator noted it was missed; repository confirms multi-runtime workflow and context-rot positioning.",
+      "recommended_action": "Promoted directly into primary registry watch."
+    },
+    {
+      "name": "Superpowers",
+      "evidence": "Operator noted it was missed; repository and subagent-driven skill confirm two-stage review pattern.",
+      "recommended_action": "Promoted directly into primary registry watch."
+    },
+    {
+      "name": "Spec Kitty",
+      "evidence": "Search surfaced an active GitHub project as Spec Kit expansion/fork.",
+      "recommended_action": "Hold as discovery candidate for June scan; do not add to primary registry until evidence names a distinct gzkit-relevant strength."
+    }
+  ],
+  "routed_follow_up": [
+    {
+      "target": "gz-competitor-radar skill",
+      "action": "Create portable skill package with registry, scan, render, and validation scripts.",
+      "status": "implemented"
+    },
+    {
+      "target": "monthly automation",
+      "action": "Schedule monthly scan after the skill validates and mirrors sync.",
+      "status": "scheduled as monthly-competitor-radar"
+    },
+    {
+      "target": "future design discussion",
+      "action": "Use the Grill Queue to accept, modify, or reject suggested moves before ADR/GHI mutation.",
+      "status": "pending-operator-session"
+    }
+  ]
+}
