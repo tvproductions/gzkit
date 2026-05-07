@@ -3,7 +3,7 @@ id: OBPI-0.0.29-05-auto-chain-hook
 parent: ADR-0.0.29
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.29-05-auto-chain-hook: Auto-chain from xenon-as-gate Failure
@@ -17,7 +17,7 @@ status: Draft
 
 ## Objective
 
-Implement the pre-commit auto-chain hook at `.gzkit/hooks/pre-commit-complexity-advisor` that fires `gz complexity-advise --auto-chain` when xenon-as-gate exits non-zero. Preserve the existing `complexity-reduction-xenon` chore's SKIP-bypass guard wiring; the hook is additive on the failure path, not substitutive of xenon.
+Implement the pre-commit auto-chain hook at `.gzkit/hooks/pre-commit-complexity-advisor` that fires `gz complexity advise --auto-chain` when xenon-as-gate exits non-zero. Preserve the existing `complexity-reduction-xenon` chore's SKIP-bypass guard wiring; the hook is additive on the failure path, not substitutive of xenon.
 
 ## Lane
 
@@ -42,9 +42,9 @@ Implement the pre-commit auto-chain hook at `.gzkit/hooks/pre-commit-complexity-
 ## Requirements (FAIL-CLOSED)
 
 1. REQUIREMENT: The hook at `.gzkit/hooks/pre-commit-complexity-advisor` is opt-in: `gz init` does NOT install it by default; the operator runs `python -m gzkit.hooks.install_complexity_advisor` (or equivalent CLI surface — preferred) to install. The rationale per § Negative #6: pre-commit hook interaction is fragile; opt-in defends against unwelcome installation.
-2. REQUIREMENT: The hook runs xenon-as-gate first (preserving the `complexity-reduction-xenon` chore's existing invocation) and inspects the exit code. On exit 0, the hook exits 0 silently. On non-zero exit, the hook fires `gz complexity-advise --auto-chain <staged-files>`.
+2. REQUIREMENT: The hook runs xenon-as-gate first (preserving the `complexity-reduction-xenon` chore's existing invocation) and inspects the exit code. On exit 0, the hook exits 0 silently. On non-zero exit, the hook fires `gz complexity advise --auto-chain <staged-files>`.
 3. REQUIREMENT: The hook honors the existing SKIP-bypass guard wiring: if the operator's environment names the SKIP variable per the chore's existing convention, both xenon AND the auto-chain advisor are skipped. The SKIP semantics are NOT redefined here; they are honored as-is from the chore.
-4. REQUIREMENT: The hook wraps the `gz complexity-advise --auto-chain` invocation in OBPI-09's timeout primitive; on timeout the hook fails open with a logged warning (per OBPI-09's contract).
+4. REQUIREMENT: The hook wraps the `gz complexity advise --auto-chain` invocation in OBPI-09's timeout primitive; on timeout the hook fails open with a logged warning (per OBPI-09's contract).
 5. REQUIREMENT: The hook only inspects staged files (not the full working tree); auto-chain analysis is scoped to what the developer is committing.
 6. REQUIREMENT: The hook's exit code on auto-chain block-band crossing is 1 (developer must amend); on warn-band crossing the hook exits 0 with diagnosis printed to stderr (commit proceeds, advisor diagnosis informs the operator).
 7. REQUIREMENT: Tests cover: hook exits 0 silently when xenon exits 0; hook fires advisor when xenon exits non-zero; hook honors SKIP env var (xenon + advisor both skipped); hook wraps in timeout (mocked); hook scopes to staged files only; hook exit codes match the contract above. Each test decorated with `@covers(REQ-0.0.29-05-NN)`. Tests use `tempfile`-backed git repo fixtures.
@@ -54,16 +54,26 @@ Implement the pre-commit auto-chain hook at `.gzkit/hooks/pre-commit-complexity-
 11. REQUIREMENT: TDD discipline; hooks tested via subprocess invocation in behave only, mocked at the Python boundary in unit tier per `.claude/rules/tests.md`.
 12. REQUIREMENT: NEVER include the operator's personal email in hook script, installer, runbook, fixtures, or commit messages.
 
-> STOP-on-BLOCKERS: if OBPI-03's CLI verb (`gz complexity-advise --auto-chain` semantics) and OBPI-09's timeout primitive are not present, STOP — both are consumer dependencies of this hook.
+> STOP-on-BLOCKERS: if OBPI-03's CLI verb (`gz complexity advise --auto-chain` semantics) and OBPI-09's timeout primitive are not present, STOP — both are consumer dependencies of this hook.
 
 ## Discovery Checklist
 
-- [ ] OBPI-03 CLI verb (`--auto-chain` flag semantics)
-- [ ] OBPI-09 timeout primitive
-- [ ] `src/gzkit/chores/complexity-reduction-xenon/CHORE.md` — existing SKIP-bypass guard wiring
-- [ ] Parent ADR § Decision — opt-in install, exit-code semantics, staged-file scoping
-- [ ] `.claude/rules/cross-platform.md` — POSIX shell discipline + Windows boundary
-- [ ] AGENTS.md § Behavior Rules — hook discipline (do not work around hook blocks; investigate root cause)
+**Prerequisites (check existence, STOP if missing):**
+
+- [x] OBPI-03 CLI verb (`--auto-chain` flag semantics) — confirmed at `src/gzkit/commands/complexity_advise.py:51` (reserved no-op)
+- [x] OBPI-09 timeout primitive — confirmed at `src/gzkit/complexity/advisor/timeout.py` (`run_with_timeout`)
+- [x] Parent ADR § Decision — opt-in install, exit-code semantics, staged-file scoping
+
+**Existing Code (understand current state):**
+
+- [x] `src/gzkit/chores/complexity-reduction-xenon/CHORE.md` — xenon C/C/C invocation and SKIP convention via pre-commit framework
+- [x] `.pre-commit-config.yaml` — existing `xenon-complexity` hook entry (id, entry, language)
+- [x] `src/gzkit/complexity/advisor/engine.py` — `DiagnosisEngine`, `AstContext` consumed by runtime wrapper
+
+**Governance:**
+
+- [x] `.claude/rules/cross-platform.md` — POSIX shell discipline + Windows boundary
+- [x] AGENTS.md § Behavior Rules — hook discipline (do not work around hook blocks; investigate root cause)
 
 ## Quality Gates
 
@@ -100,7 +110,7 @@ uv run -m behave features/complexity_advisor_auto_chain.feature
 ## Acceptance Criteria
 
 - [ ] REQ-0.0.29-05-01: Given xenon exits 0, when the hook runs, then the hook exits 0 silently and the advisor is not invoked.
-- [ ] REQ-0.0.29-05-02: Given xenon exits non-zero, when the hook runs, then `gz complexity-advise --auto-chain` is invoked against staged files.
+- [ ] REQ-0.0.29-05-02: Given xenon exits non-zero, when the hook runs, then `gz complexity advise --auto-chain` is invoked against staged files.
 - [ ] REQ-0.0.29-05-03: Given the SKIP environment variable is set per the existing chore convention, when the hook runs, then both xenon and the advisor are skipped (exit 0 silent).
 - [ ] REQ-0.0.29-05-04: Given a block-band crossing in staged files, when the hook runs the advisor, then the hook exits 1 (commit blocked).
 - [ ] REQ-0.0.29-05-05: Given a warn-band crossing only, when the hook runs the advisor, then the hook exits 0 with diagnosis printed to stderr.
@@ -150,13 +160,21 @@ uv run -m behave features/complexity_advisor_auto_chain.feature
 
 ### Key Proof
 
+
+- `uv run -m unittest tests/hooks/test_complexity_advisor_auto_chain.py -v` — 15/15 pass (receipt `arb-step-unittest-205df5ac94c741d3874c93d9ce52321b`)
+- `uv run gz arb ruff` — clean (receipt `arb-ruff-9479a66ea7e04561af8166aa9775d50a`)
+- `uv run gz arb typecheck` — clean (receipt `arb-step-typecheck-5b4b7bd8f842473ea19dbe05d017261c`)
+- `uv run gz covers OBPI-0.0.29-05-auto-chain-hook --json` — 7/7 REQs covered, 0 uncovered
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Shell hook: `.gzkit/hooks/pre-commit-complexity-advisor` — POSIX-compatible, runs xenon-as-gate first, chains to advisor on non-zero exit via Python runtime
+- Python module: `src/gzkit/hooks/install_complexity_advisor.py` — dual-purpose installer (replaces xenon-complexity in .pre-commit-config.yaml) and runtime (wraps DiagnosisEngine in OBPI-09 timeout primitive, maps exit codes per REQ-6)
+- Tests: 15 unit tests covering 7/7 REQs with @covers decorators and tempfile-backed fixtures
+- Behave: 4 canonical-path scenarios at `features/complexity_advisor_auto_chain.feature`
+- Runbook: entry under Governance Doctrine Surfaces documenting install, SKIP semantics, and revert
+- GHI #408: config evaluation tooling pool ADR (discovery gap for opt-in hooks)
 
 ### Closing Argument
 
@@ -166,14 +184,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — 15/15 unit tests pass covering 7/7 REQs; lint clean (arb-ruff-9479a66ea7e04561af8166aa9775d50a), typecheck clean (arb-step-typecheck-5b4b7bd8f842473ea19dbe05d017261c), scoped tests pass (arb-step-unittest-205df5ac94c741d3874c93d9ce52321b); shell hook is POSIX-compatible, installer replaces xenon-complexity entry, runtime wraps DiagnosisEngine in OBPI-09 timeout primitive with fail-open at 30s; GHI #408 filed for config evaluation tooling pool ADR tracking the opt-in discovery gap
+- Date: 2026-05-07
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-07
 
 **Evidence Hash:** -

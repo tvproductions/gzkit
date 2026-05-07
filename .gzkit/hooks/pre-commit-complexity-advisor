@@ -1,0 +1,22 @@
+#!/bin/sh
+# Auto-chain hook: xenon-as-gate -> complexity advisor on failure (OBPI-0.0.29-05).
+# Install: python -m gzkit.hooks.install_complexity_advisor
+# Skip:    SKIP=complexity-advisor-auto-chain git commit
+
+# Step 1: Run xenon-as-gate (same invocation as complexity-reduction-xenon chore)
+uvx xenon --max-absolute C --max-modules C --max-average C src/
+XENON_EXIT=$?
+
+if [ "$XENON_EXIT" -eq 0 ]; then
+    exit 0
+fi
+
+# Step 2: Xenon failed — collect staged Python files only (REQ-5)
+STAGED=$(git diff --cached --name-only --diff-filter=d -- '*.py')
+if [ -z "$STAGED" ]; then
+    exit 0
+fi
+
+# Step 3: Delegate to Python runtime for timeout-wrapped advisor (REQ-4)
+# shellcheck disable=SC2086
+uv run python -m gzkit.hooks.install_complexity_advisor --run $STAGED
