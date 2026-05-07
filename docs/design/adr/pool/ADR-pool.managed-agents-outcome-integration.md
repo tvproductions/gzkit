@@ -61,6 +61,56 @@ interchangeable without touching pipeline semantics.
    re-entry on interrupted evaluations. Stage-to-outcome sequencing
    replaces inline subagent dispatch.
 
+6. **Dreams-based memory curation** — Async curation of accumulated
+   session knowledge via the Dreams API (`client.beta.dreams.create`).
+   Three input surfaces, one output surface:
+
+   **Input surfaces** (session transcripts and memory stores fed to Dreams):
+
+   - *Agent insights* — `.gzkit/insights/agent-insights.jsonl` records
+     (course corrections per Behavior Rule 11, defect observations,
+     improvement patterns) are context for session transcripts Dreams
+     mines. Curation deduplicates recurring corrections, surfaces
+     failure-class patterns not yet codified in the six-pattern taxonomy
+     (`.gzkit/rules/agent-failure-modes.md`), and drops one-off
+     transient observations. Output feeds advisory scorecard rule
+     promotion (Judgment → Mechanical).
+
+   - *ARB receipt patterns* — Receipt corpus (`.gzkit/arb/receipts/`)
+     across sessions reveals recurring quality-gate patterns: which
+     steps fail most often, which receipts are re-run after fix cycles,
+     which canonical commands produce false confidence. Dreams mines
+     session transcripts containing ARB-wrapped runs for these patterns.
+     Receipt IDs are evidence, not curation targets — Dreams never
+     modifies the receipt corpus, only produces memory-store entries
+     summarizing cross-session receipt trends.
+
+   - *Session handoff chains* — `continues_from` chains accumulate
+     stale decisions, superseded context, and resolved blockers across
+     sessions. Dreams ingests the transcripts of chained sessions and
+     produces a curated memory store that preserves booked decisions
+     and active blockers while dropping resolved items. The staleness
+     classification (Fresh/Slightly-Stale/Stale/Very-Stale) signals
+     when curation is due; Dreams is the mechanical action behind the
+     signal.
+
+   **Output surface**: A new memory store (L3 derived — regenerable
+   from L2 session transcripts) attached to future managed sessions via
+   the Memory Stores API. The curated store is review-before-adopt:
+   operator inspects the output store before it replaces the prior one.
+   Non-destructive — input store is never modified.
+
+   **Scheduling**: Paired with `ADR-pool.cloud-agent-routines` — cloud
+   routines (R-1 through R-6) are the primary session producers; Dreams
+   runs periodically (weekly or on accumulated-session threshold) to
+   curate the routine-produced session corpus. Curation instructions
+   are per-routine-family (e.g., trust-audit sessions get "focus on
+   recurring drift patterns; drop transient validator noise").
+
+   **Constraints**: 100 session max per dream, 4096-char instruction
+   limit, research preview stability tier. Same provider adapter and
+   feature flag as Features 1–5; no new dependency surface.
+
 ## Booked Decisions
 
 | # | Question | Decision |
@@ -97,16 +147,25 @@ rebuildable from L2.
 - **controlled-agency-recovery**: Owns error taxonomy and recovery
   policies. This ADR's `failed`/`max_iterations_reached` escalation
   paths feed into recovery policy but do not define it.
+- **cloud-agent-routines**: Primary session producer for Dreams
+  curation (Feature 6). Routines generate the session corpus that
+  Dreams mines; Dreams output stores feed back into routine context.
+  Promotion sequencing: routines first (produces sessions), then this
+  ADR (consumes them for evaluation and curation).
 
 ### Provider abstraction
 
 ```
 Pipeline Runtime
-  └─ OutcomeDispatcher (provider-neutral interface)
-       ├─ ClaudeOutcomeAdapter (managed-agents-2026-04-01 beta)
-       │    └─ define_outcome, poll, retrieve files
-       ├─ OpenAIOutcomeAdapter (future)
-       └─ LocalOutcomeAdapter (testing, offline)
+  ├─ OutcomeDispatcher (provider-neutral interface)
+  │    ├─ ClaudeOutcomeAdapter (managed-agents-2026-04-01 beta)
+  │    │    └─ define_outcome, poll, retrieve files
+  │    ├─ OpenAIOutcomeAdapter (future)
+  │    └─ LocalOutcomeAdapter (testing, offline)
+  └─ DreamsCurator (memory curation interface)
+       ├─ ClaudeDreamsAdapter (dreaming-2026-04-21 beta)
+       │    └─ create dream, poll, adopt/discard output store
+       └─ LocalDreamsAdapter (testing, offline — snapshot-based)
 ```
 
 Feature flags gate adapter selection at runtime. The
@@ -131,7 +190,9 @@ Pool ADRs are backlog items — they carry no `semver:` or `kind:` frontmatter.
 Promotion into the active tree (foundation or feature) is performed via
 `gz adr promote`, which rewrites the frontmatter with the chosen taxonomy.
 
-At promotion time, the five feature-checklist items decompose into OBPIs
-per the OBPI Decomposition Matrix. Features 1-4 are independent units;
-Feature 5 (chained orchestration) depends on all four and is the
-integration OBPI.
+At promotion time, the six feature-checklist items decompose into OBPIs
+per the OBPI Decomposition Matrix. Features 1–4 are independent units;
+Feature 5 (chained orchestration) depends on all four; Feature 6
+(Dreams curation) depends on Feature 2 (managed session dispatch —
+sessions must exist before Dreams can mine them) and pairs with
+`ADR-pool.cloud-agent-routines` as its primary session source.

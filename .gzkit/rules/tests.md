@@ -5,13 +5,11 @@ paths:
 description: Test policy and coverage requirements
 ---
 
-<!-- rule-version: 0.3.1 -->
+<!-- rule-version: 0.4.0 -->
 
 # Test Policy (canonical)
 
-> **Rule version:** `0.3.1` — bumped under OBPI-0.0.26-04 to add `Eval-feedback-source:` row to the governance-intent trailers table (ADR-0.0.26 eval feedback loop). Prior versions: `0.3.0` (GHI #323 behave-req-tags lifecycle scope), `0.2.0` (GHI #310 eval-awareness corollary), unversioned content treated as `0.1.0`.
-
-> **Flag defects, never excuse them.** If a test reveals a defect in code, config, or test infrastructure — flag it. Never rationalize a failing or skipped test as "pre-existing" or "not in scope". Fix it or file a GHI.
+> **Rule version:** `0.4.0` — diet pass under GHI #327; lifted pedagogy to `docs/governance/tests-rationale.md`.
 
 ## General Rules (binding)
 
@@ -47,68 +45,21 @@ Gate 2 is named TDD. Red-Green-Refactor is a repeating cycle per behavior increm
 
 **Derivation rule:** Test cases derive from OBPI brief acceptance criteria, not from the implementation. When adding tests outside a pipeline run, locate the governing OBPI brief and derive from its requirements.
 
-**Tests assert semantics, not strings (canonical home for invariant 6f).** A test's job is to pin the operator-facing purpose the code is meant to serve, not the bytes the code currently happens to emit. Assertions must derive from the REQ or the skill's declared contract, not from a run of the code. If the test passes today because the current output happens to match and would pass tomorrow even if the output drifted into a different semantic shape, the test is wrong.
+**Tests assert semantics, not strings (invariant 6f).** Assertions derive from the REQ or skill contract, not from a run of the code.
 
-**Eval-awareness corollary — audit-helper names must not telegraph audit intent.** The Claude Opus 4.7 system card (Anthropic, 2026-04-16, § 6.5.2 Evaluation awareness) reports that suppressing internal evaluation-awareness representations *increases* deceptive behavior, with the effect slightly larger than in prior models. The symmetric implication for governance test surfaces: when the model is the agent under audit, an assertion helper whose name pattern-matches as "this is the audit step" creates a recognizable evaluation context that risks the same drift. Audit-helper names MUST NOT pattern-match as audit-step names — name them by the behavior they assert, not by the audit role they fill. This corollary is the codified-mechanical instantiation of the layered-defense thesis at the test-surface layer; see ADR-0.0.23 (agent failure mode taxonomy), ADR-0.0.24 (attestation receipt binding), and ADR-0.0.25 (OBPI completion REQ coverage gate) for the parent foundation rules.
+**Eval-awareness corollary.** Audit-helper names MUST NOT pattern-match as audit-step names — name them by behavior, not audit role (e.g. `assert_receipt_id_resolves` not `assert_audit_passes`).
 
-| Anti-pattern (audit-role name) | Preferred (behavior-named) |
-|---|---|
-| `assert_audit_passes` | `assert_receipt_id_resolves` |
-| `verify_attestation_authenticity` | `assert_attestor_name_present` |
-| `check_eval_pass` | `assert_brief_status_in_ledger` |
+**Output-form fixture carve-out.** Output-form assertions are permitted in dedicated fixture tests per `.gzkit/rules/tool-skill-runbook-alignment.md` § Invariant 3. Keep them in separate test classes from REQ-derived unit tests.
 
-This is a discipline rule, not a `gz validate` scope yet. Auditing existing test names for renaming is out of scope for the rule edit; surface a separate sweep GHI if coverage demands it.
+**Per-increment rhythm:** One test → one observed RED → minimum code to GREEN → next increment.
 
-**Output-form fixture carve-out.** Output-form assertions (table markers, JSON shape, plain-text line form) are permitted in fixture tests dedicated to that form, scoped per `.gzkit/rules/tool-skill-runbook-alignment.md` § Invariant 3. Those fixtures pin the rendering contract a routing skill's Output Contract declares; they are not the same surface as REQ-derived unit tests and must not be blended with them. The semantics rule above governs REQ-derived behavior tests; the Invariant 3 fixtures govern the skill→verb rendering contract. Keep them in separate test classes or modules so a semantic refactor never forces a string-shape rewrite and a rendering change never forces a semantic rewrite.
+**RED evidence:** Do not author ARB receipts with `exit_status=1` as "RED receipts". Gate 2 TDD claims cite only GREEN-side receipts (`arb-step-unittest-*`).
 
-**Per-increment rhythm:** TDD runs **along the way**, continuously. Unit of discipline: one test, one observed RED, minimum code to GREEN, next increment. Increments flow without per-step operator approval until a logical checkpoint (brief completion, phase boundary, ceremony step boundary).
+## TASK-Driven Workflow (binding)
 
-### TDD anti-patterns
+Every src/tests commit carries a governance-intent trailer: `Task:`, `Ceremony:`, or `Eval-feedback-source:`. Enforced by `gz validate --commit-trailers`.
 
-- Writing tests after implementation that confirm what the code already does
-- Writing tests "alongside" without seeing them fail first (skipping Red)
-- Writing all tests at once before any implementation (test-dump, not TDD)
-- Batching all tests for one "RED screenshot" then batching all code for one "GREEN screenshot" (GHI #157)
-- Stopping after each RED→GREEN pair to solicit operator approval before the next increment (GHI #157)
-- Refactoring while tests are still failing (mixing Green and Refactor)
-- Backfilling `@covers(REQ-...)` decorators on existing tests to make `gz adr audit-check` pass without re-deriving semantic assertions from the REQ — the decorator is a traceability tag, not an assertion of semantic coverage; cosmetic backfill silences the audit while leaving the semantic gap intact (GHI #272)
-
-### RED evidence
-
-Do not author ARB receipts with `exit_status=1` as "RED receipts" — ARB treats intentional REDs as defects. Until the dedicated RED/GREEN receipt stream lands (`ADR-pool.tdd-receipt-stream`, GHI #157), Gate 2 TDD claims cite ARB receipts only for the GREEN side (`arb-step-unittest-*`); RED is recorded as per-increment observation pasted into the commit body or OBPI verification section.
-
-## TASK-Driven Workflow (binding — GHI #160 Phase 6)
-
-Every code-change GHI decomposes into TASKs via `gz task`, and every commit touching `src/**` or `tests/**` carries a governance-intent trailer.
-
-**Binding steps for any GHI-originated code fix:**
-
-1. Identify the REQ(s) the fix addresses. Use `gz covers <ADR-ID>` to locate.
-2. For each REQ, start a TASK: `gz task start TASK-X.Y.Z-NN-MM-PP`.
-3. Perform the TDD cycle (Red → Green → Refactor) for that TASK.
-4. Commit with the trailer: `Task: TASK-X.Y.Z-NN-MM-PP` as the final line.
-5. Complete the TASK: `gz task complete TASK-X.Y.Z-NN-MM-PP`.
-6. Decorate the new tests with `@covers(REQ-X.Y.Z-NN-MM)`.
-
-**Governance-intent trailers (GHI #201):** A src/tests-touching commit MUST carry one of:
-
-- `Task: TASK-X.Y.Z-NN-MM-PP` — hand-crafted work scoped to a single TASK.
-- `Ceremony: <name>` — chore/sync commits bundling work from multiple governance anchors (e.g. `Ceremony: gz-git-sync`, `Ceremony: obpi-reconcile`, `Ceremony: adr-closeout`). `gz git-sync` emits this automatically.
-- `Eval-feedback-source: <event-id-or-artifact-path>` — rule edits closing a GHI labeled `eval-feedback`; repeatable alongside `Task:` or `Ceremony:`; traced by `gz validate --commit-trailers` back to evaluation feedback loop source artifacts (ADR-0.0.26).
-
-**Verification:**
-
-```bash
-uv run gz validate --commit-trailers
-uv run gz validate --requirements
-```
-
-### TASK anti-patterns
-
-- Skipping `gz task start` and writing a `Task:` trailer from memory
-- Using a single TASK for multiple unrelated REQ fixes
-- Orphan test files (no `@covers`) — invisible to `gz covers`
-- Using `Ceremony:` as a blanket bypass for task-scoped hand edits
+**Steps:** `gz covers` → `gz task start` → TDD cycle → commit with `Task:` trailer → `gz task complete` → `@covers(REQ-...)` decorator.
 
 ## Two runners, one test surface
 
@@ -121,87 +72,12 @@ uv run gz validate --requirements
 
 ### Unit-tier contract (binding)
 
-A test under `tests/` must:
+- Mock every subprocess boundary (`_uv_sync_patcher`, `_git_subprocess_patcher`, `_quick_init` in `tests/commands/common.py`)
+- Complete in < 200ms; deterministic; `tempfile` temp DBs only
+- E2E scenarios requiring real subprocess → `features/*.feature`
 
-- Mock every subprocess boundary it touches. Canonical helpers in `tests/commands/common.py`:
-  - `_uv_sync_patcher` — stubs `gzkit.commands.init_cmd._run_uv_sync`
-  - `_git_subprocess_patcher` — stubs `gzkit.utils.git_cmd` at every import site used by `gz git-sync`
-  - `_quick_init(mode)` — 5x faster replacement for `runner.invoke(main, ["init"])` when the test is not exercising `gz init` itself
-- Complete in < 200ms on a typical workstation
-- Be deterministic across repeated runs
-- Use `tempfile` temp DBs; NEVER touch live/production databases
+### Behave scenario tagging
 
-Tests that exercise `gz init` directly keep `_uv_sync_patcher` module-level. Tests that touch real git state (e.g. closeout-ceremony fixtures) may use `_init_git_repo` from the common helper — a deliberate exception where real git history is load-bearing.
+Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM` as a scenario tag. Enforced by `gz validate --behave-req-tags` (fires on `Completed`/`Validated` briefs only, GHI #276/#323). Waivers in `data/behave_coverage_waivers.json`.
 
-### End-to-end coverage lives in behave
-
-If a scenario requires real `git` subprocess semantics, real `uv sync`, or a real `gz init` template-rendering round trip, it belongs in `features/*.feature`.
-
-### Behave scenario tagging (GHI #185)
-
-Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM` as a scenario tag (one per REQ, with leading `@`). This lets `gz test --obpi OBPI-X.Y.Z-NN --bdd` filter to exactly the scenarios covering that OBPI's requirements.
-
-```gherkin
-  @REQ-0.0.16-02-03
-  @REQ-0.0.16-02-04
-  Scenario: gz gates blocks on frontmatter drift
-    Given an ADR with drifted status frontmatter
-    When I run "gz gates --adr ADR-X.Y.Z"
-    Then the exit code is 3
-```
-
-Feature-level `# @covers REQ-...` comments remain supported for narrative authorship but are too coarse for OBPI-scoped filtering.
-
-**Enforcement direction (canonical, GHI #276):** `gz validate --behave-req-tags`
-enumerates heavy-lane OBPI briefs under `docs/design/adr/**` (excluding
-pool ADRs), extracts REQ-IDs from each brief's `## Acceptance Criteria`
-section, and asserts every REQ carries a matching scenario-level
-`@REQ-X.Y.Z-NN-MM` tag somewhere under `features/**`. The check fires
-OBPI → feature so a heavy OBPI that ships zero scenario coverage at all
-is flagged — the original feature → feature direction (GHI #211) could
-only flag a feature file that forgot to tag a scenario it already had.
-
-**Lifecycle scope (canonical, GHI #323):** the validator fires only on
-briefs whose `status:` frontmatter is one of `Completed` or `Validated`
-— the post-implementation states. Pre-implementation states (`Draft`,
-`Pending`, `Proposed`, etc.), terminal-but-not-implemented states
-(`Withdrawn`, `Superseded`), and unknown / future-added states default
-to skip via inverse filter. The rationale is Red-Green-Refactor: BDD
-scenarios land alongside the code they test (at implementation time),
-not at brief-authoring time when the CLI verbs / engines / hooks named
-in the brief do not yet exist. The inverse filter is the structural
-defense against future-added pre-implementation statuses silently
-re-introducing the GHI #323 defect.
-
-Missing coverage on a Completed / Validated brief is a policy breach
-(exit 3). Briefs that legitimately defer BDD even after implementation
-(schema-only, template-only, or Gate 4 explicitly N/A) register an
-entry in `data/behave_coverage_waivers.json` keyed by OBPI ID with a
-rationale — the waiver is the mechanism for "BDD deferred to
-CLI-exposing OBPIs" patterns.
-
-### Runner anti-patterns
-
-- Adding a third tier (`--integration`, `--e2e`, `--slow`) to `gz test` — the runner boundary is the gate
-- Spawning real `git` or `uv sync` in a `tests/` module without documented justification — mock it with `_git_subprocess_patcher` / `_uv_sync_patcher` first
-- Using `runner.invoke(main, ["init"])` when `_quick_init` would produce equivalent fixture state 5x faster
-- Porting a subprocess-spawning test to behave without checking whether `features/` already covers the scenario
-- Deleting a test without verifying its coverage is preserved elsewhere
-
-## Patterns
-
-### Temp-dir context manager (preferred)
-
-```python
-class TestSomething(unittest.TestCase):
-    def test_with_temp_dir(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
-            test_file = Path(temp_dir) / "data.json"
-            test_file.write_text("{}")
-            result = process_dir(temp_dir)
-            self.assertEqual(result, expected)
-```
-
-## Rationale
-
-> See [`docs/governance/tests-rationale.md`](../../docs/governance/tests-rationale.md) for the canonical history of the two-runner boundary (GHI #181 → #182) and the "why TDD rhythm matters" justification underlying the TDD anti-patterns above.
+> See [`docs/governance/tests-rationale.md`](../../docs/governance/tests-rationale.md) for TDD anti-patterns, eval-awareness corollary details, behave enforcement direction, runner anti-patterns, TASK workflow details, and code patterns.
