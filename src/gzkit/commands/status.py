@@ -164,6 +164,9 @@ def _build_adr_status_entry(
         "4": "n/a" if gate4_na is not None else gate_statuses.get(4, "pending"),
         "5": "pass" if entry.get("attested") else "pending",
     }
+    entry["observed_post_validation_gate_failures"] = ledger.get_post_validation_failed_gates(
+        adr_id
+    )
     if gate4_na is not None:
         entry["gate4_na_reason"] = gate4_na
 
@@ -437,6 +440,7 @@ def _build_adr_status_result(adr: str) -> dict[str, Any]:
 
     lane = resolve_adr_lane(info, config.mode)
     gate_statuses = ledger.get_effective_gate_statuses(adr_id)
+    observed_post_validation_failures = ledger.get_post_validation_failed_gates(adr_id)
     gate4_na = _gate4_na_reason(project_root, lane)
     semantics = Ledger.derive_adr_semantics(info)
     result: dict[str, Any] = {
@@ -457,6 +461,7 @@ def _build_adr_status_result(adr: str) -> dict[str, Any]:
             "4": "n/a" if gate4_na is not None else gate_statuses.get(4, "pending"),
             "5": "pass" if info.get("attested") else "pending",
         },
+        "observed_post_validation_gate_failures": observed_post_validation_failures,
     }
     obpi_rows = _adr_obpi_status_rows(project_root, config, ledger, adr_id)
     _apply_pool_adr_status_overrides(adr_id, result)
@@ -489,11 +494,25 @@ def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
 
     if show_gates:
         lane = cast(str, result["lane"])
+        observed = cast(list[int], result.get("observed_post_validation_gate_failures") or [])
+        observed_set = set(observed)
+
+        def _annotate(gate_num: int, rendered: str) -> str:
+            if gate_num in observed_set:
+                return f"{rendered} [yellow](observed FAIL post-validation)[/yellow]"
+            return rendered
+
         console.print("  Gate 1 (ADR):   [green]PASS[/green]")
-        console.print(f"  Gate 2 (TDD):   {_render_gate_status(result['gates'].get('2'))}")
+        console.print(
+            f"  Gate 2 (TDD):   {_annotate(2, _render_gate_status(result['gates'].get('2')))}"
+        )
         if lane == "heavy":
-            console.print(f"  Gate 3 (Docs):  {_render_gate_status(result['gates'].get('3'))}")
-            console.print(f"  Gate 4 (BDD):   {_render_gate_status(result['gates'].get('4'))}")
+            console.print(
+                f"  Gate 3 (Docs):  {_annotate(3, _render_gate_status(result['gates'].get('3')))}"
+            )
+            console.print(
+                f"  Gate 4 (BDD):   {_annotate(4, _render_gate_status(result['gates'].get('4')))}"
+            )
             if result["gates"].get("4") == "n/a":
                 console.print(f"                 ({result.get('gate4_na_reason', '')})")
             is_attested = bool(result.get("attested"))

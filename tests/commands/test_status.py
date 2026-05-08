@@ -15,6 +15,7 @@ from gzkit.ledger import (
     attested_event,
     audit_receipt_emitted_event,
     gate_checked_event,
+    lifecycle_transition_event,
     obpi_created_event,
     obpi_receipt_emitted_event,
 )
@@ -2038,3 +2039,112 @@ class TestStatusFullOutputForm(unittest.TestCase):
             self.assertIn("OBPI", result.output)
             self.assertIn("Attestation", result.output)
             self.assertIn("Anchor", result.output)
+
+
+def _seed_adr_with_post_validation_fail(adr_id: str) -> None:
+    """Seed ledger with a Validated ADR plus a stale post-validation gate fail.
+
+    The shape mirrors GHI #411: a `Completed` lifecycle transition follows
+    attestation, after which a `gate_checked: fail` event lands without any
+    rollback. The effective gate view smooths it to `pass`; the sidecar must
+    still surface the underlying observation.
+    """
+    ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+    ledger.append(gate_checked_event(adr_id, 2, "pass", "uv run gz test", 0))
+    ledger.append(attested_event(adr_id, "completed", "human"))
+    ledger.append(lifecycle_transition_event(adr_id, "adr", "Proposed", "Completed"))
+    ledger.append(gate_checked_event(adr_id, 2, "fail", "uv run gz test", 1))
+
+
+class TestPostValidationObservedGateFail(unittest.TestCase):
+    """REQ-derived semantics for GHI #411 (observation laundering)."""
+
+    def test_adr_status_json_includes_observed_post_validation_failures(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _seed_adr_with_post_validation_fail("ADR-0.1.0-f")
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertEqual(
+                payload["observed_post_validation_gate_failures"],
+                [2],
+                "JSON consumers must see the laundered observations",
+            )
+            self.assertEqual(
+                payload["gates"]["2"],
+                "pass",
+                "Lifecycle authority preserved on the gate cell",
+            )
+
+    def test_status_json_payload_field_is_jsonable(self) -> None:
+        """Sidecar uses list[int] (not set[int]) so json.dumps succeeds."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _seed_adr_with_post_validation_fail("ADR-0.1.0-f")
+
+            result = runner.invoke(main, ["status", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            entry = payload["adrs"]["ADR-0.1.0-f"]
+            self.assertEqual(entry["observed_post_validation_gate_failures"], [2])
+
+    def test_status_json_empty_when_no_laundering(self) -> None:
+        """No false positives when raw and effective agree."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "uv run gz test", 0))
+            ledger.append(attested_event("ADR-0.1.0-f", "completed", "human"))
+            ledger.append(lifecycle_transition_event("ADR-0.1.0-f", "adr", "Proposed", "Completed"))
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertEqual(payload["observed_post_validation_gate_failures"], [])
+
+    def test_qc_readiness_blocked_by_observed_post_validation_failure(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _seed_adr_with_post_validation_fail("ADR-0.1.0-f")
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--show-gates"])
+            self.assertEqual(result.exit_code, 0)
+            # QC readiness must block on the laundered observation rather
+            # than reporting READY against lifecycle alone.
+            self.assertIn("Observed post-validation gate fail", result.output)
+
+
+class TestPostValidationObservedGateFailOutputForm(unittest.TestCase):
+    """Output-form fixture for GHI #411 surfaces (Invariant 3 carve-out)."""
+
+    def test_show_gates_annotates_smoothed_pass_with_observation(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _seed_adr_with_post_validation_fail("ADR-0.1.0-f")
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--show-gates"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("observed FAIL post-validation", result.output)
+
+    def test_status_table_legend_advertises_observed_fail_code(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _seed_adr_with_post_validation_fail("ADR-0.1.0-f")
+
+            result = runner.invoke(main, ["status", "--table"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("X=Observed post-validation gate fail", result.output)

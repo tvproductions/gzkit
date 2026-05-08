@@ -37,9 +37,21 @@ def _render_gate_status(gate_status: str | None) -> str:
 
 
 def _qc_readiness(
-    gates: dict[str, str], lane: str, obpi_summary: dict[str, Any]
+    gates: dict[str, str],
+    lane: str,
+    obpi_summary: dict[str, Any],
+    observed_post_validation_failures: list[int] | None = None,
 ) -> tuple[str, list[str]]:
-    """Derive summarized QC readiness and pending checkpoints from gate statuses."""
+    """Derive summarized QC readiness and pending checkpoints from gate statuses.
+
+    `observed_post_validation_failures` carries gate ids whose latest raw
+    observation is `gate_checked: fail` after the validated lifecycle epoch
+    began (per `Ledger.get_post_validation_failed_gates`). The lifecycle-
+    authoritative `gates` dict shows those gates as `pass`; the sidecar adds
+    a blocker so QC readiness does not silently report `READY` while live
+    evidence contradicts the smoothed view (GHI #411 — observation
+    laundering).
+    """
     blockers: list[str] = []
     obpi_total = int(obpi_summary.get("total", 0))
     obpi_unit_status = str(obpi_summary.get("unit_status", "unscoped"))
@@ -55,6 +67,9 @@ def _qc_readiness(
             blockers.append("BDD")
         if gates.get("5") != "pass":
             blockers.append("Human attestation")
+    if observed_post_validation_failures:
+        gate_list = ",".join(str(g) for g in observed_post_validation_failures)
+        blockers.append(f"Observed post-validation gate fail: {gate_list}")
     readiness = "ready" if not blockers else "pending"
     return readiness, blockers
 
@@ -77,7 +92,13 @@ def _render_pending_checks_cell(blockers: list[str]) -> str:
         "BDD": "B",
         "Human attestation": "H",
     }
-    return ",".join(code_map.get(blocker, "?") for blocker in blockers)
+    codes: list[str] = []
+    for blocker in blockers:
+        if blocker.startswith("Observed post-validation gate fail"):
+            codes.append("X")
+        else:
+            codes.append(code_map.get(blocker, "?"))
+    return ",".join(codes)
 
 
 # ---------------------------------------------------------------------------
@@ -92,14 +113,27 @@ def _print_status_gate_section(
     attested: bool,
     attestation_term: Any,
 ) -> None:
-    """Render optional gate-by-gate diagnostics for one ADR."""
+    """Render optional gate-by-gate diagnostics for one ADR.
+
+    When `info["observed_post_validation_gate_failures"]` names a gate, the
+    smoothed `pass` cell is annotated with the underlying observation so the
+    operator sees both lifecycle authority and live evidence (GHI #411).
+    """
+    observed = cast(list[int], info.get("observed_post_validation_gate_failures") or [])
+    observed_set = set(observed)
+
+    def _annotate(gate_num: int, rendered: str) -> str:
+        if gate_num in observed_set:
+            return f"{rendered} [yellow](observed FAIL post-validation)[/yellow]"
+        return rendered
+
     console.print("  Gate 1 (ADR):   [green]PASS[/green]")
-    console.print(f"  Gate 2 (TDD):   {_render_gate_status(gates.get('2'))}")
+    console.print(f"  Gate 2 (TDD):   {_annotate(2, _render_gate_status(gates.get('2')))}")
     if lane != "heavy":
         return
 
-    console.print(f"  Gate 3 (Docs):  {_render_gate_status(gates.get('3'))}")
-    console.print(f"  Gate 4 (BDD):   {_render_gate_status(gates.get('4'))}")
+    console.print(f"  Gate 3 (Docs):  {_annotate(3, _render_gate_status(gates.get('3')))}")
+    console.print(f"  Gate 4 (BDD):   {_annotate(4, _render_gate_status(gates.get('4')))}")
     if gates.get("4") == "n/a":
         console.print(f"                 ({info.get('gate4_na_reason')})")
 
@@ -163,7 +197,12 @@ def _render_status_row(
     _print_status_obpi_section(obpi_rows, obpi_summary, full=full)
     _print_status_task_section(info.get("task_summary"))
 
-    qc_readiness, qc_blockers = _qc_readiness(gates, lane, obpi_summary)
+    observed_post_validation_failures = cast(
+        list[int], info.get("observed_post_validation_gate_failures") or []
+    )
+    qc_readiness, qc_blockers = _qc_readiness(
+        gates, lane, obpi_summary, observed_post_validation_failures
+    )
     console.print(f"  QC Readiness:   {_render_qc_readiness(qc_readiness, qc_blockers)}")
     if show_gates:
         _print_status_gate_section(info, lane, gates, attested, attestation_term)
@@ -216,7 +255,10 @@ def _render_status_table(
         if printed:
             console.print()
         _render_adr_table(TABLE_TITLE_POOL, pool, default_mode, full=full)
-    console.print("Checks legend: O=OBPI completion, T=TDD, D=Docs, B=BDD, H=Human attestation")
+    console.print(
+        "Checks legend: O=OBPI completion, T=TDD, D=Docs, B=BDD, H=Human attestation, "
+        "X=Observed post-validation gate fail"
+    )
 
 
 def _render_adr_table(
@@ -252,7 +294,12 @@ def _render_adr_table(
         obpi_total = cast(int, obpi_summary.get("total", 0))
         obpi_completed = cast(int, obpi_summary.get("completed", 0))
         obpi_unit_status = cast(str, obpi_summary.get("unit_status", "unscoped"))
-        qc_readiness, qc_blockers = _qc_readiness(gates, lane, obpi_summary)
+        observed_post_validation_failures = cast(
+            list[int], info.get("observed_post_validation_gate_failures") or []
+        )
+        qc_readiness, qc_blockers = _qc_readiness(
+            gates, lane, obpi_summary, observed_post_validation_failures
+        )
         qc_label = "READY" if qc_readiness == "ready" else "PENDING"
 
         table.add_row(
@@ -282,7 +329,12 @@ def _render_adr_report(result: dict[str, Any]) -> None:
     obpi_completed = cast(int, obpi_summary.get("completed", 0))
     gates = cast(dict[str, str], result.get("gates", {}))
     lane = cast(str, result.get("lane", "lite"))
-    qc_readiness, _qc_blockers = _qc_readiness(gates, lane, obpi_summary)
+    observed_post_validation_failures = cast(
+        list[int], result.get("observed_post_validation_gate_failures") or []
+    )
+    qc_readiness, _qc_blockers = _qc_readiness(
+        gates, lane, obpi_summary, observed_post_validation_failures
+    )
     closeout_label = "READY" if result.get("closeout_ready") else "BLOCKED"
     qc_label = "READY" if qc_readiness == "ready" else "PENDING"
 

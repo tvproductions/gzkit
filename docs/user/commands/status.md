@@ -85,6 +85,13 @@ excluded when `--epic` is set. An epic with no members exits 0 with an empty `ad
   `attestation_requirement`, `attestation_state`, `req_proof_state`, `req_proof_inputs`,
   `anchor_state`, `anchor_commit`, `current_head`, `anchor_issues`,
   `anchor_drift_files`, `tracked_defects`, and `issue_details`
+- `observed_post_validation_gate_failures`: sorted list of gate ids whose latest
+  raw `gate_checked` event is `fail` after the validated lifecycle epoch began.
+  The lifecycle-authoritative `gates` cell still shows `pass` for those gates
+  (state-doctrine — lifecycle is authority), but the sidecar surfaces the
+  underlying observation so display layers can annotate it and QC readiness
+  blocks on it instead of silently reporting `READY`. Empty when raw and
+  effective views agree.
 - related additive fields
 
 If an OBPI brief records a `## Tracked Defects` section, the corresponding
@@ -135,7 +142,9 @@ ADR Status
 |ADR-0.1.0                   |Pending  |LITE |  0/1|PENDING  |PENDING|O,T      |
 |ADR-0.2.0                   |Completed|HEAVY|  3/3|COMPLETED|READY  |-        |
 +------------------------------------------------------------------------------+
-Checks legend: O=OBPI completion, T=TDD, D=Docs, B=BDD, H=Human attestation
+Checks legend: O=OBPI completion, T=TDD, D=Docs, B=BDD, H=Human attestation, X=Observed post-validation gate fail
 ```
+
+`X` (observed post-validation gate fail) appears when an ADR has a `gate_checked: fail` event in the ledger that landed after its lifecycle transitioned to `Completed` / `Validated` (with no rollback). Lifecycle remains the authoritative source for the `Gates` cell, but the `Checks` column surfaces the underlying observation so the failing evidence is not silently smoothed away (GHI #411).
 
 The table uses compact cell padding so more ADR identifier text stays visible in the default terminal width. If an identifier still exceeds the available width, the `ADR` column folds it across lines instead of truncating it with an ellipsis.

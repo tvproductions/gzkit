@@ -37,6 +37,11 @@ It keeps existing compatibility fields and adds derived semantics:
 - `closeout_ready`
 - `closeout_blockers`
 - `gate4_na_reason` (when applicable)
+- `observed_post_validation_gate_failures`: gates whose latest raw `gate_checked`
+  event is `fail` after the validated lifecycle epoch began. Lifecycle remains
+  the authoritative source for the `gates` cell; the sidecar surfaces the
+  underlying observation so QC readiness and `--show-gates` annotate it instead
+  of silently smoothing it away (GHI #411).
 
 Default text output is OBPI-first and shows both closeout readiness and QC readiness.
 QC readiness is fail-closed on OBPI completion: when linked OBPIs exist and unit status is not
