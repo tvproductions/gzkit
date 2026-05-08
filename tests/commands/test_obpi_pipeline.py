@@ -1,4 +1,5 @@
 import json
+import threading
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -209,18 +210,28 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertIn("Human attestation required.", result.output)
             self.assertIn("--from=sync", result.output)
             # Verify the verification commands were executed.
-            # Baseline (3) + brief verification block (5) + heavy-lane mkdocs (1)
-            # + Stage 3 precomplete (1). Behave is omitted because the isolated
+            # Baseline (3, dispatched in parallel per GHI #421) +
+            # brief verification block (5, sequential) + heavy-lane mkdocs (1) +
+            # Stage 3 precomplete (1). Behave is omitted because the isolated
             # filesystem fixture has no @REQ-tagged feature scenarios for this
             # OBPI (GHI #420 scope discipline: full ``features/`` sweep deferred
             # to ADR closeout when no OBPI-scoped tags resolve).
             verify_commands = [call.args[0] for call in run_command_mock.call_args_list[:10]]
+            # Parallel section: arrival order at the mock is non-deterministic.
             self.assertEqual(
-                verify_commands,
+                sorted(verify_commands[:3]),
+                sorted(
+                    [
+                        "uv run gz arb ruff",
+                        "uv run gz arb typecheck",
+                        "uv run gz arb step --name unittest -- uv run -m unittest -q",
+                    ]
+                ),
+            )
+            # Sequential section: input order preserved.
+            self.assertEqual(
+                verify_commands[3:],
                 [
-                    "uv run gz arb ruff",
-                    "uv run gz arb typecheck",
-                    "uv run gz arb step --name unittest -- uv run -m unittest -q",
                     "uv run gz validate --documents",
                     "uv run gz lint",
                     "uv run gz typecheck",
@@ -233,6 +244,52 @@ class TestObpiPipelineCommand(unittest.TestCase):
             marker_path, legacy_path = self._pipeline_paths(Path.cwd())
             self.assertTrue(marker_path.exists())
             self.assertTrue(legacy_path.exists())
+
+    @patch("gzkit.cli.main.run_command")
+    def test_verify_dispatches_baseline_arb_gates_concurrently(self, run_command_mock) -> None:
+        """GHI #421: Stage 3 must dispatch the canonical ARB gates concurrently.
+
+        The three ``BASELINE_VERIFICATION`` commands (ruff/typecheck/unittest)
+        and the heavy-lane mkdocs gate read disjoint surfaces and emit
+        independent receipts. A ``threading.Barrier`` across the three
+        baseline commands is the deterministic detector: parallel dispatch
+        opens the barrier; sequential dispatch leaves one thread waiting
+        until ``BrokenBarrierError`` fires.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self._seed_runtime(runner)
+
+            baseline_commands = {
+                "uv run gz arb ruff",
+                "uv run gz arb typecheck",
+                "uv run gz arb step --name unittest -- uv run -m unittest -q",
+            }
+            barrier = threading.Barrier(len(baseline_commands), timeout=3.0)
+
+            def command_result(command: str, cwd: Path) -> QualityResult:
+                if command in baseline_commands:
+                    barrier.wait()
+                return QualityResult(
+                    success=True,
+                    command=command,
+                    stdout="ok",
+                    stderr="",
+                    returncode=0,
+                )
+
+            run_command_mock.side_effect = command_result
+
+            result = runner.invoke(
+                main,
+                ["obpi", "pipeline", "OBPI-0.13.0-01-runtime-command-contract", "--from=verify"],
+            )
+
+            self.assertEqual(result.exit_code, 0, result.output)
+            self.assertIn("Verification passed. Chaining into ceremony.", result.output)
+            mock_calls = {call.args[0] for call in run_command_mock.call_args_list}
+            for command in baseline_commands:
+                self.assertIn(command, mock_calls)
 
     @patch("gzkit.cli.main.run_command")
     def test_verify_rewrites_markers_with_verify_stage_state(self, run_command_mock) -> None:
