@@ -558,11 +558,41 @@ def render_json(issues: list[Issue], precedent: int, duplicates: dict[int, int])
     )
 
 
+RANK_INPUT_CACHE_DIR = Path(".gzkit/cache/triage")
+
+
 def _read_rank_input(path: str | None) -> object:
-    if path is None or path == "-":
-        raw = sys.stdin.read()
-    else:
-        raw = Path(path).read_text(encoding="utf-8")
+    """Load rank input from a path under .gzkit/cache/triage/.
+
+    Stdin (`-`) is rejected and inline-pipe shapes (`echo '<json>' | …`) are
+    structurally impossible: the agent must Write the JSON to a file under
+    the cache directory and pass the path. The path constraint kills the
+    duplicate-render shape on the bash command-line surface (GHI #424
+    round 4) — a `Write` tool call surfaces only the file path in chat,
+    while `echo '<json>' | …` surfaces the whole rank payload as the
+    command line itself.
+    """
+    if path is None:
+        raise RankInputError(
+            "--format rank requires --rank-input <path>; stdin is not accepted (GHI #424)"
+        )
+    if path == "-":
+        raise RankInputError(
+            "--rank-input does not accept stdin ('-'); "
+            "Write the JSON to .gzkit/cache/triage/<name>.json and pass the path "
+            "(GHI #424)"
+        )
+    resolved = Path(path).resolve()
+    cache_root = RANK_INPUT_CACHE_DIR.resolve()
+    try:
+        resolved.relative_to(cache_root)
+    except ValueError as exc:
+        raise RankInputError(
+            f"--rank-input path must live under {RANK_INPUT_CACHE_DIR.as_posix()}/ "
+            f"(got {path!r}); the cache-path requirement structurally prevents "
+            "inline-pipe duplicate-render shapes (GHI #424)"
+        ) from exc
+    raw = resolved.read_text(encoding="utf-8")
     if not raw.strip():
         raise RankInputError("--rank-input is empty")
     return json.loads(raw)
@@ -586,10 +616,12 @@ def main() -> int:
         "--rank-input",
         default=None,
         help="Path to a JSON file containing the agent's rank input "
-        "({'rankings': [{number, severity}, ...]}); use '-' for stdin. "
-        "Required with --format rank. Schema is structural-only: severity "
-        f"is one of {SEVERITY_VALUES}. No prose fields are accepted "
-        "(extras are rejected, GHI #424).",
+        "({'rankings': [{number, severity}, ...]}). Path MUST live under "
+        f"{RANK_INPUT_CACHE_DIR.as_posix()}/ (stdin rejected — Write the "
+        "JSON to a cache file and pass the path). Required with --format "
+        f"rank. Schema is structural-only: severity is one of "
+        f"{SEVERITY_VALUES}. No prose fields are accepted (extras are "
+        "rejected, GHI #424).",
     )
     p.add_argument(
         "--width",
