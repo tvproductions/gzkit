@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-25
 metadata:
-  skill-version: "4.1.0"
+  skill-version: "4.2.0"
 model: sonnet
 ---
 
@@ -91,6 +91,15 @@ The intent is to constrain WHY-shape at the render boundary so determinism
 does not leak through cognitive freedom on the input side — the agent is
 free to choose what to say; the rendering contract pins how it can say it
 (see GHI #324, comment by voidborne-d).
+
+**Chat-silence rule (binding — GHI #424):** Step 2 produces JSON, not chat
+prose. The agent MUST NOT render its rank judgment to chat before piping
+to `--format rank`. Permitted Step-2 chat output is at most one terse
+status line (e.g. *"composing rank input"*); summarizing the queue,
+restating severity/action/why per GHI, or printing the recommended order
+in chat all duplicate the Step-3 deliverable and violate the Output
+Contract. Cognitive freedom lives in the JSON the agent composes; the
+chat surface is reserved for the renderer's verbatim output.
 
 ### Step 3 — Render the deliverable
 
@@ -196,6 +205,10 @@ markdown is human-readable; Rich-in-chat is not).
 - Rendering per-GHI panels, recommended-order tables, or any other
   intermediate view between Step 2 and Step 3 — the rank list IS the
   deliverable
+- Narrating rank choices in chat before piping to `--format rank`
+  (e.g. *"Ranked order: 1. #N — blocking; …"*) — the JSON is the
+  agent's input artifact; chat-side restatement duplicates the
+  deliverable and violates the Step-2 chat-silence rule (GHI #424)
 - Modifying GHIs from this skill — triage is read-only
 
 ## Related
