@@ -118,6 +118,8 @@ def _run_all_checks(project_root: Path, brief_path: Path, obpi_id: str) -> Itera
     yield _check_lock_held(project_root, obpi_id)
     yield _check_arb_receipts_present(project_root)
     yield _check_plan_audit_receipt(project_root, obpi_id)
+    yield _check_brief_headings_scoped(project_root, brief_path)
+    yield _check_behave_req_coverage_scoped(project_root, brief_path, obpi_id)
 
 
 def _check_brief_readiness(project_root: Path, brief_path: Path) -> CheckResult:
@@ -280,6 +282,114 @@ def _check_plan_audit_receipt(project_root: Path, obpi_id: str) -> CheckResult:
         name="plan_audit_receipt",
         ok=True,
         message=f"PASS receipt at {receipt_path.name}",
+    )
+
+
+def _check_brief_headings_scoped(project_root: Path, brief_path: Path) -> CheckResult:
+    """Evidence section headings on this brief MUST be H3, not H2 (GHI #238).
+
+    GHI #422 fix #2: catch heading drift at Stage 3, before ``gz obpi complete``
+    mutates the brief. The whole-tree ``audit_brief_headings`` validator fires
+    at git-sync (Stage 5), too late to abort cleanly.
+    """
+    from gzkit.governance.trust_audits.briefs import (  # noqa: PLC0415
+        _BRIEF_EVIDENCE_H3_HEADINGS,
+        _scan_one_brief_headings,
+    )
+
+    canonical_forms: dict[str, str] = {h.casefold(): h for h in _BRIEF_EVIDENCE_H3_HEADINGS}
+    errors = _scan_one_brief_headings(brief_path, canonical_forms, project_root)
+    if errors:
+        first = errors[0].message
+        return CheckResult(
+            name="brief_headings",
+            ok=False,
+            message=f"{len(errors)} H2 evidence heading(s); first: {first[:120]}",
+            remediation=(
+                "Convert H2 evidence headings (`## Implementation Summary`, "
+                "`## Key Proof`, `## Closing Argument`) to H3 (`### ...`)."
+            ),
+        )
+    return CheckResult(
+        name="brief_headings",
+        ok=True,
+        message="evidence headings are H3 (or absent)",
+    )
+
+
+def _check_behave_req_coverage_scoped(
+    project_root: Path, brief_path: Path, obpi_id: str
+) -> CheckResult:
+    """Heavy-lane OBPI's REQs MUST have @REQ-* scenario tags BEFORE completion.
+
+    GHI #422 fix #2: catch missing scenario coverage at Stage 3, before
+    ``gz obpi complete`` mutates the brief to ``Completed``. The whole-tree
+    ``audit_behave_req_tags`` validator only fires on briefs already in
+    Completed/Validated status (post-mutation, too late). Lite-lane briefs
+    are exempt; waivered OBPIs report ok with the waiver rationale.
+    """
+    from gzkit.governance.trust_audits.briefs import (  # noqa: PLC0415
+        _ACCEPTANCE_SECTION,
+        _LANE_IN_FRONTMATTER,
+        _REQ_ID_IN_BRIEF,
+        _collect_scenario_req_tags,
+        _load_behave_coverage_waivers,
+    )
+
+    try:
+        text = brief_path.read_text(encoding="utf-8")
+    except OSError as exc:
+        return CheckResult(
+            name="behave_req_coverage",
+            ok=False,
+            message=f"brief unreadable: {exc}",
+            remediation=f"Re-create or restore {brief_path.name}.",
+        )
+
+    lane_match = _LANE_IN_FRONTMATTER.search(text)
+    if not lane_match or lane_match.group(1).lower() != "heavy":
+        return CheckResult(
+            name="behave_req_coverage",
+            ok=True,
+            message="lite-lane brief; BDD coverage not required",
+        )
+
+    waivers = _load_behave_coverage_waivers(project_root)
+    if obpi_id in waivers:
+        return CheckResult(
+            name="behave_req_coverage",
+            ok=True,
+            message=f"waived: {waivers[obpi_id][:80]}",
+        )
+
+    accept_match = _ACCEPTANCE_SECTION.search(text)
+    req_ids = sorted(set(_REQ_ID_IN_BRIEF.findall(accept_match.group(1)))) if accept_match else []
+    if not req_ids:
+        return CheckResult(
+            name="behave_req_coverage",
+            ok=True,
+            message="no REQ IDs in Acceptance Criteria",
+        )
+
+    tagged = _collect_scenario_req_tags(project_root)
+    missing = [r for r in req_ids if r not in tagged]
+    if missing:
+        first = ", ".join(missing[:3])
+        suffix = f" (+{len(missing) - 3} more)" if len(missing) > 3 else ""
+        return CheckResult(
+            name="behave_req_coverage",
+            ok=False,
+            message=f"{len(missing)} REQ(s) lack scenario tags: {first}{suffix}",
+            remediation=(
+                f"Add `@REQ-X.Y.Z-NN-MM` scenario tags under `features/**` for "
+                f"{obpi_id}'s REQs, or add a waiver entry in "
+                "`data/behave_coverage_waivers.json` with rationale."
+            ),
+        )
+    return CheckResult(
+        name="behave_req_coverage",
+        ok=True,
+        message=f"{len(req_ids)} REQ(s) all tagged in features/**",
     )
 
 

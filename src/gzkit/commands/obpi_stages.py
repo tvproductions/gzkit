@@ -34,8 +34,15 @@ BASELINE_VERIFICATION = [
 ]
 
 
-def _pipeline_verification_commands(obpi_content: str, lane: str) -> list[str]:
-    """Parse the Verification block into executable shell commands."""
+def _pipeline_verification_commands(
+    obpi_content: str, lane: str, obpi_id: str | None = None
+) -> list[str]:
+    """Parse the Verification block into executable shell commands.
+
+    When ``obpi_id`` is provided, ``gz obpi precomplete`` is appended so
+    brief-shape audits (behave_req_tags, brief_headings) fire at Stage 3
+    BEFORE ``gz obpi complete`` mutates the brief — see GHI #422.
+    """
     commands: list[str] = list(BASELINE_VERIFICATION)
     section = extract_markdown_section(obpi_content, "Verification") or ""
     matches = re.findall(r"```bash\n(.*?)```", section, flags=re.DOTALL)
@@ -52,6 +59,8 @@ def _pipeline_verification_commands(obpi_content: str, lane: str) -> list[str]:
                 "uv run gz arb step --name behave -- uv run -m behave features/",
             ]
         )
+    if obpi_id:
+        commands.append(f"uv run gz obpi precomplete {obpi_id}")
 
     deduped: list[str] = []
     seen: set[str] = set()
@@ -134,7 +143,7 @@ def _run_pipeline_verify_stage(
     evidence_json: str | None,
 ) -> None:
     """Run the verify stage, then chain into ceremony and sync."""
-    commands = _pipeline_verification_commands(obpi_content, lane)
+    commands = _pipeline_verification_commands(obpi_content, lane, obpi_id=obpi_id)
     verification_results: list[tuple[str, bool, str]] = []
     failures: list[tuple[str, str]] = []
     console.print("")
