@@ -7,6 +7,21 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from gzkit.commands.common import console
+from gzkit.governance.brief_path_validity import (
+    allowed_path_resolves as _allowed_path_resolves,  # noqa: F401  (test import)
+)
+from gzkit.governance.brief_path_validity import (
+    check_brief_path_validity as _check_brief_path_validity,
+)
+from gzkit.governance.brief_path_validity import (
+    extract_allowed_paths as _extract_allowed_paths,
+)
+from gzkit.governance.brief_path_validity import (
+    extract_plan_creates_paths as _extract_plan_creates_paths,
+)
+from gzkit.governance.brief_path_validity import (
+    vendor_mirror_canonical as _vendor_mirror_canonical,  # noqa: F401  (test import)
+)
 
 
 def _canonicalize_obpi_id(project_root: Path, obpi_id: str) -> str:
@@ -211,36 +226,6 @@ def _find_plan_file(plans_dir: Path, obpi_id: str) -> Path | None:
     return max(candidates, key=lambda p: p.stat().st_mtime)
 
 
-_ALLOWED_HEADING_RE = re.compile(r"^##\s+ALLOWED\s+PATHS(\s*\(.*?\))?\s*$", re.IGNORECASE)
-_BULLET_PATH_RE = re.compile(r"^\s*-\s*`([^`]+)`")
-
-
-def _extract_allowed_paths(brief_path: Path) -> list[str] | None:
-    """Extract allowed paths from an OBPI brief.
-
-    Accepts ``## Allowed Paths`` and ``## ALLOWED PATHS`` (and parenthesized
-    lane suffixes like ``## ALLOWED PATHS (Foundational)``). Path bullets are
-    read from the first backtick-delimited token on each bullet line, so
-    trailing ``-- commentary`` is ignored.
-    """
-    content = brief_path.read_text(encoding="utf-8")
-    in_allowed = False
-    paths: list[str] = []
-    for line in content.splitlines():
-        if _ALLOWED_HEADING_RE.match(line):
-            in_allowed = True
-            continue
-        if in_allowed and line.startswith("## "):
-            break
-        if in_allowed:
-            match = _BULLET_PATH_RE.match(line)
-            if match:
-                path = match.group(1).strip()
-                if path:
-                    paths.append(path)
-    return paths if paths else None
-
-
 def _paths_overlap(a: str, b: str) -> bool:
     """Return True when two declared paths share a directory-prefix relationship.
 
@@ -386,67 +371,6 @@ def _path_within_allowed(path: str, allowed: list[str]) -> bool:
     return True  # If we can't determine, don't block
 
 
-# Vendor-mirror prefixes per .gzkit/rules/skill-surface-sync.md § Surface
-# layout. A brief listing one of these as an allowed path routes an agent
-# to a generated mirror; the next ``gz agent sync control-surfaces``
-# overwrites the change.
-_VENDOR_MIRROR_TO_CANONICAL: tuple[tuple[str, str], ...] = (
-    (".claude/rules/", ".gzkit/rules/"),
-    (".claude/skills/", ".gzkit/skills/"),
-    (".github/skills/", ".gzkit/skills/"),
-    (".github/instructions/", ".gzkit/rules/"),
-    (".agents/skills/", ".gzkit/skills/"),
-)
-
-_GLOB_MARKER_CHARS = "*?[<"
-
-
-def _has_glob_chars(token: str) -> bool:
-    return any(ch in token for ch in _GLOB_MARKER_CHARS)
-
-
-def _glob_root(path: str) -> str:
-    """Return the longest leading literal-component prefix of a glob path.
-
-    ``src/gzkit/**/*.py`` -> ``src/gzkit``;
-    ``.gzkit/skills/<slug>/SKILL.md`` -> ``.gzkit/skills``;
-    ``*.md`` -> ``""`` (caller treats as project root).
-    """
-    literal: list[str] = []
-    for part in path.split("/"):
-        if _has_glob_chars(part):
-            break
-        literal.append(part)
-    return "/".join(literal)
-
-
-def _vendor_mirror_canonical(path: str) -> str | None:
-    """Return the canonical edit surface for a vendor-mirror path, else None."""
-    normalized = path.rstrip("/") + "/"
-    for prefix, canonical in _VENDOR_MIRROR_TO_CANONICAL:
-        if normalized.startswith(prefix):
-            tail = path[len(prefix) :].rstrip("/")
-            return canonical + tail if tail else canonical.rstrip("/")
-    return None
-
-
-def _allowed_path_resolves(project_root: Path, path: str) -> bool:
-    """Return True when an allowed path resolves to a real file/dir or its glob root exists."""
-    if path.startswith("-"):
-        # CLI flag tokens (e.g. ``--skill``) accidentally caught by the
-        # bullet regex are not path-shaped; existence is meaningless.
-        return True
-    candidate = path.rstrip("/")
-    if not candidate:
-        return False
-    if _has_glob_chars(candidate):
-        root = _glob_root(candidate)
-        if not root:
-            return True
-        return (project_root / root).exists()
-    return (project_root / candidate).exists()
-
-
 def _gather_brief_path_gaps(
     project_root: Path,
     brief_path: Path,
@@ -467,70 +391,3 @@ def _gather_brief_path_gaps(
                 gaps.append(f"Plan references path outside brief scope: {p}")
     gaps.extend(_check_brief_path_validity(project_root, target_allowed or [], creates_paths))
     return gaps, target_allowed
-
-
-_CREATES_PATH_PREFIXES: tuple[str, ...] = (
-    "src/",
-    "tests/",
-    "docs/",
-    ".gzkit/",
-    ".claude/",
-    ".agents/",
-    ".github/",
-    "data/",
-    "features/",
-)
-
-
-def _extract_plan_creates_paths(plan_file: Path) -> set[str]:
-    """Return paths the plan declares it creates (GHI #403).
-
-    Recognizes paths within either of two patterns: lines that contain the
-    literal token ``**CREATE**``, or any line under a heading whose text
-    contains ``creates these files`` (case-insensitive). The union of those
-    contexts is mined for path-shaped tokens, normalized to leading-slash-
-    free relative paths, and returned as a set used by
-    :func:`_check_brief_path_validity` to suppress the GHI #393
-    non-existent-allowed-path gap on net-new files the OBPI is creating.
-    """
-    content = plan_file.read_text(encoding="utf-8")
-    paths: set[str] = set()
-    in_creates_section = False
-    for line in content.splitlines():
-        if line.lstrip().startswith("#"):
-            in_creates_section = "creates these files" in line.lower()
-        if not (in_creates_section or "**CREATE**" in line):
-            continue
-        for token in line.split():
-            cleaned = token.strip("`*,()[]<>").lstrip("./")
-            if any(cleaned.startswith(prefix) for prefix in _CREATES_PATH_PREFIXES):
-                paths.add(cleaned)
-    return paths
-
-
-def _check_brief_path_validity(
-    project_root: Path,
-    allowed: list[str],
-    creates_paths: set[str] | None = None,
-) -> list[str]:
-    """Return gap messages for non-existent or vendor-mirror allowed paths (GHI #393).
-
-    Net-new paths the plan explicitly declares it creates (GHI #403) are
-    exempt from the non-existence check — they exist in contract before
-    they exist on disk.
-    """
-    creates = creates_paths or set()
-    gaps: list[str] = []
-    for path in allowed:
-        canonical = _vendor_mirror_canonical(path)
-        if canonical is not None:
-            gaps.append(
-                "Allowed path is a generated vendor mirror; edit canonical "
-                f"surface instead: {path} -> {canonical}"
-            )
-            continue
-        if not _allowed_path_resolves(project_root, path):
-            if path.lstrip("./").rstrip("/") in creates:
-                continue
-            gaps.append(f"Allowed path does not exist in repository: {path}")
-    return gaps

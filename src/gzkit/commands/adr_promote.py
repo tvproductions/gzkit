@@ -274,9 +274,15 @@ def _check_scaffold_obpis(
 ) -> tuple[int, list[str]]:
     """Check promoted OBPIs for scaffold content and structural errors.
 
-    Returns (scaffold_count, structure_errors).
+    Returns (scaffold_count, structure_errors). Structure errors include
+    allowed-path drift (GHI #419) — vendor-mirror surfaces and references
+    to non-existent files in any pre-authored brief are surfaced at
+    promotion time so post-promotion edits start from a clean slate.
     """
     from gzkit.commands.obpi_cmd import _validate_brief_structure  # noqa: PLC0415
+    from gzkit.governance.brief_path_validity import (  # noqa: PLC0415
+        check_brief_path_validity_for_brief,
+    )
     from gzkit.hooks.obpi import ObpiValidator  # noqa: PLC0415
 
     validator = ObpiValidator(project_root)
@@ -290,6 +296,9 @@ def _check_scaffold_obpis(
             scaffold_count += 1
         errors = _validate_brief_structure(project_root, obpi_path)
         for err in errors:
+            structure_errors.append(f"{obpi_path.name}: {err}")
+        path_errors = check_brief_path_validity_for_brief(project_root, obpi_path)
+        for err in path_errors:
             structure_errors.append(f"{obpi_path.name}: {err}")
     return scaffold_count, structure_errors
 

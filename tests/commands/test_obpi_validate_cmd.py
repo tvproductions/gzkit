@@ -206,6 +206,7 @@ class TestObpiValidateCommand(unittest.TestCase):
                 "## Objective\nDefine typed port interfaces.\n\n"
                 "## Lane\n**Lite** - Internal Python contract.\n\n"
                 "## Allowed Paths\n- `src/gzkit/ports/` - in scope\n\n"
+                "## Creates these files\n- `src/gzkit/ports/`\n\n"
                 "## Denied Paths\n- `docs/user/commands/` - docs stay unchanged\n\n"
                 "## Requirements (FAIL-CLOSED)\n1. REQUIREMENT: Use Protocols.\n\n"
                 "## Quality Gates\n### Gate 1: ADR\n- [ ] Intent recorded\n\n"
@@ -228,7 +229,7 @@ class TestObpiValidateCommand(unittest.TestCase):
 
             result = runner.invoke(main, ["obpi", "validate", str(obpi_path), "--authored"])
 
-            self.assertEqual(result.exit_code, 0)
+            self.assertEqual(result.exit_code, 0, msg=result.output)
             self.assertIn("OBPI Validation Passed", result.output)
 
     def test_obpi_validate_no_args_shows_error(self) -> None:
