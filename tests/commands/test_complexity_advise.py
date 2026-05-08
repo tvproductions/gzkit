@@ -370,7 +370,7 @@ class TestComplexityAdviseOutputForm(unittest.TestCase):
         lowered = out.lower()
         self.assertIn("archetype", lowered)
         self.assertIn("authority", lowered)
-        self.assertIn("proof", lowered)
+        self.assertIn("file:", lowered)
         self.assertIn("recommended", lowered)
 
 

@@ -33,10 +33,10 @@ document. The verdict ↔ proof binding (per ADR-0.0.29 § Decision
 rationale #5) is structural — the engine fails closed if proof
 cannot be produced.
 
-The default output is structured human-readable prose; `--json`
-mode emits the canonical Pydantic serialization (REQ-0.0.29-03-04).
-The `--auto-chain` flag is reserved for OBPI-0.0.29-05 (the xenon
-auto-fire hook) and is currently a no-op marker.
+The default output is structured human-readable prose (verbose `AdHocPresenter`);
+`--json` mode emits the canonical Pydantic serialization (REQ-0.0.29-03-04).
+The `--auto-chain` flag (introduced in OBPI-0.0.29-05 for the xenon auto-fire hook)
+activates the concise `AutoChainPresenter` output mode (landed in OBPI-0.0.29-06).
 
 ## OPTIONS
 
@@ -48,9 +48,11 @@ auto-fire hook) and is currently a no-op marker.
 - `--quiet` — Errors only; no progress output.
 - `--verbose` — Debug output (per-file analysis trace).
 - `--dry-run` — Reserved; analysis is read-only and dry-run is a no-op.
-- `--auto-chain` — Reserved for OBPI-0.0.29-05; signals the verb is
-  fired by the xenon-as-gate auto-chain hook (different presentation
-  defaults will land there).
+- `--auto-chain` — Signals ad-hoc pathway is invoked by the xenon-as-gate
+  auto-chain hook (OBPI-0.0.29-05). Activates the concise `AutoChainPresenter`:
+  one-line summary per diagnosis plus "run `gz complexity advise <path>` for
+  full detail" hint. Without this flag (ad-hoc), the verbose `AdHocPresenter`
+  is used (full doctrinal frame, source snippets, attestation reference).
 - `--rule-path PATH` — Override the threshold rule path. Default is
   `.gzkit/rules/complexity-thresholds.md`. Test injection only;
   production runs should use the default.
@@ -92,6 +94,61 @@ Use a non-canonical threshold rule (test injection):
 
 ```bash
 gz complexity advise subject.py --rule-path /tmp/synthetic-rules.md
+```
+
+### Ad-hoc preview pathway (verbose output)
+
+Analyze a file in ad-hoc mode (default, without `--auto-chain`):
+
+```bash
+gz complexity advise src/foo.py
+```
+
+This emits the verbose `AdHocPresenter` output: each crossing includes the
+metric name, band (`warn` or `block`), numeric value, refactor archetype,
+full doctrinal frame (authority and citation), source-line snippets from the
+proof range, recommended move, and intrinsic attestation reference. If no
+crossings are detected, output is: "no crossings detected, checked N functions
+across M metrics".
+
+Example output snippet:
+```
+CROSSING: radon_cc (function foo) — band: warn (threshold: 10)
+  Value: 12
+  Archetype: ExtractMethod
+  Authority: Fowler, Refactoring (1999)
+  Proof: src/foo.py:45-62 (radon_cc=12, 2 decision points)
+
+  Source snippet:
+  45 def foo(x, y):
+  46     if x > 0:
+  47         ...
+  62         return result
+
+  Recommended move: Extract the conditional logic (lines 46–60) into a
+  separate function. See `.gzkit/rules/complexity-thresholds.md` for
+  band definitions.
+
+  Attestation: Gate 5 witness required if moving to foundation scope
+  (ADR-0.0.29 § Attestation).
+```
+
+### Auto-chain context (concise output)
+
+Analyze a file with `--auto-chain` (invoked by the xenon hook):
+
+```bash
+gz complexity advise src/foo.py --auto-chain
+```
+
+This emits the concise `AutoChainPresenter` output: a one-line summary per
+diagnosis (metric, band, archetype, file:line, recommended move) followed by
+a footer hint. If no crossings are detected, output is silent (no output).
+
+Example output snippet:
+```
+src/foo.py:45 | radon_cc warn | ExtractMethod | Extract conditional logic (lines 46–60)
+Run `gz complexity advise src/foo.py` for full detail.
 ```
 
 ## SEE ALSO

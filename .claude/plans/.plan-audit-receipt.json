@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.29-05-auto-chain-hook",
-  "timestamp": "2026-05-07T01:38:00Z",
+  "obpi_id": "OBPI-0.0.29-06-ad-hoc-path",
+  "timestamp": "2026-05-07T23:00:00Z",
   "verdict": "PASS",
-  "plan_file": "plan-OBPI-0.0.29-05-auto-chain-hook.md",
+  "plan_file": "plan-OBPI-0.0.29-06-ad-hoc-path.md",
   "gaps_found": 0,
-  "notes": "ADR<->OBPI alignment: 7/7 checks aligned. Plan covers all 12 REQs with explicit test coverage map. 4 structural 'allowed-path-not-found' gaps are expected (green-field OBPI creating new files: shell hook, installer, unit tests, behave feature). 240 scope-collision advisories are cross-ADR overlaps on shared surfaces (hooks, tests, runbook) — not blocking. Key design decisions resolved: D1 shell-delegates-to-Python (Path B1) for timeout primitive consumption per runbook line 812; D2 installer replaces xenon-complexity entry; D3 SKIP via pre-commit framework convention; D4 engine-direct for different exit code semantics."
+  "notes": "ADR<->OBPI alignment: 7/7 checks aligned. Plan covers all 11 REQs with explicit test coverage map and @covers decorator requirement. 3 structural 'allowed-path-not-found' gaps are expected (green-field OBPI creating new files: presentation.py, test_complexity_advise_ad_hoc.py, features/complexity_advise_ad_hoc.feature). 203 scope-collision advisories are cross-ADR overlaps on shared surfaces — non-blocking per OBPI-05 precedent. OBPI-03 dependency confirmed landed (complexity_advise.py exists with auto_chain param). Destination-in-mind: Presenter protocol + AdHocPresenter + AutoChainPresenter + CLI dispatch based on --auto-chain flag. Rejected alternative: inline logic in complexity_advise.py (brief REQ-05 mandates separable classes in presentation.py)."
 }
