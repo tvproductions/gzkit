@@ -66,18 +66,8 @@ class TestRankDeliverableIsByteStable(unittest.TestCase):
         self.precedent = 110
         self.agent_input = {
             "rankings": [
-                {
-                    "number": 324,
-                    "severity": "blocking",
-                    "action": "fix triage skill rendering",
-                    "why": "operator-facing surface degrades chat output every invocation",
-                },
-                {
-                    "number": 323,
-                    "severity": "degrading",
-                    "action": "scope behave-req-tags to post-impl briefs",
-                    "why": "validator currently fires on Draft briefs that have no scenarios yet",
-                },
+                {"number": 324, "severity": "blocking"},
+                {"number": 323, "severity": "degrading"},
             ]
         }
 
@@ -106,31 +96,40 @@ class TestRankDeliverableIsByteStable(unittest.TestCase):
         self.assertGreater(idx_323, -1)
         self.assertLess(idx_324, idx_323, "agent-supplied order must be preserved verbatim")
 
-    def test_render_rank_includes_severity_route_action_why_and_title(self) -> None:
+    def test_render_rank_includes_severity_route_and_title(self) -> None:
         items = _TRIAGE.parse_rank_input(self.agent_input, set(self.issue_index))
         rendered = _TRIAGE.render_rank(
             items, self.issue_index, self.routes, self.precedent, len(self.issues)
         )
         self.assertIn("[blocking]", rendered)
         self.assertIn("direct-fix", rendered)
-        self.assertIn("fix triage skill rendering", rendered)
-        self.assertIn("operator-facing surface degrades chat output every invocation", rendered)
         self.assertIn("vibed deliverable contract", rendered)
 
+    def test_render_rank_omits_agent_prose_fields(self) -> None:
+        """GHI #424 round 3: rank-input schema carries no prose; render mirrors that."""
+        items = _TRIAGE.parse_rank_input(self.agent_input, set(self.issue_index))
+        rendered = _TRIAGE.render_rank(
+            items, self.issue_index, self.routes, self.precedent, len(self.issues)
+        )
+        # Renderer never emits the legacy `action`/`why` tokens because the
+        # schema no longer accepts them. This guards against a regression that
+        # would re-introduce prose duplication between input and output.
+        for legacy_phrase in (
+            "fix triage skill rendering",
+            "operator-facing surface degrades chat output every invocation",
+            "scope behave-req-tags to post-impl briefs",
+        ):
+            self.assertNotIn(legacy_phrase, rendered)
 
-class TestRankInputRenderingEdgeContract(unittest.TestCase):
-    """Constrains WHY/ACTION shape so determinism doesn't leak through input."""
+
+class TestRankInputStructuralSchema(unittest.TestCase):
+    """Schema is structural-only — number + severity, no prose (GHI #424 round 3)."""
 
     def setUp(self) -> None:
         self.known = {324, 323}
 
     def _payload(self, **overrides: object) -> dict:
-        entry: dict[str, object] = {
-            "number": 324,
-            "severity": "blocking",
-            "action": "fix it",
-            "why": "operator surface degrades every run",
-        }
+        entry: dict[str, object] = {"number": 324, "severity": "blocking"}
         entry.update(overrides)
         return {"rankings": [entry]}
 
@@ -138,25 +137,17 @@ class TestRankInputRenderingEdgeContract(unittest.TestCase):
         with self.assertRaises(_TRIAGE.RankInputError):
             _TRIAGE.parse_rank_input(self._payload(severity="critical"), self.known)
 
-    def test_why_too_long_rejected(self) -> None:
+    def test_action_field_rejected(self) -> None:
         with self.assertRaises(_TRIAGE.RankInputError):
-            _TRIAGE.parse_rank_input(self._payload(why="x" * 121), self.known)
+            _TRIAGE.parse_rank_input(self._payload(action="fix it"), self.known)
 
-    def test_action_too_long_rejected(self) -> None:
+    def test_why_field_rejected(self) -> None:
         with self.assertRaises(_TRIAGE.RankInputError):
-            _TRIAGE.parse_rank_input(self._payload(action="x" * 81), self.known)
+            _TRIAGE.parse_rank_input(self._payload(why="some reason"), self.known)
 
-    def test_why_with_newline_rejected(self) -> None:
+    def test_arbitrary_extra_field_rejected(self) -> None:
         with self.assertRaises(_TRIAGE.RankInputError):
-            _TRIAGE.parse_rank_input(self._payload(why="first clause\nsecond clause"), self.known)
-
-    def test_why_with_markdown_chars_rejected(self) -> None:
-        for bad in ("**bold** thing", "list `code`", "head # one", "pipe | cell"):
-            with (
-                self.subTest(bad=bad),
-                self.assertRaises(_TRIAGE.RankInputError),
-            ):
-                _TRIAGE.parse_rank_input(self._payload(why=bad), self.known)
+            _TRIAGE.parse_rank_input(self._payload(rationale="anything"), self.known)
 
     def test_unknown_issue_number_rejected(self) -> None:
         with self.assertRaises(_TRIAGE.RankInputError):
@@ -165,8 +156,8 @@ class TestRankInputRenderingEdgeContract(unittest.TestCase):
     def test_duplicate_issue_number_rejected(self) -> None:
         payload = {
             "rankings": [
-                {"number": 324, "severity": "blocking", "action": "a", "why": "b"},
-                {"number": 324, "severity": "latent", "action": "c", "why": "d"},
+                {"number": 324, "severity": "blocking"},
+                {"number": 324, "severity": "latent"},
             ]
         }
         with self.assertRaises(_TRIAGE.RankInputError):

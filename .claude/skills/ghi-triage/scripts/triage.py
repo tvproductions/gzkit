@@ -341,45 +341,27 @@ CLASS_STYLE = {
 
 SEVERITY_VALUES = ("blocking", "degrading", "latent")
 SEVERITY_RANK = {sev: idx for idx, sev in enumerate(SEVERITY_VALUES)}
-WHY_MAX_CHARS = 120
-ACTION_MAX_CHARS = 80
-_FORBIDDEN_CHARS = set("*_`#|<>\n\r\t")
+_ALLOWED_RANKING_KEYS = frozenset({"number", "severity"})
 
 
 @dataclass(frozen=True)
 class RankItem:
     number: int
     severity: str
-    action: str
-    why: str
 
 
 class RankInputError(ValueError):
     """Raised when --rank-input fails the rendering-edge contract."""
 
 
-def _validate_text_field(value: object, field: str, idx: int, max_chars: int) -> str:
-    if not isinstance(value, str):
-        raise RankInputError(f"rankings[{idx}].{field} must be a string")
-    cleaned = value.strip()
-    if not cleaned:
-        raise RankInputError(f"rankings[{idx}].{field} required")
-    if len(cleaned) > max_chars:
-        raise RankInputError(
-            f"rankings[{idx}].{field} exceeds {max_chars} chars (got {len(cleaned)})"
-        )
-    bad = sorted({c for c in cleaned if c in _FORBIDDEN_CHARS})
-    if bad:
-        raise RankInputError(f"rankings[{idx}].{field} contains forbidden characters: {bad!r}")
-    return cleaned
-
-
 def parse_rank_input(payload: object, known_numbers: set[int]) -> list[RankItem]:
     """Validate agent-supplied rank input.
 
-    Constrains WHY/ACTION shape at the rendering edge so determinism does not
-    leak through cognitive freedom on the input side (GHI #324, comment by
-    voidborne-d). Cognitive freedom on the input; determinism on the render.
+    Schema is structural-only: number + severity per entry. No prose fields
+    (no `action`, no `why`) — those duplicated the renderer's title output
+    and produced the recurring chat-surface duplication GHI #424 closed
+    structurally. Cognitive freedom lives in selection + ordering + severity;
+    the renderer owns all prose.
     """
     if not isinstance(payload, dict):
         raise RankInputError("--rank-input must be a JSON object")
@@ -391,6 +373,12 @@ def parse_rank_input(payload: object, known_numbers: set[int]) -> list[RankItem]
     for idx, entry in enumerate(rankings):
         if not isinstance(entry, dict):
             raise RankInputError(f"rankings[{idx}] must be an object")
+        extra = sorted(set(entry.keys()) - _ALLOWED_RANKING_KEYS)
+        if extra:
+            raise RankInputError(
+                f"rankings[{idx}] has forbidden field(s) {extra!r}; "
+                "schema accepts only 'number' and 'severity' (GHI #424)"
+            )
         number = entry.get("number")  # ty: ignore[invalid-argument-type]
         if not isinstance(number, int) or isinstance(number, bool):
             raise RankInputError(f"rankings[{idx}].number must be int")
@@ -404,11 +392,7 @@ def parse_rank_input(payload: object, known_numbers: set[int]) -> list[RankItem]
         severity = entry.get("severity")  # ty: ignore[invalid-argument-type]
         if severity not in SEVERITY_VALUES:
             raise RankInputError(f"rankings[{idx}].severity must be one of {SEVERITY_VALUES}")
-        raw_action = entry.get("action")  # ty: ignore[invalid-argument-type]
-        raw_why = entry.get("why")  # ty: ignore[invalid-argument-type]
-        action = _validate_text_field(raw_action, "action", idx, ACTION_MAX_CHARS)
-        why = _validate_text_field(raw_why, "why", idx, WHY_MAX_CHARS)
-        items.append(RankItem(number=number, severity=severity, action=action, why=why))
+        items.append(RankItem(number=number, severity=severity))
     return items
 
 
@@ -423,7 +407,10 @@ def render_rank(
 
     Deterministic by construction: items render in caller-provided order
     (the agent owns the ranking), every field is validated upstream by
-    parse_rank_input, and no formatting branches on environment.
+    parse_rank_input, and no formatting branches on environment. The line
+    shape is a strict superset of the agent's input — the agent contributes
+    {number, severity, ordering}; the renderer adds {route, title} from the
+    fetched issue set. No prose field appears in both surfaces.
     """
     lines = [
         f"# GHI Triage Ranking — {len(items)} ranked of {total} open "
@@ -433,10 +420,7 @@ def render_rank(
     for rank, item in enumerate(items, start=1):
         title = issue_index[item.number].title
         route_label = routes.get(item.number, "—")
-        lines.append(
-            f"{rank}. #{item.number} [{item.severity}] {route_label} — {item.action} — {item.why}"
-        )
-        lines.append(f"   ↳ {title}")
+        lines.append(f"{rank}. #{item.number} [{item.severity}] {route_label} — {title}")
     lines.append("")
     return "\n".join(lines)
 
@@ -602,11 +586,10 @@ def main() -> int:
         "--rank-input",
         default=None,
         help="Path to a JSON file containing the agent's rank input "
-        "({'rankings': [{number, severity, action, why}, ...]}); use '-' for "
-        "stdin. Required with --format rank. Validation rules: severity is "
-        f"one of {SEVERITY_VALUES}; action ≤{ACTION_MAX_CHARS} chars; "
-        f"why ≤{WHY_MAX_CHARS} chars; neither field may contain newlines or "
-        "markdown control characters.",
+        "({'rankings': [{number, severity}, ...]}); use '-' for stdin. "
+        "Required with --format rank. Schema is structural-only: severity "
+        f"is one of {SEVERITY_VALUES}. No prose fields are accepted "
+        "(extras are rejected, GHI #424).",
     )
     p.add_argument(
         "--width",

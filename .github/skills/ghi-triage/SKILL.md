@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-25
 metadata:
-  skill-version: "4.3.0"
+  skill-version: "5.0.0"
 model: sonnet
 ---
 
@@ -61,71 +61,52 @@ the agent recommends working on, in the agent's recommended order:
 ```json
 {
   "rankings": [
-    {
-      "number": 324,
-      "severity": "blocking",
-      "action": "fix triage skill rendering",
-      "why": "operator-facing surface degrades chat output every invocation"
-    },
-    {
-      "number": 323,
-      "severity": "degrading",
-      "action": "scope behave-req-tags to post-impl briefs",
-      "why": "validator currently fires on Draft briefs that have no scenarios yet"
-    }
+    {"number": 324, "severity": "blocking"},
+    {"number": 323, "severity": "degrading"}
   ]
 }
 ```
 
-**Rendering-edge contract (binding):**
+**Rendering-edge contract (binding — structural-only schema, GHI #424
+round 3):**
 
 | Field | Constraint |
 |-------|------------|
 | `number` | int; must appear in the Step 1 fetched set |
 | `severity` | one of `blocking` (current work fails), `degrading` (succeeds but produces drift), `latent` (deferrable) |
-| `action` | ≤80 chars; single clause; no newlines; no markdown control characters (`* _ \` # \| < >`) |
-| `why` | ≤120 chars; single clause; same character restrictions |
+| any other field | **rejected** — the script returns exit 1 if a `rankings[*]` entry contains keys other than `number` and `severity` |
 
-These are enforced by the script and rejected with exit 1 on violation.
-The intent is to constrain WHY-shape at the render boundary so determinism
-does not leak through cognitive freedom on the input side — the agent is
-free to choose what to say; the rendering contract pins how it can say it
-(see GHI #324, comment by voidborne-d).
-
-**Chat-silence rule (binding — GHI #424):** Step 2 produces JSON, not chat
-prose. The agent MUST NOT render its rank judgment to chat before piping
-to `--format rank`. Permitted Step-2 chat output is at most one terse
-status line (e.g. *"composing rank input"*); summarizing the queue,
-restating severity/action/why per GHI, or printing the recommended order
-in chat all duplicate the Step-3 deliverable and violate the Output
-Contract. Cognitive freedom lives in the JSON the agent composes; the
-chat surface is reserved for the renderer's verbatim output.
+The schema is structural-only by design. Earlier versions (≤4.3.x) accepted
+agent-supplied `action` and `why` prose, which then duplicated the
+renderer's output in the operator's chat surface — the rank-input JSON
+visible in the Bash command (or Write/heredoc) showed the same severity +
+action + why content the rendered deliverable then printed back. GHI #424
+was reopened twice while chat-silence rules tried to suppress that
+duplication; only removing the prose fields from the schema makes
+recurrence mechanically impossible. The agent's cognitive contribution is
+**selection + ordering + severity**; the renderer owns all prose, derived
+from the fetched issue set.
 
 ### Step 3 — Render the deliverable
 
 Pipe the rank-input JSON to the script with `--format rank`:
 
 ```bash
-echo '<rank-input JSON>' | uv run python .claude/skills/ghi-triage/scripts/triage.py --format rank --rank-input -
+echo '<rank-input JSON>' | uv run python .gzkit/skills/ghi-triage/scripts/triage.py --format rank --rank-input -
 ```
 
 Or write the JSON to a file and pass `--rank-input <path>`. The script
 renders a deterministic markdown deliverable: one numbered row per ranked
-GHI, each row containing the severity, route, action, and WHY in a fixed
-shape. **The script's stdout IS the deliverable. The Bash tool result
-shown to the operator is the presentation — do not echo, restate, copy,
-or paraphrase that output in agent-generated text.**
+GHI, each row containing the severity, route, and title in a fixed shape.
+**The script's stdout IS the deliverable. The Bash tool result shown to
+the operator is the presentation — do not echo, restate, copy, or
+paraphrase that output in agent-generated text.**
 
-**Chat-silence rule, Step-3 edge (binding — GHI #424):** After the
-renderer runs, the agent's chat surface is closed for the rank content.
-Permitted post-pipe chat output is at most one terse status line
-(e.g. *"rendered"*) or no text at all; re-emitting the rank list — even
-verbatim — routes the deliverable through the agent's generation channel
-and recreates the vibing surface the script exists to eliminate. In
-Claude Code and any surface where Bash tool results are visible to the
-operator, the tool result is the presentation; agent-side restatement
-is a duplicate render, not a confirmation. The same rule that closes
-Step 2 (no pre-pipe prose) closes Step 3 (no post-pipe echo).
+The chat-silence rules from earlier versions remain (no pre-pipe queue
+summary; no post-pipe echo of the rendered output) but they are now
+backstops, not the primary defense. With prose stripped from the
+rank-input schema, the agent has no prose to duplicate even if the
+chat-silence rules are forgotten.
 
 There is no Step 4. There is no "Recommended order" follow-up table. The
 rank list IS the recommended order.
@@ -206,10 +187,10 @@ markdown is human-readable; Rich-in-chat is not).
 - Running the script with `--format markdown` or `--format rich` and
   presenting that as the deliverable — those are operator-skim views,
   not the rank deliverable
-- Composing rank input with multi-clause sentences, embedded markdown,
-  or newline-separated reasoning — the validator rejects these by
-  design; do not work around it by stripping characters until validation
-  passes, re-think the WHY language instead
+- Adding `action`, `why`, `rationale`, or any prose field to a `rankings[*]`
+  entry — the schema is structural-only and rejects extras with exit 1.
+  The rationale for ranking lives in the agent's reasoning, not the
+  payload (GHI #424 round 3 — prose in input duplicates renderer output).
 - Calling the script twice for the same data (one for `--format markdown`,
   one for `--format json`) — Step 1 is a single call
 - Running `gz state --json` unconditionally — the cross-check is
@@ -221,13 +202,12 @@ markdown is human-readable; Rich-in-chat is not).
 - Narrating rank choices in chat before piping to `--format rank`
   (e.g. *"Ranked order: 1. #N — blocking; …"*) — the JSON is the
   agent's input artifact; chat-side restatement duplicates the
-  deliverable and violates the Step-2 chat-silence rule (GHI #424)
+  deliverable
 - Echoing the renderer's output in agent text after `--format rank`
   has produced it — even verbatim. The Bash tool result already
   presents the deliverable in Claude Code surfaces; restating it
-  through the agent's generation channel is the post-pipe twin of the
-  Step-2 violation and is forbidden by the Step-3 chat-silence rule
-  (GHI #424). "Present verbatim" means *let the tool result stand*,
+  through the agent's generation channel is a duplicate render, not
+  a confirmation. "Present verbatim" means *let the tool result stand*,
   not *copy-paste it into a text response*.
 - Modifying GHIs from this skill — triage is read-only
 
