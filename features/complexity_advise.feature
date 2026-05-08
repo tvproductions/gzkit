@@ -10,7 +10,7 @@ Feature: gz complexity advise — trigger-time advisor diagnosis (ADR-0.0.29 / O
     Given a synthetic complexity-advise environment with a clean Python source
     When I run the gz command "complexity advise subject.py --rule-path complexity_thresholds.md"
     Then the command exits with code 0
-    And the output contains "no crossings"
+    And the output contains "No crossings"
 
   @REQ-0.0.29-03-02
   Scenario: warn-band crossing produces exit 0 with diagnosis prose

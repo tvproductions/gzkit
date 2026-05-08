@@ -11,6 +11,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--requirements] [--commit-trailers]
             [--taxonomy] [--chores-layout]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
+            [--advisor-proof-binding]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
 ```
 
@@ -321,6 +322,38 @@ gz validate --intrinsic-attestation
 | 0 | All events valid or no events present | — |
 | 1 | One or more events have missing/invalid fields | Inspect the ledger event and re-run `gz complexity advise --attest-intrinsic` |
 
+### `--advisor-proof-binding`
+
+Defense-in-depth backstop for the verdict <-> proof binding (ADR-0.0.29 /
+OBPI-0.0.29-08). Model-layer enforcement (OBPI-0.0.29-01: `Field(min_length=1)`
+on `AdvisorDiagnosis.proof`) and engine-layer enforcement (OBPI-0.0.29-02:
+`EngineError` raised before model instantiation when proof is unavailable)
+prevent empty-proof diagnoses at runtime; this validator is the gate-time
+defense against a future regression in either lower layer.
+
+Three scan scopes:
+
+1. **Fixture scope** — walks `tests/fixtures/advisor/*.json`, asserts each
+   diagnosis fixture has non-empty `proof`. A speculative-marker escape
+   (`"_negative_case": true` at the fixture's top level) skips fixtures
+   explicitly authored as negative-case tests of the empty-proof rejection.
+2. **Ledger scope** — reads `.gzkit/ledger.jsonl`, finds
+   `intrinsic-complexity-attestation` events whose payload references a
+   diagnosis id (via the OBPI-07 event shape), cross-checks that the cited
+   diagnosis carries non-empty `proof`.
+3. **Schema scope** — loads `src/gzkit/schemas/advisor_diagnosis.json` and
+   asserts `properties.proof.minItems >= 1`.
+
+```bash
+# Run the binding audit; integrates with --all and gz check
+gz validate --advisor-proof-binding
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | All scopes pass (vacuous when fixtures/ledger absent) | — |
+| 1 | One or more diagnoses lack non-empty `proof` | Inspect named fixture/event/schema and restore the binding (or remove the empty-proof artifact) |
+
 ### `--sensitivity`
 
 Enforces the ADR-0.0.22 security-sensitivity invariant. Reads `data/security_surfaces.json` (the canonical glob-to-category registry) and walks every OBPI brief's `## ALLOWED PATHS` block. Any intersection between a brief's allowlist and the registry forces `sensitivity: security` (the auto-detect floor); frontmatter MAY escalate to `sensitivity: security` when paths don't trigger detection, but MAY NOT declare a value below the detected floor (escalate-not-escape). Fail-closed when the registry is missing, malformed, or schema-invalid.
@@ -438,6 +471,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--absorption-duplicates` | opt-in | Same opsdev source path across parent ADRs needs `paired_with:` frontmatter waiver (GHI #376) |
 | `--evaluation-justify-binding` | opt-in | Fail-closed gate: `gz-justify` artifact required when evaluation scores are low (ADR-0.0.26) |
 | `--intrinsic-attestation` | opt-in | Validate `intrinsic-complexity-attestation` ledger events against canonical schema (OBPI-0.0.29-07) |
+| `--advisor-proof-binding` | opt-in | Verdict <-> proof binding audit across fixtures, ledger-cited diagnoses, and JSON Schema (OBPI-0.0.29-08) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
 
 The `--allowlist-only` flag is a sub-modifier for `--unscoped-rules` —
