@@ -10,6 +10,8 @@ from __future__ import annotations
 import json
 import re
 import shlex
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
@@ -21,6 +23,7 @@ from gzkit.pipeline_runtime import (
     refresh_pipeline_markers,
     remove_pipeline_artifacts,
 )
+from gzkit.quality import QualityResult
 
 # Canonical ARB-wrapped baseline (GHI #317).
 # The pipeline's Stage 3 verification must produce receipts at parity with the
@@ -32,6 +35,64 @@ BASELINE_VERIFICATION = [
     "uv run gz arb typecheck",
     "uv run gz arb step --name unittest -- uv run -m unittest -q",
 ]
+
+
+# Canonical ARB gates that read disjoint surfaces and emit independent
+# receipts (GHI #421). Consecutive parallel-safe commands in the Stage 3
+# command list dispatch concurrently; non-matching commands run serially
+# in input order to preserve any operator-supplied ordering intent.
+_PARALLEL_SAFE_PREFIXES: tuple[str, ...] = (
+    "uv run gz arb ruff",
+    "uv run gz arb typecheck",
+    "uv run gz arb step --name unittest",
+    "uv run gz arb step --name mkdocs",
+    "uv run gz arb step --name behave",
+)
+
+
+def _is_parallel_safe(command: str) -> bool:
+    """Return True if ``command`` is a canonical ARB gate (GHI #421)."""
+    return any(command.startswith(prefix) for prefix in _PARALLEL_SAFE_PREFIXES)
+
+
+def _result_tuple(command: str, result: QualityResult) -> tuple[str, bool, str]:
+    """Translate a ``QualityResult`` into the verify-stage result triple."""
+    if result.success:
+        return command, True, "pass"
+    detail = (result.stderr or result.stdout or f"exit code {result.returncode}").strip()
+    return command, False, detail
+
+
+def _dispatch_verification_commands(
+    commands: list[str],
+    runner: Callable[[str], QualityResult],
+) -> list[tuple[str, bool, str]]:
+    """Dispatch verification commands, parallelizing canonical ARB gates.
+
+    Consecutive parallel-safe commands run concurrently via a thread pool;
+    the rest run serially in input order. Results return in input order
+    regardless of completion order. Fail-closed: every command runs even
+    when an earlier one fails (no early-exit).
+    """
+    results: list[tuple[str, bool, str]] = [("", False, "")] * len(commands)
+    i = 0
+    while i < len(commands):
+        if not _is_parallel_safe(commands[i]):
+            results[i] = _result_tuple(commands[i], runner(commands[i]))
+            i += 1
+            continue
+        j = i
+        while j < len(commands) and _is_parallel_safe(commands[j]):
+            j += 1
+        if j - i == 1:
+            results[i] = _result_tuple(commands[i], runner(commands[i]))
+        else:
+            with ThreadPoolExecutor(max_workers=j - i) as executor:
+                future_to_index = {executor.submit(runner, commands[k]): k for k in range(i, j)}
+                for future, idx in future_to_index.items():
+                    results[idx] = _result_tuple(commands[idx], future.result())
+        i = j
+    return results
 
 
 def _pipeline_behave_command(behave_tags: list[str] | None) -> str | None:
@@ -181,20 +242,20 @@ def _run_pipeline_verify_stage(
     commands = _pipeline_verification_commands(
         obpi_content, lane, obpi_id=obpi_id, behave_tags=behave_tags
     )
-    verification_results: list[tuple[str, bool, str]] = []
-    failures: list[tuple[str, str]] = []
     console.print("")
     console.print("[bold]Stage 3: Verification[/bold]")
-    for command in commands:
-        result = _cli_main().run_command(command, cwd=project_root)
-        if result.success:
+
+    def _runner(command: str) -> QualityResult:
+        return _cli_main().run_command(command, cwd=project_root)
+
+    verification_results = _dispatch_verification_commands(commands, _runner)
+    failures: list[tuple[str, str]] = []
+    for command, passed, detail in verification_results:
+        if passed:
             console.print(f"[green]PASS[/green] {command}")
-            verification_results.append((command, True, "pass"))
-            continue
-        detail = (result.stderr or result.stdout or f"exit code {result.returncode}").strip()
-        failures.append((command, detail))
-        verification_results.append((command, False, detail))
-        console.print(f"[red]FAIL[/red] {command}")
+        else:
+            failures.append((command, detail))
+            console.print(f"[red]FAIL[/red] {command}")
     if failures:
         refresh_pipeline_markers(
             plans_dir,
