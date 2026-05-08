@@ -623,6 +623,66 @@ class TestValidateLedger(unittest.TestCase):
             errors = validate_ledger(Path(f.name))
             self.assertTrue(any("must be an object" in error.message for error in errors))
 
+    def test_audit_receipt_emitted_accepts_runtime_emitted_events(self) -> None:
+        """GHI #414: schema accepts every ``receipt_event`` value the runtime emits.
+
+        The producers — ``_enforce_attestation_receipt_gate`` in
+        ``obpi_complete.py`` and ``_emit_adr_closeout_receipt`` in
+        ``adr_audit.py`` — emit ``audit_receipt_emitted`` events with
+        ``receipt_event`` values beyond the original ``completed`` /
+        ``validated`` pair: ``meta-receipt-bind`` (REQ-0.0.24-02 receipt
+        binding) and ``closed`` (ADR-0.0.25-02 closeout). The schema
+        ``audit_receipt_emitted.receipt_event.enum`` must accept all of
+        them or runtime-emitted ledger lines are reported as drift.
+        """
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+            for value in ("completed", "validated", "meta-receipt-bind", "closed"):
+                f.write(
+                    json.dumps(
+                        {
+                            "schema": "gzkit.ledger.v1",
+                            "event": "audit_receipt_emitted",
+                            "id": "ADR-0.3.0",
+                            "ts": "2026-02-14T00:00:00+00:00",
+                            "receipt_event": value,
+                            "attestor": "human:jeff",
+                        }
+                    )
+                    + "\n"
+                )
+            f.flush()
+            errors = validate_ledger(Path(f.name))
+        self.assertEqual(errors, [])
+
+    def test_audit_receipt_emitted_rejects_unknown_receipt_event(self) -> None:
+        """GHI #414: schema still rejects values the runtime never emits.
+
+        Extending the enum for runtime parity must not become a free-for-all.
+        ``not-a-real-event`` is not a producer-side value and must fail.
+        """
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+            f.write(
+                json.dumps(
+                    {
+                        "schema": "gzkit.ledger.v1",
+                        "event": "audit_receipt_emitted",
+                        "id": "ADR-0.3.0",
+                        "ts": "2026-02-14T00:00:00+00:00",
+                        "receipt_event": "not-a-real-event",
+                        "attestor": "human:jeff",
+                    }
+                )
+                + "\n"
+            )
+            f.flush()
+            errors = validate_ledger(Path(f.name))
+        self.assertTrue(
+            any(
+                "must be one of" in error.message and "not-a-real-event" in error.message
+                for error in errors
+            )
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
