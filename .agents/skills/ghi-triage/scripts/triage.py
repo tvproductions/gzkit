@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """ghi-triage: fetch open GHIs, score routing, render deterministic deliverable.
 
-Self-contained to the skill directory. Uses Rich (already a gzkit project
-dependency) for the optional terminal-only table view. Invoke via:
+Self-contained to the skill directory. Stdlib + `gh` CLI are the only
+hard runtime requirements; `rich` is imported lazily inside the
+`--format rich` path so consumers without it can still use the
+markdown / json / rank formats. Invoke via:
 
     uv run python .claude/skills/ghi-triage/scripts/triage.py [args]
 
@@ -13,6 +15,7 @@ Output formats:
   - json — structured records for the agent's judgment pass
   - rank — the deterministic rank-ordered deliverable (requires --rank-input)
   - rich — terminal-only Rich table; explicit opt-in for TTY operators
+                (this is the only path that requires `rich`)
 """
 
 from __future__ import annotations
@@ -26,11 +29,6 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-
-from rich import box
-from rich.console import Console
-from rich.table import Table
-from rich.text import Text
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -451,13 +449,19 @@ def _detect_width() -> int:
     return 100
 
 
-def _make_console(width: int | None) -> Console:
+def _make_console(width: int | None):
     """Force Rich to render a real table even under non-TTY capture.
 
     Rich downgrades box drawing, color, and column ratios when stdout isn't a
     TTY. We always want the full Rich table, so `force_terminal=True` keeps
     the glyphs and the explicit width defeats the 80-col fallback.
+
+    Rich is imported lazily here so consumers that ship the skill without
+    `rich` installed can still use the markdown / json / rank paths
+    (`--format rich` is the only consumer of this helper).
     """
+    from rich.console import Console  # noqa: PLC0415 — lazy: see docstring
+
     if width is None:
         width = _detect_width()
     return Console(force_terminal=True, color_system="truecolor", width=width)
@@ -469,6 +473,12 @@ def render(
     duplicates: dict[int, int],
     width: int | None = None,
 ) -> None:
+    # Lazy imports: rich is only needed for the --format rich path; keeping
+    # the skill script importable on consumers that don't ship rich.
+    from rich import box  # noqa: PLC0415
+    from rich.table import Table  # noqa: PLC0415
+    from rich.text import Text  # noqa: PLC0415
+
     console = _make_console(width)
     precedent_ok = precedent >= 3
 
@@ -561,6 +571,18 @@ def render_json(issues: list[Issue], precedent: int, duplicates: dict[int, int])
 RANK_INPUT_CACHE_DIR = Path(".gzkit/cache/triage")
 
 
+def _ensure_rank_input_cache_dir() -> Path:
+    """Create `.gzkit/cache/triage/` on demand and return its resolved path.
+
+    Auto-creation keeps the skill portable to fresh checkouts: the agent's
+    `Write .gzkit/cache/triage/<name>.json` step would otherwise fail with
+    a parent-directory error on first use. The directory is the supported
+    Write target, so the script owns its lifecycle.
+    """
+    RANK_INPUT_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    return RANK_INPUT_CACHE_DIR.resolve()
+
+
 def _read_rank_input(path: str | None) -> object:
     """Load rank input from a path under .gzkit/cache/triage/.
 
@@ -582,8 +604,8 @@ def _read_rank_input(path: str | None) -> object:
             "Write the JSON to .gzkit/cache/triage/<name>.json and pass the path "
             "(GHI #424)"
         )
+    cache_root = _ensure_rank_input_cache_dir()
     resolved = Path(path).resolve()
-    cache_root = RANK_INPUT_CACHE_DIR.resolve()
     try:
         resolved.relative_to(cache_root)
     except ValueError as exc:
