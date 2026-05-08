@@ -248,6 +248,45 @@ def _run_pipeline_ceremony_stage(
     )
 
 
+def _build_sync_stage_steps(
+    *,
+    obpi_id: str,
+    resolved_parent: str,
+    attestor: str,
+    evidence_json: str,
+) -> list[tuple[str, str]]:
+    """Return the ``(command, label)`` list executed at Stage 5.
+
+    GHI #422 fix #1: ``gz obpi complete`` runs first to mutate the brief and
+    write the completion receipt atomically (the previous runtime jumped
+    straight to ``git-sync``, leaving the brief stuck in ``pending`` and the
+    operator running ``complete`` manually after the fact).
+
+    GHI #422 fix #3: ``--attestor-present`` is passed automatically because
+    Stage 5 runs only when the active pipeline marker exists — the runtime IS
+    the active session and has already enforced the attestation gate at
+    Stage 4.
+
+    GHI #36 anchor cleanness is preserved: ``gz obpi complete`` captures the
+    parent ADR anchor (clean — the parent ADR isn't being mutated). The
+    standalone ``gz obpi emit-receipt`` step that previously ran after sync is
+    removed because ``complete`` emits the same ``obpi_receipt_emitted_event``
+    internally; keeping both produced duplicate ledger events.
+    """
+    complete_cmd = (
+        f"uv run gz obpi complete {obpi_id}"
+        f" --attestor-present"
+        f" --attestor {shlex.quote(attestor)}"
+        f" --evidence-json {shlex.quote(evidence_json)}"
+    )
+    return [
+        (complete_cmd, "Complete OBPI atomically"),
+        (pipeline_git_sync_command(), "Guarded repository sync"),
+        (f"uv run gz obpi reconcile {obpi_id}", "Reconcile OBPI"),
+        (f"uv run gz adr status {resolved_parent} --json", "Refresh parent ADR view"),
+    ]
+
+
 def _run_pipeline_sync_stage(
     *,
     project_root: Path,
@@ -261,21 +300,12 @@ def _run_pipeline_sync_stage(
     console.print("")
     console.print("[bold]Stage 5: Sync And Account[/bold]")
 
-    emit_cmd = (
-        f"uv run gz obpi emit-receipt {obpi_id}"
-        f" --event completed"
-        f" --attestor {shlex.quote(attestor)}"
-        f" --evidence-json {shlex.quote(evidence_json)}"
+    steps = _build_sync_stage_steps(
+        obpi_id=obpi_id,
+        resolved_parent=resolved_parent,
+        attestor=attestor,
+        evidence_json=evidence_json,
     )
-    # GHI #36: Sync first so the receipt captures a clean anchor (commit hash
-    # from synced implementation, dirty=false).  Accounting changes (ledger
-    # write, frontmatter reconcile) are committed in a lightweight follow-up.
-    steps: list[tuple[str, str]] = [
-        (pipeline_git_sync_command(), "Guarded repository sync"),
-        (emit_cmd, "Emit completion receipt"),
-        (f"uv run gz obpi reconcile {obpi_id}", "Reconcile OBPI"),
-        (f"uv run gz adr status {resolved_parent} --json", "Refresh parent ADR view"),
-    ]
 
     for command, label in steps:
         console.print(f"  {label}...")
