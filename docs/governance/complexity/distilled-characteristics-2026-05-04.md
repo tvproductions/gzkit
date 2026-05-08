@@ -21,7 +21,7 @@ Across the corpus (13 project(s) contributing to this aggregate), `radon_cc` lan
 
 ### Practitioner-eye observation
 
-<!-- OPERATOR: practitioner-eye observation for `radon_cc` goes here per OEE doctrine (operator-attested at Gate 5; agent never authors the practitioner-eye prose). -->
+When branch count rises, I usually suspect hidden policy logic, mode handling, or too many cases in one function. First move: extract decision policy or split paths by responsibility. But a high CC can be acceptable in explicit parsers/validators when branches are deliberately enumerated and well-tested.
 
 ## Metric: `radon_mi`
 
@@ -35,7 +35,7 @@ Across the corpus (13 project(s) contributing to this aggregate), `radon_mi` lan
 
 ### Practitioner-eye observation
 
-<!-- OPERATOR: practitioner-eye observation for `radon_mi` goes here per OEE doctrine (operator-attested at Gate 5; agent never authors the practitioner-eye prose). -->
+Because high MI is good, low MI is the smell. A low score usually means several smells are stacking: long code, branching, dense tokens. I treat it as a triage signal, not a diagnosis.
 
 ## Metric: `radon_hal_volume`
 
@@ -49,7 +49,7 @@ Across the corpus (13 project(s) contributing to this aggregate), `radon_hal_vol
 
 ### Practitioner-eye observation
 
-<!-- OPERATOR: practitioner-eye observation for `radon_hal_volume` goes here per OEE doctrine (operator-attested at Gate 5; agent never authors the practitioner-eye prose). -->
+High volume often means the function is carrying too much vocabulary: too many names, operations, or concepts. First move: identify the dominant concept and extract secondary concepts. But volume can over-penalize straightforward data-shaping code.
 
 ## Metric: `radon_hal_difficulty`
 
@@ -63,7 +63,7 @@ Across the corpus (13 project(s) contributing to this aggregate), `radon_hal_dif
 
 ### Practitioner-eye observation
 
-<!-- OPERATOR: practitioner-eye observation for `radon_hal_difficulty` goes here per OEE doctrine (operator-attested at Gate 5; agent never authors the practitioner-eye prose). -->
+Difficulty rises when the reader must juggle too many operators/operands or domain terms at once. I look for places where naming, helper extraction, or intermediate variables can reduce mental stack load.
 
 ## Metric: `radon_hal_effort`
 
@@ -77,7 +77,7 @@ Across the corpus (13 project(s) contributing to this aggregate), `radon_hal_eff
 
 ### Practitioner-eye observation
 
-<!-- OPERATOR: practitioner-eye observation for `radon_hal_effort` goes here per OEE doctrine (operator-attested at Gate 5; agent never authors the practitioner-eye prose). -->
+Effort is useful when volume and difficulty combine. I read it as 'how much attention this code will consume during review.' First move: reduce either size or conceptual density, not necessarily both.
 
 ## Metric: `radon_raw_nloc`
 
@@ -91,7 +91,7 @@ Across the corpus (13 project(s) contributing to this aggregate), `radon_raw_nlo
 
 ### Practitioner-eye observation
 
-<!-- OPERATOR: practitioner-eye observation for `radon_raw_nloc` goes here per OEE doctrine (operator-attested at Gate 5; agent never authors the practitioner-eye prose). -->
+High module NLOC usually signals file-scale drift: too many responsibilities accumulating because no one stopped to redraw boundaries. First move: look for separable services, policies, adapters, or testable units.
 
 ## Metric: `radon_raw_lloc`
 
@@ -105,7 +105,7 @@ Across the corpus (13 project(s) contributing to this aggregate), `radon_raw_llo
 
 ### Practitioner-eye observation
 
-<!-- OPERATOR: practitioner-eye observation for `radon_raw_lloc` goes here per OEE doctrine (operator-attested at Gate 5; agent never authors the practitioner-eye prose). -->
+High logical LOC is more concerning than physical length because it points to actual executable density. I use it to find modules that look short enough visually but are doing too much real work.
 
 ## Metric: `lizard_nloc`
 
@@ -119,7 +119,7 @@ Across the corpus (13 project(s) contributing to this aggregate), `lizard_nloc` 
 
 ### Practitioner-eye observation
 
-<!-- OPERATOR: practitioner-eye observation for `lizard_nloc` goes here per OEE doctrine (operator-attested at Gate 5; agent never authors the practitioner-eye prose). -->
+Function-scale length is often where agent-generated code gets sloppy: one function keeps accumulating preparation, policy, execution, and formatting. First move: split setup, decision, and output shaping.
 
 ## Metric: `lizard_param_count`
 
@@ -133,7 +133,7 @@ Across the corpus (13 project(s) contributing to this aggregate), `lizard_param_
 
 ### Practitioner-eye observation
 
-<!-- OPERATOR: practitioner-eye observation for `lizard_param_count` goes here per OEE doctrine (operator-attested at Gate 5; agent never authors the practitioner-eye prose). -->
+Too many parameters usually means the function wants a context object, value object, config object, or clearer boundary. But I'm careful not to hide bad coupling inside a vague bag-of-fields object.
 
 ## Metric: `lizard_nesting_depth`
 
@@ -147,7 +147,7 @@ Across the corpus (13 project(s) contributing to this aggregate), `lizard_nestin
 
 ### Practitioner-eye observation
 
-<!-- OPERATOR: practitioner-eye observation for `lizard_nesting_depth` goes here per OEE doctrine (operator-attested at Gate 5; agent never authors the practitioner-eye prose). -->
+This one is especially operator-judgment-heavy because the corpus parser failed. Deep nesting usually means arrow code: the happy path is buried under conditionals. First move: guard clauses, early returns, extracted predicates, or state-machine style.
 
 ## Metric: `lizard_ccn`
 
@@ -161,7 +161,7 @@ Across the corpus (13 project(s) contributing to this aggregate), `lizard_ccn` l
 
 ### Practitioner-eye observation
 
-<!-- OPERATOR: practitioner-eye observation for `lizard_ccn` goes here per OEE doctrine (operator-attested at Gate 5; agent never authors the practitioner-eye prose). -->
+I compare this with `radon_cc`. Agreement means real branch complexity; disagreement means I inspect parser behavior or language constructs. Either way, it is a review prompt, not an automatic condemnation.
 
 ## Metric: `cohesion_lcom4`
 
@@ -175,7 +175,7 @@ Across the corpus (13 project(s) contributing to this aggregate), `cohesion_lcom
 
 ### Practitioner-eye observation
 
-<!-- OPERATOR: practitioner-eye observation for `cohesion_lcom4` goes here per OEE doctrine (operator-attested at Gate 5; agent never authors the practitioner-eye prose). -->
+Also operator-judgment-heavy because the corpus parser failed. High LCOM4 usually means a class is acting as a junk drawer: methods don't share state or purpose. First move: split by concept, lifecycle, or collaborator role.
 
 ## Diff against prior distillation
 
