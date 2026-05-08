@@ -11,6 +11,8 @@ from pathlib import Path
 from gzkit.cli import main
 from gzkit.commands.obpi_precomplete import (
     _check_arb_receipts_present,
+    _check_behave_req_coverage_scoped,
+    _check_brief_headings_scoped,
     _check_brief_readiness,
     _check_lock_held,
     _check_plan_audit_receipt,
@@ -318,7 +320,7 @@ class TestPrecompleteCliEndToEnd(unittest.TestCase):
             payload = json.loads(result.output)
             self.assertEqual(payload["obpi_id"], "OBPI-0.1.0-01")
             self.assertIn("ready", payload)
-            self.assertEqual(len(payload["checks"]), 5)
+            self.assertEqual(len(payload["checks"]), 7)
             self.assertEqual(
                 {c["name"] for c in payload["checks"]},
                 {
@@ -327,8 +329,114 @@ class TestPrecompleteCliEndToEnd(unittest.TestCase):
                     "lock_held",
                     "arb_receipts",
                     "plan_audit_receipt",
+                    "brief_headings",
+                    "behave_req_coverage",
                 },
             )
+
+
+class TestPrecompleteBriefHeadingsScopedCheck(unittest.TestCase):
+    """GHI #422 fix #2: brief evidence headings checked at Stage 3."""
+
+    def test_passes_when_no_evidence_headings(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            path = _scaffold_authored_brief(root, "ADR-0.1.0", "OBPI-0.1.0-01")
+            result = _check_brief_headings_scoped(root, path)
+            self.assertTrue(result.ok, msg=result.message)
+
+    def test_fails_when_evidence_section_uses_h2(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            path = _scaffold_authored_brief(root, "ADR-0.1.0", "OBPI-0.1.0-01")
+            text = path.read_text(encoding="utf-8")
+            path.write_text(
+                text + "\n## Implementation Summary\nDrifted heading.\n",
+                encoding="utf-8",
+            )
+            result = _check_brief_headings_scoped(root, path)
+            self.assertFalse(result.ok, msg=result.message)
+            self.assertIn("h2", result.message.lower())
+
+
+class TestPrecompleteBehaveReqCoverageScopedCheck(unittest.TestCase):
+    """GHI #422 fix #2: heavy-lane REQ scenario tags checked at Stage 3."""
+
+    def _scaffold_heavy_brief(self, root: Path, obpi_id: str, req_id: str) -> Path:
+        """Heavy-lane authored brief with one REQ in Acceptance Criteria."""
+        config = GzkitConfig.load(root / ".gzkit.json")
+        adr_dir = root / config.paths.design_root / "adr" / "pre-release" / "ADR-0.1.0-test"
+        obpi_dir = adr_dir / "obpis"
+        obpi_dir.mkdir(parents=True, exist_ok=True)
+        path = obpi_dir / f"{obpi_id}-test.md"
+        path.write_text(
+            f"---\nid: {obpi_id}\nparent: ADR-0.1.0\nstatus: pending\nlane: Heavy\n---\n\n"
+            f"# {obpi_id}\n\n"
+            f"## Acceptance Criteria\n- [ ] {req_id}: Real criterion.\n",
+            encoding="utf-8",
+        )
+        return path
+
+    def test_passes_for_lite_lane_brief(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            path = _scaffold_authored_brief(root, "ADR-0.1.0", "OBPI-0.1.0-01")
+            result = _check_behave_req_coverage_scoped(root, path, "OBPI-0.1.0-01")
+            self.assertTrue(result.ok, msg=result.message)
+            self.assertIn("lite", result.message.lower())
+
+    def test_fails_for_heavy_brief_with_untagged_req(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            path = self._scaffold_heavy_brief(root, "OBPI-0.1.0-01", "REQ-0.1.0-01-01")
+            (root / "features").mkdir(exist_ok=True)
+            result = _check_behave_req_coverage_scoped(root, path, "OBPI-0.1.0-01")
+            self.assertFalse(result.ok, msg=result.message)
+            self.assertIn("REQ-0.1.0-01-01", result.message)
+            self.assertIn("scenario tags", (result.remediation or "").lower())
+
+    def test_passes_for_heavy_brief_with_tagged_req(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            path = self._scaffold_heavy_brief(root, "OBPI-0.1.0-01", "REQ-0.1.0-01-01")
+            features_dir = root / "features"
+            features_dir.mkdir(exist_ok=True)
+            (features_dir / "test.feature").write_text(
+                "Feature: x\n\n  @REQ-0.1.0-01-01\n  Scenario: y\n    Given z\n",
+                encoding="utf-8",
+            )
+            result = _check_behave_req_coverage_scoped(root, path, "OBPI-0.1.0-01")
+            self.assertTrue(result.ok, msg=result.message)
+
+    def test_passes_when_obpi_is_waived(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            path = self._scaffold_heavy_brief(root, "OBPI-0.1.0-01", "REQ-0.1.0-01-01")
+            (root / "data").mkdir(exist_ok=True)
+            (root / "data" / "behave_coverage_waivers.json").write_text(
+                json.dumps(
+                    {
+                        "default_rationale": {"test-waiver": "test rationale"},
+                        "waivers": {"OBPI-0.1.0-01": "test-waiver"},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            result = _check_behave_req_coverage_scoped(root, path, "OBPI-0.1.0-01")
+            self.assertTrue(result.ok, msg=result.message)
+            self.assertIn("waived", result.message.lower())
 
 
 if __name__ == "__main__":  # pragma: no cover
