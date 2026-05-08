@@ -33,7 +33,9 @@ def _tail(text: str, max_chars: int) -> tuple[str, bool]:
 def _write_receipt(receipt: dict[str, object]) -> Path:
     out_dir = receipts_root()
     path = out_dir / f"{receipt['run_id']}.json"
-    path.write_text(_canonical(receipt), encoding="utf-8")
+    # Trailing newline keeps end-of-file-fixer from rewriting receipts on
+    # every pre-commit run (would block git-sync and burn operator tokens).
+    path.write_text(_canonical(receipt) + "\n", encoding="utf-8")
     return path
 
 

@@ -137,7 +137,9 @@ def _parse_findings(raw: str, stderr: str) -> list[dict[str, object]]:
 def _write_receipt(receipt: dict[str, object]) -> Path:
     out_dir = receipts_root()
     path = out_dir / f"{receipt['run_id']}.json"
-    text = _canonical(receipt)
+    # Trailing newline keeps end-of-file-fixer from rewriting receipts on
+    # every pre-commit run (would block git-sync and burn operator tokens).
+    text = _canonical(receipt) + "\n"
     path.write_text(text, encoding="utf-8")
     return path
 

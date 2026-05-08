@@ -78,6 +78,22 @@ class TestRunRuffViaArb(unittest.TestCase):
         self.assertEqual(payload["findings"], [])
         self.assertEqual(payload["findings_total"], 0)
 
+    def test_ruff_receipt_file_ends_with_newline(self) -> None:
+        """Receipts must end with `\\n` so the ``end-of-file-fixer``
+        pre-commit hook does not rewrite them on every commit.
+        """
+        from gzkit.arb.ruff_reporter import run_ruff_via_arb
+
+        fake = _fake_run_factory(ruff_returncode=0, ruff_stdout="[]", ruff_stderr="")
+        with patch("gzkit.arb.ruff_reporter._run_command", side_effect=fake):
+            _, path = run_ruff_via_arb(paths=["src"], quiet=True)
+        self.assertIsNotNone(path)
+        text = path.read_text(encoding="utf-8")
+        self.assertTrue(
+            text.endswith("\n"),
+            msg=f"Receipt must end with newline; last 20 chars: {text[-20:]!r}",
+        )
+
     def test_failing_run_captures_parsed_findings(self) -> None:
         from gzkit.arb.ruff_reporter import run_ruff_via_arb
 
