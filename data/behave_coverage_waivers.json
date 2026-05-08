@@ -1737,6 +1737,16 @@
         "REQ-0.0.29-07-02",
         "REQ-0.0.29-07-06"
       ]
+    },
+    "OBPI-0.0.29-08-verdict-proof-binding": {
+      "rationale": "Brief REQ-0.0.29-08-08 explicitly limits BDD scenarios to REQ-02 and REQ-03 (the two canonical failure paths). The remaining REQs are structurally verified at the unit tier in tests/governance/test_advisor_proof_binding_validator.py (16 tests, 100% REQ coverage via gz covers OBPI-0.0.29-08 -> 6/6): REQ-01 (vacuous and well-formed fixture pass) is a happy-path counterpart to REQ-02 with no new operator-visible behavior; REQ-04 (JSON Schema minItems audit) tests the validator's structural assertion against a synthetic schema fixture, not a CLI-observable scenario; REQ-05 (error message quality - file:line for fixtures, event id for ledger) is asserted via TestErrorMessageQuality.{test_fixture_error_cites_path_and_line,test_ledger_error_cites_event_id} unit tests; REQ-06 (speculative-marker escape) tests an internal short-circuit (_NEGATIVE_CASE_KEY) that has no behaviorally distinct CLI output - the validator simply skips the file and returns []. BDD scenarios at features/advisor_proof_binding.feature carry @REQ-0.0.29-08-02 + @REQ-0.0.29-08-03 tags. Same shape as adr-0.0.29-06-partial-reqs-unit-only.",
+      "status_at_landing": "Completed",
+      "waived_reqs": [
+        "REQ-0.0.29-08-01",
+        "REQ-0.0.29-08-04",
+        "REQ-0.0.29-08-05",
+        "REQ-0.0.29-08-06"
+      ]
     }
   }
 }
