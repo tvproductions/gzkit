@@ -1,11 +1,13 @@
 """Tests for gzkit quality module."""
 
+import re
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from gzkit import quality
 from gzkit.commands.quality import _test_name_from_record
 from gzkit.quality import QualityResult, run_adr_path_contract_lint, run_command, run_skill_audit
 from gzkit.triangle import EdgeType, LinkageRecord, VertexRef, VertexType
@@ -97,24 +99,85 @@ class TestRunCommand(unittest.TestCase):
 
     def test_successful_command(self) -> None:
         """Successful command returns success=True."""
-        result = run_command("echo hello")
+        result = run_command([sys.executable, "-c", "print('hello')"])
         self.assertTrue(result.success)
         self.assertIn("hello", result.stdout)
         self.assertEqual(result.returncode, 0)
 
     def test_failed_command(self) -> None:
         """Failed command returns success=False."""
-        result = run_command("exit 1")
+        result = run_command([sys.executable, "-c", "import sys; sys.exit(1)"])
         self.assertFalse(result.success)
         self.assertEqual(result.returncode, 1)
 
     def test_command_with_cwd(self) -> None:
         """Command runs in specified directory."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            command = f'"{sys.executable}" -c "import os; print(os.getcwd())"'
-            result = run_command(command, cwd=Path(tmpdir))
+            result = run_command(
+                [sys.executable, "-c", "import os; print(os.getcwd())"],
+                cwd=Path(tmpdir),
+            )
             self.assertTrue(result.success)
             self.assertEqual(Path(result.stdout.strip()).resolve(), Path(tmpdir).resolve())
+
+    def test_string_command_is_shlex_split(self) -> None:
+        """String commands are tokenized via shlex, not handed to a shell (GHI #415)."""
+        import shlex as _shlex
+
+        result = run_command(f"{_shlex.quote(sys.executable)} --version")
+        self.assertTrue(result.success)
+        # Python --version emits "Python X.Y.Z" to stdout (3.4+) or stderr (<3.4).
+        combined = result.stdout + result.stderr
+        self.assertIn("Python", combined)
+
+    def test_no_shell_metacharacter_interpretation(self) -> None:
+        """Shell metacharacters in argv tokens are passed literal (GHI #415).
+
+        Under ``shell=True``, ``;`` and ``$VAR`` would be parsed by the shell
+        and could chain commands or expand environment variables outside the
+        program's control. The governance gate runner must not expose that
+        attack surface — argv tokens are forwarded literally to the program.
+        """
+        sentinel = "$HOME;injected_marker"
+        result = run_command(
+            [
+                sys.executable,
+                "-c",
+                "import sys; sys.stdout.write(sys.argv[1])",
+                sentinel,
+            ]
+        )
+        self.assertTrue(result.success)
+        # The full sentinel echoes verbatim — no env-var expansion, no chain.
+        self.assertEqual(result.stdout, sentinel)
+
+
+class TestQualityHasNoShellTrue(unittest.TestCase):
+    """Static guard: src/gzkit/quality.py never opts into shell=True (GHI #415).
+
+    Mirrors the defense-in-depth pattern from
+    ``tests/complexity/test_measurement.py::TestSubprocessHasNoShellTrue`` —
+    the runtime test asserts the semantic, this test asserts the surface.
+    Closes the class of failure named in GHI #415 across the whole module,
+    not just the single ``run_command`` site that surfaced it.
+    """
+
+    def test_no_shell_true_in_quality_source(self) -> None:
+        """No source line in quality.py opts into shell=True."""
+        source = Path(quality.__file__).read_text(encoding="utf-8")
+        self.assertNotRegex(source, r"shell\s*=\s*True")
+
+    def test_subprocess_run_uses_non_shell_form(self) -> None:
+        """Every ``subprocess.run`` call in quality.py is shell=False (default)."""
+        source = Path(quality.__file__).read_text(encoding="utf-8")
+        for match in re.finditer(r"subprocess\.run\s*\(", source):
+            tail = source[match.end() : match.end() + 400]
+            # Default is shell=False; explicit shell=True would surface above.
+            self.assertNotRegex(
+                tail,
+                r"shell\s*=\s*True",
+                msg=f"subprocess.run with shell=True near: {tail[:120]!r}",
+            )
 
 
 class TestSkillAuditQualityIntegration(unittest.TestCase):

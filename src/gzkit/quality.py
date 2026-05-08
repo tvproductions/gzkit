@@ -5,7 +5,9 @@ Provides unified interface to linting, formatting, testing, and type checking.
 
 import ast
 import re
+import shlex
 import subprocess
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -35,32 +37,47 @@ class QualityResult(BaseModel):
 
 
 def run_command(
-    command: str,
+    command: str | Sequence[str],
     cwd: Path | None = None,
 ) -> QualityResult:
-    """Run a shell command and capture output.
+    """Run a command without shell interpretation and capture output.
+
+    Governance gate execution must not depend on shell parsing of configurable
+    command strings (GHI #415). String input is tokenized once via
+    ``shlex.split`` and dispatched as argv with ``shell=False``; sequence
+    input is forwarded as argv directly. Pipes, redirects, env-var
+    expansion, and command chaining are not supported by design — callers
+    must compose explicit argv if those semantics are needed.
 
     Args:
-        command: Command to run.
+        command: Command to run, either as a string (tokenized via shlex)
+            or as a pre-built argv sequence.
         cwd: Working directory.
 
     Returns:
         QualityResult with command output.
 
     """
+    if isinstance(command, str):
+        argv = shlex.split(command)
+        display = command
+    else:
+        argv = list(command)
+        display = shlex.join(argv)
+
     try:
         result = subprocess.run(
-            command,
-            shell=True,
+            argv,
             capture_output=True,
             text=True,
             encoding="utf-8",
             errors="replace",
             cwd=cwd,
+            check=False,
         )
         return QualityResult(
             success=result.returncode == 0,
-            command=command,
+            command=display,
             stdout=result.stdout,
             stderr=result.stderr,
             returncode=result.returncode,
@@ -68,7 +85,7 @@ def run_command(
     except (OSError, subprocess.SubprocessError) as e:
         return QualityResult(
             success=False,
-            command=command,
+            command=display,
             stdout="",
             stderr=str(e),
             returncode=-1,
