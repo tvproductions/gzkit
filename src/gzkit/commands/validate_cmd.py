@@ -374,6 +374,7 @@ def _collect_errors(
     check_chores_layout: bool = False,
     check_unscoped_rules: bool = False,
     check_sensitivity: bool = False,
+    check_doc_surface_parity: bool = False,
     check_absorption_duplicates: bool = False,
     check_evaluation_justify_binding: str | None = None,
     check_intrinsic_attestation: bool = False,
@@ -424,6 +425,7 @@ def _collect_errors(
         "chores_layout": check_chores_layout,
         "unscoped_rules": check_unscoped_rules,
         "sensitivity": check_sensitivity,
+        "doc_surface_parity": check_doc_surface_parity,
         "absorption_duplicates": check_absorption_duplicates,
         "evaluation_justify_binding": check_evaluation_justify_binding is not None,
         "intrinsic_attestation": check_intrinsic_attestation,
@@ -509,6 +511,7 @@ def _explicit_scope_runners(
         "chores_layout": lambda: trust_audits.audit_chores_layout(project_root),
         "unscoped_rules": lambda: _unscoped_rules_runner(project_root),
         "sensitivity": lambda: _sensitivity_umbrella_runner(project_root),
+        "doc_surface_parity": lambda: trust_audits.audit_doc_surface_parity(project_root),
         "absorption_duplicates": lambda: trust_audits.audit_absorption_duplicates(project_root),
         "evaluation_justify_binding": lambda: _evaluation_justify_binding_runner(
             project_root, None
@@ -1143,6 +1146,7 @@ def validate(
     unscoped_rules_allowlist_only: bool = False,
     check_sensitivity: bool = False,
     sensitivity_explain: str | None = None,
+    check_doc_surface_parity: bool = False,
     check_absorption_duplicates: bool = False,
     check_evaluation_justify_binding: str | None = None,
     check_intrinsic_attestation: bool = False,
@@ -1216,6 +1220,7 @@ def validate(
             check_taxonomy,
             check_brief_headings,
             check_chores_layout,
+            check_doc_surface_parity,
             check_absorption_duplicates,
         ]
     )
@@ -1284,6 +1289,7 @@ def validate(
         check_chores_layout=check_chores_layout,
         check_unscoped_rules=check_unscoped_rules,
         check_sensitivity=check_sensitivity,
+        check_doc_surface_parity=check_doc_surface_parity,
         check_absorption_duplicates=check_absorption_duplicates,
         check_evaluation_justify_binding=check_evaluation_justify_binding,
         check_intrinsic_attestation=check_intrinsic_attestation,
@@ -1349,6 +1355,7 @@ def validate(
         "chores_layout": check_chores_layout,
         "unscoped_rules": check_unscoped_rules,
         "sensitivity": check_sensitivity,
+        "doc_surface_parity": check_doc_surface_parity,
         "absorption_duplicates": check_absorption_duplicates,
         "evaluation_justify_binding": check_evaluation_justify_binding is not None,
         "intrinsic_attestation": check_intrinsic_attestation,

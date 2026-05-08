@@ -253,6 +253,13 @@ No `--fix` variant: recovery is a judgment call (narrow vs. fold vs. allow-list)
 
 Included in `gz validate --audits` and `gz check` aggregate passes — future unscoped rules cannot silently accrete.
 
+### `--doc-surface-parity`
+
+Fail-closed if any `.md` file exists under `docs/user/commands/`.
+That directory was decommissioned in favour of the canonical
+`docs/user/manpages/` surface (GHI #418). Included in `--audits`
+and `gz check`.
+
 ### `--absorption-duplicates`
 
 Detects parallel OBPI evaluations of the same opsdev/airlineops source
