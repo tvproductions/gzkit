@@ -481,15 +481,24 @@ class TestObpiPipelineCommand(unittest.TestCase):
             marker_path, legacy_path = self._pipeline_paths(Path.cwd())
             self.assertFalse(marker_path.exists())
             self.assertFalse(legacy_path.exists())
-            # Verify sync commands were executed in correct order (GHI #36):
-            # git-sync BEFORE emit-receipt, accounting commit AFTER reconcile
+            # Verify sync commands were executed in correct order (GHI #422):
+            # `gz obpi complete --attestor-present` is the first step (was
+            # missing entirely; pipeline jumped to sync). git-sync follows so
+            # the brief mutation is committed. Reconcile + status follow sync.
+            # `gz obpi emit-receipt` is gone — complete emits the receipt
+            # internally; running both produced duplicate ledger events.
             executed = [call.args[0] for call in run_command_mock.call_args_list]
-            self.assertTrue(any("emit-receipt" in cmd for cmd in executed))
+            self.assertTrue(any("obpi complete" in cmd for cmd in executed))
+            self.assertTrue(any("--attestor-present" in cmd for cmd in executed))
+            self.assertFalse(
+                any("obpi emit-receipt" in cmd for cmd in executed),
+                "emit-receipt removed under GHI #422; complete emits receipt internally",
+            )
             self.assertTrue(any("reconcile" in cmd for cmd in executed))
             self.assertTrue(any("git-sync" in cmd for cmd in executed))
+            complete_idx = next(i for i, c in enumerate(executed) if "obpi complete" in c)
             sync_idx = next(i for i, c in enumerate(executed) if "git-sync" in c)
-            emit_idx = next(i for i, c in enumerate(executed) if "emit-receipt" in c)
-            self.assertLess(sync_idx, emit_idx, "git-sync must run before emit-receipt")
+            self.assertLess(complete_idx, sync_idx, "complete must run before git-sync")
             # Accounting commit should appear after the core steps
             self.assertTrue(any("git add" in cmd for cmd in executed))
             self.assertTrue(any("git commit" in cmd for cmd in executed))

@@ -1,6 +1,7 @@
 import unittest
 
 from gzkit.commands.obpi_cmd import _pipeline_verification_commands
+from gzkit.commands.obpi_stages import _build_sync_stage_steps
 
 
 class TestPipelineBaselineVerification(unittest.TestCase):
@@ -92,4 +93,64 @@ class TestPipelineBaselineVerification(unittest.TestCase):
             self.assertFalse(
                 cmd.startswith("uv run gz obpi precomplete"),
                 f"precomplete should not appear without obpi_id: {cmd}",
+            )
+
+
+class TestSyncStageStepBuilder(unittest.TestCase):
+    """GHI #422 fix #1 + fix #3: Stage 5 step ordering with --attestor-present."""
+
+    def _build(self) -> list[tuple[str, str]]:
+        return _build_sync_stage_steps(
+            obpi_id="OBPI-0.0.29-08",
+            resolved_parent="ADR-0.0.29",
+            attestor="g0",
+            evidence_json='{"value_narrative":"x","key_proof":"y"}',
+        )
+
+    def test_complete_is_first_step(self) -> None:
+        """GHI #422 fix #1: brief mutation via `gz obpi complete` is the first
+        Stage 5 step (was missing entirely; runtime jumped straight to sync).
+        """
+        steps = self._build()
+        first_cmd, _ = steps[0]
+        self.assertTrue(
+            first_cmd.startswith("uv run gz obpi complete OBPI-0.0.29-08"),
+            f"First step must be `gz obpi complete`, got: {first_cmd}",
+        )
+
+    def test_complete_passes_attestor_present(self) -> None:
+        """GHI #422 fix #3: --attestor-present auto-passed when active marker
+        exists. Stage 5 only runs when marker exists (by construction), so the
+        flag is always safe.
+        """
+        steps = self._build()
+        complete_cmd = steps[0][0]
+        self.assertIn("--attestor-present", complete_cmd)
+
+    def test_sync_follows_complete(self) -> None:
+        """Brief mutation must commit BEFORE reconcile, so sync follows complete."""
+        steps = self._build()
+        sync_idx = next(i for i, (c, _) in enumerate(steps) if "git-sync" in c)
+        self.assertGreater(sync_idx, 0, "git-sync must come after complete (first step)")
+
+    def test_reconcile_and_status_follow_sync(self) -> None:
+        """Reconcile reads the synced brief; ADR status refreshes the derived view."""
+        steps = self._build()
+        sync_idx = next(i for i, (c, _) in enumerate(steps) if "git-sync" in c)
+        reconcile_idx = next(i for i, (c, _) in enumerate(steps) if "obpi reconcile" in c)
+        status_idx = next(i for i, (c, _) in enumerate(steps) if "adr status" in c)
+        self.assertGreater(reconcile_idx, sync_idx)
+        self.assertGreater(status_idx, sync_idx)
+
+    def test_no_emit_receipt_step(self) -> None:
+        """`gz obpi complete` already emits the completed receipt internally;
+        the previous standalone `gz obpi emit-receipt` step would have caused
+        a duplicate ledger event.
+        """
+        steps = self._build()
+        for cmd, _ in steps:
+            self.assertNotIn(
+                "obpi emit-receipt",
+                cmd,
+                f"emit-receipt removed; complete now emits internally. Got: {cmd}",
             )
