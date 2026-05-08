@@ -196,9 +196,9 @@ class TestRankInputCachePathRequirement(unittest.TestCase):
         self._prev_cwd = Path.cwd()
         os.chdir(self._tmpdir.name)
         self.addCleanup(lambda: os.chdir(self._prev_cwd))
-        cache_dir = Path(self._tmpdir.name) / ".gzkit" / "cache" / "triage"
-        cache_dir.mkdir(parents=True)
-        self.cache_dir = cache_dir
+        # Cache dir intentionally NOT pre-created here — the script auto-
+        # creates it. Tests that need a file in it create the dir as needed.
+        self.cache_dir = Path(self._tmpdir.name) / ".gzkit" / "cache" / "triage"
         self.payload = '{"rankings":[{"number":324,"severity":"blocking"}]}'
 
     def test_none_path_rejected(self) -> None:
@@ -220,16 +220,28 @@ class TestRankInputCachePathRequirement(unittest.TestCase):
         self.assertIn(".gzkit/cache/triage", str(ctx.exception))
 
     def test_path_inside_cache_dir_accepted(self) -> None:
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
         inside = self.cache_dir / "rank.json"
         inside.write_text(self.payload, encoding="utf-8")
         result = _TRIAGE._read_rank_input(str(inside))
         self.assertEqual(result, {"rankings": [{"number": 324, "severity": "blocking"}]})
 
     def test_empty_cache_file_rejected(self) -> None:
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
         empty = self.cache_dir / "empty.json"
         empty.write_text("", encoding="utf-8")
         with self.assertRaises(_TRIAGE.RankInputError):
             _TRIAGE._read_rank_input(str(empty))
+
+    def test_cache_dir_auto_created_when_missing(self) -> None:
+        """Portability: a fresh checkout should not need a manual mkdir."""
+        self.assertFalse(self.cache_dir.exists())
+        # _ensure_rank_input_cache_dir is the documented portability hook;
+        # exercise it directly so the contract is pinned even if the
+        # _read_rank_input call sites change.
+        resolved = _TRIAGE._ensure_rank_input_cache_dir()
+        self.assertTrue(self.cache_dir.exists())
+        self.assertEqual(resolved, self.cache_dir.resolve())
 
 
 if __name__ == "__main__":
