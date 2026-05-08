@@ -24,6 +24,9 @@ from __future__ import annotations
 from gzkit.governance.trust_audits.absorption_duplicates import (
     audit_absorption_duplicates,
 )
+from gzkit.governance.trust_audits.advisor_proof_binding import (
+    validate_advisor_proof_binding,
+)
 from gzkit.governance.trust_audits.attestation_receipts import (
     AttestationReceiptEntry,
     AttestationReceiptValidationResult,
@@ -114,6 +117,7 @@ __all__ = [
     "audit_version_release",
     "explain_sensitivity_for_paths",
     "BOOTSTRAP_MODE_NOTICE_PREFIX",
+    "validate_advisor_proof_binding",
     "validate_attestation_receipts",
     "validate_complexity_doctrine_links",
     "validate_complexity_thresholds",

@@ -535,6 +535,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Validate intrinsic-complexity-attestation ledger event shapes (OBPI-0.0.29-07).",
     )
     p_validate.add_argument(
+        "--advisor-proof-binding",
+        dest="check_advisor_proof_binding",
+        action="store_true",
+        help="Audit advisor verdict <-> proof binding (OBPI-0.0.29-08).",
+    )
+    p_validate.add_argument(
         "--attestation-receipts",
         dest="attestation_receipts",
         default=None,
@@ -601,6 +607,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_absorption_duplicates=a.check_absorption_duplicates,
             check_evaluation_justify_binding=(a.check_evaluation_justify_binding),
             check_intrinsic_attestation=a.check_intrinsic_attestation,
+            check_advisor_proof_binding=a.check_advisor_proof_binding,
             attestation_receipts=a.attestation_receipts,
             attestation_lane=a.attestation_lane,
             attestation_kind=a.attestation_kind,

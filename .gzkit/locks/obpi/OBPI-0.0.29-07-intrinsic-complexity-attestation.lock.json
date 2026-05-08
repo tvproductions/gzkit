@@ -1,9 +1,0 @@
-{
-  "obpi_id": "OBPI-0.0.29-07-intrinsic-complexity-attestation",
-  "agent": "unknown-47195",
-  "pid": 47195,
-  "session_id": "47195",
-  "claimed_at": "2026-05-08T02:00:23.794866+00:00",
-  "branch": "main",
-  "ttl_minutes": 120
-}

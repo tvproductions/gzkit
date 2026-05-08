@@ -377,6 +377,7 @@ def _collect_errors(
     check_absorption_duplicates: bool = False,
     check_evaluation_justify_binding: str | None = None,
     check_intrinsic_attestation: bool = False,
+    check_advisor_proof_binding: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -426,6 +427,7 @@ def _collect_errors(
         "absorption_duplicates": check_absorption_duplicates,
         "evaluation_justify_binding": check_evaluation_justify_binding is not None,
         "intrinsic_attestation": check_intrinsic_attestation,
+        "advisor_proof_binding": check_advisor_proof_binding,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
@@ -512,6 +514,7 @@ def _explicit_scope_runners(
             project_root, None
         ),
         "intrinsic_attestation": lambda: trust_audits.validate_intrinsic_attestation(project_root),
+        "advisor_proof_binding": lambda: trust_audits.validate_advisor_proof_binding(project_root),
     }
 
 
@@ -958,6 +961,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "absorption_duplicates",
         "evaluation_justify_binding",
         "intrinsic_attestation",
+        "advisor_proof_binding",
     ]
 
     run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
@@ -1142,6 +1146,7 @@ def validate(
     check_absorption_duplicates: bool = False,
     check_evaluation_justify_binding: str | None = None,
     check_intrinsic_attestation: bool = False,
+    check_advisor_proof_binding: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1282,6 +1287,7 @@ def validate(
         check_absorption_duplicates=check_absorption_duplicates,
         check_evaluation_justify_binding=check_evaluation_justify_binding,
         check_intrinsic_attestation=check_intrinsic_attestation,
+        check_advisor_proof_binding=check_advisor_proof_binding,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -1346,6 +1352,7 @@ def validate(
         "absorption_duplicates": check_absorption_duplicates,
         "evaluation_justify_binding": check_evaluation_justify_binding is not None,
         "intrinsic_attestation": check_intrinsic_attestation,
+        "advisor_proof_binding": check_advisor_proof_binding,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]
