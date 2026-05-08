@@ -80,7 +80,7 @@ def step_heavy_adr_with_obpi(context) -> None:  # type: ignore[no-untyped-def]
                 "## ALLOWED PATHS",
                 "",
                 "- `src/gzkit/demo.py`",
-                "- `docs/user/commands/demo.md`",
+                "- `docs/user/manpages/demo.md`",
                 "",
                 "## REQUIREMENTS (FAIL-CLOSED)",
                 "",

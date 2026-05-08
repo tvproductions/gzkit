@@ -41,7 +41,7 @@ def _scaffold_authored_brief(project_root: Path, adr_id: str, obpi_id: str) -> P
         "## Objective\nA fully authored brief for precomplete tests.\n\n"
         "## Lane\n**Lite** - Internal contract.\n\n"
         "## Allowed Paths\n- `src/gzkit/ports/` - Port definitions\n\n"
-        "## Denied Paths\n- `docs/user/commands/` - No operator-surface changes\n\n"
+        "## Denied Paths\n- `docs/user/manpages/` - No operator-surface changes\n\n"
         "## Requirements (FAIL-CLOSED)\n"
         "1. REQUIREMENT: Real requirement.\n\n"
         "## Discovery Checklist\n"

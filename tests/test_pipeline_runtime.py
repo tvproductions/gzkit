@@ -672,7 +672,7 @@ class TestValidateBriefForPipeline(unittest.TestCase):
                 "## Objective\nDefine typed port interfaces.\n\n"
                 "## Lane\n**Lite** - Internal contract only.\n\n"
                 "## Allowed Paths\n- `src/gzkit/ports/` - Port definitions\n\n"
-                "## Denied Paths\n- `docs/user/commands/` - No operator docs drift\n\n"
+                "## Denied Paths\n- `docs/user/manpages/` - No operator docs drift\n\n"
                 "## Requirements (FAIL-CLOSED)\n"
                 "1. REQUIREMENT: Ports use typing.Protocol\n\n"
                 "## Discovery Checklist\n"

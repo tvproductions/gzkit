@@ -51,11 +51,11 @@
       "properties": {
         "manpage": {
           "type": "boolean",
-          "description": "Requires a docs/user/commands/{slug}.md file"
+          "description": "Requires a docs/user/manpages/{slug}.md file"
         },
         "index_entry": {
           "type": "boolean",
-          "description": "Requires an entry in docs/user/commands/index.md"
+          "description": "Requires an entry in docs/user/manpages/index.md"
         },
         "operator_runbook": {
           "type": "boolean",

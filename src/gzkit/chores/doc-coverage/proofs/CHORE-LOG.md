@@ -129,15 +129,15 @@ Documentation Coverage Gap Report
     MISSING: manpage -- Missing validate.md
 
   Orphaned documentation:
-    - [manpage] docs/user/commands/adr-audit-check.md: Manpage 'adr-audit-check.md' has no matching command 'adr audit check'
-    - [manpage] docs/user/commands/adr-covers-check.md: Manpage 'adr-covers-check.md' has no matching command 'adr covers check'
-    - [manpage] docs/user/commands/adr-emit-receipt.md: Manpage 'adr-emit-receipt.md' has no matching command 'adr emit receipt'
-    - [manpage] docs/user/commands/agent-sync-control-surfaces.md: Manpage 'agent-sync-control-surfaces.md' has no matching command 'agent sync control surfaces'
-    - [manpage] docs/user/commands/check-config-paths.md: Manpage 'check-config-paths.md' has no matching command 'check config paths'
-    - [manpage] docs/user/commands/git-sync.md: Manpage 'git-sync.md' has no matching command 'git sync'
-    - [manpage] docs/user/commands/migrate-semver.md: Manpage 'migrate-semver.md' has no matching command 'migrate semver'
-    - [manpage] docs/user/commands/obpi-emit-receipt.md: Manpage 'obpi-emit-receipt.md' has no matching command 'obpi emit receipt'
-    - [manpage] docs/user/commands/register-adrs.md: Manpage 'register-adrs.md' has no matching command 'register adrs'
+    - [manpage] docs/user/manpages/adr-audit-check.md: Manpage 'adr-audit-check.md' has no matching command 'adr audit check'
+    - [manpage] docs/user/manpages/adr-covers-check.md: Manpage 'adr-covers-check.md' has no matching command 'adr covers check'
+    - [manpage] docs/user/manpages/adr-emit-receipt.md: Manpage 'adr-emit-receipt.md' has no matching command 'adr emit receipt'
+    - [manpage] docs/user/manpages/agent-sync-control-surfaces.md: Manpage 'agent-sync-control-surfaces.md' has no matching command 'agent sync control surfaces'
+    - [manpage] docs/user/manpages/check-config-paths.md: Manpage 'check-config-paths.md' has no matching command 'check config paths'
+    - [manpage] docs/user/manpages/git-sync.md: Manpage 'git-sync.md' has no matching command 'git sync'
+    - [manpage] docs/user/manpages/migrate-semver.md: Manpage 'migrate-semver.md' has no matching command 'migrate semver'
+    - [manpage] docs/user/manpages/obpi-emit-receipt.md: Manpage 'obpi-emit-receipt.md' has no matching command 'obpi emit receipt'
+    - [manpage] docs/user/manpages/register-adrs.md: Manpage 'register-adrs.md' has no matching command 'register adrs'
 
 FAILED: 86 issues found across 36 commands.
 [uv run -m gzkit.doc_coverage.runner] stderr:

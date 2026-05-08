@@ -1,4 +1,4 @@
-# gz-issue
+# gz issue
 
 Cross-repo defect/enhancement filing wrapper for gzkit-owned surfaces.
 

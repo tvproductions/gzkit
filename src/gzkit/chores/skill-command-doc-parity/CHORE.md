@@ -8,13 +8,13 @@
 
 ## Overview
 
-Audit every `gz-*` skill and `gz` CLI command for documentation coverage parity. Ensure each skill has a clear, regulated purpose statement and each command has a matching `docs/user/commands/` page. Detect undocumented commands, orphaned skill files, stale descriptions, and purpose drift between skill SKILL.md content and command doc contracts.
+Audit every `gz-*` skill and `gz` CLI command for documentation coverage parity. Ensure each skill has a clear, regulated purpose statement and each command has a matching `docs/user/manpages/` page. Detect undocumented commands, orphaned skill files, stale descriptions, and purpose drift between skill SKILL.md content and command doc contracts.
 
 ## Policy and Guardrails
 
 - **Lane:** Heavy — documentation is an external contract (Gate 5 Runbook-Code Covenant)
 - Audit only; classify findings before remediation
-- Every `gz` CLI subcommand must have a `docs/user/commands/<name>.md` page
+- Every `gz` CLI subcommand must have a `docs/user/manpages/<name>.md` page
 - Every `gz-*` skill must have a SKILL.md with a clear, non-overlapping purpose
 - Skills that wrap the same command must cross-reference, not duplicate
 - Runbooks (`docs/user/runbook.md`, `docs/governance/governance_runbook.md`) must reference all commands they exercise
@@ -33,14 +33,14 @@ uv run gz cli audit
 
 Cross-reference:
 - `.claude/skills/gz-*/SKILL.md` — all skill files
-- `docs/user/commands/*.md` — all command docs
-- `docs/user/commands/index.md` — command index entries
+- `docs/user/manpages/*.md` — all command docs
+- `docs/user/manpages/index.md` — command index entries
 
 ### 2. Gap Analysis
 
 For each command from `gz --help`, check:
-- [ ] `docs/user/commands/<name>.md` exists
-- [ ] Command appears in `docs/user/commands/index.md`
+- [ ] `docs/user/manpages/<name>.md` exists
+- [ ] Command appears in `docs/user/manpages/index.md`
 - [ ] At least one runbook references the command
 
 For each `gz-*` skill, check:
@@ -93,7 +93,7 @@ uv run gz validate --documents --surfaces > ops/chores/skill-command-doc-parity/
 
 ## Known Gaps (Baseline 2026-03-21)
 
-Commands missing `docs/user/commands/` pages:
+Commands missing `docs/user/manpages/` pages:
 - `gz lint`, `gz format`, `gz test`, `gz typecheck`, `gz check`
 - `gz validate`, `gz tidy`, `gz superbook`, `gz interview`
 - `gz chores show`, `gz chores advise`

@@ -223,8 +223,8 @@ class TestCheckSurfaces(unittest.TestCase):
     def test_manpage_present(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / "docs" / "user" / "commands").mkdir(parents=True)
-            (root / "docs" / "user" / "commands" / "init.md").write_text(
+            (root / "docs" / "user" / "manpages").mkdir(parents=True)
+            (root / "docs" / "user" / "manpages" / "init.md").write_text(
                 "# gz init\n", encoding="utf-8"
             )
             coverages = check_surfaces(root, [self._make_command("init")], "")
@@ -235,7 +235,7 @@ class TestCheckSurfaces(unittest.TestCase):
     def test_manpage_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / "docs" / "user" / "commands").mkdir(parents=True)
+            (root / "docs" / "user" / "manpages").mkdir(parents=True)
             # No init.md
             coverages = check_surfaces(root, [self._make_command("init")], "")
             surface = self._get_surface(coverages, "manpage")
@@ -244,8 +244,8 @@ class TestCheckSurfaces(unittest.TestCase):
     def test_index_entry_present(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / "docs" / "user" / "commands").mkdir(parents=True)
-            (root / "docs" / "user" / "commands" / "index.md").write_text(
+            (root / "docs" / "user" / "manpages").mkdir(parents=True)
+            (root / "docs" / "user" / "manpages" / "index.md").write_text(
                 "- [init](init.md)\n", encoding="utf-8"
             )
             coverages = check_surfaces(root, [self._make_command("init")], "")
@@ -255,8 +255,8 @@ class TestCheckSurfaces(unittest.TestCase):
     def test_index_entry_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / "docs" / "user" / "commands").mkdir(parents=True)
-            (root / "docs" / "user" / "commands" / "index.md").write_text(
+            (root / "docs" / "user" / "manpages").mkdir(parents=True)
+            (root / "docs" / "user" / "manpages" / "index.md").write_text(
                 "- [something-else](something-else.md)\n", encoding="utf-8"
             )
             coverages = check_surfaces(root, [self._make_command("init")], "")
@@ -303,9 +303,9 @@ class TestFindOrphanedDocs(unittest.TestCase):
     def test_orphaned_manpage_detected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / "docs" / "user" / "commands").mkdir(parents=True)
+            (root / "docs" / "user" / "manpages").mkdir(parents=True)
             # Create a manpage for a command not in the discovered set
-            (root / "docs" / "user" / "commands" / "ghost-cmd.md").write_text(
+            (root / "docs" / "user" / "manpages" / "ghost-cmd.md").write_text(
                 "# gz ghost-cmd\n", encoding="utf-8"
             )
             # Discovered set does NOT include "ghost cmd"
@@ -320,8 +320,8 @@ class TestFindOrphanedDocs(unittest.TestCase):
     def test_no_orphans_when_clean(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / "docs" / "user" / "commands").mkdir(parents=True)
-            (root / "docs" / "user" / "commands" / "init.md").write_text(
+            (root / "docs" / "user" / "manpages").mkdir(parents=True)
+            (root / "docs" / "user" / "manpages" / "init.md").write_text(
                 "# gz init\n", encoding="utf-8"
             )
             # All manpage files correspond to discovered commands
@@ -337,8 +337,8 @@ class TestFindOrphanedDocs(unittest.TestCase):
     def test_index_excluded_from_orphan_check(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / "docs" / "user" / "commands").mkdir(parents=True)
-            (root / "docs" / "user" / "commands" / "index.md").write_text(
+            (root / "docs" / "user" / "manpages").mkdir(parents=True)
+            (root / "docs" / "user" / "manpages" / "index.md").write_text(
                 "# Command Index\n", encoding="utf-8"
             )
             # Discovered set is empty — only index.md is present
@@ -425,7 +425,7 @@ class TestModels(unittest.TestCase):
     def test_report_failed_when_orphans_exist(self) -> None:
         orphan = OrphanedDoc(
             surface="manpage",
-            reference="docs/user/commands/ghost.md",
+            reference="docs/user/manpages/ghost.md",
             detail="No matching command",
         )
         report = CoverageReport(

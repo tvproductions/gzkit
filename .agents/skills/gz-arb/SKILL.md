@@ -80,6 +80,6 @@ uv run gz arb advise --limit 10
 
 - Binding rule: `AGENTS.md` § Attestation (em-dash pattern + canonical invocations + lane behavior + receipt-ID discipline)
 - Deep-dive: `docs/governance/arb-middleware.md` (core concept, command surface, receipt schema, exit codes, rationale)
-- Command docs: `docs/user/commands/arb.md`
+- Command docs: `docs/user/manpages/arb.md`
 - Manpage: `docs/user/manpages/arb.md`
 - Absorption record: OBPI-0.25.0-33 under ADR-0.25.0

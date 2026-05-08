@@ -70,4 +70,4 @@ Locked by: `tests/commands/test_status.py::TestLifecycleStatusSemantics::test_ad
 ## References
 
 - Command implementation: `src/gzkit/cli.py`
-- User docs: `docs/user/commands/adr-status.md`, `docs/user/commands/status.md`
+- User docs: `docs/user/manpages/adr-status.md`, `docs/user/manpages/status.md`

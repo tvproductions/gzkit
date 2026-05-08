@@ -206,7 +206,7 @@ Implementation: `src/gzkit/governance/trust_audits.py:151-207` (`audit_cli_align
 Assertions:
 
 1. Sources scanned: `features/**/*.feature`, `docs/user/runbook.md`,
-   `docs/user/commands/**/*.md`, `docs/user/manpages/**/*.md`
+   `docs/user/manpages/**/*.md`, `docs/user/manpages/**/*.md`
    (line 153-165).
 2. Three regex patterns at line 92-94:
    - `_BACKTICKED_INVOCATION`: `` `gz <verb>...` ``

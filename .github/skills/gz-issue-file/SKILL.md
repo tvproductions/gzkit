@@ -103,7 +103,7 @@ create`'s default), not a structured payload.
 ## Related
 
 - Manpage: `docs/user/manpages/gz-issue.md`
-- Command doc: `docs/user/commands/issue-file.md`
+- Command doc: `docs/user/manpages/issue-file.md`
 - Operator runbook entry: `docs/user/runbook.md` § Cross-Repo Defect Filing
 - Governance runbook entry: `docs/governance/governance_runbook.md` § Cross-repo defect routing
 - Parent ADR: `docs/design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/`

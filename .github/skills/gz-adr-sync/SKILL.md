@@ -71,4 +71,4 @@ uv run gz lint
 ## References
 
 - Command implementation: `src/gzkit/cli.py`
-- User docs: `docs/user/commands/register-adrs.md`, `docs/user/commands/adr-status.md`, `docs/user/commands/adr-audit-check.md`
+- User docs: `docs/user/manpages/register-adrs.md`, `docs/user/manpages/adr-status.md`, `docs/user/manpages/adr-audit-check.md`

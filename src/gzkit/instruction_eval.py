@@ -314,12 +314,12 @@ def _check_workflow_relocation_negative(project_root: Path) -> EvalResult:
 
 
 def _check_workflow_docs_positive(project_root: Path) -> EvalResult:
-    index = project_root / "docs" / "user" / "commands" / "index.md"
+    index = project_root / "docs" / "user" / "manpages" / "index.md"
     if not index.is_file():
         return EvalResult(
             case_id="workflow-docs-positive",
             passed=False,
-            detail="docs/user/commands/index.md not found",
+            detail="docs/user/manpages/index.md not found",
         )
     content = index.read_text(encoding="utf-8").lower()
     required = ["readiness", "parity", "skill audit"]

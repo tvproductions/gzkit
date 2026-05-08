@@ -4,12 +4,12 @@ The closeout ceremony's ``discover_demo_commands`` synthesizes ``uv run gz ...``
 invocations from three sources in OBPI briefs:
 
 1. ``## Demo`` fenced code blocks
-2. ``docs/user/commands/*.md`` link patterns
+2. ``docs/user/manpages/*.md`` link patterns
 3. Brief titles containing ``gz <verb>``
 
 Before this fix, none of the three strategies validated the derived verb
 against the registered CLI parser. Any slug that looked plausible got
-emitted. OBPI-0.25.0-33 legitimately references ``docs/user/commands/
+emitted. OBPI-0.25.0-33 legitimately references ``docs/user/manpages/
 index.md`` (the docs-directory ToC page), and Strategy 2 derived
 ``uv run gz index --help`` from that filename — a verb that does not exist
 in the parser at all. The ceremony walkthrough failed in production with
@@ -43,7 +43,7 @@ from gzkit.traceability import covers
 # command-doc link (arb.md), a shared-line mention of index.md, AND a
 # standalone ``index.md`` line that the regex in ``check_doc_alignment``
 # actually captures as a slug. The real OBPI-0.25.0-33 brief has
-# ``docs/user/commands/index.md`` on its own bullet at line 255, which is
+# ``docs/user/manpages/index.md`` on its own bullet at line 255, which is
 # how the Step 3 alignment table picked up ``gz index``.
 OBPI_33_STYLE_BRIEF = """\
 ---
@@ -60,12 +60,12 @@ Evaluate airlineops opsdev/arb module against gzkit's ARB surface.
 
 ## Allowed Paths
 
-- `docs/user/commands/arb.md`, `docs/user/commands/index.md` — operator command reference
+- `docs/user/manpages/arb.md`, `docs/user/manpages/index.md` — operator command reference
 - `src/gzkit/arb/` — the ARB package surface
 
 ## Evidence
 
-- `docs/user/commands/index.md` — new "ARB (Agent Self-Reporting)" section added
+- `docs/user/manpages/index.md` — new "ARB (Agent Self-Reporting)" section added
 """
 
 
@@ -98,7 +98,7 @@ class TestCollectRegisteredInvocations(unittest.TestCase):
 
 
 class TestCommandDocLinkDiscoveryValidation(unittest.TestCase):
-    """Strategy 2 — ``docs/user/commands/*.md`` links validated against parser."""
+    """Strategy 2 — ``docs/user/manpages/*.md`` links validated against parser."""
 
     def _write_brief(self, temp_dir: Path, content: str) -> Path:
         brief = temp_dir / "OBPI.md"
@@ -106,7 +106,7 @@ class TestCommandDocLinkDiscoveryValidation(unittest.TestCase):
         return brief
 
     def _seed_command_doc(self, temp_dir: Path, slug: str) -> None:
-        cmd_dir = temp_dir / "docs" / "user" / "commands"
+        cmd_dir = temp_dir / "docs" / "user" / "manpages"
         cmd_dir.mkdir(parents=True, exist_ok=True)
         (cmd_dir / f"{slug}.md").write_text(f"# {slug}\n", encoding="utf-8")
 
@@ -144,7 +144,7 @@ lane: lite
 
 ## Allowed Paths
 
-- `docs/user/commands/frobnicate.md` — fake command reference
+- `docs/user/manpages/frobnicate.md` — fake command reference
 """
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -168,7 +168,7 @@ lane: lite
 
 ## Allowed Paths
 
-- `docs/user/commands/arb.md` — ARB manpage
+- `docs/user/manpages/arb.md` — ARB manpage
 """
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -280,7 +280,7 @@ lane: lite
 
 ```bash
 uv run gz arb --help
-ls docs/user/commands/
+ls docs/user/manpages/
 ```
 """
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -290,7 +290,7 @@ ls docs/user/commands/
             commands = _commands_from_demo_sections([brief])
 
         self.assertIn("uv run gz arb --help", commands)
-        self.assertIn("ls docs/user/commands/", commands)
+        self.assertIn("ls docs/user/manpages/", commands)
 
 
 class TestDiscoverDemoCommandsEndToEnd(unittest.TestCase):
@@ -300,14 +300,14 @@ class TestDiscoverDemoCommandsEndToEnd(unittest.TestCase):
     def test_obpi_33_pattern_does_not_emit_gz_index(self) -> None:
         """Reproduce the exact production failure: OBPI-0.25.0-33 brief shape.
 
-        The brief references both docs/user/commands/arb.md and
-        docs/user/commands/index.md. Before the fix, discovery emitted both
+        The brief references both docs/user/manpages/arb.md and
+        docs/user/manpages/index.md. Before the fix, discovery emitted both
         `uv run gz arb --help` and `uv run gz index --help`, and the ceremony
         walkthrough failed at the second command with exit code 2.
         """
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
-            cmd_dir = root / "docs" / "user" / "commands"
+            cmd_dir = root / "docs" / "user" / "manpages"
             cmd_dir.mkdir(parents=True)
             (cmd_dir / "arb.md").write_text("# arb\n", encoding="utf-8")
             (cmd_dir / "index.md").write_text("# commands index\n", encoding="utf-8")
@@ -326,7 +326,7 @@ class TestCheckDocAlignmentValidation(unittest.TestCase):
     """GHI-156 follow-up: check_doc_alignment had the same class of failure.
 
     The Step 3 (Docs Alignment Check) renderer derives a ``gz <slug>`` command
-    name from every ``docs/user/commands/*.md`` link it finds in a brief and
+    name from every ``docs/user/manpages/*.md`` link it finds in a brief and
     emits a row in the alignment table. It had the *exact same* missing
     validation layer as the Step 5 demo discovery: ``index.md`` is the
     commands-directory ToC page, not a manpage for a verb named ``gz index``,
@@ -346,7 +346,7 @@ class TestCheckDocAlignmentValidation(unittest.TestCase):
         return brief
 
     def _seed_command_doc(self, temp_dir: Path, slug: str) -> None:
-        cmd_dir = temp_dir / "docs" / "user" / "commands"
+        cmd_dir = temp_dir / "docs" / "user" / "manpages"
         cmd_dir.mkdir(parents=True, exist_ok=True)
         (cmd_dir / f"{slug}.md").write_text(f"# {slug}\n", encoding="utf-8")
 
@@ -378,7 +378,7 @@ lane: lite
 
 ## Allowed Paths
 
-- `docs/user/commands/frobnicate.md` — fake
+- `docs/user/manpages/frobnicate.md` — fake
 """
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -403,7 +403,7 @@ lane: lite
 
 ## Allowed Paths
 
-- `docs/user/commands/arb.md` — the arb manpage
+- `docs/user/manpages/arb.md` — the arb manpage
 """
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

@@ -909,7 +909,7 @@ def _check_concepts_page_proof(allowed_paths: list[str], project_root: Path) -> 
 def _check_command_doc_proof(allowed_paths: list[str], project_root: Path) -> bool:
     """Check if any command doc in allowed paths exists with substantive content."""
     for path_str in allowed_paths:
-        if not path_str.startswith("docs/user/commands/"):
+        if not path_str.startswith("docs/user/manpages/"):
             continue
         doc_path = project_root / path_str
         if not doc_path.is_file():
@@ -1055,7 +1055,7 @@ def check_product_proof(
 
     Checks four proof types per OBPI (at least one must exist):
     - runbook: keyword match in docs/user/runbook.md
-    - command_doc: file exists with substantive content in docs/user/commands/
+    - command_doc: file exists with substantive content in docs/user/manpages/
     - docstring: public interfaces in source files have docstrings
     - governance_artifact: .gzkit/ file exists with substantive content
 

@@ -147,7 +147,7 @@ will use to manage automated widget processing.
 
 - `src/gzkit/widget.py` - Widget processor implementation
 - `tests/test_widget.py` - Widget processor tests
-- `docs/user/commands/widget.md` - Command documentation
+- `docs/user/manpages/widget.md` - Command documentation
 
 ## Requirements (FAIL-CLOSED)
 

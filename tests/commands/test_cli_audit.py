@@ -205,7 +205,7 @@ class TestPerFlagDocCoverage(unittest.TestCase):
             issue_text = " ".join(item["issue"] for item in issues)
             paths = {item["path"] for item in issues}
             self.assertEqual(len(issues), 1)
-            self.assertIn("docs/user/commands/validate.md", paths)
+            self.assertIn("docs/user/manpages/validate.md", paths)
             self.assertIn("--undocumented-flag", issue_text)
             self.assertNotIn("--documents", issue_text)
 
@@ -228,7 +228,7 @@ class TestPerFlagDocCoverage(unittest.TestCase):
 
         project_root = get_project_root()
         flags_by_command = scan_command_flags(project_root)
-        commands_dir = project_root / "docs" / "user" / "commands"
+        commands_dir = project_root / "docs" / "user" / "manpages"
 
         # 1. Audit with the live waiver: must surface zero drift.
         issues = check_flag_doc_coverage(commands_dir, flags_by_command)

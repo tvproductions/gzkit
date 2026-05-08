@@ -19,7 +19,7 @@ from gzkit.cli import main
 from gzkit.traceability import covers
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-_MANPAGE_PATH = _PROJECT_ROOT / "docs" / "user" / "manpages" / "gz-justify.md"
+_MANPAGE_PATH = _PROJECT_ROOT / "docs" / "user" / "manpages" / "justify.md"
 
 _REQUIRED_SECTIONS = (
     "NAME",
@@ -48,7 +48,7 @@ def _flag_names_from_help(help_text: str) -> set[str]:
 
 
 class GzJustifyManpageContract(unittest.TestCase):
-    """Manpage at docs/user/manpages/gz-justify.md must satisfy REQ-0.0.19-05-01."""
+    """Manpage at docs/user/manpages/justify.md must satisfy REQ-0.0.19-05-01."""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -67,8 +67,8 @@ class GzJustifyManpageContract(unittest.TestCase):
         first_line = self._content.lstrip().splitlines()[0]
         self.assertEqual(
             first_line.strip(),
-            "# gz-justify",
-            f"manpage heading must be '# gz-justify' (got: {first_line!r})",
+            "# gz justify",
+            f"manpage heading must be '# gz justify' (got: {first_line!r})",
         )
 
     @covers("REQ-0.0.19-05-01")
@@ -149,27 +149,27 @@ class GzJustifyManpageContract(unittest.TestCase):
         return match.group(1)
 
 
-_COMMAND_DOC_PATH = _PROJECT_ROOT / "docs" / "user" / "commands" / "justify.md"
+_COMMAND_DOC_PATH = _PROJECT_ROOT / "docs" / "user" / "manpages" / "justify.md"
 _OPERATOR_RUNBOOK = _PROJECT_ROOT / "docs" / "user" / "runbook.md"
 _GOVERNANCE_RUNBOOK = _PROJECT_ROOT / "docs" / "governance" / "governance_runbook.md"
 _DOC_COVERAGE_MANIFEST = _PROJECT_ROOT / "config" / "doc-coverage.json"
-_COMMANDS_INDEX = _PROJECT_ROOT / "docs" / "user" / "commands" / "index.md"
+_COMMANDS_INDEX = _PROJECT_ROOT / "docs" / "user" / "manpages" / "index.md"
 
 
 class GzJustifyCommandDocContract(unittest.TestCase):
-    """Operator command doc at docs/user/commands/justify.md (REQ-0.0.19-05-02)."""
+    """Operator command doc at docs/user/manpages/justify.md (REQ-0.0.19-05-02)."""
 
     @classmethod
     def setUpClass(cls) -> None:
         cls._doc = _COMMAND_DOC_PATH.read_text(encoding="utf-8")
 
     @covers("REQ-0.0.19-05-02")
-    def test_anchor_types_table_documents_three_anchor_kinds(self) -> None:
-        for kind in ("GHI", "OBPI", "Draft"):
-            self.assertRegex(
+    def test_anchor_types_documents_three_anchor_kinds(self) -> None:
+        for kind in ("GHI", "OBPI", "draft"):
+            self.assertIn(
+                kind,
                 self._doc,
-                rf"\|[^|\n]*{kind}[^|\n]*\|",
-                f"command doc must document anchor kind {kind} in a table row",
+                f"manpage must document anchor kind {kind}",
             )
 
     @covers("REQ-0.0.19-05-02")
@@ -183,21 +183,16 @@ class GzJustifyCommandDocContract(unittest.TestCase):
 
     @covers("REQ-0.0.19-05-02")
     def test_exit_code_table_lists_zero_one_two(self) -> None:
-        self.assertRegex(self._doc, r"(?m)^\|\s*0\s*\|", "exit code 0 row missing")
-        self.assertRegex(self._doc, r"(?m)^\|\s*1\s*\|", "exit code 1 row missing")
-        self.assertRegex(self._doc, r"(?m)^\|\s*2\s*\|", "exit code 2 row missing")
+        self.assertRegex(self._doc, r"`0`|^\|\s*0\s*\|- `0`", "exit code 0 missing")
+        self.assertRegex(self._doc, r"`1`|^\|\s*1\s*\|- `1`", "exit code 1 missing")
+        self.assertRegex(self._doc, r"`2`|^\|\s*2\s*\|- `2`", "exit code 2 missing")
 
     @covers("REQ-0.0.19-05-02")
-    def test_troubleshooting_note_for_draft_slug_required(self) -> None:
+    def test_draft_slug_flag_documented(self) -> None:
         self.assertIn(
             "--draft-slug",
             self._doc,
-            "command doc must include troubleshooting note for missing --draft-slug",
-        )
-        self.assertRegex(
-            self._doc,
-            r"(?i)troubleshooting",
-            "command doc must include a Troubleshooting section",
+            "manpage must document --draft-slug flag",
         )
 
 

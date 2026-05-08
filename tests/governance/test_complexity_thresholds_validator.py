@@ -268,7 +268,7 @@ class CommandDocAndRunbook(unittest.TestCase):
 
     @covers("REQ-0.0.28-03-07")
     def test_command_doc_documents_flag(self) -> None:
-        path = _PROJECT_ROOT / "docs" / "user" / "commands" / "validate.md"
+        path = _PROJECT_ROOT / "docs" / "user" / "manpages" / "validate.md"
         self.assertTrue(path.is_file())
         content = path.read_text(encoding="utf-8")
         self.assertIn("--complexity-thresholds", content)

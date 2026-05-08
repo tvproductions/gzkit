@@ -126,13 +126,13 @@ def check_doc_alignment(
     """Check doc coverage for commands touched by OBPIs.
 
     Discovers commands from two sources:
-    1. Explicit ``docs/user/commands/*.md`` links in briefs
-    2. Allowed Paths entries pointing at command docs (including globs)
+    1. Explicit ``docs/user/manpages/*.md`` links in briefs
+    2. Allowed Paths entries pointing at manpage docs (including globs)
 
     Every derived slug is validated against the registered CLI parser
-    (GHI-156 follow-up) — a ``.md`` file under ``docs/user/commands/`` whose
+    (GHI-156 follow-up) — a ``.md`` file under ``docs/user/manpages/`` whose
     slug does not correspond to a real ``gz`` verb (e.g. ``index.md``, the
-    commands-directory ToC page) is dropped from the alignment table.
+    manpages-directory ToC page) is dropped from the coverage table.
     Command-coverage checks must not emit rows for non-commands.
 
     Returns list of dicts with *command*, *manpage_path*,
@@ -144,7 +144,7 @@ def check_doc_alignment(
 
     runbook = project_root / "docs" / "user" / "runbook.md"
     runbook_text = runbook.read_text(encoding="utf-8") if runbook.is_file() else ""
-    cmd_dir = project_root / "docs" / "user" / "commands"
+    cmd_dir = project_root / "docs" / "user" / "manpages"
 
     def _add_slug(slug: str) -> None:
         if slug in seen_slugs:
@@ -153,7 +153,7 @@ def check_doc_alignment(
         verb_chain = slug.replace("-", " ")
         if verb_chain not in registered:
             return
-        rel = f"docs/user/commands/{slug}.md"
+        rel = f"docs/user/manpages/{slug}.md"
         gz_cmd = f"gz {verb_chain}"
         results.append(
             {
@@ -168,7 +168,7 @@ def check_doc_alignment(
         content = obpi_file.read_text(encoding="utf-8")
         for line in content.splitlines():
             # Links: - `docs/...` or - [x] `docs/...`
-            m = re.match(r"^- (?:\[.\] )?`docs/user/commands/(\S+)\.md`", line)
+            m = re.match(r"^- (?:\[.\] )?`docs/user/manpages/(\S+)\.md`", line)
             if m:
                 slug = m.group(1)
                 # If slug has a glob (e.g., obpi-lock-*), expand from disk
@@ -201,7 +201,7 @@ def _collect_registered_invocations() -> frozenset[str]:
     GHI-156: the closeout ceremony's demo discovery used to emit ``uv run gz
     <slug> --help`` for any slug it found in a brief, whether or not the verb
     actually existed in the CLI. OBPI-0.25.0-33 legitimately referenced
-    ``docs/user/commands/index.md`` (the commands-directory ToC page) and the
+    ``docs/user/manpages/index.md`` (the manpages-directory ToC page) and the
     discovery pipeline synthesized ``gz index --help`` from the filename,
     which crashed the walkthrough at exit code 2. This helper is the
     validation layer those strategies were missing.
@@ -326,9 +326,9 @@ def _commands_from_command_doc_links(
 ) -> list[str]:
     """Build ``--help`` commands from command-doc links in briefs.
 
-    Every slug derived from a ``docs/user/commands/*.md`` reference is
+    Every slug derived from a ``docs/user/manpages/*.md`` reference is
     validated against the registered CLI parser. ``index.md`` (the
-    commands-directory ToC page) and any other non-manpage page drops out
+    manpages-directory ToC page) and any other non-manpage page drops out
     because its derived verb chain is not registered — this is the GHI-156
     fix that the instance check ``skip index.md by name`` would have missed.
     """
@@ -338,7 +338,7 @@ def _commands_from_command_doc_links(
     for obpi_file in obpi_files:
         content = obpi_file.read_text(encoding="utf-8")
         for line in content.splitlines():
-            for m in re.finditer(r"`(docs/user/commands/(\S+?)\.md)`", line):
+            for m in re.finditer(r"`(docs/user/manpages/(\S+?)\.md)`", line):
                 slug = m.group(2)
                 if slug in seen:
                     continue

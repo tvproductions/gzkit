@@ -45,8 +45,8 @@ def _scaffold_project(root: Path) -> None:
     skill = root / ".gzkit" / "skills" / "gz-test"
     skill.mkdir(parents=True)
     (skill / "SKILL.md").write_text("# gz-test skill\n", encoding="utf-8")
-    # docs/user/commands/index.md with quality references
-    cmd_docs = root / "docs" / "user" / "commands"
+    # docs/user/manpages/index.md with quality references
+    cmd_docs = root / "docs" / "user" / "manpages"
     cmd_docs.mkdir(parents=True)
     (cmd_docs / "index.md").write_text(
         "# Commands\n\n- readiness audit\n- parity check\n- skill audit\n", encoding="utf-8"
@@ -181,7 +181,7 @@ class TestRunEvalSuite(unittest.TestCase):
             root = Path(tmp)
             _scaffold_project(root)
             # Rewrite index without quality command refs
-            (root / "docs" / "user" / "commands" / "index.md").write_text(
+            (root / "docs" / "user" / "manpages" / "index.md").write_text(
                 "# Commands\n", encoding="utf-8"
             )
             result = run_eval_suite(root)

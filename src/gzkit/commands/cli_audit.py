@@ -173,10 +173,10 @@ def cli_audit_cmd(as_json: bool) -> None:
     project_root = get_project_root()
     issues: list[dict[str, str]] = []
 
-    index_path = project_root / "docs/user/commands/index.md"
+    index_path = project_root / "docs/user/manpages/index.md"
     index_content = index_path.read_text(encoding="utf-8") if index_path.exists() else ""
     if not index_path.exists():
-        issues.append({"path": "docs/user/commands/index.md", "issue": "commands index missing"})
+        issues.append({"path": "docs/user/manpages/index.md", "issue": "manpages index missing"})
 
     from gzkit.doc_coverage.manifest import load_manifest, manpage_path_for  # noqa: PLC0415
 
@@ -202,7 +202,7 @@ def cli_audit_cmd(as_json: bool) -> None:
         basename = doc_rel.name
         if index_content and basename not in index_content:
             issues.append(
-                {"path": "docs/user/commands/index.md", "issue": f"missing link to {basename}"}
+                {"path": "docs/user/manpages/index.md", "issue": f"missing link to {basename}"}
             )
 
     issues.extend(_collect_readme_quickstart_issues(project_root))
@@ -216,7 +216,7 @@ def cli_audit_cmd(as_json: bool) -> None:
     )
 
     flags_by_command = scan_command_flags(project_root)
-    commands_dir = project_root / "docs" / "user" / "commands"
+    commands_dir = project_root / "docs" / "user" / "manpages"
     issues.extend(check_flag_doc_coverage(commands_dir, flags_by_command))
 
     result = {"valid": not issues, "issues": issues, "cross_coverage": coverage_report.model_dump()}
