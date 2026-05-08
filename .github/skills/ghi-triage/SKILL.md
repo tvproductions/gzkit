@@ -5,9 +5,9 @@ description: Triage every open GHI — read each body, classify severity, and pr
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-25
+last_reviewed: 2026-05-08
 metadata:
-  skill-version: "5.0.0"
+  skill-version: "5.1.0"
 model: sonnet
 ---
 
@@ -89,24 +89,35 @@ from the fetched issue set.
 
 ### Step 3 — Render the deliverable
 
-Pipe the rank-input JSON to the script with `--format rank`:
+Write the rank-input JSON to a cache file under `.gzkit/cache/triage/`,
+then pass that path to the script with `--format rank`:
 
 ```bash
-echo '<rank-input JSON>' | uv run python .gzkit/skills/ghi-triage/scripts/triage.py --format rank --rank-input -
+# Write tool: .gzkit/cache/triage/rank.json  ← {"rankings":[…]}
+uv run python .claude/skills/ghi-triage/scripts/triage.py \
+    --format rank --rank-input .gzkit/cache/triage/rank.json
 ```
 
-Or write the JSON to a file and pass `--rank-input <path>`. The script
-renders a deterministic markdown deliverable: one numbered row per ranked
-GHI, each row containing the severity, route, and title in a fixed shape.
-**The script's stdout IS the deliverable. The Bash tool result shown to
-the operator is the presentation — do not echo, restate, copy, or
-paraphrase that output in agent-generated text.**
+`--rank-input` rejects stdin (`-`) and any path outside
+`.gzkit/cache/triage/` (GHI #424 round 4). Inline-pipe shapes —
+`echo '<json>' | triage.py … --rank-input -` — surface the entire rank
+payload on the bash command line and reproduce the duplicate-render shape
+in chat; the cache-path requirement makes that structurally impossible.
 
-The chat-silence rules from earlier versions remain (no pre-pipe queue
-summary; no post-pipe echo of the rendered output) but they are now
-backstops, not the primary defense. With prose stripped from the
-rank-input schema, the agent has no prose to duplicate even if the
-chat-silence rules are forgotten.
+The script renders a deterministic markdown deliverable: one numbered row
+per ranked GHI, each row containing the severity, route, and title in a
+fixed shape. **The script's stdout IS the deliverable. The Bash tool
+result shown to the operator is the presentation — do not echo, restate,
+copy, or paraphrase that output in agent-generated text.**
+
+A PreToolUse `Bash` hook (`.claude/hooks/ghi-triage-chat-silence.py`,
+GHI #424 round 4) inspects the assistant's most recent turn whenever
+`triage.py --format rank` is invoked. If the turn contains two or more
+distinct `#NNN` GHI tokens each within 200 characters of a severity word
+(`blocking|degrading|latent`), the hook exits 2 and blocks the tool call.
+Compose the rank input silently — the hook is the structural backstop on
+the chat-text surface, paired with the `--rank-input` cache-path
+requirement on the bash-command-line surface.
 
 There is no Step 4. There is no "Recommended order" follow-up table. The
 rank list IS the recommended order.
@@ -193,6 +204,11 @@ markdown is human-readable; Rich-in-chat is not).
   payload (GHI #424 round 3 — prose in input duplicates renderer output).
 - Calling the script twice for the same data (one for `--format markdown`,
   one for `--format json`) — Step 1 is a single call
+- Piping the rank-input JSON via `echo '<json>' | … --rank-input -` —
+  rejected by the script (GHI #424 round 4); surfaces the entire payload
+  on the bash command line and reproduces the duplicate-render shape in
+  chat. Write the JSON to `.gzkit/cache/triage/<name>.json` and pass the
+  path.
 - Running `gz state --json` unconditionally — the cross-check is
   conditional on `files_mentioned` overlap with in-flight ADR allowed
   paths
@@ -220,3 +236,6 @@ markdown is human-readable; Rich-in-chat is not).
 - `.gzkit/skills/ghi-close/SKILL.md` — closes GHIs after the routed work lands
 - `.claude/rules/gh-cli.md` — allowed `gh` commands
 - GHI #324 — the v3 → v4 rewrite that produced this contract
+- GHI #424 — the chat-silence enforcement series; round 4 added the
+  cache-path `--rank-input` requirement and the PreToolUse Bash hook
+  that pin both surfaces of the duplicate-render shape

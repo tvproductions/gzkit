@@ -252,7 +252,11 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                             "command": (
                                 "uv run python .claude/hooks/pipeline-completion-reminder.py"
                             ),
-                        }
+                        },
+                        {
+                            "type": "command",
+                            "command": ("uv run python .claude/hooks/ghi-triage-chat-silence.py"),
+                        },
                     ],
                 },
             ],
@@ -391,7 +395,13 @@ class TestSetupClaudeHooks(unittest.TestCase):
                                 "command": (
                                     "uv run python .claude/hooks/pipeline-completion-reminder.py"
                                 ),
-                            }
+                            },
+                            {
+                                "type": "command",
+                                "command": (
+                                    "uv run python .claude/hooks/ghi-triage-chat-silence.py"
+                                ),
+                            },
                         ],
                     },
                 ],

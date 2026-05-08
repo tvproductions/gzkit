@@ -15,7 +15,9 @@ the agent.
 from __future__ import annotations
 
 import importlib.util
+import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -176,6 +178,58 @@ class TestRankInputStructuralSchema(unittest.TestCase):
         self.assertEqual(len(items), 1)
         self.assertEqual(items[0].number, 324)
         self.assertEqual(items[0].severity, "blocking")
+
+
+class TestRankInputCachePathRequirement(unittest.TestCase):
+    """GHI #424 round 4: --rank-input must live under .gzkit/cache/triage/.
+
+    Stdin and arbitrary paths are rejected so the inline-pipe shape
+    (`echo '<json>' | triage.py --format rank --rank-input -`) is
+    structurally impossible. Writing the JSON to a cache file leaves a
+    file path on the bash command line; the rank payload itself is
+    never echoed into the chat surface.
+    """
+
+    def setUp(self) -> None:
+        self._tmpdir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmpdir.cleanup)
+        self._prev_cwd = Path.cwd()
+        os.chdir(self._tmpdir.name)
+        self.addCleanup(lambda: os.chdir(self._prev_cwd))
+        cache_dir = Path(self._tmpdir.name) / ".gzkit" / "cache" / "triage"
+        cache_dir.mkdir(parents=True)
+        self.cache_dir = cache_dir
+        self.payload = '{"rankings":[{"number":324,"severity":"blocking"}]}'
+
+    def test_none_path_rejected(self) -> None:
+        with self.assertRaises(_TRIAGE.RankInputError) as ctx:
+            _TRIAGE._read_rank_input(None)
+        self.assertIn("GHI #424", str(ctx.exception))
+
+    def test_stdin_dash_rejected(self) -> None:
+        with self.assertRaises(_TRIAGE.RankInputError) as ctx:
+            _TRIAGE._read_rank_input("-")
+        self.assertIn("stdin", str(ctx.exception).lower())
+        self.assertIn("GHI #424", str(ctx.exception))
+
+    def test_path_outside_cache_dir_rejected(self) -> None:
+        outside = Path(self._tmpdir.name) / "rank.json"
+        outside.write_text(self.payload, encoding="utf-8")
+        with self.assertRaises(_TRIAGE.RankInputError) as ctx:
+            _TRIAGE._read_rank_input(str(outside))
+        self.assertIn(".gzkit/cache/triage", str(ctx.exception))
+
+    def test_path_inside_cache_dir_accepted(self) -> None:
+        inside = self.cache_dir / "rank.json"
+        inside.write_text(self.payload, encoding="utf-8")
+        result = _TRIAGE._read_rank_input(str(inside))
+        self.assertEqual(result, {"rankings": [{"number": 324, "severity": "blocking"}]})
+
+    def test_empty_cache_file_rejected(self) -> None:
+        empty = self.cache_dir / "empty.json"
+        empty.write_text("", encoding="utf-8")
+        with self.assertRaises(_TRIAGE.RankInputError):
+            _TRIAGE._read_rank_input(str(empty))
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ from contextlib import suppress
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
+from gzkit.hooks.scripts.ghi import _ghi_triage_chat_silence_script
 from gzkit.hooks.scripts.pipeline import (
     _pipeline_completion_reminder_script,
     _plan_audit_gate_script,
@@ -178,7 +179,11 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                             "command": (
                                 f"uv run python {hooks_dir}/pipeline-completion-reminder.py"
                             ),
-                        }
+                        },
+                        {
+                            "type": "command",
+                            "command": (f"uv run python {hooks_dir}/ghi-triage-chat-silence.py"),
+                        },
                     ],
                 },
             ],
@@ -368,6 +373,14 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
         executable=True,
     )
     created.append(pipeline_completion_reminder_path.relative_to(project_root).as_posix())
+
+    ghi_triage_chat_silence_path = hooks_path / "ghi-triage-chat-silence.py"
+    _write_hook_file(
+        ghi_triage_chat_silence_path,
+        _ghi_triage_chat_silence_script(),
+        executable=True,
+    )
+    created.append(ghi_triage_chat_silence_path.relative_to(project_root).as_posix())
 
     session_staleness_path = hooks_path / "session-staleness-check.py"
     _write_hook_file(session_staleness_path, _session_staleness_check_script(), executable=True)
