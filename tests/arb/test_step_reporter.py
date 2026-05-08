@@ -68,6 +68,20 @@ class TestRunStepViaArb(unittest.TestCase):
         self.assertEqual(payload["exit_status"], 0)
         self.assertEqual(payload["stdout_tail"], "OK\n")
 
+    def test_step_receipt_file_ends_with_newline(self) -> None:
+        """Receipts must end with `\\n` so the ``end-of-file-fixer``
+        pre-commit hook does not rewrite them on every commit (the fix
+        loop was burning operator tokens during ``gz git-sync``).
+        """
+        fake = subprocess.CompletedProcess(["uv", "run", "-m", "unittest"], 0, "OK\n", "")
+        _, path = self._run_with_fake_result(fake)
+        self.assertIsNotNone(path)
+        text = path.read_text(encoding="utf-8")
+        self.assertTrue(
+            text.endswith("\n"),
+            msg=f"Receipt must end with newline; last 20 chars: {text[-20:]!r}",
+        )
+
     def test_failing_step_writes_receipt(self) -> None:
         fake = subprocess.CompletedProcess(
             ["uv", "run", "-m", "unittest"], 1, "", "AssertionError: boom\n"
