@@ -1,10 +1,4 @@
-@wip
 Feature: Complexity advisor auto-chain from xenon-as-gate failure (ADR-0.0.29 / OBPI-0.0.29-05)
-# @wip: step definitions for the pre-commit hook scenarios are pending —
-# OBPI-0.0.29-05 attested with the runtime hook landed but the BDD step
-# implementations were not authored. Tracked under GHI #417; behave skips
-# @wip by default per behave.ini. Surface the test gap by running
-# `behave features/complexity_advisor_auto_chain.feature --tags=wip`.
   As a developer committing complexity-sensitive code,
   I want the pre-commit hook to run the advisor when xenon fails,
   so that warn-band crossings surface a diagnosis and block-band
@@ -21,6 +15,11 @@ Feature: Complexity advisor auto-chain from xenon-as-gate failure (ADR-0.0.29 / 
   @REQ-0.0.29-05-02
   @REQ-0.0.29-05-05
   @REQ-0.0.29-05-06
+  @wip
+  # @wip pending GHI #423: distilled-characteristics-2026-05-04 practitioner-eye
+  # sections empty for all 12 metrics; advisor engine fail-closes at runtime.
+  # Scenario step definitions are landed (GHI #417); this scenario is unblocked
+  # once the operator authors the radon_cc practitioner-eye prose.
   Scenario: warn-band commit — xenon fails, advisor diagnoses warn crossing
     Given a git repo with the auto-chain hook installed
     And a staged Python file with a warn-band complexity crossing
@@ -31,6 +30,11 @@ Feature: Complexity advisor auto-chain from xenon-as-gate failure (ADR-0.0.29 / 
   @REQ-0.0.29-05-04
   @REQ-0.0.29-05-05
   @REQ-0.0.29-05-06
+  @wip
+  # @wip pending GHI #423: distilled-characteristics-2026-05-04 practitioner-eye
+  # sections empty for all 12 metrics; advisor engine fail-closes at runtime.
+  # Scenario step definitions are landed (GHI #417); this scenario is unblocked
+  # once the operator authors the radon_cc practitioner-eye prose.
   Scenario: block-band commit — xenon fails, advisor diagnoses block crossing
     Given a git repo with the auto-chain hook installed
     And a staged Python file with a block-band complexity crossing

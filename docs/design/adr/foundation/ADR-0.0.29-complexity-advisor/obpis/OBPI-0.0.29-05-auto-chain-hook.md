@@ -176,6 +176,25 @@ uv run -m behave features/complexity_advisor_auto_chain.feature
 - Runbook: entry under Governance Doctrine Surfaces documenting install, SKIP semantics, and revert
 - GHI #408: config evaluation tooling pool ADR (discovery gap for opt-in hooks)
 
+#### Post-completion follow-up (GHI #417 closeout, 2026-05-08)
+
+- Behave step definitions for `features/complexity_advisor_auto_chain.feature`
+  authored at `features/steps/complexity_advisor_auto_chain_steps.py` (GHI #417).
+  The original four scenarios shipped with no step implementations, surfacing as
+  21 undefined steps + 4 errored scenarios under behave; behave skipped the
+  feature by default via `behave.ini` (`default_tags = ~@wip`) until the
+  step-definition gap closed.
+- Result: 2/4 scenarios pass under default tags (clean-commit and SKIP-bypass
+  paths exercise the runtime contract end-to-end). Warn-band and block-band
+  scenarios retain scenario-level `@wip` pending GHI #423 (operator-attested
+  practitioner-eye prose for `radon_cc` and 11 other metrics in
+  `distilled-characteristics-2026-05-04.md`). The advisor engine fail-closes on
+  empty practitioner-eye sections; surfacing the upstream gap is the engine's
+  intended contract, not a step-definition defect.
+- @wip is now scoped to those two scenarios (not the feature header) so the
+  feature contributes meaningful BDD coverage to `gz check` while the upstream
+  authoring task remains visible in the queue.
+
 ### Closing Argument
 
 ## Tracked Defects
