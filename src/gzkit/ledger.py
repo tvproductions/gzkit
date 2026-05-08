@@ -472,6 +472,28 @@ class Ledger:
 
         return latest
 
+    def get_post_validation_failed_gates(self, adr_id: str) -> list[int]:
+        """Return gates whose latest raw observation is `fail` after validation.
+
+        The display-only effective view (`get_effective_gate_statuses`) smooths
+        post-validation `gate_checked: fail` events to `pass` so that lifecycle
+        authority is preserved (GHI #392). That smoothing alone, without an
+        adjacent surface for the failing observation, hides current evidence
+        from the operator (GHI #411 — observation laundering).
+
+        This sidecar names the gates whose raw latest observation diverges from
+        the lifecycle-authoritative effective value, so display surfaces can
+        annotate the smoothed `pass` with the underlying observation. Returns a
+        sorted list of gate ids; empty when there is no laundering to surface.
+        """
+        raw = self.get_latest_gate_statuses(adr_id)
+        effective = self.get_effective_gate_statuses(adr_id)
+        return sorted(
+            gate
+            for gate, raw_status in raw.items()
+            if raw_status == "fail" and effective.get(gate) == "pass"
+        )
+
     @staticmethod
     def _artifact_creation_entry(
         event: LedgerEvent,

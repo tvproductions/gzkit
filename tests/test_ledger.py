@@ -415,6 +415,66 @@ class TestLedger(unittest.TestCase):
             effective = ledger.get_effective_gate_statuses("ADR-0.1.0")
             self.assertEqual(effective.get(2), "pass")
 
+    def test_post_validation_failed_gates_surfaces_observation(self) -> None:
+        """Post-validation observed `gate_checked: fail` is reported as a sidecar.
+
+        The effective view smooths the fail to `pass` (lifecycle authority);
+        the sidecar must still surface gate ids whose latest raw observation is
+        `fail` after the validated lifecycle epoch began (GHI #411 — observation
+        laundering: the display surface must distinguish lifecycle authority
+        from current observations).
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.1.0", "", "heavy"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "uv run gz test", 0))
+            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
+            ledger.append(lifecycle_transition_event("ADR-0.1.0", "adr", "Proposed", "Completed"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "fail", "uv run gz test", 1))
+
+            self.assertEqual(ledger.get_post_validation_failed_gates("ADR-0.1.0"), [2])
+
+    def test_post_validation_failed_gates_empty_when_observation_recovers(self) -> None:
+        """A post-validation pass that follows a post-validation fail clears the sidecar."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.1.0", "", "heavy"))
+            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
+            ledger.append(lifecycle_transition_event("ADR-0.1.0", "adr", "Proposed", "Completed"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "fail", "uv run gz test", 1))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "uv run gz test", 0))
+
+            self.assertEqual(ledger.get_post_validation_failed_gates("ADR-0.1.0"), [])
+
+    def test_post_validation_failed_gates_empty_pre_validation(self) -> None:
+        """Pre-validation fails are authoritative, not laundered — sidecar stays empty."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.1.0", "", "heavy"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "fail", "uv run gz test", 1))
+
+            self.assertEqual(ledger.get_post_validation_failed_gates("ADR-0.1.0"), [])
+
+    def test_post_validation_failed_gates_after_rollback_empty(self) -> None:
+        """Rollback opens a new epoch; fails after rollback are authoritative, not laundered."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.1.0", "", "heavy"))
+            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
+            ledger.append(lifecycle_transition_event("ADR-0.1.0", "adr", "Proposed", "Completed"))
+            ledger.append(lifecycle_transition_event("ADR-0.1.0", "adr", "Completed", "Proposed"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "fail", "uv run gz test", 1))
+
+            self.assertEqual(ledger.get_post_validation_failed_gates("ADR-0.1.0"), [])
+
     def test_get_artifact_graph_tracks_closeout_and_validation_receipt(self) -> None:
         """Graph captures closeout initiation and validation receipts for ADR semantics."""
         with tempfile.TemporaryDirectory() as tmpdir:
