@@ -515,6 +515,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="With --unscoped-rules: list current allowlist entries and exit 0",
     )
     p_validate.add_argument(
+        "--doc-surface-parity",
+        dest="check_doc_surface_parity",
+        action="store_true",
+        help="Fail if docs/user/commands/ exists (decommissioned, GHI #418)",
+    )
+    p_validate.add_argument(
         "--absorption-duplicates",
         dest="check_absorption_duplicates",
         action="store_true",
@@ -604,6 +610,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             unscoped_rules_allowlist_only=a.unscoped_rules_allowlist_only,
             check_sensitivity=a.check_sensitivity or a.check_audits,
             sensitivity_explain=(a.frontmatter_explain if a.check_sensitivity else None),
+            check_doc_surface_parity=a.check_doc_surface_parity or a.check_audits,
             check_absorption_duplicates=a.check_absorption_duplicates,
             check_evaluation_justify_binding=(a.check_evaluation_justify_binding),
             check_intrinsic_attestation=a.check_intrinsic_attestation,
