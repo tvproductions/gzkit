@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-25
 metadata:
-  skill-version: "4.2.0"
+  skill-version: "4.3.0"
 model: sonnet
 ---
 
@@ -112,7 +112,20 @@ echo '<rank-input JSON>' | uv run python .claude/skills/ghi-triage/scripts/triag
 Or write the JSON to a file and pass `--rank-input <path>`. The script
 renders a deterministic markdown deliverable: one numbered row per ranked
 GHI, each row containing the severity, route, action, and WHY in a fixed
-shape. **Present the script's output verbatim. This is the deliverable.**
+shape. **The script's stdout IS the deliverable. The Bash tool result
+shown to the operator is the presentation — do not echo, restate, copy,
+or paraphrase that output in agent-generated text.**
+
+**Chat-silence rule, Step-3 edge (binding — GHI #424):** After the
+renderer runs, the agent's chat surface is closed for the rank content.
+Permitted post-pipe chat output is at most one terse status line
+(e.g. *"rendered"*) or no text at all; re-emitting the rank list — even
+verbatim — routes the deliverable through the agent's generation channel
+and recreates the vibing surface the script exists to eliminate. In
+Claude Code and any surface where Bash tool results are visible to the
+operator, the tool result is the presentation; agent-side restatement
+is a duplicate render, not a confirmation. The same rule that closes
+Step 2 (no pre-pipe prose) closes Step 3 (no post-pipe echo).
 
 There is no Step 4. There is no "Recommended order" follow-up table. The
 rank list IS the recommended order.
@@ -209,6 +222,13 @@ markdown is human-readable; Rich-in-chat is not).
   (e.g. *"Ranked order: 1. #N — blocking; …"*) — the JSON is the
   agent's input artifact; chat-side restatement duplicates the
   deliverable and violates the Step-2 chat-silence rule (GHI #424)
+- Echoing the renderer's output in agent text after `--format rank`
+  has produced it — even verbatim. The Bash tool result already
+  presents the deliverable in Claude Code surfaces; restating it
+  through the agent's generation channel is the post-pipe twin of the
+  Step-2 violation and is forbidden by the Step-3 chat-silence rule
+  (GHI #424). "Present verbatim" means *let the tool result stand*,
+  not *copy-paste it into a text response*.
 - Modifying GHIs from this skill — triage is read-only
 
 ## Related
