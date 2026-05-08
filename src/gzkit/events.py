@@ -552,6 +552,32 @@ class TaskEscalatedEvent(_TaskEventBase):
     escalated_to: str | None = Field(None, description="Escalation target (person/team)")
 
 
+# ---------------------------------------------------------------------------
+# Intrinsic complexity attestation (OBPI-0.0.29-07)
+# ---------------------------------------------------------------------------
+
+
+class IntrinsicComplexityAttestationEvent(_EventBase):
+    """intrinsic-complexity-attestation event (OBPI-0.0.29-07).
+
+    Records a human-attested declaration that a named function's cyclomatic
+    complexity is irreducibly intrinsic. Emitted by ``gz complexity advise
+    --attest-intrinsic``.
+    """
+
+    event: Literal["intrinsic-complexity-attestation"]
+    file_path: str = Field(..., description="Source file containing the function")
+    qualname: str = Field(..., description="Qualified name of the function")
+    reason: str = Field(..., description="Human-readable rationale for attestation")
+    attestor: str = Field(..., description="Full name of the attesting human")
+    attestation_date: str = Field(..., description="ISO 8601 date of attestation")
+    metric: str = Field(..., description="Complexity metric key (e.g. radon_cc)")
+    crossing_band: Literal["block", "warn", "advise"] = Field(
+        ..., description="Threshold band crossed at attestation time"
+    )
+    crossing_value: float = Field(..., description="Observed metric value at attestation time")
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -580,7 +606,8 @@ TypedLedgerEvent = Annotated[
     | TaskStartedEvent
     | TaskCompletedEvent
     | TaskBlockedEvent
-    | TaskEscalatedEvent,
+    | TaskEscalatedEvent
+    | IntrinsicComplexityAttestationEvent,
     Field(discriminator="event"),
 ]
 

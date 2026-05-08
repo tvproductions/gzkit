@@ -346,6 +346,19 @@
         "reason": { "type": "string", "min_length": 1 },
         "escalated_to": { "type": "string", "min_length": 1 }
       }
+    },
+    "intrinsic-complexity-attestation": {
+      "required": ["file_path", "qualname", "reason", "attestor", "attestation_date", "metric", "crossing_band", "crossing_value"],
+      "properties": {
+        "file_path": { "type": "string", "min_length": 1 },
+        "qualname": { "type": "string", "min_length": 1 },
+        "reason": { "type": "string", "min_length": 1 },
+        "attestor": { "type": "string", "min_length": 1 },
+        "attestation_date": { "type": "string", "min_length": 10 },
+        "metric": { "type": "string", "min_length": 1 },
+        "crossing_band": { "type": "string", "enum": ["block", "warn", "advise"] },
+        "crossing_value": { "type": "number" }
+      }
     }
   }
 }

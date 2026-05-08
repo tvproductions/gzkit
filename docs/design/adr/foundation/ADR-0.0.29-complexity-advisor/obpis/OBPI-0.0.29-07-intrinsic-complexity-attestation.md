@@ -3,7 +3,7 @@ id: OBPI-0.0.29-07-intrinsic-complexity-attestation
 parent: ADR-0.0.29
 item: 7
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.29-07-intrinsic-complexity-attestation: Two-path Intrinsic-Complexity Attestation
@@ -125,46 +125,83 @@ uv run -m behave features/intrinsic_complexity_attestation.feature
 ## Evidence
 
 ### Gate 1 (ADR)
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded — ADR-0.0.29 OBPI-07 two-path attestation
 
 ### Gate 2 (TDD — Red-Green-Refactor)
 ```text
-# Paste RGR + unittest output
+arb-step-unittest-cf68ebf06bb646cbb56d5e0cf81afef5
+All tests pass (skipped=1)
+REQs covered: REQ-0.0.29-07-01 through REQ-0.0.29-07-06
 ```
 
 ### Code Quality
 ```text
-# Paste lint/typecheck output
+arb-ruff-363ee011147c4191a2196e0eb613434b (lint clean)
+arb-step-typecheck-093d9f5a6d32460fab47140eb0b1f986 (types clean)
 ```
 
 ### Gate 3 (Docs)
 ```text
-# Paste mkdocs --strict + manpage + runbook diffs
+arb-step-mkdocs-42e979ab5b214bf9bf28beb7e79ccc2e (docs build clean)
+docs/user/commands/complexity-advise.md: --attest-intrinsic, --reason, --attestor documented
+docs/user/commands/validate.md: --intrinsic-attestation documented
+docs/user/runbook.md: two-path attestation entry added
 ```
 
 ### Gate 4 (BDD)
 ```text
-# Paste behave output
+features/intrinsic_complexity_attestation.feature
+1 feature passed, 0 failed, 0 skipped
+4 scenarios passed, 0 failed, 0 skipped
+21 steps passed, 0 failed, 0 skipped
 ```
 
 ### Gate 5 (Human)
 ```text
-# Record attestation + receipt IDs
+Attestor: Jeffry
+Text: attest completed
+Date: 2026-05-08
 ```
 
 ### Value Narrative
 
+Functions with genuinely irreducible cyclomatic complexity (query optimizers,
+state machines, protocol decoders) previously had no formal escape from
+repeated advisor refactor recommendations. OBPI-0.0.29-07 closes this gap
+with two human-attested paths: a decorator for compile-time registration and
+a commit-time CLI command for in-flight discovery.
+
 ### Key Proof
+
+
+arb-step-unittest-cf68ebf06bb646cbb56d5e0cf81afef5 (all tests pass);
+uv run -m behave features/intrinsic_complexity_attestation.feature (4/4 pass);
+gz validate --documents (exit 0)
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+Decorator path: @intrinsic_complexity(reason, attestor) registers
+(file_path, qualname) in module-level registry; _analyze_file checks
+registry before engine call and short-circuits attested functions.
+Commit-time path: gz complexity advise file:qualname --attest-intrinsic
+validates band crossing, TTY gate, ATTEST confirmation, emits
+intrinsic-complexity-attestation ledger event. Trust audit
+validate_intrinsic_attestation added under gz validate --intrinsic-attestation.
+
+- Files created: intrinsic.py, intrinsic_attestation.py, 3 test files, BDD feature + steps
+- Files modified: complexity_advise.py, ledger_events.py, schemas/ledger.json, events.py, trust_audits/__init__.py, validate_cmd.py, parser_artifacts.py, parser_maintenance.py, 3 doc files
+- Tests added: 8 unit (registry), 7 unit (attest CLI), 8 unit (event shape), 4 BDD
+- Date completed: 2026-05-08
+- Attestation status: Attested by Jeffry
+- Defects noted: None in-scope
 
 ### Closing Argument
+
+Both attestation paths are human-gated: the decorator requires explicit reason
+and attestor at authoring time; the CLI path requires a crossing function,
+an interactive TTY, and the literal word ATTEST. The trust audit closes the
+ledger loop.
 
 ## Tracked Defects
 
@@ -172,14 +209,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry`
+- Attestation: attest completed — two-path intrinsic-complexity attestation implemented: decorator registry (@intrinsic_complexity) + commit-time --attest-intrinsic CLI path with TTY gate; validate_intrinsic_attestation trust audit wired; arb-ruff-363ee011147c4191a2196e0eb613434b, arb-step-typecheck-093d9f5a6d32460fab47140eb0b1f986, arb-step-unittest-cf68ebf06bb646cbb56d5e0cf81afef5, arb-step-mkdocs-42e979ab5b214bf9bf28beb7e79ccc2e; 4/4 BDD scenarios pass; gz validate --documents clean; REQ-0.0.29-07-01 through -06 covered
+- Date: 2026-05-08
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-08
 
 **Evidence Hash:** -

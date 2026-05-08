@@ -529,6 +529,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Require gz-justify artifact for low eval scores (ADR-0.0.26).",
     )
     p_validate.add_argument(
+        "--intrinsic-attestation",
+        dest="check_intrinsic_attestation",
+        action="store_true",
+        help="Validate intrinsic-complexity-attestation ledger event shapes (OBPI-0.0.29-07).",
+    )
+    p_validate.add_argument(
         "--attestation-receipts",
         dest="attestation_receipts",
         default=None,
@@ -594,6 +600,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             sensitivity_explain=(a.frontmatter_explain if a.check_sensitivity else None),
             check_absorption_duplicates=a.check_absorption_duplicates,
             check_evaluation_justify_binding=(a.check_evaluation_justify_binding),
+            check_intrinsic_attestation=a.check_intrinsic_attestation,
             attestation_receipts=a.attestation_receipts,
             attestation_lane=a.attestation_lane,
             attestation_kind=a.attestation_kind,

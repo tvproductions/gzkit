@@ -62,6 +62,13 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "modify the artifact graph (the OBPI's attested_completed state is "
         "already established by the upstream obpi_receipt_emitted event)."
     ),
+    "intrinsic-complexity-attestation": (
+        "Attestation record for functions with irreducibly intrinsic cyclomatic "
+        "complexity (OBPI-0.0.29-07). Consumed by gz complexity advise advisor "
+        "path and gz validate --documents trust audit; does not add artifact graph "
+        "nodes (complexity attestations are a quality-governance record, not an "
+        "artifact lifecycle event)."
+    ),
 }
 
 _VALIDATOR_FIELD_WAIVERS: dict[str, str] = {}
