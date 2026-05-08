@@ -3,7 +3,7 @@ id: OBPI-0.0.29-08-verdict-proof-binding
 parent: ADR-0.0.29
 item: 8
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.29-08-verdict-proof-binding: Verdict ↔ Proof Binding
@@ -159,13 +159,54 @@ uv run -m behave features/advisor_proof_binding.feature
 
 ### Key Proof
 
+
+```bash
+uv run gz validate --advisor-proof-binding
+# Validated: advisor_proof_binding
+# ✓ All validations passed (1 scopes).
+# Exit 0 — vacuous pass on live repo (no fixtures present + schema minItems=1 + no ledger events citing empty-proof diagnoses)
+
+uv run gz arb ruff
+# Lint clean — receipt arb-ruff-d5ed64aeef3e45a9a18a02be9f0e3544
+
+uv run gz arb typecheck
+# Type clean — receipt arb-step-typecheck-aad61d67d4c64e6aab4752ba92283f24
+
+uv run gz arb step --name unittest -- uv run -m unittest tests.governance.test_advisor_proof_binding_validator -v
+# 16/16 PASS — receipt arb-step-unittest-ffab4fe6dc2448179986cda64a0e4b95
+
+uv run gz arb step --name unittest -- uv run -m unittest -q
+# 4458/4458 PASS — receipt arb-step-unittest-0f6418ed0e294388a9071bac1bbbb9aa
+
+uv run gz arb step --name behave -- uv run -m behave features/advisor_proof_binding.feature
+# 1 feature passed, 0 failed; 2 scenarios passed, 0 failed; 11 steps passed, 0 failed
+# receipt arb-step-behave-29408fd33d5e4526bf295633cb039066
+
+uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
+# Documentation built — receipt arb-step-mkdocs-54a20358e4d14c328c87aeaf9d1424fd
+
+uv run gz covers OBPI-0.0.29-08 --json
+# {"by_obpi": [{"identifier": "OBPI-0.0.29-08", "total_reqs": 6, "covered_reqs": 6, "uncovered_reqs": 0, "coverage_percent": 100.0}]}
+
+uv run gz check
+# 17/17 ✓ All checks passed.
+```
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Validator: `src/gzkit/governance/trust_audits/advisor_proof_binding.py` (new module; 3 scan scopes — fixtures, ledger, schema; speculative-marker escape via `_negative_case: true`)
+- Tests: `tests/governance/test_advisor_proof_binding_validator.py` (16 unit tests across 5 test classes; @covers REQ-0.0.29-08-01..06)
+- BDD: `features/advisor_proof_binding.feature` (2 scenarios @REQ-0.0.29-08-02 + @REQ-0.0.29-08-03), `features/steps/advisor_proof_binding_steps.py`
+- CLI flag: `--advisor-proof-binding` registered at `src/gzkit/cli/parser_maintenance.py`; wired into 6 dispatcher surfaces in `src/gzkit/commands/validate_cmd.py` (collect_errors signature, explicit_scopes dict, _explicit_scope_runners runner map, _resolve_scopes opt_in_scopes list, validate() signature, --all aggregation)
+- Re-export: `validate_advisor_proof_binding` added to `src/gzkit/governance/trust_audits/__init__.py`
+- Docs: `docs/user/manpages/gz-validate.md` (new manpage — was missing on disk despite verb being live); `docs/user/commands/validate.md` (flag section + synopsis + summary table); `docs/user/runbook.md` (entry under "Complexity doctrine surfaces"); `docs/governance/advisory-rules-audit.md` (scorecard row #54 — Mechanical class)
+- In-flight cross-OBPI direct-fixes (per AGENTS.md § Defect-fix routing thresholds): `features/complexity_advise.feature` (1-line case-mismatch with OBPI-03 emitted output); `features/complexity_advisor_auto_chain.feature` (`@wip` tag); `behave.ini` (`default_tags = ~@wip` config)
+- Brief Allowed Paths corrected mid-flight: `trust_audits.py` (file) -> `trust_audits/advisor_proof_binding.py` (new module under existing package); `commands/validate.py` -> `commands/validate_cmd.py`; `cli/parser_artifacts.py` -> `cli/parser_maintenance.py`; `manpages/gz-validate.md` (file did not exist; authored as new file per operator clarification)
+- Tests added: 16 unit (5 test classes) + 2 BDD scenarios
+- Date completed: 2026-05-08
+- Attestation status: human-attested (operator: Jeffry Babb)
+- Defects routed: GHI #417 (OBPI-05 missing step defs), GHI #418 (manpages/commands docs-surface duplication), GHI #419 (brief drift pre-flight gap), GHI #420 (Stage 3 scope discipline drift), GHI #421 (serial ARB receipt cycles)
 
 ### Closing Argument
 
@@ -175,14 +216,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — OBPI-0.0.29-08 verdict <-> proof binding validator lands as the gate-time defense-in-depth backstop for OBPI-01 (model layer Field(min_length=1) + _check_proof_nonempty validator) and OBPI-02 (engine layer EngineError raised pre-instantiation when proof is unavailable). Three scan scopes (fixtures under tests/fixtures/advisor/*.json, intrinsic-complexity-attestation ledger events citing diagnoses, JSON Schema at src/gzkit/schemas/advisor_diagnosis.json properties.proof.minItems >= 1) with speculative-marker escape (_negative_case: true). 16/16 unit tests across 5 test classes (TestFixtureScope, TestLedgerScope, TestSchemaScope, TestErrorMessageQuality, TestCliIntegration) green; 2/2 BDD scenarios @REQ-0.0.29-08-02 (empty-proof fixture) and @REQ-0.0.29-08-03 (ledger event citing empty-proof diagnosis) green; 6/6 REQ coverage parity (gz covers OBPI-0.0.29-08 uncovered_reqs=0); --advisor-proof-binding flag wired into validate_cmd dispatcher and --all aggregation; gz check 17/17 green; ARB receipts arb-ruff-d5ed64aeef3e45a9a18a02be9f0e3544, arb-step-typecheck-aad61d67d4c64e6aab4752ba92283f24, arb-step-unittest-ffab4fe6dc2448179986cda64a0e4b95, arb-step-unittest-0f6418ed0e294388a9071bac1bbbb9aa, arb-step-mkdocs-54a20358e4d14c328c87aeaf9d1424fd, arb-step-behave-29408fd33d5e4526bf295633cb039066. Brief drift corrected mid-flight (4 paths: parser_artifacts -> parser_maintenance, validate.py -> validate_cmd.py, manpages/gz-validate.md authored as new file, trust_audits.py -> trust_audits/advisor_proof_binding.py). In-flight cross-OBPI cleanup tracked under GHI #417 (OBPI-05 missing 21 step defs; @wip + behave.ini) + GHI #418 (manpages/commands docs-surface duplication). Operator-attested system slop tracked under GHI #419 (brief drift pre-flight), GHI #420 (Stage 3 scope discipline drift in pipeline runtime), GHI #421 (serial ARB receipt cycles).
+- Date: 2026-05-08
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-08
 
 **Evidence Hash:** -
