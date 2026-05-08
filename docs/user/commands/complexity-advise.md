@@ -13,6 +13,7 @@ range, recommended move) for each crossing.
 ```text
 gz complexity advise <path> [--json] [--quiet] [--verbose] [--dry-run]
                             [--auto-chain] [--rule-path PATH]
+                            [--attest-intrinsic --reason REASON --attestor NAME]
 ```
 
 ## DESCRIPTION
@@ -56,6 +57,15 @@ auto-fire hook) and is currently a no-op marker.
 - `--rule-path PATH` — Override the threshold rule path. Default is
   `.gzkit/rules/complexity-thresholds.md`. Test injection only;
   production runs use the default.
+- `--attest-intrinsic` — Commit-time intrinsic attestation path. Requires
+  `<path>` in `<file_path>:<qualname>` form. Checks that the named
+  function crosses a threshold band, then requires TTY + `ATTEST`
+  confirmation before emitting one `intrinsic-complexity-attestation`
+  ledger event. Headless invocations are refused (exit 1).
+- `--reason REASON` — Human-readable rationale for the intrinsic
+  attestation (required with `--attest-intrinsic`).
+- `--attestor NAME` — Full name of the attesting human (required with
+  `--attest-intrinsic`).
 - `--help`, `-h` — Show usage and exit 0.
 
 ## EXIT CODES
@@ -73,6 +83,10 @@ auto-fire hook) and is currently a no-op marker.
 gz complexity advise src/gzkit/commands/validate.py
 gz complexity advise src/gzkit/ --json
 gz complexity advise tests/ --quiet
+gz complexity advise src/gzkit/commands/engine.py:QueryOptimizer.plan \
+    --attest-intrinsic \
+    --reason "Irreducibly complex state-machine optimizer; CC=24 is the floor" \
+    --attestor "Jeffry"
 ```
 
 ## SEE ALSO

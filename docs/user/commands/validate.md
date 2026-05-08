@@ -304,6 +304,23 @@ gz validate --evaluation-justify-binding
 | 0 | No violations — gate not triggered, or trigger + justify artifact present | — |
 | 3 | Gate triggered (low score or high red-team count) with no qualifying `gz-justify` artifact | Run `uv run -m gzkit justify <artifact-id> --save` then commit the filled artifact |
 
+### `--intrinsic-attestation`
+
+Validates every `intrinsic-complexity-attestation` event in the ledger against the canonical
+schema (OBPI-0.0.29-07). Checks required string fields are non-empty, `crossing_band` is one
+of `block`, `warn`, `advise`, and `crossing_value` is numeric. Returns no errors for a missing
+ledger file (fail-open when attestation has never been used).
+
+```bash
+# Validate all intrinsic-complexity-attestation events in the ledger
+gz validate --intrinsic-attestation
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | All events valid or no events present | — |
+| 1 | One or more events have missing/invalid fields | Inspect the ledger event and re-run `gz complexity advise --attest-intrinsic` |
+
 ### `--sensitivity`
 
 Enforces the ADR-0.0.22 security-sensitivity invariant. Reads `data/security_surfaces.json` (the canonical glob-to-category registry) and walks every OBPI brief's `## ALLOWED PATHS` block. Any intersection between a brief's allowlist and the registry forces `sensitivity: security` (the auto-detect floor); frontmatter MAY escalate to `sensitivity: security` when paths don't trigger detection, but MAY NOT declare a value below the detected floor (escalate-not-escape). Fail-closed when the registry is missing, malformed, or schema-invalid.
@@ -420,6 +437,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--sensitivity` | opt-in | ADR-0.0.22 sensitivity-binding (auto-detect floor; escalate-not-escape against `data/security_surfaces.json`) |
 | `--absorption-duplicates` | opt-in | Same opsdev source path across parent ADRs needs `paired_with:` frontmatter waiver (GHI #376) |
 | `--evaluation-justify-binding` | opt-in | Fail-closed gate: `gz-justify` artifact required when evaluation scores are low (ADR-0.0.26) |
+| `--intrinsic-attestation` | opt-in | Validate `intrinsic-complexity-attestation` ledger events against canonical schema (OBPI-0.0.29-07) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
 
 The `--allowlist-only` flag is a sub-modifier for `--unscoped-rules` —

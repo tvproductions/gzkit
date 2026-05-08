@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.29-06-ad-hoc-path",
-  "timestamp": "2026-05-07T23:00:00Z",
+  "obpi_id": "OBPI-0.0.29-07-intrinsic-complexity-attestation",
+  "timestamp": "2026-05-08T00:45:17.791978+00:00",
   "verdict": "PASS",
-  "plan_file": "plan-OBPI-0.0.29-06-ad-hoc-path.md",
-  "gaps_found": 0,
-  "notes": "ADR<->OBPI alignment: 7/7 checks aligned. Plan covers all 11 REQs with explicit test coverage map and @covers decorator requirement. 3 structural 'allowed-path-not-found' gaps are expected (green-field OBPI creating new files: presentation.py, test_complexity_advise_ad_hoc.py, features/complexity_advise_ad_hoc.feature). 203 scope-collision advisories are cross-ADR overlaps on shared surfaces — non-blocking per OBPI-05 precedent. OBPI-03 dependency confirmed landed (complexity_advise.py exists with auto_chain param). Destination-in-mind: Presenter protocol + AdHocPresenter + AutoChainPresenter + CLI dispatch based on --auto-chain flag. Rejected alternative: inline logic in complexity_advise.py (brief REQ-05 mandates separable classes in presentation.py)."
+  "plan_file": "silly-herding-mist.md",
+  "gaps_found": 2,
+  "notes": "ADR<->OBPI alignment: 7/7 checks aligned. Plan covers all 13 REQs with explicit test coverage map and @covers decorator requirement. 5 structural allowed-path-not-found gaps are expected (green-field OBPI creating new files: intrinsic.py, test_intrinsic.py, test_complexity_advise_attest_intrinsic.py, test_intrinsic_attestation_event.py, features/intrinsic_complexity_attestation.feature). 255 scope-collision advisories are cross-ADR overlaps \u2014 non-blocking per OBPI-05/06 precedent. Two advisory path discrepancies documented: (1) ledger_events.py is at src/gzkit/ledger_events.py not governance subdir \u2014 accommodated by (or schema home) annotation; plan targets correct path. (2) trust_audits.py is a directory package \u2014 plan creates sub-module intrinsic_attestation.py. Destination-in-mind: decorator + registry in intrinsic.py; CLI enrichment via model_copy(); --attest-intrinsic replicates _enforce_human_attestation_authenticity; ledger event factory in root ledger_events.py; trust-audit sub-module for event-shape validation. Rejected alternatives: diagnosis.py edit (denied path), ARB receipts for attestation (ADR Negative 12), flat trust_audits.py (package not file)."
 }

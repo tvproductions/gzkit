@@ -405,3 +405,31 @@ def patch_release_event(
             "manifest_path": manifest_path,
         },
     )
+
+
+def intrinsic_complexity_attestation_event(
+    *,
+    file_path: str,
+    qualname: str,
+    reason: str,
+    attestor: str,
+    attestation_date: str,
+    metric: str,
+    crossing_band: str,
+    crossing_value: float,
+) -> LedgerEvent:
+    """Create an intrinsic-complexity-attestation event (OBPI-0.0.29-07)."""
+    return LedgerEvent(
+        event="intrinsic-complexity-attestation",
+        id=f"{file_path}::{qualname}",
+        extra={
+            "file_path": file_path,
+            "qualname": qualname,
+            "reason": reason,
+            "attestor": attestor,
+            "attestation_date": attestation_date,
+            "metric": metric,
+            "crossing_band": crossing_band,
+            "crossing_value": crossing_value,
+        },
+    )

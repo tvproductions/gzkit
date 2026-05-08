@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.0.29-07-intrinsic-complexity-attestation",
+  "parent_adr": "ADR-0.0.29",
+  "lane": "heavy",
+  "entry": "full",
+  "execution_mode": "normal",
+  "current_stage": "stage_2_implement",
+  "started_at": "2026-05-08T00:45:46.154851+00:00",
+  "updated_at": "2026-05-08T00:45:46.154953+00:00",
+  "receipt_state": "pass",
+  "plan_file": "silly-herding-mist.md",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "implement",
+  "resume_point": null
+}

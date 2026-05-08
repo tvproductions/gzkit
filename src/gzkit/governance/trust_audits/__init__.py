@@ -64,6 +64,9 @@ from gzkit.governance.trust_audits.insights import audit_insights_shape
 from gzkit.governance.trust_audits.instructions_files_budget import (
     audit_instructions_files_budget,
 )
+from gzkit.governance.trust_audits.intrinsic_attestation import (
+    validate_intrinsic_attestation,
+)
 from gzkit.governance.trust_audits.models import audit_pydantic_models
 from gzkit.governance.trust_audits.orientation import audit_orientation_freshness
 from gzkit.governance.trust_audits.reconcile import audit_reconcile_freshness
@@ -115,4 +118,5 @@ __all__ = [
     "validate_complexity_doctrine_links",
     "validate_complexity_thresholds",
     "validate_evaluation_justify_binding",
+    "validate_intrinsic_attestation",
 ]

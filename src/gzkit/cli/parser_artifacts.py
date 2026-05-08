@@ -252,6 +252,24 @@ def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:
         default=None,
         help="Override threshold rule path (default: .gzkit/rules/complexity-thresholds.md)",
     )
+    p_advise.add_argument(
+        "--attest-intrinsic",
+        dest="attest_intrinsic",
+        action="store_true",
+        help="Commit-time intrinsic attestation; requires <file>:<qualname> as path",
+    )
+    p_advise.add_argument(
+        "--reason",
+        dest="reason",
+        default=None,
+        help="Rationale for intrinsic attestation (required with --attest-intrinsic)",
+    )
+    p_advise.add_argument(
+        "--attestor",
+        dest="attestor",
+        default=None,
+        help="Full name of the attesting human (required with --attest-intrinsic)",
+    )
     p_advise.set_defaults(
         func=lambda a: _lazy("complexity_advise_cmd")(
             path=a.path,
@@ -261,6 +279,9 @@ def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:
             dry_run=a.dry_run,
             auto_chain=a.auto_chain,
             rule_path=a.rule_path,
+            attest_intrinsic=a.attest_intrinsic,
+            reason=a.reason,
+            attestor=a.attestor,
         )
     )
 
