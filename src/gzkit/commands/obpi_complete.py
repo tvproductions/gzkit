@@ -445,6 +445,8 @@ def _apply_uncovered_waivers(
     project_root: Path,
     as_json: bool,
     ledger: Any,
+    sensitivity: str | None = None,
+    parent_kind: str | None = None,
 ) -> list[str]:
     """Apply --accept-uncovered waivers to gaps; emit ledger events. Returns remaining gaps."""
     accepted_set = set(accept_uncovered)
@@ -460,6 +462,8 @@ def _apply_uncovered_waivers(
                 attestor=attestor,
                 attestor_present=attestor_present,
                 project_root=project_root,
+                sensitivity=sensitivity,
+                parent_kind=parent_kind,
             )
         except GzCliError as exc:
             _fail(str(exc), exit_code=3, as_json=as_json, obpi_id=obpi_id)
@@ -499,6 +503,7 @@ def _enforce_req_coverage_gate(
     attestor: str = "",
     attestor_present: bool = False,
     ledger: Any = None,
+    sensitivity: str | None = None,
 ) -> None:
     """Refuse completion when any brief REQ has no passing covering test.
 
@@ -554,6 +559,8 @@ def _enforce_req_coverage_gate(
             attestor_present=attestor_present,
             project_root=project_root,
             as_json=as_json,
+            sensitivity=sensitivity,
+            parent_kind=parent_kind,
             ledger=ledger,
         )
 
@@ -802,6 +809,7 @@ def obpi_complete_cmd(
         attestor=attestor,
         attestor_present=attestor_present,
         ledger=ledger,
+        sensitivity=parse_frontmatter_value(original_content, "sensitivity"),
     )
 
     # 4b. GHI #290 authenticity gate: no human-attestation receipt without TTY
@@ -811,6 +819,7 @@ def obpi_complete_cmd(
     # notes the gate would fire.
     attestation_type: str = ATTESTATION_TYPE_HUMAN
     if requires_human and not dry_run:
+        sensitivity_value = parse_frontmatter_value(original_content, "sensitivity")
         try:
             attestation_type = _enforce_human_attestation_authenticity(
                 obpi_id=obpi_id,
@@ -819,6 +828,8 @@ def obpi_complete_cmd(
                 attestation_text=attestation_text,
                 attestor_present=attestor_present,
                 project_root=project_root,
+                sensitivity=sensitivity_value,
+                parent_kind=parent_kind,
             )
         except GzCliError as exc:
             _fail(str(exc), exit_code=3, as_json=as_json, obpi_id=obpi_id)

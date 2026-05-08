@@ -5,10 +5,14 @@ Feature: OBPI completion REQ-coverage gate
   emit a warning and proceed. The override path (--accept-uncovered) records a
   ledger event and requires --attestor-present for agent-relayed acceptance.
 
+  # GHI #412: agent-relayed --attestor-present is refused for foundation-kind
+  # and sensitivity:security scopes. Scenarios that exercise the happy-path
+  # coverage gate via attestor-present use heavy-feature (still triggers the
+  # heavy-lane fail-closed rule) rather than heavy-foundation.
   @REQ-0.0.25-01-01
   Scenario: Gate passes when all REQs have passing covering tests
     Given the workspace is initialized in heavy mode
-    And a heavy-foundation OBPI "OBPI-FIXTURE-01-01" with REQ "REQ-0.0.98-01-01" exists
+    And a heavy-feature OBPI "OBPI-FIXTURE-01-01" with REQ "REQ-0.0.98-01-01" exists
     And a covering test for "REQ-0.0.98-01-01" that passes exists
     And a valid arb step receipt "arb-step-unittest-00000000000000000000000000000001" exists
     And a pipeline marker for "OBPI-FIXTURE-01-01" is active
@@ -57,7 +61,7 @@ Feature: OBPI completion REQ-coverage gate
   @REQ-0.0.25-01-06
   Scenario: Any one passing covering test satisfies the REQ
     Given the workspace is initialized in heavy mode
-    And a heavy-foundation OBPI "OBPI-FIXTURE-01-06" with REQ "REQ-0.0.98-01-06" exists
+    And a heavy-feature OBPI "OBPI-FIXTURE-01-06" with REQ "REQ-0.0.98-01-06" exists
     And a covering test for "REQ-0.0.98-01-06" that passes exists
     And a second covering test for "REQ-0.0.98-01-06" that fails exists
     And a valid arb step receipt "arb-step-unittest-00000000000000000000000000000006" exists
@@ -68,7 +72,7 @@ Feature: OBPI completion REQ-coverage gate
   @REQ-0.0.25-02-01
   Scenario: Override path proceeds and records ledger event via attestor-present
     Given the workspace is initialized in heavy mode
-    And a heavy-foundation OBPI "OBPI-FIXTURE-02-01" with REQ "REQ-0.0.98-02-01" exists
+    And a heavy-feature OBPI "OBPI-FIXTURE-02-01" with REQ "REQ-0.0.98-02-01" exists
     And a valid arb step receipt "arb-step-unittest-00000000000000000000000000000007" exists
     And a pipeline marker for "OBPI-FIXTURE-02-01" is active
     When I complete coverage-gate OBPI "OBPI-FIXTURE-02-01" accepting "REQ-0.0.98-02-01" reason "agent-relayed TTY-path proxy" citing "arb-step-unittest-00000000000000000000000000000007" using attestor-present

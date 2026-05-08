@@ -20,7 +20,7 @@ gz obpi complete OBPI-X.Y.Z-NN --attestor NAME --attestation-text TEXT
 | `--attestation-text TEXT` | Substantive attestation text (required) |
 | `--implementation-summary TEXT` | Implementation summary (reads from brief if omitted) |
 | `--key-proof TEXT` | Key proof text (reads from brief if omitted) |
-| `--attestor-present` | Agent-relayed operator attestation, gated on an active pipeline marker (GHI #292) |
+| `--attestor-present` | Agent-relayed operator attestation, gated on a structurally-authentic active pipeline marker (GHI #292; hardened by GHI #412 — marker must match expected obpi_id/parent_adr, carry a 32-hex nonce, be fresh within 4 hours, and have a matching `pipeline_launched` ledger event). Refused entirely for `sensitivity:security` and foundation-kind scopes; those require live TTY attestation. |
 | `--accept-uncovered REQ_ID` | Explicitly waive an uncovered REQ (repeatable; requires `--accept-uncovered-reason`) |
 | `--accept-uncovered-reason REASON` | Rationale for the corresponding `--accept-uncovered` entry (repeatable, 1:1 pairing) |
 | `--json` | Machine-readable JSON output |

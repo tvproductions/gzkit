@@ -4,7 +4,7 @@ import json
 import re
 import sys
 from collections.abc import Mapping
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
@@ -429,16 +429,127 @@ def _is_human_attestation_tty_available() -> bool:
         return False
 
 
-def _active_pipeline_marker_exists(project_root: Path, obpi_id: str) -> bool:
-    """Return True when a project-local pipeline marker exists for ``obpi_id``.
+_PIPELINE_MARKER_STALE_HOURS = 4
+_PIPELINE_MARKER_NONCE_RE = re.compile(r"^[a-f0-9]{32}$")
+_PIPELINE_MARKER_VALID_STAGES = frozenset({"implement", "verify", "ceremony", "sync", "audit"})
 
-    The marker is ``.claude/plans/.pipeline-active-<obpi_id>.json``. Only an
-    operator-initiated ``gz obpi pipeline`` run writes this file, so its
-    presence is a strong proxy for operator co-presence that a fully-headless
-    CI process cannot forge without also running the pipeline ceremony.
+
+def _ledger_path_for(project_root: Path) -> Path:
+    """Return the canonical ledger path used for marker provenance lookup."""
+    return project_root / ".gzkit" / "ledger.jsonl"
+
+
+def _ledger_has_pipeline_launched(ledger_path: Path, obpi_id: str, nonce: str) -> bool:
+    """Return True when the ledger contains a pipeline_launched event matching obpi_id+nonce."""
+    if not ledger_path.is_file():
+        return False
+    try:
+        with ledger_path.open(encoding="utf-8") as handle:
+            for raw in handle:
+                line = raw.strip()
+                if not line:
+                    continue
+                try:
+                    record = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if record.get("event") != "pipeline_launched":
+                    continue
+                if record.get("id") != obpi_id:
+                    continue
+                if record.get("nonce") == nonce:
+                    return True
+    except OSError:
+        return False
+    return False
+
+
+def _check_marker_freshness(payload: dict[str, Any]) -> tuple[bool, str]:
+    """Return (ok, reason) for the marker's started_at freshness window."""
+    started_at = payload.get("started_at")
+    if not isinstance(started_at, str):
+        return False, "marker started_at field is missing"
+    try:
+        ts = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+    except ValueError:
+        return False, f"marker started_at is not parseable: {started_at!r}"
+    age = datetime.now(UTC) - ts
+    if age > timedelta(hours=_PIPELINE_MARKER_STALE_HOURS):
+        return False, (
+            f"marker is stale (started_at={started_at}, "
+            f"age exceeds {_PIPELINE_MARKER_STALE_HOURS}h freshness window)"
+        )
+    return True, ""
+
+
+def _validate_active_pipeline_marker(
+    project_root: Path, obpi_id: str, parent_adr: str
+) -> tuple[bool, str]:
+    """Validate the active pipeline marker for ``obpi_id`` (GHI #412).
+
+    A trivially-touched file no longer satisfies this gate. The marker must
+    parse as a JSON object with the fields ``gz obpi pipeline`` writes at
+    Stage 1, must be fresh, and its nonce must appear in a
+    ``pipeline_launched`` ledger event for the same OBPI. Returns
+    ``(True, "")`` when every check passes, otherwise ``(False, reason)``.
     """
     marker = project_root / ".claude" / "plans" / f".pipeline-active-{obpi_id}.json"
-    return marker.is_file()
+    if not marker.is_file():
+        return False, f"marker file does not exist: {marker.as_posix()}"
+    try:
+        payload = json.loads(marker.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return False, f"marker is not readable JSON: {exc}"
+    if not isinstance(payload, dict):
+        return False, "marker payload is not a JSON object"
+    if payload.get("obpi_id") != obpi_id:
+        return False, (f"marker obpi_id does not match: {payload.get('obpi_id')!r} != {obpi_id!r}")
+    marker_parent = payload.get("parent_adr")
+    if marker_parent != parent_adr:
+        return False, (
+            f"marker parent_adr does not match expected parent: {marker_parent!r} != {parent_adr!r}"
+        )
+    stage = payload.get("current_stage")
+    if stage not in _PIPELINE_MARKER_VALID_STAGES:
+        return False, f"marker current_stage is not canonical: {stage!r}"
+    nonce = payload.get("nonce")
+    if not isinstance(nonce, str) or not _PIPELINE_MARKER_NONCE_RE.fullmatch(nonce):
+        return False, "marker nonce is missing or malformed"
+    fresh_ok, fresh_reason = _check_marker_freshness(payload)
+    if not fresh_ok:
+        return False, fresh_reason
+    if not _ledger_has_pipeline_launched(_ledger_path_for(project_root), obpi_id, nonce):
+        return False, (
+            "no matching pipeline_launched ledger event for this marker; "
+            "the marker was not produced by an operator-initiated pipeline run"
+        )
+    return True, ""
+
+
+def _active_pipeline_marker_exists(project_root: Path, obpi_id: str) -> bool:
+    """Backward-compat: return True only when the marker is structurally authentic.
+
+    Pre-GHI #412 this was a trivial ``marker.is_file()`` check. The forgery
+    surface that exposed (any process with write access could satisfy the
+    agent-relayed attestation gate) is now closed: the marker must parse,
+    match expected obpi_id, carry a valid nonce, be fresh, and be witnessed
+    by a ``pipeline_launched`` ledger event. Callers that need the rejection
+    reason should call :func:`_validate_active_pipeline_marker` directly.
+    """
+    marker = project_root / ".claude" / "plans" / f".pipeline-active-{obpi_id}.json"
+    if not marker.is_file():
+        return False
+    try:
+        payload = json.loads(marker.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    if not isinstance(payload, dict):
+        return False
+    parent_adr = payload.get("parent_adr")
+    if not isinstance(parent_adr, str):
+        return False
+    ok, _reason = _validate_active_pipeline_marker(project_root, obpi_id, parent_adr)
+    return ok
 
 
 def _enforce_human_attestation_authenticity(
@@ -449,6 +560,8 @@ def _enforce_human_attestation_authenticity(
     attestation_text: str,
     attestor_present: bool = False,
     project_root: Path | None = None,
+    sensitivity: str | None = None,
+    parent_kind: str | None = None,
 ) -> str:
     """Enforce the GHI #290 authenticity gate and resolve the attestation path.
 
@@ -461,22 +574,18 @@ def _enforce_human_attestation_authenticity(
        exact word ``ATTEST`` (uppercase, no quotes) to confirm. Returns
        :data:`ATTESTATION_TYPE_HUMAN`.
     2. **Agent-relayed path (``agent-relayed-operator-attestation``).** No
-       TTY, but ``attestor_present=True`` AND an active pipeline marker
-       exists at ``.claude/plans/.pipeline-active-<obpi_id>.json``. The
-       marker is a co-presence proxy: only an operator-initiated
-       ``gz obpi pipeline`` run writes it. Returns
+       TTY, but ``attestor_present=True`` AND the marker passes
+       :func:`_validate_active_pipeline_marker` (structure, freshness,
+       ledger-witnessed nonce — GHI #412). Returns
        :data:`ATTESTATION_TYPE_AGENT_RELAYED` so the caller can record a
-       taxonomically distinct ledger receipt.
-    3. **Fail-closed.** No TTY and either ``attestor_present=False`` or no
-       pipeline marker. Agent-synthesized attestation from a fully-headless
-       context is prohibited per GHI #290; the function raises
-       :class:`GzCliError`.
-
-    Unit tests exercise the three paths by patching
-    ``_is_human_attestation_tty_available``, ``_active_pipeline_marker_exists``,
-    and ``input`` at the module level (see ``tests/test_obpi_complete_cmd.py``).
-    Callers translate :class:`GzCliError` to their own exit-code contract
-    (exit 3 for policy breach per ``.claude/rules/cli.md``).
+       taxonomically distinct ledger receipt. **GHI #412 narrowing:** the
+       agent-relayed path is refused entirely when ``sensitivity == "security"``
+       or ``parent_kind == "foundation"`` — those scopes require live TTY
+       attestation, never a file-based proxy.
+    3. **Fail-closed.** No TTY and either ``attestor_present=False`` or the
+       marker fails authenticity validation. Agent-synthesized attestation
+       from a fully-headless context is prohibited per GHI #290; the function
+       raises :class:`GzCliError`.
     """
     if _is_human_attestation_tty_available():
         console.print("")
@@ -512,13 +621,24 @@ def _enforce_human_attestation_authenticity(
                 "pipeline marker; internal caller did not pass project_root."
             )
             raise GzCliError(msg)
-        if not _active_pipeline_marker_exists(project_root, obpi_id):
+        if (isinstance(sensitivity, str) and sensitivity.lower() == "security") or (
+            isinstance(parent_kind, str) and parent_kind.lower() == "foundation"
+        ):
             msg = (
-                "--attestor-present requires an active pipeline marker at "
-                f".claude/plans/.pipeline-active-{obpi_id}.json, but none was "
-                f"found. Start the pipeline with 'uv run gz obpi pipeline "
-                f"{obpi_id}' first, or re-run this command from an "
-                "interactive shell and type the confirmation yourself."
+                "--attestor-present is refused for sensitivity:security and "
+                "foundation-kind attestation (GHI #412). The agent-relayed path "
+                "is a file-based co-presence proxy and cannot satisfy the "
+                "authority boundary required for these scopes. Run this command "
+                "from an interactive shell and type the confirmation yourself."
+            )
+            raise GzCliError(msg)
+        ok, reason = _validate_active_pipeline_marker(project_root, obpi_id, parent_adr)
+        if not ok:
+            msg = (
+                f"--attestor-present rejected: {reason}. "
+                f"Start the pipeline with 'uv run gz obpi pipeline {obpi_id}' "
+                f"first, or re-run this command from an interactive shell and "
+                f"type the confirmation yourself."
             )
             raise GzCliError(msg)
         console.print("")
@@ -530,7 +650,7 @@ def _enforce_human_attestation_authenticity(
         console.print(f"  Attestor:    {attestor}")
         console.print(f"  Attestation: {attestation_text}")
         console.print(
-            "  [dim]Co-presence proxy: active pipeline marker "
+            "  [dim]Co-presence proxy: validated active pipeline marker "
             f".claude/plans/.pipeline-active-{obpi_id}.json[/dim]"
         )
         return ATTESTATION_TYPE_AGENT_RELAYED
@@ -557,6 +677,8 @@ def _enforce_uncovered_acceptance_confirmation(
     attestor: str,
     attestor_present: bool = False,
     project_root: Path | None = None,
+    sensitivity: str | None = None,
+    parent_kind: str | None = None,
 ) -> str:
     """Gate the --accept-uncovered override for heavy/foundation parents.
 
@@ -604,10 +726,20 @@ def _enforce_uncovered_acceptance_confirmation(
                 "pipeline marker; internal caller did not pass project_root."
             )
             raise GzCliError(msg)
-        if not _active_pipeline_marker_exists(project_root, obpi_id):
+        if (isinstance(sensitivity, str) and sensitivity.lower() == "security") or (
+            isinstance(parent_kind, str) and parent_kind.lower() == "foundation"
+        ):
             msg = (
-                "--attestor-present requires an active pipeline marker at "
-                f".claude/plans/.pipeline-active-{obpi_id}.json, but none was found. "
+                "--attestor-present is refused for sensitivity:security and "
+                "foundation-kind uncovered-REQ acceptance (GHI #412). Run this "
+                "command from an interactive shell and type the confirmation "
+                "yourself."
+            )
+            raise GzCliError(msg)
+        ok, reason = _validate_active_pipeline_marker(project_root, obpi_id, parent_adr)
+        if not ok:
+            msg = (
+                f"--attestor-present rejected: {reason}. "
                 f"Start the pipeline with 'uv run gz obpi pipeline {obpi_id}' first."
             )
             raise GzCliError(msg)
@@ -1073,9 +1205,13 @@ def adr_audit_begin_cmd(adr: str) -> None:
     adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
     _reject_pool_adr_for_lifecycle(adr_id, "opened audit ceremonies")
 
+    from gzkit.ledger import pipeline_launched_event
+    from gzkit.pipeline_runtime import generate_pipeline_nonce
+
     marker_path = _adr_audit_marker_path(project_root, adr_id)
     marker_path.parent.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    nonce = generate_pipeline_nonce()
     payload: dict[str, Any] = {
         "obpi_id": adr_id,
         "parent_adr": adr_id,
@@ -1086,6 +1222,7 @@ def adr_audit_begin_cmd(adr: str) -> None:
         "started_at": timestamp,
         "updated_at": timestamp,
         "receipt_state": "audit-active",
+        "nonce": nonce,
         "blockers": [],
         "required_human_action": (
             "Operator verbal attestation expected at Gate-5 emit; agent relays."
@@ -1094,6 +1231,16 @@ def adr_audit_begin_cmd(adr: str) -> None:
         "resume_point": "emit-receipt",
     }
     marker_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    ledger.append(
+        pipeline_launched_event(
+            obpi_id=adr_id,
+            parent_adr=adr_id,
+            lane="audit",
+            nonce=nonce,
+            marker_path=marker_path.relative_to(project_root).as_posix(),
+            entry="audit",
+        )
+    )
     console.print("[green]ADR audit ceremony opened.[/green]")
     console.print(f"  ADR: {adr_id}")
     console.print(f"  Marker: {marker_path}")

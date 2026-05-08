@@ -311,6 +311,15 @@
         "marker_path": { "type": "string", "min_length": 1 }
       }
     },
+    "pipeline_launched": {
+      "required": ["nonce", "marker_path", "lane"],
+      "properties": {
+        "nonce": { "type": "string", "pattern": "^[a-f0-9]{32}$" },
+        "marker_path": { "type": "string", "min_length": 1 },
+        "lane": { "type": "string", "min_length": 1 },
+        "entry": { "type": "string" }
+      }
+    },
     "task_started": {
       "required": ["task_id", "obpi_id", "adr_id", "agent"],
       "properties": {

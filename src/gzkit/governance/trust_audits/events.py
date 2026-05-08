@@ -62,6 +62,13 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "modify the artifact graph (the OBPI's attested_completed state is "
         "already established by the upstream obpi_receipt_emitted event)."
     ),
+    "pipeline_launched": (
+        "Pipeline-launch authenticity record (GHI #412) — emitted at Stage 1 with "
+        "the nonce embedded in the active pipeline marker. Cross-referenced by "
+        "the agent-relayed attestation gate to verify the marker was produced "
+        "by an operator-initiated 'gz obpi pipeline' run rather than a forged "
+        "file. Does not modify the artifact graph."
+    ),
     "intrinsic-complexity-attestation": (
         "Attestation record for functions with irreducibly intrinsic cyclomatic "
         "complexity (OBPI-0.0.29-07). Consumed by gz complexity advise advisor "

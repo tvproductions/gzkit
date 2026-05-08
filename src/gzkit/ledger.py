@@ -795,6 +795,7 @@ from gzkit.ledger_events import (  # noqa: E402, F401
     obpi_created_event,
     obpi_receipt_emitted_event,
     obpi_withdrawn_event,
+    pipeline_launched_event,
     pipeline_marker_purged_event,
     prd_created_event,
     project_init_event,
