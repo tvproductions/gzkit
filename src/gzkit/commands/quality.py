@@ -137,12 +137,16 @@ def _resolve_obpi_test_names(project_root, obpi: str) -> list[str]:
     return sorted(names)
 
 
-def _resolve_obpi_behave_tags(project_root, obpi: str) -> list[str]:
+def resolve_obpi_behave_tags(project_root, obpi: str) -> list[str]:
     """Return behave scenario tags (``@REQ-...``) covering this OBPI's REQs.
 
     Delegates feature-file parsing to ``scan_feature_tree`` — the canonical
     scanner used by ``gz covers`` (GHI #185) — so the tag list this
     function emits is always consistent with the coverage graph.
+
+    Public surface (GHI #420): consumed by ``obpi_stages._run_pipeline_verify_stage``
+    to scope the Stage 3 behave invocation to this OBPI's REQ tags so
+    cross-OBPI rot in unrelated feature files cannot block new OBPIs.
     """
     from gzkit.traceability import EdgeType, scan_feature_tree  # noqa: PLC0415
     from gzkit.triangle import ReqId  # noqa: PLC0415
@@ -187,7 +191,7 @@ def _run_obpi_scoped_unit(project_root, obpi: str) -> None:
 
 def _run_obpi_scoped_behave(project_root, obpi: str) -> None:
     """Run behave scenarios tagged with this OBPI's REQs (exit on failure)."""
-    tags = _resolve_obpi_behave_tags(project_root, obpi)
+    tags = resolve_obpi_behave_tags(project_root, obpi)
     if not tags:
         console.print(
             f"[yellow]No @REQ-tagged behave scenarios found for {obpi}. "

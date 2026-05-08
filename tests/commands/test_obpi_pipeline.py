@@ -209,9 +209,11 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertIn("Human attestation required.", result.output)
             self.assertIn("--from=sync", result.output)
             # Verify the verification commands were executed.
-            # Baseline (3) + brief verification block (5) + heavy-lane extras (2).
-            # Baseline + heavy-lane extras are ARB-wrapped so Stage 3 emits canonical
-            # attestation receipts at parity with AGENTS.md § Attestation (GHI #317).
+            # Baseline (3) + brief verification block (5) + heavy-lane mkdocs (1)
+            # + Stage 3 precomplete (1). Behave is omitted because the isolated
+            # filesystem fixture has no @REQ-tagged feature scenarios for this
+            # OBPI (GHI #420 scope discipline: full ``features/`` sweep deferred
+            # to ADR closeout when no OBPI-scoped tags resolve).
             verify_commands = [call.args[0] for call in run_command_mock.call_args_list[:10]]
             self.assertEqual(
                 verify_commands,
@@ -225,7 +227,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
                     "uv run gz test",
                     "python -c \"print('verify ok')\"",
                     "uv run gz arb step --name mkdocs -- uv run mkdocs build --strict",
-                    "uv run gz arb step --name behave -- uv run -m behave features/",
+                    "uv run gz obpi precomplete OBPI-0.13.0-01-runtime-command-contract",
                 ],
             )
             marker_path, legacy_path = self._pipeline_paths(Path.cwd())

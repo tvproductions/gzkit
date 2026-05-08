@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.14.2"
+skill-version: "6.14.3"
 last_reviewed: 2026-04-25
 model: sonnet
 ---
@@ -308,17 +308,20 @@ uv run gz arb step --name unittest -- uv run -m unittest -q
 
 # If Heavy lane (emits arb-step-mkdocs-* and arb-step-behave-* receipts)
 uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
-uv run gz arb step --name behave -- uv run -m behave features/
+uv run gz arb step --name behave -- uv run -m behave --tags=@REQ-X.Y.Z-NN-MM,... features/
 uv run gz validate --documents
 ```
 
-**Scope discipline (GHI #160, #185).** At OBPI Stage 3, run only the
-tests that cover *this* OBPI's REQs (`--obpi` uses the `@covers` graph to
-target them — typically <1s vs ~70s for the full suite). The full unittest
-suite + behave run at ADR closeout, where cross-OBPI interactions are caught.
-Pre-commit hooks (ruff + ty + unittest) still run on every commit, so the
-full suite isn't bypassed — it's just not re-run synchronously at every
-OBPI increment. Heavy-lane BDD runs via `gz test --bdd` at ADR closeout.
+**Scope discipline (GHI #160, #185, #420).** At OBPI Stage 3, the
+runtime resolves this OBPI's `@REQ-...` behave tags via
+`resolve_obpi_behave_tags` and scopes the behave invocation to those
+tags. When the OBPI has no @REQ-tagged scenarios, behave is omitted
+from Stage 3 entirely — the full `features/` sweep is deferred to ADR
+closeout (Stage 5 of the parent ADR), where cross-OBPI interactions
+are caught. Pre-commit hooks (ruff + ty + unittest) still run on every
+commit, so the full unittest suite isn't bypassed — it's just not
+re-run synchronously at every OBPI increment. Heavy-lane BDD runs via
+`gz test --bdd` at ADR closeout.
 
 If any baseline check fails, attempt fix and re-verify once. If still failing, release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
 
