@@ -512,6 +512,28 @@ def _validate_brief_structure(project_root: Path, brief_path: Path) -> list[str]
     ]
 
 
+def _validate_brief_path_existence(project_root: Path, brief_path: Path) -> list[str]:
+    """Surface allowed-path drift at brief authoring time (GHI #419).
+
+    Mirrors the ``gz plan audit`` allowed-path validity gap (GHI #393 +
+    GHI #403) so authoring-time ``gz obpi validate`` rejects briefs whose
+    ``## Allowed Paths`` reference files that do not exist on disk —
+    closing the cost gap where every implementation paid ~10 minutes
+    correcting drift mid-flight at Stage 4 instead of zero cost at
+    authoring time.
+
+    Briefs without an ``## Allowed Paths`` section (fresh scaffolds)
+    surface no errors. Net-new paths declared via ``**CREATE**`` markers
+    or under a ``Creates these files`` heading are exempt from the
+    existence gap; vendor-mirror surfaces fail fail-closed regardless.
+    """
+    from gzkit.governance.brief_path_validity import (  # noqa: PLC0415
+        check_brief_path_validity_for_brief,
+    )
+
+    return check_brief_path_validity_for_brief(project_root, brief_path)
+
+
 def obpi_validate_cmd(obpi_path: str | None, adr_id: str | None, authored: bool) -> None:
     """Validate OBPI brief(s) for structural conformance and content readiness."""
     config = ensure_initialized()
@@ -533,10 +555,16 @@ def obpi_validate_cmd(obpi_path: str | None, adr_id: str | None, authored: bool)
     # Structural conformance check (always runs, regardless of status)
     structure_errors = _validate_brief_structure(project_root, path)
 
+    # Allowed-path validity check (GHI #419) — gated on --authored so early
+    # Draft briefs with placeholder paths still pass lenient validation;
+    # the authoring-time gate fires before plan authoring incurs the
+    # ~10-minute mid-flight drift-correction cost the GHI surfaced.
+    path_errors = _validate_brief_path_existence(project_root, path) if authored else []
+
     # Content readiness check (ObpiValidator)
     completion_errors = validator.validate_file(path, require_authored=authored)
 
-    all_errors = structure_errors + completion_errors
+    all_errors = structure_errors + path_errors + completion_errors
     if all_errors:
         console.print(f"[red]OBPI Validation Failed:[/red] {path.name}")
         console.print("BLOCKERS:")
@@ -576,8 +604,9 @@ def _obpi_validate_batch(
     total_errors = 0
     for brief_path in briefs:
         structure_errors = _validate_brief_structure(project_root, brief_path)
+        path_errors = _validate_brief_path_existence(project_root, brief_path) if authored else []
         completion_errors = validator.validate_file(brief_path, require_authored=authored)
-        all_errors = structure_errors + completion_errors
+        all_errors = structure_errors + path_errors + completion_errors
         if all_errors:
             total_errors += 1
             console.print(f"[red]FAIL[/red] {brief_path.name}")
