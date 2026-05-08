@@ -110,54 +110,54 @@ nav:
       - /gz-chore-runner: user/skills/gz-chore-runner.md
       - /gz-obpi-lock: user/skills/gz-obpi-lock.md
       - /gz-cli-audit: user/skills/gz-cli-audit.md
-  - Commands:
-    - Overview: user/commands/index.md
-    - gz init: user/commands/init.md
-    - gz prd: user/commands/prd.md
-    - gz constitute: user/commands/constitute.md
-    - gz specify: user/commands/specify.md
-    - gz plan create: user/commands/plan-create.md
-    - gz plan audit: user/commands/plan-audit.md
-    - gz implement: user/commands/implement.md
-    - gz gates: user/commands/gates.md
-    - gz status: user/commands/status.md
-    - gz state: user/commands/state.md
-    - gz adr status: user/commands/adr-status.md
-    - gz adr promote: user/commands/adr-promote.md
-    - gz adr audit-check: user/commands/adr-audit-check.md
-    - gz adr covers-check: user/commands/adr-covers-check.md
-    - gz adr emit-receipt: user/commands/adr-emit-receipt.md
-    - gz covers: user/commands/covers.md
-    - gz flags: user/commands/flags.md
-    - gz flag explain: user/commands/flag-explain.md
-    - gz obpi status: user/commands/obpi-status.md
-    - gz obpi pipeline: user/commands/obpi-pipeline.md
-    - gz obpi validate: user/commands/obpi-validate.md
-    - gz obpi reconcile: user/commands/obpi-reconcile.md
-    - gz obpi emit-receipt: user/commands/obpi-emit-receipt.md
-    - gz closeout: user/commands/closeout.md
-    - gz patch release: user/commands/patch-release.md
-    - gz audit: user/commands/audit.md
-    - gz git-sync: user/commands/git-sync.md
-    - gz attest: user/commands/attest.md
-    - gz migrate-semver: user/commands/migrate-semver.md
-    - gz register-adrs: user/commands/register-adrs.md
-    - gz chores list: user/commands/chores-list.md
-    - gz chores plan: user/commands/chores-plan.md
-    - gz chores run: user/commands/chores-run.md
-    - gz chores audit: user/commands/chores-audit.md
-    - gz skill audit: user/commands/skill-audit.md
-    - gz parity check: user/commands/parity-check.md
-    - gz readiness audit: user/commands/readiness-audit.md
-    - gz check-config-paths: user/commands/check-config-paths.md
-    - gz cli audit: user/commands/cli-audit.md
-    - gz task list: user/commands/task-list.md
-    - gz task start: user/commands/task-start.md
-    - gz task complete: user/commands/task-complete.md
-    - gz task block: user/commands/task-block.md
-    - gz task escalate: user/commands/task-escalate.md
-    - gz personas list: user/commands/personas-list.md
-    - gz agent sync control-surfaces: user/commands/agent-sync-control-surfaces.md
+  - Manpages:
+    - Overview: user/manpages/index.md
+    - gz init: user/manpages/init.md
+    - gz prd: user/manpages/prd.md
+    - gz constitute: user/manpages/constitute.md
+    - gz specify: user/manpages/specify.md
+    - gz plan create: user/manpages/plan-create.md
+    - gz plan audit: user/manpages/plan-audit.md
+    - gz implement: user/manpages/implement.md
+    - gz gates: user/manpages/gates.md
+    - gz status: user/manpages/status.md
+    - gz state: user/manpages/state.md
+    - gz adr status: user/manpages/adr-status.md
+    - gz adr promote: user/manpages/adr-promote.md
+    - gz adr audit-check: user/manpages/adr-audit-check.md
+    - gz adr covers-check: user/manpages/adr-covers-check.md
+    - gz adr emit-receipt: user/manpages/adr-emit-receipt.md
+    - gz covers: user/manpages/covers.md
+    - gz flags: user/manpages/flags.md
+    - gz flag explain: user/manpages/flag-explain.md
+    - gz obpi status: user/manpages/obpi-status.md
+    - gz obpi pipeline: user/manpages/obpi-pipeline.md
+    - gz obpi validate: user/manpages/obpi-validate.md
+    - gz obpi reconcile: user/manpages/obpi-reconcile.md
+    - gz obpi emit-receipt: user/manpages/obpi-emit-receipt.md
+    - gz closeout: user/manpages/closeout.md
+    - gz patch release: user/manpages/patch-release.md
+    - gz audit: user/manpages/audit.md
+    - gz git-sync: user/manpages/git-sync.md
+    - gz attest: user/manpages/attest.md
+    - gz migrate-semver: user/manpages/migrate-semver.md
+    - gz register-adrs: user/manpages/register-adrs.md
+    - gz chores list: user/manpages/chores-list.md
+    - gz chores plan: user/manpages/chores-plan.md
+    - gz chores run: user/manpages/chores-run.md
+    - gz chores audit: user/manpages/chores-audit.md
+    - gz skill audit: user/manpages/skill-audit.md
+    - gz parity check: user/manpages/parity-check.md
+    - gz readiness audit: user/manpages/readiness-audit.md
+    - gz check-config-paths: user/manpages/check-config-paths.md
+    - gz cli audit: user/manpages/cli-audit.md
+    - gz task list: user/manpages/task-list.md
+    - gz task start: user/manpages/task-start.md
+    - gz task complete: user/manpages/task-complete.md
+    - gz task block: user/manpages/task-block.md
+    - gz task escalate: user/manpages/task-escalate.md
+    - gz personas list: user/manpages/personas-list.md
+    - gz agent sync control-surfaces: user/manpages/agent-sync-control-surfaces.md
   - Governance (Canonical):
     - Governance Runbook: governance/governance_runbook.md
     - State Doctrine: governance/state-doctrine.md

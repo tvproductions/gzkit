@@ -159,7 +159,7 @@ Assertions (from validator docstring, since governance-core.md does not state
 the rule directly — this is a cross-file prose-binding):
 
 1. Every `gz <verb>` string appearing in `features/**/*.feature`,
-   `docs/user/runbook.md`, `docs/user/commands/**`, and
+   `docs/user/runbook.md`, `docs/user/manpages/**`, and
    `docs/user/manpages/**` must resolve to a registered top-level CLI verb.
 2. The verb is recognized when it appears in backtick, double-quote, or
    `the gz command "X"` step-definition form.

@@ -1,4 +1,4 @@
-# gz-chores
+# gz chores
 
 Discover, plan, execute, and audit repository chores using the two-surface
 chores layout introduced by ADR-0.0.21.

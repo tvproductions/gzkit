@@ -1,4 +1,4 @@
-# gz-personas
+# gz personas
 
 Persona identity frame commands.
 

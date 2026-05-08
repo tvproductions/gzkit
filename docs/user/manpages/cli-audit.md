@@ -14,9 +14,9 @@ gz cli audit [--json]
 
 ## What It Checks
 
-- Required command manpages exist under `docs/user/commands/`
+- Required command manpages exist under `docs/user/manpages/`
 - Each page heading matches the command surface (`# gz ...`)
-- `docs/user/commands/index.md` links to each required page
+- `docs/user/manpages/index.md` links to each required page
 - `README.md` Quick Start command examples parse against the live CLI
 
 ### Cross-Coverage (AST-driven)
@@ -26,8 +26,8 @@ surfaces per command:
 
 | Surface | Verification |
 |---------|-------------|
-| Manpage | `docs/user/commands/<slug>.md` exists |
-| Index entry | Listed in `docs/user/commands/index.md` |
+| Manpage | `docs/user/manpages/<slug>.md` exists |
+| Index entry | Listed in `docs/user/manpages/index.md` |
 | Operator runbook | Referenced in `docs/user/runbook.md` |
 | Governance runbook | Referenced in `docs/governance/governance_runbook.md` |
 | Docstring | Handler function has non-empty docstring |

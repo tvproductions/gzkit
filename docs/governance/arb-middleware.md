@@ -156,7 +156,7 @@ is the mechanical backstop under the narrative discipline.
 
 - `AGENTS.md` § Attestation — binding rules, canonical-invocations table, lane behavior bullets that cite this gate
 - `AGENTS.md` § Lane & Kind & Sensitivity Attestation Matrix — three-axis predicate the gate evaluates
-- `docs/user/commands/validate.md` § `--attestation-receipts` — operator-facing CLI surface and EXAMPLES
+- `docs/user/manpages/validate.md` § `--attestation-receipts` — operator-facing CLI surface and EXAMPLES
 - ADR-0.0.24-attestation-receipt-binding — Decision text, non-goals (no `--skip-receipt-binding`, no git pre-receive enforcement, no fail-closed on lite-non-foundation), and consequences
 
 ## Exit codes

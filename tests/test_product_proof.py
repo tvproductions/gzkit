@@ -36,7 +36,7 @@ class TestExtractAllowedPaths(unittest.TestCase):
             - `src/gzkit/quality.py`
             - `src/gzkit/cli.py`
             - `tests/test_product_proof.py`
-            - `docs/user/commands/closeout.md`
+            - `docs/user/manpages/closeout.md`
 
             ## REQUIREMENTS
             """)
@@ -47,7 +47,7 @@ class TestExtractAllowedPaths(unittest.TestCase):
                 "src/gzkit/quality.py",
                 "src/gzkit/cli.py",
                 "tests/test_product_proof.py",
-                "docs/user/commands/closeout.md",
+                "docs/user/manpages/closeout.md",
             ],
         )
 
@@ -116,31 +116,31 @@ class TestCheckCommandDocProof(unittest.TestCase):
     def test_existing_doc_with_content(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            doc_dir = root / "docs" / "user" / "commands"
+            doc_dir = root / "docs" / "user" / "manpages"
             doc_dir.mkdir(parents=True)
             doc = doc_dir / "closeout.md"
             doc.write_text("# gz closeout\n\n" + "x" * 200, encoding="utf-8")
 
-            allowed = ["docs/user/commands/closeout.md", "src/gzkit/cli.py"]
+            allowed = ["docs/user/manpages/closeout.md", "src/gzkit/cli.py"]
             self.assertTrue(_check_command_doc_proof(allowed, root))
 
     @covers("REQ-0.23.0-02-05")
     def test_missing_doc_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            allowed = ["docs/user/commands/closeout.md"]
+            allowed = ["docs/user/manpages/closeout.md"]
             self.assertFalse(_check_command_doc_proof(allowed, root))
 
     @covers("REQ-0.23.0-02-05")
     def test_empty_doc(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            doc_dir = root / "docs" / "user" / "commands"
+            doc_dir = root / "docs" / "user" / "manpages"
             doc_dir.mkdir(parents=True)
             doc = doc_dir / "closeout.md"
             doc.write_text("# Title\n", encoding="utf-8")
 
-            allowed = ["docs/user/commands/closeout.md"]
+            allowed = ["docs/user/manpages/closeout.md"]
             self.assertFalse(_check_command_doc_proof(allowed, root))
 
     @covers("REQ-0.23.0-02-05")
@@ -568,7 +568,7 @@ class TestCheckProductProof(unittest.TestCase):
     def _make_project(self, tmp: str) -> Path:
         root = Path(tmp)
         (root / "docs" / "user").mkdir(parents=True)
-        (root / "docs" / "user" / "commands").mkdir(parents=True)
+        (root / "docs" / "user" / "manpages").mkdir(parents=True)
         (root / "src" / "gzkit").mkdir(parents=True)
         return root
 
@@ -596,7 +596,7 @@ class TestCheckProductProof(unittest.TestCase):
             brief = self._make_brief(
                 root,
                 "OBPI-0.1.0-01-pipeline-check",
-                ["src/gzkit/pipeline.py", "docs/user/commands/pipeline.md"],
+                ["src/gzkit/pipeline.py", "docs/user/manpages/pipeline.md"],
             )
             obpi_files = {"OBPI-0.1.0-01-pipeline-check": brief}
             result = check_product_proof("ADR-0.1.0", obpi_files, root)

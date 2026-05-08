@@ -2,7 +2,7 @@
 
 Closes the class of failure where an ``add_argument("--flag", ...)`` call lands
 in an existing subcommand's parser but no corresponding section is added to
-``docs/user/commands/<command>.md``. The pre-existing surfaces (per-command
+``docs/user/manpages/<command>.md``. The pre-existing surfaces (per-command
 ``manpage``, ``index_entry``, runbook references) are command-grained, not
 flag-grained — a new flag never tripped any mechanical check.
 
@@ -172,7 +172,7 @@ def check_flag_doc_coverage(
                 continue
             if flag in waived:
                 continue
-            rel = f"docs/user/commands/{slug}.md"
+            rel = f"docs/user/manpages/{slug}.md"
             issues.append(
                 {
                     "path": rel,

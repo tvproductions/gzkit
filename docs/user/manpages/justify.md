@@ -1,10 +1,10 @@
-# gz-justify
+# gz justify
 
 Pre-execution reasoning walkthrough scaffold.
 
 ## NAME
 
-gz-justify — render an 8-section pre-execution reasoning walkthrough for
+gz justify — render an 8-section pre-execution reasoning walkthrough for
 a GHI, OBPI, or draft anchor; reverse-parse a filled walkthrough.
 
 ## SYNOPSIS
@@ -103,7 +103,6 @@ gz justify validate path/to/walkthrough.md --json
 
 ## SEE ALSO
 
-- [`commands/justify.md`](../commands/justify.md) — operator command doc
 - [`gz-adr-evaluate`](../skills/gz-adr-evaluate.md) — low-score output
   suggests this command for low-confidence anchors
 - [`gz-obpi-pipeline`](../skills/gz-obpi-pipeline.md) — Stage 1→2

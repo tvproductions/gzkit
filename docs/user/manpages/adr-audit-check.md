@@ -1,4 +1,4 @@
-# gz-adr-audit-check
+# gz adr audit-check
 
 Verify linked OBPIs are completed with evidence and that `@covers`
 decorators were authored independently of their REQ's closing receipt.

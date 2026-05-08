@@ -76,7 +76,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
         from gzkit.doc_coverage.manifest import load_manifest
 
         flags_by_command = scan_command_flags(_REAL_PROJECT_ROOT)
-        index_path = Path("docs/user/commands/index.md")
+        index_path = Path("docs/user/manpages/index.md")
         index_path.parent.mkdir(parents=True, exist_ok=True)
         manifest = load_manifest(Path("."))
         links: list[str] = []

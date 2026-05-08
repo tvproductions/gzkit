@@ -1209,7 +1209,7 @@ Formalized the `@covers` decorator as a first-class test-to-spec traceability me
 - Coverage anchor scanner: test tree walk, annotation discovery, LinkageRecord production, ADR/OBPI/REQ rollups
 - `gz covers` CLI with ADR/OBPI/REQ granularity and human/JSON/plain output modes
 - ADR audit integration: coverage data wired into `gz adr audit-check`
-- Operator docs: `docs/user/commands/covers.md`, `docs/user/concepts/test-traceability.md`, migration guide, language-agnostic proof metadata contract
+- Operator docs: `docs/user/manpages/covers.md`, `docs/user/concepts/test-traceability.md`, migration guide, language-agnostic proof metadata contract
 - BDD scenarios: `features/test_traceability.feature`
 - `gz obpi withdraw` command for deregistering phantom/erroneous OBPI ledger entries (GHI #39)
 
@@ -1230,7 +1230,7 @@ Introduced the spec-test-code triangle framework for detecting governance drift.
 - Drift detection engine: computes unlinked specs, orphan tests, and unjustified code changes
 - `gz drift` CLI with `--json` and `--plain` output modes and configurable `--adr-dir`/`--test-dir`
 - `gz check` advisory drift integration: drift findings appended after blocking checks with `advisory: true` in JSON output
-- Command docs: `docs/user/commands/drift.md`, updated `docs/user/commands/check.md`
+- Command docs: `docs/user/manpages/drift.md`, updated `docs/user/manpages/check.md`
 - BDD scenarios: `features/triangle_drift.feature`, `features/check_drift_advisory.feature`
 
 ### Gate Evidence

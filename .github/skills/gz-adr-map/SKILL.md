@@ -44,4 +44,4 @@ uv run gz adr audit-check ADR-0.3.0 --json
 ## References
 
 - Command implementation: `src/gzkit/cli.py`
-- User docs: `docs/user/commands/state.md`, `docs/user/commands/adr-audit-check.md`
+- User docs: `docs/user/manpages/state.md`, `docs/user/manpages/adr-audit-check.md`

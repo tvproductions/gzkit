@@ -334,5 +334,5 @@ This mirrors the `FOUNDATION_SKIP_STEPS` behavior in the closeout ceremony.
 - Version sync: `src/gzkit/commands/version_sync.py` (`sync_project_version`)
 - Closeout ceremony: `.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md`
 - Parent ADR: `docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md`
-- Command docs: `docs/user/commands/patch-release.md`
+- Command docs: `docs/user/manpages/patch-release.md`
 - Governance release policy: `docs/governance/GovZero/releases/patch-release.md`

@@ -164,10 +164,10 @@ def readiness_audit_cmd(as_json: bool) -> None:
             {
                 "id": "command_docs_index",
                 "kind": "markers",
-                "path": "docs/user/commands/index.md",
+                "path": "docs/user/manpages/index.md",
                 "markers": ("`gz check`", "`gz parity check`", "`gz skill audit`"),
                 "required": False,
-                "issue": "command index missing core quality/readiness command references",
+                "issue": "manpages index missing core quality/readiness command references",
             },
             {
                 "id": "runbook_surface",
@@ -382,8 +382,8 @@ def readiness_audit_cmd(as_json: bool) -> None:
                 ],
             },
             {"kind": "file", "path": "tests/test_sync.py"},
-            {"kind": "file", "path": "docs/user/commands/parity-check.md"},
-            {"kind": "file", "path": "docs/user/commands/skill-audit.md"},
+            {"kind": "file", "path": "docs/user/manpages/parity-check.md"},
+            {"kind": "file", "path": "docs/user/manpages/skill-audit.md"},
         ],
     }
 

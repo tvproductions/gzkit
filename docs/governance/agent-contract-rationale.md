@@ -48,7 +48,7 @@ through GHI-156 that surfaced the class of failure.*
 
 What vibe coding looks like:
 
-- Writing a function that reads `docs/user/commands/*.md` and treats every
+- Writing a function that reads `docs/user/manpages/*.md` and treats every
   file as a manpage, without opening the directory and noticing `index.md`
   is a ToC page.
 - Landing a case-sensitive string match (`line.startswith("## Objective")`)

@@ -9,14 +9,14 @@ from gzkit.commands.common import get_project_root
 
 _MANIFEST_PATH = Path("config") / "doc-coverage.json"
 
-_MANPAGE_DIR = Path("docs") / "user" / "commands"
+_MANPAGE_DIR = Path("docs") / "user" / "manpages"
 
 
 def manpage_path_for(command_name: str) -> Path:
     """Derive the manpage path for a command name by convention.
 
-    ``"plan create"`` -> ``docs/user/commands/plan-create.md``
-    ``"closeout"``    -> ``docs/user/commands/closeout.md``
+    ``"plan create"`` -> ``docs/user/manpages/plan-create.md``
+    ``"closeout"``    -> ``docs/user/manpages/closeout.md``
     """
     slug = command_name.replace(" ", "-")
     return _MANPAGE_DIR / f"{slug}.md"
@@ -27,8 +27,8 @@ class SurfaceRequirements(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    manpage: bool = Field(..., description="Requires a docs/user/commands/{slug}.md file")
-    index_entry: bool = Field(..., description="Requires an entry in docs/user/commands/index.md")
+    manpage: bool = Field(..., description="Requires a docs/user/manpages/{slug}.md file")
+    index_entry: bool = Field(..., description="Requires an entry in docs/user/manpages/index.md")
     operator_runbook: bool = Field(..., description="Requires a reference in docs/user/runbook.md")
     governance_runbook: bool = Field(
         ..., description="Requires a reference in docs/governance/governance_runbook.md"

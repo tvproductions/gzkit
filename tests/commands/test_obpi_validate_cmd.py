@@ -207,7 +207,7 @@ class TestObpiValidateCommand(unittest.TestCase):
                 "## Lane\n**Lite** - Internal Python contract.\n\n"
                 "## Allowed Paths\n- `src/gzkit/ports/` - in scope\n\n"
                 "## Creates these files\n- `src/gzkit/ports/`\n\n"
-                "## Denied Paths\n- `docs/user/commands/` - docs stay unchanged\n\n"
+                "## Denied Paths\n- `docs/user/manpages/` - docs stay unchanged\n\n"
                 "## Requirements (FAIL-CLOSED)\n1. REQUIREMENT: Use Protocols.\n\n"
                 "## Quality Gates\n### Gate 1: ADR\n- [ ] Intent recorded\n\n"
                 "## Discovery Checklist\n"

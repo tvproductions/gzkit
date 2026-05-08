@@ -919,7 +919,7 @@ class TestCliSurfaceCoverage(unittest.TestCase):
         """gz cli audit demands per-flag doc coverage; this asserts --strict
         is named in the canonical command doc the audit walks (REQ-10)."""
         repo_root = Path(__file__).resolve().parents[2]
-        doc = (repo_root / "docs" / "user" / "commands" / "adr-audit-check.md").read_text(
+        doc = (repo_root / "docs" / "user" / "manpages" / "adr-audit-check.md").read_text(
             encoding="utf-8"
         )
         self.assertIn("--strict", doc)

@@ -318,7 +318,7 @@ def check_surfaces(
 
     Returns a list of CommandCoverage objects, one per command.
     """
-    commands_dir = project_root / "docs" / "user" / "commands"
+    commands_dir = project_root / "docs" / "user" / "manpages"
     index_path = commands_dir / "index.md"
     operator_runbook = project_root / "docs" / "user" / "runbook.md"
     governance_runbook = project_root / "docs" / "governance" / "governance_runbook.md"
@@ -410,7 +410,7 @@ def find_orphaned_docs(
 ) -> list[OrphanedDoc]:
     """Find documentation referencing commands that no longer exist.
 
-    Checks manpage files in docs/user/commands/ against discovered commands.
+    Checks manpage files in docs/user/manpages/ against discovered commands.
     """
     orphans: list[OrphanedDoc] = []
 
@@ -423,7 +423,7 @@ def find_orphaned_docs(
     # of any discovered "<parent> <sub>" command is a parent-verb page, not
     # an orphan.
     parent_verbs = {name.split(" ", 1)[0] for name in discovered_names if " " in name}
-    commands_dir = project_root / "docs" / "user" / "commands"
+    commands_dir = project_root / "docs" / "user" / "manpages"
     if commands_dir.exists():
         for md_file in sorted(commands_dir.glob("*.md")):
             if md_file.name == "index.md":

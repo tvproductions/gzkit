@@ -74,7 +74,7 @@ GovZero mining rule:
      - `.gzkit/**`
      - `AGENTS.md`, `CLAUDE.md`
      - `docs/governance/GovZero/**/*.md`
-     - `docs/user/commands/*`, `docs/user/concepts/*`, `docs/user/runbook.md`
+     - `docs/user/manpages/*`, `docs/user/concepts/*`, `docs/user/runbook.md`
      - runtime control surfaces (`src/gzkit/cli.py`, ledger events, validation commands)
 5. Produce a GovZero mining inventory:
    - list each mined norm/habit

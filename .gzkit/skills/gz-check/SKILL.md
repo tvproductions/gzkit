@@ -126,4 +126,4 @@ These thoughts mean STOP — you are about to skip the gate that catches drift:
 ## References
 
 - Command implementation: `src/gzkit/cli.py`
-- User docs: `docs/user/commands/index.md`
+- User docs: `docs/user/manpages/index.md`

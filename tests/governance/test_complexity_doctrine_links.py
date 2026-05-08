@@ -302,11 +302,11 @@ class TestComplexityDoctrineLinks(unittest.TestCase):
     def test_validate_command_doc_documents_flag(self):
         """The canonical command doc must document `--complexity-doctrine-links`
         with at least one example invocation. The doc surface lives at
-        ``docs/user/commands/validate.md`` per the Gate5-Runbook-Code Covenant
+        ``docs/user/manpages/validate.md`` per the Gate5-Runbook-Code Covenant
         rule (see brief Allowed Paths drift note).
         """
         repo_root = Path(__file__).resolve().parents[2]
-        doc_path = repo_root / "docs" / "user" / "commands" / "validate.md"
+        doc_path = repo_root / "docs" / "user" / "manpages" / "validate.md"
         self.assertTrue(doc_path.is_file(), f"Doc surface missing: {doc_path}")
         body = doc_path.read_text(encoding="utf-8")
         self.assertIn("--complexity-doctrine-links", body)

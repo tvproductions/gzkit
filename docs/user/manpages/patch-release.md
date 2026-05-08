@@ -3,7 +3,7 @@
 ## SYNOPSIS
 
 ```
-gz patch release [--dry-run] [--json]
+gz patch release [--dry-run] [--json] [--full]
 ```
 
 ## DESCRIPTION
@@ -22,6 +22,9 @@ Currently a scaffold. Full logic is tracked by ADR-0.0.15 OBPIs 02-06.
 
 `--json`
 :   Emit machine-readable JSON to stdout.
+
+`--full`
+:   Execute the full ceremony in one transaction: bump, draft release notes, commit, push (with lint/test gates), and create the GitHub release.
 
 ## EXIT CODES
 

@@ -16,7 +16,7 @@ Documentation is a first-class deliverable and must track behavior changes in th
 |---|---|---|
 | Operator runbook | `docs/user/runbook.md` | daily execution workflow |
 | Governance runbook | `docs/governance/governance_runbook.md` | governance-maintainer workflow |
-| Command docs | `docs/user/commands/**` | command contracts and examples |
+| Command docs | `docs/user/manpages/**` | command contracts and examples |
 
 ## Required updates when behavior changes
 

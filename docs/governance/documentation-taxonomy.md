@@ -49,7 +49,7 @@ tool they need and wants to know *how* it works.
 
 | Artifact Type | Manpage Location |
 |---------------|-----------------|
-| CLI commands | `docs/user/commands/{command-name}.md` |
+| CLI commands | `docs/user/manpages/{command-name}.md` |
 | Skills | `docs/user/skills/{skill-name}.md` |
 
 ### Runbook entries
@@ -168,7 +168,7 @@ the function implements an operator-facing capability:
 def run_check(flags: CheckFlags) -> CheckResult:
     """Run the composite quality check suite.
 
-    See: docs/user/commands/check.md
+    See: docs/user/manpages/check.md
     """
 ```
 
@@ -230,7 +230,7 @@ it has failed its purpose.
 Documentation coverage is verified as part of the Gate 3 (Docs) check:
 
 1. **CLI commands:** `uv run gz cli audit` verifies every registered command
-   has a manpage in `docs/user/commands/`. **Automated — blocks at Gate 3.**
+   has a manpage in `docs/user/manpages/`. **Automated — blocks at Gate 3.**
 2. **Skills:** No automated enforcement exists today. A future `gz skill audit`
    command should verify operator-invocable skills have manpages in
    `docs/user/skills/`. Until then, skill manpage coverage relies on manual
@@ -263,7 +263,7 @@ agents that read it, but not enforced by runtime gates.
 ## References
 
 - Gate 5 Runbook-Code Covenant: `.claude/rules/gate5-runbook-code-covenant.md`
-- Command manpage index: `docs/user/commands/index.md`
+- Command manpage index: `docs/user/manpages/index.md`
 - Skill manpage index: `docs/user/skills/index.md` (created by OBPI-0.24.0-03)
 - Operator runbook: `docs/user/runbook.md`
 - Governance runbook: `docs/governance/governance_runbook.md`

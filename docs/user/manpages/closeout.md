@@ -1,69 +1,134 @@
-# gz closeout(1) -- ADR closeout pipeline with Defense Brief
+# gz closeout
 
-## SYNOPSIS
+Initiate closeout mode for an ADR and record `closeout_initiated` in the ledger.
 
-```
+---
+
+## Usage
+
+```bash
 gz closeout <ADR-ID> [--json] [--dry-run]
+                     [--ceremony [--next | --ceremony-status | --attest TEXT | --pause | --restart]]
 ```
 
-## DESCRIPTION
+---
 
-Initiate the end-to-end closeout pipeline for an ADR. Validates OBPI
-completion, product proof, and quality gates, then prompts for human
-attestation. On success, bumps the project version and records the
-attestation in the ledger.
+## Runtime Behavior
 
-The closeout ceremony presents a **Defense Brief** — a structured evidence
-presentation where the completing agent makes its case for closure. The
-Defense Brief includes:
+`gz closeout` is fail-closed on linked OBPI runtime proof.
+Pool ADRs (`ADR-pool.*`) are blocked from closeout until promoted out of pool.
 
-- **Closing Arguments** — per-OBPI text authored from delivered evidence
-- **Product Proof** — per-OBPI documentation proof status table
-- **Reviewer Assessment** — independent reviewer verdicts from REVIEW-*.md
+Output includes:
 
-The ceremony is blocked when any OBPI is missing its closing argument or
-product proof. For Heavy-lane ADRs, the reviewer assessment is also required.
+- Gate 1 ADR path
+- OBPI completion summary
+- Product proof status table (per-OBPI documentation proof)
+- Closeout blockers when any linked OBPI is not closeout-ready
+- Generated `ADR-CLOSEOUT-FORM.md` path inside the ADR package
+- Linked OBPI evidence paths
+- Verification command set for the ADR lane
+- Canonical attestation choices
+- Heavy-lane Gate 4 command (always required for heavy lane)
 
-## OPTIONS
+If any linked OBPI still has missing proof, canonical drift, or missing
+required human-attestation evidence, `gz closeout` prints `BLOCKERS:` and exits
+`1` without writing `closeout_initiated`.
 
-`--json`
-:   Emit machine-readable closeout payload to stdout.
+### Product Proof Gate
 
-`--dry-run`
-:   Show the full closeout plan (including Defense Brief preview) without
-    writing any ledger events or changing ADR status.
+After OBPI completion checks pass, `gz closeout` validates that each OBPI has
+at least one form of operator-facing documentation proof:
 
-## CEREMONY FLOW
+| Proof Type | Detection Method |
+|------------|-----------------|
+| `runbook` | OBPI ID or slug keywords found in `docs/user/runbook.md` |
+| `command_doc` | Command doc file from OBPI allowed paths exists with >100 chars |
+| `docstring` | Public function/class in source files from allowed paths has docstring |
 
-1. **OBPI Completion** — all linked OBPIs must be Completed
-2. **Product Proof Gate** — each OBPI has runbook/command-doc/docstring proof
-3. **Defense Brief** — closing arguments + proof table + reviewer assessment
-4. **Quality Gates** — lint, typecheck, test (+ docs, BDD for Heavy)
-5. **Human Attestation** — Completed / Partial / Dropped
-6. **Version Bump** — pyproject.toml, __init__.py, README badge
-7. **ADR-CLOSEOUT-FORM.md** — written with Defense Brief and attestation
+At least one proof type must exist per OBPI. If any OBPI has `MISSING` proof,
+closeout exits `1` with a table showing which OBPIs lack proof.
 
-## EXIT CODES
+### Defense Brief
 
-| Code | Meaning |
-|------|---------|
-| 0 | Success (or dry-run preview) |
-| 1 | Blocked: missing OBPI completion, product proof, or gate failure |
+After product proof passes, `gz closeout` computes a **Defense Brief** section
+that is included in both the `--dry-run` preview and the final
+`ADR-CLOSEOUT-FORM.md`. The Defense Brief contains:
 
-## EXAMPLES
+| Section | Content |
+|---------|---------|
+| Closing Arguments | Per-OBPI closing argument text extracted from each brief |
+| Product Proof | Per-OBPI proof type and status table |
+| Reviewer Assessment | Per-OBPI reviewer verdict from `REVIEW-*.md` artifacts |
 
-Preview closeout with Defense Brief:
+The Defense Brief transforms the closeout form from a checklist into a defense
+presentation where the completing agent's evidence is laid out for human
+judgment.
+
+When closeout succeeds without `--dry-run`, `gz closeout` creates or refreshes
+`ADR-CLOSEOUT-FORM.md` beside the ADR file with the current evidence inventory,
+Defense Brief, and Gate 5 attestation command.
+
+`--json` adds:
+
+- `allowed`
+- `blockers`
+- `obpi_summary`
+- `obpi_rows`
+- `next_steps`
+
+It still does not interpret the verification command outcomes themselves.
+
+---
+
+## Canonical Attestation Choices
+
+- `Completed`
+- `Completed — Partial: [reason]`
+- `Dropped — [reason]`
+
+---
+
+## Options
+
+| Option | Description |
+|--------|-------------|
+| `--json` | Emit machine-readable closeout payload |
+| `--dry-run` | Show payload without writing ledger event |
+| `--ceremony` | Run the interactive closeout ceremony with deterministic step sequencing |
+| `--next` | Advance the ceremony to the next step (requires `--ceremony`) |
+| `--ceremony-status` | Show the current ceremony step (requires `--ceremony`) |
+| `--attest TEXT` | Record the operator's Gate-5 attestation at step 6 (e.g. `--attest "Completed"`) |
+| `--pause` | Pause the ceremony to revise-and-resubmit (preserves state for later resumption) |
+| `--restart` | Restart the ceremony from step 1 as a fresh attempt (discards prior in-flight ceremony state) |
+
+### Ceremony Sub-Flags
+
+The `--ceremony` flag opens the interactive Gate-5 attestation ceremony.
+The companion sub-flags (`--next`, `--ceremony-status`, `--attest`, `--pause`,
+`--restart`) drive the ceremony state machine:
+
+- `--ceremony --next` advances one step.
+- `--ceremony --ceremony-status` reports the active step without mutating state.
+- `--ceremony --attest "Completed"` records the canonical attestation at step 6.
+- `--ceremony --pause` checkpoints the ceremony for revise-and-resubmit cycles.
+- `--ceremony --restart` discards in-flight ceremony state and starts over.
+
+---
+
+## Example
 
 ```bash
-uv run gz closeout ADR-0.23.0 --dry-run
+uv run gz closeout ADR-0.10.0 --dry-run
 ```
 
-Run full closeout pipeline:
-
-```bash
-uv run gz closeout ADR-0.23.0
+```text
+Dry run blocked: ADR-0.10.0-obpi-runtime-surface
+  Gate 1 (ADR): docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/ADR-0.10.0-obpi-runtime-surface.md
+  OBPI Completion: 2/3 complete
+BLOCKERS:
+- OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration: ledger proof of completion is missing
+Next steps:
+  - uv run gz adr status ADR-0.10.0-obpi-runtime-surface
+  - uv run gz adr audit-check ADR-0.10.0-obpi-runtime-surface
+  - uv run gz obpi reconcile OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration
 ```
-
-## SEE ALSO
-
-`gz attest`(1), `gz gates`(1), `gz adr status`(1)

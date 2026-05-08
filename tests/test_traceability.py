@@ -1313,12 +1313,12 @@ class TestComputeAdrCoverageDocProofChannels(unittest.TestCase):
             "---\n\n"
             "# OBPI-0.15.0-03: Demo\n\n"
             "## ALLOWED PATHS\n\n"
-            "- `docs/user/commands/demo.md`\n\n"
+            "- `docs/user/manpages/demo.md`\n\n"
             "## Acceptance Criteria\n\n"
             "- [ ] REQ-0.15.0-03-01: [doc] Command documented.\n",
             encoding="utf-8",
         )
-        cmd_doc = self.root / "docs" / "user" / "commands" / "demo.md"
+        cmd_doc = self.root / "docs" / "user" / "manpages" / "demo.md"
         cmd_doc.parent.mkdir(parents=True, exist_ok=True)
         cmd_doc.write_text("# gz demo\n\n" + ("Substantive content. " * 20), encoding="utf-8")
         from gzkit.commands.adr_audit import _compute_adr_coverage
