@@ -95,6 +95,60 @@ class TestPipelineBaselineVerification(unittest.TestCase):
                 f"precomplete should not appear without obpi_id: {cmd}",
             )
 
+    def test_heavy_lane_behave_uses_tags_when_provided(self) -> None:
+        """GHI #420: Stage 3 scope discipline.
+
+        When the runtime resolves @REQ-tagged behave scenarios for *this*
+        OBPI, the Stage 3 behave invocation must pass them via ``--tags``
+        so cross-OBPI feature-file rot (the GHI #420 surfaced failure mode)
+        does not block new OBPIs.
+        """
+        commands = _pipeline_verification_commands(
+            "",
+            "heavy",
+            obpi_id="OBPI-0.0.29-08",
+            behave_tags=["@REQ-0.0.29-08-01", "@REQ-0.0.29-08-02"],
+        )
+        expected = (
+            "uv run gz arb step --name behave -- "
+            "uv run -m behave --tags=@REQ-0.0.29-08-01,@REQ-0.0.29-08-02 features/"
+        )
+        self.assertIn(expected, commands)
+        unscoped = "uv run gz arb step --name behave -- uv run -m behave features/"
+        self.assertNotIn(unscoped, commands)
+
+    def test_heavy_lane_behave_skipped_when_obpi_has_no_tags(self) -> None:
+        """GHI #420: when the runtime resolves zero @REQ-tagged behave
+        scenarios for the OBPI, behave is omitted from Stage 3 entirely.
+
+        The full ``features/`` sweep is deferred to ADR closeout (Stage 5
+        of the parent ADR), per the SKILL.md scope-discipline doctrine.
+        Skipping is preferable to running the full suite — the full suite
+        is what cross-OBPI rot blocks.
+        """
+        commands = _pipeline_verification_commands(
+            "",
+            "heavy",
+            obpi_id="OBPI-0.0.29-08",
+            behave_tags=[],
+        )
+        for cmd in commands:
+            self.assertNotIn(
+                "behave",
+                cmd,
+                f"behave should be skipped at Stage 3 when no REQ tags: {cmd}",
+            )
+
+    def test_heavy_lane_full_behave_when_no_obpi_context(self) -> None:
+        """Backward compat: callers without ``behave_tags`` (no OBPI scope
+        context) keep the full ``features/`` invocation. Existing
+        non-pipeline callers and lite-lane briefs without an OBPI
+        identifier are unaffected.
+        """
+        commands = _pipeline_verification_commands("", "heavy")
+        full = "uv run gz arb step --name behave -- uv run -m behave features/"
+        self.assertIn(full, commands)
+
 
 class TestSyncStageStepBuilder(unittest.TestCase):
     """GHI #422 fix #1 + fix #3: Stage 5 step ordering with --attestor-present."""

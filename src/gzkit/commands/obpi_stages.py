@@ -34,14 +34,46 @@ BASELINE_VERIFICATION = [
 ]
 
 
+def _pipeline_behave_command(behave_tags: list[str] | None) -> str | None:
+    """Return the Stage 3 heavy-lane behave command, or None to skip.
+
+    GHI #420 scope-discipline resolver:
+
+    * ``behave_tags is None`` — caller has no OBPI scope context. Run
+      the full ``features/`` sweep (backward-compat for non-pipeline
+      invocations and lite-mode briefs without an OBPI identifier).
+    * ``behave_tags == []`` — OBPI has no @REQ-tagged scenarios. Skip
+      behave at Stage 3; the full sweep runs at ADR closeout.
+    * ``behave_tags`` non-empty — scope the run to ``--tags=<csv>`` so
+      cross-OBPI rot in unrelated feature files cannot block this OBPI.
+    """
+    if behave_tags is None:
+        return "uv run gz arb step --name behave -- uv run -m behave features/"
+    if not behave_tags:
+        return None
+    tag_arg = ",".join(behave_tags)
+    return f"uv run gz arb step --name behave -- uv run -m behave --tags={tag_arg} features/"
+
+
 def _pipeline_verification_commands(
-    obpi_content: str, lane: str, obpi_id: str | None = None
+    obpi_content: str,
+    lane: str,
+    obpi_id: str | None = None,
+    behave_tags: list[str] | None = None,
 ) -> list[str]:
     """Parse the Verification block into executable shell commands.
 
     When ``obpi_id`` is provided, ``gz obpi precomplete`` is appended so
     brief-shape audits (behave_req_tags, brief_headings) fire at Stage 3
     BEFORE ``gz obpi complete`` mutates the brief — see GHI #422.
+
+    When ``behave_tags`` is provided (heavy lane, OBPI-scoped pipeline
+    invocation), the Stage 3 behave run is scoped to those ``@REQ-...``
+    tags so cross-OBPI feature-file rot does not block this OBPI — see
+    GHI #420 and ``gz-obpi-pipeline`` SKILL.md § Phase 1 (Scope discipline).
+    A non-``None`` empty list means the OBPI has no @REQ-tagged scenarios;
+    behave is skipped at Stage 3 in that case (the full ``features/``
+    sweep runs at ADR closeout).
     """
     commands: list[str] = list(BASELINE_VERIFICATION)
     section = extract_markdown_section(obpi_content, "Verification") or ""
@@ -53,12 +85,10 @@ def _pipeline_verification_commands(
                 continue
             commands.append(line)
     if lane == "heavy":
-        commands.extend(
-            [
-                "uv run gz arb step --name mkdocs -- uv run mkdocs build --strict",
-                "uv run gz arb step --name behave -- uv run -m behave features/",
-            ]
-        )
+        commands.append("uv run gz arb step --name mkdocs -- uv run mkdocs build --strict")
+        behave_cmd = _pipeline_behave_command(behave_tags)
+        if behave_cmd is not None:
+            commands.append(behave_cmd)
     if obpi_id:
         commands.append(f"uv run gz obpi precomplete {obpi_id}")
 
@@ -143,7 +173,14 @@ def _run_pipeline_verify_stage(
     evidence_json: str | None,
 ) -> None:
     """Run the verify stage, then chain into ceremony and sync."""
-    commands = _pipeline_verification_commands(obpi_content, lane, obpi_id=obpi_id)
+    behave_tags: list[str] | None = None
+    if lane == "heavy":
+        from gzkit.commands.quality import resolve_obpi_behave_tags  # noqa: PLC0415
+
+        behave_tags = resolve_obpi_behave_tags(project_root, obpi_id)
+    commands = _pipeline_verification_commands(
+        obpi_content, lane, obpi_id=obpi_id, behave_tags=behave_tags
+    )
     verification_results: list[tuple[str, bool, str]] = []
     failures: list[tuple[str, str]] = []
     console.print("")
