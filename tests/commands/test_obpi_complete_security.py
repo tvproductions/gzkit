@@ -268,6 +268,7 @@ class _ObpiCompleteIntegrationFixture(unittest.TestCase):
         receipts_root: Path,
         rule_file_body: str | None,
         canonical_slot: list[str],
+        security_registry: list[dict] | None = None,
     ) -> tuple[type[BaseException] | None, int | None, list[str]]:
         """Drive ``obpi_complete_cmd`` against a mocked filesystem; return outcome."""
         recorded_console: list[str] = []
@@ -287,6 +288,13 @@ class _ObpiCompleteIntegrationFixture(unittest.TestCase):
                 rule_dir = root / ".gzkit" / "rules"
                 rule_dir.mkdir(parents=True)
                 (rule_dir / "security-sensitivity.md").write_text(rule_file_body, encoding="utf-8")
+
+            if security_registry is not None:
+                data_dir = root / "data"
+                data_dir.mkdir(parents=True, exist_ok=True)
+                (data_dir / "security_surfaces.json").write_text(
+                    json.dumps(security_registry), encoding="utf-8"
+                )
 
             obpi_file = root / "brief.md"
             obpi_file.write_text(brief_text, encoding="utf-8")
@@ -469,6 +477,63 @@ class TestSecurityReceiptStaleFailsClosed(_ObpiCompleteIntegrationFixture):
             joined = "\n".join(output)
             self.assertIn("receipt-stale", joined)
             self.assertIn(stale_path.name, joined)
+
+
+_AUTO_DETECT_REGISTRY: list[dict] = [
+    {
+        "category": "auth_boundaries",
+        "globs": ["src/gzkit/commands/obpi_complete.py"],
+        "rationale": "Test fixture — auth-boundary surface used to exercise the auto-detect floor.",
+    },
+]
+
+
+_NON_INTERSECTING_BRIEF = _NON_SECURITY_BRIEF.replace(
+    "- `src/gzkit/commands/obpi_complete.py`",
+    "- `docs/user/runbook.md`",
+)
+
+
+class TestSecurityFloorAutoDetectFiresWithoutDeclaration(_ObpiCompleteIntegrationFixture):
+    """GHI #413 — completion enforces the same auto-detect floor the audit reports.
+
+    A brief whose Allowed Paths intersect the registry but which does NOT declare
+    ``sensitivity: security`` must drive the security gate; the placeholder slot
+    then fail-closes with exit 3 just as it does for declared briefs.
+    """
+
+    def test_undeclared_intersecting_brief_triggers_security_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as receipts_dir:
+            receipts_root = Path(receipts_dir)
+            exc_type, code, output = self._run_complete(
+                brief_text=_NON_SECURITY_BRIEF,
+                receipts_root=receipts_root,
+                rule_file_body=_RULE_FILE_BODY,
+                canonical_slot=[],
+                security_registry=_AUTO_DETECT_REGISTRY,
+            )
+            self.assertIs(exc_type, SystemExit)
+            self.assertEqual(code, 3)
+            joined = "\n".join(output)
+            self.assertIn("Security-scan canonical slot", joined)
+
+
+class TestSecurityFloorAutoDetectSkipsNonIntersecting(_ObpiCompleteIntegrationFixture):
+    """GHI #413 — registry present but allowed paths do not intersect → no gate."""
+
+    def test_undeclared_non_intersecting_brief_does_not_trigger_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as receipts_dir:
+            receipts_root = Path(receipts_dir)
+            _exc, _code, output = self._run_complete(
+                brief_text=_NON_INTERSECTING_BRIEF,
+                receipts_root=receipts_root,
+                rule_file_body=None,
+                canonical_slot=[],
+                security_registry=_AUTO_DETECT_REGISTRY,
+            )
+            joined = "\n".join(output)
+            self.assertNotIn("Security Review Walkthrough", joined)
+            self.assertNotIn("Security-scan canonical slot", joined)
 
 
 if __name__ == "__main__":
