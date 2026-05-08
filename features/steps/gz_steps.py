@@ -227,6 +227,11 @@ def step_output_contains(context, text: str) -> None:  # type: ignore[no-untyped
     assert text in context.output, context.output
 
 
+@then('the output does not contain "{text}"')
+def step_output_not_contains(context, text: str) -> None:  # type: ignore[no-untyped-def]
+    assert text not in context.output, f"Expected output to not contain {text!r}: {context.output}"
+
+
 @then('the file "{path}" exists')
 def step_file_exists(_context, path: str) -> None:  # type: ignore[no-untyped-def]
     assert Path(path).exists(), f"Expected {path} to exist"

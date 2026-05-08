@@ -3,7 +3,7 @@ id: OBPI-0.0.29-06-ad-hoc-path
 parent: ADR-0.0.29
 item: 6
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.29-06-ad-hoc-path: Operator-invocable Ad-Hoc Path
@@ -17,7 +17,7 @@ status: Draft
 
 ## Objective
 
-Define and test the ad-hoc invocation pathway for `gz complexity-advise <path>` with presentation defaults distinct from the auto-chain pathway (OBPI-05). Ad-hoc is preview-before-fail; output is verbose by default with full diagnostic detail. Auto-chain is trigger-time fail-fast; output is concise and surfaces only the actionable verdict per crossing.
+Define and test the ad-hoc invocation pathway for `gz complexity advise <path>` with presentation defaults distinct from the auto-chain pathway (OBPI-05). Ad-hoc is preview-before-fail; output is verbose by default with full diagnostic detail. Auto-chain is trigger-time fail-fast; output is concise and surfaces only the actionable verdict per crossing.
 
 ## Lane
 
@@ -42,14 +42,14 @@ Define and test the ad-hoc invocation pathway for `gz complexity-advise <path>` 
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: `gz complexity-advise <path>` (no `--auto-chain` flag) is the ad-hoc pathway. Output is verbose: each diagnosis prints metric name + crossing band + crossing value + archetype + full doctrinal_frame block (authority, citation, excerpt) + per-proof-range source-line snippets + recommended_move + intrinsic_attestation reference (if any).
-2. REQUIREMENT: `gz complexity-advise --auto-chain <path>` is the auto-chain pathway (invoked by OBPI-05's hook). Output is concise: per-diagnosis one-line summary (metric, crossing band, archetype, file:line range, recommended_move headline). Full diagnosis is deferred to a "run `gz complexity-advise <path>` for full detail" hint at the end.
+1. REQUIREMENT: `gz complexity advise <path>` (no `--auto-chain` flag) is the ad-hoc pathway. Output is verbose: each diagnosis prints metric name + crossing band + crossing value + archetype + full doctrinal_frame block (authority, citation, excerpt) + per-proof-range source-line snippets + recommended_move + intrinsic_attestation reference (if any).
+2. REQUIREMENT: `gz complexity advise --auto-chain <path>` is the auto-chain pathway (invoked by OBPI-05's hook). Output is concise: per-diagnosis one-line summary (metric, crossing band, archetype, file:line range, recommended_move headline). Full diagnosis is deferred to a "run `gz complexity advise <path>` for full detail" hint at the end.
 3. REQUIREMENT: `--json` mode produces identical output regardless of pathway (both paths emit the canonical Pydantic serialization). Presentation differentiation is human-readable-only.
-4. REQUIREMENT: An operator running `gz complexity-advise <path>` against a clean file gets a "no crossings" message (verbose mode lists "checked N functions across M metrics; no warn or block crossings"). Auto-chain mode is silent on clean files (the hook exits 0 silently per OBPI-05).
+4. REQUIREMENT: An operator running `gz complexity advise <path>` against a clean file gets a "no crossings" message (verbose mode lists "checked N functions across M metrics; no warn or block crossings"). Auto-chain mode is silent on clean files (the hook exits 0 silently per OBPI-05).
 5. REQUIREMENT: Presentation classes (`AdHocPresenter`, `AutoChainPresenter`) live in `src/gzkit/complexity/advisor/presentation.py` with a shared `Presenter` protocol. The CLI dispatches to the appropriate presenter based on the `--auto-chain` flag.
 6. REQUIREMENT: Tests cover: ad-hoc verbose output contains all diagnosis fields; auto-chain concise output contains only the per-diagnosis summary; `--json` output is identical across pathways; clean-file message differs (verbose "no crossings" vs auto-chain silent); presentation classes can be substituted independently. Each test decorated with `@covers(REQ-0.0.29-06-NN)`.
 7. REQUIREMENT: A behave scenario at `features/complexity_advise_ad_hoc.feature` tagged `@REQ-0.0.29-06-{01,02,03}` covers ad-hoc preview against clean / warn-band / block-band fixture files.
-8. REQUIREMENT: Manpage extension adds at least one example for each pathway: ad-hoc preview (`gz complexity-advise src/foo.py`) and auto-chain context (`gz complexity-advise --auto-chain <staged-files>` invoked by hook).
+8. REQUIREMENT: Manpage extension adds at least one example for each pathway: ad-hoc preview (`gz complexity advise src/foo.py`) and auto-chain context (`gz complexity advise --auto-chain <staged-files>` invoked by hook).
 9. REQUIREMENT: Function-size discipline; presenter classes ≤ 300 lines per `.claude/rules/pythonic.md`.
 10. REQUIREMENT: TDD discipline.
 11. REQUIREMENT: NEVER include the operator's personal email in code, manpage, fixtures, or commit messages.
@@ -58,11 +58,18 @@ Define and test the ad-hoc invocation pathway for `gz complexity-advise <path>` 
 
 ## Discovery Checklist
 
-- [ ] OBPI-03 CLI verb shell + manpage
-- [ ] OBPI-01 schema (presenters serialize from `AdvisorDiagnosis`)
-- [ ] OBPI-02 engine (presenters consume engine output)
-- [ ] Parent ADR § Decision rationale #4 — preview-before-fail bandwidth-protection
-- [ ] AGENTS.md § OPERATOR ECONOMY OF EFFORT — drafted-not-asked shape
+**Prerequisites (check existence, STOP if missing):**
+
+- [x] OBPI-03 CLI verb — confirmed at `src/gzkit/commands/complexity_advise.py:51` (`auto_chain: bool = False` already wired, reserved no-op)
+- [x] OBPI-01 schema — confirmed at `src/gzkit/complexity/advisor/diagnosis.py` (`AdvisorDiagnosis`, `DoctrinalFrame`, `ProofRange`, `IntrinsicAttestationRef`)
+- [x] OBPI-02 engine — confirmed at `src/gzkit/complexity/advisor/engine.py` (`DiagnosisEngine`)
+- [x] Parent ADR § Decision rationale #4 — preview-before-fail bandwidth-protection confirmed as the operator-facing rationale for the ad-hoc path
+
+**Existing Code (understand current state):**
+
+- [x] `src/gzkit/commands/complexity_advise.py` — read in full; `auto_chain` param present, `_render_prose()` is single-path (no dispatch); replace with presenter dispatch
+- [x] `src/gzkit/complexity/advisor/diagnosis.py` — read in full; `AdvisorDiagnosis` fields confirmed: `metric`, `crossing_band`, `crossing_value`, `archetype`, `doctrinal_frame`, `proof`, `recommended_move`, `intrinsic_attestation`
+- [x] AGENTS.md § OPERATOR ECONOMY OF EFFORT — presenter dispatch is the "agent drafts substantively, operator reviews" shape for the developer's pre-commit moment
 
 ## Quality Gates
 
@@ -92,17 +99,17 @@ uv run gz lint
 uv run gz typecheck
 uv run gz test
 uv run mkdocs build --strict
-uv run gz complexity-advise tests/fixtures/complexity/warn_band.py
+uv run gz complexity advise tests/fixtures/complexity/warn_band.py
 uv run gz arb step --name unittest -- uv run -m unittest tests/commands/test_complexity_advise_ad_hoc.py -v
 uv run -m behave features/complexity_advise_ad_hoc.feature
 ```
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.29-06-01: Given a file with a warn-band crossing, when `gz complexity-advise <path>` runs (ad-hoc), then output contains all diagnosis fields including doctrinal_frame excerpt and per-proof source snippets.
-- [ ] REQ-0.0.29-06-02: Given the same file, when `gz complexity-advise --auto-chain <path>` runs, then output is concise (one-line summary per diagnosis) and includes the "run for full detail" hint.
+- [ ] REQ-0.0.29-06-01: Given a file with a warn-band crossing, when `gz complexity advise <path>` runs (ad-hoc), then output contains all diagnosis fields including doctrinal_frame excerpt and per-proof source snippets.
+- [ ] REQ-0.0.29-06-02: Given the same file, when `gz complexity advise --auto-chain <path>` runs, then output is concise (one-line summary per diagnosis) and includes the "run for full detail" hint.
 - [ ] REQ-0.0.29-06-03: Given `--json` mode, when invoked with or without `--auto-chain`, then the JSON output is identical.
-- [ ] REQ-0.0.29-06-04: Given a clean file, when `gz complexity-advise <path>` runs (ad-hoc), then output contains "no crossings" with the metrics-checked count.
+- [ ] REQ-0.0.29-06-04: Given a clean file, when `gz complexity advise <path>` runs (ad-hoc), then output contains "no crossings" with the metrics-checked count.
 - [ ] REQ-0.0.29-06-05: Given the same clean file, when `--auto-chain` is set, then output is silent (suitable for hook invocation).
 - [ ] REQ-0.0.29-06-06: Given the manpage, when read, then at least one example each for ad-hoc and auto-chain pathways is present.
 
@@ -149,13 +156,18 @@ uv run -m behave features/complexity_advise_ad_hoc.feature
 
 ### Key Proof
 
+
+uv run gz complexity advise tests/fixtures/complexity/warn_band.py — ad-hoc (verbose): prints metric/band/value/archetype/authority/citation/excerpt/source-lines/recommended-move per crossing; empty → "No crossings detected. Checked N metrics across M functions." Auto-chain (--auto-chain): one-line per crossing + hint; empty → silent. All 10 unit tests pass — receipt arb-step-unittest-ba929e08ae824fe8b4f141312aa6920d; ruff clean — receipt arb-ruff-5f3f031cfd1047809f4c01cf2aad9953; typecheck clean — receipt arb-step-typecheck-f075a8414ac542809441764a0814b650; mkdocs clean — receipt arb-step-mkdocs-3bae6193fb704844abe73d4ec3f33c2c.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/complexity/advisor/presentation.py (Presenter protocol, AdHocPresenter, AutoChainPresenter; 211 lines), tests/commands/test_complexity_advise_ad_hoc.py (10 unit tests @covers all REQs), features/complexity_advise_ad_hoc.feature (3 BDD scenarios @REQ-0.0.29-06-01/02/03)
+- Files modified: src/gzkit/commands/complexity_advise.py (presenter dispatch replacing _render_prose(); functions_checked/metrics_checked tracking), docs/user/manpages/gz-complexity-advise.md (ad-hoc/auto-chain examples added; --auto-chain description updated), features/steps/gz_steps.py (output does not contain step added)
+- Tests added: 10 unit tests covering REQ-01 through REQ-06; 3 BDD scenarios
+- Date completed: 2026-05-07
+- Attestation status: attested by Jeffry
+- Defects noted: none
 
 ### Closing Argument
 
@@ -165,14 +177,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry`
+- Attestation: attest completed — presentation-dispatch layer for OBPI-0.0.29-06 implemented and verified: AdHocPresenter (verbose) and AutoChainPresenter (concise) wired in complexity_advise.py based on --auto-chain flag; 10 unit tests @covers all REQs; 3 BDD scenarios pass; receipts arb-step-unittest-ba929e08ae824fe8b4f141312aa6920d, arb-ruff-5f3f031cfd1047809f4c01cf2aad9953, arb-step-typecheck-f075a8414ac542809441764a0814b650, arb-step-mkdocs-3bae6193fb704844abe73d4ec3f33c2c
+- Date: 2026-05-08
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-08
 
 **Evidence Hash:** -

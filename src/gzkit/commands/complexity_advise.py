@@ -35,6 +35,7 @@ from gzkit.complexity.advisor.engine import (
     DiagnosisEngine,
     EngineError,
 )
+from gzkit.complexity.advisor.presentation import AdHocPresenter, AutoChainPresenter
 from gzkit.complexity.thresholds import ThresholdTable, load_threshold_table
 
 DEFAULT_RULE_PATH = Path(".gzkit/rules/complexity-thresholds.md")
@@ -48,7 +49,7 @@ def complexity_advise_cmd(
     quiet: bool = False,  # noqa: ARG001 — accepted, surfaced via parser
     verbose: bool = False,  # noqa: ARG001
     dry_run: bool = False,  # noqa: ARG001
-    auto_chain: bool = False,  # noqa: ARG001 — reserved for OBPI-05
+    auto_chain: bool = False,
     rule_path: str | None = None,
 ) -> int:
     """Run advisor against ``path``; return exit code per the contract."""
@@ -61,9 +62,12 @@ def complexity_advise_cmd(
     engine = _build_engine_or_exit()
 
     diagnoses: list[AdvisorDiagnosis] = []
+    functions_checked = 0
     for source_file in _iter_python_files(target):
         try:
-            diagnoses.extend(_analyze_file(source_file, table, engine))
+            file_diagnoses, file_func_count = _analyze_file(source_file, table, engine)
+            functions_checked += file_func_count
+            diagnoses.extend(file_diagnoses)
         except SyntaxError as exc:
             print(f"error: failed to parse {source_file}: {exc}", file=sys.stderr)
             raise SystemExit(2) from exc
@@ -74,7 +78,13 @@ def complexity_advise_cmd(
     if json_output:
         print(_render_json(diagnoses))
     else:
-        print(_render_prose(diagnoses))
+        metrics_checked = 1  # currently only radon_cc
+        presenter = AutoChainPresenter() if auto_chain else AdHocPresenter()
+        output = presenter.render(
+            diagnoses, metrics_checked=metrics_checked, functions_checked=functions_checked
+        )
+        if output:
+            print(output)
 
     exit_code = _resolve_exit_code(diagnoses)
     if exit_code != 0:
@@ -118,8 +128,12 @@ def _analyze_file(
     source_file: Path,
     table: ThresholdTable,
     engine: DiagnosisEngine,
-) -> list[AdvisorDiagnosis]:
-    """Run the engine for each ``radon_cc`` crossing in ``source_file``."""
+) -> tuple[list[AdvisorDiagnosis], int]:
+    """Run the engine for each ``radon_cc`` crossing in ``source_file``.
+
+    Returns:
+        A tuple of (diagnoses list, count of function blocks analyzed).
+    """
     source = source_file.read_text(encoding="utf-8")
     tree = ast.parse(source, filename=str(source_file))
     radon_blocks = [b for b in cc_visit(source) if isinstance(b, Function)]
@@ -140,7 +154,7 @@ def _analyze_file(
         diagnosis = engine.diagnose(ast_context, METRIC_KEY, float(block.complexity), table)
         if diagnosis is not None:
             diagnoses.append(diagnosis)
-    return diagnoses
+    return diagnoses, len(radon_blocks)
 
 
 def _index_function_nodes(tree: ast.Module) -> dict[int, ast.AST]:
@@ -156,29 +170,6 @@ def _render_json(diagnoses: list[AdvisorDiagnosis]) -> str:
     """Emit AdvisorDiagnosis list as a JSON array (REQ-0.0.29-03-08)."""
     payload = [d.model_dump(mode="json") for d in diagnoses]
     return json.dumps(payload, indent=2, sort_keys=True)
-
-
-def _render_prose(diagnoses: list[AdvisorDiagnosis]) -> str:
-    """Emit structured prose; names archetype, authority, proof, recommendation."""
-    if not diagnoses:
-        return "Complexity advisor: no crossings detected."
-    lines: list[str] = ["Complexity advisor: crossings detected."]
-    for index, diag in enumerate(diagnoses, start=1):
-        proof_first = diag.proof[0]
-        proof_last = diag.proof[-1]
-        lines.extend(
-            [
-                "",
-                f"[{index}] metric={diag.metric} value={diag.crossing_value} "
-                f"band={diag.crossing_band}",
-                f"  Archetype: {diag.archetype.value}",
-                f"  Authority: {diag.doctrinal_frame.authority} ({diag.doctrinal_frame.citation})",
-                f"  Proof: {Path(proof_first.file_path).as_posix()}"
-                f":{proof_first.start_line}-{proof_last.end_line}",
-                f"  Recommended move: {diag.recommended_move}",
-            ]
-        )
-    return "\n".join(lines)
 
 
 def _resolve_exit_code(diagnoses: list[AdvisorDiagnosis]) -> int:
