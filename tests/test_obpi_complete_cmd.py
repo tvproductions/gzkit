@@ -1222,14 +1222,61 @@ class TestAgentRelayedEscapePath(unittest.TestCase):
     non-TTY without either signal still fails closed.
     """
 
-    def _write_marker(self, project_root: Path, obpi_id: str) -> Path:
+    def _write_marker(
+        self,
+        project_root: Path,
+        obpi_id: str,
+        parent_adr: str = "ADR-0.0.20",
+        nonce: str = "0123456789abcdef0123456789abcdef",
+        emit_ledger_event: bool = True,
+    ) -> Path:
+        """Write a GHI #412-authentic marker and matching ledger event.
+
+        Pre-GHI #412 the test suite wrote a minimal ``{"obpi_id": ..., "current_stage": ...}``
+        marker because the validator only ran ``is_file()``. The hardened
+        validator requires the full ``pipeline_marker_payload`` shape AND a
+        matching ``pipeline_launched`` ledger event with the same nonce.
+        """
+        from datetime import UTC, datetime
+
         plans_dir = project_root / ".claude" / "plans"
         plans_dir.mkdir(parents=True, exist_ok=True)
         marker = plans_dir / f".pipeline-active-{obpi_id}.json"
+        timestamp = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
         marker.write_text(
-            json.dumps({"obpi_id": obpi_id, "current_stage": "ceremony"}),
+            json.dumps(
+                {
+                    "obpi_id": obpi_id,
+                    "parent_adr": parent_adr,
+                    "lane": "heavy",
+                    "entry": "full",
+                    "execution_mode": "normal",
+                    "current_stage": "ceremony",
+                    "started_at": timestamp,
+                    "updated_at": timestamp,
+                    "receipt_state": "pass",
+                    "nonce": nonce,
+                }
+            ),
             encoding="utf-8",
         )
+        if emit_ledger_event:
+            ledger_dir = project_root / ".gzkit"
+            ledger_dir.mkdir(parents=True, exist_ok=True)
+            ledger_path = ledger_dir / "ledger.jsonl"
+            event = {
+                "schema": "gzkit.ledger.v1",
+                "event": "pipeline_launched",
+                "id": obpi_id,
+                "ts": timestamp,
+                "parent": parent_adr,
+                "nonce": nonce,
+                "marker_path": marker.relative_to(project_root).as_posix(),
+                "lane": "heavy",
+                "entry": "full",
+            }
+            with ledger_path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(event) + "\n")
         return marker
 
     def test_non_tty_with_attestor_present_and_marker_returns_agent_relayed(self):
@@ -1281,7 +1328,7 @@ class TestAgentRelayedEscapePath(unittest.TestCase):
                         attestor_present=True,
                         project_root=project_root,
                     )
-                self.assertIn("pipeline marker", str(ctx.exception).lower())
+                self.assertIn("marker file does not exist", str(ctx.exception))
                 self.assertIn("gz obpi pipeline", str(ctx.exception))
 
     def test_non_tty_without_attestor_present_still_raises(self):
@@ -1570,6 +1617,255 @@ class TestObpiCompleteSecuritySensitivityGate(unittest.TestCase):
             # never fired — the predicate returned False at the call site
             # in _resolve_and_validate.
             mock_tty.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# GHI #412: pipeline-marker authenticity hardening — closes the
+# "marker.is_file()" forgery surface and refuses agent-relayed attestation
+# for sensitivity:security and foundation-kind scopes.
+# ---------------------------------------------------------------------------
+
+
+def _write_authentic_marker(
+    project_root: Path,
+    obpi_id: str,
+    parent_adr: str,
+    *,
+    nonce: str = "00112233445566778899aabbccddeeff",
+    started_at: str | None = None,
+    current_stage: str = "ceremony",
+    emit_ledger_event: bool = True,
+) -> Path:
+    from datetime import UTC, datetime
+
+    plans_dir = project_root / ".claude" / "plans"
+    plans_dir.mkdir(parents=True, exist_ok=True)
+    marker = plans_dir / f".pipeline-active-{obpi_id}.json"
+    if started_at is None:
+        started_at = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    marker.write_text(
+        json.dumps(
+            {
+                "obpi_id": obpi_id,
+                "parent_adr": parent_adr,
+                "lane": "heavy",
+                "entry": "full",
+                "execution_mode": "normal",
+                "current_stage": current_stage,
+                "started_at": started_at,
+                "updated_at": started_at,
+                "receipt_state": "pass",
+                "nonce": nonce,
+            }
+        ),
+        encoding="utf-8",
+    )
+    if emit_ledger_event:
+        ledger_dir = project_root / ".gzkit"
+        ledger_dir.mkdir(parents=True, exist_ok=True)
+        ledger_path = ledger_dir / "ledger.jsonl"
+        with ledger_path.open("a", encoding="utf-8") as handle:
+            handle.write(
+                json.dumps(
+                    {
+                        "schema": "gzkit.ledger.v1",
+                        "event": "pipeline_launched",
+                        "id": obpi_id,
+                        "ts": started_at,
+                        "parent": parent_adr,
+                        "nonce": nonce,
+                        "marker_path": marker.relative_to(project_root).as_posix(),
+                        "lane": "heavy",
+                        "entry": "full",
+                    }
+                )
+                + "\n"
+            )
+    return marker
+
+
+class TestPipelineMarkerAuthenticityGhi412(unittest.TestCase):
+    """GHI #412: closes the forgery surface where any writable repo file
+    satisfied ``--attestor-present``. The validator now requires structure,
+    freshness, parent_adr match, a 32-hex nonce, and a matching
+    ``pipeline_launched`` ledger event."""
+
+    def _run_gate(
+        self,
+        project_root: Path,
+        *,
+        obpi_id: str = "OBPI-0.0.20-03",
+        parent_adr: str = "ADR-0.0.20",
+        sensitivity: str | None = None,
+        parent_kind: str | None = None,
+    ):
+        from gzkit.commands.adr_audit import _enforce_human_attestation_authenticity
+
+        with (
+            patch("gzkit.commands.adr_audit.console", _quiet_console),
+            patch(
+                "gzkit.commands.adr_audit._is_human_attestation_tty_available",
+                return_value=False,
+            ),
+        ):
+            return _enforce_human_attestation_authenticity(
+                obpi_id=obpi_id,
+                parent_adr=parent_adr,
+                attestor="Jeffry Babb",
+                attestation_text="GHI #412 unit",
+                attestor_present=True,
+                project_root=project_root,
+                sensitivity=sensitivity,
+                parent_kind=parent_kind,
+            )
+
+    def test_authentic_marker_with_ledger_event_returns_agent_relayed(self):
+        from gzkit.commands.adr_audit import ATTESTATION_TYPE_AGENT_RELAYED
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            _write_authentic_marker(project_root, "OBPI-0.0.20-03", "ADR-0.0.20")
+            self.assertEqual(self._run_gate(project_root), ATTESTATION_TYPE_AGENT_RELAYED)
+
+    def test_marker_with_unparseable_json_is_rejected(self):
+        from gzkit.commands.common import GzCliError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            plans_dir = project_root / ".claude" / "plans"
+            plans_dir.mkdir(parents=True, exist_ok=True)
+            (plans_dir / ".pipeline-active-OBPI-0.0.20-03.json").write_text(
+                "not-json{", encoding="utf-8"
+            )
+            with self.assertRaises(GzCliError) as ctx:
+                self._run_gate(project_root)
+            self.assertIn("not readable JSON", str(ctx.exception))
+
+    def test_marker_with_obpi_mismatch_is_rejected(self):
+        from gzkit.commands.common import GzCliError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            plans_dir = project_root / ".claude" / "plans"
+            plans_dir.mkdir(parents=True, exist_ok=True)
+            (plans_dir / ".pipeline-active-OBPI-0.0.20-03.json").write_text(
+                json.dumps(
+                    {
+                        "obpi_id": "OBPI-OTHER",
+                        "parent_adr": "ADR-0.0.20",
+                        "current_stage": "ceremony",
+                        "nonce": "00" * 16,
+                        "started_at": "2026-05-08T00:00:00Z",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with self.assertRaises(GzCliError) as ctx:
+                self._run_gate(project_root)
+            self.assertIn("obpi_id does not match", str(ctx.exception))
+
+    def test_marker_with_parent_adr_mismatch_is_rejected(self):
+        from gzkit.commands.common import GzCliError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            _write_authentic_marker(
+                project_root,
+                "OBPI-0.0.20-03",
+                "ADR-OTHER",  # mismatch with the gate's expected parent
+            )
+            with self.assertRaises(GzCliError) as ctx:
+                self._run_gate(project_root)
+            self.assertIn("parent_adr does not match", str(ctx.exception))
+
+    def test_marker_with_missing_nonce_is_rejected(self):
+        from gzkit.commands.common import GzCliError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            plans_dir = project_root / ".claude" / "plans"
+            plans_dir.mkdir(parents=True, exist_ok=True)
+            (plans_dir / ".pipeline-active-OBPI-0.0.20-03.json").write_text(
+                json.dumps(
+                    {
+                        "obpi_id": "OBPI-0.0.20-03",
+                        "parent_adr": "ADR-0.0.20",
+                        "current_stage": "ceremony",
+                        "started_at": "2026-05-08T00:00:00Z",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with self.assertRaises(GzCliError) as ctx:
+                self._run_gate(project_root)
+            self.assertIn("nonce is missing or malformed", str(ctx.exception))
+
+    def test_marker_with_malformed_nonce_is_rejected(self):
+        from gzkit.commands.common import GzCliError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            _write_authentic_marker(
+                project_root,
+                "OBPI-0.0.20-03",
+                "ADR-0.0.20",
+                nonce="not-a-32-hex-string",
+                emit_ledger_event=False,
+            )
+            with self.assertRaises(GzCliError) as ctx:
+                self._run_gate(project_root)
+            self.assertIn("nonce is missing or malformed", str(ctx.exception))
+
+    def test_stale_marker_is_rejected(self):
+        from gzkit.commands.common import GzCliError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            _write_authentic_marker(
+                project_root,
+                "OBPI-0.0.20-03",
+                "ADR-0.0.20",
+                started_at="2020-01-01T00:00:00Z",
+            )
+            with self.assertRaises(GzCliError) as ctx:
+                self._run_gate(project_root)
+            self.assertIn("stale", str(ctx.exception))
+
+    def test_marker_without_matching_ledger_event_is_rejected(self):
+        from gzkit.commands.common import GzCliError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            _write_authentic_marker(
+                project_root,
+                "OBPI-0.0.20-03",
+                "ADR-0.0.20",
+                emit_ledger_event=False,
+            )
+            with self.assertRaises(GzCliError) as ctx:
+                self._run_gate(project_root)
+            self.assertIn("pipeline_launched ledger event", str(ctx.exception))
+
+    def test_security_sensitivity_refuses_agent_relayed_even_with_authentic_marker(self):
+        from gzkit.commands.common import GzCliError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            _write_authentic_marker(project_root, "OBPI-0.0.20-03", "ADR-0.0.20")
+            with self.assertRaises(GzCliError) as ctx:
+                self._run_gate(project_root, sensitivity="security")
+            self.assertIn("sensitivity:security", str(ctx.exception))
+            self.assertIn("interactive shell", str(ctx.exception))
+
+    def test_foundation_kind_refuses_agent_relayed_even_with_authentic_marker(self):
+        from gzkit.commands.common import GzCliError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            _write_authentic_marker(project_root, "OBPI-0.0.20-03", "ADR-0.0.20")
+            with self.assertRaises(GzCliError) as ctx:
+                self._run_gate(project_root, parent_kind="foundation")
+            self.assertIn("foundation-kind", str(ctx.exception))
 
 
 if __name__ == "__main__":

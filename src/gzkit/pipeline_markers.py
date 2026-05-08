@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import secrets
 from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
@@ -233,6 +234,11 @@ def pipeline_stage_output(
     }
 
 
+def generate_pipeline_nonce() -> str:
+    """Return a fresh 32-hex-character nonce for pipeline-launch authenticity (GHI #412)."""
+    return secrets.token_hex(16)
+
+
 def pipeline_marker_payload(
     obpi_id: str,
     parent_adr: str,
@@ -242,8 +248,16 @@ def pipeline_marker_payload(
     *,
     execution_mode: str = "normal",
     requires_human_attestation: bool = False,
+    nonce: str | None = None,
 ) -> dict[str, Any]:
-    """Build the persisted active-state payload for pipeline markers."""
+    """Build the persisted active-state payload for pipeline markers.
+
+    GHI #412: a ``nonce`` field is now embedded so the agent-relayed
+    attestation gate can cross-check the marker against a matching
+    ``pipeline_launched`` ledger event. The caller may pass an explicit
+    nonce (used by tests and replay paths); otherwise a fresh one is
+    generated.
+    """
     timestamp = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     payload: dict[str, Any] = {
         "obpi_id": obpi_id,
@@ -255,6 +269,7 @@ def pipeline_marker_payload(
         "started_at": timestamp,
         "updated_at": timestamp,
         "receipt_state": receipt_state,
+        "nonce": nonce or generate_pipeline_nonce(),
     }
     payload.update(
         pipeline_stage_output(

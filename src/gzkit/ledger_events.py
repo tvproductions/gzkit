@@ -340,6 +340,36 @@ def obpi_lock_released_event(
     )
 
 
+def pipeline_launched_event(
+    obpi_id: str,
+    parent_adr: str,
+    lane: str,
+    nonce: str,
+    marker_path: str,
+    entry: str | None = None,
+) -> LedgerEvent:
+    """Record a pipeline launch with marker nonce (GHI #412).
+
+    Emitted by ``gz obpi pipeline`` at Stage 1 immediately after writing the
+    active marker. The nonce in this event is the same one persisted in the
+    marker payload; the agent-relayed attestation gate cross-references the
+    pair to refuse forged markers whose nonce does not appear in the ledger.
+    """
+    extra: dict[str, Any] = {
+        "nonce": nonce,
+        "marker_path": marker_path,
+        "lane": lane,
+    }
+    if entry is not None:
+        extra["entry"] = entry
+    return LedgerEvent(
+        event="pipeline_launched",
+        id=obpi_id,
+        parent=parent_adr,
+        extra=extra,
+    )
+
+
 def pipeline_marker_purged_event(
     obpi_id: str,
     parent_adr: str,

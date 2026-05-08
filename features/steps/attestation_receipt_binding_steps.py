@@ -240,25 +240,66 @@ def _seed_adr_only(adr_id: str, *, kind: str, lane: str) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _seed_pipeline_marker(obpi_id: str) -> None:
-    """Write a ``.claude/plans/.pipeline-active-<obpi-id>.json`` marker.
+def _seed_pipeline_marker(obpi_id: str, parent_adr: str | None = None) -> None:
+    """Write a structurally-authentic pipeline marker + matching ledger event.
 
-    The presence of this file lets ``--attestor-present`` ratify the
-    Stage-4 attestation as agent-relayed without requiring a real PTY.
+    The marker satisfies GHI #292 (proxy for operator co-presence) AND
+    GHI #412 (structure, freshness, parent_adr, 32-hex nonce, and a
+    ``pipeline_launched`` ledger event with the same nonce). When
+    ``parent_adr`` is omitted, the brief frontmatter is read from the
+    seeded ADR scaffolding to discover the parent — the validator
+    cross-checks this field.
     """
+    from datetime import UTC, datetime
+
     marker_dir = Path(".claude") / "plans"
     marker_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    if parent_adr is None:
+        config = GzkitConfig.load(Path(".gzkit.json"))
+        adrs_root = Path(config.paths.adrs)
+        parent_adr = ""
+        for brief_path in adrs_root.rglob(f"{obpi_id}.md"):
+            content = brief_path.read_text(encoding="utf-8")
+            for line in content.splitlines():
+                stripped = line.strip()
+                if stripped.startswith("parent:"):
+                    parent_adr = stripped.split(":", 1)[1].strip()
+                    break
+            if parent_adr:
+                break
+    nonce = "abcdef0123456789abcdef0123456789"
+    marker_path = marker_dir / f".pipeline-active-{obpi_id}.json"
     payload = {
         "obpi_id": obpi_id,
-        "current_stage": "stage-5-sync",
+        "parent_adr": parent_adr,
+        "lane": "heavy",
+        "entry": "full",
         "execution_mode": "normal",
-        "started_at": "2026-05-02T00:00:00Z",
-        "updated_at": "2026-05-02T00:00:00Z",
+        "current_stage": "ceremony",
+        "started_at": timestamp,
+        "updated_at": timestamp,
+        "receipt_state": "pass",
+        "nonce": nonce,
         "blockers": [],
     }
-    (marker_dir / f".pipeline-active-{obpi_id}.json").write_text(
-        json.dumps(payload), encoding="utf-8"
-    )
+    marker_path.write_text(json.dumps(payload), encoding="utf-8")
+    ledger_dir = Path(".gzkit")
+    ledger_dir.mkdir(parents=True, exist_ok=True)
+    ledger_path = ledger_dir / "ledger.jsonl"
+    event = {
+        "schema": "gzkit.ledger.v1",
+        "event": "pipeline_launched",
+        "id": obpi_id,
+        "ts": timestamp,
+        "parent": parent_adr,
+        "nonce": nonce,
+        "marker_path": marker_path.as_posix(),
+        "lane": "heavy",
+        "entry": "full",
+    }
+    with ledger_path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(event) + "\n")
 
 
 # ---------------------------------------------------------------------------

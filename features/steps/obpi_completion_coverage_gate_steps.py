@@ -206,19 +206,49 @@ def _seed_brief(
 
 
 def _seed_pipeline_marker(obpi_id: str) -> None:
+    """Write a GHI #412-authentic marker + matching ledger event for the seeded brief.
+
+    The parent ADR mirrors the convention used by ``_seed_brief`` callers
+    (``ADR-FIXTURE-<obpi_id[-5:]>``); the nonce is fresh per call so the
+    marker passes :func:`_validate_active_pipeline_marker`.
+    """
+    from datetime import UTC, datetime
+
     marker_dir = Path(".claude") / "plans"
     marker_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    parent_adr = f"ADR-FIXTURE-{obpi_id[-5:]}"
+    nonce = "fedcba9876543210fedcba9876543210"
+    marker_path = marker_dir / f".pipeline-active-{obpi_id}.json"
     payload = {
         "obpi_id": obpi_id,
-        "current_stage": "stage-5-sync",
+        "parent_adr": parent_adr,
+        "lane": "heavy",
+        "entry": "full",
         "execution_mode": "normal",
-        "started_at": "2026-05-03T00:00:00Z",
-        "updated_at": "2026-05-03T00:00:00Z",
+        "current_stage": "ceremony",
+        "started_at": timestamp,
+        "updated_at": timestamp,
+        "receipt_state": "pass",
+        "nonce": nonce,
         "blockers": [],
     }
-    (marker_dir / f".pipeline-active-{obpi_id}.json").write_text(
-        json.dumps(payload), encoding="utf-8"
-    )
+    marker_path.write_text(json.dumps(payload), encoding="utf-8")
+    ledger_path = Path(".gzkit") / "ledger.jsonl"
+    ledger_path.parent.mkdir(parents=True, exist_ok=True)
+    event = {
+        "schema": "gzkit.ledger.v1",
+        "event": "pipeline_launched",
+        "id": obpi_id,
+        "ts": timestamp,
+        "parent": parent_adr,
+        "nonce": nonce,
+        "marker_path": marker_path.as_posix(),
+        "lane": "heavy",
+        "entry": "full",
+    }
+    with ledger_path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(event) + "\n")
 
 
 # ---------------------------------------------------------------------------
@@ -353,6 +383,15 @@ def step_seed_foundation_lite_single_req(context, obpi_id: str, req_id: str) -> 
 def step_seed_lite_feature_single_req(context, obpi_id: str, req_id: str) -> None:  # type: ignore[no-untyped-def]
     adr_id = f"ADR-FIXTURE-{obpi_id[-5:]}"
     _seed_brief(adr_id, obpi_id, kind="feature", lane="lite", req_ids=[req_id])
+
+
+@given('a heavy-feature OBPI "{obpi_id}" with REQ "{req_id}" exists')
+def step_seed_heavy_feature_single_req(context, obpi_id: str, req_id: str) -> None:  # type: ignore[no-untyped-def]
+    """Heavy-feature brief: lane=heavy still triggers fail-closed REQ-coverage,
+    but parent_kind=feature lets ``--attestor-present`` pass the GHI #412
+    narrowing (foundation/security must use TTY)."""
+    adr_id = f"ADR-FIXTURE-{obpi_id[-5:]}"
+    _seed_brief(adr_id, obpi_id, kind="feature", lane="heavy", req_ids=[req_id])
 
 
 @given('a covering test for "{req_id}" that passes exists')

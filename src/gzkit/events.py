@@ -511,6 +511,21 @@ class PipelineMarkerPurgedEvent(_EventBase):
     marker_path: str
 
 
+class PipelineLaunchedEvent(_EventBase):
+    """pipeline_launched event — emitted at Stage 1 when the active marker is written (GHI #412).
+
+    Carries the nonce embedded in the marker payload so the agent-relayed
+    attestation gate can cross-check that the marker was produced by an
+    operator-initiated pipeline launch (rather than a forged file).
+    """
+
+    event: Literal["pipeline_launched"]
+    nonce: str
+    marker_path: str
+    lane: str
+    entry: str | None = None
+
+
 # ---------------------------------------------------------------------------
 # TASK ledger events (ADR-0.22.0 / OBPI-0.22.0-02)
 # ---------------------------------------------------------------------------
@@ -603,6 +618,7 @@ TypedLedgerEvent = Annotated[
     | ObpiCompletionUncoveredAcceptEvent
     | PatchReleaseEvent
     | PipelineMarkerPurgedEvent
+    | PipelineLaunchedEvent
     | TaskStartedEvent
     | TaskCompletedEvent
     | TaskBlockedEvent

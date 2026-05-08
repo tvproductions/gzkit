@@ -37,6 +37,8 @@ from gzkit.ledger import (
     normalize_req_proof_inputs,
     obpi_receipt_emitted_event,
     obpi_withdrawn_event,
+    parse_frontmatter_value,
+    pipeline_launched_event,
     pipeline_marker_purged_event,
     resolve_adr_lane,
 )
@@ -135,6 +137,28 @@ def _gate_completed_receipt_binding(
     )
 
 
+def _resolve_emit_receipt_authenticity_context(
+    *,
+    obpi_content: str,
+    parent_adr: Any,
+    project_root: Path,
+    config: Any,
+) -> tuple[str | None, str | None]:
+    """Return ``(sensitivity, parent_kind)`` for the emit-receipt authenticity gate.
+
+    Extracted from ``obpi_emit_receipt_cmd`` so that path stays under the
+    xenon C-rank complexity ceiling (GHI #412 plumbing added the lookup).
+    """
+    sensitivity_value = parse_frontmatter_value(obpi_content, "sensitivity")
+    parent_kind_value: str | None = None
+    if isinstance(parent_adr, str) and parent_adr:
+        from gzkit.commands.obpi_complete import _read_adr_kind
+
+        adr_file_for_kind, _ = resolve_adr_file(project_root, config, parent_adr)
+        parent_kind_value = _read_adr_kind(adr_file_for_kind)
+    return sensitivity_value, parent_kind_value
+
+
 def _gate_completed_receipt_authenticity(
     *,
     obpi_id: str,
@@ -144,6 +168,8 @@ def _gate_completed_receipt_authenticity(
     dry_run: bool,
     attestor_present: bool = False,
     project_root: Path | None = None,
+    sensitivity: str | None = None,
+    parent_kind: str | None = None,
 ) -> None:
     """GHI #290 authenticity gate wrapper for the emit-receipt path.
 
@@ -166,6 +192,8 @@ def _gate_completed_receipt_authenticity(
         attestation_text=cast(str, evidence.get("attestation_text", "")),
         attestor_present=attestor_present,
         project_root=project_root,
+        sensitivity=sensitivity,
+        parent_kind=parent_kind,
     )
     evidence["attestation_type"] = attestation_type
 
@@ -242,6 +270,12 @@ def obpi_emit_receipt_cmd(
             attestor=attestor,
             dry_run=dry_run,
         )
+        sensitivity_value, parent_kind_value = _resolve_emit_receipt_authenticity_context(
+            obpi_content=obpi_content,
+            parent_adr=parent_adr,
+            project_root=project_root,
+            config=config,
+        )
         _gate_completed_receipt_authenticity(
             obpi_id=obpi_id,
             parent_adr=parent_adr,
@@ -250,6 +284,8 @@ def obpi_emit_receipt_cmd(
             dry_run=dry_run,
             attestor_present=attestor_present,
             project_root=project_root,
+            sensitivity=sensitivity_value,
+            parent_kind=parent_kind_value,
         )
     elif evidence is not None:
         evidence = dict(evidence)
@@ -378,6 +414,16 @@ def obpi_pipeline_cmd(
         requires_human_attestation=requires_human_attestation,
     )
     per_obpi_marker, legacy_marker = write_pipeline_markers(plans_dir, marker_payload)
+    ledger.append(
+        pipeline_launched_event(
+            obpi_id=obpi_id,
+            parent_adr=resolved_parent,
+            lane=lane,
+            nonce=str(marker_payload["nonce"]),
+            marker_path=per_obpi_marker.relative_to(project_root).as_posix(),
+            entry=str(marker_payload.get("entry") or "full"),
+        )
+    )
     stage_labels = pipeline_stage_labels(start_from)
 
     _print_pipeline_header(
