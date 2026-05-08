@@ -77,7 +77,7 @@ Across the corpus (13 project(s) contributing to this aggregate), `radon_hal_eff
 
 ### Practitioner-eye observation
 
-Effort is useful when volume and difficulty combine. I read it as 'how much attention this code will consume during review.' First move: reduce either size or conceptual density, not necessarily both.
+Effort is useful when volume and difficulty combine. I read it as ‘how much attention this code will consume during review.’ First move: reduce either size or conceptual density, not necessarily both.
 
 ## Metric: `radon_raw_nloc`
 
@@ -133,7 +133,7 @@ Across the corpus (13 project(s) contributing to this aggregate), `lizard_param_
 
 ### Practitioner-eye observation
 
-Too many parameters usually means the function wants a context object, value object, config object, or clearer boundary. But I'm careful not to hide bad coupling inside a vague bag-of-fields object.
+Too many parameters usually means the function wants a context object, value object, config object, or clearer boundary. But I’m careful not to hide bad coupling inside a vague bag-of-fields object.
 
 ## Metric: `lizard_nesting_depth`
 
@@ -175,7 +175,7 @@ Across the corpus (13 project(s) contributing to this aggregate), `cohesion_lcom
 
 ### Practitioner-eye observation
 
-Also operator-judgment-heavy because the corpus parser failed. High LCOM4 usually means a class is acting as a junk drawer: methods don't share state or purpose. First move: split by concept, lifecycle, or collaborator role.
+Also operator-judgment-heavy because the corpus parser failed. High LCOM4 usually means a class is acting as a junk drawer: methods don’t share state or purpose. First move: split by concept, lifecycle, or collaborator role.
 
 ## Diff against prior distillation
 
