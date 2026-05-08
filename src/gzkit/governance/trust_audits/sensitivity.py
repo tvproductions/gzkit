@@ -195,6 +195,38 @@ def audit_sensitivity_binding(project_root: Path) -> list[ValidationError]:
     return errors
 
 
+def detect_brief_security_floor(
+    brief_text: str,
+    project_root: Path,
+) -> str | None:
+    """Return ``"security"`` when brief allowed paths intersect the registry, else ``None``.
+
+    Mirrors the auto-detect floor from :func:`audit_sensitivity_binding` so the
+    OBPI completion runtime enforces the same security floor that the audit
+    reports (GHI #413). When the registry is missing or unparseable the
+    function returns ``None`` — :func:`audit_sensitivity_binding` already
+    fail-closes that case at validate time, and completion falls through to
+    the brief's declared sensitivity rather than masking a registry-state
+    defect with a synthetic floor.
+    """
+    from gzkit.models.security_surfaces import match_globs
+
+    registry, registry_error = _load_sensitivity_registry(project_root)
+    if registry_error is not None or registry is None:
+        return None
+
+    allowed_paths = _extract_sensitivity_allowed_paths(brief_text)
+    if not allowed_paths:
+        return None
+
+    try:
+        matching = match_globs(allowed_paths, registry)
+    except (ValueError, TypeError):
+        return None
+
+    return "security" if matching else None
+
+
 def explain_sensitivity_for_paths(
     candidate_globs: Sequence[str],
     project_root: Path,

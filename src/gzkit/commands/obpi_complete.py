@@ -38,6 +38,7 @@ from gzkit.governance.trust_audits.attestation_receipts import (
     AttestationReceiptValidationResult,
     validate_attestation_receipts,
 )
+from gzkit.governance.trust_audits.sensitivity import detect_brief_security_floor
 from gzkit.hooks.obpi import section_body
 from gzkit.ledger import Ledger, parse_frontmatter_value, resolve_adr_lane
 
@@ -593,11 +594,17 @@ def _resolve_and_validate(
     ledger: Ledger,
     obpi: str,
     as_json: bool,
-) -> tuple[Path, str, str, str, str, bool]:
+) -> tuple[Path, str, str, str, str, bool, str | None]:
     """Resolve OBPI file and validate preconditions.
 
     Returns (obpi_file, obpi_id, original_content, resolved_parent, parent_lane,
-    requires_human).
+    requires_human, effective_sensitivity).
+
+    ``effective_sensitivity`` is the brief's declared ``sensitivity`` frontmatter
+    value when present, falling back to the auto-detected floor from
+    :func:`detect_brief_security_floor` (GHI #413). Both the security gate and
+    the attestation matrix consume this value so completion enforces the same
+    floor that ``audit_sensitivity_binding`` reports at validate time.
     """
     obpi_file, obpi_id = resolve_obpi_file(project_root, config, ledger, obpi)
     if not obpi_file.exists():
@@ -641,13 +648,25 @@ def _resolve_and_validate(
     parent_lane = resolve_adr_lane(graph.get(resolved_parent, {}), config.mode)
     # ADR-0.0.22 third axis: a brief carrying ``sensitivity: security`` requires
     # attestation regardless of lane or kind via the OR in
-    # ``_requires_human_obpi_attestation``.
-    sensitivity = parse_frontmatter_value(original_content, "sensitivity")
-    brief_frontmatter = {"sensitivity": sensitivity} if sensitivity else None
+    # ``_requires_human_obpi_attestation``. GHI #413: when the declaration is
+    # absent, fall back to the registry-driven floor so completion enforces the
+    # same auto-detect that ``audit_sensitivity_binding`` already reports.
+    declared_sensitivity = parse_frontmatter_value(original_content, "sensitivity")
+    detected_sensitivity = detect_brief_security_floor(original_content, project_root)
+    effective_sensitivity = declared_sensitivity or detected_sensitivity
+    brief_frontmatter = {"sensitivity": effective_sensitivity} if effective_sensitivity else None
     requires_human = _requires_human_obpi_attestation(
         resolved_parent, parent_lane, brief_frontmatter
     )
-    return obpi_file, obpi_id, original_content, resolved_parent, parent_lane, requires_human
+    return (
+        obpi_file,
+        obpi_id,
+        original_content,
+        resolved_parent,
+        parent_lane,
+        requires_human,
+        effective_sensitivity,
+    )
 
 
 def _resolve_evidence(
@@ -703,9 +722,15 @@ def obpi_complete_cmd(
     ledger = Ledger(project_root / config.paths.ledger)
 
     # 1. Resolve & validate
-    obpi_file, obpi_id, original_content, resolved_parent, parent_lane, requires_human = (
-        _resolve_and_validate(project_root, config, ledger, obpi, as_json)
-    )
+    (
+        obpi_file,
+        obpi_id,
+        original_content,
+        resolved_parent,
+        parent_lane,
+        requires_human,
+        effective_sensitivity,
+    ) = _resolve_and_validate(project_root, config, ledger, obpi, as_json)
 
     # 2. Resolve evidence
     effective_summary, effective_proof = _resolve_evidence(
@@ -743,12 +768,11 @@ def obpi_complete_cmd(
     # and rule-file-checklist contract before the GHI #290 ATTEST gate fires.
     # Skipped for --dry-run so plans can be previewed headlessly.
     if not dry_run:
-        sensitivity = parse_frontmatter_value(original_content, "sensitivity")
         _enforce_security_review_gate(
             obpi_id=obpi_id,
             parent_adr=resolved_parent,
             project_root=project_root,
-            sensitivity=sensitivity,
+            sensitivity=effective_sensitivity,
             as_json=as_json,
         )
 
@@ -809,7 +833,7 @@ def obpi_complete_cmd(
         attestor=attestor,
         attestor_present=attestor_present,
         ledger=ledger,
-        sensitivity=parse_frontmatter_value(original_content, "sensitivity"),
+        sensitivity=effective_sensitivity,
     )
 
     # 4b. GHI #290 authenticity gate: no human-attestation receipt without TTY
@@ -819,7 +843,6 @@ def obpi_complete_cmd(
     # notes the gate would fire.
     attestation_type: str = ATTESTATION_TYPE_HUMAN
     if requires_human and not dry_run:
-        sensitivity_value = parse_frontmatter_value(original_content, "sensitivity")
         try:
             attestation_type = _enforce_human_attestation_authenticity(
                 obpi_id=obpi_id,
@@ -828,7 +851,7 @@ def obpi_complete_cmd(
                 attestation_text=attestation_text,
                 attestor_present=attestor_present,
                 project_root=project_root,
-                sensitivity=sensitivity_value,
+                sensitivity=effective_sensitivity,
                 parent_kind=parent_kind,
             )
         except GzCliError as exc:
