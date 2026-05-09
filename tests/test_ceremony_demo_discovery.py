@@ -305,7 +305,6 @@ class TestExamplesSectionSynonym(unittest.TestCase):
     Step 5 walkthrough.
     """
 
-    @covers("REQ-0.0.29-03-01")
     def test_examples_section_yields_commands(self) -> None:
         brief_content = """\
 ---
@@ -332,7 +331,6 @@ uv run gz adr status
         self.assertIn("uv run gz arb --help", commands)
         self.assertIn("uv run gz adr status", commands)
 
-    @covers("REQ-0.0.29-03-01")
     def test_verification_section_is_not_treated_as_demo(self) -> None:
         """`## Verification` lists construction housekeeping; demo discovery
         must not harvest it. Otherwise the walkthrough surface re-conflates
@@ -363,7 +361,6 @@ uv run gz adr status
 
         self.assertEqual(commands, [])
 
-    @covers("REQ-0.0.29-03-01")
     def test_demo_and_examples_in_same_brief_both_yield(self) -> None:
         """A brief that authors both sections feeds both sets through."""
         brief_content = """\

@@ -387,6 +387,36 @@ class TestScanSiblingAdrCollisions(unittest.TestCase):
             )
             self.assertEqual(collisions, [])
 
+    def test_skips_when_sibling_path_is_broad_glob(self) -> None:
+        """Inverse of GHI #152: target specific, sibling broad → no collision.
+
+        When the target OBPI declares a specific path and the sibling OBPI's
+        allowed path is a broad glob (tests/, src/gzkit/), the sibling has not
+        made a specific claim on the target's path. The overlap is a
+        contract-style allowance, not a real scope collision. Reporting it
+        floods plan-audit output with false positives.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sibling_brief = (
+                root
+                / "docs/design/adr/pre-release/ADR-0.27.0-arb/obpis"
+                / "OBPI-0.27.0-99-broad.md"
+            )
+            self._mk_brief(sibling_brief, ["tests/", "src/gzkit/"])
+
+            collisions = _scan_sibling_adr_collisions(
+                project_root=root,
+                target_adr_id="ADR-0.0.30",
+                target_obpi_id="OBPI-0.0.30-03-authoring-hint-engine",
+                target_allowed=[
+                    "tests/complexity/authoring/test_hint.py",
+                    "src/gzkit/complexity/authoring/hint.py",
+                ],
+            )
+
+            self.assertEqual(collisions, [])
+
 
 class TestPlanAuditCmdScopeCollision(unittest.TestCase):
     """@covers GHI #152 — receipt records scope collisions, verdict stays PASS (advisory)."""

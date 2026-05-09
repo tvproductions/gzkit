@@ -1,0 +1,23 @@
+{
+  "obpi_id": "OBPI-0.0.30-03-authoring-hint-engine",
+  "timestamp": "2026-05-09T18:34:33.678303+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.30-03-authoring-hint-engine.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.15.0",
+      "sibling_obpi": "OBPI-0.15.0-04-schema-generation-unification",
+      "contested_paths": [
+        "src/gzkit/schemas/authoring_hint.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-06-persona-schema-validation",
+      "contested_paths": [
+        "src/gzkit/schemas/authoring_hint.json"
+      ]
+    }
+  ]
+}

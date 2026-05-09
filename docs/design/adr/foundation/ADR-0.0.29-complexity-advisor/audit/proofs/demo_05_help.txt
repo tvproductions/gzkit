@@ -1,0 +1,43 @@
+usage: gz complexity advise [-h] [--json] [--quiet] [--verbose] [--dry-run]
+                            [--auto-chain] [--rule-path RULE_PATH]
+                            [--attest-intrinsic] [--reason REASON]
+                            [--attestor ATTESTOR] [--debug]
+                            path
+
+Runs the OBPI-0.0.29-02 diagnosis engine against the file or directory at PATH. Loads the canonical threshold table from .gzkit/rules/complexity-thresholds.json (ADR-0.0.28), measures per-function radon_cc via radon's Python API, and emits an AdvisorDiagnosis for every band crossing. Default output is structured prose; --json emits the canonical Pydantic serialization. Exit codes: 0 success or warn-band crossings, 1 user/config error, 2 system/IO error, 3 block-band crossing.
+
+positional arguments:
+  path                  File or directory to analyze (recursive on
+                        directories)
+
+options:
+  -h, --help            show this help message and exit
+  --json                Emit AdvisorDiagnosis list as a JSON array
+                        (machine-readable)
+  --quiet               Errors only (no progress output)
+  --verbose             Debug output (per-file analysis trace)
+  --dry-run             Show planned actions without executing
+  --auto-chain          Reserved for OBPI-05 (xenon-as-gate auto-fire); no-op
+                        here
+  --rule-path RULE_PATH
+                        Override threshold data path (default:
+                        .gzkit/rules/complexity-thresholds.json)
+  --attest-intrinsic    Commit-time intrinsic attestation; requires
+                        <file>:<qualname> as path
+  --reason REASON       Rationale for intrinsic attestation (required with
+                        --attest-intrinsic)
+  --attestor ATTESTOR   Full name of the attesting human (required with
+                        --attest-intrinsic)
+  --debug               Enable debug mode with full tracebacks
+
+Examples
+    gz complexity advise src/gzkit/commands/validate.py
+    gz complexity advise src/gzkit/ --json
+    gz complexity advise tests/ --quiet
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach
+EXIT: 0
