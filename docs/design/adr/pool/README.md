@@ -59,7 +59,10 @@ New pool destinations created by this intake:
 Validated ADRs are not edited for this intake. If a future improvement requires
 changing a validated ADR rather than consuming it from an open ADR or pool
 destination, route the change through a GHI and an explicit amendment or follow-up
-ADR. Closed-surface comparator uplift is tracked under GHI #416.
+ADR. The doctrine for absorbing comparator strengths into closed/validated
+surfaces is captured in
+[ADR-pool.external-strength-absorption-doctrine](ADR-pool.external-strength-absorption-doctrine.md);
+each closed-ADR uplift files its own GHI and routes through that doctrine.
 
 ---
 
