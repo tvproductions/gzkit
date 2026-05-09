@@ -95,7 +95,6 @@ surfaces. The record should name:
 - `ADR-pool.context-package-registry`
 - `ADR-pool.workflow-specification`
 - `ADR-pool.design-references-bibliography`
-- GHI #416 for closed/validated ADR uplift routing
 
 ## Notes
 
