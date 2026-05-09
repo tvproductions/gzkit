@@ -797,6 +797,8 @@ uv run gz validate --complexity-thresholds       # ADR-0.0.28 threshold table sh
 uv run gz complexity distill                     # Run a distillation pass against the corpus
 uv run gz complexity distill --no-prior          # Cold-start invocation
 uv run gz complexity distill --allow-dated-sibling # Same-date sibling on collision
+uv run gz complexity guide <path>                # Preview authoring-time hints on a file (advise-band, never blocks)
+uv run gz complexity guide <path> --json         # Machine-readable AuthoringHint JSON array
 uv run gz complexity advise <path>               # Preview advisor diagnosis on a file before commit
 uv run gz complexity advise <path> --json        # Machine-readable AdvisorDiagnosis JSON
 uv run gz complexity advise <file>:<qualname> --attest-intrinsic --reason "..." --attestor "Name"
@@ -814,6 +816,8 @@ Fail-closed (exit 3) audit of every citation in cluster ADRs (0.0.27 / 0.0.28 / 
 
 - **Decorator path** (pre-known irreducible; persists in code): annotate the function with `@intrinsic_complexity(reason="...", attestor="Name")` from `gzkit.complexity.advisor.intrinsic`. The advisor skips the refactor recommendation and prints the attestation message at diagnosis time.
 - **Commit-time path** (in-flight discovery; persists in ledger): run `gz complexity advise <file>:<qualname> --attest-intrinsic --reason "..." --attestor "Name"`. Requires an interactive TTY and the word `ATTEST` to confirm. Emits one `intrinsic-complexity-attestation` ledger event; auditable via `gz validate --intrinsic-attestation`.
+
+`gz complexity guide` (ADR-0.0.30, OBPI-0.0.30-01) is the authoring-time preview surface. It wraps the OBPI-0.0.30-03 hint engine and emits one `AuthoringHint` per `advise`-band crossing — functions approaching the warn threshold, surfaced while editing before reaching gate time. Exit 3 is NOT used; this verb never blocks. Default output is one prose block per hint (archetype, guidance headline, recommended move); `--json` emits the canonical `AuthoringHint` array. See [`gz-complexity-guide`](manpages/complexity-guide.md) for the full manpage.
 
 `gz complexity advise` (ADR-0.0.29, OBPI-0.0.29-03) is the trigger-time advisor surface. It runs the OBPI-0.0.29-02 diagnosis engine against `<path>`, measures per-function `radon_cc` via radon's Python API, and emits an `AdvisorDiagnosis` (canonical refactor archetype, doctrinal authority, non-empty proof tuple linking to AST nodes, recommended-move excerpt) for every band crossing in the threshold table at `.gzkit/rules/complexity-thresholds.json`. Operator moment: preview advisor diagnosis on a file before commit. Default output is structured prose; `--json` emits the canonical Pydantic serialization. Exit codes follow the four-code map: `0` clean or warn-band, `3` block-band crossing. See [`gz-complexity-advise`](manpages/gz-complexity-advise.md) for the full manpage.
 

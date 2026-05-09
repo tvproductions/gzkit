@@ -88,6 +88,8 @@ uv run gz validate --complexity-doctrine-links  # Citation link integrity
 uv run gz complexity distill                     # Run a distillation pass
 uv run gz complexity distill --no-prior          # Cold-start invocation
 uv run gz complexity distill --allow-dated-sibling  # Same-date sibling
+uv run gz complexity guide <path>                # Authoring-time hint preview (advise-band only)
+uv run gz complexity guide <path> --json         # Machine-readable AuthoringHint JSON
 uv run gz complexity advise <path>               # Trigger-time advisor diagnosis
 uv run gz complexity advise <path> --json        # Machine-readable JSON
 ```
@@ -101,6 +103,8 @@ dated `distilled-characteristics-{YYYY-MM-DD}.md` under
 per-metric Practitioner-eye observation placeholders the verb leaves
 intact (REQ-0.0.27-04-10 — the OEE seam). Full options + exit codes in
 [`gz complexity distill`](../user/commands/complexity-distill.md).
+
+`gz complexity guide` (ADR-0.0.30, OBPI-0.0.30-01) is the authoring-time preview surface. Wraps the OBPI-0.0.30-03 hint engine; emits `AuthoringHint` blocks for `advise`-band crossings only. Never blocks (exit 3 unused). Full reference in [`gz complexity guide`](../user/commands/complexity-guide.md).
 
 `gz complexity advise` (ADR-0.0.29, OBPI-0.0.29-03) is the trigger-time
 response surface that consumes the threshold table at
