@@ -135,7 +135,7 @@ gz complexity advise <path> --attest-intrinsic
 - Manpage: `docs/user/manpages/gz-complexity-advise.md`
 - Runbook: `docs/user/runbook.md` § Complexity doctrine surfaces
 - Parent ADR: `docs/design/adr/foundation/ADR-0.0.29-complexity-advisor/`
-- Threshold table: `.gzkit/rules/complexity-thresholds.md` (ADR-0.0.28)
+- Threshold table: `.gzkit/rules/complexity-thresholds.json` (ADR-0.0.28)
 - Distilled characteristics: `data/exemplar_corpus.json` + distillation output
   (ADR-0.0.27 OBPI-04)
 - Complexity distill skill: `.gzkit/skills/gz-complexity-distill/SKILL.md`

@@ -10,6 +10,15 @@ date: 2026-04-25
 
 # ADR-0.0.28: Complexity Threshold Doctrine
 
+## Post-closeout amendment (GHI #426)
+
+**The threshold data was lifted from regex-parsed markdown to a structured JSON sibling on 2026-05-09.** The canonical surface is now a pair under `.gzkit/rules/`:
+
+- `complexity-thresholds.json` — runtime data source-of-truth (per-metric bands + citation tuple); loaded by `gzkit.complexity.thresholds.load_threshold_table` via `json.load()` + Pydantic validation.
+- `complexity-thresholds.md` — doctrine narrative (Invariant, Trigger-Semantic Vocabulary, Bootstrap carve-out, Operator-amendable mapping protocol); links to the JSON.
+
+The narrative below referring to *"`.gzkit/rules/complexity-thresholds.md`"* as the threshold table refers to the pair; the runtime contract (validator, advisor, hooks) consumes the JSON. The split closes the structural defect in GHI #426 ("deterministic config should be JSON, not regex-parsed markdown") without amending any doctrinal commitment in this ADR.
+
 ## Persona
 
 <!-- Describe the behavioral identity for agents working on this ADR.

@@ -29,7 +29,7 @@ from gzkit.complexity.advisor.engine import AstContext, DiagnosisEngine, EngineE
 from gzkit.complexity.advisor.timeout import TimeoutOk, run_with_timeout
 from gzkit.complexity.thresholds import load_threshold_table
 
-_DEFAULT_RULE_PATH = Path(".gzkit/rules/complexity-thresholds.md")
+_DEFAULT_RULE_PATH = Path(".gzkit/rules/complexity-thresholds.json")
 _FAILURE_LOG_PATH = Path(".gzkit/insights/advisor-failures.jsonl")
 _METRIC_KEY = "radon_cc"
 _DEFAULT_TIMEOUT_S = 30.0

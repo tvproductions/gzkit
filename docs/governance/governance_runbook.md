@@ -104,7 +104,7 @@ intact (REQ-0.0.27-04-10 — the OEE seam). Full options + exit codes in
 
 `gz complexity advise` (ADR-0.0.29, OBPI-0.0.29-03) is the trigger-time
 response surface that consumes the threshold table at
-`.gzkit/rules/complexity-thresholds.md` and emits an `AdvisorDiagnosis`
+`.gzkit/rules/complexity-thresholds.json` and emits an `AdvisorDiagnosis`
 for every per-function `radon_cc` band crossing. Each diagnosis names the
 canonical refactor archetype, the cited doctrinal authority
 (Fowler / Martin / Page-Jones / Constantine), a non-empty proof tuple

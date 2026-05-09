@@ -1,14 +1,23 @@
 """REQ-derived tests for the canonical complexity-thresholds rule file.
 
-These tests pin the operator-facing contract for
-``.gzkit/rules/complexity-thresholds.md``: the rule file MUST exist with
-valid frontmatter, MUST carry the body-level rule-version marker, MUST
-declare the three-value trigger-semantic vocabulary, MUST list all twelve
-canonical metrics with at least a ``block`` band each, MUST pair every
-band's percentile with an absolute number, MUST carry the canonical
-citation tuple naming the distilled-characteristics document, MUST
-declare the operator-amendable mapping protocol, and MUST name the
-bootstrap-absolutes carve-out for the three known-bootstrap metrics.
+These tests pin the operator-facing contract across the split surface
+introduced under GHI #426:
+
+* ``.gzkit/rules/complexity-thresholds.md`` carries the doctrine narrative
+  (Invariant, Vocabulary, Bootstrap carve-out, Amendment Protocol). MUST
+  exist with valid frontmatter, MUST carry the body-level rule-version
+  marker, MUST declare the three-value trigger-semantic vocabulary, MUST
+  carry the canonical citation tuple naming the distilled-characteristics
+  document, MUST declare the operator-amendable mapping protocol, MUST
+  name the bootstrap-absolutes carve-out for the three known-bootstrap
+  metrics, and MUST link to the JSON data file.
+* ``.gzkit/rules/complexity-thresholds.json`` is the runtime data
+  source-of-truth. The data tests assert semantically against the loaded
+  ``ThresholdTable`` (per ``.gzkit/rules/tests.md`` § "Tests assert
+  semantics, not strings"): every canonical metric MUST carry at least a
+  ``block`` band, and every band MUST pair ``corpus_percentile`` with
+  ``absolute_number``.
+
 Sister tests pin the advisory-scorecard entry and vendor-mirror
 propagation.
 
@@ -17,10 +26,10 @@ Coverage:
     REQ-0.0.28-01-02 — trigger-semantic vocabulary declares exactly three
         values: ``block``, ``warn``, ``advise``.
     REQ-0.0.28-01-03 — for each canonical metric (12-tuple from
-        ``gzkit.complexity.measurement.CANONICAL_METRICS``), a per-metric
-        threshold table carries at least one ``block`` band row.
-    REQ-0.0.28-01-04 — every band row carries both ``corpus_percentile``
-        and ``absolute_number``.
+        ``gzkit.complexity.measurement.CANONICAL_METRICS``), the loaded
+        ``ThresholdTable`` carries at least one ``block`` band.
+    REQ-0.0.28-01-04 — every loaded band has both ``corpus_percentile``
+        in the canonical-percentile enum and ``absolute_number`` populated.
     REQ-0.0.28-01-05 — Citation section at top names the canonical tuple
         ``(distilled_characteristics_path, section_anchor, corpus_revision)``;
         cited path resolves; ``parse_citation`` round-trips.
@@ -43,13 +52,19 @@ from pathlib import Path
 
 from gzkit.complexity.citation import parse_citation
 from gzkit.complexity.measurement import CANONICAL_METRICS
+from gzkit.complexity.thresholds import (
+    CANONICAL_PERCENTILES,
+    load_threshold_table,
+)
 from gzkit.rules import RuleFrontmatter, _parse_canonical_frontmatter
 from gzkit.traceability import covers
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _RULE_PATH = _PROJECT_ROOT / ".gzkit" / "rules" / "complexity-thresholds.md"
+_DATA_PATH = _PROJECT_ROOT / ".gzkit" / "rules" / "complexity-thresholds.json"
 _TRIGGER_VOCABULARY = ("block", "warn", "advise")
 _BOOTSTRAP_METRICS = ("radon_mi", "lizard_nesting_depth", "cohesion_lcom4")
+_RULE_VERSION = "0.3.0"
 
 
 class ComplexityThresholdsRuleAuthorship(unittest.TestCase):
@@ -78,14 +93,28 @@ class ComplexityThresholdsRuleAuthorship(unittest.TestCase):
     def test_rule_body_carries_version_marker_and_block_quote(self) -> None:
         _, body = _parse_canonical_frontmatter(_RULE_PATH)
         self.assertIn(
-            "<!-- rule-version: 0.2.0 -->",
+            f"<!-- rule-version: {_RULE_VERSION} -->",
             body,
             "body must carry the canonical body-level rule-version HTML comment",
         )
         self.assertRegex(
             body,
-            r">\s+\*\*Rule version:\*\*\s+`0\.2\.0`",
+            r">\s+\*\*Rule version:\*\*\s+`" + re.escape(_RULE_VERSION) + r"`",
             "body must carry the visible rule-version block quote",
+        )
+
+    @covers("REQ-0.0.28-01-01")
+    def test_rule_body_links_to_json_data_file(self) -> None:
+        """GHI #426 — narrative .md MUST reference the sibling JSON data file."""
+        _, body = _parse_canonical_frontmatter(_RULE_PATH)
+        self.assertIn(
+            "complexity-thresholds.json",
+            body,
+            "narrative must link to the sibling JSON data file (GHI #426)",
+        )
+        self.assertTrue(
+            _DATA_PATH.is_file(),
+            f"data file missing: {_DATA_PATH.relative_to(_PROJECT_ROOT).as_posix()}",
         )
 
     @covers("REQ-0.0.28-01-02")
@@ -129,58 +158,51 @@ class ComplexityThresholdsRuleAuthorship(unittest.TestCase):
         )
 
     @covers("REQ-0.0.28-01-03")
-    def test_each_canonical_metric_has_block_band_row(self) -> None:
-        _, body = _parse_canonical_frontmatter(_RULE_PATH)
+    def test_each_canonical_metric_has_block_band(self) -> None:
+        """Semantic assertion on the loaded ThresholdTable (GHI #426).
+
+        Replaces the prior regex-on-markdown check with a contract-level
+        assertion against the Pydantic-validated data model — the loader
+        is the single source of truth for "metric has a block band."
+        """
         self.assertEqual(
             len(CANONICAL_METRICS),
             12,
             "expected exactly 12 canonical metrics from gzkit.complexity.measurement",
         )
+        table = load_threshold_table(_DATA_PATH)
         for metric in CANONICAL_METRICS:
             with self.subTest(metric=metric):
-                # Match the per-metric section heading explicitly — `### Metric: <name>`
-                # — and capture body until the next section heading or end of document.
-                metric_section_match = re.search(
-                    rf"^###\s+Metric:\s+`{re.escape(metric)}`.*?(?=^###\s|^##\s|\Z)",
-                    body,
-                    re.DOTALL | re.MULTILINE,
+                bands = table.bands_for_metric(metric)
+                self.assertGreater(
+                    len(bands),
+                    0,
+                    f"metric {metric!r} must have at least one band in the data file",
                 )
-                self.assertIsNotNone(
-                    metric_section_match,
-                    f"metric {metric!r} must have a per-metric section in rule body",
-                )
-                section = metric_section_match.group(0) if metric_section_match else ""
-                # The section must declare a block-band row in its threshold table.
-                self.assertRegex(
-                    section,
-                    re.compile(r"\|\s*block\s*\|", re.IGNORECASE),
-                    f"metric {metric!r} section must declare a `block` band row",
+                triggers = {b.trigger_semantic for b in bands}
+                self.assertIn(
+                    "block",
+                    triggers,
+                    f"metric {metric!r} must declare a `block` band in the data file",
                 )
 
     @covers("REQ-0.0.28-01-04")
-    def test_every_band_row_pairs_percentile_with_absolute_number(self) -> None:
-        _, body = _parse_canonical_frontmatter(_RULE_PATH)
-        # Every band row in the per-metric tables must have both a percentile
-        # marker (pNN) and a numeric absolute. Look for the canonical row shape:
-        # markdown table rows with three or more cells, where one cell carries
-        # ``pNN`` and another carries a numeric value. The simplest semantic
-        # check: every percentile mention in a band-row position is accompanied
-        # by a numeric absolute on the same row.
-        band_row_pattern = re.compile(
-            r"\|\s*(?:block|warn|advise)\s*\|\s*p\d{2,3}\s*\|\s*[\d.]+",
-            re.IGNORECASE,
-        )
-        matches = band_row_pattern.findall(body)
-        # We have 12 metrics; 9 have full advise/warn/block (3 rows each = 27) +
-        # 3 bootstrap metrics with 3 bootstrap rows (9) = 36 rows minimum.
-        # Use a softer floor of 12 (one block band per metric minimum) to keep
-        # the test resilient to band-count changes within the contract.
+    def test_every_band_pairs_percentile_with_absolute_number(self) -> None:
+        """Semantic assertion on the loaded ThresholdTable (GHI #426).
+
+        ThresholdBand's Pydantic model already enforces both fields are
+        populated and well-typed; this test pins that the operator-facing
+        contract holds against the real landed data file."""
+        table = load_threshold_table(_DATA_PATH)
         self.assertGreaterEqual(
-            len(matches),
+            len(table.bands),
             12,
-            "every metric must contribute at least one band row pairing "
-            "trigger + percentile + absolute number",
+            "data file must declare at least one band per canonical metric",
         )
+        for band in table.bands:
+            with self.subTest(metric=band.metric, trigger=band.trigger_semantic):
+                self.assertIn(band.corpus_percentile, CANONICAL_PERCENTILES)
+                self.assertGreaterEqual(band.absolute_number, 0.0)
 
     @covers("REQ-0.0.28-01-05")
     def test_citation_section_names_canonical_tuple_and_resolves(self) -> None:
@@ -328,7 +350,7 @@ class ComplexityThresholdsCrossSurfaceBindings(unittest.TestCase):
                     f"vendor mirror missing: {mirror.relative_to(_PROJECT_ROOT).as_posix()}",
                 )
                 self.assertIn(
-                    "<!-- rule-version: 0.2.0 -->",
+                    f"<!-- rule-version: {_RULE_VERSION} -->",
                     mirror.read_text(encoding="utf-8"),
                     "vendor mirror must carry the body-level rule-version marker",
                 )

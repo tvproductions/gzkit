@@ -3,12 +3,13 @@
 The validator at
 ``src/gzkit/governance/trust_audits/complexity_thresholds.py``
 runs OBPI-0.0.28-02's ``load_threshold_table`` against
-``.gzkit/rules/complexity-thresholds.md``, asserts each canonical metric
-has at least one band, asserts every band's percentile + absolute pairing
-is well-formed (delegated to the loader's Pydantic model), asserts the
-citation tuple parses, and skips portability checks for rows under the
-bootstrap-absolutes carve-out (emitting a "bootstrap-mode" warning to
-operator-facing diagnostic).
+``.gzkit/rules/complexity-thresholds.json`` (data, GHI #426), asserts each
+canonical metric has at least one band, asserts every band's percentile +
+absolute pairing is well-formed (delegated to the loader's Pydantic
+model), asserts the citation tuple parses, and skips portability checks
+for rows under the bootstrap-absolutes carve-out (emitting a
+"bootstrap-mode" warning when the sibling narrative
+``.gzkit/rules/complexity-thresholds.md`` declares the carve-out section).
 
 Coverage:
     REQ-0.0.28-03-01 — well-formed threshold rule body validates clean
@@ -30,10 +31,11 @@ Coverage:
 
 from __future__ import annotations
 
-import re
+import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.governance.trust_audits.complexity_thresholds import (
     BOOTSTRAP_MODE_NOTICE_PREFIX,
@@ -43,98 +45,110 @@ from gzkit.traceability import covers
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
+_BOOTSTRAP_NARRATIVE = (
+    "<!-- rule-version: 0.3.0 -->\n\n"
+    "# Complexity Thresholds — narrative\n\n"
+    "## Bootstrap absolutes (REQ-11 carve-out -- one-shot)\n\n"
+    "- `radon_mi` — bootstrap (GHI #405)\n"
+    "- `lizard_nesting_depth` — bootstrap (GHI #404)\n"
+    "- `cohesion_lcom4` — bootstrap (GHI #404)\n"
+)
 
-def _write_rule_body(body: str) -> Path:
-    """Write the rule body into a tempdir mirroring the canonical layout."""
+
+def _write_rule_files(
+    payload: dict[str, Any],
+    *,
+    include_bootstrap_narrative: bool = False,
+) -> Path:
+    """Write data (json) + optional narrative (md) under a temp project root."""
     temp_root = Path(tempfile.mkdtemp())
     rule_dir = temp_root / ".gzkit" / "rules"
     rule_dir.mkdir(parents=True, exist_ok=True)
-    rule_path = rule_dir / "complexity-thresholds.md"
-    rule_path.write_text(body, encoding="utf-8")
+    (rule_dir / "complexity-thresholds.json").write_text(json.dumps(payload), encoding="utf-8")
+    if include_bootstrap_narrative:
+        (rule_dir / "complexity-thresholds.md").write_text(_BOOTSTRAP_NARRATIVE, encoding="utf-8")
     return temp_root
 
 
-def _well_formed_body(*, include_bootstrap: bool = False) -> str:
-    """Synthetic well-formed rule body covering all 12 canonical metrics."""
+def _well_formed_payload() -> dict[str, Any]:
+    """Synthetic well-formed data payload covering all 12 canonical metrics."""
     metrics_with_bands = [
-        ("radon_cc", "radon-cc", 4.0, 7.0, 11.0),
-        ("radon_mi", "radon-mi", 85.0, 70.0, 50.0),
-        ("radon_hal_volume", "radon-hal-volume", 946.89, 2740.93, 5549.80),
-        ("radon_hal_difficulty", "radon-hal-difficulty", 8.13, 11.54, 12.46),
-        ("radon_hal_effort", "radon-hal-effort", 7975.79, 30805.01, 74805.40),
-        ("radon_raw_nloc", "radon-raw-nloc", 311.75, 733.20, 1031.90),
-        ("radon_raw_lloc", "radon-raw-lloc", 238.25, 518.00, 811.70),
-        ("lizard_nloc", "lizard-nloc", 13.0, 25.0, 37.0),
-        ("lizard_param_count", "lizard-param-count", 3.0, 4.0, 5.0),
-        ("lizard_nesting_depth", "lizard-nesting-depth", 2.0, 3.0, 4.0),
-        ("lizard_ccn", "lizard-ccn", 4.0, 8.0, 11.0),
-        ("cohesion_lcom4", "cohesion-lcom4", 2.0, 4.0, 8.0),
+        ("radon_cc", 4.0, 7.0, 11.0, 95),
+        ("radon_mi", 85.0, 70.0, 50.0, 95),
+        ("radon_hal_volume", 946.89, 2740.93, 5549.80, 95),
+        ("radon_hal_difficulty", 8.13, 11.54, 12.46, 95),
+        ("radon_hal_effort", 7975.79, 30805.01, 74805.40, 95),
+        ("radon_raw_nloc", 311.75, 733.20, 1031.90, 95),
+        ("radon_raw_lloc", 238.25, 518.00, 811.70, 95),
+        ("lizard_nloc", 13.0, 25.0, 37.0, 95),
+        ("lizard_param_count", 3.0, 4.0, 5.0, 95),
+        ("lizard_nesting_depth", 2.0, 3.0, 4.0, 99),
+        ("lizard_ccn", 4.0, 8.0, 11.0, 95),
+        ("cohesion_lcom4", 2.0, 4.0, 8.0, 99),
     ]
-    sections = []
-    for metric, anchor, advise, warn, block in metrics_with_bands:
-        sections.append(
-            f"### Metric: `{metric}`\n\n"
-            f"Citation: `docs/governance/complexity/distilled-characteristics-2026-05-04.md "
-            f"§ {anchor} (corpus revision 1)`\n\n"
-            "| Trigger | Corpus percentile | Absolute number | Cited section |\n"
-            "|---------|-------------------|-----------------|---------------|\n"
-            f"| advise  | p75               | {advise}        | {anchor}      |\n"
-            f"| warn    | p90               | {warn}          | {anchor}      |\n"
-            f"| block   | p95               | {block}         | {anchor}      |\n"
+    bands: list[dict[str, Any]] = []
+    for metric, advise, warn, block, block_pct in metrics_with_bands:
+        bands.extend(
+            [
+                {
+                    "metric": metric,
+                    "corpus_percentile": 75,
+                    "absolute_number": advise,
+                    "trigger_semantic": "advise",
+                },
+                {
+                    "metric": metric,
+                    "corpus_percentile": 90,
+                    "absolute_number": warn,
+                    "trigger_semantic": "warn",
+                },
+                {
+                    "metric": metric,
+                    "corpus_percentile": block_pct,
+                    "absolute_number": block,
+                    "trigger_semantic": "block",
+                },
+            ]
         )
-    bootstrap_section = ""
-    if include_bootstrap:
-        bootstrap_section = (
-            "\n## Bootstrap absolutes (REQ-11 carve-out — one-shot)\n\n"
-            "- `radon_mi` — bootstrap (GHI #405)\n"
-            "- `lizard_nesting_depth` — bootstrap (GHI #404)\n"
-            "- `cohesion_lcom4` — bootstrap (GHI #404)\n"
-        )
-    return (
-        "---\n"
-        "id: complexity-thresholds\n"
-        "paths:\n"
-        '  - ".gzkit/rules/complexity-thresholds.md"\n'
-        "description: test\n"
-        "---\n\n"
-        "<!-- rule-version: 0.1.0 -->\n\n"
-        "# Complexity Thresholds\n\n"
-        "## Citation\n\n"
-        "`docs/governance/complexity/distilled-characteristics-2026-05-04.md "
-        "§ radon-cc (corpus revision 1)`\n\n"
-        "## Per-metric tables\n\n" + "\n".join(sections) + bootstrap_section
-    )
+    return {
+        "corpus_revision": 1,
+        "citation": {
+            "distilled_characteristics_path": (
+                "docs/governance/complexity/distilled-characteristics-2026-05-04.md"
+            ),
+            "section_anchor": "radon-cc",
+            "corpus_revision": 1,
+        },
+        "bands": bands,
+    }
 
 
-class WellFormedRuleBody(unittest.TestCase):
-    """Well-formed rule body validates clean."""
+class WellFormedDataFile(unittest.TestCase):
+    """Well-formed data file validates clean."""
 
     @covers("REQ-0.0.28-03-01")
-    def test_well_formed_body_returns_no_errors(self) -> None:
-        project_root = _write_rule_body(_well_formed_body())
+    def test_well_formed_payload_returns_no_errors(self) -> None:
+        project_root = _write_rule_files(_well_formed_payload())
         errors = validate_complexity_thresholds(project_root)
         self.assertEqual(
             errors,
             [],
-            f"well-formed body produced unexpected errors: {errors!r}",
+            f"well-formed payload produced unexpected errors: {errors!r}",
         )
 
 
 class MissingBlockBand(unittest.TestCase):
-    """Rule body where any metric lacks a block band fails closed."""
+    """Data where any metric lacks a block band fails closed."""
 
     @covers("REQ-0.0.28-03-02")
     def test_missing_block_band_fails_named(self) -> None:
-        # Strip every `radon_cc` block-band row regardless of whitespace
-        # padding (fixture template's column alignment is not load-bearing).
-        body = re.sub(
-            r"^\|\s*block\s*\|\s*p95\s*\|\s*[\d.]+\s*\|\s*radon-cc\s*\|\s*\n",
-            "",
-            _well_formed_body(),
-            count=1,
-            flags=re.MULTILINE,
-        )
-        project_root = _write_rule_body(body)
+        payload = _well_formed_payload()
+        payload["bands"] = [
+            band
+            for band in payload["bands"]
+            if not (band["metric"] == "radon_cc" and band["trigger_semantic"] == "block")
+        ]
+        project_root = _write_rule_files(payload)
         errors = validate_complexity_thresholds(project_root)
         self.assertGreater(len(errors), 0)
         joined = " ".join(e.message for e in errors)
@@ -146,11 +160,9 @@ class OffEnumPercentile(unittest.TestCase):
 
     @covers("REQ-0.0.28-03-03")
     def test_off_enum_percentile_fails(self) -> None:
-        body = _well_formed_body().replace(
-            "| advise  | p75               | 4.0        | radon-cc      |",
-            "| advise  | p80               | 4.0        | radon-cc      |",
-        )
-        project_root = _write_rule_body(body)
+        payload = _well_formed_payload()
+        payload["bands"][0]["corpus_percentile"] = 80
+        project_root = _write_rule_files(payload)
         errors = validate_complexity_thresholds(project_root)
         self.assertGreater(len(errors), 0)
 
@@ -160,26 +172,22 @@ class UnparseableCitation(unittest.TestCase):
 
     @covers("REQ-0.0.28-03-04")
     def test_malformed_citation_fails(self) -> None:
-        body = _well_formed_body().replace(
-            "## Citation\n\n"
-            "`docs/governance/complexity/distilled-characteristics-2026-05-04.md "
-            "§ radon-cc (corpus revision 1)`\n\n",
-            "## Citation\n\n`malformed-citation-no-canonical-form`\n\n",
-        )
-        project_root = _write_rule_body(body)
+        payload = _well_formed_payload()
+        payload["citation"]["distilled_characteristics_path"] = "not/a/governance/path.md"
+        project_root = _write_rule_files(payload)
         errors = validate_complexity_thresholds(project_root)
         self.assertGreater(len(errors), 0)
 
 
 class BootstrapMode(unittest.TestCase):
-    """Rule body with bootstrap section emits bootstrap-mode notice via stdout."""
+    """Narrative with bootstrap section emits bootstrap-mode notice via stdout."""
 
     @covers("REQ-0.0.28-03-05")
     def test_bootstrap_section_emits_notice_to_stdout(self) -> None:
         import contextlib
         import io
 
-        project_root = _write_rule_body(_well_formed_body(include_bootstrap=True))
+        project_root = _write_rule_files(_well_formed_payload(), include_bootstrap_narrative=True)
         buffer = io.StringIO()
         with contextlib.redirect_stdout(buffer):
             errors = validate_complexity_thresholds(project_root)
@@ -199,7 +207,7 @@ class BootstrapMode(unittest.TestCase):
 
     @covers("REQ-0.0.28-03-05")
     def test_bootstrap_mode_does_not_block_well_formed(self) -> None:
-        project_root = _write_rule_body(_well_formed_body(include_bootstrap=True))
+        project_root = _write_rule_files(_well_formed_payload(), include_bootstrap_narrative=True)
         errors = validate_complexity_thresholds(project_root)
         self.assertEqual(
             errors,
@@ -209,10 +217,10 @@ class BootstrapMode(unittest.TestCase):
 
 
 class RealRuleBody(unittest.TestCase):
-    """The actual landed rule body validates clean (warnings via stdout only)."""
+    """The actual landed data file validates clean (warnings via stdout only)."""
 
     @covers("REQ-0.0.28-03-01")
-    def test_real_rule_body_returns_no_errors(self) -> None:
+    def test_real_data_file_returns_no_errors(self) -> None:
         import contextlib
         import io
 
@@ -222,7 +230,7 @@ class RealRuleBody(unittest.TestCase):
         self.assertEqual(
             errors,
             [],
-            f"real rule body produced unexpected errors: {errors!r}",
+            f"real data file produced unexpected errors: {errors!r}",
         )
 
 

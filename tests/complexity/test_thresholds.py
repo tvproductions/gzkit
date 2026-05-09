@@ -1,16 +1,18 @@
 """REQ-derived tests for the ThresholdTable loader (OBPI-0.0.28-02).
 
 The loader at ``src/gzkit/complexity/thresholds.py`` parses
-``.gzkit/rules/complexity-thresholds.md`` into a frozen Pydantic
+``.gzkit/rules/complexity-thresholds.json`` (data) into a frozen Pydantic
 ``ThresholdTable`` consumed by ADR-0.0.29 advisor and ADR-0.0.30
-authoring-guidance. These tests pin the operator-facing contract: model
+authoring-guidance. The sibling ``.gzkit/rules/complexity-thresholds.md``
+carries doctrine narrative only (GHI #426 — data is JSON, narrative is
+markdown). These tests pin the operator-facing contract: model
 immutability, schema validation, parser fail-closed behavior, lookup
 method semantics, and JSON Schema mirror parity.
 
 Coverage:
-    REQ-0.0.28-02-01 — well-formed rule body parses to frozen
+    REQ-0.0.28-02-01 — well-formed data file parses to frozen
         ``ThresholdTable`` with bands and citation populated.
-    REQ-0.0.28-02-02 — rule body where any metric lacks a ``block`` band
+    REQ-0.0.28-02-02 — data where any metric lacks a ``block`` band
         fails with ``ValidationError`` naming the metric.
     REQ-0.0.28-02-03 — band with trigger-semantic outside
         ``{block, warn, advise}`` fails with ``ValidationError``.
@@ -33,6 +35,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from pydantic import ValidationError
 
@@ -46,64 +49,72 @@ from gzkit.complexity.thresholds import (
 from gzkit.traceability import covers
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
-_REAL_RULE_PATH = _PROJECT_ROOT / ".gzkit" / "rules" / "complexity-thresholds.md"
+_REAL_DATA_PATH = _PROJECT_ROOT / ".gzkit" / "rules" / "complexity-thresholds.json"
 _SCHEMA_PATH = _PROJECT_ROOT / "src" / "gzkit" / "schemas" / "complexity_thresholds.json"
 
 
-def _well_formed_rule_body() -> str:
-    """Synthetic well-formed rule body with all 12 metrics + citation tuple."""
+def _well_formed_data() -> dict[str, Any]:
+    """Synthetic well-formed data payload covering all 12 canonical metrics."""
     metrics_with_bands = [
-        ("radon_cc", "radon-cc", 4.0, 7.0, 11.0),
-        ("radon_mi", "radon-mi", 85.0, 70.0, 50.0),
-        ("radon_hal_volume", "radon-hal-volume", 946.89, 2740.93, 5549.80),
-        ("radon_hal_difficulty", "radon-hal-difficulty", 8.13, 11.54, 12.46),
-        ("radon_hal_effort", "radon-hal-effort", 7975.79, 30805.01, 74805.40),
-        ("radon_raw_nloc", "radon-raw-nloc", 311.75, 733.20, 1031.90),
-        ("radon_raw_lloc", "radon-raw-lloc", 238.25, 518.00, 811.70),
-        ("lizard_nloc", "lizard-nloc", 13.0, 25.0, 37.0),
-        ("lizard_param_count", "lizard-param-count", 3.0, 4.0, 5.0),
-        ("lizard_nesting_depth", "lizard-nesting-depth", 2.0, 3.0, 4.0),
-        ("lizard_ccn", "lizard-ccn", 4.0, 8.0, 11.0),
-        ("cohesion_lcom4", "cohesion-lcom4", 2.0, 4.0, 8.0),
+        ("radon_cc", 4.0, 7.0, 11.0, 95),
+        ("radon_mi", 85.0, 70.0, 50.0, 95),
+        ("radon_hal_volume", 946.89, 2740.93, 5549.80, 95),
+        ("radon_hal_difficulty", 8.13, 11.54, 12.46, 95),
+        ("radon_hal_effort", 7975.79, 30805.01, 74805.40, 95),
+        ("radon_raw_nloc", 311.75, 733.20, 1031.90, 95),
+        ("radon_raw_lloc", 238.25, 518.00, 811.70, 95),
+        ("lizard_nloc", 13.0, 25.0, 37.0, 95),
+        ("lizard_param_count", 3.0, 4.0, 5.0, 95),
+        ("lizard_nesting_depth", 2.0, 3.0, 4.0, 99),
+        ("lizard_ccn", 4.0, 8.0, 11.0, 95),
+        ("cohesion_lcom4", 2.0, 4.0, 8.0, 99),
     ]
-    sections = []
-    for metric, anchor, advise, warn, block in metrics_with_bands:
-        sections.append(
-            f"### Metric: `{metric}`\n\n"
-            f"Citation: `docs/governance/complexity/distilled-characteristics-2026-05-04.md "
-            f"§ {anchor} (corpus revision 1)`\n\n"
-            "| Trigger | Corpus percentile | Absolute number | Cited section |\n"
-            "|---------|-------------------|-----------------|---------------|\n"
-            f"| advise  | p75               | {advise}        | {anchor}      |\n"
-            f"| warn    | p90               | {warn}          | {anchor}      |\n"
-            f"| block   | p95               | {block}         | {anchor}      |\n"
+    bands: list[dict[str, Any]] = []
+    for metric, advise, warn, block, block_pct in metrics_with_bands:
+        bands.extend(
+            [
+                {
+                    "metric": metric,
+                    "corpus_percentile": 75,
+                    "absolute_number": advise,
+                    "trigger_semantic": "advise",
+                },
+                {
+                    "metric": metric,
+                    "corpus_percentile": 90,
+                    "absolute_number": warn,
+                    "trigger_semantic": "warn",
+                },
+                {
+                    "metric": metric,
+                    "corpus_percentile": block_pct,
+                    "absolute_number": block,
+                    "trigger_semantic": "block",
+                },
+            ]
         )
-    metrics_block = "\n".join(sections)
-    return (
-        "---\n"
-        "id: complexity-thresholds\n"
-        "paths:\n"
-        '  - ".gzkit/rules/complexity-thresholds.md"\n'
-        "description: test\n"
-        "---\n\n"
-        "<!-- rule-version: 0.1.0 -->\n\n"
-        "# Complexity Thresholds\n\n"
-        "## Citation\n\n"
-        "`docs/governance/complexity/distilled-characteristics-2026-05-04.md "
-        "§ radon-cc (corpus revision 1)`\n\n"
-        f"## Per-metric tables\n\n{metrics_block}\n"
-    )
+    return {
+        "corpus_revision": 1,
+        "citation": {
+            "distilled_characteristics_path": (
+                "docs/governance/complexity/distilled-characteristics-2026-05-04.md"
+            ),
+            "section_anchor": "radon-cc",
+            "corpus_revision": 1,
+        },
+        "bands": bands,
+    }
 
 
-def _write_rule_fixture(body: str) -> Path:
-    """Write a fixture rule body to a tempfile and return the Path."""
+def _write_data_fixture(payload: dict[str, Any]) -> Path:
+    """Write a fixture data payload to a tempfile and return the Path."""
     with tempfile.NamedTemporaryFile(
         mode="w",
-        suffix=".md",
+        suffix=".json",
         delete=False,
         encoding="utf-8",
     ) as handle:
-        handle.write(body)
+        json.dump(payload, handle)
         return Path(handle.name)
 
 
@@ -249,21 +260,19 @@ class ThresholdTableModel(unittest.TestCase):
     @covers("REQ-0.0.28-02-07")
     def test_bands_is_immutable_tuple(self) -> None:
         table = self._make_radon_cc_table()
-        # bands is declared as tuple; assigning a new value must fail under frozen=True
         with self.assertRaises(ValidationError):
             table.bands = ()  # type: ignore[misc]
 
 
 class LoaderParser(unittest.TestCase):
-    """Pin the load_threshold_table parser contract."""
+    """Pin the load_threshold_table parser contract (JSON source)."""
 
     @covers("REQ-0.0.28-02-01")
-    def test_well_formed_rule_body_parses(self) -> None:
-        rule_path = _write_rule_fixture(_well_formed_rule_body())
+    def test_well_formed_data_file_parses(self) -> None:
+        data_path = _write_data_fixture(_well_formed_data())
         try:
-            table = load_threshold_table(rule_path)
+            table = load_threshold_table(data_path)
             self.assertEqual(table.corpus_revision, 1)
-            # Every canonical metric must have at least one band.
             metrics_in_table = {b.metric for b in table.bands}
             from gzkit.complexity.measurement import CANONICAL_METRICS
 
@@ -271,70 +280,85 @@ class LoaderParser(unittest.TestCase):
                 with self.subTest(metric=canonical):
                     self.assertIn(canonical, metrics_in_table)
         finally:
-            rule_path.unlink(missing_ok=True)
+            data_path.unlink(missing_ok=True)
 
     @covers("REQ-0.0.28-02-02")
     def test_metric_missing_block_band_rejected(self) -> None:
-        # Drop the block-band row for radon_cc.
-        body = _well_formed_rule_body().replace(
-            "| block   | p95               | 11.0         | radon-cc      |\n",
-            "",
-        )
-        rule_path = _write_rule_fixture(body)
+        payload = _well_formed_data()
+        payload["bands"] = [
+            band
+            for band in payload["bands"]
+            if not (band["metric"] == "radon_cc" and band["trigger_semantic"] == "block")
+        ]
+        data_path = _write_data_fixture(payload)
         try:
             with self.assertRaises(ValidationError) as ctx:
-                load_threshold_table(rule_path)
+                load_threshold_table(data_path)
             self.assertIn("radon_cc", str(ctx.exception))
         finally:
-            rule_path.unlink(missing_ok=True)
+            data_path.unlink(missing_ok=True)
 
     @covers("REQ-0.0.28-02-03")
-    def test_unknown_trigger_semantic_in_body_rejected(self) -> None:
-        body = _well_formed_rule_body().replace(
-            "| advise  | p75               | 4.0        | radon-cc      |",
-            "| info    | p75               | 4.0        | radon-cc      |",
-        )
-        rule_path = _write_rule_fixture(body)
+    def test_unknown_trigger_semantic_in_data_rejected(self) -> None:
+        payload = _well_formed_data()
+        payload["bands"][0]["trigger_semantic"] = "info"
+        data_path = _write_data_fixture(payload)
         try:
             with self.assertRaises(ValidationError):
-                load_threshold_table(rule_path)
+                load_threshold_table(data_path)
         finally:
-            rule_path.unlink(missing_ok=True)
+            data_path.unlink(missing_ok=True)
 
     @covers("REQ-0.0.28-02-04")
     def test_malformed_citation_rejected(self) -> None:
-        body = _well_formed_rule_body().replace(
-            "## Citation\n\n"
-            "`docs/governance/complexity/distilled-characteristics-2026-05-04.md "
-            "§ radon-cc (corpus revision 1)`\n\n",
-            "## Citation\n\n`malformed-citation-no-canonical-form`\n\n",
-        )
-        rule_path = _write_rule_fixture(body)
+        payload = _well_formed_data()
+        payload["citation"] = {
+            "distilled_characteristics_path": "not/a/valid/governance/path.md",
+            "section_anchor": "radon-cc",
+            "corpus_revision": 1,
+        }
+        data_path = _write_data_fixture(payload)
         try:
             with self.assertRaises(ValidationError):
-                load_threshold_table(rule_path)
+                load_threshold_table(data_path)
         finally:
-            rule_path.unlink(missing_ok=True)
+            data_path.unlink(missing_ok=True)
+
+    def test_non_json_suffix_rejected(self) -> None:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            suffix=".md",
+            delete=False,
+            encoding="utf-8",
+        ) as handle:
+            handle.write("# narrative is not data")
+            md_path = Path(handle.name)
+        try:
+            with self.assertRaises(ValueError) as ctx:
+                load_threshold_table(md_path)
+            self.assertIn(".json", str(ctx.exception))
+        finally:
+            md_path.unlink(missing_ok=True)
 
 
 class LoaderIntegration(unittest.TestCase):
-    """Pin the loader against the real landed rule body."""
+    """Pin the loader against the real landed data file."""
 
     @covers("REQ-0.0.28-02-01")
-    def test_real_rule_body_parses_with_twelve_metrics(self) -> None:
+    def test_real_data_file_parses_with_twelve_metrics(self) -> None:
         from gzkit.complexity.measurement import CANONICAL_METRICS
 
-        self.assertTrue(_REAL_RULE_PATH.is_file(), f"missing real rule: {_REAL_RULE_PATH}")
-        table = load_threshold_table(_REAL_RULE_PATH)
+        self.assertTrue(_REAL_DATA_PATH.is_file(), f"missing real data: {_REAL_DATA_PATH}")
+        table = load_threshold_table(_REAL_DATA_PATH)
         self.assertEqual(table.corpus_revision, 1)
         metrics_seen = {b.metric for b in table.bands}
         self.assertEqual(metrics_seen, set(CANONICAL_METRICS))
 
     @covers("REQ-0.0.28-02-02")
-    def test_real_rule_body_has_block_band_per_metric(self) -> None:
+    def test_real_data_has_block_band_per_metric(self) -> None:
         from gzkit.complexity.measurement import CANONICAL_METRICS
 
-        table = load_threshold_table(_REAL_RULE_PATH)
+        table = load_threshold_table(_REAL_DATA_PATH)
         for metric in CANONICAL_METRICS:
             with self.subTest(metric=metric):
                 bands = table.bands_for_metric(metric)
@@ -344,6 +368,20 @@ class LoaderIntegration(unittest.TestCase):
                     triggers,
                     f"metric {metric!r} must have a block band",
                 )
+
+    @covers("REQ-0.0.28-01-04")
+    def test_every_real_band_pairs_percentile_with_absolute_number(self) -> None:
+        """REQ-0.0.28-01-04 — semantic check: every band has both fields populated.
+
+        Loader validation already enforces this via Pydantic ``Field`` constraints
+        on ``ThresholdBand``; this test pins the operator-facing contract that
+        the real landed data carries the pairing for every band."""
+        table = load_threshold_table(_REAL_DATA_PATH)
+        self.assertGreater(len(table.bands), 0)
+        for band in table.bands:
+            with self.subTest(metric=band.metric, trigger=band.trigger_semantic):
+                self.assertIn(band.corpus_percentile, CANONICAL_PERCENTILES)
+                self.assertGreaterEqual(band.absolute_number, 0.0)
 
 
 class JsonSchemaMirror(unittest.TestCase):

@@ -62,7 +62,7 @@ workflow context.
 | File | Role | Read/Write |
 |------|------|------------|
 | `.gzkit/skills/complexity-advisor/SKILL.md` | Agent execution instructions | Read |
-| `.gzkit/rules/complexity-thresholds.md` | Canonical threshold table (ADR-0.0.28) | Read |
+| `.gzkit/rules/complexity-thresholds.json` | Canonical threshold table (ADR-0.0.28) | Read |
 | `data/exemplar_corpus.json` | Exemplar corpus for distillation | Read |
 | `docs/user/manpages/gz-complexity-advise.md` | CLI verb manpage | Read |
 | `.gzkit/ledger.jsonl` | Attestation events (with `--attest-intrinsic`) | Write |

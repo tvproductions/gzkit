@@ -29,6 +29,7 @@ Coverage (mapped to brief Acceptance Criteria REQ-IDs):
 from __future__ import annotations
 
 import ast
+import json
 import os
 import tempfile
 import unittest
@@ -84,26 +85,37 @@ def _distilled_characteristics(
     return "\n".join(sections)
 
 
-def _rule_body(metric: str, distilled_path: Path, anchor: str) -> str:
-    return (
-        "---\n"
-        "id: complexity-thresholds\n"
-        "paths:\n"
-        '  - ".gzkit/rules/complexity-thresholds.md"\n'
-        "description: synthetic\n"
-        "---\n\n"
-        "<!-- rule-version: 0.1.0 -->\n\n"
-        "# Synthetic Complexity Thresholds\n\n"
-        "## Citation\n\n"
-        f"`{distilled_path.as_posix()} § {anchor} (corpus revision 1)`\n\n"
-        "## Per-metric tables\n\n"
-        f"### Metric: `{metric}`\n\n"
-        f"Citation: `{distilled_path.as_posix()} § {anchor} (corpus revision 1)`\n\n"
-        "| Trigger | Corpus percentile | Absolute number | Cited section |\n"
-        "|---------|-------------------|-----------------|---------------|\n"
-        f"| advise  | p75               | 4.0             | {anchor}      |\n"
-        f"| warn    | p90               | 7.0             | {anchor}      |\n"
-        f"| block   | p95               | 11.0            | {anchor}      |\n"
+def _rule_data(metric: str, distilled_path: Path, anchor: str) -> str:
+    """Synthesize the JSON data payload (GHI #426 — data is JSON, narrative .md)."""
+    return json.dumps(
+        {
+            "corpus_revision": 1,
+            "citation": {
+                "distilled_characteristics_path": distilled_path.as_posix(),
+                "section_anchor": anchor,
+                "corpus_revision": 1,
+            },
+            "bands": [
+                {
+                    "metric": metric,
+                    "corpus_percentile": 75,
+                    "absolute_number": 4.0,
+                    "trigger_semantic": "advise",
+                },
+                {
+                    "metric": metric,
+                    "corpus_percentile": 90,
+                    "absolute_number": 7.0,
+                    "trigger_semantic": "warn",
+                },
+                {
+                    "metric": metric,
+                    "corpus_percentile": 95,
+                    "absolute_number": 11.0,
+                    "trigger_semantic": "block",
+                },
+            ],
+        }
     )
 
 
@@ -139,10 +151,10 @@ def _synthetic_environment(
             ),
             encoding="utf-8",
         )
-        rule_path = root / "complexity_thresholds.md"
+        rule_path = root / "complexity-thresholds.json"
         anchor = metric.replace("_", "-")
         rule_path.write_text(
-            _rule_body(metric, Path(distilled_path).relative_to(root), anchor),
+            _rule_data(metric, Path(distilled_path).relative_to(root), anchor),
             encoding="utf-8",
         )
         prior_cwd = Path.cwd()
