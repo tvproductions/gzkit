@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.29-complexity-advisor
-status: Draft
+status: Validated
 kind: foundation
 semver: 0.0.29
 lane: heavy

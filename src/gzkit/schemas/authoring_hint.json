@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gzkit.tvproductions.dev/schemas/authoring_hint.json",
+  "title": "AuthoringHint",
+  "description": "JSON Schema mirror of the gzkit.complexity.authoring.hint.AuthoringHint Pydantic model (OBPI-0.0.30-03). Note: the cross-field constraint start_line <= end_line is enforced by the Pydantic model_validator; Draft 2020-12 has no portable cross-field comparator.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "metric",
+    "precedence_band",
+    "crossing_value",
+    "archetype",
+    "doctrinal_frame_headline",
+    "recommended_move",
+    "file_path",
+    "start_line",
+    "end_line"
+  ],
+  "properties": {
+    "metric": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Complexity metric key (e.g. 'radon_cc')."
+    },
+    "precedence_band": {
+      "type": "string",
+      "enum": ["approaching", "approaching_warn"],
+      "description": "Position within the advise band."
+    },
+    "crossing_value": {
+      "type": "number",
+      "description": "Observed metric value that triggered the hint."
+    },
+    "archetype": {
+      "type": "string",
+      "enum": [
+        "long_parameter_list",
+        "arrowhead",
+        "switch_on_type",
+        "feature_envy",
+        "large_class",
+        "divergent_change",
+        "shotgun_surgery",
+        "primitive_obsession",
+        "data_clumps",
+        "message_chain"
+      ],
+      "description": "Canonical refactor archetype."
+    },
+    "doctrinal_frame_headline": {
+      "type": "string",
+      "description": "Truncated one-line excerpt of the cited doctrinal frame."
+    },
+    "recommended_move": {
+      "type": "string",
+      "description": "Human-readable refactor recommendation."
+    },
+    "file_path": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source file path for the editor to navigate to."
+    },
+    "start_line": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "First line (1-indexed, inclusive)."
+    },
+    "end_line": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Last line (1-indexed, inclusive). The cross-field constraint end_line >= start_line is enforced by the Pydantic model_validator."
+    }
+  }
+}

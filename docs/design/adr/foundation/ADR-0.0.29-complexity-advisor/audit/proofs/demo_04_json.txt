@@ -1,0 +1,294 @@
+[
+  {
+    "archetype": "arrowhead",
+    "crossing_band": "warn",
+    "crossing_value": 8.0,
+    "doctrinal_frame": {
+      "authority": "martin",
+      "citation": "Clean Code, ch. 7 \u2014 Boundary Conditions",
+      "excerpt": "Deeply nested control flow signals missing guard clauses; collapse the arrowhead with early returns and extracted predicates."
+    },
+    "intrinsic_attestation": null,
+    "metric": "radon_cc",
+    "proof": [
+      {
+        "ast_node_kind": "arg",
+        "end_line": 1,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 1
+      },
+      {
+        "ast_node_kind": "FunctionDef",
+        "end_line": 19,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 1
+      },
+      {
+        "ast_node_kind": "Compare",
+        "end_line": 2,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 2
+      },
+      {
+        "ast_node_kind": "Name",
+        "end_line": 2,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 2
+      },
+      {
+        "ast_node_kind": "Constant",
+        "end_line": 2,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 2
+      },
+      {
+        "ast_node_kind": "If",
+        "end_line": 19,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 2
+      },
+      {
+        "ast_node_kind": "Compare",
+        "end_line": 3,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 3
+      },
+      {
+        "ast_node_kind": "Name",
+        "end_line": 3,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 3
+      },
+      {
+        "ast_node_kind": "Constant",
+        "end_line": 3,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 3
+      },
+      {
+        "ast_node_kind": "If",
+        "end_line": 8,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 3
+      },
+      {
+        "ast_node_kind": "Return",
+        "end_line": 4,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 4
+      },
+      {
+        "ast_node_kind": "Constant",
+        "end_line": 4,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 4
+      },
+      {
+        "ast_node_kind": "Compare",
+        "end_line": 5,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 5
+      },
+      {
+        "ast_node_kind": "Name",
+        "end_line": 5,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 5
+      },
+      {
+        "ast_node_kind": "Constant",
+        "end_line": 5,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 5
+      },
+      {
+        "ast_node_kind": "If",
+        "end_line": 8,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 5
+      },
+      {
+        "ast_node_kind": "Return",
+        "end_line": 6,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 6
+      },
+      {
+        "ast_node_kind": "Constant",
+        "end_line": 6,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 6
+      },
+      {
+        "ast_node_kind": "Return",
+        "end_line": 8,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 8
+      },
+      {
+        "ast_node_kind": "Constant",
+        "end_line": 8,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 8
+      },
+      {
+        "ast_node_kind": "Compare",
+        "end_line": 9,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 9
+      },
+      {
+        "ast_node_kind": "Name",
+        "end_line": 9,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 9
+      },
+      {
+        "ast_node_kind": "Constant",
+        "end_line": 9,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 9
+      },
+      {
+        "ast_node_kind": "If",
+        "end_line": 19,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 9
+      },
+      {
+        "ast_node_kind": "Compare",
+        "end_line": 10,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 10
+      },
+      {
+        "ast_node_kind": "Name",
+        "end_line": 10,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 10
+      },
+      {
+        "ast_node_kind": "Constant",
+        "end_line": 10,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 10
+      },
+      {
+        "ast_node_kind": "If",
+        "end_line": 15,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 10
+      },
+      {
+        "ast_node_kind": "Return",
+        "end_line": 11,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 11
+      },
+      {
+        "ast_node_kind": "Constant",
+        "end_line": 11,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 11
+      },
+      {
+        "ast_node_kind": "Compare",
+        "end_line": 12,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 12
+      },
+      {
+        "ast_node_kind": "Name",
+        "end_line": 12,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 12
+      },
+      {
+        "ast_node_kind": "Constant",
+        "end_line": 12,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 12
+      },
+      {
+        "ast_node_kind": "If",
+        "end_line": 15,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 12
+      },
+      {
+        "ast_node_kind": "Return",
+        "end_line": 13,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 13
+      },
+      {
+        "ast_node_kind": "Constant",
+        "end_line": 13,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 13
+      },
+      {
+        "ast_node_kind": "Return",
+        "end_line": 15,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 15
+      },
+      {
+        "ast_node_kind": "Constant",
+        "end_line": 15,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 15
+      },
+      {
+        "ast_node_kind": "Compare",
+        "end_line": 16,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 16
+      },
+      {
+        "ast_node_kind": "Name",
+        "end_line": 16,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 16
+      },
+      {
+        "ast_node_kind": "Constant",
+        "end_line": 16,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 16
+      },
+      {
+        "ast_node_kind": "If",
+        "end_line": 19,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 16
+      },
+      {
+        "ast_node_kind": "Return",
+        "end_line": 17,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 17
+      },
+      {
+        "ast_node_kind": "Constant",
+        "end_line": 17,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 17
+      },
+      {
+        "ast_node_kind": "Return",
+        "end_line": 19,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 19
+      },
+      {
+        "ast_node_kind": "Constant",
+        "end_line": 19,
+        "file_path": "/tmp/demo_warn.py",
+        "start_line": 19
+      }
+    ],
+    "recommended_move": "When branch count rises, I usually suspect hidden policy logic, mode handling, or too many cases in one function. First move: extract decision policy or split paths by responsibility. But a high CC can be acceptable in explicit parsers/validators when branches are deliberately enumerated and well-tested."
+  }
+]
+EXIT: 0

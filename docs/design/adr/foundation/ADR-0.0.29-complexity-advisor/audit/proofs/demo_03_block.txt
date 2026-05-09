@@ -1,0 +1,306 @@
+Metric: radon_cc | Band: block | Value: 14.0 | Archetype: arrowhead
+Authority: martin
+Citation: Clean Code, ch. 7 — Boundary Conditions
+Excerpt: Deeply nested control flow signals missing guard clauses; collapse the arrowhead with early returns and extracted predicates.
+Recommended: When branch count rises, I usually suspect hidden policy logic, mode handling, or too many cases in one function. First move: extract decision policy or split paths by responsibility. But a high CC can be acceptable in explicit parsers/validators when branches are deliberately enumerated and well-tested.
+File: /tmp/demo_block.py (lines 1-1, arg)
+def dispatch(kind, value, flags):
+File: /tmp/demo_block.py (lines 1-32, FunctionDef)
+def dispatch(kind, value, flags):
+    if kind == "a":
+        if value > 100:
+            if flags.get("strict"):
+                return "a-strict-high"
+            return "a-high"
+        elif value > 10:
+            return "a-mid"
+        elif value > 0:
+            return "a-low"
+        else:
+            return "a-zero"
+    elif kind == "b":
+        if value > 100:
+            return "b-high"
+        elif value > 10:
+            if flags.get("strict"):
+                return "b-strict-mid"
+            return "b-mid"
+        else:
+            return "b-low"
+    elif kind == "c":
+        if value > 50:
+            return "c-high"
+        elif value > 0:
+            return "c-low"
+        else:
+            return "c-zero"
+    elif kind == "d":
+        return "d-any"
+    else:
+        return "unknown"
+File: /tmp/demo_block.py (lines 2-2, Compare)
+    if kind == "a":
+File: /tmp/demo_block.py (lines 2-2, Name)
+    if kind == "a":
+File: /tmp/demo_block.py (lines 2-2, Constant)
+    if kind == "a":
+File: /tmp/demo_block.py (lines 2-32, If)
+    if kind == "a":
+        if value > 100:
+            if flags.get("strict"):
+                return "a-strict-high"
+            return "a-high"
+        elif value > 10:
+            return "a-mid"
+        elif value > 0:
+            return "a-low"
+        else:
+            return "a-zero"
+    elif kind == "b":
+        if value > 100:
+            return "b-high"
+        elif value > 10:
+            if flags.get("strict"):
+                return "b-strict-mid"
+            return "b-mid"
+        else:
+            return "b-low"
+    elif kind == "c":
+        if value > 50:
+            return "c-high"
+        elif value > 0:
+            return "c-low"
+        else:
+            return "c-zero"
+    elif kind == "d":
+        return "d-any"
+    else:
+        return "unknown"
+File: /tmp/demo_block.py (lines 3-3, Compare)
+        if value > 100:
+File: /tmp/demo_block.py (lines 3-3, Name)
+        if value > 100:
+File: /tmp/demo_block.py (lines 3-3, Constant)
+        if value > 100:
+File: /tmp/demo_block.py (lines 3-12, If)
+        if value > 100:
+            if flags.get("strict"):
+                return "a-strict-high"
+            return "a-high"
+        elif value > 10:
+            return "a-mid"
+        elif value > 0:
+            return "a-low"
+        else:
+            return "a-zero"
+File: /tmp/demo_block.py (lines 4-4, Call)
+            if flags.get("strict"):
+File: /tmp/demo_block.py (lines 4-4, Attribute)
+            if flags.get("strict"):
+File: /tmp/demo_block.py (lines 4-4, Constant)
+            if flags.get("strict"):
+File: /tmp/demo_block.py (lines 4-4, Name)
+            if flags.get("strict"):
+File: /tmp/demo_block.py (lines 4-5, If)
+            if flags.get("strict"):
+                return "a-strict-high"
+File: /tmp/demo_block.py (lines 5-5, Return)
+                return "a-strict-high"
+File: /tmp/demo_block.py (lines 5-5, Constant)
+                return "a-strict-high"
+File: /tmp/demo_block.py (lines 6-6, Return)
+            return "a-high"
+File: /tmp/demo_block.py (lines 6-6, Constant)
+            return "a-high"
+File: /tmp/demo_block.py (lines 7-7, Compare)
+        elif value > 10:
+File: /tmp/demo_block.py (lines 7-7, Name)
+        elif value > 10:
+File: /tmp/demo_block.py (lines 7-7, Constant)
+        elif value > 10:
+File: /tmp/demo_block.py (lines 7-12, If)
+        elif value > 10:
+            return "a-mid"
+        elif value > 0:
+            return "a-low"
+        else:
+            return "a-zero"
+File: /tmp/demo_block.py (lines 8-8, Return)
+            return "a-mid"
+File: /tmp/demo_block.py (lines 8-8, Constant)
+            return "a-mid"
+File: /tmp/demo_block.py (lines 9-9, Compare)
+        elif value > 0:
+File: /tmp/demo_block.py (lines 9-9, Name)
+        elif value > 0:
+File: /tmp/demo_block.py (lines 9-9, Constant)
+        elif value > 0:
+File: /tmp/demo_block.py (lines 9-12, If)
+        elif value > 0:
+            return "a-low"
+        else:
+            return "a-zero"
+File: /tmp/demo_block.py (lines 10-10, Return)
+            return "a-low"
+File: /tmp/demo_block.py (lines 10-10, Constant)
+            return "a-low"
+File: /tmp/demo_block.py (lines 12-12, Return)
+            return "a-zero"
+File: /tmp/demo_block.py (lines 12-12, Constant)
+            return "a-zero"
+File: /tmp/demo_block.py (lines 13-13, Compare)
+    elif kind == "b":
+File: /tmp/demo_block.py (lines 13-13, Name)
+    elif kind == "b":
+File: /tmp/demo_block.py (lines 13-13, Constant)
+    elif kind == "b":
+File: /tmp/demo_block.py (lines 13-32, If)
+    elif kind == "b":
+        if value > 100:
+            return "b-high"
+        elif value > 10:
+            if flags.get("strict"):
+                return "b-strict-mid"
+            return "b-mid"
+        else:
+            return "b-low"
+    elif kind == "c":
+        if value > 50:
+            return "c-high"
+        elif value > 0:
+            return "c-low"
+        else:
+            return "c-zero"
+    elif kind == "d":
+        return "d-any"
+    else:
+        return "unknown"
+File: /tmp/demo_block.py (lines 14-14, Compare)
+        if value > 100:
+File: /tmp/demo_block.py (lines 14-14, Name)
+        if value > 100:
+File: /tmp/demo_block.py (lines 14-14, Constant)
+        if value > 100:
+File: /tmp/demo_block.py (lines 14-21, If)
+        if value > 100:
+            return "b-high"
+        elif value > 10:
+            if flags.get("strict"):
+                return "b-strict-mid"
+            return "b-mid"
+        else:
+            return "b-low"
+File: /tmp/demo_block.py (lines 15-15, Return)
+            return "b-high"
+File: /tmp/demo_block.py (lines 15-15, Constant)
+            return "b-high"
+File: /tmp/demo_block.py (lines 16-16, Compare)
+        elif value > 10:
+File: /tmp/demo_block.py (lines 16-16, Name)
+        elif value > 10:
+File: /tmp/demo_block.py (lines 16-16, Constant)
+        elif value > 10:
+File: /tmp/demo_block.py (lines 16-21, If)
+        elif value > 10:
+            if flags.get("strict"):
+                return "b-strict-mid"
+            return "b-mid"
+        else:
+            return "b-low"
+File: /tmp/demo_block.py (lines 17-17, Call)
+            if flags.get("strict"):
+File: /tmp/demo_block.py (lines 17-17, Attribute)
+            if flags.get("strict"):
+File: /tmp/demo_block.py (lines 17-17, Constant)
+            if flags.get("strict"):
+File: /tmp/demo_block.py (lines 17-17, Name)
+            if flags.get("strict"):
+File: /tmp/demo_block.py (lines 17-18, If)
+            if flags.get("strict"):
+                return "b-strict-mid"
+File: /tmp/demo_block.py (lines 18-18, Return)
+                return "b-strict-mid"
+File: /tmp/demo_block.py (lines 18-18, Constant)
+                return "b-strict-mid"
+File: /tmp/demo_block.py (lines 19-19, Return)
+            return "b-mid"
+File: /tmp/demo_block.py (lines 19-19, Constant)
+            return "b-mid"
+File: /tmp/demo_block.py (lines 21-21, Return)
+            return "b-low"
+File: /tmp/demo_block.py (lines 21-21, Constant)
+            return "b-low"
+File: /tmp/demo_block.py (lines 22-22, Compare)
+    elif kind == "c":
+File: /tmp/demo_block.py (lines 22-22, Name)
+    elif kind == "c":
+File: /tmp/demo_block.py (lines 22-22, Constant)
+    elif kind == "c":
+File: /tmp/demo_block.py (lines 22-32, If)
+    elif kind == "c":
+        if value > 50:
+            return "c-high"
+        elif value > 0:
+            return "c-low"
+        else:
+            return "c-zero"
+    elif kind == "d":
+        return "d-any"
+    else:
+        return "unknown"
+File: /tmp/demo_block.py (lines 23-23, Compare)
+        if value > 50:
+File: /tmp/demo_block.py (lines 23-23, Name)
+        if value > 50:
+File: /tmp/demo_block.py (lines 23-23, Constant)
+        if value > 50:
+File: /tmp/demo_block.py (lines 23-28, If)
+        if value > 50:
+            return "c-high"
+        elif value > 0:
+            return "c-low"
+        else:
+            return "c-zero"
+File: /tmp/demo_block.py (lines 24-24, Return)
+            return "c-high"
+File: /tmp/demo_block.py (lines 24-24, Constant)
+            return "c-high"
+File: /tmp/demo_block.py (lines 25-25, Compare)
+        elif value > 0:
+File: /tmp/demo_block.py (lines 25-25, Name)
+        elif value > 0:
+File: /tmp/demo_block.py (lines 25-25, Constant)
+        elif value > 0:
+File: /tmp/demo_block.py (lines 25-28, If)
+        elif value > 0:
+            return "c-low"
+        else:
+            return "c-zero"
+File: /tmp/demo_block.py (lines 26-26, Return)
+            return "c-low"
+File: /tmp/demo_block.py (lines 26-26, Constant)
+            return "c-low"
+File: /tmp/demo_block.py (lines 28-28, Return)
+            return "c-zero"
+File: /tmp/demo_block.py (lines 28-28, Constant)
+            return "c-zero"
+File: /tmp/demo_block.py (lines 29-29, Compare)
+    elif kind == "d":
+File: /tmp/demo_block.py (lines 29-29, Name)
+    elif kind == "d":
+File: /tmp/demo_block.py (lines 29-29, Constant)
+    elif kind == "d":
+File: /tmp/demo_block.py (lines 29-32, If)
+    elif kind == "d":
+        return "d-any"
+    else:
+        return "unknown"
+File: /tmp/demo_block.py (lines 30-30, Return)
+        return "d-any"
+File: /tmp/demo_block.py (lines 30-30, Constant)
+        return "d-any"
+File: /tmp/demo_block.py (lines 32-32, Return)
+        return "unknown"
+File: /tmp/demo_block.py (lines 32-32, Constant)
+        return "unknown"
+EXIT: 3

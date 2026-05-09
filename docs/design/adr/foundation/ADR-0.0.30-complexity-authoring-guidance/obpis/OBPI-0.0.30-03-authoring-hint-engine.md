@@ -3,7 +3,7 @@ id: OBPI-0.0.30-03-authoring-hint-engine
 parent: ADR-0.0.30
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.30-03-authoring-hint-engine: Authoring-time Hint Engine + AuthoringHint Projection
@@ -29,7 +29,8 @@ Implement the frozen `AuthoringHint` Pydantic model + projection from `AdvisorDi
 - `src/gzkit/complexity/authoring/hint.py` — `AuthoringHint` model + `project_diagnosis_to_hint` function
 - `src/gzkit/complexity/authoring/engine.py` — authoring-time hint engine wrapping ADR-0.0.29-02
 - `src/gzkit/schemas/authoring_hint.json` — JSON Schema mirror
-- `tests/complexity/authoring/test_hint.py`, `tests/complexity/authoring/test_engine.py`
+- `tests/complexity/authoring/test_hint.py`
+- `tests/complexity/authoring/test_engine.py`
 - `docs/design/adr/foundation/ADR-0.0.30-complexity-authoring-guidance/obpis/OBPI-0.0.30-03-authoring-hint-engine.md` — this brief's evidence section only
 
 ## Denied Paths
@@ -58,11 +59,24 @@ Implement the frozen `AuthoringHint` Pydantic model + projection from `AdvisorDi
 
 ## Discovery Checklist
 
-- [ ] ADR-0.0.29-01 schema (`AdvisorDiagnosis`, `RefactorArchetype`, `DoctrinalFrame`, `ProofRange`)
-- [ ] ADR-0.0.29-02 engine (`engine.diagnose` interface)
-- [ ] ADR-0.0.28-02 `ThresholdTable` model (consumed transitively via the advisor engine)
-- [ ] `.claude/rules/models.md`, `.claude/rules/pythonic.md`
-- [ ] Parent ADR § Decision rationale #1 — projection direction is fixed (full → light)
+**Prerequisites**
+
+- [x] ADR-0.0.29-01 (`OBPI-0.0.29-01-advisor-diagnosis-schema`) — ATTESTED COMPLETED; exports `AdvisorDiagnosis`, `RefactorArchetype`, `DoctrinalFrame`, `ProofRange` from `src/gzkit/complexity/advisor/diagnosis.py`
+- [x] ADR-0.0.29-02 (`OBPI-0.0.29-02-diagnosis-engine`) — ATTESTED COMPLETED; exposes `DiagnosisEngine.diagnose(ast_context, metric, value, table)` at `src/gzkit/complexity/advisor/engine.py`
+- [x] ADR-0.0.28-02 `ThresholdTable` — landed at `src/gzkit/complexity/thresholds.py`; loaded via `load_threshold_table(.gzkit/rules/complexity-thresholds.json)`
+- [x] `.claude/rules/models.md` — Pydantic `BaseModel` + `ConfigDict(frozen=True, extra="forbid")` discipline binds `AuthoringHint`
+- [x] `.claude/rules/pythonic.md` — function-size discipline (≤ 50 lines/function) binds projection and engine helpers
+
+**Existing Code**
+
+- [x] `src/gzkit/commands/complexity_advise.py` — reference pattern for AST parsing, `cc_visit` integration, and `DiagnosisEngine` invocation; the authoring engine `_analyze_file` and `_index_function_nodes` mirror this surface
+- [x] `src/gzkit/complexity/advisor/diagnosis.py` — consumed (not edited); `AdvisorDiagnosis` is the projection's input contract
+- [x] `src/gzkit/complexity/advisor/engine.py` — consumed (not edited); `AstContext` and `DiagnosisEngine` are wrapped at engine.py boundary
+
+**Doctrinal Anchors**
+
+- [x] Parent ADR § Decision rationale #1 — projection direction is fixed (full → light); reverse projection is forbidden
+- [x] Parent ADR § Decision rationale #5 — `gz justify` integration (OBPI-05) is the agent-facing binding surface; honored in this brief's Closing Argument as a forward-binding directive
 
 ## Quality Gates
 
@@ -148,15 +162,52 @@ uv run gz arb step --name unittest -- uv run -m unittest tests/complexity/author
 
 ### Key Proof
 
+
+```
+$ uv run gz arb step --name unittest -- uv run -m unittest tests.complexity.authoring.test_hint tests.complexity.authoring.test_engine -v
+Ran 24 tests in 0.011s
+OK
+arb step name=unittest exit_status=0 receipt=arb-step-unittest-cd55e2a68edb41e599e46da6385af3ce
+```
+
+Full-suite regression: 233/233 pass — receipt `arb-step-unittest-2328b9bb63ba4c74be1fc407a7cf275f`. Lint: `arb-ruff-1fe6b60e7a344c66a6a007e6a3006110`. Typecheck: `arb-step-typecheck-eacb828b10884ec89231a08e713d0104`. Docs: `arb-step-mkdocs-f0ef1ca5e34e441899288623b1beb16e`. REQ→@covers parity: 8/8 covered. Engine semantic check: `_classify_precedence_band` with advise=5.0, warn=10.0, value=8.0 → midpoint=7.5 → "approaching_warn"; value=6.0 → "approaching"; engine returns `()` on a clean file (CC=1) and a non-empty `tuple[AuthoringHint, ...]` for advise-band crossings.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `src/gzkit/complexity/authoring/__init__.py`, `src/gzkit/complexity/authoring/hint.py` (`AuthoringHint` model + `project_diagnosis_to_hint` projection), `src/gzkit/complexity/authoring/engine.py` (`analyze` engine + helpers `_analyze_file`, `_process_block`, `_classify_precedence_band`, `_band_absolute`, `_index_function_nodes`), `src/gzkit/schemas/authoring_hint.json` (JSON Schema mirror), `tests/complexity/authoring/__init__.py`, `tests/complexity/authoring/test_hint.py` (14 tests), `tests/complexity/authoring/test_engine.py` (10 tests).
+- Files modified: `data/behave_coverage_waivers.json` (BDD waiver `adr-0.0.30-foundation-bdd-deferred` registered for OBPI-0.0.30-03; schema/engine OBPI with no CLI surface — scenarios deferred to OBPI-01).
+- Tests added: 24 tests across `TestAuthoringHintModel`, `TestAuthoringHintSchemaMirror`, `TestProjection`, `TestEngineCleanFile`, `TestEngineAdviseCrossings`, `TestPrecedenceBandClassification`; all decorated with `@covers(REQ-0.0.30-03-NN)` per REQ-08.
+- Date completed: 2026-05-09.
+- Attestation status: operator attestation received (Stage 4); agent-relayed via `--attestor-present` (GHI #292).
+- Defects noted: agents-must-abide directive captured in Closing Argument as forward-binding constraint on OBPI-02 skill and OBPI-05 `gz justify` integration; logged as `improvement` insight. Plan-audit scope-collision false positive fixed in same pipeline run (direct-fix commit, separate from OBPI scope).
 
 ### Closing Argument
+
+**Forward-binding directive for downstream OBPIs (02, 04, 05).** OBPI-03 ships
+the data contract; binding it into agent workflow is downstream's job. Because
+gzkit agents author all the code in this project, the authoring-guidance surface
+is wasted if downstream OBPIs treat it as opt-in tooling. The directive is:
+
+- **OBPI-0.0.30-02 (`complexity-guide` skill body):** the skill must direct agents
+  to invoke the OBPI-01 CLI verb (gz-complexity-guide, planned-but-unlanded as of
+  this brief) as a mandatory quality measure when authoring Python under an OBPI's
+  allowed paths — not as discretionary discovery. The skill's invariants must
+  name the invocation point (e.g. before Stage 2 implementer dispatch, or as part
+  of the implementer-agent contract under `.claude/agents/implementer.md`).
+- **OBPI-0.0.30-05 (`gz justify` integration):** the integration must surface
+  authoring hints in the justification scaffold's evidence section unconditionally
+  for any `.py` allowed path, not as an opt-in flag. The Stage 1→2 confidence gate
+  in `gz-obpi-pipeline` already routes low-confidence walks through `gz justify`;
+  this integration is what makes those walks complexity-aware.
+- **OBPI-0.0.30-04 (editor protocol):** in an agent-driven project, this surface
+  is structurally underused. The pool stub
+  `ADR-pool.complexity-authoring-editor-reference` is the canonical home for the
+  ref-editor work if a human-in-editor workflow ever materializes here.
+
+The cluster's invariant — "operator-bandwidth-protection at authoring time"
+(ADR-0.0.30 § Consequences Positive #9) — applies to agent bandwidth in this
+project. Without the binding directive above, the surface ships but is not abided.
 
 ## Tracked Defects
 
@@ -164,14 +215,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.30-03 ships AuthoringHint model + project_diagnosis_to_hint projection + analyze() engine consuming ADR-0.0.29-02 DiagnosisEngine; 24/24 OBPI tests pass (receipt arb-step-unittest-cd55e2a68edb41e599e46da6385af3ce), 233/233 full-suite regression (receipt arb-step-unittest-2328b9bb63ba4c74be1fc407a7cf275f), lint clean (receipt arb-ruff-1fe6b60e7a344c66a6a007e6a3006110), typecheck clean (receipt arb-step-typecheck-eacb828b10884ec89231a08e713d0104), mkdocs --strict clean (receipt arb-step-mkdocs-f0ef1ca5e34e441899288623b1beb16e), 8/8 REQs covered, BDD waiver registered (adr-0.0.30-foundation-bdd-deferred). Operator course-correction captured in Closing Argument as forward-binding directive on OBPI-02 skill and OBPI-05 gz-justify integration.
+- Date: 2026-05-09
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-09
 
 **Evidence Hash:** -

@@ -1,0 +1,4 @@
+Validated: advisor_proof_binding
+
+✓ All validations passed (1 scopes).
+EXIT: 0

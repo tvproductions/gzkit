@@ -1,0 +1,8 @@
+{
+  "obpi_id": "OBPI-0.0.30-01-complexity-guide-cli",
+  "timestamp": "2026-05-09T17:00:00Z",
+  "verdict": "PASS",
+  "plan_file": "cheerful-twirling-snowglobe.md",
+  "gaps_found": 0,
+  "notes": "ADR-OBPI alignment: ALIGNED. Plan aligned with OBPI brief. STOP-on-BLOCKERS active: OBPI-0.0.30-03 engine not yet landed. Stage 2 cannot begin until OBPI-0.0.30-03 is complete. This receipt certifies plan quality only."
+}

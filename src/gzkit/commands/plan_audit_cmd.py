@@ -269,14 +269,23 @@ def _obpi_id_from_brief_name(name: str) -> str:
 
 
 def _contested_paths_between(target_allowed: list[str], sibling_allowed: list[str]) -> list[str]:
-    """Return specific (non-root-glob) paths contested between two allowed-path sets."""
+    """Return specific (non-root-glob) paths contested between two allowed-path sets.
+
+    A sibling whose declared path is a broad glob (e.g. ``tests/``,
+    ``src/gzkit/``) has not made a specific claim on the target's path; the
+    overlap is a contract-style allowance, not a scope collision. Require the
+    SIBLING's declared path to be specific (>= 3 components) before reporting.
+    """
     contested: list[str] = []
     for tp in target_allowed:
         for sp in sibling_allowed:
-            if _paths_overlap(tp, sp):
-                specific = sp if len(sp) >= len(tp) else tp
-                if specific not in contested:
-                    contested.append(specific)
+            if not _paths_overlap(tp, sp):
+                continue
+            if not _is_specific_path(sp):
+                continue
+            specific = sp if len(sp) >= len(tp) else tp
+            if specific not in contested:
+                contested.append(specific)
     return [p for p in contested if _is_specific_path(p)]
 
 

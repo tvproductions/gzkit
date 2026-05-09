@@ -1,0 +1,93 @@
+{
+  "by_adr": [
+    {
+      "identifier": "ADR-0.0.29",
+      "total_reqs": 7,
+      "covered_reqs": 7,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    }
+  ],
+  "by_obpi": [
+    {
+      "identifier": "OBPI-0.0.29-03",
+      "total_reqs": 7,
+      "covered_reqs": 7,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    }
+  ],
+  "entries": [
+    {
+      "req_id": "REQ-0.0.29-03-01",
+      "covered": true,
+      "covering_tests": [
+        "TestComplexityAdviseBehavior.test_clean_file_exit_zero",
+        "TestComplexityAdviseBehavior.test_directory_walks_python_files",
+        "gz complexity advise — trigger-time advisor diagnosis (ADR-0.0.29 / OBPI-0.0.29-03)::clean file produces exit 0 with no crossings"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.29-03-02",
+      "covered": true,
+      "covering_tests": [
+        "TestComplexityAdviseBehavior.test_bad_path_exits_one",
+        "TestComplexityAdviseBehavior.test_missing_rule_path_exits_two",
+        "TestComplexityAdviseBehavior.test_warn_band_exit_zero_with_diagnosis",
+        "TestComplexityAdviseOutputForm.test_default_prose_names_archetype_authority_proof_recommendation",
+        "gz complexity advise — trigger-time advisor diagnosis (ADR-0.0.29 / OBPI-0.0.29-03)::warn-band crossing produces exit 0 with diagnosis prose"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.29-03-03",
+      "covered": true,
+      "covering_tests": [
+        "TestComplexityAdviseBehavior.test_block_band_exit_three",
+        "gz complexity advise — trigger-time advisor diagnosis (ADR-0.0.29 / OBPI-0.0.29-03)::block-band crossing produces exit 3"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.29-03-04",
+      "covered": true,
+      "covering_tests": [
+        "TestComplexityAdviseBehavior.test_json_mode_clean_file_emits_empty_array",
+        "TestComplexityAdviseBehavior.test_json_mode_emits_valid_json_array",
+        "gz complexity advise — trigger-time advisor diagnosis (ADR-0.0.29 / OBPI-0.0.29-03)::--json mode emits valid JSON validating against schema"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.29-03-05",
+      "covered": true,
+      "covering_tests": [
+        "TestComplexityAdviseBehavior.test_help_invocation_via_parser",
+        "TestComplexityAdviseBehavior.test_standard_flags_accepted",
+        "TestComplexityAdviseHelpManpageParity.test_parser_help_contains_required_sections",
+        "gz complexity advise — trigger-time advisor diagnosis (ADR-0.0.29 / OBPI-0.0.29-03)::--help exits 0 with description, options, example"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.29-03-06",
+      "covered": true,
+      "covering_tests": [
+        "TestComplexityAdviseHelpManpageParity.test_parser_help_contains_required_sections",
+        "gz complexity advise — trigger-time advisor diagnosis (ADR-0.0.29 / OBPI-0.0.29-03)::--help describes purpose, exit codes, and examples"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.29-03-07",
+      "covered": true,
+      "covering_tests": [
+        "TestComplexityAdviseCliAuditParity.test_cli_audit_covers_complexity_advise",
+        "gz complexity advise — trigger-time advisor diagnosis (ADR-0.0.29 / OBPI-0.0.29-03)::verb is registered with full surface (manpage + index + runbook coverage)"
+      ]
+    }
+  ],
+  "summary": {
+    "identifier": "OBPI-0.0.29-03",
+    "total_reqs": 7,
+    "covered_reqs": 7,
+    "uncovered_reqs": 0,
+    "coverage_percent": 100.0
+  }
+}
+EXIT: 0

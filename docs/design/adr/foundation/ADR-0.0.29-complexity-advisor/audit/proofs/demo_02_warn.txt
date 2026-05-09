@@ -1,0 +1,162 @@
+Metric: radon_cc | Band: warn | Value: 8.0 | Archetype: arrowhead
+Authority: martin
+Citation: Clean Code, ch. 7 — Boundary Conditions
+Excerpt: Deeply nested control flow signals missing guard clauses; collapse the arrowhead with early returns and extracted predicates.
+Recommended: When branch count rises, I usually suspect hidden policy logic, mode handling, or too many cases in one function. First move: extract decision policy or split paths by responsibility. But a high CC can be acceptable in explicit parsers/validators when branches are deliberately enumerated and well-tested.
+File: /tmp/demo_warn.py (lines 1-1, arg)
+def classify(x, y, z, mode):
+File: /tmp/demo_warn.py (lines 1-19, FunctionDef)
+def classify(x, y, z, mode):
+    if mode == "a":
+        if x > 0:
+            return "a-pos"
+        elif x < 0:
+            return "a-neg"
+        else:
+            return "a-zero"
+    elif mode == "b":
+        if y > 0:
+            return "b-pos"
+        elif y < 0:
+            return "b-neg"
+        else:
+            return "b-zero"
+    elif mode == "c":
+        return "c-only"
+    else:
+        return "unknown"
+File: /tmp/demo_warn.py (lines 2-2, Compare)
+    if mode == "a":
+File: /tmp/demo_warn.py (lines 2-2, Name)
+    if mode == "a":
+File: /tmp/demo_warn.py (lines 2-2, Constant)
+    if mode == "a":
+File: /tmp/demo_warn.py (lines 2-19, If)
+    if mode == "a":
+        if x > 0:
+            return "a-pos"
+        elif x < 0:
+            return "a-neg"
+        else:
+            return "a-zero"
+    elif mode == "b":
+        if y > 0:
+            return "b-pos"
+        elif y < 0:
+            return "b-neg"
+        else:
+            return "b-zero"
+    elif mode == "c":
+        return "c-only"
+    else:
+        return "unknown"
+File: /tmp/demo_warn.py (lines 3-3, Compare)
+        if x > 0:
+File: /tmp/demo_warn.py (lines 3-3, Name)
+        if x > 0:
+File: /tmp/demo_warn.py (lines 3-3, Constant)
+        if x > 0:
+File: /tmp/demo_warn.py (lines 3-8, If)
+        if x > 0:
+            return "a-pos"
+        elif x < 0:
+            return "a-neg"
+        else:
+            return "a-zero"
+File: /tmp/demo_warn.py (lines 4-4, Return)
+            return "a-pos"
+File: /tmp/demo_warn.py (lines 4-4, Constant)
+            return "a-pos"
+File: /tmp/demo_warn.py (lines 5-5, Compare)
+        elif x < 0:
+File: /tmp/demo_warn.py (lines 5-5, Name)
+        elif x < 0:
+File: /tmp/demo_warn.py (lines 5-5, Constant)
+        elif x < 0:
+File: /tmp/demo_warn.py (lines 5-8, If)
+        elif x < 0:
+            return "a-neg"
+        else:
+            return "a-zero"
+File: /tmp/demo_warn.py (lines 6-6, Return)
+            return "a-neg"
+File: /tmp/demo_warn.py (lines 6-6, Constant)
+            return "a-neg"
+File: /tmp/demo_warn.py (lines 8-8, Return)
+            return "a-zero"
+File: /tmp/demo_warn.py (lines 8-8, Constant)
+            return "a-zero"
+File: /tmp/demo_warn.py (lines 9-9, Compare)
+    elif mode == "b":
+File: /tmp/demo_warn.py (lines 9-9, Name)
+    elif mode == "b":
+File: /tmp/demo_warn.py (lines 9-9, Constant)
+    elif mode == "b":
+File: /tmp/demo_warn.py (lines 9-19, If)
+    elif mode == "b":
+        if y > 0:
+            return "b-pos"
+        elif y < 0:
+            return "b-neg"
+        else:
+            return "b-zero"
+    elif mode == "c":
+        return "c-only"
+    else:
+        return "unknown"
+File: /tmp/demo_warn.py (lines 10-10, Compare)
+        if y > 0:
+File: /tmp/demo_warn.py (lines 10-10, Name)
+        if y > 0:
+File: /tmp/demo_warn.py (lines 10-10, Constant)
+        if y > 0:
+File: /tmp/demo_warn.py (lines 10-15, If)
+        if y > 0:
+            return "b-pos"
+        elif y < 0:
+            return "b-neg"
+        else:
+            return "b-zero"
+File: /tmp/demo_warn.py (lines 11-11, Return)
+            return "b-pos"
+File: /tmp/demo_warn.py (lines 11-11, Constant)
+            return "b-pos"
+File: /tmp/demo_warn.py (lines 12-12, Compare)
+        elif y < 0:
+File: /tmp/demo_warn.py (lines 12-12, Name)
+        elif y < 0:
+File: /tmp/demo_warn.py (lines 12-12, Constant)
+        elif y < 0:
+File: /tmp/demo_warn.py (lines 12-15, If)
+        elif y < 0:
+            return "b-neg"
+        else:
+            return "b-zero"
+File: /tmp/demo_warn.py (lines 13-13, Return)
+            return "b-neg"
+File: /tmp/demo_warn.py (lines 13-13, Constant)
+            return "b-neg"
+File: /tmp/demo_warn.py (lines 15-15, Return)
+            return "b-zero"
+File: /tmp/demo_warn.py (lines 15-15, Constant)
+            return "b-zero"
+File: /tmp/demo_warn.py (lines 16-16, Compare)
+    elif mode == "c":
+File: /tmp/demo_warn.py (lines 16-16, Name)
+    elif mode == "c":
+File: /tmp/demo_warn.py (lines 16-16, Constant)
+    elif mode == "c":
+File: /tmp/demo_warn.py (lines 16-19, If)
+    elif mode == "c":
+        return "c-only"
+    else:
+        return "unknown"
+File: /tmp/demo_warn.py (lines 17-17, Return)
+        return "c-only"
+File: /tmp/demo_warn.py (lines 17-17, Constant)
+        return "c-only"
+File: /tmp/demo_warn.py (lines 19-19, Return)
+        return "unknown"
+File: /tmp/demo_warn.py (lines 19-19, Constant)
+        return "unknown"
+EXIT: 0
