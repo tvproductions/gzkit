@@ -2,52 +2,52 @@
   "adr_id": "ADR-0.0.29-complexity-advisor",
   "current_step": 11,
   "is_foundation": true,
-  "started_at": "2026-05-09T11:04:28Z",
-  "updated_at": "2026-05-09T11:49:25Z",
+  "started_at": "2026-05-09T13:16:09Z",
+  "updated_at": "2026-05-09T15:31:15Z",
   "step_history": [
     {
       "step": 1,
-      "presented_at": "2026-05-09T11:04:28Z",
-      "acknowledged_at": "2026-05-09T11:05:59Z"
+      "presented_at": "2026-05-09T13:16:09Z",
+      "acknowledged_at": "2026-05-09T13:16:13Z"
     },
     {
       "step": 2,
-      "presented_at": "2026-05-09T11:05:59Z",
-      "acknowledged_at": "2026-05-09T11:08:31Z"
+      "presented_at": "2026-05-09T13:16:13Z",
+      "acknowledged_at": "2026-05-09T14:41:44Z"
     },
     {
       "step": 3,
-      "presented_at": "2026-05-09T11:08:31Z",
-      "acknowledged_at": "2026-05-09T11:13:45Z"
+      "presented_at": "2026-05-09T14:41:44Z",
+      "acknowledged_at": "2026-05-09T14:58:24Z"
     },
     {
       "step": 4,
-      "presented_at": "2026-05-09T11:13:45Z",
-      "acknowledged_at": "2026-05-09T11:14:17Z"
+      "presented_at": "2026-05-09T14:58:24Z",
+      "acknowledged_at": "2026-05-09T15:07:03Z"
     },
     {
       "step": 5,
-      "presented_at": "2026-05-09T11:14:17Z",
-      "acknowledged_at": "2026-05-09T11:20:10Z"
+      "presented_at": "2026-05-09T15:07:03Z",
+      "acknowledged_at": "2026-05-09T15:12:14Z"
     },
     {
       "step": 6,
-      "presented_at": "2026-05-09T11:20:10Z",
-      "acknowledged_at": "2026-05-09T11:32:43Z"
+      "presented_at": "2026-05-09T15:12:14Z",
+      "acknowledged_at": "2026-05-09T15:30:06Z"
     },
     {
       "step": 7,
-      "presented_at": "2026-05-09T11:32:43Z",
-      "acknowledged_at": "2026-05-09T11:36:41Z"
+      "presented_at": "2026-05-09T15:30:06Z",
+      "acknowledged_at": "2026-05-09T15:31:04Z"
     },
     {
       "step": 8,
-      "presented_at": "2026-05-09T11:36:41Z",
-      "acknowledged_at": "2026-05-09T11:49:25Z"
+      "presented_at": "2026-05-09T15:31:04Z",
+      "acknowledged_at": "2026-05-09T15:31:15Z"
     },
     {
       "step": 11,
-      "presented_at": "2026-05-09T11:49:25Z",
+      "presented_at": "2026-05-09T15:31:15Z",
       "acknowledged_at": null
     }
   ],
@@ -55,8 +55,8 @@
     "uv run gz complexity advise --help"
   ],
   "walkthrough_index": 0,
-  "attestation": "Completed - Partial: GHI #427 (ceremony walkthrough must showcase yielded product commands, not construction housekeeping) needs to be completed",
-  "completed_at": "2026-05-09T11:49:25Z",
-  "attempt": 1,
+  "attestation": "Completed",
+  "completed_at": "2026-05-09T15:31:15Z",
+  "attempt": 2,
   "paused_at": null
 }

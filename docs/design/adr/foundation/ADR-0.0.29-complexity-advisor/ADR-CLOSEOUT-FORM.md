@@ -1,6 +1,6 @@
 # ADR Closeout Form: ADR-0.0.29-complexity-advisor
 
-**Status**: Phase 2 — Completed - Partial: Completed - Partial: GHI #427 (ceremony walkthrough must showcase yielded product commands, not construction housekeeping) needs to be completed
+**Status**: Phase 2 — Completed
 
 ---
 
@@ -70,7 +70,7 @@ Closeout evidence verified:
 
 ### Verbatim Attestation
 
-- `Completed - Partial: GHI #427 (ceremony walkthrough must showcase yielded product commands, not construction housekeeping) needs to be completed`
+- `Completed`
 
 **Attested by**: Jeffry
-**Timestamp (UTC)**: 2026-05-09T11:36:32Z
+**Timestamp (UTC)**: 2026-05-09T15:31:00Z

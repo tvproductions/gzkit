@@ -409,4 +409,4 @@ The two-path intrinsic-complexity attestation (OBPI-07) is the 2am Scenario-3 am
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.29 | Completed - Partial: Completed - Partial: GHI #427 (ceremony walkthrough must showcase yielded product commands, not construction housekeeping) needs to be completed | Jeffry | 2026-05-09 | Completed - Partial: GHI #427 (ceremony walkthrough must showcase yielded product commands, not construction housekeeping) needs to be completed |
+| 0.0.29 | Completed | Jeffry | 2026-05-09 | Completed |
