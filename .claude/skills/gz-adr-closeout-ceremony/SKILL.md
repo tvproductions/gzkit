@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.8.1"
+  skill-version: "7.9.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -277,9 +277,19 @@ Present this template at Step 5, before requesting attestation. Every field is m
 | OBPI-X.Y.Z-01 | Completed | <name> | <date> |
 | OBPI-X.Y.Z-02 | Completed | <name> | <date> |
 
-**3. Walkthrough Results**
+**3a. Product Demos — the yielded product**
 
-Cite canonical ARB-wrapped invocations with receipt IDs. Heavy-lane attestation fail-closes on missing receipt IDs per `AGENTS.md` § Attestation § Lane behavior; bare (non-ARB) commands do not satisfy this requirement. The canonical invocations are locked by `CANONICAL_STEP_COMMANDS` in `src/gzkit/arb/validator.py`.
+The ADR's outcome, demonstrated. Every row is a concrete invocation that exercises the capability the ADR delivered — actual diagnosis runs against real files, the `--json` form, auto-chain trigger output, intrinsic-attestation paths, etc. `--help` is the weakest possible product demonstration; reach for it only when no richer demo exists. Brief-side `## Demo` / `## Examples` sections feed this table directly through the walkthrough discovery (GHI #427).
+
+| Demo Command | Result | Notes |
+|--------------|--------|-------|
+| `uv run gz <verb> <real-args>` | <observed outcome> | <one-line operator-value framing> |
+| `uv run gz <verb> <real-args> --json` | <observed outcome> | <one-line operator-value framing> |
+| <brief-specific demo> | <observed outcome> | <one-line operator-value framing> |
+
+**3b. Quality Evidence — construction housekeeping**
+
+Cite canonical ARB-wrapped invocations with receipt IDs. These prove the codebase is healthy; they are not the ADR's product. Heavy-lane attestation fail-closes on missing receipt IDs per `AGENTS.md` § Attestation § Lane behavior; bare (non-ARB) commands do not satisfy this requirement. The canonical invocations are locked by `CANONICAL_STEP_COMMANDS` in `src/gzkit/arb/validator.py`.
 
 | Command | Result | Receipt ID | Notes |
 |---------|--------|------------|-------|
@@ -289,7 +299,6 @@ Cite canonical ARB-wrapped invocations with receipt IDs. Heavy-lane attestation 
 | `uv run gz arb typecheck` | Pass | `arb-step-typecheck-...` | <summary> |
 | `uv run gz validate --documents` | Pass | n/a | <summary> |
 | `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict` | Pass | `arb-step-mkdocs-...` | <summary> |
-| <brief-specific commands> | <result> | <receipt or n/a> | <summary> |
 
 **4. Documentation Alignment**
 

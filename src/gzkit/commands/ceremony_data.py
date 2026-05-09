@@ -268,16 +268,24 @@ def discover_demo_commands(
 
     Priority chain:
 
-    1. Explicit ``## Demo`` sections in briefs
+    1. Explicit ``## Demo`` or ``## Examples`` sections in briefs (yielded-
+       product demonstrations — the ADR outcome, not construction housekeeping)
     2. ``--help`` for commands found in command-doc links
     3. ``--help`` for ``gz`` commands parsed from brief titles
     4. Fallback: ``gz adr status``
+
+    The walkthrough is the operator's product-demonstration surface, not a
+    housekeeping receipt (GHI #427). Strategies 2-4 only fire when no brief
+    authors a Demo/Examples section — they synthesize ``--help`` invocations
+    so the ceremony has *something* to walk through, but ``--help`` is the
+    weakest possible product demonstration. Brief authors are prompted to
+    populate ``## Demo`` by the OBPI scaffold template.
 
     Every strategy validates derived ``gz`` invocations against the registered
     CLI parser (GHI-156) — an unregistered verb chain is dropped before the
     walkthrough can try to execute it.
     """
-    # Strategy 1: ## Demo sections
+    # Strategy 1: ## Demo or ## Examples sections
     commands = _commands_from_demo_sections(obpi_files)
     if commands:
         return commands
@@ -295,8 +303,17 @@ def discover_demo_commands(
     return [f"uv run gz adr status {adr_id} --json"]
 
 
+_DEMO_SECTION_HEADINGS: tuple[str, ...] = ("Demo", "Examples")
+
+
 def _commands_from_demo_sections(obpi_files: list[Path]) -> list[str]:
-    """Extract commands from ``## Demo`` fenced code blocks.
+    """Extract commands from ``## Demo`` (or ``## Examples``) fenced code blocks.
+
+    ``## Examples`` is honored as a synonym for ``## Demo`` (GHI #427) so
+    that briefs already authoring an Examples section, and brief authors who
+    naturally reach for that name, both feed the walkthrough. ``## Verification``
+    is *not* a synonym — Verification is construction housekeeping (lint,
+    typecheck, mkdocs); Demo/Examples are the yielded product.
 
     ``uv run gz ...`` lines are validated against the registered parser;
     unregistered verb chains are dropped. Non-gz shell commands (``ls``,
@@ -307,21 +324,22 @@ def _commands_from_demo_sections(obpi_files: list[Path]) -> list[str]:
     commands: list[str] = []
     for obpi_file in obpi_files:
         lines = obpi_file.read_text(encoding="utf-8").splitlines()
-        demo = _extract_section(lines, "Demo")
-        if not demo:
-            continue
-        in_code = False
-        for line in demo.splitlines():
-            stripped = line.strip()
-            if stripped.startswith("```"):
-                in_code = not in_code
+        for heading in _DEMO_SECTION_HEADINGS:
+            section = _extract_section(lines, heading)
+            if not section:
                 continue
-            if not (in_code and stripped) or stripped.startswith("#"):
-                continue
-            verb_chain = _extract_gz_verb_chain(stripped)
-            if verb_chain is not None and verb_chain not in registered:
-                continue
-            commands.append(stripped)
+            in_code = False
+            for line in section.splitlines():
+                stripped = line.strip()
+                if stripped.startswith("```"):
+                    in_code = not in_code
+                    continue
+                if not (in_code and stripped) or stripped.startswith("#"):
+                    continue
+                verb_chain = _extract_gz_verb_chain(stripped)
+                if verb_chain is not None and verb_chain not in registered:
+                    continue
+                commands.append(stripped)
     return commands
 
 

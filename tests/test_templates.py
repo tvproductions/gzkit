@@ -329,5 +329,42 @@ class TestObpiDiscoveryChecklistOrder(unittest.TestCase):
         )
 
 
+class TestObpiTemplateDemoSection(unittest.TestCase):
+    """GHI #427 — OBPI scaffold template prompts authors to write product demos.
+
+    The closeout ceremony walkthrough harvests `## Demo` (and `## Examples`)
+    from briefs to showcase the *yielded product*. When the template lacks a
+    Demo prompt, brief authors populate only `## Verification` (construction
+    housekeeping), and the walkthrough falls through to weakest-form `--help`
+    invocations. The template prompt is the upstream class fix.
+    """
+
+    def setUp(self) -> None:
+        self.content = load_template("obpi")
+
+    def test_template_includes_demo_section_heading(self) -> None:
+        self.assertIn("\n## Demo\n", self.content)
+
+    def test_template_separates_demo_from_verification(self) -> None:
+        """Verification (housekeeping) appears before Demo (yielded product)."""
+        verification_idx = self.content.find("\n## Verification\n")
+        demo_idx = self.content.find("\n## Demo\n")
+        self.assertGreater(verification_idx, 0)
+        self.assertGreater(demo_idx, 0)
+        self.assertLess(
+            verification_idx,
+            demo_idx,
+            "Verification (housekeeping) must precede Demo (yielded product)",
+        )
+
+    def test_demo_section_names_yielded_product(self) -> None:
+        """Demo guidance text frames the section as product, not housekeeping."""
+        demo_idx = self.content.find("\n## Demo\n")
+        next_h2 = self.content.find("\n## ", demo_idx + len("\n## Demo\n"))
+        demo_body = self.content[demo_idx:next_h2]
+        self.assertIn("YIELDED PRODUCT", demo_body)
+        self.assertIn("not housekeeping", demo_body)
+
+
 if __name__ == "__main__":
     unittest.main()

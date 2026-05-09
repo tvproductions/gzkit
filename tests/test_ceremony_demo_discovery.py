@@ -293,6 +293,110 @@ ls docs/user/manpages/
         self.assertIn("ls docs/user/manpages/", commands)
 
 
+class TestExamplesSectionSynonym(unittest.TestCase):
+    """GHI #427 — `## Examples` is honored as a synonym for `## Demo`.
+
+    The closeout ceremony walkthrough's purpose is product demonstration, not
+    construction housekeeping. Brief authors who write `## Examples` (the
+    natural English word for runnable demonstrations) must feed the same
+    walkthrough as authors who write `## Demo`. `## Verification` is *not* a
+    synonym — Verification lists lint/typecheck/mkdocs housekeeping that
+    belongs to the Quality Evidence track in the Step 6 attestation, not the
+    Step 5 walkthrough.
+    """
+
+    @covers("REQ-0.0.29-03-01")
+    def test_examples_section_yields_commands(self) -> None:
+        brief_content = """\
+---
+id: OBPI-examples-01
+status: Completed
+lane: lite
+---
+
+# OBPI-examples-01: gz arb surface review
+
+## Examples
+
+```bash
+uv run gz arb --help
+uv run gz adr status
+```
+"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            brief = Path(temp_dir) / "OBPI.md"
+            brief.write_text(brief_content, encoding="utf-8")
+
+            commands = _commands_from_demo_sections([brief])
+
+        self.assertIn("uv run gz arb --help", commands)
+        self.assertIn("uv run gz adr status", commands)
+
+    @covers("REQ-0.0.29-03-01")
+    def test_verification_section_is_not_treated_as_demo(self) -> None:
+        """`## Verification` lists construction housekeeping; demo discovery
+        must not harvest it. Otherwise the walkthrough surface re-conflates
+        the product/housekeeping split that GHI #427 separated.
+        """
+        brief_content = """\
+---
+id: OBPI-verify-01
+status: Completed
+lane: lite
+---
+
+# OBPI-verify-01
+
+## Verification
+
+```bash
+uv run gz lint
+uv run gz typecheck
+uv run gz adr status
+```
+"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            brief = Path(temp_dir) / "OBPI.md"
+            brief.write_text(brief_content, encoding="utf-8")
+
+            commands = _commands_from_demo_sections([brief])
+
+        self.assertEqual(commands, [])
+
+    @covers("REQ-0.0.29-03-01")
+    def test_demo_and_examples_in_same_brief_both_yield(self) -> None:
+        """A brief that authors both sections feeds both sets through."""
+        brief_content = """\
+---
+id: OBPI-both-01
+status: Completed
+lane: lite
+---
+
+# OBPI-both-01
+
+## Demo
+
+```bash
+uv run gz arb --help
+```
+
+## Examples
+
+```bash
+uv run gz adr status
+```
+"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            brief = Path(temp_dir) / "OBPI.md"
+            brief.write_text(brief_content, encoding="utf-8")
+
+            commands = _commands_from_demo_sections([brief])
+
+        self.assertIn("uv run gz arb --help", commands)
+        self.assertIn("uv run gz adr status", commands)
+
+
 class TestDiscoverDemoCommandsEndToEnd(unittest.TestCase):
     """Full `discover_demo_commands` pathway against the live parser."""
 
