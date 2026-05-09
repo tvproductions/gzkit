@@ -125,7 +125,7 @@ Feature: OBPI completion REQ-coverage gate
   @REQ-0.0.25-03-03
   Scenario: obpi-complete manpage documents the accept-uncovered flag
     Given the workspace is the live repository
-    Then the file "docs/user/commands/obpi-complete.md" contains "--accept-uncovered"
+    Then the file "docs/user/manpages/obpi-complete.md" contains "--accept-uncovered"
 
   @REQ-0.0.25-03-04
   Scenario: CLI audit passes in the live repository post-edit

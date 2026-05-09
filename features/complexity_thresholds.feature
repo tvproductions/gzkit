@@ -23,7 +23,7 @@ Feature: gz validate --complexity-thresholds rule body shape (OBPI-0.0.28-03)
   @REQ-0.0.28-03-07
   Scenario: Command doc references the new flag
     Given the workspace is initialized
-    Then the repo file "docs/user/commands/validate.md" contains "--complexity-thresholds"
+    Then the repo file "docs/user/manpages/validate.md" contains "--complexity-thresholds"
 
   @REQ-0.0.28-03-02
   Scenario: Rule body where any metric lacks a block band fails closed
