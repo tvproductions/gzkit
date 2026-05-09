@@ -54,6 +54,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "issue_file_cmd": "gzkit.commands.issue_cmd",
     "complexity_distill_cmd": "gzkit.commands.complexity_distill_cmd",
     "complexity_advise_cmd": "gzkit.commands.complexity_advise",
+    "complexity_guide_cmd": "gzkit.commands.complexity_guide",
 }
 
 _HANDLER_CACHE: dict[str, Callable[..., Any]] = {}
@@ -282,6 +283,49 @@ def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:
             attest_intrinsic=a.attest_intrinsic,
             reason=a.reason,
             attestor=a.attestor,
+        )
+    )
+
+    p_guide = complexity_commands.add_parser(
+        "guide",
+        help="Surface authoring-time complexity hints for a file or directory",
+        description=(
+            "Reads the advise band from the canonical threshold table "
+            "(.gzkit/rules/complexity-thresholds.json, ADR-0.0.28), measures "
+            "the target file or directory, and emits AuthoringHint blocks for "
+            "functions approaching the warn threshold. Exit 3 is NOT used — "
+            "this surface never blocks; that is gz complexity advise's role."
+        ),
+        epilog=build_epilog(
+            [
+                "gz complexity guide src/gzkit/commands/validate.py",
+                "gz complexity guide src/gzkit/ --json",
+            ]
+        ),
+    )
+    p_guide.add_argument("path", help="File or directory to analyze")
+    p_guide.add_argument(
+        "--json",
+        dest="json_output",
+        action="store_true",
+        help="Emit canonical AuthoringHint JSON array to stdout",
+    )
+    p_guide.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Suppress output; rely on exit code only",
+    )
+    p_guide.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Emit debug output to stderr",
+    )
+    p_guide.set_defaults(
+        func=lambda a: _lazy("complexity_guide_cmd")(
+            path=a.path,
+            json_output=a.json_output,
+            quiet=a.quiet,
+            verbose=a.verbose,
         )
     )
 
