@@ -9,7 +9,11 @@ from gzkit.commands.common import get_project_root
 
 _MANIFEST_PATH = Path("config") / "doc-coverage.json"
 
-_MANPAGE_DIR = Path("docs") / "user" / "manpages"
+MANPAGE_DIR: Path = Path("docs") / "user" / "manpages"
+"""Project-relative root of the canonical operator manpage surface (GHI #425)."""
+
+MANPAGE_INDEX: Path = MANPAGE_DIR / "index.md"
+"""Project-relative path to the manpages directory ToC page (GHI #425)."""
 
 
 def manpage_path_for(command_name: str) -> Path:
@@ -19,7 +23,7 @@ def manpage_path_for(command_name: str) -> Path:
     ``"closeout"``    -> ``docs/user/manpages/closeout.md``
     """
     slug = command_name.replace(" ", "-")
-    return _MANPAGE_DIR / f"{slug}.md"
+    return MANPAGE_DIR / f"{slug}.md"
 
 
 class SurfaceRequirements(BaseModel):

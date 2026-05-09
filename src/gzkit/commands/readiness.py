@@ -7,6 +7,9 @@ from typing import Any, cast
 from rich.table import Table
 
 from gzkit.commands.common import console, get_project_root
+from gzkit.doc_coverage.manifest import MANPAGE_DIR, MANPAGE_INDEX
+
+_MANPAGE_INDEX_POSIX = MANPAGE_INDEX.as_posix()
 
 
 def _readiness_collect_markers(path: Path, markers: tuple[str, ...]) -> list[str]:
@@ -164,7 +167,7 @@ def readiness_audit_cmd(as_json: bool) -> None:
             {
                 "id": "command_docs_index",
                 "kind": "markers",
-                "path": "docs/user/manpages/index.md",
+                "path": _MANPAGE_INDEX_POSIX,
                 "markers": ("`gz check`", "`gz parity check`", "`gz skill audit`"),
                 "required": False,
                 "issue": "manpages index missing core quality/readiness command references",
@@ -382,8 +385,8 @@ def readiness_audit_cmd(as_json: bool) -> None:
                 ],
             },
             {"kind": "file", "path": "tests/test_sync.py"},
-            {"kind": "file", "path": "docs/user/manpages/parity-check.md"},
-            {"kind": "file", "path": "docs/user/manpages/skill-audit.md"},
+            {"kind": "file", "path": (MANPAGE_DIR / "parity-check.md").as_posix()},
+            {"kind": "file", "path": (MANPAGE_DIR / "skill-audit.md").as_posix()},
         ],
     }
 

@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 from gzkit.commands.common import get_project_root
+from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.doc_coverage.models import CommandCoverage, CoverageReport, OrphanedDoc, SurfaceResult
 
 _SURFACE_NAMES = (
@@ -318,7 +319,7 @@ def check_surfaces(
 
     Returns a list of CommandCoverage objects, one per command.
     """
-    commands_dir = project_root / "docs" / "user" / "manpages"
+    commands_dir = project_root / MANPAGE_DIR
     index_path = commands_dir / "index.md"
     operator_runbook = project_root / "docs" / "user" / "runbook.md"
     governance_runbook = project_root / "docs" / "governance" / "governance_runbook.md"
@@ -423,7 +424,7 @@ def find_orphaned_docs(
     # of any discovered "<parent> <sub>" command is a parent-verb page, not
     # an orphan.
     parent_verbs = {name.split(" ", 1)[0] for name in discovered_names if " " in name}
-    commands_dir = project_root / "docs" / "user" / "manpages"
+    commands_dir = project_root / MANPAGE_DIR
     if commands_dir.exists():
         for md_file in sorted(commands_dir.glob("*.md")):
             if md_file.name == "index.md":
