@@ -18,7 +18,12 @@ from typing import Any
 
 from rich.console import Console
 
+from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.reporter.presets import ColumnDef, status_table
+
+_MANPAGE_DIR_POSIX = MANPAGE_DIR.as_posix()
+_MANPAGE_LINK_RE = re.compile(rf"^- (?:\[.\] )?`{re.escape(_MANPAGE_DIR_POSIX)}/(\S+)\.md`")
+_MANPAGE_INLINE_RE = re.compile(rf"`({re.escape(_MANPAGE_DIR_POSIX)}/(\S+?)\.md)`")
 
 # ---------------------------------------------------------------------------
 # Brief metadata extraction
@@ -144,7 +149,7 @@ def check_doc_alignment(
 
     runbook = project_root / "docs" / "user" / "runbook.md"
     runbook_text = runbook.read_text(encoding="utf-8") if runbook.is_file() else ""
-    cmd_dir = project_root / "docs" / "user" / "manpages"
+    cmd_dir = project_root / MANPAGE_DIR
 
     def _add_slug(slug: str) -> None:
         if slug in seen_slugs:
@@ -153,7 +158,7 @@ def check_doc_alignment(
         verb_chain = slug.replace("-", " ")
         if verb_chain not in registered:
             return
-        rel = f"docs/user/manpages/{slug}.md"
+        rel = f"{_MANPAGE_DIR_POSIX}/{slug}.md"
         gz_cmd = f"gz {verb_chain}"
         results.append(
             {
@@ -168,7 +173,7 @@ def check_doc_alignment(
         content = obpi_file.read_text(encoding="utf-8")
         for line in content.splitlines():
             # Links: - `docs/...` or - [x] `docs/...`
-            m = re.match(r"^- (?:\[.\] )?`docs/user/manpages/(\S+)\.md`", line)
+            m = _MANPAGE_LINK_RE.match(line)
             if m:
                 slug = m.group(1)
                 # If slug has a glob (e.g., obpi-lock-*), expand from disk
@@ -338,7 +343,7 @@ def _commands_from_command_doc_links(
     for obpi_file in obpi_files:
         content = obpi_file.read_text(encoding="utf-8")
         for line in content.splitlines():
-            for m in re.finditer(r"`(docs/user/manpages/(\S+?)\.md)`", line):
+            for m in _MANPAGE_INLINE_RE.finditer(line):
                 slug = m.group(2)
                 if slug in seen:
                     continue

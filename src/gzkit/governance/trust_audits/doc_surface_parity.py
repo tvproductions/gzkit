@@ -9,9 +9,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.validate import ValidationError
 
 _DECOMMISSIONED_DIR = Path("docs") / "user" / "commands"
+_DECOMMISSIONED_POSIX = _DECOMMISSIONED_DIR.as_posix()
+_PARITY_MESSAGE = (
+    f"{_DECOMMISSIONED_POSIX}/ is decommissioned (GHI #418). Move to {MANPAGE_DIR.as_posix()}/."
+)
 
 
 def audit_doc_surface_parity(project_root: Path) -> list[ValidationError]:
@@ -25,9 +30,7 @@ def audit_doc_surface_parity(project_root: Path) -> list[ValidationError]:
         ValidationError(
             type="doc_surface_parity",
             artifact=path,
-            message=(
-                "docs/user/commands/ is decommissioned (GHI #418). Move to docs/user/manpages/."
-            ),
+            message=_PARITY_MESSAGE,
         )
         for path in stale
     ]

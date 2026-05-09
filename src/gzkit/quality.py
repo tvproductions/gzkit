@@ -13,6 +13,8 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.doc_coverage.manifest import MANPAGE_DIR
+
 
 class QualityResult(BaseModel):
     """Result of a quality check."""
@@ -909,7 +911,7 @@ def _check_concepts_page_proof(allowed_paths: list[str], project_root: Path) -> 
 def _check_command_doc_proof(allowed_paths: list[str], project_root: Path) -> bool:
     """Check if any command doc in allowed paths exists with substantive content."""
     for path_str in allowed_paths:
-        if not path_str.startswith("docs/user/manpages/"):
+        if not path_str.startswith(f"{MANPAGE_DIR.as_posix()}/"):
             continue
         doc_path = project_root / path_str
         if not doc_path.is_file():

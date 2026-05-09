@@ -15,12 +15,15 @@ import ast
 from pathlib import Path
 
 from gzkit.commands.common import get_project_root
+from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.doc_coverage.scanner import (
     _find_root_parser_name,
     _handle_assignment,
     _ParserState,
     _read_cli_sources,
 )
+
+_MANPAGE_DIR_POSIX = MANPAGE_DIR.as_posix()
 
 
 def _collect_long_flags_from_call(call: ast.Call) -> list[str]:
@@ -172,7 +175,7 @@ def check_flag_doc_coverage(
                 continue
             if flag in waived:
                 continue
-            rel = f"docs/user/manpages/{slug}.md"
+            rel = f"{_MANPAGE_DIR_POSIX}/{slug}.md"
             issues.append(
                 {
                     "path": rel,
