@@ -119,7 +119,9 @@ status: Draft
 ## Verification
 
 <!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
+     outputs into Evidence. These are CONSTRUCTION HOUSEKEEPING (lint, type,
+     test, mkdocs) — they prove the codebase is healthy, not what the OBPI
+     yielded. The yielded product belongs in the `## Demo` section below. -->
 
 ```bash
 uv run gz validate --documents
@@ -129,6 +131,19 @@ uv run gz test
 
 # Specific verification for this OBPI
 {verification_specific_md}
+```
+
+## Demo
+
+<!-- THE YIELDED PRODUCT, not housekeeping. Concrete, runnable invocations
+     that demonstrate the capability this OBPI delivers — e.g. an actual
+     diagnosis run against a real file, the `--json` form, an auto-chain
+     trigger. The closeout ceremony walkthrough harvests this section
+     (parser-validated; unregistered verbs are dropped). Prefer real paths
+     and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
+
+```bash
+# Replace with concrete product demonstrations for this OBPI.
 ```
 
 ## Acceptance Criteria
