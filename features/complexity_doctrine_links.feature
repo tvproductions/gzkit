@@ -48,5 +48,5 @@ Feature: gz validate --complexity-doctrine-links link integrity (OBPI-0.0.27-07)
 
   @REQ-0.0.27-07-07
   Scenario: Validate command doc documents the flag with example
-    When I check that the file "docs/user/commands/validate.md" contains "--complexity-doctrine-links"
+    When I check that the file "docs/user/manpages/validate.md" contains "--complexity-doctrine-links"
     Then the file is documented
