@@ -204,7 +204,7 @@ def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:
         description=(
             "Runs the OBPI-0.0.29-02 diagnosis engine against the file or "
             "directory at PATH. Loads the canonical threshold table from "
-            ".gzkit/rules/complexity-thresholds.md (ADR-0.0.28), measures "
+            ".gzkit/rules/complexity-thresholds.json (ADR-0.0.28), measures "
             "per-function radon_cc via radon's Python API, and emits an "
             "AdvisorDiagnosis for every band crossing. Default output is "
             "structured prose; --json emits the canonical Pydantic "
@@ -250,7 +250,7 @@ def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:
         "--rule-path",
         dest="rule_path",
         default=None,
-        help="Override threshold rule path (default: .gzkit/rules/complexity-thresholds.md)",
+        help="Override threshold data path (default: .gzkit/rules/complexity-thresholds.json)",
     )
     p_advise.add_argument(
         "--attest-intrinsic",

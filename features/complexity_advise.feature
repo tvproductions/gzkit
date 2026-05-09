@@ -8,14 +8,14 @@ Feature: gz complexity advise — trigger-time advisor diagnosis (ADR-0.0.29 / O
   @REQ-0.0.29-03-01
   Scenario: clean file produces exit 0 with no crossings
     Given a synthetic complexity-advise environment with a clean Python source
-    When I run the gz command "complexity advise subject.py --rule-path complexity_thresholds.md"
+    When I run the gz command "complexity advise subject.py --rule-path complexity-thresholds.json"
     Then the command exits with code 0
     And the output contains "No crossings"
 
   @REQ-0.0.29-03-02
   Scenario: warn-band crossing produces exit 0 with diagnosis prose
     Given a synthetic complexity-advise environment with a warn-band Python source
-    When I run the gz command "complexity advise subject.py --rule-path complexity_thresholds.md"
+    When I run the gz command "complexity advise subject.py --rule-path complexity-thresholds.json"
     Then the command exits with code 0
     And the output contains "Archetype"
     And the output contains "Authority"
@@ -23,13 +23,13 @@ Feature: gz complexity advise — trigger-time advisor diagnosis (ADR-0.0.29 / O
   @REQ-0.0.29-03-03
   Scenario: block-band crossing produces exit 3
     Given a synthetic complexity-advise environment with a block-band Python source
-    When I run the gz command "complexity advise subject.py --rule-path complexity_thresholds.md"
+    When I run the gz command "complexity advise subject.py --rule-path complexity-thresholds.json"
     Then the command exits with code 3
 
   @REQ-0.0.29-03-04
   Scenario: --json mode emits valid JSON validating against schema
     Given a synthetic complexity-advise environment with a warn-band Python source
-    When I run the gz command "complexity advise subject.py --rule-path complexity_thresholds.md --json"
+    When I run the gz command "complexity advise subject.py --rule-path complexity-thresholds.json --json"
     Then the command exits with code 0
     And the output contains "metric"
     And the output contains "radon_cc"

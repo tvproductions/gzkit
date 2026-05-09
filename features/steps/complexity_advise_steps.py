@@ -15,6 +15,7 @@ production distilled doc has an empty practitioner-eye section.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from behave import given  # type: ignore[import-untyped]
@@ -98,40 +99,51 @@ def _distilled_characteristics(metric: str = "radon_cc") -> str:
     )
 
 
-def _rule_body(metric: str, distilled_path: Path, anchor: str) -> str:
-    return (
-        "---\n"
-        "id: complexity-thresholds\n"
-        "paths:\n"
-        '  - ".gzkit/rules/complexity-thresholds.md"\n'
-        "description: synthetic\n"
-        "---\n\n"
-        "<!-- rule-version: 0.1.0 -->\n\n"
-        "# Synthetic Complexity Thresholds\n\n"
-        "## Citation\n\n"
-        f"`{distilled_path.as_posix()} § {anchor} (corpus revision 1)`\n\n"
-        "## Per-metric tables\n\n"
-        f"### Metric: `{metric}`\n\n"
-        f"Citation: `{distilled_path.as_posix()} § {anchor} (corpus revision 1)`\n\n"
-        "| Trigger | Corpus percentile | Absolute number | Cited section |\n"
-        "|---------|-------------------|-----------------|---------------|\n"
-        f"| advise  | p75               | 4.0             | {anchor}      |\n"
-        f"| warn    | p90               | 7.0             | {anchor}      |\n"
-        f"| block   | p95               | 11.0            | {anchor}      |\n"
+def _rule_data(metric: str, distilled_path: Path, anchor: str) -> str:
+    """Synthesize the JSON data payload (GHI #426 — data is JSON, narrative .md)."""
+    return json.dumps(
+        {
+            "corpus_revision": 1,
+            "citation": {
+                "distilled_characteristics_path": distilled_path.as_posix(),
+                "section_anchor": anchor,
+                "corpus_revision": 1,
+            },
+            "bands": [
+                {
+                    "metric": metric,
+                    "corpus_percentile": 75,
+                    "absolute_number": 4.0,
+                    "trigger_semantic": "advise",
+                },
+                {
+                    "metric": metric,
+                    "corpus_percentile": 90,
+                    "absolute_number": 7.0,
+                    "trigger_semantic": "warn",
+                },
+                {
+                    "metric": metric,
+                    "corpus_percentile": 95,
+                    "absolute_number": 11.0,
+                    "trigger_semantic": "block",
+                },
+            ],
+        }
     )
 
 
 def _build_synthetic_environment(source: str) -> None:
-    """Materialize distilled doc + threshold rule + subject.py in CWD."""
+    """Materialize distilled doc + threshold data + subject.py in CWD."""
     cwd = Path.cwd()
     complexity_dir = cwd / "docs" / "governance" / "complexity"
     complexity_dir.mkdir(parents=True, exist_ok=True)
     distilled_path = complexity_dir / "distilled-characteristics-synthetic.md"
     distilled_path.write_text(_distilled_characteristics(), encoding="utf-8")
-    rule_path = cwd / "complexity_thresholds.md"
+    rule_path = cwd / "complexity-thresholds.json"
     anchor = "radon-cc"
     rule_path.write_text(
-        _rule_body("radon_cc", distilled_path.relative_to(cwd), anchor),
+        _rule_data("radon_cc", distilled_path.relative_to(cwd), anchor),
         encoding="utf-8",
     )
     subject = cwd / "subject.py"

@@ -4,8 +4,8 @@ The shell hook ``.gzkit/hooks/pre-commit-complexity-advisor`` delegates
 complexity diagnosis to ``run_auto_chain`` after xenon-as-gate fails.
 These steps exercise the runtime contract at the chain point — exit
 codes, stderr diagnostics, and SKIP semantics — using the gzkit
-project's ``.gzkit/rules/complexity-thresholds.md`` and the cited
-distilled-characteristics document.
+project's ``.gzkit/rules/complexity-thresholds.json`` (data, GHI #426)
+and the cited distilled-characteristics document.
 
 Scope boundary: shell-script structural properties (POSIX shebang,
 executable bit, no re-defined SKIP semantics) are covered by unit tests

@@ -21,7 +21,7 @@ gz complexity advise <path> [--json] [--quiet] [--verbose] [--dry-run]
 `gz complexity advise` is the operator-facing trigger-time response
 surface introduced by ADR-0.0.29 (the third foundation in the four-ADR
 complexity-doctrine cluster). The verb loads the canonical threshold
-table at `.gzkit/rules/complexity-thresholds.md` (ADR-0.0.28), measures
+table at `.gzkit/rules/complexity-thresholds.json` (ADR-0.0.28), measures
 per-function `radon_cc` for every Python file under `<path>` via
 radon's Python API (`radon.complexity.cc_visit`), and runs the
 OBPI-0.0.29-02 :class:`DiagnosisEngine` against each band crossing.
@@ -55,7 +55,7 @@ auto-fire hook) and is currently a no-op marker.
 - `--dry-run` — Reserved; analysis is read-only and dry-run is a no-op.
 - `--auto-chain` — Reserved for OBPI-0.0.29-05.
 - `--rule-path PATH` — Override the threshold rule path. Default is
-  `.gzkit/rules/complexity-thresholds.md`. Test injection only;
+  `.gzkit/rules/complexity-thresholds.json`. Test injection only;
   production runs use the default.
 - `--attest-intrinsic` — Commit-time intrinsic attestation path. Requires
   `<path>` in `<file_path>:<qualname>` form. Checks that the named

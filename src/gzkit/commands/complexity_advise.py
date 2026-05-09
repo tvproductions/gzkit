@@ -1,7 +1,8 @@
 """Handler for ``gz complexity advise`` (OBPI-0.0.29-03).
 
 Wraps the ADR-0.0.29 trigger-time response surface. Reads the canonical
-threshold table at ``.gzkit/rules/complexity-thresholds.md`` (ADR-0.0.28),
+threshold table at ``.gzkit/rules/complexity-thresholds.json`` (ADR-0.0.28,
+GHI #426 — JSON is data; the sibling ``.md`` carries doctrine narrative),
 measures the target file or directory via ``radon.complexity.cc_visit``,
 and runs the OBPI-0.0.29-02 :class:`DiagnosisEngine` for each per-function
 ``radon_cc`` crossing.
@@ -42,7 +43,7 @@ from gzkit.complexity.thresholds import ThresholdTable, load_threshold_table
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import intrinsic_complexity_attestation_event
 
-DEFAULT_RULE_PATH = Path(".gzkit/rules/complexity-thresholds.md")
+DEFAULT_RULE_PATH = Path(".gzkit/rules/complexity-thresholds.json")
 METRIC_KEY = "radon_cc"
 
 _ATTEST_CONFIRMATION = "ATTEST"

@@ -1,6 +1,6 @@
 # Complexity Thresholds -- Rationale and Pedagogy
 
-Lifted from [`.gzkit/rules/complexity-thresholds.md`](../../../.gzkit/rules/complexity-thresholds.md) under GHI #327 (instructions-files-diet). The rule file carries the binding threshold tables and invariant; this document carries the extended rationale, citation contract details, bootstrap carve-out narrative, amendment protocol, refresh portability, and anti-patterns.
+Lifted from [`.gzkit/rules/complexity-thresholds.md`](../../../.gzkit/rules/complexity-thresholds.md) under GHI #327 (instructions-files-diet). The threshold data lives in the sibling [`.gzkit/rules/complexity-thresholds.json`](../../../.gzkit/rules/complexity-thresholds.json) (data source-of-truth, GHI #426); the `.md` rule file carries the doctrine narrative and invariant. This document carries the extended rationale, citation contract details, bootstrap carve-out narrative, amendment protocol, refresh portability, and anti-patterns.
 
 ## Citation contract details
 

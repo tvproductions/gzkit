@@ -1,53 +1,38 @@
 """Threshold table data contract for ADR-0.0.28's complexity-doctrine cluster.
 
-OBPI-0.0.28-02 — frozen Pydantic models + parser + lookup methods consumed by
-ADR-0.0.29 advisor and ADR-0.0.30 authoring-guidance. The single loader is the
-structural defense against parser-divergence drift across downstream consumers.
+OBPI-0.0.28-02 — frozen Pydantic models + JSON loader + lookup methods consumed
+by ADR-0.0.29 advisor and ADR-0.0.30 authoring-guidance. The single loader is
+the structural defense against parser-divergence drift across downstream
+consumers.
+
+Data source-of-truth is ``.gzkit/rules/complexity-thresholds.json`` (GHI #426 —
+deterministic config is structured data, not regex-parsed prose). The companion
+``.gzkit/rules/complexity-thresholds.md`` carries the doctrine narrative
+(invariant, vocabulary, bootstrap carve-out, amendment protocol) and links to
+this JSON file as the runtime source of truth.
 
 Polarity-aware ``band_for`` semantics for inverted metrics (``radon_mi``) are
-tracked under GHI #405; this module ships the high-is-worse default. The rule
-body's bootstrap carve-out exempts inverted metrics from validator portability
-checks until the polarity-aware amendment lands.
+tracked under GHI #405; this module ships the high-is-worse default.
 """
 
 from __future__ import annotations
 
-import re
-from collections.abc import Iterator
+import json
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from gzkit.complexity.citation import Citation, parse_citation
-from gzkit.rules import _parse_canonical_frontmatter
+from gzkit.complexity.citation import Citation
 
 CANONICAL_PERCENTILES: tuple[int, ...] = (50, 75, 90, 95, 99)
 TRIGGER_VOCABULARY: tuple[str, ...] = ("block", "warn", "advise")
 _SEVERITY_ORDER: dict[str, int] = {"block": 3, "warn": 2, "advise": 1}
 
-_BAND_ROW_PATTERN = re.compile(
-    r"^\|\s*(?P<trigger>\w+)\s*"
-    r"\|\s*p(?P<percentile>\d{2,3})\s*"
-    r"\|\s*(?P<absolute>[\d.]+)\s*"
-    r"\|\s*(?P<anchor>[^|]+?)\s*\|",
-    re.MULTILINE,
-)
-_METRIC_SECTION_PATTERN = re.compile(
-    r"^###\s+Metric:\s+`(?P<metric>[a-z0-9_]+)`(?P<body>.*?)(?=^###\s|^##\s|\Z)",
-    re.MULTILINE | re.DOTALL,
-)
-_CITATION_SECTION_PATTERN = re.compile(
-    r"^##\s+Citation\s*\n(?P<body>.*?)(?=^##\s|\Z)",
-    re.MULTILINE | re.DOTALL,
-)
-_CITATION_BLOCK_PATTERN = re.compile(
-    r"(docs/governance/complexity/\S+?\.md\s*§\s*[a-z0-9-]+\s*\(corpus revision \d+\))",
-)
-
 
 class ThresholdBand(BaseModel):
-    """One per-metric (percentile, absolute, trigger) row from the rule body."""
+    """One per-metric (percentile, absolute, trigger) row from the data file."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -66,7 +51,7 @@ class ThresholdBand(BaseModel):
 
 
 class ThresholdTable(BaseModel):
-    """Whole rule body parsed into bands plus a citation tuple."""
+    """Whole data file parsed into bands plus a citation tuple."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -101,36 +86,40 @@ class ThresholdTable(BaseModel):
         per_metric = [b for b in self.bands if b.metric == metric]
         return tuple(sorted(per_metric, key=lambda b: b.corpus_percentile))
 
-
-def load_threshold_table(rule_path: Path) -> ThresholdTable:
-    """Parse a complexity-thresholds rule body into a ``ThresholdTable``."""
-    _, body = _parse_canonical_frontmatter(rule_path)
-    citation = _extract_citation(body)
-    bands = tuple(_iter_threshold_bands(body))
-    return ThresholdTable(
-        corpus_revision=citation.corpus_revision,
-        bands=bands,
-        citation=citation,
-    )
+    def metrics(self) -> tuple[str, ...]:
+        """Return the unique set of metrics declared in the table, in order."""
+        seen: list[str] = []
+        for band in self.bands:
+            if band.metric not in seen:
+                seen.append(band.metric)
+        return tuple(seen)
 
 
-def _extract_citation(body: str) -> Citation:
-    section_match = _CITATION_SECTION_PATTERN.search(body)
-    section_body = section_match.group("body") if section_match else ""
-    block_match = _CITATION_BLOCK_PATTERN.search(section_body)
-    candidate = block_match.group(1) if block_match else ""
-    return parse_citation(candidate)
+def load_threshold_table(data_path: Path) -> ThresholdTable:
+    """Parse a complexity-thresholds JSON file into a ``ThresholdTable``.
+
+    The path must point at a ``.json`` document conforming to
+    ``src/gzkit/schemas/complexity_thresholds.json``. Any other suffix raises
+    ``ValueError`` — the markdown rule body is doctrine narrative, not data.
+    """
+    if data_path.suffix != ".json":
+        msg = (
+            f"complexity-thresholds data must be a .json file; got {data_path.name!r}. "
+            "The markdown rule body carries narrative only; data lives in JSON (GHI #426)."
+        )
+        raise ValueError(msg)
+    raw: Any = json.loads(data_path.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        msg = f"complexity-thresholds JSON must decode to an object; got {type(raw).__name__}"
+        raise ValueError(msg)
+    payload = {key: value for key, value in raw.items() if not key.startswith("$")}
+    return ThresholdTable.model_validate(_normalize_payload(payload))
 
 
-def _iter_threshold_bands(body: str) -> Iterator[ThresholdBand]:
-    for section in _METRIC_SECTION_PATTERN.finditer(body):
-        metric = section.group("metric")
-        for row in _BAND_ROW_PATTERN.finditer(section.group("body")):
-            yield ThresholdBand.model_validate(
-                {
-                    "metric": metric,
-                    "corpus_percentile": int(row.group("percentile")),
-                    "absolute_number": float(row.group("absolute")),
-                    "trigger_semantic": row.group("trigger"),
-                }
-            )
+def _normalize_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    """Coerce list-of-dicts into the tuple-of-models shape Pydantic expects."""
+    bands_raw: Iterable[Any] = payload.get("bands", ())
+    return {
+        **payload,
+        "bands": tuple(bands_raw),
+    }
