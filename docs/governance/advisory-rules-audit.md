@@ -238,7 +238,7 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 57 | Every canonical surface (skills, rules, hooks, templates, chores, personas) MUST be reproducibly delivered by `pip install py-gzkit && gz init` to a fresh project, byte-equivalent to the wheel's authored canonical content. A wheel that ships without a canonical surface is a T0 breach regardless of whether downstream `gz init` reports success. | **Promotable** | T0 doctrine authored in `docs/governance/trust-doctrine.md` § T0 (OBPI-0.0.31-01) and ADR-0.0.31; mechanical enforcement pending OBPI-0.0.32-07 (`gz validate --distribution`, static check: pyproject.toml include + baseline manifest + on-disk canonical trees, exit 3 on any package-data omission). When OBPI-0.0.32-07 lands this row flips to **Mechanical**. Receipt-id prefix: `arb-distribution-`. |
+| 57 | Every canonical surface (skills, rules, hooks, templates, chores, personas) MUST be reproducibly delivered by `pip install py-gzkit && gz init` to a fresh project, byte-equivalent to the wheel's authored canonical content. A wheel that ships without a canonical surface is a T0 breach regardless of whether downstream `gz init` reports success. | **Promotable** | T0 doctrine authored in `docs/governance/trust-doctrine.md` § T0 (OBPI-0.0.31-01) and ADR-0.0.31; mechanical enforcement tracked under ADR-0.0.32-canonical-surface-packaging, pending OBPI-0.0.32-07 (`gz validate --distribution`, static check: pyproject.toml include + baseline manifest + on-disk canonical trees, exit 3 on any package-data omission). When OBPI-0.0.32-07 lands this row flips to **Mechanical**. Receipt-id prefix: `arb-distribution-`. |
 
 ---
 

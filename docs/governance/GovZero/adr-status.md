@@ -7,7 +7,7 @@ Status: Active
 
 Source-of-truth: filesystem under `docs/design/adr/{foundation,pre-release}/`; this table is a Layer 3 derived view per `docs/governance/state-doctrine.md`. Regenerate via `gz register-adrs` (which calls `regenerate_adr_status_md` after ledger reconciliation); drift is fail-closed by `gz validate --adr-status-fresh`.
 
-Last regenerated: 2026-05-10 (count: 74 ADRs).
+Last regenerated: 2026-05-10 (count: 75 ADRs).
 
 | ID | Title | Kind | Lane | Status | Date | Path |
 |---|---|---|---|---|---|---|
@@ -85,3 +85,4 @@ Last regenerated: 2026-05-10 (count: 74 ADRs).
 | [ADR-0.44.0-vendor-alignment-codex](../../design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/ADR-0.44.0-vendor-alignment-codex.md) | OpenAI Codex Vendor Alignment | feature | heavy | Proposed | 2026-04-23 | `design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/ADR-0.44.0-vendor-alignment-codex.md` |
 | [ADR-0.45.0-prefill-driven-authoring-scaffolding](../../design/adr/pre-release/ADR-0.45.0-prefill-driven-authoring-scaffolding/ADR-0.45.0-prefill-driven-authoring-scaffolding.md) | Prefill-Driven Authoring Scaffolding | feature | heavy | Draft | 2026-04-25 | `design/adr/pre-release/ADR-0.45.0-prefill-driven-authoring-scaffolding/ADR-0.45.0-prefill-driven-authoring-scaffolding.md` |
 | [ADR-0.46.0-captured-stdout-receipt-binding](../../design/adr/pre-release/ADR-0.46.0-captured-stdout-receipt-binding/ADR-0.46.0-captured-stdout-receipt-binding.md) | Captured-Stdout Receipt Binding | feature | heavy | Draft | 2026-04-25 | `design/adr/pre-release/ADR-0.46.0-captured-stdout-receipt-binding/ADR-0.46.0-captured-stdout-receipt-binding.md` |
+| [ADR-0.47.0-owasp-top10-2025-scan](../../design/adr/pre-release/ADR-0.47.0-owasp-top10-2025-scan/ADR-0.47.0-owasp-top10-2025-scan.md) | OWASP Top 10:2025 Portable Security Scanner | feature | heavy | Draft | 2026-05-10 | `design/adr/pre-release/ADR-0.47.0-owasp-top10-2025-scan/ADR-0.47.0-owasp-top10-2025-scan.md` |

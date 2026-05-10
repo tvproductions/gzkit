@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.47.0-01-owasp-data-model-and-mapping-schema",
+  "parent_adr": "ADR-0.47.0-owasp-top10-2025-scan",
+  "lane": "heavy",
+  "entry": "sync",
+  "execution_mode": "normal",
+  "current_stage": "sync",
+  "started_at": "2026-05-10T14:09:04Z",
+  "updated_at": "2026-05-10T14:09:04Z",
+  "receipt_state": "pass",
+  "nonce": "7222c34ce25d58cf2c19ca8cce9c1920",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz git-sync --apply --lint --test",
+  "resume_point": null
+}
