@@ -1857,15 +1857,25 @@ class TestPipelineMarkerAuthenticityGhi412(unittest.TestCase):
             self.assertIn("sensitivity:security", str(ctx.exception))
             self.assertIn("interactive shell", str(ctx.exception))
 
-    def test_foundation_kind_refuses_agent_relayed_even_with_authentic_marker(self):
-        from gzkit.commands.common import GzCliError
+    def test_foundation_kind_with_authentic_marker_returns_agent_relayed_post_434(self):
+        """GHI #434: agent-relayed attestation IS accepted for foundation-kind
+        when the marker is authentic. The marker authenticity hardening from
+        GHI #412 mitigation #1 (nonce + ledger event witness + freshness)
+        sufficiently raises the forgery bar; the additional foundation-kind
+        refusal from #412 mitigation #2 was reverted because it forced N
+        TTY sessions per ADR closeout for negligible trust gain over #1.
+        ``sensitivity: security`` remains TTY-only — see
+        ``test_security_sensitivity_refuses_agent_relayed_even_with_authentic_marker``.
+        """
+        from gzkit.commands.adr_audit import ATTESTATION_TYPE_AGENT_RELAYED
 
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
             _write_authentic_marker(project_root, "OBPI-0.0.20-03", "ADR-0.0.20")
-            with self.assertRaises(GzCliError) as ctx:
-                self._run_gate(project_root, parent_kind="foundation")
-            self.assertIn("foundation-kind", str(ctx.exception))
+            self.assertEqual(
+                self._run_gate(project_root, parent_kind="foundation"),
+                ATTESTATION_TYPE_AGENT_RELAYED,
+            )
 
 
 if __name__ == "__main__":
