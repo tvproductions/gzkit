@@ -54,7 +54,14 @@ _GZ_COMMAND_PATTERN = re.compile(
     r"(?:uv run[ \t]+)?\bgz[ \t]+([a-z][a-z-]*(?:[ \t]+[a-z][a-z-]*)*)",
 )
 _INLINE_CODE_PATTERN = re.compile(r"`([^`\n]+)`")
-_FENCED_BLOCK_PATTERN = re.compile(r"```[a-z]*\n(.*?)\n```", flags=re.DOTALL)
+# GHI #432: speculative-skip marker for OBPIs introducing a new CLI verb.
+# Mirrors the convention in
+# ``src/gzkit/governance/trust_audits/complexity_doctrine_links.py`` so
+# both validators share one marker shape. The marker on the line
+# immediately preceding an inline-code reference suppresses that line's
+# gz chains; when the marker immediately precedes an opening fence, the
+# entire fenced block is suppressed.
+_SPECULATIVE_MARKER = "<!-- gz-validate-skip: command-shape -->"
 
 
 def extract_gz_command_chains(content: str) -> list[list[str]]:
@@ -65,12 +72,52 @@ def extract_gz_command_chains(content: str) -> list[list[str]]:
     prescriptive commands; prose references are descriptive). Used by
     ObpiValidator._validate_command_shapes to verify each chain resolves
     against the registered CLI parser tree (GHI #194).
+
+    The speculative-skip marker
+    ``<!-- gz-validate-skip: command-shape -->`` on the line
+    immediately preceding an inline-code reference suppresses extraction
+    from that line; when the marker immediately precedes an opening
+    fence, the entire fenced block is suppressed. This is the escape
+    hatch for OBPIs whose own scope introduces a new CLI verb that
+    cannot yet resolve against the registered parser (GHI #432).
     """
     chains: list[list[str]] = []
-    code_segments = _INLINE_CODE_PATTERN.findall(content) + _FENCED_BLOCK_PATTERN.findall(content)
-    for segment in code_segments:
-        for line in segment.splitlines():
+    in_fenced_block = False
+    skip_current_block = False
+    pending_marker = False
+
+    for line in content.splitlines():
+        stripped = line.strip()
+
+        if stripped.startswith("```"):
+            if in_fenced_block:
+                in_fenced_block = False
+                skip_current_block = False
+            else:
+                in_fenced_block = True
+                skip_current_block = pending_marker
+            pending_marker = False
+            continue
+
+        if in_fenced_block:
+            if skip_current_block:
+                continue
             for match in _GZ_COMMAND_PATTERN.finditer(line):
+                chain = match.group(1).split()
+                if chain:
+                    chains.append(chain)
+            continue
+
+        if stripped == _SPECULATIVE_MARKER:
+            pending_marker = True
+            continue
+
+        if pending_marker:
+            pending_marker = False
+            continue
+
+        for inline_match in _INLINE_CODE_PATTERN.finditer(line):
+            for match in _GZ_COMMAND_PATTERN.finditer(inline_match.group(1)):
                 chain = match.group(1).split()
                 if chain:
                     chains.append(chain)
