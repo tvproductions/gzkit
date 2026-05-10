@@ -185,6 +185,47 @@ class TestExtractPlanCreatesPaths(unittest.TestCase):
             )
             self.assertIn("src/foo.py", extract_plan_creates_paths(plan))
 
+    def test_dotfile_rooted_paths_preserve_leading_dot(self) -> None:
+        """Regression for GHI #433: `.gzkit/`, `.claude/`, `.agents/`, `.github/`
+        rooted creates declarations must be mined into the creates set, not
+        silently dropped by an over-broad lstrip that ate the leading dot.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            plan = Path(td) / "plan.md"
+            plan.write_text(
+                "## Creates these files\n\n"
+                "- `.gzkit/chores/owasp-top10-2025-scan/mapping.json`\n"
+                "- `.claude/skills/foo/SKILL.md`\n"
+                "- `.agents/skills/bar/SKILL.md`\n"
+                "- `.github/skills/baz/SKILL.md`\n",
+                encoding="utf-8",
+            )
+            creates = extract_plan_creates_paths(plan)
+            self.assertIn(".gzkit/chores/owasp-top10-2025-scan/mapping.json", creates)
+            self.assertIn(".claude/skills/foo/SKILL.md", creates)
+            self.assertIn(".agents/skills/bar/SKILL.md", creates)
+            self.assertIn(".github/skills/baz/SKILL.md", creates)
+
+    def test_dotfile_rooted_creates_exempt_brief_existence_gap(self) -> None:
+        """End-to-end regression for GHI #433: a plan that declares a
+        `.gzkit/`-rooted path under "Creates these files" must exempt the
+        same path from the brief's allowed-path existence check.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            plan = root / "plan.md"
+            plan.write_text(
+                "## Creates these files\n\n- `.gzkit/chores/owasp-top10-2025-scan/mapping.json`\n",
+                encoding="utf-8",
+            )
+            creates = extract_plan_creates_paths(plan)
+            gaps = check_brief_path_validity(
+                root,
+                [".gzkit/chores/owasp-top10-2025-scan/mapping.json"],
+                creates_paths=creates,
+            )
+            self.assertEqual(gaps, [], msg=f"Expected no gaps; got {gaps}")
+
 
 class TestCheckBriefPathValidity(unittest.TestCase):
     def test_existing_paths_produce_no_gaps(self) -> None:
