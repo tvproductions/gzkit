@@ -101,7 +101,7 @@ class TestRunStepViaArb(unittest.TestCase):
         fake = subprocess.CompletedProcess(["echo"], 0, long_stdout, "")
         with patch("gzkit.arb.step_reporter.subprocess.run", return_value=fake):
             exit_status, path = run_step_via_arb(
-                name="echo-big",
+                name="echobig",
                 cmd=["echo", "big"],
                 max_output_chars=200,
                 quiet=True,
@@ -122,3 +122,76 @@ class TestRunStepViaArb(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             run_step_via_arb(name="echo", cmd=[])
+
+
+class TestStepNameCanonicalRegex(unittest.TestCase):
+    """Writer rejects step names the receipt-binding regex cannot match.
+
+    The canonical run_id pattern in
+    ``src/gzkit/governance/trust_audits/attestation_receipts.py:31``
+    is ``arb-(?:ruff|step-[a-z][a-z0-9]*)-[a-f0-9]{32}``. Any step name
+    outside ``[a-z][a-z0-9]*`` (hyphens, underscores, uppercase, leading
+    digit) produces a receipt the heavy/foundation receipt-binding gate
+    rejects as ``malformed_id``. Fail-fast at write time so the
+    inconsistency cannot reach attestation. (GHI #441.)
+    """
+
+    def setUp(self) -> None:
+        self._tempdir = tempfile.TemporaryDirectory()
+        self._receipts_dir = Path(self._tempdir.name) / "receipts"
+        self._prior_env = os.environ.get("GZKIT_ARB_RECEIPTS_ROOT")
+        os.environ["GZKIT_ARB_RECEIPTS_ROOT"] = str(self._receipts_dir)
+        self._git_patcher = patch(
+            "gzkit.arb.step_reporter._git_context",
+            return_value={"commit": "abcdef1", "branch": "main", "dirty": False},
+        )
+        self._git_patcher.start()
+
+    def tearDown(self) -> None:
+        self._git_patcher.stop()
+        if self._prior_env is None:
+            os.environ.pop("GZKIT_ARB_RECEIPTS_ROOT", None)
+        else:
+            os.environ["GZKIT_ARB_RECEIPTS_ROOT"] = self._prior_env
+        self._tempdir.cleanup()
+
+    def test_hyphenated_name_rejected(self) -> None:
+        from gzkit.arb.step_reporter import run_step_via_arb
+
+        with self.assertRaises(ValueError) as ctx:
+            run_step_via_arb(name="advisory-scorecard", cmd=["echo", "x"])
+        self.assertIn("[a-z][a-z0-9]*", str(ctx.exception))
+
+    def test_underscore_name_rejected(self) -> None:
+        from gzkit.arb.step_reporter import run_step_via_arb
+
+        with self.assertRaises(ValueError):
+            run_step_via_arb(name="advisory_scorecard", cmd=["echo", "x"])
+
+    def test_uppercase_name_rejected(self) -> None:
+        from gzkit.arb.step_reporter import run_step_via_arb
+
+        with self.assertRaises(ValueError):
+            run_step_via_arb(name="AdvisoryScorecard", cmd=["echo", "x"])
+
+    def test_leading_digit_name_rejected(self) -> None:
+        from gzkit.arb.step_reporter import run_step_via_arb
+
+        with self.assertRaises(ValueError):
+            run_step_via_arb(name="1leading", cmd=["echo", "x"])
+
+    def test_canonical_name_accepted(self) -> None:
+        """Canonical hyphenless lowercase names continue to work."""
+        from gzkit.arb.step_reporter import run_step_via_arb
+
+        fake = subprocess.CompletedProcess(["echo", "x"], 0, "ok\n", "")
+        with patch("gzkit.arb.step_reporter.subprocess.run", return_value=fake):
+            exit_status, path = run_step_via_arb(
+                name="advisoryscorecard",
+                cmd=["echo", "x"],
+                quiet=True,
+            )
+        self.assertEqual(exit_status, 0)
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(payload["step"]["name"], "advisoryscorecard")
+        self.assertTrue(payload["run_id"].startswith("arb-step-advisoryscorecard-"))
