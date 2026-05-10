@@ -37,7 +37,25 @@ bear no resemblance to the canonical content this repo uses to govern
 itself. T0 names the class so future surface promotions cannot drift
 silently again.
 
+**Target state (testable).** A T0-passing build produces a wheel that, when
+installed into a fresh venv and run through `gz init`, yields a project
+whose canonical surfaces (skills, rules, hooks, templates, chores,
+personas) are byte-equivalent — modulo path resolution and project-name
+substitution — to a frozen baseline manifest derived from this repo's
+`.gzkit/` content. The doctrine surface authored by this ADR makes that
+contract citable; the mechanical enforcement (ADR-0.0.32) makes it
+testable.
+
 ## Decision
+
+**Architectural precedent.** This ADR follows the proven ADR-0.0.18
+(taxonomy doctrine) ↔ ADR-0.0.17 (taxonomy mechanical enforcement) split:
+doctrine authored as a foundation-kind invariant lands first as a stable
+referent; mechanical enforcement lands as a sibling ADR that cites the
+doctrine. T0 (this ADR) is the doctrine half; ADR-0.0.32 is the mechanical
+half. The split's load-bearing precedent is that ADR-0.0.18 has stayed
+stable across multiple ADR-0.0.17 evolutions of the taxonomy enforcement
+surface, validating the doctrine/mechanics decoupling at this repo's scale.
 
 Every canonical surface — skills, rules, hooks, templates, chores, personas
 — MUST be reproducibly delivered by `pip install py-gzkit && gz init` to a
@@ -181,9 +199,10 @@ slug shift; the substantive scope is the amendment text.
 
 <!-- Links to tests, documentation, and other artifacts that prove completion -->
 
-- [ ] Doctrine: `docs/governance/trust-doctrine.md` (T0 paragraph alongside T1/T2/T3 table)
-- [ ] Scorecard: `docs/governance/advisory-rules-audit.md` (T0 entry classified Promotable)
-- [ ] Cross-link: this ADR references the trust-doctrine layer table
+- [x] Doctrine: `docs/governance/trust-doctrine.md` — T0 paragraph and layer table added (OBPI-0.0.31-01); see `## Trust Layers` and `### T0 — Distribution Invariant` sections in that file
+- [ ] Scorecard: `docs/governance/advisory-rules-audit.md` (T0 entry classified Promotable) — OBPI-0.0.31-02
+- [x] Cross-link: this ADR's Evidence section links to `docs/governance/trust-doctrine.md` trust-doctrine layer table (OBPI-0.0.31-01); T0 paragraph in trust-doctrine.md back-links to this ADR via "Doctrine source" reference
+- [ ] Catalog: `docs/governance/distribution_invariant_catalog.md` (T0 failure-mode catalog) — OBPI-0.0.31-03
 - [ ] Tests: `tests/` (no mechanical test surface in this ADR; mechanical enforcement deferred to ADR-0.0.32)
 - [ ] Docs: `docs/`
 

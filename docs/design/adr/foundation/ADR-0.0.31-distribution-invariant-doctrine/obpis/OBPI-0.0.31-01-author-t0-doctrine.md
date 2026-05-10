@@ -3,7 +3,7 @@ id: OBPI-0.0.31-01-author-t0-doctrine
 parent: ADR-0.0.31-distribution-invariant-doctrine
 item: 1
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.31-01-author-t0-doctrine: Author T0 Doctrine
@@ -192,18 +192,36 @@ Before this OBPI: the trust-doctrine page documented T1/T2/T3 layers but had no 
 
 ### Key Proof
 
-```bash
-grep -n "T0" docs/governance/trust-doctrine.md
-# Expected: T0 row in layer table + at least one paragraph defining the invariant
+
+Key proof command:
+
 ```
+grep -n "T0" docs/governance/trust-doctrine.md
+```
+
+Output confirms T0 row in 4-row layer table (line 67), ### T0 — Distribution Invariant section header (line 74), verbatim GHI #318 failure-mode quote (line 81: "a wheel that ships without a canonical surface is a T0 breach, regardless of whether downstream `gz init` reports success"), and all three mechanical enforcement contract items (lines 87–89).
+
+ARB-receipt evidence:
+- Lint clean — receipt arb-ruff-ac8036fb9f454299860fc618e82f614d
+- Typecheck clean — receipt arb-step-typecheck-92a2e4f39ffb4d98a3bfa4da571a5e4e
+- Unittests pass — receipt arb-step-unittest-f297fe1c2d384935ba29a1fe1963a593
+
+Validation gates:
+- uv run gz validate --documents → exit 0
+- uv run mkdocs build --strict → exit 0 (no broken links after directory→file path fix)
+
+Cross-link verification:
+- grep "trust-doctrine" docs/design/adr/foundation/ADR-0.0.31-distribution-invariant-doctrine/ADR-0.0.31-distribution-invariant-doctrine.md → multiple matches (Evidence section [x] items reference trust-doctrine.md)
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added: n/a (documentation-only)
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files modified: docs/governance/trust-doctrine.md (added ## Trust Layers overview section with T0/T1/T2/T3 layer table, ### T0 — Distribution Invariant paragraph including verbatim GHI #318 failure-mode quote, three-item mechanical enforcement contract, forward-link to ADR-0.0.32, doctrine-source link to ADR-0.0.31); docs/design/adr/foundation/ADR-0.0.31-distribution-invariant-doctrine/ADR-0.0.31-distribution-invariant-doctrine.md (closed bidirectional cross-link by marking Doctrine and Cross-link Evidence items complete with references to trust-doctrine.md)
+- Tests added: n/a — documentation-only OBPI; brief denies tests/ and features/
+- REQ verification: all 7 REQs verified through grep + gz validate --documents + mkdocs build --strict; --accept-uncovered passed at completion (documentation-only, no test surface)
+- Date completed: 2026-05-10
+- Attestation status: Operator-attested via Stage 4 ceremony ("attest completed"); Gate 5 brief-level attestation required because parent ADR is kind: foundation
+- Defects noted: ADR-0.0.30 frontmatter drift surfaced and reconciled during precomplete (unrelated)
 
 ## Tracked Defects
 
@@ -211,14 +229,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — T0 distribution invariant authored in docs/governance/trust-doctrine.md (## Trust Layers section, ### T0 — Distribution Invariant paragraph, 4-row layer table T0/T1/T2/T3, verbatim GHI #318 failure-mode quote, three-item mechanical enforcement contract, forward-link to ADR-0.0.32, bidirectional cross-link from ADR-0.0.31 Evidence section). All 7 REQs verified by grep + gz validate --documents + mkdocs build --strict. ARB receipts: arb-ruff-ac8036fb9f454299860fc618e82f614d (lint clean), arb-step-typecheck-92a2e4f39ffb4d98a3bfa4da571a5e4e (typecheck clean), arb-step-unittest-f297fe1c2d384935ba29a1fe1963a593 (unittests pass). Operator: Jeffry Babb.
+- Date: 2026-05-10
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-10
 
 **Evidence Hash:** -

@@ -39,6 +39,16 @@ Register the T0 distribution invariant in `docs/governance/advisory-rules-audit.
 
 1. The T0 row in `docs/governance/advisory-rules-audit.md` MUST classify T0 as **Promotable** (not Mechanical, not Judgment, not Ambiguous).
 2. Before authoring, the operator MUST read at least three existing Promotable rows in the audit to extract the canonical column shape (which fields each row carries: rule name, current classification, tracking ADR/GHI, landing receipt-id pattern, validator scope name pattern, etc.). The T0 row MUST conform to that shape — no novel fields, no missing fields.
+
+   **Representative Promotable row (row 53, lock-handoff-coupling) for shape reference:**
+
+   ```markdown
+   | # | Rule | Score | Notes |
+   |---|------|-------|-------|
+   | 53 | Lock release is coupled to a handoff/register entry: abandon categories are closed, register entries carry minimum information, reaping creates a degenerate register entry, TTL/reap discipline is explicit, and release becomes fail-closed when no valid handoff exists. | **Promotable** | Doctrine exists in the rule file and parent ADR-0.0.41, but OBPI-0.0.41-02/03/04 are still pending for runtime warning/fail-closed enforcement and `gz validate --lock-handoff-coupling`. Until those land, this is a promotable rule with a clear mechanical path rather than already-mechanical enforcement. |
+   ```
+
+   Schema extracted from this row: four columns — `#` (sequential rule number), `Rule` (one-sentence rule statement), `Score` (bolded classification), `Notes` (current state + tracking ADR/GHI + future validator scope name + Promotable→Mechanical landing condition). The T0 row MUST carry the same four columns and the same Notes-field pattern (current state + tracking ADR-0.0.32 + future `gz validate --distribution` scope + the OBPI-0.0.32-05 landing condition that flips Promotable → Mechanical). Read at least two more Promotable rows (e.g. rows 23, 29, 30, 49) to confirm the schema generalizes before authoring.
 3. The T0 row MUST cite **ADR-0.0.32-canonical-surface-packaging** as the tracking ADR for mechanical-enforcement promotion. Specifically OBPI-0.0.32-05 (`gz validate --distribution`) is the landing point that flips Promotable → Mechanical.
 4. The row MUST name the future validator-scope name (`--distribution`) and the future receipt-id prefix (e.g. `arb-distribution-` or whatever the canonical pattern dictates) so OBPI-0.0.32-05 lands against a registered placeholder rather than authoring the row mid-flight.
 5. NO doctrine prose (the why-and-what of T0) is permitted in the audit — that lives in `trust-doctrine.md` per OBPI-0.0.31-01. The audit row is a one-line scorecard entry.
