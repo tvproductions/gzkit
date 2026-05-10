@@ -621,15 +621,13 @@ def _enforce_human_attestation_authenticity(
                 "pipeline marker; internal caller did not pass project_root."
             )
             raise GzCliError(msg)
-        if (isinstance(sensitivity, str) and sensitivity.lower() == "security") or (
-            isinstance(parent_kind, str) and parent_kind.lower() == "foundation"
-        ):
+        if isinstance(sensitivity, str) and sensitivity.lower() == "security":
             msg = (
-                "--attestor-present is refused for sensitivity:security and "
-                "foundation-kind attestation (GHI #412). The agent-relayed path "
-                "is a file-based co-presence proxy and cannot satisfy the "
-                "authority boundary required for these scopes. Run this command "
-                "from an interactive shell and type the confirmation yourself."
+                "--attestor-present is refused for sensitivity:security "
+                "attestation (GHI #412 + #434). The agent-relayed path is a "
+                "file-based co-presence proxy and cannot satisfy the authority "
+                "boundary required for security scopes. Run this command from "
+                "an interactive shell and type the confirmation yourself."
             )
             raise GzCliError(msg)
         ok, reason = _validate_active_pipeline_marker(project_root, obpi_id, parent_adr)
@@ -726,14 +724,11 @@ def _enforce_uncovered_acceptance_confirmation(
                 "pipeline marker; internal caller did not pass project_root."
             )
             raise GzCliError(msg)
-        if (isinstance(sensitivity, str) and sensitivity.lower() == "security") or (
-            isinstance(parent_kind, str) and parent_kind.lower() == "foundation"
-        ):
+        if isinstance(sensitivity, str) and sensitivity.lower() == "security":
             msg = (
-                "--attestor-present is refused for sensitivity:security and "
-                "foundation-kind uncovered-REQ acceptance (GHI #412). Run this "
-                "command from an interactive shell and type the confirmation "
-                "yourself."
+                "--attestor-present is refused for sensitivity:security "
+                "uncovered-REQ acceptance (GHI #412 + #434). Run this command "
+                "from an interactive shell and type the confirmation yourself."
             )
             raise GzCliError(msg)
         ok, reason = _validate_active_pipeline_marker(project_root, obpi_id, parent_adr)
