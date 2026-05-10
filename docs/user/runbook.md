@@ -817,6 +817,14 @@ Fail-closed (exit 3) audit of every citation in cluster ADRs (0.0.27 / 0.0.28 / 
 - **Decorator path** (pre-known irreducible; persists in code): annotate the function with `@intrinsic_complexity(reason="...", attestor="Name")` from `gzkit.complexity.advisor.intrinsic`. The advisor skips the refactor recommendation and prints the attestation message at diagnosis time.
 - **Commit-time path** (in-flight discovery; persists in ledger): run `gz complexity advise <file>:<qualname> --attest-intrinsic --reason "..." --attestor "Name"`. Requires an interactive TTY and the word `ATTEST` to confirm. Emits one `intrinsic-complexity-attestation` ledger event; auditable via `gz validate --intrinsic-attestation`.
 
+**gz justify complexity hints** (ADR-0.0.30, OBPI-0.0.30-05): When `gz justify` is invoked on an OBPI whose `## Allowed Paths` section lists `.py` files, authoring-time complexity hints are automatically injected into the scaffold's evidence section under the heading `### Authoring-time complexity hints`. Each hint block shows metric, precedence band, archetype, doctrinal-frame headline, recommended-move headline, and `file:line` range — the same fields emitted by `gz complexity guide` in prose form.
+
+**When the heading appears:** The OBPI brief has at least one `.py` allowed-path AND the OBPI-03 authoring engine finds at least one advise-band crossing in those files.
+
+**When the heading is absent:** No `.py` allowed-paths, no advise-band crossings, or engine failure. All three are silent absence — the scaffold renders normally without the sub-heading.
+
+**Fail-open:** If the authoring engine raises (e.g., `.gzkit/rules/complexity-thresholds.json` missing), `gz justify` completes normally with exit 0. The hints heading is omitted and a structured failure record is appended to `.gzkit/insights/justify-failures.jsonl`. The failure never blocks pre-execution reasoning.
+
 `gz complexity guide` (ADR-0.0.30, OBPI-0.0.30-01) is the authoring-time preview surface. It wraps the OBPI-0.0.30-03 hint engine and emits one `AuthoringHint` per `advise`-band crossing — functions approaching the warn threshold, surfaced while editing before reaching gate time. Exit 3 is NOT used; this verb never blocks. Default output is one prose block per hint (archetype, guidance headline, recommended move); `--json` emits the canonical `AuthoringHint` array. See [`gz-complexity-guide`](manpages/complexity-guide.md) for the full manpage.
 
 `gz complexity guide --server` (ADR-0.0.30, OBPI-0.0.30-04) starts the JSON-over-stdio protocol server for editor/IDE integration. Editors communicate via LSP-style Content-Length–framed JSON envelopes (`initialize` → `analyze*` → `shutdown`). Protocol specification: [`docs/governance/complexity/authoring-guide-protocol.md`](governance/complexity/authoring-guide-protocol.md).

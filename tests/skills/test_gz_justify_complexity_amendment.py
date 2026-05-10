@@ -1,0 +1,125 @@
+"""TDD RED-phase tests for OBPI-0.0.30-05 gz-justify SKILL.md amendment.
+
+Tests verify that the gz-justify skill file is amended with:
+- A bumped skill-version from "6.0.1" to "6.1.0"
+- A new "Authoring-time complexity hints" section in the body
+
+``test_existing_structure_preserved`` covers regression protection and is
+expected to PASS immediately (existing H2 sections are not changed yet).
+
+``test_skill_version_bumped`` and ``test_new_section_present`` are expected
+to FAIL (RED) because the SKILL.md has not been amended yet.
+"""
+
+from __future__ import annotations
+
+import unittest
+from pathlib import Path
+
+import yaml
+
+from gzkit.traceability import covers
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SKILL_PATH = PROJECT_ROOT / ".gzkit" / "skills" / "gz-justify" / "SKILL.md"
+CLAUDE_MIRROR = PROJECT_ROOT / ".claude" / "skills" / "gz-justify" / "SKILL.md"
+AGENTS_MIRROR = PROJECT_ROOT / ".agents" / "skills" / "gz-justify" / "SKILL.md"
+GITHUB_MIRROR = PROJECT_ROOT / ".github" / "skills" / "gz-justify" / "SKILL.md"
+
+_EXISTING_H2_SECTIONS = (
+    "Purpose",
+    "Procedure",
+    "Acceptance Criteria",
+)
+
+
+def _read_skill_text() -> str:
+    return SKILL_PATH.read_text(encoding="utf-8")
+
+
+def _parse_frontmatter(text: str) -> dict[str, object]:
+    if not text.startswith("---\n"):
+        raise AssertionError("skill file does not begin with YAML frontmatter")
+    end = text.find("\n---\n", 4)
+    if end == -1:
+        raise AssertionError("skill file frontmatter block is not closed")
+    return yaml.safe_load(text[4:end])
+
+
+class TestGzJustifyComplexityAmendment(unittest.TestCase):
+    """Tests for the additive SKILL.md amendment required by OBPI-0.0.30-05."""
+
+    @covers("REQ-0.0.30-05-05")
+    def test_skill_version_bumped(self) -> None:
+        """skill-version must be "6.1.0" after the additive amendment.
+
+        Expected RED: SKILL.md currently has skill-version "6.0.1".
+        """
+        text = _read_skill_text()
+        fm = _parse_frontmatter(text)
+        metadata = fm.get("metadata")
+        self.assertIsInstance(metadata, dict, "frontmatter must have a 'metadata' dict")
+        assert isinstance(metadata, dict)
+        skill_version = metadata.get("skill-version")
+        self.assertEqual(
+            skill_version,
+            "6.1.0",
+            f"skill-version must be '6.1.0' after amendment; got {skill_version!r}",
+        )
+
+    @covers("REQ-0.0.30-05-01")
+    @covers("REQ-0.0.30-05-05")
+    def test_new_section_present(self) -> None:
+        """SKILL.md body must contain 'Authoring-time complexity hints' after amendment.
+
+        Expected RED: the section does not exist in the current SKILL.md.
+        """
+        text = _read_skill_text()
+        self.assertIn(
+            "Authoring-time complexity hints",
+            text,
+            "SKILL.md must contain an 'Authoring-time complexity hints' section "
+            "after the additive amendment (REQ-0.0.30-05-01)",
+        )
+
+    @covers("REQ-0.0.30-05-01")
+    def test_existing_structure_preserved(self) -> None:
+        """Existing H2 sections must still be present after the amendment.
+
+        Expected to PASS immediately (regression protection — structure unchanged).
+        """
+        text = _read_skill_text()
+        h2_headings = [
+            line[3:].strip()
+            for line in text.splitlines()
+            if line.startswith("## ") and not line.startswith("### ")
+        ]
+        for section in _EXISTING_H2_SECTIONS:
+            self.assertIn(
+                section,
+                h2_headings,
+                f"Existing H2 section '## {section}' must still be present after amendment",
+            )
+
+    @covers("REQ-0.0.30-05-06")
+    def test_vendor_mirrors_byte_identical(self) -> None:
+        """After gz agent sync control-surfaces, vendor mirrors must be byte-identical.
+
+        Tests the post-sync state directly — the mirrors are checked against the
+        canonical SKILL.md. If they diverge, the sync was not run or a mirror was
+        edited directly (both are defects per .gzkit/rules/skill-surface-sync.md).
+        """
+        canonical = SKILL_PATH.read_text(encoding="utf-8")
+        for mirror_path in (CLAUDE_MIRROR, AGENTS_MIRROR, GITHUB_MIRROR):
+            if not mirror_path.exists():
+                self.skipTest(f"vendor mirror not present: {mirror_path}")
+            mirror = mirror_path.read_text(encoding="utf-8")
+            self.assertEqual(
+                canonical,
+                mirror,
+                f"vendor mirror {mirror_path} diverges from canonical SKILL.md",
+            )
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.30-04-editor-protocol-contract",
-  "timestamp": "2026-05-10T00:15:00Z",
+  "obpi_id": "OBPI-0.0.30-05-justify-integration",
+  "timestamp": "2026-05-10T01:15:00Z",
   "verdict": "PASS",
-  "plan_file": "editor-protocol-contract-OBPI-0.0.30-04.md",
-  "gaps_found": 0,
-  "notes": "ADR-OBPI alignment: ALIGNED (7/7 checks). Plan-OBPI alignment: ALIGNED (7/7 checks). STOP-on-BLOCKERS: CLEAR — OBPI-03 Completed, hint.py + engine.py confirmed landed. CLI FAIL from new-file bootstrap (5 new files; CLI checks existence before creation); semantic review ALIGNED. Brief Allowed Paths corrected: complexity_guide.py + parser_artifacts.py moved from Denied to Allowed per REQ-6 carve-out. 13 REQs mapped. TDD order: tests before implementation."
+  "plan_file": "OBPI-0.0.30-05-justify-integration.md",
+  "gaps_found": 1,
+  "notes": "ADR-OBPI alignment: ALIGNED (7/7 checks). Plan-OBPI alignment: ALIGNED (7/7 checks). One corrective action: brief Allowed Paths corrected (src/gzkit/commands/justify.py -> src/gzkit/justify/cli.py + walkthrough.py + templates/walkthrough.md.j2 + complexity_hints.py new). Scope-collision warnings advisory only (shared surfaces, no active sibling conflicts). STOP-on-BLOCKERS: CLEAR -- OBPI-03 Completed, engine.analyze confirmed landed. TDD order: tests before implementation."
 }

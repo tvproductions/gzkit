@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: "2026-04-22"
 gz_command: justify
 metadata:
-  skill-version: "6.0.1"
+  skill-version: "6.1.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -144,6 +144,33 @@ The skill's own completion contract — the state in which a walkthrough can be 
 - **`gz-plan-audit`** — downstream consumer; filled walkthrough artifacts are acceptable evidence in plan receipts.
 - **`gz-design`** — upstream; if the anchor is a draft concept, run `gz-design` first to book the artifact, then `gz-justify` on the booked identifier.
 
+## Authoring-time complexity hints (ADR-0.0.30-05)
+
+When `gz justify` is invoked on an OBPI whose `## Allowed Paths` section includes
+`.py` files, the rendering pipeline automatically invokes the OBPI-03 authoring
+engine (`gzkit.complexity.authoring.engine.analyze`) on each matching path. If
+advise-band crossings are found, a `### Authoring-time complexity hints` sub-heading
+is injected into the scaffold, listing per-hint: metric, precedence band, archetype,
+doctrinal-frame headline, recommended-move headline, and `file:line` range.
+
+**When the heading appears:** OBPI has `.py` allowed-paths AND the engine finds
+at least one advise-band crossing.
+
+**When the heading is absent:** No `.py` allowed-paths, no crossings, or engine
+failure. All three cases produce silent absence — not an empty heading.
+
+**Fail-open:** If the authoring engine raises (e.g., distilled-characteristics
+document missing at `.gzkit/rules/complexity-thresholds.json`), `gz justify`
+completes normally, the hints heading is omitted, and a structured warning is
+appended to `.gzkit/insights/justify-failures.jsonl`. The failure never blocks
+the walkthrough.
+
+**Closed forward reference:** This integration closes the ADR-0.0.19 ↔ ADR-0.0.30
+cross-reference. Operators no longer need to run `gz justify` and `gz complexity-guide`
+separately and stitch the outputs together — the hints surface inline within the
+pre-execution reasoning scaffold.
+
 ## Related ADRs
 
 - **ADR-0.0.19** — Pre-execution reasoning walkthrough. This skill is the operator-facing expression of that ADR's capability.
+- **ADR-0.0.30** — Complexity authoring guidance. OBPI-05 of this ADR adds the hints integration to this skill (additive only).

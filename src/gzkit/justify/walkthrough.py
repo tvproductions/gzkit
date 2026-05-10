@@ -104,6 +104,10 @@ class Walkthrough(BaseModel):
     generated_at: str
     sections: list[WalkthroughSection]
     scaffold_version: str = "1.0"
+    complexity_hints_md: str | None = Field(
+        None,
+        description="Markdown block of authoring-time complexity hints, or None when absent.",
+    )
 
     @model_validator(mode="after")
     def _validate_sections(self) -> Self:
@@ -129,6 +133,7 @@ def render_scaffold(
     anchor: AnchorRef,
     evidence: EvidenceBundle,
     now: datetime | None = None,
+    complexity_hints_md: str | None = None,
 ) -> Walkthrough:
     """Compose an 8-section ``Walkthrough`` from an anchor and evidence bundle.
 
@@ -138,6 +143,10 @@ def render_scaffold(
     sections receive empty citation lists. Every section's reasoning is the
     ``_[To be filled]_`` placeholder. ``now`` is injectable for deterministic
     tests; it defaults to ``datetime.now(UTC)``.
+
+    ``complexity_hints_md`` is the optional authoring-time complexity hints
+    markdown block produced by :func:`gzkit.justify.complexity_hints.gather_hints_markdown`.
+    Pass ``None`` (the default) to omit the block from the rendered output.
     """
     timestamp = (now or datetime.now(UTC)).isoformat()
     sections = [_build_section(ordinal, anchor, evidence) for ordinal in range(1, 9)]
@@ -146,6 +155,7 @@ def render_scaffold(
         evidence=evidence,
         generated_at=timestamp,
         sections=sections,
+        complexity_hints_md=complexity_hints_md,
     )
 
 
