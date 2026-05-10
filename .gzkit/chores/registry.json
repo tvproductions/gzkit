@@ -9,18 +9,11 @@
     },
     "lanes": {
         "lite": {
-            "description": "Fast feedback; lint, typecheck, smoke tests (<=120s)",
-            "timeoutSeconds": 120,
-            "allowNetwork": false
-        },
-        "medium": {
-            "description": "Expanded checks; full unittest, light reports; still offline",
-            "timeoutSeconds": 300,
+            "description": "Gate-rigor: Gates 1, 2 required. Unit-tier only; no behave/network.",
             "allowNetwork": false
         },
         "heavy": {
-            "description": "Contracts/docs changed; full gates incl. coverage & security",
-            "timeoutSeconds": 900,
+            "description": "Gate-rigor: All gates required. Reserved for full-pipeline runs.",
             "allowNetwork": true
         }
     },
@@ -30,161 +23,184 @@
             "title": "Run full quality gates",
             "version": "2.0.0",
             "path": ".gzkit/chores/quality-check",
-            "lane": "medium"
+            "lane": "heavy",
+            "timeoutSeconds": 300
         },
         {
             "slug": "pool-triage",
             "title": "Pool ADR Drift Triage (read-only; stopgap for ADR-pool.pool-management)",
             "version": "0.1.0",
             "path": ".gzkit/chores/pool-triage",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "pythonic-refactoring",
             "title": "Pythonic Refactoring (ruff + ty)",
             "version": "1.0.0",
             "path": ".gzkit/chores/pythonic-refactoring",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "complexity-reduction-xenon",
             "title": "Complexity Reduction (Xenon C/C/C)",
             "version": "1.0.0",
             "path": ".gzkit/chores/complexity-reduction-xenon",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "module-sloc-cap-radon",
             "title": "Module SLOC Cap (Radon)",
             "version": "1.0.0",
             "path": ".gzkit/chores/module-sloc-cap-radon",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "pep257-docstring-compliance",
             "title": "PEP 257 Docstring Compliance (Style + Coverage)",
             "version": "1.0.0",
             "path": ".gzkit/chores/pep257-docstring-compliance",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "coverage-40pct",
             "title": "Coverage >=40% Baseline",
             "version": "1.0.0",
             "path": ".gzkit/chores/coverage-40pct",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 300
         },
         {
             "slug": "test-isolation-compliance",
             "title": "Test Isolation & Health Compliance",
             "version": "2.0.0",
             "path": ".gzkit/chores/test-isolation-compliance",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "cross-platform-test-cleanup",
             "title": "Cross-Platform Test Cleanup (Windows-Safe Patterns)",
             "version": "1.0.0",
             "path": ".gzkit/chores/cross-platform-test-cleanup",
-            "lane": "medium"
+            "lane": "lite",
+            "timeoutSeconds": 300
         },
         {
             "slug": "exceptions-and-logging-rationalization",
             "title": "Exceptions & Logging Rationalization",
             "version": "1.0.0",
             "path": ".gzkit/chores/exceptions-and-logging-rationalization",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "config-paths-remediation",
             "title": "Config Paths Remediation",
             "version": "1.0.0",
             "path": ".gzkit/chores/config-paths-remediation",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "repository-structure-normalization",
             "title": "Repository Structure Normalization",
             "version": "1.0.0",
             "path": ".gzkit/chores/repository-structure-normalization",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "schema-and-config-drift-audit",
             "title": "Schema Drift / Config Drift Audit",
             "version": "1.0.0",
             "path": ".gzkit/chores/schema-and-config-drift-audit",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "cli-contract-governance",
             "title": "CLI Contract Governance (Drift & Evolution)",
             "version": "1.0.0",
             "path": ".gzkit/chores/cli-contract-governance",
-            "lane": "heavy"
+            "lane": "heavy",
+            "timeoutSeconds": 900
         },
         {
             "slug": "validate-manpages",
             "title": "Validate Manpages (Call Stack Alignment)",
             "version": "1.0.0",
             "path": ".gzkit/chores/validate-manpages",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "test-manpage-examples",
             "title": "Test Manpage Examples (Executable Verification)",
             "version": "1.0.0",
             "path": ".gzkit/chores/test-manpage-examples",
-            "lane": "heavy"
+            "lane": "heavy",
+            "timeoutSeconds": 900
         },
         {
             "slug": "sync-manpage-docstrings",
             "title": "Sync Manpage Docstrings (One-Liner Alignment)",
             "version": "1.0.0",
             "path": ".gzkit/chores/sync-manpage-docstrings",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "skill-manifest-sync",
             "title": "Skill Manifest Sync",
             "version": "1.0.0",
             "path": ".gzkit/chores/skill-manifest-sync",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "skill-authoring-quality",
             "title": "Skill Authoring Quality (Agent-First Best Practices)",
             "version": "2.0.0",
             "path": ".gzkit/chores/skill-authoring-quality",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "evidence-integrity-audit",
             "title": "OBPI Evidence Integrity Audit",
             "version": "1.0.0",
             "path": ".gzkit/chores/evidence-integrity-audit",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "arb-pattern-extraction",
             "title": "ARB Pattern Extraction (Code Style Feedback Loop)",
             "version": "1.0.0",
             "path": ".gzkit/chores/arb-pattern-extraction",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "skill-trigger-testing",
             "title": "Skill Trigger & Output Testing",
             "version": "1.0.0",
             "path": ".gzkit/chores/skill-trigger-testing",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "skill-command-doc-parity",
             "title": "Skill & Command Documentation Parity",
             "version": "1.0.0",
             "path": ".gzkit/chores/skill-command-doc-parity",
-            "lane": "heavy"
+            "lane": "heavy",
+            "timeoutSeconds": 900
         },
         {
             "slug": "doc-coverage",
@@ -192,21 +208,24 @@
             "version": "1.0.0",
             "path": ".gzkit/chores/doc-coverage",
             "lane": "heavy",
-            "frequency": "per-release"
+            "frequency": "per-release",
+            "timeoutSeconds": 900
         },
         {
             "slug": "hardcoded-root-eradication",
             "title": "Config-First Enforcement (Anti-Vibe-Code)",
             "version": "1.0.0",
             "path": ".gzkit/chores/hardcoded-root-eradication",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "agents-md-architectural-boundaries",
             "title": "Add Architectural Boundaries to AGENTS.md",
             "version": "1.0.0",
             "path": ".gzkit/chores/agents-md-architectural-boundaries",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "memory-hygiene",
@@ -214,70 +233,80 @@
             "version": "1.0.0",
             "path": ".gzkit/chores/memory-hygiene",
             "lane": "lite",
-            "vendor": "claude"
+            "vendor": "claude",
+            "timeoutSeconds": 120
         },
         {
             "slug": "frontmatter-ledger-coherence",
             "title": "Frontmatter-Ledger Reconciliation (ADR-0.0.16 OBPI-03)",
             "version": "2.0.0",
             "path": ".gzkit/chores/frontmatter-ledger-coherence",
-            "lane": "heavy"
+            "lane": "heavy",
+            "timeoutSeconds": 900
         },
         {
             "slug": "control-surface-rule-conflicts",
-            "title": "Control Surface Audit — Rule-Pair Conflict Matrix (Pass A)",
+            "title": "Control Surface Audit \u2014 Rule-Pair Conflict Matrix (Pass A)",
             "version": "1.0.0",
             "path": ".gzkit/chores/control-surface-rule-conflicts",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "control-surface-skill-rule-reachability",
-            "title": "Control Surface Audit — Skill/Rule Reachability Matrix (Pass B)",
+            "title": "Control Surface Audit \u2014 Skill/Rule Reachability Matrix (Pass B)",
             "version": "1.0.0",
             "path": ".gzkit/chores/control-surface-skill-rule-reachability",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "control-surface-rule-vs-check-drift",
-            "title": "Control Surface Audit — Rule Prose vs Promoted Check Parity (Pass C)",
+            "title": "Control Surface Audit \u2014 Rule Prose vs Promoted Check Parity (Pass C)",
             "version": "1.0.0",
             "path": ".gzkit/chores/control-surface-rule-vs-check-drift",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "dependency-currency",
             "title": "Dependency Currency (Tooling Stack Drift Scan)",
             "version": "1.0.0",
             "path": ".gzkit/chores/dependency-currency",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "instructions-files-diet",
             "title": "Instructions & Memory Files Diet (Progressive Disclosure)",
             "version": "1.0.0",
             "path": ".gzkit/chores/instructions-files-diet",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "pythonic-design-pattern-detection",
             "title": "Pythonic Design Pattern Detection (AST Scanner + refactoring.guru Catalogue)",
             "version": "1.0.0",
             "path": ".gzkit/chores/pythonic-design-pattern-detection",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "pythonic-design-pattern-application",
             "title": "Pythonic Design Pattern Application (Before/After Evidence Capture)",
             "version": "1.0.0",
             "path": ".gzkit/chores/pythonic-design-pattern-application",
-            "lane": "lite"
+            "lane": "lite",
+            "timeoutSeconds": 120
         },
         {
             "slug": "eval-feedback-cluster",
             "title": "Evaluation Feedback Clustering (ADR-0.0.26)",
             "version": "1.0.0",
             "path": ".gzkit/chores/eval-feedback-cluster",
-            "lane": "medium"
+            "lane": "lite",
+            "timeoutSeconds": 300
         }
     ]
 }

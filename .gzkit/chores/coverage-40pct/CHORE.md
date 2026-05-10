@@ -1,7 +1,8 @@
 # CHORE: Coverage >=40% Baseline
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Lane:** Lite
+**Timeout:** 300s
 **Slug:** `coverage-40pct`
 
 ---
@@ -12,7 +13,8 @@ Periodic coverage audit to maintain >=40% line coverage floor.
 
 ## Policy and Guardrails
 
-- **Lane:** Lite — coverage verification, no contract changes
+- **Lane:** Lite — coverage verification, no contract changes; unit-tier only, no behave/network
+- **Timeout:** 300s — explicit per-chore `timeoutSeconds` calibrated to coverage instrumentation overhead (closes GHI #444; lane no longer carries duration per GHI #447)
 - Focus on high-ROI utility modules and public APIs
 - Table-driven deterministic tests; <60s smoke budget
 

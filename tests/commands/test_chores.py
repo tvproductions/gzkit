@@ -32,9 +32,8 @@ def _write_v2_registry(chores: list[dict[str, object]]) -> None:
             "choresDir": ".gzkit/chores",
         },
         "lanes": {
-            "lite": {"timeoutSeconds": 120},
-            "medium": {"timeoutSeconds": 300},
-            "heavy": {"timeoutSeconds": 900},
+            "lite": {"description": "Gate-rigor: Gates 1, 2 required."},
+            "heavy": {"description": "Gate-rigor: All gates required."},
         },
         "chores": chores,
     }
@@ -58,6 +57,7 @@ def _setup_demo_chore(
     command: str | None = None,
     expected: int = 0,
     vendor: str | None = None,
+    timeout_seconds: int = 120,
 ) -> None:
     """Create a complete v2.0 chore (registry pointer + acceptance.json)."""
     if chore_path is None:
@@ -69,6 +69,7 @@ def _setup_demo_chore(
         "version": "1.0.0",
         "path": chore_path,
         "lane": lane,
+        "timeoutSeconds": timeout_seconds,
     }
     if vendor is not None:
         pointer["vendor"] = vendor
@@ -220,10 +221,12 @@ class TestChoresCommands(unittest.TestCase):
                 chore_path=".gzkit/chores/slow-run",
                 command=f'{_PYTHON} -c "import time; time.sleep(5)"',
             )
-            # Patch lane timeout to 1s for test speed
+            # Patch chore's explicit timeoutSeconds to 1s for test speed (GHI #447).
             reg_path = _project_chores_root() / "registry.json"
             reg = json.loads(reg_path.read_text(encoding="utf-8"))
-            reg["lanes"]["lite"]["timeoutSeconds"] = 1
+            for chore in reg["chores"]:
+                if chore["slug"] == "slow-run":
+                    chore["timeoutSeconds"] = 1
             reg_path.write_text(json.dumps(reg), encoding="utf-8")
 
             result = runner.invoke(main, ["chores", "run", "slow-run"])
@@ -294,8 +297,8 @@ class TestChoresCommands(unittest.TestCase):
             self.assertIn("auditable", audit_result.output)
             self.assertIn("yes", audit_result.output.lower())
 
-    def test_chores_supports_medium_lane(self) -> None:
-        """Medium lane chores are accepted by the registry loader."""
+    def test_chores_rejects_medium_lane(self) -> None:
+        """Medium lane is no longer a valid gate-rigor classification (GHI #447)."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -307,9 +310,43 @@ class TestChoresCommands(unittest.TestCase):
             )
 
             result = runner.invoke(main, ["chores", "list"])
-            self.assertEqual(result.exit_code, 0)
-            self.assertIn("medium-chore", result.output)
-            self.assertIn("medium", result.output)
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("lane must be one of", result.output)
+            self.assertNotIn("medium", "lite heavy")  # canonical lanes per AGENTS.md
+
+    def test_chores_rejects_missing_timeout_seconds(self) -> None:
+        """Each chore must declare an explicit positive timeoutSeconds (GHI #447)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            # Build a pointer that omits timeoutSeconds entirely.
+            chore_path = str(_project_chores_root() / "no-timeout-chore")
+            _write_v2_registry(
+                [
+                    {
+                        "slug": "no-timeout-chore",
+                        "title": "Demo without timeout",
+                        "version": "1.0.0",
+                        "path": chore_path,
+                        "lane": "lite",
+                    }
+                ]
+            )
+            _write_acceptance(
+                chore_path,
+                [
+                    {
+                        "type": "exitCodeEquals",
+                        "command": f'{_PYTHON} -c "print(0)"',
+                        "expected": 0,
+                    }
+                ],
+            )
+
+            result = runner.invoke(main, ["chores", "list"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("timeoutSeconds", result.output)
+            self.assertIn("positive integer", result.output)
 
     def test_chores_vendor_field_parsed_and_displayed(self) -> None:
         """Vendor field is parsed from registry and shown in list output."""
@@ -358,6 +395,7 @@ class TestChoresFileExistsCriterion(unittest.TestCase):
                     "version": "1.0.0",
                     "path": chore_path,
                     "lane": "lite",
+                    "timeoutSeconds": 120,
                 }
             ]
         )
@@ -395,6 +433,7 @@ class TestChoresFileExistsCriterion(unittest.TestCase):
                         "version": "1.0.0",
                         "path": chore_path,
                         "lane": "lite",
+                        "timeoutSeconds": 120,
                     }
                 ]
             )
@@ -482,9 +521,8 @@ def _scaffold_package_registry(pkg_root: Path, chores: list[dict[str, object]]) 
         "description": "Package registry",
         "project": {"name": "gzkit", "root": ".", "choresDir": ".gzkit/chores"},
         "lanes": {
-            "lite": {"timeoutSeconds": 120},
-            "medium": {"timeoutSeconds": 300},
-            "heavy": {"timeoutSeconds": 900},
+            "lite": {"description": "Gate-rigor: Gates 1, 2 required."},
+            "heavy": {"description": "Gate-rigor: All gates required."},
         },
         "chores": chores,
     }
@@ -573,6 +611,7 @@ class TestChoreResolver(unittest.TestCase):
                             "version": "1.0.0",
                             "path": str(_project_chores_root() / "local-one"),
                             "lane": "lite",
+                            "timeoutSeconds": 120,
                         },
                         {
                             "slug": "pkg-only",
@@ -580,6 +619,7 @@ class TestChoreResolver(unittest.TestCase):
                             "version": "1.0.0",
                             "path": str(_project_chores_root() / "pkg-only"),
                             "lane": "lite",
+                            "timeoutSeconds": 120,
                         },
                     ]
                 )

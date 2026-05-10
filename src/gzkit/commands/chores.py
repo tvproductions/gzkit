@@ -22,9 +22,8 @@ from gzkit.config import load_config
 logger = structlog.get_logger(__name__)
 
 CHORE_SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-ALLOWED_LANES = {"lite", "medium", "heavy"}
+ALLOWED_LANES = {"lite", "heavy"}
 SHELL_OPERATORS_RE = re.compile(r"&&|\|\||[|<>]")
-LANE_TIMEOUTS: dict[str, int] = {"lite": 120, "medium": 300, "heavy": 900}
 
 
 class AcceptanceCriterion(BaseModel):
@@ -241,16 +240,8 @@ def _load_chores_registry() -> tuple[Path, dict[str, ChoreDefinition]]:
     if spec_version != "2.0":
         blockers.append("Registry specVersion must be '2.0'.")
 
-    # Parse lane timeouts from registry, falling back to built-in defaults.
-    lane_timeouts: dict[str, int] = dict(LANE_TIMEOUTS)
-    lanes_raw = payload.get("lanes")
-    if isinstance(lanes_raw, dict):
-        for lane_name, lane_cfg in lanes_raw.items():
-            if isinstance(lane_cfg, dict):
-                ts = lane_cfg.get("timeoutSeconds")
-                if isinstance(ts, int) and ts > 0:
-                    lane_timeouts[lane_name.lower()] = ts
-
+    # Timeout is required per chore (GHI #447 — explicit timeouts, not lane-derived).
+    # The lanes block carries gate-rigor metadata only (lite=Gates 1,2; heavy=all).
     chores_raw = payload.get("chores")
     if not isinstance(chores_raw, list) or not chores_raw:
         blockers.append("Registry field 'chores' must be a non-empty array.")
@@ -263,7 +254,6 @@ def _load_chores_registry() -> tuple[Path, dict[str, ChoreDefinition]]:
             raw_chore,
             idx,
             project_root,
-            lane_timeouts,
             blockers,
         )
         if chore is None:

@@ -1,7 +1,8 @@
 # CHORE: Run Full Quality Gates
 
-**Version:** 2.0.0
-**Lane:** Medium
+**Version:** 2.1.0
+**Lane:** Heavy
+**Timeout:** 300s
 **Slug:** `quality-check`
 
 ---
@@ -12,7 +13,8 @@ Run the full gz quality gate set and capture deterministic evidence.
 
 ## Policy and Guardrails
 
-- **Lane:** Medium — full `gz check` pipeline (lint + typecheck + tests + preflight) exceeds the 120s lite ceiling; medium (300s) is the canonical lane for expanded-check runs (registry.json `lanes.medium`)
+- **Lane:** Heavy — exercises the full `gz check` pipeline (lint + typecheck + tests + preflight) including behave when present; matches AGENTS.md § Gate Covenant heavy = all gates required
+- **Timeout:** 300s — explicit per-chore `timeoutSeconds` on the registry entry; lane no longer carries a duration semantic (GHI #447)
 - **Tool:** `gz check` runs lint, typecheck, test, and readiness gates in one pass
 
 ## Workflow
