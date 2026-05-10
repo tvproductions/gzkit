@@ -2,31 +2,31 @@
   "criteria": [
     {
       "type": "exitCodeEquals",
-      "command": "test -f ops/chores/control-surface-rule-vs-check-drift/proofs/promoted-inventory.md",
+      "command": "test -f .gzkit/chores/control-surface-rule-vs-check-drift/proofs/promoted-inventory.md",
       "expected": 0,
       "description": "Promoted rules inventory present"
     },
     {
       "type": "exitCodeEquals",
-      "command": "test -f ops/chores/control-surface-rule-vs-check-drift/proofs/prose-assertions.md",
+      "command": "test -f .gzkit/chores/control-surface-rule-vs-check-drift/proofs/prose-assertions.md",
       "expected": 0,
       "description": "Prose assertions extract present"
     },
     {
       "type": "exitCodeEquals",
-      "command": "test -f ops/chores/control-surface-rule-vs-check-drift/proofs/check-behaviors.md",
+      "command": "test -f .gzkit/chores/control-surface-rule-vs-check-drift/proofs/check-behaviors.md",
       "expected": 0,
       "description": "Check behaviors extract present"
     },
     {
       "type": "exitCodeEquals",
-      "command": "test -f ops/chores/control-surface-rule-vs-check-drift/proofs/parity-diff.md",
+      "command": "test -f .gzkit/chores/control-surface-rule-vs-check-drift/proofs/parity-diff.md",
       "expected": 0,
       "description": "Parity diff matrix present"
     },
     {
       "type": "exitCodeEquals",
-      "command": "test -f ops/chores/control-surface-rule-vs-check-drift/proofs/summary.md",
+      "command": "test -f .gzkit/chores/control-surface-rule-vs-check-drift/proofs/summary.md",
       "expected": 0,
       "description": "Summary artifact present"
     }

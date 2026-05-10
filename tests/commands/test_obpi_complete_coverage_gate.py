@@ -147,7 +147,7 @@ class _CoverageGateWireFixture(unittest.TestCase):
             recorded.append(" ".join(str(a) for a in args))
             return original_print(*args, **kwargs)
 
-        rec_console.print = _capture  # type: ignore[assignment]
+        rec_console.print = _capture  # ty: ignore[invalid-assignment]
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -533,7 +533,7 @@ class _OverrideGateWireFixture(_CoverageGateWireFixture):
             recorded.append(" ".join(str(a) for a in args))
             return original_print(*args, **kwargs)
 
-        rec_console.print = _capture  # type: ignore[assignment]
+        rec_console.print = _capture  # ty: ignore[invalid-assignment]
 
         def _mock_enforce_uncovered(*args, **kwargs):
             if tty_present:

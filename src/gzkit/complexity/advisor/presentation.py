@@ -43,6 +43,7 @@ class Presenter(Protocol):
 
         Returns:
             Formatted output string.
+
         """
         ...
 
@@ -69,6 +70,7 @@ class AdHocPresenter:
 
         Returns:
             Verbose formatted output; "no crossings" message if diagnoses empty.
+
         """
         if not diagnoses:
             return (
@@ -91,6 +93,7 @@ class AdHocPresenter:
 
         Returns:
             Multi-line formatted string for this diagnosis.
+
         """
         parts: list[str] = []
 
@@ -137,6 +140,7 @@ class AdHocPresenter:
 
         Returns:
             Formatted source code snippet or fallback message.
+
         """
         try:
             path = Path(file_path)
@@ -182,6 +186,7 @@ class AutoChainPresenter:
 
         Returns:
             Concise formatted output (empty string if no diagnoses).
+
         """
         if not diagnoses:
             return ""
@@ -203,6 +208,7 @@ class AutoChainPresenter:
 
         Returns:
             One-line summary (no doctrinal excerpt).
+
         """
         return (
             f"{diagnosis.metric} {diagnosis.crossing_band} "

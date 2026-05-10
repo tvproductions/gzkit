@@ -66,7 +66,7 @@ def _make_timeout_timed_out() -> TimeoutTimedOut:
 # --- covers decorators ---------------------------------------------------
 
 try:
-    from gzkit.testing import covers
+    from gzkit.testing import covers  # ty: ignore[unresolved-import]
 except ImportError:
 
     def covers(*_ids: str):  # type: ignore[misc]

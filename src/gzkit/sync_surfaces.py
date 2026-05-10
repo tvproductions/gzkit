@@ -406,6 +406,7 @@ def sync_claude_settings(project_root: Path, config: GzkitConfig) -> None:
     orientation hook is the canonical reason this merge cannot be
     skipped — replacing the file with the bare gzkit subset silently
     disables the AGENTS.md re-read backstop (GHI #329).
+
     """
     gzkit_settings = generate_claude_settings(config)
 

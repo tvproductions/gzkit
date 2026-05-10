@@ -480,9 +480,9 @@ def _ceremony_trailer(sha: str, project_root: Path, git_runner: GitRunner) -> st
 
 
 def _ceremony_subject_marker(sha: str, project_root: Path, git_runner: GitRunner) -> str | None:
-    """Return the canonical ceremony name when ``sha``'s subject carries the historical
-    parenthesized suffix (e.g. ``(gz git-sync)``) at end of line.
+    """Return canonical ceremony name when ``sha``'s subject carries the historical suffix.
 
+    The historical suffix appears as ``(gz git-sync)`` at end of line.
     Pre-GHI #201 ceremony commits embedded the marker in the subject suffix
     rather than the ``Ceremony:`` trailer; ADR-0.0.16 and other foundation-kind
     ADRs closed under that window failed audit-check despite legitimate

@@ -20,6 +20,7 @@ _PARITY_MESSAGE = (
 
 
 def audit_doc_surface_parity(project_root: Path) -> list[ValidationError]:
+    """Return errors for stale files under the decommissioned commands surface."""
     target = project_root / _DECOMMISSIONED_DIR
     if not target.is_dir():
         return []

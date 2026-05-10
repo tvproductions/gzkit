@@ -61,6 +61,7 @@ class SecuritySurfaceEntry(BaseModel):
     rationale: str = Field(..., min_length=1, description="Why this surface is security-sensitive.")
 
     def model_post_init(self, _context: object) -> None:
+        """Reject empty glob entries after model construction."""
         for glob in self.globs:
             if not glob:
                 msg = "globs entries must be non-empty strings"

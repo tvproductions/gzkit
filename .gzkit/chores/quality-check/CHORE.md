@@ -1,7 +1,7 @@
 # CHORE: Run Full Quality Gates
 
 **Version:** 2.0.0
-**Lane:** Lite
+**Lane:** Medium
 **Slug:** `quality-check`
 
 ---
@@ -12,7 +12,7 @@ Run the full gz quality gate set and capture deterministic evidence.
 
 ## Policy and Guardrails
 
-- **Lane:** Lite — internal quality verification, no external contract changes
+- **Lane:** Medium — full `gz check` pipeline (lint + typecheck + tests + preflight) exceeds the 120s lite ceiling; medium (300s) is the canonical lane for expanded-check runs (registry.json `lanes.medium`)
 - **Tool:** `gz check` runs lint, typecheck, test, and readiness gates in one pass
 
 ## Workflow

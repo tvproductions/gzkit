@@ -75,9 +75,9 @@ def discover_covers(
     *,
     features_root: Path | None = None,
 ) -> list[TestRef]:
-    """Return every covering reference for ``req_id`` under ``tests_root`` and
-    optionally ``features_root``.
+    """Return every covering reference for ``req_id`` under the given roots.
 
+    Walks ``tests_root`` and optionally ``features_root``.
     Unions ``scan_test_tree(tests_root)`` (``@covers``-decorated unit tests)
     with ``scan_feature_tree(features_root)`` (``@REQ-*`` BDD scenario tags)
     when ``features_root`` is supplied — matching the ``gz covers`` behaviour

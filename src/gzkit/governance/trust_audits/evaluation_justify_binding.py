@@ -28,6 +28,7 @@ def validate_evaluation_justify_binding(
     Returns:
         Empty list if gate passes (no trigger, or trigger + artifact present).
         Non-empty list if gate fires (trigger + no artifact).
+
     """
     # Load thresholds from config
     thresholds = _load_thresholds(project_root)

@@ -17,9 +17,9 @@ from pathlib import Path
 from typing import Any
 
 if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[call-non-callable]
 if hasattr(sys.stderr, "reconfigure"):
-    sys.stderr.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")  # ty: ignore[call-non-callable]
 
 REPORT_DIR = Path("artifacts/reports/competitor-radar")
 REGISTRY_PATH = REPORT_DIR / "registry.json"

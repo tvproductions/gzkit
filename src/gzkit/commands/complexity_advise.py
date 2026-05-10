@@ -182,6 +182,7 @@ def _analyze_file(
 
     Returns:
         (diagnoses, attested_infos, func_block_count)
+
     """
     source = source_file.read_text(encoding="utf-8")
     tree = ast.parse(source, filename=str(source_file))

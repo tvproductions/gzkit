@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+from contextlib import AbstractContextManager
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from gzkit.traceability import covers
@@ -40,7 +42,7 @@ def _make_proofs_dir(tmp_path: Path, slug: str = "eval-feedback-cluster") -> Pat
     return proofs_dir
 
 
-def _chores_root_patcher(tmp_path: Path) -> object:
+def _chores_root_patcher(tmp_path: Path) -> AbstractContextManager[Any]:
     """Return a patch context that makes _project_chores_root_path return tmp_path."""
     return patch(
         "gzkit.commands.chores_propose_ghi_cmd._project_chores_root_path",

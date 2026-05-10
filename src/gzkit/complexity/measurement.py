@@ -73,6 +73,7 @@ class MissingMeasurementToolError(RuntimeError):
     """
 
     def __init__(self, tool: str) -> None:
+        """Record the missing ``tool`` name and format the recovery message."""
         self.tool = tool
         super().__init__(f"Missing measurement tool binary: {tool!r}")
 

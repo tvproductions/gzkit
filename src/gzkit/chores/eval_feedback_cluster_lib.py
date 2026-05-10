@@ -347,6 +347,7 @@ def run_cluster(
     Returns:
         List of newly-written ProposalRecord objects. Empty if no new clusters
         exceed threshold or all matching clusters were already written.
+
     """
     if ledger_path is None:
         ledger_path = project_root / ".gzkit" / "ledger.jsonl"

@@ -17,7 +17,7 @@ _REGISTRY: dict[tuple[str, str], tuple[str, str, str]] = {}
 
 
 def intrinsic_complexity(*, reason: str, attestor: str) -> Callable[[_F], _F]:
-    """Decorator declaring a function as having irreducibly intrinsic complexity.
+    """Declare a function as having irreducibly intrinsic complexity.
 
     No-op at runtime: returns the decorated function unchanged.
     Registers (file_path, qualname) -> (reason, attestor, date) in the module registry.

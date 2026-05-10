@@ -1,4 +1,4 @@
-"""JSON-over-stdio protocol server for editor/IDE integration (OBPI-0.0.30-04).
+r"""JSON-over-stdio protocol server for editor/IDE integration (OBPI-0.0.30-04).
 
 Implements a Content-Length-framed JSON-RPC-like protocol over binary stdio.
 Invoked by ``gz complexity-guide --server``. Three message types:
@@ -143,7 +143,7 @@ def handle_shutdown(params: dict) -> dict:  # noqa: ARG001
 
 
 def _configure_binary_stdio() -> None:
-    """Reconfigure sys.stdin/stdout to binary mode at server startup.
+    r"""Reconfigure sys.stdin/stdout to binary mode at server startup.
 
     On Windows the CRT opens stdin/stdout in O_TEXT mode at the fd level,
     which allows \\n→\\r\\n translation and corrupts Content-Length framing.

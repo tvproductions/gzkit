@@ -30,7 +30,7 @@
             "title": "Run full quality gates",
             "version": "2.0.0",
             "path": ".gzkit/chores/quality-check",
-            "lane": "lite"
+            "lane": "medium"
         },
         {
             "slug": "pool-triage",

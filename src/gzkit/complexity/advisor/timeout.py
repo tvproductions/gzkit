@@ -96,15 +96,15 @@ def _run_with_signal[T](callable_: Callable[[], T], timeout_s: float) -> T | obj
     def _handler(signum: int, frame: Any) -> None:  # noqa: ARG001
         raise _TimeoutError
 
-    old_handler = signal.signal(signal.SIGALRM, _handler)
-    signal.setitimer(signal.ITIMER_REAL, timeout_s)
+    old_handler = signal.signal(signal.SIGALRM, _handler)  # ty: ignore[unresolved-attribute]
+    signal.setitimer(signal.ITIMER_REAL, timeout_s)  # ty: ignore[unresolved-attribute]
     try:
         result = callable_()
     except _TimeoutError:
         return _SENTINEL_TIMED_OUT
     finally:
-        signal.setitimer(signal.ITIMER_REAL, 0)
-        signal.signal(signal.SIGALRM, old_handler)
+        signal.setitimer(signal.ITIMER_REAL, 0)  # ty: ignore[unresolved-attribute]
+        signal.signal(signal.SIGALRM, old_handler)  # ty: ignore[unresolved-attribute]
     return result
 
 
