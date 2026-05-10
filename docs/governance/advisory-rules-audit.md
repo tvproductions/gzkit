@@ -228,20 +228,26 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 |---|------|-------|-----|
 | 51 | gzkit publishes one canonical threshold table whose every entry is a `(metric, percentile-band, absolute-number, trigger-semantic)` tuple cited from the current distilled-characteristics document. The trigger-semantic vocabulary is fixed at three values (`block` / `warn` / `advise`); the per-metric mapping is operator-amendable doctrine. Every metric MUST carry a `block` band; every band carries the percentile + absolute-number pairing. Bootstrap-absolutes carve-out covers exactly the metrics with unresolved upstream defects (currently `radon_mi` per GHI #405, `lizard_nesting_depth` and `cohesion_lcom4` per GHI #404) and is one-shot per defect. | **Mechanical** | Enforced by `gz validate --complexity-thresholds` (OBPI-0.0.28-03, `src/gzkit/governance/trust_audits/complexity_thresholds.py`) — fails closed (exit 3) on missing `block` band per metric, missing percentile + absolute pairing, trigger-semantic outside the three-value enum, unparseable citation tuple, or canonical-metric coverage gap. Bootstrap-mode carve-out emits an informational stdout notice (non-policy-breach). The `ThresholdTable` Pydantic loader at `src/gzkit/complexity/thresholds.py` (OBPI-0.0.28-02) is the runtime contract that ADR-0.0.29 advisor and ADR-0.0.30 authoring-guidance bind against; the loader's Pydantic field validators close the loader-layer half of the invariant. Selection-methodology and citation-tuple form inherited from `.gzkit/rules/complexity-doctrine.md` (rule 50) — the threshold table cites that doctrine's distilled-characteristics document at corpus revision 1. Wired into `gz check` via the "Complexity-thresholds" runner; behave scenarios under `features/complexity_thresholds.feature` cover the four canonical failure paths (missing block band, off-enum percentile, malformed citation, bootstrap-mode notice). Rule body validated by `tests/governance/test_complexity_thresholds_rule.py`; validator validated by `tests/governance/test_complexity_thresholds_validator.py`. Scorecard citation: ADR-0.0.28 (parent), OBPI-0.0.28-02 (loader), OBPI-0.0.28-03 (validator-as-enforcement). |
 
+### Editor/IDE Protocol Surface (`.gzkit/schemas/authoring_guide_protocol.json`)
+
+| # | Rule | Score | Why |
+|---|------|-------|-----|
+| 55 | The editor/IDE authoring-guide protocol envelope (LSP-style Content-Length–framed JSON) is defined by `src/gzkit/schemas/authoring_guide_protocol.json`. Every request, response, notification, and error shape MUST be named in the schema; protocol drift is caught by JSON Schema validation at server runtime, not by human review. | **Mechanical** | Enforced by `src/gzkit/schemas/authoring_guide_protocol.json` validation in the protocol server (`gz complexity guide --server`); message payload validation happens at parse time (before handler dispatch), so schema evolution (adding required fields, renaming envelopes, changing encoding) is fail-closed at request/response boundaries. Scorecard citation: ADR-0.0.30 (parent), OBPI-0.0.30-04 (protocol server implementation). |
+
 ---
 
 ## Summary
 
-Counts updated 2026-05-07 after token-block discipline landed as a Promotable-class rule (ADR-0.0.41 / OBPI-0.0.41-01).
+Counts updated 2026-05-09 after editor/IDE protocol surface landed as a Mechanical-class rule (ADR-0.0.30 / OBPI-0.0.30-04).
 
 | Score | Count | % |
 |-------|-------|---|
-| **Mechanical** | 38 | 60% |
-| **Promotable** | 6 | 10% |
+| **Mechanical** | 39 | 61% |
+| **Promotable** | 6 | 9% |
 | **Judgment** | 19 | 30% |
 | **Ambiguous** | 0 | 0% |
 
-**The mechanical floor rose from 30 % to 60 %** under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules were mechanized as `gz validate --<scope>` flags and two became pre-commit guards under `gzkit.hooks.guards`. ADR-0.0.22 added the security-sensitivity third axis as `gz validate --sensitivity`, lifting the floor by a further point. ADR-0.0.23 OBPI-02 added the **Judgment**-classed agent failure-mode taxonomy as shared reviewer vocabulary (mechanical promotion `gz validate --failure-mode-coverage` tracked under follow-up GHIs #308–#312). ADR-0.0.27 OBPI-01 added the **Mechanical**-classed exemplar-corpus doctrine rule. ADR-0.0.28 OBPI-01 added the **Mechanical**-classed complexity-thresholds rule (forthcoming `gz validate --complexity-thresholds` validator under OBPI-0.0.28-03). The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.
+**The mechanical floor rose from 30 % to 60 %** under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules were mechanized as `gz validate --<scope>` flags and two became pre-commit guards under `gzkit.hooks.guards`. ADR-0.0.22 added the security-sensitivity third axis as `gz validate --sensitivity`, lifting the floor by a further point. ADR-0.0.23 OBPI-02 added the **Judgment**-classed agent failure-mode taxonomy as shared reviewer vocabulary (mechanical promotion `gz validate --failure-mode-coverage` tracked under follow-up GHIs #308–#312). ADR-0.0.27 OBPI-01 added the **Mechanical**-classed exemplar-corpus doctrine rule. ADR-0.0.28 OBPI-01 added the **Mechanical**-classed complexity-thresholds rule (forthcoming `gz validate --complexity-thresholds` validator under OBPI-0.0.28-03). ADR-0.0.30 OBPI-04 added the **Mechanical**-classed editor/IDE protocol surface rule, with envelope validation enforced by JSON Schema. The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.
 
 ---
 

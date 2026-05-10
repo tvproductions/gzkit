@@ -19,6 +19,7 @@ import sys
 from pathlib import Path
 
 from gzkit.complexity.advisor.engine import EngineError
+from gzkit.complexity.authoring import protocol
 from gzkit.complexity.authoring.engine import (
     DEFAULT_RULE_PATH,
 )
@@ -35,12 +36,20 @@ __all__ = [
 
 def complexity_guide_cmd(
     *,
-    path: str,
+    path: str | None = None,
     json_output: bool = False,
     quiet: bool = False,  # noqa: ARG001
     verbose: bool = False,  # noqa: ARG001
+    server: bool = False,
 ) -> int:
     """Run authoring-time hint engine against ``path``; return exit code."""
+    if server:
+        raise SystemExit(protocol.run_server())
+
+    if path is None:
+        print("error: path is required when --server is not used", file=sys.stderr)
+        raise SystemExit(1)
+
     target = Path(path)
     if not target.exists():
         print(f"error: path does not exist: {path}", file=sys.stderr)

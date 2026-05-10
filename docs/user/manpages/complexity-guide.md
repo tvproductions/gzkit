@@ -10,7 +10,7 @@ approaching the warn threshold (advise-band crossings only).
 ## SYNOPSIS
 
 ```text
-gz complexity guide <path> [--json] [--quiet] [--verbose] [--help]
+gz complexity guide [<path>] [--json] [--quiet] [--verbose] [--server] [--help]
 ```
 
 ## DESCRIPTION

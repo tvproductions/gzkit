@@ -13,17 +13,16 @@
 
 ## How to read this
 
-A runbook is a recipe — *here are the steps; follow them in order.* A
-storybook is a meal — *here is the experience these courses compose into.*
-You can read a recipe and not know whether the dish is worth cooking. The
-storybook tells you why a meal matters before you commit a Saturday to
-preparing it.
+A runbook tells you *what to do, step by step.* A storybook tells you
+*why a journey through the system matters and what value emerges* — the
+shape the work takes when the parts compose, not just the procedure for
+each part.
 
 Each storybook arc traces a single value-flow from start to finish, naming
-the courses (skills, CLI verbs, gates), the order in which they are served,
-and the accoutrement (validators, hooks, ARB receipts) without which the
-plate would be incomplete. The narrative is operator-curated. The anchors
-below are derived — regenerable from the artifact graph.
+the stages (skills, CLI verbs, gates), the order in which they are taken,
+and the supporting surfaces (validators, hooks, ARB receipts) that hold
+the chain together. The narrative is operator-curated. The anchors below
+are derived — regenerable from the artifact graph.
 
 ---
 
@@ -34,28 +33,29 @@ below are derived — regenerable from the artifact graph.
 
 ### Anchored ADRs
 
-| ID | Title | Course |
-|---|---|---|
-| ADR-0.0.1 | Canonical GovZero Parity | Scaffolding |
-| ADR-0.0.2 | Stdlib CLI and Agent Sync (argparse) | Scaffolding |
-| ADR-0.0.4 | CLI Standards & Presentation Foundation | Scaffolding |
-| ADR-0.0.7 | Config-First Resolution Discipline | Scaffolding |
-| ADR-0.0.10 | Storage Tiers — Simplicity Profile | Scaffolding |
-| ADR-0.0.17 | ADR Taxonomy Mechanical | Decomposition |
-| ADR-0.0.18 | ADR Taxonomy Doctrine | Decomposition |
-| ADR-0.0.19 | Pre-execution Reasoning Walkthrough (`gz justify`) | Pre-execution |
-| ADR-0.0.22 | Security Sensitivity Doctrine | Verification |
-| ADR-0.0.24 | Attestation Receipt Binding | Implementation, Closeout |
-| ADR-0.0.25 | OBPI Completion REQ-Coverage Gate | Verification |
-| ADR-0.0.36 | Universal OBPI Attestation | Closeout |
-| ADR-0.7.0 | OBPI-First Operations | Decomposition |
-| ADR-0.13.0 | OBPI Pipeline Runtime Surface | Implementation |
-| ADR-0.18.0 | Subagent-Driven Pipeline Execution | Implementation |
-| ADR-0.19.0 | Closeout & Audit Processes | Closeout |
-| ADR-0.20.0 | Spec-Test-Code Triangle Sync | Verification |
-| ADR-0.0.15 | GHI-Driven Patch Release Ceremony | Release |
+| ID | Title | Stage | Status |
+|---|---|---|---|
+| ADR-0.0.1 | Canonical GovZero Parity | Scaffolding | Validated |
+| ADR-0.0.2 | Stdlib CLI and Agent Sync (argparse) | Scaffolding | Validated |
+| ADR-0.0.4 | CLI Standards & Presentation Foundation | Scaffolding | Validated |
+| ADR-0.0.7 | Config-First Resolution Discipline | Scaffolding | Validated |
+| ADR-0.0.10 | Storage Tiers — Simplicity Profile | Scaffolding | Validated |
+| ADR-0.0.17 | ADR Taxonomy Mechanical | Decomposition | Validated |
+| ADR-0.0.18 | ADR Taxonomy Doctrine | Decomposition | Validated |
+| ADR-0.0.19 | Pre-execution Reasoning Walkthrough (`gz justify`) | Pre-execution | Validated |
+| ADR-0.0.22 | Security Sensitivity Doctrine | Verification | Validated |
+| ADR-0.0.24 | Attestation Receipt Binding | Implementation, Closeout | Validated |
+| ADR-0.0.25 | OBPI Completion REQ-Coverage Gate | Verification | Validated |
+| ADR-0.0.36 | Universal OBPI Attestation | Closeout | **Draft** |
+| ADR-0.0.41 | Token-Block Lock Discipline | Implementation | **Draft** |
+| ADR-0.7.0 | OBPI-First Operations | Decomposition | Validated |
+| ADR-0.13.0 | OBPI Pipeline Runtime Surface | Implementation | Validated |
+| ADR-0.18.0 | Subagent-Driven Pipeline Execution | Implementation | Validated |
+| ADR-0.19.0 | Closeout & Audit Processes | Closeout | Validated |
+| ADR-0.20.0 | Spec-Test-Code Triangle Sync | Verification | Validated |
+| ADR-0.0.15 | GHI-Driven Patch Release Ceremony | Release | Validated |
 
-### Anchored skills (in serving order)
+### Anchored skills (in invocation order)
 
 `gz-init` → `gz-prd` → `gz-constitute` → `gz-design` → `gz-adr-create` →
 `gz-adr-evaluate` → `gz-justify` → `gz-plan` → `gz-plan-audit` →
@@ -76,9 +76,9 @@ below are derived — regenerable from the artifact graph.
 
 ---
 
-## The meal (Layer 1 — operator-authored canon)
+## Narrative (Layer 1 — operator-authored canon)
 
-### Course 1 — Scaffolding (`gz init`)
+### Stage 1 — Scaffolding (`gz init`)
 
 > *Value claim:* the meta-harness exists before any code does. The contract
 > precedes the commits.
@@ -94,12 +94,12 @@ framework so the surface ages with the language. ADR-0.0.10 names which
 state lives where (canon, ledger, derived view) so nothing silently
 mutates into source-of-truth.
 
-The accoutrement matters more than it looks. Hooks are wired. The
-SessionStart hook will read `AGENTS.md` to every new agent session. The
-pre-commit hook will reject pytest. The post-edit ruff hook will strip
-unused imports. None of this is suggestion; all of it is mechanical.
+The supporting surfaces matter more than they look. Hooks are wired.
+The SessionStart hook will read `AGENTS.md` to every new agent session.
+The pre-commit hook will reject pytest. The post-edit ruff hook will
+strip unused imports. None of this is suggestion; all of it is mechanical.
 
-### Course 2 — Intent (PRD → Constitution → Design)
+### Stage 2 — Intent (PRD → Constitution → Design)
 
 > *Value claim:* the irreversible discussion happens at the semantic layer,
 > not at diff-review.
@@ -119,7 +119,7 @@ can argue with. By the time anyone types `def`, the irreversible part of
 the work — the part that determines whether the project still makes sense
 in two years — is already done.
 
-### Course 3 — Decomposition (ADR → OBPI)
+### Stage 3 — Decomposition (ADR → OBPI)
 
 > *Value claim:* atomic implementation units carry their own contract.
 > Scope boundaries are mechanical, not aspirational.
@@ -136,7 +136,7 @@ This is load-bearing: it means daily work iterates increment-by-increment,
 not in giant ADR-shaped batches. The brief tells the agent what it is
 *not* allowed to touch. Scope-creep stops being a judgment call.
 
-### Course 4 — Pre-execution (`gz justify`)
+### Stage 4 — Pre-execution (`gz justify`)
 
 > *Value claim:* you cannot pretend you weren't unsure.
 
@@ -153,7 +153,7 @@ agent-failure mode gzkit knows. `gz justify` forces the reasoning into
 the open before the code exists, where it costs ninety seconds to fix
 instead of nine days.
 
-### Course 5 — Implementation (pipeline + ARB receipts)
+### Stage 5 — Implementation (pipeline + ARB receipts)
 
 > *Value claim:* every quality claim is bound to a receipt. The ledger is
 > the audit trail.
@@ -168,11 +168,13 @@ receipt IDs into `.gzkit/receipts/`. "Tests pass" is no longer a
 narrative claim; it is `arb-step-unittest-<hash>`.
 
 The triangle-sync (ADR-0.20.0) keeps spec, test, and code locked
-together so none of the three can drift independently. The lock
-discipline (ADR-0.0.41 if landed, otherwise the OBPI-lock skill) makes
-sure two agents never silently work the same brief.
+together so none of the three can drift independently. Lock discipline
+keeps two agents from silently working the same brief — today via the
+`gz-obpi-lock` skill, with mechanical token-block coupling under
+ADR-0.0.41 (Draft) once that lands. **WIP — see § Work-in-progress
+dependencies.**
 
-### Course 6 — Verification (Gates 1–5)
+### Stage 6 — Verification (Gates 1–5)
 
 > *Value claim:* lane discipline decides rigor. You do not argue about
 > which gates apply.
@@ -189,19 +191,21 @@ You do not negotiate which gates apply. The matrix decides. This is
 what *governance-as-product* feels like: discipline is mechanical, not
 charismatic.
 
-### Course 7 — Closeout (audit + ceremony)
+### Stage 7 — Closeout (audit + ceremony)
 
 > *Value claim:* human attestation is irreducible.
 
 `gz-adr-audit` runs Gate-5 audit templates. `gz-adr-closeout-ceremony`
-walks the human through attestation. ADR-0.19.0 owns the ceremony shape;
-ADR-0.0.36 (universal OBPI attestation, if landed) closes the
-self-closeable loophole — under the matrix, foundation-kind, heavy-lane,
-and security-sensitivity all force a human in the loop, no exceptions.
+walks the human through attestation. ADR-0.19.0 owns the ceremony shape.
+The current attestation matrix already forces a human in the loop for
+foundation-kind, heavy-lane, and security-sensitivity work; ADR-0.0.36
+(Draft) is the planned move to make universal OBPI attestation the
+floor — eliminating the lite-feature self-closeable carve-out.
+**WIP — see § Work-in-progress dependencies.**
 
 A release that does not bear a person's name is not a release.
 
-### Course 8 — Release (`gz patch-release`)
+### Stage 8 — Release (`gz patch-release`)
 
 > *Value claim:* the value you delivered is itself a traceable artifact,
 > all the way back to the issues that motivated it.
@@ -218,37 +222,53 @@ chain has no missing link. The operator who signed the release has a
 name. Every node has a witness. Stochastic LLM vibing has nowhere left
 to leak.
 
-That is the meal.
+That is the value flow this arc claims to deliver.
 
 ---
 
-## Gaps surfaced during derivation (candidate GHIs)
+## Work-in-progress dependencies
+
+> The narrative above leans on two ADRs that are still `Draft`. They are
+> called out inline with **WIP** markers; this section is the consolidated
+> view. If any of these fail to land, or land in a shape that does not
+> compose with the rest of the chain, the storybook's cohesion is the
+> early warning signal — that is the storybook's job.
+
+| ADR | Stage | Status | Cohesion question if it does not land |
+|---|---|---|---|
+| ADR-0.0.36 — Universal OBPI Attestation | Closeout (Stage 7) | Draft | Lite-feature self-closeable OBPIs remain a carve-out. The Stage-7 claim that "human attestation is irreducible" weakens to "human attestation is required for foundation/heavy/security." Storybook narrative needs hedging; matrix in `AGENTS.md § Lane & Kind & Sensitivity` becomes the source of truth. |
+| ADR-0.0.41 — Token-Block Lock Discipline | Implementation (Stage 5) | Draft | Lock-release stays decoupled from handoff register entry. The Stage-5 claim that "two agents never silently work the same brief" weakens to skill-level discipline, not a mechanical invariant. Risk: silent stomp on shared state under multi-agent execution. |
+
+---
+
+## Gaps surfaced during derivation (filed GHIs)
 
 > The derive step found three places where the artifact graph does not yet
-> compose into the story above. None are fatal; all are honest. Each is a
-> candidate GHI for operator decision.
+> compose into the story above. None are fatal; all are honest. All three
+> have been filed as GHIs.
 
-1. **Candidate GHI — First-time-operator runbook entry is missing.**
+1. **[GHI #428](https://github.com/tvproductions/gzkit/issues/428) —
+   Operator runbook missing first-time-operator entry.**
    `docs/user/runbook.md` opens at *Loop A: OBPI Increment*, which
    assumes the project is already mid-flight. The journey from empty
-   directory through `gz init` and the intent course (PRD → Constitution
-   → Design) has no canonical entry. The storybook arc above is currently
-   the only end-to-end account; the runbook should at minimum link to it.
+   directory through `gz init` and the intent stage (PRD → Constitution
+   → Design) has no canonical entry. The storybook arc above is
+   currently the only end-to-end account.
 
-2. **Candidate GHI — PRD → Constitution → Design wiring is partly
-   aspirational.** The skills `gz-prd`, `gz-constitute`, and `gz-design`
-   are listed and exist, but the storybook narrative implies they compose
-   into a single intent-recording dialogue. Whether the actual handoff is
-   smooth (PRD output feeds `gz-constitute`, which feeds `gz-design`,
-   which feeds `gz-adr-create`) needs operator verification. If the
-   handoff has seams, the seams are themselves candidate refactors.
+2. **[GHI #429](https://github.com/tvproductions/gzkit/issues/429) —
+   PRD → Constitution → Design → ADR handoff cohesion.**
+   The skills `gz-prd`, `gz-constitute`, `gz-design`, and `gz-adr-create`
+   exist independently. Stage 2 of this arc narrates them as a smooth
+   four-step pipeline. Whether the artifacts actually compose end-to-end
+   has not been verified.
 
-3. **Candidate GHI — The "first release" ceremony is undocumented.**
+3. **[GHI #430](https://github.com/tvproductions/gzkit/issues/430) —
+   First-release ceremony undocumented.**
    `gz-patch-release` covers patch releases on a versioned project. It
    does not cover the *first* release — the moment a pre-release project
-   crosses to v0.1.0 or v1.0.0. That ceremony has different mechanics
-   (changelog seeding, version-floor doctrine, PyPI registration) and is
-   not currently a skill or runbook entry.
+   crosses to v0.1.0 or v1.0.0. Different mechanics (changelog seeding,
+   version-floor doctrine, PyPI registration) are not currently a skill
+   or runbook entry.
 
 ---
 
@@ -258,6 +278,6 @@ That is the meal.
 - **Derived from:** ADR-0.0.{1, 2, 4, 7, 10, 15, 17, 18, 19, 22, 24, 25,
   36}, ADR-0.{7, 13, 18, 19, 20}.0, plus the skill registry as of
   2026-05-09.
-- **Authored sections:** all prose under "The meal" headings.
+- **Authored sections:** all prose under "Narrative" headings.
 - **Regenerator (planned):** `gz storybook derive --arc from-init-to-first-attested-release`.
 - **Freshness validator (planned):** `gz validate --storybook-fresh`.
