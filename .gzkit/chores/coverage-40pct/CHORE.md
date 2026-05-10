@@ -1,7 +1,7 @@
 # CHORE: Coverage >=40% Baseline
 
-**Version:** 1.0.0
-**Lane:** Lite
+**Version:** 1.1.0
+**Lane:** Medium
 **Slug:** `coverage-40pct`
 
 ---
@@ -12,7 +12,8 @@ Periodic coverage audit to maintain >=40% line coverage floor.
 
 ## Policy and Guardrails
 
-- **Lane:** Lite — coverage verification, no contract changes
+- **Lane:** Medium — coverage instrumentation overhead exceeds the 120s lite-lane budget; runs against the 300s medium budget while the smoke-budget aspiration (GHI #445) is being worked
+- Bare `uv run -m unittest -q` still must fit the smoke contract (`.gzkit/rules/tests.md` § Smoke/BVT); instrumented coverage runs are the medium-lane carve-out
 - Focus on high-ROI utility modules and public APIs
 - Table-driven deterministic tests; <60s smoke budget
 
