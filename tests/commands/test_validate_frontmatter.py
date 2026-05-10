@@ -254,20 +254,25 @@ class TestFrontmatterGuard(unittest.TestCase):
             self.assertNotIn("ADR-0.2.0", result.output)
 
     @covers("REQ-0.0.16-01-08")
-    def test_runtime_budget_under_one_second_on_real_repo(self) -> None:
-        """Real repo runtime < 1.0s (~80 ADRs / ~200 OBPIs scale)."""
+    def test_runtime_budget_under_real_repo_load(self) -> None:
+        """Real repo runtime < 2.5s (~80 ADRs / ~200 OBPIs scale).
+
+        GHI #443: budget headroom widened from 1.0s to 2.5s. The 1.0s ceiling
+        was right at the in-isolation runtime (~0.9s), causing flakes under
+        concurrent suite load while still leaving the test useful as a
+        regression signal (the kind of regression this guards against is a
+        2-3x scaling-factor change, not a 10% jitter).
+        """
         from gzkit.commands.common import get_project_root  # noqa: PLC0415
         from gzkit.commands.validate_frontmatter import (
             validate_frontmatter_coherence,  # noqa: PLC0415
         )
 
         project_root = get_project_root()
-        # Skip if this test runner is not inside the gzkit project
         if not (project_root / ".gzkit" / "ledger.jsonl").is_file():
             self.skipTest("No gzkit ledger present — not inside the gzkit repo")
-        # GHI #256: coverage instrumentation adds ~2-3x overhead, so the 1.0s
-        # budget is not meaningful under coverage. Skip when a trace function
-        # is active (coverage sets one; so does sys.settrace debuggers).
+        # GHI #256: coverage instrumentation adds ~2-3x overhead, so any
+        # wall-clock budget is not meaningful under coverage.
         if sys.gettrace() is not None:
             self.skipTest("trace function active (coverage/debugger) — budget not meaningful")
 
@@ -276,8 +281,8 @@ class TestFrontmatterGuard(unittest.TestCase):
         elapsed = time.perf_counter() - start
         self.assertLess(
             elapsed,
-            1.0,
-            f"Frontmatter guard exceeded 1.0s budget (took {elapsed:.2f}s)",
+            2.5,
+            f"Frontmatter guard exceeded 2.5s budget (took {elapsed:.2f}s)",
         )
 
 
