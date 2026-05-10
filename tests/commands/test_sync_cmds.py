@@ -628,3 +628,226 @@ class TestCommitStagedChangesBlocksOnStrandedMessage(unittest.TestCase):
                 any("COMMIT_EDITMSG" in b for b in blockers),
                 f"blocker must reference COMMIT_EDITMSG; got blockers={blockers!r}",
             )
+
+
+class TestExtractGovernanceAnchors(unittest.TestCase):
+    """``_extract_governance_anchors`` surfaces OBPI/ADR/GHI IDs from staged diff text (GHI #439).
+
+    The auto-generated ``chore: update X, Y, Z (gz git-sync)`` commit message
+    is archaeologically opaque on its own. Mining the staged diff for
+    governance anchors (OBPI/ADR/GHI/pool-ADR identifiers) and surfacing them
+    in the commit body restores a forward-traceable record of WHICH artifacts
+    a sync touched — readable from ``git log`` without a checkout.
+    """
+
+    def test_returns_empty_when_no_ids_present(self) -> None:
+        from gzkit.commands.sync import _extract_governance_anchors  # noqa: PLC0415
+
+        diff = "diff --git a/x b/x\n+just some prose\n"
+        self.assertEqual(_extract_governance_anchors(diff), [])
+
+    def test_extracts_obpi_adr_ghi_ids_sorted_and_grouped(self) -> None:
+        from gzkit.commands.sync import _extract_governance_anchors  # noqa: PLC0415
+
+        diff = (
+            "+touches OBPI-0.0.31-02-register-t0-scorecard work\n"
+            "+anchored on ADR-0.0.31 and ADR-0.0.32-foo\n"
+            "+see also ADR-pool.gz-chores-system\n"
+            "+(GHI #322) and (GHI #357)\n"
+        )
+        anchors = _extract_governance_anchors(diff)
+        # Group order: ADR (semver), ADR (pool), OBPI, GHI; alphabetical/semver within
+        self.assertIn("ADR-0.0.31", anchors)
+        self.assertIn("ADR-0.0.32-foo", anchors)
+        self.assertIn("ADR-pool.gz-chores-system", anchors)
+        self.assertIn("OBPI-0.0.31-02-register-t0-scorecard", anchors)
+        self.assertIn("GHI #322", anchors)
+        self.assertIn("GHI #357", anchors)
+
+    def test_dedupes_repeated_ids(self) -> None:
+        from gzkit.commands.sync import _extract_governance_anchors  # noqa: PLC0415
+
+        diff = "+(GHI #439)\n+(GHI #439)\n+OBPI-0.0.31-02 referenced twice OBPI-0.0.31-02\n"
+        anchors = _extract_governance_anchors(diff)
+        self.assertEqual(anchors.count("GHI #439"), 1)
+        self.assertEqual(anchors.count("OBPI-0.0.31-02"), 1)
+
+
+class TestRecentUnsyncedLedgerEvents(unittest.TestCase):
+    """``_recent_unsynced_ledger_events`` lists ledger entries since the last commit (GHI #439)."""
+
+    def test_returns_only_events_with_ts_strictly_after_cutoff(self) -> None:
+        from gzkit.commands.sync import _recent_unsynced_ledger_events  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            (project_root / ".gzkit").mkdir()
+            ledger = project_root / ".gzkit" / "ledger.jsonl"
+            ledger.write_text(
+                json.dumps(
+                    {
+                        "schema": "gzkit.ledger.v1",
+                        "event": "old_event",
+                        "id": "OLD",
+                        "ts": "2026-05-10T20:00:00+00:00",
+                    }
+                )
+                + "\n"
+                + json.dumps(
+                    {
+                        "schema": "gzkit.ledger.v1",
+                        "event": "obpi_completion",
+                        "id": "OBPI-0.0.31-02-register-t0-scorecard",
+                        "ts": "2026-05-10T22:01:08+00:00",
+                    }
+                )
+                + "\n"
+                + json.dumps(
+                    {
+                        "schema": "gzkit.ledger.v1",
+                        "event": "audit_receipt_emitted",
+                        "id": "arb-step-unittest-1746",
+                        "ts": "2026-05-10T22:01:09+00:00",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            events = _recent_unsynced_ledger_events(
+                project_root, since_iso="2026-05-10T21:00:00+00:00"
+            )
+
+            ids = [e.get("id") for e in events]
+            self.assertNotIn("OLD", ids)
+            self.assertIn("OBPI-0.0.31-02-register-t0-scorecard", ids)
+            self.assertIn("arb-step-unittest-1746", ids)
+
+    def test_returns_empty_when_ledger_missing(self) -> None:
+        from gzkit.commands.sync import _recent_unsynced_ledger_events  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            self.assertEqual(
+                _recent_unsynced_ledger_events(project_root, since_iso=None),
+                [],
+            )
+
+    def test_skips_malformed_jsonl_lines(self) -> None:
+        from gzkit.commands.sync import _recent_unsynced_ledger_events  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            (project_root / ".gzkit").mkdir()
+            (project_root / ".gzkit" / "ledger.jsonl").write_text(
+                "not-json\n"
+                + json.dumps(
+                    {
+                        "schema": "gzkit.ledger.v1",
+                        "event": "obpi_completion",
+                        "id": "OBPI-X",
+                        "ts": "2026-05-10T22:01:08+00:00",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            events = _recent_unsynced_ledger_events(project_root, since_iso=None)
+            ids = [e.get("id") for e in events]
+            self.assertEqual(ids, ["OBPI-X"])
+
+
+class TestBuildSyncCommitMessageEnrichment(unittest.TestCase):
+    """``_build_sync_commit_message`` enriches body with anchors + ledger events (GHI #439).
+
+    Semantics asserted:
+    - Anchors section appears when ``anchors`` is non-empty and lists each ID.
+    - Ledger-events section appears when ``ledger_events`` is non-empty and
+      cites event type, id, and timestamp.
+    - Both sections are omitted when their inputs are empty (preserves the
+      pre-enrichment shape for genuinely path-shape-only syncs).
+    - The ``Ceremony: gz-git-sync`` trailer remains last (GHI #201).
+    """
+
+    def test_anchors_section_listed_when_present(self) -> None:
+        from gzkit.commands.sync import _build_sync_commit_message  # noqa: PLC0415
+
+        msg = _build_sync_commit_message(
+            ["docs/design/adr/foundation/ADR-0.0.31/foo.md"],
+            anchors=["ADR-0.0.31", "OBPI-0.0.31-02", "GHI #439"],
+            ledger_events=[],
+        )
+        self.assertIn("Governance anchors touched:", msg)
+        self.assertIn("- ADR-0.0.31", msg)
+        self.assertIn("- OBPI-0.0.31-02", msg)
+        self.assertIn("- GHI #439", msg)
+
+    def test_ledger_events_section_listed_when_present(self) -> None:
+        from gzkit.commands.sync import _build_sync_commit_message  # noqa: PLC0415
+
+        events = [
+            {
+                "event": "obpi_completion",
+                "id": "OBPI-0.0.31-02-register-t0-scorecard",
+                "ts": "2026-05-10T22:01:08+00:00",
+            },
+            {
+                "event": "audit_receipt_emitted",
+                "id": "arb-step-unittest-1746",
+                "ts": "2026-05-10T22:01:09+00:00",
+            },
+        ]
+        msg = _build_sync_commit_message([".gzkit/ledger.jsonl"], anchors=[], ledger_events=events)
+        self.assertIn("Ledger events since last commit:", msg)
+        self.assertIn("obpi_completion", msg)
+        self.assertIn("OBPI-0.0.31-02-register-t0-scorecard", msg)
+        self.assertIn("2026-05-10T22:01:08+00:00", msg)
+        self.assertIn("audit_receipt_emitted", msg)
+        self.assertIn("arb-step-unittest-1746", msg)
+
+    def test_empty_anchors_and_events_omit_enrichment_sections(self) -> None:
+        from gzkit.commands.sync import _build_sync_commit_message  # noqa: PLC0415
+
+        msg = _build_sync_commit_message(
+            ["src/gzkit/commands/foo.py"], anchors=[], ledger_events=[]
+        )
+        self.assertNotIn("Governance anchors touched:", msg)
+        self.assertNotIn("Ledger events since last commit:", msg)
+        # Subject + ceremony trailer preserved.
+        self.assertIn("chore: update", msg)
+        self.assertTrue(msg.rstrip().endswith("Ceremony: gz-git-sync"))
+
+    def test_ceremony_trailer_remains_last_when_enrichment_present(self) -> None:
+        from gzkit.commands.sync import _build_sync_commit_message  # noqa: PLC0415
+
+        msg = _build_sync_commit_message(
+            ["docs/foo.md"],
+            anchors=["GHI #439"],
+            ledger_events=[
+                {"event": "obpi_completion", "id": "OBPI-X", "ts": "2026-05-10T22:01:08+00:00"}
+            ],
+        )
+        self.assertTrue(msg.rstrip().endswith("Ceremony: gz-git-sync"))
+
+    def test_ledger_events_capped_with_overflow_note(self) -> None:
+        from gzkit.commands.sync import (
+            _MAX_LEDGER_EVENTS_IN_COMMIT,  # noqa: PLC0415
+            _build_sync_commit_message,  # noqa: PLC0415
+        )
+
+        events = [
+            {
+                "event": "audit_receipt_emitted",
+                "id": f"arb-step-{i}",
+                "ts": f"2026-05-10T22:00:{i:02d}+00:00",
+            }
+            for i in range(_MAX_LEDGER_EVENTS_IN_COMMIT + 5)
+        ]
+        msg = _build_sync_commit_message([".gzkit/ledger.jsonl"], anchors=[], ledger_events=events)
+        # Cap is enforced
+        self.assertLessEqual(
+            msg.count("- audit_receipt_emitted"),
+            _MAX_LEDGER_EVENTS_IN_COMMIT,
+            "ledger event listing must not exceed the documented cap",
+        )
+        # Overflow surfaced as a single summary line
+        self.assertIn(f"({len(events)} total since last commit)", msg)
