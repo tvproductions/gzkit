@@ -113,6 +113,24 @@ uv run gz arb step --name unittest -- uv run -m unittest tests/complexity/author
 uv run -m behave features/authoring_guide_protocol.feature
 ```
 
+## Demo
+
+The protocol is a JSON-over-stdio LSP-style server consumed by editor authors — there is no end-user CLI. Demo proves the server speaks the documented envelope (initialize → analyze → shutdown).
+
+```bash
+# 1. Server starts and responds to initialize (printf feeds one JSON-RPC envelope
+#    on stdin; pipe ends so the server exits after responding).
+printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"clientVersion":"1.0"}}' \
+  | uv run gz complexity guide --server | head -1
+
+# 2. Specification document landed (Gate 3 evidence).
+ls docs/governance/complexity/authoring-guide-protocol.md
+ls src/gzkit/schemas/authoring_guide_protocol.json
+
+# 3. Behave handshake → analyze → shutdown scenario (REQ-04-01..06).
+uv run -m behave features/authoring_guide_protocol.feature
+```
+
 ## Acceptance Criteria
 
 - [ ] REQ-0.0.30-04-01: Given a synthetic editor client sending an `initialize` request, when the server responds, then the response carries the server version (`1.0`) and a capabilities object listing the supported methods.

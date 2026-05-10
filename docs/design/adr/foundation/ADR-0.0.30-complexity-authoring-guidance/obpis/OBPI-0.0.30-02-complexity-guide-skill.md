@@ -108,6 +108,24 @@ uv run gz agent sync control-surfaces  # post-sync diff empty
 uv run gz arb step --name unittest -- uv run -m unittest tests/skills/test_complexity_guide.py -v
 ```
 
+## Demo
+
+The skill is a discovery + routing surface, not a CLI verb. Demo proves canonical + three vendor mirrors are present and byte-identical, and that the operator-moment routes to OBPI-01's verb.
+
+```bash
+# 1. Skill discoverable in the canonical directory + three vendor mirrors.
+ls .gzkit/skills/complexity-guide/SKILL.md \
+   .claude/skills/complexity-guide/SKILL.md \
+   .agents/skills/complexity-guide/SKILL.md \
+   .github/skills/complexity-guide/SKILL.md
+
+# 2. Mirrors are byte-identical (post-sync invariant per skill-surface-sync rule).
+diff -q .gzkit/skills/complexity-guide/SKILL.md .claude/skills/complexity-guide/SKILL.md
+
+# 3. Skill routes to a registered CLI verb (Invariant 1: gz_command resolves).
+uv run gz complexity guide --help
+```
+
 ## Acceptance Criteria
 
 - [ ] REQ-0.0.30-02-01: Given the canonical skill, when frontmatter is parsed, then schema validates and `skill-version` is `0.1.0`.

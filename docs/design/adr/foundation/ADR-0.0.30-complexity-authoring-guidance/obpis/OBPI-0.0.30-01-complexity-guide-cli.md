@@ -114,6 +114,23 @@ uv run gz arb step --name unittest -- uv run -m unittest tests/commands/test_com
 uv run -m behave features/complexity_guide.feature
 ```
 
+## Demo
+
+The yielded product — `gz complexity guide` exercised against real targets, not `--help`. These invocations are harvested by the closeout walkthrough (`ceremony_data.py:271`).
+
+```bash
+# 1. Default text form on a file with known advise-band crossings.
+#    Emits one block per crossing: archetype / band / guidance / move.
+uv run gz complexity guide src/gzkit/commands/validate_cmd.py
+
+# 2. Canonical AuthoringHint JSON array (LSP / editor consumers).
+#    Schema: src/gzkit/schemas/authoring_hint.json.
+uv run gz complexity guide src/gzkit/commands/validate_cmd.py --json
+
+# 3. Directory traversal — exercises walker over a real package tree.
+uv run gz complexity guide src/gzkit/complexity/ --json
+```
+
 ## Acceptance Criteria
 
 - [ ] REQ-0.0.30-01-01: Given a clean file with no advise crossings, when `gz complexity guide <path>` runs, then exit 0 and output names "no advise hints".
