@@ -1,5 +1,39 @@
 # gzkit Release Notes
 
+## v0.26.2 (2026-05-10)
+
+Patch release covering red-team-surfaced security and trust hardening, ledger schema validation tightening, OBPI pipeline runtime fixes, and governance surface improvements. 14 GHIs closed.
+
+### Security & Trust Hardening
+
+- **#411** — Fixed `gz status` rewriting post-validation gate failures from `fail` to `pass`; the operator-facing status surface no longer hides current failing observations behind lifecycle authority.
+- **#412** — Removed forgeable marker-file proxy from `--attestor-present`; agent-relayed attestation now requires provenance beyond a writable repo file.
+- **#413** — Closed `gz obpi complete` security-floor bypass: auto-detected security-sensitive allowed paths now trip the security gate even when brief frontmatter omits `sensitivity: security`.
+- **#415** — Removed `shell=True` from the shared quality command runner; governance gate execution no longer presents a command-injection surface.
+
+### Validation & Schema Integrity
+
+- **#2** — Enforced JSONL schema validation on ledger entries; malformed or semantically invalid events are no longer silently accepted by `gz validate`.
+- **#414** — Fixed `meta-receipt-bind` events violating ledger schema (`receipt_event` enum requires `completed`/`validated`).
+- **#426** — Migrated complexity thresholds from regex-parsed markdown to structured JSON config (`src/gzkit/complexity/thresholds.py`); deterministic tooling now reads structured data.
+
+### Pipeline Runtime & CLI Fixes
+
+- **#3** — Added ledger-derived sync for OBPI brief derived fields; `gz adr status` and `gz status` no longer emit false negatives from drift between manually-edited fields and ledger truth.
+- **#403** — Fixed `gz plan audit` false-positive on brief allowed-paths that are intentionally new-file creation targets (GHI #393 follow-up).
+- **#420** — Restored OBPI Stage 3 scope discipline: cross-OBPI failures from unrelated work no longer block new OBPIs through full-repo `gz check`.
+- **#421** — Enabled parallel ARB receipt execution at OBPI Stage 3; lint/typecheck/test/mkdocs/behave no longer serialize through fresh `uv` processes.
+- **#422** — Reordered pipeline runtime Stage 5 to match skill semantics: complete-then-sync replaces sync-then-complete and eliminates multi-pass churn.
+
+### Governance Surface
+
+- **#409** — Enforced model-selection routing in skill frontmatter; `SkillFrontmatter.skill_model` is now a required `Literal["haiku", "sonnet", "opus"]` validated by `gz validate --surfaces`.
+- **#427** — Closeout walkthrough demos now showcase the ADR's yielded product commands instead of construction housekeeping (ARB-wrapped quality checks).
+
+### Stats
+
+- 14 GHIs closed (4 security/trust, 3 schema/validation, 5 pipeline-runtime, 2 governance-surface)
+
 ## v0.26.1 (2026-05-05)
 
 Patch release closing fifteen behavior-level defects across the covers-backfill heuristic, REQ-coverage gate, validator wiring, ledger graph, pipeline runtime, and cross-platform path handling — surfaced and resolved during ADR-0.0.27 (Exemplar Corpus Doctrine) audit and OBPI-0.0.27 closeout work.
