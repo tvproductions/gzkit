@@ -1,145 +1,14 @@
-# CHORE-LOG: pythonic-design-pattern-application
+# CHORE-LOG: config-paths-remediation
 
-## 2026-04-26T18:55:06-05:00
+## 2026-05-10T13:07:04-05:00
 - Status: PASS
-- Chore: pythonic-design-pattern-application
-- Title: Pythonic Design Pattern Application (Before/After Evidence Capture)
+- Chore: config-paths-remediation
+- Title: Config Paths Remediation
 - Lane: lite
 - Version: 1.0.0
 - Criteria Results:
-  - [PASS] `uv run -m unittest -q` => rc=0 (78.11s) -- exit 0 == 0
-  - [PASS] `uvx xenon --max-absolute C --max-modules C --max-average C src/` => rc=0 (2.45s) -- exit 0 == 0
-
-```text
-[uv run -m unittest -q] stdout:
-Chores registry diff:
-  + agents-md-architectural-boundaries
-  + arb-pattern-extraction
-  + cli-contract-governance
-  + complexity-reduction-xenon
-  + config-paths-remediation
-  + control-surface-rule-conflicts
-  + control-surface-rule-vs-check-drift
-  + control-surface-skill-rule-reachability
-  + coverage-40pct
-  + cross-platform-test-cleanup
-  + dependency-currency
-  + doc-coverage
-  + evidence-integrity-audit
-  + exceptions-and-logging-rationalization
-  + frontmatter-ledger-coherence
-  + hardcoded-root-eradication
-  + instructions-files-diet
-  + memory-hygiene
-  + module-sloc-cap-radon
-  + pep257-docstring-compliance
-  + pool-triage
-  + pythonic-design-pattern-application
-  + pythonic-design-pattern-detection
-  + pythonic-refactoring
-  + quality-check
-  + repository-structure-normalization
-  + schema-and-config-drift-audit
-  + skill-authoring-quality
-  + skill-command-doc-parity
-  + skill-manifest-sync
-  + skill-trigger-testing
-  + sync-manpage-docstrings
-  + test-isolation-compliance
-  + test-manpage-examples
-  + validate-manpages
-  = only-local (local-only, preserved)
-Chores registry diff:
-  + agents-md-architectural-boundaries
-  + arb-pattern-extraction
-  + cli-contract-governance
-  + complexity-reduction-xenon
-  + config-paths-remediation
-  + control-surface-rule-conflicts
-  + control-surface-rule-vs-check-drift
-  + control-surface-skill-rule-reachability
-  + coverage-40pct
-  + cross-platform-test-cleanup
-  + dependency-currency
-  + doc-coverage
-  + evidence-integrity-audit
-  + exceptions-and-logging-rationalization
-  + frontmatter-ledger-coherence
-  + hardcoded-root-eradication
-  + instructions-files-diet
-  + memory-hygiene
-  + module-sloc-cap-radon
-  + pep257-docstring-compliance
-  + pool-triage
-  + pythonic-design-pattern-application
-  + pythonic-design-pattern-detection
-  + pythonic-refactoring
-  + quality-check
-  + repository-structure-normalization
-  + schema-and-config-drift-audit
-  + skill-authoring-quality
-  + skill-command-doc-parity
-  + skill-manifest-sync
-  + skill-trigger-testing
-  + sync-manpage-docstrings
-  + test-isolation-compliance
-  + test-manpage-examples
-  + validate-manpages
-  = only-local-slug (local-only, preserved)
-Chores registry diff:
-  + agents-md-architectural-boundaries
-  + arb-pattern-extraction
-  + cli-contract-governance
-  + complexity-reduction-xenon
-  + config-paths-remediation
-  + control-surface-rule-conflicts
-  + control-surface-rule-vs-check-drift
-  + control-surface-skill-rule-reachability
-  + coverage-40pct
-  + cross-platform-test-cleanup
-  + dependency-currency
-  + doc-coverage
-  + evidence-integrity-audit
-  + exceptions-and-logging-rationalization
-  + frontmatter-ledger-coherence
-  + hardcoded-root-eradication
-  + instructions-files-diet
-  + memory-hygiene
-  + module-sloc-cap-radon
-  + pep257-docstring-compliance
-  + pool-triage
-  + pythonic-design-pattern-application
-  + pythonic-design-pattern-detection
-  + pythonic-refactoring
-  + quality-check
-  + repository-structure-normalization
-  + schema-and-config-drift-audit
-  + skill-authoring-quality
-  + skill-command-doc-parity
-  + skill-manifest-sync
-  + skill-trigger-testing
-  + sync-manpage-docstrings
-  + test-isolation-compliance
-  + test-manpage-examples
-  + validate-manpages
-  = only-local (local-only, preserved)
-[uv run -m unittest -q] stderr:
-----------------------------------------------------------------------
-Ran 3660 tests in 77.115s
-
-OK (skipped=1)
-[uvx xenon --max-absolute C --max-modules C --max-average C src/] stderr:
-Installed 11 packages in 70ms
-```
-## 2026-05-10T13:21:23-05:00
-- Status: PASS
-- Chore: pythonic-design-pattern-application
-- Title: Pythonic Design Pattern Application (Before/After Evidence Capture)
-- Lane: lite
-- Version: 1.0.0
-- Criteria Results:
-  - [PASS] `uv run -m unittest -q` => rc=0 (99.44s) -- exit 0 == 0
-  - [PASS] `uvx xenon --max-absolute C --max-modules C --max-average C src/` => rc=0 (1.04s) -- exit 0 == 0
+  - [PASS] `uv run -m unittest -q` => rc=0 (115.05s) -- exit 0 == 0
+  - [PASS] `uv run gz check-config-paths` => rc=0 (0.69s) -- exit 0 == 0
 
 ```text
 [uv run -m unittest -q] stdout:
@@ -401,7 +270,7 @@ Coverage: No REQs found for this ADR.
 FAIL 1 covers-backfill finding(s):
   tests/x.py:1 REQ REQ-0.1.0-01-01 introduced @ aaaaaaa (0c / 0d before receipt
 r1); see .claude/rules/tests.md § Invariant 6f for remediation
-Bootstrap-mode: C:/Users/Jeff/AppData/Local/Temp/tmpgm63jtvz/.gzkit/rules/complexity-thresholds.md declares a Bootstrap absolutes carve-out section; portability checks against bootstrap rows are skipped per ADR-0.0.28 § Bootstrap absolutes (REQ-11). This is informational, not a policy breach — review tracked GHIs (#404 parser zeros, #405 polarity-aware model) for resolution.
+Bootstrap-mode: C:/Users/Jeff/AppData/Local/Temp/tmpztwtbc5x/.gzkit/rules/complexity-thresholds.md declares a Bootstrap absolutes carve-out section; portability checks against bootstrap rows are skipped per ADR-0.0.28 § Bootstrap absolutes (REQ-11). This is informational, not a policy breach — review tracked GHIs (#404 parser zeros, #405 polarity-aware model) for resolution.
 Hook 'complexity-advisor-auto-chain' already present in .pre-commit-config.yaml
 Installed hook 'complexity-advisor-auto-chain' in .pre-commit-config.yaml
   Replaced: xenon-complexity -> complexity-advisor-auto-chain
@@ -536,7 +405,7 @@ Traceback (most recent call last):
     return codecs.charmap_decode(input,self.errors,decoding_table)[0]
            ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d in position 29: character maps to <undefined>
-Skipping unparseable file: C:\Users\Jeff\AppData\Local\Temp\tmpi3y2tqmo\test_broken.py
+Skipping unparseable file: C:\Users\Jeff\AppData\Local\Temp\tmpncxl8j0_\test_broken.py
 Malformed REQ line (skipped): - [ ] REQ-X-Y-Z: Malformed (non-numeric).
 Malformed REQ line (skipped): - [ ] REQ-: Empty body.
 [1] metric=radon_cc value=12.0 band=block
@@ -550,7 +419,9 @@ Malformed REQ line (skipped): - [ ] REQ-: Empty body.
   Proof: src/foo.py:10-30
   Recommended move: Extract Parameter Object
 ----------------------------------------------------------------------
-Ran 4671 tests in 98.262s
+Ran 4671 tests in 113.823s
 
 OK (skipped=2)
+[uv run gz check-config-paths] stdout:
+Config-path audit passed.
 ```
