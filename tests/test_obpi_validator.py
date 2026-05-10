@@ -631,6 +631,149 @@ status: {status}
             msg=f"Expected no command-shape errors, got: {cmd_errors}",
         )
 
+    def test_speculative_marker_suppresses_inline_gz_chain(self):
+        """GHI #432: speculative-skip marker suppresses immediately-following inline code.
+
+        An OBPI brief that introduces a new CLI verb (e.g. `gz storybook`)
+        must reference the unregistered verb in Demo/Verification sections.
+        The marker convention `<!-- gz-validate-skip: command-shape -->`
+        suppresses command-shape validation for the line that immediately
+        follows it — same shape as the precedent in
+        ``complexity_doctrine_links.py``.
+        """
+        self._register_adr("ADR-0.1.0", commit=False)
+        obpi_id = "OBPI-ADR-0.1.0-01"
+        path = self.project_root / f"{obpi_id}.md"
+        path.write_text(
+            f"---\nid: {obpi_id}\nparent: ADR-0.1.0\nstatus: Draft\nlane: Lite\n---\n\n"
+            f"# {obpi_id}\n\n"
+            "## Objective\nIntroduce a forward-reference CLI verb under this OBPI.\n\n"
+            "## Lane\n**Lite** - Internal contract.\n\n"
+            "## Allowed Paths\n- `src/gzkit/ports/` - Port definitions\n\n"
+            "## Denied Paths\n- `docs/user/manpages/` - No operator-surface changes\n\n"
+            "## Requirements (FAIL-CLOSED)\n"
+            "1. REQUIREMENT: This OBPI introduces a new verb. Forward-reference:\n"
+            "<!-- gz-validate-skip: command-shape -->\n"
+            "`uv run gz storybook derive --arc demo`.\n\n"
+            "## Discovery Checklist\n"
+            "**Prerequisites (check existence, STOP if missing):**\n"
+            "- [ ] `src/gzkit/runtime.py`\n\n"
+            "**Existing Code (understand current state):**\n"
+            "- [ ] `src/gzkit/ports.py`\n\n"
+            "## Verification\n```bash\nuv run gz lint\n```\n\n"
+            "## Acceptance Criteria\n- [ ] REQ-0.1.0-01-01: Real criterion.\n",
+            encoding="utf-8",
+        )
+        errors = self.validator.validate_file(path, require_authored=True)
+        cmd_errors = [e for e in errors if "command-shape" in e.lower()]
+        self.assertEqual(
+            cmd_errors,
+            [],
+            msg=(
+                f"Expected speculative marker to suppress 'storybook' command-shape "
+                f"error, got: {cmd_errors}"
+            ),
+        )
+
+    def test_speculative_marker_suppresses_fenced_block(self):
+        """GHI #432: marker preceding an opening fence suppresses the whole block.
+
+        Fenced code blocks are the common operator-facing placement for
+        gz invocations in Verification sections. A marker on the line
+        immediately preceding the opening fence suppresses every
+        ``gz <verb-chain>`` reference inside that fenced block, matching
+        the inline-code suppression semantics.
+        """
+        self._register_adr("ADR-0.1.0", commit=False)
+        obpi_id = "OBPI-ADR-0.1.0-01"
+        path = self.project_root / f"{obpi_id}.md"
+        path.write_text(
+            f"---\nid: {obpi_id}\nparent: ADR-0.1.0\nstatus: Draft\nlane: Lite\n---\n\n"
+            f"# {obpi_id}\n\n"
+            "## Objective\nIntroduce a forward-reference CLI verb under this OBPI.\n\n"
+            "## Lane\n**Lite** - Internal contract.\n\n"
+            "## Allowed Paths\n- `src/gzkit/ports/` - Port definitions\n\n"
+            "## Denied Paths\n- `docs/user/manpages/` - No operator-surface changes\n\n"
+            "## Requirements (FAIL-CLOSED)\n"
+            "1. REQUIREMENT: Forward-reference verbs introduced by this brief.\n\n"
+            "## Discovery Checklist\n"
+            "**Prerequisites (check existence, STOP if missing):**\n"
+            "- [ ] `src/gzkit/runtime.py`\n\n"
+            "**Existing Code (understand current state):**\n"
+            "- [ ] `src/gzkit/ports.py`\n\n"
+            "## Verification\n"
+            "<!-- gz-validate-skip: command-shape -->\n"
+            "```bash\n"
+            "uv run gz storybook derive --arc demo\n"
+            "uv run gz storybook publish --target docs\n"
+            "```\n\n"
+            "Real verification:\n"
+            "```bash\nuv run gz lint\n```\n\n"
+            "## Acceptance Criteria\n- [ ] REQ-0.1.0-01-01: Real criterion.\n",
+            encoding="utf-8",
+        )
+        errors = self.validator.validate_file(path, require_authored=True)
+        cmd_errors = [e for e in errors if "command-shape" in e.lower()]
+        self.assertEqual(
+            cmd_errors,
+            [],
+            msg=(
+                f"Expected marker to suppress entire fenced block of 'storybook' "
+                f"references, got: {cmd_errors}"
+            ),
+        )
+
+    def test_speculative_marker_does_not_suppress_unrelated_lines(self):
+        """GHI #432: marker suppresses only the immediately-following line/block.
+
+        Brief authors should not be able to silence the validator across
+        the whole document with a single marker. Suppression is strictly
+        local — a typo on a later, non-suppressed line must still fail
+        closed.
+        """
+        self._register_adr("ADR-0.1.0", commit=False)
+        obpi_id = "OBPI-ADR-0.1.0-01"
+        path = self.project_root / f"{obpi_id}.md"
+        path.write_text(
+            f"---\nid: {obpi_id}\nparent: ADR-0.1.0\nstatus: Draft\nlane: Lite\n---\n\n"
+            f"# {obpi_id}\n\n"
+            "## Objective\nMixed forward-reference and ordinary commands.\n\n"
+            "## Lane\n**Lite** - Internal contract.\n\n"
+            "## Allowed Paths\n- `src/gzkit/ports/` - Port definitions\n\n"
+            "## Denied Paths\n- `docs/user/manpages/` - No operator-surface changes\n\n"
+            "## Requirements (FAIL-CLOSED)\n"
+            "1. REQUIREMENT: Forward-reference verb (suppressed):\n"
+            "<!-- gz-validate-skip: command-shape -->\n"
+            "`uv run gz storybook derive --arc demo`.\n"
+            "2. REQUIREMENT: Ordinary typo (must still fail):\n"
+            "`uv run gz chore run frontmatter-ledger-coherence`.\n\n"
+            "## Discovery Checklist\n"
+            "**Prerequisites (check existence, STOP if missing):**\n"
+            "- [ ] `src/gzkit/runtime.py`\n\n"
+            "**Existing Code (understand current state):**\n"
+            "- [ ] `src/gzkit/ports.py`\n\n"
+            "## Verification\n```bash\nuv run gz lint\n```\n\n"
+            "## Acceptance Criteria\n- [ ] REQ-0.1.0-01-01: Real criterion.\n",
+            encoding="utf-8",
+        )
+        errors = self.validator.validate_file(path, require_authored=True)
+        chore_errors = [
+            e for e in errors if "command-shape" in e.lower() and "'chore'" in e and "chores" in e
+        ]
+        self.assertTrue(
+            chore_errors,
+            f"Expected unsuppressed 'chore' typo to still fail closed, got: {errors}",
+        )
+        storybook_errors = [e for e in errors if "command-shape" in e.lower() and "storybook" in e]
+        self.assertEqual(
+            storybook_errors,
+            [],
+            msg=(
+                f"Expected marker to suppress 'storybook' (forward-reference), "
+                f"got: {storybook_errors}"
+            ),
+        )
+
     def test_authored_validation_passes_substantive_draft(self):
         """Authored mode passes drafts that are ready for pipeline execution."""
         self._register_adr("ADR-0.1.0", commit=False)
