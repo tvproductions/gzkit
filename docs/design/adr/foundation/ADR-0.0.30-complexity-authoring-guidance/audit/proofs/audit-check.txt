@@ -1,0 +1,14 @@
+ADR audit-check: ADR-0.0.30-complexity-authoring-guidance
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.30-01-complexity-guide-cli
+  - OBPI-0.0.30-02-complexity-guide-skill
+  - OBPI-0.0.30-03-authoring-hint-engine
+  - OBPI-0.0.30-04-editor-protocol-contract
+  - OBPI-0.0.30-05-justify-integration
+
+Coverage: 33/33 REQs covered (100.0%)
+  OBPI-0.0.30-01: 6/6 (100.0%)
+  OBPI-0.0.30-02: 6/6 (100.0%)
+  OBPI-0.0.30-03: 8/8 (100.0%)
+  OBPI-0.0.30-04: 7/7 (100.0%)
+  OBPI-0.0.30-05: 6/6 (100.0%)

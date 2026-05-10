@@ -1,0 +1,27 @@
+usage: gz complexity guide [-h] [--json] [--quiet] [--verbose] [--server]
+                           [--debug]
+                           [path]
+
+Reads the advise band from the canonical threshold table (.gzkit/rules/complexity-thresholds.json, ADR-0.0.28), measures the target file or directory, and emits AuthoringHint blocks for functions approaching the warn threshold. Exit 3 is NOT used — this surface never blocks; that is gz complexity advise's role.
+
+positional arguments:
+  path        File or directory to analyze
+
+options:
+  -h, --help  show this help message and exit
+  --json      Emit canonical AuthoringHint JSON array to stdout
+  --quiet     Suppress output; rely on exit code only
+  --verbose   Emit debug output to stderr
+  --server    Start JSON-over-stdio LSP-style protocol server for editor/IDE
+              integration.
+  --debug     Enable debug mode with full tracebacks
+
+Examples
+    gz complexity guide src/gzkit/commands/validate.py
+    gz complexity guide src/gzkit/ --json
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach

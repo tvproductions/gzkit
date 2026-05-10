@@ -1,0 +1,41 @@
+── src/gzkit/commands/validate_cmd.py:82-82 ──
+Archetype : long_parameter_list
+Band      : approaching
+Guidance  : cyclomatic complexity above the corpus p90 violates the single-responsibility ceiling Martin names for function decomposition.
+Move      : When branch count rises, I usually suspect hidden policy logic, mode handling, or too many cases in one function. First move: extract decision policy or split paths by responsibility. But a high CC can be acceptable in explicit parsers/validators when branches are deliberately enumerated and well-tested.
+
+── src/gzkit/commands/validate_cmd.py:106-106 ──
+Archetype : long_parameter_list
+Band      : approaching
+Guidance  : cyclomatic complexity above the corpus p90 violates the single-responsibility ceiling Martin names for function decomposition.
+Move      : When branch count rises, I usually suspect hidden policy logic, mode handling, or too many cases in one function. First move: extract decision policy or split paths by responsibility. But a high CC can be acceptable in explicit parsers/validators when branches are deliberately enumerated and well-tested.
+
+── src/gzkit/commands/validate_cmd.py:237-237 ──
+Archetype : long_parameter_list
+Band      : approaching
+Guidance  : cyclomatic complexity above the corpus p90 violates the single-responsibility ceiling Martin names for function decomposition.
+Move      : When branch count rises, I usually suspect hidden policy logic, mode handling, or too many cases in one function. First move: extract decision policy or split paths by responsibility. But a high CC can be acceptable in explicit parsers/validators when branches are deliberately enumerated and well-tested.
+
+── src/gzkit/commands/validate_cmd.py:577-593 ──
+Archetype : long_parameter_list
+Band      : approaching_warn
+Guidance  : cyclomatic complexity above the corpus p90 violates the single-responsibility ceiling Martin names for function decomposition.
+Move      : When branch count rises, I usually suspect hidden policy logic, mode handling, or too many cases in one function. First move: extract decision policy or split paths by responsibility. But a high CC can be acceptable in explicit parsers/validators when branches are deliberately enumerated and well-tested.
+
+── src/gzkit/commands/validate_cmd.py:652-652 ──
+Archetype : long_parameter_list
+Band      : approaching
+Guidance  : cyclomatic complexity above the corpus p90 violates the single-responsibility ceiling Martin names for function decomposition.
+Move      : When branch count rises, I usually suspect hidden policy logic, mode handling, or too many cases in one function. First move: extract decision policy or split paths by responsibility. But a high CC can be acceptable in explicit parsers/validators when branches are deliberately enumerated and well-tested.
+
+── src/gzkit/commands/validate_cmd.py:804-804 ──
+Archetype : long_parameter_list
+Band      : approaching
+Guidance  : cyclomatic complexity above the corpus p90 violates the single-responsibility ceiling Martin names for function decomposition.
+Move      : When branch count rises, I usually suspect hidden policy logic, mode handling, or too many cases in one function. First move: extract decision policy or split paths by responsibility. But a high CC can be acceptable in explicit parsers/validators when branches are deliberately enumerated and well-tested.
+
+── src/gzkit/commands/validate_cmd.py:901-901 ──
+Archetype : long_parameter_list
+Band      : approaching
+Guidance  : cyclomatic complexity above the corpus p90 violates the single-responsibility ceiling Martin names for function decomposition.
+Move      : When branch count rises, I usually suspect hidden policy logic, mode handling, or too many cases in one function. First move: extract decision policy or split paths by responsibility. But a high CC can be acceptable in explicit parsers/validators when branches are deliberately enumerated and well-tested.
