@@ -288,7 +288,10 @@ class TestGatherEvidenceLibraryPurity(unittest.TestCase):
             ):
                 gather_evidence(anchor, related=["GHI-1", "GHI-2", "GHI-3"], project_root=root)
             elapsed = time.monotonic() - start
-        self.assertLess(elapsed, 3.0, f"gather_evidence too slow: {elapsed:.3f}s")
+        # GHI #443 follow-up: budget widened from 3.0s to 6.0s. Tempfile +
+        # subprocess mocks add jitter under concurrent suite load; 6.0s still
+        # catches a 2x slowdown regression but no longer fires on noise.
+        self.assertLess(elapsed, 6.0, f"gather_evidence too slow: {elapsed:.3f}s")
 
 
 if __name__ == "__main__":
