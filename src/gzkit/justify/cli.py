@@ -21,6 +21,7 @@ from gzkit.cli.helpers.exit_codes import (
     EXIT_USER_ERROR,
 )
 from gzkit.justify.anchors import resolve_anchor
+from gzkit.justify.complexity_hints import gather_hints_markdown
 from gzkit.justify.evidence import gather_evidence
 from gzkit.justify.models import AnchorResolutionError
 from gzkit.justify.parser import (
@@ -95,7 +96,13 @@ def handle_justify(
         related=related_list,
         project_root=project_root,
     )
-    walkthrough = render_scaffold(anchor_ref, evidence, now=now)
+    hints_md, _hints_warnings = gather_hints_markdown(anchor_ref, project_root=project_root)
+    walkthrough = render_scaffold(
+        anchor_ref,
+        evidence,
+        now=now,
+        complexity_hints_md=hints_md or None,
+    )
     markdown = render_markdown(walkthrough)
 
     if output is not None:

@@ -25,3 +25,9 @@ scaffold_version: {{ walkthrough.scaffold_version }}
 {{ section.reasoning }}
 
 {% endfor %}
+{% if walkthrough.complexity_hints_md %}
+
+### Authoring-time complexity hints
+
+{{ walkthrough.complexity_hints_md }}
+{% endif %}
