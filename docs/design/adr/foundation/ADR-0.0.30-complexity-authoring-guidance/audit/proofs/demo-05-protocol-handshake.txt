@@ -1,0 +1,5 @@
+Content-Length: 94
+
+{"id": 1, "result": {"version": "1.0", "capabilities": ["initialize", "analyze", "shutdown"]}}Content-Length: 55
+
+{"id": 2, "result": {"status": "ok", "shutdown": true}}

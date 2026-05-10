@@ -1,0 +1,11 @@
+/Users/jeff/Documents/Code/gzkit/.agents/skills/complexity-guide/:
+SKILL.md
+
+/Users/jeff/Documents/Code/gzkit/.claude/skills/complexity-guide/:
+SKILL.md
+
+/Users/jeff/Documents/Code/gzkit/.github/skills/complexity-guide/:
+SKILL.md
+
+/Users/jeff/Documents/Code/gzkit/.gzkit/skills/complexity-guide/:
+SKILL.md

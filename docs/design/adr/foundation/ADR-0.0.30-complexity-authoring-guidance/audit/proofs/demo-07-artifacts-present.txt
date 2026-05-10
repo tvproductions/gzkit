@@ -1,0 +1,4 @@
+/Users/jeff/Documents/Code/gzkit/docs/governance/complexity/authoring-guide-protocol.md
+/Users/jeff/Documents/Code/gzkit/docs/user/manpages/complexity-guide.md
+/Users/jeff/Documents/Code/gzkit/src/gzkit/schemas/authoring_guide_protocol.json
+/Users/jeff/Documents/Code/gzkit/src/gzkit/schemas/authoring_hint.json
