@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import io
 import os
-import stat
+import subprocess
 import tempfile
 import textwrap
 import unittest
@@ -268,11 +268,27 @@ class TestShellHookContract(unittest.TestCase):
 
     @covers("REQ-0.0.29-05-10")
     def test_hook_is_executable(self) -> None:
-        """Hook script has executable permission (REQ-10)."""
+        """Hook script has executable permission (REQ-10).
+
+        On Windows the POSIX execute bit is not surfaced in `os.stat`, but git
+        preserves the canonical mode (100755) in the index, which is the
+        contract the hook must satisfy when checked out on a POSIX worktree.
+        Cross-platform fix lands under GHI #442.
+        """
         hook_path = Path(".gzkit/hooks/pre-commit-complexity-advisor")
         self.assertTrue(hook_path.exists())
-        mode = hook_path.stat().st_mode
-        self.assertTrue(mode & stat.S_IXUSR, "Hook is not executable")
+        result = subprocess.run(
+            ["git", "ls-files", "--stage", str(hook_path)],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        stored_mode = result.stdout.split()[0] if result.stdout.strip() else ""
+        self.assertEqual(
+            stored_mode,
+            "100755",
+            f"Hook git mode {stored_mode!r} != '100755' (not executable in tree)",
+        )
 
     @covers("REQ-0.0.29-05-12")
     def test_no_operator_email_in_artifacts(self) -> None:
