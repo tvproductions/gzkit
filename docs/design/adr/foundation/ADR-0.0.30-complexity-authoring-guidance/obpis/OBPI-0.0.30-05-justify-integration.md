@@ -111,6 +111,24 @@ uv run gz arb step --name unittest -- uv run -m unittest tests/commands/test_jus
 uv run -m behave features/justify_complexity_hints.feature
 ```
 
+## Demo
+
+The yielded product — `gz justify` augmented so OBPIs whose Allowed Paths include `.py` files surface authoring-time hints in the scaffold's evidence section.
+
+```bash
+# 1. Hits the integration: this OBPI's Allowed Paths include .py modules
+#    (justify/cli.py, justify/walkthrough.py), so the rendered scaffold
+#    appends a live "### Authoring-time complexity hints" section.
+uv run gz justify OBPI-0.0.30-05
+
+# 2. Silent-skip path (REQ-0.0.30-05-02): an OBPI with no .py paths
+#    renders without the complexity-hints sub-heading.
+uv run gz justify OBPI-0.0.30-02 | grep -c "Authoring-time complexity hints" || echo "0 hits — silent skip honored"
+
+# 3. Behave coverage of all three canonical paths (hits / skip / engine-failure).
+uv run -m behave features/justify_complexity_hints.feature
+```
+
 ## Acceptance Criteria
 
 - [ ] REQ-0.0.30-05-01: Given an OBPI with `.py` allowed-paths and advise-band crossings, when `gz justify` runs, then the justification scaffold's evidence section contains the `### Authoring-time complexity hints` sub-heading with one block per hint.

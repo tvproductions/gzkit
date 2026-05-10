@@ -1,0 +1,47 @@
+{
+  "adr_id": "ADR-0.0.30-complexity-authoring-guidance",
+  "current_step": 6,
+  "is_foundation": true,
+  "started_at": "2026-05-10T07:02:09Z",
+  "updated_at": "2026-05-10T07:32:42Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-05-10T07:02:09Z",
+      "acknowledged_at": "2026-05-10T07:02:15Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-05-10T07:02:15Z",
+      "acknowledged_at": "2026-05-10T07:23:37Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-05-10T07:23:37Z",
+      "acknowledged_at": "2026-05-10T07:25:26Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-05-10T07:25:26Z",
+      "acknowledged_at": "2026-05-10T07:29:58Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-05-10T07:29:58Z",
+      "acknowledged_at": "2026-05-10T07:32:42Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-05-10T07:32:42Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz complexity guide --help"
+  ],
+  "walkthrough_index": 0,
+  "attestation": null,
+  "completed_at": null,
+  "attempt": 1,
+  "paused_at": null
+}

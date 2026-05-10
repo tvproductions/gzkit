@@ -108,6 +108,19 @@ uv run gz validate --documents
 uv run gz arb step --name unittest -- uv run -m unittest tests/complexity/authoring/test_hint.py tests/complexity/authoring/test_engine.py -v
 ```
 
+## Demo
+
+The engine is internal and has no operator-facing CLI of its own — it is exercised transitively through OBPI-01's `gz complexity guide` verb and OBPI-04's `--server` protocol. Demonstrate the projection (AdvisorDiagnosis → AuthoringHint, advise-band only) by running the consumer:
+
+```bash
+# 1. Engine output via OBPI-01 verb — every hint emitted is a successful
+#    projection from an advise-band AdvisorDiagnosis.
+uv run gz complexity guide src/gzkit/commands/validate_cmd.py --json | head -40
+
+# 2. Frozen-model + projection invariants exercised by the engine's tests.
+uv run -m unittest tests.complexity.authoring.test_hint tests.complexity.authoring.test_engine -v
+```
+
 ## Acceptance Criteria
 
 - [ ] REQ-0.0.30-03-01: Given a valid input dict, when `AuthoringHint(**data)` runs, then a frozen instance is returned.
