@@ -131,6 +131,7 @@ surface change**, no behavioral proof is required. The brief therefore records
 - **Spec doc update:** `docs/governance/GovZero/handoff-validation.md` Python
   API section and Sources line corrected to reference the new module path.
 - **Provenance docstring:** the ported module carries both `@covers ADR-0.0.25
+<!-- gz-validate-skip: brief-cross-references -->
   (OBPI-0.0.25-06)` (airlineops origin) and `@covers ADR-0.25.0 (OBPI-0.25.0-32)`
   (gzkit absorption) so lineage is recoverable.
 
@@ -334,6 +335,7 @@ The absorbed module ships with near-zero adaptation cost. airlineops already
 used Pydantic `BaseModel` with `ConfigDict(extra="forbid", frozen=True)`,
 `pathlib.Path`, `from __future__ import annotations`, and module-level
 `re.compile`. The only gzkit adaptations are: (a) dual `@covers` lineage in the
+<!-- gz-validate-skip: brief-cross-references -->
 module docstring, preserving the original `@covers ADR-0.0.25 (OBPI-0.0.25-06)`
 provenance and adding `@covers ADR-0.25.0 (OBPI-0.25.0-32)` absorption; and
 (b) CRLF normalization (`content = content.replace("\r\n", "\n")`) as the

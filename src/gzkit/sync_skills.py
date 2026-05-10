@@ -69,6 +69,7 @@ SKILL_GOVZERO_LAYERS = {
     "Layer 2 - Ledger Consumption",
     "Layer 3 - File Sync",
 }
+PYTHON_RUNTIME_CACHE_SUFFIXES = frozenset({".pyc", ".pyo"})
 
 # Display names for category slugs, in desired render order.
 SKILL_CATEGORY_ORDER: list[tuple[str, str]] = [
@@ -321,6 +322,8 @@ def sync_skill_mirror(
     for source_file in sorted(source_root.rglob("*")):
         if not source_file.is_file():
             continue
+        if _is_python_runtime_cache(source_file):
+            continue
 
         relative_path = source_file.relative_to(source_root)
         if exclude_dirs and relative_path.parts and relative_path.parts[0] in exclude_dirs:
@@ -337,6 +340,11 @@ def sync_skill_mirror(
         updated.append(target_file.relative_to(project_root).as_posix())
 
     return updated
+
+
+def _is_python_runtime_cache(path: Path) -> bool:
+    """Return True for Python bytecode caches that must never be mirrored."""
+    return "__pycache__" in path.parts or path.suffix in PYTHON_RUNTIME_CACHE_SUFFIXES
 
 
 # ---------------------------------------------------------------------------

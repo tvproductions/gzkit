@@ -120,6 +120,7 @@ uv run -m behave features/core_infrastructure.feature
 ### airlineops `core/schema.py` (90 lines)
 
 SQLite DDL helpers extracted from the data warehouse ingestion pipeline
+<!-- gz-validate-skip: brief-cross-references -->
 (`OBPI-0.1.8-23 Phase 2`). Provides four functions:
 
 - `infer_sql_type(val)` — maps Python types to SQL column types

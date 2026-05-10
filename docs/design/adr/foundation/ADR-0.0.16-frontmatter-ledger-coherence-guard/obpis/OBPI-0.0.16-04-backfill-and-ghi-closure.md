@@ -338,6 +338,7 @@ Exit code 0 against the live repo is the dogfood proof — the ADR's central cla
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
 
+<!-- gz-validate-skip: brief-cross-references -->
 - **[GHI #192](https://github.com/tvproductions/gzkit/issues/192)** — `validate_frontmatter` omits the pool-ADR skip filter that `frontmatter_coherence` library applies. Discovered by REQ-04 dogfooding (this OBPI). Blocks REQ-04 exit 0. Suggested fix: new sibling OBPI-0.0.16-06-validator-pool-skip-parity (Lite lane, ~5-line validator change + TDD). Until then OBPI-04 cannot mark Stage 4 ceremony.
 - **[GHI #191](https://github.com/tvproductions/gzkit/issues/191)** — `plan-audit-gate` ↔ plan-mode deadlock; surfaced during this OBPI's pipeline entry. Not blocking OBPI-04 itself but tracked for follow-up.
 - **Brief command defect** — REQ-02/03/05 specify `gz chore run frontmatter-ledger-coherence [--dry-run]`, but the chores subcommand is plural (`gz chores run`) and does not accept `--dry-run`. Canonical surface is `gz frontmatter reconcile [--dry-run]`. Recommend brief amendment when ADR-0.0.16 reopens for OBPI-06.

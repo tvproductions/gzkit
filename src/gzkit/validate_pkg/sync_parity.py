@@ -41,6 +41,12 @@ _NESTED_AGENTS_MD: tuple[str, ...] = (
 )
 
 _SYNC_DATE_LINE = re.compile(rb"^- \*\*Updated\*\*: \d{4}-\d{2}-\d{2}", re.MULTILINE)
+_PYTHON_RUNTIME_CACHE_SUFFIXES = frozenset({".pyc", ".pyo"})
+
+
+def _is_python_runtime_cache(path: Path) -> bool:
+    """Return True for ignored Python bytecode under generated surfaces."""
+    return "__pycache__" in path.parts or path.suffix in _PYTHON_RUNTIME_CACHE_SUFFIXES
 
 
 def _collect_files(project_root: Path) -> set[Path]:
@@ -54,7 +60,7 @@ def _collect_files(project_root: Path) -> set[Path]:
             continue
         if abs_path.is_dir():
             for path in abs_path.rglob("*"):
-                if path.is_file():
+                if path.is_file() and not _is_python_runtime_cache(path):
                     collected.add(path)
     return collected
 

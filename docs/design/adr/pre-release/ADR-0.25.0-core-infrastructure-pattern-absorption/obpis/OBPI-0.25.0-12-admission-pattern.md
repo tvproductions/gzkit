@@ -120,6 +120,7 @@ uv run -m behave features/core_infrastructure.feature
 
 ### airlineops `core/admission.py` (34 lines)
 
+<!-- gz-validate-skip: brief-cross-references -->
 A thin facade created during OBPI-0.1.8-23 that wraps
 `airlineops.warehouse.ingest.config.cadence.closest_admitted`. Provides one
 function:

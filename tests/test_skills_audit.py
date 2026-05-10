@@ -793,6 +793,35 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             after = audit_skills(project_root, config)
             self.assertTrue(after.valid)
 
+    def test_sync_skill_mirrors_skip_python_runtime_caches(self) -> None:
+        """Python bytecode under canonical skills must never copy to mirrors."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            _write_skill(project_root, config.paths.skills, "demo-skill")
+            pycache = project_root / config.paths.skills / "demo-skill" / "scripts" / "__pycache__"
+            pycache.mkdir(parents=True)
+            (pycache / "helper.cpython-314.pyc").write_bytes(b"\x00\x00\x00")
+
+            updated = sync_skill_mirrors(project_root, config)
+
+            self.assertFalse(any("__pycache__" in path for path in updated), updated)
+            for mirror_rel in (
+                config.paths.codex_skills,
+                config.paths.claude_skills,
+                config.paths.copilot_skills,
+            ):
+                mirrored_cache = (
+                    project_root
+                    / mirror_rel
+                    / "demo-skill"
+                    / "scripts"
+                    / "__pycache__"
+                    / "helper.cpython-314.pyc"
+                )
+                self.assertFalse(mirrored_cache.exists(), f"mirrored cache: {mirrored_cache}")
+
 
 def _write_skill_with_body(
     project_root: Path,

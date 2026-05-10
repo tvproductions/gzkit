@@ -281,6 +281,7 @@ Each promotion candidate has a tracking GHI. Close the GHI when the promotion la
 | 16 | 45a (scope-boundary subsection) | [#275](https://github.com/tvproductions/gzkit/issues/275) | Fresh-interpreter helpers + non-Python pipes + `tools/**/*.py` reconfigure | `gz validate --utf8-prefix` (extends row 5) |
 | 17 | 47 (ADR-0.0.20) | ADR-0.0.20 | Agent rule placement invariant: no `paths: "**"` under vendor rule dirs | `gz validate --unscoped-rules` |
 | 18 | 48 (ADR-0.0.22) | ADR-0.0.22 | Security-sensitivity third axis: floor + escalate-not-escape + heightened walkthrough | `gz validate --sensitivity` (+ `_requires_security_review_attestation` audit OR-branch + reserved `arb-step-security-scan-*` ARB slot) |
+| 19 | brief-cross-references | [#436](https://github.com/tvproductions/gzkit/issues/436) | Bare `OBPI-X.Y.Z-NN` / `ADR-X.Y.Z` identifiers in briefs must resolve to on-disk artifacts; speculative-skip marker `<!-- gz-validate-skip: brief-cross-references -->` for forward-reference cases | `gz validate --brief-cross-references` |
 
 Invariants 2 and 3 of the tool-skill-runbook rule (rows 29/30 above) remain Promotable — Invariant 1 landed first to establish the waiver shape for the harder body/output-form scans.
 

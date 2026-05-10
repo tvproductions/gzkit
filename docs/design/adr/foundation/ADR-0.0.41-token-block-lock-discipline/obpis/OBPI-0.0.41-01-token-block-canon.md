@@ -51,6 +51,7 @@ Author the canonical rule file `.gzkit/rules/token-block-discipline.md` that spe
 1. REQUIREMENT: `.gzkit/rules/token-block-discipline.md` MUST exist and specify the five binding sub-invariants: (a) `--abandon` reason category enum (with extension protocol); (b) register-entry minimum-information rules; (c) reaping register-entry protocol (`abandoned_by_reaper` format); (d) TTL canon (default value, escalation policy, who-may-reap, reaping-attestation rule); (e) vocabulary cross-links to AGENTS.md and state-doctrine.md.
 2. REQUIREMENT: The rule file MUST follow `.gzkit/rules/` structure (YAML frontmatter, rule-version body comment, visible version block quote) per `.gzkit/rules/skill-surface-sync.md`.
 3. REQUIREMENT: `--abandon` reason categories MUST have an extension protocol. The base enum MUST include: `network_loss`, `external_blocker`, `wrong_obpi_claimed`, `tool_failure`. Future additions require ADR-backed rationale.
+<!-- gz-validate-skip: brief-cross-references -->
 4. REQUIREMENT: Register-entry minimum-information rule MUST specify: last lock-event timestamp, last commit SHA, named decision context, branch state. Entries lacking these fields MUST fail OBPI-0.0.41-04 validator.
 5. REQUIREMENT: TTL canon MUST specify: default TTL value with rationale; warn-then-reap escalation windows; agent-authorization rule (any agent at next session-start; explicit operator override); attestation requirement (reaping agent MUST produce `abandoned_by_reaper` register entry before reap succeeds, mirroring ordinary release rule).
 6. REQUIREMENT: Vocabulary section MUST define: token (= OBPI lock), issue (= obpi_lock_claimed event), register entry (= handoff document), traversal (= OBPI session), abandonment (= degenerate handoff), reaping (= lock-takeover by different agent).
@@ -228,6 +229,7 @@ $ grep -E "^## Binding" .gzkit/rules/token-block-discipline.md
 
 ### Gate 2 (TDD — No tests for doctrine canon)
 
+<!-- gz-validate-skip: brief-cross-references -->
 Doctrine canon is non-executable rule content; TDD gate is N/A for this OBPI. Structural enforcement (fail-closed release, validator, reaping logic) is tested in OBPI-0.0.41-02, 03, 04.
 
 ### Code Quality
@@ -254,6 +256,7 @@ Validated: documents
 
 ### Closing Argument
 
+<!-- gz-validate-skip: brief-cross-references -->
 OBPI-0.0.41-01 establishes the governance vocabulary and binding sub-invariants that gzkit will enforce structurally in OBPI-02/03/04. The rule file is authoritative for the entire discipline: five fail-closed invariants (abandon categories, minimum-information, reaping protocol, TTL canon, release precondition) grounded in railway absolute-block working and adapted to governance work. No code changes; pure documentation. All validation passes. Ready for OBPI-0.0.41-02 (structural enforcement implementation).
 
 ## Human Attestation
