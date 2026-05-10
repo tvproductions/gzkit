@@ -24,6 +24,20 @@ from gzkit.utils import git_cmd
 
 GIT_SYNC_SKILL_PATH = ".gzkit/skills/git-sync/SKILL.md"
 
+# Cap on ledger entries embedded in a single auto-commit body. Twelve is
+# enough to convey the shape of a ceremony batch without bloating the log
+# beyond a comfortable terminal page; overflow is surfaced as a count line.
+_MAX_LEDGER_EVENTS_IN_COMMIT = 12
+
+# Anchor extraction patterns. The builder groups output by family
+# (ADR semver, ADR pool, OBPI, GHI) in this order.
+_ANCHOR_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("ADR-semver", re.compile(r"\bADR-\d+\.\d+\.\d+(?:-[a-z0-9][a-z0-9-]*)?\b")),
+    ("ADR-pool", re.compile(r"\bADR-pool\.[a-z0-9][a-z0-9.-]*\b")),
+    ("OBPI", re.compile(r"\bOBPI-\d+\.\d+\.\d+-\d+(?:-[a-z0-9][a-z0-9-]*)?\b")),
+    ("GHI", re.compile(r"\bGHI #\d+\b")),
+)
+
 
 def _plan_git_sync(
     project_root: Path,
@@ -137,27 +151,93 @@ def _run_sync_prechecks(
 _SYNC_CEREMONY_TRAILER = "Ceremony: gz-git-sync"
 
 
-def _build_sync_commit_message(staged_files: list[str]) -> str:
-    """Build a descriptive commit message from staged file paths.
+def _extract_governance_anchors(diff_text: str) -> list[str]:
+    """Return sorted, deduped governance anchor IDs found in staged diff text.
 
-    Every sync commit carries a ``Ceremony: gz-git-sync`` trailer so
-    ``gz validate --commit-trailers`` accepts the commit as
-    governance-intent-bound (GHI #201). Sync commits bundle work already
-    authored under other governance anchors (OBPIs, ADRs, defect fixes);
-    the ceremony trailer names this class explicitly rather than forcing
-    a synthetic Task id.
+    Surfaces OBPI / ADR (semver + pool) / GHI identifiers so the auto-commit
+    body cites the artifacts the sync touched (GHI #439). Grouped by family
+    in a stable order (ADR semver → ADR pool → OBPI → GHI); within a family
+    the IDs are sorted alphabetically. Lexicographic ordering is acceptable
+    here because the consumer is a human reading ``git log`` — not a
+    semver-comparison surface.
     """
-    if not staged_files:
-        return f"chore: sync staged changes (gz git-sync)\n\n{_SYNC_CEREMONY_TRAILER}"
+    grouped: dict[str, set[str]] = {family: set() for family, _ in _ANCHOR_PATTERNS}
+    for family, pattern in _ANCHOR_PATTERNS:
+        for match in pattern.finditer(diff_text):
+            grouped[family].add(match.group(0))
 
-    # Classify changes by top-level area
+    ordered: list[str] = []
+    for family, _ in _ANCHOR_PATTERNS:
+        ordered.extend(sorted(grouped[family]))
+    return ordered
+
+
+def _recent_unsynced_ledger_events(
+    project_root: Path, since_iso: str | None
+) -> list[dict[str, Any]]:
+    """Return ledger entries with ``ts`` strictly greater than ``since_iso``.
+
+    Reads ``.gzkit/ledger.jsonl`` and filters by ISO-8601 timestamp string
+    comparison (the ledger writes a single canonical zoned format, so string
+    comparison is monotonic). Malformed JSONL lines are skipped silently —
+    the auto-commit message is best-effort enrichment, not a validator.
+    When ``since_iso`` is ``None`` every event is returned (used for fresh
+    branches with no prior commit on this ref).
+    """
+    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+    try:
+        raw = ledger_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return []
+
+    events: list[dict[str, Any]] = []
+    for line in raw.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        try:
+            entry = json.loads(stripped)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(entry, dict):
+            continue
+        if since_iso is not None:
+            ts = entry.get("ts")
+            if not isinstance(ts, str) or ts <= since_iso:
+                continue
+        events.append(entry)
+    return events
+
+
+def _format_anchors_section(anchors: list[str]) -> str:
+    lines = ["Governance anchors touched:"]
+    lines.extend(f"- {anchor}" for anchor in anchors)
+    return "\n".join(lines)
+
+
+def _format_ledger_events_section(events: list[dict[str, Any]]) -> str:
+    total = len(events)
+    capped = events[:_MAX_LEDGER_EVENTS_IN_COMMIT]
+    lines = ["Ledger events since last commit:"]
+    for entry in capped:
+        event = entry.get("event", "?")
+        ts = entry.get("ts", "")
+        ident = entry.get("id")
+        if ident:
+            lines.append(f"- {event} {ident} ({ts})")
+        else:
+            lines.append(f"- {event} ({ts})")
+    if total > _MAX_LEDGER_EVENTS_IN_COMMIT:
+        lines.append(f"... ({total} total since last commit)")
+    return "\n".join(lines)
+
+
+def _classify_staged_areas(staged_files: list[str]) -> str:
     areas: dict[str, list[str]] = {}
     for path in staged_files:
         parts = Path(path).parts
-        if len(parts) >= 2 and parts[0] == "src":
-            area = "/".join(parts[:3])  # src/gzkit/commands etc.
-        elif len(parts) >= 2 and parts[0] == "docs":
-            area = "/".join(parts[:3])  # docs/design/adr etc.
+        if len(parts) >= 2 and parts[0] == "src" or len(parts) >= 2 and parts[0] == "docs":
+            area = "/".join(parts[:3])
         elif len(parts) >= 2 and parts[0] == "tests":
             area = "tests"
         elif len(parts) >= 2 and parts[0] == ".claude":
@@ -170,7 +250,6 @@ def _build_sync_commit_message(staged_files: list[str]) -> str:
             area = parts[0] if parts else "root"
         areas.setdefault(area, []).append(path)
 
-    # Build summary from areas
     area_summaries = []
     for area in sorted(areas):
         count = len(areas[area])
@@ -183,8 +262,43 @@ def _build_sync_commit_message(staged_files: list[str]) -> str:
     summary = ", ".join(area_summaries[:4])
     if len(area_summaries) > 4:
         summary += f" +{len(area_summaries) - 4} more"
+    return summary
 
-    return f"chore: update {summary} (gz git-sync)\n\n{_SYNC_CEREMONY_TRAILER}"
+
+def _build_sync_commit_message(
+    staged_files: list[str],
+    *,
+    anchors: list[str] | None = None,
+    ledger_events: list[dict[str, Any]] | None = None,
+) -> str:
+    """Build a descriptive commit message from staged files + governance context.
+
+    Every sync commit carries a ``Ceremony: gz-git-sync`` trailer so
+    ``gz validate --commit-trailers`` accepts the commit as
+    governance-intent-bound (GHI #201). Sync commits bundle work already
+    authored under other governance anchors (OBPIs, ADRs, defect fixes);
+    the ceremony trailer names this class explicitly rather than forcing
+    a synthetic Task id.
+
+    When ``anchors`` or ``ledger_events`` are supplied (GHI #439), the body
+    additionally surfaces the OBPI/ADR/GHI IDs touched in the staged diff
+    and the ledger events accumulated since the last commit on this branch.
+    Both sections are omitted when empty so genuinely path-shape-only syncs
+    retain their compact pre-enrichment shape.
+    """
+    subject = (
+        "chore: sync staged changes (gz git-sync)"
+        if not staged_files
+        else f"chore: update {_classify_staged_areas(staged_files)} (gz git-sync)"
+    )
+
+    sections: list[str] = [subject]
+    if anchors:
+        sections.append(_format_anchors_section(anchors))
+    if ledger_events:
+        sections.append(_format_ledger_events_section(ledger_events))
+    sections.append(_SYNC_CEREMONY_TRAILER)
+    return "\n\n".join(sections)
 
 
 _CONVENTIONAL_COMMIT_RE = re.compile(
@@ -246,7 +360,19 @@ def _commit_staged_changes(project_root: Path, blockers: list[str], executed: li
         return
 
     staged_files = [f for f in staged_out.strip().splitlines() if f.strip()]
-    message = _build_sync_commit_message(staged_files)
+
+    # GHI #439: enrich the commit body with governance anchors from the staged
+    # diff and ledger events accumulated since HEAD. Both are best-effort —
+    # failures degrade silently to the pre-enrichment shape so commit-authoring
+    # never blocks on enrichment IO.
+    rc_diff, diff_text, _err_diff = git_cmd(project_root, "diff", "--cached")
+    anchors = _extract_governance_anchors(diff_text) if rc_diff == 0 else []
+
+    rc_head_ts, head_iso, _err_head_ts = git_cmd(project_root, "log", "-1", "--format=%cI")
+    since_iso = head_iso.strip() if rc_head_ts == 0 and head_iso.strip() else None
+    ledger_events = _recent_unsynced_ledger_events(project_root, since_iso)
+
+    message = _build_sync_commit_message(staged_files, anchors=anchors, ledger_events=ledger_events)
 
     rc_commit, _out_commit, err_commit = git_cmd(
         project_root,
