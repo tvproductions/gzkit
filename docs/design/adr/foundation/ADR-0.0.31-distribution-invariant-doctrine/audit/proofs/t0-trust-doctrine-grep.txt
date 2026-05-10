@@ -1,0 +1,11 @@
+63:The doctrine names four trust layers. Each has an authority — the entity whose output it trusts — and a question it answers. T0 sits upstream of T1: distribution must happen before any layer's canonical claims are valid for external consumers.
+67:| **T0** | Distribution | Does the wheel reproducibly deliver every canonical surface to a fresh `gz init`? |
+72:T0 is upstream of T1: if a canonical surface only exists in this repo's `.gzkit/` and never ships, then T1 (canon-as-truth) is silently project-specific instead of project-portable. Invariants for T1, T2, and T3 are defined below.
+74:### T0 — Distribution Invariant
+81:> "a wheel that ships without a canonical surface is a T0 breach, regardless of whether downstream `gz init` reports success" — GHI #318
+83:T0 is upstream of T1: if a canonical surface only exists in this repo's `.gzkit/` and never ships, then T1 (canon-as-truth) is silently project-specific instead of project-portable. That is the failure shape GHI #318 surfaced.
+85:**Mechanical enforcement contract.** The mechanical surface that satisfies T0 — wheel package-data extension, canonical-content-shipping scaffolders, `gz init --update`, and the build-then-install smoke test — is owned by [ADR-0.0.32 (canonical surface packaging)](../design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/ADR-0.0.32-canonical-surface-packaging.md). T0 prescribes the contract any enforcement layer MUST satisfy:
+87:1. A T0 audit MUST detect missing package data without depending on downstream installation evidence.
+88:2. A T0 audit MUST distinguish "canonical surface authored but not shipped" (the GHI #318 class) from "canonical surface authored and shipped" (correct state) and from "no canonical surface authored" (out of scope — T0 governs *delivery* of authored canon, not authorship volume).
+89:3. A T0-passing build MUST produce a wheel that, when installed into a fresh venv and run through `gz init`, yields a project whose canonical surfaces are byte-equivalent (modulo project-name substitution) to a frozen baseline manifest.
+93:**See also:** [T0 Failure-Mode Catalog](distribution_invariant_catalog.md) — worked examples (GHI #318 self-hosting blindness; ADR-0.0.21 chores promotion gap) and an "Is this a T0 breach?" decision tree for applying T0 to new canonical surfaces.

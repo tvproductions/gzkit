@@ -1,0 +1,30 @@
+<!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
+
+# T0 Failure-Mode Catalog
+
+**Doctrine source:** [trust-doctrine.md § T0 — Distribution Invariant](trust-doctrine.md#t0-distribution-invariant)
+
+This catalog is the operator-facing companion to the T0 doctrine paragraph in `trust-doctrine.md`. Where the doctrine page names the invariant in one paragraph, this catalog gives it teeth: worked examples of past T0-class failures and a canonical "Is this a T0 breach?" decision tree that future canonical-surface promotions check against during authoring.
+
+The catalog references and applies the T0 doctrine. It does not redefine it. Any framing difference between this file and `trust-doctrine.md` § T0 is a defect in this file — the doctrine page is authoritative.
+
+**Mechanical enforcement:** [ADR-0.0.32 (canonical surface packaging)](../design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/ADR-0.0.32-canonical-surface-packaging.md) is the mechanical counterpart to this doctrine. The decision tree below points into ADR-0.0.32's OBPI work items for each class of T0 breach.
+
+---
+
+## Worked Example #1: GHI #318 — Self-Hosting Blindness
+
+**Summary:** `pip install py-gzkit && gz init` in a greenfield project produces zero rule files and one-line skill stubs — not the canonical surfaces gzkit uses to govern itself. The failure was concealed for the entire pre-1.0 cycle because gzkit develops against its own repo's `.gzkit/` content; no "fresh-project install" smoke test existed. The dogfood loop closed in a way that made the packaging gap structurally invisible.
+
+**Surfaced:** 2026-04-25 by the first external greenfield consumer.
+
+**Why this is a T0 breach:** Every failure class below is a case where a canonical surface existed in the repo but was not reproducibly delivered to a fresh `gz init`. The downstream consumer received a degraded surface (stub or nothing) while `gz init` reported success — the exact shape the T0 invariant names.
+
+### Failure Class A — Rules Entirely Unscaffolded
+
+No `scaffold_core_rules` function existed. No `CORE_RULES` registry symmetric to `CORE_SKILLS` or `CORE_CHORES`. `init_cmd.py` never referenced rules. A greenfield `gz init` produced zero rule files; contextual rule loading silently no-oped.
+
+**Closed by:**
+- [OBPI-0.0.32-03](../design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/obpis/OBPI-0.0.32-03-rules-physical-migration.md) — physical migration (`git mv .gzkit/rules/<slug>.md src/gzkit/rules/<slug>.md` for all 14 canonical rules)
+- [OBPI-0.0.32-04](../design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/obpis/OBPI-0.0.32-04-rules-scaffolder-authoring.md) — `CORE_RULES` registry + `scaffold_core_rules` + `init_cmd` wiring
+

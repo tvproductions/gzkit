@@ -1,0 +1,40 @@
+ADR audit-check: ADR-0.0.31-distribution-invariant-doctrine
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.31-01-author-t0-doctrine
+  - OBPI-0.0.31-02-register-t0-scorecard
+  - OBPI-0.0.31-03-t0-failure-mode-catalog
+Advisory 14 REQ(s) without @covers traceability (non-blocking):
+  - REQ-0.0.31-01-01
+  - REQ-0.0.31-01-02
+  - REQ-0.0.31-01-03
+  - REQ-0.0.31-01-04
+  - REQ-0.0.31-01-05
+  - REQ-0.0.31-01-06
+  - REQ-0.0.31-01-07
+  - REQ-0.0.31-02-01
+  - REQ-0.0.31-02-02
+  - REQ-0.0.31-02-03
+  - REQ-0.0.31-02-04
+  - REQ-0.0.31-02-05
+  - REQ-0.0.31-02-06
+  - REQ-0.0.31-02-07
+
+Coverage: 8/22 REQs covered (36.4%)
+  OBPI-0.0.31-01: 0/7 (0.0%)
+  OBPI-0.0.31-02: 0/7 (0.0%)
+  OBPI-0.0.31-03: 8/8 (100.0%)
+Uncovered REQs (14):
+  - REQ-0.0.31-01-01
+  - REQ-0.0.31-01-02
+  - REQ-0.0.31-01-03
+  - REQ-0.0.31-01-04
+  - REQ-0.0.31-01-05
+  - REQ-0.0.31-01-06
+  - REQ-0.0.31-01-07
+  - REQ-0.0.31-02-01
+  - REQ-0.0.31-02-02
+  - REQ-0.0.31-02-03
+  - REQ-0.0.31-02-04
+  - REQ-0.0.31-02-05
+  - REQ-0.0.31-02-06
+  - REQ-0.0.31-02-07
