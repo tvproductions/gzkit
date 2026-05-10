@@ -40,7 +40,10 @@ This brief is the foundational data contract that OBPI-02 (chore runner), OBPI-0
 - `tests/scan/__init__.py` — new test package init
 - `tests/scan/test_owasp_models.py` — schema-invariant tests
 - `tests/scan/test_owasp_mapping.py` — mapping.json parses against its JSON Schema
-- `tests/scan/fixtures/` — fixture inputs for invariant tests (valid/invalid `OwaspScanReport` payloads)
+- `tests/scan/fixtures/valid_minimal_report.json` — happy-path `OwaspScanReport` payload
+- `tests/scan/fixtures/invalid_a06_mechanical.json` — A06=mechanical negative-case fixture
+- `tests/scan/fixtures/invalid_a07_other.json` — A07!=not-applicable negative-case fixture
+- `tests/scan/fixtures/invalid_mechanical_floor.json` — mechanical-floor invariant negative-case fixture
 
 ## Denied Paths
 

@@ -52,6 +52,17 @@ _CREATES_PATH_PREFIXES: tuple[str, ...] = (
 )
 
 
+def _normalize_for_creates(token: str) -> str:
+    """Normalize a token for creates-set comparison.
+
+    Strips at most one literal ``./`` prefix and trailing ``/``. Distinct
+    from ``str.lstrip("./")`` which would also eat the leading dot of
+    dotfile-rooted paths like ``.gzkit/`` or ``.claude/``, breaking the
+    prefix check at the call site (GHI #433).
+    """
+    return token.removeprefix("./").rstrip("/")
+
+
 def has_glob_chars(token: str) -> bool:
     """Return True when the token contains a glob marker character."""
     return any(ch in token for ch in _GLOB_MARKER_CHARS)
@@ -139,7 +150,7 @@ def _extract_creates_paths_from_text(content: str) -> set[str]:
         if not (in_creates_section or "**CREATE**" in line):
             continue
         for token in line.split():
-            cleaned = token.strip("`*,()[]<>").lstrip("./").rstrip("/")
+            cleaned = _normalize_for_creates(token.strip("`*,()[]<>"))
             if any(cleaned.startswith(prefix) for prefix in _CREATES_PATH_PREFIXES):
                 paths.add(cleaned)
     return paths
@@ -185,7 +196,7 @@ def check_brief_path_validity(
             )
             continue
         if not allowed_path_resolves(project_root, path):
-            if path.lstrip("./").rstrip("/") in creates:
+            if _normalize_for_creates(path) in creates:
                 continue
             gaps.append(f"Allowed path does not exist in repository: {path}")
     return gaps
