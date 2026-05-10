@@ -1,0 +1,123 @@
+{
+  "owasp_year": 2025,
+  "categories": {
+    "A01": {
+      "category_name": "Broken Access Control",
+      "source": "judgment-only",
+      "ruff_rules": [],
+      "ast_visitors": [],
+      "reused_chores": [],
+      "coverage_baseline": "not-mechanical",
+      "notes": "Skill-only governance-access review (OBPI lock claims, Gate 5 attestation gates, ledger-write paths). Web-route auth detection deferred to follow-up ADR."
+    },
+    "A02": {
+      "category_name": "Security Misconfiguration",
+      "source": ["stdlib-ast", "judgment-only"],
+      "ruff_rules": [],
+      "ast_visitors": [
+        "chmod-permissive",
+        "ssl-verify-false",
+        "shell-true-literal"
+      ],
+      "reused_chores": [],
+      "coverage_baseline": "partial-mechanical",
+      "notes": "Mechanical: chmod 0o777 literal, requests verify=False, subprocess shell=True literal. Judgment: debug flags in production, log policy."
+    },
+    "A03": {
+      "category_name": "Software Supply Chain Failures",
+      "source": ["chore-reused", "stdlib-ast"],
+      "ruff_rules": [],
+      "ast_visitors": ["package-mgr-subprocess"],
+      "reused_chores": ["dependency-currency"],
+      "coverage_baseline": "partial-mechanical",
+      "notes": "AST: pip install / package-mgr subprocess in source. Reuses dependency-currency chore outputs verbatim."
+    },
+    "A04": {
+      "category_name": "Cryptographic Failures",
+      "source": ["ruff-S", "stdlib-ast"],
+      "ruff_rules": [
+        "S324",
+        "S501",
+        "S502",
+        "S503",
+        "S504",
+        "S505",
+        "S506",
+        "S507",
+        "S508",
+        "S509"
+      ],
+      "ast_visitors": ["hardcoded-keys", "random-for-tokens"],
+      "reused_chores": [],
+      "coverage_baseline": "mechanical",
+      "notes": "Weak hash, ssl-no-cert, weak TLS; AST: hardcoded keys, random.* used for token generation."
+    },
+    "A05": {
+      "category_name": "Injection",
+      "source": ["ruff-S", "stdlib-ast"],
+      "ruff_rules": [
+        "S301",
+        "S302",
+        "S303",
+        "S304",
+        "S305",
+        "S306",
+        "S307",
+        "S605",
+        "S606",
+        "S607",
+        "S608",
+        "S609"
+      ],
+      "ast_visitors": ["f-string-into-execute"],
+      "reused_chores": [],
+      "coverage_baseline": "mechanical",
+      "notes": "sql/shell-injection, unsafe pickle/yaml; AST: f-string interpolation into execute()."
+    },
+    "A06": {
+      "category_name": "Insecure Design",
+      "source": "judgment-only",
+      "ruff_rules": [],
+      "ast_visitors": [],
+      "reused_chores": [],
+      "coverage_baseline": "not-mechanical",
+      "notes": "Synthesizer-skill territory. Chore MUST NOT grade. The honest move is the not-mechanical coverage marker (anti-vibing binding claim 4)."
+    },
+    "A07": {
+      "category_name": "Authentication Failures",
+      "source": "not-applicable",
+      "ruff_rules": [],
+      "ast_visitors": [],
+      "reused_chores": [],
+      "coverage_baseline": "not-applicable",
+      "notes": "No auth surface in Python library/CLI; web-framework auth detection deferred to follow-up ADR."
+    },
+    "A08": {
+      "category_name": "Software or Data Integrity Failures",
+      "source": ["ruff-S", "stdlib-ast", "judgment-only"],
+      "ruff_rules": ["S301", "S302", "S506"],
+      "ast_visitors": ["artifact-integrity-checks"],
+      "reused_chores": [],
+      "coverage_baseline": "partial-mechanical",
+      "notes": "Mechanical: unsafe deserialize. Judgment: CI/release artifact integrity, signed-commit policy."
+    },
+    "A09": {
+      "category_name": "Security Logging and Alerting Failures",
+      "source": ["chore-reused", "stdlib-ast"],
+      "ruff_rules": [],
+      "ast_visitors": ["secrets-in-log-strings"],
+      "reused_chores": ["exceptions-and-logging-rationalization"],
+      "coverage_baseline": "partial-mechanical",
+      "notes": "AST: secret-shaped strings in log format strings, missing structured logger. Reuses exceptions-and-logging-rationalization chore."
+    },
+    "A10": {
+      "category_name": "Mishandling of Exceptional Conditions",
+      "source": ["chore-reused", "ruff-S"],
+      "ruff_rules": ["S110", "S112"],
+      "ast_visitors": [],
+      "reused_chores": ["exceptions-and-logging-rationalization"],
+      "coverage_baseline": "partial-mechanical",
+      "notes": "try-except-pass, try-except-continue. Reuses exceptions-and-logging-rationalization chore."
+    }
+  }
+}
