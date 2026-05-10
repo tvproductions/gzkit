@@ -1,0 +1,130 @@
+{
+  "wall_clock_seconds": 102.4,
+  "test_count": 4671,
+  "failures": 0,
+  "errors": 0,
+  "top_10_slowest": [
+    [
+      3.009,
+      "test_cli_audit_exits_zero_after_validate_subverb_lands (tests.commands.test_justify_validate.TestCliAuditCoverage.test_cli_audit_exits_zero_after_validate_subverb_lands)"
+    ],
+    [
+      3.004,
+      "test_cli_audit_covers_complexity_advise (tests.commands.test_complexity_advise.TestComplexityAdviseCliAuditParity.test_cli_audit_covers_complexity_advise)"
+    ],
+    [
+      2.529,
+      "test_cli_audit_covers_complexity_guide (tests.commands.test_complexity_guide.TestComplexityGuideCliAuditParity.test_cli_audit_covers_complexity_guide)"
+    ],
+    [
+      2.475,
+      "test_check_surfaces_report_returns_valid_report (tests.test_doc_coverage.TestIntegration.test_check_surfaces_report_returns_valid_report)"
+    ],
+    [
+      1.988,
+      "test_no_inbound_references_to_legacy_paths_in_live_files (tests.governance.test_attestation_fold.TestAttestationFold.test_no_inbound_references_to_legacy_paths_in_live_files)"
+    ],
+    [
+      1.877,
+      "test_no_inbound_references_to_legacy_paths_in_live_files (tests.governance.test_defect_fix_routing_fold.TestDefectFixRoutingFold.test_no_inbound_references_to_legacy_paths_in_live_files)"
+    ],
+    [
+      1.877,
+      "test_no_inbound_references_to_legacy_paths_in_live_files (tests.governance.test_agent_contract_fold.TestAgentContractFold.test_no_inbound_references_to_legacy_paths_in_live_files)"
+    ],
+    [
+      1.493,
+      "test_chores_layout_validation_passes (tests.chores.test_eval_feedback_cluster.TestEvalFeedbackCluster.test_chores_layout_validation_passes)"
+    ],
+    [
+      1.421,
+      "test_audit_completes_under_two_seconds_on_repo_root (tests.governance.test_audit_chores_layout.PerformanceBudgetTests.test_audit_completes_under_two_seconds_on_repo_root)"
+    ],
+    [
+      1.144,
+      "test_default_sync_parity_check_does_not_emit_ledger_event (tests.test_validate_sync_parity.SyncParityCleanTreeTest.test_default_sync_parity_check_does_not_emit_ledger_event)"
+    ]
+  ],
+  "top_10_modules": [
+    {
+      "module": "tests.commands.test_sync_cmds.TestSyncCommand",
+      "tests": 12,
+      "total_seconds": 4.12
+    },
+    {
+      "module": "tests.test_obpi_validator.TestObpiValidator",
+      "tests": 25,
+      "total_seconds": 4.08
+    },
+    {
+      "module": "tests.commands.test_justify_validate.TestCliAuditCoverage",
+      "tests": 1,
+      "total_seconds": 3.01
+    },
+    {
+      "module": "tests.commands.test_complexity_advise.TestComplexityAdviseCliAuditParity",
+      "tests": 1,
+      "total_seconds": 3.0
+    },
+    {
+      "module": "tests.commands.test_skills.TestSkillCommands",
+      "tests": 16,
+      "total_seconds": 2.96
+    },
+    {
+      "module": "tests.governance.test_promoted_advisory_audits.PromotedAdvisoryAudits",
+      "tests": 25,
+      "total_seconds": 2.89
+    },
+    {
+      "module": "tests.commands.test_audit.TestConfigAndCliAuditCommands",
+      "tests": 11,
+      "total_seconds": 2.56
+    },
+    {
+      "module": "tests.commands.test_complexity_guide.TestComplexityGuideCliAuditParity",
+      "tests": 1,
+      "total_seconds": 2.53
+    },
+    {
+      "module": "tests.test_doc_coverage.TestIntegration",
+      "tests": 2,
+      "total_seconds": 2.5
+    },
+    {
+      "module": "tests.commands.test_runtime.TestAdrRuntimeCommands",
+      "tests": 38,
+      "total_seconds": 2.08
+    }
+  ],
+  "slow_tests_over_threshold": [
+    {
+      "seconds": 3.0,
+      "test": "test_cli_audit_covers_complexity_advise (tests.commands.test_complexity_advise.TestComplexityAdviseCliAuditParity.test_cli_audit_covers_complexity_advise)"
+    },
+    {
+      "seconds": 3.01,
+      "test": "test_cli_audit_exits_zero_after_validate_subverb_lands (tests.commands.test_justify_validate.TestCliAuditCoverage.test_cli_audit_exits_zero_after_validate_subverb_lands)"
+    }
+  ],
+  "noise_line_count": 344,
+  "noise_sample": [
+    "Validated: evaluation-justify-binding",
+    "\u2713 No evaluation-justify-binding violations.",
+    "Validated: evaluation-justify-binding",
+    "\u274c 1 violation(s):",
+    "\u2192 ADR-0.0.fixture: missing gz-justify artifact for low score",
+    "Error: Attestation receipt-binding gate failed (heavy/foundation policy).",
+    "- missing: no receipt file at",
+    "arb-step-unittest-dddddddddddddddddddddddddddddddd.json",
+    "Recovery: re-run the cited ARB commands and re-cite the resolved receipt IDs.",
+    "Error: ADR closeout blocked \u2014 unwaived REQ coverage gaps in ADR-9.9.9-fixture:"
+  ],
+  "violations": [
+    "Suite took 102.4s (threshold: 60s)",
+    "Slow test (3.00s): test_cli_audit_covers_complexity_advise (tests.commands.test_complexity_advise.TestComplexityAdviseCliAuditParity.test_cli_audit_covers_complexity_advise)",
+    "Slow test (3.01s): test_cli_audit_exits_zero_after_validate_subverb_lands (tests.commands.test_justify_validate.TestCliAuditCoverage.test_cli_audit_exits_zero_after_validate_subverb_lands)",
+    "Stdout noise: 344 line(s)"
+  ],
+  "passed": false
+}
