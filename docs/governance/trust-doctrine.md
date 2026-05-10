@@ -58,6 +58,40 @@ Nine separate instances, one underlying pattern. Every one of them shipped green
 
 ---
 
+## Trust Layers
+
+The doctrine names four trust layers. Each has an authority — the entity whose output it trusts — and a question it answers. T0 sits upstream of T1: distribution must happen before any layer's canonical claims are valid for external consumers.
+
+| Layer | Authority | Question it answers |
+|-------|-----------|---------------------|
+| **T0** | Distribution | Does the wheel reproducibly deliver every canonical surface to a fresh `gz init`? |
+| **T1** | Canon | What is the authored, source-controlled truth? |
+| **T2** | Ledger | What event sequence has been witnessed? |
+| **T3** | Derived | What does a current view assert? |
+
+T0 is upstream of T1: if a canonical surface only exists in this repo's `.gzkit/` and never ships, then T1 (canon-as-truth) is silently project-specific instead of project-portable. Invariants for T1, T2, and T3 are defined below.
+
+### T0 — Distribution Invariant
+
+**Authority:** Distribution
+**Question:** Does the wheel reproducibly deliver every canonical surface to a fresh `gz init`?
+
+Every canonical surface — skills, rules, hooks, templates, chores, personas — MUST be reproducibly delivered by `pip install py-gzkit && gz init` to a fresh project, byte-equivalent (modulo path resolution and project-name substitution) to the package's authored canonical content.
+
+> "a wheel that ships without a canonical surface is a T0 breach, regardless of whether downstream `gz init` reports success" — GHI #318
+
+T0 is upstream of T1: if a canonical surface only exists in this repo's `.gzkit/` and never ships, then T1 (canon-as-truth) is silently project-specific instead of project-portable. That is the failure shape GHI #318 surfaced.
+
+**Mechanical enforcement contract.** The mechanical surface that satisfies T0 — wheel package-data extension, canonical-content-shipping scaffolders, `gz init --update`, and the build-then-install smoke test — is owned by [ADR-0.0.32 (canonical surface packaging)](../design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/ADR-0.0.32-canonical-surface-packaging.md). T0 prescribes the contract any enforcement layer MUST satisfy:
+
+1. A T0 audit MUST detect missing package data without depending on downstream installation evidence.
+2. A T0 audit MUST distinguish "canonical surface authored but not shipped" (the GHI #318 class) from "canonical surface authored and shipped" (correct state) and from "no canonical surface authored" (out of scope — T0 governs *delivery* of authored canon, not authorship volume).
+3. A T0-passing build MUST produce a wheel that, when installed into a fresh venv and run through `gz init`, yields a project whose canonical surfaces are byte-equivalent (modulo project-name substitution) to a frozen baseline manifest.
+
+**Doctrine source:** [ADR-0.0.31 (distribution invariant doctrine)](../design/adr/foundation/ADR-0.0.31-distribution-invariant-doctrine/ADR-0.0.31-distribution-invariant-doctrine.md).
+
+---
+
 ## The three invariants
 
 These invariants formalize the lessons as mechanical rules. Each has a regression test or fail-closed audit in the repo.

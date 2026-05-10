@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.30-complexity-authoring-guidance
-status: Draft
+status: Validated
 kind: foundation
 semver: 0.0.30
 lane: heavy
