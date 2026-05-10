@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any, cast
 
@@ -186,6 +187,45 @@ def _build_sync_commit_message(staged_files: list[str]) -> str:
     return f"chore: update {summary} (gz git-sync)\n\n{_SYNC_CEREMONY_TRAILER}"
 
 
+_CONVENTIONAL_COMMIT_RE = re.compile(
+    r"^(fix|feat|refactor|test|docs|chore|perf|style|ci|build|revert)(\([^)]+\))?!?:\s"
+)
+
+
+def _detect_stranded_commit_message(project_root: Path) -> str | None:
+    """Return the subject of a stranded prior commit attempt, or None.
+
+    A "stranded" message is a conventional-commit-shaped subject sitting in
+    ``.git/COMMIT_EDITMSG`` (preserved by git after a failed commit attempt)
+    whose subject does not match HEAD's subject — meaning the prior
+    ``git commit -m "..."`` invocation never landed (pre-commit hooks rejected
+    it, the operator aborted, etc.). If such a message exists, the sync
+    auto-commit path MUST refuse to silently rewrite the operator's intent;
+    see GHI #437 for the failure case (``Closes #434`` trailer + ARB receipt
+    IDs erased by the template ``chore: update`` rewrite).
+    """
+    editmsg_path = project_root / ".git" / "COMMIT_EDITMSG"
+    try:
+        raw = editmsg_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return None
+
+    subject: str | None = None
+    for line in raw.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        subject = stripped
+        break
+    if subject is None or not _CONVENTIONAL_COMMIT_RE.match(subject):
+        return None
+
+    rc_head, head_subject, _err = git_cmd(project_root, "log", "-1", "--format=%s")
+    if rc_head == 0 and head_subject.strip() == subject:
+        return None
+    return subject
+
+
 def _commit_staged_changes(project_root: Path, blockers: list[str], executed: list[str]) -> None:
     """Create sync auto-commit when staged changes are present."""
     if blockers:
@@ -193,6 +233,16 @@ def _commit_staged_changes(project_root: Path, blockers: list[str], executed: li
 
     rc_staged, staged_out, _err_staged = git_cmd(project_root, "diff", "--cached", "--name-only")
     if rc_staged != 0 or not staged_out.strip():
+        return
+
+    stranded = _detect_stranded_commit_message(project_root)
+    if stranded is not None:
+        blockers.append(
+            "Refusing to auto-commit: .git/COMMIT_EDITMSG holds a stranded prior "
+            f"commit attempt with subject {stranded!r} that has not landed. Re-run "
+            "the original `git commit` to land the authored message (or clear "
+            ".git/COMMIT_EDITMSG to release the guard), then re-run gz git-sync."
+        )
         return
 
     staged_files = [f for f in staged_out.strip().splitlines() if f.strip()]
