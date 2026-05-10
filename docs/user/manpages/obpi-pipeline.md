@@ -22,7 +22,7 @@ without the `OBPI-` prefix.
 |--------|-------------|
 | `--from {verify,ceremony,sync}` | Resume the pipeline from the named stage (default: full launch) |
 | `--attestor NAME` | Attestor identity for Stage 5 (e.g. `jeff` or `human:Jeffry`); used by ceremony and sync stages when relaying the human attestation |
-| `--evidence-json JSON` | Inline evidence payload merged into the Stage 5 receipt (`value_narrative`, `key_proof`, attestation fields, etc.) |
+| `--evidence-json JSON` | Inline evidence payload for Stage 5. **Required key**: `attestation_text` (forwarded to `gz obpi complete --attestation-text`). **Optional keys**: `implementation_summary`, `key_proof`, `value_narrative`, paired `accept_uncovered` + `accept_uncovered_reason` arrays for REQ waivers. The pipeline translates the JSON into the discrete flags `gz obpi complete` consumes; a missing `attestation_text` fails closed at the pipeline boundary (GHI #435). |
 | `--clear-stale` | Remove pipeline markers older than 4 hours before launching (recovery path for crashed sessions) |
 | `--no-subagents` | Disable subagent dispatch and run every stage in-process (single-session fallback for environments that cannot spawn subagents) |
 

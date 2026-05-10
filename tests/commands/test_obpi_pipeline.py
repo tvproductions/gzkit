@@ -518,7 +518,13 @@ class TestObpiPipelineCommand(unittest.TestCase):
                 stderr="",
                 returncode=0,
             )
-            evidence = json.dumps({"value_narrative": "test", "key_proof": "proof"})
+            evidence = json.dumps(
+                {
+                    "value_narrative": "test",
+                    "key_proof": "proof",
+                    "attestation_text": "verified Stage 3 evidence (test)",
+                }
+            )
 
             result = runner.invoke(
                 main,
@@ -584,7 +590,13 @@ class TestObpiPipelineCommand(unittest.TestCase):
                 )
 
             run_command_mock.side_effect = side_effect
-            evidence = json.dumps({"value_narrative": "test", "key_proof": "proof"})
+            evidence = json.dumps(
+                {
+                    "value_narrative": "test",
+                    "key_proof": "proof",
+                    "attestation_text": "verified Stage 3 evidence (test)",
+                }
+            )
 
             result = runner.invoke(
                 main,

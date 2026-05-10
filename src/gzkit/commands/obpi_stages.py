@@ -15,7 +15,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
-from gzkit.commands.common import _cli_main, console
+from gzkit.commands.common import GzCliError, _cli_main, console
 from gzkit.decomposition import extract_markdown_section
 from gzkit.pipeline_runtime import (
     pipeline_command,
@@ -317,8 +317,10 @@ def _run_pipeline_ceremony_stage(
         )
         console.print("")
         console.print(
-            "The --evidence-json must include: value_narrative, key_proof, "
-            "human_attestation (true), attestation_text, attestation_date."
+            "The --evidence-json MUST include: attestation_text (required by "
+            "gz obpi complete). Recommended: value_narrative, key_proof, "
+            "implementation_summary, attestation_date. For uncovered REQs "
+            "add accept_uncovered (list) + accept_uncovered_reason (list, 1:1)."
         )
         return
 
@@ -330,9 +332,14 @@ def _run_pipeline_ceremony_stage(
         objective = extract_markdown_section(obpi_content, "Objective") or obpi_id
         passed_commands = [cmd for cmd, passed, _ in (verification_results or []) if passed]
         key_proof = "All verification checks passed: " + ", ".join(passed_commands)
+        # GHI #435: auto-close path also flows through `gz obpi complete` and
+        # so must include `attestation_text` (required by the inner CLI).
         auto_evidence = {
             "value_narrative": objective.strip()[:500],
             "key_proof": key_proof[:500],
+            "attestation_text": (
+                f"Pipeline auto-close after Stage 3 verification of {obpi_id}: " + key_proof
+            )[:500],
         }
         effective_evidence = json.dumps(auto_evidence)
 
@@ -344,6 +351,79 @@ def _run_pipeline_ceremony_stage(
         attestor=effective_attestor,
         evidence_json=effective_evidence,
     )
+
+
+def _evidence_json_to_complete_flags(evidence_json: str) -> list[str]:
+    """Translate a Stage-5 evidence-json payload into ``gz obpi complete`` flags.
+
+    GHI #435: ``gz obpi complete`` accepts ``--attestation-text`` /
+    ``--implementation-summary`` / ``--key-proof`` / ``--accept-uncovered`` /
+    ``--accept-uncovered-reason`` as discrete flags — not the ``--evidence-json``
+    blob the pipeline parser exposes. The pipeline must do the translation at
+    its boundary so an evidence-json payload that lacks the required fields
+    fails fast with a message that names the payload (option B remediation),
+    instead of letting the inner CLI die on a generic
+    ``the following arguments are required: --attestation-text`` that doesn't
+    name the user-facing flag at all.
+    """
+    try:
+        payload = json.loads(evidence_json)
+    except json.JSONDecodeError as exc:
+        msg = f"--evidence-json is not valid JSON: {exc}"
+        raise GzCliError(msg) from exc  # noqa: TRY003
+
+    if not isinstance(payload, dict):
+        msg = "--evidence-json must decode to a JSON object"
+        raise GzCliError(msg)  # noqa: TRY003
+
+    attestation_text = payload.get("attestation_text")
+    if not isinstance(attestation_text, str) or not attestation_text.strip():
+        msg = (
+            "--evidence-json must include a non-empty 'attestation_text' field "
+            "(required by gz obpi complete --attestation-text)."
+        )
+        raise GzCliError(msg)  # noqa: TRY003
+
+    flags: list[str] = ["--attestation-text", shlex.quote(attestation_text)]
+
+    implementation_summary = payload.get("implementation_summary")
+    if isinstance(implementation_summary, str) and implementation_summary.strip():
+        flags.extend(["--implementation-summary", shlex.quote(implementation_summary)])
+
+    key_proof = payload.get("key_proof")
+    if isinstance(key_proof, str) and key_proof.strip():
+        flags.extend(["--key-proof", shlex.quote(key_proof)])
+
+    accept_uncovered = payload.get("accept_uncovered") or []
+    accept_reasons = payload.get("accept_uncovered_reason") or []
+    if not isinstance(accept_uncovered, list) or not isinstance(accept_reasons, list):
+        msg = (
+            "--evidence-json 'accept_uncovered' and 'accept_uncovered_reason' must be JSON arrays."
+        )
+        raise GzCliError(msg)  # noqa: TRY003
+    if len(accept_uncovered) != len(accept_reasons):
+        msg = (
+            "--evidence-json 'accept_uncovered' and 'accept_uncovered_reason' "
+            f"counts must match ({len(accept_uncovered)} vs {len(accept_reasons)})."
+        )
+        raise GzCliError(msg)  # noqa: TRY003
+    for req_id, reason in zip(accept_uncovered, accept_reasons, strict=True):
+        if not isinstance(req_id, str) or not isinstance(reason, str):
+            msg = (
+                "--evidence-json 'accept_uncovered' and 'accept_uncovered_reason' "
+                "entries must be strings."
+            )
+            raise GzCliError(msg)  # noqa: TRY003
+        flags.extend(
+            [
+                "--accept-uncovered",
+                shlex.quote(req_id),
+                "--accept-uncovered-reason",
+                shlex.quote(reason),
+            ]
+        )
+
+    return flags
 
 
 def _build_sync_stage_steps(
@@ -370,12 +450,22 @@ def _build_sync_stage_steps(
     standalone ``gz obpi emit-receipt`` step that previously ran after sync is
     removed because ``complete`` emits the same ``obpi_receipt_emitted_event``
     internally; keeping both produced duplicate ledger events.
+
+    GHI #435: the pipeline's ``--evidence-json`` payload is translated into the
+    discrete flags ``gz obpi complete`` actually consumes. A missing
+    ``attestation_text`` (or a malformed payload) fails closed at this boundary
+    with a message that names ``--evidence-json``, rather than at the inner CLI
+    with a flag the agent's command line never mentioned.
     """
-    complete_cmd = (
-        f"uv run gz obpi complete {obpi_id}"
-        f" --attestor-present"
-        f" --attestor {shlex.quote(attestor)}"
-        f" --evidence-json {shlex.quote(evidence_json)}"
+    complete_flags = _evidence_json_to_complete_flags(evidence_json)
+    complete_cmd = " ".join(
+        [
+            f"uv run gz obpi complete {obpi_id}",
+            "--attestor-present",
+            "--attestor",
+            shlex.quote(attestor),
+            *complete_flags,
+        ]
     )
     return [
         (complete_cmd, "Complete OBPI atomically"),

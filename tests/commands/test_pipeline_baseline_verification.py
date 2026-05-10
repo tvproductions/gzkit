@@ -1,5 +1,6 @@
 import unittest
 
+from gzkit.commands.common import GzCliError
 from gzkit.commands.obpi_cmd import _pipeline_verification_commands
 from gzkit.commands.obpi_stages import _build_sync_stage_steps
 
@@ -158,7 +159,10 @@ class TestSyncStageStepBuilder(unittest.TestCase):
             obpi_id="OBPI-0.0.29-08",
             resolved_parent="ADR-0.0.29",
             attestor="g0",
-            evidence_json='{"value_narrative":"x","key_proof":"y"}',
+            evidence_json=(
+                '{"value_narrative":"x","key_proof":"y",'
+                '"attestation_text":"verified Stage 3 evidence"}'
+            ),
         )
 
     def test_complete_is_first_step(self) -> None:
@@ -208,3 +212,101 @@ class TestSyncStageStepBuilder(unittest.TestCase):
                 cmd,
                 f"emit-receipt removed; complete now emits internally. Got: {cmd}",
             )
+
+    def test_complete_command_does_not_pass_evidence_json_flag(self) -> None:
+        """GHI #435: `gz obpi complete` does not accept `--evidence-json`. The
+        pipeline must translate the JSON payload into the discrete flags the
+        inner CLI consumes (`--attestation-text`, etc.), never pass the raw
+        `--evidence-json` token through.
+        """
+        steps = self._build()
+        complete_cmd = steps[0][0]
+        self.assertNotIn(
+            "--evidence-json",
+            complete_cmd,
+            f"complete does not accept --evidence-json; pipeline must translate. {complete_cmd!r}",
+        )
+
+    def test_complete_command_carries_attestation_text_flag(self) -> None:
+        """GHI #435: `attestation_text` from the evidence-json must surface as
+        `--attestation-text <quoted>` on the inner `gz obpi complete` call.
+        """
+        steps = self._build()
+        complete_cmd = steps[0][0]
+        self.assertIn("--attestation-text", complete_cmd)
+        self.assertIn("verified Stage 3 evidence", complete_cmd)
+
+    def test_complete_command_translates_implementation_summary_and_key_proof(self) -> None:
+        """GHI #435: optional fields in evidence-json forward as their flags."""
+        steps = _build_sync_stage_steps(
+            obpi_id="OBPI-0.0.29-08",
+            resolved_parent="ADR-0.0.29",
+            attestor="g0",
+            evidence_json=(
+                '{"attestation_text":"a","implementation_summary":"impl","key_proof":"proof"}'
+            ),
+        )
+        complete_cmd = steps[0][0]
+        self.assertIn("--implementation-summary", complete_cmd)
+        self.assertIn("impl", complete_cmd)
+        self.assertIn("--key-proof", complete_cmd)
+        self.assertIn("proof", complete_cmd)
+
+    def test_complete_command_translates_accept_uncovered_pairs(self) -> None:
+        """GHI #435: paired waivers translate to repeated flag pairs preserving order."""
+        steps = _build_sync_stage_steps(
+            obpi_id="OBPI-0.0.29-08",
+            resolved_parent="ADR-0.0.29",
+            attestor="g0",
+            evidence_json=(
+                '{"attestation_text":"a","accept_uncovered":["REQ-1","REQ-2"],'
+                '"accept_uncovered_reason":["r1","r2"]}'
+            ),
+        )
+        complete_cmd = steps[0][0]
+        self.assertEqual(complete_cmd.count("--accept-uncovered "), 2)
+        self.assertEqual(complete_cmd.count("--accept-uncovered-reason"), 2)
+        self.assertIn("REQ-1", complete_cmd)
+        self.assertIn("REQ-2", complete_cmd)
+        self.assertIn("r1", complete_cmd)
+        self.assertIn("r2", complete_cmd)
+
+    def test_missing_attestation_text_fails_closed_with_clear_error(self) -> None:
+        """GHI #435: option B remediation — fail at the pipeline boundary with
+        a clear error rather than letting the inner `gz obpi complete` die on
+        a missing-required-flag message that doesn't name evidence-json.
+        """
+        with self.assertRaises(GzCliError) as ctx:
+            _build_sync_stage_steps(
+                obpi_id="OBPI-0.0.29-08",
+                resolved_parent="ADR-0.0.29",
+                attestor="g0",
+                evidence_json='{"value_narrative":"x","key_proof":"y"}',
+            )
+        message = str(ctx.exception)
+        self.assertIn("--evidence-json", message)
+        self.assertIn("attestation_text", message)
+
+    def test_invalid_json_fails_closed_with_clear_error(self) -> None:
+        """GHI #435: malformed JSON fails closed at pipeline boundary."""
+        with self.assertRaises(GzCliError):
+            _build_sync_stage_steps(
+                obpi_id="OBPI-0.0.29-08",
+                resolved_parent="ADR-0.0.29",
+                attestor="g0",
+                evidence_json="{not json",
+            )
+
+    def test_accept_uncovered_length_mismatch_fails_closed(self) -> None:
+        """GHI #435: pipeline mirrors `gz obpi complete`'s 1:1 pairing rule."""
+        with self.assertRaises(GzCliError) as ctx:
+            _build_sync_stage_steps(
+                obpi_id="OBPI-0.0.29-08",
+                resolved_parent="ADR-0.0.29",
+                attestor="g0",
+                evidence_json=(
+                    '{"attestation_text":"a","accept_uncovered":["REQ-1","REQ-2"],'
+                    '"accept_uncovered_reason":["only-one"]}'
+                ),
+            )
+        self.assertIn("accept_uncovered", str(ctx.exception))
