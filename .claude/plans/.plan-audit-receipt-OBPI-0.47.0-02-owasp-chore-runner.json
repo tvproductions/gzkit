@@ -1,0 +1,7 @@
+{
+  "obpi_id": "OBPI-0.47.0-02-owasp-chore-runner",
+  "timestamp": "2026-05-10T14:17:17.427054+00:00",
+  "verdict": "PASS",
+  "plan_file": "owasp-chore-runner-obpi-02.md",
+  "gaps_found": 0
+}
