@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "owasp_year": 2025,
+  "repo": "gzkit",
+  "commit": "0000000000000000000000000000000000000000",
+  "scope_mode": "all",
+  "scanned_paths": [],
+  "findings": [],
+  "coverage": {
+    "A01": "not-mechanical",
+    "A02": "not-mechanical",
+    "A03": "not-mechanical",
+    "A04": "not-mechanical",
+    "A05": "not-mechanical",
+    "A06": "mechanical",
+    "A07": "not-applicable",
+    "A08": "not-mechanical",
+    "A09": "not-mechanical",
+    "A10": "not-mechanical"
+  },
+  "coverage_attestations": {},
+  "generated_at": "2026-05-10T00:00:00Z"
+}

@@ -3,7 +3,7 @@ id: OBPI-0.47.0-01-owasp-data-model-and-mapping-schema
 parent: ADR-0.47.0-owasp-top10-2025-scan
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.47.0-01-owasp-data-model-and-mapping-schema: OWASP scanner data model + mapping schema
@@ -233,15 +233,19 @@ Before this OBPI: ADR-0.47.0 has a Pydantic schema in prose only. Anyone authori
 
 ### Key Proof
 
+
 `uv run python -c "from gzkit.scan.models import OwaspScanReport; OwaspScanReport.model_validate_json(open('tests/scan/fixtures/invalid_a06_mechanical.json').read())"` raises `ValidationError` — proving the A06-honesty invariant is mechanical, not narrative.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+`OwaspScanReport` and `OwaspFinding` Pydantic models landed at `src/gzkit/scan/models.py` with `ConfigDict(frozen=True, extra="forbid")` and four `@model_validator(mode="after")` invariants: `_coverage_keys_complete` (A01..A10 keyset exact), `_check_a06_not_mechanical` (REQ-02 — Insecure Design must report not-mechanical), `_check_a07_not_applicable` (REQ-04 — Authentication Failures not-applicable to Python library/CLI scope), `_check_mechanical_floor` (REQ-03 — `coverage[CAT]=="mechanical"` requires ≥1 finding with mechanical source OR `coverage_attestations[CAT]=True`). The typed mapping loader at `src/gzkit/scan/mapping.py` uses `jsonschema.Draft202012Validator` per the `archetype_rules.py:130-136` precedent. The A01-A10 → analyzer-source binding lives at `.gzkit/chores/owasp-top10-2025-scan/mapping.json` validated against `mapping.schema.json` (Draft 2020-12 with `source` accepting string-or-array union via `oneOf`); category names use OWASP **2025** nomenclature verbatim.
+
+- Files created/modified: `src/gzkit/scan/__init__.py` (new package); `src/gzkit/scan/models.py` (Pydantic schema + 4 model validators + 2 field validators for posix-only path); `src/gzkit/scan/mapping.py` (typed loader); `.gzkit/chores/owasp-top10-2025-scan/mapping.json` (A01-A10 analyzer-source data); `.gzkit/chores/owasp-top10-2025-scan/mapping.schema.json` (Draft 2020-12 schema); `tests/scan/__init__.py`, `tests/scan/test_owasp_models.py` (5 REQ-covered methods), `tests/scan/test_owasp_mapping.py` (1 REQ-covered method + 1 loader sanity test); `tests/scan/fixtures/{valid_minimal_report,invalid_a06_mechanical,invalid_a07_other,invalid_mechanical_floor}.json`. Brief Allowed Paths refined to list explicit fixture files alongside `tests/scan/fixtures/`. Defect [GHI #433](https://github.com/tvproductions/gzkit/issues/433) (audit `lstrip` over-broad strip dropping dotfile-rooted creates) fixed in commit `fea540d7` before pipeline launch — added `_normalize_for_creates` helper preserving `.gzkit/`/`.claude/`/`.agents/`/`.github/` leading dots, with two regression tests.
+- Tests added: 7 (6 REQ-covered via `@covers("REQ-0.47.0-01-NN")` + 1 loader sanity); `Ran 7 tests in 0.002s OK`.
+- Date completed: 2026-05-10
+- Attestation status: Heavy lane attestation by g0 (operator-driven; agent-relayed via `--attestor-present`); behave-coverage waived under rationale `adr-0.47.0-bdd-deferred-to-obpi-03-and-obpi-05` per brief Gate-4 N/A line (BDD scenarios live in OBPI-03 CLI and OBPI-05 dogfood).
+- Defects noted: None at OBPI-01 scope. Out-of-scope defect GHI #433 fixed in flight (≤10 SLOC, single module, defect-fix routing thresholds met).
 
 ## Tracked Defects
 
@@ -249,14 +253,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: OBPI-0.47.0-01 attested: 7 REQ-covered tests passing (arb-step-unittest-9ef8409116914ddb9f5bcce257681ee9); lint clean (arb-ruff-0f0d7620b10142ea82b2e575608631a8); typecheck clean (arb-step-typecheck-a7625eb6775849998b0f24425ea86d1b); coverage captured (arb-step-coverage-ad49b73a309f460d8b347cd3fdef1f3e); docs build clean (arb-step-mkdocs-2fbb3a764f6f4cf6ab246c8c43532378); OWASP 2025 names verbatim; ready for OBPI-02 chore runner.
+- Date: 2026-05-10
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-10
 
 **Evidence Hash:** -
