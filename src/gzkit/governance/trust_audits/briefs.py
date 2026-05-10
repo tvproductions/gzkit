@@ -1,8 +1,10 @@
-"""OBPI brief trust audits — heading shape and BDD coverage.
+"""OBPI brief trust audits — heading shape, BDD coverage, cross-references.
 
 * ``audit_brief_headings`` — evidence sections must use H3, not H2 (GHI #238).
 * ``audit_behave_req_tags`` — heavy-lane OBPIs whose REQs lack ``@REQ-*``
   scenario tags under ``features/**`` fail closed (GHI #211 / GHI #276).
+* ``audit_brief_cross_references`` — bare ``OBPI-X.Y.Z-NN`` / ``ADR-X.Y.Z``
+  identifiers in briefs must resolve to on-disk artifacts (GHI #436).
 """
 
 from __future__ import annotations
@@ -198,6 +200,164 @@ def _collect_scenario_req_tags(project_root: Path) -> set[str]:
             continue
         tagged.update(m.group(1) for m in _SCENARIO_REQ_TAG.finditer(text))
     return tagged
+
+
+_BRIEF_CROSS_REF_SKIP_MARKER = "<!-- gz-validate-skip: brief-cross-references -->"
+
+_BRIEF_CROSS_REF_PATTERN = re.compile(
+    r"\b(?P<kind>OBPI|ADR)-(?P<ver>\d+\.\d+\.\d+)(?:-(?P<seq>\d+)(?:-(?P<slug>[a-z0-9][a-z0-9-]*))?)?\b"
+)
+
+_ADR_DIR_PATTERN = re.compile(r"^ADR-(\d+\.\d+\.\d+)(?:-[a-z0-9][a-z0-9-]*)?$")
+_OBPI_FILE_PATTERN = re.compile(r"^OBPI-(\d+\.\d+\.\d+)-(\d+)(?:-[a-z0-9][a-z0-9-]*)?\.md$")
+_ADR_NAMESPACES: tuple[str, ...] = ("foundation", "pre-release")
+
+
+def _build_cross_reference_index(adr_root: Path) -> tuple[set[str], set[str]]:
+    """Walk ADR canon and index resolvable ``X.Y.Z`` and ``X.Y.Z-NN`` keys."""
+    adr_versions: set[str] = set()
+    obpi_keys: set[str] = set()
+    for namespace in _ADR_NAMESPACES:
+        ns_dir = adr_root / namespace
+        if not ns_dir.is_dir():
+            continue
+        for adr_dir in ns_dir.iterdir():
+            if not adr_dir.is_dir():
+                continue
+            match = _ADR_DIR_PATTERN.match(adr_dir.name)
+            if match is None:
+                continue
+            adr_versions.add(match.group(1))
+            obpi_dir = adr_dir / "obpis"
+            if not obpi_dir.is_dir():
+                continue
+            for brief in obpi_dir.glob("OBPI-*.md"):
+                fm = _OBPI_FILE_PATTERN.match(brief.name)
+                if fm is not None:
+                    obpi_keys.add(f"{fm.group(1)}-{fm.group(2)}")
+    return adr_versions, obpi_keys
+
+
+def _resolves(
+    kind: str, version: str, seq: str | None, adr_versions: set[str], obpi_keys: set[str]
+) -> bool:
+    """Return True if the identifier resolves to an on-disk artifact.
+
+    Bare ``OBPI-X.Y.Z`` (without ``-NN``) is a prose group-reference to the
+    ADR family and resolves when the ADR version exists. Drift cases the
+    GHI #436 body targets all carry a sequence number; bare-prefix prose is
+    not a drift signal.
+    """
+    if kind == "ADR" or seq is None:
+        return version in adr_versions
+    return f"{version}-{seq}" in obpi_keys
+
+
+def _scan_brief_cross_references(
+    brief: Path,
+    adr_versions: set[str],
+    obpi_keys: set[str],
+    project_root: Path,
+) -> list[ValidationError]:
+    """Extract identifiers from one brief and emit one error per unresolvable hit."""
+    try:
+        lines = brief.read_text(encoding="utf-8").splitlines()
+    except (UnicodeDecodeError, OSError):
+        return []
+    rel = brief.relative_to(project_root).as_posix()
+    errors: list[ValidationError] = []
+    self_id = brief.stem  # e.g. "OBPI-0.0.31-02-register-t0-scorecard"
+    self_match = _OBPI_FILE_PATTERN.match(brief.name)
+    self_obpi_key = f"{self_match.group(1)}-{self_match.group(2)}" if self_match else None
+    seen_on_line: set[tuple[int, str]] = set()
+    in_fenced_block = False
+    for idx, line in enumerate(lines):
+        if line.lstrip().startswith("```"):
+            in_fenced_block = not in_fenced_block
+            continue
+        if in_fenced_block:
+            continue
+        if idx > 0 and lines[idx - 1].strip() == _BRIEF_CROSS_REF_SKIP_MARKER:
+            continue
+        for match in _BRIEF_CROSS_REF_PATTERN.finditer(line):
+            kind = match.group("kind")
+            version = match.group("ver")
+            seq = match.group("seq")
+            identifier = match.group(0)
+            # A brief naturally references its own ID (frontmatter, headings,
+            # Verification commands); self-reference is always resolvable.
+            if kind == "OBPI" and seq is not None:
+                if f"{version}-{seq}" == self_obpi_key:
+                    continue
+                if identifier == self_id:
+                    continue
+            key = (idx + 1, identifier)
+            if key in seen_on_line:
+                continue
+            if _resolves(kind, version, seq, adr_versions, obpi_keys):
+                continue
+            seen_on_line.add(key)
+            errors.append(
+                ValidationError(
+                    type="brief_cross_references",
+                    artifact=f"{rel}:{idx + 1}",
+                    message=(
+                        f"Brief references `{identifier}` but no matching "
+                        "on-disk artifact exists under "
+                        "`docs/design/adr/{foundation,pre-release}/`. "
+                        "Update the reference to a registered identifier, "
+                        "or prefix the line with "
+                        f"`{_BRIEF_CROSS_REF_SKIP_MARKER}` "
+                        "to mark it as speculative (GHI #436)."
+                    ),
+                )
+            )
+    return errors
+
+
+def audit_brief_cross_references(project_root: Path) -> list[ValidationError]:
+    """Brief identifier references must resolve to on-disk artifacts (GHI #436).
+
+    OBPI briefs cite sibling OBPIs and parent/peer ADRs by bare identifier
+    throughout. When the referenced sibling is renamed or renumbered after
+    the brief is authored, the brief silently drifts; ``gz validate
+    --documents`` and ``mkdocs build --strict`` do not catch bare-identifier
+    drift because the references are not markdown links.
+
+    Scope: every brief under
+    ``docs/design/adr/{foundation,pre-release}/*/obpis/*.md``. Each
+    identifier matching ``(OBPI|ADR)-X.Y.Z[-NN[-slug]]`` must resolve to:
+
+    * An ADR directory (for ``ADR-X.Y.Z``) under
+      ``docs/design/adr/{foundation,pre-release}/ADR-X.Y.Z-*/``, OR
+    * An OBPI brief file (for ``OBPI-X.Y.Z-NN``) at
+      ``docs/design/adr/{foundation,pre-release}/ADR-X.Y.Z-*/obpis/OBPI-X.Y.Z-NN*.md``.
+
+    Bare-prefix references (``OBPI-0.0.32-05`` resolving to on-disk
+    ``OBPI-0.0.32-05-init-update-flag.md``) are accepted — the GHI #436
+    body explicitly classifies the prefix-match shape as ``fine``. Drift
+    where the surrounding description contradicts the resolved surface is
+    a semantic check beyond the mechanical scope; the operator catches
+    that during reconcile.
+
+    Recovery: update the reference, or prefix the line with
+    ``<!-- gz-validate-skip: brief-cross-references -->`` to mark it as
+    a forward-reference to an unlanded artifact.
+    """
+    adr_root = project_root / "docs" / "design" / "adr"
+    if not adr_root.is_dir():
+        return []
+    adr_versions, obpi_keys = _build_cross_reference_index(adr_root)
+    brief_paths: list[Path] = []
+    for namespace in _ADR_NAMESPACES:
+        ns_dir = adr_root / namespace
+        if not ns_dir.is_dir():
+            continue
+        brief_paths.extend(ns_dir.glob("*/obpis/OBPI-*.md"))
+    errors: list[ValidationError] = []
+    for brief in sorted(brief_paths):
+        errors.extend(_scan_brief_cross_references(brief, adr_versions, obpi_keys, project_root))
+    return errors
 
 
 def audit_behave_req_tags(project_root: Path) -> list[ValidationError]:

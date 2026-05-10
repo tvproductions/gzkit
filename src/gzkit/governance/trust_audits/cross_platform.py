@@ -38,7 +38,7 @@ _UTF8_PIPE_WAIVERS: dict[str, str] = {
     ): _CLOSED_OBPI_WAIVER_RATIONALE,
     (
         "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption"
-        "/obpis/OBPI-0.25.0-32-handoff-validation-pattern.md:244"
+        "/obpis/OBPI-0.25.0-32-handoff-validation-pattern.md:245"
     ): _CLOSED_OBPI_WAIVER_RATIONALE,
     "docs/governance/pipeline-marker-migration-path.md:178": (
         "Migration-path doc describing historical marker semantics; target "

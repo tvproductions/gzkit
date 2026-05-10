@@ -20,6 +20,7 @@ from gzkit.governance.trust_audits import (
     audit_adr_taxonomy,
     audit_advisory_scorecard,
     audit_behave_req_tags,
+    audit_brief_cross_references,
     audit_brief_headings,
     audit_class_size,
     audit_insights_shape,
@@ -327,6 +328,16 @@ class PromotedAdvisoryAudits(unittest.TestCase):
         text = scorecard.read_text(encoding="utf-8")
         self.assertIn("gz validate --brief-headings", text)
 
+    def test_brief_cross_references_ghi_436(self) -> None:
+        """GHI #436: live tree has no unresolvable brief identifier references."""
+        self._assert_clean(audit_brief_cross_references(_PROJECT_ROOT), "brief_cross_references")
+
+    def test_brief_cross_references_scorecard_entry_exists(self) -> None:
+        """GHI #436: advisory scorecard cites gz validate --brief-cross-references."""
+        scorecard = _PROJECT_ROOT / "docs" / "governance" / "advisory-rules-audit.md"
+        text = scorecard.read_text(encoding="utf-8")
+        self.assertIn("gz validate --brief-cross-references", text)
+
 
 class BriefHeadingsAuditNegativeCases(unittest.TestCase):
     """GHI #238: H2 evidence heading drift is flagged."""
@@ -384,6 +395,135 @@ class BriefHeadingsAuditNegativeCases(unittest.TestCase):
     def test_no_briefs_dir_returns_empty(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             self.assertEqual(audit_brief_headings(Path(tmp)), [])
+
+
+class BriefCrossReferencesAuditNegativeCases(unittest.TestCase):
+    """GHI #436: unresolvable brief cross-references are flagged."""
+
+    @staticmethod
+    def _scaffold_adr(root: Path) -> Path:
+        """Create one ADR + one OBPI so resolvable identifiers exist."""
+        adr_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.1-anchor"
+        obpi_dir = adr_dir / "obpis"
+        obpi_dir.mkdir(parents=True)
+        (adr_dir / "ADR-0.0.1-anchor.md").write_text("# Anchor\n", encoding="utf-8")
+        return obpi_dir
+
+    def test_unresolvable_obpi_flagged(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            obpi_dir = self._scaffold_adr(root)
+            brief = obpi_dir / "OBPI-0.0.1-01-driver.md"
+            brief.write_text(
+                "# OBPI-0.0.1-01\n\n"
+                "## Objective\n\n"
+                "Stage references OBPI-0.0.99-05 which does not exist.\n",
+                encoding="utf-8",
+            )
+            errors = audit_brief_cross_references(root)
+            self.assertTrue(errors, "Unresolvable OBPI reference must flag")
+            self.assertEqual(errors[0].type, "brief_cross_references")
+            self.assertIn("OBPI-0.0.99-05", errors[0].message)
+
+    def test_resolvable_obpi_clean(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            obpi_dir = self._scaffold_adr(root)
+            sibling = obpi_dir / "OBPI-0.0.1-02-sibling.md"
+            sibling.write_text("# OBPI-0.0.1-02\n", encoding="utf-8")
+            brief = obpi_dir / "OBPI-0.0.1-01-driver.md"
+            brief.write_text(
+                "# OBPI-0.0.1-01\n\n## Objective\n\nReferences OBPI-0.0.1-02 sibling.\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(audit_brief_cross_references(root), [])
+
+    def test_prefix_match_accepted(self) -> None:
+        """GHI #436: bare prefix `OBPI-0.0.1-02` resolves to suffix-extended file."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            obpi_dir = self._scaffold_adr(root)
+            (obpi_dir / "OBPI-0.0.1-02-real-slug.md").write_text(
+                "# OBPI-0.0.1-02\n", encoding="utf-8"
+            )
+            brief = obpi_dir / "OBPI-0.0.1-01-driver.md"
+            brief.write_text(
+                "# OBPI-0.0.1-01\n\n## Objective\n\nReferences OBPI-0.0.1-02 bare prefix.\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(audit_brief_cross_references(root), [])
+
+    def test_unresolvable_adr_flagged(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            obpi_dir = self._scaffold_adr(root)
+            brief = obpi_dir / "OBPI-0.0.1-01-driver.md"
+            brief.write_text(
+                "# OBPI-0.0.1-01\n\n## Objective\n\nFollows ADR-0.99.0 doctrine.\n",
+                encoding="utf-8",
+            )
+            errors = audit_brief_cross_references(root)
+            self.assertTrue(errors)
+            self.assertIn("ADR-0.99.0", errors[0].message)
+
+    def test_skip_marker_suppresses(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            obpi_dir = self._scaffold_adr(root)
+            brief = obpi_dir / "OBPI-0.0.1-01-driver.md"
+            brief.write_text(
+                "# OBPI-0.0.1-01\n\n"
+                "## Objective\n\n"
+                "<!-- gz-validate-skip: brief-cross-references -->\n"
+                "Forward-references OBPI-0.0.99-05 (will land later).\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(audit_brief_cross_references(root), [])
+
+    def test_fenced_code_block_ignored(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            obpi_dir = self._scaffold_adr(root)
+            brief = obpi_dir / "OBPI-0.0.1-01-driver.md"
+            brief.write_text(
+                "# OBPI-0.0.1-01\n\n"
+                "## Objective\n\n"
+                "```bash\n"
+                "$ ls docs/design/adr/foundation/ADR-0.99.0-example/\n"
+                "```\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(audit_brief_cross_references(root), [])
+
+    def test_self_reference_accepted(self) -> None:
+        """Brief self-references in frontmatter / heading must not flag."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            obpi_dir = self._scaffold_adr(root)
+            brief = obpi_dir / "OBPI-0.0.1-07-fresh.md"
+            brief.write_text(
+                "# OBPI-0.0.1-07-fresh\n\n"
+                "id: OBPI-0.0.1-07-fresh\n\n"
+                "## Objective\n\nAuthored as OBPI-0.0.1-07.\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(audit_brief_cross_references(root), [])
+
+    def test_bare_obpi_prose_reference_resolves_to_adr(self) -> None:
+        """Bare ``OBPI-X.Y.Z`` (no sequence) is prose for the ADR family."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            obpi_dir = self._scaffold_adr(root)
+            brief = obpi_dir / "OBPI-0.0.1-01-driver.md"
+            brief.write_text(
+                "# OBPI-0.0.1-01\n\n## Objective\n\nThe OBPI-0.0.1 series.\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(audit_brief_cross_references(root), [])
+
+    def test_no_adr_dir_returns_empty(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(audit_brief_cross_references(Path(tmp)), [])
 
 
 def _write_adr(root: Path, rel_path: str, frontmatter: dict[str, str]) -> Path:

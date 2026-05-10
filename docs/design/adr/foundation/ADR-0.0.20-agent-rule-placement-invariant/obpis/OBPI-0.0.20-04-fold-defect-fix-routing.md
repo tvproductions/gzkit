@@ -17,6 +17,7 @@ status: Completed
 
 ## Objective
 
+<!-- gz-validate-skip: brief-cross-references -->
 Migrate `.gzkit/rules/defect-fix-routing.md` (80 lines, `paths: "**"`) to its proper homes — the two threshold tables (Direct-fix conditions ALL / OBPI-ceremony conditions ANY) and the decision protocol (5 steps) into a new AGENTS.md § Defect-fix routing; anti-patterns catalog and origin-GHI history (GHI #195, OBPI-0.0.16-04 → OBPI-0.0.16-06 → revert precedent) into a new `docs/governance/defect-fix-routing.md`. Delete the canonical, remove its allow-list entry, rewrite inbound references, regenerate mirrors.
 
 ## Lane
@@ -43,7 +44,9 @@ Migrate `.gzkit/rules/defect-fix-routing.md` (80 lines, `paths: "**"`) to its pr
 
 ## Requirements (FAIL-CLOSED)
 
+<!-- gz-validate-skip: brief-cross-references -->
 1. REQUIREMENT: AGENTS.md gains a new § Defect-fix routing (not replacing existing content). It contains — (a) the "Direct fix is the right route when ALL hold" table (5 criteria rows); (b) the "OBPI ceremony is required when ANY hold" table (5 trigger rows); (c) the Decision Protocol (5 numbered steps: compute facts → apply criteria → direct-fix route → OBPI route → ambiguous → surface to operator); (d) baseline precedent examples (GHI #186-#189, #191, #192) as prose or a brief note pointing to `docs/governance/defect-fix-routing.md`.
+<!-- gz-validate-skip: brief-cross-references -->
 2. REQUIREMENT: `docs/governance/defect-fix-routing.md` is created as a new file carrying the deep-dive content — (a) Anti-patterns catalog (OBPI ceremony for trivial defects; "parent ADR is natural home" rationalization; treating routing as stylistic preference); (b) Origin GHI history ("When this rule was authored" section — GHI #195 / 2026-04-18 / OBPI-0.0.16-04 → OBPI-0.0.16-06 → revert precedent); (c) Related-rules cross-references (agent-contract § Pipeline lifecycle; Craftsmanship 6c; gz-obpi-pipeline SKILL; gz-obpi-specify SKILL).
 3. REQUIREMENT: `.gzkit/rules/defect-fix-routing.md` is deleted (canonical only).
 4. REQUIREMENT: Allow-list entry for `defect-fix-routing.md` removed from `.gzkit/manifest.json` (manifest goes 1 → 0 entries assuming OBPI-02 and OBPI-03 have landed, OR enters a state with only this one remaining if this is the last fold OBPI to execute).
@@ -84,6 +87,7 @@ Migrate `.gzkit/rules/defect-fix-routing.md` (80 lines, `paths: "**"`) to its pr
 - [ ] Review current `.gzkit/rules/defect-fix-routing.md` threshold tables for exact column structure (Criterion / Threshold table format preserved in AGENTS.md fold)
 - [ ] Review current AGENTS.md section style (H2/H3 headings, table layouts) for consistent § Defect-fix routing placement
 - [ ] Review GHI #195 body for origin-narrative accuracy in `docs/governance/defect-fix-routing.md`
+<!-- gz-validate-skip: brief-cross-references -->
 - [ ] Review the OBPI-0.0.16-04 → OBPI-0.0.16-06 → revert commit history (`git log --grep 'OBPI-0.0.16'`) for precedent-example fidelity
 
 ## Quality Gates

@@ -221,12 +221,14 @@ Schema enforcement observable end-to-end:
 
   >>> import jsonschema
   >>> from gzkit.schemas import load_schema
+<!-- gz-validate-skip: brief-cross-references -->
   >>> jsonschema.validate({"frontmatter": {"id":"ADR-0.0.99-x","status":"Draft","semver":"0.0.99","lane":"lite","kind":"foundation","parent":"PRD-GZKIT-1.0.0","date":"2026-04-29","sensitivity":"confidential"}, "headers": []}, load_schema("adr"))
   Traceback (...): jsonschema.exceptions.ValidationError: 'confidential' is not one of ['security']
 
 Pydantic enforcement observable end-to-end:
 
   >>> from gzkit.models.frontmatter import AdrFrontmatter
+<!-- gz-validate-skip: brief-cross-references -->
   >>> AdrFrontmatter(id="ADR-0.0.99-x", status="Draft", semver="0.0.99", lane="lite", kind="foundation", parent="PRD-GZKIT-1.0.0", date="2026-04-29", sensitivity="confidential")
   pydantic_core._pydantic_core.ValidationError: 1 validation error for AdrFrontmatter / sensitivity / Input should be 'security' [type=literal_error, input_value='confidential', input_type=str]
 

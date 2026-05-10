@@ -1,5 +1,6 @@
 """Surface and skill validation for agent control surfaces."""
 
+import tomllib
 from pathlib import Path
 
 from pydantic import ValidationError as PydanticValidationError
@@ -97,6 +98,7 @@ def validate_surfaces(
 
     errors.extend(_validate_skill_frontmatter(project_root))
     errors.extend(_validate_instruction_frontmatter(project_root))
+    errors.extend(_validate_codex_config(project_root))
 
     for warning_msg in validate_rule_placement(project_root):
         errors.append(
@@ -113,6 +115,63 @@ def validate_surfaces(
         )
 
         errors.extend(_check_parity(project_root))
+
+    return errors
+
+
+def _validate_codex_config(project_root: Path) -> list[ValidationError]:
+    """Validate repo-local Codex feature flags for generated hook surfaces."""
+    errors: list[ValidationError] = []
+    config_path = project_root / ".codex" / "config.toml"
+    hooks_path = project_root / ".codex" / "hooks.json"
+    artifact = ".codex/config.toml"
+
+    if not config_path.exists():
+        if hooks_path.exists():
+            errors.append(
+                ValidationError(
+                    type="surface",
+                    artifact=artifact,
+                    message=".codex/hooks.json exists but .codex/config.toml is missing",
+                    field="features.hooks",
+                )
+            )
+        return errors
+
+    try:
+        payload = tomllib.loads(config_path.read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError) as exc:
+        return [
+            ValidationError(
+                type="surface",
+                artifact=artifact,
+                message=f"Failed to parse Codex config: {exc}",
+            )
+        ]
+
+    features = payload.get("features")
+    if not isinstance(features, dict):
+        features = {}
+
+    if "codex_hooks" in features:
+        errors.append(
+            ValidationError(
+                type="surface",
+                artifact=artifact,
+                message="[features].codex_hooks is deprecated; use [features].hooks instead",
+                field="features.codex_hooks",
+            )
+        )
+
+    if hooks_path.exists() and features.get("hooks") is not True:
+        errors.append(
+            ValidationError(
+                type="surface",
+                artifact=artifact,
+                message=".codex/hooks.json exists but [features].hooks is not enabled",
+                field="features.hooks",
+            )
+        )
 
     return errors
 

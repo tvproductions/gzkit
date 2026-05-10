@@ -491,6 +491,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Brief evidence sections must be H3, not H2 (GHI #238)",
     )
     p_validate.add_argument(
+        "--brief-cross-references",
+        dest="check_brief_cross_references",
+        action="store_true",
+        help="Brief OBPI/ADR identifier references must resolve on-disk (GHI #436)",
+    )
+    p_validate.add_argument(
         "--chores-layout",
         dest="check_chores_layout",
         action="store_true",
@@ -611,6 +617,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_orientation_freshness=a.check_orientation_freshness,
             check_taxonomy=a.check_taxonomy,
             check_brief_headings=a.check_brief_headings,
+            check_brief_cross_references=a.check_brief_cross_references,
             check_chores_layout=a.check_chores_layout,
             check_unscoped_rules=a.check_unscoped_rules or a.check_audits,
             unscoped_rules_allowlist_only=a.unscoped_rules_allowlist_only,
@@ -618,9 +625,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             sensitivity_explain=(a.frontmatter_explain if a.check_sensitivity else None),
             check_doc_surface_parity=a.check_doc_surface_parity or a.check_audits,
             check_absorption_duplicates=a.check_absorption_duplicates,
-            check_orphaned_implementation=(
-                a.check_orphaned_implementation or a.check_audits
-            ),
+            check_orphaned_implementation=(a.check_orphaned_implementation or a.check_audits),
             check_evaluation_justify_binding=(a.check_evaluation_justify_binding),
             check_intrinsic_attestation=a.check_intrinsic_attestation,
             check_advisor_proof_binding=a.check_advisor_proof_binding,
