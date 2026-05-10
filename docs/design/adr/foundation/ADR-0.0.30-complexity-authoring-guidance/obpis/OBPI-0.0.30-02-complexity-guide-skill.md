@@ -3,7 +3,7 @@ id: OBPI-0.0.30-02-complexity-guide-skill
 parent: ADR-0.0.30
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.30-02-complexity-guide-skill: complexity-guide Skill
@@ -25,9 +25,11 @@ Author the `complexity-guide` skill at `.gzkit/skills/complexity-guide/SKILL.md`
 
 ## Allowed Paths
 
-- `.gzkit/skills/complexity-guide/SKILL.md`
-- `.claude/skills/complexity-guide/`, `.agents/skills/complexity-guide/`, `.github/skills/complexity-guide/` — vendor mirrors via `gz agent sync control-surfaces`
+- `.gzkit/skills/complexity-guide/SKILL.md` (canonical; vendor mirrors at `.claude/skills/complexity-guide/`, `.agents/skills/complexity-guide/`, `.github/skills/complexity-guide/` are auto-synced via `gz agent sync control-surfaces` — never edit mirrors directly)
 - `tests/skills/test_complexity_guide.py`
+- `docs/user/skills/complexity-guide.md` (skill manpage — coupled surface required by `tests/test_skill_manpage_coverage.py`)
+- `docs/user/skills/index.md` (skill index link — coupled surface required by `test_every_active_skill_is_linked_from_index`)
+- `data/behave_coverage_waivers.json` (BDD waiver entry for skill-only OBPI)
 - `docs/design/adr/foundation/ADR-0.0.30-complexity-authoring-guidance/obpis/OBPI-0.0.30-02-complexity-guide-skill.md` — this brief's evidence section only
 
 ## Denied Paths
@@ -39,8 +41,8 @@ Author the `complexity-guide` skill at `.gzkit/skills/complexity-guide/SKILL.md`
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: `SKILL.md` carries valid frontmatter per the skill schema, including `skill-version: 0.1.0`, `gz_command: complexity-guide`, `description:` triggering on operator phrases ("authoring-time complexity hint", "complexity guide preview", "preview before commit", "advise-band hints").
-2. REQUIREMENT: The skill body documents the operator moment: ad-hoc authoring-time review (`gz complexity-guide <path>`) BEFORE running `gz complexity-advise` or attempting commit. The skill names this as the first-stop authoring surface; the trigger-time advisor (ADR-0.0.29) is the second stop if the developer's commit reaches gate time.
+1. REQUIREMENT: `SKILL.md` carries valid frontmatter per the skill schema, including `skill-version: 0.1.0`, `gz_command: complexity guide`, `description:` triggering on operator phrases ("authoring-time complexity hint", "complexity guide preview", "preview before commit", "advise-band hints").
+2. REQUIREMENT: The skill body documents the operator moment: ad-hoc authoring-time review (`gz complexity guide <path>`) BEFORE running `gz complexity advise` or attempting commit. The skill names this as the first-stop authoring surface; the trigger-time advisor (ADR-0.0.29) is the second stop if the developer's commit reaches gate time.
 3. REQUIREMENT: The skill body declares an Output Contract per `.gzkit/rules/tool-skill-runbook-alignment.md` § Invariant 3: the destination verb's default human-readable output is in-line hint prose with one block per advise-band hint (archetype, doctrinal-frame headline, recommended-move headline). The `--json` mode emits canonical Pydantic serialization.
 4. REQUIREMENT: The skill body cross-references ADR-0.0.29's `complexity-advisor` skill and explains the trigger-time vs. authoring-time distinction (when to use which). The cross-reference is short-form (a one-paragraph note pointing at the sister skill), not a duplication of the sister skill's content.
 5. REQUIREMENT: The skill is operator-runnable ad-hoc; its `gz_command` field resolves to a registered CLI verb per Invariant 1 of the tool-skill-runbook-alignment rule.
@@ -53,11 +55,27 @@ Author the `complexity-guide` skill at `.gzkit/skills/complexity-guide/SKILL.md`
 
 ## Discovery Checklist
 
-- [ ] OBPI-01 CLI verb registration
-- [ ] OBPI-01 manpage for cross-reference shape
-- [ ] OBPI-0.0.29-04 sister skill (`.gzkit/skills/complexity-advisor/SKILL.md`) for cross-reference target
-- [ ] `.gzkit/rules/tool-skill-runbook-alignment.md` Invariants 1, 2, 3
-- [ ] `.gzkit/rules/skill-surface-sync.md`
+**Prerequisites**
+
+- [x] OBPI-0.0.30-01 (`gz complexity guide` CLI verb) landed; status `Completed`; verb resolves via `_build_parser()` with SystemExit(0) on `complexity guide --help`
+- [x] OBPI-0.0.30-03 (authoring hint engine) landed; status `Completed`; CLI verb consumes the engine
+- [x] Skill schema at `src/gzkit/schemas/skill.schema.json` defines required frontmatter shape (name, description, lifecycle_state, owner, last_reviewed, metadata.skill-version, gz_command, model)
+- [x] CLI verb default output observed via `gz complexity guide src/gzkit/complexity/` — confirms in-line hint prose form (`── path:line ──` separator, then `Archetype/Band/Guidance/Move` lines per hint)
+
+**Existing Code**
+
+- [x] `.gzkit/skills/complexity-advisor/SKILL.md` — exemplar sister skill (ADR-0.0.29 OBPI-0.0.29-04); replicate the `name`/`description`/`lifecycle_state`/`owner`/`metadata.skill-version`/`gz_command`/`model` frontmatter and the `## Output Contract` H2 section structure
+- [x] `tests/skills/test_complexity_advisor.py` — exemplar skill-shape test pattern (helpers `_read_skill_text`, `_parse_frontmatter`, `_section_body`, vendor mirror equality, PII doctrine class without @covers)
+- [x] `gzkit.traceability.covers` decorator — REQ traceability mechanism; imports validate at decoration time
+- [x] `data/behave_coverage_waivers.json` — `default_rationale` + `waivers` structure; rationale key `adr-0.0.30-foundation-bdd-deferred` exists for the parent ADR
+- [x] `gz agent sync control-surfaces` — propagates `.gzkit/skills/` to `.claude/skills/`, `.agents/skills/`, `.github/skills/` byte-identically
+
+**Reference Material**
+
+- [x] `.gzkit/rules/tool-skill-runbook-alignment.md` Invariants 1-3 (CLI verb has skill; skill matches runbook moment; Output Contract honors verb's default form)
+- [x] `.gzkit/rules/skill-surface-sync.md` (canonical-first edits; bump `skill-version` on edit; sync after edit; never edit vendor mirrors directly)
+- [x] `.claude/rules/model-selection.md` (skill `model:` frontmatter required; `sonnet` for moderate-complexity routing surfaces)
+- [x] `tests/test_skill_manpage_coverage.py` (skill manpage + index parity coupled surface — REQ-covered by AGENTS.md §1a coupled-surface coherence)
 
 ## Quality Gates
 
@@ -142,13 +160,25 @@ uv run gz arb step --name unittest -- uv run -m unittest tests/skills/test_compl
 
 ### Key Proof
 
+
+- `uv run gz covers OBPI-0.0.30-02-complexity-guide-skill --json` → `{"total_reqs": 6, "covered_reqs": 6, "uncovered_reqs": 0, "coverage_percent": 100.0}` — REQ → @covers parity gate (Stage 3 Phase 1b) confirms all 6 REQs reachable from `tests/skills/test_complexity_guide.py`
+- `uv run gz arb step --name unittest -- uv run -m unittest tests/skills/test_complexity_guide.py -v` → `Ran 16 tests in 0.014s, OK` — receipt `arb-step-unittest-f22d7b27b0cb4be89bd95fdc4bcf00c3`
+- `uv run gz arb step --name unittest -- uv run -m unittest -q` → full suite clean — receipt `arb-step-unittest-6319c3066de74d459c385860b1e63bb7` (passes after coupled-surface fix at `docs/user/skills/complexity-guide.md` + index link satisfied `tests/test_skill_manpage_coverage.py`)
+- `uv run gz arb ruff` → clean — receipt `arb-ruff-be578dcd544d4319a69096676f577f38`
+- `uv run gz arb typecheck` → clean — receipt `arb-step-typecheck-d65f0846ea624a0ab9a7eabd72e14566`
+- `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict` → clean — receipt `arb-step-mkdocs-6b66a284d2a642449e65e9a9563d30f3`
+- `uv run gz validate --documents --surfaces` → `✓ All validations passed (2 scopes)`
+- `diff -r .gzkit/skills/complexity-guide/ .claude/skills/complexity-guide/` → empty (vendor mirror byte-identical, REQ-06)
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `.gzkit/skills/complexity-guide/SKILL.md` (canonical operator skill, vendor-mirrored to `.claude/`, `.agents/`, `.github/` via `gz agent sync control-surfaces`); `tests/skills/test_complexity_guide.py` (16 tests covering REQ-01..06 + PII doctrine via `@covers`); `docs/user/skills/complexity-guide.md` (skill manpage — coupled surface fix per AGENTS.md §1a coupled-surface coherence)
+- Files modified: `data/behave_coverage_waivers.json` (rationale key `adr-0.0.30-02-skill-only-bdd-deferred` + waiver entry); `docs/user/skills/index.md` (Code Quality section `/complexity-guide` index link); brief evidence sections and Discovery Checklist filled with Prerequisites/Existing Code/Reference Material entries
+- Tests added: 16 tests across 7 classes — TestSkillFrontmatter (×4), TestOperatorMoment (×2), TestOutputContract (×3), TestGzCommandResolution (×2), TestCrossReference (×2), TestVendorMirrorEquality (×1), TestNoOperatorPersonalEmail (×2 doctrine, no `@covers`)
+- Date completed: 2026-05-09
+- Attestation status: operator attested via `attest completed` (Stage 4 evidence ceremony, Normal mode); attestor-present co-presence proxy via active pipeline marker
+- Defects noted: brief authoring drift surfaced during precomplete check — hyphenated verb references (`complexity-guide`, `complexity-advise`) corrected to space-separated form (`complexity guide`, `complexity advise`); Allowed Paths consolidated to canonical-only with sync note; Discovery Checklist filled with substantive content; all corrections in this brief, no GHI required
 
 ### Closing Argument
 
@@ -158,14 +188,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: substantive attestation text
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.30-02 complexity-guide skill authored at .gzkit/skills/complexity-guide/SKILL.md with vendor mirrors byte-identical (receipt arb-step-unittest-f22d7b27b0cb4be89bd95fdc4bcf00c3); 16/16 OBPI-scoped tests pass; full unittest sweep clean (receipt arb-step-unittest-6319c3066de74d459c385860b1e63bb7); ruff clean (arb-ruff-be578dcd544d4319a69096676f577f38); typecheck clean (arb-step-typecheck-d65f0846ea624a0ab9a7eabd72e14566); mkdocs --strict clean (arb-step-mkdocs-6b66a284d2a642449e65e9a9563d30f3); 6/6 REQs covered (uncovered_reqs=0 via gz covers); coupled-surface coherence preserved by adding docs/user/skills/complexity-guide.md and index link; brief authoring drift fixed (verb references corrected to space-separated form, Discovery Checklist filled, Allowed Paths consolidated); attestor-present co-presence proxy satisfied via active pipeline marker.
+- Date: 2026-05-09
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-09
 
 **Evidence Hash:** -

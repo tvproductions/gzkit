@@ -75,6 +75,7 @@ audience split.
 | [`/gz-chore-runner`](gz-chore-runner.md) | Run a gzkit chore end-to-end (show, plan, advise, execute, validate) |
 | [`/gz-cli-audit`](gz-cli-audit.md) | Audit CLI documentation coverage and headings |
 | [`/complexity-advisor`](complexity-advisor.md) | Preview complexity advisor diagnosis, understand auto-chain context, or check intrinsic complexity attestation guidance |
+| [`/complexity-guide`](complexity-guide.md) | Preview authoring-time complexity hints before committing |
 | [`/gz-complexity-distill`](gz-complexity-distill.md) | Run a complexity distillation pass against the exemplar corpus to refresh distilled-characteristics doctrine |
 | [`/gz-context-diet`](gz-context-diet.md) | Trim per-turn agent context weight by lifting narrative to docs/governance/ |
 | [`/gz-deps-upgrade`](gz-deps-upgrade.md) | Refresh global uv tools, Python 3.13.x runtime, pyproject.toml pins/floors, and uv.lock to current PyPI latest |

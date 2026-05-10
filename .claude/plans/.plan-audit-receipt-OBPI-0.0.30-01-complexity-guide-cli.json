@@ -1,8 +1,8 @@
 {
   "obpi_id": "OBPI-0.0.30-01-complexity-guide-cli",
-  "timestamp": "2026-05-09T21:12:50.964662+00:00",
+  "timestamp": "2026-05-09T23:43:17.440629+00:00",
   "verdict": "PASS",
-  "plan_file": "cheerful-twirling-snowglobe.md",
+  "plan_file": "mutable-squishing-pelican.md",
   "gaps_found": 0,
   "scope_collisions": [
     {
