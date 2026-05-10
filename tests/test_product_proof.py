@@ -274,6 +274,24 @@ class TestCheckGovernanceArtifactProof(unittest.TestCase):
             root = Path(tmp)
             self.assertFalse(_check_governance_artifact_proof([], root))
 
+    def test_docs_governance_artifact_with_content_post_440(self) -> None:
+        """GHI #440: foundation doctrine OBPIs editing docs/governance/* satisfy
+        the governance_artifact proof type. Pre-#440, only .gzkit/ paths were
+        accepted, silently classifying every doctrine OBPI as MISSING.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            gov_dir = root / "docs" / "governance"
+            gov_dir.mkdir(parents=True)
+            artifact = gov_dir / "trust-doctrine.md"
+            artifact.write_text(
+                "# Trust Doctrine\n\n" + "T0 invariant body. " * 20,
+                encoding="utf-8",
+            )
+
+            allowed = ["docs/governance/trust-doctrine.md"]
+            self.assertTrue(_check_governance_artifact_proof(allowed, root))
+
 
 class TestCheckReleaseArtifactProof(unittest.TestCase):
     """GHI-118: docs/releases/PATCH-vX.Y.Z.md is valid product proof."""

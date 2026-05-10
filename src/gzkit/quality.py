@@ -702,7 +702,7 @@ class ObpiProofStatus(BaseModel):
     command_doc_found: bool = Field(False, description="Command doc exists with content")
     docstring_found: bool = Field(False, description="Public interface has docstrings")
     governance_artifact_found: bool = Field(
-        False, description="Governance artifact exists in .gzkit/ with content"
+        False, description="Governance artifact exists in .gzkit/ or docs/governance/ with content"
     )
     test_evidence_found: bool = Field(
         False, description="Test file exists with substantive content"
@@ -947,9 +947,15 @@ def _check_docstring_proof(allowed_paths: list[str], project_root: Path) -> bool
 
 
 def _check_governance_artifact_proof(allowed_paths: list[str], project_root: Path) -> bool:
-    """Check if governance artifacts in .gzkit/ exist with substantive content."""
+    """Check governance artifacts (.gzkit/ or docs/governance/) for substantive content.
+
+    Foundation doctrine OBPIs ship content under docs/governance/ (trust-doctrine.md,
+    advisory-rules-audit.md, distribution_invariant_catalog.md, governance_runbook.md,
+    state-doctrine.md, etc.); .gzkit/ alone was too narrow and silently classified
+    those OBPIs as MISSING product proof (GHI #440, extending #89's type).
+    """
     for path_str in allowed_paths:
-        if not path_str.startswith(".gzkit/"):
+        if not (path_str.startswith(".gzkit/") or path_str.startswith("docs/governance/")):
             continue
         artifact_path = project_root / path_str
         if not artifact_path.is_file():
