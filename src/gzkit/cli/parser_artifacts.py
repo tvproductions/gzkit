@@ -837,7 +837,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     p_obpi_pipeline.add_argument(
         "--evidence-json",
         dest="evidence_json",
-        help="JSON evidence payload for Stage 5 (value_narrative, key_proof, etc.)",
+        help="Stage 5 JSON; must include attestation_text (see manpage)",
     )
     p_obpi_pipeline.add_argument(
         "--clear-stale",
