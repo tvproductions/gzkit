@@ -168,14 +168,12 @@ def _parse_chore_pointer(
     raw_chore: object,
     index: int,
     project_root: Path,
-    lane_timeouts: dict[str, int],
     blockers: list[str],
 ) -> ChoreDefinition | None:
     """Parse one v2.0 chore pointer from the registry."""
     from gzkit.commands.chores import (  # noqa: PLC0415
         ALLOWED_LANES,
         CHORE_SLUG_RE,
-        LANE_TIMEOUTS,
         _resolve_chore_dir,
     )
 
@@ -228,7 +226,14 @@ def _parse_chore_pointer(
     if not criteria:
         return None
 
-    timeout = lane_timeouts.get(lane, LANE_TIMEOUTS.get(lane, 900))
+    timeout_raw = data.get("timeoutSeconds")
+    if not isinstance(timeout_raw, int) or isinstance(timeout_raw, bool) or timeout_raw <= 0:
+        blockers.append(
+            f"chores[{slug}].timeoutSeconds must be a positive integer "
+            f"(GHI #447 — explicit per-chore timeouts)."
+        )
+        return None
+    timeout = timeout_raw
 
     vendor_raw = data.get("vendor")
     vendor = vendor_raw.strip() if isinstance(vendor_raw, str) else None

@@ -1,7 +1,7 @@
 # CHORE: eval-feedback-cluster — Evaluation Feedback Clustering
 
 **Version:** 1.0.0
-**Lane:** Medium
+**Lane:** Lite
 **Slug:** `eval-feedback-cluster`
 
 ---
@@ -15,7 +15,8 @@ distinct artifacts (ADR-0.0.26 Decision §3).
 
 ## Policy and Guardrails
 
-- **Lane:** Medium — reads ledger and justify artifacts; no network required.
+- **Lane:** Lite — read-only audit over ledger and justify artifacts; unit-tier only, no behave/network
+- **Timeout:** 300s — explicit per-chore `timeoutSeconds` (was lane-derived 300 under the removed medium tier); GHI #447
 - **Read-only** at `.gzkit/ledger.jsonl` and `docs/design/adr/**`; only writes to its own proofs directory.
 - No duplicate proposals: idempotent by content hash over `(cluster_key, sorted source_artifact_ids)`.
 - Threshold configurable via `data/eval_feedback_thresholds.json` (`cluster_min_recurrence`, default 3).

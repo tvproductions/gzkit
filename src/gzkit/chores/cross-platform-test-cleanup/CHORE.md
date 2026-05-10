@@ -1,7 +1,7 @@
 # CHORE: Cross-Platform Test Cleanup (Windows-Safe Patterns)
 
 **Version:** 1.0.0
-**Lane:** Medium
+**Lane:** Lite
 **Slug:** `cross-platform-test-cleanup`
 
 ---
@@ -12,7 +12,8 @@ Enforce Windows-safe test cleanup patterns. Eliminate raw `shutil.rmtree()` in t
 
 ## Policy and Guardrails
 
-- **Lane:** Medium — test infrastructure, may require verbose test runs
+- **Lane:** Lite — test-infra hygiene (Windows-safe cleanup patterns); unit-tier only, no behave/network
+- **Timeout:** 300s — explicit per-chore `timeoutSeconds` (was lane-derived 300 under the removed medium tier); GHI #447
 - Use `tempfile.TemporaryDirectory()` context managers (preferred)
 - Use `pathlib.Path` throughout; no hard-coded path separators
 - Cross-platform: Windows (primary), macOS, Linux
