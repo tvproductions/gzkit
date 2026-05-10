@@ -90,6 +90,8 @@ T0 is upstream of T1: if a canonical surface only exists in this repo's `.gzkit/
 
 **Doctrine source:** [ADR-0.0.31 (distribution invariant doctrine)](../design/adr/foundation/ADR-0.0.31-distribution-invariant-doctrine/ADR-0.0.31-distribution-invariant-doctrine.md).
 
+**See also:** [T0 Failure-Mode Catalog](distribution_invariant_catalog.md) — worked examples (GHI #318 self-hosting blindness; ADR-0.0.21 chores promotion gap) and an "Is this a T0 breach?" decision tree for applying T0 to new canonical surfaces.
+
 ---
 
 ## The three invariants

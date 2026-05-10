@@ -234,20 +234,26 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 |---|------|-------|-----|
 | 55 | The editor/IDE authoring-guide protocol envelope (LSP-style Content-Length–framed JSON) is defined by `src/gzkit/schemas/authoring_guide_protocol.json`. Every request, response, notification, and error shape MUST be named in the schema; protocol drift is caught by JSON Schema validation at server runtime, not by human review. | **Mechanical** | Enforced by `src/gzkit/schemas/authoring_guide_protocol.json` validation in the protocol server (`gz complexity guide --server`); message payload validation happens at parse time (before handler dispatch), so schema evolution (adding required fields, renaming envelopes, changing encoding) is fail-closed at request/response boundaries. Scorecard citation: ADR-0.0.30 (parent), OBPI-0.0.30-04 (protocol server implementation). |
 
+### Distribution Invariant Doctrine (T0) (`docs/governance/trust-doctrine.md` T0 layer + `ADR-0.0.31`)
+
+| # | Rule | Score | Notes |
+|---|------|-------|-------|
+| 57 | Every canonical surface (skills, rules, hooks, templates, chores, personas) MUST be reproducibly delivered by `pip install py-gzkit && gz init` to a fresh project, byte-equivalent to the wheel's authored canonical content. A wheel that ships without a canonical surface is a T0 breach regardless of whether downstream `gz init` reports success. | **Promotable** | T0 doctrine authored in `docs/governance/trust-doctrine.md` § T0 (OBPI-0.0.31-01) and ADR-0.0.31; mechanical enforcement pending OBPI-0.0.32-07 (`gz validate --distribution`, static check: pyproject.toml include + baseline manifest + on-disk canonical trees, exit 3 on any package-data omission). When OBPI-0.0.32-07 lands this row flips to **Mechanical**. Receipt-id prefix: `arb-distribution-`. |
+
 ---
 
 ## Summary
 
-Counts updated 2026-05-09 after editor/IDE protocol surface landed as a Mechanical-class rule (ADR-0.0.30 / OBPI-0.0.30-04).
+Counts updated 2026-05-10 after Distribution Invariant (T0) registered as a Promotable rule (ADR-0.0.31 / OBPI-0.0.31-02).
 
 | Score | Count | % |
 |-------|-------|---|
-| **Mechanical** | 39 | 61% |
-| **Promotable** | 6 | 9% |
-| **Judgment** | 19 | 30% |
+| **Mechanical** | 39 | 60% |
+| **Promotable** | 7 | 11% |
+| **Judgment** | 19 | 29% |
 | **Ambiguous** | 0 | 0% |
 
-**The mechanical floor rose from 30 % to 60 %** under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules were mechanized as `gz validate --<scope>` flags and two became pre-commit guards under `gzkit.hooks.guards`. ADR-0.0.22 added the security-sensitivity third axis as `gz validate --sensitivity`, lifting the floor by a further point. ADR-0.0.23 OBPI-02 added the **Judgment**-classed agent failure-mode taxonomy as shared reviewer vocabulary (mechanical promotion `gz validate --failure-mode-coverage` tracked under follow-up GHIs #308–#312). ADR-0.0.27 OBPI-01 added the **Mechanical**-classed exemplar-corpus doctrine rule. ADR-0.0.28 OBPI-01 added the **Mechanical**-classed complexity-thresholds rule (forthcoming `gz validate --complexity-thresholds` validator under OBPI-0.0.28-03). ADR-0.0.30 OBPI-04 added the **Mechanical**-classed editor/IDE protocol surface rule, with envelope validation enforced by JSON Schema. The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.
+**The mechanical floor rose from 30 % to 60 %** under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules were mechanized as `gz validate --<scope>` flags and two became pre-commit guards under `gzkit.hooks.guards`. ADR-0.0.22 added the security-sensitivity third axis as `gz validate --sensitivity`, lifting the floor by a further point. ADR-0.0.23 OBPI-02 added the **Judgment**-classed agent failure-mode taxonomy as shared reviewer vocabulary (mechanical promotion `gz validate --failure-mode-coverage` tracked under follow-up GHIs #308–#312). ADR-0.0.27 OBPI-01 added the **Mechanical**-classed exemplar-corpus doctrine rule. ADR-0.0.28 OBPI-01 added the **Mechanical**-classed complexity-thresholds rule (forthcoming `gz validate --complexity-thresholds` validator under OBPI-0.0.28-03). ADR-0.0.30 OBPI-04 added the **Mechanical**-classed editor/IDE protocol surface rule, with envelope validation enforced by JSON Schema. ADR-0.0.31 OBPI-02 added the **Promotable**-classed T0 distribution invariant rule (mechanical enforcement pending OBPI-0.0.32-07 `gz validate --distribution`). The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, T0, etc.) is tracked for follow-up waves.
 
 ---
 

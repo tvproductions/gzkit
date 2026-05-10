@@ -164,6 +164,8 @@ See [State Doctrine](state-doctrine.md) for the full three-layer model, five aut
 | 2 | Ledger-driven reconciliation | `/gz-obpi-reconcile`, `gz audit` |
 | 3 | File sync and indexing | `/gz-obpi-sync`, `/gz-adr-sync`, `gz agent sync control-surfaces` |
 
+**T0 — Distribution layer:** When promoting a new canonical surface, read [`docs/governance/distribution_invariant_catalog.md`](distribution_invariant_catalog.md) first and check it against the "Is this a T0 breach?" decision tree before authoring the surface's packaging OBPI.
+
 ### Persona framing
 
 Every agent context frame includes a mandatory `## Persona` section (ADR-0.0.11).
