@@ -434,3 +434,197 @@ class TestBuildSyncCommitMessage(unittest.TestCase):
 
         msg = _build_sync_commit_message(["src/gzkit/commands/foo.py"])
         self.assertEqual(parse_ceremony_trailers(msg), ["gz-git-sync"])
+
+
+class TestDetectStrandedCommitMessage(unittest.TestCase):
+    """``_detect_stranded_commit_message`` refuses silent message rewrite (GHI #437).
+
+    When a prior ``git commit -m "fix(...)"`` attempt has failed (e.g. pre-commit
+    hooks modified files and aborted the commit), the operator's authored
+    conventional-commit message is preserved in ``.git/COMMIT_EDITMSG`` while
+    the staged content survives. A subsequent ``gz git-sync --apply`` would
+    silently emit its template ``chore: update ... (gz git-sync)`` message over
+    the same staged set — erasing the operator's intent and any trailers such
+    as ``Closes #N`` or ARB receipt IDs. The detector returns the stranded
+    subject so ``_commit_staged_changes`` can surface a hard blocker instead.
+    """
+
+    def _make_repo(self, tmpdir: str) -> Path:
+        project_root = Path(tmpdir)
+        (project_root / ".git").mkdir()
+        return project_root
+
+    def _seed_head_and_editmsg(
+        self,
+        project_root: Path,
+        *,
+        head_subject: str,
+        editmsg_body: str,
+    ) -> None:
+        """Patch ``git_cmd`` to return ``head_subject`` and write COMMIT_EDITMSG."""
+        (project_root / ".git" / "COMMIT_EDITMSG").write_text(editmsg_body, encoding="utf-8")
+        # Caller responsible for patching git_cmd to return head_subject; this
+        # helper just writes the file. Kept separate so callers can compose.
+
+    def test_returns_subject_when_editmsg_holds_unlanded_conventional_commit(self) -> None:
+        from gzkit.commands.sync import _detect_stranded_commit_message  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = self._make_repo(tmpdir)
+            self._seed_head_and_editmsg(
+                project_root,
+                head_subject="chore: update something (gz git-sync)",
+                editmsg_body=(
+                    "fix(attestation): allow agent-relayed for foundation-kind (GHI #434)\n"
+                    "\n"
+                    "Body paragraph.\n"
+                    "\n"
+                    "Closes #434\n"
+                ),
+            )
+
+            def fake_git_cmd(_root: Path, *args: str) -> tuple[int, str, str]:
+                if args == ("log", "-1", "--format=%s"):
+                    return (0, "chore: update something (gz git-sync)", "")
+                return (0, "", "")
+
+            with patch("gzkit.commands.sync.git_cmd", side_effect=fake_git_cmd):
+                stranded = _detect_stranded_commit_message(project_root)
+
+            self.assertEqual(
+                stranded,
+                "fix(attestation): allow agent-relayed for foundation-kind (GHI #434)",
+                "stranded prior-attempt conventional-commit subject must be returned verbatim",
+            )
+
+    def test_returns_none_when_editmsg_subject_matches_head(self) -> None:
+        """No stranding: the COMMIT_EDITMSG subject already landed as HEAD."""
+        from gzkit.commands.sync import _detect_stranded_commit_message  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = self._make_repo(tmpdir)
+            self._seed_head_and_editmsg(
+                project_root,
+                head_subject="fix(scope): something landed (GHI #N)",
+                editmsg_body="fix(scope): something landed (GHI #N)\n\nBody.\n",
+            )
+
+            def fake_git_cmd(_root: Path, *args: str) -> tuple[int, str, str]:
+                if args == ("log", "-1", "--format=%s"):
+                    return (0, "fix(scope): something landed (GHI #N)", "")
+                return (0, "", "")
+
+            with patch("gzkit.commands.sync.git_cmd", side_effect=fake_git_cmd):
+                stranded = _detect_stranded_commit_message(project_root)
+
+            self.assertIsNone(stranded)
+
+    def test_returns_none_when_editmsg_missing(self) -> None:
+        from gzkit.commands.sync import _detect_stranded_commit_message  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = self._make_repo(tmpdir)
+            # No COMMIT_EDITMSG written.
+
+            def fake_git_cmd(_root: Path, *args: str) -> tuple[int, str, str]:
+                return (0, "any-subject", "")
+
+            with patch("gzkit.commands.sync.git_cmd", side_effect=fake_git_cmd):
+                stranded = _detect_stranded_commit_message(project_root)
+
+            self.assertIsNone(stranded)
+
+    def test_returns_none_when_editmsg_holds_only_comments(self) -> None:
+        from gzkit.commands.sync import _detect_stranded_commit_message  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = self._make_repo(tmpdir)
+            self._seed_head_and_editmsg(
+                project_root,
+                head_subject="any",
+                editmsg_body="# Please enter the commit message...\n# Lines starting with '#'\n\n",
+            )
+
+            def fake_git_cmd(_root: Path, *args: str) -> tuple[int, str, str]:
+                return (0, "any", "")
+
+            with patch("gzkit.commands.sync.git_cmd", side_effect=fake_git_cmd):
+                stranded = _detect_stranded_commit_message(project_root)
+
+            self.assertIsNone(stranded)
+
+    def test_returns_none_when_editmsg_subject_lacks_conventional_prefix(self) -> None:
+        """Free-form messages are not protected; only conventional-commit prefixes."""
+        from gzkit.commands.sync import _detect_stranded_commit_message  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = self._make_repo(tmpdir)
+            self._seed_head_and_editmsg(
+                project_root,
+                head_subject="chore: update X (gz git-sync)",
+                editmsg_body="WIP scratch buffer\n\nrandom notes\n",
+            )
+
+            def fake_git_cmd(_root: Path, *args: str) -> tuple[int, str, str]:
+                if args == ("log", "-1", "--format=%s"):
+                    return (0, "chore: update X (gz git-sync)", "")
+                return (0, "", "")
+
+            with patch("gzkit.commands.sync.git_cmd", side_effect=fake_git_cmd):
+                stranded = _detect_stranded_commit_message(project_root)
+
+            self.assertIsNone(stranded)
+
+
+class TestCommitStagedChangesBlocksOnStrandedMessage(unittest.TestCase):
+    """``_commit_staged_changes`` refuses to silently rewrite a stranded
+    conventional-commit message (GHI #437).
+
+    Asserts the semantic: when ``.git/COMMIT_EDITMSG`` holds a prior-attempt
+    conventional-commit subject that does not match HEAD, the helper appends a
+    blocker citing the stranded subject and does NOT call ``git commit``. The
+    operator's authored intent is preserved for manual recovery rather than
+    silently overwritten by the auto-generated ``chore: update`` template.
+    """
+
+    def test_appends_blocker_and_skips_commit_when_stranded_subject_detected(self) -> None:
+        from gzkit.commands.sync import _commit_staged_changes  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            (project_root / ".git").mkdir()
+            (project_root / ".git" / "COMMIT_EDITMSG").write_text(
+                "fix(attestation): hardened path (GHI #434)\n\nBody.\n",
+                encoding="utf-8",
+            )
+
+            commit_calls: list[tuple[str, ...]] = []
+
+            def fake_git_cmd(_root: Path, *args: str) -> tuple[int, str, str]:
+                if args == ("diff", "--cached", "--name-only"):
+                    return (0, "src/gzkit/commands/adr_audit.py\ntests/test_x.py\n", "")
+                if args == ("log", "-1", "--format=%s"):
+                    return (0, "chore: previous landed (gz git-sync)", "")
+                if args[:1] == ("commit",):
+                    commit_calls.append(args)
+                    return (0, "", "")
+                return (0, "", "")
+
+            blockers: list[str] = []
+            executed: list[str] = []
+            with patch("gzkit.commands.sync.git_cmd", side_effect=fake_git_cmd):
+                _commit_staged_changes(project_root, blockers, executed)
+
+            self.assertEqual(
+                commit_calls,
+                [],
+                "auto-commit must be skipped when a stranded commit message is detected",
+            )
+            self.assertTrue(
+                any("fix(attestation): hardened path (GHI #434)" in b for b in blockers),
+                f"blocker must cite the stranded subject; got blockers={blockers!r}",
+            )
+            self.assertTrue(
+                any("COMMIT_EDITMSG" in b for b in blockers),
+                f"blocker must reference COMMIT_EDITMSG; got blockers={blockers!r}",
+            )
