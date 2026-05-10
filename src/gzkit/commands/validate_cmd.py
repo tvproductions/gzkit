@@ -376,6 +376,7 @@ def _collect_errors(
     check_sensitivity: bool = False,
     check_doc_surface_parity: bool = False,
     check_absorption_duplicates: bool = False,
+    check_orphaned_implementation: bool = False,
     check_evaluation_justify_binding: str | None = None,
     check_intrinsic_attestation: bool = False,
     check_advisor_proof_binding: bool = False,
@@ -427,6 +428,7 @@ def _collect_errors(
         "sensitivity": check_sensitivity,
         "doc_surface_parity": check_doc_surface_parity,
         "absorption_duplicates": check_absorption_duplicates,
+        "orphaned_implementation": check_orphaned_implementation,
         "evaluation_justify_binding": check_evaluation_justify_binding is not None,
         "intrinsic_attestation": check_intrinsic_attestation,
         "advisor_proof_binding": check_advisor_proof_binding,
@@ -513,6 +515,9 @@ def _explicit_scope_runners(
         "sensitivity": lambda: _sensitivity_umbrella_runner(project_root),
         "doc_surface_parity": lambda: trust_audits.audit_doc_surface_parity(project_root),
         "absorption_duplicates": lambda: trust_audits.audit_absorption_duplicates(project_root),
+        "orphaned_implementation": lambda: trust_audits.audit_orphaned_implementation(
+            project_root
+        ),
         "evaluation_justify_binding": lambda: _evaluation_justify_binding_runner(
             project_root, None
         ),
@@ -961,7 +966,9 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "chores_layout",
         "unscoped_rules",
         "sensitivity",
+        "doc_surface_parity",
         "absorption_duplicates",
+        "orphaned_implementation",
         "evaluation_justify_binding",
         "intrinsic_attestation",
         "advisor_proof_binding",
@@ -1148,6 +1155,7 @@ def validate(
     sensitivity_explain: str | None = None,
     check_doc_surface_parity: bool = False,
     check_absorption_duplicates: bool = False,
+    check_orphaned_implementation: bool = False,
     check_evaluation_justify_binding: str | None = None,
     check_intrinsic_attestation: bool = False,
     check_advisor_proof_binding: bool = False,
@@ -1222,6 +1230,7 @@ def validate(
             check_chores_layout,
             check_doc_surface_parity,
             check_absorption_duplicates,
+            check_orphaned_implementation,
         ]
     )
     if check_evaluation_justify_binding is not None and not _other_scopes_active:
@@ -1291,6 +1300,7 @@ def validate(
         check_sensitivity=check_sensitivity,
         check_doc_surface_parity=check_doc_surface_parity,
         check_absorption_duplicates=check_absorption_duplicates,
+        check_orphaned_implementation=check_orphaned_implementation,
         check_evaluation_justify_binding=check_evaluation_justify_binding,
         check_intrinsic_attestation=check_intrinsic_attestation,
         check_advisor_proof_binding=check_advisor_proof_binding,
@@ -1357,6 +1367,7 @@ def validate(
         "sensitivity": check_sensitivity,
         "doc_surface_parity": check_doc_surface_parity,
         "absorption_duplicates": check_absorption_duplicates,
+        "orphaned_implementation": check_orphaned_implementation,
         "evaluation_justify_binding": check_evaluation_justify_binding is not None,
         "intrinsic_attestation": check_intrinsic_attestation,
         "advisor_proof_binding": check_advisor_proof_binding,

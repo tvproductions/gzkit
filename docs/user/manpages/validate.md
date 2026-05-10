@@ -289,6 +289,48 @@ gz validate --absorption-duplicates --json
 | 0 | No cross-ADR duplicates, or all duplicates have a `paired_with:` waiver | — |
 | 3 | Same opsdev source path appears in OBPIs across distinct parent ADRs without a pairing | Add `paired_with: <prior-brief-id>` to the by-reference brief's frontmatter, or — if the second evaluation is genuinely independent — document the rationale and pair the briefs explicitly |
 
+### `--orphaned-implementation`
+
+Detects the silent broken state where a prior session claimed an OBPI
+lock, made allowed-path edits, then force-released the lock without
+running `gz obpi complete` (GHI #438). Walks every brief under
+`docs/design/adr/**/obpis/`; for each whose frontmatter `status:` is
+not `Completed`/`attested_completed`/`validated`/`Withdrawn`, the audit
+inspects the brief's `## Allowed Paths` and the ledger:
+
+1. Find the latest `obpi_lock_claimed` for this OBPI.
+2. If any `obpi_completion_*` event exists at or after that claim, the
+   brief is considered ceremonialized — skip.
+3. Otherwise, look for an `obpi_lock_released` with `force: true` after
+   the claim.
+4. If a force-release exists, scan `artifact_edited` events between
+   claim and release for paths covered by the brief's allowed-paths
+   (literal, directory-prefix, or glob-root match).
+5. If matches exist, the brief is fingerprinted as
+   *implementation landed without ceremony*.
+
+Opt-out marker (binding): an intentional implementation-without-ceremony
+must place the line
+`<!-- gz-validate-skip: orphaned-implementation GHI-<num> -->`
+anywhere in the brief body and file a tracking GHI explaining why. The
+marker shape follows the GHI #432 speculative-skip convention so both
+validators share one opt-out vocabulary.
+
+```bash
+# Audit every non-completed brief against the ledger window
+gz validate --orphaned-implementation
+
+# Machine-readable per-brief records
+gz validate --orphaned-implementation --json
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | No orphaned implementations, or all flagged briefs carry the skip marker | — |
+| 3 | One or more non-completed briefs have lock-claim + force-release + allowed-path edits without `obpi_completion_*` | Run `uv run gz obpi pipeline <OBPI-ID> --from=verify` to finish the ceremony, or — if the implementation is intentional without ceremony — file a tracking GHI and add the skip marker to the brief body |
+
+Included in `gz validate --audits` and `gz check` aggregate passes.
+
 ### `--evaluation-justify-binding`
 
 Enforces the ADR-0.0.26 evaluation feedback-loop doctrine (§ Decision #2). Reads the most
@@ -476,6 +518,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--brief-headings` | opt-in | OBPI brief evidence sections must be H3, not H2 (GHI #238) |
 | `--sensitivity` | opt-in | ADR-0.0.22 sensitivity-binding (auto-detect floor; escalate-not-escape against `data/security_surfaces.json`) |
 | `--absorption-duplicates` | opt-in | Same opsdev source path across parent ADRs needs `paired_with:` frontmatter waiver (GHI #376) |
+| `--orphaned-implementation` | yes | Non-completed OBPI with lock-claim + force-release + allowed-path edits and no `obpi_completion_*` is a silent broken state (GHI #438) |
 | `--evaluation-justify-binding` | opt-in | Fail-closed gate: `gz-justify` artifact required when evaluation scores are low (ADR-0.0.26) |
 | `--intrinsic-attestation` | opt-in | Validate `intrinsic-complexity-attestation` ledger events against canonical schema (OBPI-0.0.29-07) |
 | `--advisor-proof-binding` | opt-in | Verdict <-> proof binding audit across fixtures, ledger-cited diagnoses, and JSON Schema (OBPI-0.0.29-08) |
