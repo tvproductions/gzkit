@@ -303,7 +303,7 @@ def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:
             ]
         ),
     )
-    p_guide.add_argument("path", help="File or directory to analyze")
+    p_guide.add_argument("path", nargs="?", default=None, help="File or directory to analyze")
     p_guide.add_argument(
         "--json",
         dest="json_output",
@@ -320,12 +320,19 @@ def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Emit debug output to stderr",
     )
+    p_guide.add_argument(
+        "--server",
+        action="store_true",
+        default=False,
+        help="Start JSON-over-stdio LSP-style protocol server for editor/IDE integration.",
+    )
     p_guide.set_defaults(
         func=lambda a: _lazy("complexity_guide_cmd")(
             path=a.path,
             json_output=a.json_output,
             quiet=a.quiet,
             verbose=a.verbose,
+            server=a.server,
         )
     )
 

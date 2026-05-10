@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gzkit.tvproductions.dev/schemas/authoring_guide_protocol.json",
+  "title": "AuthoringGuideProtocol",
+  "description": "JSON Schema for editor/IDE integration protocol message envelopes. Defines request/response contracts for authoring guide service.",
+  "type": "object",
+  "$defs": {
+    "RequestEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "method", "params"],
+      "properties": {
+        "id": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "description": "Unique request identifier for correlation with response."
+        },
+        "method": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Method name (e.g., 'analyze', 'initialize')."
+        },
+        "params": {
+          "type": "object",
+          "description": "Method-specific parameters."
+        }
+      }
+    },
+    "ResponseEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "description": "Request identifier being responded to."
+        },
+        "result": {
+          "type": "object",
+          "description": "Success result object. Mutually exclusive with error."
+        },
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["code", "message"],
+          "properties": {
+            "code": {
+              "type": "integer",
+              "description": "Error code."
+            },
+            "message": {
+              "type": "string",
+              "description": "Human-readable error message."
+            }
+          },
+          "description": "Error object. Mutually exclusive with result."
+        }
+      },
+      "not": {
+        "required": ["result", "error"]
+      }
+    },
+    "AnalyzeParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file_path"],
+      "properties": {
+        "file_path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to the file being analyzed."
+        },
+        "cursor_position": {
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional cursor position (0-indexed byte offset or line number)."
+        }
+      }
+    },
+    "AnalyzeResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hints"],
+      "properties": {
+        "hints": {
+          "type": "array",
+          "items": {
+            "$ref": "authoring_hint.json"
+          },
+          "description": "Array of authoring hints for the analyzed file."
+        }
+      }
+    },
+    "InitializeParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["clientVersion"],
+      "properties": {
+        "clientVersion": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+",
+          "description": "Client semantic version (e.g., '1.0', '2.3.1')."
+        }
+      }
+    },
+    "InitializeResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "capabilities"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Server version string."
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of supported capabilities (e.g., 'analyze', 'streaming')."
+        }
+      }
+    }
+  }
+}

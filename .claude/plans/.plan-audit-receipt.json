@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.30-02-complexity-guide-skill",
-  "timestamp": "2026-05-09T23:38:00Z",
+  "obpi_id": "OBPI-0.0.30-04-editor-protocol-contract",
+  "timestamp": "2026-05-10T00:15:00Z",
   "verdict": "PASS",
-  "plan_file": "mutable-squishing-pelican.md",
+  "plan_file": "editor-protocol-contract-OBPI-0.0.30-04.md",
   "gaps_found": 0,
-  "notes": "ADR-OBPI alignment: ALIGNED (7/7 checks). Plan-OBPI alignment: ALIGNED (7/7 checks). STOP-on-BLOCKERS: CLEAR — gz complexity guide registered, OBPI-01 Completed, OBPI-03 Completed. All 9 REQs mapped. Denied paths respected. TDD order: tests before SKILL.md."
+  "notes": "ADR-OBPI alignment: ALIGNED (7/7 checks). Plan-OBPI alignment: ALIGNED (7/7 checks). STOP-on-BLOCKERS: CLEAR — OBPI-03 Completed, hint.py + engine.py confirmed landed. CLI FAIL from new-file bootstrap (5 new files; CLI checks existence before creation); semantic review ALIGNED. Brief Allowed Paths corrected: complexity_guide.py + parser_artifacts.py moved from Denied to Allowed per REQ-6 carve-out. 13 REQs mapped. TDD order: tests before implementation."
 }
