@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 import time
@@ -16,6 +17,13 @@ from gzkit.arb.ruff_reporter import _git_context
 
 SCHEMA_ID = "gzkit.arb.step_receipt.v1"
 DEFAULT_MAX_OUTPUT_CHARS = 8000
+
+# Canonical step-name shape — must match the receipt-binding regex
+# in src/gzkit/governance/trust_audits/attestation_receipts.py
+# (``arb-(?:ruff|step-[a-z][a-z0-9]*)-[a-f0-9]{32}``). Names outside
+# this character class produce receipts the heavy/foundation
+# receipt-binding gate rejects as ``malformed_id`` (GHI #441).
+_CANONICAL_STEP_NAME_RE = re.compile(r"^[a-z][a-z0-9]*$")
 
 
 def _canonical(obj: Any) -> str:
@@ -67,6 +75,13 @@ def run_step_via_arb(
     step_name = (name or "").strip()
     if not step_name:
         raise ValueError("ARB step name is required")
+    if not _CANONICAL_STEP_NAME_RE.match(step_name):
+        raise ValueError(
+            f"ARB step name {step_name!r} is not canonical — must match "
+            "[a-z][a-z0-9]* (lowercase, no hyphens or underscores, no "
+            "leading digit) so the run_id binds against the canonical "
+            "receipt regex arb-(?:ruff|step-[a-z][a-z0-9]*)-[a-f0-9]{32}"
+        )
     if not cmd:
         raise ValueError("ARB step command is required")
 
