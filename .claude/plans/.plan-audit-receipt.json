@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.31-01-author-t0-doctrine",
-  "timestamp": "2026-05-10T10:12:00Z",
+  "obpi_id": "OBPI-0.0.31-03-t0-failure-mode-catalog",
+  "timestamp": "2026-05-10T11:30:00Z",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.31-01-author-t0-doctrine.md",
+  "plan_file": "OBPI-0.0.31-03-t0-failure-mode-catalog.md",
   "gaps_found": 0,
-  "notes": "ADR-OBPI alignment: ALIGNED (7/7 checks). Plan-OBPI alignment: ALIGNED (7/7 checks). No plan existed prior — plan authored as part of audit. Prerequisites confirmed: trust-doctrine.md has T1/T2/T3 table, ADR-0.0.32 booked. Documentation-only OBPI; Gate 5 required (foundation-kind)."
+  "notes": "ADR-OBPI alignment: ALIGNED (7/7 checks). CLI structural FAIL is a false positive for new-file-creation OBPIs — the allowed path is the file being created. Scope-edge flags disclosed in plan: (1) trust-doctrine.md see-also addition required by REQ-5 (OBPI-0.0.31-01 did not add it); allowed paths amended; (2) governance_runbook.md one-line discoverability entry for REQ-8; allowed paths amended. Prerequisites confirmed: OBPI-0.0.31-01 Completed, OBPI-0.0.31-02 Draft, ADR-0.0.32 booked. Two real worked examples planned (GHI #318 + ADR-0.0.21); no contrived third example per REQ-4."
 }
