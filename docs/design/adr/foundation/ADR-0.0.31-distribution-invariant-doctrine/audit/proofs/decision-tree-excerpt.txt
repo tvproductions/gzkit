@@ -1,0 +1,91 @@
+---
+
+## Is This a T0 Breach?
+
+Apply this decision tree when promoting a new canonical surface or extending an existing one. A "No" at any branch is a T0 breach requiring the named recovery action before the surface can ship.
+
+```text
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Canonical surface being promoted or extended                           │
+│  (skill kind, rule family, hook surface, persona, template, chore, …)  │
+└────────────────────────────┬────────────────────────────────────────────┘
+                             │
+                             ▼
+              ┌──────────────────────────────┐
+              │ 1. Does it ship in the wheel? │
+              │    (check pyproject.toml      │
+              │     [tool.hatch.build]        │
+              │     include entries)          │
+              └───────────┬──────────────────┘
+                          │
+           ┌──────────────┴──────────────┐
+          YES                            NO
+           │                             │
+           │                    Recovery: extend
+           │                    [tool.hatch.build.targets.wheel]
+           │                    include: to cover the new surface
+           │                    directory (follow ADR-0.0.21 pattern)
+           │
+           ▼
+┌──────────────────────────────────────────┐
+│ 2. Does `pip install py-gzkit &&        │
+│    gz init` reproduce it?               │
+│    (check scaffolder: does init_cmd.py  │
+│     call scaffold_core_<surface>()?    │
+│     does it copy canonical content,    │
+│     not render stubs?)                 │
+└───────────┬──────────────────────────────┘
+            │
+ ┌──────────┴──────────┐
+YES                    NO
+ │                     │
+ │            Recovery: add scaffold_core_<surface>()
+ │            to init_cmd._scaffold_project_skeleton
+ │            (fresh init) and _repair_missing_artifacts
+ │            (re-run repair). Implement project-first →
+ │            package-fallback resolution via importlib.resources
+ │            (ADR-0.0.21 OBPI-0.0.21-04 pattern).
+ │
+ ▼
+┌──────────────────────────────────────────┐
+│ 3. Does the baseline manifest list it?  │
+│    (check data/distribution_baseline_   │
+│     manifest.json — the frozen          │
+│     byte-equivalence reference)         │
+└───────────┬──────────────────────────────┘
+            │
+ ┌──────────┴──────────┐
+YES                    NO
+ │                     │
+ │            Recovery: extend the baseline manifest
+ │            to include the new surface entries;
+ │            re-run `gz validate --distribution`
+ │            to confirm the wheel-installed output
+ │            matches the updated baseline.
+ │
+ ▼
+┌──────────────────────────────────────────┐
+│ 4. Does `gz validate --distribution`    │
+│    cover it?                            │
+│    (check that the T0 validator scope   │
+│     enumerates this surface and exits 3 │
+│     when the surface is unshipped)      │
+└───────────┬──────────────────────────────┘
+            │
+ ┌──────────┴──────────┐
+YES                    NO
+ │                     │
+ │            Recovery: extend T0 validator scope
+ │            (follow OBPI-0.0.32-07 pattern);
+ │            if ADR-0.0.32 is already closed,
+ │            file a follow-up GHI labeled `defect`
+ │            with surface name + missing scope.
+ │
+ ▼
+T0 PASS — surface promotion is distribution-compliant.
+```
+
+### Decision Tree Quick Reference
+
+| Branch | Check | Recovery if No |
+|--------|-------|----------------|

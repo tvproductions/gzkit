@@ -1,0 +1,1 @@
+91:**Doctrine source:** [ADR-0.0.31 (distribution invariant doctrine)](../design/adr/foundation/ADR-0.0.31-distribution-invariant-doctrine/ADR-0.0.31-distribution-invariant-doctrine.md).
