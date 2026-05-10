@@ -1,9 +1,0 @@
-{
-  "obpi_id": "OBPI-0.0.31-02-register-t0-scorecard",
-  "agent": "unknown-4117",
-  "pid": 4117,
-  "session_id": "4117",
-  "claimed_at": "2026-05-10T13:25:00.375183+00:00",
-  "branch": "main",
-  "ttl_minutes": 120
-}

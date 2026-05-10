@@ -31,6 +31,8 @@ if hasattr(sys.stderr, "reconfigure"):
 
 
 class Candidate(NamedTuple):
+    """Represent a single design-pattern detection result."""
+
     file: Path
     line: int
     class_name: str
@@ -535,6 +537,7 @@ def _detect_isinstance_chain(
 
 
 def scan_file(path: Path, source: str) -> Iterator[Candidate]:
+    """Yield design-pattern candidates discovered in ``source``."""
     try:
         tree = ast.parse(source, filename=str(path))
     except SyntaxError:
@@ -572,6 +575,7 @@ def scan_file(path: Path, source: str) -> Iterator[Candidate]:
 
 
 def scan_root(root: Path, exclude: Iterable[str]) -> list[Candidate]:
+    """Scan ``root`` recursively and return collected candidates."""
     excludes = tuple(exclude)
     candidates: list[Candidate] = []
     for path in sorted(root.rglob("*.py")):
@@ -587,6 +591,7 @@ def scan_root(root: Path, exclude: Iterable[str]) -> list[Candidate]:
 
 
 def render_report(candidates: list[Candidate], root: Path, scanned_count: int) -> str:
+    """Render a Markdown report summarizing ``candidates``."""
     today = dt.date.today().isoformat()
     lines: list[str] = [
         f"# Pythonic Design Pattern Candidates — {today}",
@@ -887,6 +892,7 @@ _NEGATIVE_FIXTURES: tuple[str, ...] = (
 
 
 def run_self_test() -> int:
+    """Run built-in fixtures and return non-zero on regressions."""
     errors: list[str] = []
     for expected_pattern, source, expected_name in _SELF_TEST_FIXTURES:
         candidates = list(scan_file(Path("<fixture>"), source))
@@ -918,6 +924,7 @@ def run_self_test() -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Entry point for the pattern-detection scanner CLI."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("src"), help="Source tree to scan")
     parser.add_argument("--out", type=Path, help="Markdown output path")

@@ -92,6 +92,7 @@ class MetricPredicate(BaseModel):
     bands: tuple[Literal["block", "warn", "advise"], ...] = Field(min_length=1)
 
     def matches(self, metric: str, band: str) -> bool:
+        """Return True when ``metric`` and ``band`` both fall within this clause."""
         return metric in self.metrics and band in self.bands
 
 
@@ -130,6 +131,7 @@ class AstPredicate(BaseModel):
         return self
 
     def matches(self, node: ast.AST) -> bool:
+        """Return True when ``node`` satisfies every declared match clause."""
         if self.node_kind is not None and type(node).__name__ != self.node_kind:
             return False
         if self.min_param_count is not None and _count_params(node) < self.min_param_count:
@@ -167,7 +169,6 @@ def load_archetype_rules(path: Path | None = None) -> tuple[ArchetypeRule, ...]:
     ``ArchetypeRule`` instances. Raises :class:`ValueError` on schema failure;
     raises :class:`pydantic.ValidationError` on Pydantic-level failure.
     """
-
     target = path if path is not None else CANONICAL_RULE_TABLE_PATH
     schema_text = CANONICAL_SCHEMA_PATH.read_text(encoding="utf-8")
     schema = json.loads(schema_text)

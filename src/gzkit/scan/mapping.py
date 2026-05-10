@@ -30,7 +30,6 @@ def load_mapping(path: Path) -> dict[str, dict[str, Any]]:
     because every consumer already imports it via the
     ``OwaspScanReport.owasp_year`` Literal.
     """
-
     schema_path = path.parent / "mapping.schema.json"
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
     payload = json.loads(path.read_text(encoding="utf-8"))

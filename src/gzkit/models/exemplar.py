@@ -190,6 +190,7 @@ def load_corpus(path: Path) -> ExemplarCorpus:
             ``ExemplarCorpus`` schema.
         json.JSONDecodeError: If the file is not valid JSON.
         OSError: If the file cannot be read.
+
     """
     raw = json.loads(path.read_text(encoding="utf-8"))
     return ExemplarCorpus.model_validate(raw)

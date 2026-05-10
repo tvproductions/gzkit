@@ -14,7 +14,7 @@ Background: ADR-0.0.16 through 0.0.18 surfaced acute control-surface instability
 
 ## Policy and Guardrails
 
-- **Lane:** Lite — audit-only; zero file edits outside `ops/chores/control-surface-rule-conflicts/proofs/`
+- **Lane:** Lite — audit-only; zero file edits outside `.gzkit/chores/control-surface-rule-conflicts/proofs/`
 - **Read-only on rules.** This chore does NOT modify any `.gzkit/rules/` file, any skill, or any source.
 - **Scope:** every `.md` under `.gzkit/rules/` plus `AGENTS.md` and `CLAUDE.md`. Vendor mirrors (`.claude/rules/`, `.github/instructions/`) are derivatives and are NOT audited here — they should match canonical per sync discipline.
 - **No speculation.** A conflict row requires a concrete worked example (a specific case where rule X says one thing and rule Y says the opposite). No "these could maybe conflict" entries.
@@ -47,15 +47,15 @@ Write `proofs/summary.md` with counts by severity, top 5 blocking rows, and a pr
 
 | Type | Command | Expected |
 |------|---------|----------|
-| exitCodeEquals | `test -f ops/chores/control-surface-rule-conflicts/proofs/rule-inventory.md` | 0 |
-| exitCodeEquals | `test -f ops/chores/control-surface-rule-conflicts/proofs/conflict-matrix.md` | 0 |
-| exitCodeEquals | `test -f ops/chores/control-surface-rule-conflicts/proofs/summary.md` | 0 |
+| exitCodeEquals | `test -f .gzkit/chores/control-surface-rule-conflicts/proofs/rule-inventory.md` | 0 |
+| exitCodeEquals | `test -f .gzkit/chores/control-surface-rule-conflicts/proofs/conflict-matrix.md` | 0 |
+| exitCodeEquals | `test -f .gzkit/chores/control-surface-rule-conflicts/proofs/summary.md` | 0 |
 
 ## Evidence Commands
 
 ```bash
-ls .gzkit/rules/ > ops/chores/control-surface-rule-conflicts/proofs/rule-surface-listing.txt
-wc -l .gzkit/rules/*.md AGENTS.md CLAUDE.md > ops/chores/control-surface-rule-conflicts/proofs/rule-line-counts.txt
+ls .gzkit/rules/ > .gzkit/chores/control-surface-rule-conflicts/proofs/rule-surface-listing.txt
+wc -l .gzkit/rules/*.md AGENTS.md CLAUDE.md > .gzkit/chores/control-surface-rule-conflicts/proofs/rule-line-counts.txt
 ```
 
 ---

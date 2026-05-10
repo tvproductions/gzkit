@@ -55,7 +55,7 @@ class AdrRow(NamedTuple):
         return (bucket, major, minor, patch, self.adr_id)
 
     def signature(self) -> tuple[str, ...]:
-        """Comparable tuple for drift detection (excludes regen date)."""
+        """Return a comparable tuple for drift detection (excludes regen date)."""
         return (
             self.adr_id,
             self.title,

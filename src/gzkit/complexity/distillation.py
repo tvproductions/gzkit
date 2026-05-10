@@ -147,7 +147,6 @@ class _PriorMetricBoundary(BaseModel):
 
 def _select_cross_metric(baseline: BaselineArtifact, metric_key: str) -> CrossMetricAggregate:
     """Look up a cross-project aggregate by metric key, fail closed if absent."""
-
     for aggregate in baseline.cross_project.metrics:
         if aggregate.metric_key == metric_key:
             return aggregate
@@ -157,7 +156,6 @@ def _select_cross_metric(baseline: BaselineArtifact, metric_key: str) -> CrossMe
 
 def render_metric_triple(metric_key: str, baseline: BaselineArtifact) -> PerMetricTriple:
     """Build the per-metric triple from the cross-project p90 boundary."""
-
     cross = _select_cross_metric(baseline, metric_key)
     absolute = getattr(cross, _BOUNDARY_PERCENTILE)
     return PerMetricTriple(
@@ -171,7 +169,6 @@ def render_metric_triple(metric_key: str, baseline: BaselineArtifact) -> PerMetr
 
 def _render_metric_aggregate_prose(metric_key: str, baseline: BaselineArtifact) -> str:
     """Agent-drafted percentile prose per metric (REQ-03 prose surface)."""
-
     cross = _select_cross_metric(baseline, metric_key)
     return (
         f"Across the corpus ({cross.project_count} project(s) contributing "
@@ -186,7 +183,6 @@ def _render_metric_aggregate_prose(metric_key: str, baseline: BaselineArtifact) 
 
 def _variance_commentary(variance: float) -> str:
     """One-line commentary on inter-project variance shape."""
-
     if variance < 0.5:
         return "low variance, the corpus speaks with one voice on this metric"
     if variance < 2.0:
@@ -196,7 +192,6 @@ def _variance_commentary(variance: float) -> str:
 
 def _render_practitioner_eye_block(metric_key: str) -> str:
     """Operator-attested practitioner-eye placeholder (REQ-10 surface)."""
-
     return (
         "### Practitioner-eye observation\n\n"
         f"<!-- OPERATOR: practitioner-eye observation for `{metric_key}` "
@@ -207,7 +202,6 @@ def _render_practitioner_eye_block(metric_key: str) -> str:
 
 def _render_metric_section(metric_key: str, baseline: BaselineArtifact) -> str:
     """Render one full metric section: header + prose + triple + practitioner-eye."""
-
     triple = render_metric_triple(metric_key, baseline)
     prose = _render_metric_aggregate_prose(metric_key, baseline)
     practitioner = _render_practitioner_eye_block(metric_key)
@@ -225,7 +219,6 @@ def _render_metric_section(metric_key: str, baseline: BaselineArtifact) -> str:
 
 def _render_cold_start_diff() -> str:
     """REQ-03/04: first-run cold-start diff sentinel."""
-
     return (
         "Cold start — no prior distillation; this document establishes "
         "the baseline.  Subsequent runs will narrate every boundary that "
@@ -242,7 +235,6 @@ _PRIOR_BOUNDARY_PATTERN = re.compile(
 
 def _parse_prior_boundaries(prior_text: str) -> dict[str, _PriorMetricBoundary]:
     """Extract per-metric boundaries from a prior distillation document."""
-
     boundaries: dict[str, _PriorMetricBoundary] = {}
     for match in _PRIOR_BOUNDARY_PATTERN.finditer(prior_text):
         entry = _PriorMetricBoundary(
@@ -256,7 +248,6 @@ def _parse_prior_boundaries(prior_text: str) -> dict[str, _PriorMetricBoundary]:
 
 def _render_movement_line(metric_key: str, prior_absolute: float, current_absolute: float) -> str:
     """Render one boundary-movement narration with operator placeholder."""
-
     if prior_absolute == 0.0:
         return (
             f"- `{metric_key}`: prior boundary was zero; cannot compute "
@@ -276,7 +267,6 @@ def render_diff_section(
     current_baseline: BaselineArtifact,
 ) -> str:
     """REQ-04: diff against prior distillation, or cold-start sentinel."""
-
     if prior_distillation is None:
         return _render_cold_start_diff()
     prior_text = prior_distillation.read_text(encoding="utf-8")
@@ -316,7 +306,6 @@ def _render_frontmatter(
     today: date,
 ) -> str:
     """Render the YAML frontmatter for the distilled document."""
-
     prior_value = (
         "null" if prior_distillation_path is None else f'"{prior_distillation_path.as_posix()}"'
     )
@@ -332,7 +321,6 @@ def _render_frontmatter(
 
 def _render_citation_form_section(baseline: BaselineArtifact) -> str:
     """REQ-06: name the canonical citation tuple."""
-
     return (
         "## Citation form\n\n"
         "Downstream foundation ADRs (per ADR-0.0.27 § Citation contract and "
@@ -356,7 +344,6 @@ def _render_citation_form_section(baseline: BaselineArtifact) -> str:
 
 def _resolve_output_path(*, output_dir: Path, today: date, allow_dated_sibling: bool) -> Path:
     """Pick the dated output path, fail or suffix on collision per REQ-05."""
-
     output_dir.mkdir(parents=True, exist_ok=True)
     stem = f"distilled-characteristics-{today.isoformat()}"
     primary = output_dir / f"{stem}.md"
@@ -387,7 +374,6 @@ def render_document(
     allow_dated_sibling: bool = False,
 ) -> Path:
     """Render the full distilled-characteristics document and return its path."""
-
     output_path = _resolve_output_path(
         output_dir=output_dir, today=today, allow_dated_sibling=allow_dated_sibling
     )

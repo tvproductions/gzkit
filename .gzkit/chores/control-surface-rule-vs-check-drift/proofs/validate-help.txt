@@ -1,0 +1,140 @@
+usage: gz validate [-h] [--manifest] [--documents] [--surfaces] [--ledger]
+                   [--instructions] [--briefs] [--personas] [--interviews]
+                   [--decomposition] [--requirements] [--commit-trailers]
+                   [--frontmatter] [--adr FRONTMATTER_ADR]
+                   [--explain FRONTMATTER_EXPLAIN] [--version]
+                   [--type-ignores] [--cli-alignment] [--event-handlers]
+                   [--validator-fields] [--audits] [--utf8-prefix]
+                   [--test-tiers] [--pydantic-models] [--class-size]
+                   [--version-release] [--pool-adr-isolation]
+                   [--behave-req-tags] [--skill-alignment]
+                   [--advisory-scorecard] [--complexity-doctrine-links]
+                   [--complexity-thresholds] [--reconcile-freshness]
+                   [--insights-shape] [--instructions-files-budget]
+                   [--adr-status-fresh] [--orientation-freshness] [--taxonomy]
+                   [--brief-headings] [--chores-layout] [--unscoped-rules]
+                   [--sensitivity] [--allowlist-only] [--doc-surface-parity]
+                   [--absorption-duplicates]
+                   [--evaluation-justify-binding [ARTIFACT_ID]]
+                   [--intrinsic-attestation] [--advisor-proof-binding]
+                   [--attestation-receipts <text|@file>] [--lane {heavy,lite}]
+                   [--kind {foundation,feature}] [--json] [--quiet |
+                   --verbose] [--debug]
+
+Check governance artifacts against schema rules.
+
+options:
+  -h, --help            show this help message and exit
+  --manifest            Validate .gzkit/manifest.json
+  --documents           Validate governance docs
+  --surfaces            Validate control surfaces
+  --ledger              Validate ledger integrity
+  --instructions        Validate agent instructions
+  --briefs              Validate all OBPI briefs against the canonical OBPI
+                        schema
+  --personas            Validate persona files in .gzkit/personas/
+  --interviews          Verify ADRs with OBPIs have interview transcript
+                        artifacts
+  --decomposition       Validate ADR decomposition scorecards and
+                        checklist-to-brief alignment
+  --requirements        Flag OBPI briefs whose REQUIREMENTS sections lack
+                        REQ-ID identifiers
+  --commit-trailers     Flag HEAD commits touching src/ or tests/ without a
+                        Task: trailer
+  --frontmatter         Validate frontmatter against ledger truth (exit 3 on
+                        drift)
+  --adr FRONTMATTER_ADR
+                        Scope --frontmatter validation to one ADR (and its
+                        OBPIs)
+  --explain FRONTMATTER_EXPLAIN
+                        ADR ID (--frontmatter) or path list (--sensitivity)
+  --version             Validate version consistency across all locations
+  --type-ignores        Fail on `# type: ignore[<code>]` under src/
+                        (ty-unhonored)
+  --cli-alignment       Every `gz <verb>` in features/operator-docs must
+                        resolve
+  --event-handlers      Every ledger event type must be claimed by a graph
+                        handler
+  --validator-fields    Every validator info.get(field) must have a graph
+                        writer
+  --audits              Run all four trust-doctrine pattern audits
+  --utf8-prefix         Forbid `PYTHONUTF8=1 uv run gz` anti-pattern in
+                        docs/skills
+  --test-tiers          Forbid third test tier under tests/
+                        (integration/e2e/slow/bdd)
+  --pydantic-models     Governance classes use Pydantic BaseModel +
+                        ConfigDict, not @dataclass
+  --class-size          Classes under src/gzkit/ <=300 lines unless explicitly
+                        waived
+  --version-release     pyproject version has a matching vX.Y.Z git tag
+  --pool-adr-isolation  Pool ADRs never receive runtime-track lifecycle/gate
+                        events
+  --behave-req-tags     Heavy OBPI REQs have @REQ-* scenario tags under
+                        features/
+  --skill-alignment     Every CLI verb has a wielding skill (Invariant 1)
+  --advisory-scorecard  Every .gzkit/rules file appears in
+                        advisory-rules-audit scorecard
+  --complexity-doctrine-links
+                        Audit ADR-0.0.27 complexity-doctrine citations resolve
+                        (link integrity)
+  --complexity-thresholds
+                        Audit ADR-0.0.28 complexity-thresholds rule body shape
+                        and citation
+  --reconcile-freshness
+                        Flag if no reconcile event since HEAD (grace: 24h)
+  --insights-shape      Validate `.gzkit/insights/agent-insights.jsonl`
+                        records (GHI #358)
+  --instructions-files-budget
+                        AGENTS.md/CLAUDE.md/.claude/rules char budget (GHI
+                        #373)
+  --adr-status-fresh    adr-status.md must agree with on-disk ADR canon (GHI
+                        #322)
+  --orientation-freshness
+                        SessionStart orientation hook + script must remain
+                        wired (GHI #341)
+  --taxonomy            Enforce ADR kind/semver/id-prefix consistency
+                        (ADR-0.0.17)
+  --brief-headings      Brief evidence sections must be H3, not H2 (GHI #238)
+  --chores-layout       Forbid CHORE.md/acceptance.json outside canonical
+                        chores roots (ADR-0.0.21)
+  --unscoped-rules      Fail on .gzkit/rules/*.md with paths: '**' or missing
+                        paths: (ADR-0.0.20)
+  --sensitivity         Audit ADR-0.0.22 sensitivity binding (auto-detect
+                        floor)
+  --allowlist-only      With --unscoped-rules: list current allowlist entries
+                        and exit 0
+  --doc-surface-parity  Fail if docs/user/commands/ exists (decommissioned,
+                        GHI #418)
+  --absorption-duplicates
+                        Same opsdev source path across parent ADRs needs
+                        paired_with: (GHI #376)
+  --evaluation-justify-binding [ARTIFACT_ID]
+                        Require gz-justify artifact for low eval scores
+                        (ADR-0.0.26).
+  --intrinsic-attestation
+                        Validate intrinsic-complexity-attestation ledger event
+                        shapes (OBPI-0.0.29-07).
+  --advisor-proof-binding
+                        Audit advisor verdict <-> proof binding
+                        (OBPI-0.0.29-08).
+  --attestation-receipts <text|@file>
+                        Validate ARB receipt citations in an attestation
+                        string (ADR-0.0.24)
+  --lane {heavy,lite}   Lane for --attestation-receipts (default: heavy)
+  --kind {foundation,feature}
+                        Kind for --attestation-receipts (default: feature)
+  --json                Output as JSON
+  --quiet, -q           Suppress non-error output
+  --verbose, -v         Enable verbose output
+  --debug               Enable debug mode with full tracebacks
+
+Examples
+    gz validate --manifest --ledger
+    gz validate --documents --surfaces
+    gz validate --briefs --json
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach

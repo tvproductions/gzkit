@@ -111,7 +111,7 @@ def _script_section_headings(script_path: Path) -> list[str] | None:
 
 
 def _node_references_collector(node: ast.AST) -> bool:
-    """True for ``Name``/``Attribute`` nodes referring to ``_ORIENTATION_COLLECTOR``."""
+    """Return True for ``Name``/``Attribute`` nodes referring to ``_ORIENTATION_COLLECTOR``."""
     if isinstance(node, ast.Name) and node.id == _ORIENTATION_COLLECTOR:
         return True
     return isinstance(node, ast.Attribute) and node.attr == _ORIENTATION_COLLECTOR

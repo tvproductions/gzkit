@@ -2,19 +2,19 @@
   "criteria": [
     {
       "type": "exitCodeEquals",
-      "command": "test -f ops/chores/control-surface-rule-conflicts/proofs/rule-inventory.md",
+      "command": "test -f .gzkit/chores/control-surface-rule-conflicts/proofs/rule-inventory.md",
       "expected": 0,
       "description": "Rule inventory artifact present"
     },
     {
       "type": "exitCodeEquals",
-      "command": "test -f ops/chores/control-surface-rule-conflicts/proofs/conflict-matrix.md",
+      "command": "test -f .gzkit/chores/control-surface-rule-conflicts/proofs/conflict-matrix.md",
       "expected": 0,
       "description": "Conflict matrix artifact present"
     },
     {
       "type": "exitCodeEquals",
-      "command": "test -f ops/chores/control-surface-rule-conflicts/proofs/summary.md",
+      "command": "test -f .gzkit/chores/control-surface-rule-conflicts/proofs/summary.md",
       "expected": 0,
       "description": "Summary artifact present"
     }

@@ -50,8 +50,10 @@ _CLUSTER_ADR_PREFIXES = (
 
 
 def _enumerate_in_scope_artifacts(project_root: Path) -> list[Path]:
-    """Return cluster ADR bodies + OBPI briefs + complexity-doctrine.md
-    + docs/governance/complexity/**/*.md (excluding distilled-characteristics-*).
+    """Return cluster ADR bodies + OBPI briefs + complexity doctrine surfaces.
+
+    Includes complexity-doctrine.md and docs/governance/complexity/**/*.md
+    (excluding distilled-characteristics-*).
     """
     artifacts: list[Path] = []
     foundation_root = project_root / "docs" / "design" / "adr" / "foundation"
@@ -75,8 +77,9 @@ def _enumerate_in_scope_artifacts(project_root: Path) -> list[Path]:
 
 
 def _extract_citations(file: Path) -> list[tuple[int, str]]:
-    """Return (lineno, citation_text) for every line referencing a complexity doc,
-    EXCLUDING any line preceded by the speculative skip marker.
+    """Return (lineno, citation_text) for every line referencing a complexity doc.
+
+    Lines preceded by the speculative skip marker are excluded.
     """
     try:
         lines = file.read_text(encoding="utf-8").splitlines()
@@ -139,8 +142,9 @@ def _resolve_section_anchor(file: Path, anchor: str) -> bool:
 
 
 def _read_current_corpus_revision(project_root: Path) -> int | None:
-    """Parse corpus_revision from frontmatter of the most recent
-    distilled-characteristics-*.md (sorted by filename desc).
+    """Parse corpus_revision from frontmatter of the most recent distilled file.
+
+    Uses distilled-characteristics-*.md sorted by filename desc.
     """
     complexity_docs = project_root / "docs" / "governance" / "complexity"
     if not complexity_docs.is_dir():
@@ -182,8 +186,9 @@ def _make_error(source: Path, lineno: int, project_root: Path, message: str) -> 
 
 
 def validate_complexity_doctrine_links(project_root: Path) -> list[ValidationError]:
-    """Main entry point. Enumerates artifacts, walks each citation, applies
-    the four checks, returns list of ValidationError on any miss.
+    """Enumerate artifacts, walk each citation, apply the four checks.
+
+    Returns a list of ValidationError on any miss.
     """
     errors: list[ValidationError] = []
     current_revision = _read_current_corpus_revision(project_root)

@@ -206,7 +206,7 @@ def check_brief_path_validity_for_brief(
     project_root: Path,
     brief_path: Path,
 ) -> list[str]:
-    """Convenience: extract allowed + brief-level creates and run validity check.
+    """Extract allowed + brief-level creates and run the validity check.
 
     Returns an empty list when the brief has no ``## Allowed Paths`` section
     (newly scaffolded briefs surface no signal until paths are authored).

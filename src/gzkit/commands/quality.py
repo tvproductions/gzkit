@@ -280,9 +280,11 @@ def typecheck() -> None:
 
 
 def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
-    """Build the canonical `gz check` steps list. Module-scope-importable so
-    tests and external callers can introspect the aggregator without invoking
-    the full check pipeline (REQ-0.0.27-07-06)."""
+    """Build the canonical `gz check` steps list.
+
+    Module-scope-importable so tests and external callers can introspect the
+    aggregator without invoking the full check pipeline (REQ-0.0.27-07-06).
+    """
     from gzkit.quality import (
         run_adr_status_fresh_audit,
         run_cli_audit,

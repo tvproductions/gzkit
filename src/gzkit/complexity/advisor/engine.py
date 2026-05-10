@@ -111,6 +111,7 @@ class DiagnosisEngine:
         rules: tuple[ArchetypeRule, ...] | None = None,
         rule_path: Path | None = None,
     ) -> None:
+        """Initialize the engine with explicit ``rules`` or a ``rule_path`` to load."""
         if rules is not None and rule_path is not None:
             msg = "DiagnosisEngine accepts rules OR rule_path, not both"
             raise EngineError(msg)
@@ -125,6 +126,7 @@ class DiagnosisEngine:
         value: float,
         table: ThresholdTable,
     ) -> AdvisorDiagnosis | None:
+        """Return an advisor diagnosis for ``ast_context`` against ``metric``/``value``."""
         band = table.band_for(metric, value)
         if band is None:
             return None
@@ -165,7 +167,6 @@ def diagnose(
     rules: tuple[ArchetypeRule, ...] | None = None,
 ) -> AdvisorDiagnosis | None:
     """Module-level convenience wrapper around :class:`DiagnosisEngine`."""
-
     return DiagnosisEngine(rules=rules).diagnose(ast_context, metric, value, table)
 
 
