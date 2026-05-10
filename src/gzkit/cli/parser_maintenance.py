@@ -527,6 +527,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Same opsdev source path across parent ADRs needs paired_with: (GHI #376)",
     )
     p_validate.add_argument(
+        "--orphaned-implementation",
+        dest="check_orphaned_implementation",
+        action="store_true",
+        help="Lock force-released after allowed-path edits without completion (GHI #438)",
+    )
+    p_validate.add_argument(
         "--evaluation-justify-binding",
         dest="check_evaluation_justify_binding",
         nargs="?",
@@ -612,6 +618,9 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             sensitivity_explain=(a.frontmatter_explain if a.check_sensitivity else None),
             check_doc_surface_parity=a.check_doc_surface_parity or a.check_audits,
             check_absorption_duplicates=a.check_absorption_duplicates,
+            check_orphaned_implementation=(
+                a.check_orphaned_implementation or a.check_audits
+            ),
             check_evaluation_justify_binding=(a.check_evaluation_justify_binding),
             check_intrinsic_attestation=a.check_intrinsic_attestation,
             check_advisor_proof_binding=a.check_advisor_proof_binding,

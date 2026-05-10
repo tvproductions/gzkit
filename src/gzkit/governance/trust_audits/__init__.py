@@ -75,6 +75,9 @@ from gzkit.governance.trust_audits.intrinsic_attestation import (
 )
 from gzkit.governance.trust_audits.models import audit_pydantic_models
 from gzkit.governance.trust_audits.orientation import audit_orientation_freshness
+from gzkit.governance.trust_audits.orphaned_implementation import (
+    audit_orphaned_implementation,
+)
 from gzkit.governance.trust_audits.reconcile import audit_reconcile_freshness
 from gzkit.governance.trust_audits.release import (
     audit_advisory_scorecard,
@@ -109,6 +112,7 @@ __all__ = [
     "audit_insights_shape",
     "audit_instructions_files_budget",
     "audit_orientation_freshness",
+    "audit_orphaned_implementation",
     "audit_pool_adr_isolation",
     "audit_pydantic_models",
     "audit_reconcile_freshness",
