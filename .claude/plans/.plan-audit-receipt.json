@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.31-03-t0-failure-mode-catalog",
-  "timestamp": "2026-05-10T11:30:00Z",
+  "obpi_id": "OBPI-0.0.32-01-skills-physical-migration",
+  "timestamp": "2026-05-11T08:42:00.000000+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.31-03-t0-failure-mode-catalog.md",
+  "plan_file": "OBPI-0.0.32-01-skills-physical-migration.md",
   "gaps_found": 0,
-  "notes": "ADR-OBPI alignment: ALIGNED (7/7 checks). CLI structural FAIL is a false positive for new-file-creation OBPIs — the allowed path is the file being created. Scope-edge flags disclosed in plan: (1) trust-doctrine.md see-also addition required by REQ-5 (OBPI-0.0.31-01 did not add it); allowed paths amended; (2) governance_runbook.md one-line discoverability entry for REQ-8; allowed paths amended. Prerequisites confirmed: OBPI-0.0.31-01 Completed, OBPI-0.0.31-02 Draft, ADR-0.0.32 booked. Two real worked examples planned (GHI #318 + ADR-0.0.21); no contrived third example per REQ-4."
+  "notes": "ADR<->OBPI alignment PASS (7/7). CLI structural FAIL is false positive for migration OBPIs: allowed paths (src/gzkit/skills/__init__.py, src/gzkit/skills/<slug>/SKILL.md, tests/test_skills.py) are files created by this OBPI. Scope-collision advisories (ADR-0.5.0, ADR-0.4.0) are pool/future ADRs with no active lock. Pre-migration findings in plan: 70 skills on disk vs 61 stated (migrate all 70), 38 skill dirs have auxiliary subdirs (SKILL.md moves only; aux stays for OBPI-06)."
 }

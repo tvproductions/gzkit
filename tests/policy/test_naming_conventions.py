@@ -29,6 +29,7 @@ SNAKE_CASE_RE = re.compile(r"^[a-z_][a-z0-9_]*$")
 DATA_PACKAGE_CARVEOUTS = (
     SRC_ROOT / "chores",  # ADR-0.0.21 — chore slugs like 'coverage-40pct'
     SRC_ROOT / "templates" / "skills",  # GHI #315 — skill slugs like 'git-sync'
+    SRC_ROOT / "skills",  # ADR-0.0.32-01 — skill slugs like 'gz-adr-audit'
 )
 
 

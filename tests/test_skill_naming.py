@@ -6,7 +6,8 @@ from pathlib import Path
 
 KEBAB_CASE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 SKILL_ROOTS = (
-    ".gzkit/skills",
+    ".gzkit/skills",  # authored source (project canonical)
+    "src/gzkit/skills",  # synced copy for wheel shipping (ADR-0.0.32-01)
     ".agents/skills",
     ".claude/skills",
     ".github/skills",
@@ -36,7 +37,9 @@ class TestSkillNaming(unittest.TestCase):
             root = repo_root / root_rel
             self.assertTrue(root.exists(), f"Missing skills root: {root_rel}")
 
-            for skill_dir in sorted(p for p in root.iterdir() if p.is_dir()):
+            for skill_dir in sorted(
+                p for p in root.iterdir() if p.is_dir() and not p.name.startswith("__")
+            ):
                 self.assertRegex(
                     skill_dir.name,
                     KEBAB_CASE,

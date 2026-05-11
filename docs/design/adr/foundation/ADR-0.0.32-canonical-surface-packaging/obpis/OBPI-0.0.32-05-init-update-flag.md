@@ -1,7 +1,7 @@
 ---
 id: OBPI-0.0.32-05-init-update-flag
 parent: ADR-0.0.32-canonical-surface-packaging
-item: 3
+item: 5
 lane: Heavy
 status: Draft
 ---
@@ -36,9 +36,9 @@ Add a third `gz init` mode — `--update` — that performs version-aware refres
 ## Denied Paths
 
 - `src/gzkit/skills/<slug>/SKILL.md`, `src/gzkit/rules/<slug>.md` — canonical content moves belong to OBPI-0.0.32-01 / -02
-- `pyproject.toml` — wheel includes belong to OBPI-0.0.32-04
-- `src/gzkit/governance/trust_audits.py` — `gz validate --distribution` belongs to OBPI-0.0.32-05
-- `.claude/skills/`, `.github/skills/`, `.github/instructions/` — mirror sync belongs to OBPI-0.0.32-06
+- `pyproject.toml` — wheel includes belong to OBPI-0.0.32-06
+- `src/gzkit/governance/trust_audits.py` — `gz validate --distribution` belongs to OBPI-0.0.32-07
+- `.claude/skills/`, `.github/skills/`, `.github/instructions/` — mirror sync belongs to OBPI-0.0.32-08
 - Any rule, skill, hook, template, persona content edits in this OBPI — refresh logic is content-agnostic
 
 ## Requirements (FAIL-CLOSED)

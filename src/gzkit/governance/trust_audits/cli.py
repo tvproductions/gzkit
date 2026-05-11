@@ -149,9 +149,9 @@ def _collect_skill_verb_refs(
 def audit_skill_alignment(project_root: Path) -> list[ValidationError]:
     """Invariant 1: every CLI verb is referenced by at least one skill.
 
-    Scans ``.gzkit/skills/**/SKILL.md`` frontmatter (``gz_command:``) and body
-    prose for each registered top-level CLI verb. A verb with no wielding
-    skill and no explicit waiver is a defect signal per
+    Scans ``.gzkit/skills/**/SKILL.md`` (authored source) frontmatter
+    (``gz_command:``) and body prose for each registered top-level CLI verb.
+    A verb with no wielding skill and no explicit waiver is a defect signal per
     ``.gzkit/rules/tool-skill-runbook-alignment.md``.
     """
     skills_root = project_root / ".gzkit" / "skills"
