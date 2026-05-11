@@ -45,7 +45,7 @@ Promote the T0 distribution invariant from advisory doctrine (ADR-0.0.31) to mec
 ## Requirements (FAIL-CLOSED)
 
 1. `gz validate --distribution` (or `gz validate --surfaces` extended) MUST exist as a registered scope in the validator's flag list and MUST appear in `gz validate --help` output.
-2. The check MUST be a static analysis: load `pyproject.toml [tool.hatch.build.targets.wheel] include:`, load `data/distribution_baseline_manifest.json`, walk on-disk canonical-surface trees (`src/gzkit/skills/`, `src/gzkit/rules/`, `src/gzkit/templates/`, `src/gzkit/hooks/`, `src/gzkit/personas/`), and detect three drift classes:
+2. The check MUST be a static analysis: load `pyproject.toml [tool.hatch.build.targets.wheel] include:`, load `data/distribution_baseline_manifest.json`, walk every on-disk canonical-surface tree per ADR-0.0.32 § Canonical-routing scope (`src/gzkit/skills/`, `src/gzkit/rules/`, `src/gzkit/personas/`, `src/gzkit/templates/`, `src/gzkit/chores/` honoring OBPI-13's class-classifier, `src/gzkit/hooks/scripts/` as hooks-as-Python-library per § Named exceptions), and detect three drift classes:
    (a) ON_DISK_NOT_INCLUDED — file exists under a canonical-surface tree but is NOT covered by any include glob;
    (b) BASELINE_NOT_ON_DISK — baseline manifest names a file that does not exist on disk;
    (c) ON_DISK_NOT_BASELINE — file exists on disk and is in the include but is NOT in the baseline manifest.

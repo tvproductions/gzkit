@@ -144,6 +144,130 @@ Canonical-routing direction (binding):
    first write*, not a runtime resolution chain — once written, the adopter's
    `.gzkit/` is canonical for that project.
 
+### Canonical-routing scope (binding)
+
+The canonical-routing model applies uniformly to every gzkit-homegrown
+authored canonical surface. The scope is operator-edited content the
+wheel must ship and the agent runtime must consume:
+
+| Surface | Authored canonical at | Wheel-shipping copy at | Vendor mirror(s) | Scaffolder | Status |
+|---|---|---|---|---|---|
+| skills | `.gzkit/skills/<slug>/SKILL.md` | `src/gzkit/skills/<slug>/SKILL.md` | `.claude/skills/`, `.github/skills/` | `scaffold_core_skills` (OBPI-02) | dual-surface ✓ (OBPI-01) |
+| rules | `.gzkit/rules/<slug>.md` | `src/gzkit/rules/<slug>.md` | `.claude/rules/`, `.github/instructions/` | `scaffold_core_rules` (OBPI-04) | pending (OBPI-03) |
+| personas | `.gzkit/personas/<slug>.md` | `src/gzkit/personas/<slug>.md` | `.claude/personas/`, `.github/personas/`, `.agents/personas/` (transformed) | `scaffold_core_personas` (OBPI-10) | pending (OBPI-09/10) |
+| templates | `.gzkit/templates/<name>.md` | `src/gzkit/templates/<name>.md` | none (templates are consumed at scaffold-time, not exposed to agent runtime) | `scaffold_core_templates` (OBPI-12) | pending (OBPI-11/12 — reverse-migration from current `src/gzkit/templates/` location) |
+| chores | `.gzkit/chores/<slug>/CHORE.md` + adjuncts | `src/gzkit/chores/<slug>/CHORE.md` + adjuncts | (none — chores are scaffolder/library only) | `scaffold_core_chores` (ADR-0.0.21) | dual-surface present with drift; normalize under OBPI-13 |
+
+### Named exceptions to canonical-routing (binding)
+
+Not every harness surface fits the canonical-routing model uniformly. The
+two named exceptions below are documented gaps, not oversights. Each is
+explicitly carved out of the dual-surface byte-parity invariant declared
+above.
+
+**Exception 1 — Hooks are vendor-coupled, currently Claude-only.**
+
+The agent-runtime hook surface (`.claude/hooks/*.py`) is vendor-specific:
+Claude Code consumes a particular lifecycle (PreToolUse, PostToolUse,
+SessionStart, Stop, etc.) with vendor-specific I/O conventions. No
+cross-vendor hook lifecycle standard exists today. Codex and (deprecating)
+Copilot expose different lifecycle models that gzkit's `.claude/hooks/`
+contracts cannot satisfy uniformly. A meta-layer contract that abstracts
+across vendors was considered (operator narrative, 2026-05-11) and
+declared currently infeasible — even the level of specification a
+meta-contract would require is blocked by vendor non-uniformity.
+
+Consequence: hooks are explicitly **OUT of scope** for the canonical-routing
+model in this ADR. The `.claude/hooks/<name>.py` surface stays a
+Claude-vendor-runtime surface; `src/gzkit/hooks/scripts/<name>.py` stays
+a Python library API consumed in-process; there is no `.gzkit/hooks/`
+authored canonical surface for the runtime hook scripts. The wheel
+continues to ship `src/gzkit/hooks/scripts/` via existing
+`pyproject.toml` includes; `.claude/hooks/` is regenerated as needed by
+existing vendor-specific tooling and is not byte-coupled to any package
+surface.
+
+A pool ADR (`ADR-pool.hooks-meta-layer-contract`) is filed to park the
+future authoring of a vendor-neutral hook contract IF/WHEN vendor
+lifecycle convergence makes it feasible. Pool stays parked until the
+design unblocks; no implementation work is scheduled.
+
+**Exception 2 — Chores carry mixed file classes; byte-parity binds canonical content only.**
+
+Chores (ADR-0.0.21) are homegrown skill/spec/ceremony/tool combos that
+mix three file classes within each `<slug>/` directory:
+
+- **Canonical authored content** — `CHORE.md`, `AGENTS.md`, doctrine
+  markdown, scoring rubrics, planning prose. Operator-edited at `.gzkit/`;
+  MUST be byte-equivalent at `src/gzkit/`.
+- **Package-internal Python** — `__init__.py`, `__pycache__/`, library
+  registries (e.g., `src/gzkit/chores/__init__.py`'s 224 lines of API).
+  Package-only; never present at `.gzkit/`; EXEMPT from byte-parity.
+- **Runtime-state files** — `CHORE-LOG.md`, `proofs/<artifact>`,
+  `.gitkeep` markers, per-run logs. Operator-and-agent-written at
+  runtime; the two surfaces diverge intentionally during chore execution;
+  EXEMPT from byte-parity.
+
+Consequence: the dual-surface byte-parity invariant applies to chores'
+canonical authored content only. OBPI-13 (chores normalization)
+normalizes the existing drift on canonical files (e.g.,
+`.gzkit/chores/AGENTS.md` ↔ `src/gzkit/chores/AGENTS.md`) and codifies
+the carve-out rules in `.claude/rules/skill-surface-sync.md` so future
+chore authoring respects the class boundaries. OBPI-08's
+`gz agent sync control-surfaces` MUST honor the carve-out
+class-classifier — never overwrite a runtime-state file from the
+`.gzkit/` side, never sync a package-only file onto the canonical side.
+
+The runtime-state-mixed-with-canonical-instructions pattern itself is a
+**design smell** (operator framing, 2026-05-11: *"keeping logs and
+receipts with the instructions code [...] may be a design flaw"*). OBPI-13's
+classifier is a **temporary accommodation** that preserves the
+canonical-routing invariant without prejudging the deeper question of
+whether runtime-state should live under the `<slug>/` directories at all.
+The long-term direction — relocating runtime-state to a separate
+`.gzkit/receipts/<surface>/<slug>/` tree so canonical `<slug>/` directories
+carry only authored content — is parked at
+**`ADR-pool.canonical-vs-runtime-separation`**. When that pool ADR is
+promoted and the relocation lands, OBPI-13's classifier shrinks to a
+single class (canonical authored content) and chores becomes
+structurally clean under the canonical-routing model.
+
+### Forward extension policy
+
+Any future canonical surface added to gzkit (e.g., new agent-context
+package types) MUST adopt the dual-surface model unless explicitly
+declared a named exception by an attested ADR that justifies the carve-out
+against this section's framing. The default is dual-surface; deviations
+require attestation.
+
+### Design gaps surfaced by this expansion
+
+The expansion of the canonical-routing model from skills + rules to all
+harness surfaces (skills, rules, personas, templates, chores) surfaced
+two architectural gaps that are too large to absorb into this ADR and
+are parked at pool ADRs for future promotion:
+
+1. **`ADR-pool.canonical-vs-runtime-separation`** — runtime-state (logs,
+   receipts, proofs, per-run artifacts) currently lives co-located with
+   canonical instructions inside `<slug>/` directories. The chores
+   class-classifier landed by OBPI-13 is a temporary accommodation; the
+   structural fix is to relocate runtime-state into a separate
+   `.gzkit/receipts/<surface>/<slug>/` tree. See Exception 2 above.
+
+2. **`ADR-pool.central-config-airlineops-pattern`** — gzkit configuration
+   is currently distributed across at least seven file locations
+   (`pyproject.toml`, `.gzkit/manifest.json`, `data/*.json` registries,
+   `.claude/settings.json`, per-surface frontmatter, etc.). Adding
+   `CORE_PERSONAS` + `CORE_TEMPLATES` + further surface registries in
+   this ADR's chain made the fragmentation visible. AirlineOps' pattern
+   (per operator framing, 2026-05-11) provides a strong central-config
+   seam gzkit should adopt; the pool ADR parks the question until
+   ADR-0.0.32 closeout stabilizes the surface inventory.
+
+Neither gap blocks ADR-0.0.32's OBPI work — they're consequences of the
+expansion that justify dedicated future ADRs rather than scope-creep
+into this one.
+
 ## Comparator Uplift (2026-05-07)
 
 Tessl/BMAD/GSD package context so agents can enter a workflow quickly. gzkit's
@@ -208,20 +332,35 @@ future context packages so portability never means hand-copied markdown.
 <!-- Deterministic OBPI sizing: score each dimension 0/1/2. -->
 <!-- Cutoffs are notional defaults and should be calibrated over time from project evidence. -->
 
-- Data/State: 1
+- Data/State: 2
 - Logic/Engine: 2
 - Interface: 2
 - Observability: 1
 - Lineage: 2
-- Dimension Total: 8
-- Baseline Range: 4-4
-- Baseline Selected: 4
-- Split Single-Narrative: 1
-- Split Surface Boundary: 1
-- Split State Anchor: 1
-- Split Testability Ceiling: 1
-- Split Total: 4
-- Final Target OBPI Count: 8
+- Dimension Total: 9
+- Baseline Range: 4-5
+- Baseline Selected: 5
+- Split Single-Narrative: 2
+- Split Surface Boundary: 2
+- Split State Anchor: 2
+- Split Testability Ceiling: 2
+- Split Total: 8
+- Final Target OBPI Count: 13
+
+<!--
+ORIGINAL scorecard (8 OBPIs, skills + rules + plumbing only):
+- Data/State: 1, Logic/Engine: 2, Interface: 2, Observability: 1, Lineage: 2 (Total: 8)
+- Baseline: 4, Split: 4 (Final: 8)
+EXPANDED 2026-05-11 to absorb personas + templates + chores normalization per
+operator's canonical-routing-binds-across-all-harness-surfaces clarification.
+Hooks remain a named exception (vendor-coupled), tracked under pool ADR
+`ADR-pool.hooks-meta-layer-contract`. Dimension bumps: Data/State 1→2
+(adds 3 more canonical-surface families), Split Surface Boundary 1→2 (per-surface
+atomicity), Split Single-Narrative 1→2 (three independent migration narratives),
+Split State Anchor 1→2 (each surface has its own ledger-state anchor), Split
+Testability Ceiling 1→2 (per-surface byte-parity test independence).
+-->
+
 
 ## Checklist
 
@@ -238,7 +377,12 @@ future context packages so portability never means hand-copied markdown.
 - [ ] OBPI-0.0.32-05: Add `gz init --update` flag — version-aware refresh of the adopter's `.gzkit/<surface>/` from the wheel's package data, with three-state detection (IDENTICAL/STALE/EDITED), manpage, behave coverage.
 - [ ] OBPI-0.0.32-06: Author T0 smoke test (build wheel, install into temp venv, run `gz init`, assert byte-equivalence of the resulting `.gzkit/` tree against frozen baseline manifest); audit and extend `pyproject.toml [tool.hatch.build.targets.wheel] include:`; author `data/distribution_baseline_manifest.json`.
 - [ ] OBPI-0.0.32-07: Extend `gz validate --surfaces` (or add `--distribution`) with T0 enforcement — verify every canonical surface in manifest is wheel-deliverable from `src/gzkit/`; fail-closed exit 3 on any package-data omission; flip T0 scorecard Promotable→Mechanical.
-- [ ] OBPI-0.0.32-08: Canonical surface sync — broaden `gz agent sync control-surfaces` so a single invocation propagates `.gzkit/<surface>/` (authored canonical) to BOTH `src/gzkit/<surface>/` (wheel-shipping byte-parity copy, dev-time only) AND `.[vendor]/<surface>/` (vendor mirrors: `.claude/skills/`, `.claude/rules/`, `.github/skills/`, `.github/instructions/`); idempotent on freshly-synced state; absorbs GHI #449 (`.gzkit/` → `src/gzkit/` dev-time sync) and the existing `.gzkit/` → `.[vendor]/` mirror flow into one mechanism. Depends on OBPI-03/04 landing first so rules are dual-surface before the sync mechanism covers them.
+- [ ] OBPI-0.0.32-08: Canonical surface sync — broaden `gz agent sync control-surfaces` so a single invocation propagates `.gzkit/<surface>/` (authored canonical) to BOTH `src/gzkit/<surface>/` (wheel-shipping byte-parity copy, dev-time only) AND `.[vendor]/<surface>/` (vendor mirrors: `.claude/skills/`, `.claude/rules/`, `.claude/personas/`, `.github/skills/`, `.github/instructions/`, `.github/personas/`, `.agents/personas/`); covers every dual-surface family (skills, rules, personas, templates, chores per § Canonical-routing scope); honors chores carve-out rules (canonical content syncs; package-only and runtime-state files exempt per § Named exceptions); idempotent on freshly-synced state; absorbs GHI #449 (`.gzkit/` → `src/gzkit/` dev-time sync) and the existing `.gzkit/` → `.[vendor]/` mirror flow into one mechanism. Depends on OBPI-03/04/09/11/13 landing first so every dual-surface family is established before the sync mechanism covers it.
+- [ ] OBPI-0.0.32-09: Personas physical migration — establish dual-surface for all 6 canonical personas: retain `.gzkit/personas/<slug>.md` as authored source-of-truth AND add byte-equivalent copy at `src/gzkit/personas/<slug>.md` for wheel-shipping; create `src/gzkit/personas/__init__.py` if needed for package discovery (no public-symbol exports beyond the data surface); byte-parity test fails closed on drift. Vendor mirrors at `.claude/personas/`, `.github/personas/`, `.agents/personas/` remain a transformed shape (1-line trimmed renders distinct from full authored content) — that transformation is intentional and OUT of the byte-parity invariant for vendor mirrors. Scaffolder + init wiring deferred to OBPI-10; sync mechanism deferred to OBPI-08.
+- [ ] OBPI-0.0.32-10: Personas scaffolder authoring — build `CORE_PERSONAS` registry symmetric to `CORE_SKILLS`/`CORE_RULES`/`CORE_CHORES`; author `scaffold_core_personas` that copies canonical persona content from `importlib.resources.files("gzkit.personas")` (the wheel's package surface) into the adopter's `.gzkit/personas/<slug>.md`; integrate with `init_cmd._scaffold_project_skeleton` (fresh init) and `_repair_missing_artifacts` (re-run repair). Depends on OBPI-09 landing first.
+- [ ] OBPI-0.0.32-11: Templates reverse-migration — establish dual-surface for all 13+ canonical templates by REVERSE-migrating from the current single-surface location: `git mv src/gzkit/templates/*.md .gzkit/templates/*.md` to establish `.gzkit/templates/` as the new authored canonical source-of-truth; add byte-equivalent copy back at `src/gzkit/templates/*.md` for wheel-shipping; preserve `src/gzkit/templates/__init__.py` (Python package) and any non-`.md` adjuncts; existing `render_template()` consumers continue resolving through `gzkit.templates` package; byte-parity test fails closed on drift. This is a direction reversal from skills/rules/personas migrations because templates already live at the package surface today. Scaffolder + init wiring deferred to OBPI-12; sync mechanism deferred to OBPI-08.
+- [ ] OBPI-0.0.32-12: Templates scaffolder authoring — build `CORE_TEMPLATES` registry symmetric to `CORE_SKILLS`/`CORE_RULES`/`CORE_PERSONAS`/`CORE_CHORES`; author `scaffold_core_templates` that copies canonical template content from `importlib.resources.files("gzkit.templates")` (the wheel's package surface) into the adopter's `.gzkit/templates/<name>.md`; integrate with `init_cmd._scaffold_project_skeleton` (fresh init) and `_repair_missing_artifacts` (re-run repair); preserve `render_template()` resolution semantics so it consults the adopter's `.gzkit/templates/` project-first per the same project-first → package-fallback shape. Depends on OBPI-11 landing first.
+- [ ] OBPI-0.0.32-13: Chores normalization — apply the § Named exceptions / Exception 2 carve-out doctrine to the existing `.gzkit/chores/` ↔ `src/gzkit/chores/` parallel structure. Bring canonical authored content (`CHORE.md`, `AGENTS.md`, doctrine markdown, scoring rubrics) into byte-parity; codify exempt classes (package-only `__init__.py`/`__pycache__`/`README.md`-when-package-only; runtime-state `CHORE-LOG.md`/`proofs/<artifact>`/`.gitkeep`) in `.claude/rules/skill-surface-sync.md` as the carve-out rule reference; teach OBPI-08's sync mechanism the class-classifier so syncs never overwrite runtime-state and never propagate package-only files onto the canonical side; add byte-parity tests scoped to canonical content classes only.
 
 ## Q&A Transcript
 
@@ -254,14 +398,49 @@ design intent changed in the slug shift; the substantive scope is the
 amendment text. The OBPI numbering preserves the amendment's 01–06 sketch.
 
 Sequencing: ADR-0.0.31 (T0 doctrine) lands first; ADR-0.0.32 opens with
-ADR-0.0.31 as the cited invariant in the `parent:` frontmatter. Eight OBPIs
-run in dependency order: 01 (skills dual-surface, completed); 02 (skills
-scaffolder), 03 (rules dual-surface), 04 (rules scaffolder) in parallel
-after 01; 05 (`init --update`), 06 (T0 smoke test + wheel includes), 07
-(`validate --distribution`) after 03/04; 08 (canonical surface sync —
-`.gzkit/` to `src/gzkit/` AND `.[vendor]/`) last, gated on 03/04 so the
-sync mechanism covers skills + rules + (forward) templates + personas +
-hooks in one pass.
+ADR-0.0.31 as the cited invariant in the `parent:` frontmatter. Thirteen
+OBPIs run in dependency order:
+
+- **Migrations (parallelizable after 01):** 01 (skills dual-surface,
+  completed); 03 (rules dual-surface); 09 (personas dual-surface); 11
+  (templates reverse-migration); 13 (chores normalization).
+- **Scaffolders (depend on respective migrations):** 02 (skills) after 01;
+  04 (rules) after 03; 10 (personas) after 09; 12 (templates) after 11.
+- **Adopter refresh ceremony:** 05 (`gz init --update`) after the
+  scaffolders are in place.
+- **T0 enforcement:** 06 (T0 smoke test + wheel includes) and 07
+  (`gz validate --distribution`) after migrations + scaffolders + 05.
+- **Canonical surface sync (closes the chain):** 08 (canonical surface sync
+  covering every dual-surface family: skills, rules, personas, templates,
+  chores; honors chores carve-out per § Named exceptions) gated on every
+  migration OBPI (03/09/11/13) so all dual-surface families exist before
+  the sync mechanism wires them.
+
+Canonical-routing course corrections (2026-05-11):
+
+- **Round 1 (mid-OBPI-01):** Brief originally specified `git mv` ("move
+  into wheel-shipped package data") semantics inherited from the chores
+  precedent. Operator clarified the canonical model is dual-surface —
+  `.gzkit/<surface>/` retained as the authored source-of-truth,
+  byte-equivalent copy at `src/gzkit/<surface>/` for wheel-shipping.
+
+- **Round 2 (post-OBPI-01 attestation):** Clarification broadened to
+  bind across the full ADR-0.0.32 chain and every future gzkit canonical
+  surface: `.gzkit/<surface>/ ↔ src/gzkit/<surface>/` (dev-time
+  wheel-shipping byte-parity) AND `.gzkit/<surface>/ ↔ .[vendor]/<surface>/`
+  (agent-runtime vendor mirrors); both arrows originate at `.gzkit/`.
+
+- **Round 3 (post-Round-2 ADR rewrite):** Scope expanded again to bind
+  across ALL harness surfaces — skills, rules, personas, templates,
+  chores — with hooks explicitly carved OUT as a documented vendor-coupled
+  gap. Per-surface OBPI decomposition chosen for traceability. The
+  Decomposition Scorecard bumped from Final Target 8 → 13. The hooks gap
+  is parked at pool ADR `ADR-pool.hooks-meta-layer-contract` until vendor
+  lifecycle convergence makes a meta-layer contract feasible.
+
+Insights records at `.gzkit/insights/agent-insights.jsonl`:
+2026-05-11T08:55:00Z (Round 1), 2026-05-11T09:58:00Z (Round 2),
+and the Round 3 record appended at this ADR rewrite's landing time.
 
 Canonical-routing course correction (2026-05-11): OBPI-01 was authored
 with `git mv` ("move into wheel-shipped package data") semantics inherited
@@ -282,9 +461,9 @@ Insights record at `.gzkit/insights/agent-insights.jsonl`
 
 <!-- Links to tests, documentation, and other artifacts that prove completion -->
 
-- [ ] Tests: `tests/` (unit-tier coverage for `CORE_RULES`, `scaffold_core_rules`, package-resource enumeration, init-cmd integration)
-- [ ] Smoke test: `features/distribution_invariant.feature` (build wheel → temp-venv install → `gz init` → byte-equivalence against `data/distribution_baseline_manifest.json`)
-- [ ] Wheel manifest: `pyproject.toml [tool.hatch.build.targets.wheel] include:` extended for `src/gzkit/skills/**/*.md`, `src/gzkit/rules/**/*.md`, `src/gzkit/templates/*.md`, `src/gzkit/hooks/scripts/**`, `src/gzkit/personas/**`
+- [ ] Tests: `tests/` (unit-tier coverage for every `CORE_<SURFACE>` registry — `CORE_SKILLS`, `CORE_RULES`, `CORE_PERSONAS`, `CORE_TEMPLATES`, `CORE_CHORES` — and every `scaffold_core_<surface>` function; package-resource enumeration; init-cmd integration; per-surface byte-parity tests for skills, rules, personas, templates; chores canonical-class-only byte-parity per § Named exceptions)
+- [ ] Smoke test: `features/distribution_invariant.feature` (build wheel → temp-venv install → `gz init` → byte-equivalence against `data/distribution_baseline_manifest.json` across all canonical surfaces)
+- [ ] Wheel manifest: `pyproject.toml [tool.hatch.build.targets.wheel] include:` extended for `src/gzkit/skills/**/*.md`, `src/gzkit/rules/**/*.md`, `src/gzkit/personas/**/*.md`, `src/gzkit/templates/**/*.md`, `src/gzkit/hooks/scripts/**` (hooks-as-Python-library, per § Named exceptions — not dual-surface), `src/gzkit/chores/**` (canonical content only per § Named exceptions Exception 2 carve-out)
 - [ ] CLI surface: `gz init --update` manpage at `docs/user/manpages/gz-init.md`; behave coverage in `features/init.feature`
 - [ ] Validation surface: `gz validate --distribution` (or extended `--surfaces`) manpage + tests
 - [ ] Canonical surface sync: `gz agent sync control-surfaces` propagates `.gzkit/<surface>/` (authored canonical) to BOTH `src/gzkit/<surface>/` (wheel-shipping byte-parity copy) AND `.[vendor]/<surface>/` (`.claude/skills/`, `.claude/rules/`, `.github/skills/`, `.github/instructions/`); sync is idempotent (no-op on freshly-synced state); byte-parity test passes post-sync

@@ -43,7 +43,7 @@ Author the build-then-install smoke test that mechanically enforces the T0 distr
 
 ## Requirements (FAIL-CLOSED)
 
-1. `pyproject.toml [tool.hatch.build.targets.wheel] include:` MUST grow to cover every canonical surface that ships with the wheel: skills (already added by OBPI-0.0.32-01), rules (added by OBPI-0.0.32-02), templates (`src/gzkit/templates/*.md`), hooks (`src/gzkit/hooks/scripts/**`), personas (`src/gzkit/personas/**`). Audit gap: every directory under `src/gzkit/` that contains operator-facing canonical content MUST be in the include list.
+1. `pyproject.toml [tool.hatch.build.targets.wheel] include:` MUST grow to cover every canonical surface that ships with the wheel per ADR-0.0.32 § Canonical-routing scope: skills (`src/gzkit/skills/**/SKILL.md`), rules (`src/gzkit/rules/**/*.md`), personas (`src/gzkit/personas/**/*.md` — OBPI-09 establishes), templates (`src/gzkit/templates/**/*.md` — OBPI-11 establishes after reverse-migration), chores canonical content (`src/gzkit/chores/**/*.md` honoring OBPI-13's class-classifier), hooks (`src/gzkit/hooks/scripts/**` — hooks-as-Python-library per § Named exceptions; NOT dual-surface). Audit gap: every directory under `src/gzkit/` that contains operator-facing canonical content (per the § Canonical-routing scope table) MUST be in the include list.
 2. The `exclude` block MUST NOT strip any newly-included content. Verify by `python -m build && unzip -l dist/py_gzkit-*.whl` after each include addition.
 3. `data/distribution_baseline_manifest.json` MUST be authored at this OBPI's landing time and MUST list every canonical artifact the wheel ships, organized by surface. Schema (proposed):
    ```json
