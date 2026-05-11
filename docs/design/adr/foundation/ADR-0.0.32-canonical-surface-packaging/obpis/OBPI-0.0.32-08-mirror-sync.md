@@ -1,7 +1,7 @@
 ---
 id: OBPI-0.0.32-08-mirror-sync
 parent: ADR-0.0.32-canonical-surface-packaging
-item: 6
+item: 8
 lane: Heavy
 status: Draft
 ---
@@ -39,9 +39,9 @@ After OBPI-0.0.32-01 (skills) and OBPI-0.0.32-02 (rules) move canonical content 
 ## Denied Paths
 
 - `src/gzkit/skills/**`, `src/gzkit/rules/**` — canonical content moves belong to OBPI-0.0.32-01 / -02
-- `pyproject.toml` — wheel includes belong to OBPI-0.0.32-04
-- `src/gzkit/governance/trust_audits.py` — `gz validate --distribution` belongs to OBPI-0.0.32-05
-- `data/distribution_baseline_manifest.json` — baseline manifest belongs to OBPI-0.0.32-04
+- `pyproject.toml` — wheel includes belong to OBPI-0.0.32-06
+- `src/gzkit/governance/trust_audits.py` — `gz validate --distribution` belongs to OBPI-0.0.32-07
+- `data/distribution_baseline_manifest.json` — baseline manifest belongs to OBPI-0.0.32-06
 - `docs/governance/trust-doctrine.md` — T0 doctrine prose belongs to OBPI-0.0.31-01
 - Canonical content edits — mirrors are byte-derived from canonical; this OBPI does not author content
 
@@ -84,8 +84,8 @@ After OBPI-0.0.32-01 (skills) and OBPI-0.0.32-02 (rules) move canonical content 
 **Context — sibling OBPIs:**
 
 - [ ] OBPI-0.0.32-01 + -02 — canonical content moves; this OBPI consumes the new surface layout
-- [ ] OBPI-0.0.32-04 — baseline manifest is invariant under sync (mirror regeneration MUST NOT change the canonical surface fingerprints captured in the manifest)
-- [ ] OBPI-0.0.32-05 — `gz validate --distribution` must continue to pass after this OBPI's sync runs
+- [ ] OBPI-0.0.32-06 — baseline manifest is invariant under sync (mirror regeneration MUST NOT change the canonical surface fingerprints captured in the manifest)
+- [ ] OBPI-0.0.32-07 — `gz validate --distribution` must continue to pass after this OBPI's sync runs
 
 **Prerequisites (check existence, STOP if missing):**
 

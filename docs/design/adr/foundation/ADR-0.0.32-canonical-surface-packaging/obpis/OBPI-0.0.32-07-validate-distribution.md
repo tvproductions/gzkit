@@ -1,7 +1,7 @@
 ---
 id: OBPI-0.0.32-07-validate-distribution
 parent: ADR-0.0.32-canonical-surface-packaging
-item: 5
+item: 7
 lane: Heavy
 status: Draft
 ---
@@ -35,11 +35,11 @@ Promote the T0 distribution invariant from advisory doctrine (ADR-0.0.31) to mec
 
 ## Denied Paths
 
-- `pyproject.toml` — wheel include extension belongs to OBPI-0.0.32-04; this OBPI consumes the include list as input
+- `pyproject.toml` — wheel include extension belongs to OBPI-0.0.32-06; this OBPI consumes the include list as input
 - `src/gzkit/skills/**`, `src/gzkit/rules/**` — content moves belong to OBPI-0.0.32-01 / -02
-- `data/distribution_baseline_manifest.json` — baseline manifest is authored by OBPI-0.0.32-04; this OBPI consumes it as input (loading + parsing only)
-- `features/distribution_invariant.feature` — behave smoke belongs to OBPI-0.0.32-04
-- `.claude/skills/`, `.github/skills/` — mirror sync belongs to OBPI-0.0.32-06
+- `data/distribution_baseline_manifest.json` — baseline manifest is authored by OBPI-0.0.32-06; this OBPI consumes it as input (loading + parsing only)
+- `features/distribution_invariant.feature` — behave smoke belongs to OBPI-0.0.32-06
+- `.claude/skills/`, `.github/skills/` — mirror sync belongs to OBPI-0.0.32-08
 - `docs/governance/trust-doctrine.md` — T0 doctrine prose belongs to OBPI-0.0.31-01
 
 ## Requirements (FAIL-CLOSED)
@@ -86,12 +86,12 @@ Promote the T0 distribution invariant from advisory doctrine (ADR-0.0.31) to mec
 
 - [ ] `gz validate --chores-layout` — analogous static layout check (`src/gzkit/governance/trust_audits.py` _CHORES_LAYOUT_*); the implementation pattern transfers
 - [ ] `gz validate --utf8-prefix` — another static check with three drift classes; pattern transfers
-- [ ] OBPI-0.0.32-04 — produces the baseline manifest this OBPI consumes; produces the wheel includes this OBPI verifies
+- [ ] OBPI-0.0.32-06 — produces the baseline manifest this OBPI consumes; produces the wheel includes this OBPI verifies
 
 **Prerequisites (check existence, STOP if missing):**
 
 - [ ] `src/gzkit/governance/trust_audits.py` exists and contains existing `--surfaces` / `--chores-layout` / `--utf8-prefix` checks (the patterns this OBPI extends)
-- [ ] OBPI-0.0.32-04 baseline manifest exists at `data/distribution_baseline_manifest.json`
+- [ ] OBPI-0.0.32-06 baseline manifest exists at `data/distribution_baseline_manifest.json`
 - [ ] OBPI-0.0.32-01 + OBPI-0.0.32-02 wheel includes are landed (so the include block parses cleanly)
 - [ ] Python 3.11+ stdlib `tomllib` is available (sanity check via `python -c "import tomllib"`)
 

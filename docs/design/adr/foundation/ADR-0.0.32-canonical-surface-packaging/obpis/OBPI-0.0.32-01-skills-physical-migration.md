@@ -3,7 +3,7 @@ id: OBPI-0.0.32-01-skills-physical-migration
 parent: ADR-0.0.32-canonical-surface-packaging
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.32-01-skills-physical-migration: Skills Physical Migration
@@ -17,7 +17,12 @@ status: Draft
 
 ## Objective
 
-Move 61 hand-authored canonical SKILL.md files from `.gzkit/skills/<slug>/` into `src/gzkit/skills/<slug>/SKILL.md` via `git mv` (preserving per-file history). Convert the existing `src/gzkit/skills.py` module (438 lines) into `src/gzkit/skills/__init__.py` so every `from gzkit.skills import X` import site continues to resolve. **No scaffolder refactor in this OBPI** — `scaffold_core_skills` continues to render through `templates/skill.md` after this OBPI lands; OBPI-02 is the brief that refactors it to copy from package canonical content. This OBPI is the chores precedent's OBPI-0.0.21-01 shape: physical migration as its own atomic unit, separate from the resolver/scaffolder semantics that depend on it.
+Establish the dual-surface layout for skills: keep the 70 hand-authored canonical SKILL.md files in place at `.gzkit/skills/<slug>/SKILL.md` (the authored source of truth) and add a byte-identical copy at `src/gzkit/skills/<slug>/SKILL.md` (the surface that ships in the wheel). Convert the existing `src/gzkit/skills.py` module (479 lines) into `src/gzkit/skills/__init__.py` so every `from gzkit.skills import X` import site continues to resolve. **No scaffolder refactor in this OBPI** — `scaffold_core_skills` continues to render through `templates/skill.md` after this OBPI lands; OBPI-02 is the brief that refactors it to copy from package canonical content. **No sync-mechanism enforcement in this OBPI** — dev-time sync `.gzkit/ → src/gzkit/` is tracked as GHI #449.
+
+<!-- gz-validate-skip: command-shape -->
+**No adopter-side refresh in this OBPI** — `gz upgrade` is tracked as GHI #450.
+
+**Course correction (2026-05-11):** Brief originally specified `git mv` and "moved" semantics, but the correct model under ADR-0.0.32 is dual-surface (authored at `.gzkit/`, copied to `src/gzkit/` for wheel shipping). Operator clarified mid-implementation: "the truest canonical source, for everything, is `.gzkit/`." REQ-01 wording amended accordingly. Insights record at `.gzkit/insights/agent-insights.jsonl` (2026-05-11T08:55:00Z).
 
 ## Lane
 
@@ -46,8 +51,8 @@ Move 61 hand-authored canonical SKILL.md files from `.gzkit/skills/<slug>/` into
 
 ## Requirements (FAIL-CLOSED)
 
-1. `git mv .gzkit/skills/<slug>/SKILL.md src/gzkit/skills/<slug>/SKILL.md` MUST be used for every one of the 61 canonical skills so per-file git history is preserved. A bulk `cp` + `rm` is NEVER acceptable.
-2. After the moves, `src/gzkit/skills/<slug>/SKILL.md` MUST be byte-identical to the pre-move `.gzkit/skills/<slug>/SKILL.md`. No content edits.
+1. `.gzkit/skills/<slug>/SKILL.md` MUST remain in place as the authored canonical source of truth for every skill (~70 files at OBPI execution time). A byte-identical copy MUST be added at `src/gzkit/skills/<slug>/SKILL.md`. The authored surface is never deleted; the package surface is added alongside.
+2. `src/gzkit/skills/<slug>/SKILL.md` MUST be byte-identical to `.gzkit/skills/<slug>/SKILL.md`. No content edits in either surface. A byte-parity test (`tests/test_skills.py::TestSkillsLayoutDualSurface::test_dual_surface_byte_parity`) MUST fail closed on drift.
 3. `src/gzkit/skills.py` MUST NOT exist after this OBPI. Its contents MUST move to `src/gzkit/skills/__init__.py` such that every `from gzkit.skills import X` import site in `src/` and `tests/` continues to resolve without modification.
 4. `src/gzkit/skills/__init__.py` MUST be byte-equivalent to the prior `src/gzkit/skills.py` contents — no new functions, no removed functions, no signature changes. The single permitted edit is module-docstring text-only updates that reflect the new package location (if any).
 5. `from gzkit.skills_audit import …` import sites MUST continue to work; the audit module is a sibling under `src/gzkit/`, not a child of the new package.
@@ -142,8 +147,8 @@ python -c "from gzkit.skills import CORE_SKILLS, scaffold_core_skills, audit_ski
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.32-01-01: All 61 SKILL.md files moved via `git mv` from `.gzkit/skills/<slug>/SKILL.md` to `src/gzkit/skills/<slug>/SKILL.md`; per-file git history preserved
-- [ ] REQ-0.0.32-01-02: `src/gzkit/skills.py` does not exist post-OBPI; `src/gzkit/skills/__init__.py` exists with byte-equivalent (modulo docstring) contents
+- [ ] REQ-0.0.32-01-01: Dual-surface layout established — `.gzkit/skills/<slug>/SKILL.md` retained as authored canonical source (~70 files); byte-identical copy added at `src/gzkit/skills/<slug>/SKILL.md`. Byte-parity test `tests/test_skills.py::TestSkillsLayoutDualSurface::test_dual_surface_byte_parity` fails closed on drift
+- [ ] REQ-0.0.32-01-02: `src/gzkit/skills.py` does not exist post-OBPI; `src/gzkit/skills/__init__.py` exists with byte-equivalent (modulo docstring) contents; package surface SKILL.md files are byte-identical to authored source
 - [ ] REQ-0.0.32-01-03: Every public symbol previously importable from `gzkit.skills` remains importable; regression test enumerates the full set
 - [ ] REQ-0.0.32-01-04: `from gzkit.skills_audit import ...` import sites continue to resolve
 - [ ] REQ-0.0.32-01-05: `scaffold_core_skills` body is byte-identical to the pre-OBPI version (no scaffolder logic change in this OBPI)
@@ -198,22 +203,60 @@ python -c "from gzkit.skills import CORE_SKILLS, scaffold_core_skills, audit_ski
 
 ### Value Narrative
 
-Before this OBPI: 61 hand-authored canonical SKILL.md files lived only at `.gzkit/skills/<slug>/`. After this OBPI: those files live at `src/gzkit/skills/<slug>/SKILL.md` as a Python package, with `from gzkit.skills import X` continuing to resolve through the new `src/gzkit/skills/__init__.py`. The wheel does not yet ship them (that is OBPI-06) and the scaffolder does not yet copy them (that is OBPI-02) — this OBPI delivers the layout, not the closure. Each subsequent OBPI in this ADR depends on the layout being right, which is why the chores precedent kept physical migration as its own atomic unit.
+Before this OBPI: 70 hand-authored canonical SKILL.md files lived only at `.gzkit/skills/<slug>/SKILL.md`, with no presence in the Python package — the wheel could not ship them, and the canonical content was unreachable from `importlib.resources`. After this OBPI: those 70 files remain at `.gzkit/skills/<slug>/SKILL.md` as the **authored canonical source of truth** AND a byte-identical copy lives at `src/gzkit/skills/<slug>/SKILL.md` as the **package surface** (precondition for OBPI-06 wheel includes). `src/gzkit/skills.py` is converted to `src/gzkit/skills/__init__.py` so every `from gzkit.skills import X` import site continues to resolve. The byte-parity test (`test_dual_surface_byte_parity`) fails closed if the two surfaces drift.
+
+Sync invariants now in place (mechanical or upcoming):
+
+- `.gzkit/skills/ ↔ src/gzkit/skills/` — byte-parity test fails closed on drift (this OBPI). Convenience sync mechanism deferred to GHI #449.
+- `.gzkit/skills/ → .[vendor]/skills/` — existing `gz agent sync control-surfaces` (unchanged).
+<!-- gz-validate-skip: command-shape -->
+- `src/gzkit/skills/ → adopter's .gzkit/skills/` — deferred to GHI #450 (`gz upgrade` adopter subcommand).
+
+The wheel does not yet ship the package surface (OBPI-06), the scaffolder does not yet copy from `importlib.resources` (OBPI-02), and the mirrors are not yet regenerated from the new surface (OBPI-08). This OBPI delivers the dual-surface layout, not the T0 closure. Each subsequent OBPI in this ADR depends on the layout being right.
 
 ### Key Proof
 
+
+Dual-surface layout established and byte-parity guard in place:
+
 ```bash
-ls src/gzkit/skills/ | grep -v __init__.py | grep -v __pycache__ | wc -l
-# Expected: 61
+$ find .gzkit/skills/ -name SKILL.md | wc -l       # 70 authored
+$ find src/gzkit/skills/ -name SKILL.md | wc -l    # 70 package copy
+$ uv run -m unittest tests.test_skills -v          # 26/26 pass
+```
+
+Full quality gates green (ARB receipts):
+- arb-ruff-abda11a07b154a2c9e07d55c72c6d930 (lint clean)
+- arb-step-typecheck-db038e775abd4331821873d815741764 (typecheck clean)
+- arb-step-unittest-ffde8346d9964d06bb99dd75e41248e7 (4790/4790 pass)
+- arb-step-mkdocs-0f77fc27fab6418cb2d80e9f33110ed1 (docs build clean)
+
+REQ coverage: 8/8 covered (verified by `uv run gz covers OBPI-0.0.32-01-skills-physical-migration --json`).
+
+Byte-parity gate: `tests.test_skills.TestSkillsLayoutDualSurface.test_dual_surface_byte_parity` fails closed on any drift between `.gzkit/skills/<slug>/SKILL.md` and `src/gzkit/skills/<slug>/SKILL.md` (read_bytes comparison across all 70 slugs).
+
+Imports continuous post-conversion:
+
+```bash
+$ uv run python -c "from gzkit.skills import CORE_SKILLS, scaffold_core_skills, audit_skills, SkillAuditIssue, _parse_frontmatter, DEFAULT_MAX_REVIEW_AGE_DAYS, list_skills, scaffold_skill, Skill, get_skill, SkillAuditReport; print('imports OK')"
+imports OK
 ```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Dual-surface layout established: .gzkit/skills/<slug>/SKILL.md (70 files, authored canonical source, retained) plus src/gzkit/skills/<slug>/SKILL.md (70 byte-identical copies for wheel shipping). src/gzkit/skills.py converted to src/gzkit/skills/__init__.py via git mv; every `from gzkit.skills import X` site continues to resolve.
+- Course correction (2026-05-11): Brief originally specified git mv semantics that removed SKILL.md from .gzkit/. Operator clarified "the truest canonical source, for everything, is .gzkit/". Reversed via git mv back + cp; REQ-1/-2 wording amended; insights record appended at .gzkit/insights/agent-insights.jsonl (2026-05-11T08:55:00Z).
+- Scope expansion (REQ-8 compliance, AGENTS.md PRIME DIRECTIVE 4): 2 files outside the original allowed-paths list updated for the layout change — tests/policy/test_naming_conventions.py (added src/gzkit/skills carve-out) and tests/test_skill_naming.py (added src/gzkit/skills root + __pycache__ filter). 9 files were temporarily patched during initial implementation; 7 were reverted after the operator's course correction restored .gzkit/skills/ as authoritative.
+- Out-of-scope deferrals filed: GHI #449 (.gzkit/ -> src/gzkit/ dev-time sync mechanism — parity test is detection-only; convenience sync step is missing) and GHI #450 (gz upgrade adopter subcommand — depends on OBPI-0.0.32-06 wheel includes + OBPI-0.0.32-02 scaffolder refactor).
+- 26 REQ-derived regression tests added at tests/test_skills.py covering all 8 REQs via @covers decorators including dual-surface byte-parity gate (TestSkillsLayoutDualSurface.test_dual_surface_byte_parity).
+- Behave coverage waiver added (data/behave_coverage_waivers.json): adr-0.0.32-bdd-deferred-to-obpi-06 — BDD coverage routed to OBPI-0.0.32-06 (T0 smoke test); OBPI-01 is layout-only verified via Python unit tests.
+- Files created: 72 (src/gzkit/skills/__init__.py + 70 src/gzkit/skills/<slug>/SKILL.md + tests/test_skills.py).
+- Files modified: 5 (test_naming_conventions, test_skill_naming, brief, insights, behave_coverage_waivers).
+- Files deleted: 1 (src/gzkit/skills.py — converted to __init__.py).
+- Date completed: 2026-05-11.
+- Attestation status: attest completed — operator attested with explicit phrase after Stage 4 evidence presented.
+- Defects noted: none beyond the course-correction (documented in insights record) and the two filed follow-up GHIs.
 
 ## Tracked Defects
 
@@ -221,14 +264,14 @@ ls src/gzkit/skills/ | grep -v __init__.py | grep -v __pycache__ | wc -l
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — dual-surface layout established for 70 canonical SKILL.md files: .gzkit/skills/<slug>/SKILL.md retained as authored source of truth, byte-identical copy added at src/gzkit/skills/<slug>/SKILL.md as wheel-shipping surface, src/gzkit/skills.py converted to src/gzkit/skills/__init__.py via git mv preserving all 10 __all__ symbols. 4790/4790 tests pass (26 new regression tests covering all 8 REQs at tests/test_skills.py); ARB receipts: arb-ruff-abda11a07b154a2c9e07d55c72c6d930, arb-step-typecheck-db038e775abd4331821873d815741764, arb-step-unittest-ffde8346d9964d06bb99dd75e41248e7, arb-step-mkdocs-0f77fc27fab6418cb2d80e9f33110ed1. Course correction (operator: "the truest canonical source, for everything, is .gzkit/") reversed initial git mv removal and added cp-based dual surface; insights record at .gzkit/insights/agent-insights.jsonl (2026-05-11T08:55:00Z). Out-of-scope deferrals filed as GHI #449 (.gzkit -> src/gzkit dev-time sync mechanism) and GHI #450 (gz upgrade adopter subcommand). Byte-parity test test_dual_surface_byte_parity gates drift fail-closed.
+- Date: 2026-05-11
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-11
 
 **Evidence Hash:** -

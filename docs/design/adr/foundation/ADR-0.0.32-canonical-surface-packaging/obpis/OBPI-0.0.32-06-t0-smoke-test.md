@@ -1,7 +1,7 @@
 ---
 id: OBPI-0.0.32-06-t0-smoke-test
 parent: ADR-0.0.32-canonical-surface-packaging
-item: 4
+item: 6
 lane: Heavy
 status: Draft
 ---
@@ -35,9 +35,9 @@ Author the build-then-install smoke test that mechanically enforces the T0 distr
 ## Denied Paths
 
 - `src/gzkit/skills/**`, `src/gzkit/rules/**` — content moves belong to OBPI-0.0.32-01 / -02; this OBPI consumes those moves to assert wheel coverage
-- `src/gzkit/commands/init_cmd.py` — `--update` belongs to OBPI-0.0.32-03; init dispatch unchanged here
-- `src/gzkit/governance/trust_audits.py` — `gz validate --distribution` belongs to OBPI-0.0.32-05
-- `.claude/skills/**`, `.github/skills/**`, `.github/instructions/**` — mirror sync belongs to OBPI-0.0.32-06
+- `src/gzkit/commands/init_cmd.py` — `--update` belongs to OBPI-0.0.32-05; init dispatch unchanged here
+- `src/gzkit/governance/trust_audits.py` — `gz validate --distribution` belongs to OBPI-0.0.32-07
+- `.claude/skills/**`, `.github/skills/**`, `.github/instructions/**` — mirror sync belongs to OBPI-0.0.32-08
 - `docs/governance/trust-doctrine.md` — T0 doctrine prose belongs to OBPI-0.0.31-01
 - Canonical content edits in this OBPI — the baseline manifest captures the current canonical state; content authoring is out of scope
 

@@ -1,0 +1,40 @@
+{
+  "obpi_id": "OBPI-0.0.32-01",
+  "timestamp": "2026-05-11T08:41:30.000000+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.32-01-skills-physical-migration.md",
+  "gaps_found": 0,
+  "notes": "CLI structural check flagged 3 allowed-path gaps (src/gzkit/skills/__init__.py, src/gzkit/skills/<slug>/SKILL.md, tests/test_skills.py) -- these are files created by this OBPI, not pre-existing paths. Semantic audit: ADR<->OBPI PASS (all 7 checks aligned). Plan<->OBPI PASS (all steps within allowed paths, all REQs covered, denied paths respected, verification commands included). Scope-collision advisories (ADR-0.5.0, ADR-0.4.0) are pool/future ADRs with no active lock claim.",
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.5.0",
+      "sibling_obpi": "OBPI-0.5.0-04-maintenance-and-deprecation-operations",
+      "contested_paths": ["src/gzkit/skills.py"],
+      "severity": "advisory"
+    },
+    {
+      "sibling_adr": "ADR-0.5.0",
+      "sibling_obpi": "OBPI-0.5.0-01-skill-taxonomy-and-capability-model",
+      "contested_paths": ["src/gzkit/skills.py"],
+      "severity": "advisory"
+    },
+    {
+      "sibling_adr": "ADR-0.5.0",
+      "sibling_obpi": "OBPI-0.5.0-02-parity-verification-policy",
+      "contested_paths": ["src/gzkit/skills.py"],
+      "severity": "advisory"
+    },
+    {
+      "sibling_adr": "ADR-0.5.0",
+      "sibling_obpi": "OBPI-0.5.0-03-lifecycle-state-transitions",
+      "contested_paths": ["src/gzkit/skills.py"],
+      "severity": "advisory"
+    },
+    {
+      "sibling_adr": "ADR-0.4.0",
+      "sibling_obpi": "OBPI-0.4.0-02-agent-native-mirror-contracts",
+      "contested_paths": ["src/gzkit/skills.py"],
+      "severity": "advisory"
+    }
+  ]
+}

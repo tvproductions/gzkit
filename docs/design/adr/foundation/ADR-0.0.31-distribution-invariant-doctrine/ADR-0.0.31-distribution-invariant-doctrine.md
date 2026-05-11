@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.31-distribution-invariant-doctrine
-status: Draft
+status: Validated
 kind: foundation
 semver: 0.0.31
 lane: lite
