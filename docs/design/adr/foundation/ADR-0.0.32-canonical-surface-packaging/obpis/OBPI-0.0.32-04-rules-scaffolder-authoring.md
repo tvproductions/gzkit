@@ -11,13 +11,13 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/ADR-0.0.32-canonical-surface-packaging.md`
-- **Checklist Item:** #4 — "Rules scaffolder authoring — build `CORE_RULES` registry symmetric to `CORE_SKILLS`/`CORE_CHORES`; author `scaffold_core_rules` mirroring `scaffold_core_chores` semantics; integrate with `init_cmd._scaffold_project_skeleton` (fresh init) and `_repair_missing_artifacts` (re-run repair). Depends on OBPI-03 landing first."
+- **Checklist Item:** #4 — "Rules scaffolder authoring — build `CORE_RULES` registry symmetric to `CORE_SKILLS`/`CORE_CHORES`; author `scaffold_core_rules` that copies canonical rule content from `importlib.resources.files(\"gzkit.rules\")` (the wheel's package surface) into the adopter's `.gzkit/rules/<slug>.md`; integrate with `init_cmd._scaffold_project_skeleton` (fresh init) and `_repair_missing_artifacts` (re-run repair). Depends on OBPI-03 landing first."
 
 **Status:** Draft
 
 ## Objective
 
-After OBPI-03 has landed the rules physical migration (14 rule files now at `src/gzkit/rules/<slug>.md`, `src/gzkit/rules.py` converted to `src/gzkit/rules/__init__.py`), author the rules scaffolding surface that closes T0-class A. Build a `CORE_RULES` registry symmetric to `CORE_SKILLS` / `CORE_CHORES`. Author `scaffold_core_rules(project_root, config, *, skip_existing=False)` mirroring `scaffold_core_chores` semantics — enumerate canonical rules from `importlib.resources.files("gzkit.rules")`, write each to `<project_root>/.gzkit/rules/<slug>.md`, honor `skip_existing`, return the list of newly-created slugs. Wire `scaffold_core_rules` into `init_cmd._scaffold_project_skeleton` (for fresh init) and `_repair_missing_artifacts` (for re-run repair). After this OBPI lands, `gz init` produces 14 canonical rule files at `.gzkit/rules/`. T0-class A closure depends on this OBPI + OBPI-06 (wheel includes) jointly.
+After OBPI-03 has landed the rules dual-surface (14 rule files retained at `.gzkit/rules/<slug>.md` as authored canonical source-of-truth AND byte-equivalent copies at `src/gzkit/rules/<slug>.md` for wheel-shipping, `src/gzkit/rules.py` converted to `src/gzkit/rules/__init__.py`), author the rules scaffolding surface that closes T0-class A. Build a `CORE_RULES` registry symmetric to `CORE_SKILLS` / `CORE_CHORES`. Author `scaffold_core_rules(project_root, config, *, skip_existing=False)` mirroring `scaffold_core_chores` semantics — enumerate canonical rules from `importlib.resources.files("gzkit.rules")` (the wheel's package surface), write each to `<project_root>/.gzkit/rules/<slug>.md` (the adopter's project canonical surface-of-truth), honor `skip_existing`, return the list of newly-created slugs. Wire `scaffold_core_rules` into `init_cmd._scaffold_project_skeleton` (for fresh init) and `_repair_missing_artifacts` (for re-run repair). After this OBPI lands, `gz init` produces 14 canonical rule files at the adopter's `.gzkit/rules/`; once written, the adopter's `.gzkit/rules/` is their project canonical source-of-truth per ADR-0.0.32 § Decision's binding canonical-routing invariant. T0-class A closure depends on this OBPI + OBPI-06 (wheel includes) jointly.
 
 ## Lane
 
@@ -30,7 +30,7 @@ After OBPI-03 has landed the rules physical migration (14 rule files now at `src
 - `tests/test_rules.py`, `tests/commands/test_init.py` — unit tests for `CORE_RULES`, `scaffold_core_rules`, init-cmd integration, project-first → package-fallback resolution
 - `docs/user/manpages/gz-init.md` — mention rule scaffolding alongside skills + chores + personas
 - `docs/user/runbook.md` — runbook section for rules surface
-- `.claude/rules/skill-surface-sync.md` — rules now follow the same canonical-content-from-package pattern as skills and chores
+- `.claude/rules/skill-surface-sync.md` — re-affirm "Edit `.gzkit/` first" canon; document that `gz init` populates an adopter's `.gzkit/rules/` from the wheel's package surface as the bootstrap source, mirroring the skills pattern from OBPI-02
 
 ## Denied Paths
 
@@ -118,7 +118,7 @@ After OBPI-03 has landed the rules physical migration (14 rule files now at `src
 
 - [ ] `docs/user/manpages/gz-init.md` mentions rule scaffolding
 - [ ] `docs/user/runbook.md` rules section updated
-- [ ] `.claude/rules/skill-surface-sync.md` updated — rules now follow canonical-content-from-package
+- [ ] `.claude/rules/skill-surface-sync.md` re-affirmed — "Edit `.gzkit/` first" remains canon; section added explaining that `gz init` populates adopter's `.gzkit/rules/` from the wheel's package surface as the bootstrap source
 - [ ] `mkdocs build --strict` passes
 
 ### Gate 4: BDD (Heavy)
@@ -164,7 +164,7 @@ mkdir /tmp/gz-rules-scaffold-smoke && cd /tmp/gz-rules-scaffold-smoke && uv run 
 - [ ] REQ-0.0.32-04-05: `init_cmd._repair_missing_artifacts` invokes `scaffold_core_rules(skip_existing=True)` for re-run repair
 - [ ] REQ-0.0.32-04-06: Project-first → package-fallback resolution holds; `skip_existing=True` preserves operator edits
 - [ ] REQ-0.0.32-04-07: A fresh `gz init` in a tempdir produces 14 canonical rule files at `.gzkit/rules/`
-- [ ] REQ-0.0.32-04-08: `.claude/rules/skill-surface-sync.md` updated to reflect rules-from-package; `docs/user/manpages/gz-init.md` updated; `mkdocs build --strict` passes
+- [ ] REQ-0.0.32-04-08: `.claude/rules/skill-surface-sync.md` re-affirms "Edit `.gzkit/` first" and documents that `gz init` populates adopter's `.gzkit/rules/` from the wheel's package surface; `docs/user/manpages/gz-init.md` updated; `mkdocs build --strict` passes
 - [ ] REQ-0.0.32-04-09: `uv run gz check` exits 0
 
 ## Completion Checklist
@@ -214,7 +214,7 @@ mkdir /tmp/gz-rules-scaffold-smoke && cd /tmp/gz-rules-scaffold-smoke && uv run 
 
 ### Value Narrative
 
-Before this OBPI: `gz init` produced ZERO rule files; contextual rule loading silently no-opped. After this OBPI: `gz init` produces 14 canonical rule files at `.gzkit/rules/`; `CORE_RULES` is the symmetric counterpart to `CORE_SKILLS` and `CORE_CHORES`; future rule promotions follow the documented two-surface pattern. T0-class A closure remains contingent on OBPI-06 (wheel includes) for fresh-install consumers; this OBPI delivers the runtime semantics.
+Before this OBPI: `gz init` produced ZERO rule files in adopter projects; contextual rule loading silently no-opped. After this OBPI: `gz init` reads canonical rule content from the wheel's package surface (`importlib.resources.files("gzkit.rules")`) and writes 14 canonical rule files into the adopter's `.gzkit/rules/` — once written, that surface becomes the adopter's project canonical source-of-truth per ADR-0.0.32 § Decision's binding canonical-routing invariant. `CORE_RULES` is the symmetric counterpart to `CORE_SKILLS` and `CORE_CHORES`; future rule promotions follow the documented dual-surface pattern (`.gzkit/rules/` authored canonical, `src/gzkit/rules/` byte-equivalent wheel-shipping copy, vendor mirrors synced from `.gzkit/` by `gz agent sync control-surfaces` via OBPI-08). T0-class A closure remains contingent on OBPI-06 (wheel includes) for fresh-install consumers; this OBPI delivers the runtime semantics.
 
 ### Key Proof
 

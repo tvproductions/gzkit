@@ -11,13 +11,13 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/ADR-0.0.32-canonical-surface-packaging.md`
-- **Checklist Item:** #5 — "Extend `gz validate --surfaces` (or add `--distribution`) with T0 enforcement — verify every canonical surface in manifest is wheel-deliverable; fail-closed exit 3 on any package-data omission"
+- **Checklist Item:** #7 — "Extend `gz validate --surfaces` (or add `--distribution`) with T0 enforcement — verify every canonical surface in manifest is wheel-deliverable from `src/gzkit/`; fail-closed exit 3 on any package-data omission; flip T0 scorecard Promotable→Mechanical."
 
 **Status:** Draft
 
 ## Objective
 
-Promote the T0 distribution invariant from advisory doctrine (ADR-0.0.31) to mechanical fail-closed enforcement at the validator surface. Add `gz validate --distribution` (or extend an existing `--surfaces` scope) so that every commit that adds a canonical surface without wheel coverage exits 3 BEFORE the build stage. The static check operates on `pyproject.toml [tool.hatch.build.targets.wheel] include:` + `data/distribution_baseline_manifest.json` + the on-disk canonical content trees — no actual wheel build required, so the check fits in the standard `gz validate` runtime budget. This OBPI is the static counterpart to OBPI-0.0.32-04's behave smoke; together they fail-close T0 from two angles.
+Promote the T0 distribution invariant from advisory doctrine (ADR-0.0.31) to mechanical fail-closed enforcement at the validator surface. Add `gz validate --distribution` (or extend an existing `--surfaces` scope) so that every commit that adds a canonical surface without wheel coverage exits 3 BEFORE the build stage. The static check operates on `pyproject.toml [tool.hatch.build.targets.wheel] include:` + `data/distribution_baseline_manifest.json` + the on-disk canonical-content trees at `src/gzkit/<surface>/` (the wheel-shipping byte-equivalent copies of `.gzkit/<surface>/`) — no actual wheel build required, so the check fits in the standard `gz validate` runtime budget. The validator's source-of-truth for "what should ship in the wheel" is `src/gzkit/<surface>/` (because that is what the wheel literally includes); `.gzkit/<surface>/` byte-parity with `src/gzkit/<surface>/` is separately gated by OBPI-01/03's byte-parity tests and the OBPI-08 sync mechanism. This OBPI is the static counterpart to OBPI-06's behave smoke; together they fail-close T0 from two angles.
 
 ## Lane
 
