@@ -165,27 +165,48 @@ two named exceptions below are documented gaps, not oversights. Each is
 explicitly carved out of the dual-surface byte-parity invariant declared
 above.
 
-**Exception 1 — Hooks are vendor-coupled, currently Claude-only.**
+**Exception 1 — Hooks are vendor-coupled with uneven multi-vendor coverage.**
 
-The agent-runtime hook surface (`.claude/hooks/*.py`) is vendor-specific:
-Claude Code consumes a particular lifecycle (PreToolUse, PostToolUse,
-SessionStart, Stop, etc.) with vendor-specific I/O conventions. No
-cross-vendor hook lifecycle standard exists today. Codex and (deprecating)
-Copilot expose different lifecycle models that gzkit's `.claude/hooks/`
-contracts cannot satisfy uniformly. A meta-layer contract that abstracts
-across vendors was considered (operator narrative, 2026-05-11) and
-declared currently infeasible — even the level of specification a
-meta-contract would require is blocked by vendor non-uniformity.
+gzkit ships hooks for multiple vendors today:
+
+- **Claude** — 12 hook scripts at `.claude/hooks/*.py` (ceremony-step-gate,
+  control-surface-sync, ghi-triage-chat-silence, instruction-router,
+  ledger-writer, obpi-completion-validator, pipeline-completion-reminder,
+  pipeline-gate, pipeline-router, plan-audit-gate, post-edit-ruff,
+  session-staleness-check). The most complete coverage.
+- **Copilot** — `.github/copilot/hooks/ledger-writer.py` (1 script today)
+  plus the Python adapter `src/gzkit/hooks/copilot.py`. Minimal but real.
+- **Codex** — `.agents/` namespace reserved (skills + personas already
+  populated); `.agents/hooks/` not yet populated; the Python `gzkit.hooks`
+  package does not yet ship a `codex.py` adapter sibling to `claude.py`
+  and `copilot.py`. Slot-reserved.
+
+The design gap is **not** "Claude-only." The gap is that the three vendor
+harnesses expose **non-uniform lifecycle models** — Claude's
+PreToolUse / PostToolUse / SessionStart / Stop / Notification etc. has
+no clean isomorphism to Copilot's event model, nor to Codex's; the
+vendor-side hook contracts (signatures, I/O conventions, blocking
+semantics, exit-code interpretation) differ enough that a single
+gzkit-authored hook script cannot be cross-compiled to all three.
+
+A meta-layer contract that abstracts across vendors was considered
+(operator narrative, 2026-05-11) and declared currently infeasible —
+even the level of specification a meta-contract would require is blocked
+by vendor non-uniformity. The realistic path forward is per-vendor hook
+scripts that share Python-library helpers from `src/gzkit/hooks/`
+(`core.py`, `guards.py`, `obpi.py`) — which gzkit already does — without
+attempting full cross-vendor parity at the script level.
 
 Consequence: hooks are explicitly **OUT of scope** for the canonical-routing
-model in this ADR. The `.claude/hooks/<name>.py` surface stays a
-Claude-vendor-runtime surface; `src/gzkit/hooks/scripts/<name>.py` stays
-a Python library API consumed in-process; there is no `.gzkit/hooks/`
-authored canonical surface for the runtime hook scripts. The wheel
-continues to ship `src/gzkit/hooks/scripts/` via existing
-`pyproject.toml` includes; `.claude/hooks/` is regenerated as needed by
-existing vendor-specific tooling and is not byte-coupled to any package
-surface.
+model in this ADR. The per-vendor hook surfaces (`.claude/hooks/`,
+`.github/copilot/hooks/`, `.agents/hooks/` when populated) each stay
+vendor-runtime surfaces with vendor-specific shapes; `src/gzkit/hooks/`
+stays a Python library API (per-vendor adapters + shared helpers)
+consumed in-process; there is no `.gzkit/hooks/` authored canonical
+surface that synchronizes across vendors. The wheel continues to ship
+`src/gzkit/hooks/` via existing `pyproject.toml` includes; each vendor's
+hook directory is maintained as that vendor's own surface, byte-coupled
+to no other vendor's hook scripts.
 
 A pool ADR (`ADR-pool.hooks-meta-layer-contract`) is filed to park the
 future authoring of a vendor-neutral hook contract IF/WHEN vendor
@@ -267,6 +288,47 @@ are parked at pool ADRs for future promotion:
 Neither gap blocks ADR-0.0.32's OBPI work — they're consequences of the
 expansion that justify dedicated future ADRs rather than scope-creep
 into this one.
+
+### Post-1.0 forward-look — adopter-side extensions
+
+Adopters consume gzkit via `pip install py-gzkit && gz init` and edit
+their project canonical surfaces under `.gzkit/`. The current model is
+**unidirectional**: gzkit ships canonical content; adopters receive and
+edit; adopters do not author their own canonical surfaces alongside
+gzkit's, do not ship their own gzkit-derived wheels, and do not have
+their own `src/gzkit/<surface>/` byte-equivalent shadow. The
+canonical-routing invariant binds within gzkit's authoring repo and
+within each adopter's project independently — not across them.
+
+Operator framing (2026-05-11): "they adopt gzkit to do their work, it is
+presently out of scope to accommodate extensions/enhancements. if they
+adopt their own skills/rules, they would not mix with gzkit (hence the
+prefix namespacing). maybe we can accommodate this as post release
+enhancements."
+
+The prefix-namespacing convention is already in place — gzkit's skills
+use `gz-*` and `ghi-*` prefixes (`gz-prd`, `gz-plan`, `ghi-author`,
+`ghi-triage`, etc.); adopters who author their own skills can use a
+distinct prefix (their org or project slug) to avoid collision with
+gzkit's canonical set. The same pattern can extend to rules, personas,
+and templates if adopter-extension authoring becomes in scope.
+
+What's NOT in scope for ADR-0.0.32 (deferred to post-1.0):
+
+- A formal adopter-extension framework that lets adopter projects author
+  their own dual-surface canonical content (e.g., adopter's `.gzkit/skills/`
+  has both gzkit's `gz-*` skills AND the adopter's `myorg-*` skills, and
+  the adopter's local `gz check` / `gz validate` honor both)
+- An "adopter-publishes-gzkit-extension-wheel" workflow that lets an
+  adopter ship their canonical-surface additions as a wheel that other
+  consumers can install alongside gzkit
+- A namespace-conflict-detection mechanism that fail-closes when an
+  adopter's prefix collides with gzkit's
+
+Future ADR (post-1.0): when adopter-extension demand emerges, the
+canonical-routing model documented here should extend naturally —
+adopters get the same dual-surface pattern at their authoring repo,
+with prefix namespacing as the collision-avoidance discipline.
 
 ## Comparator Uplift (2026-05-07)
 
