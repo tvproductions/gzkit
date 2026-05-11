@@ -208,10 +208,36 @@ surface that synchronizes across vendors. The wheel continues to ship
 hook directory is maintained as that vendor's own surface, byte-coupled
 to no other vendor's hook scripts.
 
-A pool ADR (`ADR-pool.hooks-meta-layer-contract`) is filed to park the
-future authoring of a vendor-neutral hook contract IF/WHEN vendor
-lifecycle convergence makes it feasible. Pool stays parked until the
-design unblocks; no implementation work is scheduled.
+The broader vendor-harness design framework is already captured by a
+constellation of pre-existing pool ADRs that supersede the need for a
+dedicated hooks-meta-layer parking artifact:
+
+- **`ADR-pool.vendor-capability-matrix`** — the canonical machine-readable
+  capability registry under `.gzkit/vendor-capabilities/<vendor>.yaml`
+  with `upstream_maturity` × `gzkit_support` axes plus `source_url` +
+  `source_checked_at` for surveillance. Hooks are one capability category
+  in this matrix (`category: hooks`); they are not a separate scope.
+- **`ADR-pool.harness-aware-execution-modes`** — the two-mode runtime
+  adaptation architecture (Mode 1 universal via skill chains, Mode 2
+  hook-enforced where the vendor provides lifecycle interception).
+  Carries the rejection of the "lowest-common-denominator hook
+  abstraction" alternative and names the triggers under which a vendor-
+  neutral hook contract would become feasible.
+- **`ADR-pool.vendor-alignment-{claude-code,codex,copilot,opencode}`** —
+  per-vendor specialization (the subclass layer of the
+  overarching-interface / per-vendor-specialization pattern).
+- **`ADR-pool.vendor-scoped-chores`** — the mechanism for chores
+  (and forward to hooks/skills) to declare vendor scope.
+- **GHI #451** — the recurring vendor-harness-capability-surveillance
+  chore that maintains the parity matrix and documents per-vendor
+  lifecycle drift.
+
+Together these surface a complete forward-design framework for the
+multi-vendor hook landscape without requiring this ADR to park hooks
+under a dedicated meta-layer-contract pool entry. The framework's
+promotion ordering is operator-discretion; the surveillance chore (GHI
+#451) keeps the per-vendor coverage status visible while the framework
+remains in the pool.
 
 **Exception 2 — Chores carry mixed file classes; byte-parity binds canonical content only.**
 
@@ -415,8 +441,11 @@ ORIGINAL scorecard (8 OBPIs, skills + rules + plumbing only):
 - Baseline: 4, Split: 4 (Final: 8)
 EXPANDED 2026-05-11 to absorb personas + templates + chores normalization per
 operator's canonical-routing-binds-across-all-harness-surfaces clarification.
-Hooks remain a named exception (vendor-coupled), tracked under pool ADR
-`ADR-pool.hooks-meta-layer-contract`. Dimension bumps: Data/State 1→2
+Hooks remain a named exception (vendor-coupled, uneven multi-vendor
+coverage), tracked under the pre-existing pool-ADR framework
+(`ADR-pool.vendor-capability-matrix` + `ADR-pool.harness-aware-execution-modes` +
+per-vendor `ADR-pool.vendor-alignment-*` ADRs) plus the surveillance
+chore at GHI #451. Dimension bumps: Data/State 1→2
 (adds 3 more canonical-surface families), Split Surface Boundary 1→2 (per-surface
 atomicity), Split Single-Narrative 1→2 (three independent migration narratives),
 Split State Anchor 1→2 (each surface has its own ledger-state anchor), Split
@@ -496,13 +525,37 @@ Canonical-routing course corrections (2026-05-11):
   across ALL harness surfaces — skills, rules, personas, templates,
   chores — with hooks explicitly carved OUT as a documented vendor-coupled
   gap. Per-surface OBPI decomposition chosen for traceability. The
-  Decomposition Scorecard bumped from Final Target 8 → 13. The hooks gap
-  is parked at pool ADR `ADR-pool.hooks-meta-layer-contract` until vendor
-  lifecycle convergence makes a meta-layer contract feasible.
+  Decomposition Scorecard bumped from Final Target 8 → 13.
+
+- **Round 4 (post-Round-3 expansion):** Operator corrected the
+  "Claude-only" framing — gzkit ships hooks across multiple vendors
+  (12 Claude scripts, 1 Copilot script, Codex namespace reserved,
+  OpenCode onboarding planned) but cross-vendor lifecycle standards are
+  absent. Added § Post-1.0 forward-look documenting adopter-side
+  extension deferral with prefix-namespacing as the collision-avoidance
+  pattern.
+
+- **Round 5 (post-Round-4 framing correction):** Discovery that the
+  broader vendor-harness design framework was already captured in
+  pre-existing pool ADRs (`ADR-pool.vendor-capability-matrix` parent,
+  `ADR-pool.harness-aware-execution-modes` runtime adaptation,
+  `ADR-pool.vendor-alignment-*` per-vendor specializations,
+  `ADR-pool.vendor-scoped-chores` mechanism). The Round-3-filed
+  `ADR-pool.hooks-meta-layer-contract` pool ADR was redundant with this
+  framework; merged its unique slice (LCD-abstraction rejection, named
+  promotion triggers, corrected multi-vendor framing) into
+  `ADR-pool.harness-aware-execution-modes` § Alternatives Considered and
+  deleted the redundant pool ADR. Two GHIs filed for design-intent
+  tracking: GHI #451 (recurring vendor-harness-capability-surveillance
+  chore — elevated scope from hooks to ALL control surfaces per
+  operator framing) and GHI #452 (pool-triage skill analogous to
+  ghi-triage, surfaced because the pool grew large enough to warrant
+  the same triage mechanism).
 
 Insights records at `.gzkit/insights/agent-insights.jsonl`:
 2026-05-11T08:55:00Z (Round 1), 2026-05-11T09:58:00Z (Round 2),
-and the Round 3 record appended at this ADR rewrite's landing time.
+2026-05-11T10:25:00Z (Round 3), 2026-05-11T10:55:00Z (Round 4),
+and the Round 5 record appended at this reconciliation's landing time.
 
 Canonical-routing course correction (2026-05-11): OBPI-01 was authored
 with `git mv` ("move into wheel-shipped package data") semantics inherited
