@@ -14,6 +14,49 @@ Legacy parity note: when external docs mention `/gz-adr-manager`, use `/gz-adr-c
 
 ---
 
+## Loop 0: First-Time Operator (Empty Repo → First Attested Release)
+
+> **When to use:** you are bootstrapping a new gzkit-governed project from
+> an empty directory and need the on-ramp to the daily Loop A and the
+> per-release Loop C. Run Loop 0 once per project; thereafter daily
+> execution lives in Loop A.
+
+The eight bootstrap stages compose the journey from `mkdir` to a tagged,
+attested patch release. Each stage names the skill (preferred) and the
+CLI verb. For the narrative account of why these stages compose this way
+— what value flows through each — see the storybook arc
+[`storybook/from-init-to-first-attested-release.md`](storybook/from-init-to-first-attested-release.md).
+
+| # | Stage | Skill (preferred) | CLI verbs |
+|---|-------|-------------------|-----------|
+| 1 | Scaffolding | `/gz-init` | `uv tool install gzkit`; `uv run gz init` |
+| 2 | Intent (PRD → Constitution → Design) | `/gz-prd`, `/gz-constitute`, `/gz-design` | `uv run gz prd`; `uv run gz constitute` |
+| 3 | Decomposition (ADR → OBPI) | `/gz-plan`, `/gz-adr-create`, `/gz-obpi-specify` | `uv run gz plan create <name> --semver X.Y.Z`; `uv run gz specify <slug> --parent ADR-<X.Y.Z> --item <N>` |
+| 4 | Pre-execution reasoning | `/gz-justify`, `/gz-plan-audit` | `uv run gz justify <anchor> --save`; `uv run gz justify validate <path>` |
+| 5 | Implementation | `/gz-obpi-pipeline`, `/gz-arb` | `uv run gz obpi pipeline OBPI-<X.Y.Z-NN>` |
+| 6 | Verification (Gates 1–5) | `/gz-check`, `/gz-implement`, `/gz-gates` | `uv run gz check`; `uv run gz gates --adr ADR-<X.Y.Z>` |
+| 7 | Closeout | `/gz-adr-closeout-ceremony`, `/gz-adr-audit`, `/gz-adr-emit-receipt` | `uv run gz closeout ADR-<X.Y.Z>`; `uv run gz attest ADR-<X.Y.Z> --status completed`; `uv run gz audit ADR-<X.Y.Z>`; `uv run gz adr emit-receipt ADR-<X.Y.Z> --event validated --attestor "<Name>" --evidence-json '{"scope":"ADR-<X.Y.Z>","date":"YYYY-MM-DD"}'` |
+| 8 | Release (GHI-driven patch) | `/gz-patch-release` | `uv run gz patch release --full` |
+
+### First-time setup acceptance
+
+You have completed Loop 0 when:
+
+- `uv run gz status --table` lists at least one validated ADR with Gates 1–5 marked pass
+- `uv run gz adr report` shows the ADR in the Foundation or Feature table (not Pool)
+- `uv run gz patch release --dry-run` reports a `qualified` GHI count ≥ 1
+- A tagged release exists on GitHub (`gh release list`)
+
+After Loop 0, daily iteration moves to [Loop A: OBPI Increment](#loop-a-obpi-increment-primary-daily-loop). End-of-batch release accounting moves to [Loop C: Patch Release (GHI-Driven)](#loop-c-patch-release-ghi-driven).
+
+> **Quickstart vs. Loop 0:** the [Quickstart](quickstart.md) walks a single
+> ADR cycle end-to-end as a tutorial. Loop 0 is the runbook anchor that
+> classifies the same journey into named stages with skill/CLI parity so
+> an operator can return to any stage by reference without re-reading the
+> tutorial flow.
+
+---
+
 ## Loop A: OBPI Increment (Primary Daily Loop)
 
 > Skills add interview logic, forcing functions, and governance validation
