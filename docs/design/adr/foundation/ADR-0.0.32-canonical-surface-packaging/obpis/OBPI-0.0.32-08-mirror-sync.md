@@ -6,62 +6,82 @@ lane: Heavy
 status: Draft
 ---
 
-# OBPI-0.0.32-08-mirror-sync: Mirror Sync Post-Promotion
+# OBPI-0.0.32-08-mirror-sync: Canonical Surface Sync
 
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/ADR-0.0.32-canonical-surface-packaging.md`
-- **Checklist Item:** #6 — "Sync mirrors after surfaces promote: `.claude/skills/`, `.claude/rules/`, `.github/skills/`, `.github/instructions/` regenerated from new package surface; verify `gz agent sync control-surfaces` no-ops cleanly post-promotion"
+- **Checklist Item:** #8 — "Canonical surface sync — broaden `gz agent sync control-surfaces` so a single invocation propagates `.gzkit/<surface>/` (authored canonical) to BOTH `src/gzkit/<surface>/` (wheel-shipping byte-parity copy, dev-time only) AND `.[vendor]/<surface>/` (vendor mirrors: `.claude/skills/`, `.claude/rules/`, `.github/skills/`, `.github/instructions/`); idempotent on freshly-synced state; absorbs GHI #449 (`.gzkit/` → `src/gzkit/` dev-time sync) and the existing `.gzkit/` → `.[vendor]/` mirror flow into one mechanism. Depends on OBPI-03/04 landing first so rules are dual-surface before the sync mechanism covers them."
 
 **Status:** Draft
 
 ## Objective
 
-After OBPI-0.0.32-01 (skills) and OBPI-0.0.32-02 (rules) move canonical content from `.gzkit/skills/<slug>/SKILL.md` and `.gzkit/rules/<slug>.md` into `src/gzkit/skills/<slug>/SKILL.md` and `src/gzkit/rules/<slug>.md`, the vendor mirror tree (`.claude/skills/`, `.claude/rules/`, `.github/skills/`, `.github/instructions/`) becomes stale. This OBPI updates `gz agent sync control-surfaces` so it reads canonical content from the new package surfaces (via `importlib.resources` or the equivalent project-first → package-fallback resolution), regenerates every mirror cleanly, and asserts that re-running sync on freshly-synced state is a clean no-op (the operator-facing health signal that mirrors are in canonical agreement). After this OBPI lands, the mirror tree is a wheel-derivable artifact, not a separately-maintained source of truth.
+Broaden `gz agent sync control-surfaces` so it is the single mechanism that propagates `.gzkit/<surface>/` (authored canonical source-of-truth) to every derived surface in this repo:
+
+1. `.gzkit/<surface>/` → `src/gzkit/<surface>/` (dev-time wheel-shipping byte-parity copy) — closes GHI #449's missing convenience step that currently forces operators to remember `cp .gzkit/skills/<slug>/SKILL.md src/gzkit/skills/<slug>/SKILL.md` after every authored edit or trip the OBPI-01 byte-parity test
+2. `.gzkit/<surface>/` → `.[vendor]/<surface>/` (vendor mirrors at `.claude/skills/`, `.claude/rules/`, `.github/skills/`, `.github/instructions/`, plus any future vendor surface) — existing flow rebased to read from `.gzkit/` rather than `src/gzkit/`
+
+After this OBPI lands, the canonical-routing invariant declared in ADR-0.0.32 § Decision is mechanically enforced: a single `gz agent sync control-surfaces` run after editing `.gzkit/<surface>/<slug>/SKILL.md` (or `<slug>.md` for rules) leaves both `src/gzkit/<surface>/<slug>/` and `.[vendor]/<surface>/<slug>/` byte-equivalent to the authored source. Re-running the same command on freshly-synced state is a clean no-op — the operator-facing health signal that the derived-surface tree is in canonical agreement with `.gzkit/`. The byte-parity tests from OBPI-01 (skills) and OBPI-03 (rules, when it lands) pass after every sync run.
 
 ## Lane
 
-**Heavy** — changes the runtime contract of `gz agent sync control-surfaces` (the canonical resolution path), modifies generated vendor mirror outputs, and gates closeout of the entire ADR-0.0.32 chain on clean post-promotion mirror state. Per § Lane & Kind Attestation Matrix, foundation-kind + heavy lane requires brief-level Gate 5 attestation.
+**Heavy** — changes the runtime contract of `gz agent sync control-surfaces` (single sync run now propagates to two derived surface families), modifies generated `src/gzkit/<surface>/` and `.[vendor]/<surface>/` outputs, and gates closeout of the entire ADR-0.0.32 chain on clean post-sync state across both derived surfaces. Per § Lane & Kind Attestation Matrix, foundation-kind + heavy lane requires brief-level Gate 5 attestation.
 
 ## Allowed Paths
 
-- `src/gzkit/sync.py` (or `src/gzkit/sync_surfaces.py`, `src/gzkit/sync_skills.py`, `src/gzkit/skills_mirror.py`, `src/gzkit/rules.py` — wherever the sync logic lives) — update canonical-content resolution to project-first → package-fallback per the new layout
+- `src/gzkit/sync.py` (or `src/gzkit/sync_surfaces.py`, `src/gzkit/sync_skills.py`, `src/gzkit/skills_mirror.py`, `src/gzkit/rules/__init__.py` — wherever the sync logic lives) — broaden canonical-source resolution to `.gzkit/<surface>/`; add the `.gzkit/<surface>/ → src/gzkit/<surface>/` propagation step alongside the existing vendor-mirror propagation
 - `src/gzkit/cli/parser_*.py` (if `gz agent sync control-surfaces` flag dispatch needs an adjustment) — minimal-surface change
-- `.claude/skills/<slug>/SKILL.md` (61 files) — regenerated outputs
+- `src/gzkit/skills/<slug>/SKILL.md` (~70 files) — regenerated outputs (byte-equivalent copies of `.gzkit/skills/<slug>/SKILL.md`)
+- `src/gzkit/rules/<slug>.md` (14 files, once OBPI-03 lands) — regenerated outputs (byte-equivalent copies of `.gzkit/rules/<slug>.md`)
+- `.claude/skills/<slug>/SKILL.md` (~70 files) — regenerated outputs
 - `.claude/rules/<slug>.md` (14 files) — regenerated outputs
 - `.github/skills/<slug>/SKILL.md` (mirror) — regenerated outputs
 - `.github/instructions/<slug>.md` — regenerated outputs
 - `.gzkit/manifest.json` — refresh `Updated:` field and any per-surface metadata
-- `tests/test_sync.py`, `tests/test_skills_mirror.py` — unit-tier tests for canonical-resolution change
-- `features/agent_sync.feature` — behave scenario asserting post-promotion sync is a clean no-op (idempotency test)
-- `docs/user/manpages/gz-agent.md` — document the canonical-resolution change if it surfaces operator-facing behavior
+- `tests/test_sync.py`, `tests/test_skills_mirror.py`, `tests/test_rules.py` — unit-tier tests for canonical-resolution-from-`.gzkit/` change and dual-direction propagation
+- `features/agent_sync.feature` — behave scenario asserting post-sync state is idempotent (re-running sync is a clean no-op across both derived surface families)
+- `docs/user/manpages/gz-agent.md` — document the broadened sync semantics (one canonical source, two derived surface families)
+- `.claude/rules/skill-surface-sync.md` — re-affirm `.gzkit/` first and document that one `gz agent sync` invocation now covers both wheel-shipping copy AND vendor mirrors
 
 ## Denied Paths
 
-- `src/gzkit/skills/**`, `src/gzkit/rules/**` — canonical content moves belong to OBPI-0.0.32-01 / -02
-- `pyproject.toml` — wheel includes belong to OBPI-0.0.32-06
-- `src/gzkit/governance/trust_audits.py` — `gz validate --distribution` belongs to OBPI-0.0.32-07
-- `data/distribution_baseline_manifest.json` — baseline manifest belongs to OBPI-0.0.32-06
+- `src/gzkit/skills/__init__.py`, `src/gzkit/rules/__init__.py` (logic edits) — canonical-resolution change is allowed; package-API edits are out of scope
+- `.gzkit/skills/**/SKILL.md`, `.gzkit/rules/**.md` content edits — canonical surface is read-only from this OBPI's perspective; the sync only copies FROM `.gzkit/`, never writes into it
+- `pyproject.toml` — wheel includes belong to OBPI-06
+- `src/gzkit/governance/trust_audits.py` — `gz validate --distribution` belongs to OBPI-07
+- `data/distribution_baseline_manifest.json` — baseline manifest belongs to OBPI-06
 - `docs/governance/trust-doctrine.md` — T0 doctrine prose belongs to OBPI-0.0.31-01
-- Canonical content edits — mirrors are byte-derived from canonical; this OBPI does not author content
 
 ## Requirements (FAIL-CLOSED)
 
-1. `gz agent sync control-surfaces` MUST resolve canonical skill content from `src/gzkit/skills/<slug>/SKILL.md` (the package surface) when no project-local override exists at `.gzkit/skills/<slug>/SKILL.md`; same project-first → package-fallback shape for rules.
-2. After running `gz agent sync control-surfaces` once on a clean post-promotion working tree, every vendor mirror MUST be byte-equivalent to the corresponding canonical source (modulo any documented vendor-specific transformation).
-3. Re-running `gz agent sync control-surfaces` on freshly-synced state MUST produce ZERO writes (idempotent; confirms the canonical-resolution path is stable).
-4. The number of files in `.claude/skills/` MUST equal the number of files in `src/gzkit/skills/<slug>/SKILL.md` (61); same for `.claude/rules/` ↔ 14 rule files; same for `.github/skills/` ↔ 61 and `.github/instructions/` ↔ 14.
-5. `.gzkit/manifest.json` MUST refresh on each sync run with the new `Updated:` date and surface counts.
-6. Unit tests MUST cover: (a) canonical-resolution returns content from the package when no project override exists, (b) canonical-resolution returns the project override when one exists, (c) the sync function regenerates mirrors byte-equivalent to canonical, (d) running sync twice in a row produces no diffs.
-7. A behave scenario MUST run sync against a clean post-promotion fixture and assert no-op idempotency on the second run, tagged `@REQ-0.0.32-08-NN`.
-8. `uv run gz check` MUST exit 0 with the new resolution path.
-9. `gz validate --surfaces` MUST pass post-sync; mirror drift detection (already covered by existing `--surfaces` audit) MUST report clean.
-10. `gz validate --distribution` (from OBPI-0.0.32-05) MUST pass — this OBPI does not introduce on-disk-not-baseline drift.
+1. `gz agent sync control-surfaces` MUST resolve canonical content from `.gzkit/<surface>/` (the authored source-of-truth) for every dual-surface family. The sync function MUST NOT read canonical content from `src/gzkit/<surface>/` or from vendor mirrors — `src/gzkit/` and `.[vendor]/` are derived-only.
+2. A single `gz agent sync control-surfaces` invocation MUST propagate `.gzkit/<surface>/<slug>/SKILL.md` (skills) AND `.gzkit/rules/<slug>.md` (rules) — and, by composition, any future canonical surface that adopts the dual-surface model — to BOTH `src/gzkit/<surface>/<slug>/` (wheel-shipping byte-parity copy) AND `.[vendor]/<surface>/<slug>/` (vendor mirrors), in that order.
+3. After a sync run on a clean working tree, BOTH derived surfaces MUST be byte-equivalent to the canonical source (modulo any documented vendor-specific transformation):
+   - `src/gzkit/skills/<slug>/SKILL.md` byte-identical to `.gzkit/skills/<slug>/SKILL.md` for every slug
+   - `src/gzkit/rules/<slug>.md` byte-identical to `.gzkit/rules/<slug>.md` for every rule
+   - `.claude/skills/<slug>/SKILL.md` byte-equivalent (modulo documented vendor transformation) to `.gzkit/skills/<slug>/SKILL.md`
+   - Same for `.claude/rules/`, `.github/skills/`, `.github/instructions/`
+4. Re-running `gz agent sync control-surfaces` on freshly-synced state MUST produce ZERO writes (idempotent across BOTH derived surfaces; confirms the canonical-resolution path is stable and the dual-direction propagation is deterministic).
+5. The number of files in `src/gzkit/skills/<slug>/SKILL.md` MUST equal the number in `.gzkit/skills/<slug>/SKILL.md` (~70) after a sync; same for `.claude/skills/` ↔ ~70 and `.github/skills/` ↔ ~70; same for `src/gzkit/rules/*.md` ↔ `.gzkit/rules/*.md` ↔ 14 and `.claude/rules/` ↔ 14 and `.github/instructions/` ↔ 14.
+6. `.gzkit/manifest.json` MUST refresh on each sync run with the new `Updated:` date and surface counts (one entry per dual-surface family).
+7. Unit tests MUST cover:
+   - canonical-resolution-from-`.gzkit/` for both skills and rules (mock filesystem with `.gzkit/` populated)
+   - dual-direction propagation (one sync writes to both `src/gzkit/` AND `.[vendor]/`)
+   - sync regenerates `src/gzkit/` byte-equivalent to `.gzkit/` for both skills and rules
+   - sync regenerates `.[vendor]/` byte-equivalent to `.gzkit/` (modulo documented transformations)
+   - running sync twice in a row produces no diffs across either derived surface
+   - byte-parity tests from OBPI-01 (and OBPI-03 when it lands) pass post-sync
+8. A behave scenario MUST run sync against a clean post-promotion fixture and assert no-op idempotency on the second run across BOTH derived surface families, tagged `@REQ-0.0.32-08-NN`.
+9. `uv run gz check` MUST exit 0 with the broadened sync path.
+10. `gz validate --surfaces` MUST pass post-sync; mirror-drift detection (already covered by existing `--surfaces` audit) MUST report clean for BOTH `src/gzkit/` ↔ `.gzkit/` and `.[vendor]/` ↔ `.gzkit/`.
+11. `gz validate --distribution` (from OBPI-07) MUST pass — this OBPI does not introduce on-disk-not-baseline drift.
+12. `.claude/rules/skill-surface-sync.md` MUST be re-affirmed: "Edit `.gzkit/` first" remains canon; the rule body MUST document that one `gz agent sync control-surfaces` invocation now covers both wheel-shipping byte-parity AND vendor mirrors.
 
 > STOP-on-BLOCKERS:
-> - If OBPI-0.0.32-01 or OBPI-0.0.32-02 has not landed (canonical content still at `.gzkit/`), STOP — there is nothing to re-resolve.
-> - If `gz agent sync control-surfaces` currently has no project-first → package-fallback path (it always reads from `.gzkit/`), the sync function needs a deeper refactor than a path change; surface that as a sub-task and decompose if scope expansion is required.
-> - If a vendor mirror has accumulated hand-edits between sync runs (e.g. someone edited `.claude/skills/<slug>/SKILL.md` directly without bumping `skill-version`), STOP and reconcile per `.claude/rules/skill-surface-sync.md` § Conflict resolution.
+> - If OBPI-0.0.32-03 has not landed (canonical rule content still single-surface at `.gzkit/rules/`), STOP — the sync mechanism's rules-arm has no destination to write to. Skills (OBPI-01 attested) are dual-surface and can be synced independently if a partial-coverage interim sync is acceptable per operator judgment.
+> - If `gz agent sync control-surfaces` currently reads canonical content from `src/gzkit/` or from `.gzkit/` indirectly (e.g. via a registry that resolves to `src/gzkit/`), the canonical-resolution refactor is broader than a path change — surface that as a sub-task and decompose if scope expansion is required.
+> - If a derived surface has accumulated hand-edits between sync runs (e.g. someone edited `.claude/skills/<slug>/SKILL.md` or `src/gzkit/skills/<slug>/SKILL.md` directly without editing `.gzkit/` first), STOP and reconcile per `.claude/rules/skill-surface-sync.md` § Conflict resolution. The canonical-routing model is fail-closed on inverse edits.
 > - If `gz validate --surfaces` reports drift before this OBPI starts, STOP — fix the drift first; this OBPI's success criterion depends on a clean baseline.
 
 ## Discovery Checklist
@@ -69,48 +89,52 @@ After OBPI-0.0.32-01 (skills) and OBPI-0.0.32-02 (rules) move canonical content 
 **Parent ADR (read first; order pinned — GHI #321):**
 
 - [ ] **Parent ADR § Decision item — quote the line this OBPI implements** verbatim into Implementation Summary
-- [ ] Parent ADR § Decision — package-layout block + project-first resolution
-- [ ] Parent ADR § Consequences (Negative) — names the temporary mirror-stale state during the OBPI chain
+- [ ] Parent ADR § Decision — canonical-routing direction paragraph (the binding `.gzkit/` ↔ {`src/gzkit/`, `.[vendor]/`} model)
+- [ ] Parent ADR § Consequences (Negative) — names the dual-surface byte-parity discipline this OBPI mechanizes
 - [ ] Parent ADR file: `docs/design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/ADR-0.0.32-canonical-surface-packaging.md`
 
 > **STOP:** If you cannot quote the parent ADR § Decision item that this OBPI implements, STOP and re-read.
 
 **Governance (read once, cache):**
 
-- [ ] `.claude/rules/skill-surface-sync.md` — surface layout table, conflict resolution, version discipline
+- [ ] `.claude/rules/skill-surface-sync.md` — "Edit `.gzkit/` first" canon; this OBPI re-affirms and broadens the sync coverage
 - [ ] `AGENTS.md` § Skills Protocol — discovery + sync expectations
-- [ ] `.claude/rules/tool-skill-runbook-alignment.md` — Invariant 1, 2, 3 (mirror sync must not break tool↔skill alignment)
+- [ ] `.claude/rules/tool-skill-runbook-alignment.md` — Invariant 1, 2, 3 (sync must not break tool↔skill alignment)
+- [ ] GHI #449 — the missing `.gzkit/ → src/gzkit/` convenience step this OBPI absorbs
 
 **Context — sibling OBPIs:**
 
-- [ ] OBPI-0.0.32-01 + -02 — canonical content moves; this OBPI consumes the new surface layout
-- [ ] OBPI-0.0.32-06 — baseline manifest is invariant under sync (mirror regeneration MUST NOT change the canonical surface fingerprints captured in the manifest)
+- [ ] OBPI-0.0.32-01 (attested) — established dual-surface for skills + the byte-parity test this OBPI's sync must keep passing
+- [ ] OBPI-0.0.32-03 — establishes dual-surface for rules; must land before this OBPI covers rules
+- [ ] OBPI-0.0.32-06 — baseline manifest is invariant under sync (sync regeneration MUST NOT change the canonical surface fingerprints captured in the manifest)
 - [ ] OBPI-0.0.32-07 — `gz validate --distribution` must continue to pass after this OBPI's sync runs
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] OBPI-0.0.32-01 + OBPI-0.0.32-02 landed; canonical content at `src/gzkit/skills/` and `src/gzkit/rules/`
+- [ ] OBPI-0.0.32-01 landed (dual-surface for skills active; byte-parity test in `tests/test_skills.py`)
+- [ ] OBPI-0.0.32-03 landed (dual-surface for rules active; byte-parity test in `tests/test_rules.py` or equivalent)
 - [ ] `gz agent sync control-surfaces` currently runnable (sanity check before refactor)
 - [ ] `.claude/skills/`, `.claude/rules/`, `.github/skills/`, `.github/instructions/` exist as directories
-- [ ] `gz validate --surfaces` exits 0 on the pre-OBPI state (so any drift this OBPI surfaces is genuinely from the resolution-path change, not pre-existing)
+- [ ] `gz validate --surfaces` exits 0 on the pre-OBPI state (so any drift this OBPI surfaces is genuinely from the sync-mechanism change, not pre-existing)
 
 **Existing Code:**
 
-- [ ] Read `src/gzkit/sync.py`, `sync_surfaces.py`, `sync_skills.py`, `skills_mirror.py` end-to-end (the sync surface is fragmented — understand which file owns what before editing)
+- [ ] Read `src/gzkit/sync.py`, `sync_surfaces.py`, `sync_skills.py`, `skills_mirror.py` end-to-end (the sync surface is fragmented — understand which file owns what and which currently reads from where before editing)
 - [ ] Read `.gzkit/manifest.json` schema before refresh logic lands
-- [ ] Read existing `gz validate --surfaces` check in trust_audits to understand what mirror-drift detection already covers
+- [ ] Read existing `gz validate --surfaces` check in `trust_audits` to understand what mirror-drift detection already covers and how to extend it to cover `src/gzkit/` ↔ `.gzkit/` parity
+- [ ] Read `tests/test_skills.py::TestSkillsLayoutDualSurface::test_dual_surface_byte_parity` (OBPI-01 landing) to understand the byte-parity assertion shape the sync must keep green
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
 - [ ] Intent and scope recorded
-- [ ] Parent ADR checklist item #6 quoted
+- [ ] Parent ADR checklist item #8 quoted
 
 ### Gate 2: TDD (Red-Green-Refactor)
 
-- [ ] RED: tests for canonical-resolution + idempotent sync fail before implementation
-- [ ] GREEN: tests pass after the resolution-path change and sync run
+- [ ] RED: tests for canonical-resolution-from-`.gzkit/` + dual-direction propagation + idempotent sync fail before implementation
+- [ ] GREEN: tests pass after the resolution-path change and the dual-target sync run
 - [ ] Coverage above 40% floor
 
 ### Code Quality
@@ -120,12 +144,13 @@ After OBPI-0.0.32-01 (skills) and OBPI-0.0.32-02 (rules) move canonical content 
 
 ### Gate 3: Docs (Heavy)
 
-- [ ] `docs/user/manpages/gz-agent.md` updated if operator-facing behavior changed (likely minimal — resolution path is internal)
+- [ ] `docs/user/manpages/gz-agent.md` updated for the broadened sync semantics (canonical from `.gzkit/`, two derived surface families)
+- [ ] `.claude/rules/skill-surface-sync.md` re-affirmed: "Edit `.gzkit/` first" + one `gz agent sync` invocation covers both derived surface families
 - [ ] `mkdocs build --strict` passes
 
 ### Gate 4: BDD (Heavy)
 
-- [ ] `features/agent_sync.feature` (or equivalent) extended with the post-promotion idempotency scenario tagged `@REQ-0.0.32-08-01`
+- [ ] `features/agent_sync.feature` (or equivalent) extended with the dual-direction idempotency scenario tagged `@REQ-0.0.32-08-01`
 
 ### Gate 5: Human (Heavy + Foundation — brief-level)
 
@@ -139,21 +164,30 @@ uv run gz typecheck
 uv run gz test
 uv run mkdocs build --strict
 
-# First sync after promotion: regenerates mirrors
+# First sync after a canonical edit: regenerates both derived surfaces
+echo "test edit" >> .gzkit/skills/gz-prd/SKILL.md   # simulate authored edit
 uv run gz agent sync control-surfaces
-git status .claude/ .github/ .gzkit/manifest.json    # expect changes (mirrors regenerating to canonical)
+git status src/gzkit/skills/ .claude/skills/ .github/skills/   # expect changes in both
+git checkout -- .gzkit/skills/gz-prd/SKILL.md src/gzkit/skills/ .claude/ .github/   # cleanup
 
-# Second sync immediately after: idempotent no-op
+# Second sync immediately after a clean sync: idempotent no-op
 uv run gz agent sync control-surfaces
-git status .claude/ .github/ .gzkit/manifest.json    # expect clean (manifest Updated: may bump if it carries a date)
+git status src/gzkit/ .claude/ .github/ .gzkit/manifest.json
+# expect: clean (manifest Updated: may bump if it carries a date)
 
-# Mirror counts match canonical
-find src/gzkit/skills/ -name SKILL.md | wc -l                      # 61
-find .claude/skills/ -name SKILL.md | wc -l                        # 61
-find .github/skills/ -name SKILL.md | wc -l                        # 61
-ls src/gzkit/rules/*.md | wc -l                                    # 14
-ls .claude/rules/*.md | wc -l                                      # 14
-ls .github/instructions/*.md | wc -l                               # 14
+# Byte-parity tests pass post-sync
+uv run -m unittest tests.test_skills.TestSkillsLayoutDualSurface -v
+uv run -m unittest tests.test_rules.TestRulesLayoutDualSurface -v   # OBPI-03 landing
+
+# File counts match canonical
+find .gzkit/skills/ -name SKILL.md | wc -l
+find src/gzkit/skills/ -name SKILL.md | wc -l
+find .claude/skills/ -name SKILL.md | wc -l
+find .github/skills/ -name SKILL.md | wc -l
+ls .gzkit/rules/*.md | wc -l
+ls src/gzkit/rules/*.md | wc -l
+ls .claude/rules/*.md | wc -l
+ls .github/instructions/*.md | wc -l
 
 uv run gz validate --surfaces
 uv run gz validate --distribution
@@ -163,23 +197,26 @@ uv run -m behave features/agent_sync.feature --tags=@REQ-0.0.32-08-01
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.32-08-01: `gz agent sync control-surfaces` resolves canonical skill content from `src/gzkit/skills/<slug>/SKILL.md` when no project-local override exists; same project-first → package-fallback shape for rules
-- [ ] REQ-0.0.32-08-02: Post-sync mirror trees match canonical sources byte-equivalent (modulo documented vendor transformations)
-- [ ] REQ-0.0.32-08-03: Re-running sync on freshly-synced state produces zero file writes (idempotent)
-- [ ] REQ-0.0.32-08-04: Mirror counts match canonical: `.claude/skills/` = 61; `.claude/rules/` = 14; `.github/skills/` = 61; `.github/instructions/` = 14
-- [ ] REQ-0.0.32-08-05: `.gzkit/manifest.json` refreshes Updated date + surface counts on each sync
-- [ ] REQ-0.0.32-08-06: `gz validate --surfaces` exits 0 post-sync (no mirror drift)
-- [ ] REQ-0.0.32-08-07: `gz validate --distribution` exits 0 post-sync (no on-disk-not-baseline drift)
-- [ ] REQ-0.0.32-08-08: Behave scenario `@REQ-0.0.32-08-01` exercises post-promotion idempotency and passes
-- [ ] REQ-0.0.32-08-09: `uv run gz check` exits 0
+- [ ] REQ-0.0.32-08-01: `gz agent sync control-surfaces` resolves canonical content from `.gzkit/<surface>/` for every dual-surface family; NEVER from `src/gzkit/` or `.[vendor]/`
+- [ ] REQ-0.0.32-08-02: A single sync invocation propagates `.gzkit/<surface>/` to BOTH `src/gzkit/<surface>/` (wheel-shipping byte-parity copy) AND `.[vendor]/<surface>/` (vendor mirrors)
+- [ ] REQ-0.0.32-08-03: Post-sync, `src/gzkit/<surface>/` is byte-equivalent to `.gzkit/<surface>/` for every slug (skills and rules); byte-parity tests from OBPI-01/03 pass
+- [ ] REQ-0.0.32-08-04: Post-sync, `.[vendor]/<surface>/` is byte-equivalent (modulo documented vendor transformations) to `.gzkit/<surface>/`
+- [ ] REQ-0.0.32-08-05: Re-running sync on freshly-synced state produces zero file writes across BOTH derived surface families (idempotent)
+- [ ] REQ-0.0.32-08-06: File counts match across canonical and derived surfaces — `.gzkit/skills/` = `src/gzkit/skills/` = `.claude/skills/` = `.github/skills/` (~70); `.gzkit/rules/` = `src/gzkit/rules/` = `.claude/rules/` = `.github/instructions/` (14)
+- [ ] REQ-0.0.32-08-07: `.gzkit/manifest.json` refreshes Updated date + surface counts on each sync
+- [ ] REQ-0.0.32-08-08: `gz validate --surfaces` exits 0 post-sync (no drift across either derived surface family)
+- [ ] REQ-0.0.32-08-09: `gz validate --distribution` exits 0 post-sync (no on-disk-not-baseline drift)
+- [ ] REQ-0.0.32-08-10: Behave scenario `@REQ-0.0.32-08-01` exercises dual-direction idempotency and passes
+- [ ] REQ-0.0.32-08-11: `.claude/rules/skill-surface-sync.md` re-affirms "Edit `.gzkit/` first" and documents the broadened sync coverage
+- [ ] REQ-0.0.32-08-12: `uv run gz check` exits 0
 
 ## Completion Checklist
 
 - [ ] **Gate 1 (ADR):** Intent + Decision quote in Implementation Summary
 - [ ] **Gate 2 (TDD):** RGR cycle recorded
 - [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Gate 3 (Docs):** Manpage update (minimal); mkdocs --strict passes
-- [ ] **Gate 4 (BDD):** Idempotency scenario passes
+- [ ] **Gate 3 (Docs):** Manpage update + skill-surface-sync rule re-affirm; mkdocs --strict passes
+- [ ] **Gate 4 (BDD):** Dual-direction idempotency scenario passes
 - [ ] **Gate 5 (Human):** Foundation-kind heavy-lane brief-level attestation recorded — this OBPI is the LAST in the ADR-0.0.32 chain; closeout of the parent ADR follows
 
 ## Evidence
@@ -191,7 +228,7 @@ uv run -m behave features/agent_sync.feature --tags=@REQ-0.0.32-08-01
 ### Gate 2 (TDD)
 
 ```text
-# Paste unittest output for canonical-resolution + idempotent-sync tests
+# Paste unittest output for canonical-resolution-from-.gzkit/ + dual-direction propagation + idempotent-sync tests
 ```
 
 ### Code Quality
@@ -220,13 +257,21 @@ uv run -m behave features/agent_sync.feature --tags=@REQ-0.0.32-08-01
 
 ### Value Narrative
 
-Before this OBPI: vendor mirrors at `.claude/skills/`, `.claude/rules/`, `.github/skills/`, `.github/instructions/` would have gone stale immediately when OBPI-0.0.32-01 / -02 moved canonical content to the package surface, leaving the agent runtime reading inconsistent state. After this OBPI: `gz agent sync control-surfaces` resolves canonical content from the new package layout via project-first → package-fallback, regenerates every mirror byte-equivalent, and asserts idempotency on the second run as the operator-facing health signal that the mirror tree is a wheel-derivable artifact.
+Before this OBPI: editing `.gzkit/skills/<slug>/SKILL.md` required the operator to remember to `cp` the change to `src/gzkit/skills/<slug>/SKILL.md` or trip the byte-parity test from OBPI-01; the existing `gz agent sync control-surfaces` flow handled the vendor-mirror leg but had no `.gzkit/ → src/gzkit/` step (GHI #449). After this OBPI: a single `gz agent sync control-surfaces` invocation propagates `.gzkit/<surface>/` to both `src/gzkit/<surface>/` (wheel-shipping byte-parity copy) and `.[vendor]/<surface>/` (vendor mirrors); byte-parity tests pass; re-running on freshly-synced state is a clean no-op. The canonical-routing invariant declared in ADR-0.0.32 § Decision is mechanically enforced — `.gzkit/` is the single authoring surface; the rest is derivable from it.
 
 ### Key Proof
 
 ```bash
-uv run gz agent sync control-surfaces && uv run gz agent sync control-surfaces
-git diff --stat .claude/ .github/   # Expected: empty (idempotent)
+# Make a canonical edit, sync once, verify both derived surfaces are byte-equivalent
+echo "demo" >> .gzkit/skills/gz-prd/SKILL.md
+uv run gz agent sync control-surfaces
+diff .gzkit/skills/gz-prd/SKILL.md src/gzkit/skills/gz-prd/SKILL.md   # Expected: no diff
+diff .gzkit/skills/gz-prd/SKILL.md .claude/skills/gz-prd/SKILL.md     # Expected: no diff (modulo documented transforms)
+
+# Idempotent re-run
+uv run gz agent sync control-surfaces
+git diff --stat src/gzkit/ .claude/ .github/   # Expected: empty (idempotent across all derived surfaces)
+git checkout -- .gzkit/skills/gz-prd/SKILL.md src/gzkit/ .claude/ .github/   # cleanup
 ```
 
 ### Implementation Summary
@@ -240,6 +285,7 @@ git diff --stat .claude/ .github/   # Expected: empty (idempotent)
 ## Tracked Defects
 
 - GHI #318 — final OBPI in the closure chain; ADR-0.0.32 closeout follows this OBPI's attestation
+- GHI #449 — `.gzkit/ → src/gzkit/` dev-time sync mechanism absorbed by this OBPI's broadened scope; close `superseded` against this OBPI when it attests
 
 ## Human Attestation
 

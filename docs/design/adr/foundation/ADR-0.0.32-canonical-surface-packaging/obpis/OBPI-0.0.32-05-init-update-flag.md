@@ -11,13 +11,13 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/ADR-0.0.32-canonical-surface-packaging.md`
-- **Checklist Item:** #3 — "Add `gz init --update` flag with version-aware refresh + manpage + behave coverage"
+- **Checklist Item:** #5 — "Add `gz init --update` flag — version-aware refresh of the adopter's `.gzkit/<surface>/` from the wheel's package data, with three-state detection (IDENTICAL/STALE/EDITED), manpage, behave coverage."
 
 **Status:** Draft
 
 ## Objective
 
-Add a third `gz init` mode — `--update` — that performs version-aware refresh of canonical surfaces (rules, skills, hooks, templates, personas) shipped by the wheel, preserving project-local edits via marker-comment detection or content-hash comparison. The current `gz init` is binary: default re-run repairs only missing artifacts (skip-existing); `--force` wipes and recreates. The middle case — *the package canonical content has evolved between gzkit versions; refresh stale project copies in place without losing operator edits* — has no path today. This OBPI closes failure class D from GHI #318.
+Add a third `gz init` mode — `--update` — that performs version-aware refresh of the adopter's `.gzkit/<surface>/` (their project canonical source-of-truth) FROM the wheel's package data for every dual-surface canonical family (skills, rules, plus forward-promoted hooks, templates, personas), preserving project-local edits via marker-comment detection or content-hash comparison. The current `gz init` is binary: default re-run repairs only missing artifacts (skip-existing); `--force` wipes and recreates. The middle case — *the wheel's package canonical content has evolved between gzkit versions; refresh stale entries in the adopter's `.gzkit/` in place without losing operator edits* — has no path today. The refresh direction is one-way: wheel package data → adopter's `.gzkit/`; the adopter's `.gzkit/` is canonical AFTER the refresh, just as it was the canonical source-of-truth before (per ADR-0.0.32 § Decision's binding canonical-routing invariant). The wheel's package data is the bootstrap source on fresh install and the upgrade source on `--update`. This OBPI closes failure class D from GHI #318.
 
 ## Lane
 

@@ -11,13 +11,13 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/ADR-0.0.32-canonical-surface-packaging.md`
-- **Checklist Item:** #2 — "Skills scaffolder refactor — refactor `scaffold_core_skills` to copy canonical SKILL.md content from `importlib.resources.files(\"gzkit.skills\")`; implement project-first → package-fallback resolution; delete (or document repurposing of) `src/gzkit/templates/skill.md`. Depends on OBPI-01 landing first."
+- **Checklist Item:** #2 — "Skills scaffolder refactor — refactor `scaffold_core_skills` to copy canonical SKILL.md content from `importlib.resources.files(\"gzkit.skills\")` (the wheel's package surface) into the adopter's `.gzkit/skills/<slug>/`; preserve operator edits via `skip_existing=True`; delete (or document repurposing of) `src/gzkit/templates/skill.md`. Depends on OBPI-01 landing first."
 
 **Status:** Draft
 
 ## Objective
 
-After OBPI-01 has landed the skills physical migration (61 SKILL.md files now at `src/gzkit/skills/<slug>/SKILL.md`, `src/gzkit/skills.py` converted to `src/gzkit/skills/__init__.py`), refactor `scaffold_core_skills` so it COPIES canonical SKILL.md content from `importlib.resources.files("gzkit.skills")` rather than rendering one-line stubs through `src/gzkit/templates/skill.md`. Author `_iter_canonical_skill_slugs()` mirroring `src/gzkit/chores/__init__.py:_iter_canonical_chore_slugs()`. Implement project-first → package-fallback resolution. Delete `src/gzkit/templates/skill.md` (or document its repurposing, but the stub-template scaffolding path MUST be eliminated). After this OBPI lands, `gz init` produces full canonical SKILL.md content in any project's `.gzkit/skills/<slug>/`. T0-class B closure depends on this OBPI + OBPI-06 (wheel includes) jointly.
+After OBPI-01 has landed the skills dual-surface (~70 SKILL.md files retained at `.gzkit/skills/<slug>/SKILL.md` as authored canonical source-of-truth AND byte-equivalent copies at `src/gzkit/skills/<slug>/SKILL.md` for wheel-shipping, `src/gzkit/skills.py` converted to `src/gzkit/skills/__init__.py`), refactor `scaffold_core_skills` so it COPIES canonical SKILL.md content from `importlib.resources.files("gzkit.skills")` (the wheel's package surface — `src/gzkit/skills/` in the gzkit dev repo, the installed-wheel package data on adopter machines) into the adopter project's `.gzkit/skills/<slug>/SKILL.md` rather than rendering one-line stubs through `src/gzkit/templates/skill.md`. Author `_iter_canonical_skill_slugs()` mirroring `src/gzkit/chores/__init__.py:_iter_canonical_chore_slugs()`. Implement project-first → package-fallback resolution (project-first = preserve any existing `.gzkit/skills/<slug>/SKILL.md` in the adopter project; package-fallback = copy from wheel package data when a file is missing). The scaffolder writes into adopter's `.gzkit/<surface>/`; once written, that adopter's `.gzkit/` becomes their project canonical source-of-truth — the same canonical-routing invariant ADR-0.0.32 § Decision binds across every gzkit-or-adopter repo. Delete `src/gzkit/templates/skill.md` (or document its repurposing, but the stub-template scaffolding path MUST be eliminated). After this OBPI lands, `gz init` produces full canonical SKILL.md content in any adopter project's `.gzkit/skills/<slug>/SKILL.md`. T0-class B closure depends on this OBPI + OBPI-06 (wheel includes) jointly.
 
 ## Lane
 
@@ -29,7 +29,7 @@ After OBPI-01 has landed the skills physical migration (61 SKILL.md files now at
 - `src/gzkit/templates/skill.md` — DELETE, OR keep with a documented repurposing comment (the stub-template scaffolding path is eliminated either way)
 - `tests/test_skills.py`, `tests/commands/test_init.py` (or equivalents) — unit tests for `_iter_canonical_skill_slugs`, copy-from-package behavior, project-first resolution
 - `docs/user/manpages/gz-init.md` — document the new copy-from-package behavior if it surfaces operator-facing change (likely yes — `--force` semantics shift from "wipe and re-template" to "wipe and re-copy")
-- `.claude/rules/skill-surface-sync.md` — current rule assumes hand-authored canonical files at `.gzkit/skills/`; update to reflect canonical-content-from-package
+- `.claude/rules/skill-surface-sync.md` — re-affirm "Edit `.gzkit/` first" canon; document that fresh-init adopter projects receive their `.gzkit/skills/` canonical content from the wheel's package surface (`importlib.resources`), after which the adopter's `.gzkit/` is their project canonical
 
 ## Denied Paths
 
@@ -114,7 +114,7 @@ After OBPI-01 has landed the skills physical migration (61 SKILL.md files now at
 ### Gate 3: Docs (Heavy)
 
 - [ ] `docs/user/manpages/gz-init.md` updated for the copy-from-package behavior change
-- [ ] `.claude/rules/skill-surface-sync.md` updated — references to "hand-authored canonical files at `.gzkit/skills/`" become "package-shipped canonical content under `src/gzkit/skills/`"
+- [ ] `.claude/rules/skill-surface-sync.md` re-affirmed — "Edit `.gzkit/` first" remains canon; section added explaining that `gz init` populates adopter's `.gzkit/skills/` from the wheel's package surface as the bootstrap source
 - [ ] `mkdocs build --strict` passes
 
 ### Gate 4: BDD (Heavy)
@@ -149,7 +149,7 @@ mkdir /tmp/gz-skills-scaffold-smoke && cd /tmp/gz-skills-scaffold-smoke && uv ru
 - [ ] REQ-0.0.32-02-04: Project-first → package-fallback resolution holds; `skip_existing=True` preserves operator edits
 - [ ] REQ-0.0.32-02-05: `scaffold_core_skills` public API surface (signature + return type) is unchanged
 - [ ] REQ-0.0.32-02-06: A fresh `gz init` in a tempdir produces full canonical SKILL.md content (NOT one-line stubs) — visible via `head -5` of any scaffolded SKILL.md
-- [ ] REQ-0.0.32-02-07: `.claude/rules/skill-surface-sync.md` updated to reflect canonical-content-from-package
+- [ ] REQ-0.0.32-02-07: `.claude/rules/skill-surface-sync.md` re-affirms "Edit `.gzkit/` first" and documents that `gz init` populates adopter's `.gzkit/skills/` from the wheel's package surface
 - [ ] REQ-0.0.32-02-08: `docs/user/manpages/gz-init.md` updated for behavior change; `mkdocs build --strict` passes
 - [ ] REQ-0.0.32-02-09: `uv run gz check` exits 0
 
@@ -200,7 +200,7 @@ mkdir /tmp/gz-skills-scaffold-smoke && cd /tmp/gz-skills-scaffold-smoke && uv ru
 
 ### Value Narrative
 
-Before this OBPI: `gz init` rendered 12 one-line skill stubs from `templates/skill.md` regardless of how rich the in-repo `.gzkit/skills/<slug>/SKILL.md` content was. After this OBPI: `gz init` copies canonical SKILL.md content from package resources, so a project receives the same multi-section operator-facing artifacts this repo authors. Closure of T0-class B remains contingent on OBPI-06 (wheel includes) — this OBPI delivers the runtime semantics; OBPI-06 makes them work for `pip install` consumers.
+Before this OBPI: `gz init` rendered 12 one-line skill stubs from `templates/skill.md` regardless of how rich the in-repo `.gzkit/skills/<slug>/SKILL.md` content was. After this OBPI: `gz init` copies canonical SKILL.md content from the wheel's package surface (`importlib.resources.files("gzkit.skills")`) into the adopter's `.gzkit/skills/<slug>/SKILL.md`, so a fresh-init project receives the same multi-section operator-facing artifacts this repo authors. Once written, the adopter's `.gzkit/` becomes their project canonical source-of-truth — the canonical-routing invariant ADR-0.0.32 § Decision declares binding across every gzkit-or-adopter repo. Closure of T0-class B remains contingent on OBPI-06 (wheel includes) — this OBPI delivers the runtime semantics; OBPI-06 makes them work for `pip install` consumers.
 
 ### Key Proof
 

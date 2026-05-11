@@ -11,13 +11,13 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/ADR-0.0.32-canonical-surface-packaging.md`
-- **Checklist Item:** #4 — "Author T0 smoke test (build wheel, install into temp venv, run `gz init`, assert byte-equivalence against frozen baseline manifest); audit and extend `pyproject.toml [tool.hatch.build.targets.wheel] include:`"
+- **Checklist Item:** #6 — "Author T0 smoke test (build wheel, install into temp venv, run `gz init`, assert byte-equivalence of the resulting `.gzkit/` tree against frozen baseline manifest); audit and extend `pyproject.toml [tool.hatch.build.targets.wheel] include:`; author `data/distribution_baseline_manifest.json`."
 
 **Status:** Draft
 
 ## Objective
 
-Author the build-then-install smoke test that mechanically enforces the T0 distribution invariant authored by ADR-0.0.31. Concretely: a behave scenario (or equivalent) that builds the wheel via `uv build`, installs it into a temp venv via `uv pip install`, runs `gz init` in a fresh project, and asserts every canonical-surface file is present byte-equivalent (modulo project-name substitution) against a frozen baseline manifest checked in at `data/distribution_baseline_manifest.json`. Audit and extend `pyproject.toml [tool.hatch.build.targets.wheel] include:` to cover every canonical surface (skills, rules, hooks, templates, personas) — closing failure class C from GHI #318.
+Author the build-then-install smoke test that mechanically enforces the T0 distribution invariant authored by ADR-0.0.31. Concretely: a behave scenario (or equivalent) that builds the wheel via `uv build`, installs it into a temp venv via `uv pip install`, runs `gz init` in a fresh adopter project, and asserts every canonical-surface file the wheel ships (sourced from `src/gzkit/<surface>/` in the gzkit dev repo — the byte-equivalent copy of `.gzkit/<surface>/` authored canonical) lands in the adopter's `.gzkit/<surface>/` byte-equivalent (modulo project-name substitution) against a frozen baseline manifest checked in at `data/distribution_baseline_manifest.json`. The smoke test exercises the full canonical-routing chain end-to-end: gzkit-dev-repo `.gzkit/<surface>/` (authored) → `src/gzkit/<surface>/` (byte-equivalent, wheel-shipped via includes) → adopter's `.gzkit/<surface>/` (post-`gz init`). Audit and extend `pyproject.toml [tool.hatch.build.targets.wheel] include:` to cover every canonical surface (skills, rules, hooks, templates, personas) under `src/gzkit/` — closing failure class C from GHI #318.
 
 ## Lane
 
