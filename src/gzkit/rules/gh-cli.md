@@ -1,0 +1,38 @@
+---
+id: gh-cli
+paths:
+  - ".github/**"
+  - "docs/design/adr/**"
+  - "src/gzkit/commands/issue_cmd.py"
+description: GitHub CLI guardrails and cross-repo filing protocol.
+---
+
+<!-- rule-version: 0.2.0 -->
+
+# GitHub CLI Guardrails (gzkit)
+
+> **Rule version:** `0.2.0` — diet pass under GHI #327; compressed cross-repo filing section.
+
+Use `gh` for defect tracking, ADR closeout, release ceremony, or active brief / explicit user request.
+
+## Allowed commands
+
+```bash
+gh issue create --label defect --title "..." --body "..."
+gh issue list --search "ADR-X.Y.Z" --state open
+gh issue close <number> --comment "Resolved by ADR-X.Y.Z closeout."
+gh release create vX.Y.Z --title "vX.Y.Z" --notes-file RELEASE_NOTES.md
+```
+
+## Prohibited without explicit approval
+
+- Repository/org settings mutations
+- Secret/token management
+- Force pushes
+- Merging PRs without explicit human authorization
+
+## Cross-repo filing
+
+Defects against gzkit-owned surfaces (`gz <verb>`, `.gzkit/`, `src/gzkit/`, `gzkit.<module>`) filed from consuming repos MUST go to `tvproductions/gzkit` via `gz issue file`. The wrapper auto-stamps provenance, validates surface references, and hard-rejects bodies referencing no gzkit surface. Consumer-repo-only defects go to the consumer's tracker.
+
+Operator PII: the wrapper stamps only repo slug + gz version, never operator email.

@@ -39,6 +39,7 @@ Land the strongest mechanical enforcement layer of the cascade: static AST analy
 - `src/gzkit/cli/domain.py` — OBPI-03
 - `src/gzkit/ledger/**` — OBPI-05 (this OBPI calls `emit_cascade_import_bypass` from cascade emitter)
 - `.gzkit/skills/**` — OBPI-08 / 09 / 10
+<!-- gz-validate-skip: brief-cross-references -->
 - Runtime enforcement at import time (e.g., import hooks, `sys.meta_path` manipulation) — deferred to ADR-0.0.46 per parent ADR § Extension Points
 - Runtime dependencies
 
@@ -51,6 +52,7 @@ Land the strongest mechanical enforcement layer of the cascade: static AST analy
 5. **REQUIREMENT (analyzer scope restriction option).** If false-positive rate is ≥5% on first measurement, the analyzer MAY restrict to `src/gzkit/governance/` and `src/gzkit/domain/` (the cleanest cross-BC surface) and defer broader corpus coverage to a follow-on OBPI. Restriction is operator-attested in evidence.
 6. **REQUIREMENT (pipeline integration).** `gz obpi pipeline <OBPI-ID> verify` invokes the cascade import check after standard verify checks. Failures exit 3 with `Resolve:` line naming (a) the offending import (b) the relevant context-map gap (c) the inline-marker bypass option.
 7. **REQUIREMENT (`# cascade-allowed:` marker discipline).** Each bypass marker MUST be reviewable in code review (no programmatic insertion). Lint scope (separate; not implemented here) MAY warn on `cascade-allowed:` accumulation > N markers per file.
+<!-- gz-validate-skip: brief-cross-references -->
 8. **REQUIREMENT (no runtime enforcement).** This OBPI does NOT install Python import hooks or modify `sys.meta_path`. Static-only. Runtime enforcement is ADR-0.0.46 scope.
 9. **REQUIREMENT (lazy/conditional import handling).** `importlib.import_module(...)` and conditional imports under `if TYPE_CHECKING:` are recognized but NOT flagged as violations (false-positive control). The analyzer emits a warning when these patterns appear in cross-context contexts so operators can review.
 10. **REQUIREMENT (evidence document).** `docs/governance/cascade-import-enforcer.md` (or section in OBPI-12's `domain-cascade.md`) MUST document the analyzer's scope, limitations, false-positive policy, and `# cascade-allowed:` marker contract.

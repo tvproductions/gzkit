@@ -1,0 +1,62 @@
+---
+id: pythonic
+paths:
+  - "**/*.py"
+description: Pythonic standards and idiomatic code contract
+---
+
+# Pythonic Standards (Idiomatic Code Contract)
+
+## Core Principles
+
+1. **Clarity over cleverness** — explicit, readable, consistent code
+2. **Separation of concerns** — isolate IO, transforms, QC, persistence
+3. **Typed interfaces** — enforce with `uvx ty check .`
+4. **EAFP for IO, LBYL for contracts** — clear error boundaries
+5. **Context managers** — for files, DBs, sessions, progress phases
+6. **No mutable defaults** — use `None` + factory
+7. **Pydantic BaseModel for data** — TypedDict for shapes; see models policy
+8. **Explicit exceptions** — typed errors; **no bare `except:` / `except Exception:`**
+9. **Small units** — <=50 lines/function, <=600 lines/module, <=300 lines/class
+10. **No implicit globals** — explicit configuration and state
+
+## Size Limits & Refactoring
+
+**Limits:** Functions <=50 lines | Modules <=600 lines | Classes <=300 lines
+
+## Imports (PEP 8)
+
+- **Top-level imports only.** Standard library, third-party, then local.
+- **No lazy imports** unless required for optional dependencies or cycle avoidance.
+
+## Error Handling
+
+- Catch specific exceptions, translate to `core.errors`.
+- **No bare `except:` / `except Exception:`** outside CLI boundaries.
+
+## Toolchain (Astral)
+
+| Tool         | Role                  | Command                 |
+| ------------ | --------------------- | ----------------------- |
+| **uv**       | Environment/execution | `uv run` / `uvx`        |
+| **ruff**     | Linting/formatting    | `uv run ruff check .`   |
+| **ty**       | Static typing         | `uvx ty check .`        |
+| **unittest** | Testing               | `uv run -m unittest -q` |
+
+## Type-check suppression syntax (ty — binding)
+
+`ty` does not honor mypy-style bracketed codes. `# type: ignore[override]`,
+`# type: ignore[union-attr]`, `# type: ignore[arg-type]`, etc. look valid but
+suppress nothing — the diagnostic still fires. This silently accumulated
+across 12 lines in 6 files before ADR-0.0.16 closeout exposed them (GHI #197).
+
+Use exactly one of:
+
+| Form | When |
+|------|------|
+| `# type: ignore` (bare) | When the suppression is unconditional and precise narrowing is unnecessary |
+| `# ty: ignore[<ty-code>]` | When you want specificity — cite ty's own error code (e.g. `invalid-method-override`, `no-matching-overload`, `invalid-assignment`, `unresolved-attribute`, `call-non-callable`, `invalid-argument-type`) |
+
+`tests/governance/test_type_ignore_syntax.py` fail-closes on any
+`# type: ignore[<code>]` under `src/**`. Fix the suppression syntax rather than
+disabling the test.

@@ -1,0 +1,40 @@
+---
+id: security-sensitivity
+paths:
+  - "docs/design/adr/**/obpis/**"
+  - "docs/design/adr/**/briefs/**"
+  - "data/security_surfaces.json"
+description: Security-sensitivity third axis of attestation rigor (ADR-0.0.22).
+---
+
+<!-- rule-version: 0.2.0 -->
+
+# Security Sensitivity (gzkit)
+
+> **Rule version:** `0.2.0` — diet pass under GHI #327; lifted walkthrough details and scanner-unavailable rationale to `docs/governance/security-sensitivity-rationale.md`.
+
+## Invariant
+
+**Security work needs heightened review regardless of lane or kind.** A brief carrying `sensitivity: security` is never self-closeable. The axis is additive: heavy lane, foundation kind, and security sensitivity each independently force human attestation; none suppresses another.
+
+## Registry contract
+
+Security surfaces are named in [`data/security_surfaces.json`](../../data/security_surfaces.json). The registry is self-bootstrapping: edits require the editing brief to declare `sensitivity: security`.
+
+## `gz validate --sensitivity` (binding)
+
+1. **Auto-detect floor.** Briefs whose allowed-paths overlap a registered security surface MUST declare `sensitivity: security` (exit 3 on violation).
+2. **Escalate-not-escape.** A brief MAY declare sensitivity without overlap (escalation). A brief MAY NOT omit sensitivity while overlapping (escape is fail-closed).
+
+## Heightened walkthrough
+
+`gz obpi complete` on a `sensitivity: security` brief fires an extended Gate 5 walkthrough: surface enumeration, `arb-step-security-scan-*` receipt confirmation, classification confirmation, and co-presence proxy gate. Scanner-unavailable is fail-closed (no degradation).
+
+## Anti-patterns
+
+- Declaring `sensitivity: absent` while touching a registered surface
+- Editing `data/security_surfaces.json` without declaring `sensitivity: security`
+- Narrative substitution for the security-scan receipt
+- Bundling security work into a non-security parent OBPI
+
+> See [`docs/governance/security-sensitivity-rationale.md`](../../docs/governance/security-sensitivity-rationale.md) for walkthrough enumeration details, scanner-unavailable failure mode rationale, and related references.

@@ -1,0 +1,8 @@
+{
+  "obpi_id": "OBPI-0.0.32-03-rules-physical-migration",
+  "timestamp": "2026-05-11T22:55:00.000000+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.32-03-rules-physical-migration.md",
+  "gaps_found": 0,
+  "notes": "CLI FAIL overridden: destination paths (src/gzkit/rules/__init__.py, src/gzkit/rules/<slug>.md) are created by this OBPI, not pre-existing -- same false-positive pattern as OBPI-01. ADR<->OBPI alignment is PASS. Advisory: rule count is 20 (not 14), rules.py is 594 lines (not 563) -- stale brief metadata, approach unchanged. 4 sibling-ADR scope collisions on src/gzkit/rules.py are Draft future ADRs, not in-progress."
+}

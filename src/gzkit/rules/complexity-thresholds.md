@@ -1,0 +1,99 @@
+---
+id: complexity-thresholds
+paths:
+  - ".gzkit/rules/complexity-thresholds.md"
+  - ".gzkit/rules/complexity-thresholds.json"
+  - "src/gzkit/complexity/thresholds.py"
+  - "src/gzkit/schemas/complexity_thresholds.json"
+  - "docs/governance/complexity/**"
+description: Per-metric threshold table mapping percentile + absolute boundaries to fixed three-value trigger semantics (block / warn / advise) for the gzkit complexity-doctrine cluster
+---
+
+<!-- rule-version: 0.3.0 -->
+
+# Complexity Thresholds (gzkit)
+
+> **Rule version:** `0.3.0` — GHI #426: per-metric threshold data lifted to the companion JSON file `complexity-thresholds.json` (deterministic config is structured data, not regex-parsed prose). This file retains the doctrine narrative.
+
+## Data source-of-truth
+
+The runtime threshold data lives in [`complexity-thresholds.json`](complexity-thresholds.json), a sibling of this file under `.gzkit/rules/`. The Pydantic loader (`gzkit.complexity.thresholds.load_threshold_table`) reads JSON; the JSON Schema mirror is at `src/gzkit/schemas/complexity_thresholds.json`. This narrative file carries doctrine prose (invariant, vocabulary, bootstrap carve-out, amendment protocol) and binds to the data via the shared identifier `complexity-thresholds`.
+
+## Citation
+
+The data file binds to the corpus-measured boundaries in
+[`docs/governance/complexity/distilled-characteristics-2026-05-04.md`](../../docs/governance/complexity/distilled-characteristics-2026-05-04.md)
+at `corpus_revision: 1`. Canonical-string form:
+
+```
+docs/governance/complexity/distilled-characteristics-2026-05-04.md § radon-cc (corpus revision 1)
+```
+
+> See [`docs/governance/complexity/complexity-thresholds-rationale.md`](../../docs/governance/complexity/complexity-thresholds-rationale.md) for citation contract details, bootstrap carve-out rationale, amendment protocol, refresh portability, and anti-patterns.
+
+## Invariant
+
+**gzkit publishes one canonical threshold table whose every entry is a
+`(metric, percentile-band, absolute-number, trigger-semantic)` tuple cited
+from the current distilled-characteristics document.** The trigger-semantic
+vocabulary is fixed at three values (`block` / `warn` / `advise`); the
+mapping per metric per band is operator-amendable doctrine. Downstream
+surfaces — xenon-as-gate, the complexity advisor (ADR-0.0.29), and the
+authoring-time guidance surface (ADR-0.0.30) — consume the table; none of
+them owns its own thresholds. A new threshold authority appearing
+anywhere else is doctrine drift by another name.
+
+Every metric MUST carry a `block` band; a metric without a `block` band
+is prose, not a threshold. `warn` and `advise` bands are optional but
+recommended for full coverage.
+
+## Trigger-Semantic Vocabulary (binding)
+
+Exactly three values are accepted by the schema. The vocabulary is
+foundation doctrine; amendments require ADR-0.0.28 ceremony, not a rule
+body edit.
+
+| Value | Effect on downstream consumer surfaces |
+|-------|----------------------------------------|
+| `block` | The metric crossing this band fails the gate. Xenon-as-gate exits 3; the build does not pass. |
+| `warn` | The metric crossing this band surfaces an advisor recommendation (ADR-0.0.29). The build proceeds; the advisor diagnosis lands in the developer's session. |
+| `advise` | The metric crossing this band feeds the authoring-guidance surface only (ADR-0.0.30). No advisor invocation; no build effect. |
+
+A fourth value (e.g. `info`, `fatal`, `debug`) is forbidden — adding a
+state with no consumer surface is the foundation-doctrine version of dead
+code (ADR-0.0.28 § Alternative #5).
+
+## Per-metric thresholds — see the data file
+
+The per-metric `(corpus_percentile, absolute_number, trigger_semantic)`
+rows previously rendered as markdown tables in this file now live in
+[`complexity-thresholds.json`](complexity-thresholds.json) as the
+runtime source of truth. The data file declares twelve canonical
+metrics covered by the gzkit complexity-doctrine cluster:
+
+- `radon_cc`, `radon_mi`, `radon_hal_volume`, `radon_hal_difficulty`,
+  `radon_hal_effort`, `radon_raw_nloc`, `radon_raw_lloc`
+- `lizard_nloc`, `lizard_param_count`, `lizard_nesting_depth`,
+  `lizard_ccn`
+- `cohesion_lcom4`
+
+Each metric must declare at least a `block` band; the loader fails
+closed when a canonical metric is missing a block-band row. Three
+metrics carry bootstrap absolutes per the carve-out below.
+
+## Bootstrap absolutes (REQ-11 carve-out -- one-shot)
+
+Three metrics in the data file carry bootstrap absolutes not derived
+from the cited corpus distillation:
+
+- `radon_mi` -- inverted polarity (GHI #405)
+- `lizard_nesting_depth` -- parser defect, all-zero corpus (GHI #404)
+- `cohesion_lcom4` -- parser defect, all-zero corpus (GHI #404)
+
+> See [rationale doc](../../docs/governance/complexity/complexity-thresholds-rationale.md#bootstrap-absolutes-req-11-carve-out--one-shot) for the full carve-out contract and one-shot semantics.
+
+## Operator-amendable mapping protocol
+
+Amendments to `(metric, band, trigger)` mappings flow through the doctrine-amendment-protocol stub (ADR-0.0.27 OBPI-02). **Silent edits are forbidden** by the validator (OBPI-0.0.28-03 -- `gz validate --complexity-thresholds`).
+
+> See [rationale doc](../../docs/governance/complexity/complexity-thresholds-rationale.md#operator-amendable-mapping-protocol) for the full amendment protocol.

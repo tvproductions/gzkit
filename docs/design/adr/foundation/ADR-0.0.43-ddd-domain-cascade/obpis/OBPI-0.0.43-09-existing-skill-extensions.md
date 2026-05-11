@@ -160,7 +160,8 @@ done
 # (Operator demo — invocation is conversational; cannot script the full dialogue here)
 
 # Run gz-adr-evaluate on a cascade-compliant ADR
-uv run gz adr evaluate ADR-0.0.43 --json | jq '.dimensions[] | select(.name == "Cascade Compliance")'
+uv run gz adr evaluate ADR-0.0.43 --json --output /tmp/adr-eval.json
+# then: jq '.dimensions[] | select(.name == "Cascade Compliance")' /tmp/adr-eval.json
 
 # Demo closeout ceremony cascade reconciliation step
 # (Operator demo — interactive)

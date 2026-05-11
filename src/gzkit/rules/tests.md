@@ -1,0 +1,83 @@
+---
+id: tests
+paths:
+  - "tests/**"
+description: Test policy and coverage requirements
+---
+
+<!-- rule-version: 0.4.0 -->
+
+# Test Policy (canonical)
+
+> **Rule version:** `0.4.0` — diet pass under GHI #327; lifted pedagogy to `docs/governance/tests-rationale.md`.
+
+## General Rules (binding)
+
+- Use **stdlib `unittest`**; no pytest.
+- Prefer **table-driven** tests with deterministic seeds; no network/external services.
+- **Smoke/BVT <=60s**; cover current-scope surfaces only.
+- Fixtures: local, small, reproducible; avoid huge goldens.
+- **Database isolation:** unit tests MUST use `tempfile` temp DBs; NEVER use live/production databases.
+- **Cleanup:** NEVER use raw `shutil.rmtree()` in tearDown. Use `tempfile.TemporaryDirectory()` context manager.
+
+## Coverage Floor (binding)
+
+- **Minimum line coverage: 40.00%**
+- Before closing any brief, verify coverage has not regressed.
+
+## Run / Verify
+
+```bash
+uv run ruff check . --fix && uv run ruff format .
+uv run -m unittest -v
+```
+
+- All tests PASS; smoke suite <=60s.
+- Coverage >=40.00%.
+
+## Red-Green-Refactor (TDD Discipline — binding)
+
+Gate 2 is named TDD. Red-Green-Refactor is a repeating cycle per behavior increment:
+
+- **Red:** Write a test for a behavior required by the OBPI brief (`REQ-*` identifier). Run it. Watch it fail for the right reason. A test that passes on first run is not Red.
+- **Green:** Write the **simplest code** that makes the test pass.
+- **Refactor:** Improve the code's structure without changing its behavior. Adding new behavior is not refactoring — that starts a new Red.
+
+**Derivation rule:** Test cases derive from OBPI brief acceptance criteria, not from the implementation. When adding tests outside a pipeline run, locate the governing OBPI brief and derive from its requirements.
+
+**Tests assert semantics, not strings (invariant 6f).** Assertions derive from the REQ or skill contract, not from a run of the code.
+
+**Eval-awareness corollary.** Audit-helper names MUST NOT pattern-match as audit-step names — name them by behavior, not audit role (e.g. `assert_receipt_id_resolves` not `assert_audit_passes`).
+
+**Output-form fixture carve-out.** Output-form assertions are permitted in dedicated fixture tests per `.gzkit/rules/tool-skill-runbook-alignment.md` § Invariant 3. Keep them in separate test classes from REQ-derived unit tests.
+
+**Per-increment rhythm:** One test → one observed RED → minimum code to GREEN → next increment.
+
+**RED evidence:** Do not author ARB receipts with `exit_status=1` as "RED receipts". Gate 2 TDD claims cite only GREEN-side receipts (`arb-step-unittest-*`).
+
+## TASK-Driven Workflow (binding)
+
+Every src/tests commit carries a governance-intent trailer: `Task:`, `Ceremony:`, or `Eval-feedback-source:`. Enforced by `gz validate --commit-trailers`.
+
+**Steps:** `gz covers` → `gz task start` → TDD cycle → commit with `Task:` trailer → `gz task complete` → `@covers(REQ-...)` decorator.
+
+## Two runners, one test surface
+
+| Runner | Location | Purpose | Contract |
+|--------|----------|---------|----------|
+| `unittest` | `tests/` | Pure Python behavior, command contracts | Mocked subprocess boundaries; deterministic; fast |
+| `behave` | `features/` | End-to-end CLI and governance scenarios | Real operator flows, Gherkin-readable |
+
+`gz test` runs `unittest` over `tests/` then `behave` over `features/`. Both gates must pass for `gz check`.
+
+### Unit-tier contract (binding)
+
+- Mock every subprocess boundary (`_uv_sync_patcher`, `_git_subprocess_patcher`, `_quick_init` in `tests/commands/common.py`)
+- Complete in < 200ms; deterministic; `tempfile` temp DBs only
+- E2E scenarios requiring real subprocess → `features/*.feature`
+
+### Behave scenario tagging
+
+Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM` as a scenario tag. Enforced by `gz validate --behave-req-tags` (fires on `Completed`/`Validated` briefs only, GHI #276/#323). Waivers in `data/behave_coverage_waivers.json`.
+
+> See [`docs/governance/tests-rationale.md`](../../docs/governance/tests-rationale.md) for TDD anti-patterns, eval-awareness corollary details, behave enforcement direction, runner anti-patterns, TASK workflow details, and code patterns.
