@@ -72,10 +72,13 @@ class TestAdrEvalCmdEmission(unittest.TestCase):
                     raise evaluate_raises
                 return result
 
+            import io  # noqa: PLC0415
+
             with (
                 patch("gzkit.commands.adr_promote.ensure_initialized", return_value=mock_config),
                 patch("gzkit.commands.adr_promote.get_project_root", return_value=Path(tmp)),
                 patch("gzkit.adr_eval.evaluate_adr", side_effect=_fake_evaluate),
+                contextlib.redirect_stdout(io.StringIO()),
                 contextlib.suppress(SystemExit, Exception),
             ):
                 adr_eval_cmd("0.0.26", as_json=False, write_scorecard=False)

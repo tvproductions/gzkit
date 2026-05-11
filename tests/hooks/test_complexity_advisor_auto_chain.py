@@ -223,10 +223,14 @@ class TestInstaller(unittest.TestCase):
                 """),
                 encoding="utf-8",
             )
+            import contextlib  # noqa: PLC0415
+            import io  # noqa: PLC0415
+
             original_cwd = os.getcwd()
             try:
                 os.chdir(tmp)
-                code = install()
+                with contextlib.redirect_stdout(io.StringIO()):
+                    code = install()
             finally:
                 os.chdir(original_cwd)
 
@@ -240,6 +244,9 @@ class TestInstaller(unittest.TestCase):
     @covers("REQ-0.0.29-05-01")
     def test_installer_idempotent(self) -> None:
         """install() is idempotent when hook is already present."""
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
         with tempfile.TemporaryDirectory() as tmp:
             config_path = Path(tmp) / ".pre-commit-config.yaml"
             config_path.write_text(
@@ -249,7 +256,8 @@ class TestInstaller(unittest.TestCase):
             original_cwd = os.getcwd()
             try:
                 os.chdir(tmp)
-                code = install()
+                with contextlib.redirect_stdout(io.StringIO()):
+                    code = install()
             finally:
                 os.chdir(original_cwd)
             self.assertEqual(code, 0)

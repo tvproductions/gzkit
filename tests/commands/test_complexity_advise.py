@@ -330,10 +330,16 @@ class TestComplexityAdviseBehavior(unittest.TestCase):
 
     @covers("REQ-0.0.29-03-05")
     def test_help_invocation_via_parser(self) -> None:
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
         from gzkit.cli.main import _build_parser  # noqa: PLC0415
 
         parser = _build_parser()
-        with self.assertRaises(SystemExit) as ctx:
+        with (
+            contextlib.redirect_stdout(io.StringIO()),
+            self.assertRaises(SystemExit) as ctx,
+        ):
             parser.parse_args(["complexity", "advise", "--help"])
         self.assertEqual(ctx.exception.code, 0)
 

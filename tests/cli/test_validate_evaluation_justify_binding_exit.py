@@ -73,12 +73,16 @@ class TestSoloHandlerExitCodeContract(unittest.TestCase):
     @covers("REQ-0.0.26-02-01")
     def test_solo_handler_exits_3_on_violation(self) -> None:
         """A non-empty violation list raises SystemExit(3) from the solo handler."""
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
         with (
             mock.patch.object(
                 validate_cmd,
                 "_evaluation_justify_binding_runner",
                 return_value=[_binding_violation()],
             ),
+            contextlib.redirect_stdout(io.StringIO()),
             self.assertRaises(SystemExit) as ctx,
         ):
             validate_cmd._run_evaluation_justify_binding_solo(
@@ -91,12 +95,16 @@ class TestSoloHandlerExitCodeContract(unittest.TestCase):
     @covers("REQ-0.0.26-02-01")
     def test_solo_handler_exits_0_when_clean(self) -> None:
         """An empty violation list raises SystemExit(0) from the solo handler."""
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
         with (
             mock.patch.object(
                 validate_cmd,
                 "_evaluation_justify_binding_runner",
                 return_value=[],
             ),
+            contextlib.redirect_stdout(io.StringIO()),
             self.assertRaises(SystemExit) as ctx,
         ):
             validate_cmd._run_evaluation_justify_binding_solo(

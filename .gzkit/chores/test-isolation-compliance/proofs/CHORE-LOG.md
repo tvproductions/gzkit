@@ -76,3 +76,66 @@ Malformed REQ line (skipped): - [ ] REQ-: Empty body.
   Proof: src/foo.py:10-30
   Recommended move: Extract Parameter Object
 ```
+## 2026-05-10T19:10:42-05:00
+- Status: PASS
+- Chore: test-isolation-compliance
+- Title: Test Isolation & Health Compliance
+- Lane: lite
+- Version: 2.0.0
+- Criteria Results:
+  - [PASS] `uv run python tests/tools/test_health_profiler.py` => rc=0 (39.60s) -- exit 0 == 0
+  - [PASS] `uv run -m unittest -q` => rc=0 (39.48s) -- exit 0 == 0
+
+```text
+[uv run python tests/tools/test_health_profiler.py] stdout:
+Tests: 4728  Wall: 39.2s
+Failures: 0  Errors: 0
+
+Top 5 slowest tests:
+   1.834s  test_cli_audit_exits_zero_after_validate_subverb_lands (tests.commands.test_justify_validate.TestCliAuditCoverage.test_cli_audit_exits_zero_after_validate_subverb_lands)
+   1.555s  test_cli_audit_covers_complexity_advise (tests.commands.test_complexity_advise.TestComplexityAdviseCliAuditParity.test_cli_audit_covers_complexity_advise)
+   1.551s  test_cli_audit_covers_complexity_guide (tests.commands.test_complexity_guide.TestComplexityGuideCliAuditParity.test_cli_audit_covers_complexity_guide)
+   1.452s  test_check_surfaces_report_returns_valid_report (tests.test_doc_coverage.TestIntegration.test_check_surfaces_report_returns_valid_report)
+   1.012s  test_chores_run_timeout_returns_nonzero (tests.commands.test_chores.TestChoresCommands.test_chores_run_timeout_returns_nonzero)
+
+Top 5 modules by time:
+    1.9s   28 tests   67.5ms/test  tests.test_obpi_validator.TestObpiValidator
+    1.8s    1 tests  1830.0ms/test  tests.commands.test_justify_validate.TestCliAuditCoverage
+    1.6s   27 tests   57.8ms/test  tests.governance.test_promoted_advisory_audits.PromotedAdvisoryAudits
+    1.6s    1 tests  1550.0ms/test  tests.commands.test_complexity_advise.TestComplexityAdviseCliAuditParity
+    1.6s    1 tests  1550.0ms/test  tests.commands.test_complexity_guide.TestComplexityGuideCliAuditParity
+
+PASSED: All thresholds met.
+[uv run python tests/tools/test_health_profiler.py] stderr:
+Skipping unparseable file: /var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/tmp6kdk12hn/test_broken.py
+Malformed REQ line (skipped): - [ ] REQ-X-Y-Z: Malformed (non-numeric).
+Malformed REQ line (skipped): - [ ] REQ-: Empty body.
+[1] metric=radon_cc value=12.0 band=block
+  Archetype: long_parameter_list
+  Authority: fowler (Fowler Refactoring 2e ch.3)
+  Proof: src/foo.py:10-30
+  Recommended move: Extract Parameter Object
+[1] metric=radon_cc value=12.0 band=warn
+  Archetype: long_parameter_list
+  Authority: fowler (Fowler Refactoring 2e ch.3)
+  Proof: src/foo.py:10-30
+  Recommended move: Extract Parameter Object
+[uv run -m unittest -q] stderr:
+Skipping unparseable file: /var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/tmpmzcvm7z7/test_broken.py
+Malformed REQ line (skipped): - [ ] REQ-X-Y-Z: Malformed (non-numeric).
+Malformed REQ line (skipped): - [ ] REQ-: Empty body.
+[1] metric=radon_cc value=12.0 band=block
+  Archetype: long_parameter_list
+  Authority: fowler (Fowler Refactoring 2e ch.3)
+  Proof: src/foo.py:10-30
+  Recommended move: Extract Parameter Object
+[1] metric=radon_cc value=12.0 band=warn
+  Archetype: long_parameter_list
+  Authority: fowler (Fowler Refactoring 2e ch.3)
+  Proof: src/foo.py:10-30
+  Recommended move: Extract Parameter Object
+----------------------------------------------------------------------
+Ran 4728 tests in 39.020s
+
+OK (skipped=1)
+```

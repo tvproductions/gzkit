@@ -968,6 +968,13 @@ class TestAdrAuditCheckIntegration(unittest.TestCase):
     exit-code precedence) — not the heuristic internals (covered above).
     """
 
+    def setUp(self) -> None:
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
+        self._stdout_redirect = contextlib.redirect_stdout(io.StringIO())
+        self._stdout_redirect.__enter__()
+
     def tearDown(self) -> None:
         # Backstop: halt every patcher started in this test, including any
         # unmanaged ``patch(...).start()`` calls that don't pair with a
@@ -976,6 +983,7 @@ class TestAdrAuditCheckIntegration(unittest.TestCase):
         from unittest.mock import patch as _patch
 
         _patch.stopall()
+        self._stdout_redirect.__exit__(None, None, None)
 
     # Shared patch targets at the adr_audit module's import-site namespace.
     _HEURISTIC_PATCH = "gzkit.commands.adr_audit.evaluate_backfill_for_audit"

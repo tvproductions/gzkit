@@ -187,22 +187,26 @@ class _AdrCloseoutFixture(unittest.TestCase):
                 ),
                 patch("gzkit.commands.adr_audit._reject_pool_adr_for_lifecycle"),
             ]
+            import contextlib  # noqa: PLC0415
+            import io  # noqa: PLC0415
+
             for p in patches:
                 p.start()
             try:
                 exc_type: type[BaseException] | None = None
                 code: int | None = None
-                try:
-                    adr_emit_receipt_cmd(
-                        adr=adr_id,
-                        receipt_event="closed",
-                        attestor="g0",
-                        evidence_json=None,
-                        dry_run=dry_run,
-                    )
-                except SystemExit as exc:
-                    exc_type = SystemExit
-                    code = int(exc.code) if isinstance(exc.code, int) else 1
+                with contextlib.redirect_stdout(io.StringIO()):
+                    try:
+                        adr_emit_receipt_cmd(
+                            adr=adr_id,
+                            receipt_event="closed",
+                            attestor="g0",
+                            evidence_json=None,
+                            dry_run=dry_run,
+                        )
+                    except SystemExit as exc:
+                        exc_type = SystemExit
+                        code = int(exc.code) if isinstance(exc.code, int) else 1
             finally:
                 for p in patches:
                     p.stop()

@@ -53,6 +53,16 @@ def _chores_root_patcher(tmp_path: Path) -> AbstractContextManager[Any]:
 class TestChoreProposeGhiTtyConfirm(unittest.TestCase):
     """REQ-0.0.26-04-01: TTY + PROPOSE confirmation → GHI filed."""
 
+    def setUp(self) -> None:
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
+        self._stdout_redirect = contextlib.redirect_stdout(io.StringIO())
+        self._stdout_redirect.__enter__()
+
+    def tearDown(self) -> None:
+        self._stdout_redirect.__exit__(None, None, None)
+
     @covers("REQ-0.0.26-04-01")
     @covers("REQ-0.0.26-04-12")
     def test_tty_confirm_files_ghi(self) -> None:
@@ -200,6 +210,16 @@ class TestChoreProposeGhiTtyConfirm(unittest.TestCase):
 class TestChoreProposeGhiHeadless(unittest.TestCase):
     """REQ-0.0.26-04-02: Headless → no GHI, record advisory=True."""
 
+    def setUp(self) -> None:
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
+        self._stdout_redirect = contextlib.redirect_stdout(io.StringIO())
+        self._stdout_redirect.__enter__()
+
+    def tearDown(self) -> None:
+        self._stdout_redirect.__exit__(None, None, None)
+
     @covers("REQ-0.0.26-04-02")
     def test_headless_advisory_only(self) -> None:
         """No TTY → no gh call, record annotated advisory=True."""
@@ -236,6 +256,16 @@ class TestChoreProposeGhiHeadless(unittest.TestCase):
 
 class TestChoreProposeGhiIdempotent(unittest.TestCase):
     """REQ-0.0.26-04-03: Idempotency checks."""
+
+    def setUp(self) -> None:
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
+        self._stdout_redirect = contextlib.redirect_stdout(io.StringIO())
+        self._stdout_redirect.__enter__()
+
+    def tearDown(self) -> None:
+        self._stdout_redirect.__exit__(None, None, None)
 
     @covers("REQ-0.0.26-04-03")
     def test_refile_idempotent(self) -> None:

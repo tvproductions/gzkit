@@ -49,6 +49,9 @@ class TestForbidManualLedgerEdits(unittest.TestCase):
             self.assertEqual(guards.forbid_manual_ledger_edits(mock.sentinel.root), 0)
 
     def test_line_deletion_fails(self) -> None:
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
         diff = (
             "--- a/.gzkit/ledger.jsonl\n"
             "+++ b/.gzkit/ledger.jsonl\n"
@@ -56,7 +59,10 @@ class TestForbidManualLedgerEdits(unittest.TestCase):
             '-{"event": "x"}\n'
             ' {"event": "y"}\n'
         )
-        with mock.patch.object(guards, "_run_git", return_value=diff):
+        with (
+            mock.patch.object(guards, "_run_git", return_value=diff),
+            contextlib.redirect_stdout(io.StringIO()),
+        ):
             self.assertEqual(guards.forbid_manual_ledger_edits(mock.sentinel.root), 1)
 
 
@@ -73,13 +79,25 @@ class TestForbidSkillSyncDrift(unittest.TestCase):
             self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 0)
 
     def test_canonical_skill_missing_mirror_fails(self) -> None:
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
         names = ".gzkit/skills/foo/SKILL.md\n"
-        with mock.patch.object(guards, "_run_git", return_value=names):
+        with (
+            mock.patch.object(guards, "_run_git", return_value=names),
+            contextlib.redirect_stdout(io.StringIO()),
+        ):
             self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 1)
 
     def test_canonical_rule_missing_mirror_fails(self) -> None:
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
         names = ".gzkit/rules/new-rule.md\n"
-        with mock.patch.object(guards, "_run_git", return_value=names):
+        with (
+            mock.patch.object(guards, "_run_git", return_value=names),
+            contextlib.redirect_stdout(io.StringIO()),
+        ):
             self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 1)
 
     def test_canonical_rule_with_github_mirror_returns_zero(self) -> None:

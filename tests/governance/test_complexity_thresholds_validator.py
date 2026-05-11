@@ -207,8 +207,12 @@ class BootstrapMode(unittest.TestCase):
 
     @covers("REQ-0.0.28-03-05")
     def test_bootstrap_mode_does_not_block_well_formed(self) -> None:
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
         project_root = _write_rule_files(_well_formed_payload(), include_bootstrap_narrative=True)
-        errors = validate_complexity_thresholds(project_root)
+        with contextlib.redirect_stdout(io.StringIO()):
+            errors = validate_complexity_thresholds(project_root)
         self.assertEqual(
             errors,
             [],
