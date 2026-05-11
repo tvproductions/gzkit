@@ -1,124 +1,157 @@
 ADR EVALUATION SCORECARD
-═══════════════════════════
+========================
 
-ADR: ADR-0.0.32 — Canonical Surface Packaging
+ADR: ADR-0.0.32-canonical-surface-packaging
 Evaluator: claude-haiku-4-5 (manual review, supersedes CLI pre-screen)
 Date: 2026-05-11
 
-CLI Pre-Screen (for traceability):
-  Verdict: NO GO | Weighted total: 3.85/4.0
-  Action items (CLI): OBPI-02 independence=1 (structural defect),
-    OBPI-04 independence=1 (structural defect), OBPI-04 avg=2.8<3.0
+CLI PRE-SCREEN: NO GO (weighted total 3.85/4.0 — flagged due to OBPI-level
+independence=1 defects, not ADR-level quality). This scorecard supersedes.
 
-─── ADR-Level Scores ───────────────────────────
+─── ADR-Level Scores ───────────────────────────────────────────────────────────
 
-| # | Dimension | Weight | CLI | Manual | Weighted | Rationale |
-|---|-----------|--------|-----|--------|----------|-----------|
-| 1 | Problem Clarity | 15% | 4 | 4 | 0.60 | Problem quantified: 61 skills + 14 rules missing from wheel; before/after is `pip install py-gzkit && gz init` yields stubs vs. canonical content; failure classes A-D mapped to GHI #318 with concrete states |
-| 2 | Decision Justification | 15% | 3 | 4 | 0.60 | CLI heuristic fired on "no numbered items" but Decision carries full package-layout block + resolution-order paragraph + 5 lettered alternatives each dismissed with specific reasons (A: include-only closes symptom not class; B: asymmetry with chores; C: single-ADR scope conflict; D: no upgrade path; E: unit tests covered for dogfood blindness). Every choice traces to chores precedent (ADR-0.0.21) |
-| 3 | Feature Checklist | 15% | 4 | 4 | 0.60 | 8 items each with unambiguous capability loss if removed: remove-01 → skills never reach wheel; remove-02 → gz init still produces stubs; remove-08 → mirrors stale post-promotion. Items at consistent granularity, dependency order respected |
-| 4 | OBPI Decomposition | 15% | 4 | 3 | 0.45 | Decomposition structure is sound (migration-then-scaffolder precedent from ADR-0.0.21-01), but OBPI-05 through OBPI-08 carry stale `item:` frontmatter (05→3, 06→4, 07→5, 08→6 from the 6-item original sketch). OBPI-06 Denied Paths contains a stale cross-reference ("mirror sync belongs to OBPI-0.0.32-06" — should be OBPI-08). These are metadata defects from the 6→8 OBPI expansion that must be corrected before implementation |
-| 5 | Lane Assignment | 10% | 4 | 4 | 0.40 | All 8 OBPIs Heavy, each with concrete external-contract justification: 01/03 restructure package layout; 02/04 change scaffolder runtime contract; 05 adds CLI flag and changes gz init contract; 06 modifies wheel ship contract; 07 adds gz validate scope; 08 changes gz agent sync resolution path |
-| 6 | Scope Discipline | 10% | 4 | 3 | 0.30 | Scope is clear through Denied Paths in each OBPI (exemplary detail); ADR lacks an explicit "Non-Goals" section, relying instead on Consequences § Negative and per-OBPI denials. Three implicit non-goals: persona/hook promotion (named in Intent but deferred to future), mirror content authoring (OBPI-08 consumes not authors), and ADR-0.0.31 doctrine prose (owned by parent ADR) |
-| 7 | Evidence Requirements | 10% | 4 | 4 | 0.40 | Every OBPI has a Verification section with concrete bash commands and expected numeric outputs (e.g. `wc -l # expect 61`). REQ-numbered acceptance criteria support `gz adr audit-check`. Gate-specific evidence placeholders are present for TDD, Docs, BDD, and Human |
-| 8 | Architectural Alignment | 10% | 4 | 4 | 0.40 | Every technical decision cites ADR-0.0.21 chores precedent by name. Integration points listed with module paths: `src/gzkit/skills.py` → `src/gzkit/skills/__init__.py`, `importlib.resources.files("gzkit.skills")`, `init_cmd._scaffold_project_skeleton`, `_repair_missing_artifacts`. Novel patterns (module-to-package conversion) are justified as unavoidable and mirroring the exact chores shape |
+| # | Dimension | Weight | Score (1-4) | Weighted | Findings |
+|---|-----------|--------|-------------|----------|----------|
+| 1 | Problem Clarity | 15% | 3 | 0.45 | CLI score matches. Intent names the problem (T0 invariant not mechanically satisfied; surfaces exist only in .gzkit/ tree) and target state (pip install → gz init → byte-equivalent canonical content), but lacks explicit "currently X → target Y" framing. Depth is distributed across Intent + Consequences; an explicit before-state sentence in Intent would close the heuristic gap. |
+| 2 | Decision Justification | 15% | 4 | 0.60 | CLI score matches. Decision section carries canonical-routing direction with three numbered binding rules, a package layout diagram, and an Alternatives Considered block with 6 named, explicitly-rejected alternatives (A–F), each citing specific principle violations. |
+| 3 | Feature Checklist | 15% | 4 | 0.60 | CLI score matches. 14 checklist items — each scoped, dependency-annotated, and mapped 1:1 to OBPI IDs. Decomposition Scorecard documents scoring math, revision history (8→13→14), and parser contract compliance. |
+| 4 | OBPI Decomposition | 15% | 4 | 0.60 | CLI score matches. 14 OBPIs with documented sequencing plan in Q&A Transcript, parallelism opportunities named (migrations 03/09/11/13 run in parallel; scaffolders 04/10/12 follow respective migrations). Hooks correctly carved out as named exception. |
+| 5 | Lane Assignment | 10% | 4 | 0.40 | CLI score matches. foundation+heavy correctly assigned. Consequences section explicitly cites AGENTS.md § Lane & Kind Attestation Matrix, names the brief-level Gate 5 rigor that applies. |
+| 6 | Scope Discipline | 10% | 4 | 0.40 | CLI score matches. Explicit in-scope (5 surface families), out-of-scope (hooks — named exception with extended rationale referencing pre-existing pool ADR framework), post-1.0 deferred (adopter-extension framework), and Forward Extension Policy (future surfaces must adopt dual-surface absent attested carve-out). |
+| 7 | Evidence Requirements | 10% | 4 | 0.40 | CLI score matches. Evidence section covers: per-surface unit + byte-parity tests, BDD smoke test (build-install-gz-init), wheel manifest audit, two CLI surfaces (gz init --update, gz upgrade), validation surface (gz validate --distribution), canonical sync, docs cross-links. |
+| 8 | Architectural Alignment | 10% | 4 | 0.40 | CLI score matches. ADR traces to ADR-0.0.31 (parent doctrine), ADR-0.0.21 (chores precedent — explicitly adopted and explicitly diverged from), and parks two design gaps at named pool ADRs for future promotion. Canonical-routing model is consistent with existing src/gzkit/ structure. |
 
-WEIGHTED TOTAL: 3.75/4.0
-CLI PRE-SCREEN TOTAL: 3.85/4.0
+WEIGHTED TOTAL: 3.85/4.0
+THRESHOLD: 3.0 (GO), 2.5 (CONDITIONAL GO), <2.5 (NO GO)
 
-Divergence explanation:
-- Dimension 2: CLI scored 3 ("no numbered items") — false negative; Decision carries full
-  bullet-point justification + 5 lettered alternatives. Manual: 4.
-- Dimension 4: CLI scored 4 — overscored; stale `item:` frontmatter in OBPI-05 through -08
-  and stale cross-reference in OBPI-06 are decomposition metadata defects. Manual: 3.
-- Dimension 6: CLI scored 4 — overscored; ADR has no explicit Non-Goals section. Manual: 3.
-  Net manual total (3.75) lower than CLI (3.85); both above GO threshold.
+ADR-LEVEL VERDICT: GO (no dimension scores 1; weighted total well above threshold)
 
-THRESHOLD: 3.0 (GO) | 2.5 (CONDITIONAL GO) | <2.5 (NO GO)
+─── CLI Reconciliation (ADR Dimensions) ─────────────────────────────────────────
 
-─── OBPI-Level Scores ──────────────────────────
+All 8 manual dimension scores match the CLI pre-screen. The only flagged heuristic
+mismatch (Dimension 1, Problem Clarity) is a confirmed false negative: the CLI's
+"no after/target-state language in Intent" heuristic fires because the ADR
+distributes before/after depth across Intent + Consequences rather than using
+explicit "currently" / "after" phrasing in Intent alone. Score of 3 is correct
+for both; no override.
 
-| OBPI | CLI-Indep | Manual-Indep | Testability | Value | Size | Clarity | Avg |
-|------|-----------|--------------|-------------|-------|------|---------|-----|
-| 01 skills-physical-migration | 2 | 3 | 4 | 4 | 3 | 4 | **3.6** |
-| 02 skills-scaffolder-refactor | 1 | 3 | 4 | 4 | 3 | 4 | **3.6** |
-| 03 rules-physical-migration | 2 | 4 | 4 | 4 | 3 | 4 | **3.8** |
-| 04 rules-scaffolder-authoring | 1 | 3 | 4 | 4 | 3 | 4 | **3.6** |
-| 05 init-update-flag | 4 | 3 | 4 | 4 | 2 | 3 | **3.2** |
-| 06 t0-smoke-test | 4 | 3 | 4 | 4 | 3 | 4 | **3.6** |
-| 07 validate-distribution | 4 | 3 | 4 | 4 | 3 | 4 | **3.6** |
-| 08 mirror-sync | 2 | 3 | 4 | 4 | 3 | 3 | **3.4** |
+─── OBPI-Level Scores ───────────────────────────────────────────────────────────
 
-All OBPI averages ≥ 3.0. No OBPI scores 1 on any dimension in manual scoring.
+| OBPI | Independence | Testability | Value | Size | Clarity | Avg | CLI Δ |
+|------|-------------|-------------|-------|------|---------|-----|-------|
+| 01 skills-physical-migration | 2★ | 4 | 4 | 3 | 3 | 3.2 | CLI=1 |
+| 02 skills-scaffolder-refactor | 2★ | 4 | 4 | 2 | 3 | 3.0 | CLI=1 |
+| 03 rules-physical-migration | 2 | 4 | 4 | 3 | 3 | 3.2 | match |
+| 04 rules-scaffolder-authoring | 1 | 4 | 4 | 2 | 3 | 2.8 | match |
+| 05 init-update-flag | 4 | 4 | 4 | 2 | 3 | 3.4 | match |
+| 06 t0-smoke-test | 4 | 4 | 4 | 2 | 3 | 3.4 | match |
+| 07 validate-distribution | 4 | 4 | 4 | 3 | 3 | 3.6 | match |
+| 08 mirror-sync | 2 | 4 | 4 | 2 | 3 | 3.0 | match |
+| 09 personas-physical-migration | 2 | 4 | 4 | 3 | 3 | 3.2 | match |
+| 10 personas-scaffolder-authoring | 1 | 4 | 4 | 2 | 3 | 2.8 | match |
+| 11 templates-reverse-migration | 4 | 4 | 4 | 2 | 3 | 3.4 | match |
+| 12 templates-scaffolder-authoring | 1 | 4 | 4 | 2 | 3 | 2.8 | match |
+| 13 chores-normalization | 4 | 4 | 4 | 3 | 3 | 3.6 | match |
+| 14 gz-upgrade-subcommand | 1 | 4 | 4 | 2 | 4 | 3.0 | Clarity 3→4 |
 
-OBPI Independence reconciliation (overrides CLI):
-- OBPI-02 (CLI=1 → Manual=3): CLI fired on STOP language "If OBPI-01 has not
-  landed, STOP" and scored independence=1. Rubric score-3 = "Depends only on
-  declared predecessors." OBPI-02 has exactly one declared hard prerequisite
-  (OBPI-01); no other OBPIs block it. The STOP language is a safety gate, not
-  a dependency on "most other OBPIs." CLI score is a false positive.
-- OBPI-04 (CLI=1 → Manual=3): Same pattern. OBPI-04 declares exactly one hard
-  STOP (OBPI-03 not landed). OBPI-02 is referenced in Discovery Checklist as a
-  pattern reference ("same scaffolder pattern applied to skills"), not as a
-  hard prerequisite or STOP condition. CLI score is a false positive.
+OBPI THRESHOLD: Average >= 3.0 per OBPI. Any dimension scoring 1 must be revised.
 
-OBPI-05 Size=2 rationale: Three-state detection (IDENTICAL/STALE/EDITED) with
-  operator-edit marker mechanism, three behave scenarios, manpage + runbook.
-  Three marker mechanism options are presented; one must be chosen and documented.
-  Scope complexity pushes toward 4-5 days.
+★ CLI Reconciliation (OBPI Independence Overrides):
 
-OBPI-08 Clarity=3 rationale: Brief acknowledges sync surface is "fragmented"
-  across multiple source files; the Discovery Checklist correctly names this but
-  the implementation-time ambiguity is real.
+OBPI-01 (CLI independence=1 → manual 2):
+  CLI heuristic: flagged "Scaffolder refactor deferred to OBPI-02; sync mechanism
+  deferred to OBPI-08" as a blocking dependency. Manual read: these are OUT-OF-SCOPE
+  deferments (work excluded from OBPI-01) not prerequisites (work that must complete
+  before OBPI-01 starts). OBPI-01 itself has no STOP-on-BLOCKERS gates requiring
+  other OBPIs first. Confirmed by ledger state: OBPI-01 is attested_completed —
+  it was executed and attested without any blocking predecessors. Override 1→2.
 
-─── Metadata Defects (must be fixed before implementation) ─────────
+OBPI-02 (CLI independence=1 → manual 2):
+  CLI heuristic: correctly identified "Depends on OBPI-01 landing first" as a
+  blocking dependency. The brief's STOP-on-BLOCKERS gate explicitly confirms it:
+  "If OBPI-01 has not landed (skills not yet at src/gzkit/skills/<slug>/SKILL.md),
+  STOP." However, OBPI-01 is now attested_completed (verified via gz adr status
+  output, 2026-05-11). The blocking condition is cleared. Override 1→2; OBPI-02
+  is READY TO START. Brief should be updated to mark the OBPI-01 prerequisite as
+  satisfied.
 
-1. OBPI-05 frontmatter: `item: 3` → should be `item: 5`
-2. OBPI-06 frontmatter: `item: 4` → should be `item: 6`
-3. OBPI-07 frontmatter: `item: 5` → should be `item: 7`
-4. OBPI-08 frontmatter: `item: 6` → should be `item: 8`
-5. OBPI-06 Denied Paths: "mirror sync belongs to OBPI-0.0.32-06" →
-   should be OBPI-0.0.32-08
+OBPI-14 (CLI Clarity=3 → manual 4):
+  CLI heuristic underscored. The checklist item specifies --surface (comma-separated
+  filter), --force (override), --dry-run (reporting without write), three-state
+  IDENTICAL/STALE/EDITED detection (inherited from OBPI-05 semantics), idempotent
+  exit-0, and bootstrap-retrofit semantics (works without prior gz init). This is
+  the most precisely specified scope in the ADR. Override Clarity 3→4; avg 3.0.
 
-These are from the 6→8 OBPI expansion in the Q&A Transcript.
-ADR Q&A Transcript also retains the old 6-OBPI sequencing narrative
-("01 (skills) and 02 (rules) in parallel...") — this is now stale;
-OBPI-01 is skills migration and OBPI-03 is rules migration.
+Remaining independence=1 (structural defects per framework — require action):
+  OBPI-04: depends on OBPI-03 (rules-physical-migration) — pending, unresolved.
+  OBPI-10: depends on OBPI-09 (personas-physical-migration) — pending, unresolved.
+  OBPI-12: depends on OBPI-11 (templates-reverse-migration) — pending, unresolved.
+  OBPI-14: depends on OBPI-02 AND OBPI-06 — both pending, unresolved.
 
-─── Overall Verdict ────────────────────────────
+Root cause analysis:
+  The independence=1 pattern on scaffolder OBPIs (04, 10, 12) is inherent to the
+  canonical-surface-packaging architecture: scaffolders cannot copy from
+  importlib.resources.files("gzkit.<surface>") until the physical files exist at
+  src/gzkit/<surface>/ (placed by the migration OBPIs). This is an architectural
+  necessity documented explicitly in the ADR Q&A Transcript's sequencing plan, not
+  a decomposition flaw. The migrations (03, 09, 11, 13) CAN run in parallel; once
+  each migration completes, its paired scaffolder OBPI immediately unblocks.
+  OBPI-14 has dual dependency (OBPI-02 + OBPI-06) — both must land before the
+  gz upgrade subcommand can wire its importlib.resources resolution path and
+  verify wheel includes.
 
+  Framework mandate: "Any dimension scoring 1 must be revised." Revision for
+  OBPI-04/10/12 means updating the briefs to explicitly state the "ready to
+  start when: OBPI-[migration] attested_completed" gate in the Discovery Checklist's
+  Prerequisites section, and executing migrations in parallel to unblock them
+  as rapidly as possible. For OBPI-14, the brief should enumerate the dual
+  dependency gates explicitly.
+
+─── Overall Verdict ─────────────────────────────────────────────────────────────
+
+[ ] GO
+[x] CONDITIONAL GO
 [ ] NO GO
-[~] CONDITIONAL GO — was conditional; all metadata defects resolved in session
-[x] GO — post-fix verdict (see Post-Fix Verdict section below)
 
-ADR weighted total: 3.75/4.0 ≥ 3.0 → above GO threshold on ADR quality
-All OBPIs: avg ≥ 3.0 → no blocking OBPI
-No OBPI scores 1 on any dimension → no structural defect at OBPI level
+ADR level: GO (3.85/4.0; no ADR dimension at 1)
+OBPI level: CONDITIONAL GO (independence=1 on OBPI-04/10/12/14; avg<3.0 on OBPI-04/10/12;
+  inherent sequencing constraints rather than decomposition flaws; briefs require
+  sequencing-gate updates before OBPI-04/10/12/14 execution)
 
-The CONDITIONAL GO is driven entirely by the five metadata defects (item
-frontmatter and one stale cross-reference). The ADR reasoning, decomposition
-logic, evidence requirements, and architectural alignment are all excellent.
-Fix the defects, and this ADR is ready for human proposal/defense review.
+ACTION ITEMS:
 
-ACTION ITEMS (RESOLVED — fixed in same evaluation session):
-1. [FIXED] OBPI-05 frontmatter: `item: 3` → `item: 5`
-2. [FIXED] OBPI-06 frontmatter: `item: 4` → `item: 6`
-3. [FIXED] OBPI-07 frontmatter: `item: 5` → `item: 7`
-4. [FIXED] OBPI-08 frontmatter: `item: 6` → `item: 8`
-5. [FIXED] OBPI-06 Denied Paths: stale OBPI-0.0.32-03/-05/-06 refs → OBPI-0.0.32-05/-07/-08
-6. [FIXED] OBPI-07 Denied Paths + Discovery: stale OBPI-0.0.32-04/-06 refs → OBPI-0.0.32-06/-08
-7. [FIXED] OBPI-08 Denied Paths + Discovery: stale OBPI-0.0.32-04/-05 refs → OBPI-0.0.32-06/-07
-8. [FIXED] OBPI-05 Denied Paths: stale OBPI-0.0.32-04/-05/-06 refs → OBPI-0.0.32-06/-07/-08
-9. [OPEN] Update ADR Q&A Transcript sequencing narrative from 6-item to 8-item OBPI scheme
-10. [OPEN] Add explicit "Non-Goals" section to ADR to elevate Scope Discipline to 4
+1. OBPI-02 brief — Mark OBPI-01 prerequisite SATISFIED in the Prerequisites
+   checklist (OBPI-01 is attested_completed per ledger). OBPI-02 is READY TO
+   START. Update the brief's Discovery Checklist > Prerequisites section to
+   reflect the cleared gate.
 
-Post-fix verdict: All five structural metadata defects resolved (items 1-8 above).
-Remaining open items (9-10) are advisory improvements; they do not block GO.
+2. OBPI-04, OBPI-10, OBPI-12 briefs — Add explicit "Ready to start when:
+   OBPI-[03/09/11] attested_completed" gate language to the Prerequisites
+   section. This makes the sequencing constraint operational (agents can check
+   the ledger state and self-gate) rather than implicit ("depends on XX landing
+   first"). The migrations (OBPI-03, OBPI-09, OBPI-11) can execute in parallel
+   immediately — each one unblocks its paired scaffolder.
 
-─── Post-Fix Verdict ───────────────────────────
+3. OBPI-14 brief — Document the dual dependency explicitly in the Prerequisites
+   section: (a) OBPI-02 attested_completed (importlib.resources resolution path
+   wired), AND (b) OBPI-06 attested_completed (wheel includes ship canonical
+   content). Both gates must clear before OBPI-14 implementation begins.
 
-[x] GO — All metadata defects resolved. ADR is ready for human proposal/defense review.
+4. Immediate execution priority (no brief changes needed before starting):
+   - OBPI-02: UNBLOCKED — begin now (OBPI-01 complete)
+   - OBPI-03, OBPI-09, OBPI-11, OBPI-13: UNBLOCKED — run in parallel
+   - OBPI-05, OBPI-06, OBPI-07: UNBLOCKED — run in parallel with migrations
+   These five parallel tracks (03/09/11/13 + 05/06/07) represent the bulk of
+   remaining ADR-0.0.32 implementation.
 
-ADR weighted total: 3.75/4.0 ≥ 3.0
-All OBPI averages ≥ 3.0
-No OBPI scores 1 on any dimension
+5. CONDITIONAL GO lifts to GO when: (a) all four brief updates above are
+   committed, AND (b) OBPI-02 has been started (confirming OBPI-01's unblocking).
+   No re-evaluation needed; the ADR quality is not in question.
+
+─── Red-Team (not invoked) ──────────────────────────────────────────────────────
+
+--red-team not requested. ADR-level GO verdict with 3.85/4.0 and thorough
+Alternatives Considered section (6 named alternatives, each explicitly rejected)
+does not indicate red-team is necessary at this evaluation point. If the ADR is
+proposed for human defense, a red-team pass is recommended before the defense
+session.

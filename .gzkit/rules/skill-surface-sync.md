@@ -9,13 +9,16 @@ paths:
 description: Version-disciplined editing and sync for skill and rule surfaces
 ---
 
-<!-- rule-version: 0.2.0 -->
+<!-- rule-version: 0.3.0 -->
 
 # Skill & Surface Sync (gzkit)
 
-> **Rule version:** `0.2.0` — bumped under GHI #307 to scope `skill-version`
-> frontmatter to skill files only and prescribe a body-level marker
-> convention for rule files. Prior unversioned content treated as `0.1.0`.
+> **Rule version:** `0.3.0` — bumped under OBPI-0.0.32-02 to canonize the
+> bootstrap-from-wheel semantics: `gz init` copies canonical SKILL.md content
+> from `importlib.resources.files("gzkit.skills")` into the adopter's
+> `.gzkit/skills/`, after which `.gzkit/` is the adopter's project canonical
+> source-of-truth. Prior `0.2.0` content (GHI #307 — body-level rule version
+> marker) preserved.
 
 ## Non-negotiable rules
 
@@ -79,6 +82,29 @@ Version is the primary signal (intentional semantic ordering). Commit hash is th
 - Do not edit `.claude/skills/` directly — edit `.gzkit/skills/` and sync
 - Do not manually copy skill files between surfaces — use the sync command
 - Do not skip sync because "both files look the same" — sync also updates manifests, registrations, and vendor-specific rendering
+
+## Bootstrap semantics (`gz init`)
+
+On first init in an adopter project, `gz init` populates
+`.gzkit/skills/<slug>/SKILL.md` by copying canonical content from the wheel's
+package surface (`importlib.resources.files("gzkit.skills")`). The package
+surface is the *one-time bootstrap source*: after init, the adopter's
+`.gzkit/skills/` is **the project canonical source-of-truth** for that
+project, and the "Edit `.gzkit/` first" rule binds from that point forward.
+
+Repair mode (re-running `gz init`) is idempotent: it adds new canonical
+slugs delivered by the installed gzkit version without overwriting
+operator-edited files (`skip_existing=True`). Use `--force` to wipe and
+re-copy every canonical SKILL.md from the wheel.
+
+`scaffold_core_skills` filters skills whose canonical SKILL.md declares
+`lifecycle_state: retired` — retired slugs are not re-introduced on `gz init`
+(hard cutover invariant, enforced by `tests/commands/test_skills.py::TestSkillCommands::test_init_scaffolds_adr_create_and_removes_adr_manager`).
+
+`gz init --update` (OBPI-0.0.32-05, not yet landed) will provide
+version-aware refresh semantics for the adopter's `.gzkit/<surface>/` from
+the wheel, with three-state IDENTICAL/STALE/EDITED detection so operator
+edits are preserved across gzkit upgrades.
 
 ## Rationale
 

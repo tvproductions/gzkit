@@ -50,6 +50,28 @@ Use `--force` only when you need a full reinitialize (rewrites config, re-scaffo
 
 ---
 
+## Skills Scaffolding
+
+As of OBPI-0.0.32-02, `gz init` copies canonical `SKILL.md` content from the
+wheel's package surface (`importlib.resources.files("gzkit.skills")`) into the
+project's `.gzkit/skills/<slug>/SKILL.md`. Every active canonical slug is
+scaffolded; entries whose canonical SKILL.md declares
+`lifecycle_state: retired` are skipped.
+
+Once written, `.gzkit/skills/` is the **project canonical source-of-truth** —
+the same editing invariant binds in every gzkit-or-adopter repo. Edit files
+under `.gzkit/skills/`; run `gz agent sync control-surfaces` to propagate to
+vendor mirrors (`.claude/skills/`, `.github/skills/`).
+
+Re-running `gz init` (repair mode) adds any new canonical skills delivered by
+the installed gzkit version without overwriting operator-edited files
+(`skip_existing=True` semantics).
+
+Use `--force` to wipe and re-copy all canonical SKILL.md content from the
+wheel's package surface (replaces any operator edits).
+
+---
+
 ## Project Skeleton
 
 By default, `gz init` creates a minimal Python project skeleton:

@@ -257,10 +257,15 @@ class TestSyncCommand(unittest.TestCase):
             self.assertIn("invalid choice", result.output.lower())
 
     def test_agent_sync_fails_closed_on_canonical_skill_corruption(self) -> None:
-        """Sync blocks mirror propagation when canonical SKILL metadata is invalid."""
+        """Sync blocks mirror propagation when canonical SKILL metadata is invalid.
+
+        Fixture skill moved from ``lint`` (retired in canonical 2026-04-03 →
+        filtered by scaffold_core_skills under OBPI-0.0.32-02) to
+        ``gz-status`` (active CORE_SKILLS slug).
+        """
         runner = CliRunner()
         with _InitFromTemplate():
-            Path(".gzkit/skills/lint/SKILL.md").write_text(
+            Path(".gzkit/skills/gz-status/SKILL.md").write_text(
                 "# SKILL.md\n\nbroken\n", encoding="utf-8"
             )
 
@@ -268,7 +273,7 @@ class TestSyncCommand(unittest.TestCase):
 
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("preflight failed", result.output.lower())
-            self.assertIn(".gzkit/skills/lint/SKILL.md", result.output)
+            self.assertIn(".gzkit/skills/gz-status/SKILL.md", result.output)
 
     def test_agent_sync_reports_stale_mirror_recovery_non_destructively(self) -> None:
         """Sync warns on stale mirror-only paths and preserves them for manual cleanup."""
