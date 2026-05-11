@@ -145,23 +145,27 @@ class _AdrEmitReceiptFixture(unittest.TestCase):
                     return_value=receipts_root_dir,
                 ),
             ]
+            import contextlib  # noqa: PLC0415
+            import io  # noqa: PLC0415
+
             for p in patches:
                 p.start()
             try:
                 exc_type: type[BaseException] | None = None
                 code: int | None = None
-                try:
-                    adr_emit_receipt_cmd(
-                        adr=adr_id,
-                        receipt_event=receipt_event,
-                        attestor="Jeffry Babb",
-                        evidence_json=json.dumps(evidence),
-                        dry_run=False,
-                        attestor_present=False,
-                    )
-                except SystemExit as exc:
-                    exc_type = SystemExit
-                    code = int(exc.code) if isinstance(exc.code, int) else 1
+                with contextlib.redirect_stdout(io.StringIO()):
+                    try:
+                        adr_emit_receipt_cmd(
+                            adr=adr_id,
+                            receipt_event=receipt_event,
+                            attestor="Jeffry Babb",
+                            evidence_json=json.dumps(evidence),
+                            dry_run=False,
+                            attestor_present=False,
+                        )
+                    except SystemExit as exc:
+                        exc_type = SystemExit
+                        code = int(exc.code) if isinstance(exc.code, int) else 1
             finally:
                 for p in patches:
                     p.stop()

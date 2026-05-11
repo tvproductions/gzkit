@@ -403,6 +403,16 @@ class TestScaffoldCoreChores(unittest.TestCase):
 class TestMergeChoresRegistry(unittest.TestCase):
     """Tests for gzkit.chores.merge_chores_registry (REQ-0.0.21-05-04)."""
 
+    def setUp(self) -> None:
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
+        self._stdout_redirect = contextlib.redirect_stdout(io.StringIO())
+        self._stdout_redirect.__enter__()
+
+    def tearDown(self) -> None:
+        self._stdout_redirect.__exit__(None, None, None)
+
     def _seed_local_registry(
         self,
         project_root: Path,

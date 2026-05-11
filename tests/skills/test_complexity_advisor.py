@@ -210,10 +210,16 @@ class TestVerbResolution(unittest.TestCase):
 
     @covers("REQ-0.0.29-04-05")
     def test_declared_verb_resolves_in_live_argparse_parser(self) -> None:
+        import contextlib
+        import io
+
         from gzkit.cli.main import _build_parser
 
         parser = _build_parser()
-        with self.assertRaises(SystemExit) as captured:
+        with (
+            contextlib.redirect_stdout(io.StringIO()),
+            self.assertRaises(SystemExit) as captured,
+        ):
             parser.parse_args(["complexity", "advise", "--help"])
         self.assertEqual(
             captured.exception.code,
