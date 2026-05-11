@@ -190,6 +190,18 @@ grep -q "preference leakage" docs/user/manpages/gz-validate.md
 grep -q "judge-leakage" docs/user/runbook.md
 ```
 
+## Demo
+
+<!-- THE YIELDED PRODUCT, not housekeeping. Concrete, runnable invocations
+     that demonstrate the capability this OBPI delivers. The closeout
+     ceremony walkthrough harvests this section (parser-validated;
+     unregistered verbs are dropped). Prefer real paths and arguments
+     over `<placeholder>` syntax. `--help` is not a demo. -->
+
+```bash
+# Replace with concrete product demonstrations for this OBPI.
+```
+
 ## Acceptance Criteria
 
 <!--

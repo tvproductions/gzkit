@@ -88,6 +88,18 @@ uv run gz test
 uv run gz arb step --name unittest -- uv run -m unittest tests/commands/test_obpi_complete_prefill.py tests/commands/test_adr_emit_receipt_prefill.py tests/attestation/test_prefill_builder.py -v
 ```
 
+## Demo
+
+<!-- THE YIELDED PRODUCT, not housekeeping. Concrete, runnable invocations
+     that demonstrate the capability this OBPI delivers. The closeout
+     ceremony walkthrough harvests this section (parser-validated;
+     unregistered verbs are dropped). Prefer real paths and arguments
+     over `<placeholder>` syntax. `--help` is not a demo. -->
+
+```bash
+# Replace with concrete product demonstrations for this OBPI.
+```
+
 ## Acceptance Criteria
 
 - [ ] REQ-0.45.0-02-01: Given `gz obpi complete <ID>` without `--attestation-text`, when invoked, then `$EDITOR` opens with the canonical scaffold (em-dash separator, receipt-citation slot template).

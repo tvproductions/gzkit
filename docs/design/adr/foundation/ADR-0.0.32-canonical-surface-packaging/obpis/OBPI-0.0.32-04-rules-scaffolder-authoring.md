@@ -143,6 +143,18 @@ python -c "from gzkit.rules import CORE_RULES, scaffold_core_rules, _iter_canoni
 mkdir /tmp/gz-rules-scaffold-smoke && cd /tmp/gz-rules-scaffold-smoke && uv run gz init && ls .gzkit/rules/ | wc -l   # expect 14
 ```
 
+## Demo
+
+<!-- THE YIELDED PRODUCT, not housekeeping. Concrete, runnable invocations
+     that demonstrate the capability this OBPI delivers. The closeout
+     ceremony walkthrough harvests this section (parser-validated;
+     unregistered verbs are dropped). Prefer real paths and arguments
+     over `<placeholder>` syntax. `--help` is not a demo. -->
+
+```bash
+# Replace with concrete product demonstrations for this OBPI.
+```
+
 ## Acceptance Criteria
 
 - [ ] REQ-0.0.32-04-01: `CORE_RULES` registry exists in `src/gzkit/rules/__init__.py`; enumerates all 14 canonical slugs

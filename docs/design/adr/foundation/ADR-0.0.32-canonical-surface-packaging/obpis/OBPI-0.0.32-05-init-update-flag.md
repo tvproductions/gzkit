@@ -146,6 +146,18 @@ uv run -m behave features/init.feature --tags=@REQ-0.0.32-05-02
 uv run -m behave features/init.feature --tags=@REQ-0.0.32-05-03
 ```
 
+## Demo
+
+<!-- THE YIELDED PRODUCT, not housekeeping. Concrete, runnable invocations
+     that demonstrate the capability this OBPI delivers. The closeout
+     ceremony walkthrough harvests this section (parser-validated;
+     unregistered verbs are dropped). Prefer real paths and arguments
+     over `<placeholder>` syntax. `--help` is not a demo. -->
+
+```bash
+# Replace with concrete product demonstrations for this OBPI.
+```
+
 ## Acceptance Criteria
 
 - [ ] REQ-0.0.32-05-01: `gz init --update` exists as a documented flag and is mutually exclusive with `--force`

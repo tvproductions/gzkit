@@ -91,6 +91,18 @@ uv run gz arb step --name unittest -- uv run -m unittest tests/governance/test_m
 uv run gz validate --manpage-examples
 ```
 
+## Demo
+
+<!-- THE YIELDED PRODUCT, not housekeeping. Concrete, runnable invocations
+     that demonstrate the capability this OBPI delivers. The closeout
+     ceremony walkthrough harvests this section (parser-validated;
+     unregistered verbs are dropped). Prefer real paths and arguments
+     over `<placeholder>` syntax. `--help` is not a demo. -->
+
+```bash
+# Replace with concrete product demonstrations for this OBPI.
+```
+
 ## Acceptance Criteria
 
 - [ ] REQ-0.46.0-02-01: Given a manpage with a bound EXAMPLES block whose content hash matches the receipt's captured-stdout hash, when `gz validate --manpage-examples` runs, then exit 0.

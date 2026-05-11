@@ -191,6 +191,18 @@ uv run gz arb coverage run -m unittest discover -s tests -t .
 uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 ```
 
+## Demo
+
+<!-- THE YIELDED PRODUCT, not housekeeping. Concrete, runnable invocations
+     that demonstrate the capability this OBPI delivers. The closeout
+     ceremony walkthrough harvests this section (parser-validated;
+     unregistered verbs are dropped). Prefer real paths and arguments
+     over `<placeholder>` syntax. `--help` is not a demo. -->
+
+```bash
+# Replace with concrete product demonstrations for this OBPI.
+```
+
 ## Acceptance Criteria
 
 - [ ] **REQ-0.0.35-04-01:** Given the `gz validate` argparse surface, when `gz validate --help` is invoked, then `--kind-invariance` is listed with a one-line description.

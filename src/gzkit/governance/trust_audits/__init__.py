@@ -36,6 +36,7 @@ from gzkit.governance.trust_audits.attestation_receipts import (
 from gzkit.governance.trust_audits.briefs import (
     audit_behave_req_tags,
     audit_brief_cross_references,
+    audit_brief_demo_section,
     audit_brief_headings,
 )
 from gzkit.governance.trust_audits.chores import audit_chores_layout
@@ -104,6 +105,7 @@ __all__ = [
     "audit_attestation_receipts",
     "audit_behave_req_tags",
     "audit_brief_cross_references",
+    "audit_brief_demo_section",
     "audit_brief_headings",
     "audit_chores_layout",
     "audit_class_size",

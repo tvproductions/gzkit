@@ -497,6 +497,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Brief OBPI/ADR identifier references must resolve on-disk (GHI #436)",
     )
     p_validate.add_argument(
+        "--brief-demo-section",
+        dest="check_brief_demo_section",
+        action="store_true",
+        help="Heavy-lane CLI-shipping briefs must carry a ## Demo H2 section (GHI #431)",
+    )
+    p_validate.add_argument(
         "--chores-layout",
         dest="check_chores_layout",
         action="store_true",
@@ -618,6 +624,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_taxonomy=a.check_taxonomy,
             check_brief_headings=a.check_brief_headings,
             check_brief_cross_references=a.check_brief_cross_references,
+            check_brief_demo_section=a.check_brief_demo_section,
             check_chores_layout=a.check_chores_layout,
             check_unscoped_rules=a.check_unscoped_rules or a.check_audits,
             unscoped_rules_allowlist_only=a.unscoped_rules_allowlist_only,
