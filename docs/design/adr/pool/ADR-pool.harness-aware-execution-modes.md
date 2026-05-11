@@ -37,12 +37,25 @@ truth for all governance decisions in both modes.
 
 1. Governance enforcement must be deterministic (von Neumann predictable).
 2. The LLM/agent writing code is inherently nondeterministic.
-3. Only lifecycle hooks (PreToolUse/PostToolUse) enforce determinism
-   *around* the nondeterministic actor — the agent cannot opt out.
-4. Only Claude Code has hooks; no cross-vendor standard exists for agent
-   lifecycle interception.
-5. Therefore gzkit must operate in two modes: one portable, one
-   fully-enforced.
+3. Only lifecycle hooks (PreToolUse/PostToolUse-style events) enforce
+   determinism *around* the nondeterministic actor — the agent cannot
+   opt out.
+4. Vendor harness lifecycle models are non-uniform. Claude Code exposes
+   the most complete event surface today (PreToolUse, PostToolUse,
+   SessionStart, Stop, Notification, etc.); Copilot exposes a different
+   event model with a single ledger-writer hook landed; Codex has the
+   `.agents/` namespace reserved but no hook scripts yet; OpenCode's
+   JS/TS plugin lifecycle (`tool.execute` before/after, `chat.message`,
+   `chat.system.transform`) is the closest non-Claude analog and is the
+   planned onboarding target. No cross-vendor standard exists for agent
+   lifecycle interception; even authoring a meta-layer contract that
+   abstracts across vendors is currently blocked by lifecycle-model
+   non-uniformity (rejected in § Alternatives Considered).
+5. Therefore gzkit must operate in two modes: one portable
+   (skill-chain-enforced; works on any harness reading AGENTS.md +
+   SKILL.md), one fully-enforced (hook-enforced; presently Claude Code,
+   with per-vendor specialization paths captured by the
+   `ADR-pool.vendor-alignment-*` per-vendor pool ADRs).
 
 ### The Cost Problem
 
@@ -67,21 +80,44 @@ surfaces only where they are irreplaceable.
   Microsoft, Cursor. Progressive disclosure, skill composition (skills
   invoking other skills and tools).
 
-### Vendor-specific surfaces (no standard, no convergence)
+### Vendor-specific surfaces (no standard, uneven coverage)
 
-- **Hooks** (PreToolUse/PostToolUse) — Claude Code only.
-- **Rules** (`.claude/rules/` with path-based loading) — Claude Code only;
-  Copilot has `.github/instructions/` but different semantics.
+- **Hooks** (lifecycle interception) — uneven multi-vendor coverage. Claude
+  Code has the most complete event surface (PreToolUse, PostToolUse,
+  SessionStart, Stop, Notification); Copilot has a single hook script
+  landed; Codex's namespace is reserved but unpopulated; OpenCode's
+  JS/TS plugin lifecycle is the planned onboarding target. No cross-
+  vendor lifecycle standard.
+- **Rules** (path-based loading) — Claude Code uses `.claude/rules/`;
+  Copilot uses `.github/instructions/` with different semantics;
+  OpenCode supports glob references via `opencode.json` `instructions`
+  field; Codex consumes through `.agents/` namespace.
 - **Subagent coordination** — every harness implements differently.
 
-### gzkit today
+### gzkit today (snapshot 2026-05-11)
 
-- 51 skills in `.claude/skills/` (mirrored to `.agents/skills/`)
-- 10 hooks in `.claude/hooks/` — all Claude Code-specific
+- ~70 skills in `.gzkit/skills/` (authored canonical, dual-surface with
+  `src/gzkit/skills/` for wheel-shipping per ADR-0.0.32, mirrored to
+  `.claude/skills/`, `.agents/skills/`, `.github/skills/`)
+- **Hooks by vendor** (uneven by design constraint, not by oversight):
+  - Claude Code: 12 scripts at `.claude/hooks/*.py` (ceremony-step-gate,
+    control-surface-sync, ghi-triage-chat-silence, instruction-router,
+    ledger-writer, obpi-completion-validator, pipeline-completion-reminder,
+    pipeline-gate, pipeline-router, plan-audit-gate, post-edit-ruff,
+    session-staleness-check)
+  - Copilot: 1 script at `.github/copilot/hooks/ledger-writer.py` plus
+    `src/gzkit/hooks/copilot.py` adapter
+  - Codex: 0 scripts at `.agents/hooks/` (namespace reserved); no
+    `src/gzkit/hooks/codex.py` adapter yet
+  - OpenCode: not yet onboarded — drafted at
+    `ADR-pool.vendor-alignment-opencode`
 - OBPI pipeline already uses skill-chain enforcement ("The Iron Law":
   every stage hard-chains to the next)
 - Pipeline is strictly sequential within a single OBPI — no subagent
   coordination required for core workflow
+- Vendor-harness-capability-surveillance chore tracked at GHI #451 —
+  recurring documentation + appraisal + parity-matrix maintenance across
+  all four supported harnesses
 
 ---
 
@@ -119,7 +155,7 @@ the skill chain entirely, violations are caught at the verify gate (time
 wasted) or at `gz git-sync` (which refuses to sync without evidence).
 Agent compliance is structurally encouraged, not mechanically guaranteed.
 
-### Mode 2 — Full Enforcement (Claude Code)
+### Mode 2 — Full Enforcement (vendor-specific hooks)
 
 Everything in Mode 1, plus hooks that mechanically guarantee what Mode 1
 can only structurally encourage.
@@ -128,7 +164,21 @@ can only structurally encourage.
 agent cannot opt out — the harness runs the hook whether the agent
 cooperates or not.
 
-**Key additions over Mode 1:**
+**Today** Mode 2 is **fully realized on Claude Code** (12 hook scripts
+covering pipeline gating, completion validation, ledger writes, format-
+on-save, path-scoped instruction routing, chat-silence enforcement for
+GHI triage, etc.). Mode 2 on Copilot is **partial** (1 ledger-writer
+script landed; broader event coverage requires Copilot's event model
+to expose additional lifecycle hooks gzkit can adapt). Mode 2 on Codex
+and OpenCode is **planned but unrealized** today — Codex namespace is
+reserved; OpenCode's `tool.execute` plugin lifecycle is the planned
+target per `ADR-pool.vendor-alignment-opencode`. Each vendor's Mode-2
+shape is captured in its `ADR-pool.vendor-alignment-<vendor>` pool ADR
+and tracked against the parity matrix authored by the recurring
+surveillance chore (GHI #451).
+
+**Key additions over Mode 1 (Claude Code today; per-vendor-equivalent
+when the per-vendor pool ADRs promote):**
 - `pipeline-gate.py` — blocks `src/` and `tests/` writes before pipeline
   is active (real-time write gating)
 - `obpi-completion-validator.py` — blocks premature completion claims
@@ -139,11 +189,13 @@ cooperates or not.
 - `pipeline-router.py` — routes agent to pipeline after plan approval
 - `pipeline-completion-reminder.py` — warns before premature git commit
 
-**Agent compliance is mechanically guaranteed.** The difference from
-Mode 1 is not *what* gets enforced — the governance logic is identical
-Python — but *who initiates enforcement*. In Mode 1, the skill pipeline
-initiates. In Mode 2, hooks guarantee it even if the agent goes
-off-script.
+**Agent compliance is mechanically guaranteed (on Mode-2-capable
+vendors).** The difference from Mode 1 is not *what* gets enforced — the
+governance logic is identical Python — but *who initiates enforcement*.
+In Mode 1, the skill pipeline initiates. In Mode 2, hooks guarantee it
+even if the agent goes off-script. The set of vendors that can run
+Mode 2 grows as their per-vendor specialization ADRs promote and as the
+surveillance chore detects new vendor-side lifecycle capabilities.
 
 ### Harness Detection
 
@@ -164,6 +216,52 @@ Skills that differ between modes include conditional sections:
 - Mode 2: skill omits token ceremony (hooks handle enforcement
   mechanically)
 - Shared: all `gz` CLI calls, verification commands, evidence presentation
+
+---
+
+## Alternatives Considered
+
+**A. Author a vendor-neutral hook meta-layer contract now (don't wait for
+vendor convergence).** Rejected: any contract authored today reduces to
+"the union of every vendor's lifecycle events plus per-vendor translation
+tables," which is approximately the shape gzkit already has at the
+`src/gzkit/hooks/<vendor>.py` adapter level. The meta-layer would add
+ceremony without removing the underlying vendor coupling — each adapter
+would still have to encode the vendor-specific lifecycle semantics that
+the meta-layer pretends to abstract. The right shape is Mode 1 + Mode 2
+(this ADR) with per-vendor specialization (`ADR-pool.vendor-alignment-*`),
+not a leaky meta-abstraction.
+
+**B. Lowest-common-denominator hook abstraction across all vendors.**
+Rejected: would collapse Claude's rich PreToolUse signature to a thin
+event that also fits Copilot's event model AND Codex's lifecycle AND
+OpenCode's `tool.execute`. The resulting abstraction would be too thin
+to express the hook intent gzkit actually needs (block writes when
+pipeline inactive, validate completion claims against ledger evidence,
+deterministic format-on-save). LCD abstractions silently degrade Mode-2
+assurance into Mode-1 assurance for the most-capable vendor; that
+trade is the inverse of what this ADR's two-mode design provides.
+
+**C. Single-runtime architectural rework that eliminates the multi-vendor
+problem.** Rejected for now — gzkit's value depends on running across
+multiple vendor harnesses (operators choose their tools). A single-runtime
+model would be a different product. May reconsider if a specific vendor
+emerges as the de-facto standard and the operator population converges,
+but that's not the current trajectory.
+
+**Triggers that would re-open hook-meta-layer authoring:**
+
+- Cross-vendor hook standard emergence (at least two of {Claude, Codex,
+  Copilot, OpenCode} publish convergent lifecycle specs)
+- gzkit acquiring concrete portability invariant that justifies a
+  gzkit-internal abstraction layer despite the per-vendor shims underneath
+- Single-runtime architectural rework that absorbs the multi-vendor
+  problem (see Alternative C)
+
+Until then, the two-mode + per-vendor-specialization shape this ADR
+captures is the right design. The vendor-harness-capability-surveillance
+chore (GHI #451) keeps the per-vendor coverage status visible without
+forcing premature meta-layer abstraction.
 
 ---
 
