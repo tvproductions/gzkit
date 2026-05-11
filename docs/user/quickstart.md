@@ -7,6 +7,10 @@ use and **skills** (`/gz-<name>`) for Claude Code sessions. Skills carry
 interview logic, forcing functions, and governance validation that raw CLI
 commands do not — use them when they exist.
 
+> **First-time operators:** this Quickstart is a tutorial through a single
+> ADR cycle. The named-stages reference for the empty-repo → first-attested-release
+> journey lives at [Runbook → Loop 0](runbook.md#loop-0-first-time-operator-empty-repo-first-attested-release).
+
 ---
 
 ## 1. Initialize
@@ -131,6 +135,7 @@ using the appropriate template.
 
 ## Next
 
+- [Runbook → Loop 0 (first-time operator)](runbook.md#loop-0-first-time-operator-empty-repo-first-attested-release)
 - [Runbook](runbook.md)
 - [Skills](skills/index.md)
 - [Lifecycle](concepts/lifecycle.md)
