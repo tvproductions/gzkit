@@ -1,0 +1,138 @@
+---
+id: chores
+paths:
+  - "src/gzkit/chores/**"
+  - ".gzkit/chores/**"
+description: Chores workflow command sequences, two-surface layout, and evidence patterns
+---
+
+<!-- rule-version: 0.2.0 -->
+
+# Chores Workflow (gzkit)
+
+> **Rule version:** `0.2.0` — bumped under OBPI-0.0.21-06 to capture the
+> two-surface layout, project-first → package-fallback resolution, and the
+> `--explain` / `doctor` / `--chores-layout` surfaces. Prior unversioned
+> content treated as `0.1.0`.
+
+> **Purpose:** Enable agents to run repository chores effectively with clear,
+> repeatable command sequences, aligned to gzkit guardrails and the two-surface
+> layout introduced by ADR-0.0.21.
+
+## Two-Surface Layout (ADR-0.0.21)
+
+Chores live in two coordinated surfaces:
+
+| Surface | Path | Role | Shipped in wheel? |
+|---------|------|------|-------------------|
+| Canonical (package) | `src/gzkit/chores/<slug>/` | Authoritative templates discoverable via `importlib.resources("gzkit.chores")` | Yes |
+| Project overlay | `.gzkit/chores/<slug>/` | Project-local copies + execution evidence (`proofs/`) | No |
+
+**Resolution order (project-first → package-fallback):** `gz chores` resolves
+each slug from `<project_root>/.gzkit/chores/<slug>/` first; if the project-local
+directory is absent or incomplete, it falls back to the package resource. The
+registry file (`registry.json`) follows the same order. `gz chores list --explain`
+prints one row per chore labeling the resolution source as `project`, `package`,
+or `missing` (REQ-0.0.21-04-04).
+
+`proofs/` is **always project-local, never canonical** — execution evidence is
+generated at run time and written under `.gzkit/chores/<slug>/proofs/`. Canonical
+templates do not ship `proofs/` content.
+
+## Core Principles
+
+| Principle           | Description                                     |
+| ------------------- | ----------------------------------------------- |
+| **Plan-first**      | Generate or refresh a chore plan before any run |
+| **Lite by default** | Run `uv run -m unittest -q` (unit tier only); no `behave`, no network, no external services. Duration ceilings are a test-infra contract (see `.gzkit/rules/tests.md` § Smoke/BVT) — not an agent-introspected clock. |
+| **Small diffs**     | Touch only files in scope for the chore         |
+| **CLI evidence**    | Never use raw SQL for attestation               |
+| **Layout discipline** | Stray `CHORE.md` or `acceptance.json` outside the two canonical roots is a defect — `gz validate --chores-layout` enforces it (REQ-0.0.21-08-04). |
+
+## Command Sequences
+
+### 1. Discover Chores
+
+```bash
+uv run gz chores list                  # List declared chores
+uv run gz chores list --explain        # Show resolution source per chore (project/package/missing)
+uv run gz chores show <chore_slug>     # Display CHORE.md for one chore
+```
+
+### 2. Plan & Advise
+
+```bash
+uv run gz chores plan <chore_slug> --replace
+uv run gz chores advise <chore_slug>
+```
+
+### 3. Apply Advice
+
+1. **Read advice** — Identify discrete actions
+2. **Create TODO list** — Exactly one item in-progress at a time
+3. **Implement surgically** — Minimal diffs, preserve behavior
+4. **Validate locally** — Lint, typecheck, tests
+5. **Sync if green** — Commit/push after validation passes
+
+```bash
+uv run ruff check . --fix && uv run ruff format .
+uvx ty check . --exclude 'features/**'
+uv run -m unittest -q
+```
+
+### 4. Execute and Audit
+
+```bash
+uv run gz chores run <chore_slug>      # Execute one chore by slug; logs to .gzkit/chores/<slug>/proofs/
+uv run gz chores audit --all           # Audit log presence for all chores
+```
+
+### 5. Health and Layout
+
+```bash
+uv run gz chores doctor                 # Repair missing canonical files in .gzkit/chores/ from package
+uv run gz chores doctor --dry-run       # Report-only; no file changes
+uv run gz chores doctor --json          # One JSON record per slug (slug, before_status, after_status)
+uv run gz validate --chores-layout      # Fail closed (exit 3) on stray CHORE.md or acceptance.json
+```
+
+`doctor` never touches `proofs/` content (REQ-0.0.21-09-05) and never modifies
+project-local-only slugs (REQ-0.0.21-09-06).
+
+## Evidence & Attestation
+
+### Correct Evidence (CLI commands only)
+
+```bash
+uv run gz gates
+uv run behave features/<feature>.feature --tags=@schema
+```
+
+### Prohibited Evidence
+
+- Raw SQL statements
+- Direct DB queries for attestation
+- Bypassing CLI interface
+
+## Authoring a New Chore
+
+Canonical chore packages live in `src/gzkit/chores/<slug>/` (shipped in the
+wheel). Project-specific overrides go in `.gzkit/chores/<slug>/`. Each slug
+directory contains:
+
+| File | Purpose | Required |
+|------|---------|----------|
+| `CHORE.md` | Definition, workflow, acceptance criteria | Yes |
+| `acceptance.json` | Machine-readable criteria for automation | Yes |
+| `README.md` | Human-readable summary | Yes |
+| `proofs/` | Project-local execution evidence (never canonical) | Yes (project-local) |
+
+The full agent contract for authoring chores lives at
+[`src/gzkit/chores/README.md`](../../src/gzkit/chores/README.md).
+
+## Related
+
+- ADR-0.0.21 — `docs/design/adr/foundation/ADR-0.0.21-chores-as-gzkit-surface/`
+- Manpage — `docs/user/manpages/gz-chores.md`
+- Runbook — `docs/user/runbook.md` § Chores Commands
+- Skill — `.gzkit/skills/gz-chore-runner/`

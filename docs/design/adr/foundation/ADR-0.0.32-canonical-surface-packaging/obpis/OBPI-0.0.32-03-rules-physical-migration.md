@@ -3,7 +3,7 @@ id: OBPI-0.0.32-03-rules-physical-migration
 parent: ADR-0.0.32-canonical-surface-packaging
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.32-03-rules-physical-migration: Rules Physical Migration
@@ -213,20 +213,39 @@ The wheel does not yet ship the package surface (OBPI-06), no scaffolder yet exi
 
 ### Key Proof
 
+
 ```bash
-ls .gzkit/rules/*.md | wc -l       # Expected: 14 (authored canonical, retained)
-ls src/gzkit/rules/*.md | wc -l    # Expected: 14 (byte-equivalent package copy)
-diff -r .gzkit/rules/ src/gzkit/rules/ --exclude=__init__.py --exclude=__pycache__
-# Expected: no diff
+$ ls .gzkit/rules/*.md | wc -l && ls src/gzkit/rules/*.md | wc -l
+20
+20
+$ diff -r .gzkit/rules/ src/gzkit/rules/ --exclude=__init__.py --exclude=__pycache__ --exclude='*.json'
+(no output — byte-parity holds across all 20 .md files)
+$ test ! -f src/gzkit/rules.py && test -f src/gzkit/rules/__init__.py && echo OK
+OK
+$ uv run -m unittest tests.test_rules.TestRulesLayoutDualSurface tests.test_rules.TestRulesLayoutScopeGuards -v
+Ran 10 tests in 0.001s — OK   (5 dual-surface + 5 scope-guards, all 8 REQs covered)
+$ uv run gz covers OBPI-0.0.32-03-rules-physical-migration --json --output /tmp/covers.json
+# summary in /tmp/covers.json: total_reqs=8, covered_reqs=8, uncovered_reqs=0, coverage_percent=100.0
 ```
+
+ARB receipts attesting Stage 3 quality gates:
+- ruff: `arb-ruff-611394785e30440796fcf8cdff1f253a`
+- typecheck: `arb-step-typecheck-79109bd55c004b5cbcf5a515498a856a`
+- unittest (test_rules scope): `arb-step-unittest-d348bbc45dfd49d0bb8b789429cd0a0b`
+- mkdocs --strict: `arb-step-mkdocs-8ed8fc3038bc46e99a894b3e7126087f`
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `src/gzkit/rules/__init__.py` (via `git mv` from `src/gzkit/rules.py`, git history preserved); `src/gzkit/rules/<20 .md files>` (via `cp` from `.gzkit/rules/`, byte-identical to canonical authored source).
+- Files modified: `tests/test_rules.py` (added `TestRulesLayoutDualSurface` 5 tests for REQ-01/02/03 and `TestRulesLayoutScopeGuards` 5 tests for REQ-04/05/06/07/08 — 100% REQ coverage); `data/behave_coverage_waivers.json` (registered OBPI-0.0.32-03 under the existing `adr-0.0.32-bdd-deferred-to-obpi-06` rationale); `data/security_surfaces.json` (removed `src/gzkit/rules.py` entry from `deserialization_user_input` per operator decision: scanner toolchain not yet built, so registry gating is premature — tracked at GHI #455).
+- Tests added: 10 regression tests with @covers tags for all 8 REQs. Dual-surface byte-parity + package-conversion (REQ-01/02/03) + negative-scope guards for OBPI-04 deferred work (REQ-04: no CORE_RULES/scaffold_core_rules) + REQ-05 (init_cmd unchanged) + REQ-06 (pyproject unchanged) + REQ-07 (agent-sync unchanged) + REQ-08 (import surface healthy).
+- Stale brief metadata: brief Discovery Checklist stated 14 files / 563 lines; actual on-disk state is 20 files / 594 lines (6 rules added post-authoring). Approach unchanged; all 20 `.md` files migrated.
+- Auxiliary content decision: `.gzkit/rules/complexity-thresholds.json` NOT copied to `src/gzkit/rules/` — per brief STOP condition, auxiliary content's package-data shipping is OBPI-06's responsibility. Byte-parity test scoped to `*.md` per REQ-02.
+- Security registry decision (in-flight): `src/gzkit/rules.py` removed from `data/security_surfaces.json` `deserialization_user_input` category. Operator framing: the entry was gating completion on a scanner toolchain that doesn't exist yet (CANONICAL_STEP_COMMANDS["security"] = []); premature to gate. The deserialization-boundary nature of the rule loaders is real, but registry membership should follow scanner availability, not precede it. Re-registration belongs to whichever ADR promotes pool.agentic-security-review and actually fills the scanner slot.
+- Date completed: 2026-05-11
+- Attestation status: operator attestation received in Stage 4 ceremony (`attest completed`); attestation-type recorded as `agent-relayed-operator-attestation` via GHI #292 `--attestor-present` path.
+- Defects noted: GHI #454 (pre-existing audit failures in ADR-0.0.43 Draft OBPIs, unrelated). GHI #455 (registry-staleness-after-migration class — surfaced and partially resolved during this OBPI; rules entry removed per operator decision pending toolchain readiness).
 
 ## Tracked Defects
 
@@ -234,14 +253,14 @@ diff -r .gzkit/rules/ src/gzkit/rules/ --exclude=__init__.py --exclude=__pycache
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — operator confirmed acceptance during Stage 4 ceremony after reviewing dual-surface byte-parity (20 .md files), package conversion (rules.py → rules/__init__.py with git mv history preserved), 5 dual-surface regression tests green (TestRulesLayoutDualSurface), and canonical quality receipts (arb-ruff-fa00ca0687ab42109a5e77b1da404e43, arb-step-typecheck-79109bd55c004b5cbcf5a515498a856a, arb-step-unittest-8d300192300c47aaa71e6c60b8912722, arb-step-mkdocs-8ed8fc3038bc46e99a894b3e7126087f). Pre-existing audit failures in ADR-0.0.43 OBPIs (Draft) tracked at GHI #454, out-of-scope for OBPI-0.0.32-03.
+- Date: 2026-05-11
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-11
 
 **Evidence Hash:** -

@@ -153,13 +153,14 @@ done
 ```bash
 # List BCs (after OBPI-13 populates PRD § 2.2)
 uv run gz domain list
-uv run gz domain list --json | jq .
+uv run gz domain list --json --output /tmp/bcs.json  # then inspect with jq /tmp/bcs.json
 
 # Status check
 uv run gz domain status
 
 # Show one BC's cascade
-uv run gz domain show governance --json | jq '.bounded_context, .domain_model.aggregates'
+uv run gz domain show governance --json --output /tmp/gov.json
+# then: jq '.bounded_context, .domain_model.aggregates' /tmp/gov.json
 
 # Regenerate; idempotence check
 uv run gz domain regenerate

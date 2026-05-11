@@ -1,0 +1,41 @@
+---
+id: tool-skill-runbook-alignment
+paths:
+  - "src/gzkit/commands/**"
+  - "src/gzkit/cli/**"
+  - ".gzkit/skills/**"
+description: Authoring invariants that keep CLI tools, skills, and runbooks aligned — drift between layers is a defect signal.
+---
+<!-- rule-version: 0.2.0 -->
+
+# Tool / Skill / Runbook Alignment
+
+> **Rule version:** `0.2.0` — lifted pedagogy, canonical violations, and enforcement details to rationale doc under GHI #327.
+
+gzkit's operator surface is a three-layer hierarchy: **tools** (CLI verbs), **skills** (operator-facing value chains composing tools toward an intent), and **runbooks** (documentation preserving operator intent across iteration). These three invariants are the mechanical test for layer alignment; apply them whenever you author or modify any of the three surfaces.
+
+## Invariants
+
+### Invariant 1 — Every CLI tool has at least one skill that wields it
+
+Every CLI verb registered in `src/gzkit/cli/` must be invoked by at least one skill under `.gzkit/skills/` — either via the skill's frontmatter `gz_command:` field or in the skill's body instructions. An orphaned tool (a live CLI verb with no skill pointing at it) is either dead code or hidden drift — either way, it is a defect signal.
+
+### Invariant 2 — Every skill's `gz_command` matches a runbook-prescribed tool for the same operator moment
+
+Every skill's declared `gz_command:` (frontmatter or body) must resolve to a CLI verb that the runbook prescribes for the same operator moment. If the skill name and its actual CLI target describe different operator moments — or if the skill invokes a verb the runbook does not prescribe for that moment — the skill is drifted from the runbook's preserved intent.
+
+### Invariant 3 — Destination verb's default output form must honor the routing skill's Output Contract
+
+When a skill's Output Contract declares a required rendering form ("table", "JSON", "tree", "plain text", etc.), the CLI verb in the skill's `gz_command` must produce that form as its default human-readable output. If the skill promises a table and the verb emits prose, the skill is drifted from its destination regardless of whether the verb name matches (Invariant 2). Invariant 3 closes the gap between "right verb routed" and "right rendering produced."
+
+## When to apply
+
+- **Authoring a new CLI verb** — confirm at least one skill will wield it before merging; author the skill in the same patch or file a follow-up GHI
+- **Renaming a CLI verb** — audit every referencing skill (frontmatter `gz_command:` + body invocations); update in same patch
+- **Authoring a new skill** — confirm `gz_command:` target matches the runbook-prescribed verb for that operator moment, and run the target once to verify output form matches Output Contract
+- **Renaming a skill** — confirm `gz_command:` still aligns with the new name's implied operator moment
+- **Re-routing a skill's `gz_command`** — run the new target and observe default output before committing; fix destination verb or skill contract if form disagrees
+- **Editing the runbook** — confirm prescribed verbs still match skill-layer routing; add missing skills or update prescriptions
+- **Editing a CLI verb's rendering** — check every skill whose `gz_command` points at that verb; preserve any Output Contract-declared form
+
+> See [`docs/governance/tool-skill-runbook-rationale.md`](../../docs/governance/tool-skill-runbook-rationale.md) for canonical violation examples, enforcement details, commit-message discipline, and rationale.

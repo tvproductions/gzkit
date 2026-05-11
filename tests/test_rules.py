@@ -632,3 +632,178 @@ class TestRegistryRuleIntegration(unittest.TestCase):
         fm = {"id": "test-rule"}  # missing paths and description
         errors = REGISTRY.validate_artifact("Rule", fm, "test.md")
         self.assertGreater(len(errors), 0)
+
+
+class TestRulesLayoutDualSurface(unittest.TestCase):
+    """Dual-surface invariant for OBPI-0.0.32-03: .gzkit/rules <-> src/gzkit/rules."""
+
+    def _repo_root(self) -> Path:
+        return Path(__file__).resolve().parent.parent
+
+    @covers("REQ-0.0.32-03-03")
+    def test_rules_py_does_not_exist(self) -> None:
+        rules_py = self._repo_root() / "src" / "gzkit" / "rules.py"
+        self.assertFalse(
+            rules_py.exists(),
+            f"src/gzkit/rules.py must not exist after OBPI-0.0.32-03 migration; found {rules_py}",
+        )
+
+    @covers("REQ-0.0.32-03-03")
+    def test_rules_init_exists(self) -> None:
+        init_py = self._repo_root() / "src" / "gzkit" / "rules" / "__init__.py"
+        self.assertTrue(
+            init_py.exists(),
+            f"src/gzkit/rules/__init__.py must exist after migration; missing {init_py}",
+        )
+
+    @covers("REQ-0.0.32-03-01")
+    def test_dual_surface_rule_count(self) -> None:
+        canonical = self._repo_root() / ".gzkit" / "rules"
+        package = self._repo_root() / "src" / "gzkit" / "rules"
+        canonical_count = len(list(canonical.glob("*.md")))
+        package_count = len(list(package.glob("*.md"))) if package.exists() else 0
+        self.assertGreater(canonical_count, 0, "Canonical .gzkit/rules has no .md files")
+        self.assertEqual(
+            canonical_count,
+            package_count,
+            f"Rule count mismatch: canonical={canonical_count}, package={package_count}",
+        )
+
+    @covers("REQ-0.0.32-03-02")
+    def test_dual_surface_byte_parity(self) -> None:
+        canonical = self._repo_root() / ".gzkit" / "rules"
+        package = self._repo_root() / "src" / "gzkit" / "rules"
+        canonical_slugs = {p.name for p in canonical.glob("*.md")}
+        package_slugs = {p.name for p in package.glob("*.md")} if package.exists() else set()
+        missing_in_package = canonical_slugs - package_slugs
+        extra_in_package = package_slugs - canonical_slugs
+        self.assertEqual(
+            missing_in_package,
+            set(),
+            f"Rules missing from package surface: {sorted(missing_in_package)}",
+        )
+        self.assertEqual(
+            extra_in_package, set(), f"Extra files in package surface: {sorted(extra_in_package)}"
+        )
+        for slug in sorted(canonical_slugs):
+            self.assertEqual(
+                (canonical / slug).read_bytes(),
+                (package / slug).read_bytes(),
+                f"Byte drift in {slug} between .gzkit/rules and src/gzkit/rules",
+            )
+
+    @covers("REQ-0.0.32-03-03")
+    def test_public_symbol_reexports_resolve(self) -> None:
+        from gzkit.rules import (  # noqa: PLC0415 — runtime check of import surface
+            CanonicalRule,
+            ClassifiedRule,
+            RuleFrontmatter,
+            _extract_body_after_frontmatter,
+            _extract_subtree_prefix,
+            _parse_canonical_frontmatter,
+            _parse_instruction_frontmatter,
+            classify_instruction_rules,
+            load_rule,
+            load_rules,
+            render_rule_for_claude,
+            render_rule_for_copilot,
+            render_rules_to_dir,
+            sync_claude_rules,
+            sync_nested_agents_md,
+            validate_rule_placement,
+        )
+
+        for symbol in (
+            CanonicalRule,
+            ClassifiedRule,
+            RuleFrontmatter,
+            _extract_body_after_frontmatter,
+            _extract_subtree_prefix,
+            _parse_canonical_frontmatter,
+            _parse_instruction_frontmatter,
+            classify_instruction_rules,
+            load_rule,
+            load_rules,
+            render_rule_for_claude,
+            render_rule_for_copilot,
+            render_rules_to_dir,
+            sync_claude_rules,
+            sync_nested_agents_md,
+            validate_rule_placement,
+        ):
+            self.assertIsNotNone(symbol)
+
+
+class TestRulesLayoutScopeGuards(unittest.TestCase):
+    """Negative-scope guards for OBPI-0.0.32-03 (REQ-04 through REQ-08)."""
+
+    def _repo_root(self) -> Path:
+        return Path(__file__).resolve().parent.parent
+
+    @covers("REQ-0.0.32-03-04")
+    def test_req04_no_core_rules_registry_in_init(self) -> None:
+        """REQ-04: no CORE_RULES/scaffold_core_rules/_iter_canonical_rule_slugs in __init__.py."""
+        init_py = self._repo_root() / "src" / "gzkit" / "rules" / "__init__.py"
+        body = init_py.read_text(encoding="utf-8")
+        for forbidden in ("CORE_RULES", "scaffold_core_rules", "_iter_canonical_rule_slugs"):
+            self.assertNotIn(
+                forbidden,
+                body,
+                f"REQ-04: {forbidden!r} present in {init_py}; OBPI-04 owns registry/scaffolder",
+            )
+
+    @covers("REQ-0.0.32-03-05")
+    def test_req05_init_cmd_has_no_rules_scaffolder_invocation(self) -> None:
+        """REQ-05: init_cmd.py has no scaffold_core_rules invocation."""
+        init_cmd = self._repo_root() / "src" / "gzkit" / "commands" / "init_cmd.py"
+        body = init_cmd.read_text(encoding="utf-8")
+        self.assertNotIn(
+            "scaffold_core_rules",
+            body,
+            "REQ-05: scaffold_core_rules referenced in init_cmd.py; OBPI-04 owns wiring",
+        )
+
+    @covers("REQ-0.0.32-03-06")
+    def test_req06_pyproject_has_no_rules_wheel_include(self) -> None:
+        """REQ-06: pyproject.toml not extended with rules wheel-include."""
+        pyproject = self._repo_root() / "pyproject.toml"
+        body = pyproject.read_text(encoding="utf-8")
+        self.assertNotIn(
+            "src/gzkit/rules/**/*.md",
+            body,
+            "REQ-06: wheel-include glob present; OBPI-06 owns wheel manifest",
+        )
+        self.assertNotIn(
+            "src/gzkit/rules/*.md",
+            body,
+            "REQ-06: wheel-include glob present; OBPI-06 owns wheel manifest",
+        )
+
+    @covers("REQ-0.0.32-03-07")
+    def test_req07_agent_sync_unchanged_for_rules(self) -> None:
+        """REQ-07: gz agent sync has no .gzkit/rules -> src/gzkit/rules propagation."""
+        candidates = [
+            self._repo_root() / "src" / "gzkit" / "sync_surfaces.py",
+            self._repo_root() / "src" / "gzkit" / "agent_sync.py",
+            self._repo_root() / "src" / "gzkit" / "commands" / "agent_cmd.py",
+        ]
+        for path in candidates:
+            if not path.exists():
+                continue
+            body = path.read_text(encoding="utf-8")
+            self.assertNotIn(
+                "src/gzkit/rules/",
+                body,
+                f"REQ-07: src/gzkit/rules/ referenced in {path}; OBPI-08 owns sync",
+            )
+
+    @covers("REQ-0.0.32-03-08")
+    def test_req08_rules_package_imports_resolve(self) -> None:
+        """REQ-08: post-migration import surface is healthy."""
+        import importlib  # noqa: PLC0415 — runtime import-resolution probe
+
+        module = importlib.import_module("gzkit.rules")
+        self.assertTrue(hasattr(module, "load_rules"))
+        self.assertTrue(hasattr(module, "RuleFrontmatter"))
+        self.assertTrue(hasattr(module, "sync_claude_rules"))
+        self.assertTrue(callable(module.load_rules))

@@ -1,0 +1,47 @@
+---
+id: adr-audit
+paths:
+  - "docs/design/adr/**"
+description: ADR audit verification procedures
+---
+
+# ADR Audit (gzkit)
+
+Purpose: verify ADR completion claims using reproducible evidence.
+
+## Audit sequence
+
+1. Verify linked OBPI evidence:
+
+```bash
+uv run gz adr audit-check ADR-<X.Y.Z>
+```
+
+2. Run quality checks:
+
+```bash
+uv run gz lint
+uv run gz test
+uv run gz typecheck
+uv run mkdocs build --strict
+```
+
+3. Run closeout/audit lifecycle in order:
+
+```bash
+uv run gz closeout ADR-<X.Y.Z> --dry-run
+uv run gz attest ADR-<X.Y.Z> --status completed
+uv run gz audit ADR-<X.Y.Z>
+```
+
+4. Emit audit receipt:
+
+```bash
+uv run gz adr emit-receipt ADR-<X.Y.Z> --event validated --attestor "<Human Name>" --evidence-json '{"scope":"ADR-<X.Y.Z>","date":"YYYY-MM-DD"}'
+```
+
+## Rules
+
+- Do not run `gz audit` before attestation.
+- If audit-check fails, diagnose whether the flagged REQ is (a) genuinely uncovered — author a REQ-derived test and decorate with `@covers(REQ-X.Y.Z-NN-MM)` — or (b) covered by a test whose assertion drifted from REQ semantics — re-derive the assertion per `.gzkit/rules/tests.md` § "Tests assert semantics, not strings" (Invariant 6f). Never backfill a cosmetic `@covers` decorator to silence audit-check without re-deriving the assertion.
+- Keep `docs/user/runbook.md` and `docs/governance/governance_runbook.md` aligned with runtime behavior.
