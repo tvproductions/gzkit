@@ -5549,3 +5549,5 @@
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.intent-stage-skill-composition","ts":"2026-05-11T00:40:58.822154+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.first-release-ceremony.md","ts":"2026-05-11T00:51:57.616836+00:00","path":"docs/design/adr/pool/ADR-pool.first-release-ceremony.md"}
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.first-release-ceremony","ts":"2026-05-11T00:52:01.238940+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.control-surface-rule-pair-conflict-audit.md","ts":"2026-05-11T01:29:03.154074+00:00","path":"docs/design/adr/pool/ADR-pool.control-surface-rule-pair-conflict-audit.md"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.control-surface-rule-pair-conflict-audit","ts":"2026-05-11T01:30:09.697109+00:00","parent":"PRD-GZKIT-1.0.0","lane":"lite"}
