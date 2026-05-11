@@ -5,10 +5,17 @@ OBPI-0.0.32-01-skills-physical-migration: verifies that every symbol in
 after the module-package conversion, and that the dual-surface layout
 (.gzkit/skills/ authored source plus src/gzkit/skills/ package copy)
 holds byte-parity.
+
+OBPI-0.0.32-02-skills-scaffolder-refactor: verifies that
+``_iter_canonical_skill_slugs`` enumerates all 70 canonical slugs and
+``scaffold_core_skills`` copies canonical SKILL.md content from the wheel's
+package surface rather than rendering stubs.
 """
 
 from __future__ import annotations
 
+import inspect
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -243,15 +250,186 @@ class TestPyprojectTomlUnchanged(unittest.TestCase):
 
 
 class TestSkillTemplatePreserved(unittest.TestCase):
-    """src/gzkit/templates/skill.md must still exist (deletion is OBPI-02's work)."""
+    """src/gzkit/templates/skill.md is retained (not deleted) with a repurposing comment."""
 
-    @covers("REQ-0.0.32-01-07")
+    @covers("REQ-0.0.32-02-03")
     def test_skill_template_still_exists(self) -> None:
         skill_template = _PROJECT_ROOT / "src" / "gzkit" / "templates" / "skill.md"
         self.assertTrue(
             skill_template.exists(),
-            f"skill.md template must still exist at {skill_template}",
+            f"skill.md template must be retained (not deleted) at {skill_template}",
         )
+
+    @covers("REQ-0.0.32-02-03")
+    def test_skill_template_has_repurposing_comment(self) -> None:
+        skill_template = _PROJECT_ROOT / "src" / "gzkit" / "templates" / "skill.md"
+        content = skill_template.read_text(encoding="utf-8")
+        self.assertIn(
+            "scaffold_skill",
+            content,
+            "skill.md must contain repurposing comment referencing scaffold_skill",
+        )
+
+
+class TestSkillsScaffolderRefactor(unittest.TestCase):
+    """OBPI-0.0.32-02: scaffold_core_skills copies from importlib.resources package surface."""
+
+    @covers("REQ-0.0.32-02-01")
+    def test_iter_canonical_skill_slugs_exists(self) -> None:
+        from gzkit.skills import _iter_canonical_skill_slugs
+
+        self.assertTrue(callable(_iter_canonical_skill_slugs))
+
+    @covers("REQ-0.0.32-02-01")
+    def test_iter_canonical_skill_slugs_count(self) -> None:
+        from gzkit.skills import _iter_canonical_skill_slugs
+
+        count = sum(1 for _ in _iter_canonical_skill_slugs())
+        self.assertGreaterEqual(
+            count,
+            70,
+            f"_iter_canonical_skill_slugs must yield >= 70 slugs, got {count}",
+        )
+
+    @covers("REQ-0.0.32-02-02")
+    def test_scaffold_core_skills_copies_canonical_content(self) -> None:
+        from gzkit.config import GzkitConfig
+        from gzkit.skills import scaffold_core_skills
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            config = GzkitConfig(mode="lite", project_name="test-project")  # type: ignore[arg-type]
+            created = scaffold_core_skills(project_root, config, skip_existing=False)
+            self.assertGreaterEqual(
+                len(created),
+                50,
+                f"scaffold_core_skills must produce >= 50 files, got {len(created)}",
+            )
+            for skill_path in created[:5]:
+                content = skill_path.read_text(encoding="utf-8")
+                self.assertTrue(
+                    content.startswith("---"),
+                    f"scaffolded {skill_path.name} must start with --- (got: {content[:40]!r})",
+                )
+
+    @covers("REQ-0.0.32-02-04")
+    def test_skip_existing_preserves_operator_edit(self) -> None:
+        from gzkit.config import GzkitConfig
+        from gzkit.skills import scaffold_core_skills
+
+        sentinel = "OPERATOR-EDIT-SENTINEL-OBPI-32-02"
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            config = GzkitConfig(mode="lite", project_name="test-project")  # type: ignore[arg-type]
+            created = scaffold_core_skills(project_root, config, skip_existing=False)
+            self.assertGreater(len(created), 0, "first scaffold must create files")
+            target = created[0]
+            target.write_text(sentinel, encoding="utf-8")
+            scaffold_core_skills(project_root, config, skip_existing=True)
+            self.assertEqual(
+                target.read_text(encoding="utf-8"),
+                sentinel,
+                "skip_existing=True must preserve operator-edited SKILL.md",
+            )
+
+    @covers("REQ-0.0.32-02-05")
+    def test_scaffold_core_skills_signature_stable(self) -> None:
+        from gzkit.skills import scaffold_core_skills
+
+        sig = inspect.signature(scaffold_core_skills)
+        params = list(sig.parameters.keys())
+        self.assertIn("project_root", params, "scaffold_core_skills must accept project_root")
+        self.assertIn("config", params, "scaffold_core_skills must accept config")
+        self.assertIn("skip_existing", params, "scaffold_core_skills must accept skip_existing")
+
+    @covers("REQ-0.0.32-02-06")
+    def test_scaffolded_content_is_canonical_not_stub(self) -> None:
+        from gzkit.config import GzkitConfig
+        from gzkit.skills import scaffold_core_skills
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            config = GzkitConfig(mode="lite", project_name="test-project")  # type: ignore[arg-type]
+            created = scaffold_core_skills(project_root, config, skip_existing=False)
+            for skill_path in created[:10]:
+                content = skill_path.read_text(encoding="utf-8")
+                lines = content.splitlines()
+                self.assertGreater(
+                    len(lines),
+                    5,
+                    f"{skill_path.name} has {len(lines)} lines; canonical must be > 5",
+                )
+                self.assertTrue(
+                    content.startswith("---"),
+                    f"{skill_path.name} must start with --- frontmatter marker",
+                )
+
+    @covers("REQ-0.0.32-02-07")
+    def test_skill_surface_sync_rule_documents_bootstrap_semantics(self) -> None:
+        rule_path = _PROJECT_ROOT / ".gzkit" / "rules" / "skill-surface-sync.md"
+        self.assertTrue(rule_path.exists(), f"canonical rule must exist at {rule_path}")
+        content = rule_path.read_text(encoding="utf-8")
+        self.assertIn(
+            "Edit `.gzkit/` first",
+            content,
+            "rule must re-affirm 'Edit `.gzkit/` first' canon",
+        )
+        self.assertIn(
+            "Bootstrap semantics",
+            content,
+            "rule must document bootstrap-from-wheel semantics for gz init",
+        )
+        self.assertIn(
+            'importlib.resources.files("gzkit.skills")',
+            content,
+            "rule must cite the package-surface resource path",
+        )
+
+    @covers("REQ-0.0.32-02-08")
+    def test_init_manpage_documents_skills_scaffolding(self) -> None:
+        manpage = _PROJECT_ROOT / "docs" / "user" / "manpages" / "init.md"
+        self.assertTrue(manpage.exists(), f"init manpage must exist at {manpage}")
+        content = manpage.read_text(encoding="utf-8")
+        self.assertIn(
+            "Skills Scaffolding",
+            content,
+            "init manpage must include a Skills Scaffolding section",
+        )
+        self.assertIn(
+            'importlib.resources.files("gzkit.skills")',
+            content,
+            "init manpage must document the package-surface copy behavior",
+        )
+
+    @covers("REQ-0.0.32-02-09")
+    def test_scaffold_core_skills_filters_retired_lifecycle(self) -> None:
+        """gz check exit 0 invariant — retired skills are filtered.
+
+        REQ-09 says ``uv run gz check`` MUST exit 0 after the refactor.
+        The brittle failure mode (retired skills re-introduced by scaffold)
+        is asserted directly here: the post-refactor ``scaffold_core_skills``
+        MUST filter ``lifecycle_state: retired`` slugs.  ``gz check`` running
+        green is the umbrella property; this test asserts the underlying
+        invariant whose violation would break gz check.
+        """
+        from gzkit.config import GzkitConfig
+        from gzkit.skills import scaffold_core_skills
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            config = GzkitConfig(mode="lite", project_name="test-project")  # type: ignore[arg-type]
+            created = scaffold_core_skills(project_root, config, skip_existing=False)
+            scaffolded_names = {p.parent.name for p in created}
+            self.assertNotIn(
+                "gz-adr-manager",
+                scaffolded_names,
+                "retired gz-adr-manager must not be scaffolded",
+            )
+            self.assertNotIn(
+                "lint",
+                scaffolded_names,
+                "retired lint must not be scaffolded",
+            )
 
 
 class TestGzCheckPasses(unittest.TestCase):

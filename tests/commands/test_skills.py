@@ -122,8 +122,12 @@ class TestSkillCommands(unittest.TestCase):
         with _InitFromTemplate():
             result = runner.invoke(main, ["skill", "list"])
             self.assertEqual(result.exit_code, 0)
-            # Should show core skills from init
-            self.assertIn("lint", result.output)
+            # Should show core skills from init.  Active-skill fixture moved
+            # from ``lint`` (retired in canonical 2026-04-03 → filtered by
+            # scaffold_core_skills under OBPI-0.0.32-02) to ``gz-status``;
+            # ``gz-adr-manager`` retired-and-not-scaffolded invariant is
+            # what this test actually encodes.
+            self.assertIn("gz-status", result.output)
             self.assertIn("gz-adr-create", result.output)
             self.assertNotIn("gz-adr-manager", result.output)
 
@@ -139,41 +143,43 @@ class TestSkillCommands(unittest.TestCase):
         skill_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     def test_skill_list_hides_retired_by_default(self) -> None:
-        """skill list matches AGENTS catalog semantics — retired skills hidden."""
+        """skill list matches AGENTS catalog semantics — retired skills hidden.
+
+        Fixture skill moved from ``lint`` (retired in canonical) to
+        ``gz-status`` under OBPI-0.0.32-02; the test asserts the
+        ``retired-then-hidden`` invariant, not anything ``lint``-specific.
+        """
         runner = CliRunner()
         with _InitFromTemplate():
-            self._mark_skill_retired("lint")
+            self._mark_skill_retired("gz-status")
             result = runner.invoke(main, ["skill", "list"])
             self.assertEqual(result.exit_code, 0)
-            # Assert the lint skill *row* is absent, not just any substring —
-            # other rows may legitimately mention "lint" in their description
-            # (e.g. git-sync mentions lint/test gates).
             json_result = runner.invoke(main, ["skill", "list", "--json"])
             self.assertEqual(json_result.exit_code, 0)
             names = [s["name"] for s in json.loads(json_result.output)["skills"]]
-            self.assertNotIn("lint", names)
+            self.assertNotIn("gz-status", names)
             self.assertIn("gz-adr-create", result.output)
 
     def test_skill_list_all_shows_retired_with_label(self) -> None:
         """skill list --all surfaces retired skills with an explicit label."""
         runner = CliRunner()
         with _InitFromTemplate():
-            self._mark_skill_retired("lint")
+            self._mark_skill_retired("gz-status")
             result = runner.invoke(main, ["skill", "list", "--all"])
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("lint", result.output)
+            self.assertIn("gz-status", result.output)
             self.assertIn("retired", result.output.lower())
 
     def test_skill_list_json_default_filters_retired(self) -> None:
         """skill list --json excludes retired skills by default."""
         runner = CliRunner()
         with _InitFromTemplate():
-            self._mark_skill_retired("lint")
+            self._mark_skill_retired("gz-status")
             result = runner.invoke(main, ["skill", "list", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             names = [s["name"] for s in payload["skills"]]
-            self.assertNotIn("lint", names)
+            self.assertNotIn("gz-status", names)
             self.assertIn("gz-adr-create", names)
             self.assertFalse(payload["include_retired"])
 
@@ -181,13 +187,13 @@ class TestSkillCommands(unittest.TestCase):
         """skill list --json --all includes every skill and its lifecycle_state."""
         runner = CliRunner()
         with _InitFromTemplate():
-            self._mark_skill_retired("lint")
+            self._mark_skill_retired("gz-status")
             result = runner.invoke(main, ["skill", "list", "--all", "--json"])
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             by_name = {s["name"]: s for s in payload["skills"]}
-            self.assertIn("lint", by_name)
-            self.assertEqual(by_name["lint"]["lifecycle_state"], "retired")
+            self.assertIn("gz-status", by_name)
+            self.assertEqual(by_name["gz-status"]["lifecycle_state"], "retired")
             self.assertEqual(by_name["gz-adr-create"]["lifecycle_state"], "active")
             self.assertTrue(payload["include_retired"])
 
@@ -292,11 +298,19 @@ class TestSkillCommands(unittest.TestCase):
             self.assertIn("positive integer", result.output.lower())
 
     def test_skill_audit_max_review_age_override_relaxes_stale_failure(self) -> None:
-        """Override can relax stale-review blocking checks when policy allows."""
+        """Override can relax stale-review blocking checks when policy allows.
+
+        Fixture skill changed from ``lint`` (retired in canonical 2026-04-03)
+        to ``gz-prd`` (active CORE_SKILLS slug present in all four mirror
+        surfaces) under OBPI-0.0.32-02 — ``scaffold_core_skills`` now reads
+        ``lifecycle_state`` from canonical SKILL.md and skips retired slugs,
+        making the prior ``lint`` fixture choice incidental rather than
+        invariant.
+        """
         runner = CliRunner()
         with _InitFromTemplate():
             stale_date = (date.today() - timedelta(days=120)).isoformat()
-            self._set_skill_last_reviewed_all_roots("lint", stale_date)
+            self._set_skill_last_reviewed_all_roots("gz-prd", stale_date)
 
             default_result = runner.invoke(main, ["skill", "audit"])
             self.assertNotEqual(default_result.exit_code, 0)

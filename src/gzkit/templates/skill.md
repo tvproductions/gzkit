@@ -1,3 +1,9 @@
+<!-- repurposing-note: This template is retained for scaffold_skill (custom
+     non-canonical skill creation). scaffold_core_skills no longer uses this
+     template as of OBPI-0.0.32-02 — it copies canonical SKILL.md content
+     directly from importlib.resources.files("gzkit.skills"). The residual
+     scaffold_skill dependency on this template is tracked for follow-up
+     cleanup in a separate GHI. -->
 ---
 name: {skill_slug}
 description: {skill_description}

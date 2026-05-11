@@ -3,8 +3,11 @@
 Skills are reusable agent instructions that can be triggered contextually.
 """
 
+import importlib.resources
+from collections.abc import Iterator
 from datetime import date
 from importlib.resources import files
+from importlib.resources.abc import Traversable
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +16,28 @@ from pydantic import BaseModel, ConfigDict
 from gzkit.config import GzkitConfig
 from gzkit.skill_contract import SKILL_DESCRIPTION_MAX_CHARS, SUPPORTED_SKILL_HARNESSES
 from gzkit.templates import render_template
+
+_CANONICAL_SKILLS_RESOURCE = "gzkit.skills"
+
+
+def _iter_canonical_skill_slugs() -> Iterator[Traversable]:
+    """Yield each canonical skill-slug directory shipped with the wheel.
+
+    Mirrors :func:`gzkit.chores._iter_canonical_chore_slugs`. Enumerates entries
+    under ``importlib.resources.files("gzkit.skills")``, skipping
+    ``__pycache__``-style entries and any directory without a ``SKILL.md``
+    file.
+    """
+    root = importlib.resources.files(_CANONICAL_SKILLS_RESOURCE)
+    for entry in root.iterdir():
+        if not entry.is_dir():
+            continue
+        if entry.name.startswith("__"):
+            continue
+        if not entry.joinpath("SKILL.md").is_file():
+            continue
+        yield entry
+
 
 # Core skills that are scaffolded by `gz init`.
 #
@@ -346,35 +371,49 @@ def scaffold_core_skills(
     *,
     skip_existing: bool = False,
 ) -> list[Path]:
-    """Scaffold all core skills.
+    """Scaffold all canonical skills into the project's skills directory.
+
+    Copies canonical ``SKILL.md`` content from the wheel's package surface
+    (``importlib.resources.files("gzkit.skills")``) into
+    ``<project_root>/<config.paths.skills>/<slug>/SKILL.md``. After this OBPI
+    (OBPI-0.0.32-02) the scaffolder no longer renders stubs through
+    ``templates/skill.md``; full canonical content is delivered byte-for-byte.
 
     Args:
         project_root: Project root directory.
-        config: Optional configuration.
-        skip_existing: When True, skip skills whose SKILL.md already exists.
-            Used by repair mode so upgraded gzkit versions deliver new skills
-            without overwriting user-modified existing ones.
+        config: Optional configuration; defaults to loading from
+            ``project_root / .gzkit.json``.
+        skip_existing: When True, skip any slug whose destination SKILL.md
+            already exists on disk. Used by repair mode so upgraded gzkit
+            versions deliver new canonical slugs without overwriting
+            operator-edited existing ones.
 
     Returns:
-        List of paths to created SKILL.md files.
+        List of paths to created ``SKILL.md`` files (one per scaffolded
+        slug). Empty list when every slug was skipped.
 
     """
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
 
-    created = []
-    for dir_name, kwargs in CORE_SKILLS.items():
-        if skip_existing:
-            existing = project_root / config.paths.skills / dir_name / "SKILL.md"
-            if existing.exists():
-                continue
-        skill_file = scaffold_skill(
-            project_root,
-            dir_name,
-            config.paths.skills,
-            **kwargs,
-        )
-        created.append(skill_file)
+    skills_dir = project_root / config.paths.skills
+    skills_dir.mkdir(parents=True, exist_ok=True)
+
+    created: list[Path] = []
+    for slug_resource in _iter_canonical_skill_slugs():
+        slug = slug_resource.name
+        target_dir = skills_dir / slug
+        target_file = target_dir / "SKILL.md"
+        if skip_existing and target_file.exists():
+            continue
+        skill_src = slug_resource.joinpath("SKILL.md")
+        content_bytes = skill_src.read_bytes()
+        frontmatter, _ = _parse_frontmatter(content_bytes.decode("utf-8"))
+        if (frontmatter.get("lifecycle_state") or "active") == "retired":
+            continue
+        target_dir.mkdir(parents=True, exist_ok=True)
+        target_file.write_bytes(content_bytes)
+        created.append(target_file)
 
     return created
 
