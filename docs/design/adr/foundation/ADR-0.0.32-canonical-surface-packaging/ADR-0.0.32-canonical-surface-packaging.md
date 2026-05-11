@@ -423,33 +423,55 @@ future context packages so portability never means hand-copied markdown.
 - Data/State: 2
 - Logic/Engine: 2
 - Interface: 2
-- Observability: 1
+- Observability: 2
 - Lineage: 2
-- Dimension Total: 9
-- Baseline Range: 4-5
-- Baseline Selected: 5
-- Split Single-Narrative: 2
-- Split Surface Boundary: 2
-- Split State Anchor: 2
-- Split Testability Ceiling: 2
-- Split Total: 8
-- Final Target OBPI Count: 13
+- Dimension Total: 10
+- Baseline Range: 5+
+- Baseline Selected: 10
+- Split Single-Narrative: 1
+- Split Surface Boundary: 1
+- Split State Anchor: 1
+- Split Testability Ceiling: 1
+- Split Total: 4
+- Final Target OBPI Count: 14
 
 <!--
 ORIGINAL scorecard (8 OBPIs, skills + rules + plumbing only):
-- Data/State: 1, Logic/Engine: 2, Interface: 2, Observability: 1, Lineage: 2 (Total: 8)
-- Baseline: 4, Split: 4 (Final: 8)
-EXPANDED 2026-05-11 to absorb personas + templates + chores normalization per
-operator's canonical-routing-binds-across-all-harness-surfaces clarification.
-Hooks remain a named exception (vendor-coupled, uneven multi-vendor
-coverage), tracked under the pre-existing pool-ADR framework
+  Data/State 1, Logic/Engine 2, Interface 2, Observability 1, Lineage 2 (Total 8)
+  Baseline 4, Splits 1/1/1/1 = 4 (Final 8)
+EXPANDED 2026-05-11 (8 → 13) to absorb personas + templates + chores
+normalization per operator's canonical-routing-binds-across-all-harness-surfaces
+clarification. Hooks remain a named exception (vendor-coupled, uneven
+multi-vendor coverage), tracked under the pre-existing pool-ADR framework
 (`ADR-pool.vendor-capability-matrix` + `ADR-pool.harness-aware-execution-modes` +
 per-vendor `ADR-pool.vendor-alignment-*` ADRs) plus the surveillance
-chore at GHI #451. Dimension bumps: Data/State 1→2
-(adds 3 more canonical-surface families), Split Surface Boundary 1→2 (per-surface
-atomicity), Split Single-Narrative 1→2 (three independent migration narratives),
-Split State Anchor 1→2 (each surface has its own ledger-state anchor), Split
-Testability Ceiling 1→2 (per-surface byte-parity test independence).
+chore at GHI #451. Dimension bump: Data/State 1→2 (adds 3 more
+canonical-surface families). Baseline Selected raised from 4 → 9 to absorb
+the per-surface atomicity (each canonical surface gets its own migration
+narrative, surface-boundary anchor, state-anchor in the ledger, and
+testability ceiling — those four splits are honored by Baseline expansion,
+keeping the binary split flags valid per scoring.py).
+EXPANDED 2026-05-11 (13 → 14) to absorb `gz upgrade` adopter-side
+surface-only refresh per GHI #450 — a CLI verb distinct from
+`gz init --update` (OBPI-05). `gz init --update` is the canonical
+project-refresh ceremony (all surfaces, version-aware diff/merge, manifest
+mutation); `gz upgrade` is the surface-only refresh (per-`--surface`
+filter, no scaffolder logic, no manifest mutation, optional `--force` and
+`--dry-run` flags). Dimension bump: Observability 1→2 (adds `--dry-run`
+reporting surface + idempotency exit-0 verification beyond OBPI-05's
+three-state detection). Baseline Selected 9 → 10 absorbs the
+surface-only-refresh narrative as distinct from the project-refresh
+ceremony.
+
+Scorecard parser contract (src/gzkit/core/scoring.py): split flags MUST
+be 0 or 1; dimensions MUST be 0, 1, or 2; Baseline Range derives from
+Dimension Total (≥9 → `5+`, open above); Final Target = Baseline Selected
++ Split Total. The original 2026-05-11 8 → 13 expansion encoded the
+splits as 2 each (Split Total 8), which violated the parser contract;
+this 13 → 14 expansion re-encoded the scorecard to a valid shape (splits
+1 each + Baseline Selected 10) while preserving the same Final Target
+arithmetic. The latent invalidity was discovered when `gz specify --item 14`
+triggered scorecard parsing during this same authoring pass.
 -->
 
 
@@ -474,6 +496,7 @@ Testability Ceiling 1→2 (per-surface byte-parity test independence).
 - [ ] OBPI-0.0.32-11: Templates reverse-migration — establish dual-surface for all 13+ canonical templates by REVERSE-migrating from the current single-surface location: `git mv src/gzkit/templates/*.md .gzkit/templates/*.md` to establish `.gzkit/templates/` as the new authored canonical source-of-truth; add byte-equivalent copy back at `src/gzkit/templates/*.md` for wheel-shipping; preserve `src/gzkit/templates/__init__.py` (Python package) and any non-`.md` adjuncts; existing `render_template()` consumers continue resolving through `gzkit.templates` package; byte-parity test fails closed on drift. This is a direction reversal from skills/rules/personas migrations because templates already live at the package surface today. Scaffolder + init wiring deferred to OBPI-12; sync mechanism deferred to OBPI-08.
 - [ ] OBPI-0.0.32-12: Templates scaffolder authoring — build `CORE_TEMPLATES` registry symmetric to `CORE_SKILLS`/`CORE_RULES`/`CORE_PERSONAS`/`CORE_CHORES`; author `scaffold_core_templates` that copies canonical template content from `importlib.resources.files("gzkit.templates")` (the wheel's package surface) into the adopter's `.gzkit/templates/<name>.md`; integrate with `init_cmd._scaffold_project_skeleton` (fresh init) and `_repair_missing_artifacts` (re-run repair); preserve `render_template()` resolution semantics so it consults the adopter's `.gzkit/templates/` project-first per the same project-first → package-fallback shape. Depends on OBPI-11 landing first.
 - [ ] OBPI-0.0.32-13: Chores normalization — apply the § Named exceptions / Exception 2 carve-out doctrine to the existing `.gzkit/chores/` ↔ `src/gzkit/chores/` parallel structure. Bring canonical authored content (`CHORE.md`, `AGENTS.md`, doctrine markdown, scoring rubrics) into byte-parity; codify exempt classes (package-only `__init__.py`/`__pycache__`/`README.md`-when-package-only; runtime-state `CHORE-LOG.md`/`proofs/<artifact>`/`.gitkeep`) in `.claude/rules/skill-surface-sync.md` as the carve-out rule reference; teach OBPI-08's sync mechanism the class-classifier so syncs never overwrite runtime-state and never propagate package-only files onto the canonical side; add byte-parity tests scoped to canonical content classes only.
+- [ ] OBPI-0.0.32-14: `gz upgrade` subcommand — adopter-side surface-only refresh of `.gzkit/<surface>/` from the installed wheel's package data via `importlib.resources.files("gzkit.<surface>")`, distinct from `gz init --update` (OBPI-05) which is the canonical project-refresh ceremony. Adds `--surface skills,rules,templates,personas,hooks` filter (comma-separated; default all), `--force` override for project-local edits (without `--force` the three-state IDENTICAL/STALE/EDITED detection from OBPI-05 reports conflicts; with `--force` overwrites), `--dry-run` reports what would change without writing. Works in a fresh `pip install py-gzkit` environment without requiring `gz init` to have been run first (bootstrap retrofit case). Idempotent: exits 0 when wheel content is already byte-identical to `.gzkit/`. Manpage at `docs/user/manpages/gz-upgrade.md`; behave coverage in `features/upgrade.feature`. Depends on OBPI-02 (scaffolder refactor wires `importlib.resources` resolution path) and OBPI-06 (wheel includes ship the canonical content) landing first.
 
 ## Q&A Transcript
 
@@ -580,6 +603,7 @@ Insights record at `.gzkit/insights/agent-insights.jsonl`
 - [ ] Smoke test: `features/distribution_invariant.feature` (build wheel → temp-venv install → `gz init` → byte-equivalence against `data/distribution_baseline_manifest.json` across all canonical surfaces)
 - [ ] Wheel manifest: `pyproject.toml [tool.hatch.build.targets.wheel] include:` extended for `src/gzkit/skills/**/*.md`, `src/gzkit/rules/**/*.md`, `src/gzkit/personas/**/*.md`, `src/gzkit/templates/**/*.md`, `src/gzkit/hooks/scripts/**` (hooks-as-Python-library, per § Named exceptions — not dual-surface), `src/gzkit/chores/**` (canonical content only per § Named exceptions Exception 2 carve-out)
 - [ ] CLI surface: `gz init --update` manpage at `docs/user/manpages/gz-init.md`; behave coverage in `features/init.feature`
+- [ ] CLI surface: `gz upgrade` manpage at `docs/user/manpages/gz-upgrade.md`; behave coverage in `features/upgrade.feature` (per OBPI-14 — adopter-side surface-only refresh distinct from `gz init --update`)
 - [ ] Validation surface: `gz validate --distribution` (or extended `--surfaces`) manpage + tests
 - [ ] Canonical surface sync: `gz agent sync control-surfaces` propagates `.gzkit/<surface>/` (authored canonical) to BOTH `src/gzkit/<surface>/` (wheel-shipping byte-parity copy) AND `.[vendor]/<surface>/` (`.claude/skills/`, `.claude/rules/`, `.github/skills/`, `.github/instructions/`); sync is idempotent (no-op on freshly-synced state); byte-parity test passes post-sync
 - [ ] Docs: `docs/governance/trust-doctrine.md` cross-link to T0 (authored by ADR-0.0.31); `docs/user/runbook.md` updated with `--update` workflow
