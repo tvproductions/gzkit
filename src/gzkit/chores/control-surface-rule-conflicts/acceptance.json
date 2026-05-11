@@ -17,6 +17,18 @@
       "command": "test -f .gzkit/chores/control-surface-rule-conflicts/proofs/summary.md",
       "expected": 0,
       "description": "Summary artifact present"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run python src/gzkit/chores/control-surface-rule-conflicts/check_evidence.py --self-test",
+      "expected": 0,
+      "description": "Evidence-gate parser self-test (deterministic, no network)"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run python src/gzkit/chores/control-surface-rule-conflicts/check_evidence.py --offline",
+      "expected": 0,
+      "description": "Conflict matrix conforms to ADR-pool.control-surface-rule-pair-conflict-audit § Audit-row schema (evidence column resolves)"
     }
   ]
 }
