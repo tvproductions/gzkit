@@ -21,6 +21,7 @@ from gzkit.governance.trust_audits import (
     audit_advisory_scorecard,
     audit_behave_req_tags,
     audit_brief_cross_references,
+    audit_brief_demo_section,
     audit_brief_headings,
     audit_class_size,
     audit_insights_shape,
@@ -338,6 +339,16 @@ class PromotedAdvisoryAudits(unittest.TestCase):
         text = scorecard.read_text(encoding="utf-8")
         self.assertIn("gz validate --brief-cross-references", text)
 
+    def test_brief_demo_section_ghi_431(self) -> None:
+        """GHI #431: live tree has no active heavy-lane CLI brief missing Demo."""
+        self._assert_clean(audit_brief_demo_section(_PROJECT_ROOT), "brief_demo_section")
+
+    def test_brief_demo_section_scorecard_entry_exists(self) -> None:
+        """GHI #431: advisory scorecard cites gz validate --brief-demo-section."""
+        scorecard = _PROJECT_ROOT / "docs" / "governance" / "advisory-rules-audit.md"
+        text = scorecard.read_text(encoding="utf-8")
+        self.assertIn("gz validate --brief-demo-section", text)
+
 
 class BriefHeadingsAuditNegativeCases(unittest.TestCase):
     """GHI #238: H2 evidence heading drift is flagged."""
@@ -524,6 +535,128 @@ class BriefCrossReferencesAuditNegativeCases(unittest.TestCase):
     def test_no_adr_dir_returns_empty(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             self.assertEqual(audit_brief_cross_references(Path(tmp)), [])
+
+
+class BriefDemoSectionAuditNegativeCases(unittest.TestCase):
+    """GHI #431: heavy-lane CLI-shipping briefs without ## Demo are flagged."""
+
+    @staticmethod
+    def _brief_dir(root: Path) -> Path:
+        path = root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.1-anchor" / "obpis"
+        path.mkdir(parents=True)
+        return path
+
+    @staticmethod
+    def _heavy_cli_brief_text(*, status: str = "Draft", with_demo: bool = False) -> str:
+        demo = "\n## Demo\n\n```bash\nuv run gz example --json\n```\n" if with_demo else ""
+        return (
+            "---\n"
+            "id: OBPI-0.0.1-01-driver\n"
+            "parent: ADR-0.0.1\n"
+            "item: 1\n"
+            "lane: Heavy\n"
+            f"status: {status}\n"
+            "---\n\n"
+            "# OBPI-0.0.1-01-driver\n\n"
+            "## Allowed Paths\n\n"
+            "- `src/gzkit/commands/example_cmd.py`\n"
+            "- `tests/commands/test_example_cmd.py`\n\n"
+            f"## Verification\n\n```bash\nuv run gz lint\n```\n{demo}\n"
+            "## Acceptance Criteria\n\n- REQ-0.0.1-01-01\n"
+        )
+
+    def test_heavy_cli_draft_without_demo_flagged(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief = self._brief_dir(root) / "OBPI-0.0.1-01-driver.md"
+            brief.write_text(self._heavy_cli_brief_text(status="Draft"), encoding="utf-8")
+            errors = audit_brief_demo_section(root)
+            self.assertEqual(len(errors), 1, msg=str(errors))
+            self.assertEqual(errors[0].type, "brief_demo_section")
+            self.assertIn("`## Demo`", errors[0].message)
+
+    def test_heavy_cli_in_progress_without_demo_flagged(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief = self._brief_dir(root) / "OBPI-0.0.1-01-driver.md"
+            brief.write_text(self._heavy_cli_brief_text(status="in_progress"), encoding="utf-8")
+            self.assertTrue(audit_brief_demo_section(root))
+
+    def test_heavy_cli_with_demo_clean(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief = self._brief_dir(root) / "OBPI-0.0.1-01-driver.md"
+            brief.write_text(
+                self._heavy_cli_brief_text(status="Draft", with_demo=True),
+                encoding="utf-8",
+            )
+            self.assertEqual(audit_brief_demo_section(root), [])
+
+    def test_completed_status_grandfathered(self) -> None:
+        """Terminal-status briefs predate the rule and are not re-audited."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief = self._brief_dir(root) / "OBPI-0.0.1-01-driver.md"
+            brief.write_text(
+                self._heavy_cli_brief_text(status="attested_completed"),
+                encoding="utf-8",
+            )
+            self.assertEqual(audit_brief_demo_section(root), [])
+
+    def test_pending_backlog_not_gated(self) -> None:
+        """Backlog (pending) briefs carry queued scope; gate fires when activated."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief = self._brief_dir(root) / "OBPI-0.0.1-01-driver.md"
+            brief.write_text(self._heavy_cli_brief_text(status="Pending"), encoding="utf-8")
+            self.assertEqual(audit_brief_demo_section(root), [])
+
+    def test_lite_lane_not_gated(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief = self._brief_dir(root) / "OBPI-0.0.1-01-driver.md"
+            text = self._heavy_cli_brief_text(status="Draft").replace("lane: Heavy", "lane: Lite")
+            brief.write_text(text, encoding="utf-8")
+            self.assertEqual(audit_brief_demo_section(root), [])
+
+    def test_no_cli_surface_not_gated(self) -> None:
+        """Heavy-lane brief without CLI surface in Allowed Paths is not gated."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief = self._brief_dir(root) / "OBPI-0.0.1-01-driver.md"
+            text = self._heavy_cli_brief_text(status="Draft").replace(
+                "- `src/gzkit/commands/example_cmd.py`",
+                "- `src/gzkit/governance/example.py`",
+            )
+            brief.write_text(text, encoding="utf-8")
+            self.assertEqual(audit_brief_demo_section(root), [])
+
+    def test_parser_artifacts_surface_gated(self) -> None:
+        """Allowed-paths touching parser_artifacts.py triggers the gate."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief = self._brief_dir(root) / "OBPI-0.0.1-01-driver.md"
+            text = self._heavy_cli_brief_text(status="Draft").replace(
+                "- `src/gzkit/commands/example_cmd.py`",
+                "- `src/gzkit/cli/parser_artifacts.py`",
+            )
+            brief.write_text(text, encoding="utf-8")
+            self.assertTrue(audit_brief_demo_section(root))
+
+    def test_skip_marker_suppresses(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief = self._brief_dir(root) / "OBPI-0.0.1-01-driver.md"
+            text = (
+                self._heavy_cli_brief_text(status="Draft").rstrip()
+                + "\n\n<!-- gz-validate-skip: brief-demo-section -->\n"
+            )
+            brief.write_text(text, encoding="utf-8")
+            self.assertEqual(audit_brief_demo_section(root), [])
+
+    def test_no_adr_dir_returns_empty(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(audit_brief_demo_section(Path(tmp)), [])
 
 
 def _write_adr(root: Path, rel_path: str, frontmatter: dict[str, str]) -> Path:

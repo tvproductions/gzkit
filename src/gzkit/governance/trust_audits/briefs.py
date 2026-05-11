@@ -5,6 +5,9 @@
   scenario tags under ``features/**`` fail closed (GHI #211 / GHI #276).
 * ``audit_brief_cross_references`` — bare ``OBPI-X.Y.Z-NN`` / ``ADR-X.Y.Z``
   identifiers in briefs must resolve to on-disk artifacts (GHI #436).
+* ``audit_brief_demo_section`` — heavy-lane CLI-shipping briefs must carry a
+  ``## Demo`` H2 section so the closeout walkthrough does not fall back to
+  ``--help`` (GHI #431).
 """
 
 from __future__ import annotations
@@ -24,7 +27,7 @@ _OBPI_ID_IN_FRONTMATTER = re.compile(
     re.MULTILINE,
 )
 _LANE_IN_FRONTMATTER = re.compile(r"^lane:\s*([A-Za-z]+)\s*$", re.MULTILINE)
-_STATUS_IN_FRONTMATTER = re.compile(r"^status:\s*([A-Za-z]+)\s*$", re.MULTILINE)
+_STATUS_IN_FRONTMATTER = re.compile(r"^status:\s*([A-Za-z][A-Za-z_]*)\s*$", re.MULTILINE)
 _ACCEPTANCE_SECTION = re.compile(
     r"^##\s+Acceptance Criteria\s*$(.*?)(?=^##\s+|\Z)",
     re.MULTILINE | re.DOTALL,
@@ -357,6 +360,137 @@ def audit_brief_cross_references(project_root: Path) -> list[ValidationError]:
     errors: list[ValidationError] = []
     for brief in sorted(brief_paths):
         errors.extend(_scan_brief_cross_references(brief, adr_versions, obpi_keys, project_root))
+    return errors
+
+
+_BRIEF_DEMO_SKIP_MARKER = "<!-- gz-validate-skip: brief-demo-section -->"
+
+_BRIEF_DEMO_HEADING_RE = re.compile(r"^##\s+Demo\s*$", re.MULTILINE)
+# Audit fires only on briefs actively being authored or implemented. Backlog
+# briefs (`pending`) carry queued scope that may never be implemented, so
+# flagging them adds friction without value. Terminal briefs predate the rule
+# and are grandfathered.
+_DEMO_ACTIVE_STATUSES = frozenset({"draft", "in_progress"})
+_DEMO_CLI_SURFACE_RE = re.compile(
+    r"src/gzkit/cli/parser_artifacts\.py|src/gzkit/commands/[A-Za-z0-9_./*\-]+\.py"
+)
+
+
+def _brief_lane(text: str) -> str | None:
+    """Return lowercase lane value from frontmatter, or None when absent."""
+    match = _LANE_IN_FRONTMATTER.search(text)
+    return match.group(1).lower() if match else None
+
+
+def _brief_status(text: str) -> str | None:
+    """Return lowercase status value from frontmatter, or None when absent."""
+    match = _STATUS_IN_FRONTMATTER.search(text)
+    return match.group(1).lower() if match else None
+
+
+def _brief_allowed_paths_section(text: str) -> str:
+    """Return the text of the brief's ``## Allowed Paths`` section, or ``""``."""
+    lines = text.splitlines()
+    start: int | None = None
+    for idx, line in enumerate(lines):
+        if line.strip().lower().startswith("## allowed paths"):
+            start = idx + 1
+            break
+    if start is None:
+        return ""
+    end = len(lines)
+    for idx in range(start, len(lines)):
+        if lines[idx].startswith("## "):
+            end = idx
+            break
+    return "\n".join(lines[start:end])
+
+
+def _brief_touches_cli_surface(text: str) -> bool:
+    """Return True when Allowed Paths intersect a CLI verb / commands module."""
+    section = _brief_allowed_paths_section(text)
+    if not section:
+        return False
+    return _DEMO_CLI_SURFACE_RE.search(section) is not None
+
+
+def audit_brief_demo_section(project_root: Path) -> list[ValidationError]:
+    """Heavy-lane CLI-shipping briefs must carry a ``## Demo`` H2 section (GHI #431).
+
+    The closeout walkthrough discovery (``src/gzkit/commands/ceremony_data.py``)
+    harvests concrete invocations from a brief's ``## Demo`` section. When a
+    heavy-lane brief that ships a new or amended CLI verb omits the section,
+    walkthrough falls back to synthesized ``--help`` invocations — the
+    weakest possible product demonstration — and the operator only discovers
+    the deficit mid-attestation. The retroactive fix on ADR-0.0.30 (five
+    briefs, ``## Demo`` sections appended at closeout) is the canonical
+    failure exemplar.
+
+    Scope: brief under
+    ``docs/design/adr/{foundation,pre-release}/*/obpis/*.md`` fails closed
+    when **all** of the following hold:
+
+    * frontmatter ``lane: Heavy`` (case-insensitive)
+    * frontmatter ``status`` is in ``{draft, in_progress}`` — the active
+      authoring/implementation states. Terminal briefs
+      (``completed``/``attested_completed``/``validated``/``withdrawn``/
+      ``superseded``) predate the rule and are grandfathered; ``pending``
+      backlog briefs carry queued scope and are not gated until activated
+    * ``## Allowed Paths`` section names ``src/gzkit/cli/parser_artifacts.py``
+      OR any ``src/gzkit/commands/*.py`` path (the new/amended CLI verb signal)
+    * brief body contains no ``^## Demo\\s*$`` H2 heading
+
+    Recovery: author the ``## Demo`` H2 section with concrete invocations
+    exercising the delivered surface (not ``--help``), or — when the brief
+    is intentionally exempted (e.g. CLI surface added for housekeeping in a
+    larger non-CLI brief) — place
+    ``<!-- gz-validate-skip: brief-demo-section -->`` anywhere in the brief
+    body to mark it grandfathered.
+    """
+    adr_root = project_root / "docs" / "design" / "adr"
+    if not adr_root.is_dir():
+        return []
+    brief_paths: list[Path] = []
+    for namespace in _ADR_NAMESPACES:
+        ns_dir = adr_root / namespace
+        if not ns_dir.is_dir():
+            continue
+        brief_paths.extend(ns_dir.glob("*/obpis/OBPI-*.md"))
+    errors: list[ValidationError] = []
+    for brief in sorted(brief_paths):
+        try:
+            text = brief.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        if _BRIEF_DEMO_SKIP_MARKER in text:
+            continue
+        if _brief_lane(text) != "heavy":
+            continue
+        status = _brief_status(text) or ""
+        if status not in _DEMO_ACTIVE_STATUSES:
+            continue
+        if not _brief_touches_cli_surface(text):
+            continue
+        if _BRIEF_DEMO_HEADING_RE.search(text):
+            continue
+        rel = brief.relative_to(project_root).as_posix()
+        errors.append(
+            ValidationError(
+                type="brief_demo_section",
+                artifact=rel,
+                message=(
+                    "Heavy-lane CLI-shipping brief is missing a `## Demo` "
+                    "H2 section. The closeout walkthrough harvests this "
+                    "section for concrete invocations; without it, the "
+                    "discovery falls back to synthesized `--help` runs "
+                    "(the weakest product demonstration). Author the "
+                    "section with real invocations exercising the "
+                    "delivered surface, or place "
+                    f"`{_BRIEF_DEMO_SKIP_MARKER}` in the body to mark "
+                    "the brief grandfathered (GHI #431)."
+                ),
+            )
+        )
     return errors
 
 

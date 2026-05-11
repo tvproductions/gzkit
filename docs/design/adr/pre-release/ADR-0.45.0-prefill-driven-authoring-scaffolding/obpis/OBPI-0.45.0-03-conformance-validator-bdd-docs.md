@@ -91,6 +91,18 @@ uv run gz validate --behave-req-tags
 uv run gz arb step --name unittest -- uv run -m unittest tests/governance/test_prefill_conformance.py -v
 ```
 
+## Demo
+
+<!-- THE YIELDED PRODUCT, not housekeeping. Concrete, runnable invocations
+     that demonstrate the capability this OBPI delivers. The closeout
+     ceremony walkthrough harvests this section (parser-validated;
+     unregistered verbs are dropped). Prefer real paths and arguments
+     over `<placeholder>` syntax. `--help` is not a demo. -->
+
+```bash
+# Replace with concrete product demonstrations for this OBPI.
+```
+
 ## Acceptance Criteria
 
 - [ ] REQ-0.45.0-03-01: Given a brief with all canonical section headings and the parent-ADR pin at Discovery Checklist item #1, when `gz validate --prefill-conformance` runs, then exit 0.
