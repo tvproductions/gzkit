@@ -3,7 +3,7 @@ id: OBPI-0.0.32-11-templates-reverse-migration
 parent: ADR-0.0.32-canonical-surface-packaging
 item: 11
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.32-11-templates-reverse-migration: Templates Reverse-Migration
@@ -222,22 +222,59 @@ This is a direction-reversal from skills/rules/personas migrations — those sta
 
 ### Key Proof
 
+
 ```bash
-ls .gzkit/templates/*.md | wc -l       # Expected: 13+ (authored canonical, new home)
-ls src/gzkit/templates/*.md | wc -l    # Expected: 13+ (byte-equivalent package copy)
-diff -r .gzkit/templates/ src/gzkit/templates/ --exclude=__init__.py --exclude=__pycache__ --exclude=skills
-# Expected: no diff
-python -c "from gzkit.templates import render_template; print(render_template('adr.md', {'id':'TEST','title':'Test'})[:200])"
-# Expected: substantive template content
+$ ls .gzkit/templates/*.md | wc -l && ls src/gzkit/templates/*.md | wc -l
+11
+11
+
+$ diff -r .gzkit/templates/ src/gzkit/templates/ --exclude=__init__.py --exclude=__pycache__ --exclude=skills
+# (zero output — byte-parity holds across all 11 .md files)
+
+$ uv run gz covers OBPI-0.0.32-11-templates-reverse-migration --json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['summary'])"
+# {'identifier': 'OBPI-0.0.32-11-templates-reverse-migration', 'total_reqs': 10, 'covered_reqs': 10, 'uncovered_reqs': 0, 'coverage_percent': 100.0}
+
+$ uv run python -c "from gzkit.templates import render_template; print(render_template('adr', id='TEST', title='Test')[:80])"
+---
+id: TEST
+status: Draft
+kind: {kind}
+semver: {semver}
+lane: lite
+parent: {parent}
+date: 2026-05-12
+---
+
+# TEST: Test
+
+$ uv run gz arb ruff
+arb ruff exit_status=0 receipt=/Users/jeff/Documents/Code/gzkit/artifacts/receipts/arb-ruff-9649c7ef0074409c9fd5ed0fa1ed3e56.json
+
+$ uv run gz arb typecheck
+arb step name=typecheck exit_status=0 receipt=/Users/jeff/Documents/Code/gzkit/artifacts/receipts/arb-step-typecheck-55fcfa0b0a384625abfda8a65248577b.json
+
+$ uv run gz arb step --name unittest -- uv run -m unittest -q
+Ran 4833 tests in 41.893s
+OK (skipped=1)
+arb step name=unittest exit_status=0 receipt=/Users/jeff/Documents/Code/gzkit/artifacts/receipts/arb-step-unittest-fa86d3be431546e28b428fe50fad789a.json
+
+$ uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
+INFO    -  Documentation built in 2.43 seconds
+arb step name=mkdocs exit_status=0 receipt=/Users/jeff/Documents/Code/gzkit/artifacts/receipts/arb-step-mkdocs-fefc00669d14493a8db202d8761db1ac.json
 ```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- **ADR § Decision item implemented:** ADR-0.0.32 checklist #11 — "Templates reverse-migration — establish dual-surface for all 13+ canonical templates by REVERSE-migrating from the current single-surface location: `git mv src/gzkit/templates/*.md .gzkit/templates/*.md` to establish `.gzkit/templates/` as the new authored canonical source-of-truth; add byte-equivalent copy back at `src/gzkit/templates/*.md` for wheel-shipping; preserve `src/gzkit/templates/__init__.py` (Python package) and any non-`.md` adjuncts; existing `render_template()` consumers continue resolving through `gzkit.templates` package; byte-parity test fails closed on drift. This is a direction reversal from skills/rules/personas migrations because templates already live at the package surface today. Scaffolder + init wiring deferred to OBPI-12; sync mechanism deferred to OBPI-08."
+- **Files migrated:** 11 `.md` template files moved via `git mv` from `src/gzkit/templates/` to `.gzkit/templates/` (per-file git history preserved): `adr_pool.md`, `adr.md`, `agents.md`, `audit_plan.md`, `audit.md`, `claude.md`, `closeout.md`, `constitution.md`, `copilot.md`, `obpi.md`, `prd.md`. Brief said "13+"; actual count is 11.
+- **Files re-established:** Same 11 `.md` files at `src/gzkit/templates/<name>.md` via `cp` (byte-equivalent package-surface copies for wheel-shipping).
+- **Files untouched (by design):** `src/gzkit/templates/__init__.py` byte-identical to pre-OBPI; `src/gzkit/templates/skills/` retained at package surface; `pyproject.toml`, `src/gzkit/sync_surfaces.py`, `src/gzkit/commands/init_cmd.py` unchanged.
+- **Tests added:** `TestTemplatesLayoutDualSurface` class in `tests/test_templates.py` with 8 tests covering all 10 REQs via `@covers` decorators (1 byte-parity, 1 authored-surface-populated, 1 init.py API preserved, 1 skills/ subdir retained, 1 no-scope-creep (subTests on 3 forbidden names), 1 pyproject no extension, 1 sync_surfaces no extension, 1 all-templates-loadable smoke); `@covers("REQ-0.0.32-11-05")` added to existing `TestRenderTemplate.test_render_substitutes_values`. Total: 9 REQ-decorated tests in test_templates.py post-OBPI.
+- **Waiver:** `data/behave_coverage_waivers.json` entry under shared rationale `adr-0.0.32-bdd-deferred-to-obpi-06` (BDD coverage routed to OBPI-0.0.32-06 T0 smoke test, same precedent as OBPI-01/02/03/09).
+- **Date completed:** 2026-05-12
+- **Attestation status:** Operator attested "attest completed" at Stage 4 ceremony; relayed via `--attestor-present` per Stage 5 primary path (pipeline marker satisfies co-presence proxy).
+- **Defects noted:** Course-correction `improvement` record appended to `.gzkit/insights/agent-insights.jsonl` (bare `python` invocation in a `uv` project, immediately corrected). The malformed schema (used `timestamp` instead of `ts`, string `evidence` instead of list) was caught by `tests/governance/test_promoted_advisory_audits.py::test_insights_shape_ghi_358` during Stage 3 — fixed in place; insights record now schema-valid.
 
 ## Tracked Defects
 
@@ -245,14 +282,14 @@ python -c "from gzkit.templates import render_template; print(render_template('a
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — Operator (Jeffry Babb) attested at Stage 4 ceremony after reviewing the full evidence pack: dual-surface layout established (11 `.md` files at `.gzkit/templates/` authored canonical + byte-identical copies at `src/gzkit/templates/` for wheel-shipping; `diff -r` exits zero modulo `__init__.py`/`__pycache__`/`skills/`), REQ coverage 10/10 via `gz covers` (TestTemplatesLayoutDualSurface 8 tests + TestRenderTemplate.test_render_substitutes_values), ARB receipts arb-ruff-9649c7ef0074409c9fd5ed0fa1ed3e56 (lint clean), arb-step-typecheck-55fcfa0b0a384625abfda8a65248577b (ty clean), arb-step-unittest-fa86d3be431546e28b428fe50fad789a (4833/4833 pass, 1 skipped), arb-step-mkdocs-fefc00669d14493a8db202d8761db1ac (docs strict clean). Foundation-kind + heavy-lane brief-level Gate 5 satisfied per § Lane & Kind Attestation Matrix.
+- Date: 2026-05-12
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-12
 
 **Evidence Hash:** -
