@@ -1,0 +1,8 @@
+{
+  "obpi_id": "OBPI-0.0.32-09-personas-physical-migration",
+  "timestamp": "2026-05-12T07:44:00.000000+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.32-09-personas-physical-migration.md",
+  "gaps_found": 0,
+  "notes": "CLI structural check FAIL is false positive for migration/conversion OBPIs: allowed paths (src/gzkit/personas/__init__.py, src/gzkit/personas/<slug>.md, tests/test_personas.py) are files created by this OBPI. ADR<->OBPI semantic audit: 7/7 checks ALIGNED — objective, scope, requirements coverage, lane (Heavy/Heavy), attestation rule (foundation+heavy=Gate5), no scope creep (CORE_PERSONAS/scaffolder/sync deferred to OBPI-10/08), no scope gap. Plan<->OBPI semantic audit: 7/7 checks ALIGNED — OBPI reference correct, all 8 REQs mapped to steps, allowed paths only, denied paths respected (pyproject.toml/init_cmd.py/sync_surfaces.py/vendor mirrors unchanged), brief verification commands included, no gold-plating, feasibility confirmed. Key finding: src/gzkit/personas.py already exists as 538-line module — this is a module-to-package conversion (same as OBPI-01 skills), not a fresh creation. STOP-on-BLOCKERS review: brief anticipated no existing imports; 8 import sites found. Finding: existing personas.py supplies the full API; conversion preserves every existing symbol; REQ-03 prohibition (no CORE_PERSONAS/scaffold_core_personas/_iter_canonical_persona_slugs) applies as negative constraint on NEW additions only. Not a blocker. Vendor mirrors (.claude/personas/) confirmed transformed-render shape (diff confirms non-byte-equivalent) — carve-out validated. Plan-before-exploration: destination (module-to-package conversion) reached after reading personas.py content; rejected alternatives documented in plan."
+}
