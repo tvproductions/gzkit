@@ -18,7 +18,7 @@ import json
 from collections.abc import Iterator
 from importlib.resources.abc import Traversable
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -28,6 +28,52 @@ from gzkit.config import GzkitConfig
 _CANONICAL_RESOURCE = "gzkit.chores"
 _PER_SLUG_FILES = ("CHORE.md", "acceptance.json", "README.md")
 _REGISTRY_FILE = "registry.json"
+
+
+def _classify_chore_file(
+    path: Path,
+    *,
+    project_root: Path | None = None,
+) -> Literal["canonical", "package_only", "runtime_state"]:
+    """Classify a chore file into one of three content classes.
+
+    canonical: CHORE.md, AGENTS.md, *.md outside proofs/, acceptance.json,
+               registry.json, authored .py tool scripts (present at .gzkit/ surface)
+    package_only: __init__.py, __pycache__/**, Python modules with no
+                  .gzkit/chores/ counterpart
+    runtime_state: CHORE-LOG.md, proofs/**, .gitkeep
+
+    See .gzkit/rules/skill-surface-sync.md § Chores class-classifier.
+    """
+    path = Path(path)
+    name = path.name
+    parts = path.parts
+    path_posix = path.as_posix()
+
+    # runtime_state: proofs/ contents, .gitkeep, CHORE-LOG.md
+    if "proofs" in parts or name in (".gitkeep", "CHORE-LOG.md"):
+        return "runtime_state"
+
+    # package_only: __init__.py and __pycache__
+    if name == "__init__.py" or "__pycache__" in parts:
+        return "package_only"
+
+    # .py files: canonical only when present at .gzkit/ surface
+    if name.endswith(".py"):
+        if ".gzkit/chores/" in path_posix:
+            return "canonical"
+        # src/ surface: check for .gzkit/ counterpart when project_root is known
+        if project_root is not None:
+            try:
+                rel = path.relative_to(project_root / "src" / "gzkit" / "chores")
+                counterpart = project_root / ".gzkit" / "chores" / rel
+                return "canonical" if counterpart.exists() else "package_only"
+            except ValueError:
+                pass
+        return "package_only"
+
+    # Default: canonical (CHORE.md, AGENTS.md, *.md, acceptance.json, registry.json, etc.)
+    return "canonical"
 
 
 def _iter_canonical_chore_slugs() -> Iterator[Traversable]:
