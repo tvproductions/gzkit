@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.0.32-04-rules-scaffolder-authoring",
+  "parent_adr": "ADR-0.0.32-canonical-surface-packaging",
+  "lane": "heavy",
+  "entry": "sync",
+  "execution_mode": "normal",
+  "current_stage": "sync",
+  "started_at": "2026-05-12T10:49:37Z",
+  "updated_at": "2026-05-12T10:49:37Z",
+  "receipt_state": "other_obpi",
+  "nonce": "821e4a99e3852e5cc87fd8266cc30013",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz git-sync --apply --lint --test",
+  "resume_point": null
+}

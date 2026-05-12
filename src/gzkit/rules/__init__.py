@@ -592,3 +592,29 @@ def render_rules_to_dir(
                 existing.unlink()
 
     return written
+
+
+# Re-export scaffolding API so `from gzkit.rules import X` works.
+from gzkit.rules._scaffolder import (  # noqa: E402
+    CORE_RULES,
+    _iter_canonical_rule_slugs,
+    scaffold_core_rules,
+)
+
+__all__ = [
+    "CORE_RULES",
+    "CanonicalRule",
+    "ClassifiedRule",
+    "RuleFrontmatter",
+    "_iter_canonical_rule_slugs",
+    "classify_instruction_rules",
+    "load_rule",
+    "load_rules",
+    "render_rule_for_claude",
+    "render_rule_for_copilot",
+    "render_rules_to_dir",
+    "scaffold_core_rules",
+    "sync_claude_rules",
+    "sync_nested_agents_md",
+    "validate_rule_placement",
+]

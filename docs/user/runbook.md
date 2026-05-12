@@ -808,6 +808,24 @@ uv run gz register-adrs            # Register existing ADR packages into ledger
 
 ---
 
+## Rules Surface
+
+Canonical rules live at `.gzkit/rules/<slug>.md` (authored source-of-truth).
+`gz init` scaffolds all canonical rules from the wheel's package surface
+(`importlib.resources.files("gzkit.rules")`) into `.gzkit/rules/`. Once
+written, `.gzkit/rules/` is the project canonical surface — edit files there.
+
+Run `gz agent sync control-surfaces` to propagate edits to vendor mirrors
+(`.claude/rules/`, `.github/instructions/`). Re-running `gz init` on an existing
+project adds new canonical rules without overwriting operator-edited files
+(`skip_existing=True`).
+
+See [`gz init`](manpages/init.md#rules-scaffolding) for rules scaffolding details
+and [`.claude/rules/skill-surface-sync.md`](../../../.gzkit/rules/skill-surface-sync.md)
+for the "Edit `.gzkit/` first" editing invariant.
+
+---
+
 ## Chores Commands
 
 Use [`/gz-chore-runner`](skills/gz-chore-runner.md) to run a chore end-to-end (show, plan, advise, execute, validate) through a guided workflow.

@@ -658,10 +658,15 @@ class TestRulesLayoutDualSurface(unittest.TestCase):
 
     @covers("REQ-0.0.32-03-01")
     def test_dual_surface_rule_count(self) -> None:
+        # AGENTS.md is package-internal (not a canonical rule slug per OBPI-04).
         canonical = self._repo_root() / ".gzkit" / "rules"
         package = self._repo_root() / "src" / "gzkit" / "rules"
-        canonical_count = len(list(canonical.glob("*.md")))
-        package_count = len(list(package.glob("*.md"))) if package.exists() else 0
+        canonical_count = len([p for p in canonical.glob("*.md") if p.name != "AGENTS.md"])
+        package_count = (
+            len([p for p in package.glob("*.md") if p.name != "AGENTS.md"])
+            if package.exists()
+            else 0
+        )
         self.assertGreater(canonical_count, 0, "Canonical .gzkit/rules has no .md files")
         self.assertEqual(
             canonical_count,
@@ -671,10 +676,15 @@ class TestRulesLayoutDualSurface(unittest.TestCase):
 
     @covers("REQ-0.0.32-03-02")
     def test_dual_surface_byte_parity(self) -> None:
+        # AGENTS.md is package-internal (not a canonical rule slug per OBPI-04).
         canonical = self._repo_root() / ".gzkit" / "rules"
         package = self._repo_root() / "src" / "gzkit" / "rules"
-        canonical_slugs = {p.name for p in canonical.glob("*.md")}
-        package_slugs = {p.name for p in package.glob("*.md")} if package.exists() else set()
+        canonical_slugs = {p.name for p in canonical.glob("*.md") if p.name != "AGENTS.md"}
+        package_slugs = (
+            {p.name for p in package.glob("*.md") if p.name != "AGENTS.md"}
+            if package.exists()
+            else set()
+        )
         missing_in_package = canonical_slugs - package_slugs
         extra_in_package = package_slugs - canonical_slugs
         self.assertEqual(
@@ -740,29 +750,6 @@ class TestRulesLayoutScopeGuards(unittest.TestCase):
     def _repo_root(self) -> Path:
         return Path(__file__).resolve().parent.parent
 
-    @covers("REQ-0.0.32-03-04")
-    def test_req04_no_core_rules_registry_in_init(self) -> None:
-        """REQ-04: no CORE_RULES/scaffold_core_rules/_iter_canonical_rule_slugs in __init__.py."""
-        init_py = self._repo_root() / "src" / "gzkit" / "rules" / "__init__.py"
-        body = init_py.read_text(encoding="utf-8")
-        for forbidden in ("CORE_RULES", "scaffold_core_rules", "_iter_canonical_rule_slugs"):
-            self.assertNotIn(
-                forbidden,
-                body,
-                f"REQ-04: {forbidden!r} present in {init_py}; OBPI-04 owns registry/scaffolder",
-            )
-
-    @covers("REQ-0.0.32-03-05")
-    def test_req05_init_cmd_has_no_rules_scaffolder_invocation(self) -> None:
-        """REQ-05: init_cmd.py has no scaffold_core_rules invocation."""
-        init_cmd = self._repo_root() / "src" / "gzkit" / "commands" / "init_cmd.py"
-        body = init_cmd.read_text(encoding="utf-8")
-        self.assertNotIn(
-            "scaffold_core_rules",
-            body,
-            "REQ-05: scaffold_core_rules referenced in init_cmd.py; OBPI-04 owns wiring",
-        )
-
     @covers("REQ-0.0.32-03-06")
     def test_req06_pyproject_has_no_rules_wheel_include(self) -> None:
         """REQ-06: pyproject.toml not extended with rules wheel-include."""
@@ -807,3 +794,135 @@ class TestRulesLayoutScopeGuards(unittest.TestCase):
         self.assertTrue(hasattr(module, "RuleFrontmatter"))
         self.assertTrue(hasattr(module, "sync_claude_rules"))
         self.assertTrue(callable(module.load_rules))
+
+
+class TestCoreRulesRegistry(unittest.TestCase):
+    """Tests for CORE_RULES, _iter_canonical_rule_slugs, scaffold_core_rules.
+
+    @covers REQ-0.0.32-04-01
+    @covers REQ-0.0.32-04-02
+    @covers REQ-0.0.32-04-03
+    @covers REQ-0.0.32-04-06
+    """
+
+    @covers("REQ-0.0.32-04-01")
+    def test_core_rules_is_a_list(self) -> None:
+        from gzkit.rules import CORE_RULES  # noqa: PLC0415
+
+        self.assertIsInstance(CORE_RULES, list)
+
+    @covers("REQ-0.0.32-04-01")
+    def test_core_rules_has_at_least_one_slug(self) -> None:
+        from gzkit.rules import CORE_RULES  # noqa: PLC0415
+
+        self.assertGreater(len(CORE_RULES), 0)
+
+    @covers("REQ-0.0.32-04-01")
+    def test_core_rules_slugs_are_strings(self) -> None:
+        from gzkit.rules import CORE_RULES  # noqa: PLC0415
+
+        for slug in CORE_RULES:
+            self.assertIsInstance(slug, str)
+
+    @covers("REQ-0.0.32-04-01")
+    def test_core_rules_contains_known_slugs(self) -> None:
+        from gzkit.rules import CORE_RULES  # noqa: PLC0415
+
+        # Check a representative set of known rules
+        for expected in ("governance-core", "tests", "models", "pythonic"):
+            self.assertIn(expected, CORE_RULES, f"{expected!r} missing from CORE_RULES")
+
+    @covers("REQ-0.0.32-04-02")
+    def test_iter_canonical_rule_slugs_returns_entries(self) -> None:
+        from gzkit.rules import _iter_canonical_rule_slugs  # noqa: PLC0415
+
+        slugs = list(_iter_canonical_rule_slugs())
+        self.assertGreater(len(slugs), 0)
+
+    @covers("REQ-0.0.32-04-02")
+    def test_iter_canonical_rule_slugs_count_matches_core_rules(self) -> None:
+        from gzkit.rules import CORE_RULES, _iter_canonical_rule_slugs  # noqa: PLC0415
+
+        slugs = list(_iter_canonical_rule_slugs())
+        self.assertEqual(len(slugs), len(CORE_RULES))
+
+    @covers("REQ-0.0.32-04-02")
+    def test_iter_canonical_rule_slugs_excludes_agents_md(self) -> None:
+        """AGENTS.md is a package-internal agent contract; not an operator rule."""
+        from gzkit.rules import _iter_canonical_rule_slugs  # noqa: PLC0415
+
+        names = [e.name for e in _iter_canonical_rule_slugs()]
+        self.assertNotIn("AGENTS.md", names)
+
+    @covers("REQ-0.0.32-04-03")
+    def test_scaffold_core_rules_is_callable(self) -> None:
+        from gzkit.rules import scaffold_core_rules  # noqa: PLC0415
+
+        self.assertTrue(callable(scaffold_core_rules))
+
+    @covers("REQ-0.0.32-04-03")
+    def test_scaffold_core_rules_writes_files_to_fresh_dir(self) -> None:
+        from gzkit.config import GzkitConfig, PathConfig  # noqa: PLC0415
+        from gzkit.rules import CORE_RULES, scaffold_core_rules  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".gzkit.json").write_text("{}", encoding="utf-8")
+            config = GzkitConfig(paths=PathConfig())
+            created = scaffold_core_rules(root, config)
+            self.assertGreater(len(created), 0)
+            rules_dir = root / ".gzkit" / "rules"
+            self.assertTrue(rules_dir.exists())
+            created_names = {p.name for p in created}
+            for slug in CORE_RULES:
+                self.assertIn(f"{slug}.md", created_names)
+
+    @covers("REQ-0.0.32-04-03")
+    def test_scaffold_core_rules_returns_list_of_paths(self) -> None:
+        from gzkit.config import GzkitConfig, PathConfig  # noqa: PLC0415
+        from gzkit.rules import scaffold_core_rules  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            config = GzkitConfig(paths=PathConfig())
+            created = scaffold_core_rules(root, config)
+            self.assertIsInstance(created, list)
+            for p in created:
+                self.assertIsInstance(p, Path)
+
+    @covers("REQ-0.0.32-04-06")
+    def test_scaffold_core_rules_skip_existing_preserves_operator_edits(self) -> None:
+        from gzkit.config import GzkitConfig, PathConfig  # noqa: PLC0415
+        from gzkit.rules import scaffold_core_rules  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            config = GzkitConfig(paths=PathConfig())
+            rules_dir = root / ".gzkit" / "rules"
+            rules_dir.mkdir(parents=True)
+            # Pre-create an operator-edited file
+            (rules_dir / "governance-core.md").write_text("# My custom edit\n", encoding="utf-8")
+
+            scaffold_core_rules(root, config, skip_existing=True)
+
+            # Operator edit must be preserved
+            content = (rules_dir / "governance-core.md").read_text(encoding="utf-8")
+            self.assertEqual(content, "# My custom edit\n")
+
+    @covers("REQ-0.0.32-04-06")
+    def test_scaffold_core_rules_skip_existing_false_overwrites(self) -> None:
+        from gzkit.config import GzkitConfig, PathConfig  # noqa: PLC0415
+        from gzkit.rules import scaffold_core_rules  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            config = GzkitConfig(paths=PathConfig())
+            rules_dir = root / ".gzkit" / "rules"
+            rules_dir.mkdir(parents=True)
+            (rules_dir / "governance-core.md").write_text("# Old content\n", encoding="utf-8")
+
+            scaffold_core_rules(root, config, skip_existing=False)
+
+            # Should have been overwritten — old placeholder content is gone
+            content = (rules_dir / "governance-core.md").read_text(encoding="utf-8")
+            self.assertNotEqual(content, "# Old content\n")
