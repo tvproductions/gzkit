@@ -4,6 +4,25 @@ status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
+amendments:
+  - date: 2026-05-12
+    scope: |
+      Added Target Scope #6 — Persona-adoption attestation receipts — to absorb
+      GHI #459's persona-adoption gap (Stage 2 declares "Active persona:
+      pipeline-orchestrator — read .gzkit/personas/pipeline-orchestrator.md
+      and adopt its behavioral identity" with no T2 mechanical fail-close).
+      Same failure class as existing Target Scope #5 (two-stage review dispatch
+      receipts): T1 doctrine, no ledger evidence of compliance, agent narrative
+      recall instead of receipts. Mechanism shape parallels #5 — ledger receipt
+      (persona_adopted event citing persona file SHA + session anchor) +
+      validator scope (gz validate --persona-adoption-receipts) + pre-skill-
+      apply gate. Routes GHI #459 gap 2 to this ADR; gap 1 was already
+      absorbed by original Target Scope #5. Gaps 3/4/5 of GHI #459 are sibling-
+      routed via GHI #458 to ADR-pool.obpi-pipeline-mandate-enforcement;
+      no new scope claimed for those. Existing five Target Scope defenses,
+      Non-Goals, Decision, Alternatives Considered, and Origin preserved
+      verbatim. No new dispatch infrastructure introduced consistent with
+      original Non-Goals.
 ---
 
 # ADR-pool.obpi-pipeline-dispatch-attestation: OBPI Pipeline Subagent Dispatch Attestation
@@ -96,6 +115,50 @@ This prevents review from becoming ritual theater. A fresh reviewer context is
 useful only when the output is bound back to the ledger and the integration
 decision can prove which review passed.
 
+### 6. Persona-adoption attestation receipts
+
+Added 2026-05-12 under GHI #459 routing (see frontmatter `amendments:`).
+
+Skill prose at `.gzkit/skills/gz-obpi-pipeline/SKILL.md` § Persona declares:
+*"Active persona: `pipeline-orchestrator` — read
+`.gzkit/personas/pipeline-orchestrator.md` and adopt its behavioral identity."*
+There is no SessionStart hook that loads the persona, no validator that
+checks adoption, and no ledger event recording the persona-file SHA the
+agent read. This is the same failure class as Target Scope #5: T1 doctrine
+declaring an agent action with no T2 mechanical evidence the action happened.
+The orchestrator that ran OBPI-0.0.32-12 Stage 2 with three implementer
+dispatches and zero spec-reviewer / quality-reviewer dispatches (the
+GHI #459 surfacing run) is the same orchestrator that may or may not have
+read the persona file — the ledger cannot answer either question.
+
+Mechanical defense parallels the dispatch-receipt shape:
+
+- `persona_adopted` ledger event with `persona_id`, `persona_file_sha`,
+  `session_anchor` (chat session ID + tool-call timestamp), and
+  `adoption_evidence` (e.g. the Read tool call that loaded the persona
+  file path)
+- `gz validate --persona-adoption-receipts` scope: for each active skill
+  invocation that declares an active persona, assert a `persona_adopted`
+  event exists in the session window with `persona_file_sha` matching the
+  declared persona file's current SHA. Exit 3 on gap or SHA mismatch
+- Pre-skill-apply gate (where harness cooperation exists): refuse to load
+  the skill body until the active persona file has been read into the
+  session. Falls back to validator-only enforcement on harnesses without
+  PreToolUse cooperation per ADR-0.0.32 § Named exceptions Exception 1
+
+The defense's lower-priority sibling — described in GHI #459's original
+fix sketch as "SessionStart hook reads the active skill's persona file
+into the session transcript" — is preserved as an alternative form of the
+adoption-evidence trigger when full skill-invocation cooperation is
+unavailable. Promotion will pick among the three triggers (SessionStart
+preload, PreToolUse cooperation, post-hoc validator) based on the
+cross-vendor capability matrix.
+
+This defense does not redefine personas, does not introduce new persona
+files, and does not change `.gzkit/personas/`'s authoring contract — it
+only attests that the agent loaded the persona the skill declared,
+binding the T1 declaration to a T2 receipt.
+
 ## Non-Goals
 
 - No new dispatch infrastructure — this ADR scopes attestation and enforcement
@@ -153,6 +216,16 @@ is real and reproduces against the current ledger. Premise is intact;
 - OBPI-0.0.23-05 implementation session (2026-05-02) — the surfacing run
 - Sibling: GHI #380 (authoring-time vibes; closes against its own destination)
 - AGENTS.md § MAKE LLM STOCHASTIC VIBES INERT operative claim 4 (the doctrine root)
+
+### Routed-here (post-authoring amendments)
+
+- **GHI #459** (2026-05-12) — closed `superseded` against this ADR.
+  Gaps 1 (Stage 2 two-stage review dispatch) and 2 (persona adoption)
+  routed here; gaps 3/4/5 (mandate-enforcement, marker contract,
+  PTY-fallback doctrine drift) sibling-routed to
+  `ADR-pool.obpi-pipeline-mandate-enforcement` via GHI #458's prior
+  close. Gap 1 absorbed by original Target Scope #5; gap 2 absorbed by
+  Target Scope #6 added under this amendment.
 
 ## Notes
 
