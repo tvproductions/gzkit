@@ -412,15 +412,19 @@ class TestTemplatesLayoutDualSurface(unittest.TestCase):
 
     @covers("REQ-0.0.32-11-03")
     def test_init_py_api_preserved(self) -> None:
-        """`src/gzkit/templates/__init__.py` must preserve the pre-migration public API."""
+        """`src/gzkit/templates/__init__.py` must expose the full public API."""
         from gzkit.templates import __all__ as templates_all
 
-        expected = {"load_template", "render_template", "get_template_path", "list_templates"}
-        self.assertEqual(
-            set(templates_all),
-            expected,
-            "__all__ must be exactly the pre-OBPI symbol set — no CORE_TEMPLATES additions",
-        )
+        expected = {
+            "CORE_TEMPLATES",
+            "_iter_canonical_template_slugs",
+            "get_template_path",
+            "list_templates",
+            "load_template",
+            "render_template",
+            "scaffold_core_templates",
+        }
+        self.assertEqual(set(templates_all), expected)
 
     @covers("REQ-0.0.32-11-04")
     def test_skills_subdir_retained(self) -> None:
@@ -430,23 +434,6 @@ class TestTemplatesLayoutDualSurface(unittest.TestCase):
             skills_subdir.is_dir(),
             "src/gzkit/templates/skills/ must be retained at the package surface",
         )
-
-    @covers("REQ-0.0.32-11-06")
-    def test_no_scope_creep_in_init_py(self) -> None:
-        """No CORE_TEMPLATES or scaffolder symbols added to __init__.py (OBPI-12 scope)."""
-        init_py = _PROJECT_ROOT / "src" / "gzkit" / "templates" / "__init__.py"
-        content = init_py.read_text(encoding="utf-8")
-        forbidden_names = (
-            "CORE_TEMPLATES",
-            "scaffold_core_templates",
-            "_iter_canonical_template_slugs",
-        )
-        for forbidden in forbidden_names:
-            self.assertNotIn(
-                forbidden,
-                content,
-                f"{forbidden} belongs to OBPI-12, must not appear in this OBPI's __init__.py",
-            )
 
     @covers("REQ-0.0.32-11-08")
     def test_pyproject_no_new_template_includes(self) -> None:
@@ -479,6 +466,218 @@ class TestTemplatesLayoutDualSurface(unittest.TestCase):
             with self.subTest(template=name):
                 content = load_template(name)
                 self.assertGreater(len(content), 0, f"Template {name!r} must not be empty")
+
+
+class TestCoreTemplatesRegistry(unittest.TestCase):
+    """REQ-0.0.32-12-01: CORE_TEMPLATES registry exists in src/gzkit/templates/__init__.py."""
+
+    @covers("REQ-0.0.32-12-01")
+    def test_core_templates_is_list_of_str(self) -> None:
+        """CORE_TEMPLATES is a non-empty list of strings."""
+        from gzkit.templates import CORE_TEMPLATES  # noqa: PLC0415
+
+        self.assertIsInstance(CORE_TEMPLATES, list)
+        self.assertGreater(len(CORE_TEMPLATES), 0)
+        for item in CORE_TEMPLATES:
+            self.assertIsInstance(item, str)
+
+    @covers("REQ-0.0.32-12-01")
+    def test_core_templates_enumerates_canonical_slugs(self) -> None:
+        """CORE_TEMPLATES enumerates all 11+ canonical template slugs."""
+        from gzkit.templates import CORE_TEMPLATES  # noqa: PLC0415
+
+        self.assertGreaterEqual(len(CORE_TEMPLATES), 11)
+        # Spot-check known slugs
+        for slug in ("adr", "prd", "obpi", "constitution", "agents"):
+            self.assertIn(slug, CORE_TEMPLATES)
+
+    @covers("REQ-0.0.32-12-02")
+    def test_iter_canonical_template_slugs_count_matches_registry(self) -> None:
+        """_iter_canonical_template_slugs returns same count as CORE_TEMPLATES."""
+        from gzkit.templates import CORE_TEMPLATES, _iter_canonical_template_slugs  # noqa: PLC0415
+
+        count = sum(1 for _ in _iter_canonical_template_slugs())
+        self.assertEqual(count, len(CORE_TEMPLATES))
+
+
+class TestScaffoldCoreTemplates(unittest.TestCase):
+    """REQ-0.0.32-12-03, 07, 08: scaffold_core_templates scaffolder."""
+
+    @covers("REQ-0.0.32-12-03")
+    def test_scaffold_signature_matches_sibling_scaffolders(self) -> None:
+        """scaffold_core_templates has exact sibling-scaffolder surface shape."""
+        import inspect  # noqa: PLC0415
+
+        from gzkit.templates import scaffold_core_templates  # noqa: PLC0415
+
+        sig = inspect.signature(scaffold_core_templates)
+        params = list(sig.parameters.keys())
+        self.assertIn("project_root", params)
+        self.assertIn("config", params)
+        self.assertIn("skip_existing", params)
+        # skip_existing must be keyword-only
+        skip_param = sig.parameters["skip_existing"]
+        self.assertEqual(skip_param.kind, inspect.Parameter.KEYWORD_ONLY)
+
+    @covers("REQ-0.0.32-12-07")
+    def test_scaffold_writes_all_canonical_templates(self) -> None:
+        """Fresh scaffold writes all canonical templates to .gzkit/templates/."""
+        import tempfile  # noqa: PLC0415
+
+        from gzkit.templates import CORE_TEMPLATES, scaffold_core_templates  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            result = scaffold_core_templates(project_root)
+            self.assertIsInstance(result, list)
+            self.assertEqual(len(result), len(CORE_TEMPLATES))
+            templates_dir = project_root / ".gzkit" / "templates"
+            self.assertTrue(templates_dir.is_dir())
+            for slug in CORE_TEMPLATES:
+                self.assertTrue(
+                    (templates_dir / f"{slug}.md").exists(),
+                    f"Expected {slug}.md in .gzkit/templates/",
+                )
+
+    @covers("REQ-0.0.32-12-03")
+    def test_scaffold_returns_list_of_paths(self) -> None:
+        """scaffold_core_templates returns list[Path]."""
+        import tempfile  # noqa: PLC0415
+
+        from gzkit.templates import scaffold_core_templates  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = scaffold_core_templates(Path(tmp))
+            self.assertIsInstance(result, list)
+            for item in result:
+                self.assertIsInstance(item, Path)
+
+    @covers("REQ-0.0.32-12-03")
+    def test_scaffold_content_byte_identical_to_package(self) -> None:
+        """Scaffolded template content is byte-identical to package resource."""
+        import importlib.resources  # noqa: PLC0415
+        import tempfile  # noqa: PLC0415
+
+        from gzkit.templates import scaffold_core_templates  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            scaffold_core_templates(project_root)
+            templates_dir = project_root / ".gzkit" / "templates"
+            pkg = importlib.resources.files("gzkit.templates")
+            for target in sorted(templates_dir.glob("*.md")):
+                pkg_file = pkg.joinpath(target.name)
+                self.assertEqual(
+                    target.read_bytes(),
+                    pkg_file.read_bytes(),
+                    f"Scaffolded {target.name} not byte-identical to package",
+                )
+
+    @covers("REQ-0.0.32-12-08")
+    def test_skip_existing_preserves_operator_edits(self) -> None:
+        """skip_existing=True preserves operator edits to .gzkit/templates/<name>.md."""
+        import tempfile  # noqa: PLC0415
+
+        from gzkit.templates import scaffold_core_templates  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            # Fresh scaffold
+            scaffold_core_templates(project_root)
+            # Operator edits a template
+            edited = project_root / ".gzkit" / "templates" / "adr.md"
+            edited.write_text("OPERATOR-EDIT", encoding="utf-8")
+            # Re-scaffold with skip_existing=True
+            scaffold_core_templates(project_root, skip_existing=True)
+            self.assertEqual(edited.read_text(encoding="utf-8"), "OPERATOR-EDIT")
+
+    @covers("REQ-0.0.32-12-08")
+    def test_skip_existing_false_overwrites(self) -> None:
+        """skip_existing=False (default) overwrites existing templates."""
+        import tempfile  # noqa: PLC0415
+
+        from gzkit.templates import scaffold_core_templates  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            scaffold_core_templates(project_root)
+            edited = project_root / ".gzkit" / "templates" / "adr.md"
+            edited.write_text("OPERATOR-EDIT", encoding="utf-8")
+            # Re-scaffold with default skip_existing=False
+            scaffold_core_templates(project_root, skip_existing=False)
+            self.assertNotEqual(edited.read_text(encoding="utf-8"), "OPERATOR-EDIT")
+
+
+class TestRenderTemplateProjectFirst(unittest.TestCase):
+    """REQ-0.0.32-12-06: render_template() project-first -> package-fallback."""
+
+    @covers("REQ-0.0.32-12-06")
+    def test_project_first_uses_project_copy_when_present(self) -> None:
+        """render_template uses .gzkit/templates/<name>.md when present in CWD tree."""
+        import os  # noqa: PLC0415
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            templates_dir = project_root / ".gzkit" / "templates"
+            templates_dir.mkdir(parents=True)
+            (templates_dir / "adr.md").write_text("PROJECT-EDIT-{id}", encoding="utf-8")
+            orig_cwd = os.getcwd()
+            try:
+                os.chdir(project_root)
+                result = render_template("adr", id="TEST-ID")
+                self.assertIn("PROJECT-EDIT-TEST-ID", result)
+            finally:
+                os.chdir(orig_cwd)
+
+    @covers("REQ-0.0.32-12-06")
+    def test_package_fallback_when_no_project_copy(self) -> None:
+        """render_template falls back to package surface when no project copy exists."""
+        import os  # noqa: PLC0415
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            orig_cwd = os.getcwd()
+            try:
+                os.chdir(tmp)
+                # No .gzkit/templates/ directory
+                result = render_template("prd", id="PRD-TEST-1.0.0", title="T")
+                self.assertIn("PRD-TEST-1.0.0", result)
+            finally:
+                os.chdir(orig_cwd)
+
+
+class TestTemplatesDocsCoverage(unittest.TestCase):
+    """REQ-0.0.32-12-09, 10: docs and gz check gate coverage."""
+
+    @covers("REQ-0.0.32-12-09")
+    def test_init_manpage_has_templates_scaffolding_section(self) -> None:
+        """docs/user/manpages/init.md must document Templates Scaffolding."""
+        manpage = _PROJECT_ROOT / "docs" / "user" / "manpages" / "init.md"
+        self.assertTrue(manpage.exists(), "init.md manpage must exist")
+        content = manpage.read_text(encoding="utf-8")
+        self.assertIn("Templates Scaffolding", content)
+        self.assertIn("OBPI-0.0.32-12", content)
+        self.assertIn(".gzkit/templates/", content)
+
+    @covers("REQ-0.0.32-12-09")
+    def test_runbook_has_templates_section(self) -> None:
+        """docs/user/runbook.md must document templates commands."""
+        runbook = _PROJECT_ROOT / "docs" / "user" / "runbook.md"
+        self.assertTrue(runbook.exists(), "runbook.md must exist")
+        content = runbook.read_text(encoding="utf-8")
+        self.assertIn(".gzkit/templates", content)
+
+    @covers("REQ-0.0.32-12-10")
+    def test_scaffold_core_templates_importable(self) -> None:
+        """scaffold_core_templates is importable — proxy for gz check exit 0 gate."""
+        from gzkit.templates import (  # noqa: PLC0415
+            CORE_TEMPLATES,
+            scaffold_core_templates,
+        )
+
+        self.assertIsNotNone(scaffold_core_templates)
+        self.assertIsInstance(CORE_TEMPLATES, list)
 
 
 if __name__ == "__main__":

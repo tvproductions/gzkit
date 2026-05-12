@@ -36,7 +36,7 @@ from gzkit.sync import (
     sync_all,
     write_manifest,
 )
-from gzkit.templates import render_template
+from gzkit.templates import render_template, scaffold_core_templates
 
 
 def _normalize_package_name(project_name: str) -> str:
@@ -326,6 +326,26 @@ def _repair_personas(
     return [f"Scaffolded new persona: {path.name}" for path in new_personas]
 
 
+def _repair_templates(
+    project_root: Path,
+    config: GzkitConfig,
+    *,
+    dry_run: bool,
+) -> list[str]:
+    """Scaffold new canonical templates, returning per-slug status messages."""
+    from gzkit.templates import _iter_canonical_template_slugs  # noqa: PLC0415
+
+    if dry_run:
+        templates_dir = project_root / ".gzkit" / "templates"
+        return [
+            f"Would scaffold template: {entry.name[:-3]}"
+            for entry in _iter_canonical_template_slugs()
+            if not (templates_dir / entry.name).exists()
+        ]
+    new_templates = scaffold_core_templates(project_root, config, skip_existing=True)
+    return [f"Scaffolded new template: {path.name[:-3]}" for path in new_templates]
+
+
 def _dry_run_missing_canonical_skills(
     project_root: Path,
     config: GzkitConfig,
@@ -416,6 +436,9 @@ def _repair_missing_artifacts(
 
     # Repair personas — scaffold any core personas added in newer gzkit versions
     repaired.extend(_repair_personas(project_root, config, dry_run=dry_run))
+
+    # Repair templates — scaffold any core templates added in newer gzkit versions
+    repaired.extend(_repair_templates(project_root, config, dry_run=dry_run))
 
     # Repair chores (scaffold + registry merge)
     repaired.extend(_repair_chores(project_root, config, dry_run=dry_run, yes=yes))
@@ -619,6 +642,10 @@ def init(
     # files; personas are identity files that must never be silently overwritten.
     personas = scaffold_core_personas(project_root, config, skip_existing=True)
     console.print(f"  Scaffolded {len(personas)} core personas")
+
+    # Scaffold canonical templates
+    templates = scaffold_core_templates(project_root, config)
+    console.print(f"  Scaffolded {len(templates)} core templates")
 
     # Scaffold data/audit_thresholds.json — required by gz adr audit-check
     # covers-backfill heuristic (REQ-0.0.23-05-03). The heuristic refuses to

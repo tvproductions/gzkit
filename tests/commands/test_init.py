@@ -641,3 +641,51 @@ class TestInitPersonasScaffoldingObpi10(unittest.TestCase):
             self.assertEqual(len(created), 5)
             # The pre-existing main-session.md must be preserved
             self.assertEqual((personas_dir / "main-session.md").read_bytes(), b"existing content")
+
+
+class TestInitTemplatesScaffolding(unittest.TestCase):
+    """REQ-0.0.32-12-04, 05, 07: init cmd templates scaffolding integration."""
+
+    @covers("REQ-0.0.32-12-07")
+    def test_init_creates_templates_directory(self) -> None:
+        """gz init creates .gzkit/templates/ directory."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertTrue(Path(".gzkit/templates").is_dir())
+
+    @covers("REQ-0.0.32-12-04")
+    @covers("REQ-0.0.32-12-07")
+    def test_init_creates_template_files(self) -> None:
+        """gz init scaffolds canonical template .md files."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            templates = list(Path(".gzkit/templates").glob("*.md"))
+            self.assertGreaterEqual(len(templates), 11)
+
+    @covers("REQ-0.0.32-12-05")
+    def test_repair_adds_missing_templates(self) -> None:
+        """Re-running init (repair mode) scaffolds missing templates."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            # Delete a template to simulate missing artifact
+            template_file = Path(".gzkit/templates/adr.md")
+            template_file.unlink()
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertTrue(template_file.exists(), "Repair must restore missing templates")
+
+    @covers("REQ-0.0.32-12-08")
+    def test_repair_preserves_operator_edited_templates(self) -> None:
+        """Repair mode does not overwrite operator-edited templates."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            template_file = Path(".gzkit/templates/adr.md")
+            template_file.write_text("OPERATOR-EDIT", encoding="utf-8")
+            runner.invoke(main, ["init"])  # repair mode
+            self.assertEqual(template_file.read_text(encoding="utf-8"), "OPERATOR-EDIT")

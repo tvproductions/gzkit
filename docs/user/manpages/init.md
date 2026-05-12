@@ -111,6 +111,24 @@ version without overwriting existing ones (`skip_existing=True` semantics always
 
 ---
 
+## Templates Scaffolding
+
+As of OBPI-0.0.32-12, `gz init` copies canonical template `.md` content from the
+wheel's package surface (`importlib.resources.files("gzkit.templates")`) into the
+project's `.gzkit/templates/<name>.md`. The 11 canonical template slugs are:
+`adr`, `adr_pool`, `agents`, `audit`, `audit_plan`, `claude`, `closeout`,
+`constitution`, `copilot`, `obpi`, `prd`.
+
+Once written, `.gzkit/templates/` is the **project canonical source-of-truth** —
+`render_template()` consults the project copy first when present
+(project-first → package-fallback resolution). Operators customize templates there.
+
+Re-running `gz init` (repair mode) adds any new canonical templates delivered by
+the installed gzkit version without overwriting existing ones (`skip_existing=True`
+semantics). Operator edits to `.gzkit/templates/<name>.md` are preserved.
+
+---
+
 ## Project Skeleton
 
 By default, `gz init` creates a minimal Python project skeleton:

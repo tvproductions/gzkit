@@ -956,6 +956,31 @@ uv run gz personas list --json       # Machine-readable persona output
 
 ---
 
+## Templates Commands
+
+As of OBPI-0.0.32-12, `gz init` scaffolds canonical template `.md` content from
+the wheel's package surface (`importlib.resources.files("gzkit.templates")`) into
+the project's `.gzkit/templates/` directory. Once written, `.gzkit/templates/` is
+the project canonical source-of-truth — `render_template()` uses project-first →
+package-fallback resolution. Operators customize templates there.
+
+The 11 canonical template slugs are: `adr`, `adr_pool`, `agents`, `audit`,
+`audit_plan`, `claude`, `closeout`, `constitution`, `copilot`, `obpi`, `prd`.
+
+```bash
+# Scaffold canonical templates (done automatically by gz init)
+gz init
+
+# List templates written to .gzkit/templates/
+ls .gzkit/templates/
+
+# Templates are operator-editable; project-first resolution means
+# operator-edited .gzkit/templates/<name>.md takes precedence over
+# the package default when render_template(<name>) is invoked.
+```
+
+---
+
 ## Adopter Feedback
 
 File bug reports, feature requests, or observations via GitHub Issues:
