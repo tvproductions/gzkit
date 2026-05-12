@@ -173,6 +173,17 @@ re-copy every canonical SKILL.md from the wheel.
 `lifecycle_state: retired` — retired slugs are not re-introduced on `gz init`
 (hard cutover invariant, enforced by `tests/commands/test_skills.py::TestSkillCommands::test_init_scaffolds_adr_create_and_removes_adr_manager`).
 
+As of OBPI-0.0.32-04, `gz init` also populates `.gzkit/rules/<slug>.md` by
+copying canonical rule content from the wheel's package surface
+(`importlib.resources.files("gzkit.rules")`). The same editing invariant
+applies: after init, `.gzkit/rules/` is **the project canonical
+source-of-truth** for rules in that adopter project. Rules scaffolding runs
+after `sync_all` in the fresh init path so the initial control-surface sync
+uses the instruction-sync path; subsequent `gz agent sync control-surfaces`
+invocations render canonical rules to `.github/instructions/`. The
+`AGENTS.md` file in the rules package is excluded from scaffolding (it is a
+package-internal agent contract, not an operator-facing rule).
+
 `gz init --update` (OBPI-0.0.32-05, not yet landed) will provide
 version-aware refresh semantics for the adopter's `.gzkit/<surface>/` from
 the wheel, with three-state IDENTICAL/STALE/EDITED detection so operator

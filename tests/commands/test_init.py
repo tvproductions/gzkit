@@ -8,6 +8,7 @@ from unittest.mock import patch
 from gzkit.cli import main
 from gzkit.commands.init_cmd import _normalize_package_name
 from gzkit.config import GzkitConfig
+from gzkit.traceability import covers
 from tests.commands.common import (
     CliRunner,
     start_init_subprocess_patches,
@@ -515,3 +516,77 @@ class TestInitChoresIntegration(unittest.TestCase):
                     ),
                     "no repair-path call with skip_existing=True",
                 )
+
+
+class TestInitRulesIntegration(unittest.TestCase):
+    """Integration tests for gz init wiring of scaffold_core_rules (REQ-0.0.32-04-04)."""
+
+    @covers("REQ-0.0.32-04-04")
+    @covers("REQ-0.0.32-04-07")
+    def test_gz_init_invokes_scaffold_core_rules_main_path(self) -> None:
+        """REQ-04-04/07: main init path calls scaffold_core_rules and populates .gzkit/rules/."""
+        from gzkit.rules import scaffold_core_rules as real_scaffold  # noqa: PLC0415
+
+        runner = CliRunner()
+        with (
+            runner.isolated_filesystem(),
+            patch(
+                "gzkit.commands.init_cmd.scaffold_core_rules",
+                wraps=real_scaffold,
+            ) as mock_scaffold,
+        ):
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertGreaterEqual(mock_scaffold.call_count, 1)
+            rules_dir = Path(".gzkit") / "rules"
+            self.assertTrue(rules_dir.exists(), ".gzkit/rules/ was not created by init")
+            rule_files = list(rules_dir.glob("*.md"))
+            self.assertGreater(len(rule_files), 0, ".gzkit/rules/ contains no .md files")
+
+    @covers("REQ-0.0.32-04-05")
+    def test_gz_init_repair_invokes_scaffold_core_rules_with_skip_existing(self) -> None:
+        """REQ-04-05: repair path calls scaffold_core_rules with skip_existing=True."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            with patch(
+                "gzkit.commands.init_cmd.scaffold_core_rules",
+                return_value=[],
+            ) as mock_scaffold:
+                result = runner.invoke(main, ["init"])
+                self.assertEqual(result.exit_code, 0)
+                self.assertTrue(
+                    any(
+                        c.kwargs.get("skip_existing") is True for c in mock_scaffold.call_args_list
+                    ),
+                    "no repair-path call with skip_existing=True",
+                )
+
+    @covers("REQ-0.0.32-04-08")
+    def test_init_manpage_mentions_rules(self) -> None:
+        """REQ-04-08: docs/user/manpages/init.md mentions rule scaffolding."""
+        manpage = Path("docs/user/manpages/init.md")
+        self.assertTrue(manpage.exists(), "docs/user/manpages/init.md not found")
+        content = manpage.read_text(encoding="utf-8").lower()
+        self.assertIn("rule", content, "init.md does not mention rules")
+
+    @covers("REQ-0.0.32-04-08")
+    def test_skill_surface_sync_rule_has_gz_init_bootstrap_note(self) -> None:
+        """REQ-04-08: .gzkit/rules/skill-surface-sync.md documents gz init bootstrap."""
+        rule_file = Path(".gzkit/rules/skill-surface-sync.md")
+        self.assertTrue(rule_file.exists(), ".gzkit/rules/skill-surface-sync.md not found")
+        content = rule_file.read_text(encoding="utf-8").lower()
+        self.assertIn("gz init", content, "skill-surface-sync.md does not document gz init")
+        self.assertIn("rules", content, "skill-surface-sync.md does not mention rules surface")
+
+    @covers("REQ-0.0.32-04-09")
+    def test_core_rules_check_passes(self) -> None:
+        """REQ-04-09: CORE_RULES registry is consistent (gz check prerequisite)."""
+        from gzkit.rules import CORE_RULES, _iter_canonical_rule_slugs  # noqa: PLC0415
+
+        iter_slugs = sorted(e.name[:-3] for e in _iter_canonical_rule_slugs())
+        self.assertEqual(
+            CORE_RULES,
+            iter_slugs,
+            "CORE_RULES does not match _iter_canonical_rule_slugs output",
+        )

@@ -25,6 +25,7 @@ from gzkit.ledger import (
     project_init_event,
 )
 from gzkit.personas import scaffold_default_personas
+from gzkit.rules import scaffold_core_rules
 from gzkit.skills import scaffold_core_skills
 from gzkit.sync import (
     detect_project_name,
@@ -285,6 +286,26 @@ def _repair_chores(
     return messages
 
 
+def _repair_rules(
+    project_root: Path,
+    config: GzkitConfig,
+    *,
+    dry_run: bool,
+) -> list[str]:
+    """Scaffold new canonical rules, returning per-slug status messages."""
+    from gzkit.rules import _iter_canonical_rule_slugs  # noqa: PLC0415
+
+    if dry_run:
+        rules_dir = project_root / config.paths.canonical_rules
+        return [
+            f"Would scaffold rule: {entry.name[:-3]}"
+            for entry in _iter_canonical_rule_slugs()
+            if not (rules_dir / entry.name).exists()
+        ]
+    new_rules = scaffold_core_rules(project_root, config, skip_existing=True)
+    return [f"Scaffolded new rule: {path.name}" for path in new_rules]
+
+
 def _dry_run_missing_canonical_skills(
     project_root: Path,
     config: GzkitConfig,
@@ -369,6 +390,9 @@ def _repair_missing_artifacts(
     elif new_skills:
         for skill_path in new_skills:
             repaired.append(f"Scaffolded new skill: {skill_path.parent.name}")
+
+    # Repair rules — scaffold any core rules added in newer gzkit versions
+    repaired.extend(_repair_rules(project_root, config, dry_run=dry_run))
 
     # Repair chores (scaffold + registry merge)
     repaired.extend(_repair_chores(project_root, config, dry_run=dry_run, yes=yes))
@@ -582,6 +606,15 @@ def init(
     updated = sync_all(project_root, config)
     for path in updated:
         console.print(f"  Generated {path}")
+
+    # Scaffold canonical rules AFTER sync_all so that the first sync uses the
+    # existing instruction-sync path (sync_claude_rules) rather than
+    # render_rules_to_dir, which would conflict with adopter-authored
+    # .github/instructions/ pairs. On subsequent gz init --repair and
+    # gz agent sync runs, rules are already in .gzkit/rules/ and will be
+    # rendered correctly by sync_all.
+    rules = scaffold_core_rules(project_root, config)
+    console.print(f"  Scaffolded {len(rules)} core rules")
 
     # Set up hooks
     _setup_init_hooks(project_root, config)

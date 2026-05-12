@@ -631,10 +631,11 @@ def sync_all(
     # Migrate legacy skill layouts into canonical path when needed.
     updated.extend(bootstrap_canonical_skills(project_root, config))
 
-    # Vendor-neutral surfaces (always generated)
+    # Vendor-neutral surfaces (AGENTS.md generated before vendor rules so that
+    # sync_nested_agents_md reads instruction files already rendered by
+    # render_rules_to_dir; caller must ensure this ordering is preserved)
     sync_agents_md(project_root, config)
     updated.append(config.paths.agents_md)
-    updated.extend(sync_nested_agents_md(project_root, config))
 
     # Load canonical rules once for all vendor renderers
     canonical_rules_dir = project_root / ".gzkit" / "rules"
@@ -657,7 +658,9 @@ def sync_all(
         updated.append(config.paths.claude_settings)
         updated.extend(setup_claude_hooks(project_root, config))
 
-    # Copilot surfaces
+    # Copilot surfaces — render canonical rules to .github/instructions/ BEFORE
+    # sync_nested_agents_md so that subsequent runs see the same instruction
+    # files as the first run (idempotency invariant).
     if not vendor_aware or config.vendors.copilot.enabled:
         if canonical_rules:
             rendered = render_rules_to_dir(
@@ -680,6 +683,11 @@ def sync_all(
         updated.append(".copilotignore")
 
         updated.extend(setup_copilot_hooks(project_root, config))
+
+    # Generate nested AGENTS.md files AFTER copilot rule rendering so that
+    # both the first and subsequent runs see the same .github/instructions/
+    # state, making sync idempotent across repeated invocations.
+    updated.extend(sync_nested_agents_md(project_root, config))
 
     # Vendor-aware skill mirrors
     mirrored = sync_skill_mirrors(project_root, config, vendor_aware=vendor_aware)

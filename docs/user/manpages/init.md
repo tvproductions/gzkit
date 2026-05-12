@@ -72,6 +72,25 @@ wheel's package surface (replaces any operator edits).
 
 ---
 
+## Rules Scaffolding
+
+As of OBPI-0.0.32-04, `gz init` copies canonical rule `.md` content from the
+wheel's package surface (`importlib.resources.files("gzkit.rules")`) into the
+project's `.gzkit/rules/<slug>.md`. Every canonical rule slug is scaffolded;
+`AGENTS.md` (a package-internal agent contract) is excluded.
+
+Once written, `.gzkit/rules/` is the **project canonical source-of-truth** —
+operators edit there. Run `gz agent sync control-surfaces` to propagate to
+vendor mirrors (`.claude/rules/`, `.github/instructions/`).
+
+Re-running `gz init` (repair mode) adds any new canonical rules delivered by
+the installed gzkit version without overwriting operator-edited files
+(`skip_existing=True` semantics). Rules scaffolding runs after `sync_all` in
+the fresh init path so that the initial control-surface sync uses the
+instruction-sync path; subsequent syncs render canonical rules to instructions.
+
+---
+
 ## Project Skeleton
 
 By default, `gz init` creates a minimal Python project skeleton:
