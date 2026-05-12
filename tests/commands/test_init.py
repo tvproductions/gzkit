@@ -220,9 +220,9 @@ class TestInitPersonaScaffolding(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
-            persona_file = Path(".gzkit/personas/default-agent.md")
+            persona_file = Path(".gzkit/personas/main-session.md")
             custom = (
-                "---\nname: default-agent\ntraits:\n  - custom\n"
+                "---\nname: main-session\ntraits:\n  - custom\n"
                 "anti-traits:\n  - x\ngrounding: custom\n---\n"
             )
             persona_file.write_text(custom, encoding="utf-8")
@@ -590,3 +590,54 @@ class TestInitRulesIntegration(unittest.TestCase):
             iter_slugs,
             "CORE_RULES does not match _iter_canonical_rule_slugs output",
         )
+
+
+class TestInitPersonasScaffoldingObpi10(unittest.TestCase):
+    """Integration tests for scaffold_core_personas wired into gz init (OBPI-0.0.32-10)."""
+
+    @covers("REQ-0.0.32-10-04")
+    @covers("REQ-0.0.32-10-07")
+    def test_fresh_init_produces_6_canonical_persona_files(self) -> None:
+        """A fresh gz init produces 6 canonical persona files at .gzkit/personas/."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            personas_dir = Path(".gzkit/personas")
+            self.assertTrue(personas_dir.is_dir())
+            persona_files = list(personas_dir.glob("*.md"))
+            self.assertEqual(
+                len(persona_files),
+                6,
+                f"Expected 6 canonical persona files, got {len(persona_files)}: "
+                f"{[f.name for f in persona_files]}",
+            )
+            expected_slugs = {
+                "implementer",
+                "main-session",
+                "narrator",
+                "pipeline-orchestrator",
+                "quality-reviewer",
+                "spec-reviewer",
+            }
+            actual_slugs = {f.stem for f in persona_files}
+            self.assertEqual(actual_slugs, expected_slugs)
+
+    @covers("REQ-0.0.32-10-05")
+    def test_repair_adds_missing_canonical_personas(self) -> None:
+        """gz init repair adds any missing canonical personas without overwriting existing."""
+        import tempfile  # noqa: PLC0415
+
+        from gzkit.personas import scaffold_core_personas  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            # Simulate partial scaffolding: only 1 persona file present
+            personas_dir = project_root / ".gzkit" / "personas"
+            personas_dir.mkdir(parents=True)
+            (personas_dir / "main-session.md").write_bytes(b"existing content")
+            # scaffold_core_personas(skip_existing=True) must add the missing 5
+            created = scaffold_core_personas(project_root, skip_existing=True)
+            self.assertEqual(len(created), 5)
+            # The pre-existing main-session.md must be preserved
+            self.assertEqual((personas_dir / "main-session.md").read_bytes(), b"existing content")

@@ -12,8 +12,11 @@ specification.  See OBPI-0.0.13-04 for vendor adapter design.
 
 from __future__ import annotations
 
+import importlib.resources as _importlib_resources
 import re
 from collections.abc import Callable
+from collections.abc import Iterator as _Iterator
+from importlib.resources.abc import Traversable as _Traversable
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -22,6 +25,7 @@ import yaml
 from gzkit.models.persona import PersonaFrontmatter
 
 if TYPE_CHECKING:
+    from gzkit.config import GzkitConfig
     from gzkit.models.persona import PersonaDriftReport, TraitCheckResult
 
 # Project-agnostic starter personas scaffolded by ``gz init``.
@@ -535,3 +539,54 @@ def render_persona_for_vendor(vendor: str, fm: PersonaFrontmatter, body: str = "
     if adapter is not None:
         return adapter(fm, body)
     return _rebuild_raw_persona(fm, body)
+
+
+# ---------------------------------------------------------------------------
+# Canonical personas scaffolding surface (OBPI-0.0.32-10)
+# ---------------------------------------------------------------------------
+
+
+def _iter_canonical_persona_slugs() -> _Iterator[_Traversable]:
+    """Yield each canonical persona ``.md`` entry shipped with the wheel.
+
+    Mirrors :func:`gzkit.rules._scaffolder._iter_canonical_rule_slugs`.
+    """
+    root = _importlib_resources.files("gzkit.personas")
+    for entry in root.iterdir():
+        if not entry.is_file():
+            continue
+        if not entry.name.endswith(".md"):
+            continue
+        yield entry
+
+
+CORE_PERSONAS: list[str] = sorted(entry.name[:-3] for entry in _iter_canonical_persona_slugs())
+"""Canonical persona slugs shipped with the gzkit wheel."""
+
+
+def scaffold_core_personas(
+    project_root: Path,
+    config: GzkitConfig | None = None,
+    *,
+    skip_existing: bool = False,
+) -> list[Path]:
+    """Scaffold canonical personas into ``<project_root>/.gzkit/personas/``.
+
+    Copies content from ``importlib.resources.files("gzkit.personas")`` into
+    the adopter's ``.gzkit/personas/<slug>.md``. ``config`` is accepted for
+    API symmetry with sibling scaffolders but is unused. ``skip_existing=True``
+    preserves operator-edited files; used by repair mode.
+
+    Returns paths of newly created files; empty when all slugs are skipped.
+    """
+    personas_dir = project_root / ".gzkit" / "personas"
+    personas_dir.mkdir(parents=True, exist_ok=True)
+
+    created: list[Path] = []
+    for slug_resource in _iter_canonical_persona_slugs():
+        target = personas_dir / slug_resource.name
+        if skip_existing and target.exists():
+            continue
+        target.write_bytes(slug_resource.read_bytes())
+        created.append(target)
+    return created

@@ -91,6 +91,26 @@ instruction-sync path; subsequent syncs render canonical rules to instructions.
 
 ---
 
+## Personas Scaffolding
+
+As of OBPI-0.0.32-10, `gz init` copies canonical persona `.md` content from the
+wheel's package surface (`importlib.resources.files("gzkit.personas")`) into the
+project's `.gzkit/personas/<slug>.md`. The 6 canonical persona slugs are:
+`implementer`, `main-session`, `narrator`, `pipeline-orchestrator`,
+`quality-reviewer`, `spec-reviewer`.
+
+Once written, `.gzkit/personas/` is the **project canonical source-of-truth** for
+that project — operators customize personas there. The `CORE_PERSONAS` registry
+(in `gzkit.personas`) enumerates the canonical slugs; `scaffold_core_personas`
+is the scaffolding function.
+
+Personas are treated as operator identity files and are **never overwritten** by
+`gz init` when they already exist — even with `--force`. Re-running `gz init`
+(repair mode) adds any new canonical personas delivered by the installed gzkit
+version without overwriting existing ones (`skip_existing=True` semantics always).
+
+---
+
 ## Project Skeleton
 
 By default, `gz init` creates a minimal Python project skeleton:

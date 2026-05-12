@@ -24,7 +24,7 @@ from gzkit.ledger import (
     prd_created_event,
     project_init_event,
 )
-from gzkit.personas import scaffold_default_personas
+from gzkit.personas import scaffold_core_personas
 from gzkit.rules import scaffold_core_rules
 from gzkit.skills import scaffold_core_skills
 from gzkit.sync import (
@@ -306,6 +306,26 @@ def _repair_rules(
     return [f"Scaffolded new rule: {path.name}" for path in new_rules]
 
 
+def _repair_personas(
+    project_root: Path,
+    config: GzkitConfig,
+    *,
+    dry_run: bool,
+) -> list[str]:
+    """Scaffold new canonical personas, returning per-slug status messages."""
+    from gzkit.personas import _iter_canonical_persona_slugs  # noqa: PLC0415
+
+    if dry_run:
+        personas_dir = project_root / ".gzkit" / "personas"
+        return [
+            f"Would scaffold persona: {entry.name[:-3]}"
+            for entry in _iter_canonical_persona_slugs()
+            if not (personas_dir / entry.name).exists()
+        ]
+    new_personas = scaffold_core_personas(project_root, config, skip_existing=True)
+    return [f"Scaffolded new persona: {path.name}" for path in new_personas]
+
+
 def _dry_run_missing_canonical_skills(
     project_root: Path,
     config: GzkitConfig,
@@ -393,6 +413,9 @@ def _repair_missing_artifacts(
 
     # Repair rules — scaffold any core rules added in newer gzkit versions
     repaired.extend(_repair_rules(project_root, config, dry_run=dry_run))
+
+    # Repair personas — scaffold any core personas added in newer gzkit versions
+    repaired.extend(_repair_personas(project_root, config, dry_run=dry_run))
 
     # Repair chores (scaffold + registry merge)
     repaired.extend(_repair_chores(project_root, config, dry_run=dry_run, yes=yes))
@@ -592,9 +615,10 @@ def init(
     chores = scaffold_core_chores(project_root, config)
     console.print(f"  Scaffolded {len(chores)} core chores")
 
-    # Scaffold default personas
-    personas = scaffold_default_personas(project_root)
-    console.print(f"  Scaffolded {len(personas)} default personas")
+    # Scaffold canonical personas — skip_existing=True preserves operator-edited
+    # files; personas are identity files that must never be silently overwritten.
+    personas = scaffold_core_personas(project_root, config, skip_existing=True)
+    console.print(f"  Scaffolded {len(personas)} core personas")
 
     # Scaffold data/audit_thresholds.json — required by gz adr audit-check
     # covers-backfill heuristic (REQ-0.0.23-05-03). The heuristic refuses to
