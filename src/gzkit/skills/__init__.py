@@ -15,7 +15,6 @@ from pydantic import BaseModel, ConfigDict
 
 from gzkit.config import GzkitConfig
 from gzkit.skill_contract import SKILL_DESCRIPTION_MAX_CHARS, SUPPORTED_SKILL_HARNESSES
-from gzkit.templates import render_template
 
 _CANONICAL_SKILLS_RESOURCE = "gzkit.skills"
 
@@ -124,28 +123,7 @@ CORE_SKILLS = {
     # The `gz git-sync --skill` flag advertises this path; without this
     # entry the path doesn't exist on consumer projects (GHI #315).
     "git-sync": {},
-    # --- Quality ---
-    "lint": {
-        "skill_name": "Lint",
-        "skill_description": "Run code linting with Ruff and PyMarkdown.",
-        "trigger_description": "After making code changes.",
-        "behavior_description": "Run `gz lint` and report issues.",
-        "prerequisites": "None",
-    },
-    "test": {
-        "skill_name": "Test",
-        "skill_description": "Run unit tests with unittest.",
-        "trigger_description": "After implementing features or fixing bugs.",
-        "behavior_description": "Run `gz test` and report results.",
-        "prerequisites": "Tests exist for the code being tested",
-    },
-    "format": {
-        "skill_name": "Format",
-        "skill_description": "Auto-format code with Ruff.",
-        "trigger_description": "Before committing changes.",
-        "behavior_description": "Run `gz format` to fix formatting issues.",
-        "prerequisites": "None",
-    },
+    # --- Quality (now consolidated into gz-check) ---
 }
 
 
@@ -308,54 +286,92 @@ def _validate_scaffold_description(description: str) -> None:
     raise ValueError(msg)
 
 
+def _render_inline_skill_stub(dir_name: str, **kwargs: str) -> str:
+    """Return a minimal valid SKILL.md body for custom-skill scaffolding.
+
+    The stub satisfies every required frontmatter field enforced by
+    ``gzkit.skills_audit`` (name, description, lifecycle_state, owner,
+    last_reviewed) plus the capability fields (compatibility, invocation,
+    gz_command) so a freshly-scaffolded skill passes ``gz skill audit``
+    on first run. The body is intentionally minimal — operators are
+    expected to flesh it out per the skill-authoring conventions.
+    """
+    skill_name = kwargs.get("skill_name", dir_name.replace("-", " ").title())
+    skill_description = kwargs.get("skill_description", "A custom skill for this project.")
+    _validate_scaffold_description(skill_description)
+    trigger_description = kwargs.get("trigger_description", "When triggered by the user.")
+    behavior_description = kwargs.get("behavior_description", "Follow the steps below.")
+    prerequisites = kwargs.get("prerequisites", "None")
+    return (
+        "---\n"
+        f"name: {dir_name}\n"
+        f"description: {skill_description}\n"
+        "compatibility: Project-local skill contract.\n"
+        "invocation: Describe the CLI invocation used for this skill.\n"
+        "gz_command: describe-command-surface\n"
+        "metadata:\n"
+        '  skill-version: "1.0.0"\n'
+        '  govzero-framework-version: "v6"\n'
+        '  govzero-author: "gzkit-governance"\n'
+        '  govzero_layer: "Layer 1 - Evidence Gathering"\n'
+        "lifecycle_state: active\n"
+        "owner: gzkit-governance\n"
+        f"last_reviewed: {date.today().isoformat()}\n"
+        "model: sonnet\n"
+        "---\n"
+        "\n"
+        "# SKILL.md\n"
+        "\n"
+        f"## {skill_name}\n"
+        "\n"
+        f"{skill_description}\n"
+        "\n"
+        "## Trigger\n"
+        "\n"
+        f"{trigger_description}\n"
+        "\n"
+        "## Behavior\n"
+        "\n"
+        f"{behavior_description}\n"
+        "\n"
+        "## Prerequisites\n"
+        "\n"
+        f"{prerequisites}\n"
+        "\n"
+        "## Steps\n"
+        "\n"
+        "1. Step 1\n"
+        "2. Step 2\n"
+        "3. Step 3\n"
+    )
+
+
 def scaffold_skill(
     project_root: Path,
     dir_name: str,
     skills_dir: str,
     **kwargs: str,
 ) -> Path:
-    """Scaffold a new skill from template or packaged resource.
+    """Scaffold a new skill from an inlined stub or packaged resource.
+
+    When a packaged SKILL.md exists at ``gzkit.templates/skills/<slug>/``
+    (e.g. ``git-sync``), its full canonical content is delivered verbatim.
+    Otherwise a minimal stub is rendered inline — the previous
+    ``templates/skill.md`` consumer was removed in GHI #453.
 
     Args:
         project_root: Project root directory.
         dir_name: Directory name for the skill.
         skills_dir: Directory for skills relative to project root.
-        **kwargs: Template variables (ignored when a packaged resource exists).
+        **kwargs: Optional stub fields (skill_name, skill_description, etc.).
+            Ignored when a packaged resource exists.
 
     Returns:
         Path to the created SKILL.md file.
 
     """
     packaged = _load_packaged_skill_resource(dir_name)
-    if packaged is None:
-        # Default values (skill_name in template is display name)
-        defaults = {
-            "skill_slug": dir_name,
-            "skill_name": dir_name.replace("-", " ").title(),
-            "skill_description": "A custom skill for this project.",
-            "compatibility": "Project-local skill contract.",
-            "invocation": "Describe the CLI invocation used for this skill.",
-            "gz_command": "describe-command-surface",
-            "metadata_skill_version": "1.0.0",
-            "metadata_govzero_framework_version": "v6",
-            "metadata_govzero_author": "gzkit-governance",
-            "metadata_govzero_layer": "Layer 1 - Evidence Gathering",
-            "lifecycle_state": "active",
-            "owner": "gzkit-governance",
-            "last_reviewed": date.today().isoformat(),
-            "model": "sonnet",
-            "trigger_description": "When triggered by the user.",
-            "behavior_description": "Follow the steps below.",
-            "prerequisites": "None",
-            "example_input": "Example input",
-            "example_output": "Example output",
-        }
-
-        context = {**defaults, **kwargs}
-        _validate_scaffold_description(context["skill_description"])
-        content = render_template("skill", **context)
-    else:
-        content = packaged
+    content = packaged if packaged is not None else _render_inline_skill_stub(dir_name, **kwargs)
 
     skill_path = project_root / skills_dir / dir_name
     skill_path.mkdir(parents=True, exist_ok=True)
@@ -375,9 +391,9 @@ def scaffold_core_skills(
 
     Copies canonical ``SKILL.md`` content from the wheel's package surface
     (``importlib.resources.files("gzkit.skills")``) into
-    ``<project_root>/<config.paths.skills>/<slug>/SKILL.md``. After this OBPI
-    (OBPI-0.0.32-02) the scaffolder no longer renders stubs through
-    ``templates/skill.md``; full canonical content is delivered byte-for-byte.
+    ``<project_root>/<config.paths.skills>/<slug>/SKILL.md``. After
+    OBPI-0.0.32-02 (and GHI #453 cleanup) the scaffolder delivers full
+    canonical content byte-for-byte rather than rendering a stub.
 
     Args:
         project_root: Project root directory.
