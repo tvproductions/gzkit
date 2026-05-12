@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-03-12
 compatibility: Works with GovZero-compliant repositories; in gzkit the receipt is written under .claude/plans/, consumed by gz-obpi-pipeline, and enforced by the registered plan-exit hooks tracked by ADR-0.12.0.
 metadata:
-  skill-version: "6.2.0"
+  skill-version: "6.3.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -278,8 +278,15 @@ Receipt contract:
 - `plan_file` should name the plan that was audited
 - receipt freshness is fail-closed: the receipt must be newer than the plan file
 
-Stop cleanly. The audit produces a report and receipt. Fixing alignment is a
-separate action.
+The audit produces a report and receipt. Fixing alignment is a separate
+action — never bundled into the audit pass.
+
+Return control to the caller:
+
+- If invoked standalone by an operator: end the turn after presenting the report.
+- If invoked from `gz-obpi-pipeline` as a sub-step: control returns to Stage 1
+  step 6 (lock claim) and Stage 2 (implementation) begins immediately in the
+  same turn. Do NOT end the turn — that violates the pipeline's Iron Law.
 
 ## Enforcement
 
@@ -331,7 +338,9 @@ Future gate logic to preserve:
 - Gaps include citations where applicable
 - Report ends with a clear PASS or FAIL verdict
 - Recommendations are actionable
-- The agent stops cleanly after presenting the report
+- The agent returns control to the caller after presenting the report —
+  ending the turn when invoked standalone, continuing into Stage 2 when
+  invoked as a `gz-obpi-pipeline` sub-step
 
 ## Related
 
