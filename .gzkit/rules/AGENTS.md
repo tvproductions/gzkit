@@ -102,6 +102,29 @@ Version is the primary signal (intentional semantic ordering). Commit hash is th
 - Do not manually copy skill files between surfaces — use the sync command
 - Do not skip sync because "both files look the same" — sync also updates manifests, registrations, and vendor-specific rendering
 
+## Bootstrap semantics (`gz init`)
+
+On first init in an adopter project, `gz init` populates
+`.gzkit/skills/<slug>/SKILL.md` by copying canonical content from the wheel's
+package surface (`importlib.resources.files("gzkit.skills")`). The package
+surface is the *one-time bootstrap source*: after init, the adopter's
+`.gzkit/skills/` is **the project canonical source-of-truth** for that
+project, and the "Edit `.gzkit/` first" rule binds from that point forward.
+
+Repair mode (re-running `gz init`) is idempotent: it adds new canonical
+slugs delivered by the installed gzkit version without overwriting
+operator-edited files (`skip_existing=True`). Use `--force` to wipe and
+re-copy every canonical SKILL.md from the wheel.
+
+`scaffold_core_skills` filters skills whose canonical SKILL.md declares
+`lifecycle_state: retired` — retired slugs are not re-introduced on `gz init`
+(hard cutover invariant, enforced by `tests/commands/test_skills.py::TestSkillCommands::test_init_scaffolds_adr_create_and_removes_adr_manager`).
+
+`gz init --update` (OBPI-0.0.32-05, not yet landed) will provide
+version-aware refresh semantics for the adopter's `.gzkit/<surface>/` from
+the wheel, with three-state IDENTICAL/STALE/EDITED detection so operator
+edits are preserved across gzkit upgrades.
+
 ## Rationale
 
 `.claude/` surfaces are the path of least resistance — that is what the agent reads at runtime. Editing there is the common drift mode; the next sync silently overwrites it. Rules cannot fully override the editing instinct, so the mechanical backstop is version + commit hash comparison: even when an agent edits the wrong surface, the version and git history make the conflict detectable and resolvable.
