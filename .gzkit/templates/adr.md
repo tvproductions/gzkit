@@ -1,0 +1,73 @@
+---
+id: {id}
+status: {status}
+kind: {kind}
+semver: {semver}
+lane: {lane}
+parent: {parent}
+date: {date}
+---
+
+# {id}: {title}
+
+## Persona
+
+<!-- Describe the behavioral identity for agents working on this ADR.
+     Frame as values and craftsmanship standards, not expertise claims.
+     See .gzkit/personas/ for reusable persona definitions. -->
+
+{persona}
+
+## Intent
+
+{intent}
+
+## Decision
+
+{decision}
+
+## Consequences
+
+### Positive
+
+{positive_consequences}
+
+### Negative
+
+{negative_consequences}
+
+## Decomposition Scorecard
+
+<!-- Deterministic OBPI sizing: score each dimension 0/1/2. -->
+<!-- Cutoffs are notional defaults and should be calibrated over time from project evidence. -->
+
+{decomposition_scorecard}
+
+## Checklist
+
+<!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
+
+{checklist}
+
+## Q&A Transcript
+
+<!-- Interview transcript preserved for context -->
+
+{qa_transcript}
+
+## Evidence
+
+<!-- Links to tests, documentation, and other artifacts that prove completion -->
+
+- [ ] Tests: `tests/`
+- [ ] Docs: `docs/`
+
+## Alternatives Considered
+
+{alternatives}
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| {semver} | Pending | | | |

@@ -9,6 +9,8 @@ from pathlib import Path
 from gzkit.templates import list_templates, load_template, render_template
 from gzkit.traceability import covers
 
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
 
 class TestLoadTemplate(unittest.TestCase):
     """Tests for template loading."""
@@ -44,6 +46,7 @@ class TestLoadTemplate(unittest.TestCase):
 class TestRenderTemplate(unittest.TestCase):
     """Tests for template rendering."""
 
+    @covers("REQ-0.0.32-11-05")
     def test_render_substitutes_values(self) -> None:
         """Render substitutes provided values."""
         content = render_template(
@@ -364,6 +367,118 @@ class TestObpiTemplateDemoSection(unittest.TestCase):
         demo_body = self.content[demo_idx:next_h2]
         self.assertIn("YIELDED PRODUCT", demo_body)
         self.assertIn("not housekeeping", demo_body)
+
+
+class TestTemplatesLayoutDualSurface(unittest.TestCase):
+    """.gzkit/templates/<name>.md must be byte-identical to src/gzkit/templates/ copy.
+
+    .gzkit/templates/ is the authored canonical source-of-truth (new home after
+    reverse-migration from src/gzkit/templates/).
+    src/gzkit/templates/ is the byte-equivalent package copy (ships in wheel).
+    """
+
+    @covers("REQ-0.0.32-11-01")
+    def test_authored_canonical_surface_populated(self) -> None:
+        """.gzkit/templates/ must exist and contain the migrated .md files."""
+        authored_root = _PROJECT_ROOT / ".gzkit" / "templates"
+        self.assertTrue(authored_root.is_dir(), ".gzkit/templates/ must exist post-migration")
+        md_files = [f for f in authored_root.iterdir() if f.suffix == ".md"]
+        self.assertGreaterEqual(
+            len(md_files),
+            11,
+            f".gzkit/templates/ must contain all migrated .md files (found {len(md_files)})",
+        )
+
+    @covers("REQ-0.0.32-11-07")
+    @covers("REQ-0.0.32-11-02")
+    def test_dual_surface_byte_parity(self) -> None:
+        """Authored .gzkit/templates/<name>.md must be byte-identical to src/gzkit copy."""
+        authored_root = _PROJECT_ROOT / ".gzkit" / "templates"
+        pkg_root = _PROJECT_ROOT / "src" / "gzkit" / "templates"
+        self.assertTrue(authored_root.is_dir(), ".gzkit/templates/ must exist")
+        md_files = [f for f in authored_root.iterdir() if f.suffix == ".md"]
+        self.assertGreater(len(md_files), 0, ".gzkit/templates/ must contain at least one .md file")
+        for authored in md_files:
+            pkg_copy = pkg_root / authored.name
+            self.assertTrue(
+                pkg_copy.exists(),
+                f"Package copy missing: {pkg_copy.relative_to(_PROJECT_ROOT)}",
+            )
+            self.assertEqual(
+                authored.read_bytes(),
+                pkg_copy.read_bytes(),
+                f"Drift between .gzkit/templates/ and src/gzkit/templates/ for {authored.name}",
+            )
+
+    @covers("REQ-0.0.32-11-03")
+    def test_init_py_api_preserved(self) -> None:
+        """`src/gzkit/templates/__init__.py` must preserve the pre-migration public API."""
+        from gzkit.templates import __all__ as templates_all
+
+        expected = {"load_template", "render_template", "get_template_path", "list_templates"}
+        self.assertEqual(
+            set(templates_all),
+            expected,
+            "__all__ must be exactly the pre-OBPI symbol set — no CORE_TEMPLATES additions",
+        )
+
+    @covers("REQ-0.0.32-11-04")
+    def test_skills_subdir_retained(self) -> None:
+        """`src/gzkit/templates/skills/` subdir must remain at the package surface."""
+        skills_subdir = _PROJECT_ROOT / "src" / "gzkit" / "templates" / "skills"
+        self.assertTrue(
+            skills_subdir.is_dir(),
+            "src/gzkit/templates/skills/ must be retained at the package surface",
+        )
+
+    @covers("REQ-0.0.32-11-06")
+    def test_no_scope_creep_in_init_py(self) -> None:
+        """No CORE_TEMPLATES or scaffolder symbols added to __init__.py (OBPI-12 scope)."""
+        init_py = _PROJECT_ROOT / "src" / "gzkit" / "templates" / "__init__.py"
+        content = init_py.read_text(encoding="utf-8")
+        forbidden_names = (
+            "CORE_TEMPLATES",
+            "scaffold_core_templates",
+            "_iter_canonical_template_slugs",
+        )
+        for forbidden in forbidden_names:
+            self.assertNotIn(
+                forbidden,
+                content,
+                f"{forbidden} belongs to OBPI-12, must not appear in this OBPI's __init__.py",
+            )
+
+    @covers("REQ-0.0.32-11-08")
+    def test_pyproject_no_new_template_includes(self) -> None:
+        """pyproject.toml must not include src/gzkit/templates/**/*.md (OBPI-06 scope)."""
+        pyproject = _PROJECT_ROOT / "pyproject.toml"
+        content = pyproject.read_text(encoding="utf-8")
+        self.assertNotIn(
+            "src/gzkit/templates/**/*.md",
+            content,
+            "templates wheel-include extension belongs to OBPI-06, not this OBPI",
+        )
+
+    @covers("REQ-0.0.32-11-09")
+    def test_sync_surfaces_has_no_templates_byte_copy(self) -> None:
+        """sync_surfaces.py must not sync .gzkit/templates to package surface (OBPI-08 scope)."""
+        sync_module = _PROJECT_ROOT / "src" / "gzkit" / "sync_surfaces.py"
+        content = sync_module.read_text(encoding="utf-8")
+        self.assertNotIn(
+            "src/gzkit/templates",
+            content,
+            "Dual-surface templates byte-copy step belongs to OBPI-08, not this OBPI",
+        )
+
+    @covers("REQ-0.0.32-11-10")
+    def test_all_templates_loadable_post_migration(self) -> None:
+        """`load_template` must succeed for all templates present in .gzkit/templates/."""
+        authored_root = _PROJECT_ROOT / ".gzkit" / "templates"
+        for md_file in sorted(authored_root.glob("*.md")):
+            name = md_file.stem
+            with self.subTest(template=name):
+                content = load_template(name)
+                self.assertGreater(len(content), 0, f"Template {name!r} must not be empty")
 
 
 if __name__ == "__main__":

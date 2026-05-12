@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.0.32-11-templates-reverse-migration",
+  "parent_adr": "ADR-0.0.32-canonical-surface-packaging",
+  "lane": "heavy",
+  "entry": "sync",
+  "execution_mode": "normal",
+  "current_stage": "sync",
+  "started_at": "2026-05-12T09:16:46Z",
+  "updated_at": "2026-05-12T09:16:46Z",
+  "receipt_state": "pass",
+  "nonce": "6228c29951ee9989e434c2a3daaa0c14",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz git-sync --apply --lint --test",
+  "resume_point": null
+}
