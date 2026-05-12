@@ -1,0 +1,15 @@
+{
+  "obpi_id": "OBPI-0.0.32-12-templates-scaffolder-authoring",
+  "parent_adr": "ADR-0.0.32-canonical-surface-packaging",
+  "lane": "heavy",
+  "entry": "full",
+  "execution_mode": "normal",
+  "current_stage": 2,
+  "started_at": "2026-05-12T11:35:00Z",
+  "updated_at": "2026-05-12T11:36:00Z",
+  "receipt_state": "pass",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "stage-2-implement",
+  "resume_point": "stage2"
+}
