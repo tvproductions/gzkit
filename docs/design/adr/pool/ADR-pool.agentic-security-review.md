@@ -91,3 +91,43 @@ point — security becomes a gate dimension alongside intent, tests, and docs.
 - Key design tension: scan speed vs. coverage. Pre-commit needs to be fast; full scans can be periodic chores.
 - Consider: should security findings have their own ledger file or share `agent-insights.jsonl`?
 - Consider: integration with GitHub Advanced Security for projects hosted on GitHub.
+
+### Promotion-time design tension: canonical-surface migration catch-22 (GHI #455)
+
+Surfaced during OBPI-0.0.32-03-rules-physical-migration Stage 5 (2026-05-11).
+When a foundation OBPI migrates the on-disk location of source code listed in
+`data/security_surfaces.json`, the registry becomes stale relative to the
+post-migration tree. Once the auto-detect security floor (GHI #413) is active
+and the security-scan canonical slot is filled by this ADR's promotion, the
+following four-step catch-22 fires on the migrating brief itself:
+
+1. `detect_brief_security_floor` matches the pre-migration glob against the
+   brief's `## Allowed Paths` (necessarily — the migrating file is in scope)
+   → `effective_sensitivity = security`.
+2. `_run_security_gate` requires the security-scan canonical slot to be
+   filled → fail-closed until this pool ADR is promoted and slot wired.
+3. The registry edit that would resolve (1) requires `sensitivity: security`
+   on the editing brief per `.gzkit/rules/security-sensitivity.md`
+   § Registry contract.
+4. Declaring `sensitivity: security` on the editing brief re-triggers (2).
+
+Operator resolution in flight: AGENTS.md § 1a coupled-surface coherence —
+the registry edit was treated as coherent with the migration and applied
+inline; `src/gzkit/rules.py` was removed from
+`data/security_surfaces.json` `deserialization_user_input` in commit
+`b1bb69ae`. The class-of-failure pattern is recorded here for the
+promotion ADR to design against. Promotion must choose one of:
+
+- **(a) Self-migrating-path exemption**: when a brief's only registry
+  overlap is a path the brief itself migrates, the auto-detect floor
+  treats the overlap as transient (exempt).
+- **(b) Coupled registry-edit allowance**: a migrating brief may edit the
+  registry to track its own move without inheriting `sensitivity: security`,
+  bounded to paths the brief touches.
+- **(c) Slot-first ordering**: the security-scan canonical slot is filled
+  before any sensitive-surface migration becomes possible, eliminating
+  fail-closed step (2) at the cost of pushing pool promotion ahead of
+  any further canonical-surface OBPIs.
+
+This is a Stage-2 promotion-criteria design question, not a v1 implementation
+detail. Recorded here so the promotion-time author has the prior art.
