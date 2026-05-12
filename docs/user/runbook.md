@@ -932,12 +932,22 @@ uv run gz task escalate TASK-<id> --reason "..." # Escalate with reason
 ## Persona Commands
 
 Agent persona definitions live in `.gzkit/personas/` as the canonical control
-surface (ADR-0.0.11). The persona research synthesis
+surface (ADR-0.0.11). As of OBPI-0.0.32-10, `gz init` scaffolds the 6
+canonical gzkit personas (`implementer`, `main-session`, `narrator`,
+`pipeline-orchestrator`, `quality-reviewer`, `spec-reviewer`) from the wheel's
+package surface (`importlib.resources.files("gzkit.personas")`) into
+`.gzkit/personas/`. Once written, `.gzkit/personas/` is the project canonical
+source-of-truth per ADR-0.0.32 § Decision's binding canonical-routing
+invariant. Personas are operator identity files and are never silently
+overwritten — even by `gz init --force`.
+
+Re-running `gz init` (repair mode) adds any new canonical personas shipped in
+newer gzkit versions without touching existing ones. The `CORE_PERSONAS`
+registry (importable from `gzkit.personas`) lists all 6 canonical slugs.
+
+The persona research synthesis
 (`docs/design/research-persona-selection-agent-identity.md`) distills five
 mechanistic studies into design principles that ground trait composition.
-The earlier `ADR-pool.per-command-persona-context` has been superseded;
-operators should supersede pool persona context references with the
-ADR-0.0.11 lineage.
 
 ```bash
 uv run gz personas list              # List loaded persona definitions

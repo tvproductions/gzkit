@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.32-04",
-  "timestamp": "2026-05-12T10:09:40.591476+00:00",
+  "obpi_id": "OBPI-0.0.32-10-personas-scaffolder-authoring",
+  "timestamp": "2026-05-12T11:15:00+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.32-04-rules-scaffolder-authoring.md",
-  "gaps_found": 0,
-  "notes": "Two brief path errors corrected: (1) docs/user/manpages/gz-init.md -> docs/user/manpages/init.md; (2) .claude/rules/skill-surface-sync.md -> .gzkit/rules/skill-surface-sync.md. Advisory: brief says 14 rule slugs; actual count is 20 .md files (AGENTS.md excluded from enumeration). Tests must use dynamic count. Plan authored at OBPI-0.0.32-04-rules-scaffolder-authoring.md. OBPI-03 prerequisite confirmed landed."
+  "plan_file": "OBPI-0.0.32-10-personas-scaffolder-authoring.md",
+  "gaps_found": 1,
+  "notes": "One brief path error corrected: docs/user/manpages/gz-init.md -> docs/user/manpages/init.md (same class as OBPI-04 correction). 79 sibling-ADR scope collisions advisory only. OBPI-09 negative boundary tests will be removed by plan Step 1a — intentional test lifecycle. All checks aligned; OBPI-09 Completed prerequisite confirmed."
 }
