@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.32-09-personas-physical-migration",
-  "timestamp": "2026-05-12T07:44:00.000000+00:00",
+  "obpi_id": "OBPI-0.0.32-13-chores-normalization",
+  "timestamp": "2026-05-12T09:34:00.000000+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.32-09-personas-physical-migration.md",
+  "plan_file": "OBPI-0.0.32-13-chores-normalization.md",
   "gaps_found": 0,
-  "notes": "CLI structural check FAIL is false positive for migration/conversion OBPIs: allowed paths (src/gzkit/personas/__init__.py, src/gzkit/personas/<slug>.md, tests/test_personas.py) are files created by this OBPI. ADR<->OBPI semantic audit: 7/7 checks ALIGNED. Plan<->OBPI semantic audit: 7/7 checks ALIGNED. Key finding: src/gzkit/personas.py already exists as 538-line module — this is a module-to-package conversion (same as OBPI-01 skills), not a fresh creation. STOP-on-BLOCKERS review: existing imports found in 8 files; finding: existing personas.py supplies the full API; conversion preserves every existing symbol; REQ-03 prohibition applies as negative constraint on NEW additions only. Vendor mirrors confirmed transformed-render shape. Plan-before-exploration disclosure: destination (module-to-package conversion) and rejected alternatives documented."
+  "notes": "Structural FAIL items resolved: (1) vendor-mirror path corrected in brief (.claude/rules -> .gzkit/rules); (2) tests/test_chores.py is a new file to be created in TDD RED phase -- not a gap; (3) docs/governance/canonical-routing-doctrine.md is explicitly optional per brief -- not a gap. ADR<->OBPI alignment: 7/7 checks ALIGNED after brief correction. Plan<->OBPI semantic audit: 10-task plan covers all 9 REQs. Divergence inventory pre-confirmed: AGENTS.md (header only), complexity-reduction-xenon/CHORE.md (mirror v2.0.0 > canonical v1.0.0, promote), pythonic-design-pattern-detection/scan.py (mirror more complete, promote). STOP-on-BLOCKERS resolved: scan.py classified as canonical (authored tool script); check_evidence.py classified as package_only (no .gzkit/ counterpart; GHI deferred). Scope-collision advisory: src/gzkit/chores/__init__.py overlaps OBPI-0.0.21-01-physical-migration (Completed) -- change is narrow and additive only. Plan-before-exploration: destination-in-mind and rejected-alternatives documented in plan file."
 }
