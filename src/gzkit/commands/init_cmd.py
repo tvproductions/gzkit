@@ -285,6 +285,32 @@ def _repair_chores(
     return messages
 
 
+def _dry_run_missing_canonical_skills(
+    project_root: Path,
+    config: GzkitConfig,
+) -> list[str]:
+    """List ``Would scaffold skill: <slug>`` lines for missing canonical slugs.
+
+    Mirrors :func:`gzkit.skills.scaffold_core_skills` iteration: enumerate
+    canonical slugs from the wheel's package surface and skip
+    ``lifecycle_state: retired`` (GHI #453 — formerly iterated
+    ``CORE_SKILLS`` which carried stale retired slugs).
+    """
+    from gzkit.skills import _iter_canonical_skill_slugs, _parse_frontmatter  # noqa: PLC0415
+
+    skills_dir = project_root / config.paths.skills
+    messages: list[str] = []
+    for slug_resource in _iter_canonical_skill_slugs():
+        slug = slug_resource.name
+        skill_src = slug_resource.joinpath("SKILL.md")
+        frontmatter, _ = _parse_frontmatter(skill_src.read_text(encoding="utf-8"))
+        if (frontmatter.get("lifecycle_state") or "active") == "retired":
+            continue
+        if not (skills_dir / slug / "SKILL.md").exists():
+            messages.append(f"Would scaffold skill: {slug}")
+    return messages
+
+
 def _repair_missing_artifacts(
     project_root: Path,
     config: GzkitConfig,
@@ -339,13 +365,7 @@ def _repair_missing_artifacts(
     # Repair skills — scaffold any core skills added in newer gzkit versions
     new_skills = scaffold_core_skills(project_root, config, skip_existing=not dry_run)
     if dry_run:
-        # In dry-run, check which skills are missing without writing
-        from gzkit.skills import CORE_SKILLS  # noqa: PLC0415
-
-        skills_dir = project_root / config.paths.skills
-        for dir_name in CORE_SKILLS:
-            if not (skills_dir / dir_name / "SKILL.md").exists():
-                repaired.append(f"Would scaffold skill: {dir_name}")
+        repaired.extend(_dry_run_missing_canonical_skills(project_root, config))
     elif new_skills:
         for skill_path in new_skills:
             repaired.append(f"Scaffolded new skill: {skill_path.parent.name}")

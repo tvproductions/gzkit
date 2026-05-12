@@ -249,25 +249,79 @@ class TestPyprojectTomlUnchanged(unittest.TestCase):
         )
 
 
-class TestSkillTemplatePreserved(unittest.TestCase):
-    """src/gzkit/templates/skill.md is retained (not deleted) with a repurposing comment."""
+class TestScaffoldSkillTemplateRemoved(unittest.TestCase):
+    """GHI #453: scaffold_skill no longer reads templates/skill.md; the file is deleted.
 
-    @covers("REQ-0.0.32-02-03")
-    def test_skill_template_still_exists(self) -> None:
+    The OBPI-0.0.32-02 follow-up clause permitted either deletion or retention with a
+    repurposing comment; this defect closure takes the deletion branch and inlines a
+    minimal stub in scaffold_skill so no template consumer remains.
+    """
+
+    def test_skill_template_does_not_exist(self) -> None:
         skill_template = _PROJECT_ROOT / "src" / "gzkit" / "templates" / "skill.md"
-        self.assertTrue(
+        self.assertFalse(
             skill_template.exists(),
-            f"skill.md template must be retained (not deleted) at {skill_template}",
+            f"templates/skill.md must be deleted (GHI #453); still present at {skill_template}",
         )
 
-    @covers("REQ-0.0.32-02-03")
-    def test_skill_template_has_repurposing_comment(self) -> None:
-        skill_template = _PROJECT_ROOT / "src" / "gzkit" / "templates" / "skill.md"
-        content = skill_template.read_text(encoding="utf-8")
-        self.assertIn(
-            "scaffold_skill",
+    def test_scaffold_skill_module_does_not_import_render_template(self) -> None:
+        skills_init = _PROJECT_ROOT / "src" / "gzkit" / "skills" / "__init__.py"
+        content = skills_init.read_text(encoding="utf-8")
+        self.assertNotIn(
+            "render_template",
             content,
-            "skill.md must contain repurposing comment referencing scaffold_skill",
+            "scaffold_skill must not depend on render_template after GHI #453",
+        )
+
+    def test_scaffold_skill_writes_inline_stub_with_required_frontmatter(self) -> None:
+        from gzkit.skills import scaffold_skill
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            skill_file = scaffold_skill(
+                project_root,
+                "demo-inline-stub",
+                "skills",
+                skill_description="Inline stub regression test (GHI #453).",
+            )
+            content = skill_file.read_text(encoding="utf-8")
+            self.assertTrue(content.startswith("---"), "stub must start with frontmatter")
+            for field in ("name:", "description:", "lifecycle_state:", "owner:", "last_reviewed:"):
+                self.assertIn(field, content, f"stub missing required frontmatter field {field!r}")
+            self.assertIn("demo-inline-stub", content)
+
+
+class TestCoreSkillsHasNoRetiredEntries(unittest.TestCase):
+    """GHI #453: CORE_SKILLS must not carry slugs whose canonical SKILL.md is retired."""
+
+    def test_no_retired_slug_in_core_skills(self) -> None:
+        import importlib.resources
+
+        from gzkit.skills import CORE_SKILLS, _parse_frontmatter
+
+        canonical_root = importlib.resources.files("gzkit.skills")
+        retired_in_core: list[str] = []
+        for slug in CORE_SKILLS:
+            slug_dir = canonical_root.joinpath(slug)
+            skill_file = slug_dir.joinpath("SKILL.md")
+            if not skill_file.is_file():
+                continue
+            frontmatter, _ = _parse_frontmatter(skill_file.read_text(encoding="utf-8"))
+            if (frontmatter.get("lifecycle_state") or "active") == "retired":
+                retired_in_core.append(slug)
+        self.assertEqual(
+            retired_in_core,
+            [],
+            f"CORE_SKILLS must contain no retired slugs (GHI #453); found: {retired_in_core}",
+        )
+
+    def test_lint_is_not_in_core_skills(self) -> None:
+        from gzkit.skills import CORE_SKILLS
+
+        self.assertNotIn(
+            "lint",
+            CORE_SKILLS,
+            "stale 'lint' entry must be removed from CORE_SKILLS (GHI #453)",
         )
 
 
