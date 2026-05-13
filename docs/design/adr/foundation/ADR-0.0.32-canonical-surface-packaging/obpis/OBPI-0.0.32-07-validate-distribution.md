@@ -3,7 +3,7 @@ id: OBPI-0.0.32-07-validate-distribution
 parent: ADR-0.0.32-canonical-surface-packaging
 item: 7
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.32-07-validate-distribution: gz validate --distribution Scope
@@ -216,18 +216,35 @@ Before this OBPI: T0 enforcement depended on the OBPI-0.0.32-04 build-install-in
 
 ### Key Proof
 
+
 ```bash
-uv run gz validate --distribution
-# Expected: exit 0 in clean state; exit 3 with structured per-violation report on any drift class
+$ uv run gz validate --help | grep -- --distribution
+  --distribution        T0 static distribution audit — three drift classes,
+                        exit 3 (ADR-0.0.32-07).
+
+$ uv run gz validate --distribution
+# Exits 3 in current state (21 pre-existing drift violations from stale OBPI-06 baseline)
+# Exits 0 in clean state (TestCleanStateExitsZero verifies); exits 2 on malformed pyproject.toml (TestMalformedToml)
 ```
+
+Receipts:
+- arb-ruff-76875a6de9ba4e68ba86b1f1e4a730d1 (lint clean)
+- arb-step-typecheck-f35dad4b93294f2f94acf9137219c289 (typecheck clean)
+- arb-step-unittest-10d203141e1e45d2a0788b1d614e9dcd (4917/4917 tests pass; OBPI-scoped 17/17 pass)
+- arb-step-mkdocs-27ce21c2b00f4388ba8fc3cbd65a3c0b (docs build strict clean)
+
+BDD: 2/2 scenarios pass (features/validate_distribution.feature, @REQ-0.0.32-07-01 + @REQ-0.0.32-07-11).
+REQ coverage: 11/11 (uv run gz covers OBPI-0.0.32-07-validate-distribution reports 0 uncovered).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/governance/trust_audits/distribution.py (audit function — 3 drift classes), tests/governance/test_distribution_audit.py (17 tests), features/validate_distribution.feature + features/steps/validate_distribution_steps.py (2 BDD scenarios), .claude/plans/OBPI-0.0.32-07-validate-distribution.md (plan)
+- Files modified: src/gzkit/governance/trust_audits/__init__.py (re-export), src/gzkit/cli/parser_maintenance.py (--distribution flag), src/gzkit/commands/validate_cmd.py (dispatch + policy-breach type), docs/user/manpages/validate.md (scope docs), docs/governance/advisory-rules-audit.md (T0 row 57 Promotable to Mechanical), .gzkit/rules/governance-core.md + src/gzkit/rules/governance-core.md (proof commands), data/behave_coverage_waivers.json (waiver for 5 structural REQs)
+- Tests added: 17 unit tests + 2 BDD scenarios (REQ-0.0.32-07-01/02/03/05/07/11 tagged; REQs 04/06/08/09/10 covered by unit tests, waived via data/behave_coverage_waivers.json with rationale adr-0.0.32-07-unit-test-only-structural-reqs)
+- Date completed: 2026-05-13
+- Attestation status: human-attested (operator: "attest completed")
+- Defects noted: pre-existing baseline drift (19 ON_DISK_NOT_BASELINE for skills added after OBPI-06 + 2 ON_DISK_NOT_INCLUDED for non-.md rules files _scaffolder.py and complexity-thresholds.json) — out of scope per brief DENIED PATHS (pyproject.toml + baseline manifest belong to OBPI-06).
 
 ## Tracked Defects
 
@@ -235,14 +252,14 @@ uv run gz validate --distribution
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — gz validate --distribution mechanically enforces T0 distribution invariant via three static drift classes (ON_DISK_NOT_INCLUDED / BASELINE_NOT_ON_DISK / ON_DISK_NOT_BASELINE); 17 unit tests + 2 BDD scenarios pass (receipts arb-step-unittest-10d203141e1e45d2a0788b1d614e9dcd, arb-ruff-76875a6de9ba4e68ba86b1f1e4a730d1, arb-step-typecheck-f35dad4b93294f2f94acf9137219c289, arb-step-mkdocs-27ce21c2b00f4388ba8fc3cbd65a3c0b); advisory scorecard row 57 flipped Promotable → Mechanical; all 11 REQs covered (6 via BDD scenario tags, 5 via waiver for unit-test-only structural assertions).
+- Date: 2026-05-13
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-13
 
 **Evidence Hash:** -

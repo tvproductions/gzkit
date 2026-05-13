@@ -36,6 +36,7 @@ direct `fix(<scope>): … (GHI #N)` path instead — this workflow does not appl
 uv run gz cli audit
 uv run gz check-config-paths
 uv run gz validate --documents --surfaces
+uv run gz validate --distribution
 uv run mkdocs build --strict
 ```
 

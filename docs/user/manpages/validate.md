@@ -9,7 +9,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--instructions] [--briefs] [--personas]
             [--interviews] [--decomposition]
             [--requirements] [--commit-trailers]
-            [--taxonomy] [--chores-layout]
+            [--taxonomy] [--chores-layout] [--distribution]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
             [--advisor-proof-binding]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
@@ -223,6 +223,81 @@ gz validate --chores-layout --json
 |------|---------|----------|
 | 0 | Clean tree (or all violations waived) | — |
 | 3 | One or more unwaived stray `CHORE.md` / `acceptance.json` | Move the file under `src/gzkit/chores/<slug>/` or `.gzkit/chores/<slug>/`, or add an explicit waiver entry |
+
+### `--distribution`
+
+Static T0 distribution invariant audit (ADR-0.0.32-07). Verifies that every
+file in a canonical surface tree (`src/gzkit/skills/`, `src/gzkit/rules/`,
+`src/gzkit/personas/`, `src/gzkit/templates/`, and any surface tracked by
+`data/distribution_baseline_manifest.json`) is wheel-deliverable — i.e.,
+covered by a `[tool.hatch.build.targets.wheel] include:` glob in
+`pyproject.toml` AND present in the baseline manifest.
+
+The check is **purely static**: no wheel build, no `uv build` or `hatch build`
+subprocess. Inputs are `pyproject.toml` (parsed via stdlib `tomllib`),
+`data/distribution_baseline_manifest.json`, and on-disk file walks.
+
+#### Drift classes
+
+| Class | Meaning |
+|-------|---------|
+| `ON_DISK_NOT_INCLUDED` | File exists under a canonical surface tree but is not covered by any include glob in `pyproject.toml`. Resolution: extend the `include:` block. |
+| `BASELINE_NOT_ON_DISK` | Baseline manifest names a file that does not exist on disk. Resolution: restore the missing file or remove the entry from `data/distribution_baseline_manifest.json`. |
+| `ON_DISK_NOT_BASELINE` | File exists on disk and is covered by an include glob but is absent from the baseline manifest. Resolution: add the entry to `data/distribution_baseline_manifest.json`. |
+
+#### Exit codes
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | No drift — all three inputs agree | — |
+| 2 | System/IO error — `pyproject.toml` is malformed or missing, or baseline manifest is missing or unparseable | Fix the TOML/JSON syntax or restore the missing file |
+| 3 | Policy breach — one or more drift violations detected | See per-violation report; extend include globs or update the baseline manifest |
+
+#### Examples
+
+```bash
+# Run the distribution audit
+uv run gz validate --distribution
+
+# Machine-readable output
+uv run gz validate --distribution --json
+```
+
+Clean state:
+
+```
+$ uv run gz validate --distribution
+Validated: distribution
+
+✓ All validations passed (1 scope).
+$ echo $?
+0
+```
+
+Drift detected (ON_DISK_NOT_BASELINE):
+
+```
+$ uv run gz validate --distribution
+Validated: distribution
+
+❌ Validation failed with 1 error(s):
+
+   → [distribution] src/gzkit/skills/new-skill/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/new-skill/SKILL.md' exists on disk
+    and is covered by a wheel include glob but is NOT in the baseline manifest.
+    Resolution: add to data/distribution_baseline_manifest.json.
+$ echo $?
+3
+```
+
+Malformed `pyproject.toml` (system error):
+
+```
+$ uv run gz validate --distribution
+distribution-audit: cannot parse pyproject.toml: ...
+$ echo $?
+2
+```
 
 ### `--unscoped-rules`
 
@@ -524,6 +599,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--evaluation-justify-binding` | opt-in | Fail-closed gate: `gz-justify` artifact required when evaluation scores are low (ADR-0.0.26) |
 | `--intrinsic-attestation` | opt-in | Validate `intrinsic-complexity-attestation` ledger events against canonical schema (OBPI-0.0.29-07) |
 | `--advisor-proof-binding` | opt-in | Verdict <-> proof binding audit across fixtures, ledger-cited diagnoses, and JSON Schema (OBPI-0.0.29-08) |
+| `--distribution` | opt-in | T0 static distribution audit: ON\_DISK\_NOT\_INCLUDED / BASELINE\_NOT\_ON\_DISK / ON\_DISK\_NOT\_BASELINE drift classes (ADR-0.0.32-07) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
 
 The `--allowlist-only` flag is a sub-modifier for `--unscoped-rules` —
