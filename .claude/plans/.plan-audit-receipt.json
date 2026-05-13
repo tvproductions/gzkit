@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.32-06-t0-smoke-test",
-  "timestamp": "2026-05-13T07:39:30+00:00",
+  "obpi_id": "OBPI-0.0.32-07-validate-distribution",
+  "timestamp": "2026-05-13T08:40:00+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.32-06-t0-smoke-test.md",
+  "plan_file": "OBPI-0.0.32-07-validate-distribution.md",
   "gaps_found": 0,
-  "notes": "CLI structural FAIL (5 gaps) is new-file-artifact only: features/distribution_invariant.feature, features/steps/distribution_invariant_steps.py, data/distribution_baseline_manifest.json, tests/distribution/test_baseline_manifest.py, docs/governance/distribution_baseline.md — all are new files created by this OBPI; not semantic alignment gaps. Same class as OBPI-0.0.32-05 structural-only FAIL. Semantic ADR<->OBPI alignment: all 7 checks PASS. Prerequisites OBPI-01 (Completed) and OBPI-02 (Completed) confirmed. 70 SKILL.md files, 19 rule .md files, 6 persona .md files, 12 template .md files confirmed in src/gzkit/. scaffold_core_skills uses importlib.resources confirmed live in init_cmd.py. Plan covers all 11 FAIL-CLOSED REQs across 7 steps."
+  "notes": "CLI structural FAIL (4 gaps) is new-file-artifact only: src/gzkit/governance/trust_audits/distribution.py, tests/governance/test_distribution_audit.py, features/validate_distribution.feature -- all new files created by this OBPI; not semantic alignment gaps. Path discrepancies (trust_audits.py->package, parser_validate.py->parser_maintenance.py, gz-validate.md->validate.md) are advisory brief-vs-reality mapping noted in plan and resolved correctly in implementation. Semantic ADR<->OBPI alignment: all 7 checks PASS. Prerequisite data/distribution_baseline_manifest.json confirmed present. tomllib stdlib confirmed available. Step 1->5 plan covers all 11 FAIL-CLOSED REQs."
 }

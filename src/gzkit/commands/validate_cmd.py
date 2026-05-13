@@ -382,6 +382,7 @@ def _collect_errors(
     check_evaluation_justify_binding: str | None = None,
     check_intrinsic_attestation: bool = False,
     check_advisor_proof_binding: bool = False,
+    check_distribution: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -436,6 +437,7 @@ def _collect_errors(
         "evaluation_justify_binding": check_evaluation_justify_binding is not None,
         "intrinsic_attestation": check_intrinsic_attestation,
         "advisor_proof_binding": check_advisor_proof_binding,
+        "distribution": check_distribution,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
@@ -527,6 +529,7 @@ def _explicit_scope_runners(
         ),
         "intrinsic_attestation": lambda: trust_audits.validate_intrinsic_attestation(project_root),
         "advisor_proof_binding": lambda: trust_audits.validate_advisor_proof_binding(project_root),
+        "distribution": lambda: trust_audits.audit_distribution(project_root),
     }
 
 
@@ -1005,6 +1008,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "sensitivity-malformed-allowlist",
         "absorption_duplicate",
         "evaluation-justify-binding",
+        "distribution",
     }
 )
 
@@ -1167,6 +1171,7 @@ def validate(
     check_evaluation_justify_binding: str | None = None,
     check_intrinsic_attestation: bool = False,
     check_advisor_proof_binding: bool = False,
+    check_distribution: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1316,6 +1321,7 @@ def validate(
         check_evaluation_justify_binding=check_evaluation_justify_binding,
         check_intrinsic_attestation=check_intrinsic_attestation,
         check_advisor_proof_binding=check_advisor_proof_binding,
+        check_distribution=check_distribution,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -1385,6 +1391,7 @@ def validate(
         "evaluation_justify_binding": check_evaluation_justify_binding is not None,
         "intrinsic_attestation": check_intrinsic_attestation,
         "advisor_proof_binding": check_advisor_proof_binding,
+        "distribution": check_distribution,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]

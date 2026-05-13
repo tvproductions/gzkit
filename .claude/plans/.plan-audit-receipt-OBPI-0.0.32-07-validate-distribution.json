@@ -1,0 +1,8 @@
+{
+  "obpi_id": "OBPI-0.0.32-07-validate-distribution",
+  "timestamp": "2026-05-13T08:42:00+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.32-07-validate-distribution.md",
+  "gaps_found": 0,
+  "notes": "CLI structural FAIL (4 gaps) is new-file-artifact only — all 4 missing paths (trust_audits/distribution.py, test_distribution_audit.py, validate_distribution.feature, validate.md) are files this OBPI will create. Same class as OBPI-0.0.32-06 structural-only FAIL. Semantic ADR<->OBPI alignment: all 7 checks PASS. Plan authors canonical plan file OBPI-0.0.32-07-validate-distribution.md with 5 steps covering all 11 REQs."
+}

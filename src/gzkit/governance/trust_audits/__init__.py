@@ -57,6 +57,7 @@ from gzkit.governance.trust_audits.complexity_thresholds import (
     validate_complexity_thresholds,
 )
 from gzkit.governance.trust_audits.cross_platform import audit_utf8_prefix
+from gzkit.governance.trust_audits.distribution import audit_distribution
 from gzkit.governance.trust_audits.doc_surface_parity import (
     audit_doc_surface_parity,
 )
@@ -109,6 +110,7 @@ __all__ = [
     "audit_brief_headings",
     "audit_chores_layout",
     "audit_class_size",
+    "audit_distribution",
     "audit_cli_alignment",
     "audit_doc_surface_parity",
     "audit_event_handlers",
