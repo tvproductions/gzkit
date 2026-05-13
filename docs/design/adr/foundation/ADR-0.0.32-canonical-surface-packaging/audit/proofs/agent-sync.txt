@@ -1,0 +1,134 @@
+Syncing control surfaces...
+  Updated .agents/personas/implementer.md
+  Updated .agents/personas/main-session.md
+  Updated .agents/personas/narrator.md
+  Updated .agents/personas/pipeline-orchestrator.md
+  Updated .agents/personas/quality-reviewer.md
+  Updated .agents/personas/spec-reviewer.md
+  Updated .agents/skills/AGENTS.md
+  Updated .claude/hooks/README.md
+  Updated .claude/hooks/control-surface-sync.py
+  Updated .claude/hooks/ghi-triage-chat-silence.py
+  Updated .claude/hooks/instruction-router.py
+  Updated .claude/hooks/ledger-writer.py
+  Updated .claude/hooks/obpi-completion-validator.py
+  Updated .claude/hooks/pipeline-completion-reminder.py
+  Updated .claude/hooks/pipeline-gate.py
+  Updated .claude/hooks/pipeline-router.py
+  Updated .claude/hooks/plan-audit-gate.py
+  Updated .claude/hooks/post-edit-ruff.py
+  Updated .claude/hooks/session-staleness-check.py
+  Updated .claude/personas/implementer.md
+  Updated .claude/personas/main-session.md
+  Updated .claude/personas/narrator.md
+  Updated .claude/personas/pipeline-orchestrator.md
+  Updated .claude/personas/quality-reviewer.md
+  Updated .claude/personas/spec-reviewer.md
+  Updated .claude/settings.json
+  Updated .claude/skills/AGENTS.md
+  Updated .copilotignore
+  Updated .github/AGENTS.md
+  Updated .github/copilot-instructions.md
+  Updated .github/copilot/hooks/ledger-writer.py
+  Updated .github/discovery-index.json
+  Updated .github/personas/implementer.md
+  Updated .github/personas/main-session.md
+  Updated .github/personas/narrator.md
+  Updated .github/personas/pipeline-orchestrator.md
+  Updated .github/personas/quality-reviewer.md
+  Updated .github/personas/spec-reviewer.md
+  Updated .github/skills/AGENTS.md
+  Updated .gzkit/chores/AGENTS.md
+  Updated .gzkit/handoffs/AGENTS.md
+  Updated .gzkit/manifest.json
+  Updated .gzkit/rules/AGENTS.md
+  Updated .gzkit/skills/AGENTS.md
+  Updated /Users/jeff/Documents/Code/gzkit/.claude/rules/adr-audit.md
+  Updated /Users/jeff/Documents/Code/gzkit/.claude/rules/agent-failure-modes.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.claude/rules/brief-heading-conventions.md
+  Updated /Users/jeff/Documents/Code/gzkit/.claude/rules/chores.md
+  Updated /Users/jeff/Documents/Code/gzkit/.claude/rules/cli.md
+  Updated /Users/jeff/Documents/Code/gzkit/.claude/rules/complexity-doctrine.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.claude/rules/complexity-thresholds.md
+  Updated /Users/jeff/Documents/Code/gzkit/.claude/rules/cross-platform.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.claude/rules/gate5-runbook-code-covenant.md
+  Updated /Users/jeff/Documents/Code/gzkit/.claude/rules/gh-cli.md
+  Updated /Users/jeff/Documents/Code/gzkit/.claude/rules/governance-core.md
+  Updated /Users/jeff/Documents/Code/gzkit/.claude/rules/model-selection.md
+  Updated /Users/jeff/Documents/Code/gzkit/.claude/rules/models.md
+  Updated /Users/jeff/Documents/Code/gzkit/.claude/rules/pythonic.md
+  Updated /Users/jeff/Documents/Code/gzkit/.claude/rules/security-sensitivity.md
+  Updated /Users/jeff/Documents/Code/gzkit/.claude/rules/skill-surface-sync.md
+  Updated /Users/jeff/Documents/Code/gzkit/.claude/rules/tests.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.claude/rules/token-block-discipline.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.claude/rules/tool-skill-runbook-alignment.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/adr_audit.instructions.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/agent_failure_modes.instru
+ctions.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/brief_heading_conventions.
+instructions.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/chores.instructions.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/cli.instructions.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/complexity_doctrine.instru
+ctions.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/complexity_thresholds.inst
+ructions.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/cross_platform.instruction
+s.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/gate5_runbook_code_covenan
+t.instructions.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/gh_cli.instructions.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/governance_core.instructio
+ns.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/model_selection.instructio
+ns.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/models.instructions.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/pythonic.instructions.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/security_sensitivity.instr
+uctions.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/skill_surface_sync.instruc
+tions.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/tests.instructions.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/token_block_discipline.ins
+tructions.md
+  Updated
+/Users/jeff/Documents/Code/gzkit/.github/instructions/tool_skill_runbook_alignme
+nt.instructions.md
+  Updated AGENTS.md
+  Updated CLAUDE.md
+  Updated docs/AGENTS.md
+  Updated docs/design/adr/AGENTS.md
+  Updated docs/governance/AGENTS.md
+  Updated docs/governance/complexity/AGENTS.md
+  Updated src/AGENTS.md
+  Updated src/gzkit/AGENTS.md
+  Updated src/gzkit/chores/AGENTS.md
+  Updated src/gzkit/cli/AGENTS.md
+  Updated src/gzkit/commands/AGENTS.md
+  Updated src/gzkit/complexity/AGENTS.md
+  Updated tests/AGENTS.md
+
+Sync complete.

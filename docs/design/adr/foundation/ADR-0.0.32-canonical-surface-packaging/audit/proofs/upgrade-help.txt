@@ -1,0 +1,26 @@
+usage: gz upgrade [-h] [--surface SURFACES] [--force] [--dry-run] [--quiet |
+                  --verbose] [--debug]
+
+Surface-only refresh of .gzkit/<surface>/ from the installed wheel's package data. Simpler than gz init --update: no manifest mutation, no scaffolder hooks, no agent sync. Use --surface to refresh a subset of surfaces; use --force to overwrite operator-edited files.
+
+options:
+  -h, --help          show this help message and exit
+  --surface SURFACES  Surfaces to refresh:
+                      skills,rules,templates,personas,hooks. Default: all.
+  --force             Override safety checks
+  --dry-run           Show planned actions without executing
+  --quiet, -q         Suppress non-error output
+  --verbose, -v       Enable verbose output
+  --debug             Enable debug mode with full tracebacks
+
+Examples
+    gz upgrade
+    gz upgrade --surface skills,rules
+    gz upgrade --surface templates --dry-run
+    gz upgrade --surface personas --force
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach
