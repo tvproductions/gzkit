@@ -170,6 +170,7 @@ class TestSkillsLayoutDualSurface(unittest.TestCase):
     """
 
     @covers("REQ-0.0.32-01-01")
+    @covers("REQ-0.0.32-08-06")
     def test_skill_files_present_in_package_surface(self) -> None:
         skills_root = _PROJECT_ROOT / "src" / "gzkit" / "skills"
         skill_dirs = [
@@ -192,6 +193,7 @@ class TestSkillsLayoutDualSurface(unittest.TestCase):
 
     @covers("REQ-0.0.32-01-01")
     @covers("REQ-0.0.32-01-02")
+    @covers("REQ-0.0.32-08-03")
     def test_dual_surface_byte_parity(self) -> None:
         """Authored .gzkit/skills/<slug>/SKILL.md must be byte-identical to src/gzkit copy."""
         authored_root = _PROJECT_ROOT / ".gzkit" / "skills"

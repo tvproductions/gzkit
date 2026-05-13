@@ -657,6 +657,7 @@ class TestRulesLayoutDualSurface(unittest.TestCase):
         )
 
     @covers("REQ-0.0.32-03-01")
+    @covers("REQ-0.0.32-08-06")
     def test_dual_surface_rule_count(self) -> None:
         # AGENTS.md is package-internal (not a canonical rule slug per OBPI-04).
         canonical = self._repo_root() / ".gzkit" / "rules"
@@ -675,6 +676,7 @@ class TestRulesLayoutDualSurface(unittest.TestCase):
         )
 
     @covers("REQ-0.0.32-03-02")
+    @covers("REQ-0.0.32-08-03")
     def test_dual_surface_byte_parity(self) -> None:
         # AGENTS.md is package-internal (not a canonical rule slug per OBPI-04).
         canonical = self._repo_root() / ".gzkit" / "rules"
@@ -762,22 +764,15 @@ class TestRulesLayoutScopeGuards(unittest.TestCase):
         )
 
     @covers("REQ-0.0.32-03-07")
-    def test_req07_agent_sync_unchanged_for_rules(self) -> None:
-        """REQ-07: gz agent sync has no .gzkit/rules -> src/gzkit/rules propagation."""
-        candidates = [
-            self._repo_root() / "src" / "gzkit" / "sync_surfaces.py",
-            self._repo_root() / "src" / "gzkit" / "agent_sync.py",
-            self._repo_root() / "src" / "gzkit" / "commands" / "agent_cmd.py",
-        ]
-        for path in candidates:
-            if not path.exists():
-                continue
-            body = path.read_text(encoding="utf-8")
-            self.assertNotIn(
-                "src/gzkit/rules/",
-                body,
-                f"REQ-07: src/gzkit/rules/ referenced in {path}; OBPI-08 owns sync",
-            )
+    def test_req07_agent_sync_propagates_rules_to_pkg(self) -> None:
+        """REQ-07: gz agent sync propagates .gzkit/rules/ to src/gzkit/rules/ (OBPI-08 landed)."""
+        sync_module = self._repo_root() / "src" / "gzkit" / "sync_surfaces.py"
+        body = sync_module.read_text(encoding="utf-8")
+        self.assertIn(
+            "src/gzkit/rules",
+            body,
+            "REQ-07: OBPI-08 must have added .gzkit/rules -> src/gzkit/rules sync",
+        )
 
     @covers("REQ-0.0.32-03-08")
     def test_req08_rules_package_imports_resolve(self) -> None:
