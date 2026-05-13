@@ -751,19 +751,14 @@ class TestRulesLayoutScopeGuards(unittest.TestCase):
         return Path(__file__).resolve().parent.parent
 
     @covers("REQ-0.0.32-03-06")
-    def test_req06_pyproject_has_no_rules_wheel_include(self) -> None:
-        """REQ-06: pyproject.toml not extended with rules wheel-include."""
+    def test_req06_pyproject_has_rules_wheel_include(self) -> None:
+        """REQ-06: pyproject.toml carries rules wheel-include (landed by OBPI-0.0.32-06)."""
         pyproject = self._repo_root() / "pyproject.toml"
         body = pyproject.read_text(encoding="utf-8")
-        self.assertNotIn(
+        self.assertIn(
             "src/gzkit/rules/**/*.md",
             body,
-            "REQ-06: wheel-include glob present; OBPI-06 owns wheel manifest",
-        )
-        self.assertNotIn(
-            "src/gzkit/rules/*.md",
-            body,
-            "REQ-06: wheel-include glob present; OBPI-06 owns wheel manifest",
+            "REQ-06: wheel-include glob expected; OBPI-06 landed wheel manifest",
         )
 
     @covers("REQ-0.0.32-03-07")

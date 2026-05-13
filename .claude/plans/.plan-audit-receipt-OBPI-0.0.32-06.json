@@ -1,0 +1,7 @@
+{
+  "obpi_id": "OBPI-0.0.32-06",
+  "timestamp": "2026-05-13T08:13:58.601025+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.32-06-t0-smoke-test.md",
+  "gaps_found": 0
+}

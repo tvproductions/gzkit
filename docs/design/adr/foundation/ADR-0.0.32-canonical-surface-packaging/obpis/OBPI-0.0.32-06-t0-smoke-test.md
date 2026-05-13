@@ -3,7 +3,7 @@ id: OBPI-0.0.32-06-t0-smoke-test
 parent: ADR-0.0.32-canonical-surface-packaging
 item: 6
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.32-06-t0-smoke-test: T0 Smoke Test + Wheel Includes Audit
@@ -226,18 +226,30 @@ Before this OBPI: T0 was advisory doctrine; the wheel could ship without canonic
 
 ### Key Proof
 
+
 ```bash
 uv run -m behave features/distribution_invariant.feature
-# Expected: scenario passes; CI fails on any T0 drift in either direction
+# 1 feature passed, 0 failed, 0 skipped
+# 2 scenarios passed, 0 failed, 0 skipped
+# 15 steps passed, 0 failed, 0 skipped
+# Receipt: arb-step-behave-81641280f67e414c870a26b3dbb60e39
 ```
+
+The smoke scenario builds the wheel via `uv build`, installs it into a fresh `.smoke-venv` (cleaned up on SUCCESS AND FAILURE via `context.add_cleanup`), runs `gz init` in a clean tempdir using the installed `gz` binary, then cross-checks the resulting `.gzkit/` tree against `data/distribution_baseline_manifest.json` in both directions — `step_baseline_entries_present` catches missing baseline entries (forward drift), `step_no_extra_artifacts` catches extra artifacts not in baseline (reverse drift). Wheel content verified by `arb:wheel-counts`: 70 SKILL.md + 19 rules + 6 personas + 11 templates shipped in `dist/py_gzkit-0.26.2-py3-none-any.whl`.
+
+Full quality suite green: 4903/4903 unit tests pass (receipt `arb-step-unittest-65d09e493f294518aa6b7cf6ba4eb8fc`); lint clean (`arb-ruff-b90447a30b4b4a55b733f6f81d73813a`); typecheck clean (`arb-step-typecheck-37c3a0b1c08b404f9b456f220ed9d93b`); mkdocs --strict clean (`arb-step-mkdocs-a1ccedd91d2b44f8a88536bb3dc583c5`). REQ → @covers parity 9/9 = 100%.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `data/distribution_baseline_manifest.json` (frozen baseline: 52 active skills + 19 rules + 6 personas + 11 templates; retired skills filtered per `scaffold_core_skills` hard cutover invariant), `tests/distribution/__init__.py`, `tests/distribution/test_baseline_manifest.py` (15 unit tests across schema/file-resolution/duplicate-detection), `features/distribution_invariant.feature` (2 behave scenarios), `features/steps/distribution_invariant_steps.py`, `docs/governance/distribution_baseline.md`
+- Files modified: `pyproject.toml` (extended `[tool.hatch.build.targets.wheel] include:` to cover skills, rules, personas, templates, hooks/scripts globs); `tests/test_skills.py`, `tests/test_rules.py`, `tests/test_personas.py` (flipped negative-scope guards from `assertNotIn` to `assertIn` — same class as the OBPI-04 scope-boundary flip; the guards explicitly said "until OBPI-06" and OBPI-06 has now landed)
+- Tests added: 15 unit tests + 2 behave scenarios
+- REQ coverage: 9/9 = 100% (verified by `gz covers OBPI-0.0.32-06-t0-smoke-test`)
+- Date completed: 2026-05-13
+- Attestation status: operator attested with "attest completed" in Stage 4; `--attestor-present` co-presence proxy via active pipeline marker
+- Defects noted: closes GHI #318 failure class C (T0 advisory → T0 mechanically enforced)
+- Scope decision: baseline manifest captures the scaffolded contract (52 active skills), not raw wheel content (70 SKILL.md files in wheel). Wheel ships retired skills for backward-compat per OBPI-01; smoke scenario cross-checks `.gzkit/` post-init against manifest, so retired entries would manufacture false drift. Rationale documented in `docs/governance/distribution_baseline.md` § "Retired-skill filtering".
 
 ## Tracked Defects
 
@@ -245,14 +257,14 @@ uv run -m behave features/distribution_invariant.feature
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — operator attested in Stage 4 ceremony after evidence presentation; heavy-lane + foundation-kind brief-level Gate 5 attestation per § Lane & Kind & Sensitivity Attestation Matrix. Evidence anchored by receipts: arb-step-behave-81641280f67e414c870a26b3dbb60e39 (2/2 scenarios pass), arb-step-unittest-65d09e493f294518aa6b7cf6ba4eb8fc (4903/4903 unit tests pass), arb-step-mkdocs-a1ccedd91d2b44f8a88536bb3dc583c5 (docs --strict clean), arb-ruff-b90447a30b4b4a55b733f6f81d73813a (lint clean), arb-step-typecheck-37c3a0b1c08b404f9b456f220ed9d93b (typecheck clean); gz covers OBPI-0.0.32-06-t0-smoke-test returns 9/9 = 100% covered. Closes GHI #318 failure class C — T0 distribution invariant mechanically enforced via build-install-init smoke scenario; wheel `include:` extended to cover every canonical surface (70 skills, 19 rules, 6 personas, 11 templates); frozen baseline manifest captures the 52 active (non-retired) scaffolded contract.
+- Date: 2026-05-13
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-13
 
 **Evidence Hash:** -

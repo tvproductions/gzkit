@@ -86,14 +86,14 @@ class TestPersonasScopeNegative(unittest.TestCase):
     """OBPI-09 must NOT add OBPI-06/08 surface changes."""
 
     @covers("REQ-0.0.32-09-05")
-    def test_pyproject_has_no_personas_wheel_include(self) -> None:
-        """pyproject.toml must not include src/gzkit/personas pattern (OBPI-06 scope)."""
+    def test_pyproject_has_personas_wheel_include(self) -> None:
+        """pyproject.toml carries src/gzkit/personas wheel-include (landed by OBPI-0.0.32-06)."""
         pyproject = _PROJECT_ROOT / "pyproject.toml"
         content = pyproject.read_text(encoding="utf-8")
-        self.assertNotIn(
+        self.assertIn(
             "src/gzkit/personas/**/*.md",
             content,
-            "personas wheel-include extension belongs to OBPI-06, not this OBPI",
+            "personas wheel-include expected; OBPI-06 landed wheel manifest extension",
         )
 
     @covers("REQ-0.0.32-09-06")
