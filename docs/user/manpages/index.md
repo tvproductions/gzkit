@@ -11,6 +11,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | Command | Description |
 |---------|-------------|
 | [`gz init`](init.md) | Initialize gzkit in a repository |
+| [`gz upgrade`](upgrade.md) | Surface-only refresh of `.gzkit/<surface>/` from the installed wheel |
 | [`gz prd`](prd.md) | Create a Product Requirements Document |
 | [`gz constitute`](constitute.md) | Create a constitution artifact |
 | [`gz specify`](specify.md) | Create an implementation brief (including OBPIs) |

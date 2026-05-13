@@ -45,6 +45,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "specify": "gzkit.commands.specify_cmd",
     "state": "gzkit.commands.state",
     "status": "gzkit.commands.status",
+    "upgrade_cmd": "gzkit.commands.upgrade",
 }
 
 _HANDLER_CACHE: dict[str, Callable[..., Any]] = {}
@@ -160,6 +161,34 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
             update=a.update,
         )
     )
+
+    p_upgrade = commands.add_parser(
+        "upgrade",
+        help="Surface-only refresh of .gzkit/<surface>/ from the installed wheel.",
+        description=(
+            "Surface-only refresh of .gzkit/<surface>/ from the installed wheel's "
+            "package data. Simpler than gz init --update: no manifest mutation, no "
+            "scaffolder hooks, no agent sync. Use --surface to refresh a subset of "
+            "surfaces; use --force to overwrite operator-edited files."
+        ),
+        epilog=build_epilog(
+            [
+                "gz upgrade",
+                "gz upgrade --surface skills,rules",
+                "gz upgrade --surface templates --dry-run",
+                "gz upgrade --surface personas --force",
+            ]
+        ),
+    )
+    p_upgrade.add_argument(
+        "--surface",
+        default=None,
+        metavar="SURFACES",
+        help="Surfaces to refresh: skills,rules,templates,personas,hooks. Default: all.",
+    )
+    add_force_flag(p_upgrade)
+    add_dry_run_flag(p_upgrade)
+    p_upgrade.set_defaults(func=lambda a: _lazy("upgrade_cmd")(a))
 
     p_prd = commands.add_parser(
         "prd",

@@ -34,6 +34,7 @@ uv run gz personas list --json         # List personas as JSON
 
 ```bash
 uv run gz init                        # Initialize governance scaffolding
+uv run gz upgrade                     # Surface-only refresh from installed wheel (no manifest mutation)
 uv run gz prd                         # Create Product Requirements Document
 uv run gz constitute                  # Create constitution artifact
 uv run gz plan create <name> --semver X.Y.Z  # Create an ADR

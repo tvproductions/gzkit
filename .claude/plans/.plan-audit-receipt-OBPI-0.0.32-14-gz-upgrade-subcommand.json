@@ -1,0 +1,12 @@
+{
+  "obpi_id": "OBPI-0.0.32-14-gz-upgrade-subcommand",
+  "timestamp": "2026-05-13T11:01:24.069020+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.32-14-gz-upgrade-subcommand.md",
+  "gaps_found": 0,
+  "notes": [
+    "Greenfield paths (5 files to-be-created) are implementation targets, not alignment gaps.",
+    "Path correction applied: src/gzkit/cli.py -> src/gzkit/cli/parser_governance.py in brief Allowed Paths.",
+    "81 scope-collision advisories are non-in-flight siblings; not blocking."
+  ]
+}
