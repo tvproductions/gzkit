@@ -60,6 +60,11 @@ include = [
     "src/gzkit/chores/**/*.json",
     "src/gzkit/chores/README.md",
     "src/gzkit/chores/registry.json",
+    "src/gzkit/skills/**/*.md",
+    "src/gzkit/rules/**/*.md",
+    "src/gzkit/personas/**/*.md",
+    "src/gzkit/templates/**/*.md",
+    "src/gzkit/hooks/scripts/**",
 ]
 exclude = [
     "**/__pycache__",

@@ -236,16 +236,16 @@ class TestSkillMdByteIdenticalContent(unittest.TestCase):
         self.assertGreaterEqual(count, 61, f"Expected at least 61 skill dirs, got {count}")
 
 
-class TestPyprojectTomlUnchanged(unittest.TestCase):
-    """pyproject.toml must not include src/gzkit/skills in wheel includes (OBPI-06's work)."""
+class TestPyprojectTomlSkillsInclude(unittest.TestCase):
+    """pyproject.toml includes src/gzkit/skills wheel-include (landed by OBPI-0.0.32-06)."""
 
     @covers("REQ-0.0.32-01-06")
-    def test_pyproject_does_not_include_skills_package_data(self) -> None:
+    def test_pyproject_includes_skills_package_data(self) -> None:
         pyproject = (_PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8")
-        self.assertNotIn(
+        self.assertIn(
             "src/gzkit/skills/**",
             pyproject,
-            "pyproject.toml must not include src/gzkit/skills/** until OBPI-06",
+            "pyproject.toml must include src/gzkit/skills/** for wheel-shipping (OBPI-06)",
         )
 
 

@@ -435,15 +435,15 @@ class TestTemplatesLayoutDualSurface(unittest.TestCase):
             "src/gzkit/templates/skills/ must be retained at the package surface",
         )
 
-    @covers("REQ-0.0.32-11-08")
-    def test_pyproject_no_new_template_includes(self) -> None:
-        """pyproject.toml must not include src/gzkit/templates/**/*.md (OBPI-06 scope)."""
+    @covers("REQ-0.0.32-06-02")
+    def test_pyproject_includes_template_markdown(self) -> None:
+        """pyproject.toml must include src/gzkit/templates/**/*.md (OBPI-06 scope)."""
         pyproject = _PROJECT_ROOT / "pyproject.toml"
         content = pyproject.read_text(encoding="utf-8")
-        self.assertNotIn(
+        self.assertIn(
             "src/gzkit/templates/**/*.md",
             content,
-            "templates wheel-include extension belongs to OBPI-06, not this OBPI",
+            "templates wheel-include extension is part of OBPI-06 canonical surfaces",
         )
 
     @covers("REQ-0.0.32-11-09")
