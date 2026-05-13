@@ -284,6 +284,40 @@ Manpage: `docs/user/manpages/gz-issue.md`.
 
 ---
 
+## Cross-Version Upgrade (`gz init --update`)
+
+When `pip install --upgrade py-gzkit` brings a newer wheel into an existing
+adopter project, the new wheel may carry updated canonical content for
+skills, rules, chores, personas, and templates. The adopter's
+`.gzkit/<surface>/` (project canonical source-of-truth) is the editing
+surface — `gz init --update` is the ceremony that refreshes stale entries
+from the wheel while preserving operator edits.
+
+```bash
+uv run gz init --update --dry-run    # Preview: per-artifact STALE/EDITED/IDENTICAL
+uv run gz init --update              # Execute: refresh STALE entries; report conflicts
+```
+
+Three-state detection determines the action per artifact:
+
+- **IDENTICAL** — bytes match the wheel canonical; skipped silently
+- **STALE** — bytes differ, no canonical-version marker present; refreshed in place
+- **EDITED** — bytes differ AND the file carries a
+  `<!-- gzkit-canonical-version: X.Y.Z -->` marker; left untouched and surfaced
+  as a conflict in the end-of-run summary
+
+Exit code 3 means at least one EDITED conflict remains unresolved. Two ways
+forward per conflict:
+
+1. **Accept canonical:** `rm .gzkit/<surface>/<path>` and re-run `gz init --update`
+2. **Keep edits:** no action (conflict persists; rerun continues to surface it)
+
+`--update` is mutually exclusive with `--force` (the wipe-and-recreate path
+that destroys operator edits). See `docs/user/manpages/init.md` § Update Mode
+for the full contract.
+
+---
+
 ## Storage Tiers and Recovery
 
 The three tier model and pool archive governance is documented in

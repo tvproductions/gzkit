@@ -3,7 +3,7 @@ id: OBPI-0.0.32-05-init-update-flag
 parent: ADR-0.0.32-canonical-surface-packaging
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.32-05-init-update-flag: gz init --update Flag
@@ -26,9 +26,9 @@ Add a third `gz init` mode — `--update` — that performs version-aware refres
 ## Allowed Paths
 
 - `src/gzkit/commands/init_cmd.py` — add `--update` mode and refresh dispatch logic
-- `src/gzkit/cli/parser_init.py` (or wherever the init subparser lives) — register the `--update` flag
+- `src/gzkit/cli/parser_governance.py` — register the `--update` flag on the existing `p_init` subparser (lines 107-151)
 - `src/gzkit/skills/__init__.py`, `src/gzkit/rules/__init__.py`, `src/gzkit/chores/__init__.py` — add `refresh_*` companion functions to existing scaffolders if required (small additive surface)
-- `docs/user/manpages/gz-init.md` — document `--update` semantics, marker-comment / hash-comparison contract, conflict resolution
+- `docs/user/manpages/init.md` — document `--update` semantics, marker-comment / hash-comparison contract, conflict resolution
 - `docs/user/runbook.md` — runbook section for the upgrade workflow
 - `features/init.feature` — behave scenarios covering `--update` happy path, project-local-edit preservation, conflict surfacing
 - `tests/commands/test_init.py` — unit tests for `--update` dispatch and refresh logic (mocked subprocess boundary; behavior-tier coverage in features)
@@ -220,18 +220,25 @@ Before this OBPI: cross-version upgrades silently leave stale artifacts in place
 
 ### Key Proof
 
+
 ```bash
-uv run gz init --update --dry-run /tmp/gz-update-smoke
-# Expected: per-artifact IDENTICAL/STALE/EDITED report; exit 0 if no conflicts; exit 3 if conflicts
+uv run gz init --update --dry-run
+# Refreshing canonical surfaces from installed wheel...
+# Dry run: no files will be written.
+#   IDENTICAL: 214 STALE: 0 EDITED: 0
 ```
+
+After Stage 2 implementation + the dual-surface drift fix, all 214 canonical artifacts are byte-equivalent to the wheel canonical (IDENTICAL: 214; STALE/EDITED: 0). The three-state classifier is mechanically operational across skills/rules/chores/personas/templates. Receipts: arb-ruff-2ac93d01438e411daa6432bb8ef7c0c0 (lint), arb-step-typecheck-b6d3852786b04a55bb25c4e2d78f50cd (typecheck), arb-step-unittest-585effb9f1f04e3c8d3d9a472d338ccf (4887 tests OK), arb-step-mkdocs-2cdfbf5d16bc43369970ec1ecb81e556 (docs --strict), arb-step-behave-2689fe03b7f34fe9aaf87453ce60380b (6 REQ scenario tags pass).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: tests/commands/test_init_update.py (14 unit tests — three-state detection + marker pattern composition + manpage content assertions); features/init.feature (4 behave scenarios, multi-tagged to cover all 8 REQs); .claude/plans/OBPI-0.0.32-05-init-update-flag.md (plan file)
+- Files modified: src/gzkit/commands/init_cmd.py (added RefreshState Literal, RefreshResult Pydantic model, _detect_refresh_state pure function, _iter_canonical_surface_files, _walk_traversable, _refresh_one_artifact, _refresh_canonical_surfaces, _print_refresh_summary; extended init() with update kwarg + mutex check + dispatch); src/gzkit/cli/parser_governance.py (--update flag at p_init line 141; 2 epilog examples); docs/user/manpages/init.md (Options table row + Update Mode section with three-state contract, marker contract, exit codes, conflict resolution); docs/user/runbook.md (Cross-Version Upgrade operator section); brief Allowed Paths corrected (parser_init.py -> parser_governance.py; gz-init.md -> init.md); ADR line 605 manpage path corrected
+- Tests added: 14 unit tests + 4 behave scenarios; @covers parity 8/8 = 100%
+- Date completed: 2026-05-13
+- Attestation status: operator phrase "attest completed" received Stage 4
+- Defects noted: pre-existing drift in .gzkit/templates/agents.md and .gzkit/skills/ghi-author/SKILL.md vs src/gzkit/ wheel copies surfaced by Stage 3 dual-surface byte-parity tests; fixed in the same patch by propagating .gzkit/ direction-of-truth -> src/gzkit/ per CRAFTSMANSHIP MAXIM
 
 ## Tracked Defects
 
@@ -239,14 +246,14 @@ uv run gz init --update --dry-run /tmp/gz-update-smoke
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — gz init --update lands as the third init mode with three-state IDENTICAL/STALE/EDITED detection over skills/rules/chores/personas/templates canonical surfaces; 14 unit tests + 4 behave scenarios; 8/8 @covers parity; brief paths + ADR line 605 corrected; pre-existing .gzkit/ -> src/gzkit/ drift in agents.md + ghi-author SKILL.md fixed in same patch (receipt arb-step-unittest-585effb9f1f04e3c8d3d9a472d338ccf, arb-ruff-2ac93d01438e411daa6432bb8ef7c0c0, arb-step-typecheck-b6d3852786b04a55bb25c4e2d78f50cd, arb-step-mkdocs-2cdfbf5d16bc43369970ec1ecb81e556, arb-step-behave-2689fe03b7f34fe9aaf87453ce60380b)
+- Date: 2026-05-13
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-13
 
 **Evidence Hash:** -
