@@ -109,7 +109,9 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         help="Initialize gzkit in the current project",
         description=(
             "Initialize gzkit governance scaffolding and Python project skeleton. "
-            "Re-running on an initialized project repairs missing artifacts."
+            "Re-running on an initialized project repairs missing artifacts. "
+            "Use --update for version-aware refresh of canonical surfaces from "
+            "the installed wheel (preserves operator edits via marker detection)."
         ),
         epilog=build_epilog(
             [
@@ -117,6 +119,8 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
                 "gz init --mode heavy",
                 "gz init --no-skeleton",
                 "gz init --force --dry-run",
+                "gz init --update",
+                "gz init --update --dry-run",
             ]
         ),
     )
@@ -138,6 +142,12 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         default=False,
         help="Auto-accept registry-merge prompts during repair",
     )
+    p_init.add_argument(
+        "--update",
+        action="store_true",
+        default=False,
+        help="Refresh canonical surfaces from wheel; preserve operator edits.",
+    )
     add_force_flag(p_init)
     add_dry_run_flag(p_init)
     p_init.set_defaults(
@@ -147,6 +157,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
             dry_run=a.dry_run,
             no_skeleton=a.no_skeleton,
             yes=a.yes,
+            update=a.update,
         )
     )
 

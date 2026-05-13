@@ -17,7 +17,8 @@ gz init [OPTIONS]
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `--mode` | `lite` \| `heavy` | `lite` | Governance mode |
-| `--force` | flag | — | Full reinitialize (overwrites config, re-scaffolds) |
+| `--force` | flag | — | Full reinitialize (overwrites config, re-scaffolds). Mutually exclusive with `--update` |
+| `--update` | flag | — | Version-aware refresh of canonical surfaces from the installed wheel; preserves operator edits via marker detection. Mutually exclusive with `--force` |
 | `--no-skeleton` | flag | — | Skip Python project skeleton (pyproject.toml, src/, tests/) |
 | `--yes` | flag | — | Auto-accept registry-merge prompts during repair |
 | `--dry-run` | flag | — | Show actions without writing |
@@ -47,6 +48,81 @@ Running `gz init` on an already-initialized project enters **repair mode**:
 - Does not require `--force`
 
 Use `--force` only when you need a full reinitialize (rewrites config, re-scaffolds everything).
+
+---
+
+## Update Mode (Version-Aware Refresh)
+
+`gz init --update` is the **third** init mode, distinct from default (repair-missing) and `--force` (wipe-and-recreate). It refreshes canonical surfaces in the adopter's `.gzkit/<surface>/` from the installed wheel's package data while **preserving operator-edited files** via marker detection.
+
+### Three modes — when to use which
+
+| Mode | When to use | Behavior on existing canonical files |
+|------|-------------|--------------------------------------|
+| **default** (`gz init`) | First init, or repair missing artifacts on an existing project | Skip-existing: never overwrites |
+| **`--update`** | Cross-version upgrade after `pip install py-gzkit==X.Y.Z` brings new canonical content | Refresh STALE entries in place; preserve EDITED entries; report conflicts |
+| **`--force`** | Full reinitialize; willing to lose operator edits | Wipe and re-copy every canonical surface |
+
+### Three-state detection (REQ-0.0.32-05-02)
+
+Per artifact under `.gzkit/<surface>/`, `--update` classifies the project copy against the wheel canonical:
+
+| State | Condition | Action |
+|-------|-----------|--------|
+| `IDENTICAL` | bytes match wheel canonical | skip; no write |
+| `STALE` | bytes differ; no canonical-version marker present | refresh in place (overwrite with wheel canonical) |
+| `EDITED` | bytes differ; canonical-version marker present | **conflict — never overwrite**; record in summary |
+
+### Operator-edit marker (REQ-0.0.32-05-04)
+
+The marker is a body-level HTML comment:
+
+```html
+<!-- gzkit-canonical-version: X.Y.Z -->
+```
+
+The scaffolder writes this marker when it copies canonical content into `.gzkit/<surface>/`. `--update` rewrites it on a STALE refresh. The marker's presence in a file whose bytes differ from the current wheel canonical is the positive signal that the scaffolder previously stamped this copy and the operator (or a prior `--update`) has since edited it.
+
+The marker composes with — and does **not** replace — the existing surface-author version markers per `.claude/rules/skill-surface-sync.md`:
+
+- Skills retain `skill-version:` in YAML frontmatter
+- Rules retain body-level `<!-- rule-version: X.Y.Z -->`
+- The canonical-version marker tracks "version of canonical content delivered by the wheel" — a distinct dimension from surface-author version semantics.
+
+### Dry-run
+
+```bash
+gz init --update --dry-run
+```
+
+Reports the per-surface `IDENTICAL`/`STALE`/`EDITED` count and lists every artifact that would be refreshed or conflicted, **without writing**. Use to preview an upgrade before committing.
+
+### Exit codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | Success: refresh complete or dry-run reported; no unresolved conflicts |
+| `1` | Usage error: e.g. `--update` combined with `--force`, or `--update` on an uninitialized project |
+| `3` | Policy breach: at least one `EDITED` conflict remains unresolved at end-of-run |
+
+### Conflict resolution (exit 3)
+
+When `gz init --update` exits 3, review each `EDITED` conflict listed in the summary. Two operator actions resolve a conflict:
+
+1. **Accept the canonical version** — delete the project copy and re-run `gz init --update`. The next run sees the file as missing, copies the wheel canonical, and stamps a fresh marker.
+2. **Keep the project edits** — no action required. The conflict persists across runs; `--update` will continue to surface it until the operator either accepts the canonical or rewrites the project copy to match.
+
+### Surface coverage
+
+`--update` iterates every canonical surface that ships in the wheel:
+
+- `gzkit.skills` → `.gzkit/skills/<slug>/SKILL.md`
+- `gzkit.rules` → `.gzkit/rules/<slug>.md`
+- `gzkit.chores` → `.gzkit/chores/<slug>/` (canonical-class files only per chores class-classifier)
+- `gzkit.personas` → `.gzkit/personas/<slug>.md`
+- `gzkit.templates` → `.gzkit/templates/<name>.md`
+
+Package-internal entries (`__init__.py`, `_scaffolder.py`, `__pycache__/`) are excluded by the leading-underscore filter. Chore `proofs/` and runtime-state files are excluded by the chores class-classifier.
 
 ---
 
@@ -191,6 +267,12 @@ gz init --force
 
 # Dry run
 gz init --dry-run
+
+# Version-aware refresh after pip install py-gzkit==<newer> (preserves operator edits)
+gz init --update
+
+# Preview what --update would refresh, without writing
+gz init --update --dry-run
 ```
 
 ---

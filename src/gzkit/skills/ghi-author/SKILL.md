@@ -5,9 +5,9 @@ description: Author a GitHub Issue (GHI) for a defect, enhancement, or investiga
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-27
+last_reviewed: 2026-05-12
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.3.0"
 model: sonnet
 ---
 
@@ -104,6 +104,33 @@ routing matrix will consume.
 - You have read the surface the defect touches — authoring a GHI without reading the code is vibe-tracking and produces cargo-cult issues
 
 ## Steps
+
+0. **Prior-art lookup (binding pre-flight — MANDATORY).** Before drafting anything, search for adjacent open GHIs and recent closes. Skipping this step is a process defect; resulting duplicates are withdrawable on discovery under `ghi-close`'s `withdrawn` disposition with a one-line "duplicate of #N" comment.
+
+   Two queries — keyword search PLUS recent-by-date skim. Keyword search alone misses semantic neighbors that share root cause without sharing surface words.
+
+   ```bash
+   # Keyword search across open + recent closes (last 30 days).
+   # Use 2–3 surface keywords from the observed symptom, not narrative phrasing.
+   gh issue list --state all --search "<keywords> created:>=$(date -v-30d +%Y-%m-%d)" --limit 20 \
+     --json number,title,state,labels,createdAt
+
+   # Recent open by date — catches semantic neighbors keyword search misses.
+   gh issue list --state open --limit 20 --json number,title,labels,createdAt
+   ```
+
+   Read every title in both result sets (titles are cheap; read bodies only on candidate hits). Decide which branch you are on:
+
+   | Result | Action |
+   |--------|--------|
+   | An open GHI already covers this exact finding | **Do not file.** Add a comment to the existing GHI with this session's new evidence; record the issue number in session evidence; stop. Duplicate-filing is the failure mode this step closes. |
+   | An open GHI covers an adjacent / sibling-cut of the same root cause | Author this GHI but include `Related: #N` in the body's `## Related` section AND post a cross-link comment on the sibling GHI naming the relationship (root vs. symptom, per-skill vs. catalog-wide, etc.) at authoring time, not as a follow-up |
+   | A recently-closed GHI (≤30 days) addressed this exact finding | Re-open it (`gh issue reopen <N>`) with a comment citing the regression evidence — never file a fresh GHI for the same root cause |
+   | No prior or adjacent GHI exists | Proceed to Step 1 |
+
+   **Canonical sibling-cut regression:** GHIs #459 and #460 (2026-05-12) shared the T1→T2 doctrine-drift root cause (skill prose declares an agent action with no mechanical fail-close) but shared no title keywords — #459 named the per-skill Stage 2 dispatch gap, #460 named the catalog-wide skill-body-as-procedural-script surface. #460 was filed ~17 minutes after #459 without cross-link at authoring time; the relationship was only recorded in a follow-up comment after the operator noticed the overlap. The recent-by-date skim catches this class even when keywords disagree.
+
+   The pre-flight is **defense, not guarantee** — semantic neighbors may evade both queries. When in doubt, surface the candidate matches to the operator with the routing facts (open GHI numbers + one-line title-summaries + relationship hypothesis) before proceeding to Step 1.
 
 1. **Classify the GHI** using the table below. Pick exactly one; a single GHI is one class.
 
@@ -234,6 +261,7 @@ routing matrix will consume.
 - **Never bundle unrelated defects into one GHI.** One GHI, one class of failure. Bundling creates a routing ambiguity the matrix cannot resolve.
 - **Never author a GHI to substitute for fixing something you could fix now.** The Prime Directive #4 (scope expansion is not scope creep) takes precedence — file a GHI only when the fix genuinely cannot land in-patch.
 - **Never omit a secondary label whose Step-1 predicate fired.** Missing `runtime` on a runtime-touching GHI silently drops it from `gz patch release` qualification; missing `security` defeats the Gate-5 walkthrough trigger; missing `eval-feedback` breaks the commit-trailer requirement under ADR-0.0.26. Secondary labels are not optional triage hints — they are mechanical inputs to downstream gates.
+- **Never call `gh issue create` outside this skill.** Bypassing `/ghi-author` skips Step 0's prior-art lookup, which is the only defense against sibling-cut duplicates (canonical regression: GHI #459/#460, 2026-05-12). The binding agent rule lives at `AGENTS.md` § Behavior Rules — Always #13; the skill is the mechanical home of the pre-flight. Cross-repo filing goes through `gz issue file`, which itself must run Step 0's pre-flight against the target repository before delegating to `gh issue create`.
 
 ## Common Rationalizations
 
@@ -248,6 +276,8 @@ These thoughts mean STOP — you are about to produce a low-quality GHI:
 | "I can write 'see session log for details'" | Session logs are Layer-3 derived state and are not canonical. Paste the evidence into the GHI body. |
 | "I'll file this and let it track until the work ships" | A GHI is not an implementation tracker. The destination artifact (commit / ADR / OBPI) tracks implementation through its own lifecycle. File the GHI, route it to a destination in the same session, close it. If you cannot route in-session, open with a blocker comment — never open as a long-lived shadow tracker. |
 | "This finding is too big for a fix and there's no ADR yet — I'll just leave it open" | If the right home is a pool ADR, **author the pool ADR in the same session** via `uv run gz plan create <slug> --kind pool --lane <lane> --title "..."` populated with Intent / Decision / rejected alternatives grounded in the GHI's evidence. Then close `superseded` citing the pool ADR. Pool ADRs are valid `superseded` destinations because they are registered in `gz adr report`. |
+| "I already know this finding is novel — I'll skip the prior-art lookup and save the round-trip" | **Step 0 is mandatory, not advisory.** The canonical sibling-cut regression (#459/#460) was filed by an operator who had filed both issues themselves minutes apart — confidence in novelty is precisely the failure-state. The two `gh issue list` queries take seconds; skipping them produces duplicate-scoped GHIs that bypass `ghi-close`'s destination-routing rule and dilute triage. |
+| "I'll call `gh issue create` directly — faster than going through the skill" | **Direct `gh issue create` invocations are a process defect** per `AGENTS.md` § Behavior Rules — Always #13. The skill is not optional ergonomics; it is the mechanical home of Step 0's prior-art lookup. Bypassing the skill bypasses the only defense against sibling-cut duplicates. |
 
 ## Red Flags
 

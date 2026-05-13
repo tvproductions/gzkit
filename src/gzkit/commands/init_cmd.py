@@ -1,13 +1,19 @@
 """Init, PRD, and constitution command implementations."""
 
+import importlib.resources
 import json
 import re
 import subprocess
+import sys
+from collections.abc import Iterator
 from datetime import date
+from importlib.resources.abc import Traversable
 from pathlib import Path
 from typing import Literal, cast
 
-from gzkit.chores import merge_chores_registry, scaffold_core_chores
+from pydantic import BaseModel, ConfigDict, Field
+
+from gzkit.chores import _classify_chore_file, merge_chores_registry, scaffold_core_chores
 from gzkit.commands.common import (
     _confirm,
     console,
@@ -37,6 +43,200 @@ from gzkit.sync import (
     write_manifest,
 )
 from gzkit.templates import render_template, scaffold_core_templates
+
+RefreshState = Literal["IDENTICAL", "STALE", "EDITED"]
+
+CANONICAL_VERSION_MARKER_PATTERN = r"<!-- gzkit-canonical-version: \d+\.\d+\.\d+ -->"
+
+
+class RefreshResult(BaseModel):
+    """Aggregate report of a ``gz init --update`` run.
+
+    Each list holds repo-relative path strings keyed by canonical surface.
+    """
+
+    model_config = ConfigDict(frozen=False, extra="forbid")
+
+    identical: list[str] = Field(default_factory=list)
+    stale_refreshed: list[str] = Field(default_factory=list)
+    edited_conflicts: list[str] = Field(default_factory=list)
+    dry_run: bool = Field(default=False)
+
+
+def _detect_refresh_state(
+    *,
+    project_bytes: bytes,
+    canonical_bytes: bytes,
+    marker_pattern: str = CANONICAL_VERSION_MARKER_PATTERN,
+) -> RefreshState:
+    """Classify a project canonical-surface artifact against the wheel canonical.
+
+    Returns:
+        ``IDENTICAL`` when ``project_bytes`` equals ``canonical_bytes`` byte-for-byte.
+        ``EDITED`` when the bytes differ AND ``project_bytes`` carries the
+        operator-edit marker matched by ``marker_pattern`` — interpreted as a
+        positive signal that the scaffolder previously stamped this copy and
+        the operator has since edited it. The refresh path must NOT overwrite.
+        ``STALE`` when the bytes differ and no marker is present — safe to refresh.
+
+    The marker mechanism (REQ-0.0.32-05-04 option a): the scaffolder writes
+    ``<!-- gzkit-canonical-version: X.Y.Z -->`` into every canonical body on
+    copy. ``--update`` rewrites the marker on a STALE refresh; an operator
+    edit either leaves the marker in place (signal: EDITED) or removes it
+    (signal: STALE — operator wants the next refresh to restore canon).
+    """
+    if project_bytes == canonical_bytes:
+        return "IDENTICAL"
+    if re.search(marker_pattern, project_bytes.decode("utf-8", errors="replace")):
+        return "EDITED"
+    return "STALE"
+
+
+def _iter_canonical_surface_files(resource_pkg: str) -> Iterator[tuple[Traversable, Path]]:
+    """Walk a canonical surface resource and yield ``(traversable, rel_path)``.
+
+    ``resource_pkg`` is an importlib.resources package name (e.g. ``"gzkit.skills"``).
+    The yielded ``rel_path`` is the path **relative to the canonical surface root**
+    suitable for joining onto ``.gzkit/<surface>/`` in an adopter project.
+
+    Skips ``__pycache__``-style entries and non-file leaves; preserves
+    subdirectory structure (needed for chores and skills with multiple files).
+    """
+    root = importlib.resources.files(resource_pkg)
+    yield from _walk_traversable(root, root.name, Path())
+
+
+def _walk_traversable(
+    node: Traversable,
+    root_name: str,
+    rel_prefix: Path,
+) -> Iterator[tuple[Traversable, Path]]:
+    for entry in node.iterdir():
+        # Skip leading-underscore entries (__pycache__, __init__.py,
+        # _scaffolder.py, etc.) — these are package-internal infrastructure,
+        # never canonical surface content.
+        if entry.name.startswith("_"):
+            continue
+        next_rel = rel_prefix / entry.name
+        if entry.is_dir():
+            yield from _walk_traversable(entry, root_name, next_rel)
+        elif entry.is_file():
+            yield entry, next_rel
+
+
+def _refresh_one_artifact(
+    *,
+    canonical: Traversable,
+    project_path: Path,
+    dry_run: bool,
+) -> RefreshState:
+    """Detect state for ``project_path`` against ``canonical`` and refresh if STALE.
+
+    Returns the detected state. Writes to ``project_path`` only when the state
+    is STALE and ``dry_run`` is False. EDITED state never writes; the caller is
+    responsible for recording the conflict.
+    """
+    canonical_bytes = canonical.read_bytes()
+    if not project_path.exists():
+        if not dry_run:
+            project_path.parent.mkdir(parents=True, exist_ok=True)
+            project_path.write_bytes(canonical_bytes)
+        return "STALE"
+    project_bytes = project_path.read_bytes()
+    state = _detect_refresh_state(
+        project_bytes=project_bytes,
+        canonical_bytes=canonical_bytes,
+    )
+    if state == "STALE" and not dry_run:
+        project_path.write_bytes(canonical_bytes)
+    return state
+
+
+def _refresh_canonical_surfaces(
+    project_root: Path,
+    *,
+    dry_run: bool = False,
+) -> RefreshResult:
+    """Refresh canonical surfaces in ``.gzkit/<surface>/`` from the wheel.
+
+    Walks each canonical surface resource (skills, rules, chores canonical-class
+    files, templates, personas), classifies each artifact via
+    :func:`_detect_refresh_state`, and refreshes STALE entries in place.
+    EDITED entries are recorded as conflicts and NOT overwritten.
+
+    Surface targets (REQ-0.0.32-05-02):
+
+    - ``gzkit.skills``  -> ``.gzkit/skills/``
+    - ``gzkit.rules``   -> ``.gzkit/rules/``
+    - ``gzkit.chores``  -> ``.gzkit/chores/`` (canonical class only;
+      package_only/runtime_state are excluded per chores class-classifier)
+    - ``gzkit.personas`` -> ``.gzkit/personas/``
+    - ``gzkit.templates`` -> ``.gzkit/templates/``
+
+    Args:
+        project_root: Project root containing the adopter's ``.gzkit/``.
+        dry_run: When True, detect and report state without writing.
+    """
+    result = RefreshResult(dry_run=dry_run)
+
+    surface_map: list[tuple[str, str]] = [
+        ("gzkit.skills", "skills"),
+        ("gzkit.rules", "rules"),
+        ("gzkit.chores", "chores"),
+        ("gzkit.personas", "personas"),
+        ("gzkit.templates", "templates"),
+    ]
+
+    for resource_pkg, surface_name in surface_map:
+        target_root = project_root / ".gzkit" / surface_name
+        for canonical, rel_path in _iter_canonical_surface_files(resource_pkg):
+            project_path = target_root / rel_path
+            if surface_name == "chores":
+                classification = _classify_chore_file(
+                    Path("src/gzkit/chores") / rel_path,
+                    project_root=project_root,
+                )
+                if classification != "canonical":
+                    continue
+            display = f".gzkit/{surface_name}/{rel_path.as_posix()}"
+            state = _refresh_one_artifact(
+                canonical=canonical,
+                project_path=project_path,
+                dry_run=dry_run,
+            )
+            if state == "IDENTICAL":
+                result.identical.append(display)
+            elif state == "STALE":
+                result.stale_refreshed.append(display)
+            else:  # EDITED
+                result.edited_conflicts.append(display)
+
+    return result
+
+
+def _print_refresh_summary(result: RefreshResult) -> None:
+    """Render a structured per-surface summary of a refresh run."""
+    if result.dry_run:
+        console.print("[yellow]Dry run:[/yellow] no files will be written.")
+    console.print(
+        f"  IDENTICAL: {len(result.identical)} "
+        f"STALE: {len(result.stale_refreshed)} "
+        f"EDITED: {len(result.edited_conflicts)}"
+    )
+    if result.stale_refreshed:
+        prefix = "Would refresh" if result.dry_run else "Refreshed"
+        console.print(f"\n[green]{prefix} (STALE):[/green]")
+        for path in result.stale_refreshed:
+            console.print(f"  - {path}")
+    if result.edited_conflicts:
+        console.print("\n[red]Conflicts (EDITED — not overwritten):[/red]")
+        for path in result.edited_conflicts:
+            console.print(f"  - {path}")
+        console.print(
+            "\n  Operator action required: review each conflict and either accept "
+            "the canonical version (delete the project copy and re-run --update) "
+            "or keep the project edits (no action; conflict persists)."
+        )
 
 
 def _normalize_package_name(project_name: str) -> str:
@@ -538,10 +738,39 @@ def init(
     *,
     no_skeleton: bool = False,
     yes: bool = False,
+    update: bool = False,
 ) -> None:
-    """Initialize gzkit in the current project."""
+    """Initialize gzkit in the current project.
+
+    Three operating modes:
+
+    - **default** (no flags) — repair mode if already initialized; otherwise
+      full initialization. Idempotent; preserves operator-edited files.
+    - ``--force`` — full wipe-and-recreate. Overwrites every canonical surface.
+    - ``--update`` — version-aware refresh of canonical surfaces from the
+      installed wheel. Preserves operator-edited files via marker detection
+      (see :func:`_detect_refresh_state`). Reports conflicts and exits 3 if
+      any unresolved EDITED entries remain. Mutually exclusive with ``--force``.
+    """
+    if update and force:
+        console.print("[red]Error:[/red] --update and --force are mutually exclusive.")
+        sys.exit(1)
+
     project_root = get_project_root()
     gzkit_dir = project_root / ".gzkit"
+
+    if update:
+        if not gzkit_dir.exists():
+            console.print(
+                "[red]Error:[/red] --update requires an initialized project. Run `gz init` first."
+            )
+            sys.exit(1)
+        console.print("Refreshing canonical surfaces from installed wheel...")
+        result = _refresh_canonical_surfaces(project_root, dry_run=dry_run)
+        _print_refresh_summary(result)
+        if result.edited_conflicts:
+            sys.exit(3)
+        return
 
     # Already initialized and no --force: run repair instead of erroring
     if gzkit_dir.exists() and not force:
