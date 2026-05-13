@@ -335,5 +335,283 @@ class TestLoadLocalContentPath(unittest.TestCase):
             self.assertEqual(load_local_content(Path(tmpdir)), "")
 
 
+class TestSyncPkgSurfaces(unittest.TestCase):
+    """OBPI-0.0.32-08: sync_pkg_surfaces propagates .gzkit/<surface>/ to src/gzkit/<surface>/.
+
+    @covers REQ-0.0.32-08-01
+    @covers REQ-0.0.32-08-02
+    @covers REQ-0.0.32-08-04
+    @covers REQ-0.0.32-08-05
+    """
+
+    _VALID_SKILL_MD = (
+        "---\n"
+        "name: test-skill\n"
+        "description: Test skill for OBPI-0.0.32-08\n"
+        "lifecycle_state: active\n"
+        "owner: test\n"
+        "last_reviewed: 2026-01-01\n"
+        "---\n\n# Test Skill\n"
+    )
+
+    @staticmethod
+    def _make_pkg_surface(root: Path, surface: str) -> None:
+        _make_pkg_surface(root, surface)
+
+    @covers("REQ-0.0.32-08-01")
+    def test_sync_pkg_surfaces_skills_resolves_canonical_from_gzkit(self) -> None:
+        """sync_pkg_surfaces reads from .gzkit/skills/ and writes to src/gzkit/skills/."""
+        from gzkit.config import GzkitConfig
+        from gzkit.sync_surfaces import sync_pkg_surfaces
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            self._make_pkg_surface(root, "skills")
+            canonical_skill = root / ".gzkit" / "skills" / "test-skill" / "SKILL.md"
+            canonical_skill.parent.mkdir(parents=True)
+            canonical_skill.write_text(self._VALID_SKILL_MD, encoding="utf-8")
+
+            config = GzkitConfig(project_name="test")
+            result = sync_pkg_surfaces(root, config)
+
+            pkg_skill = root / "src" / "gzkit" / "skills" / "test-skill" / "SKILL.md"
+            self.assertTrue(pkg_skill.exists(), "pkg SKILL.md must be created by sync")
+            self.assertEqual(pkg_skill.read_bytes(), canonical_skill.read_bytes())
+            self.assertEqual(canonical_skill.read_bytes(), self._VALID_SKILL_MD.encode())
+            self.assertIn("src/gzkit/skills/test-skill/SKILL.md", result)
+
+    @covers("REQ-0.0.32-08-01")
+    def test_sync_pkg_surfaces_rules_resolves_canonical_from_gzkit(self) -> None:
+        """sync_pkg_surfaces reads from .gzkit/rules/ and writes to src/gzkit/rules/."""
+        from gzkit.config import GzkitConfig
+        from gzkit.sync_surfaces import sync_pkg_surfaces
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            self._make_pkg_surface(root, "rules")
+            canonical_rule = root / ".gzkit" / "rules" / "test-rule.md"
+            canonical_rule.parent.mkdir(parents=True)
+            canonical_rule.write_text("# Test Rule\n\nContent.\n", encoding="utf-8")
+
+            config = GzkitConfig(project_name="test")
+            result = sync_pkg_surfaces(root, config)
+
+            pkg_rule = root / "src" / "gzkit" / "rules" / "test-rule.md"
+            self.assertTrue(pkg_rule.exists(), "pkg rule must be created by sync")
+            self.assertEqual(pkg_rule.read_bytes(), canonical_rule.read_bytes())
+            self.assertIn("src/gzkit/rules/test-rule.md", result)
+
+    @covers("REQ-0.0.32-08-02")
+    def test_sync_pkg_surfaces_dual_direction_single_call(self) -> None:
+        """One sync_pkg_surfaces call writes to both src/gzkit/skills/ and src/gzkit/rules/."""
+        from gzkit.config import GzkitConfig
+        from gzkit.sync_surfaces import sync_pkg_surfaces
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            self._make_pkg_surface(root, "skills")
+            self._make_pkg_surface(root, "rules")
+            skill_dir = root / ".gzkit" / "skills" / "gz-prd"
+            skill_dir.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text(self._VALID_SKILL_MD, encoding="utf-8")
+            rules_dir = root / ".gzkit" / "rules"
+            rules_dir.mkdir(parents=True)
+            (rules_dir / "adr-audit.md").write_text("# ADR Audit\n", encoding="utf-8")
+
+            config = GzkitConfig(project_name="test")
+            result = sync_pkg_surfaces(root, config)
+
+            self.assertTrue((root / "src" / "gzkit" / "skills" / "gz-prd" / "SKILL.md").exists())
+            self.assertTrue((root / "src" / "gzkit" / "rules" / "adr-audit.md").exists())
+            skill_paths = [p for p in result if "skills" in p]
+            rule_paths = [p for p in result if "rules" in p]
+            self.assertTrue(len(skill_paths) >= 1, f"Expected skill paths in result: {result}")
+            self.assertTrue(len(rule_paths) >= 1, f"Expected rule paths in result: {result}")
+
+    @covers("REQ-0.0.32-08-04")
+    def test_sync_pkg_surfaces_idempotent(self) -> None:
+        """Second sync_pkg_surfaces call on freshly-synced state produces no writes."""
+        from gzkit.config import GzkitConfig
+        from gzkit.sync_surfaces import sync_pkg_surfaces
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            self._make_pkg_surface(root, "skills")
+            canonical_skill = root / ".gzkit" / "skills" / "gz-prd" / "SKILL.md"
+            canonical_skill.parent.mkdir(parents=True)
+            canonical_skill.write_text(self._VALID_SKILL_MD, encoding="utf-8")
+
+            config = GzkitConfig(project_name="test")
+            first = sync_pkg_surfaces(root, config)
+            second = sync_pkg_surfaces(root, config)
+
+            self.assertTrue(len(first) >= 1, "First sync must write at least one file")
+            self.assertEqual(second, [], f"Second sync must produce no writes; got: {second}")
+
+    @covers("REQ-0.0.32-08-05")
+    def test_sync_pkg_surfaces_chores_skips_runtime_state(self) -> None:
+        """Chores runtime-state files (CHORE-LOG.md, proofs/) are never written to pkg."""
+        from gzkit.config import GzkitConfig
+        from gzkit.sync_surfaces import sync_pkg_surfaces
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            # Establish chores pkg surface
+            pkg_chores_dir = root / "src" / "gzkit" / "chores"
+            pkg_chores_dir.mkdir(parents=True)
+            chore_dir = root / ".gzkit" / "chores" / "test-chore"
+            chore_dir.mkdir(parents=True)
+            (chore_dir / "CHORE.md").write_text("# Test Chore\n", encoding="utf-8")
+            (chore_dir / "CHORE-LOG.md").write_text("log\n", encoding="utf-8")
+            proofs = chore_dir / "proofs"
+            proofs.mkdir()
+            (proofs / "receipt.json").write_text("{}", encoding="utf-8")
+
+            config = GzkitConfig(project_name="test")
+            sync_pkg_surfaces(root, config)
+
+            pkg_chore = pkg_chores_dir / "test-chore"
+            self.assertTrue((pkg_chore / "CHORE.md").exists(), "CHORE.md must be synced to pkg")
+            self.assertFalse(
+                (pkg_chore / "CHORE-LOG.md").exists(),
+                "CHORE-LOG.md is runtime_state; must NOT be synced",
+            )
+            self.assertFalse(
+                (pkg_chore / "proofs" / "receipt.json").exists(),
+                "proofs/ contents are runtime_state; must NOT be synced",
+            )
+
+    @covers("REQ-0.0.32-08-02")
+    def test_sync_all_calls_pkg_surface_sync(self) -> None:
+        """sync_all() propagates .gzkit/skills/ to src/gzkit/skills/ when pkg is established."""
+        from gzkit.config import GzkitConfig
+        from gzkit.sync_surfaces import sync_all
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / ".gzkit").mkdir()
+            self._make_pkg_surface(root, "skills")
+            skill_dir = root / ".gzkit" / "skills" / "gz-prd"
+            skill_dir.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text(self._VALID_SKILL_MD, encoding="utf-8")
+
+            config = GzkitConfig(project_name="test")
+            result = sync_all(root, config, emit_event=False)
+
+            pkg_skill = root / "src" / "gzkit" / "skills" / "gz-prd" / "SKILL.md"
+            self.assertTrue(
+                pkg_skill.exists(),
+                "sync_all must propagate .gzkit/skills/ to src/gzkit/skills/ (REQ-0.0.32-08-02)",
+            )
+            self.assertIn("src/gzkit/skills/gz-prd/SKILL.md", result)
+
+
+def _make_pkg_surface(root: Path, surface: str) -> None:
+    """Create src/gzkit/<surface>/__init__.py to establish the dual-surface guard."""
+    init = root / "src" / "gzkit" / surface / "__init__.py"
+    init.parent.mkdir(parents=True, exist_ok=True)
+    init.write_text("", encoding="utf-8")
+
+
+class TestSyncPkgSurfacesManifestAndDocs(unittest.TestCase):
+    """OBPI-0.0.32-08 REQ coverage for manifest, rule re-affirm, and check-gate REQs."""
+
+    _REPO_ROOT = Path(__file__).resolve().parent.parent
+
+    @covers("REQ-0.0.32-08-07")
+    def test_manifest_records_skills_control_surface(self) -> None:
+        """Manifest is updated by sync and contains control_surfaces with skills path."""
+        manifest = self._REPO_ROOT / ".gzkit" / "manifest.json"
+        self.assertTrue(manifest.exists(), "manifest.json must exist")
+        import json  # noqa: PLC0415
+
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+        self.assertIn("control_surfaces", data, "manifest.json must have control_surfaces")
+        self.assertIn(
+            "skills",
+            data["control_surfaces"],
+            "control_surfaces must include 'skills' path (.gzkit/skills)",
+        )
+
+    @covers("REQ-0.0.32-08-09")
+    def test_sync_does_not_introduce_new_pkg_skills_beyond_canonical(self) -> None:
+        """OBPI-08 sync does not introduce src/gzkit/skills/ files absent from .gzkit/skills/.
+
+        REQ-09: this OBPI must not add on-disk-not-baseline drift. sync_pkg_surfaces
+        is SKILL.md-only and only writes slugs that exist canonically.
+        """
+        from gzkit.config import GzkitConfig  # noqa: PLC0415
+        from gzkit.sync_surfaces import sync_pkg_surfaces  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            _make_pkg_surface(root, "skills")
+            canonical_skill = root / ".gzkit" / "skills" / "gz-prd" / "SKILL.md"
+            canonical_skill.parent.mkdir(parents=True)
+            canonical_skill.write_text(
+                "---\nname: gz-prd\ndescription: X\n"
+                "lifecycle_state: active\nowner: t\nlast_reviewed: 2026-01-01\n---\n",
+                encoding="utf-8",
+            )
+            config = GzkitConfig(project_name="test")
+            sync_pkg_surfaces(root, config)
+
+            pkg_skills = root / "src" / "gzkit" / "skills"
+            synced_slugs = {
+                d.name for d in pkg_skills.iterdir() if d.is_dir() and not d.name.startswith("__")
+            }
+            canonical_slugs = {d.name for d in (root / ".gzkit" / "skills").iterdir() if d.is_dir()}
+            extra = synced_slugs - canonical_slugs - {"__pycache__"}
+            self.assertEqual(
+                extra,
+                set(),
+                f"sync_pkg_surfaces wrote skill slugs absent from canonical: {extra}",
+            )
+
+    @covers("REQ-0.0.32-08-10")
+    def test_agent_sync_feature_has_req_tagged_scenario(self) -> None:
+        """features/agent_sync.feature exists with @REQ-0.0.32-08-01 scenario tag."""
+        feature = self._REPO_ROOT / "features" / "agent_sync.feature"
+        self.assertTrue(feature.exists(), "features/agent_sync.feature must exist")
+        content = feature.read_text(encoding="utf-8")
+        self.assertIn(
+            "@REQ-0.0.32-08-01",
+            content,
+            "feature file must have @REQ-0.0.32-08-01 scenario tag",
+        )
+
+    @covers("REQ-0.0.32-08-11")
+    def test_skill_surface_sync_rule_documents_broadened_sync(self) -> None:
+        """skill-surface-sync.md re-affirms Edit .gzkit/ first and documents broadened sync."""
+        rule = self._REPO_ROOT / ".gzkit" / "rules" / "skill-surface-sync.md"
+        content = rule.read_text(encoding="utf-8")
+        self.assertIn("0.5.0", content, "rule must be bumped to 0.5.0 for OBPI-08")
+        self.assertIn(
+            "src/gzkit/<surface>/",
+            content,
+            "rule must document wheel-shipping pkg copy surface",
+        )
+        self.assertIn(
+            "Edit `.gzkit/` first",
+            content,
+            "rule must re-affirm 'Edit .gzkit/ first' canon",
+        )
+
+    @covers("REQ-0.0.32-08-12")
+    def test_sync_surfaces_module_imports_cleanly(self) -> None:
+        """sync_surfaces.py imports successfully (baseline for gz check gate)."""
+        import importlib  # noqa: PLC0415
+
+        mod = importlib.import_module("gzkit.sync_surfaces")
+        self.assertTrue(
+            hasattr(mod, "sync_pkg_surfaces"),
+            "sync_surfaces must export sync_pkg_surfaces",
+        )
+        self.assertTrue(
+            hasattr(mod, "sync_all"),
+            "sync_surfaces must export sync_all",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

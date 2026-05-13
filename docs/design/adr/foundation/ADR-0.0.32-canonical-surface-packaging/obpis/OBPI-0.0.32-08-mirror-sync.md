@@ -3,7 +3,7 @@ id: OBPI-0.0.32-08-mirror-sync
 parent: ADR-0.0.32-canonical-surface-packaging
 item: 8
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.32-08-mirror-sync: Canonical Surface Sync
@@ -263,26 +263,45 @@ Before this OBPI: editing `.gzkit/skills/<slug>/SKILL.md` required the operator 
 
 ### Key Proof
 
-```bash
-# Make a canonical edit, sync once, verify both derived surfaces are byte-equivalent
-echo "demo" >> .gzkit/skills/gz-prd/SKILL.md
-uv run gz agent sync control-surfaces
-diff .gzkit/skills/gz-prd/SKILL.md src/gzkit/skills/gz-prd/SKILL.md   # Expected: no diff
-diff .gzkit/skills/gz-prd/SKILL.md .claude/skills/gz-prd/SKILL.md     # Expected: no diff (modulo documented transforms)
 
-# Idempotent re-run
+```bash
+# Edit canonical skill, single sync writes to both derived surface families
+echo "# demo" >> .gzkit/skills/gz-prd/SKILL.md
 uv run gz agent sync control-surfaces
-git diff --stat src/gzkit/ .claude/ .github/   # Expected: empty (idempotent across all derived surfaces)
-git checkout -- .gzkit/skills/gz-prd/SKILL.md src/gzkit/ .claude/ .github/   # cleanup
+diff .gzkit/skills/gz-prd/SKILL.md src/gzkit/skills/gz-prd/SKILL.md  # no diff (wheel-shipping pkg copy)
+diff .gzkit/skills/gz-prd/SKILL.md .claude/skills/gz-prd/SKILL.md    # no diff (vendor mirror)
+
+# Idempotent re-run on freshly-synced state
+uv run gz agent sync control-surfaces  # no new writes
+
+# Cleanup
+git checkout -- .gzkit/skills/gz-prd/SKILL.md src/gzkit/skills/ .claude/skills/
 ```
+
+Receipts:
+- arb-ruff-d21c40670f6e43d6b607939712d5b55e (lint clean)
+- arb-step-typecheck-2cae7c1ea2d84acf9bc0290807fd0cc2 (typecheck clean)
+- arb-step-unittest-99b651d00c3a449b934538bc9c11ecf2 (4931/4931 pass)
+- arb-step-mkdocs-da1ac434ae2247d19a9dcea0e8dce663 (docs strict pass)
+
+REQ parity: uncovered_reqs: 0 (all 12 REQs covered via unit tests + 3 behave scenarios + waiver for structural REQs).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created:
+  - features/agent_sync.feature (3 BDD scenarios for dual-direction sync idempotency)
+- Files modified:
+  - src/gzkit/sync_surfaces.py: added sync_pkg_surfaces() + _pkg_surface_exists() + _sync_flat_md_to_pkg(); wired into sync_all() before vendor mirrors
+  - .gzkit/rules/skill-surface-sync.md: bumped to v0.5.0 with broadened sync documentation
+  - docs/user/manpages/agent-sync-control-surfaces.md: documented one-canonical-source / two-derived-families behavior
+  - data/behave_coverage_waivers.json: added rationale + waiver entry for structural REQs
+  - tests/test_sync_surfaces.py: added TestSyncPkgSurfaces (6) and TestSyncPkgSurfacesManifestAndDocs (5)
+  - tests/test_skills.py, test_rules.py, test_personas.py, test_templates.py: added @covers; replaced obsolete forward-guard scope tests with positive assertions
+- Tests added: 11 new unittests + 3 new behave scenarios; all 4931 unittests pass
+- Date completed: 2026-05-13
+- Attestation status: human-attested (Jeffry Babb)
+- Defects noted: Brief Allowed Paths listed vendor-mirror path .claude/rules/skill-surface-sync.md (canonical edit target is .gzkit/rules/skill-surface-sync.md); orphaned manpage gz-agent.md merged into existing agent-sync-control-surfaces.md
 
 ## Tracked Defects
 
@@ -291,14 +310,14 @@ git checkout -- .gzkit/skills/gz-prd/SKILL.md src/gzkit/ .claude/ .github/   # c
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — OBPI-0.0.32-08-mirror-sync sync mechanism implemented and verified. ARB receipts: arb-ruff-d21c40670f6e43d6b607939712d5b55e (lint), arb-step-typecheck-2cae7c1ea2d84acf9bc0290807fd0cc2 (typecheck), arb-step-unittest-99b651d00c3a449b934538bc9c11ecf2 (4931/4931 pass), arb-step-mkdocs-da1ac434ae2247d19a9dcea0e8dce663 (docs strict). 12/12 REQs covered (uncovered_reqs: 0). 3 BDD scenarios pass under features/agent_sync.feature. sync_pkg_surfaces() propagates .gzkit/<surface>/ to src/gzkit/<surface>/ for skills/rules/personas/templates/chores-canonical, guarded by __init__.py existence (adopter projects untouched). skill-surface-sync.md bumped to v0.5.0.
+- Date: 2026-05-13
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-13
 
 **Evidence Hash:** -

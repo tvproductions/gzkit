@@ -520,6 +520,147 @@ def _has_manifest_vendors(project_root: Path) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Pkg surface sync (.gzkit/<surface>/ → src/gzkit/<surface>/)
+# ---------------------------------------------------------------------------
+
+
+def _pkg_surface_exists(project_root: Path, surface: str) -> bool:
+    """Return True when the pkg surface package directory is already established.
+
+    Only propagate when src/gzkit/<surface>/__init__.py exists — this is the
+    signal that the dual-surface layout was set up for this repo (e.g. gzkit's
+    own dev tree). Adopter projects do not have src/gzkit/ at all; propagating
+    there would silently create a foreign package namespace.
+    """
+    return (project_root / "src" / "gzkit" / surface / "__init__.py").exists()
+
+
+def _sync_flat_md_to_pkg(
+    canonical_dir: Path,
+    pkg_dir: Path,
+    project_root: Path,
+    *,
+    exclude_names: set[str] | None = None,
+) -> list[str]:
+    """Copy *.md (and *.json) from canonical_dir to pkg_dir, idempotent.
+
+    pkg_dir must already exist (caller checked _pkg_surface_exists).
+    Skips files whose bytes already match the destination.
+    """
+    if not canonical_dir.exists() or not pkg_dir.exists():
+        return []
+    updated: list[str] = []
+    for src_file in sorted(canonical_dir.iterdir()):
+        if not src_file.is_file():
+            continue
+        if exclude_names and src_file.name in exclude_names:
+            continue
+        if src_file.suffix not in {".md", ".json"}:
+            continue
+        dest_file = pkg_dir / src_file.name
+        src_bytes = src_file.read_bytes()
+        if dest_file.exists() and dest_file.read_bytes() == src_bytes:
+            continue
+        dest_file.write_bytes(src_bytes)
+        updated.append(dest_file.relative_to(project_root).as_posix())
+    return updated
+
+
+def sync_pkg_surfaces(project_root: Path, config: GzkitConfig) -> list[str]:
+    """Copy .gzkit/<surface>/ to src/gzkit/<surface>/ for every dual-surface family.
+
+    Only propagates when the pkg surface is already established (its __init__.py
+    exists), so adopter projects — which have no src/gzkit/ package — are
+    unaffected. Covers skills, rules, personas, templates, and chores (canonical
+    class only per _classify_chore_file). Idempotent: skips bytes-identical files.
+    Reads ONLY from .gzkit/<surface>/ — never from src/gzkit/ (REQ-0.0.32-08-01).
+
+    Args:
+        project_root: Project root directory.
+        config: Project configuration.
+
+    Returns:
+        List of files written (POSIX-form relative paths).
+
+    """
+    updated: list[str] = []
+
+    # Skills: .gzkit/skills/<slug>/SKILL.md → src/gzkit/skills/<slug>/SKILL.md
+    if _pkg_surface_exists(project_root, "skills"):
+        from gzkit.sync_skills import _retired_skill_names
+
+        retired = _retired_skill_names(project_root / config.paths.skills)
+        canonical_skills = project_root / config.paths.skills
+        pkg_skills = project_root / "src" / "gzkit" / "skills"
+        for skill_dir in sorted(canonical_skills.iterdir()):
+            if not skill_dir.is_dir() or skill_dir.name in retired:
+                continue
+            skill_md = skill_dir / "SKILL.md"
+            if not skill_md.exists():
+                continue
+            dest_skill_md = pkg_skills / skill_dir.name / "SKILL.md"
+            dest_skill_md.parent.mkdir(parents=True, exist_ok=True)
+            src_bytes = skill_md.read_bytes()
+            if dest_skill_md.exists() and dest_skill_md.read_bytes() == src_bytes:
+                continue
+            dest_skill_md.write_bytes(src_bytes)
+            updated.append(dest_skill_md.relative_to(project_root).as_posix())
+
+    # Rules: .gzkit/rules/*.md → src/gzkit/rules/*.md (exclude AGENTS.md, package-internal)
+    if _pkg_surface_exists(project_root, "rules"):
+        updated.extend(
+            _sync_flat_md_to_pkg(
+                project_root / ".gzkit" / "rules",
+                project_root / "src" / "gzkit" / "rules",
+                project_root,
+                exclude_names={"AGENTS.md"},
+            )
+        )
+
+    # Personas: .gzkit/personas/*.md → src/gzkit/personas/*.md
+    if _pkg_surface_exists(project_root, "personas"):
+        updated.extend(
+            _sync_flat_md_to_pkg(
+                project_root / config.paths.personas,
+                project_root / "src" / "gzkit" / "personas",
+                project_root,
+            )
+        )
+
+    # Templates: .gzkit/templates/*.md → src/gzkit/templates/*.md
+    if _pkg_surface_exists(project_root, "templates"):
+        updated.extend(
+            _sync_flat_md_to_pkg(
+                project_root / ".gzkit" / "templates",
+                project_root / "src" / "gzkit" / "templates",
+                project_root,
+            )
+        )
+
+    # Chores: canonical-class files only, per _classify_chore_file
+    from gzkit.chores import _classify_chore_file
+
+    gzkit_chores = project_root / config.paths.chores
+    pkg_chores = project_root / "src" / "gzkit" / "chores"
+    if gzkit_chores.exists() and pkg_chores.exists():
+        for src_file in sorted(gzkit_chores.rglob("*")):
+            if not src_file.is_file():
+                continue
+            if _classify_chore_file(src_file, project_root=project_root) != "canonical":
+                continue
+            rel = src_file.relative_to(gzkit_chores)
+            dest_file = pkg_chores / rel
+            dest_file.parent.mkdir(parents=True, exist_ok=True)
+            src_bytes = src_file.read_bytes()
+            if dest_file.exists() and dest_file.read_bytes() == src_bytes:
+                continue
+            dest_file.write_bytes(src_bytes)
+            updated.append(dest_file.relative_to(project_root).as_posix())
+
+    return updated
+
+
+# ---------------------------------------------------------------------------
 # Persona mirror sync
 # ---------------------------------------------------------------------------
 
@@ -630,6 +771,9 @@ def sync_all(
 
     # Migrate legacy skill layouts into canonical path when needed.
     updated.extend(bootstrap_canonical_skills(project_root, config))
+
+    # Pkg surfaces: .gzkit/<surface>/ → src/gzkit/<surface>/ (REQ-0.0.32-08-02)
+    updated.extend(sync_pkg_surfaces(project_root, config))
 
     # Vendor-neutral surfaces (AGENTS.md generated before vendor rules so that
     # sync_nested_agents_md reads instruction files already rendered by

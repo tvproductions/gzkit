@@ -447,14 +447,14 @@ class TestTemplatesLayoutDualSurface(unittest.TestCase):
         )
 
     @covers("REQ-0.0.32-11-09")
-    def test_sync_surfaces_has_no_templates_byte_copy(self) -> None:
-        """sync_surfaces.py must not sync .gzkit/templates to package surface (OBPI-08 scope)."""
+    def test_sync_surfaces_has_templates_pkg_sync(self) -> None:
+        """sync_surfaces.py must propagate .gzkit/templates to src/gzkit/templates (OBPI-08)."""
         sync_module = _PROJECT_ROOT / "src" / "gzkit" / "sync_surfaces.py"
         content = sync_module.read_text(encoding="utf-8")
-        self.assertNotIn(
+        self.assertIn(
             "src/gzkit/templates",
             content,
-            "Dual-surface templates byte-copy step belongs to OBPI-08, not this OBPI",
+            "OBPI-08 must add .gzkit/templates -> src/gzkit/templates sync",
         )
 
     @covers("REQ-0.0.32-11-10")

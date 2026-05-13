@@ -97,14 +97,14 @@ class TestPersonasScopeNegative(unittest.TestCase):
         )
 
     @covers("REQ-0.0.32-09-06")
-    def test_sync_surfaces_has_no_personas_byte_copy(self) -> None:
-        """sync_surfaces.py must not byte-copy .gzkit/personas to package (OBPI-08 scope)."""
+    def test_sync_surfaces_has_personas_pkg_sync(self) -> None:
+        """sync_surfaces.py must propagate .gzkit/personas to src/gzkit/personas."""
         sync_module = _PROJECT_ROOT / "src" / "gzkit" / "sync_surfaces.py"
         content = sync_module.read_text(encoding="utf-8")
-        self.assertNotIn(
+        self.assertIn(
             "src/gzkit/personas",
             content,
-            "Dual-surface personas byte-copy step belongs to OBPI-08, not this OBPI",
+            "OBPI-08 must add .gzkit/personas -> src/gzkit/personas sync",
         )
 
     @covers("REQ-0.0.32-09-07")

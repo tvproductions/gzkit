@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gzkit.tvproductions.dev/schemas/owasp-top10-2025-mapping.schema.json",
+  "title": "OWASP Top 10:2025 analyzer mapping",
+  "description": "Binds OWASP 2025 categories A01..A10 to analyzer source families per ADR-0.47.0 Decision section.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["owasp_year", "categories"],
+  "properties": {
+    "owasp_year": {
+      "const": 2025
+    },
+    "categories": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A07",
+        "A08",
+        "A09",
+        "A10"
+      ],
+      "properties": {
+        "A01": {"$ref": "#/$defs/category"},
+        "A02": {"$ref": "#/$defs/category"},
+        "A03": {"$ref": "#/$defs/category"},
+        "A04": {"$ref": "#/$defs/category"},
+        "A05": {"$ref": "#/$defs/category"},
+        "A06": {"$ref": "#/$defs/category"},
+        "A07": {"$ref": "#/$defs/category"},
+        "A08": {"$ref": "#/$defs/category"},
+        "A09": {"$ref": "#/$defs/category"},
+        "A10": {"$ref": "#/$defs/category"}
+      }
+    }
+  },
+  "$defs": {
+    "sourceEnum": {
+      "enum": [
+        "ruff-S",
+        "stdlib-ast",
+        "chore-reused",
+        "not-mechanical",
+        "judgment-only",
+        "not-applicable"
+      ]
+    },
+    "category": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category_name",
+        "source",
+        "ruff_rules",
+        "ast_visitors",
+        "reused_chores",
+        "coverage_baseline",
+        "notes"
+      ],
+      "properties": {
+        "category_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "oneOf": [
+            {"$ref": "#/$defs/sourceEnum"},
+            {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {"$ref": "#/$defs/sourceEnum"}
+            }
+          ]
+        },
+        "ruff_rules": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^S[0-9]{3}$"
+          }
+        },
+        "ast_visitors": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reused_chores": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "coverage_baseline": {
+          "enum": [
+            "mechanical",
+            "partial-mechanical",
+            "not-mechanical",
+            "not-applicable"
+          ]
+        },
+        "notes": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

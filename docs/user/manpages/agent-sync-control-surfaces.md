@@ -1,12 +1,42 @@
 # gz agent sync control-surfaces
 
-Regenerate agent control surfaces and skill mirrors from canonical governance state.
+Regenerate agent control surfaces from canonical governance state.
 
 ## Usage
 
 ```bash
 gz agent sync control-surfaces [--dry-run]
 ```
+
+## One Canonical Source, Two Derived Families (OBPI-0.0.32-08)
+
+`gz agent sync control-surfaces` propagates `.gzkit/<surface>/` (the authored
+canonical source-of-truth) to **both** derived surface families in a single
+invocation:
+
+1. **Wheel-shipping byte-parity copy** — `src/gzkit/<surface>/` for every
+   dual-surface family (skills, rules, personas, templates, chores canonical
+   class only). Active only in gzkit's own dev repo where
+   `src/gzkit/<surface>/__init__.py` exists.
+
+2. **Vendor mirrors** — `.[vendor]/<surface>/` (`.claude/skills/`, `.claude/rules/`,
+   `.github/skills/`, `.github/instructions/`, `.claude/personas/`,
+   `.agents/personas/`, `.github/personas/`).
+
+No separate `cp` step is needed. Edit `.gzkit/<surface>/`, bump the version
+marker, run sync once (closes GHI #449).
+
+### Surface families covered
+
+| Canonical source | Pkg copy (wheel) | Vendor mirrors |
+|-----------------|------------------|----------------|
+| `.gzkit/skills/<slug>/SKILL.md` | `src/gzkit/skills/<slug>/SKILL.md` | `.claude/skills/`, `.github/skills/` |
+| `.gzkit/rules/<slug>.md` | `src/gzkit/rules/<slug>.md` | `.claude/rules/`, `.github/instructions/` |
+| `.gzkit/personas/<slug>.md` | `src/gzkit/personas/<slug>.md` | `.claude/personas/`, `.agents/personas/`, `.github/personas/` (transformed) |
+| `.gzkit/templates/<name>.md` | `src/gzkit/templates/<name>.md` | (none) |
+| `.gzkit/chores/<slug>/` (canonical class) | `src/gzkit/chores/<slug>/` (canonical only) | (none) |
+
+Re-running on freshly-synced state produces zero writes (idempotent).
 
 ## Determinism Contract
 
