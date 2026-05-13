@@ -318,6 +318,37 @@ for the full contract.
 
 ---
 
+## Surface-Only Refresh (`gz upgrade`)
+
+`gz upgrade` is the narrower sibling of `gz init --update`. Use it when you
+only need canonical surface content (skills, rules, templates, personas) to
+match the installed wheel — without the manifest refresh, scaffolder hooks, or
+agent sync that `gz init --update` performs.
+
+```bash
+uv run gz upgrade --dry-run          # Preview: per-artifact STALE/EDITED/IDENTICAL
+uv run gz upgrade                    # Execute: refresh all surfaces from wheel
+uv run gz upgrade --surface skills,rules   # Refresh specific surfaces only
+uv run gz upgrade --force            # Overwrite EDITED artifacts (audit trail printed)
+```
+
+Three-state detection is identical to `gz init --update`:
+
+- **IDENTICAL** — bytes match; skipped silently
+- **STALE** — bytes differ, no version marker; refreshed in place
+- **EDITED** — bytes differ, version marker present; conflict reported, left unchanged
+  (unless `--force`)
+
+`gz upgrade` also handles the **bootstrap-retrofit** case: when
+`.gzkit/<surface>/` does not exist (project was not initialized via `gz init`),
+the command creates it and writes canonical content from the wheel. Use
+`gz init --update` when you need the full ceremony; use `gz upgrade` when you
+only need surface content.
+
+See [`gz upgrade`](manpages/upgrade.md) for the full contract.
+
+---
+
 ## Storage Tiers and Recovery
 
 The three tier model and pool archive governance is documented in

@@ -52,6 +52,16 @@
       },
       "governance_relevant": true
     },
+    "upgrade": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
     "prd": {
       "surfaces": {
         "manpage": true,

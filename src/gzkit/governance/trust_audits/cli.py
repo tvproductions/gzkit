@@ -53,6 +53,11 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "the `gz-justify` skill ships in OBPI-0.0.19-04 per the ADR's "
         "decomposition plan (skill definition + upstream integrations OBPI)."
     ),
+    "upgrade": (
+        "Surface-only refresh verb (ADR-0.0.32 OBPI-14); the gz-deps-upgrade "
+        "skill covers dependency upgrades; a dedicated gz-upgrade skill for "
+        "canonical surface refresh is deferred post-ADR-0.0.32 closeout."
+    ),
 }
 
 
