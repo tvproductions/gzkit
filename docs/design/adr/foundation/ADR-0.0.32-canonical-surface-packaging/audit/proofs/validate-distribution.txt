@@ -1,0 +1,109 @@
+Validated: manifest, surfaces, ledger, instructions, briefs, documents,
+personas, version, taxonomy
+
+❌ Validation failed with 21 error(s):
+
+   →  src/gzkit/rules/_scaffolder.py
+    ON_DISK_NOT_INCLUDED: 'src/gzkit/rules/_scaffolder.py' exists under a
+canonical surface tree but is not covered by any include glob in  include.
+Resolution: extend the include block in pyproject.toml.
+
+   →  src/gzkit/rules/complexity-thresholds.json
+    ON_DISK_NOT_INCLUDED: 'src/gzkit/rules/complexity-thresholds.json' exists
+under a canonical surface tree but is not covered by any include glob in
+include. Resolution: extend the include block in pyproject.toml.
+
+   →  src/gzkit/skills/format/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/format/SKILL.md' exists on disk and
+is covered by a wheel include glob but is NOT in the baseline manifest.
+Resolution: add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/gz-adr-autolink/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/gz-adr-autolink/SKILL.md' exists on
+disk and is covered by a wheel include glob but is NOT in the baseline manifest.
+Resolution: add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/gz-adr-check/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/gz-adr-check/SKILL.md' exists on
+disk and is covered by a wheel include glob but is NOT in the baseline manifest.
+Resolution: add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/gz-adr-manager/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/gz-adr-manager/SKILL.md' exists on
+disk and is covered by a wheel include glob but is NOT in the baseline manifest.
+Resolution: add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/gz-adr-recon/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/gz-adr-recon/SKILL.md' exists on
+disk and is covered by a wheel include glob but is NOT in the baseline manifest.
+Resolution: add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/gz-adr-verification/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/gz-adr-verification/SKILL.md' exists
+on disk and is covered by a wheel include glob but is NOT in the baseline
+manifest. Resolution: add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/gz-attest/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/gz-attest/SKILL.md' exists on disk
+and is covered by a wheel include glob but is NOT in the baseline manifest.
+Resolution: add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/gz-audit/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/gz-audit/SKILL.md' exists on disk
+and is covered by a wheel include glob but is NOT in the baseline manifest.
+Resolution: add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/gz-closeout/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/gz-closeout/SKILL.md' exists on disk
+and is covered by a wheel include glob but is NOT in the baseline manifest.
+Resolution: add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/gz-interview/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/gz-interview/SKILL.md' exists on
+disk and is covered by a wheel include glob but is NOT in the baseline manifest.
+Resolution: add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/gz-obpi-audit/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/gz-obpi-audit/SKILL.md' exists on
+disk and is covered by a wheel include glob but is NOT in the baseline manifest.
+Resolution: add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/gz-obpi-brief/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/gz-obpi-brief/SKILL.md' exists on
+disk and is covered by a wheel include glob but is NOT in the baseline manifest.
+Resolution: add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/gz-obpi-sync/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/gz-obpi-sync/SKILL.md' exists on
+disk and is covered by a wheel include glob but is NOT in the baseline manifest.
+Resolution: add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/gz-register-adrs/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/gz-register-adrs/SKILL.md' exists on
+disk and is covered by a wheel include glob but is NOT in the baseline manifest.
+Resolution: add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/gz-specify/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/gz-specify/SKILL.md' exists on disk
+and is covered by a wheel include glob but is NOT in the baseline manifest.
+Resolution: add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/gz-typecheck/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/gz-typecheck/SKILL.md' exists on
+disk and is covered by a wheel include glob but is NOT in the baseline manifest.
+Resolution: add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/lint/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/lint/SKILL.md' exists on disk and is
+covered by a wheel include glob but is NOT in the baseline manifest. Resolution:
+add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/skills/test/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/skills/test/SKILL.md' exists on disk and is
+covered by a wheel include glob but is NOT in the baseline manifest. Resolution:
+add to data/distribution_baseline_manifest.json.
+
+   →  src/gzkit/templates/skills/git-sync/SKILL.md
+    ON_DISK_NOT_BASELINE: 'src/gzkit/templates/skills/git-sync/SKILL.md' exists
+on disk and is covered by a wheel include glob but is NOT in the baseline
+manifest. Resolution: add to data/distribution_baseline_manifest.json.

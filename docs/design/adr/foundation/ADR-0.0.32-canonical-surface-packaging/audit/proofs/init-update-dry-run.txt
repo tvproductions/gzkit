@@ -1,0 +1,8 @@
+Refreshing canonical surfaces from installed wheel...
+Dry run: no files will be written.
+  IDENTICAL: 218 STALE: 3 EDITED: 0
+
+Would refresh (STALE):
+  - .gzkit/chores/README.md
+  - .gzkit/chores/AGENTS.md
+  - .gzkit/templates/skills/git-sync/SKILL.md
