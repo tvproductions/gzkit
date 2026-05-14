@@ -159,7 +159,6 @@ def _seed_chore_registry() -> None:
                     },
                     "lanes": {
                         "lite": {"timeoutSeconds": 120, "allowNetwork": False},
-                        "medium": {"timeoutSeconds": 300, "allowNetwork": False},
                         "heavy": {"timeoutSeconds": 900, "allowNetwork": True},
                     },
                     "chores": [
@@ -168,7 +167,8 @@ def _seed_chore_registry() -> None:
                             "title": "Evaluation Feedback Clustering",
                             "version": "1.0.0",
                             "path": ".gzkit/chores/eval-feedback-cluster",
-                            "lane": "medium",
+                            "lane": "lite",
+                            "timeoutSeconds": 300,
                         }
                     ],
                 },

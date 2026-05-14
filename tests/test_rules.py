@@ -880,6 +880,7 @@ class TestCoreRulesRegistry(unittest.TestCase):
             created_names = {p.name for p in created}
             for slug in CORE_RULES:
                 self.assertIn(f"{slug}.md", created_names)
+            self.assertIn("complexity-thresholds.json", created_names)
 
     @covers("REQ-0.0.32-04-03")
     def test_scaffold_core_rules_returns_list_of_paths(self) -> None:

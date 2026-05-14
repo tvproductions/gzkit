@@ -10,4 +10,4 @@ uv run -m unittest -q
 
 ## Lane
 
-**medium**
+**lite**

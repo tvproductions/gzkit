@@ -26,6 +26,7 @@ Feature: gz validate --distribution T0 static audit
   @REQ-0.0.32-15-02
   @REQ-0.0.32-15-03
   Scenario: --regenerate rewrites manifest and validate exits 0
+    Given a minimal clean distribution baseline project
     When I run "gz validate --distribution --regenerate"
     Then it exits with code 0
     And the output contains "Baseline regenerated"

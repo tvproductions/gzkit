@@ -296,7 +296,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         "--briefs",
         dest="check_briefs",
         action="store_true",
-        help="Validate all OBPI briefs against the canonical OBPI schema",
+        help="Validate OBPI briefs with lifecycle-aware authored/completed gates",
     )
     p_validate.add_argument(
         "--personas",
