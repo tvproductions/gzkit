@@ -19,6 +19,7 @@ from gzkit.arb.paths import receipts_root
 from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
 from gzkit.commands.adr_audit import (
     ATTESTATION_TYPE_HUMAN,
+    ATTESTATION_TYPE_OPERATOR_VERBATIM,
     _enforce_human_attestation_authenticity,
     _enforce_uncovered_acceptance_confirmation,
     _requires_human_obpi_attestation,
@@ -797,6 +798,21 @@ def obpi_complete_cmd(
             accept_security_floor=accept_security_floor,
         )
 
+    # GHI #462: --accept-security-floor declares the auto-detect over-classified
+    # the brief. Downgrade effective_sensitivity for downstream gates so the
+    # attestor-present co-presence proxy is no longer refused, the security
+    # walkthrough is skipped, and the receipt records sensitivity:absent.
+    # The override is already recorded in console output by _enforce_security_review_gate.
+    if accept_security_floor and effective_sensitivity == "security":
+        effective_sensitivity = None
+        # Recompute requires_human now that sensitivity is downgraded; the
+        # caller's brief_frontmatter no longer carries security, so
+        # heavy/foundation rules apply normally.
+        brief_frontmatter_downgraded: dict[str, str] | None = None
+        requires_human = _requires_human_obpi_attestation(
+            resolved_parent, parent_lane, brief_frontmatter_downgraded
+        )
+
     # 4a-bis. ADR-0.0.24-02 receipt-binding gate: heavy/foundation = fail-closed
     # on unresolvable ARB receipts; lite-non-foundation = warn-only. Runs
     # BEFORE the GHI #290 TTY gate so a mechanical-receipt failure short-
@@ -859,24 +875,35 @@ def obpi_complete_cmd(
 
     # 4b. GHI #290 authenticity gate: no human-attestation receipt without TTY
     # confirmation. GHI #292 adds --attestor-present as an agent-relayed escape
-    # path gated on an active pipeline marker. Skipped for --dry-run so plans
-    # can be previewed headlessly, but a line in the dry-run output explicitly
-    # notes the gate would fire.
+    # path gated on an active pipeline marker. GHI #462 + canon-owner declaration
+    # 2026-05-14 adds --accept-security-floor REASON as a third documented path:
+    # the operator's verbatim attestation in the CLI invocation IS the attestation
+    # when the rationale string is non-empty. Recorded as ATTESTATION_TYPE_OPERATOR_VERBATIM
+    # in the ledger so the receipt is taxonomically distinct from TTY-typed
+    # attestation and audits can count the streams separately. Skipped for
+    # --dry-run so plans can be previewed headlessly.
     attestation_type: str = ATTESTATION_TYPE_HUMAN
     if requires_human and not dry_run:
-        try:
-            attestation_type = _enforce_human_attestation_authenticity(
-                obpi_id=obpi_id,
-                parent_adr=resolved_parent,
-                attestor=attestor,
-                attestation_text=attestation_text,
-                attestor_present=attestor_present,
-                project_root=project_root,
-                sensitivity=effective_sensitivity,
-                parent_kind=parent_kind,
+        if accept_security_floor:
+            attestation_type = ATTESTATION_TYPE_OPERATOR_VERBATIM
+            console.print(
+                "[green]✓[/green] Operator-verbatim conversational attestation "
+                "accepted (GHI #462; canon-owner declaration 2026-05-14)."
             )
-        except GzCliError as exc:
-            _fail(str(exc), exit_code=3, as_json=as_json, obpi_id=obpi_id)
+        else:
+            try:
+                attestation_type = _enforce_human_attestation_authenticity(
+                    obpi_id=obpi_id,
+                    parent_adr=resolved_parent,
+                    attestor=attestor,
+                    attestation_text=attestation_text,
+                    attestor_present=attestor_present,
+                    project_root=project_root,
+                    sensitivity=effective_sensitivity,
+                    parent_kind=parent_kind,
+                )
+            except GzCliError as exc:
+                _fail(str(exc), exit_code=3, as_json=as_json, obpi_id=obpi_id)
 
     # 5. Build audit ledger entry and receipt event
     adr_dir = obpi_file.parent.parent
