@@ -320,6 +320,25 @@ Do the thing.
             self.assertEqual(result.exit_code, 0)
 
 
+class TestValidateScopeResolution(unittest.TestCase):
+    """The rendered scope list must match the checks that actually ran."""
+
+    def test_default_validate_scope_list_includes_frontmatter(self) -> None:
+        from gzkit.commands.validate_cmd import _resolve_scopes
+
+        self.assertIn("frontmatter", _resolve_scopes({}))
+
+    def test_frontmatter_flag_resolves_to_frontmatter_only(self) -> None:
+        from gzkit.commands.validate_cmd import _resolve_scopes
+
+        self.assertEqual(["frontmatter"], _resolve_scopes({"frontmatter": True}))
+
+    def test_distribution_flag_resolves_to_distribution_only(self) -> None:
+        from gzkit.commands.validate_cmd import _resolve_scopes
+
+        self.assertEqual(["distribution"], _resolve_scopes({"distribution": True}))
+
+
 class TestFrontmatterCoherence(unittest.TestCase):
     """Tests for gz validate --frontmatter (GHI-167)."""
 

@@ -75,7 +75,7 @@ def _is_package_only(rel_posix: str, project_root: Path | None = None) -> bool:
     try:
         result = classifier(path, project_root=project_root)  # type: ignore
     except TypeError:
-        result = classifier(path)  # type: ignore
+        result = classifier(path)
     return result in ("package_only", "runtime_state")
 
 
@@ -268,7 +268,7 @@ def regenerate_distribution_baseline(project_root: Path) -> dict[str, Any]:
                 try:
                     cls = classifier(path, project_root=project_root)  # type: ignore
                 except TypeError:
-                    cls = classifier(path)  # type: ignore
+                    cls = classifier(path)
                 if cls in ("package_only", "runtime_state"):
                     continue
             entry = path.relative_to(root_path).as_posix()

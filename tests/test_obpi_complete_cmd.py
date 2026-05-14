@@ -99,7 +99,7 @@ Test brief for obpi complete command.
 
 ---
 
-**Brief Status:** Draft
+**Status:** Draft
 
 **Date Completed:** -
 
@@ -107,7 +107,7 @@ Test brief for obpi complete command.
 """
 
 _COMPLETED_BRIEF = _MINIMAL_BRIEF.replace("status: Draft", "status: Completed").replace(
-    "**Brief Status:** Draft", "**Brief Status:** Completed"
+    "**Status:** Draft", "**Status:** Completed"
 )
 
 
@@ -236,7 +236,7 @@ class TestBuildCompletedBrief(unittest.TestCase):
             key_proof="gz obpi complete exits 0",
             date_completed="2026-04-05",
         )
-        self.assertIn("**Brief Status:** Completed", result)
+        self.assertIn("**Status:** Completed", result)
         self.assertIn("**Date Completed:** 2026-04-05", result)
 
     @covers("REQ-0.0.14-02-03")
@@ -757,7 +757,7 @@ class TestObpiCompleteCmdHappyPath(unittest.TestCase):
             # Brief should be updated
             updated = obpi_file.read_text(encoding="utf-8")
             self.assertIn("status: Completed", updated)
-            self.assertIn("**Brief Status:** Completed", updated)
+            self.assertIn("**Status:** Completed", updated)
             self.assertIn("- Attestor: `jeff`", updated)
             self.assertIn("- Attestation: Lock commands verified", updated)
             self.assertIn("obpi_complete.py, parser_artifacts.py", updated)
@@ -1401,7 +1401,7 @@ existing TTY + ATTEST gate without any new TTY-gating code.
 
 ---
 
-**Brief Status:** Draft
+**Status:** Draft
 
 **Date Completed:** -
 

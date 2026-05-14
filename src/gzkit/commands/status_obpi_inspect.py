@@ -268,7 +268,15 @@ def _inspect_obpi_brief(
 ) -> dict[str, Any]:
     content = obpi_file.read_text(encoding="utf-8")
     frontmatter_status = (parse_frontmatter_value(content, "status") or "").strip().lower()
-    brief_status = (_markdown_label_value(content, "Brief Status") or "").strip().lower()
+    brief_status = (
+        (
+            _markdown_label_value(content, "Status")
+            or _markdown_label_value(content, "Brief Status")
+            or ""
+        )
+        .strip()
+        .lower()
+    )
     file_completed = frontmatter_status == "completed" or brief_status == "completed"
     implementation_evidence_ok = _has_substantive_implementation_summary(content)
     key_proof_body = _resolved_key_proof_body(content)

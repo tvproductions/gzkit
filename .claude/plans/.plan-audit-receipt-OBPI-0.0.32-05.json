@@ -1,8 +1,0 @@
-{
-  "obpi_id": "OBPI-0.0.32-05-init-update-flag",
-  "timestamp": "2026-05-13T01:30:00+00:00",
-  "verdict": "PASS",
-  "plan_file": "OBPI-0.0.32-05-init-update-flag.md",
-  "gaps_found": 0,
-  "notes": "Brief paths corrected: docs/user/manpages/gz-init.md -> init.md (same class as OBPI-04 correction); src/gzkit/cli/parser_init.py -> parser_governance.py (Option A: add --update flag directly to existing p_init subparser at lines 107-151, no extraction refactor). ADR line 605 also corrected to match. Plan-audit CLI residual FAIL on features/init.feature is structural-only (new file to be created by this OBPI's REQ-07 — three behave scenarios); not a semantic alignment gap. 83 sibling-ADR scope collisions advisory only. ADR <-> OBPI alignment: all 7 checks PASS. Plan <-> OBPI alignment: plan steps cover all 10 REQs and acceptance criteria."
-}

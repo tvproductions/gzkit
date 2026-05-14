@@ -8,6 +8,7 @@ exits 0 on clean state, exits 3 on policy drift, and exits 2 on system errors.
 from __future__ import annotations
 
 import contextlib
+import io
 import json
 import tempfile
 import unittest
@@ -237,7 +238,7 @@ class TestMalformedToml(unittest.TestCase):
             (root / "pyproject.toml").write_text("this is not valid toml {{{{", encoding="utf-8")
             _write_manifest(root, {})
 
-            with self.assertRaises(SystemExit) as ctx:
+            with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as ctx:
                 audit_distribution(root)
 
             self.assertEqual(
@@ -255,7 +256,7 @@ class TestMalformedToml(unittest.TestCase):
             _write_manifest(root, {})
             # No pyproject.toml
 
-            with self.assertRaises(SystemExit) as ctx:
+            with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as ctx:
                 audit_distribution(root)
 
             self.assertEqual(ctx.exception.code, 2)
@@ -269,7 +270,7 @@ class TestMalformedToml(unittest.TestCase):
             _write_pyproject(root, [])
             # No data/distribution_baseline_manifest.json
 
-            with self.assertRaises(SystemExit) as ctx:
+            with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as ctx:
                 audit_distribution(root)
 
             self.assertEqual(ctx.exception.code, 2)

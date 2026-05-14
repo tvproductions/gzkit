@@ -316,10 +316,11 @@ def step_malformed_event(context, artifact_id: str) -> None:  # type: ignore[no-
 
     try:
         AdrEvaluationEvent(
+            id=f"adr-evaluation-{artifact_id}",
             event="adr-evaluation",
             artifact_id=artifact_id,
             artifact_type="ADR",
-            dimensions="not-a-mapping",  # type: ignore[arg-type]
+            dimensions="not-a-mapping",  # ty: ignore[invalid-argument-type]
             scores={},
             weighted_total=0.0,
             red_team_challenges_fired=[],

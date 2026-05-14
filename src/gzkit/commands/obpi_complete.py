@@ -1186,10 +1186,10 @@ def _build_completed_brief(
     # 4. Update ## Human Attestation section
     result = _update_human_attestation(result, attestor, attestation_text, date_completed)
 
-    # 5. Update **Brief Status:** line
+    # 5. Update **Status:** line
     result = re.sub(
-        r"\*\*Brief Status:\*\*\s*\S+",
-        "**Brief Status:** Completed",
+        r"\*\*Status:\*\*\s*\S+",
+        "**Status:** Completed",
         result,
     )
 

@@ -239,8 +239,6 @@ _No defects tracked._
 
 ---
 
-**Brief Status:** Draft
-
 **Date Completed:** -
 
 **Evidence Hash:** -
