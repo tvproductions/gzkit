@@ -6,9 +6,43 @@ suppression in quiet/JSON modes, and non-TTY degradation.
 
 import io
 import unittest
+from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from gzkit.cli.formatters import OutputFormatter, OutputMode, ProgressContext
+
+
+class _ProgressSpy:
+    def __init__(self, total: int, label: str) -> None:
+        self.total = total
+        self.label = label
+        self.advanced: list[str] = []
+
+    def __enter__(self) -> "_ProgressSpy":
+        return self
+
+    def __exit__(self, *_exc: object) -> None:
+        return None
+
+    def advance(self, step: str) -> None:
+        self.advanced.append(step)
+
+
+class _FormatterSpy:
+    instances: list["_FormatterSpy"] = []
+
+    def __init__(self) -> None:
+        self.progress: _ProgressSpy | None = None
+        self.__class__.instances.append(self)
+
+    def progress_context(self, total: int, label: str) -> _ProgressSpy:
+        self.progress = _ProgressSpy(total, label)
+        return self.progress
+
+
+def _result(success: bool) -> SimpleNamespace:
+    return SimpleNamespace(success=success)
 
 
 class TestProgressContextExists(unittest.TestCase):
@@ -112,13 +146,34 @@ class TestProgressKnownSteps(unittest.TestCase):
 class TestCheckIntegration(unittest.TestCase):
     """REQ-0.0.4-09-01: gz check uses progress_context."""
 
-    def test_check_function_uses_progress_context(self):
-        """check() source code references progress_context."""
-        from pathlib import Path
+    def test_check_function_advances_progress_for_each_step(self):
+        """check() advances the formatter progress context for each quality step."""
+        from gzkit.commands import quality
 
-        source = Path("src/gzkit/commands/quality.py").read_text(encoding="utf-8")
-        self.assertIn("progress_context", source)
-        self.assertIn("progress.advance", source)
+        _FormatterSpy.instances.clear()
+        steps = [
+            ("Lint", lambda _: _result(True)),
+            ("Test", lambda _: _result(True)),
+        ]
+
+        with (
+            patch("gzkit.cli.formatters.OutputFormatter", _FormatterSpy),
+            patch.object(quality, "console", SimpleNamespace(print=lambda *_args, **_kwargs: None)),
+            patch.object(quality, "get_project_root", return_value=Path(".")),
+            patch.object(quality, "_build_check_steps", return_value=steps),
+            patch(
+                "gzkit.quality.run_drift_advisory",
+                return_value=SimpleNamespace(has_drift=False),
+            ),
+            patch("gzkit.flags.registry.load_registry", side_effect=RuntimeError("skip flags")),
+        ):
+            quality.check()
+
+        formatter = _FormatterSpy.instances[-1]
+        self.assertIsNotNone(formatter.progress)
+        self.assertEqual(formatter.progress.total, 2)
+        self.assertEqual(formatter.progress.label, "Running quality checks")
+        self.assertEqual(formatter.progress.advanced, ["Lint", "Test"])
 
 
 if __name__ == "__main__":

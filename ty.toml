@@ -17,3 +17,12 @@ invalid-argument-type = "ignore"
 not-subscriptable = "ignore"
 unused-type-ignore-comment = "ignore"
 possibly-missing-attribute = "ignore"
+
+# behave's @given/@when/@then resolve to _StepDecorator instances that ty
+# cannot see as callable; suppress the decorator false-positive in step glue
+# rather than littering every step definition with inline ignore comments.
+[[overrides]]
+include = ["features/**"]
+
+[overrides.rules]
+call-non-callable = "ignore"

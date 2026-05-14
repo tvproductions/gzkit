@@ -106,8 +106,11 @@ class TestParseBriefReqs(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             brief = Path(tmp) / "brief.md"
             brief.write_text(_BRIEF_TEMPLATE.format(criteria=criteria), encoding="utf-8")
-            reqs = parse_brief_reqs(brief)
+            with self.assertLogs("gzkit.triangle", level="WARNING") as cm:
+                reqs = parse_brief_reqs(brief)
         self.assertEqual(reqs, ["REQ-9.9.9-99-01", "REQ-9.9.9-99-04"])
+        self.assertEqual(len(cm.output), 2)
+        self.assertTrue(all("Malformed REQ line" in message for message in cm.output))
 
     @covers("REQ-0.0.25-01-01")
     def test_returns_empty_when_brief_path_missing(self) -> None:
@@ -242,9 +245,11 @@ class TestDiscoverCoversAstSafety(unittest.TestCase):
                     ]
                 ),
             )
-            refs = discover_covers("REQ-9.9.9-99-02", tests_root)
+            with self.assertLogs("gzkit.traceability", level="WARNING") as cm:
+                refs = discover_covers("REQ-9.9.9-99-02", tests_root)
         self.assertEqual(len(refs), 1)
         self.assertTrue(refs[0].file_path.endswith("test_valid.py"))
+        self.assertTrue(any("Skipping unparseable file" in message for message in cm.output))
 
 
 _FEATURE_TEMPLATE = """\

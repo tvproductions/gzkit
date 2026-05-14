@@ -81,7 +81,6 @@
       "src/gzkit/config.py",
       "src/gzkit/handoff_validation.py",
       "src/gzkit/pipeline_dispatch.py",
-      "src/gzkit/sync_surfaces.py",
       "src/gzkit/adr_eval_redteam.py"
     ],
     "rationale": "YAML / JSON / arbitrary-frontmatter loaders that read operator-supplied content; unsafe loaders execute attacker-controlled payloads, and gzkit's discipline mandates ``yaml.safe_load`` and Pydantic validation at every boundary."

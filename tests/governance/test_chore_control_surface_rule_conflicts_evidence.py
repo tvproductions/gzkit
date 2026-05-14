@@ -16,6 +16,7 @@ against a tmpfile fixture.
 from __future__ import annotations
 
 import importlib.util
+import io
 import sys
 import unittest
 from pathlib import Path
@@ -206,7 +207,9 @@ class SelfTestEntrypointTests(unittest.TestCase):
     """The --self-test mode is what acceptance.json invokes; it must be deterministic."""
 
     def test_self_test_exits_zero(self) -> None:
-        self.assertEqual(CE.run_self_test(), 0)
+        with patch("sys.stdout", new_callable=io.StringIO) as stdout:
+            self.assertEqual(CE.run_self_test(), 0)
+        self.assertIn("OK (7 matrix fixtures + 3 parser checks)", stdout.getvalue())
 
 
 if __name__ == "__main__":

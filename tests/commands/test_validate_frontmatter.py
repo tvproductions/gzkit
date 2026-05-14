@@ -73,8 +73,8 @@ class TestFrontmatterGuard(unittest.TestCase):
             )
             result = runner.invoke(main, ["validate", "--frontmatter"])
             self.assertEqual(result.exit_code, 0)
-            # REQ-01: empty body on coherent repo — no "drift" prose
-            self.assertNotIn("drift", result.output.lower())
+            # REQ-01: empty body on coherent repo.
+            self.assertEqual("", result.output)
 
     @covers("REQ-0.0.16-01-02")
     def test_status_drift_exits_3_reports_drift_line(self) -> None:

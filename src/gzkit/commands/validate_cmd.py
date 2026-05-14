@@ -940,6 +940,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "briefs",
         "documents",
         "personas",
+        "frontmatter",
         "version",
         "taxonomy",
     ]
@@ -981,6 +982,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "evaluation_justify_binding",
         "intrinsic_attestation",
         "advisor_proof_binding",
+        "distribution",
     ]
 
     run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
@@ -1310,6 +1312,7 @@ def validate(
             check_doc_surface_parity,
             check_absorption_duplicates,
             check_orphaned_implementation,
+            check_distribution,
         ]
     )
     if _dispatch_early_return_scopes(

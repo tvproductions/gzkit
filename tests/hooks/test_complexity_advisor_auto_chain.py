@@ -84,11 +84,13 @@ class TestRunAutoChain(unittest.TestCase):
 
     @covers("REQ-0.0.29-05-06")
     @patch("gzkit.hooks.install_complexity_advisor.run_with_timeout")
-    def test_block_band_exits_1(self, mock_timeout: MagicMock) -> None:
+    @patch("sys.stderr", new_callable=io.StringIO)
+    def test_block_band_exits_1(self, mock_stderr: io.StringIO, mock_timeout: MagicMock) -> None:
         """Block-band crossing causes exit code 1 (REQ-6)."""
         mock_timeout.return_value = _make_timeout_ok([_make_diagnosis(band="block")])
         code = run_auto_chain(["src/foo.py"])
         self.assertEqual(code, 1)
+        self.assertIn("Recommended move", mock_stderr.getvalue())
 
     @covers("REQ-0.0.29-05-06")
     @patch("gzkit.hooks.install_complexity_advisor.run_with_timeout")
@@ -127,12 +129,16 @@ class TestRunAutoChain(unittest.TestCase):
 
     @covers("REQ-0.0.29-05-02")
     @patch("gzkit.hooks.install_complexity_advisor.run_with_timeout")
-    def test_xenon_fail_triggers_advisor(self, mock_timeout: MagicMock) -> None:
+    @patch("sys.stderr", new_callable=io.StringIO)
+    def test_xenon_fail_triggers_advisor(
+        self, mock_stderr: io.StringIO, mock_timeout: MagicMock
+    ) -> None:
         """When called, the advisor runs and returns diagnoses (REQ-2)."""
         diag = _make_diagnosis(band="warn")
         mock_timeout.return_value = _make_timeout_ok([diag])
         code = run_auto_chain(["src/foo.py"])
         self.assertEqual(code, 0)
+        self.assertIn("Recommended move", mock_stderr.getvalue())
         mock_timeout.assert_called_once()
 
     @covers("REQ-0.0.29-05-06")

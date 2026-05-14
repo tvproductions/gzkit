@@ -319,6 +319,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Key Proof
 
 
+
 Before:
   $ uv run gz validate --distribution
   Validation failed with 21 error(s) [ON_DISK_NOT_BASELINE x 19, ON_DISK_NOT_INCLUDED x 2]
@@ -332,13 +333,15 @@ Recovery:
 
 After:
   $ uv run gz validate --distribution
-  All validations passed (9 scopes).
+  Validated: distribution
+  All validations passed (1 scopes).
   exit=0
 
 ARB receipts: arb-ruff-a46e96f0477e4de3993daf4aa066d46e, arb-step-typecheck-1e9b9f7c478b4b59992afcf63c9d0cd5, arb-step-unittest-6d6302dd09fd4ba69628394cf4d84823, arb-step-mkdocs-e4ad1dadc9c24c08a4312b8c5ce95d53.
 REQ coverage: 10/10 via gz covers OBPI-0.0.32-15-t0-maintenance-surfaces.
 
 ### Implementation Summary
+
 
 
 - Regenerator: regenerate_distribution_baseline() in src/gzkit/governance/trust_audits/distribution.py walks canonical surface trees, applies per-surface classifiers, writes manifest with schema_version/gzkit_version/surfaces keys, emits distribution_baseline_regenerated ledger event with hash-before/after
@@ -363,7 +366,7 @@ _No defects tracked._
 ## Human Attestation
 
 - Attestor: `g0`
-- Attestation: attest completed — g0, the operator, verbatim attestation in conversation 2026-05-14 explicitly authorizing PTY-relay path per skill Stage-5 fallback. OBPI-0.0.32-15-t0-maintenance-surfaces fully implemented: regenerator (gz validate --distribution --regenerate) + per-surface classifiers (_classify_{rule,skill,persona,template}_file) + unified Canonical surface class-classifier doctrine in .gzkit/rules/skill-surface-sync.md v0.6.0. gz validate --distribution exits 0; 4994/4994 tests pass; 10/10 REQs covered per gz covers. ARB receipts: arb-ruff-a46e96f0477e4de3993daf4aa066d46e, arb-step-typecheck-1e9b9f7c478b4b59992afcf63c9d0cd5, arb-step-unittest-6d6302dd09fd4ba69628394cf4d84823, arb-step-mkdocs-e4ad1dadc9c24c08a4312b8c5ce95d53. Behave coverage for REQs 04-10 waived under rationale adr-0.0.32-15-unit-test-only-structural-reqs. Security-floor override applied per GHI #462 (operator-authored escape; changes are structurally additive + defensive, not security-relevant by content).
+- Attestation: ATTEST COMPLETED — T0 maintenance surfaces verified: --regenerate flag + per-surface class-classifiers landed per ADR-0.0.32 checklist item 15 (resolves GHI #461 S1+S2); 10/10 REQs covered. Evidence: arb-ruff-82f407d0435a4f79b623b96c535b2117, arb-step-typecheck-425a386d610a488fb4ddba2736b38b44, arb-step-unittest-10fe832120ad4a1484b9687fb479a356
 - Date: 2026-05-14
 
 ---

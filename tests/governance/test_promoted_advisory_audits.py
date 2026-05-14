@@ -306,9 +306,8 @@ class PromotedAdvisoryAudits(unittest.TestCase):
         self._assert_clean(audit_reconcile_freshness(_PROJECT_ROOT), "reconcile_freshness")
 
     @covers("REQ-0.0.17-04-09")
-    @unittest.skip("unskip after ADR-0.0.17 backfill lands")
     def test_adr_taxonomy_rule_X(self) -> None:
-        # REQ-0.0.17-04-09: lock-in passes on live tree only after backfill.
+        # REQ-0.0.17-04-09: lock-in passes on the live tree (backfill landed).
         self._assert_clean(audit_adr_taxonomy(_PROJECT_ROOT), "taxonomy")
 
     @covers("REQ-0.0.17-04-10")
