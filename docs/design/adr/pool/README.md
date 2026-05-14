@@ -37,6 +37,7 @@ future promotion absorbs external strengths without weakening gzkit's identity.
 | Parallel task waves | Kiro, GSD, Superpowers | `ADR-pool.wave-dependency-execution`, `ADR-pool.obpi-pipeline-dispatch-attestation`, `ADR-0.44.0` |
 | Content and prompt injection defense | GSD, broader agent-security practice | `ADR-pool.content-injection-scanning`, `ADR-pool.agentic-security-review`, `ADR-0.0.40` |
 | Context packages and portable agent surfaces | Tessl, BMAD, GSD, Compound Engineering | `ADR-pool.context-package-registry`, `ADR-pool.skill-control-surface-contract`, `ADR-pool.vendor-capability-matrix`, `ADR-0.0.32`, `ADR-0.44.0` |
+| First-stage namespace routing | GSD v1.40 namespace meta-skills | `ADR-pool.namespace-router-product-surface` |
 | Executable contracts | Specmatic, OpenAPI-style ecosystems | `ADR-pool.contract-surface-mechanical-defenses`, `ADR-pool.tdd-receipt-stream`, `ADR-0.46.0` |
 | Review-to-learning compounding | Compound Engineering, Superpowers | `ADR-pool.review-receipt-taxonomy`, `ADR-pool.skill-feedback-loop`, `ADR-pool.solved-problem-pattern-corpus`, `ADR-0.27.0`, `ADR-0.41.0` |
 | Persona/workflow adoption UX | BMAD, Superpowers | `ADR-pool.universal-agent-onboarding`, `ADR-pool.agent-reliability-framework`, `ADR-0.0.34` |
@@ -55,6 +56,12 @@ New pool destinations created by this intake:
   review evidence and compounding destinations.
 - `ADR-pool.context-package-registry` — feature candidate for governed context
   packages and portable agent surfaces.
+
+2026-05-14 GSD router follow-up:
+
+- `ADR-pool.namespace-router-product-surface` — feature candidate for a small
+  namespace-router front door that reduces first-stage skill-selection cost
+  while preserving direct concrete skill invocation.
 
 Validated ADRs are not edited for this intake. If a future improvement requires
 changing a validated ADR rather than consuming it from an open ADR or pool

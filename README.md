@@ -135,10 +135,10 @@ For details on any skill, read its `SKILL.md` in `.gzkit/skills/<skill-name>/`.
 
 ```bash
 # Using uv (recommended)
-uv add gzkit
+uv tool install py-gzkit
 
 # Or pip
-pip install gzkit
+pip install py-gzkit
 ```
 
 ## Quick Start

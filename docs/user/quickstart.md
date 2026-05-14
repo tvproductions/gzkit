@@ -20,7 +20,7 @@ commands do not — use them when they exist.
 | `gz init` | `/gz-init` |
 
 ```bash
-uv tool install gzkit
+uv tool install py-gzkit
 cd your-project
 gz init
 ```

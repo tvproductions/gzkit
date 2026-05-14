@@ -73,7 +73,7 @@ reading-list/
 > | `/gz-init` | `gz init --mode lite` |
 >
 > ```bash
-> uv tool install gzkit
+> uv tool install py-gzkit
 > gz init --mode lite
 > ```
 >

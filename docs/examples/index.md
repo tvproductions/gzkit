@@ -97,6 +97,6 @@ use. The mapping:
 | Instructor review | Gate 5 (Human Attestation) |
 
 Students who want to explore the full professional workflow can install gzkit
-(`uv tool install gzkit`) and use `gz init` to bootstrap governance in their
+(`uv tool install py-gzkit`) and use `gz init` to bootstrap governance in their
 project. See the [Readiness Assessment](gzkit-readiness-assessment.md) for
 current status and recommendations.

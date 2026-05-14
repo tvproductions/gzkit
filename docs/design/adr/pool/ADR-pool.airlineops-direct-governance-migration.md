@@ -92,6 +92,6 @@ as an external dependency rather than an embedded framework.
 - AirlineOps currently has 40+ foundation ADRs, 70+ skills across 3 mirrors, 20+ instruction files, and 10+ hooks. Migration scope is significant.
 - Key risk: the migration must not disrupt active development. Phase-by-phase with rollback capability is essential.
 - ADR-0.3.0 established AirlineOps as the canonical source for gzkit reconciliation. This ADR inverts that: gzkit becomes canonical, AirlineOps consumes.
-- Consider: should gzkit be a Python dependency of AirlineOps (`uv add gzkit`) or remain a CLI tool invoked via `uvx gz`?
+- Consider: should gzkit be a Python dependency of AirlineOps (`uv add py-gzkit`) or remain a CLI tool invoked via `uvx --from py-gzkit gz`?
 - Consider: what is the minimum viable gzkit version that can govern AirlineOps? This determines when this ADR can be promoted.
 - The "generated AGENTS.md" model means the document becomes a build artifact — deterministic, reproducible, always in sync with gzkit state.

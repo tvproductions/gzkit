@@ -122,7 +122,7 @@ Solution (architecture) → Implement (iterative stories)
 
 | Feature | GZKit | OpenSpec | Spec Kit | BMAD |
 |---------|-------|---------|----------|------|
-| **Installation** | `uv tool install gzkit` | `npx openspec init` | `npx specify init` | `npx bmad-method install` |
+| **Installation** | `uv tool install py-gzkit` | `npx openspec init` | `npx specify init` | `npx bmad-method install` |
 | **Language** | Python | Node/npm | Python | JavaScript/Node |
 | **PRD support** | Yes (`gz prd`) | Proposal.md per change | Yes (spec document) | Yes (one-page PRD) |
 | **Architecture decisions** | Formal ADRs with lifecycle | Design.md per change | Implicit in plan | Architecture sketch |
