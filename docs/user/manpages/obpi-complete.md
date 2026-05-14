@@ -20,7 +20,7 @@ gz obpi complete OBPI-X.Y.Z-NN --attestor NAME --attestation-text TEXT
 | `--attestation-text TEXT` | Substantive attestation text (required) |
 | `--implementation-summary TEXT` | Implementation summary (reads from brief if omitted) |
 | `--key-proof TEXT` | Key proof text (reads from brief if omitted) |
-| `--attestor-present` | Agent-relayed operator attestation, gated on a structurally-authentic active pipeline marker (GHI #292; hardened by GHI #412 — marker must match expected obpi_id/parent_adr, carry a 32-hex nonce, be fresh within 4 hours, and have a matching `pipeline_launched` ledger event). Refused entirely for `sensitivity:security` and foundation-kind scopes; those require live TTY attestation. |
+| `--attestor-present` | Retained for the `--accept-uncovered` REQ-coverage waiver path only. The prior TTY `ATTEST` human-attestation authenticity gate has been removed: Gate-5 attestation is the operator's verbatim text passed via `--attestation-text` (recorded as `attestation_type: operator-verbatim-conversational`) for every lane / kind / sensitivity. |
 | `--accept-uncovered REQ_ID` | Explicitly waive an uncovered REQ (repeatable; requires `--accept-uncovered-reason`) |
 | `--accept-uncovered-reason REASON` | Rationale for the corresponding `--accept-uncovered` entry (repeatable, 1:1 pairing) |
 | `--accept-security-floor REASON` | Override the security-scan canonical-slot fail-closed gate when the auto-detect classified the brief security-sensitive on surface-overlap but the change is structurally defensive/additive (GHI #462). The override is recorded in console output for audit trail. |
@@ -31,9 +31,14 @@ gz obpi complete OBPI-X.Y.Z-NN --attestor NAME --attestation-text TEXT
 
 1. Validates brief exists and is not already Completed
 2. Checks evidence sufficiency (Implementation Summary, Key Proof)
-3. Writes attestation to ADR-local audit ledger
-4. Updates brief with evidence, attestation, and Completed status
-5. Emits `obpi_receipt_emitted` event to main ledger
+3. For a requires-human brief (heavy-lane OR foundation-kind OR
+   `sensitivity: security`), records the operator's verbatim
+   `--attestation-text` as the Gate-5 attestation
+   (`attestation_type: operator-verbatim-conversational`). A non-empty
+   `--attestation-text` is required; there is no separate TTY ceremony.
+4. Writes attestation to ADR-local audit ledger
+5. Updates brief with evidence, attestation, and Completed status
+6. Emits `obpi_receipt_emitted` event to main ledger
 
 If any step fails, all changes are rolled back (no partial writes).
 

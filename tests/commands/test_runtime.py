@@ -20,21 +20,10 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     """Behavioral tests for closeout/audit-check/emit-receipt runtime surfaces."""
 
     def setUp(self) -> None:
-        # GHI #290: the authenticity gate requires a real TTY + 'ATTEST'
-        # confirmation. CliRunner tests run headlessly, so patch the gate
-        # at every call site for the duration of each test. This is a
-        # test-isolation mechanism, not a production bypass. The gate
-        # returns the resolved attestation_type (GHI #292); default to
-        # "human" so callers writing the value into evidence dicts produce
-        # JSON-serializable receipts.
-        for target in (
-            "gzkit.commands.adr_audit._enforce_human_attestation_authenticity",
-            "gzkit.commands.obpi_cmd._enforce_human_attestation_authenticity",
-            "gzkit.commands.obpi_complete._enforce_human_attestation_authenticity",
-        ):
-            patcher = patch(target, return_value="human")
-            patcher.start()
-            self.addCleanup(patcher.stop)
+        # The prior GHI #290 TTY 'ATTEST' authenticity gate has been removed:
+        # the operator's verbatim attestation relayed via --attestation-text /
+        # evidence is the Gate-5 attestation (AGENTS.md section "Lane & Kind &
+        # Sensitivity Attestation Matrix"). Nothing to patch out anymore.
         # ADR-0.0.24-02: the receipt-binding gate is exercised in
         # tests/commands/test_obpi_complete.py and test_adr_emit_receipt.py;
         # patch it to no-op here so end-to-end CliRunner flows that author
@@ -603,10 +592,10 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--attestor",
                     "human:jeff",
                     "--evidence-json",
-                    '{"gate":5}',
+                    '{"gate":5,"attestation_text":"attest completed -- ADR-0.1.0-f validated"}',
                 ],
             )
-            self.assertEqual(result.exit_code, 0)
+            self.assertEqual(result.exit_code, 0, msg=result.output)
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn("audit_receipt_emitted", ledger_content)
 
@@ -688,48 +677,34 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             self.assertEqual(result.exit_code, 0, msg=result.output)
             self.assertIn("No active ADR audit marker", result.output)
 
-    def test_adr_audit_begin_then_emit_validated_passes_co_presence_gate(self) -> None:
-        # End-to-end: audit-begin must produce the marker that
-        # _enforce_human_attestation_authenticity accepts on the
-        # --attestor-present branch (GHI #292), so the agent-relayed
-        # Gate-5 emit lands without TTY or hand-fabricated marker.
-        # The setUp gate-patcher is *not* sufficient for this test
-        # because we want to exercise the real branch resolution; stop
-        # the patcher and re-patch only the TTY check to False so the
-        # function picks the agent-relayed branch.
-        for patcher in list(unittest.mock._patch._active_patches):  # type: ignore[attr-defined]
-            patcher.stop()
-        self.addCleanup(self.setUp)  # restore setUp patches for next test
-
-        with patch(
-            "gzkit.commands.adr_audit._is_human_attestation_tty_available",
-            return_value=False,
-        ):
-            runner = CliRunner()
-            with runner.isolated_filesystem():
-                _quick_init()
-                runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
-                begin = runner.invoke(main, ["adr", "audit-begin", "ADR-0.1.0-f"])
-                self.assertEqual(begin.exit_code, 0, msg=begin.output)
-                emit = runner.invoke(
-                    main,
-                    [
-                        "adr",
-                        "emit-receipt",
-                        "ADR-0.1.0-f",
-                        "--event",
-                        "validated",
-                        "--attestor",
-                        "Jeffry Babb",
-                        "--attestor-present",
-                        "--evidence-json",
-                        '{"gate":5,"scope":"ADR-0.1.0-f"}',
-                    ],
-                )
-                self.assertEqual(emit.exit_code, 0, msg=emit.output)
-                ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
-                self.assertIn("audit_receipt_emitted", ledger_content)
-                self.assertIn("agent-relayed-operator-attestation", ledger_content)
+    def test_adr_emit_validated_records_operator_verbatim_attestation(self) -> None:
+        # adr emit-receipt for a human-attestation event records the
+        # operator's verbatim attestation (from the evidence attestation_text
+        # / scope field) as attestation_type operator-verbatim-conversational.
+        # The prior GHI #290 TTY 'ATTEST' authenticity gate has been removed:
+        # the operator's verbatim attestation is the Gate-5 attestation.
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            emit = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "emit-receipt",
+                    "ADR-0.1.0-f",
+                    "--event",
+                    "validated",
+                    "--attestor",
+                    "Jeffry Babb",
+                    "--evidence-json",
+                    '{"gate":5,"attestation_text":"attest completed -- ADR-0.1.0-f validated"}',
+                ],
+            )
+            self.assertEqual(emit.exit_code, 0, msg=emit.output)
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
+            self.assertIn("audit_receipt_emitted", ledger_content)
+            self.assertIn("operator-verbatim-conversational", ledger_content)
 
     def test_adr_emit_receipt_rejects_pool_adr(self) -> None:
         runner = CliRunner()

@@ -694,7 +694,6 @@ class TestObpiCompleteCmdHappyPath(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate")
     @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
-    @patch("gzkit.commands.obpi_complete._enforce_human_attestation_authenticity")
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
     @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
     @patch("gzkit.commands.obpi_complete._requires_human_obpi_attestation")
@@ -715,17 +714,15 @@ class TestObpiCompleteCmdHappyPath(unittest.TestCase):
         mock_adr_resolve,
         mock_requires_human,
         mock_anchor,
-        mock_gate,
         mock_receipt_gate,
         mock_coverage_gate,
     ):
         del mock_receipt_gate  # ADR-0.0.24-02 receipt-binding gate is patched
         del mock_coverage_gate  # OBPI-0.0.25-01 coverage gate patched to no-op
         # to a no-op here; the new contract is exercised in
-        # tests/commands/test_obpi_complete.py.
-        # Gate returns the resolved attestation_type (GHI #292);
-        # default to the canonical 'human' path for happy-path coverage.
-        mock_gate.return_value = "human"
+        # tests/commands/test_obpi_complete.py. The prior TTY 'ATTEST' gate is
+        # removed: the operator's verbatim --attestation-text is the Gate-5
+        # attestation, recorded as attestation_type operator-verbatim-conversational.
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             mock_root.return_value = root
@@ -771,7 +768,7 @@ class TestObpiCompleteCmdHappyPath(unittest.TestCase):
             audit_entries = audit_file.read_text(encoding="utf-8").strip().splitlines()
             self.assertEqual(len(audit_entries), 1)
             parsed = json.loads(audit_entries[0])
-            self.assertEqual(parsed["attestation_type"], "human")
+            self.assertEqual(parsed["attestation_type"], "operator-verbatim-conversational")
 
             # Main ledger should have been appended
             ledger.append.assert_called_once()
@@ -854,132 +851,21 @@ class TestObpiCompleteCmdRollback(unittest.TestCase):
 
 
 @covers("OBPI-0.0.14-02")
-class TestObpiCompleteAuthenticityGate(unittest.TestCase):
-    """GHI #290 — gz obpi complete refuses headless human attestation.
+class TestObpiCompleteOperatorVerbatimAttestation(unittest.TestCase):
+    """gz obpi complete records the operator's verbatim attestation.
 
-    The gate fires whenever `_requires_human_obpi_attestation` returns True
-    and `--dry-run` is not set. It closes the vector used to fabricate the
-    OBPI-0.0.20-03 attestation on 2026-04-23.
+    The prior GHI #290 TTY 'ATTEST' authenticity gate has been removed per
+    the canon-owner declaration: the operator's verbatim attestation relayed
+    via --attestation-text IS the Gate-5 attestation for every lane / kind /
+    sensitivity. A non-empty --attestation-text completes a requires-human
+    brief headlessly; an empty one exits 1 (the text is the attestation). The
+    receipt-binding and REQ-coverage gates are patched to no-op here so the
+    attestation behavior is exercised in isolation.
     """
-
-    @patch("gzkit.commands.obpi_complete.console", _quiet_console)
-    @patch("gzkit.commands.adr_audit._is_human_attestation_tty_available")
-    @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
-    @patch("gzkit.commands.obpi_complete._requires_human_obpi_attestation")
-    @patch("gzkit.commands.obpi_complete.resolve_adr_file")
-    @patch("gzkit.commands.obpi_complete.get_project_root")
-    @patch("gzkit.commands.obpi_complete.ensure_initialized")
-    @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
-    @patch("gzkit.commands.obpi_complete.Ledger")
-    def test_non_tty_rejects_human_attestation(
-        self,
-        mock_ledger_cls,
-        mock_resolve,
-        mock_init,
-        mock_root,
-        mock_adr_resolve,
-        mock_requires_human,
-        mock_anchor,
-        mock_tty,
-    ):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            mock_root.return_value = root
-            mock_init.return_value = _mock_config()
-            mock_requires_human.return_value = True
-            mock_anchor.return_value = EventAnchor(commit="abc1234", semver="0.0.14")
-            mock_tty.return_value = False
-
-            adr_dir = root / "adr"
-            obpis_dir = adr_dir / "obpis"
-            obpis_dir.mkdir(parents=True)
-            obpi_file = obpis_dir / "OBPI-0.0.14-02.md"
-            obpi_file.write_text(_MINIMAL_BRIEF, encoding="utf-8")
-            mock_resolve.return_value = (obpi_file, "OBPI-0.0.14-02")
-
-            ledger = _mock_ledger("OBPI-0.0.14-02", "ADR-0.0.14")
-            mock_ledger_cls.return_value = ledger
-            mock_adr_resolve.return_value = (adr_dir / "ADR-0.0.14.md", "ADR-0.0.14")
-
-            with self.assertRaises(SystemExit) as ctx:
-                obpi_complete_cmd(
-                    obpi="OBPI-0.0.14-02",
-                    attestor="Jeffry Babb",
-                    attestation_text="fabricated payload",
-                    implementation_summary="- Files: obpi_complete.py",
-                    key_proof="gz obpi complete exits 0",
-                    as_json=False,
-                    dry_run=False,
-                )
-            self.assertEqual(ctx.exception.code, 3)
-
-            # Brief must not have been mutated.
-            self.assertEqual(obpi_file.read_text(encoding="utf-8"), _MINIMAL_BRIEF)
-            ledger.append.assert_not_called()
-
-    @patch("gzkit.commands.obpi_complete.console", _quiet_console)
-    @patch("gzkit.commands.adr_audit.console", _quiet_console)
-    @patch("gzkit.commands.adr_audit.input", create=True)
-    @patch("gzkit.commands.adr_audit._is_human_attestation_tty_available")
-    @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
-    @patch("gzkit.commands.obpi_complete._requires_human_obpi_attestation")
-    @patch("gzkit.commands.obpi_complete.resolve_adr_file")
-    @patch("gzkit.commands.obpi_complete.get_project_root")
-    @patch("gzkit.commands.obpi_complete.ensure_initialized")
-    @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
-    @patch("gzkit.commands.obpi_complete.Ledger")
-    def test_tty_declined_rejects_human_attestation(
-        self,
-        mock_ledger_cls,
-        mock_resolve,
-        mock_init,
-        mock_root,
-        mock_adr_resolve,
-        mock_requires_human,
-        mock_anchor,
-        mock_tty,
-        mock_input,
-    ):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            mock_root.return_value = root
-            mock_init.return_value = _mock_config()
-            mock_requires_human.return_value = True
-            mock_anchor.return_value = EventAnchor(commit="abc1234", semver="0.0.14")
-            mock_tty.return_value = True
-            mock_input.return_value = "y"  # anything that isn't "ATTEST"
-
-            adr_dir = root / "adr"
-            obpis_dir = adr_dir / "obpis"
-            obpis_dir.mkdir(parents=True)
-            obpi_file = obpis_dir / "OBPI-0.0.14-02.md"
-            obpi_file.write_text(_MINIMAL_BRIEF, encoding="utf-8")
-            mock_resolve.return_value = (obpi_file, "OBPI-0.0.14-02")
-
-            ledger = _mock_ledger("OBPI-0.0.14-02", "ADR-0.0.14")
-            mock_ledger_cls.return_value = ledger
-            mock_adr_resolve.return_value = (adr_dir / "ADR-0.0.14.md", "ADR-0.0.14")
-
-            with self.assertRaises(SystemExit) as ctx:
-                obpi_complete_cmd(
-                    obpi="OBPI-0.0.14-02",
-                    attestor="Jeffry Babb",
-                    attestation_text="real attestation",
-                    implementation_summary="- Files: obpi_complete.py",
-                    key_proof="gz obpi complete exits 0",
-                    as_json=False,
-                    dry_run=False,
-                )
-            self.assertEqual(ctx.exception.code, 3)
-            self.assertEqual(obpi_file.read_text(encoding="utf-8"), _MINIMAL_BRIEF)
-            ledger.append.assert_not_called()
 
     @patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate")
     @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
-    @patch("gzkit.commands.adr_audit.console", _quiet_console)
-    @patch("gzkit.commands.adr_audit.input", create=True)
-    @patch("gzkit.commands.adr_audit._is_human_attestation_tty_available")
     @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
     @patch("gzkit.commands.obpi_complete._requires_human_obpi_attestation")
     @patch("gzkit.commands.obpi_complete.resolve_adr_file")
@@ -987,7 +873,7 @@ class TestObpiCompleteAuthenticityGate(unittest.TestCase):
     @patch("gzkit.commands.obpi_complete.ensure_initialized")
     @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
     @patch("gzkit.commands.obpi_complete.Ledger")
-    def test_tty_confirmed_allows_human_attestation(
+    def test_headless_completion_succeeds_with_attestation_text(
         self,
         mock_ledger_cls,
         mock_resolve,
@@ -996,23 +882,16 @@ class TestObpiCompleteAuthenticityGate(unittest.TestCase):
         mock_adr_resolve,
         mock_requires_human,
         mock_anchor,
-        mock_tty,
-        mock_input,
         mock_receipt_gate,
         mock_coverage_gate,
     ):
-        del mock_receipt_gate  # ADR-0.0.24-02 receipt-binding gate is
-        del mock_coverage_gate  # OBPI-0.0.25-01 coverage gate patched no-op
-        # patched to no-op; the new gate's contract is exercised in
-        # tests/commands/test_obpi_complete.py.
+        del mock_receipt_gate, mock_coverage_gate  # patched no-op; covered elsewhere
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             mock_root.return_value = root
             mock_init.return_value = _mock_config()
             mock_requires_human.return_value = True
             mock_anchor.return_value = EventAnchor(commit="abc1234", semver="0.0.14")
-            mock_tty.return_value = True
-            mock_input.return_value = "ATTEST"
 
             adr_dir = root / "adr"
             obpis_dir = adr_dir / "obpis"
@@ -1025,22 +904,28 @@ class TestObpiCompleteAuthenticityGate(unittest.TestCase):
             mock_ledger_cls.return_value = ledger
             mock_adr_resolve.return_value = (adr_dir / "ADR-0.0.14.md", "ADR-0.0.14")
 
+            # Headless (no TTY) — must still complete: the operator's verbatim
+            # --attestation-text is the attestation, recorded as
+            # attestation_type operator-verbatim-conversational.
             obpi_complete_cmd(
                 obpi="OBPI-0.0.14-02",
                 attestor="Jeffry Babb",
-                attestation_text="real human attestation",
+                attestation_text="attest completed -- obpi_complete.py verified",
                 implementation_summary="- Files: obpi_complete.py",
                 key_proof="gz obpi complete exits 0",
                 as_json=False,
                 dry_run=False,
             )
 
-            updated = obpi_file.read_text(encoding="utf-8")
-            self.assertIn("status: Completed", updated)
+            self.assertIn("status: Completed", obpi_file.read_text(encoding="utf-8"))
             ledger.append.assert_called_once()
+            audit_file = adr_dir / "logs" / "obpi-audit.jsonl"
+            parsed = json.loads(audit_file.read_text(encoding="utf-8").strip())
+            self.assertEqual(parsed["attestation_type"], "operator-verbatim-conversational")
 
+    @patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate")
+    @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
-    @patch("gzkit.commands.adr_audit._is_human_attestation_tty_available")
     @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
     @patch("gzkit.commands.obpi_complete._requires_human_obpi_attestation")
     @patch("gzkit.commands.obpi_complete.resolve_adr_file")
@@ -1048,7 +933,7 @@ class TestObpiCompleteAuthenticityGate(unittest.TestCase):
     @patch("gzkit.commands.obpi_complete.ensure_initialized")
     @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
     @patch("gzkit.commands.obpi_complete.Ledger")
-    def test_dry_run_skips_gate(
+    def test_empty_attestation_text_exits_1(
         self,
         mock_ledger_cls,
         mock_resolve,
@@ -1057,16 +942,70 @@ class TestObpiCompleteAuthenticityGate(unittest.TestCase):
         mock_adr_resolve,
         mock_requires_human,
         mock_anchor,
-        mock_tty,
+        mock_receipt_gate,
+        mock_coverage_gate,
     ):
-        """--dry-run must preview headlessly; the gate fires only on live writes."""
+        del mock_receipt_gate, mock_coverage_gate  # patched no-op; covered elsewhere
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             mock_root.return_value = root
             mock_init.return_value = _mock_config()
             mock_requires_human.return_value = True
             mock_anchor.return_value = EventAnchor(commit="abc1234", semver="0.0.14")
-            mock_tty.return_value = False  # headless — would normally fail
+
+            adr_dir = root / "adr"
+            obpis_dir = adr_dir / "obpis"
+            obpis_dir.mkdir(parents=True)
+            obpi_file = obpis_dir / "OBPI-0.0.14-02.md"
+            obpi_file.write_text(_MINIMAL_BRIEF, encoding="utf-8")
+            mock_resolve.return_value = (obpi_file, "OBPI-0.0.14-02")
+
+            ledger = _mock_ledger("OBPI-0.0.14-02", "ADR-0.0.14")
+            mock_ledger_cls.return_value = ledger
+            mock_adr_resolve.return_value = (adr_dir / "ADR-0.0.14.md", "ADR-0.0.14")
+
+            # Empty attestation text for a requires-human brief: there is no
+            # attestation to record, so the command exits 1 (user error) and
+            # leaves the brief unmutated.
+            with self.assertRaises(SystemExit) as ctx:
+                obpi_complete_cmd(
+                    obpi="OBPI-0.0.14-02",
+                    attestor="Jeffry Babb",
+                    attestation_text="",
+                    implementation_summary="- Files: obpi_complete.py",
+                    key_proof="gz obpi complete exits 0",
+                    as_json=False,
+                    dry_run=False,
+                )
+            self.assertEqual(ctx.exception.code, 1)
+            self.assertEqual(obpi_file.read_text(encoding="utf-8"), _MINIMAL_BRIEF)
+            ledger.append.assert_not_called()
+
+    @patch("gzkit.commands.obpi_complete.console", _quiet_console)
+    @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
+    @patch("gzkit.commands.obpi_complete._requires_human_obpi_attestation")
+    @patch("gzkit.commands.obpi_complete.resolve_adr_file")
+    @patch("gzkit.commands.obpi_complete.get_project_root")
+    @patch("gzkit.commands.obpi_complete.ensure_initialized")
+    @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
+    @patch("gzkit.commands.obpi_complete.Ledger")
+    def test_dry_run_skips_attestation(
+        self,
+        mock_ledger_cls,
+        mock_resolve,
+        mock_init,
+        mock_root,
+        mock_adr_resolve,
+        mock_requires_human,
+        mock_anchor,
+    ):
+        """--dry-run must preview headlessly without recording attestation."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            mock_root.return_value = root
+            mock_init.return_value = _mock_config()
+            mock_requires_human.return_value = True
+            mock_anchor.return_value = EventAnchor(commit="abc1234", semver="0.0.14")
 
             adr_dir = root / "adr"
             obpis_dir = adr_dir / "obpis"
@@ -1491,17 +1430,25 @@ def _mock_ledger_lite_feature(obpi_id: str, parent_adr: str):
 
 @covers("OBPI-0.0.22-04")
 class TestObpiCompleteSecuritySensitivityGate(unittest.TestCase):
-    """REQ-0.0.22-04-05 — sensitivity:security activates the existing TTY gate.
+    """REQ-0.0.22-04-05 — sensitivity:security forces the human-attestation
+    requirement.
 
     The test uses the *real* ``_requires_human_obpi_attestation`` predicate
     (not a mock) to prove the OR composition wires through end-to-end. A
-    ``lite + feature + sensitivity:security`` brief authored under a
-    non-TTY parent must be refused at ``_enforce_human_attestation_authenticity``
-    — the existing GHI #290 gate, reused via the OR alone.
+    ``lite + feature + sensitivity:security`` brief still requires human
+    attestation — so the completion records attestation_type
+    ``operator-verbatim-conversational``, whereas the same brief without the
+    sensitivity field self-closes (``self-close-exception``). The prior GHI
+    #290 TTY 'ATTEST' gate has been removed: the operator's verbatim
+    --attestation-text satisfies the requirement headlessly. The
+    security-review canonical-slot gate is patched to no-op here so the
+    attestation-requirement composition is exercised in isolation.
     """
 
+    @patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate")
+    @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
+    @patch("gzkit.commands.obpi_complete._enforce_security_review_gate")
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
-    @patch("gzkit.commands.adr_audit._is_human_attestation_tty_available")
     @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
     @patch("gzkit.commands.obpi_complete.resolve_adr_file")
     @patch("gzkit.commands.obpi_complete.get_project_root")
@@ -1509,7 +1456,7 @@ class TestObpiCompleteSecuritySensitivityGate(unittest.TestCase):
     @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
     @patch("gzkit.commands.obpi_complete.Ledger")
     @covers("REQ-0.0.22-04-05")
-    def test_lite_feature_security_brief_refused_without_tty(
+    def test_lite_feature_security_brief_requires_operator_verbatim_attestation(
         self,
         mock_ledger_cls,
         mock_resolve,
@@ -1517,8 +1464,11 @@ class TestObpiCompleteSecuritySensitivityGate(unittest.TestCase):
         mock_root,
         mock_adr_resolve,
         mock_anchor,
-        mock_tty,
+        mock_security_gate,
+        mock_receipt_gate,
+        mock_coverage_gate,
     ):
+        del mock_security_gate, mock_receipt_gate, mock_coverage_gate  # patched no-op
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             mock_root.return_value = root
@@ -1526,7 +1476,6 @@ class TestObpiCompleteSecuritySensitivityGate(unittest.TestCase):
             cfg.mode = "lite"
             mock_init.return_value = cfg
             mock_anchor.return_value = EventAnchor(commit="def5678", semver="0.99.0")
-            mock_tty.return_value = False
 
             adr_dir = root / "adr"
             obpis_dir = adr_dir / "obpis"
@@ -1541,24 +1490,27 @@ class TestObpiCompleteSecuritySensitivityGate(unittest.TestCase):
             mock_ledger_cls.return_value = ledger
             mock_adr_resolve.return_value = (adr_dir / f"{adr_id}.md", adr_id)
 
-            with self.assertRaises(SystemExit) as ctx:
-                obpi_complete_cmd(
-                    obpi=obpi_id,
-                    attestor="Jeffry Babb",
-                    attestation_text="agent-synthesized payload",
-                    implementation_summary="- Files: tests/test_obpi_complete_cmd.py",
-                    key_proof="security gate refuses headless invocation",
-                    as_json=False,
-                    dry_run=False,
-                )
-            self.assertEqual(ctx.exception.code, 3)
+            # sensitivity:security forces requires_human=True via the OR
+            # composition — the completion records operator-verbatim
+            # attestation, not the self-close exception.
+            obpi_complete_cmd(
+                obpi=obpi_id,
+                attestor="Jeffry Babb",
+                attestation_text="attest completed -- security brief verified",
+                implementation_summary="- Files: tests/test_obpi_complete_cmd.py",
+                key_proof="security brief completes with operator-verbatim attestation",
+                as_json=False,
+                dry_run=False,
+            )
+            self.assertIn("status: Completed", obpi_file.read_text(encoding="utf-8"))
+            audit_file = adr_dir / "logs" / "obpi-audit.jsonl"
+            parsed = json.loads(audit_file.read_text(encoding="utf-8").strip())
+            self.assertEqual(parsed["attestation_type"], "operator-verbatim-conversational")
 
-            # Brief must not have been mutated (atomic transaction held).
-            self.assertEqual(obpi_file.read_text(encoding="utf-8"), _SECURITY_BRIEF)
-            ledger.append.assert_not_called()
-
+    @patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate")
+    @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
+    @patch("gzkit.commands.obpi_complete._enforce_security_review_gate")
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
-    @patch("gzkit.commands.adr_audit._is_human_attestation_tty_available")
     @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
     @patch("gzkit.commands.obpi_complete.resolve_adr_file")
     @patch("gzkit.commands.obpi_complete.get_project_root")
@@ -1574,11 +1526,14 @@ class TestObpiCompleteSecuritySensitivityGate(unittest.TestCase):
         mock_root,
         mock_adr_resolve,
         mock_anchor,
-        mock_tty,
+        mock_security_gate,
+        mock_receipt_gate,
+        mock_coverage_gate,
     ):
+        del mock_security_gate, mock_receipt_gate, mock_coverage_gate  # patched no-op
         # Sister proof to REQ-05: the *same* lite + feature parent without
-        # the sensitivity field must NOT trip the gate. Demonstrates the
-        # security branch is the only thing that changed routing.
+        # the sensitivity field does NOT require human attestation — it
+        # self-closes (attestation_type self-close-exception).
         baseline_brief = _SECURITY_BRIEF.replace("sensitivity: security\n", "")
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -1587,7 +1542,6 @@ class TestObpiCompleteSecuritySensitivityGate(unittest.TestCase):
             cfg.mode = "lite"
             mock_init.return_value = cfg
             mock_anchor.return_value = EventAnchor(commit="def5678", semver="0.99.0")
-            mock_tty.return_value = False
 
             adr_dir = root / "adr"
             obpis_dir = adr_dir / "obpis"
@@ -1602,21 +1556,19 @@ class TestObpiCompleteSecuritySensitivityGate(unittest.TestCase):
             mock_ledger_cls.return_value = ledger
             mock_adr_resolve.return_value = (adr_dir / f"{adr_id}.md", adr_id)
 
-            # Self-closeable path completes without TTY because the predicate
-            # returns False — no security axis, lite lane, feature kind.
+            # Self-closeable path completes because the predicate returns
+            # False — no security axis, lite lane, feature kind.
             obpi_complete_cmd(
                 obpi=obpi_id,
                 attestor="Jeffry Babb",
                 attestation_text="self-close evidence baseline",
                 implementation_summary="- Files: tests/test_obpi_complete_cmd.py",
-                key_proof="completion succeeds without TTY when no sensitivity",
+                key_proof="completion succeeds when no sensitivity axis is present",
                 as_json=False,
                 dry_run=False,
             )
-            # The TTY mock must not have been queried, because the gate
-            # never fired — the predicate returned False at the call site
-            # in _resolve_and_validate.
-            mock_tty.assert_not_called()
+            self.assertIn("status: Completed", obpi_file.read_text(encoding="utf-8"))
+            ledger.append.assert_called_once()
 
 
 # ---------------------------------------------------------------------------

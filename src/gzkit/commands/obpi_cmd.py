@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from gzkit.commands.adr_audit import (
-    _enforce_human_attestation_authenticity,
+    ATTESTATION_TYPE_OPERATOR_VERBATIM,
     _requires_human_obpi_attestation,
     _validate_explicit_req_proof_inputs,
     _validate_obpi_completion_evidence,
@@ -171,31 +171,29 @@ def _gate_completed_receipt_authenticity(
     sensitivity: str | None = None,
     parent_kind: str | None = None,
 ) -> None:
-    """GHI #290 authenticity gate wrapper for the emit-receipt path.
+    """Resolve attestation_type for the emit-receipt path.
 
-    Extracted to keep obpi_emit_receipt_cmd under the complexity ceiling.
-    The lower-level emit-receipt surface must honour the same TTY +
-    confirmation contract as gz obpi complete -- it was the exact path
-    used to fabricate the OBPI-0.0.20-03 receipt. GHI #292 adds the
-    --attestor-present escape path; the resolved attestation_type is
-    written into the evidence dict so the ledger receipt records which
-    gate path fired. Skipped for --dry-run.
+    Per the canon-owner declaration (AGENTS.md section "Lane & Kind &
+    Sensitivity Attestation Matrix"), the operator's verbatim attestation
+    relayed via the receipt evidence IS the Gate-5 attestation for every
+    lane / kind / sensitivity. The prior TTY-typed ATTEST authenticity gate
+    (GHI #290) is no longer invoked; ``attestor`` / ``attestor_present`` /
+    ``project_root`` / ``sensitivity`` / ``parent_kind`` are retained on the
+    signature for the call graph and are slated for removal with the gate
+    scaffolding under a separate ADR. Skipped for --dry-run.
     """
     if dry_run or not isinstance(evidence, dict):
         return
     if evidence.get("attestation_requirement") != "required":
         return
-    attestation_type = _enforce_human_attestation_authenticity(
-        obpi_id=obpi_id,
-        parent_adr=parent_adr if isinstance(parent_adr, str) else "",
-        attestor=attestor,
-        attestation_text=cast(str, evidence.get("attestation_text", "")),
-        attestor_present=attestor_present,
-        project_root=project_root,
-        sensitivity=sensitivity,
-        parent_kind=parent_kind,
-    )
-    evidence["attestation_type"] = attestation_type
+    attestation_text = cast(str, evidence.get("attestation_text", ""))
+    if not attestation_text.strip():
+        msg = (
+            f"Completed receipt for {obpi_id} requires the operator's verbatim "
+            "attestation text in --evidence-json (the 'attestation_text' field)."
+        )
+        raise GzCliError(msg)  # noqa: TRY003
+    evidence["attestation_type"] = ATTESTATION_TYPE_OPERATOR_VERBATIM
 
 
 def obpi_emit_receipt_cmd(

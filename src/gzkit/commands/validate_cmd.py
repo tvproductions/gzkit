@@ -1122,6 +1122,77 @@ def _run_attestation_receipts_scope(
         raise SystemExit(result.exit_code)
 
 
+def _dispatch_early_return_scopes(
+    project_root: Path,
+    *,
+    other_scopes_active: bool,
+    check_distribution_regenerate: bool,
+    check_distribution: bool,
+    attestation_receipts: str | None,
+    attestation_lane: str,
+    attestation_kind: str,
+    check_evaluation_justify_binding: str | None,
+    check_unscoped_rules: bool,
+    unscoped_rules_allowlist_only: bool,
+    check_sensitivity: bool,
+    sensitivity_explain: str | None,
+    as_json: bool,
+) -> bool:
+    """Handle scopes that own their full 0/2/3 lifecycle and return immediately.
+
+    Returns True when one of these scopes handled the invocation — the caller
+    must then return without running the aggregate validation path.
+    """
+    if check_distribution_regenerate:
+        if not check_distribution:
+            console.print(
+                "[yellow]Warning:[/yellow] --regenerate has no effect without --distribution."
+            )
+            return True
+        from gzkit.governance.trust_audits.distribution import (
+            regenerate_distribution_baseline,  # noqa: PLC0415
+        )
+
+        result = regenerate_distribution_baseline(project_root)
+        console.print(
+            f"[green]✓[/green] Baseline regenerated: {result['file_count']} files across "
+            f"{', '.join(result['surfaces_walked'])}. "
+            f"Ledger event emitted (distribution_baseline_regenerated)."
+        )
+        return True
+    if attestation_receipts is not None:
+        _run_attestation_receipts_scope(
+            project_root,
+            attestation_text=attestation_receipts,
+            lane=attestation_lane,
+            kind=attestation_kind,
+            as_json=as_json,
+        )
+        return True
+    if check_evaluation_justify_binding is not None and not other_scopes_active:
+        _run_evaluation_justify_binding_solo(
+            project_root, check_evaluation_justify_binding, as_json=as_json
+        )
+        return True
+    if check_unscoped_rules and not other_scopes_active:
+        _run_unscoped_rules_scope(
+            project_root, as_json=as_json, allowlist_only=unscoped_rules_allowlist_only
+        )
+        return True
+    if check_sensitivity and not other_scopes_active:
+        _run_sensitivity_scope(project_root, as_json=as_json, explain=sensitivity_explain)
+        return True
+    if sensitivity_explain and not check_sensitivity:
+        # `--explain` without `--sensitivity` is the explain-only fast-path.
+        _run_sensitivity_scope(project_root, as_json=as_json, explain=sensitivity_explain)
+        return True
+    if unscoped_rules_allowlist_only:
+        # --allowlist-only without --unscoped-rules still prints the listing.
+        _run_unscoped_rules_scope(project_root, as_json=as_json, allowlist_only=True)
+        return True
+    return False
+
+
 def validate(
     check_manifest: bool,
     check_documents: bool,
@@ -1189,38 +1260,13 @@ def validate(
         * 3 — frontmatter-ledger policy breach (drift found)
     """
     project_root = get_project_root()
-    if check_distribution_regenerate:
-        if not check_distribution:
-            console.print(
-                "[yellow]Warning:[/yellow] --regenerate has no effect without --distribution."
-            )
-            return
-        from gzkit.governance.trust_audits.distribution import (
-            regenerate_distribution_baseline,  # noqa: PLC0415
-        )
 
-        result = regenerate_distribution_baseline(project_root)
-        console.print(
-            f"[green]✓[/green] Baseline regenerated: {result['file_count']} files across "
-            f"{', '.join(result['surfaces_walked'])}. "
-            f"Ledger event emitted (distribution_baseline_regenerated)."
-        )
-        return
-    if attestation_receipts is not None:
-        _run_attestation_receipts_scope(
-            project_root,
-            attestation_text=attestation_receipts,
-            lane=attestation_lane,
-            kind=attestation_kind,
-            as_json=as_json,
-        )
-        return
-    # --explain implies --frontmatter and scope
+    # --explain implies --frontmatter and scope (must precede _other_scopes_active).
     if frontmatter_explain:
         check_frontmatter = True
         frontmatter_adr = frontmatter_explain
 
-    # Dedicated --unscoped-rules path owns its own 0/2/3 exit codes.
+    # Dedicated single-scope paths own their own 0/2/3 exit codes.
     _other_scopes_active = any(
         [
             check_manifest,
@@ -1266,31 +1312,23 @@ def validate(
             check_orphaned_implementation,
         ]
     )
-    if check_evaluation_justify_binding is not None and not _other_scopes_active:
-        _run_evaluation_justify_binding_solo(
-            project_root, check_evaluation_justify_binding, as_json=as_json
-        )
+    if _dispatch_early_return_scopes(
+        project_root,
+        other_scopes_active=_other_scopes_active,
+        check_distribution_regenerate=check_distribution_regenerate,
+        check_distribution=check_distribution,
+        attestation_receipts=attestation_receipts,
+        attestation_lane=attestation_lane,
+        attestation_kind=attestation_kind,
+        check_evaluation_justify_binding=check_evaluation_justify_binding,
+        check_unscoped_rules=check_unscoped_rules,
+        unscoped_rules_allowlist_only=unscoped_rules_allowlist_only,
+        check_sensitivity=check_sensitivity,
+        sensitivity_explain=sensitivity_explain,
+        as_json=as_json,
+    ):
         return
-    if check_unscoped_rules and not _other_scopes_active:
-        _run_unscoped_rules_scope(
-            project_root, as_json=as_json, allowlist_only=unscoped_rules_allowlist_only
-        )
-        return
-    if check_sensitivity and not _other_scopes_active:
-        _run_sensitivity_scope(
-            project_root,
-            as_json=as_json,
-            explain=sensitivity_explain,
-        )
-        return
-    if sensitivity_explain and not check_sensitivity:
-        # `--explain` without `--sensitivity` is the explain-only fast-path.
-        _run_sensitivity_scope(project_root, as_json=as_json, explain=sensitivity_explain)
-        return
-    if unscoped_rules_allowlist_only:
-        # --allowlist-only without --unscoped-rules still prints the listing.
-        _run_unscoped_rules_scope(project_root, as_json=as_json, allowlist_only=True)
-        return
+
     errors = _collect_errors(
         project_root,
         check_manifest,

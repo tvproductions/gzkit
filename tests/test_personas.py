@@ -99,14 +99,29 @@ class TestPersonasScopeNegative(unittest.TestCase):
 
     @covers("REQ-0.0.32-09-06")
     def test_sync_surfaces_has_personas_pkg_sync(self) -> None:
-        """sync_surfaces.py must propagate .gzkit/personas to src/gzkit/personas."""
-        sync_module = _PROJECT_ROOT / "src" / "gzkit" / "sync_surfaces.py"
-        content = sync_module.read_text(encoding="utf-8")
-        self.assertIn(
-            "src/gzkit/personas",
-            content,
-            "OBPI-08 must add .gzkit/personas -> src/gzkit/personas sync",
-        )
+        """sync_pkg_surfaces propagates .gzkit/personas/ to src/gzkit/personas/ (OBPI-08)."""
+        import tempfile  # noqa: PLC0415
+
+        from gzkit.config import GzkitConfig  # noqa: PLC0415
+        from gzkit.sync_surfaces import sync_pkg_surfaces  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            pkg_init = root / "src" / "gzkit" / "personas" / "__init__.py"
+            pkg_init.parent.mkdir(parents=True)
+            pkg_init.write_text("", encoding="utf-8")
+            canonical = root / ".gzkit" / "personas" / "test-persona.md"
+            canonical.parent.mkdir(parents=True)
+            canonical.write_text("# Test Persona\n", encoding="utf-8")
+
+            sync_pkg_surfaces(root, GzkitConfig(project_name="test"))
+
+            pkg_copy = root / "src" / "gzkit" / "personas" / "test-persona.md"
+            self.assertTrue(
+                pkg_copy.exists(),
+                "OBPI-08 must propagate .gzkit/personas -> src/gzkit/personas",
+            )
+            self.assertEqual(pkg_copy.read_bytes(), canonical.read_bytes())
 
     @covers("REQ-0.0.32-09-07")
     def test_vendor_mirrors_remain_transformed_renders(self) -> None:

@@ -3,7 +3,7 @@ id: OBPI-0.0.32-15-t0-maintenance-surfaces
 parent: ADR-0.0.32-canonical-surface-packaging
 item: 15
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.32-15-t0-maintenance-surfaces: T0 Maintenance Surfaces
@@ -318,15 +318,40 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+Before:
+  $ uv run gz validate --distribution
+  Validation failed with 21 error(s) [ON_DISK_NOT_BASELINE x 19, ON_DISK_NOT_INCLUDED x 2]
+  exit=3
+
+Recovery:
+  $ uv run gz validate --distribution --regenerate
+  Baseline regenerated: 108 files across personas, rules, skills, templates.
+  Ledger event emitted (distribution_baseline_regenerated).
+  exit=0
+
+After:
+  $ uv run gz validate --distribution
+  All validations passed (9 scopes).
+  exit=0
+
+ARB receipts: arb-ruff-a46e96f0477e4de3993daf4aa066d46e, arb-step-typecheck-1e9b9f7c478b4b59992afcf63c9d0cd5, arb-step-unittest-6d6302dd09fd4ba69628394cf4d84823, arb-step-mkdocs-e4ad1dadc9c24c08a4312b8c5ce95d53.
+REQ coverage: 10/10 via gz covers OBPI-0.0.32-15-t0-maintenance-surfaces.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Regenerator: regenerate_distribution_baseline() in src/gzkit/governance/trust_audits/distribution.py walks canonical surface trees, applies per-surface classifiers, writes manifest with schema_version/gzkit_version/surfaces keys, emits distribution_baseline_regenerated ledger event with hash-before/after
+- CLI surface: --regenerate flag on gz validate --distribution (parser_maintenance.py + validate_cmd.py); manpage entry in docs/user/manpages/validate.md
+- Classifiers: _classify_rule_file, _classify_skill_file, _classify_persona_file, _classify_template_file added to respective __init__.py files, signature-compatible with _classify_chore_file
+- Validator exemption: _collect_errors consults classifiers via _is_package_only() helper to exempt package_only/runtime_state files from ON_DISK_NOT_INCLUDED
+- Sync integration: sync_pkg_surfaces consults _classify_rule_file/_classify_persona_file/_classify_template_file before propagating files
+- Event plumbing: DistributionBaselineRegeneratedEvent Pydantic model, ledger.json schema entry, _NO_GRAPH_IMPACT waiver
+- Doctrine: .gzkit/rules/skill-surface-sync.md bumped to 0.6.0 with unified "Canonical surface class-classifier" section covering chores+rules+skills+personas+templates
+- pyproject.toml: added src/gzkit/rules/**/*.json wheel include glob (complexity-thresholds.json is canonical)
+- Tests: 23 new tests covering 10 REQs; all 4994 tests pass
+- Files modified: 22 source/test files; baseline manifest regenerated to 108 files across 4 surfaces
+- Date completed: 2026-05-14
 
 ## Tracked Defects
 
@@ -337,14 +362,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — Jeffry Babb, the operator, verbatim attestation in conversation 2026-05-14 explicitly authorizing PTY-relay path per skill Stage-5 fallback. OBPI-0.0.32-15-t0-maintenance-surfaces fully implemented: regenerator (gz validate --distribution --regenerate) + per-surface classifiers (_classify_{rule,skill,persona,template}_file) + unified Canonical surface class-classifier doctrine in .gzkit/rules/skill-surface-sync.md v0.6.0. gz validate --distribution exits 0; 4994/4994 tests pass; 10/10 REQs covered per gz covers. ARB receipts: arb-ruff-a46e96f0477e4de3993daf4aa066d46e, arb-step-typecheck-1e9b9f7c478b4b59992afcf63c9d0cd5, arb-step-unittest-6d6302dd09fd4ba69628394cf4d84823, arb-step-mkdocs-e4ad1dadc9c24c08a4312b8c5ce95d53. Behave coverage for REQs 04-10 waived under rationale adr-0.0.32-15-unit-test-only-structural-reqs. Security-floor override applied per GHI #462 (operator-authored escape; changes are structurally additive + defensive, not security-relevant by content).
+- Date: 2026-05-14
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-05-14
 
 **Evidence Hash:** -

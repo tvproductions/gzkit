@@ -4,7 +4,7 @@ description: Gate-5 audit templates and procedure for ADR verification. GovZero 
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.7.1"
+  skill-version: "6.8.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -223,9 +223,11 @@ When all shortfalls resolved:
 
 ### 8. Emit Validation Receipt (agent-relayed via audit-begin/audit-end)
 
-After a successful audit the agent emits the validated receipt via the
-GHI #292 agent-relayed branch, using the `gz adr audit-begin` /
-`gz adr audit-end` ceremony pair to obtain co-presence proof. Steps:
+After a successful audit the agent emits the validated receipt. The
+operator's verbatim audit acceptance, relayed via the `--evidence-json`
+`attestation_text` field, IS the Gate-5 attestation — there is no TTY
+`ATTEST` gate. The `gz adr audit-begin` / `gz adr audit-end` pair brackets
+the audit ceremony as a distinct operator moment. Steps:
 
 1. **Open the ceremony.** `uv run gz adr audit-begin <adr-id>` — writes
    the per-ADR co-presence marker at
@@ -250,16 +252,14 @@ GHI #292 agent-relayed branch, using the `gz adr audit-begin` /
    ```bash
    uv run gz adr emit-receipt <adr-id> --event validated \
      --attestor "<Operator Name>" \
-     --attestor-present \
      --evidence-json '{"gate":5,"tests_passed":true,"tests_count":...,
                        "scope":"<adr-id>","date":"<YYYY-MM-DD>",
                        "attestation_text":"<operator verbatim ack> — <agent enrichment>"}'
    ```
 
-   Runtime fires the `agent-relayed-operator-attestation` branch
-   (`adr_audit.py:_enforce_human_attestation_authenticity`); the
-   marker satisfies the co-presence check; receipt lands with
-   `evidence.attestation_type=agent-relayed-operator-attestation`.
+   The receipt records `evidence.attestation_type=operator-verbatim-conversational`
+   from the `attestation_text` field — the operator's verbatim acceptance is
+   the Gate-5 attestation.
 
 4. **Close the ceremony.** `uv run gz adr audit-end <adr-id>` —
    removes the marker. Marker hygiene matters: leaving it behind
@@ -282,9 +282,8 @@ GHI #292 agent-relayed branch, using the `gz adr audit-begin` /
   If the emit fails for any reason, still run `audit-end` so the
   next ceremony starts clean.
 - **Do not hand-write the marker.** Use the `gz adr audit-begin` CLI
-  verb — that is the operator-typed entry-point that makes the marker
-  legitimate co-presence proof under GHI #290. Hand-fabricating the
-  file bypasses the slash-command chain and is impersonation.
+  verb — hand-fabricating the marker file bypasses the ceremony
+  entry-point.
 - **Idempotent:** Running twice produces two ledger entries (audit
   trail preserved).
 - **Forward note (GHI #354):** the taxonomy split between an
@@ -334,7 +333,7 @@ report success to the operator until the report command confirms the change.
 | OBPI reconcile | `uv run gz audit <adr-id>` | L1+L2 |
 | Coverage discovery | `rg -n '@covers("ADR-' tests` | L1 |
 | **Open audit ceremony** | `uv run gz adr audit-begin <adr-id>` — writes per-ADR co-presence marker. | L1 |
-| **Emit receipt (agent-relayed)** | `uv run gz adr emit-receipt <adr-id> --event validated --attestor "<Operator Name>" --attestor-present` after operator's verbal `accept audit` / `verify audit` (NOT OBPI-closeout `attest completed`). | L2 |
+| **Emit receipt** | `uv run gz adr emit-receipt <adr-id> --event validated --attestor "<Operator Name>" --evidence-json '{...,"attestation_text":"<operator verbatim ack>"}'` after operator's verbal `accept audit` / `verify audit` (NOT OBPI-closeout `attest completed`). | L2 |
 | **Close audit ceremony** | `uv run gz adr audit-end <adr-id>` — removes marker. | L1 |
 
 **Layer key:** L1 = runs verification, L2 = reads ledger proof

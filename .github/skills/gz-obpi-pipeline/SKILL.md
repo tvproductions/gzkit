@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.14.3"
+skill-version: "6.15.0"
 last_reviewed: 2026-04-25
 model: sonnet
 ---
@@ -44,8 +44,8 @@ These thoughts mean STOP — you are about to break the pipeline:
 | "Implementation/tests done, let me summarize" | You are between stages. The pipeline runs to Stage 5. Proceed. |
 | "No plan receipt exists — the brief is clear enough to skip planning" | The plan-audit handoff is a governance checkpoint. Invoke `/gz-plan-audit <OBPI-ID>` in this same turn (see § The Plan-Mode Gate); do not end the turn to ask permission. |
 | "The hook blocked me, I'll work around it" | Hook blocks are signals. Diagnose the cause. NEVER create marker files manually to bypass. |
-| "`gz obpi complete` refused a non-TTY invocation, so I'll ask the operator to run it themselves" | No. The operator already attested in Stage 4. Pass `--attestor-present` (GHI #292) — the active pipeline marker at `.claude/plans/.pipeline-active-{OBPI-ID}.json` satisfies the co-presence proxy, and the CLI records `attestation_type: "agent-relayed-operator-attestation"`. If `--attestor-present` is refused (missing marker, pre-GHI-#292 CLI), fall back to PTY allocation (`pty.fork`) as documented in Stage 5 Step 2. Handing the invocation back to the operator is still the regression — both paths are strictly preferred. |
-| "The operator said `attest completed` — maybe they want me to explain what to do next" | No. `attest completed` IS the attestation. Run `gz obpi complete` immediately with that phrase (enriched per § Attestation) in `--attestation-text`, allocating a PTY if needed. Do not produce runbook-style instructions for the operator to execute. |
+| "`gz obpi complete` needs a TTY, so I'll ask the operator to run it themselves" | No. There is no TTY gate. A plain non-TTY `uv run gz obpi complete ... --attestation-text "<operator's verbatim attestation>"` call completes the brief for every lane / kind / sensitivity. The operator already attested in Stage 4 — relay that phrase, never hand the invocation back. |
+| "The operator said `attest completed` — maybe they want me to explain what to do next" | No. `attest completed` IS the attestation. Run `gz obpi complete` immediately with that phrase (enriched per § Attestation) in `--attestation-text`. Do not produce runbook-style instructions for the operator to execute. |
 
 ### The Plan-Mode Gate
 
@@ -521,7 +521,7 @@ Wait for the human to respond "Accepted", "Completed", "attest completed", or eq
 
 Do NOT mark ceremony task `completed` until attestation is received.
 
-**When attestation arrives, immediately invoke `gz obpi complete` under a PTY (Stage 5 Step 2), feeding `ATTEST` to the confirmation prompt.** The operator's short phrase is the attestation; the pipeline must not pause to ask for longer text, must not print runbook-style instructions for the operator to execute, and must not treat the non-TTY refusal as a handoff. Enrich the attestation text per `AGENTS.md` § Attestation (em-dash + concrete session evidence + receipt IDs) before passing it through.
+**When attestation arrives, immediately invoke `gz obpi complete` (Stage 5 Step 2) with the operator's phrase in `--attestation-text`.** The operator's short phrase is the attestation; the pipeline must not pause to ask for longer text and must not print runbook-style instructions for the operator to execute. Enrich the attestation text per `AGENTS.md` § Attestation (em-dash + concrete session evidence + receipt IDs) before passing it through.
 
 **Human rejects:** Record feedback, return to Stage 2 with corrections.
 
@@ -595,87 +595,28 @@ the reconcile output and ADR status refresh.
      or the command exits 1 with a recovery hint. The Step 1 walkthrough above
      is what catches this before the CLI does.
 
-   **Authenticity gate (MANDATORY, GHI #290 + GHI #292).** `gz obpi complete`
-   refuses to emit a `human_attestation: true` receipt from a non-TTY parent,
-   because agent-synthesized attestation is prohibited. Claude Code's Bash
-   tool is a non-TTY child process by default, so a plain `uv run gz obpi
-   complete ...` call fails with *"stdin/stdout is not a TTY."* This is
-   **not** an instruction to hand the invocation to the operator — the
-   operator already attested in Stage 4. There are now two agent-side paths
-   that preserve the Stage-4 attestation without bouncing the work back:
-
-   **Primary path — `--attestor-present` (GHI #292).** Pass
-   `--attestor-present` on the `gz obpi complete` invocation. The CLI checks
-   for an active pipeline marker at
-   `.claude/plans/.pipeline-active-{OBPI-ID}.json`; because Stage 1 of this
-   very pipeline wrote that marker, the co-presence proxy is satisfied. The
-   ledger receipt records `attestation_type: "agent-relayed-operator-attestation"`
-   — taxonomically distinct from `attestation_type: "human"` (TTY-typed) so
-   audits can count the two streams separately. No PTY needed, no feeding
-   `ATTEST`, no Python subprocess launcher. Use this path first.
+   **Gate-5 attestation.** The operator's Stage-4 verbatim attestation
+   (e.g. "attest completed"), relayed via `--attestation-text`, IS the
+   Gate-5 attestation for every lane / kind / sensitivity — the completion
+   receipt records `attestation_type: operator-verbatim-conversational`.
+   There is no TTY-typed `ATTEST` ceremony, no `--attestor-present`
+   co-presence proxy, and no PTY launcher: a plain non-TTY `uv run gz obpi
+   complete ...` call from the Bash tool completes the brief. A non-empty
+   `--attestation-text` is required (it IS the attestation); an empty one
+   exits 1. Never hand the invocation back to the operator — they already
+   attested in Stage 4.
 
    ```bash
    uv run gz obpi complete {OBPI-SLUG} \
      --attestor '{attestor}' \
      --attestation-text "$(cat /tmp/obpi-attestation.txt)" \
      --implementation-summary "$(cat /tmp/obpi-summary.md)" \
-     --key-proof "$(cat /tmp/obpi-keyproof.md)" \
-     --attestor-present
+     --key-proof "$(cat /tmp/obpi-keyproof.md)"
    ```
 
-   **Fallback path — PTY allocation (GHI #290 original).** If
-   `--attestor-present` is unavailable (missing pipeline marker, pre-GHI-#292
-   CLI version, or any other reason the CLI refuses the marker-based gate),
-   fall back to allocating a PTY, spawning the CLI under it, and feeding
-   `ATTEST` when the confirmation prompt appears. Stopping the turn and
-   asking the operator to run the command is still a regression, not
-   compliance — the PTY launcher is the last-resort path, not the preferred
-   one.
-
-   PTY invocation pattern (POSIX platforms):
-
-   ```bash
-   python3 -c "
-   import os, pty, select, sys
-   cmd = [
-       'uv', 'run', 'gz', 'obpi', 'complete', '{OBPI-SLUG}',
-       '--attestor', '{attestor}',
-       '--attestation-text', open('/tmp/obpi-attestation.txt').read().strip(),
-       '--implementation-summary', open('/tmp/obpi-summary.md').read(),
-       '--key-proof', open('/tmp/obpi-keyproof.md').read(),
-   ]
-   pid, fd = pty.fork()
-   if pid == 0:
-       os.execvp(cmd[0], cmd)
-   buf = b''
-   sent = False
-   while True:
-       r, _, _ = select.select([fd], [], [], 60.0)
-       if not r: break
-       try: chunk = os.read(fd, 4096)
-       except OSError: break
-       if not chunk: break
-       buf += chunk
-       sys.stdout.write(chunk.decode('utf-8', errors='replace'))
-       sys.stdout.flush()
-       if not sent and b'ATTEST' in buf and b'confirm' in buf:
-           os.write(fd, b'ATTEST\n'); sent = True
-   _, status = os.waitpid(pid, 0)
-   sys.exit(os.WEXITSTATUS(status) if os.WIFEXITED(status) else 1)
-   "
-   ```
-
-   Write long `--attestation-text` / `--implementation-summary` / `--key-proof`
-   payloads to `/tmp/*.txt|md` first to keep the Python launcher tractable. The
-   launcher feeds `ATTEST` only once, only after observing the CLI's own
-   confirmation prompt (`ATTEST` + `confirm` both in the buffer) — so the gate
-   is still satisfying its contract: the agent is not synthesizing attestation,
-   it is relaying the operator's Stage-4 attestation through a TTY surface the
-   gzkit CLI insists on.
-
-   If the PTY approach fails (unavailable on the platform, harness restriction,
-   etc.) and only then — fall through to asking the operator to run the
-   command interactively. Do not lead with that fallback.
+   Write long `--attestation-text` / `--implementation-summary` /
+   `--key-proof` payloads to `/tmp/*.txt|md` first to keep the invocation
+   tractable.
 3. **Release OBPI lock** — `uv run gz obpi lock release {OBPI-SLUG}`
 4. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
 5. Remove `.claude/plans/.pipeline-active.json` only when it still points at
