@@ -269,6 +269,7 @@ class _ObpiCompleteIntegrationFixture(unittest.TestCase):
         rule_file_body: str | None,
         canonical_slot: list[str],
         security_registry: list[dict] | None = None,
+        accept_security_floor: str | None = None,
     ) -> tuple[type[BaseException] | None, int | None, list[str]]:
         """Drive ``obpi_complete_cmd`` against a mocked filesystem; return outcome."""
         recorded_console: list[str] = []
@@ -351,6 +352,7 @@ class _ObpiCompleteIntegrationFixture(unittest.TestCase):
                         key_proof="gz obpi complete fires the walkthrough.",
                         as_json=False,
                         dry_run=False,
+                        accept_security_floor=accept_security_floor,
                     )
                 except SystemExit as exc:
                     exc_type = SystemExit
@@ -510,6 +512,28 @@ class TestSecurityFloorAutoDetectFiresWithoutDeclaration(_ObpiCompleteIntegratio
             self.assertEqual(code, 3)
             joined = "\n".join(output)
             self.assertIn("Security-scan canonical slot", joined)
+
+    def test_operator_override_allows_auto_detected_brief_when_slot_unfilled(self) -> None:
+        with (
+            tempfile.TemporaryDirectory() as receipts_dir,
+            patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate"),
+            patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate"),
+        ):
+            receipts_root = Path(receipts_dir)
+            exc_type, code, output = self._run_complete(
+                brief_text=_NON_SECURITY_BRIEF,
+                receipts_root=receipts_root,
+                rule_file_body=_RULE_FILE_BODY,
+                canonical_slot=[],
+                security_registry=_AUTO_DETECT_REGISTRY,
+                accept_security_floor=(
+                    "operator reviewed overlap; change is structurally defensive"
+                ),
+            )
+            self.assertIsNone(exc_type)
+            self.assertIsNone(code)
+            joined = "\n".join(output)
+            self.assertIn("--accept-security-floor override applied", joined)
 
 
 class TestSecurityFloorAutoDetectSkipsNonIntersecting(_ObpiCompleteIntegrationFixture):
