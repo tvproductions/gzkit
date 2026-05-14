@@ -194,6 +194,7 @@ class TestSkillsLayoutDualSurface(unittest.TestCase):
     @covers("REQ-0.0.32-01-01")
     @covers("REQ-0.0.32-01-02")
     @covers("REQ-0.0.32-08-03")
+    @covers("REQ-0.0.32-15-10")
     def test_dual_surface_byte_parity(self) -> None:
         """Authored .gzkit/skills/<slug>/SKILL.md must be byte-identical to src/gzkit copy."""
         authored_root = _PROJECT_ROOT / ".gzkit" / "skills"
@@ -523,3 +524,47 @@ class TestGzCheckPasses(unittest.TestCase):
         skills_flat = _PROJECT_ROOT / "src" / "gzkit" / "skills.py"
         self.assertTrue(skills_init.exists(), "src/gzkit/skills/__init__.py must exist")
         self.assertFalse(skills_flat.exists(), "src/gzkit/skills.py must not exist")
+
+
+class TestClassifySkillFile(unittest.TestCase):
+    """Per-surface classifier for the skills canonical surface (REQ-0.0.32-15-04).
+
+    Signature-compatible with ``gzkit.chores._classify_chore_file``: returns
+    one of ``"canonical"``, ``"package_only"``, or ``"runtime_state"``.
+    """
+
+    @covers("REQ-0.0.32-15-04")
+    def test_importable(self) -> None:
+        """``_classify_skill_file`` is importable from ``gzkit.skills``."""
+        try:
+            from gzkit.skills import _classify_skill_file  # noqa: PLC0415, F401
+        except ImportError as e:  # pragma: no cover - failure surfaces in assertion
+            self.fail(
+                f"_classify_skill_file must be importable from gzkit.skills; got ImportError: {e}"
+            )
+
+    @covers("REQ-0.0.32-15-04")
+    def test_package_only_init_py(self) -> None:
+        """``__init__.py`` files classify as ``package_only``."""
+        from gzkit.skills import _classify_skill_file  # noqa: PLC0415
+
+        result = _classify_skill_file(Path("src/gzkit/skills/__init__.py"))
+        self.assertEqual(result, "package_only")
+
+    @covers("REQ-0.0.32-15-04")
+    def test_canonical_md(self) -> None:
+        """A ``SKILL.md`` (or any non-package file) classifies as ``canonical``."""
+        from gzkit.skills import _classify_skill_file  # noqa: PLC0415
+
+        result = _classify_skill_file(Path("src/gzkit/skills/gz-prd/SKILL.md"))
+        self.assertEqual(result, "canonical")
+
+    @covers("REQ-0.0.32-15-04")
+    def test_package_only_pycache(self) -> None:
+        """Anything under ``__pycache__`` classifies as ``package_only``."""
+        from gzkit.skills import _classify_skill_file  # noqa: PLC0415
+
+        result = _classify_skill_file(
+            Path("src/gzkit/skills/__pycache__/something.cpython-313.pyc")
+        )
+        self.assertEqual(result, "package_only")

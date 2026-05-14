@@ -391,6 +391,7 @@ class TestTemplatesLayoutDualSurface(unittest.TestCase):
 
     @covers("REQ-0.0.32-11-07")
     @covers("REQ-0.0.32-11-02")
+    @covers("REQ-0.0.32-15-10")
     def test_dual_surface_byte_parity(self) -> None:
         """Authored .gzkit/templates/<name>.md must be byte-identical to src/gzkit copy."""
         authored_root = _PROJECT_ROOT / ".gzkit" / "templates"
@@ -417,6 +418,7 @@ class TestTemplatesLayoutDualSurface(unittest.TestCase):
 
         expected = {
             "CORE_TEMPLATES",
+            "_classify_template_file",
             "_iter_canonical_template_slugs",
             "get_template_path",
             "list_templates",
@@ -678,6 +680,51 @@ class TestTemplatesDocsCoverage(unittest.TestCase):
 
         self.assertIsNotNone(scaffold_core_templates)
         self.assertIsInstance(CORE_TEMPLATES, list)
+
+
+class TestClassifyTemplateFile(unittest.TestCase):
+    """Per-surface classifier for the templates canonical surface (REQ-0.0.32-15-04).
+
+    Signature-compatible with ``gzkit.chores._classify_chore_file``: returns
+    one of ``"canonical"``, ``"package_only"``, or ``"runtime_state"``.
+    """
+
+    @covers("REQ-0.0.32-15-04")
+    def test_importable(self) -> None:
+        """``_classify_template_file`` is importable from ``gzkit.templates``."""
+        try:
+            from gzkit.templates import _classify_template_file  # noqa: PLC0415, F401
+        except ImportError as e:  # pragma: no cover - failure surfaces in assertion
+            self.fail(
+                "_classify_template_file must be importable from gzkit.templates; "
+                f"got ImportError: {e}"
+            )
+
+    @covers("REQ-0.0.32-15-04")
+    def test_package_only_init_py(self) -> None:
+        """``__init__.py`` files classify as ``package_only``."""
+        from gzkit.templates import _classify_template_file  # noqa: PLC0415
+
+        result = _classify_template_file(Path("src/gzkit/templates/__init__.py"))
+        self.assertEqual(result, "package_only")
+
+    @covers("REQ-0.0.32-15-04")
+    def test_canonical_md(self) -> None:
+        """A template ``*.md`` classifies as ``canonical``."""
+        from gzkit.templates import _classify_template_file  # noqa: PLC0415
+
+        result = _classify_template_file(Path("src/gzkit/templates/AGENTS.md"))
+        self.assertEqual(result, "canonical")
+
+    @covers("REQ-0.0.32-15-04")
+    def test_package_only_pycache(self) -> None:
+        """Anything under ``__pycache__`` classifies as ``package_only``."""
+        from gzkit.templates import _classify_template_file  # noqa: PLC0415
+
+        result = _classify_template_file(
+            Path("src/gzkit/templates/__pycache__/something.cpython-313.pyc")
+        )
+        self.assertEqual(result, "package_only")
 
 
 if __name__ == "__main__":

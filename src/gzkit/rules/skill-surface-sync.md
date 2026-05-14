@@ -9,15 +9,14 @@ paths:
 description: Version-disciplined editing and sync for skill and rule surfaces
 ---
 
-<!-- rule-version: 0.5.0 -->
+<!-- rule-version: 0.6.0 -->
 
 # Skill & Surface Sync (gzkit)
 
-> **Rule version:** `0.5.0` — bumped under OBPI-0.0.32-08 to document broadened
-> sync coverage: one `gz agent sync control-surfaces` invocation now propagates
-> `.gzkit/<surface>/` to BOTH `src/gzkit/<surface>/` (wheel-shipping byte-parity
-> copy) AND `.[vendor]/<surface>/` (vendor mirrors). Prior `0.4.0` content
-> (OBPI-0.0.32-13 — Chores class-classifier) preserved.
+> **Rule version:** `0.6.0` — bumped under OBPI-0.0.32-15 to extend the Chores
+> class-classifier into a unified canonical surface class-classifier covering
+> chores, rules, skills, personas, and templates. Prior `0.5.0` content
+> (OBPI-0.0.32-08 — broadened sync coverage) preserved.
 
 ## Non-negotiable rules
 
@@ -122,27 +121,39 @@ version-aware refresh semantics for the adopter's `.gzkit/<surface>/` from
 the wheel, with three-state IDENTICAL/STALE/EDITED detection so operator
 edits are preserved across gzkit upgrades.
 
-## Chores class-classifier
+## Canonical surface class-classifier
 
-This section codifies the three-class chores surface model per ADR-0.0.32 § Named exceptions / Exception 2 (OBPI-0.0.32-13). Every file under `.gzkit/chores/<slug>/` or `src/gzkit/chores/<slug>/` falls into exactly one class:
+This section codifies the three-class content model for every canonical surface (OBPI-0.0.32-13 for chores; extended to all surfaces under OBPI-0.0.32-15). Every file under any canonical surface (`src/gzkit/{chores,rules,skills,personas,templates}/`) falls into exactly one class:
 
-| Class | Examples | Byte-parity | Notes |
-|---|---|---|---|
-| **canonical** | `CHORE.md`, `AGENTS.md`, `*.md` (outside `proofs/`), `acceptance.json`, `registry.json`, `scan.py` (authored tool scripts present at `.gzkit/` surface), `mapping.json`, `*.schema.json` | Required | `.gzkit/chores/` is direction-of-truth; sync propagates `.gzkit/ → src/gzkit/` |
-| **package_only** | `__init__.py`, `__pycache__/**`, `README.md` (when no `.gzkit/` counterpart), `eval_feedback_cluster_lib.py`, `check_evidence.py` (Python modules with no `.gzkit/` counterpart) | Exempt | Package surface only; NEVER sync onto canonical side |
-| **runtime_state** | `CHORE-LOG.md`, `proofs/<artifact>`, `.gitkeep` | Exempt | Each surface owns runtime-state independently; NEVER sync either direction |
+| Class | Definition | Byte-parity | Sync | Validator |
+|---|---|---|---|---|
+| **canonical** | Operator-authored content present at `.gzkit/<surface>/` — the source of truth | Required | `.gzkit/ → src/gzkit/` | Included in wheel; present in baseline manifest |
+| **package_only** | Python modules and supporting files with no `.gzkit/` counterpart (e.g. `__init__.py`, `_scaffolder.py`) | Exempt | NEVER propagate to `.gzkit/` side | Exempt from `ON_DISK_NOT_INCLUDED` |
+| **runtime_state** | Per-run logs, receipts, proofs — written by agents at runtime | Exempt | NEVER sync in either direction | Exempt from both error classes |
 
-**Default rules:**
-- Unmatched `.md` files outside `proofs/` → **canonical**
-- Files under `proofs/` → **runtime_state**
-- `.py` files present at `.gzkit/chores/<slug>/` surface → **canonical** (authored tool scripts)
-- `.py` files in `src/gzkit/chores/<slug>/` with no `.gzkit/` counterpart → **package_only**
+### Default rules by surface
 
-**Conflict resolution** (mirror version > canonical version): promote mirror content to canonical, then re-sync. Apply § Conflict resolution above.
+| Surface | canonical | package_only | runtime_state |
+|---------|-----------|--------------|---------------|
+| **chores** | `CHORE.md`, `AGENTS.md`, `*.md` outside `proofs/`, `acceptance.json`, `registry.json`, `.py` with `.gzkit/` counterpart | `__init__.py`, `__pycache__/**`, `.py` with no `.gzkit/` counterpart | `CHORE-LOG.md`, `proofs/**`, `.gitkeep` |
+| **rules** | `*.md`, `*.json` with `.gzkit/rules/` counterpart, `.py` with `.gzkit/rules/` counterpart | `__init__.py`, `__pycache__/**`, `_scaffolder.py`, `.py` or `.json` with no `.gzkit/rules/` counterpart | (none) |
+| **skills** | `SKILL.md` (all) | `__init__.py`, `__pycache__/**` | (none) |
+| **personas** | `*.md` (all) | `__init__.py`, `__pycache__/**` | (none) |
+| **templates** | `*.md` (all) | `__init__.py`, `__pycache__/**` | (none) |
 
-**Python helper:** `_classify_chore_file(path, *, project_root=None)` in `src/gzkit/chores/__init__.py` implements this classifier for OBPI-08's sync mechanism. See tests at `tests/test_chores.py::TestChoresLayoutDualSurface`.
+**Python helpers (all signature-compatible with `_classify_chore_file`):**
 
-**Long-term note:** This classifier is a **temporary accommodation**. The deeper design concern — runtime-state (logs/receipts/proofs) co-located with canonical instructions — is parked at `ADR-pool.canonical-vs-runtime-separation`. When that ADR is promoted, runtime-state moves to a separate location and this classifier shrinks to a single class (canonical only).
+| Surface | Helper | Module | Tests |
+|---------|--------|--------|-------|
+| chores | `_classify_chore_file(path, *, project_root=None)` | `gzkit.chores` | `tests/test_chores.py::TestChoresLayoutDualSurface` |
+| rules | `_classify_rule_file(path, *, project_root=None)` | `gzkit.rules` | `tests/test_rules.py::TestClassifyRuleFile` |
+| skills | `_classify_skill_file(path, *, project_root=None)` | `gzkit.skills` | `tests/test_skills.py::TestClassifySkillFile` |
+| personas | `_classify_persona_file(path, *, project_root=None)` | `gzkit.personas` | `tests/test_personas.py::TestClassifyPersonaFile` |
+| templates | `_classify_template_file(path, *, project_root=None)` | `gzkit.templates` | `tests/test_templates.py::TestClassifyTemplateFile` |
+
+The `gz validate --distribution` validator consults these classifiers to exempt `package_only` files from `ON_DISK_NOT_INCLUDED` errors. The `sync_pkg_surfaces` function consults them to skip non-canonical files when propagating `.gzkit/ → src/gzkit/`.
+
+**Long-term note (chores):** The chores classifier is a **temporary accommodation** for runtime-state co-location with canonical instructions. When `ADR-pool.canonical-vs-runtime-separation` promotes, runtime-state moves to a separate location and the chores classifier shrinks to a single class (canonical only).
 
 ## Rationale
 

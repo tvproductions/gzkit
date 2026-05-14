@@ -29,16 +29,16 @@ class TestChoresLayoutDualSurface(unittest.TestCase):
     @covers("REQ-0.0.32-13-01")
     @covers("REQ-0.0.32-13-06")
     @covers("REQ-0.0.32-13-08")
+    @covers("REQ-0.0.32-15-08")
     def test_classifier_section_in_rule(self) -> None:
         """Verify .gzkit/rules/skill-surface-sync.md contains classifier section."""
         rule_file = _PROJECT_ROOT / ".gzkit" / "rules" / "skill-surface-sync.md"
         self.assertTrue(rule_file.is_file(), "skill-surface-sync.md must exist")
 
         content = rule_file.read_text(encoding="utf-8")
-        self.assertIn(
-            "Chores class-classifier",
-            content,
-            "skill-surface-sync.md must document Chores class-classifier",
+        self.assertTrue(
+            "Chores class-classifier" in content or "Canonical surface class-classifier" in content,
+            "skill-surface-sync.md must document the chores/canonical class-classifier section",
         )
         self.assertIn(
             "ADR-pool.canonical-vs-runtime-separation",

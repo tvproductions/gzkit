@@ -18,7 +18,7 @@ from collections.abc import Callable
 from collections.abc import Iterator as _Iterator
 from importlib.resources.abc import Traversable as _Traversable
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import yaml
 
@@ -27,6 +27,38 @@ from gzkit.models.persona import PersonaFrontmatter
 if TYPE_CHECKING:
     from gzkit.config import GzkitConfig
     from gzkit.models.persona import PersonaDriftReport, TraitCheckResult
+
+
+def _classify_persona_file(
+    path: Path,
+    *,
+    project_root: Path | None = None,
+) -> Literal["canonical", "package_only", "runtime_state"]:
+    """Classify a personas-surface file into one of three content classes.
+
+    canonical: persona ``*.md`` files (authored under ``.gzkit/personas/`` and
+               shipped at ``src/gzkit/personas/``).
+    package_only: ``__init__.py``, ``__pycache__/**``.
+    runtime_state: (currently unused for the personas surface; reserved for
+                   parity with ``_classify_chore_file``.)
+
+    Signature-compatible with :func:`gzkit.chores._classify_chore_file`. See
+    ``.gzkit/rules/skill-surface-sync.md`` § class-classifier.
+    """
+    path = Path(path)
+    name = path.name
+    parts = path.parts
+
+    if name == "__init__.py" or "__pycache__" in parts:
+        return "package_only"
+
+    # ``project_root`` accepted for API symmetry with the chores classifier;
+    # the personas surface has no per-file counterpart logic, so the parameter
+    # is unused. Silence the unused-arg lint without changing the signature.
+    _ = project_root
+
+    return "canonical"
+
 
 # Project-agnostic starter personas scaffolded by ``gz init``.
 # Content MUST NOT reference any specific project, language, or tool.

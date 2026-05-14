@@ -677,6 +677,7 @@ class TestRulesLayoutDualSurface(unittest.TestCase):
 
     @covers("REQ-0.0.32-03-02")
     @covers("REQ-0.0.32-08-03")
+    @covers("REQ-0.0.32-15-10")
     def test_dual_surface_byte_parity(self) -> None:
         # AGENTS.md is package-internal (not a canonical rule slug per OBPI-04).
         canonical = self._repo_root() / ".gzkit" / "rules"
@@ -916,3 +917,145 @@ class TestCoreRulesRegistry(unittest.TestCase):
             # Should have been overwritten — old placeholder content is gone
             content = (rules_dir / "governance-core.md").read_text(encoding="utf-8")
             self.assertNotEqual(content, "# Old content\n")
+
+
+class TestClassifyRuleFile(unittest.TestCase):
+    """Per-surface classifier for the rules canonical surface (REQ-0.0.32-15-04/05).
+
+    Signature-compatible with ``gzkit.chores._classify_chore_file``: returns
+    one of ``"canonical"``, ``"package_only"``, or ``"runtime_state"`` for any
+    path under (or relative to) ``src/gzkit/rules/`` and ``.gzkit/rules/``.
+    """
+
+    @covers("REQ-0.0.32-15-04")
+    def test_importable(self) -> None:
+        """``_classify_rule_file`` is importable from ``gzkit.rules``."""
+        try:
+            from gzkit.rules import _classify_rule_file  # noqa: PLC0415, F401
+        except ImportError as e:  # pragma: no cover - failure surfaces in assertion
+            self.fail(
+                f"_classify_rule_file must be importable from gzkit.rules; got ImportError: {e}"
+            )
+
+    @covers("REQ-0.0.32-15-04")
+    def test_package_only_init_py(self) -> None:
+        """``__init__.py`` files classify as ``package_only``."""
+        from gzkit.rules import _classify_rule_file  # noqa: PLC0415
+
+        result = _classify_rule_file(Path("src/gzkit/rules/__init__.py"))
+        self.assertEqual(result, "package_only")
+
+    @covers("REQ-0.0.32-15-04")
+    def test_canonical_md(self) -> None:
+        """``*.md`` files classify as ``canonical`` (default for markdown)."""
+        from gzkit.rules import _classify_rule_file  # noqa: PLC0415
+
+        result = _classify_rule_file(Path("src/gzkit/rules/governance-core.md"))
+        self.assertEqual(result, "canonical")
+
+    @covers("REQ-0.0.32-15-05")
+    def test_package_only_scaffolder_py(self) -> None:
+        """``_scaffolder.py`` (no ``.gzkit/`` counterpart) classifies ``package_only``."""
+        from gzkit.rules import _classify_rule_file  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src" / "gzkit" / "rules").mkdir(parents=True)
+            (root / ".gzkit" / "rules").mkdir(parents=True)
+            scaffolder = root / "src" / "gzkit" / "rules" / "_scaffolder.py"
+            scaffolder.write_text("# stub\n", encoding="utf-8")
+            # No counterpart at .gzkit/rules/_scaffolder.py.
+
+            result = _classify_rule_file(scaffolder, project_root=root)
+            self.assertEqual(result, "package_only")
+
+    @covers("REQ-0.0.32-15-05")
+    def test_canonical_json_with_gzkit_counterpart(self) -> None:
+        """JSON file with a ``.gzkit/rules/`` counterpart classifies ``canonical``."""
+        from gzkit.rules import _classify_rule_file  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src" / "gzkit" / "rules").mkdir(parents=True)
+            (root / ".gzkit" / "rules").mkdir(parents=True)
+            pkg_json = root / "src" / "gzkit" / "rules" / "complexity-thresholds.json"
+            pkg_json.write_text("{}\n", encoding="utf-8")
+            # Counterpart exists at .gzkit/rules/complexity-thresholds.json.
+            (root / ".gzkit" / "rules" / "complexity-thresholds.json").write_text(
+                "{}\n", encoding="utf-8"
+            )
+
+            result = _classify_rule_file(pkg_json, project_root=root)
+            self.assertEqual(result, "canonical")
+
+    @covers("REQ-0.0.32-15-05")
+    def test_package_only_json_without_gzkit_counterpart(self) -> None:
+        """JSON file without a ``.gzkit/rules/`` counterpart classifies ``package_only``."""
+        from gzkit.rules import _classify_rule_file  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src" / "gzkit" / "rules").mkdir(parents=True)
+            (root / ".gzkit" / "rules").mkdir(parents=True)
+            pkg_json = root / "src" / "gzkit" / "rules" / "internal-only.json"
+            pkg_json.write_text("{}\n", encoding="utf-8")
+            # No counterpart under .gzkit/rules/.
+
+            result = _classify_rule_file(pkg_json, project_root=root)
+            self.assertEqual(result, "package_only")
+
+    @covers("REQ-0.0.32-15-05")
+    def test_canonical_when_path_under_gzkit_rules(self) -> None:
+        """Files already under ``.gzkit/rules/`` classify ``canonical``."""
+        from gzkit.rules import _classify_rule_file  # noqa: PLC0415
+
+        result = _classify_rule_file(Path(".gzkit/rules/governance-core.md"))
+        self.assertEqual(result, "canonical")
+
+    @covers("REQ-0.0.32-15-09")
+    def test_pyproject_includes_rules_json(self) -> None:
+        """pyproject.toml must include src/gzkit/rules/**/*.json for canonical json files."""
+        import tomllib
+
+        project_root = Path(__file__).resolve().parents[1]
+        pyproject = project_root / "pyproject.toml"
+        with open(pyproject, "rb") as f:
+            data = tomllib.load(f)
+        include_globs = (
+            data.get("tool", {})
+            .get("hatch", {})
+            .get("build", {})
+            .get("targets", {})
+            .get("wheel", {})
+            .get("include", [])
+        )
+        self.assertIn(
+            "src/gzkit/rules/**/*.json",
+            include_globs,
+            "pyproject.toml must include src/gzkit/rules/**/*.json for canonical json files",
+        )
+
+
+class TestSyncClassifierIntegration(unittest.TestCase):
+    """sync_pkg_surfaces consults per-surface classifiers (REQ-0.0.32-15-07)."""
+
+    @covers("REQ-0.0.32-15-07")
+    def test_sync_surfaces_has_rules_classifier_integration(self) -> None:
+        """sync_pkg_surfaces imports and consults _classify_rule_file for rules sync."""
+        sync_src = Path(__file__).resolve().parents[1] / "src" / "gzkit" / "sync_surfaces.py"
+        content = sync_src.read_text(encoding="utf-8")
+        self.assertIn(
+            "_classify_rule_file",
+            content,
+            "sync_surfaces.py must import and consult _classify_rule_file for rules sync",
+        )
+        self.assertIn(
+            "_classify_persona_file",
+            content,
+            "sync_surfaces.py must import and consult _classify_persona_file for personas sync",
+        )
+        self.assertIn(
+            "_classify_template_file",
+            content,
+            "sync_surfaces.py must import and consult _classify_template_file for templates sync",
+        )

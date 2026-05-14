@@ -593,6 +593,21 @@ class IntrinsicComplexityAttestationEvent(_EventBase):
     crossing_value: float = Field(..., description="Observed metric value at attestation time")
 
 
+class DistributionBaselineRegeneratedEvent(_EventBase):
+    """distribution_baseline_regenerated event — baseline manifest rewrite (OBPI-0.0.32-15).
+
+    Emitted when ``gz validate --distribution --regenerate`` rewrites
+    ``data/distribution_baseline_manifest.json`` from on-disk canonical surface
+    truth. Layer-2 witness symmetric to ``agent_sync_completed``.
+    """
+
+    event: Literal["distribution_baseline_regenerated"]
+    surfaces_walked: list[str]
+    file_count: int
+    manifest_hash_before: str
+    manifest_hash_after: str
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -623,7 +638,8 @@ TypedLedgerEvent = Annotated[
     | TaskCompletedEvent
     | TaskBlockedEvent
     | TaskEscalatedEvent
-    | IntrinsicComplexityAttestationEvent,
+    | IntrinsicComplexityAttestationEvent
+    | DistributionBaselineRegeneratedEvent,
     Field(discriminator="event"),
 ]
 

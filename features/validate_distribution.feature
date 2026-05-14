@@ -21,3 +21,17 @@ Feature: gz validate --distribution T0 static audit
     Then it exits with code 3
     And the output contains "ON_DISK_NOT_INCLUDED"
     And the output contains "pyproject.toml"
+
+  @REQ-0.0.32-15-01
+  @REQ-0.0.32-15-02
+  @REQ-0.0.32-15-03
+  Scenario: --regenerate rewrites manifest and validate exits 0
+    When I run "gz validate --distribution --regenerate"
+    Then it exits with code 0
+    And the output contains "Baseline regenerated"
+
+  @REQ-0.0.32-15-01
+  Scenario: --regenerate flag appears in gz validate --help
+    When I run "gz validate --help"
+    Then it exits with code 0
+    And the output contains "--regenerate"

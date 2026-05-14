@@ -9,7 +9,7 @@ from datetime import date
 from importlib.resources import files
 from importlib.resources.abc import Traversable
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -17,6 +17,37 @@ from gzkit.config import GzkitConfig
 from gzkit.skill_contract import SKILL_DESCRIPTION_MAX_CHARS, SUPPORTED_SKILL_HARNESSES
 
 _CANONICAL_SKILLS_RESOURCE = "gzkit.skills"
+
+
+def _classify_skill_file(
+    path: Path,
+    *,
+    project_root: Path | None = None,
+) -> Literal["canonical", "package_only", "runtime_state"]:
+    """Classify a skills-surface file into one of three content classes.
+
+    canonical: SKILL.md and every other authored skill asset (README.md,
+               supporting scripts that ship as part of the skill).
+    package_only: ``__init__.py``, ``__pycache__/**``.
+    runtime_state: (currently unused for the skills surface; reserved for
+                   parity with ``_classify_chore_file``.)
+
+    Signature-compatible with :func:`gzkit.chores._classify_chore_file`. See
+    ``.gzkit/rules/skill-surface-sync.md`` § class-classifier.
+    """
+    path = Path(path)
+    name = path.name
+    parts = path.parts
+
+    if name == "__init__.py" or "__pycache__" in parts:
+        return "package_only"
+
+    # ``project_root`` accepted for API symmetry with the chores classifier;
+    # the skills surface has no per-file counterpart logic, so the parameter
+    # is unused. Silence the unused-arg lint without changing the signature.
+    _ = project_root
+
+    return "canonical"
 
 
 def _iter_canonical_skill_slugs() -> Iterator[Traversable]:
@@ -526,6 +557,7 @@ __all__ = [
     "Skill",
     "SkillAuditIssue",
     "SkillAuditReport",
+    "_classify_skill_file",
     "audit_skills",
     "get_skill",
     "list_skills",

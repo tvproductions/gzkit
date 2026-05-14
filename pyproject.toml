@@ -62,6 +62,7 @@ include = [
     "src/gzkit/chores/registry.json",
     "src/gzkit/skills/**/*.md",
     "src/gzkit/rules/**/*.md",
+    "src/gzkit/rules/**/*.json",
     "src/gzkit/personas/**/*.md",
     "src/gzkit/templates/**/*.md",
     "src/gzkit/hooks/scripts/**",

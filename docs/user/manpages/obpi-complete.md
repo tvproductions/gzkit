@@ -23,6 +23,7 @@ gz obpi complete OBPI-X.Y.Z-NN --attestor NAME --attestation-text TEXT
 | `--attestor-present` | Agent-relayed operator attestation, gated on a structurally-authentic active pipeline marker (GHI #292; hardened by GHI #412 — marker must match expected obpi_id/parent_adr, carry a 32-hex nonce, be fresh within 4 hours, and have a matching `pipeline_launched` ledger event). Refused entirely for `sensitivity:security` and foundation-kind scopes; those require live TTY attestation. |
 | `--accept-uncovered REQ_ID` | Explicitly waive an uncovered REQ (repeatable; requires `--accept-uncovered-reason`) |
 | `--accept-uncovered-reason REASON` | Rationale for the corresponding `--accept-uncovered` entry (repeatable, 1:1 pairing) |
+| `--accept-security-floor REASON` | Override the security-scan canonical-slot fail-closed gate when the auto-detect classified the brief security-sensitive on surface-overlap but the change is structurally defensive/additive (GHI #462). The override is recorded in console output for audit trail. |
 | `--json` | Machine-readable JSON output |
 | `--dry-run` | Show plan without writing files |
 

@@ -1172,6 +1172,7 @@ def validate(
     check_intrinsic_attestation: bool = False,
     check_advisor_proof_binding: bool = False,
     check_distribution: bool = False,
+    check_distribution_regenerate: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1188,6 +1189,23 @@ def validate(
         * 3 — frontmatter-ledger policy breach (drift found)
     """
     project_root = get_project_root()
+    if check_distribution_regenerate:
+        if not check_distribution:
+            console.print(
+                "[yellow]Warning:[/yellow] --regenerate has no effect without --distribution."
+            )
+            return
+        from gzkit.governance.trust_audits.distribution import (
+            regenerate_distribution_baseline,  # noqa: PLC0415
+        )
+
+        result = regenerate_distribution_baseline(project_root)
+        console.print(
+            f"[green]✓[/green] Baseline regenerated: {result['file_count']} files across "
+            f"{', '.join(result['surfaces_walked'])}. "
+            f"Ledger event emitted (distribution_baseline_regenerated)."
+        )
+        return
     if attestation_receipts is not None:
         _run_attestation_receipts_scope(
             project_root,
