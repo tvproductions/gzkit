@@ -38,7 +38,7 @@ as it gets.
 
 ```bash
 # gzkit installed
-uv tool install gzkit
+uv tool install py-gzkit
 
 # Python 3.13+
 python --version

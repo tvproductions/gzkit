@@ -30,7 +30,7 @@ documentation and error messages must do that work.
 
 | Capability | Status | Notes |
 |------------|--------|-------|
-| Installation | Ready | `uv tool install gzkit` works cleanly |
+| Installation | Ready | `uv tool install py-gzkit` works cleanly |
 | `gz init` | Ready | Creates correct structure |
 | `gz prd` | Ready | Generates template, writes ledger |
 | `gz plan` | Ready | Generates ADR with checklist scaffolding |

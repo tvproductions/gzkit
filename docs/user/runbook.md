@@ -29,7 +29,7 @@ CLI verb. For the narrative account of why these stages compose this way
 
 | # | Stage | Skill (preferred) | CLI verbs |
 |---|-------|-------------------|-----------|
-| 1 | Scaffolding | `/gz-init` | `uv tool install gzkit`; `uv run gz init` |
+| 1 | Scaffolding | `/gz-init` | `uv tool install py-gzkit`; `gz init` |
 | 2 | Intent (PRD → Constitution → Design) | `/gz-prd`, `/gz-constitute`, `/gz-design` | `uv run gz prd`; `uv run gz constitute` |
 | 3 | Decomposition (ADR → OBPI) | `/gz-plan`, `/gz-adr-create`, `/gz-obpi-specify` | `uv run gz plan create <name> --semver X.Y.Z`; `uv run gz specify <slug> --parent ADR-<X.Y.Z> --item <N>` |
 | 4 | Pre-execution reasoning | `/gz-justify`, `/gz-plan-audit` | `uv run gz justify <anchor> --save`; `uv run gz justify validate <path>` |

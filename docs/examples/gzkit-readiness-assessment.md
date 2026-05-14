@@ -29,7 +29,7 @@ ready for unguided student self-service.**
 
 | Criterion | Weight | Score | Notes |
 |-----------|--------|-------|-------|
-| Installation and setup | High | B+ | `uv tool install gzkit && gz init` works cleanly |
+| Installation and setup | High | B+ | `uv tool install py-gzkit && gz init` works cleanly |
 | First-run experience | High | C | Quickstart exists but jumps past conceptual foundations |
 | Conceptual clarity | High | B | Docs explain concepts but assume prior governance exposure |
 | Workflow guidance | Medium | B- | Runbook and concept docs exist; no "first project" walkthrough |
