@@ -427,67 +427,81 @@ class TestRegenerateDistributionBaseline(unittest.TestCase):
 
         self.assertTrue(callable(regenerate_distribution_baseline))
 
+    @staticmethod
+    def _seed_surface_root(root: Path) -> None:
+        """Populate a temp project root with one canonical skill surface file.
+
+        Test-isolation contract: the regenerator writes the baseline manifest
+        and appends a ledger event. Both MUST land in the temp root, never the
+        live repo (see .gzkit/rules/tests.md — never use production databases).
+        """
+        skill = root / "src" / "gzkit" / "skills" / "test-skill" / "SKILL.md"
+        skill.parent.mkdir(parents=True)
+        skill.write_text("# Test skill\n", encoding="utf-8")
+        _write_pyproject(root, ["src/gzkit/skills/**/*.md"])
+        _write_manifest(root, {"skills": []})
+
     @covers("REQ-0.0.32-15-03")
     def test_regenerate_then_audit_exits_zero(self) -> None:
-        """After regenerating against current project root, audit returns no errors."""
+        """After regenerating against a project root, audit returns no errors."""
         from gzkit.governance.trust_audits.distribution import (
             audit_distribution,
             regenerate_distribution_baseline,
         )
 
-        project_root = Path(__file__).resolve().parents[2]
-        regenerate_distribution_baseline(project_root)
-        errors = audit_distribution(project_root)
-        self.assertEqual(
-            [],
-            errors,
-            f"audit_distribution returned errors after regeneration: {[e.message for e in errors]}",
-        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._seed_surface_root(root)
+            regenerate_distribution_baseline(root)
+            errors = audit_distribution(root)
+            self.assertEqual(
+                [],
+                errors,
+                f"audit returned errors after regeneration: {[e.message for e in errors]}",
+            )
 
     @covers("REQ-0.0.32-15-03")
     def test_regenerate_is_idempotent(self) -> None:
         """Running the regenerator twice produces no manifest diff."""
-        import json
-
         from gzkit.governance.trust_audits.distribution import regenerate_distribution_baseline
 
-        project_root = Path(__file__).resolve().parents[2]
-        manifest_path = project_root / "data" / "distribution_baseline_manifest.json"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._seed_surface_root(root)
+            manifest_path = root / "data" / "distribution_baseline_manifest.json"
 
-        regenerate_distribution_baseline(project_root)
-        content_after_first = json.loads(manifest_path.read_text(encoding="utf-8"))
+            regenerate_distribution_baseline(root)
+            content_after_first = json.loads(manifest_path.read_text(encoding="utf-8"))
 
-        regenerate_distribution_baseline(project_root)
-        content_after_second = json.loads(manifest_path.read_text(encoding="utf-8"))
+            regenerate_distribution_baseline(root)
+            content_after_second = json.loads(manifest_path.read_text(encoding="utf-8"))
 
-        self.assertEqual(
-            content_after_first["surfaces"],
-            content_after_second["surfaces"],
-            "Regenerating twice must produce the same manifest",
-        )
+            self.assertEqual(
+                content_after_first["surfaces"],
+                content_after_second["surfaces"],
+                "Regenerating twice must produce the same manifest",
+            )
 
     @covers("REQ-0.0.32-15-02")
     def test_regenerator_emits_ledger_event(self) -> None:
         """Successful regeneration appends a distribution_baseline_regenerated ledger event."""
         from gzkit.governance.trust_audits.distribution import regenerate_distribution_baseline
 
-        project_root = Path(__file__).resolve().parents[2]
-        ledger_path = project_root / ".gzkit" / "ledger.jsonl"
-        lines_before = len(ledger_path.read_text(encoding="utf-8").splitlines())
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._seed_surface_root(root)
+            ledger_path = root / ".gzkit" / "ledger.jsonl"
 
-        regenerate_distribution_baseline(project_root)
+            regenerate_distribution_baseline(root)
 
-        lines_after = ledger_path.read_text(encoding="utf-8").splitlines()
-        self.assertGreater(len(lines_after), lines_before, "No ledger event appended")
-        last_event_raw = lines_after[-1]
-        import json
-
-        last_event = json.loads(last_event_raw)
-        self.assertEqual(
-            "distribution_baseline_regenerated",
-            last_event.get("event"),
-            f"Expected distribution_baseline_regenerated event, got: {last_event.get('event')}",
-        )
+            lines_after = ledger_path.read_text(encoding="utf-8").splitlines()
+            self.assertGreater(len(lines_after), 0, "No ledger event appended")
+            last_event = json.loads(lines_after[-1])
+            self.assertEqual(
+                "distribution_baseline_regenerated",
+                last_event.get("event"),
+                f"Expected distribution_baseline_regenerated event, got: {last_event.get('event')}",
+            )
 
 
 class TestPackageOnlyExemption(unittest.TestCase):

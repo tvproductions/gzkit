@@ -19,7 +19,7 @@ gz adr emit-receipt <ADR-ID> --event {completed,validated,closed} --attestor <te
 | `--event` | Receipt event type (`completed`, `validated`, or `closed`) |
 | `--attestor` | Identity of the attestor |
 | `--evidence-json` | JSON payload with `value_narrative`, `key_proof`; Heavy/Foundation adds attestation fields |
-| `--attestor-present` | Agent-relayed operator attestation, gated on an active pipeline marker (GHI #292) |
+| `--attestor-present` | Retained for compatibility; no longer load-bearing. Human-attestation receipt events record the operator's verbatim attestation from the `--evidence-json` `attestation_text` (or `scope`) field as `attestation_type: operator-verbatim-conversational`. The prior TTY `ATTEST` authenticity gate has been removed. |
 | `--dry-run` | Show planned actions without executing |
 
 ---

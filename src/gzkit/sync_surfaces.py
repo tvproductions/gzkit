@@ -7,6 +7,7 @@ Extracted from sync.py to keep modules under 600 lines.
 """
 
 import json
+from collections.abc import Callable
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -535,35 +536,43 @@ def _pkg_surface_exists(project_root: Path, surface: str) -> bool:
     return (project_root / "src" / "gzkit" / surface / "__init__.py").exists()
 
 
-def _sync_flat_md_to_pkg(
+def _copy_if_changed(
+    src_file: Path, dest_file: Path, project_root: Path, updated: list[str]
+) -> None:
+    """Copy src_file to dest_file when bytes differ; record the write in updated.
+
+    Idempotent: a bytes-identical destination is left untouched and not recorded.
+    """
+    dest_file.parent.mkdir(parents=True, exist_ok=True)
+    src_bytes = src_file.read_bytes()
+    if dest_file.exists() and dest_file.read_bytes() == src_bytes:
+        return
+    dest_file.write_bytes(src_bytes)
+    updated.append(dest_file.relative_to(project_root).as_posix())
+
+
+def _sync_classified_flat(
     canonical_dir: Path,
     pkg_dir: Path,
+    classifier: Callable[..., str],
     project_root: Path,
+    updated: list[str],
     *,
-    exclude_names: set[str] | None = None,
-) -> list[str]:
-    """Copy *.md (and *.json) from canonical_dir to pkg_dir, idempotent.
+    skip_names: frozenset[str] = frozenset(),
+) -> None:
+    """Propagate canonical-class files from a flat canonical dir to its pkg copy.
 
-    pkg_dir must already exist (caller checked _pkg_surface_exists).
-    Skips files whose bytes already match the destination.
+    Used for rules, personas, and templates — surfaces whose canonical tree is a
+    single flat directory gated by a per-surface ``_classify_*_file`` helper.
     """
-    if not canonical_dir.exists() or not pkg_dir.exists():
-        return []
-    updated: list[str] = []
+    if not (canonical_dir.exists() and pkg_dir.exists()):
+        return
     for src_file in sorted(canonical_dir.iterdir()):
-        if not src_file.is_file():
+        if not src_file.is_file() or src_file.name in skip_names:
             continue
-        if exclude_names and src_file.name in exclude_names:
+        if classifier(src_file, project_root=project_root) != "canonical":
             continue
-        if src_file.suffix not in {".md", ".json"}:
-            continue
-        dest_file = pkg_dir / src_file.name
-        src_bytes = src_file.read_bytes()
-        if dest_file.exists() and dest_file.read_bytes() == src_bytes:
-            continue
-        dest_file.write_bytes(src_bytes)
-        updated.append(dest_file.relative_to(project_root).as_posix())
-    return updated
+        _copy_if_changed(src_file, pkg_dir / src_file.name, project_root, updated)
 
 
 def sync_pkg_surfaces(project_root: Path, config: GzkitConfig) -> list[str]:
@@ -584,104 +593,71 @@ def sync_pkg_surfaces(project_root: Path, config: GzkitConfig) -> list[str]:
 
     """
     updated: list[str] = []
+    pkg_root = project_root / "src" / "gzkit"
 
     # Skills: .gzkit/skills/<slug>/SKILL.md → src/gzkit/skills/<slug>/SKILL.md
     if _pkg_surface_exists(project_root, "skills"):
-        from gzkit.sync_skills import _retired_skill_names
+        from gzkit.sync_skills import _retired_skill_names  # noqa: PLC0415
 
-        retired = _retired_skill_names(project_root / config.paths.skills)
         canonical_skills = project_root / config.paths.skills
-        pkg_skills = project_root / "src" / "gzkit" / "skills"
+        retired = _retired_skill_names(canonical_skills)
         for skill_dir in sorted(canonical_skills.iterdir()):
             if not skill_dir.is_dir() or skill_dir.name in retired:
                 continue
             skill_md = skill_dir / "SKILL.md"
             if not skill_md.exists():
                 continue
-            dest_skill_md = pkg_skills / skill_dir.name / "SKILL.md"
-            dest_skill_md.parent.mkdir(parents=True, exist_ok=True)
-            src_bytes = skill_md.read_bytes()
-            if dest_skill_md.exists() and dest_skill_md.read_bytes() == src_bytes:
-                continue
-            dest_skill_md.write_bytes(src_bytes)
-            updated.append(dest_skill_md.relative_to(project_root).as_posix())
+            _copy_if_changed(
+                skill_md, pkg_root / "skills" / skill_dir.name / "SKILL.md", project_root, updated
+            )
 
-    # Rules: .gzkit/rules/ → src/gzkit/rules/ (canonical-class files only per _classify_rule_file)
+    # Rules / personas / templates: flat canonical dirs gated by a per-surface classifier
     if _pkg_surface_exists(project_root, "rules"):
         from gzkit.rules import _classify_rule_file  # noqa: PLC0415
 
-        canonical_rules = project_root / ".gzkit" / "rules"
-        pkg_rules = project_root / "src" / "gzkit" / "rules"
-        if canonical_rules.exists() and pkg_rules.exists():
-            for src_file in sorted(canonical_rules.iterdir()):
-                if not src_file.is_file() or src_file.name == "AGENTS.md":
-                    continue
-                if _classify_rule_file(src_file, project_root=project_root) != "canonical":
-                    continue
-                dest_file = pkg_rules / src_file.name
-                src_bytes = src_file.read_bytes()
-                if dest_file.exists() and dest_file.read_bytes() == src_bytes:
-                    continue
-                dest_file.write_bytes(src_bytes)
-                updated.append(dest_file.relative_to(project_root).as_posix())
-
-    # Personas: .gzkit/personas/ → src/gzkit/personas/ (canonical-class per _classify_persona_file)
+        _sync_classified_flat(
+            project_root / ".gzkit" / "rules",
+            pkg_root / "rules",
+            _classify_rule_file,
+            project_root,
+            updated,
+            skip_names=frozenset({"AGENTS.md"}),
+        )
     if _pkg_surface_exists(project_root, "personas"):
         from gzkit.personas import _classify_persona_file  # noqa: PLC0415
 
-        canonical_personas = project_root / config.paths.personas
-        pkg_personas = project_root / "src" / "gzkit" / "personas"
-        if canonical_personas.exists() and pkg_personas.exists():
-            for src_file in sorted(canonical_personas.iterdir()):
-                if not src_file.is_file():
-                    continue
-                if _classify_persona_file(src_file, project_root=project_root) != "canonical":
-                    continue
-                dest_file = pkg_personas / src_file.name
-                src_bytes = src_file.read_bytes()
-                if dest_file.exists() and dest_file.read_bytes() == src_bytes:
-                    continue
-                dest_file.write_bytes(src_bytes)
-                updated.append(dest_file.relative_to(project_root).as_posix())
-
-    # Templates: .gzkit/templates/ → src/gzkit/templates/ (canonical-class per classifier)
+        _sync_classified_flat(
+            project_root / config.paths.personas,
+            pkg_root / "personas",
+            _classify_persona_file,
+            project_root,
+            updated,
+        )
     if _pkg_surface_exists(project_root, "templates"):
         from gzkit.templates import _classify_template_file  # noqa: PLC0415
 
-        canonical_templates = project_root / ".gzkit" / "templates"
-        pkg_templates = project_root / "src" / "gzkit" / "templates"
-        if canonical_templates.exists() and pkg_templates.exists():
-            for src_file in sorted(canonical_templates.iterdir()):
-                if not src_file.is_file():
-                    continue
-                if _classify_template_file(src_file, project_root=project_root) != "canonical":
-                    continue
-                dest_file = pkg_templates / src_file.name
-                src_bytes = src_file.read_bytes()
-                if dest_file.exists() and dest_file.read_bytes() == src_bytes:
-                    continue
-                dest_file.write_bytes(src_bytes)
-                updated.append(dest_file.relative_to(project_root).as_posix())
+        _sync_classified_flat(
+            project_root / ".gzkit" / "templates",
+            pkg_root / "templates",
+            _classify_template_file,
+            project_root,
+            updated,
+        )
 
-    # Chores: canonical-class files only, per _classify_chore_file
-    from gzkit.chores import _classify_chore_file
+    # Chores: canonical-class files only, recursive tree, per _classify_chore_file
+    from gzkit.chores import _classify_chore_file  # noqa: PLC0415
 
     gzkit_chores = project_root / config.paths.chores
-    pkg_chores = project_root / "src" / "gzkit" / "chores"
+    pkg_chores = pkg_root / "chores"
     if gzkit_chores.exists() and pkg_chores.exists():
         for src_file in sorted(gzkit_chores.rglob("*")):
             if not src_file.is_file():
                 continue
             if _classify_chore_file(src_file, project_root=project_root) != "canonical":
                 continue
-            rel = src_file.relative_to(gzkit_chores)
-            dest_file = pkg_chores / rel
-            dest_file.parent.mkdir(parents=True, exist_ok=True)
-            src_bytes = src_file.read_bytes()
-            if dest_file.exists() and dest_file.read_bytes() == src_bytes:
-                continue
-            dest_file.write_bytes(src_bytes)
-            updated.append(dest_file.relative_to(project_root).as_posix())
+            _copy_if_changed(
+                src_file, pkg_chores / src_file.relative_to(gzkit_chores), project_root, updated
+            )
 
     return updated
 

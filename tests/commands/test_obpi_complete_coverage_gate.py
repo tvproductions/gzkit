@@ -201,12 +201,6 @@ class _CoverageGateWireFixture(unittest.TestCase):
                     "gzkit.commands.obpi_complete._enforce_attestation_receipt_gate",
                     MagicMock(return_value=None),
                 ),
-                # Bypass the GHI #290 TTY gate; the coverage gate runs BEFORE
-                # this hook (REQ-0.0.25-01-11 ordering, mechanism for REQ-02..05).
-                patch(
-                    "gzkit.commands.obpi_complete._enforce_human_attestation_authenticity",
-                    MagicMock(return_value="human"),
-                ),
                 # Hook the scoped-run outcome predicate.
                 patch(
                     "gzkit.commands.obpi_complete._any_covering_test_passes",
@@ -588,10 +582,6 @@ class _OverrideGateWireFixture(_CoverageGateWireFixture):
                 patch(
                     "gzkit.commands.obpi_complete._enforce_attestation_receipt_gate",
                     MagicMock(return_value=None),
-                ),
-                patch(
-                    "gzkit.commands.obpi_complete._enforce_human_attestation_authenticity",
-                    MagicMock(return_value="human"),
                 ),
                 patch(
                     "gzkit.commands.obpi_complete._enforce_uncovered_acceptance_confirmation",

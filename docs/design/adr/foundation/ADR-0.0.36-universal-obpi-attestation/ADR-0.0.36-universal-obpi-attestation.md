@@ -30,6 +30,8 @@ The companion defenses (`_enforce_human_attestation_authenticity`'s TTY + `ATTES
 
 This ADR amends `AGENTS.md` § OBPI Acceptance Protocol to bind brief-level human attestation universally, collapses the runtime gate, extends the validator to refuse the deprecated receipt shapes on new entries, documents the historical drift via a closed waiver list, and sweeps the dependent skills. It is the destination ADR that closes GHI #342.
 
+> **Addendum (2026-05-14, canon-owner declaration).** Non-goal #2 below — "remove the TTY + `ATTEST` gate" — is **superseded**. The operator (canon owner) declared verbatim across 2026-05-12 (×2) and 2026-05-14 that operator-verbatim conversational attestation IS the Gate-5 attestation: *"WHEN I SAY ATTEST COMPLETED IT IS MOTHERFUCKING COMPLETE — ALWAYS, ALWAYS, ALWAYS"*, *"MY WORD IS AUTHORITY IN ALL CASES"*, *"WHEN I SAY 'ATTEST COMPLETED' THAT IS MY ZERO MAXXING"*. The TTY `ATTEST` authenticity gate (`_enforce_human_attestation_authenticity`) was removed as a direct fix on 2026-05-14: it had grown from a forged-attestation defense into a mechanism that gated the canon owner out of their own system. This does **not** relax the universal-attestation foundation — every OBPI still requires brief-level human attestation; that attestation is now satisfied by the operator's verbatim `--attestation-text` (`attestation_type: operator-verbatim-conversational`) rather than a separate TTY ceremony. The forged-attestation boundary is held instead by `AGENTS.md` § Never #1 and audit. `OBPI-0.0.36-02-runtime-gate-collapse`'s gate-collapse intent is partially delivered by this fix.
+
 ## Decision
 
 **Brief-level human attestation is required for every OBPI completion, regardless of parent ADR kind or lane. There is no self-close path.**
@@ -53,7 +55,7 @@ Historical receipts with the deprecated shapes are preserved per ledger immutabi
 ## Non-goals (explicit exclusions)
 
 - **Retroactive re-attestation of historical receipts.** Ledger immutability binds; pre-doctrine receipts are documented via the waiver list, not rewritten.
-- **Removal of `_enforce_human_attestation_authenticity` (TTY + `ATTEST` gate).** Authenticity defense remains as-is; this ADR addresses the absence-of-attestation surface, not the forged-attestation surface. The two defenses compose.
+- ~~**Removal of `_enforce_human_attestation_authenticity` (TTY + `ATTEST` gate).** Authenticity defense remains as-is; this ADR addresses the absence-of-attestation surface, not the forged-attestation surface. The two defenses compose.~~ **SUPERSEDED 2026-05-14** (see Intent addendum) — the TTY gate was removed by direct fix per the canon-owner declaration; the forged-attestation boundary is now held by `AGENTS.md` § Never #1 and audit.
 - **Changes to lane/kind axes for *gate-firing scope*.** Lane still determines whether Gate 3 (docs) and Gate 4 (BDD) fire. Kind still determines foundation-vs-feature classification per ADR-0.0.18. Only Gate 5 brief-level attestation becomes universal.
 - **A new CLI verb.** Validator scope is added under existing `gz validate --<scope>` shape; no new top-level command.
 - **Migration of existing closed ADRs to a new attestation format.** Closed ADRs stay closed; this ADR binds going forward from its `date:` cutoff.

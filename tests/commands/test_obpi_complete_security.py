@@ -325,12 +325,6 @@ class _ObpiCompleteIntegrationFixture(unittest.TestCase):
                     "gzkit.commands.obpi_complete.capture_validation_anchor",
                     return_value=EventAnchor(commit="abc1234", semver="0.0.22"),
                 ),
-                # Bypass the GHI #290 TTY gate so we can exercise the security
-                # gate in isolation; the security gate runs BEFORE this hook.
-                patch(
-                    "gzkit.commands.obpi_complete._enforce_human_attestation_authenticity",
-                    return_value="human",
-                ),
                 # Drive the receipts-root resolver to our temp dir.
                 patch(
                     "gzkit.commands.obpi_complete.receipts_root",

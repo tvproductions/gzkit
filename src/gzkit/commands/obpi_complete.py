@@ -20,7 +20,6 @@ from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
 from gzkit.commands.adr_audit import (
     ATTESTATION_TYPE_HUMAN,
     ATTESTATION_TYPE_OPERATOR_VERBATIM,
-    _enforce_human_attestation_authenticity,
     _enforce_uncovered_acceptance_confirmation,
     _requires_human_obpi_attestation,
 )
@@ -325,9 +324,9 @@ def _enforce_attestation_receipt_gate(
     | any                               | zero, no warn    | emit meta-receipt-bind |
     | lite / non-foundation             | zero, warn_only  | warning, proceed (no meta event) |
 
-    The gate runs BEFORE ``_enforce_human_attestation_authenticity``; a
-    mechanical-receipt failure short-circuits human prompting (REQ-07 in
-    the brief, mechanism for REQ-02).
+    The gate runs BEFORE the operator-verbatim attestation step; a
+    mechanical-receipt failure short-circuits attestation recording (REQ-07
+    in the brief, mechanism for REQ-02).
     """
     if dry_run:
         return
@@ -873,37 +872,33 @@ def obpi_complete_cmd(
         sensitivity=effective_sensitivity,
     )
 
-    # 4b. GHI #290 authenticity gate: no human-attestation receipt without TTY
-    # confirmation. GHI #292 adds --attestor-present as an agent-relayed escape
-    # path gated on an active pipeline marker. GHI #462 + canon-owner declaration
-    # 2026-05-14 adds --accept-security-floor REASON as a third documented path:
-    # the operator's verbatim attestation in the CLI invocation IS the attestation
-    # when the rationale string is non-empty. Recorded as ATTESTATION_TYPE_OPERATOR_VERBATIM
-    # in the ledger so the receipt is taxonomically distinct from TTY-typed
-    # attestation and audits can count the streams separately. Skipped for
-    # --dry-run so plans can be previewed headlessly.
+    # 4b. Operator-verbatim conversational attestation. Per the canon-owner
+    # declaration (operator verbatim, 2026-05-12 x2 + 2026-05-14: "WHEN I SAY
+    # ATTEST COMPLETED IT IS MOTHERFUCKING COMPLETE - ALWAYS, ALWAYS, ALWAYS";
+    # "MY WORD IS AUTHORITY IN ALL CASES"), the operator's verbatim attestation
+    # relayed into this invocation via --attestation-text IS the Gate-5
+    # attestation for every lane / kind / sensitivity. The prior TTY-typed
+    # ATTEST authenticity gate (GHI #290/#292/#412) is no longer invoked;
+    # _enforce_human_attestation_authenticity in adr_audit.py and its pipeline-
+    # marker scaffolding are now unused and slated for removal under a separate
+    # ADR. See AGENTS.md section "Lane & Kind & Sensitivity Attestation Matrix".
+    # Skipped for --dry-run so plans can be previewed headlessly.
     attestation_type: str = ATTESTATION_TYPE_HUMAN
     if requires_human and not dry_run:
-        if accept_security_floor:
-            attestation_type = ATTESTATION_TYPE_OPERATOR_VERBATIM
-            console.print(
-                "[green]✓[/green] Operator-verbatim conversational attestation "
-                "accepted (GHI #462; canon-owner declaration 2026-05-14)."
+        if not attestation_text.strip():
+            _fail(
+                "Human attestation required for this OBPI: pass the operator's "
+                "verbatim attestation via --attestation-text (e.g. "
+                "'attest completed -- <evidence>'). The text is the attestation.",
+                exit_code=1,
+                as_json=as_json,
+                obpi_id=obpi_id,
             )
-        else:
-            try:
-                attestation_type = _enforce_human_attestation_authenticity(
-                    obpi_id=obpi_id,
-                    parent_adr=resolved_parent,
-                    attestor=attestor,
-                    attestation_text=attestation_text,
-                    attestor_present=attestor_present,
-                    project_root=project_root,
-                    sensitivity=effective_sensitivity,
-                    parent_kind=parent_kind,
-                )
-            except GzCliError as exc:
-                _fail(str(exc), exit_code=3, as_json=as_json, obpi_id=obpi_id)
+        attestation_type = ATTESTATION_TYPE_OPERATOR_VERBATIM
+        console.print(
+            "[green]OK[/green] Operator-verbatim conversational attestation "
+            "accepted (canon-owner declaration; AGENTS.md Attestation Matrix)."
+        )
 
     # 5. Build audit ledger entry and receipt event
     adr_dir = obpi_file.parent.parent

@@ -13,12 +13,13 @@ Coverage map (formal acceptance criteria — see brief § Acceptance Criteria):
 | REQ-0.0.24-02-04 | TestObpiCompleteFoundationLiteMissing (foundation OR) |
 
 Auxiliary FAIL-CLOSED REQUIREMENTs from the brief (#5 meta-receipt payload,
-#6 canonical slot, #7 gate-before-TTY ordering) are mechanism-level
-expectations that underwrite REQ-01 / REQ-02; they are tested through the
-classes mapped to those REQ IDs above rather than through fictional REQ
-identifiers. The gate runs BEFORE ``_enforce_human_attestation_authenticity``;
-tests use the same mock-rig pattern as ``tests/commands/test_obpi_complete_security.py``
-to exercise it without spawning a real subprocess.
+#6 canonical slot, #7 receipt-binding-before-attestation ordering) are
+mechanism-level expectations that underwrite REQ-01 / REQ-02; they are tested
+through the classes mapped to those REQ IDs above rather than through
+fictional REQ identifiers. The receipt-binding gate runs BEFORE attestation
+is recorded; tests use the same mock-rig pattern as
+``tests/commands/test_obpi_complete_security.py`` to exercise it without
+spawning a real subprocess.
 """
 
 from __future__ import annotations
@@ -225,7 +226,6 @@ class _ObpiCompleteWireFixture(unittest.TestCase):
         attestation_text: str,
         existing_receipt_paths: list[Path] | None = None,
         receipts_root_dir: Path | None = None,
-        tty_gate_mock: MagicMock | None = None,
         ledger_mock: MagicMock | None = None,
     ) -> tuple[type[BaseException] | None, int | None, list[str], MagicMock]:
         """Drive ``obpi_complete_cmd`` end-to-end, returning outcome + ledger mock."""
@@ -258,9 +258,6 @@ class _ObpiCompleteWireFixture(unittest.TestCase):
             ledger_obj = (
                 ledger_mock if ledger_mock is not None else _mock_ledger(obpi_id, parent_adr, lane)
             )
-            tty_mock = (
-                tty_gate_mock if tty_gate_mock is not None else MagicMock(return_value="human")
-            )
 
             patches = [
                 patch("gzkit.commands.obpi_complete.console", rec_console),
@@ -284,13 +281,6 @@ class _ObpiCompleteWireFixture(unittest.TestCase):
                 patch(
                     "gzkit.commands.obpi_complete.capture_validation_anchor",
                     return_value=EventAnchor(commit="abc1234", semver="0.0.24"),
-                ),
-                # Bypass the GHI #290 TTY gate so the receipt-binding gate is
-                # exercised in isolation. The receipt-binding gate runs BEFORE
-                # this hook (REQ-0.0.24-02-07).
-                patch(
-                    "gzkit.commands.obpi_complete._enforce_human_attestation_authenticity",
-                    tty_mock,
                 ),
                 # Bypass the OBPI-0.0.25-01 REQ-coverage gate so the
                 # receipt-binding gate is exercised in isolation. The
@@ -375,19 +365,18 @@ class TestObpiCompleteHeavyMissingReceipt(_ObpiCompleteWireFixture):
 
 
 class TestObpiCompleteGateRunsBeforeTtyGate(_ObpiCompleteWireFixture):
-    """REQ-0.0.24-02-07 — TTY gate is NOT invoked when receipt-binding fails."""
+    """REQ-0.0.24-02-02 — completion aborts when receipt-binding fails."""
 
-    # The "gate runs before TTY" ordering requirement is FAIL-CLOSED
-    # REQUIREMENT #7 in the brief (auxiliary). It is the mechanism by
-    # which REQ-02 (heavy-lane missing receipt → exit 3) terminates
-    # without prompting for human input — so we tag against REQ-02.
+    # The receipt-binding gate fails-closed BEFORE attestation is recorded.
+    # It is the mechanism by which REQ-02 (heavy-lane missing receipt →
+    # exit 3) terminates without writing a completion receipt — so we tag
+    # against REQ-02.
     @covers("REQ-0.0.24-02-02")
-    def test_tty_gate_not_called_when_receipt_binding_fails(self) -> None:
+    def test_completion_aborts_before_attestation_when_receipt_binding_fails(self) -> None:
         with tempfile.TemporaryDirectory() as receipts_dir:
             receipts_root = Path(receipts_dir)
             attestation = "Heavy lane attestation citing receipt arb-step-unittest-" + ("b" * 32)
-            tty_mock = MagicMock(return_value="human")
-            exc_type, code, _output, _ledger = self._run_complete(
+            exc_type, code, _output, ledger = self._run_complete(
                 brief_text=_heavy_brief(),
                 obpi_id="OBPI-0.0.24-02-wire-into-completion",
                 parent_adr="ADR-0.0.24-attestation-receipt-binding",
@@ -395,12 +384,11 @@ class TestObpiCompleteGateRunsBeforeTtyGate(_ObpiCompleteWireFixture):
                 kind="foundation",
                 attestation_text=attestation,
                 receipts_root_dir=receipts_root,
-                tty_gate_mock=tty_mock,
             )
             self.assertIs(exc_type, SystemExit)
             self.assertEqual(code, 3)
-            # Gate ran BEFORE TTY hook — TTY gate must not have been invoked.
-            tty_mock.assert_not_called()
+            # Receipt-binding gate fired first — no completion receipt written.
+            ledger.append.assert_not_called()
 
 
 # ---------------------------------------------------------------------------

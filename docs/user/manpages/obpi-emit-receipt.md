@@ -10,10 +10,11 @@ Emit a receipt event (`completed` or `validated`) for a specific OBPI.
 gz obpi emit-receipt <OBPI-ID> --event {completed,validated} --attestor <text> [--evidence-json <json>] [--attestor-present] [--dry-run]
 ```
 
-`--attestor-present` is the agent-relayed operator-attestation form: it
-satisfies the foundation-kind / heavy-lane TTY gate when an active
-`gz obpi pipeline` marker is present, so the agent can complete the relay
-without bypassing GHI #290 authenticity (see GHI #292).
+`--attestor-present` is retained for compatibility but is no longer
+load-bearing. The prior TTY `ATTEST` authenticity gate has been removed:
+for a foundation-kind / heavy-lane parent, the Gate-5 attestation is the
+operator's verbatim `attestation_text` in `--evidence-json` (recorded as
+`attestation_type: operator-verbatim-conversational`).
 
 ---
 

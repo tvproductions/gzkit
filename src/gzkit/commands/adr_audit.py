@@ -409,6 +409,16 @@ def _requires_human_obpi_attestation(
 
 # ---------------------------------------------------------------------------
 # GHI #290 authenticity gate + GHI #292 agent-relayed escape path
+#
+# DEAD CODE as of the canon-owner attestation declaration: the operator's
+# verbatim conversational attestation relayed via --attestation-text is the
+# Gate-5 attestation for every lane / kind / sensitivity (see AGENTS.md
+# section "Lane & Kind & Sensitivity Attestation Matrix"). Nothing calls
+# _enforce_human_attestation_authenticity or _validate_active_pipeline_marker
+# anymore. This scaffolding (the TTY prompt, pipeline-marker validation, nonce
+# coupling, --attestor-present plumbing) is retained pending removal under a
+# separate ADR so the deletion lands with its own test fallout, not bundled
+# into the doctrine change.
 # ---------------------------------------------------------------------------
 
 _GHI_290_AUTHENTICITY_CONFIRMATION = "ATTEST"
@@ -976,7 +986,13 @@ def _apply_human_attestation_gates(
     project_root: Path,
     dry_run: bool,
 ) -> None:
-    """Run ADR-0.0.24-02 receipt-binding gate then GHI #290 TTY authenticity gate."""
+    """Run the ADR-0.0.24-02 receipt-binding gate then resolve attestation_type.
+
+    The prior GHI #290 TTY authenticity gate is no longer invoked: per the
+    canon-owner declaration the operator's verbatim attestation relayed via
+    the receipt evidence is the Gate-5 attestation. See AGENTS.md section
+    "Lane & Kind & Sensitivity Attestation Matrix".
+    """
     from gzkit.commands.obpi_complete import _enforce_attestation_receipt_gate, _read_adr_kind
 
     adr_attestation_text = ""
@@ -1022,20 +1038,29 @@ def _enforce_human_authenticity_gate(
     project_root: Path,
     attestation_text: str,
 ) -> str:
-    """Run the GHI #290 TTY gate; return the resolved attestation_type."""
+    """Resolve the attestation_type for an ADR human-attestation receipt.
+
+    Per the canon-owner declaration (AGENTS.md section "Lane & Kind &
+    Sensitivity Attestation Matrix"), the operator's verbatim attestation
+    relayed via the receipt evidence IS the Gate-5 attestation for every
+    lane / kind / sensitivity. The prior TTY-typed ATTEST authenticity gate
+    (GHI #290) is no longer invoked; ``attestor`` / ``attestor_present`` /
+    ``project_root`` are retained on the signature for the call graph and
+    are slated for removal with the gate scaffolding under a separate ADR.
+    """
     text = attestation_text
     if isinstance(evidence, dict):
         candidate = evidence.get("attestation_text") or evidence.get("scope")
         if isinstance(candidate, str):
             text = candidate
-    return _enforce_human_attestation_authenticity(
-        obpi_id=adr_id,
-        parent_adr=adr_id,
-        attestor=attestor,
-        attestation_text=text or f"{receipt_event} {adr_id}",
-        attestor_present=attestor_present,
-        project_root=project_root,
-    )
+    if not (text or "").strip():
+        msg = (
+            f"Human-attestation receipt '{receipt_event}' for {adr_id} requires "
+            "the operator's verbatim attestation text in --evidence-json "
+            "(the 'attestation_text' or 'scope' field)."
+        )
+        raise GzCliError(msg)
+    return ATTESTATION_TYPE_OPERATOR_VERBATIM
 
 
 def _emit_adr_closeout_receipt(
@@ -1146,8 +1171,8 @@ def adr_emit_receipt_cmd(
         console.print(json.dumps(event.model_dump(), indent=2))
         if _is_human_attestation_receipt_event(receipt_event):
             console.print(
-                "[yellow]Gate (GHI #290):[/yellow] live run would require "
-                "interactive TTY + 'ATTEST' confirmation."
+                "[yellow]Attestation:[/yellow] live run would record the "
+                "operator-verbatim attestation text from --evidence-json."
             )
         return
 

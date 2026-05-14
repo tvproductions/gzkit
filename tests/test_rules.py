@@ -766,14 +766,27 @@ class TestRulesLayoutScopeGuards(unittest.TestCase):
 
     @covers("REQ-0.0.32-03-07")
     def test_req07_agent_sync_propagates_rules_to_pkg(self) -> None:
-        """REQ-07: gz agent sync propagates .gzkit/rules/ to src/gzkit/rules/ (OBPI-08 landed)."""
-        sync_module = self._repo_root() / "src" / "gzkit" / "sync_surfaces.py"
-        body = sync_module.read_text(encoding="utf-8")
-        self.assertIn(
-            "src/gzkit/rules",
-            body,
-            "REQ-07: OBPI-08 must have added .gzkit/rules -> src/gzkit/rules sync",
-        )
+        """REQ-07: sync_pkg_surfaces propagates .gzkit/rules/ to src/gzkit/rules/ (OBPI-08)."""
+        from gzkit.config import GzkitConfig  # noqa: PLC0415
+        from gzkit.sync_surfaces import sync_pkg_surfaces  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            pkg_init = root / "src" / "gzkit" / "rules" / "__init__.py"
+            pkg_init.parent.mkdir(parents=True)
+            pkg_init.write_text("", encoding="utf-8")
+            canonical = root / ".gzkit" / "rules" / "test-rule.md"
+            canonical.parent.mkdir(parents=True)
+            canonical.write_text("# Test Rule\n\nContent.\n", encoding="utf-8")
+
+            sync_pkg_surfaces(root, GzkitConfig(project_name="test"))
+
+            pkg_copy = root / "src" / "gzkit" / "rules" / "test-rule.md"
+            self.assertTrue(
+                pkg_copy.exists(),
+                "REQ-07: OBPI-08 must propagate .gzkit/rules -> src/gzkit/rules",
+            )
+            self.assertEqual(pkg_copy.read_bytes(), canonical.read_bytes())
 
     @covers("REQ-0.0.32-03-08")
     def test_req08_rules_package_imports_resolve(self) -> None:

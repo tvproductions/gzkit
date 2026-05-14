@@ -450,14 +450,29 @@ class TestTemplatesLayoutDualSurface(unittest.TestCase):
 
     @covers("REQ-0.0.32-11-09")
     def test_sync_surfaces_has_templates_pkg_sync(self) -> None:
-        """sync_surfaces.py must propagate .gzkit/templates to src/gzkit/templates (OBPI-08)."""
-        sync_module = _PROJECT_ROOT / "src" / "gzkit" / "sync_surfaces.py"
-        content = sync_module.read_text(encoding="utf-8")
-        self.assertIn(
-            "src/gzkit/templates",
-            content,
-            "OBPI-08 must add .gzkit/templates -> src/gzkit/templates sync",
-        )
+        """sync_pkg_surfaces propagates .gzkit/templates/ to src/gzkit/templates/ (OBPI-08)."""
+        import tempfile  # noqa: PLC0415
+
+        from gzkit.config import GzkitConfig  # noqa: PLC0415
+        from gzkit.sync_surfaces import sync_pkg_surfaces  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            pkg_init = root / "src" / "gzkit" / "templates" / "__init__.py"
+            pkg_init.parent.mkdir(parents=True)
+            pkg_init.write_text("", encoding="utf-8")
+            canonical = root / ".gzkit" / "templates" / "test-template.md"
+            canonical.parent.mkdir(parents=True)
+            canonical.write_text("# Test Template\n", encoding="utf-8")
+
+            sync_pkg_surfaces(root, GzkitConfig(project_name="test"))
+
+            pkg_copy = root / "src" / "gzkit" / "templates" / "test-template.md"
+            self.assertTrue(
+                pkg_copy.exists(),
+                "OBPI-08 must propagate .gzkit/templates -> src/gzkit/templates",
+            )
+            self.assertEqual(pkg_copy.read_bytes(), canonical.read_bytes())
 
     @covers("REQ-0.0.32-11-10")
     def test_all_templates_loadable_post_migration(self) -> None:
