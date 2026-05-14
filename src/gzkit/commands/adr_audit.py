@@ -415,6 +415,7 @@ _GHI_290_AUTHENTICITY_CONFIRMATION = "ATTEST"
 
 ATTESTATION_TYPE_HUMAN = "human"
 ATTESTATION_TYPE_AGENT_RELAYED = "agent-relayed-operator-attestation"
+ATTESTATION_TYPE_OPERATOR_VERBATIM = "operator-verbatim-conversational"
 
 
 def _is_human_attestation_tty_available() -> bool:
