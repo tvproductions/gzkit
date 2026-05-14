@@ -417,5 +417,118 @@ class TestDocumentationAndScorecard(unittest.TestCase):
         )
 
 
+class TestRegenerateDistributionBaseline(unittest.TestCase):
+    """Tests for the regenerate_distribution_baseline function (OBPI-0.0.32-15)."""
+
+    @covers("REQ-0.0.32-15-01")
+    def test_regenerator_is_callable(self) -> None:
+        """regenerate_distribution_baseline is importable and callable."""
+        from gzkit.governance.trust_audits.distribution import regenerate_distribution_baseline
+
+        self.assertTrue(callable(regenerate_distribution_baseline))
+
+    @covers("REQ-0.0.32-15-03")
+    def test_regenerate_then_audit_exits_zero(self) -> None:
+        """After regenerating against current project root, audit returns no errors."""
+        from gzkit.governance.trust_audits.distribution import (
+            audit_distribution,
+            regenerate_distribution_baseline,
+        )
+
+        project_root = Path(__file__).resolve().parents[2]
+        regenerate_distribution_baseline(project_root)
+        errors = audit_distribution(project_root)
+        self.assertEqual(
+            [],
+            errors,
+            f"audit_distribution returned errors after regeneration: {[e.message for e in errors]}",
+        )
+
+    @covers("REQ-0.0.32-15-03")
+    def test_regenerate_is_idempotent(self) -> None:
+        """Running the regenerator twice produces no manifest diff."""
+        import json
+
+        from gzkit.governance.trust_audits.distribution import regenerate_distribution_baseline
+
+        project_root = Path(__file__).resolve().parents[2]
+        manifest_path = project_root / "data" / "distribution_baseline_manifest.json"
+
+        regenerate_distribution_baseline(project_root)
+        content_after_first = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+        regenerate_distribution_baseline(project_root)
+        content_after_second = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            content_after_first["surfaces"],
+            content_after_second["surfaces"],
+            "Regenerating twice must produce the same manifest",
+        )
+
+    @covers("REQ-0.0.32-15-02")
+    def test_regenerator_emits_ledger_event(self) -> None:
+        """Successful regeneration appends a distribution_baseline_regenerated ledger event."""
+        from gzkit.governance.trust_audits.distribution import regenerate_distribution_baseline
+
+        project_root = Path(__file__).resolve().parents[2]
+        ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+        lines_before = len(ledger_path.read_text(encoding="utf-8").splitlines())
+
+        regenerate_distribution_baseline(project_root)
+
+        lines_after = ledger_path.read_text(encoding="utf-8").splitlines()
+        self.assertGreater(len(lines_after), lines_before, "No ledger event appended")
+        last_event_raw = lines_after[-1]
+        import json
+
+        last_event = json.loads(last_event_raw)
+        self.assertEqual(
+            "distribution_baseline_regenerated",
+            last_event.get("event"),
+            f"Expected distribution_baseline_regenerated event, got: {last_event.get('event')}",
+        )
+
+
+class TestPackageOnlyExemption(unittest.TestCase):
+    """Classifier-based exemption for package_only files in ON_DISK_NOT_INCLUDED (REQ-06)."""
+
+    @covers("REQ-0.0.32-15-06")
+    def test_package_only_init_py_not_flagged(self) -> None:
+        """__init__.py under a canonical surface is exempt from ON_DISK_NOT_INCLUDED."""
+        from gzkit.governance.trust_audits.distribution import _collect_errors
+
+        project_root = Path(__file__).resolve().parents[2]
+        on_disk = {"src/gzkit/rules/__init__.py", "src/gzkit/rules/agents.md"}
+        included = {"src/gzkit/rules/agents.md"}
+        baseline = {"src/gzkit/rules/agents.md"}
+
+        errors = _collect_errors(on_disk, included, baseline, project_root)
+        flagged = [e.artifact for e in errors]
+        self.assertNotIn(
+            "src/gzkit/rules/__init__.py",
+            flagged,
+            "__init__.py must not be flagged as ON_DISK_NOT_INCLUDED",
+        )
+
+    @covers("REQ-0.0.32-15-06")
+    def test_scaffolder_py_not_flagged(self) -> None:
+        """_scaffolder.py (package_only) under rules surface is exempt from ON_DISK_NOT_INCLUDED."""
+        from gzkit.governance.trust_audits.distribution import _collect_errors
+
+        project_root = Path(__file__).resolve().parents[2]
+        on_disk = {"src/gzkit/rules/_scaffolder.py", "src/gzkit/rules/agents.md"}
+        included = {"src/gzkit/rules/agents.md"}
+        baseline = {"src/gzkit/rules/agents.md"}
+
+        errors = _collect_errors(on_disk, included, baseline, project_root)
+        flagged = [e.artifact for e in errors]
+        self.assertNotIn(
+            "src/gzkit/rules/_scaffolder.py",
+            flagged,
+            "_scaffolder.py (package_only) must not be flagged as ON_DISK_NOT_INCLUDED",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

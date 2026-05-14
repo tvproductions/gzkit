@@ -299,6 +299,44 @@ $ echo $?
 2
 ```
 
+### `--regenerate`
+
+Rewrite `data/distribution_baseline_manifest.json` from on-disk canonical surface
+truth. Always combine with `--distribution`.
+
+The regenerator is the canonical one-command recovery for `ON_DISK_NOT_BASELINE`
+drift — new canonical surface files added after the baseline was frozen.
+Symmetric to `gz register-adrs` for the ADR status index (per
+`.gzkit/rules/governance-core.md` § ADR status index regeneration).
+
+The regenerator:
+1. Walks each surface root tracked by the manifest (`src/gzkit/skills/`, `rules/`, etc.)
+2. Applies per-surface classifiers to skip `package_only` and `runtime_state` files
+3. Writes the new manifest atomically via temp-file-and-rename
+4. Appends a `distribution_baseline_regenerated` ledger event capturing hash before/after
+
+After regeneration, `gz validate --distribution` should exit 0 on a clean tree.
+
+#### Exit codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | Regeneration completed; `data/distribution_baseline_manifest.json` updated |
+| 2 | System/IO error reading `pyproject.toml` or the manifest |
+
+#### Examples
+
+```bash
+# Before: validate fails with ON_DISK_NOT_BASELINE errors
+uv run gz validate --distribution
+
+# Fix: regenerate the baseline from on-disk truth
+uv run gz validate --distribution --regenerate
+
+# After: validate exits 0 on a clean tree
+uv run gz validate --distribution
+```
+
 ### `--unscoped-rules`
 
 Enforces the agent-rule placement invariant ([ADR-0.0.20](../../design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-0.0.20-agent-rule-placement-invariant.md)). Non-path-scoped agent rules (`paths: "**"` or missing `paths:`) may not live under any vendor-surface rules directory — they belong in `AGENTS.md` (root or hierarchical per-directory) at the narrowest appropriate scope.

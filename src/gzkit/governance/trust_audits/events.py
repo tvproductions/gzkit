@@ -76,6 +76,12 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "nodes (complexity attestations are a quality-governance record, not an "
         "artifact lifecycle event)."
     ),
+    "distribution_baseline_regenerated": (
+        "Records that `gz validate --distribution --regenerate` rewrote the "
+        "baseline manifest (OBPI-0.0.32-15). Layer-2 witness for regeneration runs "
+        "symmetric to agent_sync_completed; consumed by distribution drift audits, "
+        "not the artifact graph."
+    ),
 }
 
 _VALIDATOR_FIELD_WAIVERS: dict[str, str] = {}

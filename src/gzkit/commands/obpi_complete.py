@@ -160,6 +160,7 @@ def _enforce_security_review_gate(
     project_root: Path,
     sensitivity: str | None,
     as_json: bool,
+    accept_security_floor: str | None = None,
 ) -> None:
     """Enforce REQ-0.0.22-05-{01,02,04,05,06}.
 
@@ -174,6 +175,15 @@ def _enforce_security_review_gate(
     4. Render the rule-file-derived checklist before the GHI #290 ATTEST
        gate runs (REQ-0.0.22-05-01).
 
+    ``accept_security_floor`` (GHI #462) provides an operator escape when
+    the canonical slot is structurally unfilled — auto-detect classified the
+    brief security-sensitive on surface-overlap but the toolchain feature
+    ADR (promoting ``pool.agentic-security-review``) has not yet landed to
+    fill the slot. The operator passes a rationale string; the override is
+    recorded in console output for audit trail. The receipt-missing and
+    receipt-stale checks remain enforced (they only fire when the slot is
+    filled), so this escape narrows only the slot-unfilled deadlock.
+
     ``_fail`` raises ``SystemExit``; this function therefore either returns
     normally (security checks passed and walkthrough rendered) or terminates
     the process via ``_fail``.
@@ -182,11 +192,20 @@ def _enforce_security_review_gate(
         return
 
     if not _security_canonical_slot_filled():
+        if accept_security_floor:
+            console.print(
+                "[yellow]⚠ Security-scan canonical slot unfilled; "
+                f"--accept-security-floor override applied (GHI #462). Reason: "
+                f"{accept_security_floor}[/yellow]"
+            )
+            return
         _fail(
             "Security-scan canonical slot in CANONICAL_STEP_COMMANDS is unfilled "
             f"for parent ADR {parent_adr}; the toolchain feature ADR (promoting "
             "pool.agentic-security-review) must fill it before sensitivity:security "
-            "briefs can be completed.",
+            "briefs can be completed. To override when the brief change is "
+            "structurally defensive/additive and not actually security-relevant, "
+            "pass --accept-security-floor 'REASON' (GHI #462).",
             exit_code=3,
             as_json=as_json,
             obpi_id=obpi_id,
@@ -715,6 +734,7 @@ def obpi_complete_cmd(
     attestor_present: bool = False,
     accept_uncovered: list[str] | None = None,
     accept_uncovered_reason: list[str] | None = None,
+    accept_security_floor: str | None = None,
 ) -> None:
     """Atomically complete an OBPI: validate, write evidence, flip status, emit receipt."""
     config = ensure_initialized()
@@ -774,6 +794,7 @@ def obpi_complete_cmd(
             project_root=project_root,
             sensitivity=effective_sensitivity,
             as_json=as_json,
+            accept_security_floor=accept_security_floor,
         )
 
     # 4a-bis. ADR-0.0.24-02 receipt-binding gate: heavy/foundation = fail-closed

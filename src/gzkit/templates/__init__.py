@@ -9,10 +9,41 @@ from datetime import date
 from importlib.resources import files
 from importlib.resources.abc import Traversable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from gzkit.config import GzkitConfig
+
+
+def _classify_template_file(
+    path: Path,
+    *,
+    project_root: Path | None = None,
+) -> Literal["canonical", "package_only", "runtime_state"]:
+    """Classify a templates-surface file into one of three content classes.
+
+    canonical: template ``*.md`` files (authored under ``.gzkit/templates/``
+               and shipped at ``src/gzkit/templates/``).
+    package_only: ``__init__.py``, ``__pycache__/**``.
+    runtime_state: (currently unused for the templates surface; reserved for
+                   parity with ``_classify_chore_file``.)
+
+    Signature-compatible with :func:`gzkit.chores._classify_chore_file`. See
+    ``.gzkit/rules/skill-surface-sync.md`` § class-classifier.
+    """
+    path = Path(path)
+    name = path.name
+    parts = path.parts
+
+    if name == "__init__.py" or "__pycache__" in parts:
+        return "package_only"
+
+    # ``project_root`` accepted for API symmetry with the chores classifier;
+    # the templates surface has no per-file counterpart logic, so the parameter
+    # is unused. Silence the unused-arg lint without changing the signature.
+    _ = project_root
+
+    return "canonical"
 
 
 def _find_project_template(name: str) -> Path | None:
@@ -159,6 +190,7 @@ def scaffold_core_templates(
 
 __all__ = [
     "CORE_TEMPLATES",
+    "_classify_template_file",
     "_iter_canonical_template_slugs",
     "get_template_path",
     "list_templates",

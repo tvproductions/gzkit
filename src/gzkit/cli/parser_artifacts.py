@@ -1050,6 +1050,13 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         default=None,
         help="Rationale for --accept-uncovered (repeatable, 1:1 positional pairing).",
     )
+    p_obpi_complete.add_argument(
+        "--accept-security-floor",
+        dest="accept_security_floor",
+        metavar="REASON",
+        default=None,
+        help="Override unfilled security-scan canonical slot with rationale (GHI #462).",
+    )
     add_json_flag(p_obpi_complete)
     add_dry_run_flag(p_obpi_complete)
     p_obpi_complete.set_defaults(
@@ -1062,6 +1069,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
             attestor_present=a.attestor_present,
             accept_uncovered=a.accept_uncovered,
             accept_uncovered_reason=a.accept_uncovered_reason,
+            accept_security_floor=a.accept_security_floor,
             as_json=a.as_json,
             dry_run=a.dry_run,
         )

@@ -392,6 +392,31 @@ def pipeline_marker_purged_event(
     )
 
 
+def distribution_baseline_regenerated_event(
+    surfaces_walked: list[str],
+    file_count: int,
+    manifest_hash_before: str,
+    manifest_hash_after: str,
+) -> LedgerEvent:
+    """Create an event recording a distribution baseline manifest regeneration (OBPI-0.0.32-15).
+
+    Symmetric to ``gz register-adrs`` for the ADR status index; records manifest
+    hash before/after so Layer-2 truth captures every regeneration.
+    """
+    timestamp = datetime.now(UTC).isoformat()
+    return LedgerEvent(
+        event="distribution_baseline_regenerated",
+        id=f"distribution-baseline-regen-{timestamp}",
+        ts=timestamp,
+        extra={
+            "surfaces_walked": list(surfaces_walked),
+            "file_count": file_count,
+            "manifest_hash_before": manifest_hash_before,
+            "manifest_hash_after": manifest_hash_after,
+        },
+    )
+
+
 def agent_sync_completed_event(
     updated_paths: list[str],
     canonical_rule_count: int,

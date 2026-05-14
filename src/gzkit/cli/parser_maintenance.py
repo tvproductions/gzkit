@@ -571,6 +571,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="T0 static distribution audit — three drift classes, exit 3 (ADR-0.0.32-07).",
     )
     p_validate.add_argument(
+        "--regenerate",
+        dest="check_distribution_regenerate",
+        action="store_true",
+        help="Rewrite baseline manifest from on-disk truth. Use with --distribution.",
+    )
+    p_validate.add_argument(
         "--attestation-receipts",
         dest="attestation_receipts",
         default=None,
@@ -643,6 +649,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_intrinsic_attestation=a.check_intrinsic_attestation,
             check_advisor_proof_binding=a.check_advisor_proof_binding,
             check_distribution=a.check_distribution,
+            check_distribution_regenerate=a.check_distribution_regenerate,
             attestation_receipts=a.attestation_receipts,
             attestation_lane=a.attestation_lane,
             attestation_kind=a.attestation_kind,

@@ -60,6 +60,7 @@ class TestPersonasLayoutDualSurface(unittest.TestCase):
 
     @covers("REQ-0.0.32-09-01")
     @covers("REQ-0.0.32-09-02")
+    @covers("REQ-0.0.32-15-10")
     def test_dual_surface_byte_parity(self) -> None:
         """Authored .gzkit/personas/<slug>.md must be byte-identical to src/gzkit copy."""
         authored_root = _PROJECT_ROOT / ".gzkit" / "personas"
@@ -247,6 +248,51 @@ class TestPersonasScaffolderObpi10(unittest.TestCase):
         self.assertEqual(len(CORE_PERSONAS), 6)
         self.assertTrue(callable(_iter_canonical_persona_slugs))
         self.assertTrue(callable(scaffold_core_personas))
+
+
+class TestClassifyPersonaFile(unittest.TestCase):
+    """Per-surface classifier for the personas canonical surface (REQ-0.0.32-15-04).
+
+    Signature-compatible with ``gzkit.chores._classify_chore_file``: returns
+    one of ``"canonical"``, ``"package_only"``, or ``"runtime_state"``.
+    """
+
+    @covers("REQ-0.0.32-15-04")
+    def test_importable(self) -> None:
+        """``_classify_persona_file`` is importable from ``gzkit.personas``."""
+        try:
+            from gzkit.personas import _classify_persona_file  # noqa: PLC0415, F401
+        except ImportError as e:  # pragma: no cover - failure surfaces in assertion
+            self.fail(
+                "_classify_persona_file must be importable from gzkit.personas; "
+                f"got ImportError: {e}"
+            )
+
+    @covers("REQ-0.0.32-15-04")
+    def test_package_only_init_py(self) -> None:
+        """``__init__.py`` files classify as ``package_only``."""
+        from gzkit.personas import _classify_persona_file  # noqa: PLC0415
+
+        result = _classify_persona_file(Path("src/gzkit/personas/__init__.py"))
+        self.assertEqual(result, "package_only")
+
+    @covers("REQ-0.0.32-15-04")
+    def test_canonical_md(self) -> None:
+        """A persona ``*.md`` classifies as ``canonical``."""
+        from gzkit.personas import _classify_persona_file  # noqa: PLC0415
+
+        result = _classify_persona_file(Path("src/gzkit/personas/main-session.md"))
+        self.assertEqual(result, "canonical")
+
+    @covers("REQ-0.0.32-15-04")
+    def test_package_only_pycache(self) -> None:
+        """Anything under ``__pycache__`` classifies as ``package_only``."""
+        from gzkit.personas import _classify_persona_file  # noqa: PLC0415
+
+        result = _classify_persona_file(
+            Path("src/gzkit/personas/__pycache__/something.cpython-313.pyc")
+        )
+        self.assertEqual(result, "package_only")
 
 
 if __name__ == "__main__":
