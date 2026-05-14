@@ -212,6 +212,8 @@ def _collect_errors(
         )
 
     for rel_posix in sorted((on_disk & included) - baseline):
+        if _is_package_only(rel_posix, project_root):
+            continue
         errors.append(
             ValidationError(
                 type="distribution",

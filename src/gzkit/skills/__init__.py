@@ -42,9 +42,16 @@ def _classify_skill_file(
     if name == "__init__.py" or "__pycache__" in parts:
         return "package_only"
 
-    # ``project_root`` accepted for API symmetry with the chores classifier;
-    # the skills surface has no per-file counterpart logic, so the parameter
-    # is unused. Silence the unused-arg lint without changing the signature.
+    if name == "SKILL.md":
+        try:
+            content = path.read_text(encoding="utf-8")
+        except OSError:
+            content = ""
+        frontmatter, _body = _parse_frontmatter(content)
+        if (frontmatter.get("lifecycle_state") or "active") == "retired":
+            return "package_only"
+
+    # ``project_root`` accepted for API symmetry with the chores classifier.
     _ = project_root
 
     return "canonical"

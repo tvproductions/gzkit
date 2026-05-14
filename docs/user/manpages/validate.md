@@ -597,7 +597,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--surfaces` | yes | Validate control-surface existence, frontmatter shape, and canonical sync parity |
 | `--ledger` | yes | Validate ledger integrity (event ordering, payload schema, append-only invariant) |
 | `--instructions` | yes | Validate agent-instruction surfaces (`AGENTS.md`, `CLAUDE.md`, hooks) |
-| `--briefs` | yes | Validate every OBPI brief against the canonical OBPI schema |
+| `--briefs` | yes | Validate OBPI briefs with lifecycle-aware authored/completed gates |
 | `--personas` | yes | Validate persona files in `.gzkit/personas/` |
 | `--interviews` | opt-in | Verify ADRs with OBPIs have interview-transcript artifacts |
 | `--decomposition` | opt-in | Validate ADR decomposition scorecards and checklist-to-brief alignment |

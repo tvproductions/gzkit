@@ -319,6 +319,64 @@ Do the thing.
             result = runner.invoke(main, ["validate", "--requirements"])
             self.assertEqual(result.exit_code, 0)
 
+    def test_validate_briefs_tolerates_legacy_noncompleted_brief_shape(self) -> None:
+        """--briefs uses lifecycle-aware validation, not raw current schema on legacy drafts."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            obpi_dir = Path("docs/design/adr/pre-release/ADR-0.0.99-test/obpis")
+            obpi_dir.mkdir(parents=True, exist_ok=True)
+            (obpi_dir / "OBPI-0.0.99-01-legacy.md").write_text(
+                """---
+id: OBPI-0.0.99-01
+parent: ADR-0.0.99-test
+status: Pending
+lane: Lite
+---
+
+# OBPI-0.0.99-01 - Legacy
+
+## Acceptance Criteria
+
+- [ ] Legacy criterion written before the authored-brief schema.
+""",
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(main, ["validate", "--briefs"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+    def test_validate_briefs_does_not_require_live_scope_for_completed_history(self) -> None:
+        """--briefs is static corpus hygiene, not completion-readiness validation."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            obpi_dir = Path("docs/design/adr/pre-release/ADR-0.0.99-test/obpis")
+            obpi_dir.mkdir(parents=True, exist_ok=True)
+            (obpi_dir / "OBPI-0.0.99-01-completed.md").write_text(
+                """---
+id: OBPI-0.0.99-01
+parent: ADR-0.0.99-test
+status: Completed
+lane: Lite
+---
+
+# OBPI-0.0.99-01 - Completed History
+
+## Implementation Summary
+
+Historical completion evidence.
+
+## Key Proof
+
+Historical proof.
+""",
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(main, ["validate", "--briefs"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
 
 class TestValidateScopeResolution(unittest.TestCase):
     """The rendered scope list must match the checks that actually ran."""

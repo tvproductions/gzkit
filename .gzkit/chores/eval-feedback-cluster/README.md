@@ -13,4 +13,4 @@ uv run -m unittest tests/chores/test_eval_feedback_cluster.py -q
 
 ## Lane
 
-**medium**
+**lite**

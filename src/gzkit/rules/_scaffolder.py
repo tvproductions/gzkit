@@ -36,6 +36,23 @@ def _iter_canonical_rule_slugs() -> Iterator[Traversable]:
         yield entry
 
 
+def _iter_canonical_rule_files() -> Iterator[Traversable]:
+    """Yield every rule-surface file scaffolded into adopter projects.
+
+    Markdown files provide the instruction prose. JSON sidecars such as
+    ``complexity-thresholds.json`` are runtime data bound to those rules and
+    must be copied beside the prose file under ``.gzkit/rules/``.
+    """
+    root = importlib.resources.files(_CANONICAL_RULES_RESOURCE)
+    for entry in root.iterdir():
+        if not entry.is_file():
+            continue
+        if entry.name == "AGENTS.md":
+            continue
+        if entry.name.endswith((".md", ".json")):
+            yield entry
+
+
 CORE_RULES: list[str] = sorted(
     entry.name[:-3]  # strip .md suffix to get slug
     for entry in _iter_canonical_rule_slugs()
@@ -76,7 +93,7 @@ def scaffold_core_rules(
     rules_dir.mkdir(parents=True, exist_ok=True)
 
     created: list[Path] = []
-    for slug_resource in _iter_canonical_rule_slugs():
+    for slug_resource in _iter_canonical_rule_files():
         target = rules_dir / slug_resource.name
         if skip_existing and target.exists():
             continue

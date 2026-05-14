@@ -19,9 +19,10 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.cli.helpers.exit_codes import (
     EXIT_POLICY_BREACH,
@@ -37,14 +38,15 @@ if TYPE_CHECKING:
 _OBPI_SHORT_PATTERN = re.compile(r"OBPI-[\d.]+-\d+")
 
 
-@dataclass(frozen=True)
-class CheckResult:
+class CheckResult(BaseModel):
     """One precondition check: name, pass/fail, evidence message, remediation."""
 
-    name: str
-    ok: bool
-    message: str
-    remediation: str | None = None
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    name: str = Field(..., description="Stable precondition check identifier")
+    ok: bool = Field(..., description="Whether the precondition passed")
+    message: str = Field(..., description="Observed evidence for the check result")
+    remediation: str | None = Field(None, description="Operator remediation when blocked")
 
 
 def obpi_precomplete_cmd(*, obpi_id: str, as_json: bool = False) -> int:
@@ -74,7 +76,7 @@ def obpi_precomplete_cmd(*, obpi_id: str, as_json: bool = False) -> int:
                 {
                     "obpi_id": obpi_id,
                     "ready": all(c.ok for c in checks),
-                    "checks": [asdict(c) for c in checks],
+                    "checks": [c.model_dump() for c in checks],
                 },
                 indent=2,
             )

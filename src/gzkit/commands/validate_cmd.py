@@ -43,6 +43,40 @@ def _find_obpi_briefs(project_root: Path) -> list[Path]:
     return sorted(adr_root.rglob("OBPI-*.md"))
 
 
+def _validate_obpi_briefs(project_root: Path) -> list[ValidationError]:
+    """Validate OBPI brief corpus hygiene through the OBPI validator.
+
+    Historical and pre-release briefs predate the current authored-brief schema.
+    The raw document-schema validator treats that corpus as if every file were a
+    newly-authored brief and produces thousands of non-actionable failures.
+    This static corpus scope checks only shape drift that is meaningful without
+    an active pipeline: lingering scaffold defaults and frontmatter/body lane
+    contradictions. Strict authored and completion-readiness checks remain in
+    ``gz obpi validate --authored``, ``gz obpi precomplete``, and
+    ``gz obpi complete``.
+    """
+    from gzkit.hooks.obpi import ObpiValidator  # noqa: PLC0415
+
+    if not (project_root / ".gzkit.json").is_file():
+        return []
+
+    validator = ObpiValidator(project_root)
+    errors: list[ValidationError] = []
+    for brief_path in _find_obpi_briefs(project_root):
+        content = brief_path.read_text(encoding="utf-8")
+        messages = validator._detect_template_scaffold(content)  # noqa: SLF001
+        messages.extend(validator._detect_lane_section_mismatch(content))  # noqa: SLF001
+        for message in messages:
+            errors.append(
+                ValidationError(
+                    type="briefs",
+                    artifact=brief_path.relative_to(project_root).as_posix(),
+                    message=message,
+                )
+            )
+    return errors
+
+
 def _validate_interviews(project_root: Path) -> list[ValidationError]:
     """Check that ADRs with OBPIs have an interview transcript artifact."""
     adr_root = project_root / "docs" / "design" / "adr"
@@ -456,11 +490,7 @@ def _default_scope_runners(
         "surfaces": lambda: list(validate_surfaces(project_root)),
         "ledger": lambda: list(validate_ledger(project_root / ".gzkit" / "ledger.jsonl")),
         "instructions": lambda: list(audit_instructions(project_root)),
-        "briefs": lambda: [
-            err
-            for brief_path in _find_obpi_briefs(project_root)
-            for err in validate_document(brief_path, "obpi")
-        ],
+        "briefs": lambda: _validate_obpi_briefs(project_root),
         "documents": lambda: _validate_manifest_documents(project_root),
         "personas": lambda: _validate_personas(project_root),
         "frontmatter": lambda: list(

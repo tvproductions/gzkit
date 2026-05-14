@@ -531,7 +531,8 @@ class ObpiValidator:
         expected = "**Heavy**" if frontmatter_lane == "heavy" else "**Lite**"
         opposite = "**Lite**" if frontmatter_lane == "heavy" else "**Heavy**"
         lane_intro = lane_body.splitlines()[0].strip() if lane_body.splitlines() else ""
-        if opposite in lane_intro or expected not in lane_intro:
+        lane_intro_lower = lane_intro.lower()
+        if opposite.lower() in lane_intro_lower or expected.lower() not in lane_intro_lower:
             warnings.append(
                 "Lane section body does not match frontmatter lane: "
                 f"frontmatter='{frontmatter_lane}', lane_section='{lane_intro}'."

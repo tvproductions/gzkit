@@ -22,9 +22,10 @@ def _classify_template_file(
 ) -> Literal["canonical", "package_only", "runtime_state"]:
     """Classify a templates-surface file into one of three content classes.
 
-    canonical: template ``*.md`` files (authored under ``.gzkit/templates/``
-               and shipped at ``src/gzkit/templates/``).
-    package_only: ``__init__.py``, ``__pycache__/**``.
+    canonical: top-level template ``*.md`` files (authored under
+               ``.gzkit/templates/`` and shipped at ``src/gzkit/templates/``).
+    package_only: ``__init__.py``, ``__pycache__/**``, and nested package
+                  resources such as ``templates/skills/git-sync/SKILL.md``.
     runtime_state: (currently unused for the templates surface; reserved for
                    parity with ``_classify_chore_file``.)
 
@@ -36,6 +37,18 @@ def _classify_template_file(
     parts = path.parts
 
     if name == "__init__.py" or "__pycache__" in parts:
+        return "package_only"
+
+    try:
+        rel = path.relative_to((project_root or Path.cwd()) / "src" / "gzkit" / "templates")
+    except ValueError:
+        try:
+            rel = path.relative_to(Path("src/gzkit/templates"))
+        except ValueError:
+            rel = Path(name)
+    if len(rel.parts) != 1:
+        return "package_only"
+    if not name.endswith(".md"):
         return "package_only"
 
     # ``project_root`` accepted for API symmetry with the chores classifier;
