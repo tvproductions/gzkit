@@ -194,7 +194,7 @@ class TestSkillsLayoutDualSurface(unittest.TestCase):
     @covers("REQ-0.0.32-01-01")
     @covers("REQ-0.0.32-01-02")
     @covers("REQ-0.0.32-08-03")
-    @covers("REQ-0.0.32-15-10")
+    @covers("REQ-0.0.32-15-10")  # audit-exempt: regression-invariant-overlay OBPI-01 byte parity
     def test_dual_surface_byte_parity(self) -> None:
         """Authored .gzkit/skills/<slug>/SKILL.md must be byte-identical to src/gzkit copy."""
         authored_root = _PROJECT_ROOT / ".gzkit" / "skills"

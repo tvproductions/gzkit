@@ -467,6 +467,139 @@ def _file_creation_short_sha(
     return None
 
 
+# Function definition line — `def name(...)` or `async def name(...)`. Matches
+# only at the start of a logical line (decorator stack ends; def begins).
+_DEF_LINE_RE = re.compile(r"^\s*(?:async\s+)?def\s+\w+")
+
+# 7..40 hex-only line (a bare `git log --format=%H` SHA, no surrounding noise).
+_BARE_SHA_RE = re.compile(r"^[0-9a-f]{7,40}$")
+
+# Maximum lines to scan downward from a decorator looking for its def line.
+# Decorator stacks of more than ~32 lines are pathological — past this we
+# treat the structure as unparseable and fall through to other exemptions.
+_MAX_DECORATOR_STACK_SCAN = 32
+
+
+def _read_source_lines(file_path: Path) -> list[str] | None:
+    """Read source file as a list of lines; return ``None`` on IO failure.
+
+    Returns ``None`` (not raises) so the predicate degrades to "no exemption"
+    rather than crashing the audit when a source file the heuristic was told
+    about is unreadable — same fail-soft posture as the git-runner boundary.
+    """
+    try:
+        return file_path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeDecodeError):
+        return None
+
+
+def _find_function_def_line(source_lines: list[str], decorator_line_no: int) -> int | None:
+    """Return 1-indexed line number of the ``def``/``async def`` below the decorator.
+
+    Scans forward from the line AFTER ``decorator_line_no`` looking for the
+    first match against :data:`_DEF_LINE_RE`. Skips other decorators, blank
+    lines, and comment lines that may appear in a decorator stack. Returns
+    ``None`` when no def line is found within :data:`_MAX_DECORATOR_STACK_SCAN`
+    lines or when the decorator line is past end-of-file.
+    """
+    if decorator_line_no < 1 or decorator_line_no > len(source_lines):
+        return None
+    end = min(decorator_line_no + _MAX_DECORATOR_STACK_SCAN, len(source_lines))
+    for line_no in range(decorator_line_no + 1, end + 1):
+        if _DEF_LINE_RE.match(source_lines[line_no - 1]):
+            return line_no
+    return None
+
+
+def _line_intro_short_sha(
+    rel_file: str, line_no: int, project_root: Path, git_runner: GitRunner
+) -> str | None:
+    """Return 7-char SHA of the commit that introduced ``rel_file:line_no``.
+
+    Uses ``git log --reverse --format=%H -L<n>,<n>:<file>`` and parses the
+    first hex-only line. ``--reverse`` pins the FIRST entry as the introducing
+    commit; the helper is resilient to diff-hunk noise that follows the SHA.
+    Returns ``None`` on git failure or unparseable output.
+    """
+    rc, stdout, _stderr = git_runner(
+        ["log", "--reverse", "--format=%H", f"-L{line_no},{line_no}:{rel_file}"],
+        project_root,
+    )
+    if rc != 0 or not stdout.strip():
+        return None
+    for raw_line in stdout.splitlines():
+        candidate = raw_line.strip()
+        if _BARE_SHA_RE.match(candidate):
+            return candidate[:7]
+    return None
+
+
+def _is_same_commit_block_creation(
+    intro: CoverIntroduction,
+    project_root: Path,
+    git_runner: GitRunner,
+) -> bool:
+    """True when the decorated function's def line shares the decorator's intro SHA.
+
+    Same-commit BLOCK creation is structurally identical to GHI #382 same-commit
+    FILE creation: the assertion came into existence WITH the decorator in the
+    same commit, so no later "silencing" pass is possible. The exemption applies
+    even when the file pre-existed — what matters is that the decorated function
+    body and the decorator were authored together.
+
+    Caller is responsible for the receipt-coupling guard (see GHI #309): if
+    ``intro.commit_sha == receipt.commit_sha`` the file/block-creation
+    exemptions are suppressed by the orchestrator.
+    """
+    source_lines = _read_source_lines(project_root / intro.file)
+    if source_lines is None:
+        return False
+    def_line_no = _find_function_def_line(source_lines, intro.line)
+    if def_line_no is None:
+        return False
+    def_intro = _line_intro_short_sha(intro.file, def_line_no, project_root, git_runner)
+    return def_intro is not None and def_intro == intro.commit_sha
+
+
+# Inline regression-invariant overlay marker. Source-side opt-in for the
+# Component A shape from GHI #466: a `@covers` decorator added to an existing
+# test whose assertion structurally IS the REQ being named (e.g. a
+# regression-invariant REQ pointing at the test that already enforces the
+# prior invariant). Required form on the decorator line:
+#
+#     @covers("REQ-X")  # audit-exempt: regression-invariant-overlay <reason>
+#
+# Reason text after the marker is required so the exemption can't be a
+# one-token escape hatch — the operator must articulate WHY this is an
+# overlay rather than cosmetic backfill. Em-dash, hyphen, or colon are
+# accepted as separators between marker and reason.
+_AUDIT_EXEMPT_MARKER_RE = re.compile(
+    r"#\s*audit-exempt:\s*regression-invariant-overlay(?:\s*[—\-:])?\s+\S+"
+)
+
+
+def _has_inline_audit_exempt_marker(
+    intro: CoverIntroduction,
+    project_root: Path,
+) -> bool:
+    """True when the decorator line carries the regression-invariant overlay marker.
+
+    Reads the live source file (not git history) at ``intro.line``: the
+    marker is current operator intent, not a historical artifact. Unlike
+    the file/block-creation exemptions, this marker is NOT suppressed when
+    the receipt is anchored to the same commit — by construction, the
+    overlay shape only occurs when the operator is claiming a new REQ
+    against a test that pre-existed the receipt commit, and the marker
+    is the operator's explicit attestation that this is legitimate.
+    """
+    source_lines = _read_source_lines(project_root / intro.file)
+    if source_lines is None:
+        return False
+    if intro.line < 1 or intro.line > len(source_lines):
+        return False
+    return bool(_AUDIT_EXEMPT_MARKER_RE.search(source_lines[intro.line - 1]))
+
+
 def _ceremony_trailer(sha: str, project_root: Path, git_runner: GitRunner) -> str | None:
     """Return the ``Ceremony:`` trailer value for ``sha`` (or ``None``)."""
     rc, stdout, _stderr = git_runner(
@@ -508,26 +641,43 @@ def _is_legitimate_authoring(
     git_runner: GitRunner,
     receipt_commit_sha: str | None = None,
 ) -> bool:
-    """Return True when ``intro`` is same-commit creation or ceremony-bundled.
+    """Return True when ``intro`` is co-authored, ceremony-bundled, or marked overlay.
 
-    Two structurally distinct legitimate-authoring shapes are exempted from
+    Five structurally distinct legitimate-authoring shapes are exempted from
     the same-commit-window backfill heuristic:
 
-    - **Same-commit creation (GHI #382):** the file went 0->N lines in the
-      introducing commit, so ``@covers`` was present from line one.
+    - **Same-commit FILE creation (GHI #382):** the file went 0->N lines in
+      the introducing commit, so ``@covers`` was present from line one.
+    - **Same-commit BLOCK creation (GHI #466 Component B):** the decorated
+      function's ``def`` line shares the decorator's introducing SHA, even
+      when the file pre-existed. The assertion came into existence WITH
+      the decorator; no later "silencing" pass is possible.
+    - **Inline regression-invariant overlay marker (GHI #466 Component A):**
+      the decorator line carries
+      ``# audit-exempt: regression-invariant-overlay <reason>``. Source-side
+      opt-in for cases where a regression-invariant REQ is being claimed
+      against an existing test whose assertion structurally IS that
+      invariant (e.g. byte-parity tests covering a regression-invariant
+      REQ). Reason text required.
     - **Ceremony bundling (GHI #386):** the introducing commit carries a
       ``Ceremony:`` trailer in :data:`_EXEMPT_CEREMONIES` (e.g.
       ``Ceremony: gz-git-sync``), marking it as a governance ceremony commit
       that bundles tests + implementation + receipt by design.
+    - **Pre-trailer subject-suffix marker (GHI #390):** historical ceremony
+      commits before the ``Ceremony:`` trailer convention carry the marker
+      in the subject suffix (e.g. ``(gz git-sync)``).
 
-    The same-commit-creation exemption does NOT apply when the receipt is also
-    anchored to the same commit — that triple (file-create + @covers + receipt
-    all in one commit) is the GHI #309 cosmetic-backfill pattern regardless of
-    file-creation status.
+    The file/block-creation exemptions do NOT apply when the receipt is also
+    anchored to the same commit — that triple (creation + @covers + receipt
+    all in one commit) is the GHI #309 cosmetic-backfill pattern. The inline
+    marker is intentionally NOT subject to the receipt-coupling guard: by
+    construction, the regression-invariant overlay shape only occurs when
+    the operator is claiming a new REQ against a pre-existing test, and the
+    marker is the operator's explicit attestation that this is legitimate.
 
-    Any other shape (later-commit decoration on a pre-existing test) remains
-    flag-eligible — that is the GHI #272 cosmetic-backfill anti-pattern this
-    heuristic exists to catch.
+    Any other shape (later-commit decoration on a pre-existing test, no
+    marker, no ceremony) remains flag-eligible — that is the GHI #272
+    cosmetic-backfill anti-pattern this heuristic exists to catch.
     """
     creation_sha = _file_creation_short_sha(intro.file, project_root, git_runner)
     if (
@@ -535,6 +685,12 @@ def _is_legitimate_authoring(
         and creation_sha == intro.commit_sha
         and (receipt_commit_sha is None or receipt_commit_sha != intro.commit_sha)
     ):
+        return True
+    if (
+        receipt_commit_sha is None or receipt_commit_sha != intro.commit_sha
+    ) and _is_same_commit_block_creation(intro, project_root, git_runner):
+        return True
+    if _has_inline_audit_exempt_marker(intro, project_root):
         return True
     trailer = _ceremony_trailer(intro.commit_sha, project_root, git_runner)
     if trailer is not None and trailer in _EXEMPT_CEREMONIES:

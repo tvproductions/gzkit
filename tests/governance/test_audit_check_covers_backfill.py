@@ -651,6 +651,325 @@ class TestLegitimateAuthoringExemption(unittest.TestCase):
 
 
 # --------------------------------------------------------------------------- #
+# Same-commit BLOCK creation + inline overlay marker (GHI #466)                 #
+# --------------------------------------------------------------------------- #
+
+
+class TestBlockCreationAndOverlayMarker(unittest.TestCase):
+    """Two new legitimate-authoring shapes added under GHI #466.
+
+    - **Same-commit BLOCK creation (Component B):** the function body and its
+      ``@covers`` decorator are authored in the same commit, even though the
+      file pre-existed. Structurally identical to GHI #382 same-commit FILE
+      creation — the assertion came into existence WITH the decorator, no
+      later "silencing" pass is possible.
+    - **Inline regression-invariant overlay marker (Component A):** a
+      ``# audit-exempt: regression-invariant-overlay <reason>`` token on
+      the decorator line. Source-side opt-in for cases where a
+      regression-invariant ``REQ`` is being claimed against an existing test
+      whose assertion structurally IS that invariant (e.g. byte-parity
+      tests covering a regression-invariant REQ).
+
+    Both shapes preserve the GHI #272 cosmetic-backfill detection (decorator
+    added later to a pre-existing test with no body change in the same SHA
+    must still flag).
+    """
+
+    @staticmethod
+    def _write_test_file(project_root: Path, rel_path: str, content: str) -> Path:
+        target = project_root / rel_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+        return target
+
+    @covers("REQ-0.0.23-05-01")
+    def test_same_commit_block_creation_in_existing_file_exempt(self) -> None:
+        """Decorator + def line co-authored in same SHA on a pre-existing file is exempt."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            self._write_test_file(
+                project_root,
+                "tests/x.py",
+                '@covers("REQ-X")\ndef test_thing(self) -> None:\n    self.assertTrue(True)\n',
+            )
+            intro = _make_intro(file="tests/x.py", line=1, sha="aaaaaaa", on=date(2026, 4, 1))
+            receipt = _make_receipt(sha="bbbbbbb", on=date(2026, 4, 1))
+            fake = FakeGit(
+                {
+                    ("rev-list", "--count", "aaaaaaa..bbbbbbb"): (0, "1\n", ""),
+                    ("log", "--diff-filter=A", "--format=%H", "--", "tests/x.py"): (
+                        0,
+                        "deadbee0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    # Block-creation: def line at line 2, intro SHA matches decorator SHA.
+                    ("log", "--reverse", "--format=%H", "-L2,2:tests/x.py"): (
+                        0,
+                        "aaaaaaa1234567890abcdef0123456789abcdef\n",
+                        "",
+                    ),
+                }
+            )
+            thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+            findings = compute_backfill_findings(
+                [intro],
+                {intro.target: receipt},
+                thresholds,
+                severity="blocking",
+                project_root=project_root,
+                git_runner=fake,
+            )
+            self.assertEqual(findings, ())
+
+    @covers("REQ-0.0.23-05-01")
+    def test_same_commit_block_creation_with_same_commit_receipt_still_flagged(self) -> None:
+        """GHI #309 protection preserved: block-creation + same-commit receipt = flagged."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            self._write_test_file(
+                project_root,
+                "tests/x.py",
+                '@covers("REQ-X")\ndef test_thing(self) -> None:\n    self.assertTrue(True)\n',
+            )
+            intro = _make_intro(file="tests/x.py", line=1, sha="aaaaaaa", on=date(2026, 4, 1))
+            receipt = _make_receipt(sha="aaaaaaa", on=date(2026, 4, 1))
+            # intro_sha == receipt_sha short-circuits rev-list (count = 0). After
+            # file-creation check (different SHA, would have exempted but receipt
+            # coupled), block-creation check (SHA matches, would have exempted
+            # but receipt coupled), then ceremony trailer (empty), then subject
+            # marker (no marker) → finding stands.
+            fake = FakeGit(
+                {
+                    ("log", "--diff-filter=A", "--format=%H", "--", "tests/x.py"): (
+                        0,
+                        "deadbee0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    ("log", "--reverse", "--format=%H", "-L2,2:tests/x.py"): (
+                        0,
+                        "aaaaaaa1234567890abcdef0123456789abcdef\n",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%(trailers:key=Ceremony,valueonly=true)", "aaaaaaa"): (
+                        0,
+                        "",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%s", "aaaaaaa"): (
+                        0,
+                        "feat: add stuff\n",
+                        "",
+                    ),
+                }
+            )
+            thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+            findings = compute_backfill_findings(
+                [intro],
+                {intro.target: receipt},
+                thresholds,
+                severity="blocking",
+                project_root=project_root,
+                git_runner=fake,
+            )
+            self.assertEqual(len(findings), 1)
+
+    @covers("REQ-0.0.23-05-01")
+    def test_inline_audit_exempt_marker_exempts_decorator(self) -> None:
+        """``# audit-exempt: regression-invariant-overlay <reason>`` exempts the line."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            self._write_test_file(
+                project_root,
+                "tests/x.py",
+                '@covers("REQ-X")  # audit-exempt: regression-invariant-overlay '
+                "REQ-X is regression-invariant for OBPI-Y\n"
+                "def test_existing(self) -> None:\n    self.assertTrue(True)\n",
+            )
+            intro = _make_intro(file="tests/x.py", line=1, sha="aaaaaaa", on=date(2026, 4, 1))
+            receipt = _make_receipt(sha="aaaaaaa", on=date(2026, 4, 1))
+            # Marker exemption fires BEFORE ceremony-trailer checks, so only
+            # file-creation + block-creation git calls are reached. Both miss
+            # (different SHA / different SHA), but marker check intervenes
+            # before the ceremony trailer call → no flag, no further git.
+            fake = FakeGit(
+                {
+                    ("log", "--diff-filter=A", "--format=%H", "--", "tests/x.py"): (
+                        0,
+                        "deadbee0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    ("log", "--reverse", "--format=%H", "-L2,2:tests/x.py"): (
+                        0,
+                        "deadbee0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                }
+            )
+            thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+            findings = compute_backfill_findings(
+                [intro],
+                {intro.target: receipt},
+                thresholds,
+                severity="blocking",
+                project_root=project_root,
+                git_runner=fake,
+            )
+            self.assertEqual(findings, ())
+
+    @covers("REQ-0.0.23-05-01")
+    def test_inline_audit_exempt_marker_requires_reason_text(self) -> None:
+        """The marker keyword alone (no reason text after) does not exempt."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            self._write_test_file(
+                project_root,
+                "tests/x.py",
+                '@covers("REQ-X")  # audit-exempt: regression-invariant-overlay\n'
+                "def test_existing(self) -> None:\n    self.assertTrue(True)\n",
+            )
+            intro = _make_intro(file="tests/x.py", line=1, sha="aaaaaaa", on=date(2026, 4, 1))
+            receipt = _make_receipt(sha="bbbbbbb", on=date(2026, 4, 2))
+            fake = FakeGit(
+                {
+                    ("rev-list", "--count", "aaaaaaa..bbbbbbb"): (0, "1\n", ""),
+                    ("log", "--diff-filter=A", "--format=%H", "--", "tests/x.py"): (
+                        0,
+                        "deadbee0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    ("log", "--reverse", "--format=%H", "-L2,2:tests/x.py"): (
+                        0,
+                        "deadbee0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%(trailers:key=Ceremony,valueonly=true)", "aaaaaaa"): (
+                        0,
+                        "",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%s", "aaaaaaa"): (
+                        0,
+                        "feat: add stuff\n",
+                        "",
+                    ),
+                }
+            )
+            thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+            findings = compute_backfill_findings(
+                [intro],
+                {intro.target: receipt},
+                thresholds,
+                severity="blocking",
+                project_root=project_root,
+                git_runner=fake,
+            )
+            self.assertEqual(len(findings), 1)
+
+    @covers("REQ-0.0.23-05-01")
+    def test_inline_audit_exempt_marker_must_be_on_decorator_line(self) -> None:
+        """A marker on a sibling line (not the decorator line itself) does not exempt."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            self._write_test_file(
+                project_root,
+                "tests/x.py",
+                "# audit-exempt: regression-invariant-overlay decoy reason\n"
+                '@covers("REQ-X")\n'
+                "def test_existing(self) -> None:\n    self.assertTrue(True)\n",
+            )
+            # Decorator is now on line 2, not line 1 (line 1 carries the decoy comment).
+            intro = _make_intro(file="tests/x.py", line=2, sha="aaaaaaa", on=date(2026, 4, 1))
+            receipt = _make_receipt(sha="bbbbbbb", on=date(2026, 4, 2))
+            fake = FakeGit(
+                {
+                    ("rev-list", "--count", "aaaaaaa..bbbbbbb"): (0, "1\n", ""),
+                    ("log", "--diff-filter=A", "--format=%H", "--", "tests/x.py"): (
+                        0,
+                        "deadbee0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    ("log", "--reverse", "--format=%H", "-L3,3:tests/x.py"): (
+                        0,
+                        "deadbee0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%(trailers:key=Ceremony,valueonly=true)", "aaaaaaa"): (
+                        0,
+                        "",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%s", "aaaaaaa"): (
+                        0,
+                        "feat: add stuff\n",
+                        "",
+                    ),
+                }
+            )
+            thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+            findings = compute_backfill_findings(
+                [intro],
+                {intro.target: receipt},
+                thresholds,
+                severity="blocking",
+                project_root=project_root,
+                git_runner=fake,
+            )
+            self.assertEqual(len(findings), 1)
+
+    @covers("REQ-0.0.23-05-01")
+    def test_cosmetic_backfill_on_preexisting_test_still_flagged(self) -> None:
+        """GHI #272 anti-pattern preserved: decorator added later to a pre-existing
+        test (def line authored in an OLDER SHA, no marker) still flags.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            self._write_test_file(
+                project_root,
+                "tests/x.py",
+                '@covers("REQ-X")\ndef test_existing(self) -> None:\n    self.assertTrue(True)\n',
+            )
+            intro = _make_intro(file="tests/x.py", line=1, sha="aaaaaaa", on=date(2026, 4, 5))
+            receipt = _make_receipt(sha="bbbbbbb", on=date(2026, 4, 6))
+            fake = FakeGit(
+                {
+                    ("rev-list", "--count", "aaaaaaa..bbbbbbb"): (0, "1\n", ""),
+                    ("log", "--diff-filter=A", "--format=%H", "--", "tests/x.py"): (
+                        0,
+                        "deadbee0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    # Def line authored in an OLDER SHA → no block-creation exemption.
+                    ("log", "--reverse", "--format=%H", "-L2,2:tests/x.py"): (
+                        0,
+                        "0123456000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%(trailers:key=Ceremony,valueonly=true)", "aaaaaaa"): (
+                        0,
+                        "",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%s", "aaaaaaa"): (
+                        0,
+                        "fix: silence audit warning\n",
+                        "",
+                    ),
+                }
+            )
+            thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+            findings = compute_backfill_findings(
+                [intro],
+                {intro.target: receipt},
+                thresholds,
+                severity="blocking",
+                project_root=project_root,
+                git_runner=fake,
+            )
+            self.assertEqual(len(findings), 1)
+            self.assertEqual(findings[0].severity, "blocking")
+
+
+# --------------------------------------------------------------------------- #
 # format_backfill_finding (REQ-0.0.23-05-01, REQ-0.0.23-05-03 remediation hint) #
 # --------------------------------------------------------------------------- #
 

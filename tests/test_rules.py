@@ -677,7 +677,7 @@ class TestRulesLayoutDualSurface(unittest.TestCase):
 
     @covers("REQ-0.0.32-03-02")
     @covers("REQ-0.0.32-08-03")
-    @covers("REQ-0.0.32-15-10")
+    @covers("REQ-0.0.32-15-10")  # audit-exempt: regression-invariant-overlay OBPI-03 byte parity
     def test_dual_surface_byte_parity(self) -> None:
         # AGENTS.md is package-internal (not a canonical rule slug per OBPI-04).
         canonical = self._repo_root() / ".gzkit" / "rules"
