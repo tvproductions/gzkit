@@ -64,7 +64,7 @@ _RULE_PATH = _PROJECT_ROOT / ".gzkit" / "rules" / "complexity-thresholds.md"
 _DATA_PATH = _PROJECT_ROOT / ".gzkit" / "rules" / "complexity-thresholds.json"
 _TRIGGER_VOCABULARY = ("block", "warn", "advise")
 _BOOTSTRAP_METRICS = ("radon_mi", "lizard_nesting_depth", "cohesion_lcom4")
-_RULE_VERSION = "0.3.0"
+_RULE_VERSION = "0.4.0"
 
 
 class ComplexityThresholdsRuleAuthorship(unittest.TestCase):

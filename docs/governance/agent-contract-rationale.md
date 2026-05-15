@@ -307,6 +307,7 @@ Claude Code](harness-engineering-appraisal.md#external-validation-greyling-on-cl
 for the codebase-ratio framing, subsystem mapping, and the triangulation
 with Böckeler's "Harness Engineering" thesis.
 
+<!-- lifted-from: AGENTS.md#anti-vibing-mantra--relationship-to-the-rest-of-the-contract -->
 ## Anti-vibing mantra — relationship to the rest of the contract
 
 *Lifted from `AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT § Relationship
@@ -324,6 +325,7 @@ back on flawed approaches), § Attestation (ARB receipts as observed
 evidence) — are this mantra rendered as mechanical checks. When those
 checks are silent, the mantra is the conscience.
 
+<!-- lifted-from: AGENTS.md#operator-economy--why-this-is-canon -->
 ## Operator economy — why this is canon
 
 *Lifted from `AGENTS.md` § OPERATOR ECONOMY OF EFFORT § Why this is
@@ -369,6 +371,7 @@ See [`docs/governance/arb-middleware.md`](arb-middleware.md) for ARB
 middleware deep-dive: core concept, command surface, receipt schema and
 storage, exit codes, and rationale.
 
+<!-- lifted-from: AGENTS.md#stdlib-first-doctrine--rationale -->
 ## Stdlib-First doctrine — rationale
 
 *Lifted from `AGENTS.md` § STDLIB-FIRST DOCTRINE under GHI #327 follow-up.*
@@ -418,6 +421,7 @@ follow-up GHIs #308–#312 per ADR-0.0.23 § Decision. Until those land, the
 rule binds at authoring time only: cite the pattern by name when reviewing,
 when filing a defect, and when extending the scorecard.
 
+<!-- lifted-from: .claude/rules/agent-failure-modes.md#failure-mode-worked-examples -->
 ### Failure-mode worked examples
 
 **Fabrication — GHI #290:** An agent synthesized a `human_attestation: true`
