@@ -11,6 +11,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--requirements] [--commit-trailers]
             [--taxonomy] [--chores-layout] [--distribution]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
+            [--scenario-reachability]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
             [--advisor-proof-binding]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
@@ -418,6 +419,67 @@ $ echo $?
 | 0 | All blockquote-See pointers resolve and every destination carries a back-pointer | — |
 | 3 | One or more pointers unresolved (path missing or anchor not present) | Fix the link target or add the heading to the destination |
 | 3 | Destination referenced by forward pointer lacks `<!-- lifted-from: -->` back-pointer | Add `<!-- lifted-from: <source-path>#<anchor> -->` to the destination file |
+
+### `--scenario-reachability`
+
+Enforces ADR-0.0.33 Invariant 4: every Mechanical/Promotable bullet in the
+advisory scorecard (`docs/governance/advisory-rules-audit.md`) must be
+reachable from at least one declared loading scenario in
+`data/agent-control-surface-scenarios.json`.
+
+**Era-1 behavior (registry absent):** The validator exits 0 and emits a
+single advisory to stderr:
+
+```
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+```
+
+The registry is authored under ADR-0.0.34; registry-absent is a bootstrap
+state, not drift.
+
+**Era-2 behavior (registry present):**
+
+1. Validates the registry against the declared JSON Schema (array of objects
+   with `name: string` and `corpus: array[string]`). A schema violation exits 3.
+2. For each Mechanical/Promotable bullet, checks that at least one scenario's
+   `corpus` list includes a surface file containing the bullet. Orphan bullets
+   emit `scenario-reachability: orphan bullet: <bullet_text>` warnings to
+   stderr and exit 0 (advisory — escalation to fail-closed deferred to a
+   follow-up `--strict` GHI per ADR-0.0.33 Decision).
+
+```bash
+# Era-1: check with no registry present
+uv run gz validate --scenario-reachability
+```
+
+**Era-1 clean state (registry absent):**
+
+```
+$ uv run gz validate --scenario-reachability
+$ echo $?
+0
+```
+
+(Advisory line emitted to stderr, not stdout.)
+
+**Era-2 schema violation:**
+
+```
+$ uv run gz validate --scenario-reachability
+
+❌ Validation failed with 1 error(s):
+
+   → [scenario_reachability] data/agent-control-surface-scenarios.json
+    scenario-reachability: registry schema invalid: expected array, got dict
+$ echo $?
+3
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Registry absent (Era-1 advisory) or all bullets reachable (Era-2 clean) | — |
+| 0 | Orphan bullets found (Era-2 advisory) | Review orphan warnings in stderr; fix coverage or await `--strict` escalation |
+| 3 | Registry schema violation | Fix `data/agent-control-surface-scenarios.json` to match declared schema |
 
 ### `--distribution`
 

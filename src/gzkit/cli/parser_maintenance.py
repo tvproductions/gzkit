@@ -589,6 +589,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Pointer-integrity audit: > See [...] anchors (ADR-0.0.33-03).",
     )
     p_validate.add_argument(
+        "--scenario-reachability",
+        dest="check_scenario_reachability",
+        action="store_true",
+        help="Scenario-reachability: orphan bullets vs loading scenarios (ADR-0.0.33-04).",
+    )
+    p_validate.add_argument(
         "--regenerate",
         dest="check_distribution_regenerate",
         action="store_true",
@@ -671,6 +677,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_bullet_retention=a.check_bullet_retention,
             check_surface_weight=a.check_surface_weight,
             check_pointer_anchors=a.check_pointer_anchors,
+            check_scenario_reachability=a.check_scenario_reachability,
             attestation_receipts=a.attestation_receipts,
             attestation_lane=a.attestation_lane,
             attestation_kind=a.attestation_kind,

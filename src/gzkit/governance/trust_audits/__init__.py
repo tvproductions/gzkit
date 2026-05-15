@@ -90,6 +90,9 @@ from gzkit.governance.trust_audits.release import (
     audit_advisory_scorecard,
     audit_version_release,
 )
+from gzkit.governance.trust_audits.scenario_reachability import (
+    validate_scenario_reachability,
+)
 from gzkit.governance.trust_audits.sensitivity import (
     audit_sensitivity_binding,
     explain_sensitivity_for_paths,
@@ -144,5 +147,6 @@ __all__ = [
     "validate_evaluation_justify_binding",
     "validate_intrinsic_attestation",
     "validate_pointer_integrity",
+    "validate_scenario_reachability",
     "validate_surface_weight",
 ]
