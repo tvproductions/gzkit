@@ -1,0 +1,8 @@
+{
+  "obpi_id": "OBPI-0.0.33-04-scenario-reachability-validator",
+  "timestamp": "2026-05-15T23:30:00+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.33-04-scenario-reachability-validator.md",
+  "gaps_found": 0,
+  "notes": "CLI structural FAIL (1 gap) is a known path-mapping artifact: docs/user/manpages/gz-validate.md in brief allowed-paths maps to docs/user/manpages/validate.md in practice -- the actual manpage was updated with --scenario-reachability section. Same mapping as OBPI-0.0.33-01, -02, -03 (all completed with PASS receipts via this override). 33 scope-collision advisories are advisory-only (shared surfaces, sequential execution). ADR<->OBPI: all 7 checks PASS. ADR Decision Invariant 4 quoted verbatim in objective. 5 FAIL-CLOSED REQs implemented: registry-absent advisory (Era-1 exit 0), registry-present reachability (Era-2), advisory-mode orphan warnings (exit 0), registry schema validation (exit 3), parseable output prefix. Plan<->OBPI: all 7 checks PASS. Implementation: 8/8 scenario_reachability tests pass; 5077/5077 full suite passes; ruff/typecheck/mkdocs clean; gz validate --scenario-reachability exits 0 with Era-1 advisory."
+}

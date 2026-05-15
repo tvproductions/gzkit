@@ -420,6 +420,7 @@ def _collect_errors(
     check_bullet_retention: bool = False,
     check_surface_weight: bool = False,
     check_pointer_anchors: bool = False,
+    check_scenario_reachability: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -478,6 +479,7 @@ def _collect_errors(
         "bullet_retention": check_bullet_retention,
         "surface_weight": check_surface_weight,
         "pointer_anchors": check_pointer_anchors,
+        "scenario_reachability": check_scenario_reachability,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
@@ -569,6 +571,7 @@ def _explicit_scope_runners(
         "bullet_retention": lambda: trust_audits.validate_bullet_retention(project_root),
         "surface_weight": lambda: trust_audits.validate_surface_weight(project_root),
         "pointer_anchors": lambda: trust_audits.validate_pointer_integrity(project_root),
+        "scenario_reachability": lambda: trust_audits.validate_scenario_reachability(project_root),
     }
 
 
@@ -1295,6 +1298,7 @@ def validate(
     check_bullet_retention: bool = False,
     check_surface_weight: bool = False,
     check_pointer_anchors: bool = False,
+    check_scenario_reachability: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1365,6 +1369,7 @@ def validate(
             check_bullet_retention,
             check_surface_weight,
             check_pointer_anchors,
+            check_scenario_reachability,
         ]
     )
     if _dispatch_early_return_scopes(
@@ -1436,6 +1441,7 @@ def validate(
         check_bullet_retention=check_bullet_retention,
         check_surface_weight=check_surface_weight,
         check_pointer_anchors=check_pointer_anchors,
+        check_scenario_reachability=check_scenario_reachability,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -1509,6 +1515,7 @@ def validate(
         "bullet_retention": check_bullet_retention,
         "surface_weight": check_surface_weight,
         "pointer_anchors": check_pointer_anchors,
+        "scenario_reachability": check_scenario_reachability,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]

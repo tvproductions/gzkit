@@ -3,7 +3,7 @@ id: OBPI-0.0.33-04-scenario-reachability-validator
 parent: ADR-0.0.33-agent-control-surface-fidelity
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.33-04-scenario-reachability-validator: Scenario Reachability Validator
@@ -13,13 +13,22 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md`
 - **Checklist Item:** #4 - "OBPI-0.0.33-04: Scenario-reachability validator (`gz validate --scenario-reachability`) — advisory Era-1; reads loading-scenarios registry once ADR-0.0.34 lands it; warns on orphan bullets"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Scenario-reachability validator (`gz validate --scenario-reachability`) — advisory Era-1; reads loading-scenarios registry once ADR-0.0.34 lands it; warns on orphan bullets.
+Implement `gz validate --scenario-reachability` (ADR-0.0.33 Invariant 4): when
+`data/agent-control-surface-scenarios.json` is absent (Era-1 bootstrap), exit 0
+with the literal stderr advisory `scenario-reachability: registry absent
+(ADR-0.0.34); skipping reachability check` so the validator integrates into
+`gz validate` before the loading-scenarios registry substrate lands. When the
+registry exists (Era-2), validate its JSON Schema (exit 3 with
+`ValidationError(type="scenario_reachability")` on schema violation), then
+parse every Mechanical/Promotable bullet from `docs/governance/advisory-rules-audit.md`
+and emit `scenario-reachability: orphan bullet: <text>` stderr warnings for
+any bullet whose surface file is not covered by at least one declared
+scenario's corpus list — exit 0 (advisory mode per parent-ADR Decision; the
+fail-closed `--strict` escalation is deferred to a follow-up GHI).
 
 ## Lane
 
@@ -233,15 +242,39 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+Era-1 advisory verified end-to-end via the CLI surface:
+
+```
+$ uv run gz validate --scenario-reachability
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+Validated: manifest, surfaces, ledger, instructions, briefs, documents, personas, frontmatter, version, taxonomy
+
+✓ All validations passed (10 scopes).
+$ echo $?
+0
+```
+
+Exit 0 + stderr advisory per REQ-0.0.33-04-01. Full quality chain green:
+
+- Tests: 5077/5077 pass (receipt `arb-step-unittest-f785c9ef6c7442eaa52b8905bcbc2b97`)
+- Lint: clean (receipt `arb-ruff-e28cd288bca142cc92c010e98ee61e0b`)
+- Typecheck: clean (receipt `arb-step-typecheck-deb4b70b8fae4fb7a934bbe3e8e5be0f`)
+- Docs build: clean (receipt `arb-step-mkdocs-118809eed51746cd8099e02c388ebd8c`)
+- REQ coverage: 5/5 (`uv run gz covers OBPI-0.0.33-04-scenario-reachability-validator --json` → `uncovered_reqs: 0`)
+
+OBPI-specific TDD suite: 8/8 tests pass across 5 REQ classes (Era-1 absence, Era-2 no-orphans, Era-2 orphans-advisory, registry-schema-fail-closed, package re-export).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `src/gzkit/governance/trust_audits/scenario_reachability.py` (validator module ~160 lines, Era-1 absence guard + Era-2 reachability check + inline JSON Schema validation), `tests/governance/test_scenario_reachability.py` (8 tests across 5 REQ classes)
+- Files modified: `src/gzkit/governance/trust_audits/__init__.py` (alphabetical import + `__all__`), `src/gzkit/cli/parser_maintenance.py` (--scenario-reachability flag + dispatch), `src/gzkit/commands/validate_cmd.py` (5 wiring locations: signature, explicit_scopes, scope runner, validate() signature, two pass-throughs), `docs/user/manpages/validate.md` (--scenario-reachability section with Era-1/Era-2 behavior + exit-code table)
+- Waiver: `data/behave_coverage_waivers.json` (BDD deferred to OBPI-0.0.33-05 composite scope per ADR decomposition; rationale key `adr-0.0.33-04-bdd-deferred-to-composite-obpi-05`)
+- Tests added: 8 tests covering 5 REQs — TestREQ01_RegistryAbsent (1), TestREQ02_RegistryPresentNoOrphans (1), TestREQ03_RegistryPresentWithOrphans (1), TestREQ04_RegistryMalformed (3: invalid JSON, missing key, wrong type), TestREQ05_PackageReExport (2)
+- Date completed: 2026-05-15
+- Attestation status: operator-verbatim-conversational ("attest completed")
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -252,14 +285,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — ADR-0.0.33 Invariant 4 advisory Era-1 validator landed: `gz validate --scenario-reachability` exits 0 with stderr advisory `scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check` per REQ-0.0.33-04-01; Era-2 behaviors (REQ-02 reachability, REQ-03 orphan-bullet warnings, REQ-04 registry-schema fail-closed, REQ-05 package re-export) covered by 8/8 unit tests in tests/governance/test_scenario_reachability.py; full suite 5077/5077 pass (arb-step-unittest-f785c9ef6c7442eaa52b8905bcbc2b97); ruff/typecheck/mkdocs clean (arb-ruff-e28cd288bca142cc92c010e98ee61e0b, arb-step-typecheck-deb4b70b8fae4fb7a934bbe3e8e5be0f, arb-step-mkdocs-118809eed51746cd8099e02c388ebd8c); REQ coverage 5/5 (uncovered_reqs: 0). Operator-verbatim Stage-4 attestation.
+- Date: 2026-05-15
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-15
 
 **Evidence Hash:** -
