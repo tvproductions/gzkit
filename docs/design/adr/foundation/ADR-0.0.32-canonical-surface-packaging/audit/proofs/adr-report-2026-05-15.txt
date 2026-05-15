@@ -1,0 +1,37 @@
+                                 ADR Overview
+╭────────────┬───────┬───────────┬────────────────┬───────┬──────────┬───────╮
+│ ADR        │ Lane  │ Lifecycle │ Closeout Phase │ OBPI  │ Closeout │ QC    │
+├────────────┼───────┼───────────┼────────────────┼───────┼──────────┼───────┤
+│ ADR-0.0.32 │ heavy │ Completed │ attested       │ 15/15 │ READY    │ READY │
+╰────────────┴───────┴───────────┴────────────────┴───────┴──────────┴───────╯
+                                     OBPIs
+╭────┬─────────────────────────────────────┬────────────────────┬───────┬──────╮
+│ #  │ OBPI ID                             │ State              │ Brief │ Done │
+├────┼─────────────────────────────────────┼────────────────────┼───────┼──────┤
+│ 01 │ OBPI-0.0.32-01-skills-physical-migr │ attested_completed │ draft │ yes  │
+│    │ ation                               │                    │       │      │
+│ 02 │ OBPI-0.0.32-02-skills-scaffolder-re │ attested_completed │ draft │ yes  │
+│    │ factor                              │                    │       │      │
+│ 03 │ OBPI-0.0.32-03-rules-physical-migra │ attested_completed │ draft │ yes  │
+│    │ tion                                │                    │       │      │
+│ 04 │ OBPI-0.0.32-04-rules-scaffolder-aut │ attested_completed │ draft │ yes  │
+│    │ horing                              │                    │       │      │
+│ 05 │ OBPI-0.0.32-05-init-update-flag     │ attested_completed │ draft │ yes  │
+│ 06 │ OBPI-0.0.32-06-t0-smoke-test        │ attested_completed │ draft │ yes  │
+│ 07 │ OBPI-0.0.32-07-validate-distributio │ attested_completed │ draft │ yes  │
+│    │ n                                   │                    │       │      │
+│ 08 │ OBPI-0.0.32-08-mirror-sync          │ attested_completed │ draft │ yes  │
+│ 09 │ OBPI-0.0.32-09-personas-physical-mi │ attested_completed │ draft │ yes  │
+│    │ gration                             │                    │       │      │
+│ 10 │ OBPI-0.0.32-10-personas-scaffolder- │ attested_completed │ draft │ yes  │
+│    │ authoring                           │                    │       │      │
+│ 11 │ OBPI-0.0.32-11-templates-reverse-mi │ attested_completed │ draft │ yes  │
+│    │ gration                             │                    │       │      │
+│ 12 │ OBPI-0.0.32-12-templates-scaffolder │ attested_completed │ draft │ yes  │
+│    │ -authoring                          │                    │       │      │
+│ 13 │ OBPI-0.0.32-13-chores-normalization │ attested_completed │ draft │ yes  │
+│ 14 │ OBPI-0.0.32-14-gz-upgrade-subcomman │ attested_completed │ draft │ yes  │
+│    │ d                                   │                    │       │      │
+│ 15 │ OBPI-0.0.32-15-t0-maintenance-surfa │ attested_completed │ draft │ yes  │
+│    │ ces                                 │                    │       │      │
+╰────┴─────────────────────────────────────┴────────────────────┴───────┴──────╯

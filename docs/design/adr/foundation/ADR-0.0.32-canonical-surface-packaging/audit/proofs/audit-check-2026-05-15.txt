@@ -1,0 +1,52 @@
+ADR audit-check: ADR-0.0.32-canonical-surface-packaging
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.32-01-skills-physical-migration
+  - OBPI-0.0.32-02-skills-scaffolder-refactor
+  - OBPI-0.0.32-03-rules-physical-migration
+  - OBPI-0.0.32-04-rules-scaffolder-authoring
+  - OBPI-0.0.32-05-init-update-flag
+  - OBPI-0.0.32-06-t0-smoke-test
+  - OBPI-0.0.32-07-validate-distribution
+  - OBPI-0.0.32-08-mirror-sync
+  - OBPI-0.0.32-09-personas-physical-migration
+  - OBPI-0.0.32-10-personas-scaffolder-authoring
+  - OBPI-0.0.32-11-templates-reverse-migration
+  - OBPI-0.0.32-12-templates-scaffolder-authoring
+  - OBPI-0.0.32-13-chores-normalization
+  - OBPI-0.0.32-14-gz-upgrade-subcommand
+  - OBPI-0.0.32-15-t0-maintenance-surfaces
+Advisory 8 REQ(s) without @covers traceability (non-blocking):
+  - REQ-0.0.32-01-07
+  - REQ-0.0.32-02-03
+  - REQ-0.0.32-03-04
+  - REQ-0.0.32-03-05
+  - REQ-0.0.32-09-03
+  - REQ-0.0.32-09-04
+  - REQ-0.0.32-11-06
+  - REQ-0.0.32-11-08
+
+Coverage: 130/138 REQs covered (94.2%)
+  OBPI-0.0.32-01: 7/8 (87.5%)
+  OBPI-0.0.32-02: 8/9 (88.9%)
+  OBPI-0.0.32-03: 6/8 (75.0%)
+  OBPI-0.0.32-04: 9/9 (100.0%)
+  OBPI-0.0.32-05: 8/8 (100.0%)
+  OBPI-0.0.32-06: 9/9 (100.0%)
+  OBPI-0.0.32-07: 11/11 (100.0%)
+  OBPI-0.0.32-08: 12/12 (100.0%)
+  OBPI-0.0.32-09: 6/8 (75.0%)
+  OBPI-0.0.32-10: 9/9 (100.0%)
+  OBPI-0.0.32-11: 8/10 (80.0%)
+  OBPI-0.0.32-12: 10/10 (100.0%)
+  OBPI-0.0.32-13: 8/8 (100.0%)
+  OBPI-0.0.32-14: 9/9 (100.0%)
+  OBPI-0.0.32-15: 10/10 (100.0%)
+Uncovered REQs (8):
+  - REQ-0.0.32-01-07
+  - REQ-0.0.32-02-03
+  - REQ-0.0.32-03-04
+  - REQ-0.0.32-03-05
+  - REQ-0.0.32-09-03
+  - REQ-0.0.32-09-04
+  - REQ-0.0.32-11-06
+  - REQ-0.0.32-11-08

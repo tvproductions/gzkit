@@ -1,5 +1,48 @@
 # gzkit Release Notes
 
+## v0.26.3 (2026-05-15)
+
+Closes 20 runtime-labelled GHIs spanning pipeline ceremony reliability, canonical surface packaging, governance validation hardening, git-sync commit archaeology, and test suite hygiene.
+
+### Pipeline & OBPI Ceremony
+
+- **#433** — Fixed `gz plan audit` silently dropping dotfile-rooted paths (`.gzkit/`, `.claude/`, `.agents/`, `.github/`) from creates-declarations due to `lstrip("./")` stripping the leading dot. Replaced with `removeprefix("./")` in `brief_path_validity.py`, unblocking plan-audit for any OBPI that creates files under those prefixes.
+- **#435** — Fixed `gz obpi pipeline --from=sync --evidence-json` ignoring `attestation_text`, `implementation_summary`, and related fields, which forced agents to abandon the pipeline and call `gz obpi complete` directly. The pipeline now extracts and passes all completion fields from the JSON payload.
+- **#436** — Added `gz validate --brief-cross-references` that fail-closes when brief cross-references (sibling OBPI and peer ADR IDs) have drifted from on-disk identifiers after reorganization — previously all verify-gate checks passed on stale references.
+- **#456** — Resolved contradiction between `gz-plan-audit` SKILL.md's "Stop cleanly" tail instruction and the `gz-obpi-pipeline` Iron Law. The plan-audit skill now disambiguates by caller context: standalone invocations end the turn after the report; pipeline sub-step invocations return control to Stage 2 without ending the turn.
+- **#462** — Fixed `gz obpi complete` security auto-detect deadlocking completion for briefs whose allowed paths overlap a registered security surface but introduce no actual security risk. Added a per-brief `--accept-security-autodetect-floor` escape valve parallel to the existing `--accept-uncovered` REQ waiver pattern.
+
+### Governance Validation
+
+- **#431** — Added `gz validate --brief-demo-section` that fail-closes when a heavy-lane CLI-shipping OBPI brief omits the `## Demo` section, preventing `gz closeout` walkthrough-discovery from silently degrading to `--help` invocations.
+- **#432** — Added speculative-skip marker convention to the brief command-shape check in `gz obpi validate --authored`, enabling OBPIs introducing new CLI verbs to annotate forward-reference invocations with `<!-- gz-validate-skip: command-shape -->` before the verb is registered — matching the existing escape-hatch pattern in the cli-alignment validator.
+- **#438** — Added `gz validate --orphaned-implementation` that detects OBPIs where a lock was force-released after artifact edits on allowed paths with no completion event — the implementation-without-ceremony state that previously required manual ledger forensics to diagnose.
+- **#441** — Fixed `gz arb step` accepting step names that the receipt-binding regex would later reject, causing ARB receipts written with those names to fail the receipt-lookup at attestation time. Step names are now validated against the binding regex at write time.
+- **#466** — Fixed the `gz adr audit-check` covers-backfill detector incorrectly flagging same-commit block-creation as a backfill, which was blocking ADR-0.0.32's audit completion.
+
+### Commit & Git Sync
+
+- **#437** — Fixed `gz git-sync` silently overwriting agent-authored `fix()` / `feat()` commit messages with its generic `chore: update X, Y, Z` template when an end-of-file-fixer auto-fixed unrelated files between retry attempts. Messages already matching conventional-commit format are now preserved verbatim.
+- **#439** — Improved `gz git-sync` commit-message quality: for diffs containing source, ADR/OBPI body, doctrine, schema, or test changes, the autostamper now refuses the generic path-list message and surfaces an explicit message-authoring prompt instead.
+
+### Canonical Surface & Distribution
+
+- **#449** — Extended `gz agent sync control-surfaces` to copy `.gzkit/<surface>/**` → `src/gzkit/<surface>/**` in dependency order (authored → package, then authored → vendor mirrors), eliminating the manual `cp` step that operators had to remember after editing canonical surfaces.
+- **#450** — Added `gz upgrade [--surface ...] [--force] [--dry-run]` subcommand for adopter-side canonical surface refresh from the installed wheel, with per-surface filtering and three-state (IDENTICAL/STALE/EDITED) conflict detection matching `gz init --update`.
+- **#453** — Removed the stale `templates/skill.md` dependency from `scaffold_skill` (superseded by OBPI-0.0.32-02's `importlib.resources` path) and cleaned up the orphaned `CORE_SKILLS["lint"]` entry pointing at a retired skill.
+- **#455** — Updated `data/security_surfaces.json` registry after the OBPI-0.0.32-03 physical migration: `deserialization_user_input` glob updated from `src/gzkit/rules.py` to `src/gzkit/rules/__init__.py`, unblocking OBPI completions that touched the migrated path.
+- **#457** — Synced missing `AGENTS.md` and `complexity-thresholds.json` to the `src/gzkit/rules/` package mirror, resolving dual-surface parity test failures surfaced during GHI #453 closeout.
+
+### Test Suite & Quality
+
+- **#444** — Moved `coverage-40pct` chore from lite lane (120s) to medium lane (300s), resolving the timeout caused by coverage instrumentation overhead on the current 101s test suite. #445 is the durable test-speed fix.
+- **#445** — Fixed `test-isolation-compliance` health-audit failures: mocked `gz cli audit` at the subprocess boundary to eliminate 4 slow tests (3–3.2s each), suppressed 344 lines of validator stdout noise in non-quiet contexts, bringing the suite back under the 60s smoke contract.
+- **#448** — Hardened `gz chores run control-surface-rule-conflicts` acceptance with a resolvability-check script that parses `conflict-matrix.md` and fails closed when any Evidence column citation is unresolvable via `gh issue view`, `git log`, or `agent-insights.jsonl`, directly enforcing the `ADR-pool.control-surface-rule-pair-conflict-audit` audit-row schema.
+
+### Stats
+
+- 20 GHIs closed
+
 ## v0.26.2 (2026-05-10)
 
 Patch release covering red-team-surfaced security and trust hardening, ledger schema validation tightening, OBPI pipeline runtime fixes, and governance surface improvements. 14 GHIs closed.
