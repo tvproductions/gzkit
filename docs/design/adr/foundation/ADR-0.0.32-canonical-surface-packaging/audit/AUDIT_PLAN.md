@@ -1,10 +1,12 @@
 # AUDIT_PLAN — ADR-0.0.32 (canonical-surface-packaging)
 
-**Date:** 2026-05-13
+**Date:** 2026-05-15 (resumed; original 2026-05-13)
 **Auditor:** main-session agent (subagent invocation)
 **Operator of record:** g0
 **Lane / Kind / Sensitivity:** heavy / foundation / (none)
-**Prerequisite check:** `gz adr audit-check ADR-0.0.32` → PASS (all 14 linked OBPIs attested_completed; 8 advisory uncovered REQs labelled non-blocking).
+**Prerequisite check (2026-05-15 re-run):** `gz adr audit-check ADR-0.0.32` → FAIL exit 3 (all 15 linked OBPIs PASS at ledger level; 32 `covers-backfill` findings on REQ-0.0.32-15-* decorators introduced 2c/1d before OBPI-15 receipt; 8 advisory uncovered REQs labelled non-blocking). Diagnosis in AUDIT.md § Shortfall S5 — detector false-positive (GHI #386 legitimate-authoring gap), not Invariant 6f cosmetic backfill.
+
+**Prerequisite check (2026-05-13 original):** `gz adr audit-check ADR-0.0.32` → PASS (all 14 linked OBPIs attested_completed; 8 advisory uncovered REQs labelled non-blocking).
 
 ## Scope
 
