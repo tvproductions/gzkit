@@ -91,6 +91,39 @@ surfaces as fidelity-critical: if a borrowed workflow adds a section, marker,
 role, or command promise to an agent-loaded surface, the fidelity validators
 must prove the rendered surface preserves it and rejects partial mirrors.
 
+## Anti-Patterns
+
+What "wrong" looks like — explicit failure shapes the validators are built to
+catch. Implementing agents must recognize these as defects, not as acceptable
+shortcuts:
+
+1. **Adding a `gz validate --<scope>` without wiring it into `--surface-fidelity`.** A
+   narrow scope that lives outside the composite is invisible to `gz check`
+   and to pre-commit; the four invariants are a set, not a menu. New scopes
+   in this family MUST register into the composite at the same commit they
+   land.
+2. **Editing `AGENTS.md` or `CLAUDE.md` without re-running `--bullet-retention`.** A
+   diet pass, lift-to-rationale, or reword that drops a Mechanical/Promotable
+   bullet from the rendered surface is the GHI #327 regression class. The
+   validator is the compile-time gate; agent goodwill is not.
+3. **Recalibrating warning bands silently.** Adjusting the surface-weight
+   green/yellow/red thresholds without an attested recalibration event
+   reproduces the doctrine-drift failure the ADR exists to prevent. Band
+   changes are ledger events, not config tweaks.
+4. **Treating Era-1 advisory checks as optional.** Scenario reachability is
+   advisory in Era 1 because the registry isn't authored yet — not because
+   the invariant is soft. An orphan bullet warning that's ignored is a
+   silently-failing bullet retention; the advisory mode exists for
+   bootstrap, not for permanent dispensation.
+5. **Lifting pedagogy without back-pointers.** `<!-- lifted-from: -->` is the
+   reverse half of the pointer-integrity contract. Lifting prose to a
+   rationale page without stamping the back-pointer breaks bidirectional
+   trace and is the same class of failure as a broken `> See [...]` anchor.
+6. **Bypassing pre-commit with `--no-verify`.** The cheap fidelity subset
+   (invariants 1, 2, 3) is fast enough to run pre-commit precisely so the
+   gate cannot be excused as friction. A `--no-verify` against a fidelity
+   failure is a doctrine-drift event.
+
 ## Consequences
 
 ### Positive

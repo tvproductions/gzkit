@@ -29,30 +29,56 @@ Composite scope + CI wiring — `gz validate --surface-fidelity` runs all four; 
 > documentation, and template-only work stays Lite unless it changes one of
 > those external surfaces.
 
+## Dependencies
+
+This OBPI is the integration layer for OBPI-01 through OBPI-04. It MUST NOT
+begin implementation until all four predecessor validators are landed and
+re-exporting from `gzkit.governance.trust_audits`:
+
+- OBPI-0.0.33-01-bullet-retention-validator → `validate_bullet_retention`
+- OBPI-0.0.33-02-surface-weight-validator → `validate_surface_weight`
+- OBPI-0.0.33-03-pointer-integrity-validator → `validate_pointer_integrity`
+- OBPI-0.0.33-04-scenario-reachability-validator → `validate_scenario_reachability`
+
+The composite is sequentially last on the dependency graph. Predecessors 01–04
+are mutually independent and may be implemented in parallel.
+
 ## Allowed Paths
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md` — parent ADR for intent and scope
-- `tests/governance/` — explicitly referenced by the checklist item
+- `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/**` — parent ADR package scope
+- `src/gzkit/governance/trust_audits/__init__.py` — composite scope dispatch wiring (`validate_surface_fidelity` runs all four)
+- `src/gzkit/cli/parser_maintenance.py` — `gz validate --surface-fidelity` flag registration and dispatch; `gz check` integration
+- `tests/governance/test_surface_fidelity_composite.py` — Gate-2 TDD asset for composite behavior
+- `.pre-commit-config.yaml` — pre-commit hook registration for the cheap subset (invariants 1, 2, 3)
+- `docs/user/manpages/gz-validate.md` — manpage entry for `--surface-fidelity`
+- `docs/user/manpages/gz-check.md` — note that `gz check` now includes the surface-fidelity composite
 
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
 - Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- The four predecessor validator modules (already landed by OBPIs 01–04)
+- `docs/governance/advisory-rules-audit.md`, `AGENTS.md`, `CLAUDE.md`, `.claude/rules/**` (content edits are not in scope; only the validator wiring)
+- New runtime dependencies
+- CI files outside `.pre-commit-config.yaml`, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: **Bullet retention** — every bullet on `docs/governance/advisory-rules-audit.md`
-1. REQUIREMENT: **Surface weight regression** — direction-binding (no growth past current
-1. REQUIREMENT: **Pointer integrity** — every `> See [...](path#anchor)` lift pointer in
-1. REQUIREMENT: **Loading-scenario reachability** — every Mechanical/Promotable bullet is
+This OBPI implements the composite scope and CI wiring. It does NOT re-implement
+the four invariants; it integrates them.
+
+1. REQUIREMENT: **Composite runs all four.** `gz validate --surface-fidelity` MUST invoke `validate_bullet_retention`, `validate_surface_weight`, `validate_pointer_integrity`, and `validate_scenario_reachability` in that order and aggregate their `ValidationError` lists. Skipping any of the four is fail-closed at the test layer.
+2. REQUIREMENT: **Exit code is the worst of the four.** If any constituent validator exits 3, the composite exits 3. The composite exit MUST NEVER be lower than the highest constituent exit code (no masking).
+3. REQUIREMENT: **`gz check` integration.** `gz check` MUST invoke `--surface-fidelity` as part of its default pipeline. The wiring follows the established pattern for other composite validators (e.g., `--advisor-proof-binding` registered in `parser_maintenance.py`).
+4. REQUIREMENT: **Pre-commit runs the cheap subset.** `.pre-commit-config.yaml` MUST register a hook that runs invariants 1, 2, and 3 (`--bullet-retention`, `--surface-weight`, `--pointer-anchors`). Invariant 4 (scenario reachability) is CI-only in Era 1 and MUST NOT be in pre-commit (its registry-absent advisory would be noise on every commit).
+5. REQUIREMENT: **No new pre-commit dependency.** The hook MUST invoke `uv run gz validate --bullet-retention --surface-weight --pointer-anchors` (a single CLI call passing all three flags), not three separate hooks, so the per-commit overhead is one parser bootstrap, not three.
+6. REQUIREMENT: **Tests live under `tests/governance/`.** The composite test file follows the per-rule-file naming convention; integration tests assert (a) all four constituents fire, (b) exit code aggregation, (c) `gz check` includes the scope, (d) pre-commit registration text is present.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -79,11 +105,14 @@ Composite scope + CI wiring — `gz validate --surface-fidelity` runs all four; 
 
 - [ ] Related OBPIs in same ADR
 
-**Prerequisites (check existence, STOP if missing):**
+**Prerequisites (check existence, STOP if missing — sequential dependency on OBPIs 01–04):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `tests/governance/`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
+- [ ] Parent ADR file exists: `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md`
+- [ ] `src/gzkit/governance/trust_audits/bullet_retention.py` exists and re-exports `validate_bullet_retention` (OBPI-01 landed)
+- [ ] `src/gzkit/governance/trust_audits/surface_weight.py` exists and re-exports `validate_surface_weight` (OBPI-02 landed)
+- [ ] `src/gzkit/governance/trust_audits/pointer_integrity.py` exists and re-exports `validate_pointer_integrity` (OBPI-03 landed)
+- [ ] `src/gzkit/governance/trust_audits/scenario_reachability.py` exists and re-exports `validate_scenario_reachability` (OBPI-04 landed)
+- [ ] `.pre-commit-config.yaml` exists at repo root
 
 **Existing Code (understand current state):**
 
@@ -137,8 +166,11 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md
-test -f tests/governance/
+uv run gz validate --surface-fidelity                 # composite must exit 0 on a clean tree
+uv run gz check                                        # must invoke surface-fidelity as part of pipeline
+uv run -m unittest tests.governance.test_surface_fidelity_composite -v
+grep -q "gz validate --bullet-retention" .pre-commit-config.yaml
+test -d tests/governance
 ```
 
 ## Acceptance Criteria
@@ -149,9 +181,12 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.33-05-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.33-05-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.33-05-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.33-05-01: Given the four predecessor validators are importable from `gzkit.governance.trust_audits`, when `gz validate --surface-fidelity` runs, then it invokes all four in declared order (`bullet_retention`, `surface_weight`, `pointer_integrity`, `scenario_reachability`) and aggregates their errors.
+- [ ] REQ-0.0.33-05-02: Given one constituent validator returns a fail-closed error (exit 3) and the others return clean, when `gz validate --surface-fidelity` runs, then the composite exits 3 and the aggregated error list contains the failing constituent's `ValidationError`.
+- [ ] REQ-0.0.33-05-03: Given `gz check` is invoked, when its pipeline runs, then `validate_surface_fidelity` is one of the executed steps (assert via test-doubles on the check dispatch table).
+- [ ] REQ-0.0.33-05-04: Given `.pre-commit-config.yaml`, when read, then it contains a hook entry invoking `uv run gz validate --bullet-retention --surface-weight --pointer-anchors` as a single CLI call. NEVER includes `--scenario-reachability` in the pre-commit subset.
+- [ ] REQ-0.0.33-05-05: Given the manpage `docs/user/manpages/gz-validate.md`, when read, then `--surface-fidelity` is documented with a description matching the composite scope behavior.
+- [ ] REQ-0.0.33-05-06: Given the composite is implemented, when `gzkit.governance.trust_audits.validate_surface_fidelity` is imported, then it resolves and matches the established re-export pattern.
 
 ## Completion Checklist
 

@@ -33,15 +33,22 @@ Pointer-integrity validator (`gz validate --pointer-anchors`) — parse `> See [
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md` — parent ADR for intent and scope
 - `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/**` — parent ADR package scope
+- `src/gzkit/governance/trust_audits/pointer_integrity.py` — validator implementation (new module)
+- `src/gzkit/governance/trust_audits/__init__.py` — package re-export of `validate_pointer_integrity`
+- `src/gzkit/cli/parser_maintenance.py` — `gz validate --pointer-anchors` flag registration and dispatch
+- `tests/governance/test_pointer_integrity.py` — Gate-2 TDD asset
+- `docs/user/manpages/gz-validate.md` — manpage entry for the new flag
 
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
 - Paths not listed in Allowed Paths
-- New dependencies
+- New runtime dependencies (stdlib markdown parsing only)
+- Composite wiring into `--surface-fidelity` (owned by OBPI-05)
+- Other invariants' validator modules
+- Editing existing `> See [...]` pointers or `<!-- lifted-from: -->` back-pointers (the validator only enforces; remediation of detected drift is a separate fix)
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
@@ -49,10 +56,14 @@ Pointer-integrity validator (`gz validate --pointer-anchors`) — parse `> See [
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: **Bullet retention** — every bullet on `docs/governance/advisory-rules-audit.md`
-1. REQUIREMENT: **Surface weight regression** — direction-binding (no growth past current
-1. REQUIREMENT: **Pointer integrity** — every `> See [...](path#anchor)` lift pointer in
-1. REQUIREMENT: **Loading-scenario reachability** — every Mechanical/Promotable bullet is
+This OBPI implements parent-ADR Invariant 3 only. The other three invariants
+are out of scope for this brief.
+
+1. REQUIREMENT: **Forward anchor resolution.** `gz validate --pointer-anchors` walks the per-turn surface corpus (`AGENTS.md`, `CLAUDE.md`, `.claude/rules/**`), parses every `> See [...](path#anchor)` blockquote, and asserts each `path#anchor` resolves to an existing heading anchor in the destination file. NEVER use raw string matching on the heading text; ALWAYS slugify with the established docs slug rule (lowercase, hyphenated, non-alphanumeric stripped) to match mkdocs anchor generation.
+2. REQUIREMENT: **Reverse back-pointer check.** For each lifted-pedagogy destination (any file referenced by a `> See [...]` pointer in the per-turn surface), the destination MUST carry a matching `<!-- lifted-from: <source-path>#<anchor> -->` comment. A forward pointer without a back-pointer is fail-closed.
+3. REQUIREMENT: **Exit 3 on any unresolved pointer or missing back-pointer.** Single failure → `ValidationError` with `type="pointer_anchors"`, exit code 3. NEVER warn-and-pass.
+4. REQUIREMENT: **Pointer surface is bounded.** ONLY `> See [...](path#anchor)` blockquotes inside the per-turn surface corpus are checked. NEVER walk arbitrary markdown for "see" prose; the blockquote-`See`-link form is the canonical lift-pointer shape (per the lift-rationale doctrine).
+5. REQUIREMENT: **Error message names both halves.** Each emitted `ValidationError` MUST cite the source file:line of the unresolved pointer AND the destination path that lacks the matching anchor or back-pointer. Single-side errors are insufficient for remediation.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -81,9 +92,11 @@ Pointer-integrity validator (`gz validate --pointer-anchors`) — parse `> See [
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
+- [ ] Parent ADR file exists: `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md`
+- [ ] Per-turn surface corpus exists: `AGENTS.md`, `CLAUDE.md`, `.claude/rules/`
+- [ ] Trust-audits package exists: `src/gzkit/governance/trust_audits/__init__.py`
+- [ ] CLI parser exists: `src/gzkit/cli/parser_maintenance.py`
+- [ ] At least one existing `> See [...](path#anchor)` pointer in the corpus (sanity baseline for the parser)
 
 **Existing Code (understand current state):**
 
@@ -137,7 +150,9 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md
+uv run gz validate --pointer-anchors                  # must exit 0 on a clean tree
+uv run -m unittest tests.governance.test_pointer_integrity -v
+test -f src/gzkit/governance/trust_audits/pointer_integrity.py
 ```
 
 ## Acceptance Criteria
@@ -148,9 +163,11 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.33-03-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.33-03-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.33-03-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.33-03-01: Given a `> See [path#anchor]` pointer whose destination heading exists in `path` and whose slug matches the mkdocs slugification, when `gz validate --pointer-anchors` runs, then it exits 0 for that pointer.
+- [ ] REQ-0.0.33-03-02: Given a `> See [path#anchor]` pointer whose destination path does not exist OR whose anchor is absent from the destination, when `gz validate --pointer-anchors` runs, then it exits 3 with a `ValidationError` of `type="pointer_anchors"` naming both the source `file:line` and the unresolved destination.
+- [ ] REQ-0.0.33-03-03: Given a destination path referenced by a forward pointer but lacking a `<!-- lifted-from: <source>#<anchor> -->` back-pointer, when `gz validate --pointer-anchors` runs, then it exits 3 with a `ValidationError` naming the missing back-pointer.
+- [ ] REQ-0.0.33-03-04: Given a non-blockquote `[link](path#anchor)` reference in the per-turn surface, when `gz validate --pointer-anchors` runs, then the reference is NOT checked (scope is `> See [...]` blockquotes only).
+- [ ] REQ-0.0.33-03-05: Given the validator module, when imported, then `gzkit.governance.trust_audits.validate_pointer_integrity` resolves and matches the package re-export pattern.
 
 ## Completion Checklist
 
