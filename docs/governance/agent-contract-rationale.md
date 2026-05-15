@@ -254,15 +254,58 @@ The tradeoff is deliberate, and stating it is the fair thing to do:
   a corrupted artifact graph that reconciliation has to untangle months
   later.
 
-Both shapes are defensible for their problem class. The four Karpathy
-principles (Think Before Coding, Simplicity First, Surgical Changes,
-Goal-Driven Execution) are all present in this contract with stronger
-mechanical backstops — see `AGENTS.md` § Behavior Rules (Judgment invariants
-7–10) and § DO IT RIGHT (#6a–6h), `.gzkit/rules/tests.md` Red-Green-Refactor,
-and the ARB receipt requirement in § Attestation. When in doubt about
-whether gzkit's surface is worth the cost, the answer is: it is worth the
-cost for work that must be audited across context boundaries, and it is
-heavier than necessary for a single trivial edit. Use judgment.
+Both shapes are defensible for their problem class. Mapping the four
+Karpathy principles onto this contract, three are adopted with stronger
+mechanical backstops; one is **deliberately inverted**:
+
+- **#1 Think Before Coding** (assumptions, ambiguity, push back) —
+  adopted. `AGENTS.md` § Behavior Rules — Always #7–#10 (90% confidence
+  threshold, surface assumptions, STOP on inconsistencies, push back on
+  flawed approaches) and § DO IT RIGHT §2 ("no vibe coding") carry the
+  same intent under stronger framing; § Anti-vibing mantra is the
+  conscience when the judgment invariants are silent.
+- **#2 Simplicity First** (minimum code, no speculative features) —
+  adopted on *defaults*, departed on *velocity framing*. § STDLIB-FIRST
+  and the no-speculative-features clause in § PRIME DIRECTIVE land the
+  same defaults. The upstream framing "bias toward caution over speed"
+  is presented as a tradeoff axis; § Anti-vibing operative claim 2
+  forbids that framing (*"'Lighter ceremony' is not a tradeoff axis"*).
+  Advisory scorecard rows #18–24 (ruff complexity, ty, class/module
+  size) are the mechanical floor.
+- **#3 Surgical Changes** — **deliberately inverted**. Upstream: *"every
+  changed line should trace directly to the user's request."* gzkit
+  § PRIME DIRECTIVE 4 (*"SCOPE EXPANSION IS NOT SCOPE CREEP"*) and
+  § DO IT RIGHT §1 (*"fix the class of failure, not the instance"*) plus
+  §1a (coupled-surface coherence) require the *thorough* fix where
+  Karpathy requires the *narrow* one. The inversion is intentional: a
+  corrupted artifact graph cannot be unwound by a downstream surgical
+  patch, so the contract pays the coupled-surface tax up-front.
+  § Defect-fix routing's 60-day precedent gate and Invariant 6c are the
+  structural defenses that keep "fix the class" from sliding into
+  ceremony-for-ceremony's-sake on small in-flight fixes.
+- **#4 Goal-Driven Execution** (transform "fix X" into "write failing
+  test, make it pass") — adopted; the upstream *authoring habit* is a
+  sharper restatement of gzkit's REQ-coverage *mechanical check*.
+  Karpathy: *"Add validation → write tests for invalid inputs, then make
+  them pass."* gzkit's REQ-coverage gate (ADR-0.0.25, `gz obpi
+  complete`) is the post-hoc enforcement on the same loop;
+  `.gzkit/rules/tests.md` Red-Green-Refactor is the authoring
+  discipline; the ARB receipt requirement in § Attestation pins the
+  evidence. The Karpathy phrasing is worth retaining as the operative
+  input habit upstream of the mechanical gate.
+
+When in doubt about whether gzkit's surface is worth the cost, the
+answer is: it is worth the cost for work that must be audited across
+context boundaries, and it is heavier than necessary for a single
+trivial edit. Use judgment.
+
+This contract recursively applies the harness-is-product principle one
+tier up: where Claude Code's harness wraps the model, gzkit's
+meta-harness wraps Claude Code's outputs in governance state. See
+[`harness-engineering-appraisal.md` § External Validation — Greyling on
+Claude Code](harness-engineering-appraisal.md#external-validation-greyling-on-claude-code-recursive-case)
+for the codebase-ratio framing, subsystem mapping, and the triangulation
+with Böckeler's "Harness Engineering" thesis.
 
 ## Anti-vibing mantra — relationship to the rest of the contract
 

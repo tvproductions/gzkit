@@ -66,7 +66,7 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 
 > gzkit's purpose is to make stochastic LLM vibing structurally inert. A 5:1 governance-to-output ratio is not overhead — it is the product. Every option is framed by *"which choice leaves the smallest surface for vibing to leak through,"* never by maintenance burden or velocity. *"Lighter ceremony"* is not a tradeoff axis.
 
-> See [`docs/governance/agent-contract-rationale.md` § Anti-vibing mantra](docs/governance/agent-contract-rationale.md#anti-vibing-mantra--relationship-to-the-rest-of-the-contract) for the rationale and relationship to the other contract pillars.
+> See [`docs/governance/agent-contract-rationale.md` § Anti-vibing mantra](docs/governance/agent-contract-rationale.md#anti-vibing-mantra--relationship-to-the-rest-of-the-contract) for the rationale and relationship to the other contract pillars; see [`docs/governance/harness-engineering-appraisal.md`](docs/governance/harness-engineering-appraisal.md) for the appraisal of gzkit's harness fitness against the Böckeler ("Harness Engineering") and Greyling ("98% of Claude Code Is Not AI") external theses.
 
 ### Operative claims (binding)
 

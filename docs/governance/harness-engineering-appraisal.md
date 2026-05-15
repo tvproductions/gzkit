@@ -56,9 +56,40 @@ The article's framing is that **guides anticipate, sensors observe**. gzkit inve
 
 The two concrete additions that emerged as highest-priority from this appraisal: **mutation testing as a `gz validate --mutation` scope** (closes the Invariant 6f gap mechanically) and **an in-session sensor sidecar** that streams `gz validate` deltas to the agent during edits. Both are on the [improvement plan](../../.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md) — mutation testing in Wave 1 (already booked as `OBPI-0.31.0-07-mutate`), sidecar in Wave 2 (`ADR-pool.harness-sidecar`).
 
+## External Validation — Greyling on Claude Code (recursive case)
+
+> **Source:** Cobus Greyling, ["98% of Claude Code Is Not AI"](https://github.com/cobusgreyling/98-percent-claude-code-not-ai), summarizing a 46-page reverse-engineering study of Claude Code's TypeScript codebase (paper cited by Greyling at `arxiv:2604.14228`; the blog is the consulted artifact).
+>
+> **Framing:** Greyling's thesis is structural rather than 2×2 — a codebase-ratio breakdown. By the community estimate Greyling cites, ~1.6% of Claude Code's codebase is AI decision logic; ~98.4% is operational infrastructure organized into five subsystems (permissions, context management, safety layers, extensibility, session persistence). The headline: *"The harness is the product. The model is a commodity input."*
+
+### Triangulation with Böckeler
+
+Böckeler's 2×2 (feed-forward vs feedback × inferential vs computational) and Greyling's five-subsystem ratio framing are independent published harness theses. Both converge on gzkit's stance: heavy harness investment is the production-reliability story; "lighter ceremony" is not the relevant tradeoff axis. The gaps Böckeler exposes (in-session sidecar, mutation testing, property testing, harness-fitness measurement) are reinforced, not contradicted, by Greyling's framing — the per-tool-call permission gate Greyling describes is the runtime analog of the in-session sidecar Böckeler identifies as gzkit's largest gap.
+
+The independent convergence is itself the doctrinal signal: two unrelated 2026 publications, different framings, same conclusion — the harness is the product. gzkit canonicalized the same claim in `AGENTS.md § MAKE LLM STOCHASTIC VIBES INERT` operative claim 1 (*"5:1 governance-to-output ratio is the product, not overhead"*) before either external source landed.
+
+### gzkit as the recursive case
+
+Claude Code's harness wraps the model; gzkit's meta-harness wraps Claude Code's outputs in governance state. The same logic that justifies Claude Code's 98.4% operational infrastructure justifies gzkit's 5:1 governance-to-output ratio — the audit surface is wider, so the harness must be thicker. **gzkit's own runtime sits at the asymptote of this principle: ~100% governance scaffolding, 0% AI decision logic in `src/gzkit/`.** gzkit does not call the LLM in its own runtime; the LLM operates *through* gzkit's meta-harness via the upstream Claude Code harness. The recursive framing: *Claude Code makes the harness the product; gzkit makes the audit trail the harness's product.*
+
+### Subsystem mapping
+
+| Greyling subsystem (Claude Code, Layer 1) | gzkit Layer-2 analog | Time-scale | Note |
+|---|---|---|---|
+| Permissions (deny-first, ML classifier, 7 modes) | Gate covenant (Gates 1–5, sensitivity matrix) | per-ceremony, not per-tool-call | Different tier — permission asks *"can this tool run now"*; gate asks *"is this work complete"*. The per-tool-call axis is delegated to Claude Code's permission system. |
+| Context management (5-layer compaction) | SessionStart re-injection + `gz-context-diet` skill + `gz validate --instructions-files-budget` | authoring-time + session-start | Runtime compaction is delegated to Claude Code; gzkit budgets the *persistent instruction surface* so doctrine drift doesn't eat the window. |
+| Safety (structural, 93% rubber-stamping insight) | Advisory-rules-audit scorecard; Promotable→Mechanical ladder | continuous | The independently-arrived-at insight — see [`advisory-rules-audit.md` § Why this audit exists](advisory-rules-audit.md). gzkit's "9 silent failures over weeks" outage is the local-evidence version of Greyling's "users approve 93% of permission prompts." |
+| Extensibility (skills, hooks, MCP, plugins) | Skill catalog + 3-mirror sync + personas | continuous | gzkit invests further by mechanizing mirror-drift fail-closed (`gzkit.hooks.guards.forbid_skill_sync_drift`, scorecard row #33). |
+| Session persistence (transcripts, settings) | Ledger-of-truth (T2 source-of-truth) + session handoffs | persistent | **Kind shift, not just extension.** Claude Code's session is for replay; gzkit's ledger is *load-bearing governance state* that outlives the agent — state-doctrine `§` "derived views are never source-of-truth" applies. |
+
+### What this triangulation does NOT change
+
+Greyling's analysis reinforces the existing Böckeler-derived improvement plan; it does not unlock new mechanical promotion candidates beyond what's already tracked in the advisory scorecard. The honest output of this triangulation is doctrinal clarity (the recursive framing) and external validation (two independent published theses converge), not new validator scopes. The Böckeler-identified concrete additions — mutation testing (Wave 1, `OBPI-0.31.0-07-mutate`) and in-session sensor sidecar (Wave 2, `ADR-pool.harness-sidecar`) — remain the highest-priority structural moves; the Greyling axis adds an external second-opinion that they are correct, not a third item.
+
 ## Cross-References
 
 - Source: <https://martinfowler.com/articles/harness-engineering.html>
+- Greyling axis source: <https://github.com/cobusgreyling/98-percent-claude-code-not-ai>
 - Improvement plan handoff: [`.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md`](../../.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md)
 - Booked work: [`OBPI-0.31.0-07-mutate`](../design/adr/pre-release/ADR-0.31.0-new-cli-command-absorption/obpis/OBPI-0.31.0-07-mutate.md)
 - Doctrine roots cited: `AGENTS.md` §§ MAKE LLM STOCHASTIC VIBES INERT, STDLIB-FIRST DOCTRINE, OPERATOR ECONOMY OF EFFORT, Attestation; `.claude/rules/tests.md` § Invariant 6f; `docs/governance/advisory-rules-audit.md`; `docs/governance/state-doctrine.md`
