@@ -33,15 +33,24 @@ Surface-weight validator (`gz validate --surface-weight`) — snapshot file, wai
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md` — parent ADR for intent and scope
 - `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/**` — parent ADR package scope
+- `src/gzkit/governance/trust_audits/surface_weight.py` — validator implementation (new module)
+- `src/gzkit/governance/trust_audits/__init__.py` — package re-export of `validate_surface_weight`
+- `src/gzkit/cli/parser_maintenance.py` — `gz validate --surface-weight` flag registration and dispatch
+- `tests/governance/test_surface_weight.py` — Gate-2 TDD asset
+- `data/surface_weight_floor.json` — initial snapshot (created in this OBPI)
+- `data/surface_weight_waivers.json` — empty waiver schema bootstrap (created in this OBPI)
+- `docs/user/manpages/gz-validate.md` — manpage entry for the new flag
 
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
 - Paths not listed in Allowed Paths
-- New dependencies
+- New runtime dependencies (stdlib line-count only)
+- Composite wiring into `--surface-fidelity` (owned by OBPI-05)
+- Other invariants' validator modules
+- Recalibration of the warning bands themselves (band values come from the ADR Decision; this OBPI only enforces them)
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
@@ -49,10 +58,14 @@ Surface-weight validator (`gz validate --surface-weight`) — snapshot file, wai
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: **Bullet retention** — every bullet on `docs/governance/advisory-rules-audit.md`
-1. REQUIREMENT: **Surface weight regression** — direction-binding (no growth past current
-1. REQUIREMENT: **Pointer integrity** — every `> See [...](path#anchor)` lift pointer in
-1. REQUIREMENT: **Loading-scenario reachability** — every Mechanical/Promotable bullet is
+This OBPI implements parent-ADR Invariant 2 only. The other three invariants
+are out of scope for this brief.
+
+1. REQUIREMENT: **Direction-binding enforcement.** `gz validate --surface-weight` computes the current line count of the per-turn surface corpus (`AGENTS.md`, `CLAUDE.md`, files under `.claude/rules/**`), reads the floor from `data/surface_weight_floor.json`, and asserts current ≤ floor. Growth past the snapshot is fail-closed.
+2. REQUIREMENT: **Provisional warning bands.** Green ≤ 1800 (pass), yellow 1801–2200 (exit 0 with warning unless waiver entry covers the delta), red > 2200 (exit 3, no waiver dispensation). Band values are pinned by the parent ADR Decision; ALWAYS read from a single constant block in `surface_weight.py`.
+3. REQUIREMENT: **Waiver schema is structural.** `data/surface_weight_waivers.json` MUST validate against a JSON Schema declared in the validator module: required keys `waiver_id`, `expires`, `delta_lines`, `attestor`, `reason`. An expired waiver NEVER counts. NEVER hand-edit waivers without an attested recalibration receipt.
+4. REQUIREMENT: **Recalibration is a ledger event.** A floor recalibration MUST update `data/surface_weight_floor.json` AND emit a `surface_weight_recalibrated` event to the ledger via `gz adr emit-receipt`. NEVER allow silent floor mutation; the validator MUST reject a floor whose timestamp predates the most recent recalibration event by more than 24h (drift detection).
+5. REQUIREMENT: **Exit code discipline.** Exit 0 (clean), exit 0 (yellow band with active waiver), exit 3 (yellow band with no waiver), exit 3 (red band), exit 3 (floor drift detected). NEVER conflate yellow-without-waiver with green.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -81,9 +94,11 @@ Surface-weight validator (`gz validate --surface-weight`) — snapshot file, wai
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
+- [ ] Parent ADR file exists: `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md`
+- [ ] Per-turn surface corpus exists: `AGENTS.md`, `CLAUDE.md`, `.claude/rules/`
+- [ ] Trust-audits package exists: `src/gzkit/governance/trust_audits/__init__.py`
+- [ ] CLI parser exists: `src/gzkit/cli/parser_maintenance.py`
+- [ ] `data/` directory exists (snapshot and waivers will be created in this OBPI)
 
 **Existing Code (understand current state):**
 
@@ -137,8 +152,11 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md
-uv run -m unittest tests/test_persona_schema.py -v
+uv run gz validate --surface-weight                    # must exit 0 on a clean tree against snapshot
+uv run -m unittest tests.governance.test_surface_weight -v
+test -f src/gzkit/governance/trust_audits/surface_weight.py
+test -f data/surface_weight_floor.json
+test -f data/surface_weight_waivers.json
 ```
 
 ## Acceptance Criteria
@@ -149,9 +167,12 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.33-02-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.33-02-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.33-02-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.33-02-01: Given the per-turn surface corpus at or below the snapshot floor, when `gz validate --surface-weight` runs, then it exits 0 with no warning.
+- [ ] REQ-0.0.33-02-02: Given a corpus line count in the yellow band (1801–2200) with no active waiver covering the delta, when `gz validate --surface-weight` runs, then it exits 3 with a `ValidationError` of `type="surface_weight"` naming the delta.
+- [ ] REQ-0.0.33-02-03: Given a corpus line count in the red band (>2200), when `gz validate --surface-weight` runs, then it exits 3 regardless of waiver entries (no dispensation in red).
+- [ ] REQ-0.0.33-02-04: Given `data/surface_weight_waivers.json` containing an expired waiver entry, when `gz validate --surface-weight` runs, then the expired entry is rejected and the delta it covered is treated as un-waived.
+- [ ] REQ-0.0.33-02-05: Given a floor snapshot whose timestamp predates the most recent ledger `surface_weight_recalibrated` event by >24h, when `gz validate --surface-weight` runs, then it exits 3 with a `type="surface_weight"` error citing floor drift.
+- [ ] REQ-0.0.33-02-06: Given the validator module, when imported, then `gzkit.governance.trust_audits.validate_surface_weight` resolves and matches the package re-export pattern.
 
 ## Completion Checklist
 

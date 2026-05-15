@@ -33,15 +33,22 @@ Scenario-reachability validator (`gz validate --scenario-reachability`) — advi
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md` — parent ADR for intent and scope
 - `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/**` — parent ADR package scope
+- `src/gzkit/governance/trust_audits/scenario_reachability.py` — validator implementation (new module)
+- `src/gzkit/governance/trust_audits/__init__.py` — package re-export of `validate_scenario_reachability`
+- `src/gzkit/cli/parser_maintenance.py` — `gz validate --scenario-reachability` flag registration and dispatch
+- `tests/governance/test_scenario_reachability.py` — Gate-2 TDD asset
+- `docs/user/manpages/gz-validate.md` — manpage entry for the new flag
 
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
 - Paths not listed in Allowed Paths
-- New dependencies
+- `data/agent-control-surface-scenarios.json` — registry creation is owned by ADR-0.0.34; this OBPI consumes the registry when present but does NOT bootstrap it
+- New runtime dependencies (stdlib JSON + substring only)
+- Composite wiring into `--surface-fidelity` (owned by OBPI-05)
+- Other invariants' validator modules
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
@@ -49,10 +56,19 @@ Scenario-reachability validator (`gz validate --scenario-reachability`) — advi
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: **Bullet retention** — every bullet on `docs/governance/advisory-rules-audit.md`
-1. REQUIREMENT: **Surface weight regression** — direction-binding (no growth past current
-1. REQUIREMENT: **Pointer integrity** — every `> See [...](path#anchor)` lift pointer in
-1. REQUIREMENT: **Loading-scenario reachability** — every Mechanical/Promotable bullet is
+This OBPI implements parent-ADR Invariant 4 only. The other three invariants
+are out of scope for this brief.
+
+**Era-1 vs Era-2 behavior is explicit.** Invariant 4 is advisory by parent-ADR
+Decision because the loading-scenarios registry is authored under ADR-0.0.34,
+not under this ADR. The validator MUST be implemented to the full Era-2
+contract from day one; only its exit behavior is Era-1-softened.
+
+1. REQUIREMENT: **Registry-absent behavior (Era 1).** When `data/agent-control-surface-scenarios.json` does NOT exist, the validator MUST exit 0 with a single advisory line to stderr: `scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check`. NEVER silently exit 0 without the advisory line; NEVER exit 3 — registry-absent is bootstrap, not drift. (Mirrors the `--reconcile-freshness` zero-event fail-open pattern at `src/gzkit/governance/trust_audits.py:1024-1028`.)
+2. REQUIREMENT: **Registry-present behavior (Era 2).** When `data/agent-control-surface-scenarios.json` exists, the validator parses it as a list of declared loading scenarios. For each scenario, it asserts every Mechanical/Promotable bullet (sourced from `docs/governance/advisory-rules-audit.md`, same source as OBPI-01) is reachable from at least one declared scenario. Reachability semantics: the scenario's declared corpus set covers the bullet's surface file.
+3. REQUIREMENT: **Era-2 advisory remains advisory.** Even with the registry present, orphan bullets (covered by no scenario) emit a warning to stderr and exit 0. The validator NEVER exits 3 on orphan bullets without an explicit `--strict` flag (deferred to a follow-up GHI that escalates Era 2 to fail-closed). The advisory mode is per parent-ADR Decision; do NOT promote to fail-closed in this brief.
+4. REQUIREMENT: **Registry schema validation (Era 2).** When the registry exists but does not validate against the declared JSON Schema (in `scenario_reachability.py`), the validator exits 3 with a `ValidationError` of `type="scenario_reachability"`. A malformed registry IS fail-closed; an absent registry is NOT.
+5. REQUIREMENT: **Output is parseable.** Stderr advisory lines and orphan-bullet warnings MUST share a stable prefix (`scenario-reachability:`) so downstream tooling can grep without false positives. NEVER mix this prefix with other validator output.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -81,9 +97,11 @@ Scenario-reachability validator (`gz validate --scenario-reachability`) — advi
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
+- [ ] Parent ADR file exists: `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md`
+- [ ] Advisory scorecard exists (bullet source-of-truth): `docs/governance/advisory-rules-audit.md`
+- [ ] Trust-audits package exists: `src/gzkit/governance/trust_audits/__init__.py`
+- [ ] CLI parser exists: `src/gzkit/cli/parser_maintenance.py`
+- [ ] Registry absent is EXPECTED in Era 1; do NOT create `data/agent-control-surface-scenarios.json` in this OBPI (ADR-0.0.34 owns the substrate)
 
 **Existing Code (understand current state):**
 
@@ -137,7 +155,10 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md
+uv run gz validate --scenario-reachability             # Era-1: must exit 0 with advisory to stderr
+uv run -m unittest tests.governance.test_scenario_reachability -v
+test -f src/gzkit/governance/trust_audits/scenario_reachability.py
+test ! -f data/agent-control-surface-scenarios.json   # registry MUST remain absent (owned by ADR-0.0.34)
 ```
 
 ## Acceptance Criteria
@@ -148,9 +169,11 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.33-04-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.33-04-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.33-04-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.33-04-01: Given `data/agent-control-surface-scenarios.json` does not exist (Era-1 state), when `gz validate --scenario-reachability` runs, then it exits 0 AND prints the literal advisory `scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check` to stderr.
+- [ ] REQ-0.0.33-04-02: Given a stubbed registry file (test fixture) declaring at least one scenario whose corpus set covers every Mechanical/Promotable bullet, when `gz validate --scenario-reachability` runs, then it exits 0 with no orphan warnings.
+- [ ] REQ-0.0.33-04-03: Given a stubbed registry file declaring scenarios that leave at least one Mechanical/Promotable bullet uncovered, when `gz validate --scenario-reachability` runs, then it exits 0 (Era-2 advisory) AND emits `scenario-reachability: orphan bullet` warning lines naming each uncovered bullet.
+- [ ] REQ-0.0.33-04-04: Given a registry file that does not validate against the declared JSON Schema, when `gz validate --scenario-reachability` runs, then it exits 3 with a `ValidationError` of `type="scenario_reachability"`.
+- [ ] REQ-0.0.33-04-05: Given the validator module, when imported, then `gzkit.governance.trust_audits.validate_scenario_reachability` resolves and matches the package re-export pattern.
 
 ## Completion Checklist
 
