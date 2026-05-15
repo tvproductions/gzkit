@@ -1,5 +1,5 @@
 ---
-id: ADR-0.0.43
+id: ADR-0.0.43-ddd-domain-cascade
 status: Draft
 kind: foundation
 semver: 0.0.43

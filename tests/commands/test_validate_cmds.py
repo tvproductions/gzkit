@@ -1,4 +1,6 @@
+import json
 import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -568,3 +570,107 @@ class TestValidateTaxonomyFlag(unittest.TestCase):
             result = runner.invoke(main, ["validate", "--taxonomy"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Pool ADRs derive kind", result.output)
+
+
+_MANIFEST_WITH_ADR_ARTIFACT = {
+    "schema": "gzkit.manifest.v2",
+    "structure": {
+        "source_root": "src",
+        "tests_root": "tests",
+        "docs_root": "docs",
+        "design_root": "docs/design",
+    },
+    "artifacts": {
+        "adr": {"path": "docs/design/adr", "schema": "gzkit.adr.v1"},
+    },
+    "data": {},
+    "ops": {},
+    "thresholds": {},
+    "control_surfaces": {},
+    "verification": {},
+    "gates": {},
+    "rules": {},
+}
+
+_BARE_ID_ADR_FRONTMATTER = """\
+---
+id: ADR-0.0.43
+status: Draft
+kind: foundation
+semver: 0.0.43
+lane: heavy
+parent: PRD-GZKIT-1.0.0
+date: 2026-05-11
+---
+# ADR-0.0.43: DDD Domain Cascade
+"""
+
+_SLUG_ID_ADR_FRONTMATTER = """\
+---
+id: ADR-0.0.43-ddd-domain-cascade
+status: Draft
+kind: foundation
+semver: 0.0.43
+lane: heavy
+parent: PRD-GZKIT-1.0.0
+date: 2026-05-11
+---
+# ADR-0.0.43-ddd-domain-cascade: DDD Domain Cascade
+"""
+
+
+class TestValidateDocumentsNestedIteration(unittest.TestCase):
+    """REQ-468-01: validate --documents must reach nested ADR packages.
+
+    GHI #346 Reach Caveat: non-recursive glob skipped foundation/pre-release
+    ADR packages. Bare-id frontmatter in a nested package must fail-close.
+    """
+
+    def _write_manifest(self, root: Path) -> None:
+        gzkit_dir = root / ".gzkit"
+        gzkit_dir.mkdir(parents=True, exist_ok=True)
+        (gzkit_dir / "manifest.json").write_text(
+            json.dumps(_MANIFEST_WITH_ADR_ARTIFACT), encoding="utf-8"
+        )
+
+    def _write_nested_adr(self, root: Path, content: str) -> Path:
+        pkg_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.43-ddd-domain-cascade"
+        pkg_dir.mkdir(parents=True)
+        path = pkg_dir / "ADR-0.0.43-ddd-domain-cascade.md"
+        path.write_text(content, encoding="utf-8")
+        return path
+
+    def test_bare_id_in_nested_package_fails_closed(self) -> None:
+        """Bare-id frontmatter in a nested ADR package must produce a frontmatter id error."""
+        from gzkit.commands.validate_cmd import _validate_manifest_documents
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_manifest(root)
+            self._write_nested_adr(root, _BARE_ID_ADR_FRONTMATTER)
+            errors = _validate_manifest_documents(root)
+            id_errors = [e for e in errors if e.type == "frontmatter" and e.field == "id"]
+            self.assertGreater(
+                len(id_errors),
+                0,
+                msg=(
+                    "Expected frontmatter id error for bare-id ADR in nested package;"
+                    " got none (GHI #468)"
+                ),
+            )
+
+    def test_slug_id_in_nested_package_produces_no_id_error(self) -> None:
+        """Slug-suffixed ADR in nested package must not raise an id frontmatter error."""
+        from gzkit.commands.validate_cmd import _validate_manifest_documents
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_manifest(root)
+            self._write_nested_adr(root, _SLUG_ID_ADR_FRONTMATTER)
+            errors = _validate_manifest_documents(root)
+            id_errors = [e for e in errors if e.type == "frontmatter" and e.field == "id"]
+            self.assertEqual(
+                id_errors,
+                [],
+                msg=f"Expected no id errors for slug-id ADR; got {id_errors}",
+            )

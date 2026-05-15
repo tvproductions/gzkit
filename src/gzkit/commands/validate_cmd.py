@@ -953,7 +953,10 @@ def _validate_manifest_documents(project_root: Path) -> list[ValidationError]:
         schema = artifact_config.get("schema", "")
         schema_name = schema.replace("gzkit.", "").replace(".v1", "")
         if artifact_dir.exists():
-            for doc in artifact_dir.glob("*.md"):
+            _PREFIX = {"adr": "ADR-", "obpi": "OBPI-"}
+            prefix = _PREFIX.get(schema_name, "")
+            doc_iter = artifact_dir.rglob(f"{prefix}*.md") if prefix else artifact_dir.glob("*.md")
+            for doc in doc_iter:
                 errors.extend(validate_document(doc, schema_name))
     errors.extend(_validate_exemplar_corpus(project_root))
     return errors
