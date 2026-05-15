@@ -696,4 +696,4 @@ smoke test budget cost is the price of having T0 be more than advisory.
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.32 | Pending | | | |
+| 0.0.32 | Completed | Jeffry | 2026-05-14 | Completed |

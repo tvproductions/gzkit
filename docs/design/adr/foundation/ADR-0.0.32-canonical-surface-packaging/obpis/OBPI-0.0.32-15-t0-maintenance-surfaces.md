@@ -222,7 +222,7 @@ uv run gz adr audit-check ADR-0.0.32                          # expected: contin
 uv run gz validate --distribution                  # before: exit 3, 21 errors
 uv run gz validate --distribution --regenerate     # writes data/distribution_baseline_manifest.json from on-disk truth
 uv run gz validate --distribution                  # after: exit 0, no errors
-rg -n '"event": "distribution_baseline_regenerated"' .gzkit/ledger.jsonl | tail -1
+rg -n '"event":"distribution_baseline_regenerated"' .gzkit/ledger.jsonl | tail -1
 
 # Capability B — Per-surface classifier: non-md files under a canonical surface
 # resolve to a known class instead of triggering ON_DISK_NOT_INCLUDED.

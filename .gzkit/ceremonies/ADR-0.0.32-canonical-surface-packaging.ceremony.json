@@ -1,0 +1,84 @@
+{
+  "adr_id": "ADR-0.0.32-canonical-surface-packaging",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-05-15T01:03:53Z",
+  "updated_at": "2026-05-15T02:40:22Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-05-15T01:03:53Z",
+      "acknowledged_at": "2026-05-15T01:07:15Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-05-15T01:07:15Z",
+      "acknowledged_at": "2026-05-15T01:08:07Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-05-15T01:08:07Z",
+      "acknowledged_at": "2026-05-15T01:11:09Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-05-15T01:11:09Z",
+      "acknowledged_at": "2026-05-15T01:12:40Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-05-15T01:12:40Z",
+      "acknowledged_at": "2026-05-15T02:35:22Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-05-15T02:35:22Z",
+      "acknowledged_at": "2026-05-15T02:38:20Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-05-15T02:38:20Z",
+      "acknowledged_at": "2026-05-15T02:39:33Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-05-15T02:39:33Z",
+      "acknowledged_at": "2026-05-15T02:40:22Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-05-15T02:40:22Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "mkdir /tmp/gz-personas-demo && cd /tmp/gz-personas-demo",
+    "uv run gz init",
+    "ls .gzkit/personas/",
+    "head -10 .gzkit/personas/main-session.md",
+    "mkdir /tmp/gz-templates-demo && cd /tmp/gz-templates-demo",
+    "uv run gz init",
+    "ls .gzkit/templates/",
+    "head -10 .gzkit/templates/adr.md",
+    "uv run gz validate --distribution                  # before: exit 3, 21 errors",
+    "uv run gz validate --distribution --regenerate     # writes data/distribution_baseline_manifest.json from on-disk truth",
+    "uv run gz validate --distribution                  # after: exit 0, no errors",
+    "rg -n '\"event\": \"distribution_baseline_regenerated\"' .gzkit/ledger.jsonl | tail -1",
+    "uv run python -c \"from pathlib import Path; from gzkit.rules import _classify_rule_file; print(_classify_rule_file(Path('src/gzkit/rules/_scaffolder.py')))\"",
+    "ls .gzkit/rules/_scaffolder.py 2>&1                   # expected: No such file or directory",
+    "ls .gzkit/rules/_scaffolder.py 2>&1                   # expected: still No such file or directory",
+    "uv run gz validate --distribution --regenerate",
+    "git diff --quiet data/distribution_baseline_manifest.json",
+    "echo \"exit=$?\"                                         # expected: exit=0",
+    "uv run gz upgrade --surface skills --dry-run",
+    "uv run gz upgrade --surface skills,rules",
+    "uv run gz upgrade",
+    "uv run gz upgrade --surface templates --force",
+    "uv run gz upgrade"
+  ],
+  "walkthrough_index": 22,
+  "attestation": "Completed",
+  "completed_at": "2026-05-15T02:40:22Z",
+  "attempt": 1,
+  "paused_at": null
+}
