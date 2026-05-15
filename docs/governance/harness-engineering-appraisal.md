@@ -35,7 +35,7 @@ gzkit IS a harness-engineering project by design. The `MAKE LLM STOCHASTIC VIBES
 - **Mutation testing is absent.** Coverage floor (40%) is a weak signal — exactly the failure mode Böckeler demonstrated (100% statement coverage, zero unit tests, missing assertions). gzkit's own Invariant 6f names this problem; the mechanical defense is missing. `cosmic-ray` (cross-platform; `mutmut` requires `fork()` and is Unix-only) is the natural fit. Already booked as `OBPI-0.31.0-07-mutate` (port from airlineops `src/opsdev/commands/mutation_tools.py`).
 - **Property-based testing is absent.** `hypothesis` would catch logic gaps in the kind of derivation code gzkit has (semver/lifecycle/REQ-ID resolution, ledger event derivation, ARB receipt parsing). The `unittest`-over-`pytest` decision in STDLIB-FIRST DOCTRINE is principled but eliminates one path to property testing without acknowledging the cost.
 - **Fuzz testing is absent.** Less critical for gzkit's surface but worth naming as a gap.
-- **Inferential sensors are deliberately suppressed but not replaced.** `quality-reviewer` and `spec-reviewer` exist as subagents but aren't part of any pipeline stage. The anti-vibing posture is principled, but the article's point is that LLM-judges are good for *fuzzy* dimensions where deterministic checks can't reach. Foregoing them entirely cedes coverage of architectural-smell, naming-quality, abstraction-leakage failure classes.
+- **Inferential sensors are deliberately suppressed but not replaced.** `quality-reviewer` and `spec-reviewer` exist as subagents but aren't part of any pipeline stage. The anti-vibing posture is principled, but the article's point is that LLM-judges are good for *fuzzy* dimensions where deterministic checks can't reach. Foregoing them entirely cedes coverage of architectural-smell, naming-quality, abstraction-leakage failure classes. The "Third confirming thesis" subsection below catalogs Every Inc.'s 20+ specialized reviewer agents as a concrete inventory of what an inferential-sensor expansion might look like in published practice.
 - **Code-mods / language-server integration is light.** `ruff --fix` and direct edits dominate. No JetBrains MCP, no OpenRewrite-style migrations. For repeated patterns (e.g. the `# type: ignore[code]` sweep in GHI #197, the `PYTHONUTF8=1` purge in GHI #275), code-mods would be lower-vibing than agent rewrites.
 - **Dependency freshness as a continuous sensor is missing.** STDLIB-FIRST prevents *adding* dependencies poorly; it doesn't tell you when existing ones rotted.
 - **No sensor-health aggregator surface.** `gz status` and `gz state` show governance state, not "which `gz validate` scopes are currently red and what's the delta from last commit." Böckeler's sidecar dashboard had this; gzkit operators have to run `gz check` and read.
@@ -86,10 +86,41 @@ Claude Code's harness wraps the model; gzkit's meta-harness wraps Claude Code's 
 
 Greyling's analysis reinforces the existing Böckeler-derived improvement plan; it does not unlock new mechanical promotion candidates beyond what's already tracked in the advisory scorecard. The honest output of this triangulation is doctrinal clarity (the recursive framing) and external validation (two independent published theses converge), not new validator scopes. The Böckeler-identified concrete additions — mutation testing (Wave 1, `OBPI-0.31.0-07-mutate`) and in-session sensor sidecar (Wave 2, `ADR-pool.harness-sidecar`) — remain the highest-priority structural moves; the Greyling axis adds an external second-opinion that they are correct, not a third item.
 
+### Third confirming thesis — Every Inc. "Compound Engineering" plugin
+
+> **Source:** [`EveryInc/compound-engineering-plugin`](https://github.com/EveryInc/compound-engineering-plugin) (16.7k★, MIT, multi-platform: Claude Code, Codex, Cursor, Copilot, Droid, Qwen, OpenCode via a Bun/TypeScript converter CLI). Active development; 37 skills + 51 agents shipped at time of citation.
+>
+> **Thesis:** *"Each unit of engineering work should make subsequent units easier -- not harder."*
+> **Ratio (verbatim):** *"80% is in planning and review, 20% is in execution."* Numerically identical to gzkit's 5:1 (= 83/17).
+> **Framing:** *"The point is not ceremony. The point is leverage."*
+
+Three independent published harness theses (Böckeler 2×2, Greyling codebase-ratio, CE compounding-leverage) have now converged on the same heavy-process ratio (~80/20 plan-review/execution) and the same fundamental claim (the harness is the product). The convergence across independent framings is itself the doctrinal signal — gzkit's stance was not derived from any of them but lands at the same equilibrium.
+
+CE's framing is *consonant* with gzkit's Anti-vibing operative claim 2: *"The point is not ceremony. The point is leverage."* says ceremony is the mechanism, leverage is the product — the same idea gzkit canonicalizes as *"governance-to-output ratio is the product, not overhead."*
+
+#### Concrete contribution — specialized-reviewer inventory
+
+CE's most actionable contribution to this appraisal is a **published inventory of 20+ specialized reviewer agents** that gives concrete instances of the inferential-sensor expansion gap named under § Where gzkit Can Improve:
+
+| CE reviewer category | Example agents |
+|---|---|
+| Quality dimensions | code-simplicity, coherence, correctness, maintainability, performance, reliability, testing |
+| Concerns / lenses | security (×3: reviewer, sentinel, lens), product-lens, design-lens, scope-guardian, feasibility, project-standards |
+| Domain-specific | api-contract, schema-drift-detector, data-migrations, data-integrity-guardian, deployment-verification |
+| Adversarial | adversarial-reviewer, adversarial-document-reviewer |
+| Named-engineer voices | `dhh-rails`, `kieran-python`, `kieran-rails`, `kieran-typescript`, `julik-frontend-races`, `ankane-readme` |
+
+gzkit currently ships two review subagents (`quality-reviewer`, `spec-reviewer`). Whether to expand the reviewer surface in CE's direction is an **operator decision** — the inventory is flagged here as published prior art for what the expansion could look like, not adopted unilaterally. The named-engineer-voice pattern (DHH/Kieran/Julik/Ankane as review personas) is philosophically *opposed* to gzkit's trait-composed-only persona model and would require a doctrinal decision before any adoption.
+
+#### What CE does NOT add to the improvement plan
+
+CE confirms the 80/20 ratio and concretizes the inferential-sensor gap. It does not unlock new mechanical promotion candidates, does not contradict any existing gzkit doctrine, and does not displace the Böckeler-identified Wave 1/2 priorities. The CE compounding-learning mechanism (`/ce-compound` writing browsable markdown to `docs/solutions/<category>/`) is *different in kind* from gzkit's `.gzkit/insights/agent-insights.jsonl` (append-only auditable JSONL) — neither subsumes the other; the question of whether to add a browsable-by-topic surface over the insights stream is a separate operator decision, deferred here.
+
 ## Cross-References
 
 - Source: <https://martinfowler.com/articles/harness-engineering.html>
 - Greyling axis source: <https://github.com/cobusgreyling/98-percent-claude-code-not-ai>
+- Compound Engineering source: <https://github.com/EveryInc/compound-engineering-plugin> and <https://every.to/chain-of-thought/compound-engineering-how-every-codes-with-agents>
 - Improvement plan handoff: [`.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md`](../../.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md)
 - Booked work: [`OBPI-0.31.0-07-mutate`](../design/adr/pre-release/ADR-0.31.0-new-cli-command-absorption/obpis/OBPI-0.31.0-07-mutate.md)
 - Doctrine roots cited: `AGENTS.md` §§ MAKE LLM STOCHASTIC VIBES INERT, STDLIB-FIRST DOCTRINE, OPERATOR ECONOMY OF EFFORT, Attestation; `.claude/rules/tests.md` § Invariant 6f; `docs/governance/advisory-rules-audit.md`; `docs/governance/state-doctrine.md`
