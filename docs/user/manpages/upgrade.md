@@ -18,7 +18,7 @@ gz upgrade [OPTIONS]
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `--surface` | `SURFACES` | — | Comma-separated subset of canonical surfaces to refresh (`skills,rules,templates,personas,hooks`). Default: all. |
+| `--surface` | `SURFACES` | — | Comma-separated subset of canonical surfaces to refresh (`skills,rules,templates,personas`). Default: all. The `hooks` surface is carved out by ADR-0.0.32 § Named exception 1 (vendor-coupled package machinery) and is not a valid upgrade target — `--surface hooks` exits 1. |
 | `--force` | flag | — | Overwrite project-local EDITED artifacts with canonical wheel content. Without `--force`, EDITED artifacts are reported as conflicts and left unchanged. |
 | `--dry-run` | flag | — | Report what would change without writing any bytes to `.gzkit/`. Exit code matches the corresponding non-dry-run invocation. |
 
@@ -27,8 +27,11 @@ gz upgrade [OPTIONS]
 ## What It Does
 
 `gz upgrade` reads canonical surface content from the installed wheel via
-`importlib.resources.files("gzkit.<surface>")` and compares each artifact
-against the project's `.gzkit/<surface>/` tree using three-state detection:
+`importlib.resources.files("gzkit.<surface>")`, filters each candidate
+through the surface's `_classify_*` helper to skip package-only resources
+(e.g. `templates/skills/**` per REQ-0.0.32-11-04), and compares the
+remaining artifacts against the project's `.gzkit/<surface>/` tree using
+three-state detection:
 
 - **IDENTICAL** — bytes match the wheel canonical; artifact skipped silently
 - **STALE** — bytes differ and no canonical-version marker is present; artifact

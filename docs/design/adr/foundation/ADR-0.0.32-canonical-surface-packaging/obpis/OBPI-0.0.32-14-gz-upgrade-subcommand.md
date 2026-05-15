@@ -57,7 +57,7 @@ status: Completed
      These are the rules agents ground against. If not met, OBPI fails. -->
 
 1. REQUIREMENT: `gz upgrade` MUST resolve canonical content via `importlib.resources.files("gzkit.<surface>")` for every canonical surface registered in `CORE_SKILLS` / `CORE_RULES` / `CORE_PERSONAS` / `CORE_TEMPLATES` / `CORE_CHORES`. Direct filesystem reads of `src/gzkit/<surface>/` are forbidden — the package-data surface is the contract.
-2. REQUIREMENT: `gz upgrade --surface <list>` MUST accept a comma-separated subset of registered surface names (`skills`, `rules`, `templates`, `personas`, `hooks`) and process only those; default (no `--surface`) processes every registered canonical surface. An unrecognized surface name MUST fail closed with exit 1 and an error naming the unrecognized token.
+2. REQUIREMENT: `gz upgrade --surface <list>` MUST accept a comma-separated subset of registered surface names (`skills`, `rules`, `templates`, `personas`) and process only those; default (no `--surface`) processes every registered canonical surface. An unrecognized surface name MUST fail closed with exit 1 and an error naming the unrecognized token. Per-surface package-only files (e.g. `templates/skills/**`) MUST be filtered via the surface's `_classify_*` helper and never propagated to `.gzkit/<surface>/`. (Note: the authored REQ originally listed `hooks` as a valid surface; this contradicted ADR-0.0.32 § Named exception 1 — hooks are vendor-coupled and carved out of the dual-surface byte-parity invariant. Corrected under GHI #465.)
 3. REQUIREMENT: Without `--force`, `gz upgrade` MUST run the same three-state IDENTICAL/STALE/EDITED detection that OBPI-05 (`gz init --update`) establishes for `.gzkit/<surface>/<slug>/` content; project-local EDITED artifacts MUST be reported as conflicts and left unchanged, with overall exit 0 only when zero EDITED conflicts remain unresolved.
 4. REQUIREMENT: With `--force`, `gz upgrade` MUST overwrite EDITED artifacts with the wheel's package-data canonical content. A `--force` invocation MUST print a per-file overwrite line per modified path (one line per file, deterministic ordering by path) so the operator has an audit trail.
 5. REQUIREMENT: `--dry-run` MUST report what would change (using the same three-state classification as a non-dry-run invocation) without writing any byte to `.gzkit/`. The exit code under `--dry-run` matches what the corresponding non-dry-run invocation would exit with (0 for clean, non-zero for conflicts under no-`--force`).
@@ -309,7 +309,7 @@ Quality receipts:
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
 
-_No defects tracked._
+- GHI #465 — `gz upgrade` ignored ADR-0.0.32 § Named exception 1 (hooks carve-out) and package-only carve-outs (`templates/skills/**`). Surfaced at ADR-0.0.32 closeout (demo 21). Resolved by direct fix removing `hooks` from `KNOWN_SURFACES` and consulting per-surface `_classify_*` helpers; REQ-0.0.32-14-02 corrected above.
 
 ## Human Attestation
 
