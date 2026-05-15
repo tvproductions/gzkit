@@ -1,19 +1,23 @@
 ---
-id: ADR-pool.ghi-authoring-mechanical-label-enforcement
-status: Superseded
-parent: PRD-GZKIT-1.0.0
+id: ADR-0.0.44-ghi-authoring-mechanical-label-enforcement
+status: Proposed
+kind: foundation
+semver: 0.0.44
 lane: heavy
-enabler: null
-promoted_to: ADR-0.0.44-ghi-authoring-mechanical-label-enforcement
+parent: PRD-GZKIT-1.0.0
+date: 2026-05-15
+promoted_from: ADR-pool.ghi-authoring-mechanical-label-enforcement
 ---
 
-# ADR-pool.ghi-authoring-mechanical-label-enforcement: GHI Authoring Mechanical Label Enforcement
-> Promoted to `ADR-0.0.44-ghi-authoring-mechanical-label-enforcement` on 2026-05-15. This pool file is retained as historical intake context.
+# ADR-0.0.44-ghi-authoring-mechanical-label-enforcement: GHI Authoring Mechanical Label Enforcement
 
+## Persona
 
-## Status
+<!-- Describe the behavioral identity for agents working on this ADR.
+     Frame as values and craftsmanship standards, not expertise claims.
+     See .gzkit/personas/ for reusable persona definitions. -->
 
-Superseded
+{persona}
 
 ## Intent
 
@@ -101,6 +105,48 @@ mechanical surface. The `.claude/rules/gh-cli.md` allowed-commands list
 removes the unguarded `gh issue create --label defect ...` example and
 points at `gz issue file` instead.
 
+## Consequences
+
+### Positive
+
+- Promotion preserves backlog intent as executable ADR scope.
+- Checklist items now map 1:1 to generated OBPI briefs immediately.
+
+### Negative
+
+- Promotion fails closed when the pool ADR lacks actionable execution scope.
+
+## Decomposition Scorecard
+
+<!-- Deterministic OBPI sizing: score each dimension 0/1/2. -->
+<!-- Cutoffs are notional defaults and should be calibrated over time from project evidence. -->
+
+- Data/State: 2
+- Logic/Engine: 2
+- Interface: 2
+- Observability: 2
+- Lineage: 1
+- Dimension Total: 9
+- Baseline Range: 5+
+- Baseline Selected: 6
+- Split Single-Narrative: 0
+- Split Surface Boundary: 0
+- Split State Anchor: 0
+- Split Testability Ceiling: 0
+- Split Total: 0
+- Final Target OBPI Count: 6
+
+## Checklist
+
+<!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
+
+- [ ] OBPI-0.0.44-01: **local-repo-routing** — Extend `gz issue file` to accept local-repo (`tvproductions/gzkit`) invocations alongside cross-repo filing.
+- [ ] OBPI-0.0.44-02: **predicate-parser** — Add runtime-predicate body parser matching `src/gzkit/` path refs, `uv run gz <verb>` symptom lines, and `fix(...)` remedy shape.
+- [ ] OBPI-0.0.44-03: **fail-closed-refusal** — Refuse the create when the predicate fires without `--label runtime`; exit non-zero before the `gh` API call with an error naming which predicate signature hit.
+- [ ] OBPI-0.0.44-04: **accept-override** — Add `--accept-no-runtime-label` + mandatory `--accept-reason <text>` override; reason stamped into the issue body as `_audit-exempt: no-runtime-label_`.
+- [ ] OBPI-0.0.44-05: **skill-invocation-update** — Update `ghi-author` skill Step 5 invocation from raw `gh issue create` to `gz issue file`; bump skill-version; sync mirrors via `gz agent sync control-surfaces`.
+- [ ] OBPI-0.0.44-06: **doctrine-surface-update** — Update `AGENTS.md` § Behavior Rules — Always #13 and `.claude/rules/gh-cli.md` allowed-commands list to name `gz issue file` as the mechanical surface.
+
 ## Target Scope
 
 Child 1 (`gz issue file` local-repo routing + predicate enforcement) is
@@ -168,38 +214,6 @@ canonical invocation becomes `gz issue file`.
   this ADR ensures the label is mechanically present, not redefines
   what it means.
 
-## Alternatives Considered
-
-**A. Tighten the `ghi-author` skill prose further.** Rejected. The
-v0.26.3 regression is the empirical refutation: 10 days after the
-prose-fix landed, the failure rate increased rather than decreased.
-Prose-level enforcement does not hold against agent attention drift —
-that is the entire trust-doctrine motivation for Layer-2 mechanical
-defenses. Adding more prose to a surface already large enough to drop
-out of agent context is the failure mode `ADR-pool.contract-surface-mechanical-defenses`
-exists to close.
-
-**B. `gz validate --runtime-label-coverage` alone, no authoring-time
-wrapper.** Rejected as primary defense. An audit catches the failure
-after the wrong-shape GHI is created and the operator has to backfill
-labels — exactly the per-cycle recovery burden the v0.26.3 ceremony
-demonstrated. The mechanical defense belongs at the authoring boundary,
-not at a downstream consumer. Child 2 keeps this audit as
-defense-in-depth, but it is not the primary close.
-
-**C. Auto-apply the `runtime` label silently when the predicate fires.**
-Rejected. Silent label mutation breaks the authoring agent's mental
-model of what was filed and corrupts the `Eval-feedback-source:`
-trailer family of provenance signals. The wrapper refuses and forces
-the operator/agent to acknowledge the predicate hit; that is the
-correct semantics for a contract surface, not silent rewriting.
-
-**D. Move the predicate enforcement into a pre-commit hook on the
-issue-body file.** Rejected. `gh issue create` does not write a
-filesystem artifact before the API call; there is no pre-commit hook
-boundary to attach to. The wrapper is the only natural
-enforcement point in the create-time path.
-
 ## Notes
 
 Surfaced from the v0.26.3 patch-release ceremony (2026-05-15) where
@@ -221,3 +235,26 @@ Promotion into the active tree (foundation or feature) is performed via
 Recommended promotion: child 1 as `foundation` `0.0.x` (authoring
 contract is an app-system invariant); children 2 and 3 stay in pool until
 child 1 closes Gate 5.
+
+## Q&A Transcript
+
+<!-- Interview transcript preserved for context -->
+
+Promotion derived from `ADR-pool.ghi-authoring-mechanical-label-enforcement` on 2026-05-15; executable scope was carried forward from the pool ADR instead of reseeded as placeholders.
+
+## Evidence
+
+<!-- Links to tests, documentation, and other artifacts that prove completion -->
+
+- [ ] Tests: `tests/`
+- [ ] Docs: `docs/`
+
+## Alternatives Considered
+
+- Keep this work in the pool backlog until reprioritized.
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.0.44 | Pending | | | |
