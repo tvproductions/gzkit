@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.32-canonical-surface-packaging
-status: Draft
+status: Validated
 kind: foundation
 semver: 0.0.32
 lane: heavy

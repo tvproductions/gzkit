@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.32-07-validate-distribution",
-  "timestamp": "2026-05-13T08:40:00+00:00",
+  "obpi_id": "OBPI-0.0.33-01-bullet-retention-validator",
+  "timestamp": "2026-05-15T12:10:00+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.32-07-validate-distribution.md",
+  "plan_file": "OBPI-0.0.33-01-bullet-retention-validator.md",
   "gaps_found": 0,
-  "notes": "CLI structural FAIL (4 gaps) is new-file-artifact only: src/gzkit/governance/trust_audits/distribution.py, tests/governance/test_distribution_audit.py, features/validate_distribution.feature -- all new files created by this OBPI; not semantic alignment gaps. Path discrepancies (trust_audits.py->package, parser_validate.py->parser_maintenance.py, gz-validate.md->validate.md) are advisory brief-vs-reality mapping noted in plan and resolved correctly in implementation. Semantic ADR<->OBPI alignment: all 7 checks PASS. Prerequisite data/distribution_baseline_manifest.json confirmed present. tomllib stdlib confirmed available. Step 1->5 plan covers all 11 FAIL-CLOSED REQs."
+  "notes": "CLI structural FAIL (3 gaps) is new-file-artifact only: src/gzkit/governance/trust_audits/bullet_retention.py, tests/governance/test_bullet_retention.py, docs/user/manpages/gz-validate.md -- all new files created by this OBPI; not semantic alignment gaps. gz-validate.md path maps to validate.md in practice (same brief-to-reality mapping as OBPI-0.0.32-07). Semantic ADR<->OBPI alignment: all 7 checks PASS. ADR Decision Invariant 1 quoted verbatim. Objective matches ADR checklist item exactly. 5 FAIL-CLOSED REQs cover: bullet enforcement, exit-3 fail-closed, normalization bounds, classification source-of-truth, Era-2 forward compatibility. Lane Heavy matches. Foundation kind -> human attestation required. Plan covers 6 steps: TDD tests, validator implementation, __init__ re-export, CLI flag, manpage update, ARB quality checks."
 }
