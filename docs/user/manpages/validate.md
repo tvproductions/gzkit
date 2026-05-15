@@ -10,7 +10,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--interviews] [--decomposition]
             [--requirements] [--commit-trailers]
             [--taxonomy] [--chores-layout] [--distribution]
-            [--bullet-retention] [--surface-weight]
+            [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
             [--advisor-proof-binding]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
@@ -336,6 +336,88 @@ $ echo $?
 | 3 | Corpus in yellow band without active waiver | Add waiver entry to `data/surface_weight_waivers.json` or reduce corpus size |
 | 3 | Corpus in red band (> 2200) | Reduce corpus size; no waiver dispensation in red band |
 | 3 | Floor drift detected | Run `uv run gz adr emit-receipt` with `surface_weight_recalibrated` event, then update `data/surface_weight_floor.json` |
+
+### `--pointer-anchors`
+
+Enforces ADR-0.0.33 Invariant 3: every `> See [path#anchor]` blockquote
+pointer in the per-turn surface corpus (`AGENTS.md`, `CLAUDE.md`,
+`.claude/rules/**`) must resolve, and every destination must carry a
+matching `<!-- lifted-from: <source-path>#<anchor> -->` back-pointer.
+
+The validator parses each blockquote line containing the `See` keyword,
+extracts every `(path#anchor)` markdown link target, then for each:
+
+1. Confirms the destination file exists on disk.
+2. Computes mkdocs-compatible heading slugs in the destination and asserts
+   the anchor resolves to one.
+3. Reads the destination content and asserts it contains a
+   `<!-- lifted-from: -->` HTML comment (indicating it knows it carries
+   lifted content from a forward pointer).
+
+Any failed check emits a `ValidationError(type="pointer_anchors")` naming
+both halves of the broken link: the source file plus line number, and the
+unresolvable destination path/anchor or missing back-pointer.
+
+Scope: only blockquote (`> ...`) lines containing the `See` keyword are
+checked. Regular inline markdown links and unrelated blockquotes are
+ignored — this matches the canonical `> See [...]` pointer style used
+throughout `AGENTS.md` and the `.claude/rules/**` corpus.
+
+```bash
+# Check pointer integrity across the per-turn surface
+uv run gz validate --pointer-anchors
+```
+
+**Clean state (all pointers resolve, every destination carries a back-pointer):**
+
+```
+$ uv run gz validate --pointer-anchors
+Validated: pointer_anchors
+
+✓ All validations passed (1 scope).
+$ echo $?
+0
+```
+
+**Unresolved anchor:**
+
+```
+$ uv run gz validate --pointer-anchors
+Validated: pointer_anchors
+
+❌ Validation failed with 1 error(s):
+
+   → [pointer_anchors] AGENTS.md
+    Pointer anchor unresolved: AGENTS.md:42 ->
+    docs/governance/agent-contract-rationale.md#missing-section
+    (no heading slugifies to 'missing-section' in
+    docs/governance/agent-contract-rationale.md)
+$ echo $?
+3
+```
+
+**Missing back-pointer:**
+
+```
+$ uv run gz validate --pointer-anchors
+Validated: pointer_anchors
+
+❌ Validation failed with 1 error(s):
+
+   → [pointer_anchors] AGENTS.md
+    Missing back-pointer: destination
+    docs/governance/agent-contract-rationale.md (referenced by
+    AGENTS.md:42#stdlib-first-doctrine--rationale) lacks
+    `<!-- lifted-from: -->` comment
+$ echo $?
+3
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | All blockquote-See pointers resolve and every destination carries a back-pointer | — |
+| 3 | One or more pointers unresolved (path missing or anchor not present) | Fix the link target or add the heading to the destination |
+| 3 | Destination referenced by forward pointer lacks `<!-- lifted-from: -->` back-pointer | Add `<!-- lifted-from: <source-path>#<anchor> -->` to the destination file |
 
 ### `--distribution`
 

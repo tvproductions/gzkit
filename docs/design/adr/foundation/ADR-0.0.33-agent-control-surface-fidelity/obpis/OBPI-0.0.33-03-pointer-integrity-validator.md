@@ -3,7 +3,7 @@ id: OBPI-0.0.33-03-pointer-integrity-validator
 parent: ADR-0.0.33-agent-control-surface-fidelity
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.33-03-pointer-integrity-validator: Pointer Integrity Validator
@@ -13,13 +13,18 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md`
 - **Checklist Item:** #3 - "OBPI-0.0.33-03: Pointer-integrity validator (`gz validate --pointer-anchors`) — parse `> See [...]` blockquotes, resolve anchors, reverse-check `<!-- lifted-from: -->` back-pointers, exit 3 on unresolved"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Pointer-integrity validator (`gz validate --pointer-anchors`) — parse `> See [...]` blockquotes, resolve anchors, reverse-check `<!-- lifted-from: -->` back-pointers, exit 3 on unresolved.
+Implement `gz validate --pointer-anchors` (ADR-0.0.33 Invariant 3): walk the
+per-turn surface corpus (`AGENTS.md`, `CLAUDE.md`, `.claude/rules/**`), parse
+every `> See [...](path#anchor)` blockquote, resolve each anchor against the
+destination file's heading slugs (mkdocs slugification), reverse-check that
+each destination carries a `<!-- lifted-from: <source>#<anchor> -->` comment,
+and exit 3 with a `ValidationError(type="pointer_anchors")` on any unresolved
+pointer or missing back-pointer. Error messages name both halves of the
+contract: source `file:line` and the unresolved destination.
 
 ## Lane
 
@@ -38,7 +43,7 @@ Pointer-integrity validator (`gz validate --pointer-anchors`) — parse `> See [
 - `src/gzkit/governance/trust_audits/__init__.py` — package re-export of `validate_pointer_integrity`
 - `src/gzkit/cli/parser_maintenance.py` — `gz validate --pointer-anchors` flag registration and dispatch
 - `tests/governance/test_pointer_integrity.py` — Gate-2 TDD asset
-- `docs/user/manpages/gz-validate.md` — manpage entry for the new flag
+- `docs/user/manpages/validate.md` — manpage entry for the new flag (canonical manpage path; `gz-validate.md` was a legacy placeholder from OBPI-01 that does not exist on disk)
 
 ## Denied Paths
 
@@ -227,15 +232,24 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```bash
+$ uv run gz validate --pointer-anchors
+```
+
+On the current tree, exits 3 with 6 real findings — proving the validator detects genuine pre-existing pointer drift that was invisible before this OBPI. The findings span `AGENTS.md` (missing back-pointers on lifted-pedagogy destinations) and `.claude/rules/complexity-thresholds.md` (non-existent destination path).
+
+Quality evidence — receipts: `arb-ruff-baa86fe3f8d648c1b6995b6cabc510d0` (lint clean), `arb-step-typecheck-bf0049963cd44bd1a0d6608e0fe742f8` (ty clean), `arb-step-unittest-fdf6ab9a868c4f66a458abc393697e33` (5069/5069 full suite pass), `arb-step-unittestscoped-6177270bd01e420f9e3c77d5420fb509` (15/15 OBPI-scoped pass), `arb-step-mkdocs-96ef9a8507574172ad0e54e1ac371f22` (docs build clean).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `src/gzkit/governance/trust_audits/pointer_integrity.py` (validator implementation: parses `> See [...](path#anchor)` blockquotes from per-turn surface corpus, slugifies anchors using mkdocs slug rules, checks forward resolution and reverse `<!-- lifted-from: -->` back-pointers), `tests/governance/test_pointer_integrity.py` (15 Gate-2 TDD tests across 4 test classes)
+- Files modified: `src/gzkit/governance/trust_audits/__init__.py` (re-export `validate_pointer_integrity`), `src/gzkit/cli/parser_maintenance.py` (`--pointer-anchors` flag + dispatch), `src/gzkit/commands/validate_cmd.py` (4 threading points for `check_pointer_anchors`), `docs/user/manpages/validate.md` (manpage section), brief Objective substantiated, `data/behave_coverage_waivers.json` (waiver under `adr-0.0.33-03-bdd-deferred-to-composite-obpi-05`)
+- Tests added: 15 unit tests covering all 5 REQs (TestPointerResolves: 4, TestUnresolvedAnchor: 4, TestMissingBackPointer: 2, TestNonBlockquoteNotChecked: 2, TestPackageReExport: 3)
+- Date completed: 2026-05-15
+- Attestation status: Gate-5 attested by operator
+- Defects noted: 6 pre-existing pointer drift findings detected by the validator — to be filed as a GHI; remediation deferred per brief Denied Paths
 
 ## Tracked Defects
 
@@ -246,14 +260,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.33-03 pointer-integrity validator landed under ADR-0.0.33 Invariant 3. 5 FAIL-CLOSED REQs verified by 15 unit tests in tests/governance/test_pointer_integrity.py (uncovered_reqs: 0 per gz covers). Quality green: arb-ruff-baa86fe3f8d648c1b6995b6cabc510d0 (lint clean), arb-step-typecheck-bf0049963cd44bd1a0d6608e0fe742f8 (ty clean), arb-step-unittest-fdf6ab9a868c4f66a458abc393697e33 (5069/5069 pass), arb-step-unittestscoped-6177270bd01e420f9e3c77d5420fb509 (15/15 OBPI-scoped pass), arb-step-mkdocs-96ef9a8507574172ad0e54e1ac371f22 (docs build clean). Validator detects 6 pre-existing pointer-drift findings in AGENTS.md and .claude/rules/complexity-thresholds.md — to be filed as a GHI; remediation out of scope per brief Denied Paths.
+- Date: 2026-05-15
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-15
 
 **Evidence Hash:** -

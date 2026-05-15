@@ -419,6 +419,7 @@ def _collect_errors(
     check_distribution: bool = False,
     check_bullet_retention: bool = False,
     check_surface_weight: bool = False,
+    check_pointer_anchors: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -476,6 +477,7 @@ def _collect_errors(
         "distribution": check_distribution,
         "bullet_retention": check_bullet_retention,
         "surface_weight": check_surface_weight,
+        "pointer_anchors": check_pointer_anchors,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
@@ -566,6 +568,7 @@ def _explicit_scope_runners(
         "distribution": lambda: trust_audits.audit_distribution(project_root),
         "bullet_retention": lambda: trust_audits.validate_bullet_retention(project_root),
         "surface_weight": lambda: trust_audits.validate_surface_weight(project_root),
+        "pointer_anchors": lambda: trust_audits.validate_pointer_integrity(project_root),
     }
 
 
@@ -1291,6 +1294,7 @@ def validate(
     check_distribution_regenerate: bool = False,
     check_bullet_retention: bool = False,
     check_surface_weight: bool = False,
+    check_pointer_anchors: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1360,6 +1364,7 @@ def validate(
             check_distribution,
             check_bullet_retention,
             check_surface_weight,
+            check_pointer_anchors,
         ]
     )
     if _dispatch_early_return_scopes(
@@ -1430,6 +1435,7 @@ def validate(
         check_distribution=check_distribution,
         check_bullet_retention=check_bullet_retention,
         check_surface_weight=check_surface_weight,
+        check_pointer_anchors=check_pointer_anchors,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -1502,6 +1508,7 @@ def validate(
         "distribution": check_distribution,
         "bullet_retention": check_bullet_retention,
         "surface_weight": check_surface_weight,
+        "pointer_anchors": check_pointer_anchors,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]
