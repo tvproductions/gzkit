@@ -9,14 +9,15 @@ paths:
 description: Version-disciplined editing and sync for skill and rule surfaces
 ---
 
-<!-- rule-version: 0.6.0 -->
+<!-- rule-version: 0.7.0 -->
 
 # Skill & Surface Sync (gzkit)
 
-> **Rule version:** `0.6.0` — bumped under OBPI-0.0.32-15 to extend the Chores
-> class-classifier into a unified canonical surface class-classifier covering
-> chores, rules, skills, personas, and templates. Prior `0.5.0` content
-> (OBPI-0.0.32-08 — broadened sync coverage) preserved.
+> **Rule version:** `0.7.0` — bumped under GHI #464 to codify the
+> retire-on-delete doctrine: superseded/consolidated skills delete their
+> directories from all five surface roots rather than persisting as
+> `lifecycle_state: retired` `package_only` tombstones. Prior `0.6.0`
+> content (OBPI-0.0.32-15 — unified class-classifier) preserved.
 
 ## Non-negotiable rules
 
@@ -120,6 +121,38 @@ package-internal agent contract, not an operator-facing rule).
 version-aware refresh semantics for the adopter's `.gzkit/<surface>/` from
 the wheel, with three-state IDENTICAL/STALE/EDITED detection so operator
 edits are preserved across gzkit upgrades.
+
+## Retirement policy (delete-on-retire, binding)
+
+When a skill is superseded or consolidated, its directory is **deleted**
+from every surface root — `.gzkit/skills/`, `src/gzkit/skills/`,
+`.claude/skills/`, `.github/skills/`, and `.agents/skills/`. Do not
+preserve a `lifecycle_state: retired` SKILL.md stub.
+
+**Why delete:** the `package_only` classifier carve-out exists for
+*non-md package-machinery* (e.g. `__init__.py`, `__pycache__/**`).
+Routing retired SKILL.md tombstones through `package_only` is classifier
+scope creep that inflates the shipped wheel with `archived_into`
+frontmatter stubs and muddies the canonical/package_only distinction.
+Operator judgment (recorded under GHI #464 / ADR-0.0.32 closeout):
+*"tombstones not worth keeping if they are stubs."*
+
+**Redirect UX is acceptably "skill not found."** A retired-name
+invocation returns the missing-skill response rather than a tombstone
+pointer to the successor. The discoverability cost is small enough that
+indefinite wheel inflation is not justified.
+
+**Defensive backstop preserved.** The retired-frontmatter branch in
+`_classify_skill_file` (lines ~45–52 of `src/gzkit/skills/__init__.py`)
+remains as a defensive net: if a tombstone leaks back in violation of
+this doctrine, it is still classified `package_only` so
+`gz validate --distribution` does not flag it. The doctrine is the
+authored rule; the classifier branch is the runtime fallback.
+
+**Promotion of new-skill scaffolding inherits this rule.** Any future
+skill consolidation lands as a delete-on-retire pass in the same
+commit/OBPI that introduces the successor, not as a follow-up cleanup
+chore.
 
 ## Canonical surface class-classifier
 

@@ -5,6 +5,7 @@
 @covers ADR-0.0.13  OBPI-0.0.13-03 manifest-schema-persona-sync
 """
 
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -585,7 +586,15 @@ class TestSyncPkgSurfacesManifestAndDocs(unittest.TestCase):
         """skill-surface-sync.md re-affirms Edit .gzkit/ first and documents broadened sync."""
         rule = self._REPO_ROOT / ".gzkit" / "rules" / "skill-surface-sync.md"
         content = rule.read_text(encoding="utf-8")
-        self.assertIn("0.5.0", content, "rule must be bumped to 0.5.0 for OBPI-08")
+        match = re.search(r"<!--\s*rule-version:\s*(\d+)\.(\d+)\.(\d+)\s*-->", content)
+        self.assertIsNotNone(match, "rule must carry a body-level rule-version marker")
+        assert match is not None
+        major, minor, patch = (int(match.group(i)) for i in (1, 2, 3))
+        self.assertGreaterEqual(
+            (major, minor, patch),
+            (0, 5, 0),
+            f"rule must be at or above the OBPI-08 baseline 0.5.0; found {major}.{minor}.{patch}",
+        )
         self.assertIn(
             "src/gzkit/<surface>/",
             content,

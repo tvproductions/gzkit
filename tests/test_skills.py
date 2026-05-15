@@ -176,7 +176,7 @@ class TestSkillsLayoutDualSurface(unittest.TestCase):
         skill_dirs = [
             d for d in skills_root.iterdir() if d.is_dir() and not d.name.startswith("__")
         ]
-        self.assertGreater(len(skill_dirs), 60, "expected at least 60 skill directories")
+        self.assertGreater(len(skill_dirs), 50, "expected at least 50 skill directories")
         for slug_dir in skill_dirs[:3]:
             self.assertTrue((slug_dir / "SKILL.md").exists(), f"Missing: {slug_dir}/SKILL.md")
 
@@ -187,7 +187,7 @@ class TestSkillsLayoutDualSurface(unittest.TestCase):
         skill_count = sum(1 for d in skill_dirs if (d / "SKILL.md").exists())
         self.assertGreaterEqual(
             skill_count,
-            61,
+            50,
             f".gzkit/skills/ must retain authored SKILL.md files (found {skill_count})",
         )
 
@@ -236,7 +236,7 @@ class TestSkillMdByteIdenticalContent(unittest.TestCase):
             d for d in skills_root.iterdir() if d.is_dir() and not d.name.startswith("__")
         ]
         count = len(skill_dirs)
-        self.assertGreaterEqual(count, 61, f"Expected at least 61 skill dirs, got {count}")
+        self.assertGreaterEqual(count, 50, f"Expected at least 50 skill dirs, got {count}")
 
 
 class TestPyprojectTomlSkillsInclude(unittest.TestCase):
@@ -344,8 +344,8 @@ class TestSkillsScaffolderRefactor(unittest.TestCase):
         count = sum(1 for _ in _iter_canonical_skill_slugs())
         self.assertGreaterEqual(
             count,
-            70,
-            f"_iter_canonical_skill_slugs must yield >= 70 slugs, got {count}",
+            50,
+            f"_iter_canonical_skill_slugs must yield >= 50 slugs, got {count}",
         )
 
     @covers("REQ-0.0.32-02-02")
