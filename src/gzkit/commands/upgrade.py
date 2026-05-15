@@ -2,10 +2,19 @@
 
 Simpler than ``gz init --update``: no manifest mutation, no scaffolder hooks,
 no agent sync. Just surface content refresh.
+
+ADR-0.0.32 § Named exception 1 carves the ``hooks`` surface out of the
+dual-surface byte-parity invariant — hooks are vendor-coupled package
+machinery, not authored canonical content, so ``hooks`` is intentionally
+absent from ``KNOWN_SURFACES``. Per-surface ``_classify_*`` helpers filter
+package-only files (e.g. ``templates/skills/**`` per REQ-0.0.32-11-04) so
+they are not propagated into ``.gzkit/<surface>/`` during refresh.
 """
 
 import argparse
 import sys
+from pathlib import Path
+from typing import Literal, Protocol
 
 from gzkit.commands.common import console, get_project_root
 
@@ -14,19 +23,36 @@ from gzkit.commands.init_cmd import (
     _iter_canonical_surface_files,
     _refresh_one_artifact,
 )
+from gzkit.personas import _classify_persona_file
+from gzkit.rules import _classify_rule_file
 
 # Imported so test-isolation patches of this name succeed (REQ-0.0.32-14-08).
 # This function is NEVER called by upgrade_cmd — see the invariant block below.
+from gzkit.skills import _classify_skill_file
 from gzkit.skills import scaffold_core_skills as scaffold_core_skills  # noqa: F401
+from gzkit.templates import _classify_template_file
 
-KNOWN_SURFACES = ("skills", "rules", "templates", "personas", "hooks")
+KNOWN_SURFACES = ("skills", "rules", "templates", "personas")
 
 SURFACE_PKG_MAP: dict[str, str] = {
     "skills": "gzkit.skills",
     "rules": "gzkit.rules",
     "templates": "gzkit.templates",
     "personas": "gzkit.personas",
-    "hooks": "gzkit.hooks",
+}
+
+
+class _SurfaceClassifier(Protocol):
+    def __call__(
+        self, path: Path, *, project_root: Path | None = None
+    ) -> Literal["canonical", "package_only", "runtime_state"]: ...
+
+
+_SURFACE_CLASSIFIERS: dict[str, _SurfaceClassifier] = {
+    "skills": _classify_skill_file,
+    "rules": _classify_rule_file,
+    "templates": _classify_template_file,
+    "personas": _classify_persona_file,
 }
 
 
@@ -92,7 +118,15 @@ def upgrade_cmd(args: argparse.Namespace) -> None:
             console.print(f"Note: skipping surface {surface!r} ({exc})")
             continue
 
+        classifier = _SURFACE_CLASSIFIERS.get(surface)
         for canonical, rel_path in pairs:
+            if classifier is not None:
+                classification = classifier(
+                    Path("src/gzkit") / surface / rel_path,
+                    project_root=project_root,
+                )
+                if classification != "canonical":
+                    continue
             project_path = project_root / ".gzkit" / surface / rel_path
             display = project_path.relative_to(project_root).as_posix()
 

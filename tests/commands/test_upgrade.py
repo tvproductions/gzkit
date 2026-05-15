@@ -669,5 +669,104 @@ class TestUpgradeNoSideEffects(unittest.TestCase):
             )
 
 
+# ---------------------------------------------------------------------------
+# GHI #465: honor ADR-0.0.32 § Named exception 1 (hooks) and package-only
+# carve-outs (templates/skills/**, classifier-package_only files generally).
+#
+# The brief's REQ-0.0.32-14-02 lists `hooks` as a valid --surface value but
+# ADR-0.0.32 § Named exception 1 carves hooks out of the dual-surface
+# byte-parity invariant. The ADR is binding; the brief contradicted it; the
+# implementation followed the brief and so polluted .gzkit/hooks/ with
+# vendor-coupled package machinery and .gzkit/templates/skills/ with
+# package-only resources.
+# ---------------------------------------------------------------------------
+
+
+@unittest.skipUnless(_UPGRADE_AVAILABLE, _SKIP_REASON)
+class TestUpgradeHonorsNamedExceptions(unittest.TestCase):
+    """ADR-0.0.32 § Named exception 1: hooks is not a valid upgrade surface."""
+
+    @covers("REQ-0.0.32-14-02")
+    def test_hooks_surface_rejected_as_unknown(self) -> None:
+        """--surface hooks must exit 1 — hooks is ADR-0.0.32 § Named exception 1.
+
+        Same exit-1 contract as any unrecognized surface (REQ-0.0.32-14-02).
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            Path(".gzkit").mkdir()
+            result = runner.invoke(main, ["upgrade", "--surface", "hooks"])
+            self.assertEqual(
+                result.exit_code,
+                1,
+                f"--surface hooks must exit 1 (carved out by ADR-0.0.32); got "
+                f"{result.exit_code}. Output: {result.output}",
+            )
+            self.assertIn("hooks", result.output)
+
+    @covers("REQ-0.0.32-14-02")
+    def test_default_does_not_iterate_hooks_pkg(self) -> None:
+        """Default upgrade run must not iterate the gzkit.hooks package."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            Path(".gzkit").mkdir()
+            with patch(
+                "gzkit.commands.upgrade._iter_canonical_surface_files",
+                return_value=[],
+            ) as mock_iter:
+                runner.invoke(main, ["upgrade"])
+                called_pkgs = [c.args[0] for c in mock_iter.call_args_list]
+                self.assertNotIn(
+                    "gzkit.hooks",
+                    called_pkgs,
+                    "Default run must not iterate gzkit.hooks (ADR-0.0.32 § "
+                    f"Named exception 1). Iterated packages: {called_pkgs}",
+                )
+
+
+@unittest.skipUnless(_UPGRADE_AVAILABLE, _SKIP_REASON)
+class TestUpgradeHonorsPackageOnlyCarveout(unittest.TestCase):
+    """Package-only files must not be propagated to .gzkit/ during upgrade."""
+
+    @covers("REQ-0.0.32-14-02")
+    def test_templates_skills_subdir_filtered(self) -> None:
+        """templates/skills/** is package_only per _classify_template_file.
+
+        REQ-0.0.32-11-04 retains the skills subdir at the package surface only;
+        gz upgrade must consult the classifier and skip non-canonical files.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            Path(".gzkit").mkdir()
+
+            canonical_template = MagicMock()
+            canonical_template.name = "skill.md"
+            canonical_template.read_bytes.return_value = b"# canonical top-level\n"
+
+            package_only_resource = MagicMock()
+            package_only_resource.name = "SKILL.md"
+            package_only_resource.read_bytes.return_value = b"# package-only nested\n"
+
+            def fake_iter(pkg: str) -> list[tuple[MagicMock, Path]]:
+                if pkg == "gzkit.templates":
+                    return [
+                        (canonical_template, Path("skill.md")),
+                        (package_only_resource, Path("skills/git-sync/SKILL.md")),
+                    ]
+                return []
+
+            with patch(
+                "gzkit.commands.upgrade._iter_canonical_surface_files",
+                side_effect=fake_iter,
+            ):
+                runner.invoke(main, ["upgrade", "--surface", "templates"])
+
+            nested = Path(".gzkit/templates/skills/git-sync/SKILL.md")
+            self.assertFalse(
+                nested.exists(),
+                "templates/skills/** is package_only — must not propagate to .gzkit/",
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
