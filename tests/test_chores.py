@@ -29,7 +29,7 @@ class TestChoresLayoutDualSurface(unittest.TestCase):
     @covers("REQ-0.0.32-13-01")
     @covers("REQ-0.0.32-13-06")
     @covers("REQ-0.0.32-13-08")
-    @covers("REQ-0.0.32-15-08")
+    @covers("REQ-0.0.32-15-08")  # audit-exempt: regression-invariant-overlay unified classifier
     def test_classifier_section_in_rule(self) -> None:
         """Verify .gzkit/rules/skill-surface-sync.md contains classifier section."""
         rule_file = _PROJECT_ROOT / ".gzkit" / "rules" / "skill-surface-sync.md"
