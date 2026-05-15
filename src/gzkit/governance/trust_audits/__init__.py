@@ -82,6 +82,9 @@ from gzkit.governance.trust_audits.orientation import audit_orientation_freshnes
 from gzkit.governance.trust_audits.orphaned_implementation import (
     audit_orphaned_implementation,
 )
+from gzkit.governance.trust_audits.pointer_integrity import (
+    validate_pointer_integrity,
+)
 from gzkit.governance.trust_audits.reconcile import audit_reconcile_freshness
 from gzkit.governance.trust_audits.release import (
     audit_advisory_scorecard,
@@ -140,5 +143,6 @@ __all__ = [
     "validate_complexity_thresholds",
     "validate_evaluation_justify_binding",
     "validate_intrinsic_attestation",
+    "validate_pointer_integrity",
     "validate_surface_weight",
 ]
