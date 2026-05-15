@@ -10,6 +10,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--interviews] [--decomposition]
             [--requirements] [--commit-trailers]
             [--taxonomy] [--chores-layout] [--distribution]
+            [--bullet-retention]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
             [--advisor-proof-binding]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
@@ -223,6 +224,59 @@ gz validate --chores-layout --json
 |------|---------|----------|
 | 0 | Clean tree (or all violations waived) | — |
 | 3 | One or more unwaived stray `CHORE.md` / `acceptance.json` | Move the file under `src/gzkit/chores/<slug>/` or `.gzkit/chores/<slug>/`, or add an explicit waiver entry |
+
+### `--bullet-retention`
+
+Enforces ADR-0.0.33 Invariant 1: every bullet in `docs/governance/advisory-rules-audit.md`
+classified **Mechanical** or **Promotable** is present verbatim in the
+per-turn surface corpus (`AGENTS.md`, `CLAUDE.md`, `.claude/rules/**`).
+
+The check reads the scorecard's pipe-delimited table, extracts the rule text
+from each row, normalizes whitespace and leading markdown bullet markers, and
+asserts the normalized text is a substring of the normalized corpus.
+**Judgment** and **Ambiguous** bullets are not enforced.
+
+A missing bullet emits `ValidationError(type="bullet_retention")` naming the
+absent text and its source classification. Exit 3 on any violation; exit 0
+when the surface is clean.
+
+```bash
+# Audit the per-turn surface against the advisory scorecard
+uv run gz validate --bullet-retention
+```
+
+**Clean state:**
+
+```
+$ uv run gz validate --bullet-retention
+Validated: bullet_retention
+
+✓ All validations passed (1 scope).
+$ echo $?
+0
+```
+
+**Missing Mechanical bullet:**
+
+```
+$ uv run gz validate --bullet-retention
+Validated: bullet_retention
+
+❌ Validation failed with 1 error(s):
+
+   → [bullet_retention] docs/governance/advisory-rules-audit.md
+    Bullet-retention violation: 'Mechanical' bullet not found verbatim in
+    per-turn surface.
+      Bullet: 'use uv run for commands'
+      Source: docs/governance/advisory-rules-audit.md
+$ echo $?
+3
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Surface is clean — all enforced bullets present | — |
+| 3 | One or more Mechanical/Promotable bullets absent from per-turn surface | Add the missing bullet text to `AGENTS.md`, `CLAUDE.md`, or a `.claude/rules/*.md` file, then re-run |
 
 ### `--distribution`
 
@@ -638,6 +692,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--intrinsic-attestation` | opt-in | Validate `intrinsic-complexity-attestation` ledger events against canonical schema (OBPI-0.0.29-07) |
 | `--advisor-proof-binding` | opt-in | Verdict <-> proof binding audit across fixtures, ledger-cited diagnoses, and JSON Schema (OBPI-0.0.29-08) |
 | `--distribution` | opt-in | T0 static distribution audit: ON\_DISK\_NOT\_INCLUDED / BASELINE\_NOT\_ON\_DISK / ON\_DISK\_NOT\_BASELINE drift classes (ADR-0.0.32-07) |
+| `--bullet-retention` | opt-in | Assert every Mechanical/Promotable bullet in advisory-rules-audit.md is verbatim in per-turn surface (ADR-0.0.33-01) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
 
 The `--allowlist-only` flag is a sub-modifier for `--unscoped-rules` —

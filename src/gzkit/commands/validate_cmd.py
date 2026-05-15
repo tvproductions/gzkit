@@ -417,6 +417,7 @@ def _collect_errors(
     check_intrinsic_attestation: bool = False,
     check_advisor_proof_binding: bool = False,
     check_distribution: bool = False,
+    check_bullet_retention: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -472,6 +473,7 @@ def _collect_errors(
         "intrinsic_attestation": check_intrinsic_attestation,
         "advisor_proof_binding": check_advisor_proof_binding,
         "distribution": check_distribution,
+        "bullet_retention": check_bullet_retention,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
@@ -560,6 +562,7 @@ def _explicit_scope_runners(
         "intrinsic_attestation": lambda: trust_audits.validate_intrinsic_attestation(project_root),
         "advisor_proof_binding": lambda: trust_audits.validate_advisor_proof_binding(project_root),
         "distribution": lambda: trust_audits.audit_distribution(project_root),
+        "bullet_retention": lambda: trust_audits.validate_bullet_retention(project_root),
     }
 
 
@@ -1016,6 +1019,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "intrinsic_attestation",
         "advisor_proof_binding",
         "distribution",
+        "bullet_retention",
     ]
 
     run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
@@ -1044,6 +1048,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "absorption_duplicate",
         "evaluation-justify-binding",
         "distribution",
+        "bullet_retention",
     }
 )
 
@@ -1279,6 +1284,7 @@ def validate(
     check_advisor_proof_binding: bool = False,
     check_distribution: bool = False,
     check_distribution_regenerate: bool = False,
+    check_bullet_retention: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1346,6 +1352,7 @@ def validate(
             check_absorption_duplicates,
             check_orphaned_implementation,
             check_distribution,
+            check_bullet_retention,
         ]
     )
     if _dispatch_early_return_scopes(
@@ -1414,6 +1421,7 @@ def validate(
         check_intrinsic_attestation=check_intrinsic_attestation,
         check_advisor_proof_binding=check_advisor_proof_binding,
         check_distribution=check_distribution,
+        check_bullet_retention=check_bullet_retention,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -1484,6 +1492,7 @@ def validate(
         "intrinsic_attestation": check_intrinsic_attestation,
         "advisor_proof_binding": check_advisor_proof_binding,
         "distribution": check_distribution,
+        "bullet_retention": check_bullet_retention,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]

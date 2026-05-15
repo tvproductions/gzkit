@@ -39,6 +39,7 @@ from gzkit.governance.trust_audits.briefs import (
     audit_brief_demo_section,
     audit_brief_headings,
 )
+from gzkit.governance.trust_audits.bullet_retention import validate_bullet_retention
 from gzkit.governance.trust_audits.chores import audit_chores_layout
 from gzkit.governance.trust_audits.cli import (
     audit_cli_alignment,
@@ -133,6 +134,7 @@ __all__ = [
     "BOOTSTRAP_MODE_NOTICE_PREFIX",
     "validate_advisor_proof_binding",
     "validate_attestation_receipts",
+    "validate_bullet_retention",
     "validate_complexity_doctrine_links",
     "validate_complexity_thresholds",
     "validate_evaluation_justify_binding",

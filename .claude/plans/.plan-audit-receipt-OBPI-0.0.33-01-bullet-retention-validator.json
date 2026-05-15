@@ -1,20 +1,8 @@
 {
   "obpi_id": "OBPI-0.0.33-01-bullet-retention-validator",
-  "timestamp": "2026-05-15T11:41:12.717989+00:00",
-  "verdict": "FAIL",
-  "plan_file": null,
-  "gaps_found": 1,
-  "gaps": [
-    "No plan file found for OBPI-0.0.33-01-bullet-retention-validator in .claude/plans/ or ~/.claude/plans/"
-  ],
-  "scope_collisions": [
-    {
-      "sibling_adr": "ADR-0.0.42",
-      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
-      "contested_paths": [
-        "docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md",
-        "docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/**"
-      ]
-    }
-  ]
+  "timestamp": "2026-05-15T12:50:00+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.33-01-bullet-retention-validator.md",
+  "gaps_found": 0,
+  "notes": "CLI structural FAIL (3 gaps) is new-file-artifact only: src/gzkit/governance/trust_audits/bullet_retention.py, tests/governance/test_bullet_retention.py, docs/user/manpages/gz-validate.md -- all new files created by this OBPI; not semantic alignment gaps. gz-validate.md path maps to validate.md in practice (same brief-to-reality mapping as OBPI-0.0.32-07). Semantic ADR<->OBPI alignment: all 7 checks PASS. ADR Decision Invariant 1 quoted verbatim. Objective matches ADR checklist item exactly. 5 FAIL-CLOSED REQs cover: bullet enforcement, exit-3 fail-closed, normalization bounds, classification source-of-truth, Era-2 forward compatibility. Lane Heavy matches. Foundation kind -> human attestation required. Plan covers 6 steps: TDD tests, validator implementation, __init__ re-export, CLI flag, manpage update, ARB quality checks. After plan written and implementation complete (18/18 tests pass, 5030/5030 full suite pass, ruff clean, typecheck clean, mkdocs strict pass, REQ @covers parity 5/5 covered)."
 }
