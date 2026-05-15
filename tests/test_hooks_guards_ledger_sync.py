@@ -74,7 +74,7 @@ class TestForbidSkillSyncDrift(unittest.TestCase):
             self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 0)
 
     def test_canonical_skill_with_mirror_returns_zero(self) -> None:
-        names = ".gzkit/skills/foo/SKILL.md\n.claude/skills/foo/SKILL.md\n"
+        names = "M\t.gzkit/skills/foo/SKILL.md\nM\t.claude/skills/foo/SKILL.md\n"
         with mock.patch.object(guards, "_run_git", return_value=names):
             self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 0)
 
@@ -82,18 +82,26 @@ class TestForbidSkillSyncDrift(unittest.TestCase):
         import contextlib  # noqa: PLC0415
         import io  # noqa: PLC0415
 
-        names = ".gzkit/skills/foo/SKILL.md\n"
+        names = "M\t.gzkit/skills/foo/SKILL.md\n"
         with (
             mock.patch.object(guards, "_run_git", return_value=names),
             contextlib.redirect_stdout(io.StringIO()),
         ):
             self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 1)
 
+    def test_canonical_skill_deletion_without_mirror_returns_zero(self) -> None:
+        """Retire-on-delete (GHI #464): canonical deletions are exempt from the
+        mirror requirement. The mirror is either already-absent or also being
+        deleted in the same commit; either is non-drift."""
+        names = "D\t.gzkit/skills/foo/SKILL.md\n"
+        with mock.patch.object(guards, "_run_git", return_value=names):
+            self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 0)
+
     def test_canonical_rule_missing_mirror_fails(self) -> None:
         import contextlib  # noqa: PLC0415
         import io  # noqa: PLC0415
 
-        names = ".gzkit/rules/new-rule.md\n"
+        names = "A\t.gzkit/rules/new-rule.md\n"
         with (
             mock.patch.object(guards, "_run_git", return_value=names),
             contextlib.redirect_stdout(io.StringIO()),
@@ -101,7 +109,13 @@ class TestForbidSkillSyncDrift(unittest.TestCase):
             self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 1)
 
     def test_canonical_rule_with_github_mirror_returns_zero(self) -> None:
-        names = ".gzkit/rules/new-rule.md\n.github/instructions/new-rule.md\n"
+        names = "A\t.gzkit/rules/new-rule.md\nA\t.github/instructions/new-rule.md\n"
+        with mock.patch.object(guards, "_run_git", return_value=names):
+            self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 0)
+
+    def test_canonical_rule_deletion_without_mirror_returns_zero(self) -> None:
+        """Retire-on-delete (GHI #464) applies to rule deletions identically."""
+        names = "D\t.gzkit/rules/retired-rule.md\n"
         with mock.patch.object(guards, "_run_git", return_value=names):
             self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 0)
 
@@ -109,7 +123,7 @@ class TestForbidSkillSyncDrift(unittest.TestCase):
         """`.gzkit/rules/AGENTS.md` is the subtree-rules aggregator, not a per-rule
         file. Sync regenerates it without per-vendor mirrors. The drift hook must
         exempt it from the mirror requirement (GHI #370)."""
-        names = ".gzkit/rules/AGENTS.md\n"
+        names = "M\t.gzkit/rules/AGENTS.md\n"
         with mock.patch.object(guards, "_run_git", return_value=names):
             self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 0)
 
