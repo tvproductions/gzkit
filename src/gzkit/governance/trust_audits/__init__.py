@@ -91,6 +91,7 @@ from gzkit.governance.trust_audits.sensitivity import (
     audit_sensitivity_binding,
     explain_sensitivity_for_paths,
 )
+from gzkit.governance.trust_audits.surface_weight import validate_surface_weight
 from gzkit.governance.trust_audits.taxonomy import (
     audit_adr_status_fresh,
     audit_adr_taxonomy,
@@ -139,4 +140,5 @@ __all__ = [
     "validate_complexity_thresholds",
     "validate_evaluation_justify_binding",
     "validate_intrinsic_attestation",
+    "validate_surface_weight",
 ]

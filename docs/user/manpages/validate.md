@@ -10,7 +10,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--interviews] [--decomposition]
             [--requirements] [--commit-trailers]
             [--taxonomy] [--chores-layout] [--distribution]
-            [--bullet-retention]
+            [--bullet-retention] [--surface-weight]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
             [--advisor-proof-binding]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
@@ -277,6 +277,65 @@ $ echo $?
 |------|---------|----------|
 | 0 | Surface is clean — all enforced bullets present | — |
 | 3 | One or more Mechanical/Promotable bullets absent from per-turn surface | Add the missing bullet text to `AGENTS.md`, `CLAUDE.md`, or a `.claude/rules/*.md` file, then re-run |
+
+### `--surface-weight`
+
+Enforces ADR-0.0.33 Invariant 2: the per-turn surface corpus (`AGENTS.md`,
+`CLAUDE.md`, `.claude/rules/**`) does not grow past the direction-binding
+floor snapshot in `data/surface_weight_floor.json`.
+
+Band constants (pinned by ADR-0.0.33 Decision):
+
+| Band | Range | Exit Code |
+|------|-------|-----------|
+| Green | ≤ 1800 lines | 0 (clean) |
+| Yellow | 1801–2200 lines | 3 unless an active waiver in `data/surface_weight_waivers.json` covers the delta |
+| Red | > 2200 lines | 3 — no waiver dispensation |
+
+The validator also detects **floor drift**: if the floor snapshot timestamp
+predates the most recent `surface_weight_recalibrated` ledger event by more
+than 24 hours, the check exits 3 citing drift. Floor recalibration is a
+ledger event (`uv run gz adr emit-receipt` with `event
+surface_weight_recalibrated`); silent floor mutation is never permitted.
+
+```bash
+# Check surface weight against the floor snapshot
+uv run gz validate --surface-weight
+```
+
+**Clean state (corpus at or below floor):**
+
+```
+$ uv run gz validate --surface-weight
+Validated: surface_weight
+
+✓ All validations passed (1 scope).
+$ echo $?
+0
+```
+
+**Yellow-band violation (no active waiver):**
+
+```
+$ uv run gz validate --surface-weight
+Validated: surface_weight
+
+❌ Validation failed with 1 error(s):
+
+   → [surface_weight] data/surface_weight_floor.json
+    Surface weight in yellow band: 1850 lines (delta +82 from floor 1768).
+    Yellow band (1801–2200) requires an active waiver.
+    Add an entry to data/surface_weight_waivers.json or reduce the surface corpus.
+$ echo $?
+3
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Corpus at or below floor, or waiver covers yellow-band delta | — |
+| 3 | Corpus in yellow band without active waiver | Add waiver entry to `data/surface_weight_waivers.json` or reduce corpus size |
+| 3 | Corpus in red band (> 2200) | Reduce corpus size; no waiver dispensation in red band |
+| 3 | Floor drift detected | Run `uv run gz adr emit-receipt` with `surface_weight_recalibrated` event, then update `data/surface_weight_floor.json` |
 
 ### `--distribution`
 

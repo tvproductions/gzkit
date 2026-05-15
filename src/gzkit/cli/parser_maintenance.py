@@ -577,6 +577,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Bullet-retention audit: scorecard Mechanical/Promotable bullets in surface.",
     )
     p_validate.add_argument(
+        "--surface-weight",
+        dest="check_surface_weight",
+        action="store_true",
+        help="Surface-weight audit: direction-binding floor + warning bands (ADR-0.0.33-02).",
+    )
+    p_validate.add_argument(
         "--regenerate",
         dest="check_distribution_regenerate",
         action="store_true",
@@ -657,6 +663,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_distribution=a.check_distribution,
             check_distribution_regenerate=a.check_distribution_regenerate,
             check_bullet_retention=a.check_bullet_retention,
+            check_surface_weight=a.check_surface_weight,
             attestation_receipts=a.attestation_receipts,
             attestation_lane=a.attestation_lane,
             attestation_kind=a.attestation_kind,
