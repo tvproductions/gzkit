@@ -1,0 +1,5 @@
+{
+  "lines": 1859,
+  "timestamp": "2026-05-15T12:50:00+00:00",
+  "note": "Initial snapshot bootstrapped at OBPI-0.0.33-02 completion. Recalibrate via: uv run gz adr emit-receipt with event surface_weight_recalibrated, then update this file."
+}

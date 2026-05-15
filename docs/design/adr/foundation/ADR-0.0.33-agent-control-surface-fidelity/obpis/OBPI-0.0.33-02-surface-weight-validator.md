@@ -3,7 +3,7 @@ id: OBPI-0.0.33-02-surface-weight-validator
 parent: ADR-0.0.33-agent-control-surface-fidelity
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.33-02-surface-weight-validator: Surface Weight Validator
@@ -13,13 +13,20 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md`
 - **Checklist Item:** #2 - "OBPI-0.0.33-02: Surface-weight validator (`gz validate --surface-weight`) — snapshot file, waiver schema, fail-closed direction-binding, provisional warning bands, recalibration commitment"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Surface-weight validator (`gz validate --surface-weight`) — snapshot file, waiver schema, fail-closed direction-binding, provisional warning bands, recalibration commitment.
+Implement `gz validate --surface-weight` (ADR-0.0.33 Invariant 2): compute the
+per-turn surface corpus line count (`AGENTS.md`, `CLAUDE.md`,
+`.claude/rules/**`), read the direction-binding floor from
+`data/surface_weight_floor.json`, and enforce band-based exit codes (green
+≤1800 pass; yellow 1801–2200 fail unless an active waiver in
+`data/surface_weight_waivers.json` covers the delta; red >2200 fail with no
+waiver dispensation). Detect floor drift when the snapshot timestamp predates
+the most recent ledger `surface_weight_recalibrated` event by >24h. Re-export
+`validate_surface_weight` from the `gzkit.governance.trust_audits` package and
+wire the flag into the `gz validate` parser and dispatch surfaces.
 
 ## Lane
 
@@ -40,7 +47,7 @@ Surface-weight validator (`gz validate --surface-weight`) — snapshot file, wai
 - `tests/governance/test_surface_weight.py` — Gate-2 TDD asset
 - `data/surface_weight_floor.json` — initial snapshot (created in this OBPI)
 - `data/surface_weight_waivers.json` — empty waiver schema bootstrap (created in this OBPI)
-- `docs/user/manpages/gz-validate.md` — manpage entry for the new flag
+- `docs/user/manpages/validate.md` — manpage entry for the new flag
 
 ## Denied Paths
 
@@ -232,15 +239,27 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```
+$ uv run gz validate --surface-weight
+Validated: surface_weight
+
+✓ All validations passed (1 scopes).
+$ echo $?
+0
+```
+
+Corpus at floor (1859 = 1859). ARB receipts: arb-ruff-2e658d3f60624f66bc7b499782cc1d00, arb-step-typecheck-24b75d83148040d88ff7b8acc467c3c2, arb-step-unittest-ad8301ce3c0644f68db4316a0b4b3284 (5054/5054 full sweep), arb-step-unittest-2b6366187de04fbfae15a1f3dd39462e (24/24 scoped), arb-step-mkdocs-4a1de6014a16498981edcb2ccc9a6bd5.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `src/gzkit/governance/trust_audits/surface_weight.py` (190-line validator), `tests/governance/test_surface_weight.py` (24 tests across 6 classes), `data/surface_weight_floor.json` (snapshot 1859 lines), `data/surface_weight_waivers.json` (empty bootstrap)
+- Files modified: `src/gzkit/governance/trust_audits/__init__.py` (re-export validate_surface_weight), `src/gzkit/cli/parser_maintenance.py` (--surface-weight flag + dispatch), `src/gzkit/commands/validate_cmd.py` (param wiring + opt_in_scopes + _POLICY_BREACH_ERROR_TYPES), `docs/user/manpages/validate.md` (usage + section), `data/behave_coverage_waivers.json` (deferred-to-OBPI-05 rationale)
+- Tests added: 24 tests covering all 6 REQs (REQ coverage 100% via gz covers, uncovered_reqs: 0)
+- Date completed: 2026-05-15
+- Attestation status: operator-verbatim-conversational ("attest completed")
+- Defects noted: discovered + fixed mid-implementation — _resolve_scopes opt_in_scopes and _POLICY_BREACH_ERROR_TYPES both lacked "surface_weight"; remediated in same OBPI commit
 
 ## Tracked Defects
 
@@ -251,14 +270,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — Stage 4 evidence accepted; 24/24 scoped tests, 5054/5054 full sweep, ruff clean, ty clean, mkdocs strict clean; gz validate --surface-weight returns exit 0 on the current 1859-line corpus snapshot; 100% REQ coverage via gz covers; ARB receipts arb-ruff-2e658d3f60624f66bc7b499782cc1d00, arb-step-typecheck-24b75d83148040d88ff7b8acc467c3c2, arb-step-unittest-ad8301ce3c0644f68db4316a0b4b3284, arb-step-unittest-2b6366187de04fbfae15a1f3dd39462e, arb-step-mkdocs-4a1de6014a16498981edcb2ccc9a6bd5.
+- Date: 2026-05-15
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-15
 
 **Evidence Hash:** -

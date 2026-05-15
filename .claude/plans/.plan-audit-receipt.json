@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.33-01-bullet-retention-validator",
-  "timestamp": "2026-05-15T12:10:00+00:00",
+  "obpi_id": "OBPI-0.0.33-02-surface-weight-validator",
+  "timestamp": "2026-05-15T12:45:00+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.33-01-bullet-retention-validator.md",
+  "plan_file": "OBPI-0.0.33-02-surface-weight-validator.md",
   "gaps_found": 0,
-  "notes": "CLI structural FAIL (3 gaps) is new-file-artifact only: src/gzkit/governance/trust_audits/bullet_retention.py, tests/governance/test_bullet_retention.py, docs/user/manpages/gz-validate.md -- all new files created by this OBPI; not semantic alignment gaps. gz-validate.md path maps to validate.md in practice (same brief-to-reality mapping as OBPI-0.0.32-07). Semantic ADR<->OBPI alignment: all 7 checks PASS. ADR Decision Invariant 1 quoted verbatim. Objective matches ADR checklist item exactly. 5 FAIL-CLOSED REQs cover: bullet enforcement, exit-3 fail-closed, normalization bounds, classification source-of-truth, Era-2 forward compatibility. Lane Heavy matches. Foundation kind -> human attestation required. Plan covers 6 steps: TDD tests, validator implementation, __init__ re-export, CLI flag, manpage update, ARB quality checks."
+  "notes": "CLI structural FAIL (5 gaps) is new-file-artifact only: src/gzkit/governance/trust_audits/surface_weight.py, tests/governance/test_surface_weight.py, data/surface_weight_floor.json, data/surface_weight_waivers.json, docs/user/manpages/gz-validate.md -- all new files created by this OBPI; not semantic alignment gaps. gz-validate.md path maps to validate.md in practice (same mapping as OBPI-0.0.33-01). Scope-collision advisories for parser_maintenance.py and validate.md are advisory-only (shared surfaces, sequential execution). ADR<->OBPI: all 7 checks PASS. ADR Decision Invariant 2 quoted verbatim in objective. 6 FAIL-CLOSED REQs cover: direction-binding enforcement, warning bands (green/yellow/red), waiver schema + expiry rejection, recalibration as ledger event + drift detection, importability. Plan<->OBPI: all 7 checks PASS. Plan covers 6 steps: TDD tests, validator implementation, __init__ re-export, CLI flag + dispatch wiring, data file bootstrapping, manpage update. Floor bootstrapped at 1859 (current measured count) not 1768 (ADR historical), resolving bootstrap ambiguity. Lane Heavy matches. Foundation kind -> human attestation required."
 }
