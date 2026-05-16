@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.15.0"
+skill-version: "6.16.0"
 last_reviewed: 2026-04-25
 model: sonnet
 ---
@@ -23,7 +23,22 @@ wrapper/operator ritual around that runtime rather than a second stage engine.
 
 ## Persona
 
-**Active persona:** `pipeline-orchestrator` — read `.gzkit/personas/pipeline-orchestrator.md` and adopt its behavioral identity before executing this skill. Stage discipline, ceremony completion, and evidence anchoring are not rules to follow — they are who you are when running this pipeline.
+**Active driver:** `pipeline-orchestrator` — read `.gzkit/personas/pipeline-orchestrator.md` and adopt its behavioral identity before executing this skill. Stage discipline, ceremony completion, and evidence anchoring are not rules to follow — they are who you are when running this pipeline.
+
+## Persona Dispatch
+
+The pipeline dispatches four subagent personas across its stages. Stage-2 implementer/spec-reviewer/quality-reviewer dispatch is documented procedurally below (§ Stage 2); the Stage-4 narrator dispatch is declared here:
+
+| Persona | Function in this ceremony | Invoked at |
+|---|---|---|
+| `implementer` | Methodical, test-first code authoring per the approved plan; one task at a time; complete units (imports + usage + tests + docs as one edit) | Stage 2 step c–g (see § Stage 2 for dispatch mechanics) |
+| `spec-reviewer` | Independent requirement-tracing against the brief's `## Requirements (FAIL-CLOSED)` list; each REQ must map to implementation and test | Stage 2 step h.i–vii (two-stage review) |
+| `quality-reviewer` | Independent architectural assessment: SOLID, size-discipline, maintainability of the produced diff | Stage 2 step h.i–vii (two-stage review) |
+| `narrator` | Composes the Stage 4 evidence packet in operator-value framing — value narrative, key proof, evidence table, REQ coverage rendered for the human's attestation decision | Stage 4 (Present Evidence) — see § Stage 4 |
+
+The mechanical attestation that these dispatches occurred is governed by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6 (Pool / HEAVY — awaiting promotion). The pipeline marker schema records dispatches via `SubagentDispatchRecord`; the pool ADR's promotion will add `gz validate --pipeline-review-receipts` and `persona_adopted` ledger events as T2 fail-close.
+
+Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Validated). Runtime mapping: `src/gzkit/pipeline_runtime.py:129` (`ROLE_PERSONA_MAP`).
 
 ---
 
@@ -417,6 +432,8 @@ No subagent dispatch, no worktree isolation, no parallel execution.
 #### Normal Mode — HUMAN GATE
 
 **Trigger:** "Present OBPI Acceptance Ceremony" task becomes next pending. Mark `in_progress`.
+
+**Narrator dispatch** (per § Persona Dispatch). Stage 4 evidence composition is the narrator's function — "evidence-to-decision," "operator-value-framing," "every word load-bearing." Dispatch a `narrator` subagent with the populated template fields (Value Narrative input, REQ coverage table from Stage 3, ARB receipts from quality gates) and instruct it to render the final attestation surface per the template below. Record the dispatch via `SubagentDispatchRecord` (`role="Narrator"`) so the eventual `gz validate --pipeline-review-receipts` (ADR-pool.obpi-pipeline-dispatch-attestation T5) can attest the surface was produced by the named persona, not by the orchestrator inhabiting a register it isn't framed for.
 
 Present evidence using the **exact template below**. This is the human's attestation surface — they cannot provide attestation without seeing this output. Every field is mandatory. Do not omit, reorder, or freeform this.
 

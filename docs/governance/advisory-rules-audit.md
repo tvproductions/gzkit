@@ -37,7 +37,7 @@ This audit scores every rule by:
 | 4 | Do not let reconciliation remain a maintenance chore | **Mechanical** | Enforced by `gz validate --reconcile-freshness` (GHI #213) — flags when the latest reconcile ledger event is older than HEAD by more than 24h |
 | 5 | Do not let AirlineOps parity become perpetual catch-up | **Judgment** | Requires a metric ("perpetual") that depends on external repo state |
 | 6 | Do not let derived views silently become source-of-truth | **Mechanical** | Enforced by `gz validate --frontmatter`, `--event-handlers`, `--validator-fields`. Trust doctrine operationalizes this rule |
-| 6a | ADR taxonomy — kind/semver/id-prefix consistency | **Mechanical** | Enforced by `gz validate --taxonomy` (GHI #218 / ADR-0.0.17) — non-pool ADRs carry `kind: foundation` (semver `0.0.x`) or `kind: feature` (any other semver); pool ADRs (id prefix `ADR-pool.`) derive kind from the id and carry no `kind:` frontmatter |
+| 6a | `gz validate --taxonomy` enforces | **Mechanical** | Enforced by `gz validate --taxonomy` (GHI #218 / ADR-0.0.17) — non-pool ADRs carry `kind: foundation` (semver `0.0.x`) or `kind: feature` (any other semver); pool ADRs (id prefix `ADR-pool.`) derive kind from the id and carry no `kind:` frontmatter |
 
 ### Local Agent Rules (`CLAUDE.md` § Local Agent Rules)
 
@@ -45,9 +45,9 @@ This audit scores every rule by:
 |---|------|-------|-------|
 | 7 | Order versioned identifiers semantically, never lexicographically | **Mechanical** | `gz adr report`/`gz state` sort via `semver` library; tests in `tests/test_adr_status.py` lock the order |
 | 8 | Add imports with usage in same Edit | **Judgment** | Meta-rule about agent tool use; the ruff hook removing unused imports IS the enforcement |
-| 9 | Never prefix `uv run gz` with `PYTHONUTF8=1` | **Mechanical** | Enforced by `gz validate --utf8-prefix` (GHI #206) — regex scan across `docs/**`, `.gzkit/skills/**`, `.claude/skills/**`, `features/**` |
-| 10 | Attestation enrichment (pass user words + enrichment + receipt IDs) | **Mechanical** | ARB receipt-ID requirement enforced by `gz arb validate`; heavy-lane fail-closed per `.gzkit/rules/attestation-enrichment.md` |
-| 11 | Every version bump → GitHub release | **Mechanical** | Enforced by `gz validate --version-release` (GHI #205) — compares `pyproject.toml` version against local `git tag` set for a matching `vX.Y.Z` |
+| 9 | Never prefix `uv run gz` or `uv run -m gzkit` | **Mechanical** | Enforced by `gz validate --utf8-prefix` (GHI #206) — regex scan across `docs/**`, `.gzkit/skills/**`, `.claude/skills/**`, `features/**` |
+| 10 | pass user words verbatim | **Mechanical** | ARB receipt-ID requirement enforced by `gz arb validate`; heavy-lane fail-closed per `.gzkit/rules/attestation-enrichment.md` |
+| 11 | Every version bump is a release | **Mechanical** | Enforced by `gz validate --version-release` (GHI #205) — compares `pyproject.toml` version against local `git tag` set for a matching `vX.Y.Z` |
 | 12 | Use GitHub gitignore template for `.gitignore` scaffolding | **Judgment** | Only applies to `gz init` / scaffolding skills; hard to mechanize retrospectively |
 
 ### Governance Core (`.gzkit/rules/governance-core.md`)
@@ -56,65 +56,65 @@ This audit scores every rule by:
 |---|------|-------|-------|
 | 13 | Read AGENTS.md before implementation work | **Judgment** | Pre-work discipline; no compile-time signal |
 | 14 | Use `uv run` for Python command execution | **Mechanical** | Ruff + tests run via `uv run`; CI enforces. Runbook + docs scanned by `gz validate --cli-alignment` for `uv run gz ...` form |
-| 15 | Do not bypass Gate 5 for heavy-lane or foundation-kind work | **Mechanical** | `gz closeout` pipeline enforces attestation before `Completed` lifecycle event |
+| 15 | Bypass Gate 5 (human attestation) | **Mechanical** | `gz closeout` pipeline enforces attestation before `Completed` lifecycle event |
 | 16 | Do not edit `.gzkit/ledger.jsonl` manually | **Mechanical** | Enforced by `.githooks/pre-commit-ledger-guard` (GHI #207) — rejects staged ledger edits that are not strict appends from a registered `gz` command |
 | 17 | Every defect must be trackable (GHI or agent-insights.jsonl) | **Judgment** | Enforcement is cultural; no reliable mechanical signal for "defect noticed but not tracked" |
-| 17a | `.gzkit/insights/agent-insights.jsonl` record shape (companion to Behavior Rule #11) | **Mechanical** | Enforced by `gz validate --insights-shape` (GHI #358) — every record validates against `gzkit.insights.InsightRecord` (`extra="forbid"`, ISO8601 `ts`, `type` enum, `evidence: list[str]`). Pre-lock entries waived by content hash in `_INSIGHTS_SHAPE_WAIVERS`; new writes must conform. Wired into `gz check`. |
-| 17b | Per-file char budget for AGENTS.md / CLAUDE.md / `.claude/rules/*.md` (companion to Anti-vibing operative claim 2) | **Mechanical** | Enforced by `gz validate --instructions-files-budget` (GHI #373) — each tracked file checked against budget in `data/instructions_files_budget.json` (defaults: 40k chars AGENTS.md/CLAUDE.md, 16k per rule file). Fail-closed (exit 3) on overrun with remediation pointer to `/gz-context-diet`. Wired into `gz check`. |
+| 17a | `improvement` record to `.gzkit/insights/agent-insights.jsonl` | **Mechanical** | Enforced by `gz validate --insights-shape` (GHI #358) — every record validates against `gzkit.insights.InsightRecord` (`extra="forbid"`, ISO8601 `ts`, `type` enum, `evidence: list[str]`). Pre-lock entries waived by content hash in `_INSIGHTS_SHAPE_WAIVERS`; new writes must conform. Wired into `gz check`. |
+| 17b | Per-file char budget for AGENTS.md / CLAUDE.md | **Mechanical** | Enforced by `gz validate --instructions-files-budget` (GHI #373) — each tracked file checked against budget in `data/instructions_files_budget.json` (defaults: 40k chars AGENTS.md/CLAUDE.md, 16k per rule file). Fail-closed (exit 3) on overrun with remediation pointer to `/gz-context-diet`. Wired into `gz check`. |
 
 ### Pythonic Standards (`.gzkit/rules/pythonic.md`)
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
 | 18 | No bare `except:` / `except Exception:` | **Mechanical** | ruff BLE001 enforces |
-| 19 | Functions ≤50 lines | **Mechanical** | xenon complexity + pre-commit hooks |
-| 20 | Modules ≤600 lines | **Mechanical** | Pre-commit check under `.pre-commit-config.yaml` |
-| 21 | Classes ≤300 lines | **Mechanical** | Enforced by `gz validate --class-size` (GHI #204) — AST scan over `src/gzkit/**`, with explicit `_CLASS_SIZE_WAIVERS` for documented exceptions |
+| 19 | Functions <=50 lines | **Mechanical** | xenon complexity + pre-commit hooks |
+| 20 | Modules <=600 lines | **Mechanical** | Pre-commit check under `.pre-commit-config.yaml` |
+| 21 | Classes <=300 lines | **Mechanical** | Enforced by `gz validate --class-size` (GHI #204) — AST scan over `src/gzkit/**`, with explicit `_CLASS_SIZE_WAIVERS` for documented exceptions |
 | 22 | No `Optional`/`List` (use `\| None` / `list[]`) | **Mechanical** | ruff UP007, UP006 |
-| 23 | Top-level imports only (no lazy imports) | **Promotable** | Partially enforced by ruff PLC0415; inventory of exceptions documented |
-| 24 | Suppress ty diagnostics via `# ty: ignore[<code>]` or bare `# type: ignore` | **Mechanical** | Enforced by `gz validate --type-ignores` (this audit's direct outcome, GHI #197) |
+| 23 | no lazy imports | **Promotable** | Partially enforced by ruff PLC0415; inventory of exceptions documented |
+| 24 | `# type: ignore` (bare) | **Mechanical** | Enforced by `gz validate --type-ignores` (this audit's direct outcome, GHI #197) |
 
 ### Data Models (`.gzkit/rules/models.md`)
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 25 | All data models use Pydantic `BaseModel` (no stdlib `dataclass`) | **Mechanical** | Enforced by `gz validate --pydantic-models` (GHI #203) — AST scan flags `@dataclass` in `src/gzkit/**` unless explicitly waived in `_DATACLASS_WAIVERS` |
-| 26 | Immutable models use `ConfigDict(frozen=True, extra="forbid")` | **Mechanical** | Same audit (`--pydantic-models`) — flags `BaseModel` subclasses missing `model_config = ConfigDict(...)` |
+| 25 | Use **Pydantic `BaseModel`** for all data models; no stdlib `dataclasses` | **Mechanical** | Enforced by `gz validate --pydantic-models` (GHI #203) — AST scan flags `@dataclass` in `src/gzkit/**` unless explicitly waived in `_DATACLASS_WAIVERS` |
+| 26 | Use `ConfigDict(frozen=True, extra="forbid")` for immutable models | **Mechanical** | Same audit (`--pydantic-models`) — flags `BaseModel` subclasses missing `model_config = ConfigDict(...)` |
 | 27 | Use `str \| None` not `Optional[str]` | **Mechanical** | ruff UP007 |
 
 ### Tool / Skill / Runbook Alignment (`.gzkit/rules/tool-skill-runbook-alignment.md`)
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 28 | **Invariant 1** — Every CLI tool has a wielding skill | **Mechanical** | Enforced by `gz validate --skill-alignment` (GHI #202) — scans every top-level CLI verb; requires at least one skill under `.gzkit/skills/**` unless explicitly waived in `_NO_SKILL_VERBS` |
-| 29 | **Invariant 2** — Every skill's `gz_command` matches a runbook-prescribed tool | **Promotable** | Invariant 1 landed under GHI #202; Invariants 2 and 3 remain advisory until the skill→runbook cross-reference and output-form fixtures are mechanized |
-| 30 | **Invariant 3** — Destination verb's default output matches routing skill's Output Contract | **Promotable** | Requires per-skill output-form fixtures; tracked for a follow-up after #202's Invariant 1 baseline |
+| 28 | Invariant 1 — Every CLI tool has at least one skill that wields it | **Mechanical** | Enforced by `gz validate --skill-alignment` (GHI #202) — scans every top-level CLI verb; requires at least one skill under `.gzkit/skills/**` unless explicitly waived in `_NO_SKILL_VERBS` |
+| 29 | Invariant 2 — Every skill's `gz_command` matches a runbook-prescribed tool | **Promotable** | Invariant 1 landed under GHI #202; Invariants 2 and 3 remain advisory until the skill→runbook cross-reference and output-form fixtures are mechanized |
+| 30 | Invariant 3 — Destination verb's default output form | **Promotable** | Requires per-skill output-form fixtures; tracked for a follow-up after #202's Invariant 1 baseline |
 
 ### Skill & Surface Sync (`.gzkit/rules/skill-surface-sync.md`)
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 31 | Edit `.gzkit/` first; never edit vendor mirrors | **Mechanical** | `gz agent sync control-surfaces` detects drift; version + commit hash resolution documented |
-| 32 | Bump `skill-version` on every skill edit | **Mechanical** | Skill version discipline enforced by sync command; higher version wins |
-| 33 | Run sync after every skill/rule edit | **Mechanical** | Enforced by `.githooks/pre-commit-sync-guard` (GHI #210) — rejects a staged commit that touches `.gzkit/skills/**` or `.gzkit/rules/**` without the corresponding mirror under `.claude/**` or `.github/**` |
+| 31 | Edit `.gzkit/` first | **Mechanical** | `gz agent sync control-surfaces` detects drift; version + commit hash resolution documented |
+| 32 | bumping its `skill-version` frontmatter | **Mechanical** | Skill version discipline enforced by sync command; higher version wins |
+| 33 | `gz agent sync control-surfaces` | **Mechanical** | Enforced by `.githooks/pre-commit-sync-guard` (GHI #210) — rejects a staged commit that touches `.gzkit/skills/**` or `.gzkit/rules/**` without the corresponding mirror under `.claude/**` or `.github/**` |
 
 ### Tests Policy (`.gzkit/rules/tests.md`)
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
 | 34 | Red-Green-Refactor TDD discipline | **Judgment** | Cannot mechanically verify "test failed before implementation" after the fact |
-| 35 | Every commit touching src/tests carries Task: or Ceremony: trailer | **Mechanical** | `gz validate --commit-trailers` — landed under GHI #201 |
-| 36 | Use stdlib `unittest` (no pytest) | **Mechanical** | `forbid pytest` pre-commit hook |
-| 37 | Two runners: unittest + behave (no tier under unittest) | **Mechanical** | Enforced by `gz validate --test-tiers` (GHI #209) — fails on `tests/{integration,e2e,slow,bdd}/` or forbidden `--integration`/`--e2e`/`--slow`/`--bdd-only` flags re-appearing in `parser_*.py` |
-| 38 | Coverage floor ≥40% | **Mechanical** | Pre-commit hook |
-| 39 | Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM` tag | **Mechanical** | Enforced by `gz validate --behave-req-tags` (GHI #211, reversed direction GHI #276) — enumerates heavy-lane OBPI briefs (pool ADRs excluded), extracts REQ-IDs from each brief's Acceptance Criteria, and asserts every REQ has a matching scenario-level `@REQ-*` tag under `features/**`. Heavy OBPIs that defer BDD (schema-only, template-only) register in `data/behave_coverage_waivers.json`. |
+| 35 | Eval-feedback-source: | **Mechanical** | `gz validate --commit-trailers` — landed under GHI #201 |
+| 36 | Use **stdlib `unittest`**; no pytest | **Mechanical** | `forbid pytest` pre-commit hook |
+| 37 | Two runners, one test surface | **Mechanical** | Enforced by `gz validate --test-tiers` (GHI #209) — fails on `tests/{integration,e2e,slow,bdd}/` or forbidden `--integration`/`--e2e`/`--slow`/`--bdd-only` flags re-appearing in `parser_*.py` |
+| 38 | Coverage >=40.00% | **Mechanical** | Pre-commit hook |
+| 39 | Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM` | **Mechanical** | Enforced by `gz validate --behave-req-tags` (GHI #211, reversed direction GHI #276) — enumerates heavy-lane OBPI briefs (pool ADRs excluded), extracts REQ-IDs from each brief's Acceptance Criteria, and asserts every REQ has a matching scenario-level `@REQ-*` tag under `features/**`. Heavy OBPIs that defer BDD (schema-only, template-only) register in `data/behave_coverage_waivers.json`. |
 
 ### Chores Workflow (`.gzkit/rules/chores.md`)
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
 | 54 | Plan-first chore discipline | **Judgment** | Procedural; enforced by `gz chores plan/advise` ordering in the skill |
-| 55 | Lite lane by default (<=60s, unit tests only) | **Mechanical** | Lane config enforced by `gz chores plan` |
+| 55 | **Lite by default** | **Mechanical** | Lane config enforced by `gz chores plan` |
 | 56 | CLI-only evidence (no raw SQL attestation) | **Judgment** | Anti-pattern prevention; cultural |
 
 ### ADR Audit (`.gzkit/rules/adr-audit.md`)
@@ -127,12 +127,12 @@ This audit scores every rule by:
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 41 | Use `pathlib.Path` for file paths | **Mechanical** | ruff PTH rules enforce |
-| 42 | Specify `encoding="utf-8"` on file I/O | **Mechanical** | ruff / unit tests |
+| 41 | All file operations use `pathlib.Path` | **Mechanical** | ruff PTH rules enforce |
+| 42 | All file I/O specifies `encoding="utf-8"` | **Mechanical** | ruff / unit tests |
 | 43 | Use context managers for temp files | **Judgment** | Pattern — hard to mechanize reliably |
-| 44 | Subprocess list form (no `shell=True`) | **Mechanical** | ruff S602/S603 |
-| 45 | Runtime UTF-8 config in entrypoint (no env-var prefix) | **Mechanical** | Rule 9 audit `--utf8-prefix` covers this |
-| 45a | Ad-hoc `python -c` / helper scripts processing gz output must configure UTF-8 stdin/stdout (runtime guard covers only `uv run gz`) | **Mechanical** | Enforced by `gz validate --utf8-prefix` (GHI #275 — scope extended from rule-9 prefix scan to gz-pipe patterns in docs/skills/features + `tools/**/*.py` entry-point AST walk) |
+| 44 | No `shell=True` in subprocess | **Mechanical** | ruff S602/S603 |
+| 45 | The CLI entrypoint handles UTF-8 at startup | **Mechanical** | Rule 9 audit `--utf8-prefix` covers this |
+| 45a | fresh `python -c` or helper scripts | **Mechanical** | Enforced by `gz validate --utf8-prefix` (GHI #275 — scope extended from rule-9 prefix scan to gz-pipe patterns in docs/skills/features + `tools/**/*.py` entry-point AST walk) |
 
 ### Defect Fix Routing (`.gzkit/rules/defect-fix-routing.md`)
 
@@ -146,7 +146,7 @@ This audit scores every rule by:
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
 | 48 | Docs update when command output changes | **Judgment** | Correlation between code change and doc change is not reliably mechanizable |
-| 49 | No placeholder output examples | **Promotable** | Could regex-scan for `<…>` / `TODO` placeholders in runbook/manpages |
+| 49 | Do not leave placeholder output examples | **Promotable** | Could regex-scan for `<…>` / `TODO` placeholders in runbook/manpages |
 | 50 | Heavy/foundation lane requires explicit human attestation before completion | **Mechanical** | Enforced by `gz closeout` pipeline (rule 15 in this scorecard) |
 
 ### GitHub CLI Guardrails (`.gzkit/rules/gh-cli.md`)
@@ -190,7 +190,7 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 
 | # | Rule | Score | Why |
 |---|------|-------|-----|
-| 48 | Security work needs heightened review regardless of lane or kind — `sensitivity: security` floor (auto-detect against `data/security_surfaces.json`), escalate-not-escape, heightened Gate 5 walkthrough, scanner-unavailable fail-closed | **Mechanical** | Enforced by `gz validate --sensitivity` (ADR-0.0.22) — `audit_sensitivity_binding` in `src/gzkit/governance/trust_audits.py` runs floor + escalate-not-escape against the registry; audit OR-branch `_requires_security_review_attestation` at `src/gzkit/commands/adr_audit.py` forces brief-level human attestation on every `sensitivity: security` brief regardless of lane or kind; canonical security-scan ARB step is reserved in `CANONICAL_STEP_COMMANDS` so receipt absence fails Gate 5 walkthrough. Mirror discipline by `gz agent sync control-surfaces`. |
+| 48 | Security work needs heightened review regardless of lane or kind. | **Mechanical** | Enforced by `gz validate --sensitivity` (ADR-0.0.22) — `audit_sensitivity_binding` in `src/gzkit/governance/trust_audits.py` runs floor + escalate-not-escape against the registry; audit OR-branch `_requires_security_review_attestation` at `src/gzkit/commands/adr_audit.py` forces brief-level human attestation on every `sensitivity: security` brief regardless of lane or kind; canonical security-scan ARB step is reserved in `CANONICAL_STEP_COMMANDS` so receipt absence fails Gate 5 walkthrough. Mirror discipline by `gz agent sync control-surfaces`. |
 
 ### Agent Failure-Mode Taxonomy (`.gzkit/rules/agent-failure-modes.md`)
 
@@ -208,37 +208,37 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 
 | # | Rule | Score | Why |
 |---|------|-------|-----|
-| 54 | Every advisor diagnosis (fixture, ledger-cited, or JSON-Schema-defined) MUST carry non-empty `proof: tuple[ProofRange, ...]`. The verdict <-> proof binding is enforced in three layers: model-layer (OBPI-0.0.29-01: `Field(min_length=1)` on `AdvisorDiagnosis.proof` plus `_check_proof_nonempty` validator), engine-layer (OBPI-0.0.29-02: `EngineError` raised before model instantiation if proof is unavailable), and validator-layer (this row: `gz validate --advisor-proof-binding` is the gate-time defense-in-depth backstop). | **Mechanical** | Enforced by `gz validate --advisor-proof-binding` (OBPI-0.0.29-08, `src/gzkit/governance/trust_audits/advisor_proof_binding.py`) — fails closed (exit 1) on (a) any fixture under `tests/fixtures/advisor/*.json` whose top-level `proof` array is empty, (b) any `intrinsic-complexity-attestation` ledger event whose payload references a diagnosis id whose fixture has empty proof, or (c) `src/gzkit/schemas/advisor_diagnosis.json` whose `properties.proof.minItems` is missing or `< 1`. Speculative-marker escape: a fixture's top-level `"_negative_case": true` skips it (the OBPI-01 model test that asserts `ValidationError` on empty proof is the test of the defense, not a defect). Wired into `--all` aggregation and `gz check` (`_run_scope_checks` opt-in scope). Behave scenarios at `features/advisor_proof_binding.feature` cover the two canonical failure paths (REQ-0.0.29-08-02: empty fixture; REQ-0.0.29-08-03: ledger event citing empty-proof diagnosis). Validator validated by `tests/governance/test_advisor_proof_binding_validator.py` (16 tests across fixture, ledger, schema, error-message-quality, and CLI-integration test classes). Scorecard citation: ADR-0.0.29 (parent), OBPI-0.0.29-01 (model layer), OBPI-0.0.29-02 (engine layer), OBPI-0.0.29-08 (validator layer). |
+| 54 | `Field(min_length=1)` on `AdvisorDiagnosis.proof` | **Mechanical** | Enforced by `gz validate --advisor-proof-binding` (OBPI-0.0.29-08, `src/gzkit/governance/trust_audits/advisor_proof_binding.py`) — fails closed (exit 1) on (a) any fixture under `tests/fixtures/advisor/*.json` whose top-level `proof` array is empty, (b) any `intrinsic-complexity-attestation` ledger event whose payload references a diagnosis id whose fixture has empty proof, or (c) `src/gzkit/schemas/advisor_diagnosis.json` whose `properties.proof.minItems` is missing or `< 1`. Speculative-marker escape: a fixture's top-level `"_negative_case": true` skips it (the OBPI-01 model test that asserts `ValidationError` on empty proof is the test of the defense, not a defect). Wired into `--all` aggregation and `gz check` (`_run_scope_checks` opt-in scope). Behave scenarios at `features/advisor_proof_binding.feature` cover the two canonical failure paths (REQ-0.0.29-08-02: empty fixture; REQ-0.0.29-08-03: ledger event citing empty-proof diagnosis). Validator validated by `tests/governance/test_advisor_proof_binding_validator.py` (16 tests across fixture, ledger, schema, error-message-quality, and CLI-integration test classes). Scorecard citation: ADR-0.0.29 (parent), OBPI-0.0.29-01 (model layer), OBPI-0.0.29-02 (engine layer), OBPI-0.0.29-08 (validator layer). |
 
 ### Token Block Discipline (`.gzkit/rules/token-block-discipline.md`)
 
 | # | Rule | Score | Why |
 |---|------|-------|-----|
-| 53 | Lock release is coupled to a handoff/register entry: abandon categories are closed, register entries carry minimum information, reaping creates a degenerate register entry, TTL/reap discipline is explicit, and release becomes fail-closed when no valid handoff exists. | **Promotable** | Doctrine exists in the rule file and parent ADR-0.0.41, but OBPI-0.0.41-02/03/04 are still pending for runtime warning/fail-closed enforcement and `gz validate --lock-handoff-coupling`. Until those land, this is a promotable rule with a clear mechanical path rather than already-mechanical enforcement. |
+| 53 | abandon categories are closed | **Promotable** | Doctrine exists in the rule file and parent ADR-0.0.41, but OBPI-0.0.41-02/03/04 are still pending for runtime warning/fail-closed enforcement and `gz validate --lock-handoff-coupling`. Until those land, this is a promotable rule with a clear mechanical path rather than already-mechanical enforcement. |
 
 ### Exemplar Corpus Doctrine (`.gzkit/rules/complexity-doctrine.md`)
 
 | # | Rule | Score | Why |
 |---|------|-------|-----|
-| 50 | Complexity calibration is grounded in an empirically-measured exemplar corpus: selection requires all seven criteria (longevity ≥ 5 yrs, maintenance health, practitioner reputation NOT GitHub-star count, pure-Python ≥ 80% LOC, author craftsmanship signal, project doctrine fitness, pinned commit SHA); corpus anti-patterns are explicitly prohibited; distillation cadence fires on annual calendar, drift > 25%, or operator judgment (6-month minimum re-distillation guard); downstream foundation ADRs cite the distilled-characteristics document, not raw distributions or the corpus directly; link-integrity validator enforced by `gz validate --complexity-doctrine-links` (OBPI-0.0.27-07). | **Mechanical** | Enforced by `gz validate --complexity-doctrine-links` (OBPI-0.0.27-07, `src/gzkit/governance/trust_audits/complexity_doctrine_links.py`) — fails closed (exit 3) when cluster ADRs (0.0.27/0.0.28/0.0.29/0.0.30) or `.gzkit/rules/complexity-doctrine.md` cite distilled-characteristics documents that do not exist, anchors that do not resolve, or `corpus_revision` values outside the supported portability window. Two-signal heuristic (`§` + `(corpus revision`) gates the citation candidate set; HTML-comment speculative-skip marker (`<!-- gz-validate-skip: complexity-doctrine-links -->`) supported. Wired into `gz check` via the "Complexity-doctrine links" runner so pre-merge gates fire automatically. Selection methodology criteria are pinned in `.gzkit/rules/complexity-doctrine.md` and validated by `tests/governance/test_complexity_doctrine_rule.py`. Scorecard citation: ADR-0.0.27 (parent), OBPI-0.0.27-07 (link-integrity enforcement). |
+| 50 | empirically-measured exemplar corpus | **Mechanical** | Enforced by `gz validate --complexity-doctrine-links` (OBPI-0.0.27-07, `src/gzkit/governance/trust_audits/complexity_doctrine_links.py`) — fails closed (exit 3) when cluster ADRs (0.0.27/0.0.28/0.0.29/0.0.30) or `.gzkit/rules/complexity-doctrine.md` cite distilled-characteristics documents that do not exist, anchors that do not resolve, or `corpus_revision` values outside the supported portability window. Two-signal heuristic (`§` + `(corpus revision`) gates the citation candidate set; HTML-comment speculative-skip marker (`<!-- gz-validate-skip: complexity-doctrine-links -->`) supported. Wired into `gz check` via the "Complexity-doctrine links" runner so pre-merge gates fire automatically. Selection methodology criteria are pinned in `.gzkit/rules/complexity-doctrine.md` and validated by `tests/governance/test_complexity_doctrine_rule.py`. Scorecard citation: ADR-0.0.27 (parent), OBPI-0.0.27-07 (link-integrity enforcement). |
 
 ### Complexity Thresholds (`.gzkit/rules/complexity-thresholds.{md,json}`)
 
 | # | Rule | Score | Why |
 |---|------|-------|-----|
-| 51 | gzkit publishes one canonical threshold table whose every entry is a `(metric, percentile-band, absolute-number, trigger-semantic)` tuple cited from the current distilled-characteristics document. The trigger-semantic vocabulary is fixed at three values (`block` / `warn` / `advise`); the per-metric mapping is operator-amendable doctrine. Every metric MUST carry a `block` band; every band carries the percentile + absolute-number pairing. Bootstrap-absolutes carve-out covers exactly the metrics with unresolved upstream defects (currently `radon_mi` per GHI #405, `lizard_nesting_depth` and `cohesion_lcom4` per GHI #404) and is one-shot per defect. | **Mechanical** | Enforced by `gz validate --complexity-thresholds` (OBPI-0.0.28-03, `src/gzkit/governance/trust_audits/complexity_thresholds.py`) — fails closed (exit 3) on missing `block` band per metric, missing percentile + absolute pairing, trigger-semantic outside the three-value enum, unparseable citation tuple, or canonical-metric coverage gap. Bootstrap-mode carve-out emits an informational stdout notice (non-policy-breach). The `ThresholdTable` Pydantic loader at `src/gzkit/complexity/thresholds.py` (OBPI-0.0.28-02) is the runtime contract that ADR-0.0.29 advisor and ADR-0.0.30 authoring-guidance bind against; the loader's Pydantic field validators close the loader-layer half of the invariant. Selection-methodology and citation-tuple form inherited from `.gzkit/rules/complexity-doctrine.md` (rule 50) — the threshold table cites that doctrine's distilled-characteristics document at corpus revision 1. Wired into `gz check` via the "Complexity-thresholds" runner; behave scenarios under `features/complexity_thresholds.feature` cover the four canonical failure paths (missing block band, off-enum percentile, malformed citation, bootstrap-mode notice). Rule body validated by `tests/governance/test_complexity_thresholds_rule.py`; validator validated by `tests/governance/test_complexity_thresholds_validator.py`. Scorecard citation: ADR-0.0.28 (parent), OBPI-0.0.28-02 (loader), OBPI-0.0.28-03 (validator-as-enforcement). |
+| 51 | `(metric, percentile-band, absolute-number, trigger-semantic)` tuple | **Mechanical** | Enforced by `gz validate --complexity-thresholds` (OBPI-0.0.28-03, `src/gzkit/governance/trust_audits/complexity_thresholds.py`) — fails closed (exit 3) on missing `block` band per metric, missing percentile + absolute pairing, trigger-semantic outside the three-value enum, unparseable citation tuple, or canonical-metric coverage gap. Bootstrap-mode carve-out emits an informational stdout notice (non-policy-breach). The `ThresholdTable` Pydantic loader at `src/gzkit/complexity/thresholds.py` (OBPI-0.0.28-02) is the runtime contract that ADR-0.0.29 advisor and ADR-0.0.30 authoring-guidance bind against; the loader's Pydantic field validators close the loader-layer half of the invariant. Selection-methodology and citation-tuple form inherited from `.gzkit/rules/complexity-doctrine.md` (rule 50) — the threshold table cites that doctrine's distilled-characteristics document at corpus revision 1. Wired into `gz check` via the "Complexity-thresholds" runner; behave scenarios under `features/complexity_thresholds.feature` cover the four canonical failure paths (missing block band, off-enum percentile, malformed citation, bootstrap-mode notice). Rule body validated by `tests/governance/test_complexity_thresholds_rule.py`; validator validated by `tests/governance/test_complexity_thresholds_validator.py`. Scorecard citation: ADR-0.0.28 (parent), OBPI-0.0.28-02 (loader), OBPI-0.0.28-03 (validator-as-enforcement). |
 
 ### Editor/IDE Protocol Surface (`.gzkit/schemas/authoring_guide_protocol.json`)
 
 | # | Rule | Score | Why |
 |---|------|-------|-----|
-| 55 | The editor/IDE authoring-guide protocol envelope (LSP-style Content-Length–framed JSON) is defined by `src/gzkit/schemas/authoring_guide_protocol.json`. Every request, response, notification, and error shape MUST be named in the schema; protocol drift is caught by JSON Schema validation at server runtime, not by human review. | **Mechanical** | Enforced by `src/gzkit/schemas/authoring_guide_protocol.json` validation in the protocol server (`gz complexity guide --server`); message payload validation happens at parse time (before handler dispatch), so schema evolution (adding required fields, renaming envelopes, changing encoding) is fail-closed at request/response boundaries. Scorecard citation: ADR-0.0.30 (parent), OBPI-0.0.30-04 (protocol server implementation). |
+| 55 | src/gzkit/schemas/authoring_guide_protocol.json | **Mechanical** | Enforced by `src/gzkit/schemas/authoring_guide_protocol.json` validation in the protocol server (`gz complexity guide --server`); message payload validation happens at parse time (before handler dispatch), so schema evolution (adding required fields, renaming envelopes, changing encoding) is fail-closed at request/response boundaries. Scorecard citation: ADR-0.0.30 (parent), OBPI-0.0.30-04 (protocol server implementation). |
 
 ### Distribution Invariant Doctrine (T0) (`docs/governance/trust-doctrine.md` T0 layer + `ADR-0.0.31`)
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 57 | Every canonical surface (skills, rules, hooks, templates, chores, personas) MUST be reproducibly delivered by `pip install py-gzkit && gz init` to a fresh project, byte-equivalent to the wheel's authored canonical content. A wheel that ships without a canonical surface is a T0 breach regardless of whether downstream `gz init` reports success. | **Mechanical** | Enforced by `gz validate --distribution` (OBPI-0.0.32-07, `src/gzkit/governance/trust_audits/distribution.py`) — static check against `pyproject.toml` include globs + `data/distribution_baseline_manifest.json` + on-disk canonical surface trees; detects three drift classes (ON\_DISK\_NOT\_INCLUDED / BASELINE\_NOT\_ON\_DISK / ON\_DISK\_NOT\_BASELINE); exit 3 on any drift; exit 2 on system error. Receipt-id prefix: `arb-distribution-`. |
+| 57 | byte-equivalent to the wheel's authored canonical content | **Mechanical** | Enforced by `gz validate --distribution` (OBPI-0.0.32-07, `src/gzkit/governance/trust_audits/distribution.py`) — static check against `pyproject.toml` include globs + `data/distribution_baseline_manifest.json` + on-disk canonical surface trees; detects three drift classes (ON\_DISK\_NOT\_INCLUDED / BASELINE\_NOT\_ON\_DISK / ON\_DISK\_NOT\_BASELINE); exit 3 on any drift; exit 2 on system error. Receipt-id prefix: `arb-distribution-`. |
 
 ---
 
