@@ -1,0 +1,4 @@
+Validated: bullet_retention
+
+✓ All validations passed (1 scopes).
+EXIT=0

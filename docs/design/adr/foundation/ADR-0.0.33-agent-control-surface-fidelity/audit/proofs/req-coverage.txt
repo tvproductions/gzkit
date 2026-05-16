@@ -1,0 +1,50 @@
+{
+  "by_adr": [
+    {
+      "identifier": "ADR-0.0.33",
+      "total_reqs": 27,
+      "covered_reqs": 27,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    }
+  ],
+  "by_obpi": [
+    {
+      "identifier": "OBPI-0.0.33-01",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.33-02",
+      "total_reqs": 6,
+      "covered_reqs": 6,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.33-03",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.33-04",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.33-05",
+      "total_reqs": 6,
+      "covered_reqs": 6,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    }
+  ],
+  "entries": [
+    {
+      "req_id": "REQ-0.0.33-01-01",

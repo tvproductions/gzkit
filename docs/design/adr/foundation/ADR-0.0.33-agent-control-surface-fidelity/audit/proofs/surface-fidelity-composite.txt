@@ -1,0 +1,5 @@
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+Validated: surface_fidelity
+
+✓ All validations passed (1 scopes).
+EXIT=0

@@ -1,0 +1,5 @@
+      - id: surface-fidelity-cheap
+        name: surface-fidelity cheap subset (invariants 1, 2, 3)
+        entry: uv run gz validate --bullet-retention --surface-weight --pointer-anchors
+        language: system
+        pass_filenames: false

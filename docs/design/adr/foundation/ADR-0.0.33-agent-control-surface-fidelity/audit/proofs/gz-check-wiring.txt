@@ -1,0 +1,3 @@
+src/gzkit/commands/quality.py:301:        run_surface_fidelity_audit,
+src/gzkit/commands/quality.py:323:        ("Surface fidelity", run_surface_fidelity_audit),
+src/gzkit/quality.py:632:def run_surface_fidelity_audit(project_root: Path) -> QualityResult:
