@@ -1,0 +1,110 @@
+{
+  "id": "ADR-0.0.45",
+  "title": "CLI Mode-Density Doctrine",
+  "semver": "0.0.45",
+  "kind": "foundation",
+  "lane": "heavy",
+  "parent": "PRD-GZKIT-1.0.0",
+  "paired_ghis": ["#471", "#472"],
+  "tier_1": {
+    "kind_rationale": "Identity-shaping, not capability-shipping. This ADR changes what gzkit IS (cascade-governed CLI mode-density discipline) rather than producing a release-carrying user capability. Per ADR-0.0.18 taxonomy doctrine, identity-shaping work is foundation. Pre-1.0.0 boundary work; the architecture memo explicitly calls for locking foundations before 1.0.",
+    "problem": "The 40+ `--<scope>` flags that accreted on `gz validate` (each individually clig.dev-compliant in spirit and Lite-lane-cheap in mechanics) are evidence that the existing Lite/Heavy lane economics in `.claude/rules/cli.md` produced a doctrinal gradient that consumed clig.dev's noun-verb preference 39+ times in a row. The cure-without-prophylaxis (#471) re-accretes within ~12 months; the prophylaxis-without-cure (#472) is a paper gate with no precedent to cite. Both are operationally inseparable.",
+    "decision": "Codify a three-pillar CLI mode-density doctrine: (1) refactor `gz validate` to noun-verb subverbs (`gz validate suite <name>` / `gz validate audit <name>`); (2) install two mechanical density validators with named registries and bands (`cli-flag-density`: Green ≤7, Yellow 8–12, Red >12; `suite-density`: Green ≤6, Yellow 7–10, Red >10); (3) amend `.claude/rules/cli.md` to three lanes (Behavior Mode / Scope Selector / New Verb) that name what the prior binary collapsed. Hard cutover, no shim, no deprecation alias. Two parallel receipts (`cli_flag_density_recalibrated`, `suite_density_recalibrated`) for annual + receipt-triggered recalibration.",
+    "alternatives_considered": [
+      "Two paired foundation ADRs (Q1-B) — splits a single doctrine across `paired_with:` frontmatter; re-instantiates the T1/T2 drift this ADR exists to prevent.",
+      "Multi-positional CLI shape (Q2-A) — re-imports the additive-cost gradient under a different syntax; density would still hide in positional accretion.",
+      "Dual-acceptance migration window (Q3-B) — deprecated form becomes a hiding place for new accretion OR forces the density validator to fail-close on its own ADR.",
+      "Unified intent-density framework (Q4-D) — empty-framework risk; uniform counting predicate papers over genuinely-different failure modes.",
+      "Inversion / removal of Lite lane (Q5-1/Q5-3) — Heavy-lanes textbook clig.dev-compliant behavior modes; goes past clig.dev's actual prescriptions."
+    ],
+    "positive_consequences": [
+      "Mechanical pre-Gate-1 backstop against CLI mode-density accretion — what was a doctrinal gradient becomes a fail-closed validator.",
+      "Operationally inseparable cure + prophylaxis land in one ceremony; neither half can re-fail in isolation.",
+      "Three-lane rule names the genuine distinction between behavior modes (`--json`, `--dry-run`), scope selectors (subject to density check), and new verbs (Heavy ceremony) — replaces the lossy Lite/Heavy binary on this axis.",
+      "Two surfaces with distinct bands honor that flag-per-verb (UI memory load) and audits-per-suite (doctrinal-coherence drift) are genuinely different failure modes deserving distinct calibration.",
+      "Recalibration receipts make threshold drift observable and auditable; annual cadence plus receipt-triggered recalibration prevents bands from quietly becoming theatre.",
+      "Suite-named composites (`gz validate suite <name>`) and single-audit verbs (`gz validate audit <name>`) restore clig.dev noun-verb shape that the flag-accretion gradient consumed.",
+      "Foundation-attested waiver path with mandatory `next_action` forces the unwaivering to be planned, not deferred indefinitely."
+    ],
+    "negative_consequences": [
+      "Hard cutover blast radius: ~99 `--<scope>` references across ~481 files flip atomically in OBPI-0.0.45-04. Pre-commit hook `.pre-commit-config.yaml` changes from `gz validate --bullet-retention --surface-weight --pointer-anchors` to `gz validate suite cheap-fidelity` in the same commit.",
+      "Pre-mortem failure mode — accretion hides in suites with empty waiver reasons. Operators add audits to suites without bumping the suite-density count if waiver validation accepts a blank `reason`. Mitigation: `next_action` field required on every waiver entry; empty or generic reasons (`'TODO'`, `'TBD'`, single-word) fail-closed by validator.",
+      "Pre-mortem failure mode — density audit perf budget misses pre-commit ship. If `cli-flag-density` + `suite-density` add >100ms to `gz validate suite cheap-fidelity`, operators silent-disable the hook locally and the prophylaxis collapses. Mitigation: OBPI-0.0.45-04 measures wall-clock of both audits on the gzkit corpus; if >100ms, suite wiring moves to `default`/`surface-fidelity` only, not `cheap-fidelity`. Threshold measured, not assumed.",
+      "Pre-mortem failure mode — recalibration receipt schema drifts from validator expectations after first annual cadence. Mitigation: OBPI-0.0.45-04 stamps receipt schema in Pydantic with `extra='forbid'`; receipt-read path is the only consumer; schema-evolution discipline same as ledger event types.",
+      "Goes against repo precedent of transitional shims — operators reading prior ADRs may expect deprecation aliases. Documented explicitly in Rationale; the anti-vibing mantra (shims are vibing surfaces) is the rationale.",
+      "Surface area growth: two new registries (`data/cli_flag_density_*.json`, `data/suite_density_*.json`), two new validator scopes (`cli-flag-density`, `suite-density`), one new CLI verb pair (`gz validate suite <name>`, `gz validate audit <name>`), two new receipt types. Acknowledged cost, not denied.",
+      "GHIs #471 and #472 will close `superseded` on ADR-0.0.45 completion (per `ghi-close` skill at ADR closeout, NOT at ADR creation) — close-tracking discipline required."
+    ],
+    "checklist": [
+      "OBPI-0.0.45-01: Registry + thresholds + Pydantic models (`src/gzkit/governance/trust_audits/cli_density_models.py`). Two registries (`data/cli_flag_density_{thresholds,floor,waivers}.json`, `data/suite_density_{thresholds,floor,waivers}.json`) plus `data/validate_suites.json` and `data/validate_audits.json`. All models follow `.claude/rules/models.md` (`BaseModel` + `ConfigDict(frozen=True, extra='forbid')`). Registry/Interface layer.",
+      "OBPI-0.0.45-02: Surface-1 validator (`cli-flag-density`). AST walker over `src/gzkit/cli/parser_*.py` counting per-verb flag accretion against bands (Green ≤7, Yellow 8–12, Red >12). Yellow requires waiver naming why not subcommand promotion; Red fail-closed. Core Execution layer.",
+      "OBPI-0.0.45-03: Surface-2 validator (`suite-density`). Walker over `data/validate_suites.json` counting per-suite audit membership against bands (Green ≤6, Yellow 7–10, Red >10). Includes orphan-member detection (audit listed in suite that does not resolve to a registered validator scope). Core Execution layer.",
+      "OBPI-0.0.45-04: CLI surface (`gz validate audit cli-flag-density`, `gz validate audit suite-density`, `gz validate suite density`). Suite wiring (`default`/`surface-fidelity`/`cheap-fidelity`) pending ≤100ms perf measurement. Recalibration receipt emission/read paths (`cli_flag_density_recalibrated`, `suite_density_recalibrated`). Manpage. **Folds in #471's noun-verb refactor (parser cutover + ~481-file sweep) unless operator later peels it into a prior ADR.** Lifecycle/Operations layer.",
+      "OBPI-0.0.45-05: Doctrine landing. `.claude/rules/cli.md` three-lane amendment (Behavior Mode / Scope Selector / New Verb). `docs/governance/advisory-rules-audit.md` scorecard promotion (clig.dev baseline → 'Promoted: Mechanical — enforced by `gz validate audit cli-flag-density`'). `.gzkit/rules/governance-core.md` § Proof commands update. Heavy-lane behave smoke. Doctrine layer."
+    ]
+  },
+  "tier_2_forcing_functions": {
+    "pre_mortem": {
+      "covered_in": "Drafted by agent from design content for completeness (operator dialogue Q1-Q5 did not run an explicit pre-mortem pass).",
+      "scenarios": [
+        "It is 18 months from now. Operators routinely add audits to suites with one-word waiver reasons (`'TODO'`, `'TBD'`, `'pending'`); the `suite-density` validator accepts them; suite membership counts silently climb past the Red threshold while waiver lines accumulate. The cascade is 'compliant' by validator but doctrinally dead. Failure: the waiver-reason validator was Layer-1 prose, not Layer-2 fail-close.",
+        "It is 18 months from now. The `cli-flag-density` + `suite-density` audits add 200ms to `gz validate suite cheap-fidelity`; the pre-commit hook becomes 'the slow one'; operators silent-disable the hook locally with `--no-verify`; the prophylaxis is bypassed at the moment of greatest need (active development on contracting surface). Failure: perf budget was assumed, not measured against actual corpus.",
+        "It is 18 months from now. The first annual recalibration receipt was emitted in v0.27.0; a subsequent v0.30.0 changed the receipt schema (added a `methodology_version` field); validator-read code in v0.30.0 silently treats missing field as `null` and skips the recalibration check; thresholds drift unrecalibrated for 12+ months. Failure: receipt schema was not `extra='forbid'` Pydantic with explicit version-evolution discipline.",
+        "It is 18 months from now. A new agent reading the three-lane rule confuses Scope Selector and Behavior Mode (e.g., adds `--scope foundation` and labels it a Behavior Mode to dodge the density check); validator catches it because Behavior Modes are a closed enum, but reviewers waive the validator with the override flag once per defect, and the closed enum quietly expands by 4 entries. Failure: override flag had no audit trail back to a foundation-attested justification."
+      ]
+    },
+    "wwhtbt": {
+      "covered_in": "Q4 — two-vs-one validator discussion. Operator chose Q4-C (two surfaces, distinct registries and bands) over Q4-D (unified intent-density framework).",
+      "what_would_have_to_be_true_for_decision": "Flag-per-verb accretion and audits-per-suite accretion are genuinely different failure modes (UI memory load vs doctrinal-coherence drift). Their thresholds should be calibrated independently. Two surfaces are not over-engineering; one surface would paper over real differences.",
+      "what_would_have_to_be_true_for_alternative_unified": "A single counting predicate (e.g., 'cognitive units per noun') would have to capture both UI memory load and doctrinal coherence with comparable accuracy. The empty-framework risk: uniform predicate scores high on neither failure mode well.",
+      "shakiest_condition": "Two-registry / two-receipt overhead may be perceived as ceremony bloat by operators who do not yet have an intuition for why the failure modes differ. Mitigation: doctrine landing OBPI-0.0.45-05 names the distinction explicitly in `.claude/rules/cli.md` three-lane rule."
+    },
+    "constraint_archaeology": {
+      "covered_in": "Q3 — shim precedent analysis. Operator chose Q3-A (hard cutover, no shim, no deprecation alias) against repo precedent of transitional shims.",
+      "examination": "The 'transitional shim' constraint was inherited convention — last tested in ADR-0.0.32's surface-renaming work where shims were used to preserve byte-parity tests during a rolling cutover. That constraint is not load-bearing for this ADR's situation: the rename is from `--<scope>` flag form to noun-verb subverb form, not a name change. Shim semantics would be 'accept either form'; the density validator would then have to either (a) ignore the deprecated form, defeating its purpose, or (b) fail-close on the deprecated form, putting a shim and a fail-close on the same surface. Anti-vibing mantra: shims are vibing surfaces. Single-sweep blast radius is shorter pain than indefinite shim maintenance."
+    },
+    "assumption_surfacing": {
+      "covered_in": "Q4 — assumption surfacing on the 'unified framework' elegance. Operator chose Q4-C (two surfaces) over Q4-D (unified).",
+      "implicit_assumption_surfaced": "The assumption that one 'intent-density' framework would be more elegant than two distinct surfaces was named and rejected. The opposite framing (two failure modes, two registries) is empirically more honest about what the validator is measuring.",
+      "additional_drafted_by_agent": "Implicit assumption: the ~7/12 and ~6/10 thresholds are correct calibration anchors. These numbers come from the current gzkit corpus state (where `gz validate` accreted to 40+ flags before triggering the design conversation). Calibration is empirically grounded, not theoretically derived. Recalibration receipts (annual + triggered) keep the calibration honest as the corpus evolves."
+    },
+    "two_am_operator": {
+      "covered_in": "Drafted by agent — design dialogue did not explicitly run this question.",
+      "operator_needs": "At 2am the on-call operator's pre-commit hook fails with `Red threshold exceeded: gz validate carries 13 flags (Red >12)`. They need: (a) the error to name which flag/suite tipped the count over the threshold; (b) the error to name the override path (`--accept-flag-density --accept-reason <text>`); (c) the error to point at the rule (`docs/governance/advisory-rules-audit.md` § cli-flag-density); (d) a one-shot bypass (`--no-verify` is too coarse — `gz validate suite cheap-fidelity --accept-flag-density-band Yellow --accept-reason 'hotfix landing 2026-XX-XX'`) that emits a `density_band_accepted` ledger event so the bypass is auditable; (e) the next_action field to record what the unwaivering plan is. Every error message carries a `Resolve:` line per the GHI #322 ADR-status-fresh pattern."
+    },
+    "reversibility": {
+      "covered_in": "Drafted by agent — design dialogue did not explicitly score reversibility.",
+      "assessment": "Predominantly one-way door. One-way: the `--<scope>` flag form is removed from ~481 files; readers and downstream consumers expect noun-verb shape; agent training context will pivot to the new shape; `.claude/rules/cli.md` three-lane rule becomes the canonical pedagogy. Two-way: threshold values themselves (calibration is recalibrate-able), waiver decisions (revisitable at receipt-triggered recalibration), suite membership (additive/subtractive without schema change). 12-month reversal cost: very high (corpus-wide rename of ~99 references with operator attestation). Foundation-heavy ceremony is appropriate for one-way magnitude."
+    },
+    "scope_minimization": {
+      "covered_in": "Drafted by agent — design dialogue locked all five OBPIs in scope without an explicit minimization pass.",
+      "minimum_viable": "OBPI-0.0.45-01 (registry + Pydantic) + OBPI-0.0.45-02 (cli-flag-density validator only) + OBPI-0.0.45-05 doctrine landing minus suite-density references. Delivers Surface-1 only; covers ~80% of the canonical regression (which was flag-per-verb accretion on `gz validate`). Suite-density and noun-verb refactor would defer to a follow-up ADR.",
+      "minimization_override_rationale": "Foundation cost-of-incompleteness premium: partial cascade is half a cascade is no cascade. Cure (#471) and prophylaxis (#472) are operationally inseparable — minimum-viable scope would land prophylaxis-without-cure, leaving the existing 40+ flag accretion unchanged and giving the prophylaxis no precedent to cite. The half-measure would re-fail within months. Documented as scope override, not scope creep."
+    },
+    "closing_question_forced_downstream_commitments": {
+      "drafted_by_agent": "Forward-looking subsequent ADRs this decision forces: (a) recalibration ceremony ADR — the receipt schema lands here but the operator ceremony for triggered recalibration (advisor input, methodology review, threshold change attestation) likely needs its own foundation ADR within 12 months; (b) waiver-debt ADR — once foundation-attested waivers accumulate past a threshold (~10 active waivers?), a doctrine for waiver-debt review cadence will need codifying; (c) Behavior Mode enum-evolution ADR — the closed enum (`--json`, `--dry-run`, `--check`, `--apply`, `--quiet`, `--verbose`, `--plain`) will need a controlled extension protocol when a genuine new behavior mode is needed (e.g., `--explain` for explainability outputs); (d) potential cross-CLI parity ADR if AirlineOps or another consuming repo wants to adopt the three-lane rule."
+    }
+  },
+  "operator_dialogue_summary": {
+    "q1": "Single foundation ADR, not paired.",
+    "q2": "Suite-named composites (`gz validate suite <name>`) + single-audit verb (`gz validate audit <name>`). Registries: `data/validate_suites.json`, `data/validate_audits.json`.",
+    "q3": "Hard cutover. No shim. No deprecation alias. ~99 references across ~481 files flip atomically.",
+    "q4": "Two surfaces — `cli-flag-density` (Green ≤7, Yellow 8–12, Red >12) and `suite-density` (Green ≤6, Yellow 7–10, Red >10). Distinct registries and receipts. Annual + receipt-triggered recalibration.",
+    "q5": "Three-lane replacement in `.claude/rules/cli.md`: Lite (Behavior Mode, closed enum) / Mode (Scope Selector, density-checked) / Heavy (New Verb/Subcommand, unchanged procedure). Plus scorecard promotion."
+  },
+  "ledger_events_anticipated": [
+    "adr_created (ADR-0.0.45-cli-mode-density-doctrine)",
+    "obpi_created (OBPI-0.0.45-01 through -05)",
+    "cli_flag_density_recalibrated (anticipated post-implementation, annual)",
+    "suite_density_recalibrated (anticipated post-implementation, annual)",
+    "density_band_accepted (anticipated, per operator waiver)",
+    "Closes superseded: GHI #471 (cure), GHI #472 (prophylaxis) on ADR-0.0.45 completion ceremony"
+  ],
+  "interview_metadata": {
+    "schema_note": "Authored as an extended sidecar artifact — not loaded via `gz interview adr --from`. The `--from` path conflicts with `gz plan create` (both emit `adr_created`); ADR-0.0.43 precedent (docs/design/adr/foundation/ADR-0.0.43-ddd-domain-cascade/adr-interview.json) is the established sidecar convention. Tier-1 keys remain a strict superset of ADR_QUESTIONS; Tier-2 forcing functions are recorded here for record-of-design rather than for replay through the CLI interview engine.",
+    "recorded_date": "2026-05-16",
+    "design_dialogue_skill": "gz-design",
+    "booking_skill": "gz-adr-create",
+    "operator_confirmation_token": "book"
+  }
+}
