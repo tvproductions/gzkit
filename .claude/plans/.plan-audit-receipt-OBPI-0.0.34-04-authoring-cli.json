@@ -1,0 +1,12 @@
+{
+  "obpi_id": "OBPI-0.0.34-04-authoring-cli",
+  "timestamp": "2026-05-16T22:45:00Z",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.34-04-authoring-cli.md",
+  "gaps_found": 0,
+  "advisory_notes": [
+    "29 sibling-ADR scope-collision advisories on content CLI paths — non-blocking, OBPI-0.0.34-04 is canonical first claimant",
+    "Allowed paths do not exist yet — expected for new-file OBPI; implementation will create them",
+    "gz-content.md manpage index entry handled in plan Step 7"
+  ]
+}
