@@ -124,12 +124,27 @@ class TestByteStability(unittest.TestCase):
 
     @covers("REQ-0.0.34-02-04")
     def test_render_pipeline_does_not_regress_content_model_imports(self) -> None:
-        """Render pipeline must not break existing content-model registry (substrate transparency)."""
+        """Render pipeline must not break existing content-model registry."""
         from gzkit.content.models import CONTENT_MODELS as registry  # noqa: PLC0415
 
-        self.assertGreaterEqual(len(registry), 8, "CONTENT_MODELS registry must have ≥8 entries post-OBPI")
-        for name in ("AgentContract", "Rule", "Skill", "Chore", "Persona", "Handoff", "Scenario", "Bullet"):
-            self.assertIn(name, registry, f"{name} must still be in CONTENT_MODELS after render pipeline lands")
+        self.assertGreaterEqual(
+            len(registry), 8, "CONTENT_MODELS registry must have ≥8 entries post-OBPI"
+        )
+        for name in (
+            "AgentContract",
+            "Rule",
+            "Skill",
+            "Chore",
+            "Persona",
+            "Handoff",
+            "Scenario",
+            "Bullet",
+        ):
+            self.assertIn(
+                name,
+                registry,
+                f"{name} must still be in CONTENT_MODELS after render pipeline lands",
+            )
         for content_type_name, vendor in sorted(_VENDOR_ROUTING):
             stub = _STUB_BY_TYPE.get(content_type_name)
             self.assertIsNotNone(stub, f"No stub for {content_type_name!r}")

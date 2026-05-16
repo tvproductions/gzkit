@@ -1,0 +1,23 @@
+{
+  "obpi_id": "OBPI-0.0.34-03-reverse-parse-migration",
+  "timestamp": "2026-05-16T14:40:00Z",
+  "verdict": "PASS",
+  "plan_file": "obpi-0.0.34-03-reverse-parse-migration.md",
+  "gaps_found": 2,
+  "gaps": [
+    {
+      "id": "design-tension-req-03",
+      "severity": "advisory",
+      "description": "REQ-0.0.34-03-03 byte-identical diff against hand-authored AGENTS.md is not achievable with the current simple AgentContract model. Resolved as idempotency contract.",
+      "resolution": "plan adopts idempotency interpretation"
+    },
+    {
+      "id": "cli-wiring-scope-gap",
+      "severity": "advisory",
+      "description": "src/gzkit/cli/main.py not in allowed paths but required for one-line registration of gz content subparser.",
+      "resolution": "treating as implicit scope"
+    }
+  ],
+  "adr_obpi_alignment": "PASS",
+  "plan_obpi_alignment": "PASS"
+}
