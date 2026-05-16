@@ -1,0 +1,122 @@
+"""Jinja2 render pipeline for per-turn agent control surfaces.
+
+ADR-0.0.34 § Decision item #2: render(model, vendor) → deterministic bytes.
+
+Design constraints:
+  - Byte-stable: identical inputs produce identical byte output.
+  - Fail-closed: missing template raises TemplateNotFound before any file write.
+  - Render-only: no parse logic, no validation hooks, no schema migration.
+"""
+
+from __future__ import annotations
+
+import importlib.resources
+from pathlib import Path
+
+import jinja2
+
+from gzkit.content.models.base import BaseContentModel
+
+# Minimal in-code routing table declaring all supported (content_type_name, vendor) pairs.
+# Each entry is (content_type_class_name, vendor_string).
+# OBPI-0.0.34-08 (vendor manifest) replaces this table when it lands.
+_VENDOR_ROUTING: frozenset[tuple[str, str]] = frozenset(
+    {
+        ("AgentContract", "claude"),
+        ("Rule", "claude"),
+        ("Skill", "claude"),
+        ("Chore", "claude"),
+        ("Persona", "claude"),
+        ("Handoff", "claude"),
+        ("Scenario", "claude"),
+        ("Bullet", "claude"),
+    }
+)
+
+
+def _build_env() -> jinja2.Environment:
+    """Build the Jinja2 environment, resolving the templates directory at call time.
+
+    Uses FileSystemLoader so the environment is resilient to editable-install
+    and wheel layouts. The templates directory is resolved relative to the
+    gzkit/content package location.
+    """
+    try:
+        # importlib.resources.files resolves the package root correctly in
+        # both editable-install (src layout) and wheel (installed) modes.
+        pkg_root = importlib.resources.files("gzkit.content")
+        templates_path = Path(str(pkg_root)) / "templates"
+    except (ModuleNotFoundError, TypeError):
+        # Fallback: resolve relative to this file's location.
+        templates_path = Path(__file__).parent.parent / "templates"
+
+    return jinja2.Environment(
+        loader=jinja2.FileSystemLoader(str(templates_path), encoding="utf-8"),
+        keep_trailing_newline=True,
+        autoescape=False,
+        # StrictUndefined: any undefined variable in a template raises at render time.
+        undefined=jinja2.StrictUndefined,
+    )
+
+
+# Module-level singleton — built once on first access via _get_env().
+_env_instance: jinja2.Environment | None = None
+
+
+def _get_env() -> jinja2.Environment:
+    """Return the cached Jinja2 environment, building it on first call."""
+    global _env_instance  # noqa: PLW0603
+    if _env_instance is None:
+        _env_instance = _build_env()
+    return _env_instance
+
+
+class TemplateNotFound(Exception):
+    """Raised when no template exists for the requested (content_type, vendor) pair.
+
+    Attributes:
+        content_type: The model class name (e.g. "Rule", "Skill").
+        vendor: The vendor identifier (e.g. "claude").
+    """
+
+    def __init__(self, *, content_type: str, vendor: str) -> None:
+        self.content_type = content_type
+        self.vendor = vendor
+        super().__init__(
+            f"No template registered for content_type={content_type!r}, vendor={vendor!r}. "
+            f"Expected template at: {content_type.lower()}/{vendor}.md.j2"
+        )
+
+
+def render(model: BaseContentModel, vendor: str) -> bytes:
+    """Render *model* to deterministic UTF-8 bytes using the vendor's Jinja2 template.
+
+    Args:
+        model: A validated Pydantic model instance from gzkit.content.models.
+        vendor: The vendor identifier (e.g. "claude").
+
+    Returns:
+        UTF-8 encoded bytes of the rendered template output.
+
+    Raises:
+        TemplateNotFound: If the (model class name, vendor) pair is not in the
+            routing table, or if the corresponding template file does not exist.
+    """
+    content_type = model.__class__.__name__
+
+    # Routing guard — fail-closed before any template lookup.
+    if (content_type, vendor) not in _VENDOR_ROUTING:
+        raise TemplateNotFound(content_type=content_type, vendor=vendor)
+
+    template_path = f"{content_type.lower()}/{vendor}.md.j2"
+    try:
+        template = _get_env().get_template(template_path)
+    except jinja2.TemplateNotFound as exc:
+        raise TemplateNotFound(content_type=content_type, vendor=vendor) from exc
+
+    # model_dump() returns an insertion-ordered dict (Pydantic v2 preserves field
+    # declaration order). Frozen models guarantee the same dump on every call, so
+    # the output is byte-stable without requiring additional sorting in templates.
+    fields = model.model_dump()
+    rendered = template.render(**fields)
+    return rendered.encode("utf-8")

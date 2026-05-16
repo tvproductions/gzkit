@@ -1,0 +1,15 @@
+# {{ title }}
+
+Version: {{ version }}
+{% if paths %}
+## Paths
+{% for path in paths %}
+- {{ path }}
+{% endfor %}
+{% endif %}
+{% if body %}
+## Body
+{% for item in body %}
+{{ '  ' * item.indent }}- {{ item.text }}
+{% endfor %}
+{% endif %}

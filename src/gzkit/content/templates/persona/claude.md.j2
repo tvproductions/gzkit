@@ -1,0 +1,9 @@
+# {{ slug }}
+
+Role: {{ role }}
+{% if traits %}
+## Traits
+{% for trait in traits %}
+- {{ trait }}
+{% endfor %}
+{% endif %}

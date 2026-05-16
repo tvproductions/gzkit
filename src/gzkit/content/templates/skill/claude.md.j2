@@ -1,0 +1,11 @@
+# {{ title }}
+
+Slug: {{ slug }}
+
+{{ purpose }}
+{% if steps %}
+## Steps
+{% for step in steps %}
+{{ '  ' * step.indent }}- {{ step.text }}
+{% endfor %}
+{% endif %}

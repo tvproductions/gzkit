@@ -1,0 +1,7 @@
+Feature: {{ feature }}
+
+  Scenario: {{ scenario }}
+{% for step in given %}    Given {{ step }}
+{% endfor %}{% for step in when %}    When {{ step }}
+{% endfor %}{% for step in then %}    Then {{ step }}
+{% endfor %}
