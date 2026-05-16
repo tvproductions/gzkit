@@ -1,11 +1,11 @@
 ---
 name: gz-adr-evaluate
-persona: main-session
+persona: pipeline-orchestrator
 description: Post-authoring quality evaluation for ADRs and OBPIs. Scores ADRs on 8 weighted dimensions, OBPIs on 5 dimensions, and can run 10 structured red-team challenges before proposal/defense.
 category: adr-lifecycle
 compatibility: GovZero v6 framework; adapted from AirlineOps for gzkit ADR package layouts
 metadata:
-  skill-version: "6.3.0"
+  skill-version: "6.4.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "lifecycle (pre-proposal QC), quality rubric, OBPI decomposition"
@@ -50,7 +50,23 @@ existing ADR package.
 
 ## Persona
 
-**Active persona:** `main-session` — read `.gzkit/personas/main-session.md` and adopt its behavioral identity before executing this skill. Evaluation is independent judgment, not confirmation. Score what you read, not what you hope.
+**Active driver:** `pipeline-orchestrator` — read `.gzkit/personas/pipeline-orchestrator.md` and adopt its behavioral identity before executing this skill. Evaluation is a sequenced ceremony (score dimensions → engage red-team → render verdict); step-discipline keeps the rubric honest. Evaluation is independent judgment, not confirmation. Score what you read, not what you hope.
+
+## Persona Dispatch
+
+Evaluation is the highest-risk read-only judgment ceremony — the rubric's 8 dimensions split cleanly along the persona functional boundaries, and a single driver scoring its own scoring is the precise optimistic-bias defect `spec-reviewer`'s anti-traits name. Dispatch the following personas to produce independent dimension scores the driver synthesizes:
+
+| Persona | Function in this ceremony | Invoked at |
+|---|---|---|
+| `spec-reviewer` | Scores spec/requirement dimensions of the rubric: requirement clarity, target-scope falsifiability, OBPI decomposition coverage, REQ-trace integrity — anything that asks "is the spec honest, falsifiable, traceable?" | Step 2 (manual rubric scoring) |
+| `quality-reviewer` | Scores architectural dimensions: decision justification, alternatives considered, SOLID-analogues for ADR design, single-responsibility per ADR, decision boundaries, maintainability of the proposed surface | Step 2 (manual rubric scoring) |
+| `narrator` | Composes the operator-facing scorecard and frames red-team challenge findings — each challenge's finding rendered as evidence-to-decision, not as raw analysis | Step 3 (red-team challenges, if invoked) and final scorecard render |
+
+Personas not dispatched: `implementer` (evaluation is pre-implementation review — no code exists to write or evaluate).
+
+The mechanical attestation that these dispatches occurred is governed by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6 (Pool / HEAVY — awaiting promotion). This skill body declares the T1 contract; the pool ADR's promotion will bind T2 receipts.
+
+Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Validated).
 
 ## Trust Model
 

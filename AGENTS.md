@@ -366,6 +366,18 @@ The advisory scorecard is self-testing via `uv run gz validate --advisory-scorec
 
 Promoted audits run via `uv run gz validate --<scope>` — see `gz validate --help` for the full flag list. The trust-doctrine and scorecard pages list every promoted scope and the GHI under which it landed.
 
+### Mechanical scopes that bind here (companion to advisory-rules-audit catalog)
+
+- **Per-file char budget for AGENTS.md / CLAUDE.md / `.claude/rules/*.md`** (companion to Anti-vibing operative claim 2) — enforced by `gz validate --instructions-files-budget` (GHI #373). Tracked file budgets live in `data/instructions_files_budget.json` (defaults: 40k chars AGENTS.md/CLAUDE.md, 16k per rule file). Fail-closed on overrun with remediation pointer to `/gz-context-diet`.
+- **The editor/IDE authoring-guide protocol envelope (LSP-style Content-Length–framed JSON)** is defined by `src/gzkit/schemas/authoring_guide_protocol.json`. Every request, response, notification, and error shape MUST be named in the schema; protocol drift is caught by JSON Schema validation at server runtime, not by human review (ADR-0.0.30 / OBPI-0.0.30-04).
+- **Eval-feedback-source commit trailer** — when a rule edit lands under a GHI labeled `eval-feedback`, include `Eval-feedback-source: <event-id-or-artifact-path>` in the commit trailer. The trailer is validated by `gz validate --commit-trailers` (ADR-0.0.26).
+- **`abandon categories are closed`** — lock release is coupled to a handoff/register entry per ADR-0.0.41; runtime warning / fail-closed enforcement and `gz validate --lock-handoff-coupling` are tracked under pending OBPIs (`.gzkit/rules/token-block-discipline.md`).
+- **Advisor diagnosis non-empty `proof: tuple[ProofRange, ...]`** binding (`Field(min_length=1)` on `AdvisorDiagnosis.proof`) is enforced by `gz validate --advisor-proof-binding` (OBPI-0.0.29-08).
+- **Complexity calibration is grounded in an empirically-measured exemplar corpus** with seven selection criteria (longevity, maintenance health, practitioner reputation NOT GitHub-star count, pure-Python LOC share, author craftsmanship signal, project doctrine fitness, pinned commit SHA); link-integrity enforced by `gz validate --complexity-doctrine-links` (OBPI-0.0.27-07).
+- **Heavy/foundation lane requires explicit human attestation before completion** — see § OBPI Acceptance Protocol; enforced by `gz closeout` pipeline.
+- **`.gzkit/rules/*.md` with `paths: "**"` or missing `paths:` may not live under any vendor-surface rules directory** (ADR-0.0.20) — enforced by `gz validate --unscoped-rules`.
+- **Every canonical surface (skills, rules, hooks, templates, chores, personas) MUST be reproducibly delivered by `pip install py-gzkit && gz init` to a fresh project, byte-equivalent to the wheel's authored canonical content** (T0 distribution invariant, ADR-0.0.31) — enforced by `gz validate --distribution`.
+
 ## Architectural Boundaries
 
 *Source: Architecture Planning Memo Section 12 (Decision Record 2026-03-29).*

@@ -1,11 +1,11 @@
 ---
 name: gz-adr-closeout-ceremony
-persona: main-session
+persona: pipeline-orchestrator
 description: Execute the ADR closeout ceremony protocol for human attestation. GovZero v6 skill.
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.9.0"
+  skill-version: "7.10.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -56,7 +56,23 @@ These thoughts mean STOP — you are about to break the ceremony:
 
 ## Persona
 
-**Active persona:** `main-session` — read `.gzkit/personas/main-session.md` and adopt its behavioral identity before executing this skill. Present evidence; do not interpret it. The human decides. You do not. When presenting walkthrough output, use the narrator's register: precision, operator-value framing, every word load-bearing.
+**Active driver:** `pipeline-orchestrator` — read `.gzkit/personas/pipeline-orchestrator.md` and adopt its behavioral identity before executing this skill. Closeout is a sequenced ceremony (read evidence → present → attest → persist); the ceremony-as-checkbox anti-trait — "treating the attestation ceremony as a formality to rush through rather than a genuine decision point" — is literally what this skill exists to prevent. Present evidence; do not interpret it. The human decides. You do not.
+
+## Persona Dispatch
+
+Closeout is read-only ceremony work — the driver synthesizes attestation evidence from three independent subagent reads. Dispatch each as a fresh-context subagent so the driver isn't scoring its own scoring (the `optimistic-bias` failure mode `spec-reviewer`'s anti-traits name):
+
+| Persona | Function in this ceremony | Invoked at |
+|---|---|---|
+| `spec-reviewer` | Independent re-verification of each OBPI's claimed REQ coverage against brief and tests, against ledger proof | Before assembling the evidence packet (after CLI walkthrough, before human attestation step) |
+| `quality-reviewer` | Independent assessment of the ADR-package structural coherence: do the closed OBPIs form a coherent capability, or is there integration drift? | Before assembling the evidence packet |
+| `narrator` | Composes the evidence packet in operator-value framing — what the operator gains, not what the agent did; what decision the human is being asked to make, with precise citations | When rendering the attestation surface to the human |
+
+Personas not dispatched: `implementer` (no code written — closeout reads completed work; if it surfaces a defect, file a GHI via `/ghi-author`).
+
+The mechanical attestation that these dispatches occurred is governed by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6 (Pool / HEAVY — awaiting promotion). This skill body declares the T1 contract; the pool ADR's promotion will bind T2 receipts.
+
+Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Validated).
 
 ## Trust Model
 

@@ -1,10 +1,11 @@
 ---
 name: gz-adr-audit
+persona: pipeline-orchestrator
 description: Gate-5 audit templates and procedure for ADR verification. GovZero v6 skill.
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.8.0"
+  skill-version: "6.9.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -25,6 +26,26 @@ Execute reproducible ADR verification to move from COMPLETED → VALIDATED.
 
 
 > **Self-Escalation (opus-tier).** Spawn an `Agent` with `model="opus"` to execute this skill. Pass the operator's request verbatim, any relevant context (ADR IDs, OBPI IDs, design topic, prior decisions), and instruct the subagent to read `.gzkit/skills/gz-adr-audit/SKILL.md` for the full workflow. Relay the subagent's output to the operator.
+
+## Persona
+
+**Active driver:** `pipeline-orchestrator` — read `.gzkit/personas/pipeline-orchestrator.md` and adopt its behavioral identity before executing this skill. The audit is a sequenced ceremony (verify proof → reproduce → demonstrate value); step-discipline and ceremony-completion are not rules to follow — they are who you are while running it.
+
+## Persona Dispatch
+
+The audit is read-only judgment work — a single driver scoring its own findings is the optimistic-bias failure mode `spec-reviewer`'s anti-traits literally name. Dispatch the following personas as independent subagents to produce the evidence the driver synthesizes:
+
+| Persona | Function in this ceremony | Invoked at |
+|---|---|---|
+| `spec-reviewer` | Independent requirement-tracing against ledger proof; verifies each OBPI's claimed REQ coverage holds against a fresh read of brief and tests | Steps 1–2 (Verify Ledger Proof, Reproduce Key Evidence) |
+| `quality-reviewer` | Independent assessment of the ADR package's structural coherence: do the OBPIs cohere into the ADR's claimed capability, or is the integration brittle? | After Step 2, before Step 3 |
+| `narrator` | Composes the Step 3 Value Demonstration — frames the working feature in operator-value terms, not implementer-detail terms | Step 3 (Demonstrate Value) |
+
+Personas not dispatched: `implementer` (no code written in this ceremony — if audit reveals a defect requiring code, file a GHI via `/ghi-author` and route to a fresh OBPI brief, never spawn an implementer inside the audit).
+
+The mechanical attestation that these dispatches occurred is governed by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6 (Pool / HEAVY — awaiting promotion). This skill body declares the T1 contract; the pool ADR's promotion will bind T2 receipts (`gz validate --pipeline-review-receipts`, `persona_adopted` ledger events).
+
+Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Validated).
 
 ### Common Rationalizations
 
