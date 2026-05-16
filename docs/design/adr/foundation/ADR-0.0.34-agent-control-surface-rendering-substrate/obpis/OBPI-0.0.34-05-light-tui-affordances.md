@@ -8,6 +8,8 @@ status: Draft
 
 # OBPI-0.0.34-05-light-tui-affordances: Light Tui Affordances
 
+<!-- gz-validate-skip: brief-demo-section --> <!-- Draft brief; Demo section authored at implementation time per GHI #431 grandfather pattern. -->
+
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
@@ -33,8 +35,16 @@ Light TUI affordances — Claude-Code-style status lines, Rich tables, plan-mode
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md` — parent ADR for intent and scope
-- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/**` — parent ADR package scope
+- `src/gzkit/content/tui/__init__.py` — TUI affordances public entrypoint
+- `src/gzkit/content/tui/status.py` — Claude-Code-style status line for `gz content edit`/`render`
+- `src/gzkit/content/tui/tables.py` — Rich table renderer for `gz content list`
+- `src/gzkit/content/tui/panels.py` — plan-mode-style panel for `gz content show`
+- `src/gzkit/commands/content/edit.py` — wire status-line into edit subcommand (TTY-conditional)
+- `src/gzkit/commands/content/render.py` — wire status-line into render subcommand (TTY-conditional)
+- `src/gzkit/commands/content/list.py` — wire table renderer into list subcommand (TTY-conditional)
+- `src/gzkit/commands/content/show.py` — wire panel renderer into show subcommand (TTY-conditional)
+- `tests/content/test_tui_affordances.py` — TTY-on/TTY-off behavior, `--plain` flag, Rich/plain divergence
+- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/obpis/OBPI-0.0.34-05-light-tui-affordances.md` — this brief
 
 ## Denied Paths
 
@@ -49,14 +59,10 @@ Light TUI affordances — Claude-Code-style status lines, Rich tables, plan-mode
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: **Content model registry generalization.** Extend ADR-0.16.0 OBPI-01
-1. REQUIREMENT: **Rendering pipeline.** Replace file-copy logic in `gz agent sync` with
-1. REQUIREMENT: **Reverse-parse migration tooling.** `gz content import <file> --as <type>`
-1. REQUIREMENT: **Authoring CLI.** `gz content edit / render / list / show` —
-1. REQUIREMENT: **Light TUI affordances.** Claude-Code-style status lines, chore-runner
-1. REQUIREMENT: **Validation hooks.** Every render and every save fires the ADR-0.0.33
-1. REQUIREMENT: **Migration layer.** Pydantic schema versioning so model refactors do
-1. REQUIREMENT: **Vendor manifest expansion.** ADR-0.16.0 OBPI-03 seeded the vendor
+1. REQUIREMENT: **Status line, table, and panel affordances only.** Implement Rich-rendered status lines for `gz content edit`/`render`, Rich tables for `gz content list`, and plan-mode-style panels for `gz content show`. NEVER implement an interactive form, a Textual app, or a separate launcher subcommand.
+2. REQUIREMENT: **TTY-conditional rendering.** Rich rendering activates only when `sys.stdout.isatty()` returns True. Non-TTY contexts (CI, pipes, redirection) emit plain text. `--plain` flag forces plain text even in TTY contexts.
+3. REQUIREMENT: **Zero new top-level commands.** All affordances attach to existing OBPI-04 subcommands. NEVER add `gz content tui`, `gz tui`, or any other launcher verb.
+4. REQUIREMENT: **No Textual dependency.** If a candidate solution requires `textual`, the requirement has been mis-read — reject and re-read. Rich is acceptable (already an indirect transitive); NEVER add `textual` as a direct or transitive top-level dependency in this OBPI.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -81,13 +87,15 @@ Light TUI affordances — Claude-Code-style status lines, Rich tables, plan-mode
 
 **Context:**
 
-- [ ] Related OBPIs in same ADR
+- [ ] **Prerequisite OBPI:** OBPI-0.0.34-04 (authoring CLI) — TUI affordances wrap the four subcommands' plain-text output paths. MUST be complete before this OBPI's Gate 2.
+- [ ] **Soft co-dependency:** OBPI-0.0.34-02 (rendering pipeline) — status-line on `render` reports byte count and target vendor; reads pipeline return value.
+- [ ] No downstream consumers; this is operator-experience polish layered on the authoring surface.
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
+- [ ] OBPI-0.0.34-04 complete: `gz content list --help`, `gz content show --help`, `gz content edit --help`, `gz content render --help` each exit 0.
+- [ ] `rich` is already an indirect transitive dependency (verify via `uv tree | rg '^rich'`); NEVER add it as a top-level direct dependency in this OBPI.
+- [ ] Parent ADR evidence artifacts referenced by this brief are present.
 
 **Existing Code (understand current state):**
 
@@ -141,7 +149,14 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md
+uv run python -m unittest tests.content.test_tui_affordances -v
+uv run gz content list --plain | head -20      # plain text (no ANSI), even on TTY
+uv run gz content list | head -20              # Rich table on TTY (ANSI codes acceptable)
+uv run gz content list > /tmp/list-pipe.txt    # non-TTY → plain
+rg -q $'\x1b\\[' /tmp/list-pipe.txt && exit 1 || true   # no ANSI codes when piped
+grep -r "^import textual" src/ tests/          # MUST produce no matches
+grep -r "from textual" src/ tests/             # MUST produce no matches
+rg -q '^textual' pyproject.toml && exit 1 || true       # MUST not be a top-level dep
 ```
 
 ## Acceptance Criteria
@@ -152,9 +167,11 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.34-05-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.34-05-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.34-05-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.34-05-01: Given `gz content render <id>` invoked on a TTY, when rendering completes, then a Rich status line summarizing the operation (e.g. `rendered AgentContract → AGENTS.md (2.4 KiB)`) prints to stderr.
+- [ ] REQ-0.0.34-05-02: Given `gz content list` invoked on a TTY, when output is produced, then a Rich-rendered table appears; the same command piped to a file produces ANSI-free plain text.
+- [ ] REQ-0.0.34-05-03: Given `gz content show <id>` invoked on a TTY, when output is produced, then a Rich panel (plan-mode-style) frames the content; the `--plain` flag suppresses Rich rendering even in TTY contexts.
+- [ ] REQ-0.0.34-05-04: Given the project's dependency manifest after this OBPI lands, when grep'd for `textual`, then no top-level dependency entry matches and no `import textual` line exists in `src/` or `tests/`.
+- [ ] REQ-0.0.34-05-05: Given `gz content --help`, when invoked, then NO new subcommand has been added by this OBPI (the help output equals OBPI-04's at the subcommand-name level; only output formatting differs).
 
 ## Completion Checklist
 

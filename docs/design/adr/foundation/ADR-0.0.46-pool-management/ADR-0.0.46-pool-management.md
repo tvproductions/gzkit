@@ -1,29 +1,23 @@
 ---
-id: ADR-pool.pool-management
-status: Superseded
+id: ADR-0.0.46-pool-management
+status: Proposed
+kind: foundation
+semver: 0.0.46
 lane: heavy
 parent: ADR-0.6.0-pool-promotion-protocol
-promoted_to: ADR-0.0.46-pool-management
+date: 2026-05-16
+promoted_from: ADR-pool.pool-management
 ---
 
-# ADR-pool.pool-management: Pool Management Strategy
-> Promoted to `ADR-0.0.46-pool-management` on 2026-05-16. This pool file is retained as historical intake context.
+# ADR-0.0.46-pool-management: Pool Management Strategy
 
+## Persona
 
-## Status
+<!-- Describe the behavioral identity for agents working on this ADR.
+     Frame as values and craftsmanship standards, not expertise claims.
+     See .gzkit/personas/ for reusable persona definitions. -->
 
-Superseded
-
-## Date
-
-2026-03-23 (created as pool-health-management)
-2026-04-04 (extended with priority ranking — GHI #98)
-
-## Parent ADR
-
-[ADR-0.6.0-pool-promotion-protocol](../pre-release/ADR-0.6.0-pool-promotion-protocol/ADR-0.6.0-pool-promotion-protocol.md)
-
----
+{persona}
 
 ## Intent
 
@@ -31,18 +25,99 @@ Define a pool management process that (1) detects overlap, identifies natural AD
 
 **Motivation:** Pre-booking 16 absorption-wave ADRs (0.25.0-0.40.0) created semver lock-in and stale commitment. The governance chain evaluation (2026-04-04) revealed that Category B sequencing guidance (which pool ADRs to promote first based on governance-chain impact) needs a durable home. The pool must be more than an unmanaged intake queue — it needs a ranked priority signal that feeds into execution sequencing decisions.
 
+**Current state:** pool ADRs are durable intent records, but their readiness,
+overlap, supersession, and priority are still inferred from scattered prose,
+manual `rg` passes, and the interim `src/gzkit/chores/pool-triage/CHORE.md`
+drift report. That makes the pool large but not reliably navigable. The
+operator can ask which pool item to promote next, yet the answer depends on
+agent memory and one-off synthesis rather than a governed pool state model.
+
+**Target state:** gzkit treats the pool as managed planning infrastructure.
+Pool state remains Layer-1 document truth plus Layer-2 ledger history, while
+the planned ranking and triage surfaces project derived views that are
+rebuildable. The outcome is a pull-model backlog: overlap clusters,
+newly-unblocked items, stale entries, superseded entries, computed ranks, and
+operator overrides are visible before a SemVer ADR is booked.
+
 ---
 
-## Proposed OBPI Decomposition
+## Decision
 
-| # | Slug | Description | Lane |
-|---|------|-------------|------|
-| 01 | pool-metadata-model | Define pool ADR metadata, staleness classes, supersession state, archive eligibility, and validation rules for managed pool state. | Heavy |
-| 02 | pool-triage-command | Implement `gz pool triage --overlap --json` to report overlap clusters, stale items, superseded items, and newly unblocked candidates without mutating pool files. | Heavy |
-| 03 | pool-priority-registry | Add the `.gzkit/pool-priority.json` schema and ledger snapshot contract for preserving computed ranking state and triage-run evidence. | Heavy |
-| 04 | pool-rank-command | Implement `gz pool rank` and `gz pool rank --apply` with ADDRESS density, dependency blocking count, and cluster-size scoring. | Heavy |
-| 05 | pool-override-show | Implement `gz pool override` and `gz pool show` so operator rank overrides persist with reasons across recomputation. | Heavy |
-| 06 | pool-docs-runbook | Add manpages, runbook entries, command docs, and the retire-or-absorb decision for the interim `pool-triage` chore. | Heavy |
+Promote `ADR-pool.pool-management` into active implementation and execute the following tracked scope:
+
+1. Establish pool metadata and lifecycle rules as the canonical planning
+   contract for backlog ADRs.
+2. Provide read-only triage and computed ranking surfaces for overlap,
+   staleness, newly-unblocked work, dependency blocking count, ADDRESS density,
+   and cluster size.
+3. Preserve operator judgment as explicit override state with a reason, rather
+   than letting computed scores silently become decision authority.
+4. Keep the interim `pool-triage` chore bounded: it is retired or absorbed when
+   the canonical pool management surface lands.
+
+- **pool-metadata-model** — Define pool ADR metadata, staleness classes, supersession state, archive eligibility, and validation rules for managed pool state.
+- **pool-triage-command** — Implement `gz pool triage --overlap --json` to report overlap clusters, stale items, superseded items, and newly unblocked candidates without mutating pool files.
+- **pool-priority-registry** — Add the `.gzkit/pool-priority.json` schema and ledger snapshot contract for preserving computed ranking state and triage-run evidence.
+- **pool-rank-command** — Implement `gz pool rank` and `gz pool rank --apply` with ADDRESS density, dependency blocking count, and cluster-size scoring.
+- **pool-override-show** — Implement `gz pool override` and `gz pool show` so operator rank overrides persist with reasons across recomputation.
+- **pool-docs-runbook** — Add manpages, runbook entries, command docs, and the retire-or-absorb decision for the interim `pool-triage` chore.
+
+## Rationale
+
+1. ADR-0.6.0 defines promotion mechanics, but mechanics alone do not answer
+   "which pool item should be promoted next?" This ADR supplies the managed
+   backlog layer that sits before promotion.
+2. The existing interim chore in `src/gzkit/chores/pool-triage/CHORE.md`
+   proves demand for drift signals, but a chore cannot own the canonical pool
+   ranking contract or operator override state.
+3. A mutable priority registry is acceptable only because it is explicitly a
+   derived Layer-3 view. Source facts remain in `docs/design/adr/pool/*.md`
+   and `.gzkit/ledger.jsonl`; the registry can be recomputed or discarded.
+4. The design rejects the anti-pattern of semver pre-booking. Pool priority
+   communicates execution intent without forcing future ADR numbers before the
+   operator is ready to promote.
+
+## Consequences
+
+### Positive
+
+- Promotion preserves backlog intent as executable ADR scope.
+- Checklist items now map 1:1 to generated OBPI briefs immediately.
+
+### Negative
+
+- Promotion fails closed when the pool ADR lacks actionable execution scope.
+
+## Decomposition Scorecard
+
+<!-- Deterministic OBPI sizing: score each dimension 0/1/2. -->
+<!-- Cutoffs are notional defaults and should be calibrated over time from project evidence. -->
+
+- Data/State: 2
+- Logic/Engine: 2
+- Interface: 2
+- Observability: 2
+- Lineage: 1
+- Dimension Total: 9
+- Baseline Range: 5+
+- Baseline Selected: 6
+- Split Single-Narrative: 0
+- Split Surface Boundary: 0
+- Split State Anchor: 0
+- Split Testability Ceiling: 0
+- Split Total: 0
+- Final Target OBPI Count: 6
+
+## Checklist
+
+<!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
+
+- [ ] OBPI-0.0.46-01: **pool-metadata-model** — Define pool ADR metadata, staleness classes, supersession state, archive eligibility, and validation rules for managed pool state.
+- [ ] OBPI-0.0.46-02: **pool-triage-command** — Implement `gz pool triage --overlap --json` to report overlap clusters, stale items, superseded items, and newly unblocked candidates without mutating pool files.
+- [ ] OBPI-0.0.46-03: **pool-priority-registry** — Add the `.gzkit/pool-priority.json` schema and ledger snapshot contract for preserving computed ranking state and triage-run evidence.
+- [ ] OBPI-0.0.46-04: **pool-rank-command** — Implement `gz pool rank` and `gz pool rank --apply` with ADDRESS density, dependency blocking count, and cluster-size scoring.
+- [ ] OBPI-0.0.46-05: **pool-override-show** — Implement `gz pool override` and `gz pool show` so operator rank overrides persist with reasons across recomputation.
+- [ ] OBPI-0.0.46-06: **pool-docs-runbook** — Add manpages, runbook entries, command docs, and the retire-or-absorb decision for the interim `pool-triage` chore.
 
 ## Target Scope
 
@@ -155,28 +230,47 @@ The decision belongs to the ADR's promotion review, not to the chore's author. T
 
 ---
 
-## Evidence of Need
-
-1. The SPEC-agent-capability-uplift (2026-03-23) analyzed 15 pool ADRs for overlap with 22 proposed capabilities. Findings: 5 pool ADRs were directly subsumed by new work and 8 overlapped with it. Without triage, these overlaps would have continued accumulating silently.
-
-2. The governance chain evaluation (2026-04-04) produced Category B sequencing guidance — recommended absorption-wave priority order based on ADDRESS density. This analysis has no durable home. Each evaluation re-derives priority from scratch because no artifact captures the ranked state between evaluations.
-
-3. Operator identified (2026-04-04) that pre-booking 16 absorption ADRs created semver lock-in: completing ADR-0.34.0 then ADR-0.28.0 makes numbering incoherent. Priority ranking at the pool level avoids version commitment until promotion time.
-
----
-
-## Documentation Requirements
-
-When promoted and implemented:
-- **Manpages** in `docs/user/manpages/` for `gz pool rank`, `gz pool override`, `gz pool show`
-- **Runbook entries** in `docs/user/runbook.md` for pool triage workflow and priority override workflow
-- **Docstrings** on CLI command functions, Pydantic models for `pool-priority.json` schema, and triage dimension computation functions
-- **Command docs** in `docs/user/commands/` following existing patterns
-
----
-
 ## Dependencies
 
 - ADR-0.6.0-pool-promotion-protocol (promotion mechanics)
 - `gz adr promote` CLI surface (existing)
 - Governance chain evaluation framework (produces ADDRESS density input)
+
+## Q&A Transcript
+
+<!-- Interview transcript preserved for context -->
+
+Promotion derived from `ADR-pool.pool-management` on 2026-05-16; executable scope was carried forward from the pool ADR instead of reseeded as placeholders.
+
+## Evidence
+
+<!-- Links to tests, documentation, and other artifacts that prove completion -->
+
+- [ ] Tests: `tests/`
+- [ ] Docs: `docs/`
+
+## Alternatives Considered
+
+### A. Keep pool management as the interim chore only
+
+Rejected. The chore reports drift but cannot define a durable ranking schema,
+operator override contract, or promotion-readiness state. Leaving it as the
+only surface would preserve the current manual planning gap.
+
+### B. Pre-book the next pool ADRs into SemVer sequence
+
+Rejected. Pre-booking was the failure that motivated this ADR: it creates
+numbering commitment before execution commitment and makes later reprioritizing
+look like drift.
+
+### C. Let agents rank the pool from prose on demand
+
+Rejected. That is exactly the stochastic-vibing surface gzkit is designed to
+make inert. Ranking must be grounded in explicit metadata, ledger facts,
+computed dimensions, and recorded operator overrides.
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.0.46 | Pending | | | |

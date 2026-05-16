@@ -22,6 +22,22 @@ agent-mediated dialogical authoring mode is the binding interaction model.
 
 ## Intent
 
+**Current state.** The per-turn agent control surface (`AGENTS.md`,
+`CLAUDE.md`, `.claude/rules/**`, skill bodies, the chore registry, persona
+files, handoffs) is hand-authored markdown with no canonical content model.
+Vendor mirrors are produced by `shutil.copy`-style propagation in
+`sync_surfaces.py`; mirror-drift defects recur (e.g. `.claude/skills/` vs
+`.gzkit/skills/` divergence); validators check the output after the fact
+with substring grep, not against a canonical schema. Authoring is itself a
+vibing surface.
+
+**Target state.** Every per-turn surface file is rendered byte-stably from a
+canonical Pydantic content model via a Jinja2 template, vendor-aware.
+Round-trip fidelity (`model = parse(render(model))`) is the binding
+substrate contract. The fidelity validators (ADR-0.0.33) check rendered
+output against the canonical model rather than against substring patterns.
+The authoring action is a model edit, not a markdown edit.
+
 > **Agent = Model + Harness + Intent.** The Agent Control Surface is the
 > per-turn corpus the harness loads on the model's behalf — `AGENTS.md`,
 > `CLAUDE.md`, `.claude/rules/**`, skill bodies, the chore registry, persona

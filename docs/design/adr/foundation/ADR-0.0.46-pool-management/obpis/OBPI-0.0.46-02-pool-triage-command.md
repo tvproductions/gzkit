@@ -1,27 +1,23 @@
 ---
-id: OBPI-0.0.34-04-authoring-cli
-parent: ADR-0.0.34-agent-control-surface-rendering-substrate
-item: 4
+id: OBPI-0.0.46-02-pool-triage-command
+parent: ADR-0.0.46-pool-management
+item: 2
 lane: Heavy
 status: Draft
 ---
 
-# OBPI-0.0.34-04-authoring-cli: Authoring Cli
-
-<!-- gz-validate-skip: brief-demo-section --> <!-- Draft brief; Demo section authored at implementation time per GHI #431 grandfather pattern. -->
+# OBPI-0.0.46-02-pool-triage-command: Pool Triage Command
 
 ## ADR Item
 
-- **Source ADR:** `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
-- **Checklist Item:** #4 - "OBPI-0.0.34-04: Authoring CLI — `gz content edit / render / list / show` with human-readable prose output (never raw JSON in operator review surface)"
+- **Source ADR:** `docs/design/adr/foundation/ADR-0.0.46-pool-management/ADR-0.0.46-pool-management.md`
+- **Checklist Item:** #2 - "OBPI-0.0.46-02: **pool-triage-command** - Specify the planned pool triage JSON report for overlap, staleness, supersession, and newly unblocked candidates."
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Authoring CLI — `gz content edit / render / list / show` with human-readable prose output (never raw JSON in operator review surface).
+Specify the planned pool triage JSON report for overlap clusters, stale entries, superseded entries, and newly unblocked candidates without mutating pool files.
 
 ## Lane
 
@@ -35,14 +31,8 @@ Authoring CLI — `gz content edit / render / list / show` with human-readable p
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `src/gzkit/commands/content/edit.py` — `gz content edit <id>` subcommand
-- `src/gzkit/commands/content/render.py` — `gz content render <id>` subcommand
-- `src/gzkit/commands/content/list.py` — `gz content list [--type <content-type>]` subcommand
-- `src/gzkit/commands/content/show.py` — `gz content show <id>` subcommand
-- `src/gzkit/commands/content/__init__.py` — subparser registration (already created by OBPI-03 for `import`; extend here)
-- `tests/commands/test_content_cli.py` — subcommand smoke tests (TTY + non-TTY behavior)
-- `docs/user/manpages/gz-content.md` — operator manpage covering all five `gz content` subcommands
-- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/obpis/OBPI-0.0.34-04-authoring-cli.md` — this brief
+- `docs/design/adr/foundation/ADR-0.0.46-pool-management/ADR-0.0.46-pool-management.md` — parent ADR for intent and scope
+- `docs/design/adr/foundation/ADR-0.0.46-pool-management/**` — parent ADR package scope
 
 ## Denied Paths
 
@@ -57,10 +47,9 @@ Authoring CLI — `gz content edit / render / list / show` with human-readable p
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: **Four subcommands.** Register `gz content edit <id>`, `gz content render <id>`, `gz content list [--type <content-type>]`, and `gz content show <id>` under the existing `gz content` subparser (introduced by OBPI-03).
-2. REQUIREMENT: **Human-readable prose default output.** `list` emits a table; `show` emits a prose summary; `render` emits the rendered markdown to stdout. NEVER emit raw JSON as the default; `--json` flag on `list`/`show` is permitted for machine consumers.
-3. REQUIREMENT: **`edit` invokes `$EDITOR` on the canonical-form serialization.** On editor save, the file is re-parsed via OBPI-03's parser and re-validated; invalid input aborts with the validator diagnostic — NEVER perform a partial write.
-4. REQUIREMENT: **CLI-surface-only scope.** This OBPI is the argparse and operator I/O surface only. NEVER implement model logic (OBPI-01), render logic (OBPI-02), parse logic (OBPI-03), TUI affordances (OBPI-05), or hook firing (OBPI-06) inside this OBPI.
+1. REQUIREMENT: The triage report MUST be read-only and MUST NOT modify pool ADR files, priority registry state, or ledger history.
+2. REQUIREMENT: The report MUST include overlap clusters, stale entries, unarchived-superseded entries, and newly unblocked candidates as separate sections.
+3. REQUIREMENT: The JSON contract MUST be deterministic enough for downstream skill rendering and operator review.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -74,7 +63,7 @@ Authoring CLI — `gz content edit / render / list / show` with human-readable p
 
 - [ ] **Parent ADR § Decision item — quote the line this OBPI implements** verbatim into the brief's Implementation Summary. The Decision item is the contract; everything else hangs off it.
 - [ ] Parent ADR § Intent — the why-frame for the Decision read above.
-- [ ] Parent ADR file: `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
+- [ ] Parent ADR file: `docs/design/adr/foundation/ADR-0.0.46-pool-management/ADR-0.0.46-pool-management.md`
 
 > **STOP:** If you cannot quote the parent ADR § Decision item that this OBPI implements, STOP and re-read. Do not proceed to Allowed Paths, Prerequisites, or implementation until the Decision quote is in hand.
 
@@ -85,16 +74,13 @@ Authoring CLI — `gz content edit / render / list / show` with human-readable p
 
 **Context:**
 
-- [ ] **Prerequisite OBPI:** OBPI-0.0.34-02 (rendering pipeline) — `render` subcommand and `edit` save-path render-back both invoke `render()`.
-- [ ] **Prerequisite OBPI:** OBPI-0.0.34-03 (reverse-parse migration) — `edit` save-path re-parses via the OBPI-03 parser; `gz content` subparser group is introduced here.
-- [ ] **Soft co-dependency:** OBPI-0.0.34-01 (content model registry) — `list` enumerates `CONTENT_MODELS`; `show` displays model instance summary.
-- [ ] Downstream consumer: OBPI-05 (light TUI affordances wrap these subcommands' output); OBPI-06 (validation hooks fire on `edit` save).
+- [ ] Related OBPIs in same ADR
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] OBPI-0.0.34-02 complete: `from gzkit.content.render import render` imports cleanly.
-- [ ] OBPI-0.0.34-03 complete: `gz content import --help` exits 0 (subparser group registered).
-- [ ] Parent ADR evidence artifacts referenced by this brief are present.
+- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.46-pool-management/ADR-0.0.46-pool-management.md`
+- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.46-pool-management/**`
+- [ ] Parent ADR evidence artifacts referenced by this brief are present
 
 **Existing Code (understand current state):**
 
@@ -139,7 +125,9 @@ Authoring CLI — `gz content edit / render / list / show` with human-readable p
 ## Verification
 
 <!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
+     outputs into Evidence. These are CONSTRUCTION HOUSEKEEPING (lint, type,
+     test, mkdocs) — they prove the codebase is healthy, not what the OBPI
+     yielded. The yielded product belongs in the `## Demo` section below. -->
 
 ```bash
 uv run gz validate --documents
@@ -148,13 +136,20 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-uv run gz content --help | rg -q '^\s+edit\s'
-uv run gz content --help | rg -q '^\s+render\s'
-uv run gz content --help | rg -q '^\s+list\s'
-uv run gz content --help | rg -q '^\s+show\s'
-uv run gz content list | head -20             # human-readable table
-uv run gz content show <known-id> | head -30  # prose summary, not raw JSON
-uv run python -m unittest tests.commands.test_content_cli -v
+rg -n "Superseded|supersede" docs/design/adr/foundation/ADR-0.0.46-pool-management/ADR-0.0.46-pool-management.md
+```
+
+## Demo
+
+<!-- THE YIELDED PRODUCT, not housekeeping. Concrete, runnable invocations
+     that demonstrate the capability this OBPI delivers — e.g. an actual
+     diagnosis run against a real file, the `--json` form, an auto-chain
+     trigger. The closeout ceremony walkthrough harvests this section
+     (parser-validated; unregistered verbs are dropped). Prefer real paths
+     and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
+
+```bash
+# Replace with concrete product demonstrations for this OBPI.
 ```
 
 ## Acceptance Criteria
@@ -165,11 +160,9 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.34-04-01: Given `gz content list`, when invoked, then a human-readable table of registered content instances prints to stdout; NEVER raw JSON in the default form.
-- [ ] REQ-0.0.34-04-02: Given `gz content show <id>`, when invoked without `--json`, then a prose summary of the canonical model prints; with `--json`, valid JSON prints instead.
-- [ ] REQ-0.0.34-04-03: Given `gz content edit <id>` with `$EDITOR` set, when invoked, then the canonical-form file opens; on save, the file is re-parsed and re-validated; invalid input aborts non-zero with the validator's diagnostic and NEVER writes a partial file.
-- [ ] REQ-0.0.34-04-04: Given `gz content render <id>`, when invoked, then the rendered output for that id prints to stdout byte-identically to `gzkit.content.render.render(model)` for the same id (round-trip stable per OBPI-02).
-- [ ] REQ-0.0.34-04-05: Given `gz content --help`, when invoked, then the help text lists all four new subcommands (`edit`, `render`, `list`, `show`) alongside the existing `import`.
+- [ ] REQ-0.0.46-02-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
+- [ ] REQ-0.0.46-02-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
+- [ ] REQ-0.0.46-02-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
 
 ## Completion Checklist
 
@@ -253,8 +246,6 @@ _No defects tracked._
 - Date: YYYY-MM-DD or `n/a`
 
 ---
-
-**Brief Status:** Draft
 
 **Date Completed:** -
 

@@ -8,6 +8,8 @@ status: Draft
 
 # OBPI-0.0.34-06-validation-hooks: Validation Hooks
 
+<!-- gz-validate-skip: brief-demo-section --> <!-- Draft brief; Demo section authored at implementation time per GHI #431 grandfather pattern. -->
+
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
@@ -33,8 +35,12 @@ Validation hooks — every render and every save fires the ADR-0.0.33 fidelity v
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md` — parent ADR for intent and scope
-- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/**` — parent ADR package scope
+- `src/gzkit/content/validation/__init__.py` — validation hook entrypoint (re-exports ADR-0.0.33 validators)
+- `src/gzkit/content/validation/hooks.py` — render-hook and save-hook wiring
+- `src/gzkit/content/render/pipeline.py` — invoke hook after render, before return (modification, not creation)
+- `src/gzkit/commands/content/edit.py` — invoke hook after parse, before write (modification, not creation)
+- `tests/content/test_validation_hooks.py` — fail-closed render-hook, fail-closed save-hook, no-warn-and-continue test
+- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/obpis/OBPI-0.0.34-06-validation-hooks.md` — this brief
 
 ## Denied Paths
 
@@ -49,14 +55,10 @@ Validation hooks — every render and every save fires the ADR-0.0.33 fidelity v
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: **Content model registry generalization.** Extend ADR-0.16.0 OBPI-01
-1. REQUIREMENT: **Rendering pipeline.** Replace file-copy logic in `gz agent sync` with
-1. REQUIREMENT: **Reverse-parse migration tooling.** `gz content import <file> --as <type>`
-1. REQUIREMENT: **Authoring CLI.** `gz content edit / render / list / show` —
-1. REQUIREMENT: **Light TUI affordances.** Claude-Code-style status lines, chore-runner
-1. REQUIREMENT: **Validation hooks.** Every render and every save fires the ADR-0.0.33
-1. REQUIREMENT: **Migration layer.** Pydantic schema versioning so model refactors do
-1. REQUIREMENT: **Vendor manifest expansion.** ADR-0.16.0 OBPI-03 seeded the vendor
+1. REQUIREMENT: **Every render fires ADR-0.0.33 fidelity validators.** OBPI-02's `render()` MUST invoke the ADR-0.0.33 validator suite on the produced byte-string before returning; validation failure raises a typed error and aborts the render.
+2. REQUIREMENT: **Every save fires the validator suite.** OBPI-04's `gz content edit` save-path (post-`$EDITOR`) and any other content-write callsite MUST invoke the same validator suite before persisting; failure prevents file write.
+3. REQUIREMENT: **Fail-closed semantics.** Failed validation produces non-zero exit, no partial write, and a structured diagnostic naming the failing validator. NEVER implement a "warn and continue" path; NEVER log-and-return.
+4. REQUIREMENT: **Wiring-only scope.** NEVER author new fidelity validators in this OBPI — validator authoring lives under ADR-0.0.33. This OBPI is the integration layer that fires them at the two named hook points.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -81,13 +83,17 @@ Validation hooks — every render and every save fires the ADR-0.0.33 fidelity v
 
 **Context:**
 
-- [ ] Related OBPIs in same ADR
+- [ ] **Prerequisite OBPI:** OBPI-0.0.34-01 (content model registry) — validators target model instances.
+- [ ] **Prerequisite OBPI:** OBPI-0.0.34-02 (rendering pipeline) — render-hook attaches here; render must exist before hook can wrap it.
+- [ ] **Prerequisite OBPI:** OBPI-0.0.34-04 (authoring CLI) — save-hook attaches to `edit` subcommand's save path.
+- [ ] **External prerequisite:** ADR-0.0.33 fidelity validators MUST be landed and importable from `gzkit.validators.fidelity` (or wherever ADR-0.0.33 places them); if not, file a blocker GHI before starting Gate 2.
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
+- [ ] OBPI-0.0.34-02 complete: `from gzkit.content.render import render` imports cleanly.
+- [ ] OBPI-0.0.34-04 complete: `gz content edit --help` exits 0.
+- [ ] ADR-0.0.33 fidelity validator suite is importable (verify with `uv run python -c "from gzkit.validators.fidelity import VALIDATORS"` or the equivalent module path ADR-0.0.33 declares).
+- [ ] Parent ADR evidence artifacts referenced by this brief are present.
 
 **Existing Code (understand current state):**
 
@@ -141,7 +147,14 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md
+uv run python -m unittest tests.content.test_validation_hooks -v
+# Fail-closed: no warn-and-continue paths anywhere in the wiring
+rg -n "logger\.warning.*fidelity"   src/gzkit/content/validation/ && exit 1 || true
+rg -n "logger\.warn.*fidelity"      src/gzkit/content/validation/ && exit 1 || true
+rg -n "\"WARN\".*fidelity"          src/gzkit/content/validation/ && exit 1 || true
+# Hook firing is wired at both call sites
+rg -q "validation\.hooks" src/gzkit/content/render/pipeline.py
+rg -q "validation\.hooks" src/gzkit/commands/content/edit.py
 ```
 
 ## Acceptance Criteria
@@ -152,9 +165,11 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.34-06-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.34-06-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.34-06-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.34-06-01: Given OBPI-02's `render(model)`, when invoked, then the ADR-0.0.33 fidelity validator suite runs against the produced output before `render` returns; validation failure raises and aborts the render — verified by a fixture model whose canonical render deliberately violates a fidelity invariant.
+- [ ] REQ-0.0.34-06-02: Given `gz content edit <id>` save-path (OBPI-04), when the post-edit re-parse succeeds, then the validator suite runs before persisting to disk; failure prevents file write and surfaces a structured diagnostic identifying the failing validator.
+- [ ] REQ-0.0.34-06-03: Given a deliberately-fidelity-violating fixture, when the hooks fire, then exit code is non-zero and the diagnostic names the failing validator (validator id + violation explanation).
+- [ ] REQ-0.0.34-06-04: Given the rule "no warn-and-continue path," when `rg "logger\\.warning.*fidelity|logger\\.warn.*fidelity"` runs against `src/gzkit/content/validation/`, then no result matches.
+- [ ] REQ-0.0.34-06-05: Given the wiring claim, when grep'd for `validation.hooks` in `src/gzkit/content/render/pipeline.py` and `src/gzkit/commands/content/edit.py`, then both files reference the hook module (mechanical proof that wiring is in place at both call sites).
 
 ## Completion Checklist
 
