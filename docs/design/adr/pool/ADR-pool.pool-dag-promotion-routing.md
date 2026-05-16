@@ -1,6 +1,16 @@
-# ADR-pool.pool-dag-promotion-routing
+---
+id: ADR-pool.pool-dag-promotion-routing
+status: Superseded
+lane: lite
+parent: ADR-0.6.0-pool-promotion-protocol
+promoted_to: ADR-0.0.47-pool-dag-promotion-routing
+---
 
-- **Status:** Pool
+# ADR-pool.pool-dag-promotion-routing
+> Promoted to `ADR-0.0.47-pool-dag-promotion-routing` on 2026-05-16. This pool file is retained as historical intake context.
+
+
+- **Status:** Superseded
 - **Lane:** Lite
 - **Date:** 2026-04-05
 - **Origin:** GSD v1 comparative analysis — pull-model pool management
@@ -14,6 +24,17 @@ active ADR queue clears and the workflow shifts from push (pre-queued backlog) t
 pull (evaluate pool, promote best next item), the agent needs a queryable graph to
 recommend which pool ADR to promote next based on satisfied prerequisites, project
 priorities, and topological ordering.
+
+## Proposed OBPI Decomposition
+
+| # | Slug | Description | Lane |
+|---|------|-------------|------|
+| 01 | relationship-frontmatter-schema | Add structured pool ADR frontmatter for `depends_on`, `complements`, `blocks`, and `tags`, with validation against known ADR IDs. | Heavy |
+| 02 | pool-graph-builder | Build the in-repository pool DAG from pool ADR files and ledger-backed completion state, including missing-reference and cycle detection. | Heavy |
+| 03 | pool-graph-cli | Implement `gz pool graph` with `--ready`, `--path`, `--tags`, `--dot`, and `--json` query modes. | Heavy |
+| 04 | promote-dependency-guard | Extend `gz adr promote` to validate hard prerequisites, warn on topological disorder, and update dependent pool ADRs after promotion. | Heavy |
+| 05 | pool-backfill-migration | Backfill existing pool ADR frontmatter from prose dependency sections and provide a reviewed migration path for the current pool. | Heavy |
+| 06 | next-pool-recommendation | Implement `gz next --pool` recommendation logic over ready nodes, unblock potential, complement density, and current project tags. | Heavy |
 
 ## Target Scope
 

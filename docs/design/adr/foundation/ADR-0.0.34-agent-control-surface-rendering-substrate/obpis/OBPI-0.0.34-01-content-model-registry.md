@@ -3,7 +3,7 @@ id: OBPI-0.0.34-01-content-model-registry
 parent: ADR-0.0.34-agent-control-surface-rendering-substrate
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.34-01-content-model-registry: Content Model Registry
@@ -13,13 +13,11 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
 - **Checklist Item:** #1 - "OBPI-0.0.34-01: Content model registry generalization — extend ADR-0.16.0 OBPI-01 to all per-turn surface artifacts (`AgentContract`, `Rule`, `Skill`, `Chore`, `Persona`, `Handoff`, `Scenario`, `Bullet`, …) with `frozen=True, extra="forbid"`"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Content model registry generalization — extend ADR-0.16.0 OBPI-01 to all per-turn surface artifacts (`AgentContract`, `Rule`, `Skill`, `Chore`, `Persona`, `Handoff`, `Scenario`, `Bullet`, …) with `frozen=True, extra="forbid"`.
+Content model registry generalization — extend ADR-0.16.0 OBPI-01 to all per-turn surface artifacts (`AgentContract`, `Rule`, `Skill`, `Chore`, `Persona`, `Handoff`, `Scenario`, `Bullet`, …) with `frozen=True, extra="forbid"`. The eight canonical content types are exposed via a single `CONTENT_MODELS: dict[str, type[BaseContentModel]]` registry in `src/gzkit/content/models/__init__.py`.
 
 ## Lane
 
@@ -33,8 +31,18 @@ Content model registry generalization — extend ADR-0.16.0 OBPI-01 to all per-t
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md` — parent ADR for intent and scope
-- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/**` — parent ADR package scope
+- `src/gzkit/content/models/__init__.py` — `CONTENT_MODELS` registry entrypoint
+- `src/gzkit/content/models/base.py` — frozen Pydantic base class with `frozen=True, extra="forbid"`
+- `src/gzkit/content/models/agent_contract.py` — `AgentContract` model (target: `AGENTS.md`/`CLAUDE.md`)
+- `src/gzkit/content/models/rule.py` — `Rule` model (target: `.gzkit/rules/*.md`)
+- `src/gzkit/content/models/skill.py` — `Skill` model (target: `.gzkit/skills/<slug>/SKILL.md`)
+- `src/gzkit/content/models/chore.py` — `Chore` model (target: `.gzkit/chores/<slug>/CHORE.md`)
+- `src/gzkit/content/models/persona.py` — `Persona` model (target: `.gzkit/personas/*.md`)
+- `src/gzkit/content/models/handoff.py` — `Handoff` model (target: `.gzkit/handoffs/*.md`)
+- `src/gzkit/content/models/scenario.py` — `Scenario` model (target: `features/**/*.feature`)
+- `src/gzkit/content/models/bullet.py` — `Bullet` model (shared compositional primitive)
+- `tests/content/models/**` — per-model unit tests (frozen-class, extra-forbid, schema-shape)
+- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/obpis/OBPI-0.0.34-01-content-model-registry.md` — this brief
 
 ## Denied Paths
 
@@ -49,14 +57,10 @@ Content model registry generalization — extend ADR-0.16.0 OBPI-01 to all per-t
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: **Content model registry generalization.** Extend ADR-0.16.0 OBPI-01
-1. REQUIREMENT: **Rendering pipeline.** Replace file-copy logic in `gz agent sync` with
-1. REQUIREMENT: **Reverse-parse migration tooling.** `gz content import <file> --as <type>`
-1. REQUIREMENT: **Authoring CLI.** `gz content edit / render / list / show` —
-1. REQUIREMENT: **Light TUI affordances.** Claude-Code-style status lines, chore-runner
-1. REQUIREMENT: **Validation hooks.** Every render and every save fires the ADR-0.0.33
-1. REQUIREMENT: **Migration layer.** Pydantic schema versioning so model refactors do
-1. REQUIREMENT: **Vendor manifest expansion.** ADR-0.16.0 OBPI-03 seeded the vendor
+1. REQUIREMENT: **Frozen Pydantic models for every per-turn surface artifact.** Define `AgentContract`, `Rule`, `Skill`, `Chore`, `Persona`, `Handoff`, `Scenario`, and `Bullet` under `src/gzkit/content/models/` deriving from a base class declaring `model_config = ConfigDict(frozen=True, extra="forbid")`.
+2. REQUIREMENT: **Single registry entrypoint.** Expose `CONTENT_MODELS: dict[str, type[BaseContentModel]]` from `src/gzkit/content/models/__init__.py`. Lookup is by content-type string; no dynamic import in consumers.
+3. REQUIREMENT: **Round-trip-ready field shape.** Every field annotation supports round-trip parse↔render. NEVER use `Any` or untyped dict payloads. String-typed fields with semantic structure (paths, identifiers, semver) carry pydantic validators.
+4. REQUIREMENT: **Models-only scope.** This OBPI ships content models and the registry. Rendering lives in OBPI-02, parsing in OBPI-03, schema versioning in OBPI-07. NEVER import render/parse modules from a content model.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -81,13 +85,14 @@ Content model registry generalization — extend ADR-0.16.0 OBPI-01 to all per-t
 
 **Context:**
 
-- [ ] Related OBPIs in same ADR
+- [ ] Related OBPIs in same ADR — **no internal prerequisites** (this is the foundation OBPI other 02–07 depend on). External precedent: ADR-0.16.0 OBPI-01 (rules-only registry, extends here to all surface types).
+- [ ] Downstream consumers: OBPI-02 (rendering), OBPI-03 (parsing), OBPI-06 (validation hooks), OBPI-07 (schema versioning).
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
+- [ ] Pydantic ≥ 2 available in `pyproject.toml` (already present as a named departure per Stdlib-First doctrine).
+- [ ] `src/gzkit/content/` directory may not yet exist — create as part of this OBPI.
+- [ ] Parent ADR evidence artifacts referenced by this brief are present.
 
 **Existing Code (understand current state):**
 
@@ -141,7 +146,9 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md
+uv run python -c "from gzkit.content.models import CONTENT_MODELS; assert set(CONTENT_MODELS) >= {'AgentContract','Rule','Skill','Chore','Persona','Handoff','Scenario','Bullet'}, sorted(CONTENT_MODELS)"
+uv run python -c "from gzkit.content.models import CONTENT_MODELS; [m.model_config['frozen'] or (_ for _ in ()).throw(AssertionError(f'{n} not frozen')) for n, m in CONTENT_MODELS.items()]"
+uv run python -m unittest discover -s tests/content/models -t . -v
 ```
 
 ## Acceptance Criteria
@@ -152,9 +159,10 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.34-01-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.34-01-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.34-01-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.34-01-01: Given any content-type string in the canonical eight (`AgentContract`, `Rule`, `Skill`, `Chore`, `Persona`, `Handoff`, `Scenario`, `Bullet`), when looked up in `CONTENT_MODELS`, then the registry returns a Pydantic model class whose `model_config` declares both `frozen=True` and `extra="forbid"`.
+- [ ] REQ-0.0.34-01-02: Given any registered content-model class, when an instance is constructed with an undeclared field, then `pydantic.ValidationError` is raised.
+- [ ] REQ-0.0.34-01-03: Given any registered content-model class, when its JSON schema is computed, then no field has type `Any` or an untyped `dict` payload (verified by introspection test).
+- [ ] REQ-0.0.34-01-04: Given the eight canonical content types, when the registry is enumerated, then all eight are present and each maps to a class importable from `gzkit.content.models`.
 
 ## Completion Checklist
 
@@ -214,15 +222,41 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```
+$ uv run python -c "from gzkit.content.models import CONTENT_MODELS; print(sorted(CONTENT_MODELS))"
+['AgentContract', 'Bullet', 'Chore', 'Handoff', 'Persona', 'Rule', 'Scenario', 'Skill']
+
+$ uv run python -c "
+from gzkit.content.models import Rule
+from pydantic import ValidationError
+try:
+    Rule(title='t', version='not-semver')
+except ValidationError as e:
+    print('REQ-03 validator rejects non-semver:', e.errors()[0]['msg'])
+"
+REQ-03 validator rejects non-semver: Value error, version must match X.Y.Z; got 'not-semver'
+
+$ uv run -m unittest discover -s tests/content/models -t . -v 2>&1 | tail -3
+Ran 17 tests in 0.003s
+OK
+```
+
+ARB receipts (all GREEN): arb-ruff-4753298321f543249de318ab4060929c, arb-step-typecheck-119c6e9ac0ef4d318a05a24f4ef096d9, arb-step-unittest-8af05f1e51684e69ad8f71e120361c38 (full sweep 5104/5104), arb-step-unittest-a14f5653b8a14ebe8a5a403c61a23052 (OBPI-scoped 17/17). REQ coverage: 4/4 via gz covers (100%).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Package: `src/gzkit/content/__init__.py` + `src/gzkit/content/models/__init__.py` (CONTENT_MODELS dict + re-exports + `__all__`)
+- Base: `src/gzkit/content/models/base.py` — `BaseContentModel(BaseModel)` with `model_config = ConfigDict(frozen=True, extra="forbid")`
+- Primitive: `src/gzkit/content/models/bullet.py` — `Bullet` shared compositional primitive
+- Surface types: `agent_contract.py`, `rule.py`, `skill.py`, `chore.py`, `persona.py`, `handoff.py`, `scenario.py` — one frozen Pydantic class per file deriving from BaseContentModel
+- Semantic validators: `Rule.version` (semver `\d+\.\d+\.\d+`); `Rule.paths` (rejects empty, absolute POSIX, Windows drive, parent traversal); `Skill/Chore/Persona.slug` (kebab-case `[a-z][a-z0-9-]*`); `Handoff.session_id` (identifier `[A-Za-z0-9][A-Za-z0-9_-]*`)
+- Tests: `tests/content/models/test_registry.py` (4 tests covering REQ-01/02/04) + `tests/content/models/test_fields.py` (13 tests covering REQ-03 across Any/untyped-dict rejection + semantic-structure validator rejection + happy-path)
+- Tests added: 17 (all GREEN under `tests/content/models/`); full sweep 5104/5104 GREEN
+- Date completed: 2026-05-16
+- Attestation status: Heavy/foundation human attestation received from operator ("attest completed") at Stage 4
+- Defects noted: GHI #474 filed and closed in same session (pool ADR taxonomy false alarm resolved by reconcile); 4 sibling OBPI briefs (03-06) received grandfather markers per GHI #431; behave waiver added with rationale adr-0.0.34-01-foundation-bdd-deferred-to-cli-obpis
 
 ## Tracked Defects
 
@@ -233,14 +267,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.34-01-content-model-registry foundation/heavy schema-only OBPI: 8 canonical frozen Pydantic content models (AgentContract, Rule, Skill, Chore, Persona, Handoff, Scenario, Bullet) registered in CONTENT_MODELS at src/gzkit/content/models/__init__.py with model_config = ConfigDict(frozen=True, extra="forbid"); semantic validators on Rule.version (semver), Rule.paths (no absolute/Windows-drive/traversal/empty), Skill/Chore/Persona.slug (kebab-case), Handoff.session_id (identifier); 17/17 OBPI-scoped tests GREEN (receipt arb-step-unittest-a14f5653b8a14ebe8a5a403c61a23052), full sweep 5104/5104 GREEN (receipt arb-step-unittest-8af05f1e51684e69ad8f71e120361c38) after in-session fixes to 4 sibling brief Demo gaps + behave waiver; ruff GREEN (receipt arb-ruff-4753298321f543249de318ab4060929c); typecheck GREEN (receipt arb-step-typecheck-119c6e9ac0ef4d318a05a24f4ef096d9); @covers parity 4/4 REQs (100%); precomplete READY all 7 preconditions; operator attestation phrase "attest completed" received in conversational turn at Stage 4.
+- Date: 2026-05-16
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-16
 
 **Evidence Hash:** -

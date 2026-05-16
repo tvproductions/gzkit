@@ -1,16 +1,19 @@
 ---
 id: ADR-pool.pool-triage-skill
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: lite
 enabler: null
+promoted_to: ADR-0.0.48-gz-adr-pool-triage
 ---
 
 # ADR-pool.pool-triage-skill: Pool Triage Skill — Cognitive Wrapper for Pool Promotion Recommendation
+> Promoted to `ADR-0.0.48-gz-adr-pool-triage` on 2026-05-16. This pool file is retained as historical intake context.
+
 
 ## Status
 
-Pool
+Superseded
 
 ## Date
 
@@ -45,6 +48,26 @@ triage should ultimately be 'which to do next?'"*
 
 Author a `pool-triage` skill in `.gzkit/skills/pool-triage/SKILL.md`
 following the canonical three-step pattern from `ghi-triage`:
+
+## Proposed OBPI Decomposition
+
+| # | Slug | Description | Lane |
+|---|------|-------------|------|
+| 01 | triage-prepass-contract | Define the single mechanical pre-pass record set that composes ready-pool graph output and pool-overlap triage output. | Heavy |
+| 02 | candidate-cognitive-pass | Author the skill's read-each-candidate procedure, requiring Intent and Decision review before structural-only rank input is produced. | Heavy |
+| 03 | deterministic-renderer | Implement the deterministic markdown renderer for the ranked promotion recommendation deliverable. | Heavy |
+| 04 | blocked-foundation-filter | Add the dependency cross-check that filters or annotates candidates blocked by in-flight foundation work. | Heavy |
+| 05 | skill-surface-sync | Add the canonical gz ADR pool triage skill, sync mirrors, and expose the operator invocation surface. | Heavy |
+| 06 | docs-validation-fixtures | Add docs, examples, fixtures, and validation coverage for full-pool and tag-filtered pool triage runs. | Heavy |
+
+## Target Scope
+
+- **triage-prepass-contract** — Define the single mechanical pre-pass record set that composes ready-pool graph output and pool-overlap triage output.
+- **candidate-cognitive-pass** — Author the skill's read-each-candidate procedure, requiring Intent and Decision review before structural-only rank input is produced.
+- **deterministic-renderer** — Implement the deterministic markdown renderer for the ranked promotion recommendation deliverable.
+- **blocked-foundation-filter** — Add the dependency cross-check that filters or annotates candidates blocked by in-flight foundation work.
+- **skill-surface-sync** — Add the canonical gz ADR pool triage skill, sync mirrors, and expose the operator invocation surface.
+- **docs-validation-fixtures** — Add docs, examples, fixtures, and validation coverage for full-pool and tag-filtered pool triage runs.
 
 ### Step 1 — Mechanical pre-pass (single CLI call)
 

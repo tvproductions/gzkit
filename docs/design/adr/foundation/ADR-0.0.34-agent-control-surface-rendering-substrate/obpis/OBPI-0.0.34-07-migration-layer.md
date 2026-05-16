@@ -33,8 +33,12 @@ Migration layer — Pydantic schema versioning so model refactors do not break r
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md` — parent ADR for intent and scope
-- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/**` — parent ADR package scope
+- `src/gzkit/content/migration/__init__.py` — migration registry public entrypoint
+- `src/gzkit/content/migration/registry.py` — `(content_type, from_version, to_version) → migration_callable` map and dispatcher
+- `src/gzkit/content/models/base.py` — add `schema_version: int = 1` field on the content-model base class
+- `src/gzkit/content/parse/markdown_parser.py` — invoke migration registry on parse when source `schema_version` differs from current
+- `tests/content/test_migration_layer.py` — schema version detection, sequential migration application, unknown-version fail-closed
+- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/obpis/OBPI-0.0.34-07-migration-layer.md` — this brief
 
 ## Denied Paths
 
@@ -49,14 +53,10 @@ Migration layer — Pydantic schema versioning so model refactors do not break r
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: **Content model registry generalization.** Extend ADR-0.16.0 OBPI-01
-1. REQUIREMENT: **Rendering pipeline.** Replace file-copy logic in `gz agent sync` with
-1. REQUIREMENT: **Reverse-parse migration tooling.** `gz content import <file> --as <type>`
-1. REQUIREMENT: **Authoring CLI.** `gz content edit / render / list / show` —
-1. REQUIREMENT: **Light TUI affordances.** Claude-Code-style status lines, chore-runner
-1. REQUIREMENT: **Validation hooks.** Every render and every save fires the ADR-0.0.33
-1. REQUIREMENT: **Migration layer.** Pydantic schema versioning so model refactors do
-1. REQUIREMENT: **Vendor manifest expansion.** ADR-0.16.0 OBPI-03 seeded the vendor
+1. REQUIREMENT: **`schema_version: int` on every content-model base.** Every model under `src/gzkit/content/models/` derives from a base that declares `schema_version: int = 1` at the class level; this field is rendered into the canonical-form output and parsed back on import.
+2. REQUIREMENT: **Migration registry.** `src/gzkit/content/migration/registry.py` contains `MIGRATIONS: dict[tuple[str, int, int], Callable[[Model], Model]]` mapping `(content_type, from_version, to_version)` to a pure migration function. Each migration is total: it accepts a valid v_n model and returns a valid v_{n+1} model.
+3. REQUIREMENT: **Auto-migration on parse.** OBPI-03's parser detects `schema_version` mismatch between source and current and applies registered migrations in sequence before instantiating the current model. NEVER silently drop fields; NEVER guess a migration when none is registered.
+4. REQUIREMENT: **Rendered-output stability across version bumps.** Until a migration explicitly changes a model's rendered shape, re-rendering after the version bump produces byte-identical output. Verified by a fixture set of rendered files compared pre- and post-migration registration.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -81,13 +81,16 @@ Migration layer — Pydantic schema versioning so model refactors do not break r
 
 **Context:**
 
-- [ ] Related OBPIs in same ADR
+- [ ] **Prerequisite OBPI:** OBPI-0.0.34-01 (content model registry) — `schema_version` field is added to the registry's base class.
+- [ ] **Prerequisite OBPI:** OBPI-0.0.34-03 (reverse-parse migration) — parser is the call-site for auto-migration; modification (not creation) of `markdown_parser.py`.
+- [ ] **Soft co-dependency:** OBPI-0.0.34-02 (rendering pipeline) — renderer must include `schema_version` in canonical output. May land in either order.
+- [ ] Should land last in the sequence — once OBPIs 01-06 stabilize, OBPI-07 is the schema-evolution backstop ensuring future model changes don't break rendered-output stability.
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
+- [ ] OBPI-0.0.34-01 complete: `from gzkit.content.models import CONTENT_MODELS` imports cleanly.
+- [ ] OBPI-0.0.34-03 complete: `gz content import --help` exits 0.
+- [ ] Parent ADR evidence artifacts referenced by this brief are present.
 
 **Existing Code (understand current state):**
 
@@ -141,8 +144,9 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md
-uv run -m unittest tests/test_persona_schema.py -v
+uv run python -c "from gzkit.content.models import CONTENT_MODELS; assert all(getattr(m, 'schema_version', None) == 1 for m in CONTENT_MODELS.values()), {n: getattr(m, 'schema_version', None) for n, m in CONTENT_MODELS.items()}"
+uv run python -c "from gzkit.content.migration import MIGRATIONS; assert isinstance(MIGRATIONS, dict)"
+uv run python -m unittest tests.content.test_migration_layer -v
 ```
 
 ## Acceptance Criteria
@@ -153,9 +157,11 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.34-07-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.34-07-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.34-07-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.34-07-01: Given every model in the OBPI-01 registry, when `model.schema_version` is read on a freshly constructed instance, then it returns an integer ≥ 1 (default 1 at initial release).
+- [ ] REQ-0.0.34-07-02: Given a test-fixture canonical file declaring an older `schema_version`, when `gz content import` parses it, then the appropriate registered migrations apply in sequence (1 → 2 → 3) and the produced model carries the current `schema_version`.
+- [ ] REQ-0.0.34-07-03: Given a fixture set of rendered files at the current schema version, when no migrations are registered between current and a hypothetical next version, then re-rendering after introducing the migration registry produces byte-identical output (stability invariant).
+- [ ] REQ-0.0.34-07-04: Given an unknown source `schema_version` (e.g. `schema_version: 999`), when parsing runs, then exit code is non-zero and the diagnostic names the unsupported version; NEVER guess or fall through to current.
+- [ ] REQ-0.0.34-07-05: Given a registered migration callable, when called twice on the same input, then the output is equal (purity invariant — migrations are deterministic and side-effect-free).
 
 ## Completion Checklist
 

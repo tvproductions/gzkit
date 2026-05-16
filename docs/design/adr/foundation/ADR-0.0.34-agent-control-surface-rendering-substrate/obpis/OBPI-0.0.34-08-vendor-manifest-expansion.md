@@ -33,8 +33,13 @@ Vendor manifest expansion — extend ADR-0.16.0 OBPI-03 vendor manifest schema a
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md` — parent ADR for intent and scope
-- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/**` — parent ADR package scope
+- `data/vendor-manifest.json` — vendor manifest content (extend with `content_type_routes` block)
+- `src/gzkit/schemas/vendor_manifest.json` — vendor manifest JSON Schema (extend with `content_type_routes` definition)
+- `src/gzkit/content/vendors.py` — vendor routing helpers (load manifest, expose `routes_for(content_type) -> list[Vendor]`)
+- `src/gzkit/content/render/pipeline.py` — read `content_type_routes` from manifest instead of hard-coded routing
+- `src/gzkit/governance/trust_audits.py` — `gz validate --vendor-manifest` scope registration (modification, not creation)
+- `tests/content/test_vendor_manifest.py` — schema validation, route enumeration, drift fail-closed
+- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/obpis/OBPI-0.0.34-08-vendor-manifest-expansion.md` — this brief
 
 ## Denied Paths
 
@@ -49,14 +54,10 @@ Vendor manifest expansion — extend ADR-0.16.0 OBPI-03 vendor manifest schema a
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: **Content model registry generalization.** Extend ADR-0.16.0 OBPI-01
-1. REQUIREMENT: **Rendering pipeline.** Replace file-copy logic in `gz agent sync` with
-1. REQUIREMENT: **Reverse-parse migration tooling.** `gz content import <file> --as <type>`
-1. REQUIREMENT: **Authoring CLI.** `gz content edit / render / list / show` —
-1. REQUIREMENT: **Light TUI affordances.** Claude-Code-style status lines, chore-runner
-1. REQUIREMENT: **Validation hooks.** Every render and every save fires the ADR-0.0.33
-1. REQUIREMENT: **Migration layer.** Pydantic schema versioning so model refactors do
-1. REQUIREMENT: **Vendor manifest expansion.** ADR-0.16.0 OBPI-03 seeded the vendor
+1. REQUIREMENT: **Extend ADR-0.16.0 OBPI-03 vendor manifest schema.** Add a `content_type_routes` object mapping each registered content type → list of vendor mirror identifiers that receive its rendered output. Schema lives at `src/gzkit/schemas/vendor_manifest.json`; data lives at `data/vendor-manifest.json`.
+2. REQUIREMENT: **Schema-validated manifest.** `data/vendor-manifest.json` MUST validate against `src/gzkit/schemas/vendor_manifest.json`; `gz validate --vendor-manifest` exits 3 on drift. Wire this scope into `src/gzkit/governance/trust_audits.py` alongside existing validators.
+3. REQUIREMENT: **Consumed by OBPI-02 pipeline.** The render pipeline MUST read `content_type_routes` from the manifest and route accordingly; NEVER hard-code per-vendor branches in renderer or sync code.
+4. REQUIREMENT: **Schema-only scope.** NEVER define new content types here (OBPI-01 owns the registry). NEVER define new vendors here (ADR-0.16.0 governs the vendor set). This OBPI extends the manifest's shape; content-type and vendor inventories are unchanged.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -81,13 +82,16 @@ Vendor manifest expansion — extend ADR-0.16.0 OBPI-03 vendor manifest schema a
 
 **Context:**
 
-- [ ] Related OBPIs in same ADR
+- [ ] **External prerequisite:** ADR-0.16.0 OBPI-03 vendor manifest schema must exist (seeded vendor manifest). This OBPI extends it; if missing, file a blocker GHI.
+- [ ] **Soft co-dependency:** OBPI-0.0.34-01 (content model registry) — `content_type_routes` keys are the content-type names; may run in parallel but routes can only be validated end-to-end once OBPI-01 is complete.
+- [ ] **Soft co-dependency:** OBPI-0.0.34-02 (rendering pipeline) — consumer of the manifest's `content_type_routes`. May land in either order; pipeline can ship with a minimal in-code routing fallback that this OBPI replaces.
+- [ ] No downstream OBPIs in this ADR depend on OBPI-08 strictly — it can run early (alongside OBPI-01) or late.
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
+- [ ] `data/vendor-manifest.json` exists (ADR-0.16.0 OBPI-03 artifact).
+- [ ] `src/gzkit/schemas/vendor_manifest.json` exists (ADR-0.16.0 OBPI-03 artifact).
+- [ ] Parent ADR evidence artifacts referenced by this brief are present.
 
 **Existing Code (understand current state):**
 
@@ -141,8 +145,12 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md
-uv run -m unittest tests/test_persona_schema.py -v
+uv run gz validate --vendor-manifest                                                # exits 0 on clean manifest
+uv run python -c "import json; m = json.load(open('data/vendor-manifest.json')); assert 'content_type_routes' in m, sorted(m)"
+uv run python -m unittest tests.content.test_vendor_manifest -v
+# Render pipeline reads the manifest (not hard-coded vendors):
+rg -q "content_type_routes" src/gzkit/content/render/pipeline.py
+rg -n "vendor\s*==\s*['\"]claude['\"]" src/gzkit/content/render/ && exit 1 || true   # no hard-coded branches
 ```
 
 ## Acceptance Criteria
@@ -153,9 +161,11 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.34-08-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.34-08-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.34-08-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.34-08-01: Given `data/vendor-manifest.json`, when validated against `src/gzkit/schemas/vendor_manifest.json`, then validation passes; `gz validate --vendor-manifest` exits 0.
+- [ ] REQ-0.0.34-08-02: Given the expanded manifest, when read by the render pipeline (OBPI-02), then each registered content type → vendor mirror routing is honored without per-vendor hard-coded branches in renderer or sync code (verified by `rg "vendor == 'claude'"` returning no matches in `src/gzkit/content/render/`).
+- [ ] REQ-0.0.34-08-03: Given a new content type added in OBPI-01, when its `content_type_routes` entry is missing from the manifest, then `gz validate --vendor-manifest` exits non-zero naming the missing entry — coupled-surface coherence per AGENTS.md Invariant 1a.
+- [ ] REQ-0.0.34-08-04: Given an existing vendor mirror set, when the manifest is reloaded, then the render pipeline's enumerated set of `(content_type, vendor)` pairs equals the manifest's declared routes (no implicit vendor expansion, no implicit drop).
+- [ ] REQ-0.0.34-08-05: Given the test suite after this OBPI lands, when `tests/content/test_vendor_manifest.py` runs, then it covers: schema-clean case, manifest-drift fail-closed case, route enumeration round-trip.
 
 ## Completion Checklist
 

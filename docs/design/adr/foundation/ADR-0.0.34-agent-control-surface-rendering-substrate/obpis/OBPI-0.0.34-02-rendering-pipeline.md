@@ -33,11 +33,13 @@ Rendering pipeline — Jinja2 templates per (content type × vendor) producing d
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md` — parent ADR for intent and scope
-- `AGENTS.md` — primary context-frame contract
-- `src/gzkit/templates/agents.md` — generated AGENTS template source
-- `src/gzkit/templates/adr.md` — ADR template surface for future context frames
-- `src/gzkit/sync_surfaces.py` — AGENTS regeneration surface
+- `src/gzkit/content/render/__init__.py` — render-pipeline public entrypoint
+- `src/gzkit/content/render/pipeline.py` — `render(model, vendor=...)` dispatcher
+- `src/gzkit/content/templates/<content-type>/<vendor>.md.j2` — Jinja2 templates per (content type × vendor); one file per pair declared in the vendor manifest
+- `src/gzkit/sync_surfaces.py` — replace `shutil.copy`-based per-turn surface emission with `render()` invocation; mirror routing reads OBPI-08's vendor manifest
+- `tests/content/test_render_pipeline.py` — per-model render invocation + dispatcher coverage
+- `tests/content/test_byte_stability.py` — repeat-render byte-equality per (content_type, vendor)
+- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/obpis/OBPI-0.0.34-02-rendering-pipeline.md` — this brief
 
 ## Denied Paths
 
@@ -52,14 +54,10 @@ Rendering pipeline — Jinja2 templates per (content type × vendor) producing d
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: **Content model registry generalization.** Extend ADR-0.16.0 OBPI-01
-1. REQUIREMENT: **Rendering pipeline.** Replace file-copy logic in `gz agent sync` with
-1. REQUIREMENT: **Reverse-parse migration tooling.** `gz content import <file> --as <type>`
-1. REQUIREMENT: **Authoring CLI.** `gz content edit / render / list / show` —
-1. REQUIREMENT: **Light TUI affordances.** Claude-Code-style status lines, chore-runner
-1. REQUIREMENT: **Validation hooks.** Every render and every save fires the ADR-0.0.33
-1. REQUIREMENT: **Migration layer.** Pydantic schema versioning so model refactors do
-1. REQUIREMENT: **Vendor manifest expansion.** ADR-0.16.0 OBPI-03 seeded the vendor
+1. REQUIREMENT: **Jinja2 template per (content type × vendor).** Templates live under `src/gzkit/content/templates/<content-type>/<vendor>.md.j2`. Every (content_type, vendor) pair declared in OBPI-08's vendor manifest has exactly one template. Missing template at render time is fail-closed.
+2. REQUIREMENT: **Deterministic byte-stable output.** `render(model, vendor)` invoked twice on the same model produces byte-equal output. NEVER inject timestamps, NEVER iterate dicts in insertion order without an explicit sort key, NEVER use Jinja2 features that introduce nondeterminism.
+3. REQUIREMENT: **File-copy logic replaced in `gz agent sync`.** `src/gzkit/sync_surfaces.py` (and any other file-copy callsites for per-turn surface artifacts) MUST invoke `render()` rather than copying source files for any content type registered in OBPI-01.
+4. REQUIREMENT: **Render-only scope.** No parse logic (OBPI-03), no validation hook firing (OBPI-06), no schema migration (OBPI-07). The pipeline accepts a validated model and returns a byte-string.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -84,13 +82,15 @@ Rendering pipeline — Jinja2 templates per (content type × vendor) producing d
 
 **Context:**
 
-- [ ] Related OBPIs in same ADR
+- [ ] **Prerequisite OBPI:** OBPI-0.0.34-01 (content model registry) — render pipeline accepts model instances from this registry. MUST be complete before this OBPI's Gate 2 runs.
+- [ ] **Soft co-dependency:** OBPI-0.0.34-08 (vendor manifest) — defines (content_type, vendor) routing the render dispatcher reads. May land in parallel; if OBPI-08 lags, fall back to a minimal in-code routing table that this OBPI replaces when OBPI-08 lands.
+- [ ] Downstream consumers: OBPI-04 (authoring CLI invokes render), OBPI-05 (TUI wraps render output), OBPI-06 (validation hooks fire on render).
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `AGENTS.md`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
+- [ ] OBPI-0.0.34-01 complete: `from gzkit.content.models import CONTENT_MODELS` imports cleanly with ≥ 8 entries.
+- [ ] Jinja2 ≥ 3 available in `pyproject.toml` (named departure per Stdlib-First doctrine; inherits ADR-0.0.19 precedent).
+- [ ] Parent ADR evidence artifacts referenced by this brief are present.
 
 **Existing Code (understand current state):**
 
@@ -144,11 +144,10 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md
-rg -n "^## Persona$" AGENTS.md
-test -f src/gzkit/templates/agents.md
-test -f src/gzkit/templates/adr.md
-test -f src/gzkit/sync_surfaces.py
+uv run python -m unittest tests.content.test_render_pipeline -v
+uv run python -m unittest tests.content.test_byte_stability -v
+uv run gz agent sync control-surfaces      # exits 0; emitted surfaces equal canonical render
+rg -n "shutil\.copy" src/gzkit/sync_surfaces.py  # MUST emit nothing for content-surface files
 ```
 
 ## Acceptance Criteria
@@ -159,9 +158,11 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.34-02-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.34-02-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.34-02-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.34-02-01: Given any model instance from `CONTENT_MODELS`, when `render(model, vendor=v)` is invoked twice with identical inputs, then both byte-strings are equal.
+- [ ] REQ-0.0.34-02-02: Given each (content_type, vendor) pair declared in OBPI-08's vendor manifest, when the dispatcher looks up the template, then `src/gzkit/content/templates/<content_type>/<vendor>.md.j2` exists and the template renders to non-empty output.
+- [ ] REQ-0.0.34-02-03: Given the project's `gz agent sync control-surfaces` invocation, when this OBPI is landed, then per-turn surface files are produced via `render()` (verified by `rg "shutil\\.copy" src/gzkit/sync_surfaces.py` returning no content-surface matches).
+- [ ] REQ-0.0.34-02-04: Given the existing byte-parity tests under `tests/`, when run post-OBPI, then they pass without modifying expected-output fixtures (substrate transparency under repository invariants).
+- [ ] REQ-0.0.34-02-05: Given a content type with no template registered for the requested vendor, when `render` is called, then a typed `TemplateNotFound` error is raised before any file write — fail-closed, no implicit fallback.
 
 ## Completion Checklist
 

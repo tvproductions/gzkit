@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.33-agent-control-surface-fidelity
-status: Draft
+status: Validated
 kind: foundation
 semver: 0.0.33
 lane: heavy

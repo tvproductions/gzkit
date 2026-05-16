@@ -8,6 +8,8 @@ status: Draft
 
 # OBPI-0.0.34-03-reverse-parse-migration: Reverse Parse Migration
 
+<!-- gz-validate-skip: brief-demo-section --> <!-- Draft brief; Demo section authored at implementation time per GHI #431 grandfather pattern. -->
+
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
@@ -33,8 +35,20 @@ Reverse-parse migration tooling — `gz content import <file> --as <type>` reads
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md` — parent ADR for intent and scope
-- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/**` — parent ADR package scope
+- `src/gzkit/content/parse/__init__.py` — parser public entrypoint (`parse(text, as_type) -> Model`)
+- `src/gzkit/content/parse/markdown_parser.py` — reverse-parse implementation per content type
+- `src/gzkit/commands/content/__init__.py` — `gz content` subparser registration
+- `src/gzkit/commands/content/import_.py` — `gz content import <file> --as <type>` CLI verb
+- `tests/content/test_round_trip_agent_contract.py` — round-trip fidelity for `AgentContract`
+- `tests/content/test_round_trip_rule.py` — round-trip fidelity for `Rule`
+- `tests/content/test_round_trip_skill.py` — round-trip fidelity for `Skill`
+- `tests/content/test_round_trip_chore.py` — round-trip fidelity for `Chore`
+- `tests/content/test_round_trip_persona.py` — round-trip fidelity for `Persona`
+- `tests/content/test_round_trip_handoff.py` — round-trip fidelity for `Handoff`
+- `tests/content/test_round_trip_scenario.py` — round-trip fidelity for `Scenario`
+- `tests/content/test_round_trip_bullet.py` — round-trip fidelity for `Bullet`
+- `tests/commands/test_content_import.py` — CLI smoke test
+- `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/obpis/OBPI-0.0.34-03-reverse-parse-migration.md` — this brief
 
 ## Denied Paths
 
@@ -49,14 +63,10 @@ Reverse-parse migration tooling — `gz content import <file> --as <type>` reads
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: **Content model registry generalization.** Extend ADR-0.16.0 OBPI-01
-1. REQUIREMENT: **Rendering pipeline.** Replace file-copy logic in `gz agent sync` with
-1. REQUIREMENT: **Reverse-parse migration tooling.** `gz content import <file> --as <type>`
-1. REQUIREMENT: **Authoring CLI.** `gz content edit / render / list / show` —
-1. REQUIREMENT: **Light TUI affordances.** Claude-Code-style status lines, chore-runner
-1. REQUIREMENT: **Validation hooks.** Every render and every save fires the ADR-0.0.33
-1. REQUIREMENT: **Migration layer.** Pydantic schema versioning so model refactors do
-1. REQUIREMENT: **Vendor manifest expansion.** ADR-0.16.0 OBPI-03 seeded the vendor
+1. REQUIREMENT: **`gz content import <file> --as <content-type>` CLI verb.** Reads a hand-authored markdown file, returns a Pydantic model instance from `CONTENT_MODELS`, emits JSON to stdout by default; `--write <path>` persists a canonical-form re-render at `<path>`.
+2. REQUIREMENT: **Round-trip fidelity contract.** For every content type registered in OBPI-01, `parse(render(model)) == model` AND `render(parse(text)) == text` byte-equal (modulo whitespace normalizations explicitly enumerated in the parser's docstring). One test file per content type under `tests/content/test_round_trip_<content_type>.py`.
+3. REQUIREMENT: **Lossless migration of existing surfaces.** `gz content import AGENTS.md --as AgentContract --write /tmp/x.md && diff -q AGENTS.md /tmp/x.md` exits 0. Same for `CLAUDE.md` and each file in `.gzkit/rules/*.md`.
+4. REQUIREMENT: **Parse-only scope.** NEVER define new content types here (OBPI-01 owns the registry). NEVER fire validation hooks here (OBPI-06 owns hook wiring). NEVER apply schema migrations directly — invoke OBPI-07's migration registry once it exists, otherwise pass-through.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -81,13 +91,16 @@ Reverse-parse migration tooling — `gz content import <file> --as <type>` reads
 
 **Context:**
 
-- [ ] Related OBPIs in same ADR
+- [ ] **Prerequisite OBPI:** OBPI-0.0.34-01 (content model registry) — parser needs target model classes.
+- [ ] **Prerequisite OBPI:** OBPI-0.0.34-02 (rendering pipeline) — round-trip contract requires `render()` for fidelity proof.
+- [ ] **Soft co-dependency:** OBPI-0.0.34-07 (migration layer) — parser invokes migrations when source `schema_version` differs from current; pass-through if OBPI-07 hasn't landed.
+- [ ] Downstream consumer: OBPI-04 (`gz content edit` re-parses on save).
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
+- [ ] OBPI-0.0.34-01 complete: `from gzkit.content.models import CONTENT_MODELS` imports cleanly.
+- [ ] OBPI-0.0.34-02 complete: `from gzkit.content.render import render` imports cleanly.
+- [ ] Parent ADR evidence artifacts referenced by this brief are present.
 
 **Existing Code (understand current state):**
 
@@ -141,7 +154,12 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md
+uv run gz content import AGENTS.md --as AgentContract --write /tmp/agents-roundtrip.md
+diff -q AGENTS.md /tmp/agents-roundtrip.md       # MUST exit 0 (zero-byte diff)
+uv run gz content import CLAUDE.md  --as AgentContract --write /tmp/claude-roundtrip.md
+diff -q CLAUDE.md /tmp/claude-roundtrip.md       # MUST exit 0
+uv run python -m unittest discover -s tests/content -p 'test_round_trip_*.py' -t . -v
+uv run python -m unittest tests.commands.test_content_import -v
 ```
 
 ## Acceptance Criteria
@@ -152,9 +170,11 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.34-03-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.34-03-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.34-03-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.34-03-01: Given `gz content import <file> --as <ctype>`, when invoked on a valid canonical markdown file, then a Pydantic model instance is produced and emitted to stdout as JSON (exit 0).
+- [ ] REQ-0.0.34-03-02: Given each content type registered in OBPI-01, when its round-trip test loads a fixture, parses it, then re-renders the result, then output bytes equal input bytes (whitespace normalizations explicitly enumerated in the parser's docstring).
+- [ ] REQ-0.0.34-03-03: Given the project's current `AGENTS.md`, when `gz content import AGENTS.md --as AgentContract --write /tmp/x.md` runs, then `diff -q AGENTS.md /tmp/x.md` exits 0.
+- [ ] REQ-0.0.34-03-04: Given a malformed input file, when `gz content import` runs, then exit code is non-zero and the diagnostic names the failing parser location (file path + line number, where derivable).
+- [ ] REQ-0.0.34-03-05: Given a file whose `--as` declared type mismatches the actual content shape, when parse runs, then `pydantic.ValidationError` is raised before any model instance is returned to the caller.
 
 ## Completion Checklist
 
