@@ -1,5 +1,27 @@
 # gzkit Release Notes
 
+## v0.26.4 (2026-05-16)
+
+Closes four runtime defects surfaced during the ADR-0.0.32 closeout ceremony and a follow-on persona dispatch coverage audit: validator recursion fix, upgrade carve-out enforcement, skill surface cleanup, and ceremony-persona wiring.
+
+### CLI Fixes
+
+- **#465** — Fixed `gz upgrade` to honor ADR-0.0.32 § Named exceptions. Invoking `gz upgrade` (default surface set) was incorrectly copying `src/gzkit/hooks/` Python files and `src/gzkit/templates/skills/` into `.gzkit/`, polluting the canonical authored surface with vendor-coupled package machinery that the ADR explicitly carves out of the dual-surface byte-parity model. The fix consults the existing `_classify_*` helpers (from OBPI-15) and skips hooks and package-only files during the upgrade pass.
+- **#468** — Fixed `gz validate --documents` to iterate recursively through nested ADR package directories. The previous flat glob (`docs/design/adr/*.md`) never reached foundation and pre-release ADRs under `docs/design/adr/foundation/ADR-*/ADR-*.md`, allowing bare-semver frontmatter IDs (e.g. `id: ADR-0.0.43` without a slug suffix) to pass the schema pattern check silently. Five ADRs with bare IDs survived undetected until `gz adr report` surfaced a slugless row on 2026-05-15. Validation now recursively traverses all nested ADR package directories.
+
+### Skill Surface & Distribution
+
+- **#464** — Removed 18 retired-skill tombstone stubs (`lifecycle_state: retired`) from `.gzkit/skills/`, `src/gzkit/skills/`, and all three vendor mirror directories. The `package_only` classifier path was accommodating these stubs in the shipped wheel against its intended scope (non-md package-machinery files, not retired SKILL.md entries). Establishes delete-on-retire doctrine: when a skill is superseded or consolidated, its directory is deleted rather than left as a stub. The 18 removed skills were all superseded by named successors documented in their `archived_into:` frontmatter fields.
+
+### Ceremony & Persona Infrastructure
+
+- **#470** — Wired role-matched persona dispatch across all four ADR/OBPI ceremony skills. `gz-adr-audit` was missing its `persona:` frontmatter declaration entirely; `gz-adr-closeout-ceremony` and `gz-adr-evaluate` declared a driver persona but dispatched no subagent reviewers. All four ceremony skills now carry `persona: pipeline-orchestrator` frontmatter and include a `## Persona Dispatch` contract section specifying which subagent roles are dispatched and at which stage. Narrator persona wiring into OBPI Stage 4 evidence presentation was completed. Grounded in ADR-0.0.11 (persona as first-class control surface).
+
+### Stats
+
+- 4 GHIs closed
+- 1 GHI excluded (#467 — label_only, no src/gzkit/ commits)
+
 ## v0.26.3 (2026-05-15)
 
 Closes 20 runtime-labelled GHIs spanning pipeline ceremony reliability, canonical surface packaging, governance validation hardening, git-sync commit archaeology, and test suite hygiene.
