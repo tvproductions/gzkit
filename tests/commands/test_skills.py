@@ -374,6 +374,7 @@ class TestSkillCommands(unittest.TestCase):
                     return_value=ok,
                 ),
                 patch("gzkit.quality.run_preflight", return_value=ok),
+                patch("gzkit.quality.run_surface_fidelity_audit", return_value=ok),
             ):
                 result = runner.invoke(main, ["check"])
             self.assertEqual(result.exit_code, 0)

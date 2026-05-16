@@ -595,6 +595,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Scenario-reachability: orphan bullets vs loading scenarios (ADR-0.0.33-04).",
     )
     p_validate.add_argument(
+        "--surface-fidelity",
+        dest="check_surface_fidelity",
+        action="store_true",
+        help="Composite: run all four surface-fidelity invariants (ADR-0.0.33-05).",
+    )
+    p_validate.add_argument(
         "--regenerate",
         dest="check_distribution_regenerate",
         action="store_true",
@@ -678,6 +684,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_surface_weight=a.check_surface_weight,
             check_pointer_anchors=a.check_pointer_anchors,
             check_scenario_reachability=a.check_scenario_reachability,
+            check_surface_fidelity=a.check_surface_fidelity,
             attestation_receipts=a.attestation_receipts,
             attestation_lane=a.attestation_lane,
             attestation_kind=a.attestation_kind,

@@ -11,7 +11,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--requirements] [--commit-trailers]
             [--taxonomy] [--chores-layout] [--distribution]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
-            [--scenario-reachability]
+            [--scenario-reachability] [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
             [--advisor-proof-binding]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
@@ -481,6 +481,52 @@ $ echo $?
 | 0 | Orphan bullets found (Era-2 advisory) | Review orphan warnings in stderr; fix coverage or await `--strict` escalation |
 | 3 | Registry schema violation | Fix `data/agent-control-surface-scenarios.json` to match declared schema |
 
+### `--surface-fidelity`
+
+Composite scope: runs all four surface-fidelity invariants in declared order
+(`bullet_retention` → `surface_weight` → `pointer_integrity` →
+`scenario_reachability`) and aggregates their `ValidationError` lists. The
+exit code is the worst of the four — if any constituent exits 3, the composite
+exits 3. No masking.
+
+**When to use:** Run after editing `AGENTS.md`, `CLAUDE.md`, or any file in
+`.claude/rules/**` to verify the full fidelity doctrine in one pass. Also
+wired into `gz check` (step "Surface fidelity") and the pre-commit cheap
+subset (invariants 1, 2, 3 only — `--scenario-reachability` is CI-only in Era 1).
+
+```bash
+# Run the full composite
+uv run gz validate --surface-fidelity
+```
+
+**Examples:**
+
+```text
+$ uv run gz validate --surface-fidelity
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+Validated: surface_fidelity
+```
+
+```text
+$ uv run gz validate --surface-fidelity
+Validated: surface_fidelity
+
+❌ Validation failed with N error(s):
+
+   →  docs/governance/advisory-rules-audit.md
+    Bullet-retention violation: 'Mechanical' bullet not found verbatim in per-turn surface.
+  Bullet: '<bullet text>'
+  Source: docs/governance/advisory-rules-audit.md
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | All four invariants clean | — |
+| 1 | Non-policy-breach errors (e.g. pointer_anchors) | Fix unresolved lift pointers |
+| 3 | Policy breach (bullet_retention or surface_weight violations) | Fix the flagged bullet or waive the surface weight per ADR-0.0.33 |
+
 ### `--distribution`
 
 Static T0 distribution invariant audit (ADR-0.0.32-07). Verifies that every
@@ -896,6 +942,8 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--advisor-proof-binding` | opt-in | Verdict <-> proof binding audit across fixtures, ledger-cited diagnoses, and JSON Schema (OBPI-0.0.29-08) |
 | `--distribution` | opt-in | T0 static distribution audit: ON\_DISK\_NOT\_INCLUDED / BASELINE\_NOT\_ON\_DISK / ON\_DISK\_NOT\_BASELINE drift classes (ADR-0.0.32-07) |
 | `--bullet-retention` | opt-in | Assert every Mechanical/Promotable bullet in advisory-rules-audit.md is verbatim in per-turn surface (ADR-0.0.33-01) |
+| `--scenario-reachability` | opt-in | Assert every Mechanical/Promotable bullet reachable from a declared loading scenario (ADR-0.0.33-04; Era-1 advisory) |
+| `--surface-fidelity` | opt-in | Composite: run all four surface-fidelity invariants in declared order; exit code is worst-of-four (ADR-0.0.33-05) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
 
 The `--allowlist-only` flag is a sub-modifier for `--unscoped-rules` —

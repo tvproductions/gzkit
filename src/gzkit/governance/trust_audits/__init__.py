@@ -21,6 +21,9 @@ below.
 
 from __future__ import annotations
 
+from pathlib import Path
+
+from gzkit.core.validation_rules import ValidationError
 from gzkit.governance.trust_audits.absorption_duplicates import (
     audit_absorption_duplicates,
 )
@@ -104,6 +107,24 @@ from gzkit.governance.trust_audits.taxonomy import (
     audit_pool_adr_isolation,
 )
 
+
+def validate_surface_fidelity(project_root: Path) -> list[ValidationError]:
+    """Composite: run all four surface-fidelity invariants in declared order.
+
+    Invokes validate_bullet_retention, validate_surface_weight,
+    validate_pointer_integrity, and validate_scenario_reachability in
+    that order and aggregates their ValidationError lists. The exit code
+    is determined by the worst error type in the aggregate (policy-breach
+    types exit 3; others exit 1).
+    """
+    errors: list[ValidationError] = []
+    errors.extend(validate_bullet_retention(project_root))
+    errors.extend(validate_surface_weight(project_root))
+    errors.extend(validate_pointer_integrity(project_root))
+    errors.extend(validate_scenario_reachability(project_root))
+    return errors
+
+
 __all__ = [
     "AttestationReceiptEntry",
     "AttestationReceiptValidationResult",
@@ -148,5 +169,6 @@ __all__ = [
     "validate_intrinsic_attestation",
     "validate_pointer_integrity",
     "validate_scenario_reachability",
+    "validate_surface_fidelity",
     "validate_surface_weight",
 ]

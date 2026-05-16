@@ -629,6 +629,15 @@ def run_orientation_freshness_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --orientation-freshness", cwd=project_root)
 
 
+def run_surface_fidelity_audit(project_root: Path) -> QualityResult:
+    """Run the ADR-0.0.33-05 surface-fidelity composite (all four invariants).
+
+    Fails closed when any of bullet_retention, surface_weight,
+    pointer_integrity, or scenario_reachability report errors.
+    """
+    return run_command("uv run gz validate --surface-fidelity", cwd=project_root)
+
+
 def run_preflight(project_root: Path) -> QualityResult:
     """Run preflight scan for stale pipeline markers and orphan receipts.
 
