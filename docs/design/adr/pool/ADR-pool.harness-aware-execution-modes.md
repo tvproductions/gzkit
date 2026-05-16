@@ -5,6 +5,10 @@ parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
 inspired_by: https://github.com/obra/superpowers
+complements:
+  - ADR-pool.workflow-specification
+  - ADR-pool.tool-permission-classifier
+  - ADR-pool.harness-trace-bundles
 ---
 
 # ADR-pool.harness-aware-execution-modes: Harness-Aware Two-Mode Execution Architecture
@@ -32,6 +36,21 @@ SKILL.md open standards. Mode 2 (Full Enforcement) adds mechanical
 governance guarantees on harnesses that provide lifecycle hooks (currently
 Claude Code only). The `gz` CLI — deterministic Python — is the source of
 truth for all governance decisions in both modes.
+
+### Meta-Harness Boundary
+
+gzkit is a governance meta-harness, not a generic framework and not a
+replacement for a vendor agent harness. A vendor harness owns the inner
+model/tool loop, primitive file and shell tools, live context window, and
+vendor-specific permission prompts. gzkit owns the governance contract around
+that loop: control-surface rendering, workflow stages, evidence requirements,
+ledger decisions, receipts, hooks where the vendor exposes them, and human
+attestation.
+
+This ADR exists because the meta-harness must adapt to the harness it wraps. In
+Mode 1, gzkit relies on portable documents and skill chains. In Mode 2, gzkit
+uses vendor lifecycle hooks to enforce the same deterministic policy at tool-use
+time. The policy remains gzkit's; the interception mechanism is vendor-specific.
 
 ### The Constraint Chain
 
@@ -146,6 +165,8 @@ to the next skill in the chain.
   stayed within scoped paths, run verification suite
 - `gz pipeline write-token release <OBPI-ID>` — release token after
   verification passes
+- Permission mode and command-classifier metadata from
+  `ADR-pool.tool-permission-classifier` once promoted
 - Skills compose `gz` CLI calls at every stage transition
 - All governance decisions flow through deterministic Python
 
@@ -188,6 +209,8 @@ when the per-vendor pool ADRs promote):**
 - `instruction-router.py` — auto-surfaces path-scoped constraints
 - `pipeline-router.py` — routes agent to pipeline after plan approval
 - `pipeline-completion-reminder.py` — warns before premature git commit
+- Per-tool and per-command permission classifiers from
+  `ADR-pool.tool-permission-classifier` once a vendor hook can enforce them
 
 **Agent compliance is mechanically guaranteed (on Mode-2-capable
 vendors).** The difference from Mode 1 is not *what* gets enforced — the
@@ -296,6 +319,11 @@ forcing premature meta-layer abstraction.
     fallback in Mode 1)
   - ADR-pool.graduated-oversight-model (oversight tiers apply to both
     modes; Mode 1 may default to higher oversight)
+  - ADR-pool.workflow-specification (shared workflow contract consumed by both
+    execution modes)
+  - ADR-pool.tool-permission-classifier (shared permission and command-risk
+    policy consumed by Mode 1 token checks and Mode 2 hooks)
+  - ADR-pool.harness-trace-bundles (diagnostic trace evidence for mode behavior)
 
 ---
 

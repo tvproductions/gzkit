@@ -268,6 +268,14 @@ The composite invokes all four validators in declared order, aggregates their Va
 - Attestation status: operator-verbatim-conversational
 - Defects noted: none
 
+## Demo
+
+```bash
+uv run gz validate --surface-fidelity
+```
+
+Runs the composite surface-fidelity audit: invokes all four sub-invariants (bullet-retention, surface-weight, pointer-anchors, scenario-reachability) in a single pass against the live per-turn surface corpus. This is the operator-facing "is the agent control surface still honest?" check. Exits 0 when every sub-invariant passes; exits 3 with named scope on any breach. Also folded into `uv run gz check` so it runs in every quality-gate sweep.
+
 ## Tracked Defects
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.

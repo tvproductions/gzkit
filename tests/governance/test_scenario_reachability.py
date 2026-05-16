@@ -196,5 +196,52 @@ class TestREQ05_PackageReExport(unittest.TestCase):
             self.assertIsInstance(result, list, "Function must return a list")
 
 
+class TestScenarioReachabilityRoutesToExit3(unittest.TestCase):
+    """REQ-0.0.33-04-04: schema-malformed registry breach exits 3, not 1.
+
+    The REQ explicitly prescribes ``exit 3 with a ValidationError of
+    type=scenario_reachability`` on malformed registry schema. Without
+    ``scenario_reachability`` registered in ``_POLICY_BREACH_ERROR_TYPES``,
+    the CLI dispatch routes the schema-breach finding through the non-policy
+    branch and exits 1 — silently narrowing the REQ contract.
+    """
+
+    @covers("REQ-0.0.33-04-04")
+    def test_error_type_registered_as_policy_breach(self) -> None:
+        from gzkit.commands import validate_cmd
+
+        self.assertIn(
+            "scenario_reachability",
+            validate_cmd._POLICY_BREACH_ERROR_TYPES,
+            msg=(
+                "scenario_reachability must route through the exit-3 "
+                "policy-breach path per REQ-04-04"
+            ),
+        )
+
+    @covers("REQ-0.0.33-04-04")
+    def test_cli_dispatch_raises_systemexit_3_on_scenario_reachability_breach(self) -> None:
+        import contextlib
+
+        from gzkit.commands import validate_cmd
+        from gzkit.core.validation_rules import ValidationError
+
+        breach = ValidationError(
+            type="scenario_reachability",
+            artifact="data/loading_scenarios.json",
+            message="registry schema malformed: missing 'scenarios' key",
+        )
+        with (
+            contextlib.redirect_stdout(io.StringIO()),
+            self.assertRaises(SystemExit) as ctx,
+        ):
+            validate_cmd._print_validation_result(
+                errors=[breach],
+                scopes=["scenario_reachability"],
+                frontmatter_only=False,
+            )
+        self.assertEqual(ctx.exception.code, 3)
+
+
 if __name__ == "__main__":
     unittest.main()

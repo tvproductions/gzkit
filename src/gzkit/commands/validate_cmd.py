@@ -1066,6 +1066,8 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "distribution",
         "bullet_retention",
         "surface_weight",
+        "pointer_anchors",
+        "scenario_reachability",
     }
 )
 

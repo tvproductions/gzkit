@@ -251,6 +251,14 @@ Quality evidence — receipts: `arb-ruff-baa86fe3f8d648c1b6995b6cabc510d0` (lint
 - Attestation status: Gate-5 attested by operator
 - Defects noted: 6 pre-existing pointer drift findings detected by the validator — to be filed as a GHI; remediation deferred per brief Denied Paths
 
+## Demo
+
+```bash
+uv run gz validate --pointer-anchors
+```
+
+Runs the pointer-integrity audit: every `> See [...](path#anchor)` blockquote in the per-turn surface corpus must resolve to a real anchor in the target file, and the target file must carry a matching `<!-- lifted-from: -->` back-pointer. Exits 0 on full graph integrity; exits 3 with named unresolved anchors or missing back-pointers when the pedagogy-canon edge has broken.
+
 ## Tracked Defects
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.

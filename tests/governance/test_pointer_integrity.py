@@ -267,5 +267,50 @@ class TestPackageReExport(unittest.TestCase):
             self.assertIsInstance(result, list)
 
 
+class TestPointerAnchorsRoutesToExit3(unittest.TestCase):
+    """REQ-0.0.33-03-02 / REQ-0.0.33-03-03: pointer_anchors breach exits 3, not 1.
+
+    The REQs explicitly prescribe exit 3 on unresolved-anchor and
+    missing-back-pointer findings. Without ``pointer_anchors`` registered in
+    ``_POLICY_BREACH_ERROR_TYPES``, the CLI dispatch routes the error through
+    ``_print_validation_result``'s non-policy branch and exits 1 — silently
+    narrowing the REQ contract.
+    """
+
+    @covers("REQ-0.0.33-03-02")
+    def test_error_type_registered_as_policy_breach(self) -> None:
+        from gzkit.commands import validate_cmd
+
+        self.assertIn(
+            "pointer_anchors",
+            validate_cmd._POLICY_BREACH_ERROR_TYPES,
+            msg="pointer_anchors must route through the exit-3 policy-breach path per REQ-03-02/03",
+        )
+
+    @covers("REQ-0.0.33-03-03")
+    def test_cli_dispatch_raises_systemexit_3_on_pointer_anchors_breach(self) -> None:
+        import contextlib
+        import io
+
+        from gzkit.commands import validate_cmd
+        from gzkit.core.validation_rules import ValidationError
+
+        breach = ValidationError(
+            type="pointer_anchors",
+            artifact="AGENTS.md",
+            message="unresolved pointer: docs/nope.md#missing",
+        )
+        with (
+            contextlib.redirect_stdout(io.StringIO()),
+            self.assertRaises(SystemExit) as ctx,
+        ):
+            validate_cmd._print_validation_result(
+                errors=[breach],
+                scopes=["pointer_anchors"],
+                frontmatter_only=False,
+            )
+        self.assertEqual(ctx.exception.code, 3)
+
+
 if __name__ == "__main__":
     unittest.main()

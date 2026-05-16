@@ -1,6 +1,6 @@
 # Agent Control Surface Rendering Substrate — Doctrine
 
-> **North star.** Agent = Model + Harness + Intent. Harness = vendor harness (Claude Code, Codex, Copilot) + local extension (gzkit is the local extension layer). The **Agent Control Surface** is the per-turn corpus the harness loads on the model's behalf — `AGENTS.md`, `CLAUDE.md`, `.claude/rules/**`, skill bodies, the chore registry, persona files, handoffs. **gzkit is control surfaces and tools designed so that operator intent makes the model's intrinsic weaknesses and negative tendencies inert.**
+> **North star.** Agent = Model + Harness + Intent. Harness = vendor harness (Claude Code, Codex, Copilot) + local extension. **gzkit is the governance meta-harness layer:** it does not replace the vendor model/tool loop; it composes, validates, and audits the control surfaces and deterministic tools that wrap that loop. The **Agent Control Surface** is the per-turn corpus the harness loads on the model's behalf — `AGENTS.md`, `CLAUDE.md`, `.claude/rules/**`, skill bodies, the chore registry, persona files, handoffs. **gzkit is control surfaces and tools designed so that operator intent makes the model's intrinsic weaknesses and negative tendencies inert.**
 >
 > This doctrine governs the substrate gzkit composes those control surfaces from.
 
@@ -9,6 +9,26 @@
 > **Every file in the per-turn agent control surface is rendered from a canonical Pydantic content model via a Jinja2 template, deterministically, byte-stably, vendor-aware. Nothing in the per-turn surface is hand-authored at the rendered location. Vendor mirrors (`.claude/`, `.codex/`, `.github/`) are derived outputs. The fidelity validators (ADR-0.0.33) check the rendered output against the canonical models. The substrate is the harness's own integrity layer.**
 
 This is gzkit's headless-CMS doctrine. It is the long-forecast generalization of ADR-0.0.19's `gz justify` Pydantic+Jinja2 rendering pattern, applied to the entire agent control surface. It supersedes ADR-0.16.0's aspirational naming with an authored substrate doctrine and a deliberate delivery sequence.
+
+## Prompt assembly and cache stability
+
+Prompt assembly order is part of the substrate contract. gzkit does not control
+vendor prompt-cache internals, but it does control the bytes it renders and the
+order in which stable and volatile material appear.
+
+The rendering pipeline must preserve this order:
+
+1. Stable gzkit covenant and vendor-independent policy prefix.
+2. Stable project control surfaces such as `AGENTS.md`, rules, personas, and
+   skills.
+3. Path-scoped or task-scoped dynamic context.
+4. Volatile runtime state, preferably as pointers to durable artifacts rather
+   than pasted transcript text.
+
+This ordering keeps the highest-value static prefix byte-stable for vendor
+prompt caching, makes drift diffable, and prevents volatile run facts from
+invalidating the invariant surface. Any renderer or hook that injects mutable
+session content ahead of the stable prefix creates a substrate defect.
 
 ## Why this doctrine is foundation-tier
 
@@ -165,6 +185,7 @@ This is what enables existing hand-authored surfaces to migrate without loss: pa
 |---|---|---|
 | Canonical content models | Pydantic schema authorship; validation; lifecycle | — |
 | Rendering | Jinja2 template authorship; vendor-aware output paths; deterministic byte-stable rendering | — |
+| Prompt assembly order | Stable-prefix, dynamic-context, and volatile-state ordering | Vendor prompt-cache implementation and cache-hit policy |
 | Vendor mirrors | Sync to vendor-mirror locations; mirror-fidelity validation | Vendor harnesses honor the mirror format; if a vendor changes its loading semantics, gzkit's templates adapt to the new format |
 | Loading per turn | — | Vendor harness decides what to load (path-scoped frontmatter for Claude Code, equivalent for Codex/Copilot) |
 | Within-turn dynamics | — | Context window is append-only at runtime; no DOM-style manipulation; "forgetting" only exists between turns |
@@ -191,6 +212,7 @@ In every era, the agent reads a static document. What changes is *how the docume
 - **Asking the operator to read raw Pydantic-model JSON.** Per OPERATOR ECONOMY: rendered markdown is the review surface; the canonical model is agent-input only.
 - **Bypassing round-trip fidelity.** A content type that cannot parse-then-render-then-parse to identity is not substrate-compliant.
 - **Skipping the migration layer.** Existing hand-authored surfaces migrate via `gz content import`, not via "we'll re-author from scratch."
+- **Injecting volatile context before the stable prefix.** It weakens prompt-cache behavior and hides drift in the bytes that should be invariant.
 - **Treating ADR-0.16.0's deliverable as the substrate.** ADR-0.16.0 delivered a partial prior — Pydantic content-type registry, vendor-aware sync (file-copy), lifecycle state machine. It did NOT deliver Jinja2-templated rendering for the full surface. The substrate doctrine generalizes ADR-0.16.0's scope to deliver what its prose promised.
 - **Letting "lighter ceremony" become a tradeoff axis.** The substrate adds composition steps the operator may experience as friction. That friction is the product. Per the anti-vibing mantra.
 

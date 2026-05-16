@@ -1,0 +1,66 @@
+{
+  "adr_id": "ADR-0.0.33-agent-control-surface-fidelity",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-05-16T01:37:45Z",
+  "updated_at": "2026-05-16T02:28:09Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-05-16T01:37:45Z",
+      "acknowledged_at": "2026-05-16T01:38:53Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-05-16T01:38:53Z",
+      "acknowledged_at": "2026-05-16T01:38:58Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-05-16T01:38:58Z",
+      "acknowledged_at": "2026-05-16T01:39:03Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-05-16T01:39:03Z",
+      "acknowledged_at": "2026-05-16T01:40:01Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-05-16T01:40:01Z",
+      "acknowledged_at": "2026-05-16T02:03:51Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-05-16T02:03:51Z",
+      "acknowledged_at": "2026-05-16T02:24:40Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-05-16T02:24:40Z",
+      "acknowledged_at": "2026-05-16T02:25:52Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-05-16T02:25:52Z",
+      "acknowledged_at": "2026-05-16T02:28:09Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-05-16T02:28:09Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz validate --bullet-retention",
+    "uv run gz validate --surface-weight",
+    "uv run gz validate --surface-fidelity",
+    "uv run gz validate --scenario-reachability",
+    "uv run gz validate --pointer-anchors"
+  ],
+  "walkthrough_index": 4,
+  "attestation": "Completed — attest completed — 5/5 OBPIs attested_completed; 27/27 REQs covered by 71 REQ-derived tests (spec-reviewer CLEAN, independent persona dispatch); quality-reviewer verdict COHERENT (composite is thin orchestrator, CLI dispatch uniform, Era-1/Era-2 contract honored); ARB receipts arb-ruff-49f51bb527354bc796e0f4baf769c6fa, arb-step-typecheck-3be8b030fa1c4b4d9029be8ac78c083d, arb-step-unittest-05c79d3dce8942148542f1c7a2da4062 (5087 tests), arb-step-mkdocs-9e42f8eac90c4506b2a0a535e6e48c9d all exit 0; in-flight fixes applied for Blocker A (fold-test BUCKET_3_ROOTS self-perpetuation) and Blocker B / GHI #473 (pointer_anchors + scenario_reachability exit-code drift) with 4 new GREEN tests pinning REQ-vs-runtime contract",
+  "completed_at": "2026-05-16T02:28:09Z",
+  "attempt": 2,
+  "paused_at": "2026-05-16T02:14:37Z"
+}

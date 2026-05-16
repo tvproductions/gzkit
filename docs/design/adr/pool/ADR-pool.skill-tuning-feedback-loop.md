@@ -5,6 +5,9 @@ parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
 complements: ADR-pool.skill-feedback-loop
+consumes:
+  - ADR-pool.harness-trace-bundles
+  - ADR-pool.harness-lab
 inspired_by: arXiv:2603.28052v1 Meta-Harness
 ---
 
@@ -85,6 +88,26 @@ Those chores already encode the correct local vocabulary: descriptions are
 routing signals, bodies encode domain reasoning, and output contracts are
 downstream parse surfaces.
 
+## Amendment 2026-05-16: Skill tuning as harness-lab narrow mode
+
+`ADR-pool.harness-lab` generalizes the Meta-Harness lesson from skill text to
+the whole gzkit harness. This ADR remains valuable as the narrower skill-only
+mode.
+
+When both surfaces exist:
+
+- `skill_tuning` episodes should use `ADR-pool.harness-trace-bundles` for
+  `trace_refs`.
+- `gz harness lab run --module skill_tuning` may execute the same hard baskets
+  across baseline and candidate skill versions.
+- Skill tuning reports stay skill-authorship focused: trigger alignment, output
+  contract quality, forbidden-action boundaries, and promotion readiness.
+- Harness lab reports may aggregate skill-tuning episodes with workflow, hook,
+  reviewer, and sidecar ablations.
+
+This keeps the first implementation small while preventing a second,
+incompatible experiment loop from forming.
+
 ## Alternatives Considered
 
 1. Replace `ADR-pool.skill-feedback-loop` with a broader tuning ADR - rejected.
@@ -106,6 +129,10 @@ downstream parse surfaces.
 
 - Complements: `ADR-pool.skill-feedback-loop` -- qualitative feedback events
   become one source of tuning cases.
+- Consumes: `ADR-pool.harness-trace-bundles` -- raw traces become the stable
+  `trace_refs` target.
+- Feeds / may be executed by: `ADR-pool.harness-lab` -- skill tuning is one
+  module-specific experiment mode.
 - Consumes: `.gzkit/insights/agent-insights.jsonl` -- recurring wrong approach,
   misunderstood request, premature implementation, and skill friction patterns
   become hard basket inputs.

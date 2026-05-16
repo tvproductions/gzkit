@@ -5,6 +5,9 @@ parent: PRD-GZKIT-1.0.0
 lane: lite
 enabler: null
 inspired_by: nousresearch/hermes-agent skill_manager_tool.py
+complements:
+  - ADR-pool.skill-tuning-feedback-loop
+  - ADR-pool.harness-trace-bundles
 ---
 
 # ADR-pool.skill-feedback-loop: Skill Feedback Ledger Events for Human-Reviewed Improvement
@@ -33,7 +36,7 @@ queue that closes the learning loop without autonomous self-modification.
 
 ## Target Scope
 
-- Define a `skill_feedback` ledger event schema: `skill_id`, `session_id`, `outcome` (success/suboptimal/failure), `observation` (concrete description of what went wrong), `suggestion` (proposed improvement).
+- Define a `skill_feedback` ledger event schema: `skill_id`, `session_id`, `outcome` (success/suboptimal/failure), `observation` (concrete description of what went wrong), `suggestion` (proposed improvement), and optional trace references when available.
 - Add `gz skill feedback <skill-id> --outcome <outcome> --observation "..."` CLI surface for emitting feedback events.
 - Add `gz skill feedback-report [--skill <id>]` to surface accumulated feedback as a human-reviewable queue.
 - Define the review workflow: human reads feedback, edits the canonical skill in `.gzkit/skills/`, bumps `skill-version`, runs sync.
@@ -59,6 +62,27 @@ evidence. gzkit's adaptation must make the learning step witnessed:
 This keeps the compounding loop under ledger discipline. Agents may propose
 learning, but only witnessed, reviewed learning becomes canon.
 
+## Amendment 2026-05-16: Trace-backed friction capture
+
+The Meta-Harness evaluation sharpens the evidence requirement for skill
+feedback: the feedback event should preserve the moment of friction without
+requiring the operator or future agent to trust a prose summary.
+
+When `ADR-pool.harness-trace-bundles` exists, `skill_feedback` events should
+optionally cite:
+
+- `trace_bundle_ref`: path to the bundle manifest.
+- `trace_event_ids`: the concrete prompt/tool/command/failure events that show
+  the friction.
+- `skill_version`: the exact skill version that produced the behavior.
+- `routing_context`: why the skill triggered or why another skill should have
+  triggered.
+
+The qualitative observation remains human-readable, but the durable evidence
+points to raw trace facts. Feedback without a bundle is still valid for early
+adoption; once a trace-producing surface exists, promotion should decide which
+feedback categories require trace citations.
+
 ---
 
 ## Non-Goals
@@ -75,6 +99,8 @@ learning, but only witnessed, reviewed learning becomes canon.
 - **Blocks on**: None
 - **Blocked by**: None
 - **Related**: ADR-pool.skill-behavioral-hardening (enriches skills with defense patterns; feedback loop identifies which skills need hardening), ADR-pool.session-productivity-metrics (feedback is a dimension of session productivity)
+- **Consumes**: ADR-pool.harness-trace-bundles (optional trace evidence for friction capture)
+- **Feeds**: ADR-pool.skill-tuning-feedback-loop (qualitative feedback becomes hard-basket input)
 
 ---
 
@@ -86,6 +112,8 @@ This pool ADR can be promoted when all are true:
 2. Ledger event schema for `skill_feedback` is accepted.
 3. Review workflow (feedback queue → human edit → version bump → sync) is agreed upon.
 4. Human review dispositions and receipt-citation requirements are accepted.
+5. Trace citation policy is accepted for feedback generated from
+   trace-producing surfaces.
 
 ---
 

@@ -276,6 +276,14 @@ OBPI-specific TDD suite: 8/8 tests pass across 5 REQ classes (Era-1 absence, Era
 - Attestation status: operator-verbatim-conversational ("attest completed")
 - Defects noted: none
 
+## Demo
+
+```bash
+uv run gz validate --scenario-reachability
+```
+
+Runs the scenario-reachability audit. Era-1 behavior: when the loading-scenario registry (ADR-0.0.34) is absent, the validator skips with a deterministic message and exits 0. Era-2 behavior (post-registry): every authored bullet must be reachable from at least one declared loading scenario; orphan bullets exit 3 with their source location named.
+
 ## Tracked Defects
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
