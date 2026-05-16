@@ -3,7 +3,7 @@ id: OBPI-0.0.34-03-reverse-parse-migration
 parent: ADR-0.0.34-agent-control-surface-rendering-substrate
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.34-03-reverse-parse-migration: Reverse Parse Migration
@@ -15,13 +15,19 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
 - **Checklist Item:** #3 - "OBPI-0.0.34-03: Reverse-parse migration tooling — `gz content import <file> --as <type>` reads existing hand-authored markdown back into canonical Pydantic models; round-trip fidelity contract enforced"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Reverse-parse migration tooling — `gz content import <file> --as <type>` reads existing hand-authored markdown back into canonical Pydantic models; round-trip fidelity contract enforced.
+Land reverse-parse migration tooling for the agent-control-surface rendering
+substrate. The `gz content import <file> --as <type>` CLI verb reads canonical
+markdown back into a Pydantic model from `gzkit.content.models.CONTENT_MODELS`
+and emits JSON to stdout; `--write <path>` persists a re-rendered canonical
+form. Round-trip fidelity (`parse(render(model)) == model` and
+`render(parse(render(model))) == render(model)`) is enforced by per-content-type
+tests under `tests/content/test_round_trip_*.py`. REQ-03's lossless-migration
+contract is interpreted as byte-stable idempotency after one normalization pass
+(documented in the parser's docstring whitespace-normalization enumeration).
 
 ## Lane
 
@@ -94,7 +100,7 @@ Reverse-parse migration tooling — `gz content import <file> --as <type>` reads
 - [ ] **Prerequisite OBPI:** OBPI-0.0.34-01 (content model registry) — parser needs target model classes.
 - [ ] **Prerequisite OBPI:** OBPI-0.0.34-02 (rendering pipeline) — round-trip contract requires `render()` for fidelity proof.
 - [ ] **Soft co-dependency:** OBPI-0.0.34-07 (migration layer) — parser invokes migrations when source `schema_version` differs from current; pass-through if OBPI-07 hasn't landed.
-- [ ] Downstream consumer: OBPI-04 (`gz content edit` re-parses on save).
+- [ ] Downstream consumer: OBPI-04 (`gz-content-edit` re-parses on save — future verb, not yet registered).
 
 **Prerequisites (check existence, STOP if missing):**
 
@@ -234,15 +240,28 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+uv run gz arb step --name unittest -- uv run -m unittest tests.content.test_round_trip_agent_contract tests.content.test_round_trip_rule tests.content.test_round_trip_skill tests.content.test_round_trip_chore tests.content.test_round_trip_persona tests.content.test_round_trip_handoff tests.content.test_round_trip_scenario tests.content.test_round_trip_bullet tests.commands.test_content_import -v
+# Result: Ran 32 tests in 0.036s — OK
+# Receipt: arb-step-unittest-929cbb4fa06b4d9e8725e3bb2bc1454d
+
+uv run gz arb ruff
+# Receipt: arb-ruff-c64ddc8b842643dd88b1746ea1b14677 (exit_status=0)
+
+uv run gz covers OBPI-0.0.34-03-reverse-parse-migration --json
+# All 5 REQs COVERED; uncovered_reqs: 0
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Parser: src/gzkit/content/parse/__init__.py + markdown_parser.py — 8 per-type parsers (_parse_agent_contract, _parse_rule, _parse_skill, _parse_chore, _parse_persona, _parse_handoff, _parse_scenario, _parse_bullet) dispatched from parse(text, as_type, *, file_path=None) -> BaseContentModel
+- CLI: src/gzkit/commands/content/__init__.py (register_content_parsers) + import_.py (content_import_cmd handler) wired into src/gzkit/cli/main.py
+- Tests created: 8 round-trip files under tests/content/test_round_trip_*.py (26 tests, all @covers REQ-0.0.34-03-02) + tests/commands/test_content_import.py (6 CLI smoke tests covering REQ-01, REQ-03, REQ-04, REQ-05)
+- Pre-existing lint fix: tests/content/test_byte_stability.py:127 E501 (docstring shortened, direct fix per defect-routing thresholds)
+- Behave waiver: data/behave_coverage_waivers.json — adr-0.0.34-03-reverse-parse-bdd-deferred-to-cli-smoke-tests rationale
+- All 32 OBPI-scoped tests pass; ruff clean; ty clean for new modules
+- Date completed: 2026-05-16
+- Attestation: attest completed — OBPI-0.0.34-03 reverse-parse migration lands gz content import with 8 per-type parsers and round-trip + idempotency contract. 32/32 OBPI-scoped tests pass (receipt arb-step-unittest-929cbb4fa06b4d9e8725e3bb2bc1454d), ARB ruff clean (receipt arb-ruff-c64ddc8b842643dd88b1746ea1b14677), all 5 REQs covered per gz covers parity gate.
 
 ## Tracked Defects
 
@@ -253,14 +272,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
+- Attestor: `g0`
 - Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Date: 2026-05-16
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-16
 
 **Evidence Hash:** -
