@@ -2,7 +2,7 @@
 
 **GovZero Kit: A Development Covenant for Human-AI Collaboration**
 
-[![Version](https://img.shields.io/badge/version-0.26.3-blue.svg)](RELEASE_NOTES.md)
+[![Version](https://img.shields.io/badge/version-0.26.4-blue.svg)](RELEASE_NOTES.md)
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-3776ab.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Docs CI](https://img.shields.io/github/actions/workflow/status/tvproductions/gzkit/docs.yml?branch=main&logo=github&label=Docs%20CI)](https://github.com/tvproductions/gzkit/actions/workflows/docs.yml)
@@ -15,7 +15,7 @@
 [Release Notes](RELEASE_NOTES.md)
 [Roadmap](docs/design/roadmap/ROADMAP-GZKIT.md)
 
-gzkit is cognitive infrastructure for extended human-AI collaboration—a protocol that preserves human intent across agent context boundaries, gives agents constraints to reason against, creates verification loops both parties trust, and reserves final judgment for humans.
+gzkit is cognitive infrastructure for extended human-AI collaboration-a protocol that preserves human intent across agent context boundaries, gives agents constraints to reason against, creates verification loops both parties trust, and reserves final judgment for humans.
 
 ## Why gzkit?
 
@@ -68,13 +68,13 @@ YAML-style automation DSL.
 
 ## The Covenant
 
-gzkit implements a **development covenant**—a binding agreement between human and agent:
+gzkit implements a **development covenant**-a binding agreement between human and agent:
 
 1. **Human defines intent** through canon, ADRs, and acceptance criteria
 2. **Agent operates within constraints** and flags potential violations
 3. **Verification is mutual** through tests, checks, and evidence
 4. **Human attests completion** after observing artifacts
-5. **Artifacts survive sessions** preserving intent across context boundaries
+5. **Artifacts survive sessions** preserving intent across context boundaries. Gzkit operates as a constitutional framework for human‑agent collaboration: humans serve as the **Legislature** (defining intent, constraints, and final judgment), agents act as the **Executive** (executing within bounds and generating evidence), and tests/BDD function as the **Judiciary** (verifying compliance and enforcing the constitution).
 
 This is not "AI governance" in the compliance sense. It's a protocol for productive partnership.
 
@@ -82,9 +82,9 @@ This is not "AI governance" in the compliance sense. It's a protocol for product
 
 gzkit evolved from:
 
-- **[GitHub spec-kit](https://github.com/github/spec-kit)** — the `constitute → specify → plan → implement → analyze` phase model
-- **GovZero** — governance framework developed in AirlineOps through ~100 work items of iterative learning
-- **Claude Code conventions** — CLAUDE.md patterns for agent-native constraint specification
+- **[GitHub spec-kit](https://github.com/github/spec-kit)** - the `constitute → specify → plan → implement → analyze` phase model
+- **GovZero** - governance framework developed in AirlineOps through ~100 work items of iterative learning
+- **Claude Code conventions** - CLAUDE.md patterns for agent-native constraint specification
 
 See [docs/lineage.md](docs/lineage.md) for full heritage.
 
@@ -176,10 +176,10 @@ gzkit uses `.gzkit.json` for project configuration:
 
 ## Documentation
 
-- [Charter](docs/user/reference/charter.md) — The covenant itself
-- [Lineage](docs/user/reference/lineage.md) — Heritage from spec-kit and GovZero
-- [Concepts](docs/user/concepts/) — The three concerns explained
-- [Genesis](docs/user/reference/genesis.md) — Origin story and founding conversation
+- [Charter](docs/user/reference/charter.md) - The covenant itself
+- [Lineage](docs/user/reference/lineage.md) - Heritage from spec-kit and GovZero
+- [Concepts](docs/user/concepts/) - The three concerns explained
+- [Genesis](docs/user/reference/genesis.md) - Origin story and founding conversation
 
 ## Philosophy
 

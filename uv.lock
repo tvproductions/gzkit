@@ -576,7 +576,7 @@ wheels = [
 
 [[package]]
 name = "py-gzkit"
-version = "0.26.3"
+version = "0.26.4"
 source = { editable = "." }
 dependencies = [
     { name = "cohesion" },
