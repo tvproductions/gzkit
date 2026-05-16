@@ -1,0 +1,8 @@
+                   [--distribution] [--bullet-retention] [--surface-weight]
+                   [--pointer-anchors] [--scenario-reachability]
+                   [--surface-fidelity] [--regenerate]
+  --bullet-retention    Bullet-retention audit: scorecard
+  --surface-weight      Surface-weight audit: direction-binding floor +
+  --pointer-anchors     Pointer-integrity audit: > See [...] anchors
+  --scenario-reachability
+  --surface-fidelity    Composite: run all four surface-fidelity invariants

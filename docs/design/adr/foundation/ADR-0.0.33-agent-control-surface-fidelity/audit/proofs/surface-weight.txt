@@ -1,0 +1,4 @@
+Validated: surface_weight
+
+✓ All validations passed (1 scopes).
+EXIT=0

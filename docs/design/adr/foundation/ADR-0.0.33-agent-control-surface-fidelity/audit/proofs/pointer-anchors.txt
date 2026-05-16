@@ -1,0 +1,4 @@
+Validated: pointer_anchors
+
+✓ All validations passed (1 scopes).
+EXIT=0
