@@ -13,12 +13,12 @@ from typing import Any
 from gzkit.cli.helpers import build_epilog
 
 
-def _content(name: str) -> Any:
-    """Resolve a content command handler lazily."""
+def _content(module_name: str, attr_name: str) -> Any:
+    """Resolve a content command handler lazily from gzkit.commands.content.<module_name>."""
     from importlib import import_module  # noqa: PLC0415
 
-    module = import_module("gzkit.commands.content.import_")
-    return getattr(module, name)
+    module = import_module(f"gzkit.commands.content.{module_name}")
+    return getattr(module, attr_name)
 
 
 def register_content_parsers(commands: argparse._SubParsersAction) -> None:
@@ -34,6 +34,7 @@ def register_content_parsers(commands: argparse._SubParsersAction) -> None:
             [
                 "gz content import AGENTS.md --as AgentContract",
                 "gz content import .gzkit/rules/tests.md --as Rule --write /tmp/out.md",
+                "gz content list",
             ]
         ),
     )
@@ -41,6 +42,10 @@ def register_content_parsers(commands: argparse._SubParsersAction) -> None:
     content_commands.required = True
 
     _register_import(content_commands)
+    _register_list(content_commands)
+    _register_show(content_commands)
+    _register_render(content_commands)
+    _register_edit(content_commands)
 
 
 def _register_import(content_commands: argparse._SubParsersAction) -> None:
@@ -74,9 +79,157 @@ def _register_import(content_commands: argparse._SubParsersAction) -> None:
         help="Write re-rendered canonical form to this path.",
     )
     p.set_defaults(
-        func=lambda a: _content("content_import_cmd")(
+        func=lambda a: _content("import_", "content_import_cmd")(
             file=a.file,
             as_type=a.as_type,
             write_path=a.write_path,
+        )
+    )
+
+
+def _register_list(content_commands: argparse._SubParsersAction) -> None:
+    p = content_commands.add_parser(
+        "list",
+        help="List registered content model types",
+        description=(
+            "List the registered content model types from the CONTENT_MODELS registry. "
+            "Default output is a human-readable table; use --json for machine consumption."
+        ),
+        epilog=build_epilog(
+            [
+                "gz content list",
+                "gz content list --type Rule",
+                "gz content list --json",
+            ]
+        ),
+    )
+    p.add_argument(
+        "--type",
+        dest="type_filter",
+        default=None,
+        help="Filter to a specific content type (e.g. Rule, Skill).",
+    )
+    p.add_argument(
+        "--json",
+        dest="as_json",
+        action="store_true",
+        help="Emit JSON to stdout instead of a human-readable table.",
+    )
+    p.set_defaults(
+        func=lambda a: _content("list", "content_list_cmd")(
+            type_filter=a.type_filter,
+            as_json=a.as_json,
+        )
+    )
+
+
+def _register_show(content_commands: argparse._SubParsersAction) -> None:
+    p = content_commands.add_parser(
+        "show",
+        help="Show a prose summary of a content model file",
+        description=(
+            "Parse a canonical content file and display a human-readable prose summary. "
+            "Use --json for machine consumption."
+        ),
+        epilog=build_epilog(
+            [
+                "gz content show AGENTS.md --as AgentContract",
+                "gz content show .gzkit/rules/tests.md --as Rule --json",
+            ]
+        ),
+    )
+    p.add_argument("file", help="Path to the markdown file to inspect.")
+    p.add_argument(
+        "--as",
+        dest="as_type",
+        required=True,
+        help="Content type name (e.g. AgentContract, Rule, Skill).",
+    )
+    p.add_argument(
+        "--json",
+        dest="as_json",
+        action="store_true",
+        help="Emit JSON to stdout instead of prose summary.",
+    )
+    p.set_defaults(
+        func=lambda a: _content("show", "content_show_cmd")(
+            file=a.file,
+            as_type=a.as_type,
+            as_json=a.as_json,
+        )
+    )
+
+
+def _register_render(content_commands: argparse._SubParsersAction) -> None:
+    p = content_commands.add_parser(
+        "render",
+        help="Render a content model file to canonical markdown",
+        description=(
+            "Parse a canonical content file and emit the rendered markdown to stdout. "
+            "Output is byte-identical to gzkit.content.render.render(model, vendor)."
+        ),
+        epilog=build_epilog(
+            [
+                "gz content render AGENTS.md --as AgentContract",
+                "gz content render .gzkit/rules/tests.md --as Rule --vendor claude",
+            ]
+        ),
+    )
+    p.add_argument("file", help="Path to the markdown file to render.")
+    p.add_argument(
+        "--as",
+        dest="as_type",
+        required=True,
+        help="Content type name (e.g. AgentContract, Rule, Skill).",
+    )
+    p.add_argument(
+        "--vendor",
+        dest="vendor",
+        default="claude",
+        help="Target vendor template (default: claude).",
+    )
+    p.set_defaults(
+        func=lambda a: _content("render", "content_render_cmd")(
+            file=a.file,
+            as_type=a.as_type,
+            vendor=a.vendor,
+        )
+    )
+
+
+def _register_edit(content_commands: argparse._SubParsersAction) -> None:
+    p = content_commands.add_parser(
+        "edit",
+        help="Edit a content model file via $EDITOR with re-validation",
+        description=(
+            "Open the content model file in $EDITOR (or $VISUAL). On editor save, "
+            "re-parse and re-validate the edited content. Invalid input aborts with "
+            "the validator diagnostic; the original file is never partially written."
+        ),
+        epilog=build_epilog(
+            [
+                "gz content edit AGENTS.md --as AgentContract",
+                "gz content edit .gzkit/rules/tests.md --as Rule --vendor claude",
+            ]
+        ),
+    )
+    p.add_argument("file", help="Path to the markdown file to edit.")
+    p.add_argument(
+        "--as",
+        dest="as_type",
+        required=True,
+        help="Content type name (e.g. AgentContract, Rule, Skill).",
+    )
+    p.add_argument(
+        "--vendor",
+        dest="vendor",
+        default="claude",
+        help="Target vendor template for re-rendering on save (default: claude).",
+    )
+    p.set_defaults(
+        func=lambda a: _content("edit", "content_edit_cmd")(
+            file=a.file,
+            as_type=a.as_type,
+            vendor=a.vendor,
         )
     )

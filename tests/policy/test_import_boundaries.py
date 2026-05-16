@@ -75,6 +75,11 @@ COMMAND_ENV_EXCEPTIONS: dict[str, frozenset[str]] = {
     "sync.py": frozenset({"SKIP"}),
     # obpi_lock_cmd.py reads agent identity env vars for lock ownership.
     "obpi_lock_cmd.py": frozenset({"CLAUDE_CODE", "CODEX_SANDBOX", "CLAUDE_SESSION_ID"}),
+    # gz content edit (OBPI-0.0.34-04) resolves the operator's preferred
+    # editor via $VISUAL / $EDITOR. This is the standard POSIX editor-
+    # invocation contract; routing it through core/ports would be a
+    # premature abstraction over a stable shell convention.
+    "edit.py": frozenset({"EDITOR", "VISUAL"}),
 }
 
 

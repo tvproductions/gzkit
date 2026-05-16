@@ -29,6 +29,8 @@ ENV_VAR_ALLOWLIST: frozenset[str] = frozenset(
         "CODEX_SANDBOX",  # Agent identity resolution (obpi lock)
         "COPILOT_SESSION_ID",  # Agent session identification (hooks)
         "GZKIT_CLAUDE_HOME",  # Plan-discovery test isolation (#128)
+        "EDITOR",  # Operator editor invocation (gz content edit, OBPI-0.0.34-04)
+        "VISUAL",  # Operator editor invocation (gz content edit, OBPI-0.0.34-04)
     }
 )
 
