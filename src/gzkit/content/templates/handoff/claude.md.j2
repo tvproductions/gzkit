@@ -1,0 +1,14 @@
+# Handoff: {{ session_id }}
+
+{{ state_summary }}
+{% if open_items %}
+## Open Items
+{% for item in open_items %}
+{{ '  ' * item.indent }}- {{ item.text }}
+{% endfor %}
+{% endif %}
+{% if resume_point %}
+## Resume Point
+
+{{ resume_point }}
+{% endif %}

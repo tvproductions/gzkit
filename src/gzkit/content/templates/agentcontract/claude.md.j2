@@ -1,0 +1,15 @@
+# {{ name }}
+
+{{ purpose }}
+{% if tech_stack %}
+## Tech Stack
+{% for item in tech_stack %}
+- {{ item }}
+{% endfor %}
+{% endif %}
+{% if rules %}
+## Rules
+{% for rule in rules %}
+{{ '  ' * rule.indent }}- {{ rule.text }}
+{% endfor %}
+{% endif %}

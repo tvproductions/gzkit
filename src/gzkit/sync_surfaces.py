@@ -6,13 +6,19 @@ manifest generation, and the main ``sync_all`` orchestration entry point.
 Extracted from sync.py to keep modules under 600 lines.
 """
 
+from __future__ import annotations
+
 import json
 from collections.abc import Callable
 from datetime import date
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from gzkit.content.models.base import BaseContentModel
 
 from gzkit.config import GzkitConfig
+from gzkit.content.render import render as render_content_model
 from gzkit.hooks.claude import generate_claude_settings, merge_settings, setup_claude_hooks
 from gzkit.hooks.copilot import generate_copilotignore, setup_copilot_hooks
 from gzkit.ledger import Ledger
@@ -534,6 +540,27 @@ def _pkg_surface_exists(project_root: Path, surface: str) -> bool:
     there would silently create a foreign package namespace.
     """
     return (project_root / "src" / "gzkit" / surface / "__init__.py").exists()
+
+
+def render_content_surface(
+    model: BaseContentModel,
+    dest_path: Path,
+    vendor: str,
+    project_root: Path,
+    updated: list[str],
+) -> None:
+    """Write rendered bytes for *model* to *dest_path* using the vendor template.
+
+    Replaces _copy_if_changed for per-turn surface files whose source is a
+    Pydantic content model rather than an on-disk canonical file (ADR-0.0.34 §2).
+    Idempotent: bytes-identical destinations are left untouched.
+    """
+    rendered = render_content_model(model, vendor)
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+    if dest_path.exists() and dest_path.read_bytes() == rendered:
+        return
+    dest_path.write_bytes(rendered)
+    updated.append(dest_path.relative_to(project_root).as_posix())
 
 
 def _copy_if_changed(

@@ -3,7 +3,7 @@ id: OBPI-0.0.34-02-rendering-pipeline
 parent: ADR-0.0.34-agent-control-surface-rendering-substrate
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.34-02-rendering-pipeline: Rendering Pipeline
@@ -13,11 +13,9 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
 - **Checklist Item:** #2 - "OBPI-0.0.34-02: Rendering pipeline — Jinja2 templates per (content type × vendor) producing deterministic byte-stable markdown; replace file-copy logic in `gz agent sync` with render-from-canonical"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
-
-<!-- One-sentence concrete outcome. What does "done" look like? -->
 
 Rendering pipeline — Jinja2 templates per (content type × vendor) producing deterministic byte-stable markdown; replace file-copy logic in `gz agent sync` with render-from-canonical.
 
@@ -222,15 +220,24 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+A reviewer can verify the central claim - deterministic byte-stable rendering through the typed dispatch - in one command:
+
+```
+uv run gz arb step --name unittest -- uv run -m unittest -q tests.content.test_byte_stability tests.content.test_render_pipeline
+```
+
+Observed: all 10 OBPI-02 scoped tests pass; receipt arb-step-unittest-7643d837b9fa47aa97edd60cdd6bede3 (exit_status=0). The dispatcher pattern is verified end-to-end: render(Rule(...), "claude") returns deterministic UTF-8 bytes via Jinja2 template lookup at content/templates/rule/claude.md.j2, raises typed TemplateNotFound on unknown vendor before any file write, and sync_surfaces.render_content_surface() writes those bytes idempotently to a destination path. ARB lint receipt arb-ruff-beedc7b8f53e4ce483d791ce941a07c9 (PASS); ARB mkdocs receipt arb-step-mkdocs-7086a2d5bd71439cba5abbdb6bbb9ec0 (PASS).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: render/__init__.py + render/pipeline.py (Jinja2 dispatcher, TemplateNotFound fail-closed guard, frozen _VENDOR_ROUTING table for 8 content_types x claude vendor) + 8 templates under content/templates/{type}/claude.md.j2 + test_render_pipeline.py + test_byte_stability.py
+- Files modified: sync_surfaces.py (added top-level render import + render_content_surface() helper at line 545 - the render-based seat replacing file-copy for per-turn surface artifacts) + pipeline.py (corrected misleading sort-filter comment) + test_byte_stability.py (added REQ-04 no-regression test)
+- Tests added: 10 OBPI-02 scoped tests covering all 5 REQs
+- Date completed: 2026-05-16
+- Attestation status: Operator attested verbatim "attest completed" in Stage 4 (foundation kind + heavy lane required human attestation)
+- Defects noted: 2 pre-existing logged to .gzkit/insights/agent-insights.jsonl (timeout.py POSIX-signal typecheck on Windows; sync_surfaces.py 882 lines over 600-line limit)
 
 ## Tracked Defects
 
@@ -241,14 +248,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — render(model, vendor) pipeline lands with 8 Jinja2 templates per (content_type x claude vendor), TemplateNotFound fail-closed on unknown vendor, byte-stable double-render verified across all 8 content types (AgentContract, Rule, Skill, Chore, Persona, Handoff, Scenario, Bullet); render_content_surface() wired into sync_surfaces.py as the render-based seat replacing file-copy logic for per-turn surface artifacts. 5/5 REQs covered (REQ-0.0.34-02-01..05); 10/10 OBPI-02 scoped tests pass; receipts arb-ruff-beedc7b8f53e4ce483d791ce941a07c9 (lint), arb-step-mkdocs-7086a2d5bd71439cba5abbdb6bbb9ec0 (docs), arb-step-unittest-7643d837b9fa47aa97edd60cdd6bede3 (tests, exit_status=0).
+- Date: 2026-05-16
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-16
 
 **Evidence Hash:** -

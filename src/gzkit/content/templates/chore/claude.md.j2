@@ -1,0 +1,10 @@
+# {{ title }}
+
+Slug: {{ slug }}
+Cadence: {{ cadence }}
+{% if steps %}
+## Steps
+{% for step in steps %}
+{{ '  ' * step.indent }}- {{ step.text }}
+{% endfor %}
+{% endif %}
