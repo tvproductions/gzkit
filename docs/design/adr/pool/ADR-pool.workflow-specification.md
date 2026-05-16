@@ -5,6 +5,11 @@ parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
 inspired_by: https://archon.diy/guides/authoring-workflows/
+complements:
+  - ADR-pool.harness-trace-bundles
+  - ADR-pool.harness-lab
+  - ADR-pool.harness-fitness-report
+  - ADR-pool.tool-permission-classifier
 ---
 
 # ADR-pool.workflow-specification: JSON Workflow Specification
@@ -96,6 +101,40 @@ workflow inspect` view should show not only the stage order, but which parts are
 native gzkit doctrine, which parts were borrowed, and how each borrowed part is
 mechanically witnessed.
 
+## Amendment 2026-05-16: NLAH/IHR and harness-lab precondition
+
+The Natural-Language Agent Harnesses / Intelligent Harness Runtime paper adds a
+useful framing for this pool ADR: workflow specification is the explicit harness
+object, while the `gz` runtime owns shared policy, adapters, state semantics,
+and child-agent lifecycle. gzkit should keep that boundary visible.
+
+Add these fields to the promotion-time workflow schema decision set:
+
+- `runtime_charter_ref`: the gzkit doctrine/runtime contract that interprets the
+  workflow.
+- `roles`: named agent/human roles and non-overlapping responsibilities.
+- `adapters`: deterministic scripts, validators, and tool shims the workflow may
+  invoke.
+- `state_semantics`: which artifacts persist, which are derived, and how later
+  stages reopen them.
+- `failure_taxonomy`: named blocker/failure states and their recovery routes.
+- `loop_policy`: maximum iterations or stage passes, legal re-entry edges, and
+  termination conditions for each workflow.
+- `context_policy`: what remains verbatim, what becomes a pointer, what may be
+  summarized, and what must be omitted.
+- `prompt_assembly_order`: stable-prefix, dynamic-context, and volatile-state
+  ordering for surfaces that render prompts or agent instructions.
+- `permission_policy`: declared permission modes for tools, commands, state
+  mutation, and human-approval escalation.
+- `subagent_policy`: child-agent roles, allowed tools, depth caps, isolation
+  rules, and collection contracts.
+- `trace_policy`: which stages emit `ADR-pool.harness-trace-bundles` events.
+- `ablation_tags`: stable module IDs consumed by `ADR-pool.harness-lab`.
+
+This makes workflow export the first dependency for the offline harness lab. The
+lab should evaluate declared workflow objects, not reconstruct pipeline behavior
+from prose skills and runbooks.
+
 ## Alternatives Considered
 
 - **Adopt a YAML DAG DSL.** Rejected. YAML DAGs are useful for generic workflow
@@ -149,6 +188,12 @@ mechanically witnessed.
   define resumable stage boundaries and required handoff fields.
 - **Related:** ADR-pool.agent-execution-intelligence CAP-22 (`gz next`) —
   deterministic next-step routing can use workflow metadata once available.
+- **Enables:** ADR-pool.harness-lab — candidate experiments and module ablations
+  consume exported workflow objects.
+- **Consumes:** ADR-pool.harness-trace-bundles — workflow stages declare which
+  trace events are emitted and which bundle manifests are valid evidence.
+- **Consumes:** ADR-pool.tool-permission-classifier — workflow stages declare
+  their required permission mode and any command-classifier escalation policy.
 
 ## Promotion Criteria
 
@@ -162,6 +207,9 @@ This pool ADR can be promoted when all are true:
    attestation, ledger events, scope, and failure policy.
 5. The promotion plan names which existing pipeline/runtime modules own the
    source of truth for exported data.
+6. Runtime-charter, state-semantics, loop-policy, context-policy,
+   prompt-assembly-order, permission-policy, subagent-policy, trace-policy, and
+   ablation-tag fields are accepted or explicitly deferred with rationale.
 
 ## Notes
 

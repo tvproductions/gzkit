@@ -268,6 +268,14 @@ REQ-coverage parity: `uv run gz covers OBPI-0.0.33-01-bullet-retention-validator
 - Attestation status: human attested (operator phrase "attest completed", relayed verbatim)
 - Defects noted: none in scope; the validator surfaces 41 Era-1 gaps between the advisory scorecard and per-turn surface — this IS the GHI #327 signal the ADR was designed to surface, not a regression
 
+## Demo
+
+```bash
+uv run gz validate --bullet-retention
+```
+
+Runs the bullet-retention audit against the live per-turn surface corpus: every advisory-scorecard bullet classified `Mechanical` or `Promotable` must appear verbatim in `AGENTS.md`. Exits 0 when surface is complete; exits 3 with named missing bullets when drift is present.
+
 ## Tracked Defects
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.

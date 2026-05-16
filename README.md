@@ -52,17 +52,19 @@ All three are necessary. Specification without governance drifts. Governance wit
 
 ## Boundary
 
-gzkit is a meta-harness and agent runner for governed human-AI work. Its
-runner surface is not a generic automation dashboard: it exists to preserve
-intent, execute within declared constraints, collect evidence, enforce gates,
-and reserve completion authority for human attestation.
+gzkit is a governance meta-harness and agent runner for governed human-AI
+work. A vendor harness turns a model into an agent; gzkit operates one tier up,
+wrapping agent harnesses such as Codex, Claude Code, Copilot, and adjacent tools
+with deterministic governance surfaces, evidence capture, gate enforcement, and
+human attestation.
 
-Other harnesses may execute discrete agent steps; gzkit governs whether the
-work is justified, verified, and complete. If gzkit grows a machine-readable
-workflow specification surface, its canonical form is JSON that describes
-gzkit stages, gate prerequisites, evidence requirements, and ledger events.
-Workflow specification should make the covenant more executable, not replace
-it with a YAML-style automation DSL.
+gzkit is not a generic framework that asks humans to assemble arbitrary agent
+chains. It ships an opinionated covenant for deciding whether agent work is
+justified, verified, and complete. If gzkit grows a machine-readable workflow
+specification surface, its canonical form is JSON that describes gzkit stages,
+gate prerequisites, evidence requirements, and ledger events. Workflow
+specification should make the covenant more executable, not replace it with a
+YAML-style automation DSL.
 
 ## The Covenant
 
@@ -183,7 +185,7 @@ gzkit uses `.gzkit.json` for project configuration:
 
 > Governance is verification, not celebration.
 
-gzkit treats governance as executable documentation. All state lives in Markdown, validated by a Python CLI. The framework is human-centric, auditable, and version-controlled.
+gzkit treats governance as executable documentation. All state lives in Markdown, validated by a Python CLI. The meta-harness is human-centric, auditable, and version-controlled.
 
 Prompts are code. Constraints are first-class. Human attestation is the final gate.
 

@@ -261,6 +261,14 @@ Corpus at floor (1859 = 1859). ARB receipts: arb-ruff-2e658d3f60624f66bc7b499782
 - Attestation status: operator-verbatim-conversational ("attest completed")
 - Defects noted: discovered + fixed mid-implementation — _resolve_scopes opt_in_scopes and _POLICY_BREACH_ERROR_TYPES both lacked "surface_weight"; remediated in same OBPI commit
 
+## Demo
+
+```bash
+uv run gz validate --surface-weight
+```
+
+Runs the surface-weight audit: each per-turn surface file (`AGENTS.md`, `CLAUDE.md`, `.claude/rules/*.md`) must hold its share of the direction-binding floor recorded in `data/surface_weight_floor.json`. Exits 0 when no file is below its snapshot floor; exits 3 when a directive surface has been silently thinned.
+
 ## Tracked Defects
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.

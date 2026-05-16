@@ -31,6 +31,10 @@ BUCKET_3_ROOTS = (
     "docs/governance/agent-contract-rationale.md",
     "docs/governance/advisory-rules-audit.md",
     "tests/governance/test_agent_contract_fold.py",
+    # ARB receipts are immutable evidentiary records; their stderr_tail can
+    # legitimately quote retired path names from the failure messages they
+    # captured. Scanning them creates a self-perpetuating false positive.
+    "artifacts/receipts/",
     # mkdocs build artifact; regenerated from sources
     "site/",
     # local venv / build caches
