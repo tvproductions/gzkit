@@ -298,6 +298,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_preflight,
         run_readiness_audit,
         run_skill_audit,
+        run_surface_fidelity_audit,
         run_unscoped_rules_audit,
     )
 
@@ -319,6 +320,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Complexity-doctrine links", run_complexity_doctrine_links_audit),
         ("Complexity-thresholds", run_complexity_thresholds_audit),
         ("Preflight", run_preflight),
+        ("Surface fidelity", run_surface_fidelity_audit),
     ]
 
 

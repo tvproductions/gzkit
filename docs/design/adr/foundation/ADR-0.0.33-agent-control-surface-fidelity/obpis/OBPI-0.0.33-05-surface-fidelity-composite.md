@@ -3,7 +3,7 @@ id: OBPI-0.0.33-05-surface-fidelity-composite
 parent: ADR-0.0.33-agent-control-surface-fidelity
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.33-05-surface-fidelity-composite: Surface Fidelity Composite
@@ -13,11 +13,9 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/ADR-0.0.33-agent-control-surface-fidelity.md`
 - **Checklist Item:** #5 - "OBPI-0.0.33-05: Composite scope + CI wiring — `gz validate --surface-fidelity` runs all four; wired into `gz check`; cheap subset (1, 2, 3) in pre-commit; tests under `tests/governance/` per per-rule-file naming and the eval-awareness corollary"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
-
-<!-- One-sentence concrete outcome. What does "done" look like? -->
 
 Composite scope + CI wiring — `gz validate --surface-fidelity` runs all four; wired into `gz check`; cheap subset (1, 2, 3) in pre-commit; tests under `tests/governance/` per per-rule-file naming and the eval-awareness corollary.
 
@@ -52,8 +50,8 @@ are mutually independent and may be implemented in parallel.
 - `src/gzkit/cli/parser_maintenance.py` — `gz validate --surface-fidelity` flag registration and dispatch; `gz check` integration
 - `tests/governance/test_surface_fidelity_composite.py` — Gate-2 TDD asset for composite behavior
 - `.pre-commit-config.yaml` — pre-commit hook registration for the cheap subset (invariants 1, 2, 3)
-- `docs/user/manpages/gz-validate.md` — manpage entry for `--surface-fidelity`
-- `docs/user/manpages/gz-check.md` — note that `gz check` now includes the surface-fidelity composite
+- `docs/user/manpages/validate.md` — manpage entry for `--surface-fidelity`
+- `docs/user/manpages/check.md` — note that `gz check` now includes the surface-fidelity composite
 
 ## Denied Paths
 
@@ -246,15 +244,29 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```bash
+$ uv run gz validate --surface-fidelity
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+Validated: surface_fidelity
+```
+
+The composite invokes all four validators in declared order, aggregates their ValidationError lists, and exits with the worst-of-four exit code — confirmed by test_all_four_validators_fire_in_order and test_exit_code_worst_of_four (receipt arb-step-unittest-e8e473571f264b8eaf2f877e09a2b9ba). gz check includes the new "Surface fidelity" step (receipt arb-step-mkdocs-329cddd5e26249d78ba317fef5ca8f71 validates docs build clean). All 5083 unit tests pass; 6/6 OBPI tests pass.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Composite function: validate_surface_fidelity in src/gzkit/governance/trust_audits/__init__.py invokes validate_bullet_retention, validate_surface_weight, validate_pointer_integrity, validate_scenario_reachability in declared order and aggregates ValidationError lists
+- CLI flag: --surface-fidelity registered in src/gzkit/cli/parser_maintenance.py; wired through 6 locations in src/gzkit/commands/validate_cmd.py
+- gz check integration: run_surface_fidelity_audit in src/gzkit/quality.py; ("Surface fidelity", run_surface_fidelity_audit) appended to _build_check_steps() in src/gzkit/commands/quality.py
+- Pre-commit hook: surface-fidelity-cheap in .pre-commit-config.yaml runs uv run gz validate --bullet-retention --surface-weight --pointer-anchors (single CLI call, no --scenario-reachability per REQ-04)
+- Docs: --surface-fidelity documented in docs/user/manpages/validate.md (usage line, dedicated section, scopes table); Surface fidelity step documented in docs/user/manpages/check.md
+- Tests added: tests/governance/test_surface_fidelity_composite.py with 6 unit tests; all 6 REQs covered via @covers decorators (uncovered_reqs: 0 per gz covers)
+- Regression fix: added run_surface_fidelity_audit mock patch to tests/commands/test_skills.py:377 so the existing gz check test continues to pass
+- Behave waiver: registered adr-0.0.33-05-composite-bdd-deferred-to-unit-tests in data/behave_coverage_waivers.json — composite wiring REQs are internal-mechanics naturally covered by Python unit tests; per-invariant operator-runnable behavior is owned by OBPI-01..04
+- Date completed: 2026-05-15
+- Attestation status: operator-verbatim-conversational
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -265,14 +277,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — composite validator validate_surface_fidelity lands in trust_audits/__init__.py invoking all four predecessors in declared order; --surface-fidelity CLI flag registered; "Surface fidelity" step wired into gz check via run_surface_fidelity_audit; pre-commit hook surface-fidelity-cheap registers the 3-invariant subset (no --scenario-reachability); manpages updated; 6/6 REQs covered by tests/governance/test_surface_fidelity_composite.py (uncovered_reqs: 0); 5083/5083 unit tests pass; ARB receipts arb-ruff-0479b27bb3b6481ba69049a94e93fe15, arb-step-typecheck-dc1b5f6de9bb423faa6b685c6f30cb7f, arb-step-unittest-e8e473571f264b8eaf2f877e09a2b9ba, arb-step-mkdocs-329cddd5e26249d78ba317fef5ca8f71.
+- Date: 2026-05-16
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-16
 
 **Evidence Hash:** -

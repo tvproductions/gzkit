@@ -1,0 +1,8 @@
+{
+  "obpi_id": "OBPI-0.0.33-05-surface-fidelity-composite",
+  "timestamp": "2026-05-15T23:48:00+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.33-05-surface-fidelity-composite.md",
+  "gaps_found": 0,
+  "notes": "Brief Allowed Paths updated mid-Stage-5 to use validate.md and check.md (actual file names) instead of gz-validate.md and gz-check.md (template-convention names) per Stage 5 precomplete remediation. The composite was landed; all 6 REQs covered. ADR<->OBPI: all 7 checks PASS. Plan<->OBPI: all 7 checks PASS. 33 scope-collision advisories are advisory-only (shared infrastructure surfaces, sequential execution)."
+}

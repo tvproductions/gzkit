@@ -60,6 +60,13 @@ repos:
         types: [python]
         stages: [pre-commit]
 
+      - id: surface-fidelity-cheap
+        name: surface-fidelity cheap subset (invariants 1, 2, 3)
+        entry: uv run gz validate --bullet-retention --surface-weight --pointer-anchors
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
       - id: check-todos-fixmes
         name: check TODO/FIXME (flagged, informational)
         entry: bash -c 'grep -r "TODO\|FIXME" src/ tests/ --include="*.py" 2>/dev/null || true'
