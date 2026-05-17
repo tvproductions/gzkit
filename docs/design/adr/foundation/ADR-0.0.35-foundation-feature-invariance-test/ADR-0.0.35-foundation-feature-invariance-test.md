@@ -166,4 +166,4 @@ Rejected by the test itself. *Without the invariance test, kind classification f
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.35 | Pending | | | |
+| 0.0.35 | Completed | g0 | 2026-05-17 | Completed — operator: attest completed. 4/4 OBPIs attested; demos confirm --kind routing (gz plan create) and heavy-lane --kind-invariance validator (gz validate, all 38 foundation ADRs clean); 5255 unittests pass receipt arb-step-unittest-c4a1249fde7e4e4da2a59ec6a6567c5d; ruff arb-ruff-d1037a042aca4e90961d023e630a218e; typecheck arb-step-typecheck-433fc98ab5c5477ba87b9966d0820ebf; mkdocs arb-step-mkdocs-62ee87a9765f4b4eb092086eaf356575; behave 268/269 (1 fail scoped to ADR-0.0.32 distribution baseline); quality-reviewer trust-chain VERDICT CLEAR; in-flight lint auto-fix to tests/governance/test_kind_invariance_docs.py |
