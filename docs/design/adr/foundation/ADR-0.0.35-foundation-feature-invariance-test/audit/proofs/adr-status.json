@@ -1,0 +1,229 @@
+{
+  "adr": "ADR-0.0.35-foundation-feature-invariance-test",
+  "mode": "lite",
+  "lane": "lite",
+  "attested": true,
+  "attestation_status": "completed",
+  "attestation_term": "Completed",
+  "lifecycle_status": "Completed",
+  "closeout_phase": "attested",
+  "closeout_initiated": true,
+  "validated": false,
+  "gates": {
+    "1": "pass",
+    "2": "pass",
+    "3": "n/a",
+    "4": "n/a",
+    "5": "pass"
+  },
+  "observed_post_validation_gate_failures": [],
+  "obpis": [
+    {
+      "id": "OBPI-0.0.35-01-concept-page",
+      "linked_in_ledger": true,
+      "found_file": true,
+      "file": "docs/design/adr/foundation/ADR-0.0.35-foundation-feature-invariance-test/obpis/OBPI-0.0.35-01-concept-page.md",
+      "completed": true,
+      "ledger_completed": true,
+      "file_completed": true,
+      "evidence_ok": true,
+      "implementation_evidence_ok": true,
+      "key_proof_ok": true,
+      "human_attestation": {
+        "present": true,
+        "valid": true,
+        "attestor": "g0",
+        "attestation_text": "attest completed \u2014 operator-verbatim Gate 5 for foundation-kind Lite-lane brief; concept page authoring landed verbatim invariance test + hexagonal-ports lens + both worked examples + anti-pattern, bidirectional cross-link with adr-taxonomy.md confirmed, index.md and mkdocs.yml nav reachable, runbook.md cross-references at PRD->ADR Derivation (line 763) and Anti-pattern (line 821) sections; ARB receipts arb-ruff-b0ceeb3ea6c24161b23cfca18127d454, arb-step-typecheck-da169ce739c04370b772de6b12904af9, arb-step-unittest-4c1f40c066044f85a4efaffb056eaebc (5198/5198), arb-step-mkdocs-f92446d4bb964b22b00021bbbf08801c.",
+        "date": "2026-05-17"
+      },
+      "runtime_state": "attested_completed",
+      "proof_state": "recorded",
+      "attestation_requirement": "required",
+      "attestation_state": "recorded",
+      "req_proof_state": "recorded",
+      "req_proof_inputs": [
+        {
+          "name": "key_proof",
+          "kind": "legacy_key_proof",
+          "source": "Walk-through example landed inline on the concept page: an adopter facing 'should ledger storage backend selection be foundation or feature?' applies the invariance test in one sentence \u2014 'The project would still be the project under either backend; storage is a plug; the ADR is feature.' Verified: grep -F 'Foundation = without it, we wouldn't be doing the project' docs/user/concepts/foundation-feature-invariance-test.md returns the verbatim quote at line 14. ARB receipts: arb-step-mkdocs-f92446",
+          "status": "present"
+        }
+      ],
+      "req_proof_summary": {
+        "total": 1,
+        "present": 1,
+        "missing": 0,
+        "state": "recorded"
+      },
+      "anchor_state": "not_tracked",
+      "anchor_commit": "299f09b",
+      "current_head": "1922dac",
+      "anchor_issues": [],
+      "anchor_drift_files": [],
+      "frontmatter_status": "completed",
+      "brief_status": "completed",
+      "reflection_issues": [],
+      "tracked_defects": [],
+      "issues": [],
+      "issue_details": []
+    },
+    {
+      "id": "OBPI-0.0.35-02-skill-prompt-enrichment",
+      "linked_in_ledger": true,
+      "found_file": true,
+      "file": "docs/design/adr/foundation/ADR-0.0.35-foundation-feature-invariance-test/obpis/OBPI-0.0.35-02-skill-prompt-enrichment.md",
+      "completed": true,
+      "ledger_completed": true,
+      "file_completed": true,
+      "evidence_ok": true,
+      "implementation_evidence_ok": true,
+      "key_proof_ok": true,
+      "human_attestation": {
+        "present": true,
+        "valid": true,
+        "attestor": "g0",
+        "attestation_text": "attest completed \u2014 OBPI-0.0.35-02-skill-prompt-enrichment: four kind-deciding skills (gz-plan v1.2.0, gz-adr-create v6.3.0, gz-design v1.3.0, gz-adr-promote v1.3.0) carry the invariance test verbatim, hexagonal-ports lens, and concept-page link; 30 unit tests in tests/governance/test_foundation_invariance_skill_enrichment.py cover all 6 REQs; mirror byte-parity confirmed across .claude/skills/ and .github/skills/; ARB receipts arb-ruff-20c4e7766b244580bba976002715070b, arb-step-typecheck-b9044e8703d34b0aacae95071326d12e, arb-step-unittest-dbcafe32fae64b499ef0610290f3f623 (5198/5198), arb-step-unittest-989ec93d147444bead07d2fe5610bb57 (30/30 scoped).",
+        "date": "2026-05-17"
+      },
+      "runtime_state": "attested_completed",
+      "proof_state": "recorded",
+      "attestation_requirement": "required",
+      "attestation_state": "recorded",
+      "req_proof_state": "recorded",
+      "req_proof_inputs": [
+        {
+          "name": "key_proof",
+          "kind": "legacy_key_proof",
+          "source": "Verbatim invariance test present in all four canonical skills, confirmed by:\n\n```bash\ngrep -F \"Foundation = without it, we wouldn't be doing the project\" \\\n  .gzkit/skills/gz-plan/SKILL.md \\\n  .gzkit/skills/gz-design/SKILL.md \\\n  .gzkit/skills/gz-adr-create/SKILL.md \\\n  .gzkit/skills/gz-adr-promote/SKILL.md\n```\n\nReturns one match per file. Mirror parity confirmed by `TestSkillMirrorParity` (8 byte-equality tests, all pass).\n\nARB receipts:\n\n- `arb-ruff-20c4e7766b244580bba976002715070b` (lint clea",
+          "status": "present"
+        }
+      ],
+      "req_proof_summary": {
+        "total": 1,
+        "present": 1,
+        "missing": 0,
+        "state": "recorded"
+      },
+      "anchor_state": "not_tracked",
+      "anchor_commit": "1a67a89",
+      "current_head": "1922dac",
+      "anchor_issues": [],
+      "anchor_drift_files": [],
+      "frontmatter_status": "completed",
+      "brief_status": "completed",
+      "reflection_issues": [],
+      "tracked_defects": [],
+      "issues": [],
+      "issue_details": []
+    },
+    {
+      "id": "OBPI-0.0.35-03-why-foundation-tier-convention",
+      "linked_in_ledger": true,
+      "found_file": true,
+      "file": "docs/design/adr/foundation/ADR-0.0.35-foundation-feature-invariance-test/obpis/OBPI-0.0.35-03-why-foundation-tier-convention.md",
+      "completed": true,
+      "ledger_completed": true,
+      "file_completed": true,
+      "evidence_ok": true,
+      "implementation_evidence_ok": true,
+      "key_proof_ok": true,
+      "human_attestation": {
+        "present": true,
+        "valid": true,
+        "attestor": "g0",
+        "attestation_text": "attest completed \u2014 5235/5235 unittest pass (arb-step-unittest-0706555b5b8e41318d7144a0fc0bec23); ruff clean (arb-ruff-903bbeebf3a34367be59c19ca54bb8e7); typecheck clean (arb-step-typecheck-20c3e158d9eb40b7af0c306ff82f498e); mkdocs strict clean (arb-step-mkdocs-58548e5c4eb54d51bda3729f745cb406); 7/7 REQs covered per gz covers; foundation scaffolds the `## Why foundation tier?` section between Persona and Intent with invariance-test + port-vs-plug prompts, feature scaffolding does not; concept page and runbook cross-reference the convention; T0 byte-parity preserved between .gzkit/templates and src/gzkit/templates for adr.md",
+        "date": "2026-05-17"
+      },
+      "runtime_state": "attested_completed",
+      "proof_state": "recorded",
+      "attestation_requirement": "required",
+      "attestation_state": "recorded",
+      "req_proof_state": "recorded",
+      "req_proof_inputs": [
+        {
+          "name": "key_proof",
+          "kind": "legacy_key_proof",
+          "source": "Foundation scaffolding produces the section; feature scaffolding does not. Run `uv run gz plan create test-foundation --kind foundation --semver 0.0.99 --lane lite --score-data-state 0 --score-logic-engine 0 --score-interface 0 --score-observability 0 --score-lineage 1 --dry-run` and observe `## Why foundation tier?` heading present between `## Persona` and `## Intent`. Run the same with `--kind feature --semver 0.99.0` and observe the heading absent. tests/commands/test_plan.py::TestPlanCreateK",
+          "status": "present"
+        }
+      ],
+      "req_proof_summary": {
+        "total": 1,
+        "present": 1,
+        "missing": 0,
+        "state": "recorded"
+      },
+      "anchor_state": "not_tracked",
+      "anchor_commit": "ca23995",
+      "current_head": "1922dac",
+      "anchor_issues": [],
+      "anchor_drift_files": [],
+      "frontmatter_status": "completed",
+      "brief_status": "completed",
+      "reflection_issues": [],
+      "tracked_defects": [],
+      "issues": [],
+      "issue_details": []
+    },
+    {
+      "id": "OBPI-0.0.35-04-kind-invariance-validator",
+      "linked_in_ledger": true,
+      "found_file": true,
+      "file": "docs/design/adr/foundation/ADR-0.0.35-foundation-feature-invariance-test/obpis/OBPI-0.0.35-04-kind-invariance-validator.md",
+      "completed": true,
+      "ledger_completed": true,
+      "file_completed": true,
+      "evidence_ok": true,
+      "implementation_evidence_ok": true,
+      "key_proof_ok": true,
+      "human_attestation": {
+        "present": true,
+        "valid": true,
+        "attestor": "g0",
+        "attestation_text": "attest completed \u2014 gz validate --kind-invariance exits 0 against all 38 foundation ADRs (operator-approved 38-ADR backfill applied to satisfy REQ-6 without breaking the build); 100% REQ coverage (11/11) with 19 REQ-derived unit tests + 5 behave scenarios; Heavy-lane ARB receipts captured (GREEN): arb-ruff-eb8772b06ded4f3284e3fb3a6286560e, arb-step-typecheck-74081d05b0ae4ee3b08cd680bf1241ff, arb-step-unittest-8071390b748440248d70e083e72d1e86, arb-step-coverage-bdd508d88b354d278ced76af3c002f13, arb-step-mkdocs-0ae297d5ef5f4c06a4d3ec3174b56a23, arb-step-behave-df0a24c360ec4677a98683509c42032d",
+        "date": "2026-05-17"
+      },
+      "runtime_state": "attested_completed",
+      "proof_state": "recorded",
+      "attestation_requirement": "required",
+      "attestation_state": "recorded",
+      "req_proof_state": "recorded",
+      "req_proof_inputs": [
+        {
+          "name": "key_proof",
+          "kind": "legacy_key_proof",
+          "source": "```\n$ uv run gz validate --kind-invariance\nValidated: kind_invariance\n\n\u2713 All validations passed (1 scopes).\n```\n\nAll 38 foundation ADRs (including ADR-0.0.35 itself per REQ-16) carry substantive `## Why foundation tier?` sections; validator enumeration + section-presence + substantive-content checks all pass. Constructed-failure case exercised in `tests.governance.test_kind_invariance.test_author_prompt_body_fails` (placeholder body \u2192 exit 3) and behave scenario `@REQ-0.0.35-04-04`.\n\nHeavy-lane",
+          "status": "present"
+        }
+      ],
+      "req_proof_summary": {
+        "total": 1,
+        "present": 1,
+        "missing": 0,
+        "state": "recorded"
+      },
+      "anchor_state": "not_tracked",
+      "anchor_commit": "4d0b86b",
+      "current_head": "1922dac",
+      "anchor_issues": [],
+      "anchor_drift_files": [],
+      "frontmatter_status": "completed",
+      "brief_status": "completed",
+      "reflection_issues": [],
+      "tracked_defects": [],
+      "issues": [],
+      "issue_details": []
+    }
+  ],
+  "obpi_summary": {
+    "total": 4,
+    "completed": 4,
+    "incomplete": 0,
+    "missing_files": 0,
+    "unit_status": "completed",
+    "outstanding_ids": []
+  },
+  "closeout_ready": true,
+  "closeout_blockers": [],
+  "gate4_na_reason": "Gate 4 applies to heavy lane only."
+}
