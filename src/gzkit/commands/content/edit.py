@@ -109,6 +109,15 @@ def content_edit_cmd(*, file: str, as_type: str, vendor: str) -> None:
         try:
             staging_path.write_bytes(rendered)
             staging_path.replace(file_path)
+            if sys.stdout.isatty():
+                from gzkit.content.tui.status import render_status_line  # noqa: PLC0415
+
+                render_status_line(
+                    operation="edited",
+                    source=file_path.name,
+                    result=as_type,
+                    byte_count=len(rendered),
+                )
         except OSError as exc:
             # Clean up staging file if replace failed mid-way
             if staging_path.exists():

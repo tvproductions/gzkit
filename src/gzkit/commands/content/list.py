@@ -8,11 +8,12 @@ import sys
 from gzkit.content.models import CONTENT_MODELS
 
 
-def content_list_cmd(*, type_filter: str | None, as_json: bool) -> None:
-    """Handle ``gz content list [--type <type>] [--json]``.
+def content_list_cmd(*, type_filter: str | None, as_json: bool, plain: bool = False) -> None:
+    """Handle ``gz content list [--type <type>] [--json] [--plain]``.
 
     Default output: human-readable two-column table (Type | Description).
     --json: array of {type, description} objects.
+    --plain: suppress Rich table even on a TTY.
     Exit 0 on success, 1 on unknown --type filter.
     """
     if type_filter is not None and type_filter not in CONTENT_MODELS:
@@ -38,9 +39,14 @@ def content_list_cmd(*, type_filter: str | None, as_json: bool) -> None:
         print(json.dumps(rows, indent=2))
         return
 
-    # Human-readable table
-    type_col_width = max(len("Type"), max((len(r["type"]) for r in rows), default=0))
-    print(f"{'Type'.ljust(type_col_width)}  Description")
-    print(f"{'-' * type_col_width}  {'-' * len('Description')}")
-    for row in rows:
-        print(f"{row['type'].ljust(type_col_width)}  {row['description']}")
+    if sys.stdout.isatty() and not plain:
+        from gzkit.content.tui.tables import render_content_table  # noqa: PLC0415
+
+        render_content_table(rows)
+    else:
+        # Plain-text table (no ANSI codes)
+        type_col_width = max(len("Type"), max((len(r["type"]) for r in rows), default=0))
+        print(f"{'Type'.ljust(type_col_width)}  Description")
+        print(f"{'-' * type_col_width}  {'-' * len('Description')}")
+        for row in rows:
+            print(f"{row['type'].ljust(type_col_width)}  {row['description']}")

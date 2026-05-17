@@ -10,7 +10,11 @@ from __future__ import annotations
 import argparse
 from typing import Any
 
-from gzkit.cli.helpers import build_epilog
+
+def _build_epilog(examples: list[str]) -> str:
+    from gzkit.cli.helpers import build_epilog  # noqa: PLC0415
+
+    return build_epilog(examples)
 
 
 def _content(module_name: str, attr_name: str) -> Any:
@@ -30,7 +34,7 @@ def register_content_parsers(commands: argparse._SubParsersAction) -> None:
             "Commands for importing hand-authored markdown files into canonical "
             "Pydantic content models. Part of the ADR-0.0.34 rendering substrate."
         ),
-        epilog=build_epilog(
+        epilog=_build_epilog(
             [
                 "gz content import AGENTS.md --as AgentContract",
                 "gz content import .gzkit/rules/tests.md --as Rule --write /tmp/out.md",
@@ -57,7 +61,7 @@ def _register_import(content_commands: argparse._SubParsersAction) -> None:
             "content model instance, and emit JSON to stdout. "
             "Use --write to persist a re-rendered canonical form."
         ),
-        epilog=build_epilog(
+        epilog=_build_epilog(
             [
                 "gz content import AGENTS.md --as AgentContract",
                 "gz content import .gzkit/rules/tests.md --as Rule",
@@ -95,7 +99,7 @@ def _register_list(content_commands: argparse._SubParsersAction) -> None:
             "List the registered content model types from the CONTENT_MODELS registry. "
             "Default output is a human-readable table; use --json for machine consumption."
         ),
-        epilog=build_epilog(
+        epilog=_build_epilog(
             [
                 "gz content list",
                 "gz content list --type Rule",
@@ -115,10 +119,17 @@ def _register_list(content_commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Emit JSON to stdout instead of a human-readable table.",
     )
+    p.add_argument(
+        "--plain",
+        dest="plain",
+        action="store_true",
+        help="Force plain text output even on a TTY (disables Rich table).",
+    )
     p.set_defaults(
         func=lambda a: _content("list", "content_list_cmd")(
             type_filter=a.type_filter,
             as_json=a.as_json,
+            plain=a.plain,
         )
     )
 
@@ -131,7 +142,7 @@ def _register_show(content_commands: argparse._SubParsersAction) -> None:
             "Parse a canonical content file and display a human-readable prose summary. "
             "Use --json for machine consumption."
         ),
-        epilog=build_epilog(
+        epilog=_build_epilog(
             [
                 "gz content show AGENTS.md --as AgentContract",
                 "gz content show .gzkit/rules/tests.md --as Rule --json",
@@ -151,11 +162,18 @@ def _register_show(content_commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Emit JSON to stdout instead of prose summary.",
     )
+    p.add_argument(
+        "--plain",
+        dest="plain",
+        action="store_true",
+        help="Force plain text output even on a TTY (disables Rich panel).",
+    )
     p.set_defaults(
         func=lambda a: _content("show", "content_show_cmd")(
             file=a.file,
             as_type=a.as_type,
             as_json=a.as_json,
+            plain=a.plain,
         )
     )
 
@@ -168,7 +186,7 @@ def _register_render(content_commands: argparse._SubParsersAction) -> None:
             "Parse a canonical content file and emit the rendered markdown to stdout. "
             "Output is byte-identical to gzkit.content.render.render(model, vendor)."
         ),
-        epilog=build_epilog(
+        epilog=_build_epilog(
             [
                 "gz content render AGENTS.md --as AgentContract",
                 "gz content render .gzkit/rules/tests.md --as Rule --vendor claude",
@@ -206,7 +224,7 @@ def _register_edit(content_commands: argparse._SubParsersAction) -> None:
             "re-parse and re-validate the edited content. Invalid input aborts with "
             "the validator diagnostic; the original file is never partially written."
         ),
-        epilog=build_epilog(
+        epilog=_build_epilog(
             [
                 "gz content edit AGENTS.md --as AgentContract",
                 "gz content edit .gzkit/rules/tests.md --as Rule --vendor claude",

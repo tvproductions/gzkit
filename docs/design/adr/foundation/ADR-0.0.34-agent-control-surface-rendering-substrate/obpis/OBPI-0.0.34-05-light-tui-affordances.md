@@ -3,7 +3,7 @@ id: OBPI-0.0.34-05-light-tui-affordances
 parent: ADR-0.0.34-agent-control-surface-rendering-substrate
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.34-05-light-tui-affordances: Light Tui Affordances
@@ -15,13 +15,11 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
 - **Checklist Item:** #5 - "OBPI-0.0.34-05: Light TUI affordances — Claude-Code-style status lines, Rich tables, plan-mode-style panels; explicitly NOT a Textual form editor"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Light TUI affordances — Claude-Code-style status lines, Rich tables, plan-mode-style panels; explicitly NOT a Textual form editor.
+`gz content list` renders a Rich table on TTY; `gz content show` renders a plan-mode-style panel on TTY; `gz content render` and `gz content edit` emit a Claude-Code-style status line to stderr on TTY. All rendering is TTY-conditional (`sys.stdout.isatty()`); `--plain` suppresses Rich even on TTY. No Textual dependency; no new subcommand.
 
 ## Lane
 
@@ -61,7 +59,9 @@ Light TUI affordances — Claude-Code-style status lines, Rich tables, plan-mode
 
 1. REQUIREMENT: **Status line, table, and panel affordances only.** Implement Rich-rendered status lines for `gz content edit`/`render`, Rich tables for `gz content list`, and plan-mode-style panels for `gz content show`. NEVER implement an interactive form, a Textual app, or a separate launcher subcommand.
 2. REQUIREMENT: **TTY-conditional rendering.** Rich rendering activates only when `sys.stdout.isatty()` returns True. Non-TTY contexts (CI, pipes, redirection) emit plain text. `--plain` flag forces plain text even in TTY contexts.
-3. REQUIREMENT: **Zero new top-level commands.** All affordances attach to existing OBPI-04 subcommands. NEVER add `gz content tui`, `gz tui`, or any other launcher verb.
+3. REQUIREMENT: **Zero new top-level commands.** All affordances attach to existing OBPI-04 subcommands.
+<!-- gz-validate-skip: command-shape -->
+NEVER add `gz content tui`, `gz tui`, or any other launcher verb.
 4. REQUIREMENT: **No Textual dependency.** If a candidate solution requires `textual`, the requirement has been mis-read — reject and re-read. Rich is acceptable (already an indirect transitive); NEVER add `textual` as a direct or transitive top-level dependency in this OBPI.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
@@ -231,15 +231,18 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+`gz content list` on a TTY renders a Rich table (box-drawing characters, styled headers); piped to a file produces ANSI-free plain text. `gz content list --plain` forces plain text even on TTY. `gz content render <file> --as <type>` emits `✓ rendered <file> → <vendor> (<N> KiB)` to stderr; stdout unchanged. No `import textual`/`from textual` in src/ or tests/ — verified by TestTextualAbsence (3 passing tests). Receipts: arb-ruff-74a08401073d47c5a833e8dbb6188a1e (lint clean), arb-step-mkdocs-695b58ed801f4b8ba3c58db16544f31c (docs clean), arb-step-unittest-743d702d934f46a793c46736d30231fb (10/10 OBPI tests pass).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/content/tui/__init__.py, status.py, tables.py, panels.py (Rich TUI affordances); tests/content/test_tui_affordances.py (10 tests, 5 REQs covered)
+- Files modified: src/gzkit/commands/content/list.py (Rich table + --plain), show.py (Rich panel + --plain), render.py (status line to stderr), edit.py (status line to stderr), __init__.py (--plain parser + lazy _build_epilog())
+- Tests added: 10 passing tests across 5 test classes; gz covers shows uncovered_reqs: 0
+- Date completed: 2026-05-17
+- Attestation status: operator-attested via Stage 4 Route A selection
+- Defects noted: GHI #475 filed and closed superseded by OBPI-0.0.34-06 (authoring ceremony deferred to validation hooks OBPI)
 
 ## Tracked Defects
 
@@ -250,14 +253,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: Route A (attest as-is) — TTY-conditional Rich table for `gz content list`, Rich panel for `gz content show`, and green-checkmark status line to stderr for `gz content render`/`edit` land cleanly. `--plain` flag suppresses Rich on all TTY-aware commands. No Textual dependency added. 10/10 OBPI tests pass; 5/5 REQs covered; lint and docs build clean. Receipts: arb-ruff-74a08401073d47c5a833e8dbb6188a1e, arb-step-mkdocs-695b58ed801f4b8ba3c58db16544f31c, arb-step-unittest-743d702d934f46a793c46736d30231fb.
+- Date: 2026-05-17
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-17
 
 **Evidence Hash:** -

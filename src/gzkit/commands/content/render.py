@@ -49,4 +49,13 @@ def content_render_cmd(*, file: str, as_type: str, vendor: str) -> None:
         sys.exit(1)
 
     rendered = render(model, vendor)
+    if sys.stdout.isatty():
+        from gzkit.content.tui.status import render_status_line  # noqa: PLC0415
+
+        render_status_line(
+            operation="rendered",
+            source=file_path.name,
+            result=vendor,
+            byte_count=len(rendered),
+        )
     print(rendered.decode("utf-8"), end="")
