@@ -35,9 +35,7 @@ class FidelityHookError(Exception):
         self.validator_id = validator_id
         self.violation = violation
         self.errors = errors or []
-        super().__init__(
-            f"Fidelity validation failed [{validator_id}]: {violation}"
-        )
+        super().__init__(f"Fidelity validation failed [{validator_id}]: {violation}")
 
 
 def _run_validators(project_root: Path) -> None:
