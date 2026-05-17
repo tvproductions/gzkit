@@ -16,6 +16,12 @@ date: 2026-04-25
 attestation surface; methodical TDD discipline, atomic edits per behavior
 increment, complete units rather than half-finished plumbing.
 
+## Why foundation tier?
+
+Without this ADR, attestation claims bind to narrative recall — an agent says "tests pass" without any tamper-evident proof, and the gzkit governance chain has no defense against fabricated evidence or training-corpus-drifted claims.
+
+This ADR authors a port: the attestation-to-receipt-ID binding contract that every claim-emitting surface (closeout, complete, emit-receipt) must honor.
+
 ## Intent
 
 Promote the inline ARB receipt-ID requirement on heavy-lane attestation from

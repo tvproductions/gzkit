@@ -19,6 +19,12 @@ promoted_from: ADR-pool.pool-dag-promotion-routing
 
 {persona}
 
+## Why foundation tier?
+
+Without this ADR, pool ADRs lack dependency-aware promotion routing — promotions can land out-of-order against the pool DAG, breaking downstream pool entries that assumed an earlier promotion landed first.
+
+This ADR authors a port: the pool-DAG promotion-routing contract `gz adr promote` and the pool-graph validator both bind to.
+
 ## Intent
 
 Make the implicit dependency graph between pool ADRs explicit and queryable, enabling

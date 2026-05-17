@@ -80,6 +80,7 @@ from gzkit.governance.trust_audits.instructions_files_budget import (
 from gzkit.governance.trust_audits.intrinsic_attestation import (
     validate_intrinsic_attestation,
 )
+from gzkit.governance.trust_audits.kind_invariance import audit_kind_invariance
 from gzkit.governance.trust_audits.models import audit_pydantic_models
 from gzkit.governance.trust_audits.orientation import audit_orientation_freshness
 from gzkit.governance.trust_audits.orphaned_implementation import (
@@ -146,6 +147,7 @@ __all__ = [
     "audit_event_handlers",
     "audit_event_schemas",
     "audit_insights_shape",
+    "audit_kind_invariance",
     "audit_instructions_files_budget",
     "audit_orientation_freshness",
     "audit_orphaned_implementation",

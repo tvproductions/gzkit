@@ -16,6 +16,12 @@ date: 2026-04-19
 
 This ADR is a Foundation addition. Foundations are baseline assumptions about good app substrates — the Prime Directive invariant 11 ("if <90% sure, ask the human") lives in `AGENTS.md` § Behavior Rules — Always (item 7) per ADR-0.0.20 OBPI-02 consolidation, with rationale in `docs/governance/agent-contract-rationale.md`. The invariant has no mechanical surface; this ADR provides one without imposing universal friction. The 2am-operator rubric is load-bearing: actual 2am use is reading commit bodies, so justify's value is *pre-2am* (before the confident-wrong-direction commit), not during.
 
+## Why foundation tier?
+
+Without this ADR, Prime Directive invariant 11 ("if <90% sure, ask the human") is unenforced — agents routinely produce confident-wrong-direction runs that waste session context and ship discarded work with no mechanical surface to catch the reasoning gap.
+
+This ADR authors a port: the pre-execution reasoning-walkthrough contract that every change-anchor (GHI/OBPI/draft) can produce evidence-grounded justification against.
+
 ## Intent
 
 Prime Directive invariant 11 ("if <90% sure, ask the human") is unenforced in gzkit today. Agents routinely produce confident-wrong-direction runs that waste session context and ship discarded work. An 8-section walkthrough structure developed ad-hoc during the 4.7 governance hardening audit (umbrella GHI #224, sub-GHIs #225-#230) repeatedly caught reasoning errors that would have shipped (e.g. the `chores.md:19` correction where the original fix shape "drop the threshold" was wrong and the operator's observation "tools have a clock via arb receipts" surfaced the correct fix). The pattern is reusable across any change anchor (GHI, OBPI, or draft description) but only if formalized as a durable surface. **After this ADR, `gz justify` produces an evidence-grounded 8-section scaffold for any GHI/OBPI/draft; operators and agents fill the reasoning blocks; filled walkthroughs are greppable for audit replay via `gz justify validate <file>`.** The skill is advisory — not a mechanical gate — and is suggested by upstream skills (`gz-adr-evaluate` on low scores, `gz-obpi-pipeline` on low agent confidence) rather than enforced by hook.

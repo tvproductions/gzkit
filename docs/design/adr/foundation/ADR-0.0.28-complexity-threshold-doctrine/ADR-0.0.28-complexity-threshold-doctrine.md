@@ -29,6 +29,12 @@ The narrative below referring to *"`.gzkit/rules/complexity-thresholds.md`"* as 
 
 This ADR is the second foundation in the four-ADR complexity-doctrine cluster (0.0.27 / 0.0.28 / 0.0.29 / 0.0.30). It consumes ADR-0.0.27's distilled-characteristics document via the citation tuple from OBPI-0.0.27-05, produces the `ThresholdTable` data contract that ADR-0.0.29 (advisor) and ADR-0.0.30 (authoring-guidance) bind against, and gates the cluster's downstream surfaces via `gz validate --complexity-thresholds` integrated into `gz check`. The mantra binds the choice toward one canonical home for thresholds; the Q4 rejection from ADR-0.0.27 binds the choice toward fail-closed validation; the OBPI-0.0.27-05 citation contract binds the choice toward percentile + absolute pairing for refresh portability.
 
+## Why foundation tier?
+
+Without this ADR, complexity thresholds drift silently — the advisor's band cutoffs live in code as magic numbers, the exemplar-corpus link is informal, and a threshold change can land without a witness to the calibration that justifies it.
+
+This ADR authors a port: the complexity-threshold rule file contract (versioned, validator-checked, exemplar-grounded) that every advisor invocation reads against.
+
 ## Intent
 
 gzkit's complexity-doctrine cluster needs a single canonical threshold table that maps per-metric numeric boundaries to trigger semantics (block / warn / advise). Without ADR-0.0.28, the threshold values would proliferate across xenon configuration flags, advisor rule tables (ADR-0.0.29), authoring-guidance prose (ADR-0.0.30), and the existing complexity-reduction-xenon chore — drifting independently each time any one of them is amended. The MAKE LLM STOCHASTIC VIBES INERT mantra forbids that drift class structurally; situational thresholds are doctrine drift by another name (the Q4 graceful-degradation rejection from ADR-0.0.27 § Decision applies here too). This ADR consumes ADR-0.0.27's distilled-characteristics document via the OBPI-0.0.27-05 citation contract and produces the binding threshold table that all downstream complexity surfaces honor.

@@ -19,6 +19,12 @@ promoted_from: ADR-pool.pool-triage-skill
 
 {persona}
 
+## Why foundation tier?
+
+Without this ADR, pool triage is ad-hoc operator judgment — there's no skill, no rendered surface, no mechanical pass that ranks pool entries by readiness/dependency/staleness for the operator's next promotion choice.
+
+This ADR authors a port: the `gz-adr-pool-triage` ceremony contract every pool-triage invocation honors.
+
 ## Intent
 
 Capture design intent for a `pool-triage` skill that answers *"which pool ADR

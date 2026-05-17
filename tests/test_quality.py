@@ -378,6 +378,22 @@ class TestAdrPathContractLint(unittest.TestCase):
             self.assertTrue(result.success)
 
 
+class TestKindInvarianceInCheckPipeline(unittest.TestCase):
+    """REQ-0.0.35-04-06: kind-invariance audit must be in gz check."""
+
+    def test_kind_invariance_in_check_steps(self) -> None:
+        """REQ-0.0.35-04-06: gz check pipeline includes kind_invariance scope."""
+        from gzkit.commands.quality import _build_check_steps
+
+        steps = _build_check_steps()
+        step_names = [name for name, _ in steps]
+        self.assertIn(
+            "Kind invariance",
+            step_names,
+            "gz check aggregator must include the Kind invariance step",
+        )
+
+
 class TestDecisionDocProof(unittest.TestCase):
     """Tests for decision_doc proof type in product proof gate.
 

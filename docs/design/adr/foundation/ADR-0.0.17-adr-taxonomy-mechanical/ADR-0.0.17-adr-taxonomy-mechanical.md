@@ -16,6 +16,12 @@ kind: foundation
 
 This ADR is a Foundation addition. Foundations are app/system invariants and identity-shaping facts, conditions, concepts, and semantics — and "what kind of ADR am I writing" is exactly that. The companion ADR-0.0.18 lands the operator doctrine; this ADR lands the mechanical enforcement so the doctrine has a schema to refer to.
 
+## Why foundation tier?
+
+Without this ADR, gzkit's kind taxonomy is silent convention — pool is named but foundation and feature are encoded only by `0.0.x` semver in `AGENTS.md`, and `gz plan create` has no `--kind` parameter to express authoring intent, so adopters cannot unambiguously describe their ADRs.
+
+This ADR authors a port: the `kind`/`semver`/id-prefix consistency contract that every ADR-emitting surface (scaffolder, promoter, validator) must honor.
+
 ## Intent
 
 gzkit's ADR model has three conceptual kinds but only one is first-class. **Pool** is named and has CLI support (`ADR-pool.<slug>`, `gz adr promote`). **Foundation** is implicit — encoded by `0.0.x` semver convention and documented only in `AGENTS.md:194–217`. **Feature** is unnamed anywhere in the CLI, skills, schemas, or scaffolded governance docs. Adopters cannot unambiguously describe their ADRs, and `gz plan create` has no `--kind` parameter to express intent at authoring time. Reported by the RHEA adopter as GZKIT-BOOTSTRAP-009 (GHI #218); RHEA paused bootstrap at end of Session 3 rather than commit ADR-001 in a vocabulary vacuum.

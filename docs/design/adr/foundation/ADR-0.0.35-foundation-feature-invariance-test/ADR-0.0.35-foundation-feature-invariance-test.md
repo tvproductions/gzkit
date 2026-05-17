@@ -14,6 +14,12 @@ date: 2026-04-26
 
 **Active persona:** `main-session` — operator-facing doctrine author who treats kind classification as a load-bearing decision, not a tagging chore. ADR-0.0.18 supplied decision *guidance* (heuristics, worked examples, decomposition narrative); this ADR supplies the *invariance test* — a one-line mechanical question that resolves edge cases the heuristic alone leaves ambiguous. The craft standard is: an adopter facing a kind decision should be able to answer the test in one sentence, with the same answer the project's authors would give.
 
+## Why foundation tier?
+
+Without this ADR, kind classification stays heuristic-only and adopters disagree on what foundation means at the edges (substrate-vs-port, doctrine-vs-tooling) — the foundation tier loses its meaning at exactly the boundary where it most needs to hold.
+
+This ADR authors a port: the foundation/feature invariance-test contract every kind-classifying surface (scaffolder, validator, design skill prompt) binds to.
+
 ## Intent
 
 ADR-0.0.18 (ADR Taxonomy — Operator Doctrine, Validated) lands the kind/lane decision playbook for adopters: how to decompose PRDs into ADRs, when to pool vs. promote, how to group epics, and worked examples for foundation-vs-feature classification. That doctrine is sufficient for the typical case — *"is this app-system identity, or is this a named capability?"* routes most decisions cleanly.

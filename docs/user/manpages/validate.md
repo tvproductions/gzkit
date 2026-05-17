@@ -14,6 +14,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--scenario-reachability] [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
             [--advisor-proof-binding] [--vendor-manifest]
+            [--kind-invariance]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
 ```
 
@@ -516,6 +517,44 @@ $ uv run gz validate --vendor-manifest
 |------|---------|----------|
 | 0 | Manifest validates clean | — |
 | 3 | Schema violation or missing content-type route | Add the missing entry to `data/vendor-manifest.json` |
+
+### `--kind-invariance`
+
+Validates that every ADR marked `kind: foundation` carries a substantive
+`## Why foundation tier?` section in its design rationale. Foundation-kind ADRs
+set system invariants and identity-shaping facts; the Why-foundation-tier
+section explicitly states the architectural justification for foundation status
+and articulates why this policy must survive across releases. Enforced under
+ADR-0.0.35 (Foundation-Kind Doctrine).
+
+**When to use:** After promoting a pool ADR to foundation kind, or as part of a
+`gz check` validation sweep to audit tier-consistency.
+
+```bash
+uv run gz validate --kind-invariance
+```
+
+**Examples:**
+
+```text
+$ uv run gz validate --kind-invariance
+Validated: kind_invariance
+```
+
+```text
+$ uv run gz validate --kind-invariance
+❌ Validation failed with 1 error(s):
+
+   → docs/design/adr/foundation/ADR-0.0.35/ADR-0.0.35.md
+    Foundation-kind ADR missing ## Why foundation tier? section
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | All foundation ADRs have Why-foundation-tier section | — |
+| 1 | Parsing or discovery error; foundation ADR missing the section | Add `## Why foundation tier?` section to the ADR and document the architectural justification |
 
 ### `--surface-fidelity`
 

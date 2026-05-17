@@ -29,6 +29,12 @@ wants edits" framing because skills/rules/templates/personas are themselves
 authored at `.gzkit/` in this very repo and cannot be moved without
 displacing the authoring surface.
 
+## Why foundation tier?
+
+Without this ADR, `gz init` cannot reliably scaffold canonical surfaces from the wheel — skills, rules, personas, templates, chores all bootstrap via ad-hoc copy logic, and an adopter's fresh project drifts from the shipped wheel content immediately.
+
+This ADR authors a port: the T0-byte-equivalent canonical-surface packaging contract (canonical = package-copy = wheel-shipped) that every scaffolder must honor.
+
 ## Intent
 
 Mechanically satisfy the T0 distribution invariant authored by ADR-0.0.31

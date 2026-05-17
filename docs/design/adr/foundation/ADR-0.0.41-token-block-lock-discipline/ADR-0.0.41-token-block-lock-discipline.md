@@ -20,6 +20,12 @@ mechanism whose write-side is judgment-driven while the read-side is
 mechanical. Anti-vibing mantra (AGENTS.md) applies sharply here:
 "smallest-vibing-surface" framing, never maintenance-burden framing.
 
+## Why foundation tier?
+
+Without this ADR, multi-agent coordination has no lock discipline — two agents can claim the same OBPI simultaneously, lock release is decoupled from handoff/register entries, and the abandon path can leak claims into orphan locks.
+
+This ADR authors a port: the token-block lock-discipline contract every claim/release/abandon surface (and the validator that audits them) binds to.
+
 ## Intent
 
 Reframe the gzkit OBPI lock as the kit's equivalent of railway absolute-block

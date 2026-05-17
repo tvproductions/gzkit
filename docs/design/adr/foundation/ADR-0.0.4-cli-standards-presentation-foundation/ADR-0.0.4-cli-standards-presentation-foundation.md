@@ -10,6 +10,12 @@ date: 2026-03-22
 
 # ADR-0.0.4: CLI Standards & Presentation Foundation
 
+## Why foundation tier?
+
+Without this ADR, every gzkit command absorbed into the CLI lands on an amateur chassis — inconsistent output, no shared help-text standards, no epilog templates, no OutputFormatter — making the CLI unfit as a governance tool that operators and agents depend on.
+
+This ADR authors a port: the CLI presentation contract (OutputFormatter, StableArgumentParser, exit-code epilogs, common flags) that every command handler must honor.
+
 ## Intent
 
 gzkit's CLI presentation is inferior to airlineops and opsdev. Help text is incomplete

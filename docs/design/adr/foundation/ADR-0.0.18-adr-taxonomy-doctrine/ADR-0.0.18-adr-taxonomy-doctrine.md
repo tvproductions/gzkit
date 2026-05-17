@@ -16,6 +16,12 @@ kind: foundation
 
 This ADR is a Foundation addition and Lite lane: pure doctrine, no external contracts touched. Foundation-kind rigor applies to authoring (attestation, Gate 5 walkthrough) because doctrine drift is an app-system invariant drift — adopters read doctrine to ground their decisions, and stale doctrine mis-routes future ADRs.
 
+## Why foundation tier?
+
+Without this ADR, adopters have the kind/lane CLI vocabulary from ADR-0.0.17 but no operator doctrine — "should I make this a foundation?" remains per-author judgment, and the foundation/feature distinction collapses without shared decision criteria.
+
+This ADR authors a port: the kind-classification decision playbook every adopter applies when decomposing PRDs into ADRs.
+
 ## Intent
 
 ADR-0.0.17 lands the mechanical taxonomy (`kind:` field, `--kind` CLI, `--taxonomy` validator). That closes the naming gap GZKIT-BOOTSTRAP-009 surfaced — but names alone don't answer "should I make this a foundation?" Adopters scaffolding their first ADR still need guidance on:

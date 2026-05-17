@@ -20,6 +20,12 @@ date: 2026-04-25
 
 This ADR is the fourth and closing foundation in the four-ADR complexity-doctrine cluster (0.0.27 corpus / 0.0.28 thresholds / 0.0.29 advisor / 0.0.30 authoring-guidance). It is the lightest-touch trigger-semantic surface (consuming the advise band of ADR-0.0.28) and the cluster's loop-closer with ADR-0.0.19's pre-execution reasoning-walkthrough doctrine. The cluster's mantra (5:1 governance-to-output ratio is the product) holds even at this lightest-touch layer — operator-bandwidth-protection does NOT mean operator-decision-bypass.
 
+## Why foundation tier?
+
+Without this ADR, complexity hints fire only post-commit — authors don't see advisor diagnosis until the gate flags them, so the feedback loop is too late to shape the code as it's written.
+
+This ADR authors a port: the authoring-time complexity-hint contract (`gz complexity guide`, editor LSP-style protocol) every authoring surface can consume before commit.
+
 ## Intent
 
 ADR-0.0.29's advisor is the trigger-time response surface — it fires when a metric crosses warn or block at commit time. ADR-0.0.30 is the upstream-prevention complement: it surfaces complexity hints to the developer while they are authoring code, before the metric crosses any band, so refactor decisions land at design time rather than at gate time. The two surfaces share `AdvisorDiagnosis` schema (consumed) and the cluster's distilled-characteristics + threshold table; they differ in trigger time (authoring vs. commit), presentation (in-line hint vs. structured diagnosis), and consumer surface (editor/IDE + `gz justify` vs. CLI + pre-commit hook).

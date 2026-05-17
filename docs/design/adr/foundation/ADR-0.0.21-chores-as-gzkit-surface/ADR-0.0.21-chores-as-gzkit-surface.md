@@ -20,6 +20,12 @@ change to the resolver, scaffolder, packaging, and registry must land
 complete (tests with implementation, imports with usage, docs with
 behavior change).
 
+## Why foundation tier?
+
+Without this ADR, chores are operator folk-tradition — registered via ad-hoc convention, executed via per-chore scripts, with no first-class surface discipline, no manifest, no validator, no `gz init` scaffolding.
+
+This ADR authors a port: the chore-as-canonical-surface contract that registry, scaffolder, runner, and acceptance proof all bind to.
+
 ## Intent
 
 Chores are governance surfaces — the same class as skills, rules, personas,

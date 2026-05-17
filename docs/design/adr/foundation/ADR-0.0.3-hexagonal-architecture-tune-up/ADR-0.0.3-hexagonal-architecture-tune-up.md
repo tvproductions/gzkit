@@ -10,6 +10,12 @@ date: 2026-03-15
 
 # ADR-0.0.3-hexagonal-architecture-tune-up: Hexagonal Architecture Tune-Up
 
+## Why foundation tier?
+
+Without this ADR, gzkit has no separation between core domain logic and I/O concerns — every command handler mixes ports, adapters, and business logic, making the codebase untestable without patching internals and structurally unable to support the governance pipeline the project exists to deliver.
+
+This ADR authors a port: the hexagonal-layering contract (FileStore, ProcessRunner, LedgerStore, ConfigStore protocols) that every I/O implementation must honor.
+
 ## Intent
 
 1. **Hexagonal layering** — Separate core domain logic from I/O and CLI concerns via ports and adapters

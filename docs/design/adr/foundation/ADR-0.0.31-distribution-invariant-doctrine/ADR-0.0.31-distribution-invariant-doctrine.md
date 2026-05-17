@@ -19,6 +19,12 @@ and that any divergence is invariant drift, not a packaging convenience.
 Writes doctrine that downstream invariants and audits can stand on without
 re-litigating the premise.
 
+## Why foundation tier?
+
+Without this ADR, wheel distribution drift is invisible — a canonical skill or rule landing on disk without being added to `pyproject.toml` wheel includes silently fails to ship in `pip install py-gzkit`, and adopters get partial installs.
+
+This ADR authors a port: the distribution-invariant contract (on-disk = manifest = wheel-includes) that `gz validate --distribution` enforces against every release.
+
 ## Intent
 
 Codify a **T0 distribution invariant** in `docs/governance/trust-doctrine.md`

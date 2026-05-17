@@ -574,6 +574,17 @@ def run_adr_status_fresh_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --adr-status-fresh", cwd=project_root)
 
 
+def run_kind_invariance_audit(project_root: Path) -> QualityResult:
+    """Run the kind-invariance audit for foundation-tier ADRs (OBPI-0.0.35-04).
+
+    Fails closed when any ``kind: foundation`` ADR is missing or has a
+    placeholder-only "## Why foundation tier?" section. Recovery: add/update
+    the section with a substantive one-sentence answer to the invariance test
+    ('Without this ADR, the project would not be the project because ...').
+    """
+    return run_command("uv run gz validate --kind-invariance", cwd=project_root)
+
+
 def run_insights_shape_audit(project_root: Path) -> QualityResult:
     """Run the agent-insights.jsonl record-shape audit (GHI #358).
 

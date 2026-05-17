@@ -17,6 +17,12 @@ Active persona: `main-session` — craftsperson, governance-aware, whole-file-re
 
 This ADR closes the doctrinal-to-mechanical gap left by ADR-0.0.39. Validator authoring requires reading the canonical schema (OBPI-0.0.39-02) before writing the audit; reading the existing `_UTF8_PIPE_WAIVERS` and `data/security_surfaces.json` patterns before designing the leakage waiver registry; reading every existing judge surface (gz-adr-evaluate red-team, advisor(), complexity-distill) before drafting the retrofit. Vibe-shaped validator implementation — pattern-matching another validator's structure without verifying the actual receipt-emit shape — is the canonical failure mode this ADR's careful sequencing exists to prevent. Honest enumeration of mitigation gaps in the retrofit is craft, not deference; concealing a gap to ship faster reproduces the doctrine-drift class the survey paper names.
 
+## Why foundation tier?
+
+Without this ADR, judge outputs have no mechanical enforcement — judges can leak training-corpus bias, output unstructured prose, or self-attest verdicts that don't bind to evidence, and the judge contract from ADR-0.0.39 stays honor-system.
+
+This ADR authors a port: the judge-enforcement validator contract (leakage scope, output discipline scope, meta-eval CLI) that every judge surface must pass.
+
 ## Intent
 
 **Current state.** ADR-0.0.39 codifies the LLM-as-judge doctrine and lands the `JudgeInvocation` schema. The schema is the contract; nothing yet enforces it. Specifically: (a) **preference-leakage** is unflagged across the existing receipt corpus — `gz-adr-evaluate --red-team` and runtime `advisor()` likely run same-family judging today; (b) **output discipline** is unenforced — receipts could (in principle) populate `verdict` without `explanation_text` and pass; (c) **meta-evaluation cadence** has no executor — the doctrine names a cadence but no command computes the kappa metric; (d) **existing surfaces** still emit pre-schema receipts because the retrofit hasn't run. ADR-0.0.39 is, until this ADR closes, a Promotable-but-unpromoted rule per `docs/governance/advisory-rules-audit.md` — the canonical anti-pattern the maxim disqualifies.

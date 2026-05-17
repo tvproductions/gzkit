@@ -20,6 +20,12 @@ date: 2026-04-25
 
 This ADR is the third foundation in the four-ADR complexity-doctrine cluster (0.0.27 / 0.0.28 / 0.0.29 / 0.0.30) and the largest single-ADR ceremony in the cluster (nine OBPIs). The advisor consumes ADR-0.0.27 OBPI-04's distilled-characteristics document and ADR-0.0.28-02's `ThresholdTable` model directly — neither is reimplemented; both are imported. The advisor is the trigger-time response surface ADR-0.0.30 (authoring-guidance, the cluster's fourth foundation) builds on as the upstream-prevention complement.
 
+## Why foundation tier?
+
+Without this ADR, intrinsic complexity attestation has no calibrated advisor — operators receive raw metric scores with no verdict band, no diagnosis, no proof binding, so complexity gates collapse to either noise or fail-on-everything.
+
+This ADR authors a port: the advisor-diagnosis contract (verdict, diagnosis, proof tuple) that the CLI, hooks, and attestation surface all bind to.
+
 ## Intent
 
 When a metric crosses the `warn` band per ADR-0.0.28's threshold table, the developer needs a structured diagnosis: which authority (Fowler *Refactoring* 2e, Martin SOLID, Page-Jones connascence taxonomy, Constantine coupling/cohesion modes — the diagnostic vocabulary canonized in ADR-0.0.27) speaks to this kind of complexity, what refactor archetype applies (Long Parameter List → Parameter Object, Arrowhead → Guard Clauses, Switch-on-Type → Polymorphism, Feature Envy → Move Method, etc.), what specific lines or AST nodes are responsible, and what the recommended next move is. Without ADR-0.0.29, the developer gets a number (`CC=14`) and no doctrinal frame for action — the canonical training-corpus failure mode the MAKE LLM STOCHASTIC VIBES INERT mantra forbids at the trigger-time response layer. The advisor is the trigger-time response surface that closes that gap.
