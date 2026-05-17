@@ -1,5 +1,17 @@
 # gzkit Release Notes
 
+## v0.26.5 (2026-05-17)
+
+Patch release fixing a section-scoping defect in `gz obpi complete` that caused attestation substitution to target the wrong line when the implementation summary contained a `- Attestation:` bullet.
+
+### CLI Fixes
+
+- **#479** — Fixed `gz obpi complete` exiting with "Missing human attestation content" when `--implementation-summary` included a `- Attestation:` bullet. The `_update_human_attestation` function applied `re.sub` with `count=1` against the full brief string, causing the first globally-matched `^- Attestation:` line — inside the Implementation Summary section — to be substituted instead of the correct line inside `## Human Attestation`. The fix scopes substitution to the `## Human Attestation` section body, matching the section-scoped logic already used by `_has_human_attestation_content`.
+
+### Stats
+
+- 1 GHI closed
+
 ## v0.26.4 (2026-05-16)
 
 Closes four runtime defects surfaced during the ADR-0.0.32 closeout ceremony and a follow-on persona dispatch coverage audit: validator recursion fix, upgrade carve-out enforcement, skill surface cleanup, and ceremony-persona wiring.

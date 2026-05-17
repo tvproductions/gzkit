@@ -1,0 +1,18 @@
+                                ADR Overview                                
+┌────────────┬──────┬───────────┬────────────────┬──────┬──────────┬───────┐
+│ ADR        │ Lane │ Lifecycle │ Closeout Phase │ OBPI │ Closeout │ QC    │
+├────────────┼──────┼───────────┼────────────────┼──────┼──────────┼───────┤
+│ ADR-0.0.35 │ lite │ Completed │ attested       │ 4/4  │ READY    │ READY │
+└────────────┴──────┴───────────┴────────────────┴──────┴──────────┴───────┘
+                                     OBPIs                                     
+┌────┬────────────────────────────────┬────────────────────┬───────────┬──────┐
+│ #  │ OBPI ID                        │ State              │ Brief     │ Done │
+├────┼────────────────────────────────┼────────────────────┼───────────┼──────┤
+│ 01 │ OBPI-0.0.35-01-concept-page    │ attested_completed │ completed │ yes  │
+│ 02 │ OBPI-0.0.35-02-skill-prompt-en │ attested_completed │ completed │ yes  │
+│    │ richment                       │                    │           │      │
+│ 03 │ OBPI-0.0.35-03-why-foundation- │ attested_completed │ completed │ yes  │
+│    │ tier-convention                │                    │           │      │
+│ 04 │ OBPI-0.0.35-04-kind-invariance │ attested_completed │ completed │ yes  │
+│    │ -validator                     │                    │           │      │
+└────┴────────────────────────────────┴────────────────────┴───────────┴──────┘

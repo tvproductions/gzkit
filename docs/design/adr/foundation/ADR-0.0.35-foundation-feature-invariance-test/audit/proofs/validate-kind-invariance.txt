@@ -1,0 +1,3 @@
+Validated: kind_invariance
+
+✓ All validations passed (1 scopes).
