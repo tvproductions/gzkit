@@ -1,25 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.34-08-vendor-manifest-expansion",
-  "timestamp": "2026-05-17T07:55:00+00:00",
+  "obpi_id": "OBPI-0.0.35-01-concept-page",
+  "timestamp": "2026-05-17T12:00:00+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.34-08-vendor-manifest-expansion.md",
+  "plan_file": "OBPI-0.0.35-01-concept-page.md",
   "gaps_found": 0,
-  "notes": "CLI structural FAIL (5 gaps) is new-file-artifact only: all gaps are 'Allowed path does not exist in repository' for data/vendor-manifest.json, src/gzkit/schemas/vendor_manifest.json, src/gzkit/content/vendors.py, src/gzkit/governance/trust_audits.py (package path mismatch — correct paths are trust_audits/vendor_manifest.py and trust_audits/__init__.py), and tests/content/test_vendor_manifest.py — none exist yet because this OBPI creates them from scratch. Precedent: same pattern as OBPI-0.0.34-07 receipt. Prerequisite mismatch: brief claims data/vendor-manifest.json and src/gzkit/schemas/vendor_manifest.json are 'ADR-0.16.0 OBPI-03 artifacts' but OBPI-0.16.0-03 only added a vendors section to .gzkit/manifest.json; render pipeline explicit comment 'OBPI-0.0.34-08 (vendor manifest) replaces this table when it lands' confirms these files are created here. Allowlist expansion documented: src/gzkit/governance/trust_audits/vendor_manifest.py, src/gzkit/governance/trust_audits/__init__.py, src/gzkit/commands/validate_cmd.py, src/gzkit/cli/parser_maintenance.py added with rationale. Scope collisions (21) are advisory-only. ADR<->OBPI: all checks PASS — objective quotes ADR Decision item #8 verbatim, allowed paths consistent with integration points, 4 REQs cover schema validation/pipeline consumption/scope guard/validate scope, Heavy lane matches. Plan<->OBPI: all checks PASS — 9 steps map to 4 REQs (TDD red-green pattern), all files documented (brief + expanded), verification commands present. Destination-in-mind: CREATE data/vendor-manifest.json with 8 content types all routing to ['claude'], replace _VENDOR_ROUTING frozenset with manifest-driven vendors.routes_for() call, add gz validate --vendor-manifest via new trust_audits/vendor_manifest.py submodule. Rejected: (1) blocker GHI halt — pipeline.py comment names OBPI-08 as creator; (2) extend .gzkit/manifest.json — different concern; (3) reuse manifest.json schema — brief requires separate schema; (4) single trust_audits.py — trust_audits is already a package.",
-  "_original_gaps_detail": [
-    "Allowed path does not exist in repository: data/vendor-manifest.json",
-    "Allowed path does not exist in repository: src/gzkit/schemas/vendor_manifest.json",
-    "Allowed path does not exist in repository: src/gzkit/content/vendors.py",
-    "Allowed path does not exist in repository: src/gzkit/governance/trust_audits.py",
-    "Allowed path does not exist in repository: tests/content/test_vendor_manifest.py"
-  ],
-  "scope_collisions": [
-    {
-      "sibling_adr": "ADR-0.0.42",
-      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
-      "contested_paths": [
-        "docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/obpis/OBPI-0.0.34-08-vendor-manifest-expansion.md"
-      ],
-      "advisory": true
-    }
-  ]
+  "notes": "CLI structural check: 2 expected gaps — no plan file (created below) and new file not yet on disk (new-file-artifact pattern, same as OBPI-0.0.34-08 precedent). 54 scope-collision overlaps all advisory (contested OBPIs are Completed). ADR<->OBPI: all 7 checks PASS — objective quotes ADR checklist item #1 verbatim, allowed paths match ADR integration points, denied paths reserve skills/template/validator for OBPI-02/03/04, 8 REQs cover all ADR Decision items 1-5 plus cross-link/discoverability/mkdocs clean, Lite lane consistent, foundation-kind attestation correctly inherited. Destination-in-mind: CREATE docs/user/concepts/foundation-feature-invariance-test.md mirroring adr-taxonomy.md structure (no frontmatter, prose-first, H1/H2 headings), INSERT mkdocs.yml nav after 'ADR Taxonomy' entry (semantic companion slot), ADD concepts-section entry to index.md, APPEND cross-reference to runbook.md PRD→ADR Derivation section. Rejected: (1) strict-alpha nav placement before Gates — semantic companion after ADR Taxonomy preferred; (2) inline AGENTS.md edit — ADR routes concept page first; (3) pervasive index.md mentions — brief specifies single concepts-section listing. Plan file written: OBPI-0.0.35-01-concept-page.md."
 }

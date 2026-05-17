@@ -183,5 +183,6 @@ kind safe to grow over time: its cadence is detached from the release clock.
 
 - [ADR-0.0.17 (mechanical taxonomy)](../../design/adr/foundation/ADR-0.0.17-adr-taxonomy-mechanical/ADR-0.0.17-adr-taxonomy-mechanical.md) — `kind:` field, `--kind` CLI, `--taxonomy` validator.
 - [ADR-0.0.18 (this doctrine)](../../design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md) — operator doctrine source.
+- [Foundation/Feature Invariance Test](foundation-feature-invariance-test.md) — one-line test that resolves the substrate-vs-port and doctrine-vs-tooling edge cases the ADR-0.0.18 heuristic leaves ambiguous.
 - [Lanes](lanes.md) — the other axis (Lite vs Heavy).
 - [Lifecycle](lifecycle.md) — how ADRs move from Draft through Attested.

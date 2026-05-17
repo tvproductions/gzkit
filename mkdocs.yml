@@ -67,6 +67,7 @@ nav:
     - Lanes: user/concepts/lanes.md
     - Lifecycle: user/concepts/lifecycle.md
     - ADR Taxonomy: user/concepts/adr-taxonomy.md
+    - Foundation/Feature Invariance Test: user/concepts/foundation-feature-invariance-test.md
     - OBPIs: user/concepts/obpis.md
     - Closeout Ceremony: user/concepts/closeout.md
     - Daily Workflow: user/concepts/workflow.md

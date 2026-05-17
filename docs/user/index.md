@@ -51,3 +51,17 @@ gzkit enforces a ledger-first GovZero workflow:
 ```text
 gz init -> gz prd -> gz plan -> gz specify -> gz obpi pipeline -> gz obpi emit-receipt -> gz obpi reconcile -> gz adr audit-check -> gz closeout -> gz attest -> gz audit -> gz adr emit-receipt
 ```
+
+---
+
+## Concepts
+
+- [Gates](concepts/gates.md) — Gate 1-5 covenant
+- [Lanes](concepts/lanes.md) — Lite vs Heavy
+- [Lifecycle](concepts/lifecycle.md) — Draft through Validated
+- [ADR Taxonomy](concepts/adr-taxonomy.md) — kind, lane, semver binding
+- [Foundation/Feature Invariance Test](concepts/foundation-feature-invariance-test.md) — one-line test for kind classification edge cases
+- [OBPIs](concepts/obpis.md) — implementation increments
+- [Closeout Ceremony](concepts/closeout.md) — ADR closeout
+- [Daily Workflow](concepts/workflow.md) — daily operational patterns
+- [Test Traceability](concepts/test-traceability.md) — REQ coverage
