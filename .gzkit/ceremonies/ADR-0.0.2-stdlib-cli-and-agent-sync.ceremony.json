@@ -1,0 +1,62 @@
+{
+  "adr_id": "ADR-0.0.2-stdlib-cli-and-agent-sync",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-05-17T11:21:43Z",
+  "updated_at": "2026-05-17T11:32:57Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-05-17T11:21:43Z",
+      "acknowledged_at": "2026-05-17T11:21:46Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-05-17T11:21:46Z",
+      "acknowledged_at": "2026-05-17T11:21:54Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-05-17T11:21:54Z",
+      "acknowledged_at": "2026-05-17T11:21:58Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-05-17T11:21:58Z",
+      "acknowledged_at": "2026-05-17T11:22:01Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-05-17T11:22:01Z",
+      "acknowledged_at": "2026-05-17T11:23:09Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-05-17T11:23:09Z",
+      "acknowledged_at": "2026-05-17T11:30:43Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-05-17T11:30:43Z",
+      "acknowledged_at": "2026-05-17T11:32:47Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-05-17T11:32:47Z",
+      "acknowledged_at": "2026-05-17T11:32:57Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-05-17T11:32:57Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz adr status ADR-0.0.2-stdlib-cli-and-agent-sync --json"
+  ],
+  "walkthrough_index": 0,
+  "attestation": "Completed",
+  "completed_at": "2026-05-17T11:32:57Z",
+  "attempt": 1,
+  "paused_at": null
+}

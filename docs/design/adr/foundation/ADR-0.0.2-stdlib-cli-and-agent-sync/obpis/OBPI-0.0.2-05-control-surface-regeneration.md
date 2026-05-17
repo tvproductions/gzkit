@@ -3,7 +3,7 @@ id: OBPI-0.0.2-05-control-surface-regeneration
 parent: ADR-0.0.2-stdlib-cli-and-agent-sync
 item: 5
 lane: Lite
-status: Pending
+status: Completed
 ---
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
@@ -15,7 +15,12 @@ status: Pending
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.2-stdlib-cli-and-agent-sync/ADR-0.0.2-stdlib-cli-and-agent-sync.md`
 - **Checklist Item:** #5 — "Update generated control surfaces to use canonical grammar. Add regression tests for canonical command path and alias behavior."
 
-**Status:** Pending — retroactive brief authored 2026-04-15 under GHI #160 Phase 3 Mode F. Operator attestation required (Foundation ADR).
+**Status:** Completed — retroactive brief authored 2026-04-15 under GHI #160 Phase 3 Mode F; operator attestation recorded 2026-05-17.
+
+## ALLOWED PATHS
+
+- `src/gzkit/commands/sync.py`
+- `docs/user/manpages/agent-sync-control-surfaces.md`
 
 ## Objective
 
@@ -29,12 +34,14 @@ Regenerate every vendor control surface to reflect the canonical `gz agent sync 
 
 ### Implementation Summary
 
+
 - Sync grammar drives all control-surface regeneration
 - Drift detection lives in `gz check-config-paths` and `gz validate --surfaces`
 - Date authored: 2026-04-15 (retroactive backfill)
 - Defects noted: none
 
 ### Key Proof
+
 
 ```bash
 $ uv run gz check-config-paths
@@ -43,5 +50,6 @@ $ uv run gz validate --surfaces
 
 ## Human Attestation
 
-- Attestor: pending — operator attestation required (Foundation ADR)
-- Date: pending
+- Attestor: `g0`
+- Attestation: attest completed — retroactive ratification of control-surface regeneration and drift checks. Re-verified 2026-05-17 against HEAD 35c5ace: uv run gz check-config-paths → 'Config-path audit passed.'; uv run gz validate --surfaces → 'All validations passed (1 scopes).' The canonical-to-mirror propagation (.gzkit/ → .claude/, .agents/, .github/) is operational and drift-gated. REQ-0.0.2-05-01 through REQ-0.0.2-05-03 all hold. Brief authored retroactively 2026-04-15 under GHI #160 phase 3 mode f; this attestation closes the ledger gap.
+- Date: 2026-05-17
