@@ -131,6 +131,52 @@ the ADR is not foundation.
 
 ---
 
+## Why foundation tier? (the convention)
+
+When `gz plan create <name> --kind foundation` scaffolds a new foundation ADR,
+it pre-populates a `## Why foundation tier?` section positioned as the second
+H2 in the body — between `## Persona` and `## Intent`. This section is
+the canonical home for the invariance-test answer and the port-vs-plug framing.
+
+**The exact heading** (byte-identical — OBPI-04's validator pins this string):
+
+```
+## Why foundation tier?
+```
+
+Sentence case. Trailing question mark. No variation.
+
+**The two scaffolded prompts:**
+
+1. *Invariance-test answer:* "Without this ADR, would the project still be the
+   project?" — answered in one sentence, naming the invariance explicitly.
+2. *Port-vs-plug framing:* "Is this ADR a port (an abstract contract every
+   implementation must honor) or a plug (one implementation behind an existing
+   port)?" — answered with port or plug and a one-line justification.
+
+**Filled-in example** (from ADR-0.0.35 itself):
+
+```
+## Why foundation tier?
+
+Without this ADR, kind classification for foundation candidates remains
+heuristic-only — the project's ability to distinguish substrate from port
+collapses to per-author judgment, and the foundation tier loses its meaning.
+Foundation (the invariance test is load-bearing doctrine, not a preference).
+
+This ADR is a port: it defines the abstract contract (the invariance test and
+the hexagonal-ports lens) that every kind-classification decision must honor.
+A future ADR that implements a specific classification tool is a plug behind
+this port.
+```
+
+**Scope:** Forward-only convention. Existing foundation ADRs are not backfilled
+by this OBPI. When `gz validate --kind-invariance` ships (OBPI-04), it reports
+drift on existing ADRs that lack the section — producing the work list for a
+backfill sweep.
+
+---
+
 ## Related
 
 - [ADR Taxonomy](adr-taxonomy.md) — the three kinds (pool, foundation,

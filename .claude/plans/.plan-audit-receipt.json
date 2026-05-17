@@ -1,8 +1,9 @@
 {
-  "obpi_id": "OBPI-0.0.35-02-skill-prompt-enrichment",
-  "timestamp": "2026-05-17T12:19:36.467553+00:00",
+  "obpi_id": "OBPI-0.0.35-03-why-foundation-tier-convention",
+  "timestamp": "2026-05-17T15:34:43.279420+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.35-02-skill-prompt-enrichment.md",
+  "plan_file": "OBPI-0.0.35-03-why-foundation-tier-convention.md",
   "gaps_found": 0,
-  "notes": "CLI structural check PASS. 3 scope-collision overlaps (ADR-0.0.43/OBPI-09, ADR-0.0.18/OBPI-05, ADR-0.0.42/OBPI-04) are advisory — contested OBPIs are Draft/in-flight for different enrichment angles; this OBPI's edits are additive within kind-decision sections only. ADR<->OBPI: all 7 checks PASS — objective matches ADR checklist item #2 verbatim, allowed paths are exactly the 4 canonical skill SKILL.md files, denied paths reserve mirrors and source for other OBPIs, 10 REQs cover ADR decision items 1-2 (verbatim test + lens + link + version + sync), Lite lane consistent, foundation-kind attestation correctly inherited. Destination-in-mind: surgical enrichment of kind-prompt sections in 4 skills with invariance test + hexagonal-ports lens + concept-page link; minor skill-version bumps; mirror sync. Rejected: (1) new standalone section per skill — OBPI requires enrichment at existing kind-prompt section; (2) DRY shared include — markdown skills have no include mechanism. Plan file written: OBPI-0.0.35-02-skill-prompt-enrichment.md."
+  "gaps": [],
+  "notes": "Brief Allowed Paths corrected (gz-plan.md -> plan-create.md) before plan was written. ADR<->OBPI alignment: all checks Aligned after brief fix."
 }

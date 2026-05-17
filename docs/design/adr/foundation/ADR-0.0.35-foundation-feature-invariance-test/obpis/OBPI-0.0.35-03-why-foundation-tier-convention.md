@@ -3,7 +3,7 @@ id: OBPI-0.0.35-03-why-foundation-tier-convention
 parent: ADR-0.0.35-foundation-feature-invariance-test
 item: 3
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.35-03-why-foundation-tier-convention: Why-Foundation-Tier Section Convention + Scaffolding Template Update
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.35-foundation-feature-invariance-test/ADR-0.0.35-foundation-feature-invariance-test.md`
 - **Checklist Item:** #3 — "Why-foundation-tier section convention — define the `## Why foundation tier?` section every foundation ADR carries (one-line answer to the invariance test plus port-vs-plug framing); update the foundation ADR template in `gz plan create --kind foundation` scaffolding so new ADRs scaffold the section pre-populated; document the convention in the concepts page authored under OBPI-01. Depends on OBPI-01."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -29,7 +29,7 @@ Define and codify the `## Why foundation tier?` section convention for every fou
 - `src/gzkit/commands/plan.py` — renderer wiring for the new section (only if the section needs conditional rendering for foundation vs feature/pool; minimal logic)
 - `docs/user/concepts/foundation-feature-invariance-test.md` — concept-page section documenting the convention (this OBPI extends the OBPI-01 page; non-conflicting addition under a `## Why foundation tier? (the convention)` subsection)
 - `docs/user/runbook.md` — cross-reference at the `gz plan create --kind foundation` section
-- `docs/user/manpages/gz-plan.md` — manpage update reflecting the new section in scaffolding output (if manpage discusses scaffolded structure)
+- `docs/user/manpages/plan-create.md` — manpage update reflecting the new section in scaffolding output (the existing `gz plan create` manpage; the planned `gz-plan.md` belongs to ADR-0.0.31/0.0.42 scope)
 
 ## Denied Paths
 
@@ -208,15 +208,17 @@ Before this OBPI: foundation-kind ADRs have no canonical home for the invariance
 
 ### Key Proof
 
-Excerpts side-by-side: `gz plan create test-x --kind foundation` produces an ADR with `## Why foundation tier?` heading visible at the second-H2 position; `gz plan create test-y --kind feature` produces an ADR with no such heading. RED test output and GREEN test output pasted in evidence demonstrate the same.
+
+Foundation scaffolding produces the section; feature scaffolding does not. Run `uv run gz plan create test-foundation --kind foundation --semver 0.0.99 --lane lite --score-data-state 0 --score-logic-engine 0 --score-interface 0 --score-observability 0 --score-lineage 1 --dry-run` and observe `## Why foundation tier?` heading present between `## Persona` and `## Intent`. Run the same with `--kind feature --semver 0.99.0` and observe the heading absent. tests/commands/test_plan.py::TestPlanCreateKindFoundation (4 tests, 4 pass) — receipts: arb-step-unittest-0706555b5b8e41318d7144a0fc0bec23 (5235/5235 unittest pass), arb-ruff-903bbeebf3a34367be59c19ca54bb8e7 (ruff clean), arb-step-typecheck-20c3e158d9eb40b7af0c306ff82f498e (typecheck clean), arb-step-mkdocs-58548e5c4eb54d51bda3729f745cb406 (mkdocs strict clean). `gz covers OBPI-0.0.35-03` reports 7/7 REQs covered.
 
 ### Implementation Summary
 
-- Files modified: `src/gzkit/templates/adr.md`, `src/gzkit/commands/plan.py` (renderer logic if needed), `docs/user/concepts/foundation-feature-invariance-test.md`, `docs/user/runbook.md`, `docs/user/manpages/gz-plan.md` (if applicable)
-- Tests added: `tests/commands/test_plan.py` (foundation scaffolds with section; feature does not) — exact test name TBD by implementer
-- Date completed: -
-- Attestation status: -
-- Defects noted: -
+
+- Files modified: src/gzkit/templates/adr.md (added {why_foundation_tier} placeholder between ## Persona and ## Intent), .gzkit/templates/adr.md (T0 byte-parity mirror), src/gzkit/templates/__init__.py (added why_foundation_tier default empty string so non-foundation callers render cleanly), src/gzkit/commands/plan.py (module-level _WHY_FOUNDATION_TIER_SECTION constant; conditional why_foundation_tier kwarg in _render_adr_by_kind keyed on kind=="foundation"), docs/user/concepts/foundation-feature-invariance-test.md (added ## Why foundation tier? (the convention) section before ## Related with exact heading, two prompts, filled example from ADR-0.0.35), docs/user/runbook.md (cross-reference at the invariance-test mention in PRD -> ADR Derivation), docs/user/manpages/plan-create.md (What It Does item #5 describing the foundation-only section)
+- Tests added: tests/commands/test_plan.py::TestPlanCreateKindFoundation (4 test methods covering REQ-01 exact heading, REQ-02 foundation scaffolds, REQ-03 feature does not, REQ-04 two prompts, REQ-05 concept page documents, REQ-06 runbook cross-references, REQ-07 RED-GREEN cycle, REQ-09 position between Persona and Intent)
+- Implementation approach: stdlib-first per Operative Claim 1 — single template file with conditional {placeholder} resolved by renderer branch keyed on kind. Rejected alternatives: separate template files (duplication), Jinja2 conditional (third-party dep violating REQ-10)
+- Date completed: 2026-05-17
+- Attestation status: operator verbatim "attest completed" with session-evidence enrichment
 
 ## Tracked Defects
 
@@ -224,14 +226,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` — required (foundation-kind parent)
-- Attestation: -
-- Date: -
+- Attestor: `g0`
+- Attestation: attest completed — 5235/5235 unittest pass (arb-step-unittest-0706555b5b8e41318d7144a0fc0bec23); ruff clean (arb-ruff-903bbeebf3a34367be59c19ca54bb8e7); typecheck clean (arb-step-typecheck-20c3e158d9eb40b7af0c306ff82f498e); mkdocs strict clean (arb-step-mkdocs-58548e5c4eb54d51bda3729f745cb406); 7/7 REQs covered per gz covers; foundation scaffolds the `## Why foundation tier?` section between Persona and Intent with invariance-test + port-vs-plug prompts, feature scaffolding does not; concept page and runbook cross-reference the convention; T0 byte-parity preserved between .gzkit/templates and src/gzkit/templates for adr.md
+- Date: 2026-05-17
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-17
 
 **Evidence Hash:** -

@@ -3,6 +3,7 @@ from pathlib import Path
 
 from gzkit.cli import main
 from gzkit.ledger import Ledger
+from gzkit.traceability import covers
 from gzkit.validate_pkg.document import validate_document
 from tests.commands.common import CliRunner, _quick_init
 
@@ -493,3 +494,154 @@ class TestPlanTaxonomyRoundtrip(unittest.TestCase):
                 [],
                 msg="validator rejected freshly-scaffolded feature ADR",
             )
+
+
+class TestPlanCreateKindFoundation(unittest.TestCase):
+    """OBPI-0.0.35-03 — `## Why foundation tier?` section convention.
+
+    Foundation-kind ADRs scaffolded by `gz plan create --kind foundation`
+    must carry the `## Why foundation tier?` heading between `## Persona`
+    and `## Intent`, pre-populated with two author prompts (invariance-test
+    answer + port-vs-plug framing). Feature-kind ADRs must not.
+
+    @covers REQ-0.0.35-03-02 (foundation scaffolds the section)
+    @covers REQ-0.0.35-03-03 (feature does NOT scaffold the section)
+    @covers REQ-0.0.35-03-04 (two prompts present)
+    @covers REQ-0.0.35-03-07 (RED-before / GREEN-after evidence)
+    """
+
+    @covers("REQ-0.0.35-03-01")
+    @covers("REQ-0.0.35-03-02")
+    @covers("REQ-0.0.35-03-04")
+    @covers("REQ-0.0.35-03-07")
+    def test_foundation_adr_scaffolds_why_foundation_tier_section(self) -> None:
+        """Foundation scaffolding: exact heading, position, and two prompts."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            result = runner.invoke(
+                main,
+                [
+                    "plan",
+                    "create",
+                    "why-foundation-tier-scaffold",
+                    "--kind",
+                    "foundation",
+                    "--semver",
+                    "0.0.99",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            adr_path = Path(
+                "design/adr/foundation/"
+                "ADR-0.0.99-why-foundation-tier-scaffold/"
+                "ADR-0.0.99-why-foundation-tier-scaffold.md"
+            )
+            self.assertTrue(adr_path.exists(), msg=f"expected {adr_path}")
+            content = adr_path.read_text(encoding="utf-8")
+
+            # REQ-0.0.35-03-02 — section heading present, byte-identical
+            self.assertIn(
+                "## Why foundation tier?",
+                content,
+                msg="foundation ADR must scaffold `## Why foundation tier?` heading",
+            )
+
+            # REQ-0.0.35-03-09 (positioning) — heading sits between Persona and Intent
+            persona_idx = content.index("## Persona")
+            why_idx = content.index("## Why foundation tier?")
+            intent_idx = content.index("## Intent")
+            self.assertLess(
+                persona_idx,
+                why_idx,
+                msg="`## Why foundation tier?` must appear after `## Persona`",
+            )
+            self.assertLess(
+                why_idx,
+                intent_idx,
+                msg="`## Why foundation tier?` must appear before `## Intent`",
+            )
+
+            # REQ-0.0.35-03-04 — two prompts present (invariance-test + port-vs-plug)
+            # Section body extracted between its heading and the next H2.
+            section_body = content[why_idx:intent_idx]
+            self.assertIn(
+                "invariance test",
+                section_body.lower(),
+                msg="section must include invariance-test answer prompt",
+            )
+            self.assertIn(
+                "port",
+                section_body.lower(),
+                msg="section must include port-vs-plug framing prompt",
+            )
+            self.assertIn(
+                "plug",
+                section_body.lower(),
+                msg="section must include port-vs-plug framing prompt",
+            )
+
+    @covers("REQ-0.0.35-03-03")
+    def test_feature_adr_does_not_scaffold_why_foundation_tier_section(self) -> None:
+        """Feature-kind ADRs MUST NOT carry the section."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            result = runner.invoke(
+                main,
+                [
+                    "plan",
+                    "create",
+                    "no-foundation-tier-here",
+                    "--kind",
+                    "feature",
+                    "--semver",
+                    "0.99.0",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            adr_path = Path(
+                "design/adr/pre-release/"
+                "ADR-0.99.0-no-foundation-tier-here/"
+                "ADR-0.99.0-no-foundation-tier-here.md"
+            )
+            self.assertTrue(adr_path.exists(), msg=f"expected {adr_path}")
+            content = adr_path.read_text(encoding="utf-8")
+            self.assertNotIn(
+                "## Why foundation tier?",
+                content,
+                msg="feature ADR must NOT scaffold `## Why foundation tier?` heading",
+            )
+
+    @covers("REQ-0.0.35-03-05")
+    def test_concept_page_documents_why_foundation_tier_convention(self) -> None:
+        """Concept page must have a convention section."""
+        from pathlib import Path as _Path
+
+        concept_path = _Path("docs/user/concepts/foundation-feature-invariance-test.md")
+        self.assertTrue(concept_path.exists(), msg=f"concept page missing: {concept_path}")
+        content = concept_path.read_text(encoding="utf-8")
+        self.assertIn(
+            "## Why foundation tier? (the convention)",
+            content,
+            msg="concept page must contain the Why-foundation-tier convention section",
+        )
+        self.assertIn(
+            "## Why foundation tier?",
+            content,
+            msg="concept page must name the exact heading within the convention section",
+        )
+
+    @covers("REQ-0.0.35-03-06")
+    def test_runbook_cross_references_why_foundation_tier_convention(self) -> None:
+        """Runbook must cross-reference the convention."""
+        from pathlib import Path as _Path
+
+        runbook_path = _Path("docs/user/runbook.md")
+        self.assertTrue(runbook_path.exists(), msg=f"runbook missing: {runbook_path}")
+        content = runbook_path.read_text(encoding="utf-8")
+        self.assertIn(
+            "Why foundation tier?",
+            content,
+            msg="runbook must cross-reference the `## Why foundation tier?` convention",
+        )

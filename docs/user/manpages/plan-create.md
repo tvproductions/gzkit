@@ -52,6 +52,7 @@ gz plan <name> [OPTIONS]
    - `feature` → `design/adr/pre-release/<id>/<id>.md` (per-ADR folder)
    - `pool` → `design/adr/pool/ADR-pool.<slug>.md` (flat)
 4. For `foundation`/`feature`, computes and writes a deterministic `## Decomposition Scorecard`, seeds `## Checklist`, and records ADR creation in the ledger. Pool ADRs are backlog stubs and are only registered after promotion via `gz adr promote`.
+5. For `foundation` kind specifically, scaffolds a `## Why foundation tier?` section between `## Persona` and `## Intent`, pre-populated with two author prompts: the invariance-test answer and the port-vs-plug framing (ADR-0.0.35 § Decision item #6). Feature- and pool-kind ADRs do not scaffold this section. See the [convention docs](../concepts/foundation-feature-invariance-test.md#why-foundation-tier-the-convention).
 
 ---
 

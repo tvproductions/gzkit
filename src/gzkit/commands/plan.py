@@ -13,6 +13,23 @@ from gzkit.templates import render_template
 _FOUNDATION_SEMVER_RE = re.compile(r"^0\.0\.\d+$")
 _SEMVER_LITERAL_RE = re.compile(r"^\d+\.\d+\.\d+$")
 
+# ADR-0.0.35 § Decision item #6 — every foundation-kind ADR scaffolds with a
+# `## Why foundation tier?` section between `## Persona` and `## Intent`,
+# pre-populated with two author prompts: the invariance-test answer and the
+# port-vs-plug framing. The heading is byte-identical (sentence case,
+# trailing question mark) so OBPI-04's validator can pin it. Feature- and
+# pool-kind ADRs MUST NOT scaffold this section.
+_WHY_FOUNDATION_TIER_SECTION = """\
+## Why foundation tier?
+
+_[Author: Answer the invariance test in one sentence: "Without this ADR, would \
+the project still be the project?" State yes and name the invariance.]_
+
+_[Port-vs-plug framing: Is this ADR a port (an abstract contract every \
+implementation must honor) or a plug (one implementation behind an existing port)?]_
+
+"""
+
 
 def _compose_canonical_adr_id(name: str, semver: str) -> str:
     """Compose the canonical ADR id from a CLI `name` argument and `semver`.
@@ -188,6 +205,10 @@ def _render_adr_by_kind(
         adr_dir = adrs_root / rel_dir
     else:
         adr_id = _compose_canonical_adr_id(name, semver)
+        # ADR-0.0.35 § Decision item #6 — only foundation-kind ADRs scaffold
+        # the `## Why foundation tier?` section; feature-kind ADRs render an
+        # empty string for the placeholder so no spurious heading appears.
+        why_foundation_tier = _WHY_FOUNDATION_TIER_SECTION if kind == "foundation" else ""
         content = render_template(
             "adr",
             id=adr_id,
@@ -200,6 +221,7 @@ def _render_adr_by_kind(
             date=date.today().isoformat(),
             decomposition_scorecard=scorecard.to_markdown(),  # ty: ignore[unresolved-attribute]
             checklist=checklist_seed,
+            why_foundation_tier=why_foundation_tier,
         )
         sub = "foundation" if kind == "foundation" else "pre-release"
         adr_dir = adrs_root / sub / adr_id

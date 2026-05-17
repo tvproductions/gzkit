@@ -112,6 +112,7 @@ def render_template(name: str, **kwargs: Any) -> str:
         "date": date.today().isoformat(),
         "status": "Draft",
         "lane": "lite",
+        "why_foundation_tier": "",
     }
 
     # Merge defaults with provided kwargs (kwargs take precedence)

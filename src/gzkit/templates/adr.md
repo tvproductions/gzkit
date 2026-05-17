@@ -18,7 +18,7 @@ date: {date}
 
 {persona}
 
-## Intent
+{why_foundation_tier}## Intent
 
 {intent}
 

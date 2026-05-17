@@ -582,12 +582,7 @@ class TestUpdateHumanAttestationSectionScoping(unittest.TestCase):
 
     def test_ha_section_all_fields_updated(self) -> None:
         """Standard case: no collision; all three HA fields are updated."""
-        content = (
-            "## Human Attestation\n\n"
-            "- Attestor: `<name>`\n"
-            "- Attestation: -\n"
-            "- Date: -\n"
-        )
+        content = "## Human Attestation\n\n- Attestor: `<name>`\n- Attestation: -\n- Date: -\n"
         result = self._call(content)
         self.assertIn("- Attestor: `Alice`", result)
         self.assertIn("- Attestation: verified", result)

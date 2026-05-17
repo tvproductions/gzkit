@@ -1239,15 +1239,11 @@ def _update_human_attestation(content: str, attestor: str, attestation_text: str
     body = section_match.group(2)
     after = content[section_match.end(2) :]
 
-    body = re.sub(
-        r"(^- Attestor:\s*).*$", rf"\g<1>`{attestor}`", body, count=1, flags=re.MULTILINE
-    )
+    body = re.sub(r"(^- Attestor:\s*).*$", rf"\g<1>`{attestor}`", body, count=1, flags=re.MULTILINE)
     body = re.sub(
         r"(^- Attestation:\s*).*$", rf"\g<1>{attestation_text}", body, count=1, flags=re.MULTILINE
     )
-    body = re.sub(
-        r"(^- Date:\s*).*$", rf"\g<1>{date}", body, count=1, flags=re.MULTILINE
-    )
+    body = re.sub(r"(^- Date:\s*).*$", rf"\g<1>{date}", body, count=1, flags=re.MULTILINE)
     return before + body + after
 
 

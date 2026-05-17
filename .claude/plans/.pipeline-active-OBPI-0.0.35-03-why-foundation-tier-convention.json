@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.0.35-03-why-foundation-tier-convention",
+  "parent_adr": "ADR-0.0.35-foundation-feature-invariance-test",
+  "lane": "lite",
+  "entry": "full",
+  "execution_mode": "normal",
+  "current_stage": "implement",
+  "started_at": "2026-05-17T15:36:47Z",
+  "updated_at": "2026-05-17T15:36:47Z",
+  "receipt_state": "pass",
+  "nonce": "fbca798e69cdfcd9317ae723fbabda5b",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz obpi pipeline OBPI-0.0.35-03-why-foundation-tier-convention --from=verify",
+  "resume_point": "verify"
+}
