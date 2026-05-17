@@ -3,7 +3,7 @@ name: gz-plan
 description: Create ADR artifacts for planned change. Use when recording architecture intent and lane-specific scope.
 category: adr-lifecycle
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.2.0"
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-20
@@ -36,6 +36,8 @@ Operate the gz plan command surface as a reusable governance workflow.
     > **What kind of ADR is this?** `foundation` (app/system invariant, always 0.0.x) / `feature` (release-carrying capability) / `pool` (noted, not committed).
     >
     > Heuristic: Does this decision shape what the app IS (identity/invariant)? → `foundation`. Does this decision ship a named capability to users? → `feature`. Is this decision noted but not committed? → `pool`. For deeper context see `docs/user/concepts/adr-taxonomy.md`.
+    >
+    > **Invariance Test (Foundation/Feature Boundary):** *"Foundation = without it, we wouldn't be doing the project."* Use the hexagonal-ports lens to resolve edge cases: **ports point to invariance; plugs are features**. See `docs/user/concepts/foundation-feature-invariance-test.md` for worked examples and anti-patterns.
 
 7. Run `uv run gz plan` with the required options, passing the operator's chosen `--kind` through verbatim.
 8. Summarize results, including evidence and any follow-up gates.
