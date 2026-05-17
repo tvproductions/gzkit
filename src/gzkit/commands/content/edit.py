@@ -14,6 +14,19 @@ from pydantic import ValidationError
 from gzkit.content.models import CONTENT_MODELS
 from gzkit.content.parse import parse
 from gzkit.content.render import render
+from gzkit.content.validation import hooks as validation_hooks
+
+
+def _resolve_project_root(file_path: Path) -> Path:
+    """Walk up from file_path to find the project root (directory containing .gzkit/)."""
+    candidate = file_path.parent
+    while True:
+        if (candidate / ".gzkit").exists():
+            return candidate
+        parent = candidate.parent
+        if parent == candidate:
+            return file_path.parent  # Fallback: use file directory if no .gzkit found
+        candidate = parent
 
 
 def content_edit_cmd(*, file: str, as_type: str, vendor: str) -> None:
@@ -105,6 +118,19 @@ def content_edit_cmd(*, file: str, as_type: str, vendor: str) -> None:
 
         # Re-render to canonical form, then atomic replace
         rendered = render(model, vendor)
+
+        # Fire ADR-0.0.33 fidelity validators before persisting (OBPI-0.0.34-06)
+        _project_root = _resolve_project_root(file_path)
+        try:
+            validation_hooks.validate_save(project_root=_project_root)
+        except validation_hooks.FidelityHookError as exc:
+            print(
+                f"Fidelity validation failed [{exc.validator_id}]: {exc.violation}\n"
+                "File not written.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
         staging_path = file_path.with_suffix(file_path.suffix + ".tmp")
         try:
             staging_path.write_bytes(rendered)

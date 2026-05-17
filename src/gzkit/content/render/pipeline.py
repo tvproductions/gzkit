@@ -5,7 +5,8 @@ ADR-0.0.34 § Decision item #2: render(model, vendor) → deterministic bytes.
 Design constraints:
   - Byte-stable: identical inputs produce identical byte output.
   - Fail-closed: missing template raises TemplateNotFound before any file write.
-  - Render-only: no parse logic, no validation hooks, no schema migration.
+  - Render + fidelity hook (OBPI-0.0.34-06): when project_root is supplied,
+    the ADR-0.0.33 fidelity validator suite fires before return.
 """
 
 from __future__ import annotations
@@ -88,12 +89,15 @@ class TemplateNotFound(Exception):
         )
 
 
-def render(model: BaseContentModel, vendor: str) -> bytes:
+def render(model: BaseContentModel, vendor: str, *, project_root: Path | None = None) -> bytes:
     """Render *model* to deterministic UTF-8 bytes using the vendor's Jinja2 template.
 
     Args:
         model: A validated Pydantic model instance from gzkit.content.models.
         vendor: The vendor identifier (e.g. "claude").
+        project_root: Optional project root path. When provided, the ADR-0.0.33
+            fidelity validator suite is invoked before returning. Raises
+            FidelityHookError on any violation (fail-closed).
 
     Returns:
         UTF-8 encoded bytes of the rendered template output.
@@ -118,5 +122,15 @@ def render(model: BaseContentModel, vendor: str) -> bytes:
     # declaration order). Frozen models guarantee the same dump on every call, so
     # the output is byte-stable without requiring additional sorting in templates.
     fields = model.model_dump()
-    rendered = template.render(**fields)
-    return rendered.encode("utf-8")
+    rendered = template.render(**fields).encode("utf-8")
+
+    if project_root is not None:
+        # Lazy import: gzkit.content.validation.hooks → gzkit.governance.trust_audits
+        # → ... → gzkit.sync_surfaces → gzkit.content.render forms a cycle if
+        # the import is hoisted to the top of this module. Deferring inside the
+        # guard breaks the cycle without sacrificing mock interception.
+        from gzkit.content.validation import hooks  # noqa: PLC0415
+
+        hooks.validate_render(project_root=project_root)
+
+    return rendered

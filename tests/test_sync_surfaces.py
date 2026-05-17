@@ -370,7 +370,9 @@ class TestSyncPkgSurfaces(unittest.TestCase):
             self._make_pkg_surface(root, "skills")
             canonical_skill = root / ".gzkit" / "skills" / "test-skill" / "SKILL.md"
             canonical_skill.parent.mkdir(parents=True)
-            canonical_skill.write_text(self._VALID_SKILL_MD, encoding="utf-8")
+            # write_bytes (not write_text) avoids platform LF->CRLF translation
+            # on Windows so the byte-equality assertion below holds cross-platform.
+            canonical_skill.write_bytes(self._VALID_SKILL_MD.encode("utf-8"))
 
             config = GzkitConfig(project_name="test")
             result = sync_pkg_surfaces(root, config)
