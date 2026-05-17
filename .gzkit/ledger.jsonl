@@ -6495,3 +6495,4 @@
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.0.35-foundation-feature-invariance-test","ts":"2026-05-17T20:00:00.746584+00:00","gate":2,"status":"pass","command":"uv run gz typecheck","returncode":0}
 {"schema":"gzkit.ledger.v1","event":"attested","id":"ADR-0.0.35-foundation-feature-invariance-test","ts":"2026-05-17T20:00:00.761356+00:00","status":"completed","by":"g0"}
 {"schema":"gzkit.ledger.v1","event":"lifecycle_transition","id":"ADR-0.0.35-foundation-feature-invariance-test","ts":"2026-05-17T20:00:00.761695+00:00","content_type":"adr","from_state":"Proposed","to_state":"Completed"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs\\design\\adr\\pool\\ADR-pool.validate-documents-backfill.md","ts":"2026-05-17T20:24:37.220224+00:00","path":"docs\\design\\adr\\pool\\ADR-pool.validate-documents-backfill.md"}
