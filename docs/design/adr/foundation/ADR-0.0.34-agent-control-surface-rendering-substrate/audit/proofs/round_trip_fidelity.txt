@@ -1,0 +1,18 @@
+parse(render(m)) == m: True
+render(parse(render(m))) == render(m): True
+Rule.model_config[frozen]: True
+Rule.model_config[extra]: forbid
+--- rendered output ---
+# Demo Rule
+
+Version: 1.0.0
+
+## Paths
+
+- src/**/*.py
+
+
+
+## Body
+
+- Use pathlib.Path

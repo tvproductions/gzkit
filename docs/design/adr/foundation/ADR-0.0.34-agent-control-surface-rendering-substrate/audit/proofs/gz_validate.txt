@@ -1,0 +1,9 @@
+methodology-doc-absorption/ADR-0.37.0-govzero-methodology-doc-absorption.md
+    Checklist must contain at least one OBPI item.
+    Field: Checklist
+
+   →
+/Users/jeff/Documents/Code/gzkit/docs/design/adr/pre-release/ADR-0.37.0-govzero-
+methodology-doc-absorption/ADR-0.37.0-govzero-methodology-doc-absorption.md
+    Missing required section: 'Decomposition Scorecard'.
+    Field: Decomposition Scorecard

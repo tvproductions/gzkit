@@ -1,0 +1,24 @@
+                                ADR Overview
+╭────────────┬───────┬───────────┬────────────────┬──────┬──────────┬───────╮
+│ ADR        │ Lane  │ Lifecycle │ Closeout Phase │ OBPI │ Closeout │ QC    │
+├────────────┼───────┼───────────┼────────────────┼──────┼──────────┼───────┤
+│ ADR-0.0.34 │ heavy │ Completed │ attested       │ 8/8  │ READY    │ READY │
+╰────────────┴───────┴───────────┴────────────────┴──────┴──────────┴───────╯
+                                     OBPIs
+╭────┬─────────────────────────────────┬────────────────────┬───────────┬──────╮
+│ #  │ OBPI ID                         │ State              │ Brief     │ Done │
+├────┼─────────────────────────────────┼────────────────────┼───────────┼──────┤
+│ 01 │ OBPI-0.0.34-01-content-model-re │ attested_completed │ completed │ yes  │
+│    │ gistry                          │                    │           │      │
+│ 02 │ OBPI-0.0.34-02-rendering-pipeli │ attested_completed │ completed │ yes  │
+│    │ ne                              │                    │           │      │
+│ 03 │ OBPI-0.0.34-03-reverse-parse-mi │ attested_completed │ completed │ yes  │
+│    │ gration                         │                    │           │      │
+│ 04 │ OBPI-0.0.34-04-authoring-cli    │ attested_completed │ completed │ yes  │
+│ 05 │ OBPI-0.0.34-05-light-tui-afford │ attested_completed │ completed │ yes  │
+│    │ ances                           │                    │           │      │
+│ 06 │ OBPI-0.0.34-06-validation-hooks │ attested_completed │ completed │ yes  │
+│ 07 │ OBPI-0.0.34-07-migration-layer  │ attested_completed │ completed │ yes  │
+│ 08 │ OBPI-0.0.34-08-vendor-manifest- │ attested_completed │ completed │ yes  │
+│    │ expansion                       │                    │           │      │
+╰────┴─────────────────────────────────┴────────────────────┴───────────┴──────╯

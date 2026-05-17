@@ -1,0 +1,30 @@
+usage: gz content [-h] [--quiet | --verbose] [--debug]
+                  {import,list,show,render,edit} ...
+
+Commands for importing hand-authored markdown files into canonical Pydantic content models. Part of the ADR-0.0.34 rendering substrate.
+
+positional arguments:
+  {import,list,show,render,edit}
+    import              Import a markdown file into a canonical content model
+    list                List registered content model types
+    show                Show a prose summary of a content model file
+    render              Render a content model file to canonical markdown
+    edit                Edit a content model file via $EDITOR with
+                        re-validation
+
+options:
+  -h, --help            show this help message and exit
+  --quiet, -q           Suppress non-error output
+  --verbose, -v         Enable verbose output
+  --debug               Enable debug mode with full tracebacks
+
+Examples
+    gz content import AGENTS.md --as AgentContract
+    gz content import .gzkit/rules/tests.md --as Rule --write /tmp/out.md
+    gz content list
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach

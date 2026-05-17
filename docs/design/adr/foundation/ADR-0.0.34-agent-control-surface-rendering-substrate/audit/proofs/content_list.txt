@@ -1,0 +1,10 @@
+Type           Description
+-------------  -----------
+AgentContract  Per-turn surface content for AGENTS.md / CLAUDE.md.
+Bullet         A single bullet (used inside Rule.body, Handoff.open_items, etc.).
+Chore          Per-turn surface content for a single chore.
+Handoff        Per-turn surface content for a single session handoff.
+Persona        Per-turn surface content for a single persona definition.
+Rule           Per-turn surface content for a single rule file.
+Scenario       Per-turn surface content for a single Gherkin scenario.
+Skill          Per-turn surface content for a single skill SKILL.md.
