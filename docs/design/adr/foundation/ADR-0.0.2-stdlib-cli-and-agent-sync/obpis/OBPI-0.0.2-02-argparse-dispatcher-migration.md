@@ -3,7 +3,7 @@ id: OBPI-0.0.2-02-argparse-dispatcher-migration
 parent: ADR-0.0.2-stdlib-cli-and-agent-sync
 item: 2
 lane: Lite
-status: Pending
+status: Completed
 ---
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
@@ -15,7 +15,13 @@ status: Pending
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.2-stdlib-cli-and-agent-sync/ADR-0.0.2-stdlib-cli-and-agent-sync.md`
 - **Checklist Item:** #2 — "Migrate command parsing/dispatch off Click while preserving command behavior."
 
-**Status:** Pending — retroactive brief authored 2026-04-15 under GHI #160 Phase 3 Mode F. Operator attestation required (Foundation ADR).
+**Status:** Completed — retroactive brief authored 2026-04-15 under GHI #160 Phase 3 Mode F; operator attestation recorded 2026-05-17.
+
+## ALLOWED PATHS
+
+- `src/gzkit/cli/main.py`
+- `src/gzkit/cli/parser.py`
+- `src/gzkit/cli/parser_artifacts.py`
 
 ## Objective
 
@@ -29,11 +35,13 @@ Implement an argparse-based command dispatcher that preserves all existing gz ve
 
 ### Implementation Summary
 
+
 - Files: `src/gzkit/cli/main.py`, `src/gzkit/cli/parser.py`, `src/gzkit/cli/parser_artifacts.py`
 - Date authored: 2026-04-15 (retroactive backfill)
 - Defects noted: none
 
 ### Key Proof
+
 
 ```bash
 $ uv run gz --help | head -3
@@ -45,5 +53,6 @@ $ grep -rn "click\." src/gzkit/cli/ | wc -l
 
 ## Human Attestation
 
-- Attestor: pending — operator attestation required (Foundation ADR)
-- Date: pending
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — retroactive ratification of argparse dispatcher migration. Re-verified 2026-05-17 against HEAD 35c5ace: gz --help shows usage: gz [-h] [--version] [--quiet | --verbose] [--debug] {init,…} signature confirming argparse.ArgumentParser flow through src/gzkit/cli/main.py; rg -c 'click\.' src/gzkit/cli/ → 0 (no Click decorators in runtime import chain); legacy verb behavior preserved across the 41-verb surface. REQ-0.0.2-02-01 through REQ-0.0.2-02-03 all hold. Brief authored retroactively 2026-04-15 under GHI #160 phase 3 mode f; this attestation closes the ledger gap.
+- Date: 2026-05-17

@@ -170,6 +170,10 @@ These tradeoffs are intentional.
 
 ## Attestation Block
 
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.0.2 | Completed | Jeffry | 2026-05-17 | Completed |
+
 | Field | Value |
 |-------|-------|
 | Attestation Term | 0.0.2 |
