@@ -17,7 +17,6 @@ _CANONICAL_SKILLS_ROOT = _PROJECT_ROOT / ".gzkit" / "skills"
 _CLAUDE_SKILLS_ROOT = _PROJECT_ROOT / ".claude" / "skills"
 _GITHUB_SKILLS_ROOT = _PROJECT_ROOT / ".github" / "skills"
 
-_TARGET_SKILLS = ["gz-design", "gz-plan", "gz-adr-create", "gz-adr-promote"]
 _INVARIANCE_TEST = "Foundation = without it, we wouldn't be doing the project"
 _HEXAGONAL_LENS = "ports point to invariance; plugs are features"
 _CONCEPT_PAGE_LINK = "foundation-feature-invariance-test"
@@ -30,28 +29,28 @@ _EXPECTED_VERSIONS: dict[str, str] = {
 }
 
 
+def _skill_content(slug: str) -> str:
+    return (_CANONICAL_SKILLS_ROOT / slug / "SKILL.md").read_text(encoding="utf-8")
+
+
 class TestSkillInvarianceTestEnrichment(unittest.TestCase):
     """REQ-0.0.35-02-01: All four skills contain the verbatim invariance test."""
 
     @covers("REQ-0.0.35-02-01")
     def test_gz_design_has_invariance_test(self) -> None:
-        content = (_CANONICAL_SKILLS_ROOT / "gz-design" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn(_INVARIANCE_TEST, content)
+        self.assertIn(_INVARIANCE_TEST, _skill_content("gz-design"))
 
     @covers("REQ-0.0.35-02-01")
     def test_gz_plan_has_invariance_test(self) -> None:
-        content = (_CANONICAL_SKILLS_ROOT / "gz-plan" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn(_INVARIANCE_TEST, content)
+        self.assertIn(_INVARIANCE_TEST, _skill_content("gz-plan"))
 
     @covers("REQ-0.0.35-02-01")
     def test_gz_adr_create_has_invariance_test(self) -> None:
-        content = (_CANONICAL_SKILLS_ROOT / "gz-adr-create" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn(_INVARIANCE_TEST, content)
+        self.assertIn(_INVARIANCE_TEST, _skill_content("gz-adr-create"))
 
     @covers("REQ-0.0.35-02-01")
     def test_gz_adr_promote_has_invariance_test(self) -> None:
-        content = (_CANONICAL_SKILLS_ROOT / "gz-adr-promote" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn(_INVARIANCE_TEST, content)
+        self.assertIn(_INVARIANCE_TEST, _skill_content("gz-adr-promote"))
 
 
 class TestSkillHexagonalLens(unittest.TestCase):
@@ -59,23 +58,19 @@ class TestSkillHexagonalLens(unittest.TestCase):
 
     @covers("REQ-0.0.35-02-02")
     def test_gz_design_has_hexagonal_lens(self) -> None:
-        content = (_CANONICAL_SKILLS_ROOT / "gz-design" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn(_HEXAGONAL_LENS, content)
+        self.assertIn(_HEXAGONAL_LENS, _skill_content("gz-design"))
 
     @covers("REQ-0.0.35-02-02")
     def test_gz_plan_has_hexagonal_lens(self) -> None:
-        content = (_CANONICAL_SKILLS_ROOT / "gz-plan" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn(_HEXAGONAL_LENS, content)
+        self.assertIn(_HEXAGONAL_LENS, _skill_content("gz-plan"))
 
     @covers("REQ-0.0.35-02-02")
     def test_gz_adr_create_has_hexagonal_lens(self) -> None:
-        content = (_CANONICAL_SKILLS_ROOT / "gz-adr-create" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn(_HEXAGONAL_LENS, content)
+        self.assertIn(_HEXAGONAL_LENS, _skill_content("gz-adr-create"))
 
     @covers("REQ-0.0.35-02-02")
     def test_gz_adr_promote_has_hexagonal_lens(self) -> None:
-        content = (_CANONICAL_SKILLS_ROOT / "gz-adr-promote" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn(_HEXAGONAL_LENS, content)
+        self.assertIn(_HEXAGONAL_LENS, _skill_content("gz-adr-promote"))
 
 
 class TestSkillConceptPageLink(unittest.TestCase):
@@ -83,31 +78,26 @@ class TestSkillConceptPageLink(unittest.TestCase):
 
     @covers("REQ-0.0.35-02-03")
     def test_gz_design_has_concept_page_link(self) -> None:
-        content = (_CANONICAL_SKILLS_ROOT / "gz-design" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn(_CONCEPT_PAGE_LINK, content)
+        self.assertIn(_CONCEPT_PAGE_LINK, _skill_content("gz-design"))
 
     @covers("REQ-0.0.35-02-03")
     def test_gz_plan_has_concept_page_link(self) -> None:
-        content = (_CANONICAL_SKILLS_ROOT / "gz-plan" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn(_CONCEPT_PAGE_LINK, content)
+        self.assertIn(_CONCEPT_PAGE_LINK, _skill_content("gz-plan"))
 
     @covers("REQ-0.0.35-02-03")
     def test_gz_adr_create_has_concept_page_link(self) -> None:
-        content = (_CANONICAL_SKILLS_ROOT / "gz-adr-create" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn(_CONCEPT_PAGE_LINK, content)
+        self.assertIn(_CONCEPT_PAGE_LINK, _skill_content("gz-adr-create"))
 
     @covers("REQ-0.0.35-02-03")
     def test_gz_adr_promote_has_concept_page_link(self) -> None:
-        content = (_CANONICAL_SKILLS_ROOT / "gz-adr-promote" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn(_CONCEPT_PAGE_LINK, content)
+        self.assertIn(_CONCEPT_PAGE_LINK, _skill_content("gz-adr-promote"))
 
 
 class TestSkillVersionBump(unittest.TestCase):
     """REQ-0.0.35-02-04: All four skills have their skill-version at expected post-edit value."""
 
     def _read_skill_version(self, slug: str) -> str:
-        path = _CANONICAL_SKILLS_ROOT / slug / "SKILL.md"
-        for line in path.read_text(encoding="utf-8").splitlines():
+        for line in _skill_content(slug).splitlines():
             if "skill-version" in line and ":" in line:
                 return line.split(":", 1)[1].strip().strip('"').strip("'")
         return ""
@@ -118,7 +108,8 @@ class TestSkillVersionBump(unittest.TestCase):
 
     @covers("REQ-0.0.35-02-04")
     def test_gz_adr_create_version_bumped(self) -> None:
-        self.assertEqual(self._read_skill_version("gz-adr-create"), _EXPECTED_VERSIONS["gz-adr-create"])
+        expected = _EXPECTED_VERSIONS["gz-adr-create"]
+        self.assertEqual(self._read_skill_version("gz-adr-create"), expected)
 
     @covers("REQ-0.0.35-02-04")
     def test_gz_design_version_bumped(self) -> None:
@@ -126,7 +117,8 @@ class TestSkillVersionBump(unittest.TestCase):
 
     @covers("REQ-0.0.35-02-04")
     def test_gz_adr_promote_version_bumped(self) -> None:
-        self.assertEqual(self._read_skill_version("gz-adr-promote"), _EXPECTED_VERSIONS["gz-adr-promote"])
+        expected = _EXPECTED_VERSIONS["gz-adr-promote"]
+        self.assertEqual(self._read_skill_version("gz-adr-promote"), expected)
 
 
 class TestSkillMirrorParity(unittest.TestCase):
@@ -182,37 +174,31 @@ class TestSkillEditSurgical(unittest.TestCase):
     @covers("REQ-0.0.35-02-06")
     def test_gz_plan_adr_taxonomy_link_preserved(self) -> None:
         """ADR-0.0.18 taxonomy link coexists with the invariance test."""
-        content = (_CANONICAL_SKILLS_ROOT / "gz-plan" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("adr-taxonomy.md", content)
+        self.assertIn("adr-taxonomy.md", _skill_content("gz-plan"))
 
     @covers("REQ-0.0.35-02-06")
     def test_gz_adr_create_adr_taxonomy_link_preserved(self) -> None:
-        content = (_CANONICAL_SKILLS_ROOT / "gz-adr-create" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("adr-taxonomy.md", content)
+        self.assertIn("adr-taxonomy.md", _skill_content("gz-adr-create"))
 
     @covers("REQ-0.0.35-02-06")
     def test_gz_plan_workflow_section_preserved(self) -> None:
         """Core Workflow section is intact."""
-        content = (_CANONICAL_SKILLS_ROOT / "gz-plan" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("gz plan create", content)
+        self.assertIn("gz plan create", _skill_content("gz-plan"))
 
     @covers("REQ-0.0.35-02-06")
     def test_gz_adr_create_procedure_section_preserved(self) -> None:
         """Procedure section is intact."""
-        content = (_CANONICAL_SKILLS_ROOT / "gz-adr-create" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("## Procedure", content)
+        self.assertIn("## Procedure", _skill_content("gz-adr-create"))
 
     @covers("REQ-0.0.35-02-06")
     def test_gz_design_step5_book_artifact_preserved(self) -> None:
         """Step 5 Book the Artifact section is intact."""
-        content = (_CANONICAL_SKILLS_ROOT / "gz-design" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("Book the Artifact", content)
+        self.assertIn("Book the Artifact", _skill_content("gz-design"))
 
     @covers("REQ-0.0.35-02-06")
     def test_gz_adr_promote_options_section_preserved(self) -> None:
         """Options section is intact."""
-        content = (_CANONICAL_SKILLS_ROOT / "gz-adr-promote" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("## Options", content)
+        self.assertIn("## Options", _skill_content("gz-adr-promote"))
 
 
 if __name__ == "__main__":

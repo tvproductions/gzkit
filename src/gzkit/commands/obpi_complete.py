@@ -1222,29 +1222,33 @@ def _replace_h3_section(content: str, heading: str, new_body: str) -> str:
 
 
 def _update_human_attestation(content: str, attestor: str, attestation_text: str, date: str) -> str:
-    """Update the Human Attestation section values."""
-    result = re.sub(
-        r"(^- Attestor:\s*).*$",
-        rf"\g<1>`{attestor}`",
-        content,
-        count=1,
-        flags=re.MULTILINE,
+    """Update the Human Attestation section values (GHI #479)."""
+    # Locate the ## Human Attestation section so substitutions are scoped to
+    # its body only — a global count=1 match clobbers the first ^- Attestation:
+    # bullet it finds, which may be inside ## Implementation Summary.
+    section_pattern = (
+        r"(^## Human Attestation\s*$)"
+        r"([\s\S]*?)"
+        r"(?=^## |\n---|\Z)"
     )
-    result = re.sub(
-        r"(^- Attestation:\s*).*$",
-        rf"\g<1>{attestation_text}",
-        result,
-        count=1,
-        flags=re.MULTILINE,
+    section_match = re.search(section_pattern, content, flags=re.MULTILINE)
+    if not section_match:
+        return content
+
+    before = content[: section_match.start(2)]
+    body = section_match.group(2)
+    after = content[section_match.end(2) :]
+
+    body = re.sub(
+        r"(^- Attestor:\s*).*$", rf"\g<1>`{attestor}`", body, count=1, flags=re.MULTILINE
     )
-    result = re.sub(
-        r"(^- Date:\s*).*$",
-        rf"\g<1>{date}",
-        result,
-        count=1,
-        flags=re.MULTILINE,
+    body = re.sub(
+        r"(^- Attestation:\s*).*$", rf"\g<1>{attestation_text}", body, count=1, flags=re.MULTILINE
     )
-    return result
+    body = re.sub(
+        r"(^- Date:\s*).*$", rf"\g<1>{date}", body, count=1, flags=re.MULTILINE
+    )
+    return before + body + after
 
 
 # ---------------------------------------------------------------------------
