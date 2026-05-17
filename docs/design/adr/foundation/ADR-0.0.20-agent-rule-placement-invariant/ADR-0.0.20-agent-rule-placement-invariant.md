@@ -20,6 +20,12 @@ dependencies:
 
 This ADR is a Foundation addition. Foundations are baseline assumptions about good app substrates — ADR-0.17.0 Intent #1 ("~80% token reduction in always-loaded content") has been load-bearing since 2026-03-15 but has had no anti-regression mechanism; this ADR provides one without imposing universal friction. The 2am-operator rubric applies: at 2am, an operator adding a new always-on rule hits the validator at pre-commit, gets three-option recovery (narrow glob / fold / allow-list), reads this ADR for context. The validator is THE enforcement.
 
+## Why foundation tier?
+
+Without this ADR, agent rules can land anywhere — scoped vendor-mirror directories accumulate unscoped global rules, per-turn agent surface fragments across `.gzkit/`/`.claude/`/`.github/`, and rule placement becomes the silent drift class.
+
+This ADR authors a port: the agent-rule placement contract (scoped rules under vendor directories, global rules at canonical root) that every rule-authoring surface must honor.
+
 ## Intent
 
 ### Before (current state)

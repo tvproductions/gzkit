@@ -423,6 +423,7 @@ def _collect_errors(
     check_scenario_reachability: bool = False,
     check_surface_fidelity: bool = False,
     check_vendor_manifest: bool = False,
+    check_kind_invariance: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -484,6 +485,7 @@ def _collect_errors(
         "scenario_reachability": check_scenario_reachability,
         "surface_fidelity": check_surface_fidelity,
         "vendor_manifest": check_vendor_manifest,
+        "kind_invariance": check_kind_invariance,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
@@ -578,6 +580,7 @@ def _explicit_scope_runners(
         "scenario_reachability": lambda: trust_audits.validate_scenario_reachability(project_root),
         "surface_fidelity": lambda: trust_audits.validate_surface_fidelity(project_root),
         "vendor_manifest": lambda: trust_audits.validate_vendor_manifest(project_root),
+        "kind_invariance": lambda: trust_audits.audit_kind_invariance(project_root),
     }
 
 
@@ -1032,6 +1035,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "orphaned_implementation",
         "evaluation_justify_binding",
         "intrinsic_attestation",
+        "kind_invariance",
         "advisor_proof_binding",
         "distribution",
         "bullet_retention",
@@ -1072,6 +1076,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "surface_weight",
         "pointer_anchors",
         "scenario_reachability",
+        "kind_invariance",
     }
 )
 
@@ -1313,6 +1318,7 @@ def validate(
     check_scenario_reachability: bool = False,
     check_surface_fidelity: bool = False,
     check_vendor_manifest: bool = False,
+    check_kind_invariance: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1386,6 +1392,7 @@ def validate(
             check_scenario_reachability,
             check_surface_fidelity,
             check_vendor_manifest,
+            check_kind_invariance,
         ]
     )
     if _dispatch_early_return_scopes(
@@ -1460,6 +1467,7 @@ def validate(
         check_scenario_reachability=check_scenario_reachability,
         check_surface_fidelity=check_surface_fidelity,
         check_vendor_manifest=check_vendor_manifest,
+        check_kind_invariance=check_kind_invariance,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -1536,6 +1544,7 @@ def validate(
         "scenario_reachability": check_scenario_reachability,
         "surface_fidelity": check_surface_fidelity,
         "vendor_manifest": check_vendor_manifest,
+        "kind_invariance": check_kind_invariance,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]

@@ -16,6 +16,12 @@ date: 2026-05-06
 
 This is the largest single foundation ADR in the cluster (ten OBPIs) because it codifies two co-load-bearing invariants (composition + brief↔reality coherence) plus the migration that proves the framework. Decomposition discipline applies — each OBPI is a separable invariant, not a fragmentation move. The ten-OBPI count is locked from the design dialogue's MAX DO IT RIGHT pass.
 
+## Why foundation tier?
+
+Without this ADR, constitutional invariants don't compose mechanically — each invariant has its own validator and recovery doctrine, but invariant composition (e.g., "every artifact satisfies both T1 read-path and T2 write-path") is ad-hoc judgment.
+
+This ADR authors a port: the constitutional-invariant composition contract every multi-invariant validator binds to (composition is structural, not narrated).
+
 ## Intent
 
 gzkit's foundation surface is currently inverted. AGENTS.md — the prose contract every agent reads at session start — is treated as Layer 1 canon, with foundation ADRs documenting "defenses of" its claims. This makes every foundational invariant only as trustworthy as the prose it's encoded in: an editable, drift-prone, narrative surface that the project's own MAKE LLM STOCHASTIC VIBES INERT mantra explicitly identifies as the named failure class. Two pool stubs (`ADR-pool.brief-authoring-evidence-checks`, `ADR-pool.obpi-pipeline-dispatch-attestation`) recently rejected foundation-kind framing for their own work on the explicit grounds that "the invariant already exists in AGENTS.md operative-claim-4" — the inversion in plain sight, twice within a week.

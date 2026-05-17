@@ -21,6 +21,12 @@ as a first-class output, not a side effect. Anti-vibing mantra applies:
 narrative authoring is human judgment, never LLM-paraphrase of frontmatter;
 the smallest-vibing-surface framing decides every authoring choice.
 
+## Why foundation tier?
+
+Without this ADR, storybook artifacts are honor-system — scenario narratives drift from CLI behavior without a validator to catch the divergence, and the storybook surface accumulates aspirational prose instead of runnable demonstrations.
+
+This ADR authors a port: the storybook doctrine and validator contract (scenarios bind to executable verbs) every story authoring surface must honor.
+
 ## Intent
 
 gzkit operators have manpages (CLI verb contracts), a runbook (procedural workflow), and 73 ADRs (decision records), but no surface that narrates the value-flow that emerges when these compose. A downstream consumer governing their own product with gzkit cannot see end-to-end value without synthesizing the entire artifact graph themselves. The graph is rich; the value-narrative layer is absent. Worse, there is no mechanical signal when the artifact graph drifts away from any coherent operator-facing model — cohesion failure is invisible until someone notices the system no longer composes. Three real cohesion gaps surfaced during a single strawman authoring exercise (filed as GHI #428, #429, #430), demonstrating that the gap-detection mechanic works before any doctrine even lands. This ADR codifies the Storybook as a value-narrative companion to the runbook for downstream gzkit consumers, with built-in cohesion-failure signaling as a second-order benefit.

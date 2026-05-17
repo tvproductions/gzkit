@@ -16,6 +16,12 @@ date: 2026-04-25
 This ADR is rule and doctrine work; the work is the work, not theater for an
 unseen reviewer.
 
+## Why foundation tier?
+
+Without this ADR, agent failure patterns are unnamed — the same six recurring shapes (stochastic vibing, narrative recall, premature summary, hook bypass, evidence fabrication, scope creep rationalization) recur across sessions with no shared vocabulary or rule home to catch them.
+
+This ADR authors a port: the failure-mode taxonomy every agent-targeting rule (CLAUDE.md, agent-failure-modes.md) and review skill references.
+
 ## Intent
 
 Codify a six-pattern taxonomy of agent failure modes — drawn from the Claude

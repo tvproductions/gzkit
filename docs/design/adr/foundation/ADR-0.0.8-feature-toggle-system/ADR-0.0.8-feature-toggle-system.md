@@ -9,6 +9,12 @@ lane: heavy
 
 # ADR-0.0.8: Feature Flag System for GZKit
 
+## Why foundation tier?
+
+Without this ADR, every governance check that introduces new behavior immediately breaks all legacy state — there is no transition mechanism, so every evolution of gzkit's enforcement is an all-or-nothing breaking change that retroactively blocks all existing ADRs.
+
+This ADR authors a port: the feature-decision contract (FlagService, FeatureDecisions, registry-with-lifecycle) that every command handler consuming transition-gated behavior must honor.
+
 ## Status
 
 Draft

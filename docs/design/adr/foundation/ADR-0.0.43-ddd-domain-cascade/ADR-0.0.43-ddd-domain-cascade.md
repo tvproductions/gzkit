@@ -25,6 +25,12 @@ canonical pattern for any future agent-drafted-then-human-attested ceremony.
 Domain modeling is human judgment; the validator catches drift but never
 authors semantics.
 
+## Why foundation tier?
+
+Without this ADR, gzkit's domain boundaries cascade ungoverned — cross-domain checks (validators, gates, ceremony steps) accumulate without a unified routing or coverage discipline, and domain-overlap drift becomes silent maintenance debt.
+
+This ADR authors a port: the DDD domain-cascade contract every cross-domain validator and ceremony step binds to.
+
 ## Intent
 
 gzkit currently lacks an explicit pre-Gate-1 link from PRD intent through to ADR decision that captures the three core artifacts of Domain-Driven Design: shared vocabulary, bounded contexts, and documented inter-context contracts. The cascade is implicit today — PRDs describe project context, ADRs make architectural decisions, OBPIs decompose implementation — but there is no mechanical surface enforcing that ADRs land within a named bounded context, no canonical glossary that ADR / GHI / OBPI prose resolves against, and no context map declaring how bounded contexts integrate. The consequence is what Evans (2003) named *model integrity collapse*: agents and operators reach for terms like 'change', 'user', 'context', 'event' across artifacts with subtly different meanings depending on the BC being implicitly assumed, and no validator catches the drift. In agentic SDLC the problem is acute: a single ADR conversation can span minutes; a fresh agent session inherits no shared vocabulary; same-token-different-meaning collisions become silent and accumulate across the artifact graph.

@@ -10,6 +10,12 @@ date: 2026-03-23
 
 # ADR-0.0.6: Documentation Cross-Coverage Enforcement
 
+## Why foundation tier?
+
+Without this ADR, every new CLI command is a documentation-debt time bomb — there is no mechanical enforcement of the full documentation contract (manpage, index entry, runbook reference, docstring), so incomplete documentation silently accumulates and the Gate 5 runbook-code covenant has no command-level backstop.
+
+This ADR authors a port: the documentation cross-coverage contract (AST scanner, manifest, chore runner) that every CLI command surface must satisfy.
+
 ## Status
 
 Pending

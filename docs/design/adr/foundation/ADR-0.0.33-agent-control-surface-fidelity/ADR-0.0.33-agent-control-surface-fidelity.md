@@ -18,6 +18,12 @@ authoring posture is doctrine-author, not feature-implementer. Agents working
 on this ADR must treat the four invariants as binding constraints whose
 mechanical defenses are non-negotiable, not as advisory targets to soften.
 
+## Why foundation tier?
+
+Without this ADR, every other gzkit pillar's binding-rule assumption is unprovable — if AGENTS.md and the per-turn agent surface diverge, no rule mechanically enforces anything, and the entire governance contract collapses to honor-system.
+
+This ADR authors a port: the agent-control-surface fidelity contract (canonical = rendered = per-turn) that every rendering substrate must honor.
+
 ## Intent
 
 > **Agent = Model + Harness + Intent.** The Agent Control Surface is the

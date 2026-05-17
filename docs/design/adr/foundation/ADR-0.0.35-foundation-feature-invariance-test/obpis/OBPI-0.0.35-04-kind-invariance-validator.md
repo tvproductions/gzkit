@@ -3,7 +3,7 @@ id: OBPI-0.0.35-04-kind-invariance-validator
 parent: ADR-0.0.35-foundation-feature-invariance-test
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.35-04-kind-invariance-validator: `gz validate --kind-invariance` Validator Scope
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.35-foundation-feature-invariance-test/ADR-0.0.35-foundation-feature-invariance-test.md`
 - **Checklist Item:** #4 — "`gz validate --kind-invariance` validator scope — author validator in `src/gzkit/governance/trust_audits.py` enumerating every `kind: foundation` ADR under `docs/design/adr/foundation/**` and asserting each carries the Why-foundation-tier section non-empty; wire into `gz check`; REQ-derived unit tests asserting section-presence semantics; manpage and runbook updates per `.claude/rules/gate5-runbook-code-covenant.md`; behave scenario tagged with the new REQ-IDs. Heavy-lane CLI surface change. Depends on OBPI-03."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -272,16 +272,32 @@ Before this OBPI: the Why-foundation-tier convention authored under OBPI-03 is h
 
 ### Key Proof
 
-Output of `uv run gz validate --kind-invariance` invoked against the current foundation-ADR population, pasted with one passing case (ADR-0.0.35 itself, post-OBPI-03 backfill) and one constructed-failure case (a fixture foundation ADR with placeholder body) — both with their exit codes named.
+
+```
+$ uv run gz validate --kind-invariance
+Validated: kind_invariance
+
+✓ All validations passed (1 scopes).
+```
+
+All 38 foundation ADRs (including ADR-0.0.35 itself per REQ-16) carry substantive `## Why foundation tier?` sections; validator enumeration + section-presence + substantive-content checks all pass. Constructed-failure case exercised in `tests.governance.test_kind_invariance.test_author_prompt_body_fails` (placeholder body → exit 3) and behave scenario `@REQ-0.0.35-04-04`.
+
+Heavy-lane ARB receipts (GREEN): ruff `arb-ruff-eb8772b06ded4f3284e3fb3a6286560e`, typecheck `arb-step-typecheck-74081d05b0ae4ee3b08cd680bf1241ff`, unittest `arb-step-unittest-8071390b748440248d70e083e72d1e86`, coverage `arb-step-coverage-bdd508d88b354d278ced76af3c002f13`, mkdocs `arb-step-mkdocs-0ae297d5ef5f4c06a4d3ec3174b56a23`, behave `arb-step-behave-df0a24c360ec4677a98683509c42032d`.
 
 ### Implementation Summary
 
-- Files created/modified: `src/gzkit/governance/trust_audits.py` (new validator scope), `src/gzkit/cli/parser_maintenance.py` (flag registration), `src/gzkit/commands/validate_cmd.py` (dispatch), `src/gzkit/commands/check.py` or equivalent (pipeline integration), `tests/governance/test_kind_invariance.py` (new), `tests/commands/test_validate.py` (additions), `features/kind_invariance.feature` (new or existing-feature addition), `docs/user/manpages/gz-validate.md`, `docs/user/runbook.md`
-- Tests added: REQ-derived semantics tests for enumeration, section-presence, substantive-content, and CLI dispatch — exact test names TBD by implementer; each `@covers(REQ-0.0.35-04-NN)`-decorated
-- ARB receipts: `arb-step-unittest-*`, `arb-ruff-*`, `arb-step-typecheck-*`, `arb-step-coverage-*`, `arb-step-mkdocs-*` (cited in attestation)
-- Date completed: -
-- Attestation status: -
-- Defects noted: -
+
+- Validator: `src/gzkit/governance/trust_audits/kind_invariance.py` — globs `docs/design/adr/foundation/ADR-*/ADR-*.md`, parses frontmatter, filters `kind: foundation`, asserts byte-identical `## Why foundation tier?` heading + substantive body (placeholder detection reuses `STRICT_PLACEHOLDERS` from `gzkit.hooks.obpi` plus `_[...]_` author-prompt detection)
+- CLI: `--kind-invariance` flag in `src/gzkit/cli/parser_maintenance.py`, dispatch in `src/gzkit/commands/validate_cmd.py`, scope added to `_POLICY_BREACH_ERROR_TYPES` and `_resolve_scopes` opt_in
+- gz check wiring: `run_kind_invariance_audit` wrapper in `src/gzkit/quality.py`, "Kind invariance" entry in `_build_check_steps()` in `src/gzkit/commands/quality.py`
+- Tests added: 10 validator tests, 5 docs/meta tests, 3 CLI flag-wiring tests, 1 pipeline-composition test, 1 cascading mock fix in `tests/commands/test_skills.py`. 100% REQ coverage (11/11) verified by `gz covers OBPI-0.0.35-04`.
+- Behave: 5 scenarios in `features/kind_invariance.feature` + step definitions in `features/steps/kind_invariance_steps.py`
+- Docs: `--kind-invariance` synopsis + scope section in `docs/user/manpages/validate.md`; cross-reference added to `docs/user/runbook.md`
+- Backfill (operator-approved scope expansion): substantive `## Why foundation tier?` sections added to all 38 existing foundation ADRs
+- Waiver: `data/behave_coverage_waivers.json` entry covers structural/meta REQs whose verification surface is Python unit tests
+- ARB receipts (GREEN): `arb-ruff-eb8772b06ded4f3284e3fb3a6286560e`, `arb-step-typecheck-74081d05b0ae4ee3b08cd680bf1241ff`, `arb-step-unittest-8071390b748440248d70e083e72d1e86`, `arb-step-coverage-bdd508d88b354d278ced76af3c002f13`, `arb-step-mkdocs-0ae297d5ef5f4c06a4d3ec3174b56a23`, `arb-step-behave-df0a24c360ec4677a98683509c42032d`
+- Date completed: 2026-05-17
+- Attestation status: attest completed (operator verbatim, Stage 4)
 
 ## Tracked Defects
 
@@ -289,14 +305,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` — required (heavy-lane + foundation-kind parent)
-- Attestation: -
-- Date: -
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — gz validate --kind-invariance exits 0 against all 38 foundation ADRs (operator-approved 38-ADR backfill applied to satisfy REQ-6 without breaking the build); 100% REQ coverage (11/11) with 19 REQ-derived unit tests + 5 behave scenarios; Heavy-lane ARB receipts captured (GREEN): arb-ruff-eb8772b06ded4f3284e3fb3a6286560e, arb-step-typecheck-74081d05b0ae4ee3b08cd680bf1241ff, arb-step-unittest-8071390b748440248d70e083e72d1e86, arb-step-coverage-bdd508d88b354d278ced76af3c002f13, arb-step-mkdocs-0ae297d5ef5f4c06a4d3ec3174b56a23, arb-step-behave-df0a24c360ec4677a98683509c42032d
+- Date: 2026-05-17
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-17
 
 **Evidence Hash:** -

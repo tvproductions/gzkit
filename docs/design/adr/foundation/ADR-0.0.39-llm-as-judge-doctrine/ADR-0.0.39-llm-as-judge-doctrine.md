@@ -17,6 +17,12 @@ Active persona: `main-session` — craftsperson, governance-aware, whole-file-re
 
 LLM-as-judge is a paradigm whose canonical literature ([arxiv 2411.15594 — *From Generation to Judgment*](https://arxiv.org/abs/2411.15594), [llm-as-a-judge.github.io](https://llm-as-a-judge.github.io/)) names specific failure modes — preference leakage, position bias, verbosity bias, self-preference, calibration drift — that are invisible to mechanical validation and easy to miss without explicit roster. The author of this ADR reads the survey before authoring; refusing to codify a bias the survey names but the codebase has not yet observed is craft, not deference. The doctrine is not a description of what gzkit does today; it is the structural floor every future judge surface inherits, including failure modes that have not yet surfaced in practice.
 
+## Why foundation tier?
+
+Without this ADR, LLM-as-judge invocation is ungoverned — judges fire with no doctrine on calibration, leakage prevention, output discipline, or attestation, so judge verdicts have no contractual standing in the governance chain.
+
+This ADR authors a port: the LLM-as-judge doctrine every judge-invoking surface (eval, review, meta-evaluation) binds to.
+
 ## Intent
 
 **Current state.** gzkit already runs LLM-as-judge surfaces — `gz-adr-evaluate --red-team` (10 structured red-team challenges + 8-dim ADR / 5-dim OBPI rubric scoring), the runtime `advisor()` tool (stronger reviewer model on full conversation transcript), `gz-complexity-distill` advisor verdicts, and the proposed advisory-judge surface that this ADR's pool source originally seeded. **Today**, none of these surfaces declares its judging methodology, names the biases it inherits, requires explanation-before-verdict output structure, or runs a meta-evaluation cadence that would surface judge-correctness drift over time.

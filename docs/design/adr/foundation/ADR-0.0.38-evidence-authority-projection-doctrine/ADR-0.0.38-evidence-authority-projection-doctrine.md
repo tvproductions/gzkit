@@ -17,6 +17,12 @@ Active persona: `main-session` — craftsperson, governance-aware, whole-file-re
 
 This ADR codifies a foundational distinction (which surfaces bind gate decisions vs. which inform operator judgment vs. which merely project Layer-1/Layer-2 truth). The author of every section reads existing surfaces whole before classifying — frontmatter, body invocations, call-site shapes, exit-code semantics — because the binding character of a surface is determined by how callers consume it, not by how its own code is shaped. Refusing to classify a surface whose binding character cannot be observed from evidence is craft, not avoidance; the canonical home for unresolved cases is a `surface_axis_undecidable` ledger event with the named ambiguity, never a guess.
 
+## Why foundation tier?
+
+Without this ADR, evidence authority doesn't project across surfaces — a receipt proven on one axis (e.g., an ARB step) cannot be cited as evidence for an attestation on another axis without re-deriving the proof.
+
+This ADR authors a port: the evidence-authority projection contract (proof on one axis projects onto adjacent axes when the projection rules are explicit) every cross-axis attestation surface honors.
+
 ## Intent
 
 **Current state.** Multiple gzkit surfaces — `gz-plan-audit` findings,

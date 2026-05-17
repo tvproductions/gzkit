@@ -927,6 +927,7 @@ uv run gz validate --chores-layout   # Fail closed (exit 3) on stray CHORE.md or
 ### Governance Doctrine Surfaces
 
 ```bash
+uv run gz validate --kind-invariance             # ADR-0.0.35 Why-foundation-tier section present on every foundation ADR
 uv run gz validate --complexity-doctrine-links  # ADR-0.0.27 citation link integrity
 uv run gz validate --complexity-thresholds       # ADR-0.0.28 threshold table shape audit
 uv run gz complexity distill                     # Run a distillation pass against the corpus

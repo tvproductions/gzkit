@@ -17,6 +17,12 @@ ledger schema, the evaluation surface, and the rule-authoring flow. The work
 is the work; the loop the doctrine codifies is observational, not
 prescriptive.
 
+## Why foundation tier?
+
+Without this ADR, evaluation findings stay narrative — operator audits surface defects but the loop back to mechanical rule changes is ad-hoc, so eval feedback drifts into informal corrections that don't harden the contract.
+
+This ADR authors a port: the eval-feedback-source trailer contract that every rule-edit commit landing under an `eval-feedback`-labeled GHI must carry, traceable end-to-end.
+
 ## Intent
 
 Close the open feedback loop between gzkit's two reasoning surfaces

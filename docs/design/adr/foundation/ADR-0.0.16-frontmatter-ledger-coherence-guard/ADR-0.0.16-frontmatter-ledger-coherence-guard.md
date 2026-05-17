@@ -16,6 +16,12 @@ date: 2026-04-17
 
 This ADR is a Foundation addition. Foundations are baseline assumptions about good app substrates — the state-doctrine (ADR-0.0.9) asserted "ledger is authoritative, frontmatter is derived"; this ADR mechanically enforces that assertion. The anti-pattern canon in AGENTS.md applies throughout, especially the DO IT RIGHT maxim (6a — fix the class of failure, not the instance): the guard is the class fix, not a per-consumer patch. The 2am-operator rubric is load-bearing here — every OBPI must preserve operator recoverability when the guard blocks a gate.
 
+## Why foundation tier?
+
+Without this ADR, the state-doctrine invariant "ledger is authoritative, frontmatter is derived" is advisory prose — 94.7% drift in ADR status fields demonstrates that without a mechanical guard, Layer 3 silently lies to every consumer and the project's governance chain is untrustworthy.
+
+This ADR authors a port: the frontmatter-ledger coherence contract (validator, auto-fix chore, status-vocabulary mapping) that every ADR and OBPI file surface must satisfy at gate time.
+
 ## Intent
 
 YAML frontmatter on ADR/OBPI files (id, parent, lane, status) is Layer 3 derived state — written as a side-effect of ledger events — but 13 code paths across 8 files consume it as if it were authoritative. With no guard gate or chore audit reconciling frontmatter against ledger truth, drift accumulates silently: 94.7% of sampled ADR status: fields (18/19) disagree with ledger lifecycle. The state-doctrine rule 'frontmatter is L3 derived state; read the ledger' (ADR-0.0.9; .gzkit/rules/constraints.md § State Doctrine) has no mechanical enforcement today, so every consumer is a silent corruption vector. Operator-facing output (agent reads frontmatter → reports stale lifecycle) has already misled a design session (GHI #162 surface event, 2026-04-15, ADR-0.22.0). **After this ADR, every `gz gates` invocation mechanically confirms frontmatter-ledger coherence for the four governed fields; drift is either auto-fixed by the registered chore or blocks gate progression with a named recovery command. The 94.7% existing status-field drift is cleared in the one-time backfill run that ships as part of the ADR's dogfood evidence.** This ADR closes the governance cluster GHI #162, #167, #168, #169, #170 by adding the missing mechanical guard and automated reconciliation, not by rewriting the 13 consumer paths.

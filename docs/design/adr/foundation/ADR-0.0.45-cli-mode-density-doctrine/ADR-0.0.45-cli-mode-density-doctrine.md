@@ -22,6 +22,12 @@ coherent move, not three loosely-related changes. The hard cutover blast radius
 across ~481 files is approached as a single whole-file reasoning pass, not an
 incremental shim sequence.
 
+## Why foundation tier?
+
+Without this ADR, CLI mode density (subcommand depth, flag count per verb, mode interactions) is undisciplined — the operator surface accretes verbs and flags without structural pushback, and `gz` drifts toward unusable complexity.
+
+This ADR authors a port: the CLI mode-density doctrine every new-verb / new-flag authoring surface (and its validator) binds to.
+
 ## Intent
 
 Bound CLI mode-density mechanically. **Today**, the 40+ `--<scope>` flags that

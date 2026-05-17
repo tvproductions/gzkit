@@ -9,6 +9,12 @@ lane: lite
 
 # ADR-0.0.5: Evaluation Infrastructure
 
+## Why foundation tier?
+
+Without this ADR, every instruction surface change, skill update, or model migration is a blind deployment — there is no systematic way to detect whether AI-assisted workflow quality improved or regressed, making gzkit ungovernable at its own AI-behavior layer.
+
+This ADR authors a port: the evaluation harness contract (reference datasets, delta-based scoring, regression detection) that every AI-sensitive surface change must honor before release.
+
 ## Status
 
 Pending

@@ -20,6 +20,12 @@ must remain coherent across the OBPI sequence; light-CLI/light-TUI
 discipline must hold against the temptation to build a heavy editor; the
 agent-mediated dialogical authoring mode is the binding interaction model.
 
+## Why foundation tier?
+
+Without this ADR, the agent control surface is a hand-authored vibing surface — fidelity validators have nothing canonical to diff against, and per-turn agent context drifts from authored doctrine with no structural defense.
+
+This ADR authors a port: the canonical rendering-substrate contract that fidelity validators bind to (the rendered surface is the spec; future renderers are plugs behind it).
+
 ## Intent
 
 **Current state.** The per-turn agent control surface (`AGENTS.md`,

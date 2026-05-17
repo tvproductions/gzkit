@@ -19,6 +19,12 @@ promoted_from: ADR-pool.ghi-authoring-mechanical-label-enforcement
 
 {persona}
 
+## Why foundation tier?
+
+Without this ADR, GHI labels drift unverifiably — authors apply labels by convention, automation reads them by convention, and the loop between authoring-time labels and consumer-time enforcement has no mechanical check.
+
+This ADR authors a port: the GHI authoring mechanical-label enforcement contract every issue-authoring and issue-consuming surface honors.
+
 ## Intent
 
 Convert the `ghi-author` skill's Step 1 secondary-label predicate from

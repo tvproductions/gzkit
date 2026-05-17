@@ -607,6 +607,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Validate vendor manifest schema and content-type route drift (ADR-0.0.34).",
     )
     p_validate.add_argument(
+        "--kind-invariance",
+        dest="check_kind_invariance",
+        action="store_true",
+        help="Validate foundation ADRs have Why-foundation-tier section",
+    )
+    p_validate.add_argument(
         "--regenerate",
         dest="check_distribution_regenerate",
         action="store_true",
@@ -692,6 +698,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_scenario_reachability=a.check_scenario_reachability,
             check_surface_fidelity=a.check_surface_fidelity,
             check_vendor_manifest=a.check_vendor_manifest,
+            check_kind_invariance=a.check_kind_invariance,
             attestation_receipts=a.attestation_receipts,
             attestation_lane=a.attestation_lane,
             attestation_kind=a.attestation_kind,

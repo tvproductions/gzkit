@@ -16,6 +16,12 @@ date: 2026-04-25
 what `Completed` means at OBPI brief level. Methodical TDD discipline; tests
 assert REQ-derived semantics, not strings.
 
+## Why foundation tier?
+
+Without this ADR, OBPIs can close without REQ-coverage proof — `gz obpi complete` accepts attestation without verifying that every brief REQ has a covering passing test, and acceptance criteria become honor-system.
+
+This ADR authors a port: the REQ-coverage gate contract every brief-closeout surface must honor (covered REQs only; uncovered REQs require explicit operator waiver).
+
 ## Intent
 
 Refuse `gz obpi complete` (and the ADR-level analogue `gz adr emit-receipt

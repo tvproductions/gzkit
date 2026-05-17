@@ -19,6 +19,12 @@ promoted_from: ADR-pool.pool-management
 
 {persona}
 
+## Why foundation tier?
+
+Without this ADR, the ADR pool has no curation discipline — pool entries accumulate without staleness sweep, dependency tracking, or promotion routing, and the backlog becomes write-only.
+
+This ADR authors a port: the pool-management contract (lifecycle, sweep cadence, dependency surface) every pool-touching surface honors.
+
 ## Intent
 
 Define a pool management process that (1) detects overlap, identifies natural ADR clusters, retires stale items, and produces promotion recommendations, and (2) maintains a priority-ranked backlog so execution intent is signaled without version commitment.

@@ -14,6 +14,12 @@ date: 2026-04-26
 
 **Active persona:** `main-session` — doctrine author treating OBPI completion attestation as a load-bearing invariant, not a configurable workflow knob. The craft standard for this ADR is *every state shape that pre-doctrine permitted self-close becomes structurally unreachable post-doctrine*. The reviewer test: an adopter cannot construct a valid OBPI completion path that omits brief-level human attestation, regardless of which combination of `kind` and `lane` they choose for the parent ADR.
 
+## Why foundation tier?
+
+Without this ADR, OBPI attestation surface varies by lane/kind — heavy and lite paths take different code routes, attestation events emit with inconsistent payloads, and adopters can't reason uniformly about what an OBPI completion event actually proves.
+
+This ADR authors a port: the universal OBPI attestation contract every closeout, complete, and receipt-emit surface honors regardless of lane or kind.
+
 ## Intent
 
 > **Operator course correction (2026-04-26, GHI #331 closure):** *"drop all ideas of self-closing... agents vibe too much. ABANDON that idea. GovZero is Zero-maxxing."*
