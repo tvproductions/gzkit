@@ -1,0 +1,6 @@
+Fidelity validation failed [surface-weight]: Surface weight limit exceeded
+File not written.
+----------------------------------------------------------------------
+Ran 44 tests in 0.012s
+
+OK

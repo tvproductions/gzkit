@@ -1,0 +1,2 @@
+content/list.py has Rich import: True
+content/show.py has Rich import: True

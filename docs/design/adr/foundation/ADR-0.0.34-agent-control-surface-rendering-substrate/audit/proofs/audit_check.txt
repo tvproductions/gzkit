@@ -1,0 +1,20 @@
+ADR audit-check: ADR-0.0.34-agent-control-surface-rendering-substrate
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.34-01-content-model-registry
+  - OBPI-0.0.34-02-rendering-pipeline
+  - OBPI-0.0.34-03-reverse-parse-migration
+  - OBPI-0.0.34-04-authoring-cli
+  - OBPI-0.0.34-05-light-tui-affordances
+  - OBPI-0.0.34-06-validation-hooks
+  - OBPI-0.0.34-07-migration-layer
+  - OBPI-0.0.34-08-vendor-manifest-expansion
+
+Coverage: 39/39 REQs covered (100.0%)
+  OBPI-0.0.34-01: 4/4 (100.0%)
+  OBPI-0.0.34-02: 5/5 (100.0%)
+  OBPI-0.0.34-03: 5/5 (100.0%)
+  OBPI-0.0.34-04: 5/5 (100.0%)
+  OBPI-0.0.34-05: 5/5 (100.0%)
+  OBPI-0.0.34-06: 5/5 (100.0%)
+  OBPI-0.0.34-07: 5/5 (100.0%)
+  OBPI-0.0.34-08: 5/5 (100.0%)

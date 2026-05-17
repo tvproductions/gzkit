@@ -1,0 +1,5 @@
+validate_render: validate_render
+validate_save: validate_save
+FidelityHookError is Exception: True
+pipeline.render references validate_render: True
+pipeline.render references FidelityHookError: True

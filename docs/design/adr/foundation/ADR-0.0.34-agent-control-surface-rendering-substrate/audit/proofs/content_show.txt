@@ -1,0 +1,1 @@
+Parse error: .gzkit/rules/gh-cli.md: Expected line starting with 'Version: '
