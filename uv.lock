@@ -580,6 +580,7 @@ version = "0.26.4"
 source = { editable = "." }
 dependencies = [
     { name = "cohesion" },
+    { name = "jinja2" },
     { name = "jsonschema" },
     { name = "lizard" },
     { name = "pydantic" },
@@ -609,6 +610,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "cohesion", specifier = ">=1.0,<2.0" },
+    { name = "jinja2", specifier = ">=3.1" },
     { name = "jsonschema", specifier = ">=4.26" },
     { name = "lizard", specifier = ">=1.17,<2.0" },
     { name = "mkdocs", marker = "extra == 'docs'", specifier = "==1.6.1" },
