@@ -106,6 +106,7 @@ from gzkit.governance.trust_audits.taxonomy import (
     audit_adr_taxonomy,
     audit_pool_adr_isolation,
 )
+from gzkit.governance.trust_audits.vendor_manifest import validate_vendor_manifest
 
 
 def validate_surface_fidelity(project_root: Path) -> list[ValidationError]:
@@ -171,4 +172,5 @@ __all__ = [
     "validate_scenario_reachability",
     "validate_surface_fidelity",
     "validate_surface_weight",
+    "validate_vendor_manifest",
 ]

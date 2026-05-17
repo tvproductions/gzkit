@@ -601,6 +601,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Composite: run all four surface-fidelity invariants (ADR-0.0.33-05).",
     )
     p_validate.add_argument(
+        "--vendor-manifest",
+        dest="check_vendor_manifest",
+        action="store_true",
+        help="Validate vendor manifest schema and content-type route drift (ADR-0.0.34).",
+    )
+    p_validate.add_argument(
         "--regenerate",
         dest="check_distribution_regenerate",
         action="store_true",
@@ -685,6 +691,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_pointer_anchors=a.check_pointer_anchors,
             check_scenario_reachability=a.check_scenario_reachability,
             check_surface_fidelity=a.check_surface_fidelity,
+            check_vendor_manifest=a.check_vendor_manifest,
             attestation_receipts=a.attestation_receipts,
             attestation_lane=a.attestation_lane,
             attestation_kind=a.attestation_kind,

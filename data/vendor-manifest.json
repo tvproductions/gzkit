@@ -1,0 +1,12 @@
+{
+  "content_type_routes": {
+    "AgentContract": ["claude"],
+    "Bullet": ["claude"],
+    "Chore": ["claude"],
+    "Handoff": ["claude"],
+    "Persona": ["claude"],
+    "Rule": ["claude"],
+    "Scenario": ["claude"],
+    "Skill": ["claude"]
+  }
+}

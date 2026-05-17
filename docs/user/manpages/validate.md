@@ -13,7 +13,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--scenario-reachability] [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
-            [--advisor-proof-binding]
+            [--advisor-proof-binding] [--vendor-manifest]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
 ```
 
@@ -480,6 +480,42 @@ $ echo $?
 | 0 | Registry absent (Era-1 advisory) or all bullets reachable (Era-2 clean) | — |
 | 0 | Orphan bullets found (Era-2 advisory) | Review orphan warnings in stderr; fix coverage or await `--strict` escalation |
 | 3 | Registry schema violation | Fix `data/agent-control-surface-scenarios.json` to match declared schema |
+
+### `--vendor-manifest`
+
+Validates `data/vendor-manifest.json` against `src/gzkit/schemas/vendor_manifest.json`
+and checks that every declared `content_type_routes` entry maps to at least one vendor
+mirror. Exits 3 when any registered content type is missing from the manifest or when
+the manifest fails JSON Schema validation (ADR-0.0.34 OBPI-08).
+
+**When to use:** After editing `data/vendor-manifest.json`, adding a new content type
+to the registry, or verifying the render pipeline's routing is schema-consistent.
+
+```bash
+uv run gz validate --vendor-manifest
+```
+
+**Examples:**
+
+```text
+$ uv run gz validate --vendor-manifest
+Validated: vendor_manifest
+```
+
+```text
+$ uv run gz validate --vendor-manifest
+❌ Validation failed with 1 error(s):
+
+   → data/vendor-manifest.json
+    Vendor manifest missing content_type_routes entry for: NewContentType
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Manifest validates clean | — |
+| 3 | Schema violation or missing content-type route | Add the missing entry to `data/vendor-manifest.json` |
 
 ### `--surface-fidelity`
 

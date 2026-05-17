@@ -11,6 +11,7 @@ Covers:
 
 import unittest
 
+from gzkit.content import vendors
 from gzkit.content.models import (
     CONTENT_MODELS,
     AgentContract,
@@ -23,7 +24,6 @@ from gzkit.content.models import (
     Skill,
 )
 from gzkit.content.render import render
-from gzkit.content.render.pipeline import _VENDOR_ROUTING
 from gzkit.traceability import covers
 
 # ---------------------------------------------------------------------------
@@ -91,7 +91,8 @@ class TestByteStability(unittest.TestCase):
     @covers("REQ-0.0.34-02-02")
     def test_all_registered_pairs_render_nonempty(self) -> None:
         """Every (content_type, vendor) pair in the routing table renders non-empty output."""
-        for content_type_name, vendor in sorted(_VENDOR_ROUTING):
+        pairs = sorted((ct, v) for ct, vs in vendors.all_routes().items() for v in vs)
+        for content_type_name, vendor in pairs:
             with self.subTest(content_type=content_type_name, vendor=vendor):
                 stub = _STUB_BY_TYPE.get(content_type_name)
                 self.assertIsNotNone(
@@ -113,7 +114,7 @@ class TestByteStability(unittest.TestCase):
     @covers("REQ-0.0.34-02-02")
     def test_routing_table_covers_all_canonical_models(self) -> None:
         """The routing table must include an entry for every canonical content type."""
-        routed_types = {ct for ct, _ in _VENDOR_ROUTING}
+        routed_types = set(vendors.all_routes().keys())
         canonical_types = set(CONTENT_MODELS.keys())
         missing = canonical_types - routed_types
         self.assertEqual(
@@ -145,7 +146,8 @@ class TestByteStability(unittest.TestCase):
                 registry,
                 f"{name} must still be in CONTENT_MODELS after render pipeline lands",
             )
-        for content_type_name, vendor in sorted(_VENDOR_ROUTING):
+        pairs = sorted((ct, v) for ct, vs in vendors.all_routes().items() for v in vs)
+        for content_type_name, vendor in pairs:
             stub = _STUB_BY_TYPE.get(content_type_name)
             self.assertIsNotNone(stub, f"No stub for {content_type_name!r}")
             from gzkit.content.models.base import BaseContentModel  # noqa: PLC0415
