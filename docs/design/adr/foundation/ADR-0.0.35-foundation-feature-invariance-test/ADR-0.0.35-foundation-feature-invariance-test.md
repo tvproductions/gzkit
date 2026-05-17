@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.35-foundation-feature-invariance-test
-status: Draft
+status: Validated
 kind: foundation
 semver: 0.0.35
 lane: lite

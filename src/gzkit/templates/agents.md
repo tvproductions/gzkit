@@ -221,28 +221,26 @@ Right-size implementation units per [OBPI Decomposition Matrix](docs/governance/
 
 ## OBPI Acceptance Protocol
 
-**Agent MUST NOT mark an OBPI brief as `Completed` without explicit human attestation when the parent ADR is `heavy`-lane OR `foundation`-kind.** Both axes gate independently. Enforced by `_requires_human_obpi_attestation` + TTY `ATTEST` gate.
+**Agent MUST NOT mark an OBPI brief as `Completed` without explicit human attestation. Brief-level human attestation is universal (ADR-0.0.36, GHI #342). Enforced by `_requires_human_obpi_attestation`.**
 
 **REQ-coverage gate (ADR-0.0.25).** Every REQ must have a covering passing test before `gz obpi complete`. Uncovered REQs require `--accept-uncovered <REQ-ID> --accept-uncovered-reason <REASON>`. Failing-cover REQs cannot be waived.
 
 **Pipeline mandate:** After plan approval, agents MUST run `uv run gz obpi pipeline <OBPI-ID>`. The `gz-obpi-pipeline` skill is a thin alias; runtime owns stage sequencing and preserves verify -> ceremony -> guarded git sync -> completion order, with `uv run gz git-sync --apply --lint --test` before final accounting. Freeform implementation without runtime invocation is a process defect.
 
-### Lane & Kind & Sensitivity Attestation Matrix
+### Universal OBPI Attestation (ADR-0.0.36, GHI #342)
 
-`kind`, `lane`, and `sensitivity` are three orthogonal axes. Any one axis alone can force human attestation at brief level — the predicate is a three-way OR:
+**Brief-level human attestation is ALWAYS required for every OBPI completion, regardless
+of parent ADR kind or lane. There is NO self-close path.**
 
-| Parent Kind | Parent Lane | Sensitivity | Brief-level Human Attestation | Source of truth |
-|-------------|-------------|-------------|-------------------------------|-----------------|
-| `foundation` | `lite`  | absent     | **Required** | `_is_foundation_adr` branch |
-| `foundation` | `lite`  | `security` | **Required** | foundation OR security |
-| `foundation` | `heavy` | absent     | **Required** | foundation AND lane |
-| `foundation` | `heavy` | `security` | **Required** | three-way OR |
-| `feature`    | `lite`  | absent     | Self-closeable after evidence | — |
-| `feature`    | `lite`  | `security` | **Required** | `_requires_security_review_attestation` branch (ADR-0.0.22) |
-| `feature`    | `heavy` | absent     | **Required** | lane branch |
-| `feature`    | `heavy` | `security` | **Required** | lane OR security |
+`kind`, `lane`, and `sensitivity` remain three orthogonal axes that determine *which gates
+fire* — they NEVER determine whether Gate 5 brief-level attestation fires. Gate 5 is universal:
 
-Inheritance: heavy-lane OBPI inherits lane rigor; foundation-kind OBPI inherits kind rigor; `sensitivity: security` OBPI inherits security rigor. A lite-lane foundation OBPI is **not** self-closeable. If matrix and code disagree, code (`_requires_human_obpi_attestation`) is source of truth. Third-axis doctrine: [`.gzkit/rules/security-sensitivity.md`](.gzkit/rules/security-sensitivity.md).
+- **`foundation` kind** — determines whether Gate 3 (docs scope) and Gate 4 (BDD scope)
+  apply the foundation-tier bar.
+- **`heavy` lane** — determines whether Gate 3 (docs) and Gate 4 (BDD) are required.
+- **`security` sensitivity** — adds security-scan requirements to Gate 5.
+
+Third-axis doctrine: [`.gzkit/rules/security-sensitivity.md`](.gzkit/rules/security-sensitivity.md).
 
 ## Execution Rules
 

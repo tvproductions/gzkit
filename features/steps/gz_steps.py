@@ -243,6 +243,12 @@ def step_file_contains(_context, path: str, text: str) -> None:  # type: ignore[
     assert text in content, content
 
 
+@then('the file "{path}" does not contain "{text}"')
+def step_file_not_contains(_context, path: str, text: str) -> None:  # type: ignore[no-untyped-def]
+    content = Path(path).read_text(encoding="utf-8")
+    assert text not in content, f"Expected {path!r} to not contain {text!r}"
+
+
 @then('JSON path "{path}" equals "{expected}"')
 def step_json_path_equals(context, path: str, expected: str) -> None:  # type: ignore[no-untyped-def]
     payload = json.loads(context.output)
