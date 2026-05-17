@@ -22,6 +22,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -34,6 +35,13 @@ def _gzkit_project_root() -> Path:
         return Path(env).resolve()
     # features/steps/distribution_invariant_steps.py -> parents[2] is gzkit root
     return Path(__file__).resolve().parents[2]
+
+
+def _venv_bin(venv_path: Path, name: str) -> Path:
+    # uv venv lays out interpreter/scripts at Scripts/*.exe on Windows, bin/* on POSIX.
+    if sys.platform == "win32":
+        return venv_path / "Scripts" / f"{name}.exe"
+    return venv_path / "bin" / name
 
 
 def _run(cmd: list[str], cwd: Path) -> tuple[int, str]:
@@ -92,7 +100,7 @@ def step_install_into_venv(context) -> None:  # type: ignore[no-untyped-def]
     context.add_cleanup(_cleanup_venv)
     code, output = _run(["uv", "venv", str(venv_path)], cwd=context.project_root)
     assert code == 0, f"uv venv failed (exit {code}):\n{output}"
-    venv_python = venv_path / "bin" / "python"
+    venv_python = _venv_bin(venv_path, "python")
     assert venv_python.exists(), f"venv python missing at {venv_python}"
     code, output = _run(
         [
@@ -106,7 +114,7 @@ def step_install_into_venv(context) -> None:  # type: ignore[no-untyped-def]
         cwd=context.project_root,
     )
     assert code == 0, f"uv pip install failed (exit {code}):\n{output}"
-    context.venv_gz = venv_path / "bin" / "gz"
+    context.venv_gz = _venv_bin(venv_path, "gz")
     assert context.venv_gz.exists(), f"venv gz binary missing at {context.venv_gz}"
 
 
