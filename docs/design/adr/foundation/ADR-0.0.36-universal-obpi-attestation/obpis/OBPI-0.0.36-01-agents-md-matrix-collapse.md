@@ -3,7 +3,7 @@ id: OBPI-0.0.36-01-agents-md-matrix-collapse
 parent: ADR-0.0.36-universal-obpi-attestation
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.36-01-agents-md-matrix-collapse: AGENTS.md Matrix Collapse
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.36-universal-obpi-attestation/ADR-0.0.36-universal-obpi-attestation.md`
 - **Checklist Item:** #1 — "AGENTS.md matrix collapse — replace Lane & Kind Attestation Matrix with universal-attestation binding rule; preserve lane/kind axes for gate-firing scope only"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -201,24 +201,40 @@ Before this OBPI, `AGENTS.md` § OBPI Acceptance Protocol carried a four-row mat
 
 ### Key Proof
 
-```bash
-# Before:
-$ rg "Self-closeable after evidence" AGENTS.md
-AGENTS.md:NNN:| `feature` | `lite` | Self-closeable after evidence |
 
-# After:
-$ rg "Self-closeable after evidence" AGENTS.md **/AGENTS.md
-(no matches)
-$ rg "brief-level human attestation is required for every OBPI completion" AGENTS.md
-AGENTS.md:NNN:**Brief-level human attestation is required for every OBPI completion...**
+```bash
+# Before: deprecated matrix cell present
+$ rg "Self-closeable after evidence" AGENTS.md
+AGENTS.md:264:| `feature`    | `lite`  | absent     | Self-closeable after evidence | — |
+
+# After: zero matches across all AGENTS.md files
+$ rg "Self-closeable after evidence" --glob "**/AGENTS.md"
+$ echo $?
+1
+
+# New universal binding rule present in AGENTS.md
+$ rg "ALWAYS required for every OBPI completion" AGENTS.md
+AGENTS.md:256:**Brief-level human attestation is ALWAYS required for every OBPI completion, regardless
 ```
+
+ARB receipts:
+- arb-ruff-d5242753decd4425a3b2891ef60c34d6 (lint clean)
+- arb-step-typecheck-45e467920c454a42b44c417f8bced516 (typecheck clean)
+- arb-step-unittest-2d8ae16947da4130889794edbb8c1864 (5260/5260 pass)
+- arb-step-mkdocs-faf17a5646704eb8a5e6a21938a54fbd (docs build clean)
+
+BDD: 5/5 scenarios pass on features/universal_obpi_attestation.feature (REQ-01..05)
+@covers parity: 5/5 REQs covered (uncovered_reqs: 0 via `gz covers OBPI-0.0.36-01-agents-md-matrix-collapse --json`)
 
 ### Implementation Summary
 
-- Files created/modified: `AGENTS.md` (matrix collapse), `src/gzkit/templates/agents.md` (template alignment if applicable), `tests/governance/test_agents_md_matrix.py` (new test module), all `**/AGENTS.md` mirrors via `gz agent sync control-surfaces`
-- Tests added: `test_lane_and_kind_attestation_matrix_is_collapsed`, `test_universal_attestation_binding_rule_present`, `test_lane_kind_axes_retained_for_gate_firing_scope`
-- Date completed: TBD
-- Attestation status: pending TTY+ATTEST under universal attestation rule
+
+- Files modified: `AGENTS.md` (matrix collapsed to Universal OBPI Attestation section), `src/gzkit/templates/agents.md` and `.gzkit/templates/agents.md` (canonical template aligned), all `**/AGENTS.md` directory mirrors (propagated by `gz agent sync control-surfaces`)
+- Files created: `tests/governance/test_agents_md_matrix.py` (5 unit tests covering REQ-01..05), `features/universal_obpi_attestation.feature` (5 BDD scenarios tagged @REQ-0.0.36-01-01..05)
+- Coupled-surface fixes: `tests/test_adr_audit_predicates.py` and `tests/governance/test_security_sensitivity_rule.py` (REQ-0.0.22-04-06, REQ-0.0.22-06-03 updated to assert the new Universal OBPI Attestation section instead of the collapsed matrix); `features/steps/gz_steps.py` (added `Then the file "{path}" does not contain "{text}"` step)
+- Tests added: 5 unit + 5 BDD = 10 REQ-derived assertions; semantic checks, not byte-level
+- Date completed: 2026-05-17
+- Attestation status: operator-verbatim conversational attestation received Stage 4 (universal under ADR-0.0.36)
 - Defects noted: none
 
 ## Tracked Defects
@@ -227,14 +243,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `Jeffry Babb` (universal under ADR-0.0.36)
-- Attestation: substantive attestation text recorded at completion
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — matrix collapse landed: AGENTS.md § OBPI Acceptance Protocol replaces the eight-row Lane & Kind & Sensitivity Attestation Matrix with the Universal OBPI Attestation section binding human attestation for every OBPI completion regardless of kind or lane. Verified by 5 unit tests (test_agents_md_matrix.py, receipt arb-step-unittest-2d8ae16947da4130889794edbb8c1864 — 5260/5260 pass), 5 @REQ-0.0.36-01-01..05 BDD scenarios (features/universal_obpi_attestation.feature, 5/5 pass), GHI #342 and ADR-0.0.36 cited inline for grep traceability, all AGENTS.md mirrors propagated via `gz agent sync control-surfaces`. Receipts: arb-ruff-d5242753decd4425a3b2891ef60c34d6, arb-step-typecheck-45e467920c454a42b44c417f8bced516, arb-step-mkdocs-faf17a5646704eb8a5e6a21938a54fbd.
+- Date: 2026-05-17
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-17
 
 **Evidence Hash:** -

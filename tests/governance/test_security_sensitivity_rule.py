@@ -105,36 +105,34 @@ class SecuritySensitivityCrossSurfaceBindings(unittest.TestCase):
 
     @covers("REQ-0.0.22-06-03")
     def test_agents_md_matrix_cites_rule_and_lists_every_cell(self) -> None:
+        # ADR-0.0.36 collapsed the Lane & Kind & Sensitivity Attestation Matrix
+        # to a universal attestation rule. The new canonical surface is the
+        # "Universal OBPI Attestation" section, which names all three axes for
+        # gate-firing scope. The security-sensitivity rule file is still cited
+        # via the Third-axis doctrine link.
+        #
+        # REQ-0.0.22-06-03 semantic: the canonical AGENTS.md surface names the
+        # security-sensitivity axis and cites the rule file. This is satisfied
+        # by the new universal attestation section.
         agents_md = (_PROJECT_ROOT / "AGENTS.md").read_text(encoding="utf-8")
         self.assertIn(
-            "Lane & Kind & Sensitivity Attestation Matrix",
+            "Universal OBPI Attestation",
             agents_md,
-            "AGENTS.md must carry the matrix section",
+            "AGENTS.md must carry the universal attestation section (ADR-0.0.36)",
         )
         self.assertIn(
             ".gzkit/rules/security-sensitivity.md",
             agents_md,
-            "AGENTS.md matrix must cite the security-sensitivity rule file",
+            "AGENTS.md must cite the security-sensitivity rule file (Third-axis doctrine link)",
         )
-        # Eight cells = (foundation × lite/heavy × absent/security) +
-        # (feature × lite/heavy × absent/security) — every (kind × lane ×
-        # sensitivity) triple.
-        for kind in ("foundation", "feature"):
-            for lane in ("lite", "heavy"):
-                for sens in ("absent", "security"):
-                    with self.subTest(kind=kind, lane=lane, sensitivity=sens):
-                        # Each row's lane-cell pattern is `| {kind} | {lane}*|`
-                        # — token presence is sufficient to pin the matrix
-                        # surface against silent row-removal drift.
-                        self.assertRegex(
-                            agents_md,
-                            re.compile(
-                                rf"\|\s*`{kind}`\s*\|\s*`{lane}`\s*\|\s*"
-                                rf"(`{sens}`|absent\s*)\s*\|",
-                                re.MULTILINE,
-                            ),
-                            f"matrix missing cell ({kind}, {lane}, {sens})",
-                        )
+        # All three axes must be named for gate-firing scope in the new section.
+        for axis in ("`foundation`", "`heavy`", "`security`"):
+            with self.subTest(axis=axis):
+                self.assertIn(
+                    axis,
+                    agents_md,
+                    f"universal attestation section must name gate-firing axis {axis}",
+                )
 
     @covers("REQ-0.0.22-06-04")
     def test_advisory_scorecard_classifies_rule_mechanical(self) -> None:

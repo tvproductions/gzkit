@@ -138,21 +138,25 @@ class TestAgentsMatrixThirdAxis(unittest.TestCase):
     def test_agents_md_matrix_names_third_axis(self):
         # Verify the readable projection of the predicate exists at the
         # canonical surface and names the third (sensitivity) axis,
-        # cites the source-of-truth function, and includes the
-        # `feature + lite + security` cell that closes the self-close
-        # vector this OBPI exists to address.
+        # cites the source-of-truth function, and names the security
+        # sensitivity axis as a gate-firing factor.
+        #
+        # ADR-0.0.36 collapsed the old Lane & Kind & Sensitivity Attestation
+        # Matrix to a universal attestation rule. The readable projection is
+        # now the "Universal OBPI Attestation" section, which still names all
+        # three axes for gate-firing scope and cites the predicate function.
         from pathlib import Path
 
         repo_root = Path(__file__).resolve().parent.parent
         agents_md = (repo_root / "AGENTS.md").read_text(encoding="utf-8")
 
-        # Heading carries the new third-axis title.
-        self.assertIn("Lane & Kind & Sensitivity Attestation Matrix", agents_md)
-        # Matrix names the sensitivity column.
-        self.assertIn("Sensitivity", agents_md)
+        # Heading is now the Universal OBPI Attestation section (ADR-0.0.36).
+        self.assertIn("Universal OBPI Attestation", agents_md)
+        # Sensitivity axis still named for gate-firing scope.
+        self.assertIn("sensitivity", agents_md)
         # Source-of-truth citation present.
         self.assertIn("_requires_human_obpi_attestation", agents_md)
-        # The closed vector — feature + lite + security — is enumerated.
+        # The security axis is still enumerated as a gate-firing factor.
         self.assertIn("`security`", agents_md)
 
 

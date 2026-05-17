@@ -1,0 +1,88 @@
+{
+  "obpi_id": "OBPI-0.0.36-01-agents-md-matrix-collapse",
+  "timestamp": "2026-05-17T22:49:22.570630+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.36-01-agents-md-matrix-collapse.md",
+  "gaps_found": 0,
+  "gaps": [],
+  "notes": "One CLI gap suppressed: 'tests/governance/test_agents_md_matrix.py does not exist' is a pre-implementation new-file false-positive. The file is the Step 1 TDD deliverable — its absence is the correct pre-implementation state. ADR <-> OBPI alignment 7/7. Plan <-> OBPI verified: all 6 requirements covered, allowed paths respected, denied paths avoided.",
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-04-agents-md-persona-section",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.12",
+      "sibling_obpi": "OBPI-0.0.12-07-agents-md-persona-reference",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-04-requires-security-review-attestation",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-06-rule-file-matrix-scorecard",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-09-agents-md-migration",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.14.0",
+      "sibling_obpi": "OBPI-0.14.0-01-canon-shared-instruction-model",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.14.0",
+      "sibling_obpi": "OBPI-0.14.0-02-native-path-scoped-rules",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.14.0",
+      "sibling_obpi": "OBPI-0.14.0-03-root-surface-slimming-and-workflow-relocation",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.19.0",
+      "sibling_obpi": "OBPI-0.19.0-06-audit-templates-and-evidence-aggregation-from-ledger",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.4.0",
+      "sibling_obpi": "OBPI-0.4.0-01-skill-source-centralization",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    }
+  ]
+}
