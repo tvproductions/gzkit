@@ -16,23 +16,8 @@ from pathlib import Path
 
 import jinja2
 
+from gzkit.content import vendors
 from gzkit.content.models.base import BaseContentModel
-
-# Minimal in-code routing table declaring all supported (content_type_name, vendor) pairs.
-# Each entry is (content_type_class_name, vendor_string).
-# OBPI-0.0.34-08 (vendor manifest) replaces this table when it lands.
-_VENDOR_ROUTING: frozenset[tuple[str, str]] = frozenset(
-    {
-        ("AgentContract", "claude"),
-        ("Rule", "claude"),
-        ("Skill", "claude"),
-        ("Chore", "claude"),
-        ("Persona", "claude"),
-        ("Handoff", "claude"),
-        ("Scenario", "claude"),
-        ("Bullet", "claude"),
-    }
-)
 
 
 def _build_env() -> jinja2.Environment:
@@ -108,8 +93,10 @@ def render(model: BaseContentModel, vendor: str, *, project_root: Path | None = 
     """
     content_type = model.__class__.__name__
 
-    # Routing guard — fail-closed before any template lookup.
-    if (content_type, vendor) not in _VENDOR_ROUTING:
+    # Routing guard — fail-closed before any template lookup. Routes resolve
+    # from data/vendor-manifest.json when project_root is supplied; otherwise
+    # from the in-code fallback table that mirrors the canonical manifest.
+    if vendor not in vendors.routes_for(content_type, project_root=project_root):
         raise TemplateNotFound(content_type=content_type, vendor=vendor)
 
     template_path = f"{content_type.lower()}/{vendor}.md.j2"

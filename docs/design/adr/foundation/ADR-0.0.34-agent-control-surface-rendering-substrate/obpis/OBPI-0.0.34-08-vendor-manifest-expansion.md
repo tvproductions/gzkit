@@ -3,7 +3,7 @@ id: OBPI-0.0.34-08-vendor-manifest-expansion
 parent: ADR-0.0.34-agent-control-surface-rendering-substrate
 item: 8
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.34-08-vendor-manifest-expansion: Vendor Manifest Expansion
@@ -13,13 +13,11 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
 - **Checklist Item:** #8 - "OBPI-0.0.34-08: Vendor manifest expansion — extend ADR-0.16.0 OBPI-03 vendor manifest schema as the canonical declaration of which content types render to which vendor mirrors"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Vendor manifest expansion — extend ADR-0.16.0 OBPI-03 vendor manifest schema as the canonical declaration of which content types render to which vendor mirrors.
+Replace the hard-coded `_VENDOR_ROUTING` frozenset in `src/gzkit/content/render/pipeline.py` with manifest-driven routing: create `data/vendor-manifest.json` as the canonical declaration of which content types render to which vendor mirrors, back it with a JSON Schema at `src/gzkit/schemas/vendor_manifest.json`, expose `routes_for()`/`all_routes()` helpers in a new `src/gzkit/content/vendors.py`, and register `gz validate --vendor-manifest` as a fail-closed coupled-surface coherence audit. "Done" looks like `gz validate --vendor-manifest` exits 0 on a clean manifest, the render pipeline routes via `vendors.routes_for()` with no per-vendor branches in `src/gzkit/content/render/`, and removing a content-type entry from the manifest causes the audit to exit 3 naming the missing entry.
 
 ## Lane
 
@@ -33,13 +31,20 @@ Vendor manifest expansion — extend ADR-0.16.0 OBPI-03 vendor manifest schema a
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `data/vendor-manifest.json` — vendor manifest content (extend with `content_type_routes` block)
-- `src/gzkit/schemas/vendor_manifest.json` — vendor manifest JSON Schema (extend with `content_type_routes` definition)
-- `src/gzkit/content/vendors.py` — vendor routing helpers (load manifest, expose `routes_for(content_type) -> list[Vendor]`)
-- `src/gzkit/content/render/pipeline.py` — read `content_type_routes` from manifest instead of hard-coded routing
-- `src/gzkit/governance/trust_audits.py` — `gz validate --vendor-manifest` scope registration (modification, not creation)
+- `data/vendor-manifest.json` — vendor manifest content (created; declares `content_type_routes`)
+- `src/gzkit/schemas/vendor_manifest.json` — vendor manifest JSON Schema (created)
+- `src/gzkit/content/vendors.py` — vendor routing helpers (`routes_for(content_type) -> list[str]`, `all_routes()`)
+- `src/gzkit/content/render/pipeline.py` — read `content_type_routes` via `vendors.routes_for()` instead of hard-coded routing
+- `src/gzkit/governance/trust_audits/vendor_manifest.py` — new audit module providing `validate_vendor_manifest()`
+- `src/gzkit/governance/trust_audits/__init__.py` — re-export `validate_vendor_manifest`
+- `src/gzkit/commands/validate_cmd.py` — register `vendor_manifest` scope
+- `src/gzkit/cli/parser_maintenance.py` — register `--vendor-manifest` CLI flag
+- `docs/user/manpages/validate.md` — document `--vendor-manifest` flag
 - `tests/content/test_vendor_manifest.py` — schema validation, route enumeration, drift fail-closed
+- `tests/content/test_byte_stability.py` — migrate from removed `_VENDOR_ROUTING` to `vendors.all_routes()`
 - `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/obpis/OBPI-0.0.34-08-vendor-manifest-expansion.md` — this brief
+
+> **Note (prerequisite mismatch documented at audit time):** ADR-0.16.0 OBPI-03 created the `vendors` section in `.gzkit/manifest.json` (vendor enablement config). The separate `data/vendor-manifest.json` (content routing) is created HERE, not extended from a pre-existing artifact. The render pipeline placeholder comment at `src/gzkit/content/render/pipeline.py:23` (pre-modification) named OBPI-0.0.34-08 as the creator.
 
 ## Denied Paths
 
@@ -225,15 +230,35 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```
+$ uv run gz validate --vendor-manifest
+Validated: vendor_manifest
+
+✓ All validations passed (1 scopes).
+
+$ uv run python -c "from gzkit.content import vendors; print(vendors.all_routes())"
+{'AgentContract': ['claude'], 'Bullet': ['claude'], 'Chore': ['claude'], 'Handoff': ['claude'], 'Persona': ['claude'], 'Rule': ['claude'], 'Scenario': ['claude'], 'Skill': ['claude']}
+
+$ uv run python -m unittest tests.content.test_vendor_manifest -v 2>&1 | tail -3
+Ran 11 tests in 0.003s
+OK
+
+$ rg -n "vendor\s*==\s*['\"]claude['\"]" src/gzkit/content/render/ && echo "FAIL" || echo "PASS: no hard-coded branches"
+PASS: no hard-coded branches
+```
+
+Pipeline routing now reads via vendors.routes_for() at src/gzkit/content/render/pipeline.py:99 (replacing removed _VENDOR_ROUTING frozenset). ARB receipts (all GREEN): arb-ruff-8ab72a514cf24369a94bc8c819837615 (lint), arb-step-typecheck-79082b0a4ada48d5be627fa05acfd7fe (typecheck), arb-step-unittest-849d628a3b4e4853a2c895c2e23736bf (full sweep 5198/5198), arb-step-mkdocs-0eca9b9d464c49548ffe9693dea22a78 (docs build strict). REQ coverage: 5/5 via gz covers (uncovered_reqs=0).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: data/vendor-manifest.json (canonical content_type_routes for 8 content types), src/gzkit/schemas/vendor_manifest.json (JSON Schema), src/gzkit/content/vendors.py (routes_for/all_routes helpers with manifest-driven + fallback routing), src/gzkit/governance/trust_audits/vendor_manifest.py (validate_vendor_manifest audit), tests/content/test_vendor_manifest.py (11 tests covering all 5 REQs)
+- Files modified: src/gzkit/content/render/pipeline.py (replaced _VENDOR_ROUTING frozenset with vendors.routes_for() call at line 99), src/gzkit/governance/trust_audits/__init__.py (re-exported validate_vendor_manifest), src/gzkit/commands/validate_cmd.py (registered vendor_manifest scope), src/gzkit/cli/parser_maintenance.py (added --vendor-manifest flag), docs/user/manpages/validate.md (documented --vendor-manifest), tests/content/test_byte_stability.py (migrated from removed _VENDOR_ROUTING to vendors.all_routes())
+- Tests added: 11 (TestVendorManifestSchema=2, TestVendorManifestDrift=3, TestVendorRoutingRoundTrip=4, TestRenderPipelineManifestIntegration=2); full sweep 5198/5198 GREEN
+- Date completed: 2026-05-17
+- Attestation status: heavy-lane operator attestation received ("attest completed") at Stage 4
+- Defects noted: brief originally listed src/gzkit/governance/trust_audits.py (package path mismatch corrected to package submodule pattern in same commit); brief prerequisite mis-attributed data/vendor-manifest.json to OBPI-0.16.0-03 (which only created vendors enablement section in .gzkit/manifest.json) — corrected in brief Discrepancy note in same commit
 
 ## Tracked Defects
 
@@ -244,14 +269,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.34-08-vendor-manifest-expansion foundation/heavy manifest-routing OBPI: replaces hard-coded _VENDOR_ROUTING frozenset in src/gzkit/content/render/pipeline.py with data/vendor-manifest.json-driven routing via new src/gzkit/content/vendors.py (routes_for/all_routes helpers); JSON Schema at src/gzkit/schemas/vendor_manifest.json; gz validate --vendor-manifest scope via new src/gzkit/governance/trust_audits/vendor_manifest.py; CLI flag registered in src/gzkit/cli/parser_maintenance.py; 11/11 OBPI-scoped tests GREEN, full sweep 5198/5198 GREEN (receipt arb-step-unittest-849d628a3b4e4853a2c895c2e23736bf); ruff clean (arb-ruff-8ab72a514cf24369a94bc8c819837615); typecheck clean (arb-step-typecheck-79082b0a4ada48d5be627fa05acfd7fe); mkdocs strict clean (arb-step-mkdocs-0eca9b9d464c49548ffe9693dea22a78); @covers parity 5/5 REQs (100% per gz covers); gz validate --vendor-manifest exits 0; precomplete READY all 7 preconditions; operator attestation phrase "attest completed" received in conversational turn at Stage 4.
+- Date: 2026-05-17
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-17
 
 **Evidence Hash:** -

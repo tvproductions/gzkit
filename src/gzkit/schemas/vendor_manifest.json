@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vendor_manifest",
+  "type": "object",
+  "required": ["content_type_routes"],
+  "additionalProperties": false,
+  "properties": {
+    "content_type_routes": {
+      "type": "object",
+      "description": "Maps each content type class name to the vendor mirrors that receive its rendered output.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {"type": "string"},
+        "minItems": 1
+      }
+    }
+  }
+}

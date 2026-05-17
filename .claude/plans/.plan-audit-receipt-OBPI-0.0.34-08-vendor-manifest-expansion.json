@@ -1,0 +1,398 @@
+{
+  "obpi_id": "OBPI-0.0.34-08-vendor-manifest-expansion",
+  "timestamp": "2026-05-17T08:23:02.764464+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.34-08-vendor-manifest-expansion.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-06-metrics-report",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-01-sloc-scan",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-08-validate-manpages",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-10-interrogate",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-07-mutate",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-09-sync-manpage-docstrings",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-02-complexity-check",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-04-test-quality",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-03-test-times",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-05-metrics-scan",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.39.0",
+      "sibling_obpi": "OBPI-0.39.0-06-migration-tooling",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.39.0",
+      "sibling_obpi": "OBPI-0.39.0-04-conformance-validation",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.41.0",
+      "sibling_obpi": "OBPI-0.41.0-02-gz-tdd-cli-verified-emission",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.41.0",
+      "sibling_obpi": "OBPI-0.41.0-03-attestation-enrichment-tdd-integration",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.15.0",
+      "sibling_obpi": "OBPI-0.15.0-04-schema-generation-unification",
+      "contested_paths": [
+        "src/gzkit/schemas/vendor_manifest.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-13-arb-cli-wiring",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-09-arb-supabase-sync",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.22.0",
+      "sibling_obpi": "OBPI-0.22.0-05-status-and-state-integration",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-06-tasks-discover",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-03-tasks-sync",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-02-tasks-show",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-01-tasks-list",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-07-tasks-tidy",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-04-tasks-verify",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-05-tasks-test",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-04-adr-audit-integration",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-04-validate-taxonomy",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-02-ledger-first-status-reads",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.26",
+      "sibling_obpi": "OBPI-0.0.26-04-ghi-promotion-and-trailer",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-15-t0-maintenance-surfaces",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-08-verdict-proof-binding",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py",
+        "src/gzkit/commands/validate_cmd.py",
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.28",
+      "sibling_obpi": "OBPI-0.0.28-03-threshold-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py",
+        "src/gzkit/commands/validate_cmd.py",
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.24",
+      "sibling_obpi": "OBPI-0.0.24-01-validator-scope",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/vendor_manifest.py",
+        "src/gzkit/governance/trust_audits/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-01-cli-module-restructure",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-07-link-integrity-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py",
+        "src/gzkit/commands/validate_cmd.py",
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.21",
+      "sibling_obpi": "OBPI-0.0.21-08-layout-validator",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-01-bullet-retention-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py",
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-02-surface-weight-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py",
+        "src/gzkit/cli/parser_maintenance.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-05-surface-fidelity-composite",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py",
+        "src/gzkit/cli/parser_maintenance.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-04-scenario-reachability-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py",
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-03-pointer-integrity-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py",
+        "src/gzkit/cli/parser_maintenance.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "src/gzkit/cli/parser_maintenance.py",
+        "docs/user/manpages/validate.md",
+        "docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/obpis/OBPI-0.0.34-08-vendor-manifest-expansion.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-02-storybook-cli",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-01-doctrine-and-canon",
+      "contested_paths": [
+        "src/gzkit/schemas/vendor_manifest.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-03-storybook-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/vendor_manifest.py",
+        "src/gzkit/governance/trust_audits/__init__.py",
+        "src/gzkit/cli/parser_maintenance.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-06-persona-schema-validation",
+      "contested_paths": [
+        "src/gzkit/schemas/vendor_manifest.json",
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.35",
+      "sibling_obpi": "OBPI-0.0.35-04-kind-invariance-validator",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py",
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.16",
+      "sibling_obpi": "OBPI-0.0.16-03-chore-registration",
+      "contested_paths": [
+        "src/gzkit/commands/validate_cmd.py"
+      ]
+    }
+  ]
+}
