@@ -1,0 +1,31 @@
+{
+  "obpi_id": "OBPI-0.0.35-02-skill-prompt-enrichment",
+  "timestamp": "2026-05-17T12:19:36.270643+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.35-02-skill-prompt-enrichment.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-09-existing-skill-extensions",
+      "contested_paths": [
+        ".gzkit/skills/gz-design/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-05-skill-prompt-enrichment",
+      "contested_paths": [
+        ".gzkit/skills/gz-plan/SKILL.md",
+        ".gzkit/skills/gz-adr-create/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        ".gzkit/skills/gz-adr-create/SKILL.md"
+      ]
+    }
+  ]
+}

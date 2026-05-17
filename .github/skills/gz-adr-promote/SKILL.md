@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-21
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.3.0"
 model: sonnet
 ---
 
@@ -80,6 +80,7 @@ keeping rich prose in a `### Detailed specification` subsection below.
 - `--semver`: (Required) The target version (e.g., `X.Y.Z`).
 - `--slug`: Optional override for the target slug (defaults to slug derived from pool ID).
 - `--lane`: Optional override for the lane (`lite` or `heavy`).
+- `--kind`: Optional — specify the ADR kind (`foundation` or `feature`). When promoting, confirm whether the pool ADR becomes a foundation or feature ADR. Foundation = app/system invariant; Feature = release-carrying capability. Use the invariance test to resolve edge cases: *"Foundation = without it, we wouldn't be doing the project."* The hexagonal-ports lens clarifies: **ports point to invariance; plugs are features**. See `docs/user/concepts/foundation-feature-invariance-test.md` for worked examples and anti-patterns.
 
 ## Validation
 
