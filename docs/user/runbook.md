@@ -761,6 +761,11 @@ semver binding. For edge cases where the heuristic leaves classification
 ambiguous — substrate-vs-port or doctrine-vs-tooling decisions — apply the
 one-line invariance test in
 [`concepts/foundation-feature-invariance-test.md`](concepts/foundation-feature-invariance-test.md).
+When you classify a decision as foundation and run `gz plan create --kind foundation`,
+the scaffolded ADR includes a `## Why foundation tier?` section (between `## Persona`
+and `## Intent`) pre-populated with author prompts for the invariance-test answer and
+port-vs-plug framing. See [Why foundation tier? (the convention)](concepts/foundation-feature-invariance-test.md#why-foundation-tier-the-convention)
+for the exact heading and a filled-in example.
 
 ### Heuristic
 
