@@ -11,11 +11,12 @@ from gzkit.content.models import CONTENT_MODELS
 from gzkit.content.parse import parse
 
 
-def content_show_cmd(*, file: str, as_type: str, as_json: bool) -> None:
-    """Handle ``gz content show <file> --as <type> [--json]``.
+def content_show_cmd(*, file: str, as_type: str, as_json: bool, plain: bool = False) -> None:
+    """Handle ``gz content show <file> --as <type> [--json] [--plain]``.
 
     Default output: prose summary (Type, Title, field list).
     --json: model.model_dump_json(indent=2).
+    --plain: suppress Rich panel even on a TTY.
     Exit 0 on success, 1 on parse/validation error, 2 on IO error.
     """
     file_path = Path(file)
@@ -52,26 +53,50 @@ def content_show_cmd(*, file: str, as_type: str, as_json: bool) -> None:
 
     # Prose summary
     data = model.model_dump()
-    print(f"Type: {as_type}")
-    if "title" in data:
-        print(f"Title: {data['title']}")
-    if "slug" in data:
-        print(f"Slug: {data['slug']}")
-    if "version" in data:
-        print(f"Version: {data['version']}")
-    print(f"Source: {file_path}")
-    print()
-    print("Fields:")
-    for field_name in sorted(data):
-        value = data[field_name]
-        if isinstance(value, list):
-            print(f"  - {field_name}: <list, {len(value)} item(s)>")
-        elif isinstance(value, dict):
-            print(f"  - {field_name}: <dict, {len(value)} key(s)>")
-        elif value is None:
-            print(f"  - {field_name}: <none>")
-        else:
-            text_value = str(value)
-            if len(text_value) > 60:
-                text_value = text_value[:60] + "..."
-            print(f"  - {field_name}: {text_value}")
+    if sys.stdout.isatty() and not plain:
+        from gzkit.content.tui.panels import render_content_panel  # noqa: PLC0415
+
+        lines = [f"Type: {as_type}", f"Source: {file_path}"]
+        if "title" in data:
+            lines.insert(0, f"Title: {data['title']}")
+        lines.append("")
+        lines.append("Fields:")
+        for field_name in sorted(data):
+            value = data[field_name]
+            if isinstance(value, list):
+                lines.append(f"  - {field_name}: <list, {len(value)} item(s)>")
+            elif isinstance(value, dict):
+                lines.append(f"  - {field_name}: <dict, {len(value)} key(s)>")
+            elif value is None:
+                lines.append(f"  - {field_name}: <none>")
+            else:
+                text_value = str(value)
+                if len(text_value) > 60:
+                    text_value = text_value[:60] + "..."
+                lines.append(f"  - {field_name}: {text_value}")
+        title = data.get("title") or data.get("slug") or as_type
+        render_content_panel(title=f"{as_type}: {title}", body="\n".join(lines))
+    else:
+        print(f"Type: {as_type}")
+        if "title" in data:
+            print(f"Title: {data['title']}")
+        if "slug" in data:
+            print(f"Slug: {data['slug']}")
+        if "version" in data:
+            print(f"Version: {data['version']}")
+        print(f"Source: {file_path}")
+        print()
+        print("Fields:")
+        for field_name in sorted(data):
+            value = data[field_name]
+            if isinstance(value, list):
+                print(f"  - {field_name}: <list, {len(value)} item(s)>")
+            elif isinstance(value, dict):
+                print(f"  - {field_name}: <dict, {len(value)} key(s)>")
+            elif value is None:
+                print(f"  - {field_name}: <none>")
+            else:
+                text_value = str(value)
+                if len(text_value) > 60:
+                    text_value = text_value[:60] + "..."
+                print(f"  - {field_name}: {text_value}")

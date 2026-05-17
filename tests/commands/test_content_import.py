@@ -46,9 +46,7 @@ class TestContentImportCmd(unittest.TestCase):
     def test_import_canonical_rule_emits_json_exits_0(self) -> None:
         """gz content import <canonical-rule> --as Rule emits JSON, exits 0."""
         rule_path = self._canonical_rule_path()
-        result = self._runner.invoke(
-            main, ["content", "import", str(rule_path), "--as", "Rule"]
-        )
+        result = self._runner.invoke(main, ["content", "import", str(rule_path), "--as", "Rule"])
         self.assertEqual(result.exit_code, 0, msg=result.output)
         data = json.loads(result.output)
         self.assertEqual(data["title"], "Test Rule")
@@ -59,9 +57,7 @@ class TestContentImportCmd(unittest.TestCase):
         """gz content import --as UnknownType exits 1 (type not in CONTENT_MODELS)."""
         dummy = self._tmp / "dummy.md"
         dummy.write_text("# dummy\n", encoding="utf-8")
-        result = self._runner.invoke(
-            main, ["content", "import", str(dummy), "--as", "UnknownType"]
-        )
+        result = self._runner.invoke(main, ["content", "import", str(dummy), "--as", "UnknownType"])
         self.assertEqual(result.exit_code, 1)
         self.assertIn("unknown content type", result.output.lower())
 
@@ -82,9 +78,7 @@ class TestContentImportCmd(unittest.TestCase):
         """gz content import <malformed.md> exits non-zero with error diagnostic."""
         bad = self._tmp / "bad.md"
         bad.write_text("not valid markdown for any content type\n", encoding="utf-8")
-        result = self._runner.invoke(
-            main, ["content", "import", str(bad), "--as", "Rule"]
-        )
+        result = self._runner.invoke(main, ["content", "import", str(bad), "--as", "Rule"])
         self.assertNotEqual(result.exit_code, 0)
         self.assertIn("error", result.output.lower())
 
@@ -122,8 +116,6 @@ class TestContentImportCmd(unittest.TestCase):
     def test_import_type_mismatch_exits_1(self) -> None:
         """Type mismatch (Rule file imported --as Skill) exits 1 before returning model."""
         rule_path = self._canonical_rule_path()
-        result = self._runner.invoke(
-            main, ["content", "import", str(rule_path), "--as", "Skill"]
-        )
+        result = self._runner.invoke(main, ["content", "import", str(rule_path), "--as", "Skill"])
         self.assertEqual(result.exit_code, 1)
         self.assertIn("error", result.output.lower())
