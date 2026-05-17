@@ -557,5 +557,48 @@ class TestObpiCompleteFoundationLiteMissing(_ObpiCompleteWireFixture):
             ledger.append.assert_not_called()
 
 
+class TestUpdateHumanAttestationSectionScoping(unittest.TestCase):
+    """GHI #479: _update_human_attestation must scope substitutions to the HA section."""
+
+    def _call(self, content: str) -> str:
+        from gzkit.commands.obpi_complete import _update_human_attestation
+
+        return _update_human_attestation(content, "Alice", "verified", "2026-01-15")
+
+    def test_attestation_bullet_in_summary_not_clobbered(self) -> None:
+        """Summary - Attestation: bullet must not be substituted when HA section exists."""
+        content = (
+            "### Implementation Summary\n\n"
+            "- Notes: something\n"
+            "- Attestation: operator-verbatim phrase\n\n"
+            "## Human Attestation\n\n"
+            "- Attestor: `<name>`\n"
+            "- Attestation: -\n"
+            "- Date: -\n"
+        )
+        result = self._call(content)
+        self.assertIn("- Attestation: operator-verbatim phrase", result)
+        self.assertIn("- Attestation: verified", result)
+
+    def test_ha_section_all_fields_updated(self) -> None:
+        """Standard case: no collision; all three HA fields are updated."""
+        content = (
+            "## Human Attestation\n\n"
+            "- Attestor: `<name>`\n"
+            "- Attestation: -\n"
+            "- Date: -\n"
+        )
+        result = self._call(content)
+        self.assertIn("- Attestor: `Alice`", result)
+        self.assertIn("- Attestation: verified", result)
+        self.assertIn("- Date: 2026-01-15", result)
+
+    def test_summary_attestation_line_unchanged_when_ha_section_absent(self) -> None:
+        """When HA section is absent, content is returned unchanged."""
+        content = "- Attestation: some-other-value\n"
+        result = self._call(content)
+        self.assertEqual(result, content)
+
+
 if __name__ == "__main__":
     unittest.main()
