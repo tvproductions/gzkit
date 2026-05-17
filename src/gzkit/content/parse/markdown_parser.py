@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
+from gzkit.content.migration.registry import apply_migrations
 from gzkit.content.models import CONTENT_MODELS
 from gzkit.content.models.agent_contract import AgentContract
 from gzkit.content.models.base import BaseContentModel
@@ -22,6 +23,26 @@ from gzkit.content.models.skill import Skill
 
 if TYPE_CHECKING:
     pass
+
+
+_SCHEMA_VERSION_PREFIX = "Schema-version: "
+
+
+def _extract_schema_version(lines: list[str]) -> int:
+    """Return schema_version declared in preamble 'Schema-version: N' line.
+
+    Defaults to 1 when no such line is present (so existing v1 fixtures
+    without the declaration continue to parse unchanged — REQ-0.0.34-07-04
+    byte-stability invariant).
+    """
+    for line in lines:
+        if line.startswith(_SCHEMA_VERSION_PREFIX):
+            payload = line[len(_SCHEMA_VERSION_PREFIX) :].strip()
+            try:
+                return int(payload)
+            except ValueError:
+                return 1
+    return 1
 
 
 # ---------------------------------------------------------------------------
@@ -348,4 +369,14 @@ def parse(text: str, as_type: str, *, file_path: str | None = None) -> BaseConte
 
     parser = _PARSERS[as_type]
     lines = _split_lines(text)
-    return parser(lines, file_path)
+    source_version = _extract_schema_version(lines)
+    model = parser(lines, file_path)
+    target_version = CONTENT_MODELS[as_type].model_fields["schema_version"].default
+    if source_version != target_version:
+        model = apply_migrations(
+            model,
+            as_type,
+            source_version=source_version,
+            target_version=target_version,
+        )
+    return model

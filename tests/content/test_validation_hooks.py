@@ -100,10 +100,13 @@ class TestValidateRender(unittest.TestCase):
         project_root = Path(tempfile.gettempdir())
         error = _make_validation_error(validator_id="bullet-retention")
 
-        with patch(
-            "gzkit.governance.trust_audits.validate_surface_fidelity",
-            return_value=[error],
-        ), self.assertRaises(FidelityHookError):
+        with (
+            patch(
+                "gzkit.governance.trust_audits.validate_surface_fidelity",
+                return_value=[error],
+            ),
+            self.assertRaises(FidelityHookError),
+        ):
             validate_render(project_root=project_root)
 
     @covers("REQ-0.0.34-06-03")
@@ -117,10 +120,13 @@ class TestValidateRender(unittest.TestCase):
         project_root = Path(tempfile.gettempdir())
         error = _make_validation_error(validator_id="scenario-reachability")
 
-        with patch(
-            "gzkit.governance.trust_audits.validate_surface_fidelity",
-            return_value=[error],
-        ), self.assertRaises(FidelityHookError) as ctx:
+        with (
+            patch(
+                "gzkit.governance.trust_audits.validate_surface_fidelity",
+                return_value=[error],
+            ),
+            self.assertRaises(FidelityHookError) as ctx,
+        ):
             validate_render(project_root=project_root)
 
         exc = ctx.exception
@@ -142,16 +148,18 @@ class TestValidateRender(unittest.TestCase):
             # Inject a dummy warning so assertLogs doesn't fail with "no logs" —
             # we need to detect that the hook itself never adds a WARNING.
             logging.getLogger("test_sentinel").warning("sentinel-only")
-            with patch(
-                "gzkit.governance.trust_audits.validate_surface_fidelity",
-                return_value=[error],
-            ), self.assertRaises(FidelityHookError):
+            with (
+                patch(
+                    "gzkit.governance.trust_audits.validate_surface_fidelity",
+                    return_value=[error],
+                ),
+                self.assertRaises(FidelityHookError),
+            ):
                 validate_render(project_root=project_root)
 
         # The only warning must be the sentinel — hooks module must not emit WARNING.
         hook_warnings = [
-            r for r in log_ctx.output
-            if "hooks" in r.lower() or "fidelity" in r.lower()
+            r for r in log_ctx.output if "hooks" in r.lower() or "fidelity" in r.lower()
         ]
         self.assertEqual(
             hook_warnings,
@@ -185,10 +193,13 @@ class TestValidateSave(unittest.TestCase):
         project_root = Path(tempfile.gettempdir())
         error = _make_validation_error(validator_id="pointer-integrity")
 
-        with patch(
-            "gzkit.governance.trust_audits.validate_surface_fidelity",
-            return_value=[error],
-        ), self.assertRaises(FidelityHookError):
+        with (
+            patch(
+                "gzkit.governance.trust_audits.validate_surface_fidelity",
+                return_value=[error],
+            ),
+            self.assertRaises(FidelityHookError),
+        ):
             validate_save(project_root=project_root)
 
     @covers("REQ-0.0.34-06-03")
@@ -199,10 +210,13 @@ class TestValidateSave(unittest.TestCase):
         project_root = Path(tempfile.gettempdir())
         error = _make_validation_error(validator_id="bullet-retention", artifact="CLAUDE.md")
 
-        with patch(
-            "gzkit.governance.trust_audits.validate_surface_fidelity",
-            return_value=[error],
-        ), self.assertRaises(FidelityHookError) as ctx:
+        with (
+            patch(
+                "gzkit.governance.trust_audits.validate_surface_fidelity",
+                return_value=[error],
+            ),
+            self.assertRaises(FidelityHookError) as ctx,
+        ):
             validate_save(project_root=project_root)
 
         exc = ctx.exception
@@ -219,15 +233,17 @@ class TestValidateSave(unittest.TestCase):
 
         with self.assertLogs(level=logging.WARNING) as log_ctx:
             logging.getLogger("test_sentinel").warning("sentinel-only")
-            with patch(
-                "gzkit.governance.trust_audits.validate_surface_fidelity",
-                return_value=[error],
-            ), self.assertRaises(FidelityHookError):
+            with (
+                patch(
+                    "gzkit.governance.trust_audits.validate_surface_fidelity",
+                    return_value=[error],
+                ),
+                self.assertRaises(FidelityHookError),
+            ):
                 validate_save(project_root=project_root)
 
         hook_warnings = [
-            r for r in log_ctx.output
-            if "hooks" in r.lower() or "fidelity" in r.lower()
+            r for r in log_ctx.output if "hooks" in r.lower() or "fidelity" in r.lower()
         ]
         self.assertEqual(
             hook_warnings,
@@ -287,10 +303,13 @@ class TestRenderPipelineWired(unittest.TestCase):
             violation="Retention invariant violated",
         )
 
-        with patch(
-            "gzkit.content.validation.hooks.validate_render",
-            side_effect=hook_error,
-        ), self.assertRaises(FidelityHookError):
+        with (
+            patch(
+                "gzkit.content.validation.hooks.validate_render",
+                side_effect=hook_error,
+            ),
+            self.assertRaises(FidelityHookError),
+        ):
             render(contract, "claude", project_root=project_root)
 
 

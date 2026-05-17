@@ -3,7 +3,7 @@ id: OBPI-0.0.34-07-migration-layer
 parent: ADR-0.0.34-agent-control-surface-rendering-substrate
 item: 7
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.34-07-migration-layer: Migration Layer
@@ -13,13 +13,11 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/ADR-0.0.34-agent-control-surface-rendering-substrate.md`
 - **Checklist Item:** #7 - "OBPI-0.0.34-07: Migration layer — Pydantic schema versioning so model refactors do not break rendered-output stability across releases"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Migration layer — Pydantic schema versioning so model refactors do not break rendered-output stability across releases.
+Land the schema-evolution backstop for the ADR-0.0.34 content substrate so future Pydantic model refactors cannot silently produce incompatible rendered output. Stamp every content model with `schema_version: int = 1` on `BaseContentModel` (subclasses inherit), publish a typed migration registry at `src/gzkit/content/migration/registry.py` keyed by `(content_type, from_version, to_version)` with pure callable values, and wire the parser at `src/gzkit/content/parse/markdown_parser.py` to detect source-vs-current schema mismatch and dispatch registered migrations in sequence before instantiation. Done means: every model class declares `schema_version` with default `1`; `from gzkit.content.migration import MIGRATIONS` returns a typed dict; an older-versioned source with a registered migration chain auto-migrates to the current version on parse; unknown future versions (`source > target`) and gap-in-chain conditions raise `MigrationError` (we never guess); and a no-migration parse-then-render round trip on existing fixtures is byte-identical (stability invariant intact at v1 with empty registry).
 
 ## Lane
 
@@ -221,15 +219,30 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+Migration chain v1->v2->v3 dispatched in order; identity invariant when source==target; fail-closed on future version (source > target) and on missing migration step. Verified by tests.content.test_migration_layer (9/9 pass -- receipt arb-step-unittestscoped-2cdb2a21a52b487eaba670cac695255f) and full 5187/5187 suite (receipt arb-step-unittest-44d85111eb2140358c04495481effde0). Lint clean (arb-ruff-b62749b00f44431dbc5c1bf121f676f2), typecheck clean (arb-step-typecheck-048f2a89fd5e4350b7d4613e7e5870f8), docs build clean (arb-step-mkdocs-536e8584d3594582b8086bcc674f4e23). All 5 REQs covered with @covers decorators per gz covers (5/5, uncovered_reqs: 0).
+
+Demonstration session:
+
+  from gzkit.content.migration import MIGRATIONS, apply_migrations
+  from gzkit.content.models.rule import Rule
+  MIGRATIONS[("Rule", 1, 2)] = lambda m: m.model_copy(update={"schema_version": 2})
+  MIGRATIONS[("Rule", 2, 3)] = lambda m: m.model_copy(update={"schema_version": 3})
+  model = Rule(title="T", version="1.0.0", paths=[], body=[])
+  result = apply_migrations(model, "Rule", source_version=1, target_version=3)
+  assert result.schema_version == 3  # chain applied 1->2->3
+  same = apply_migrations(model, "Rule", source_version=1, target_version=1)
+  assert same.schema_version == 1  # identity when source==target
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/content/migration/__init__.py (public exports MIGRATIONS/MigrationError/apply_migrations); src/gzkit/content/migration/registry.py (typed dict + dispatcher); tests/content/test_migration_layer.py (9 tests across 5 classes, all REQs @covers-decorated)
+- Files modified: src/gzkit/content/models/base.py (added schema_version: int = 1 with ADR-0.0.34 OBPI-07 docstring); src/gzkit/content/parse/markdown_parser.py (added _extract_schema_version helper + wired apply_migrations into parse() so it fires only when source != target)
+- Tests added: 9 (TestSchemaVersionField:2, TestMigrationRegistry:2, TestAutoMigrationOnParse:2, TestUnknownVersionFailClosed:2, TestMigrationPurity:1)
+- Date completed: 2026-05-17
+- Attestation status: attested by operator "attest completed" on 2026-05-17
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -240,14 +253,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed -- OBPI-0.0.34-07 schema-evolution backstop landed: schema_version field on BaseContentModel, typed MIGRATIONS registry, parser auto-migration wiring; 9/9 OBPI tests pass (arb-step-unittestscoped-2cdb2a21a52b487eaba670cac695255f), full 5187/5187 suite green (arb-step-unittest-44d85111eb2140358c04495481effde0), lint/typecheck/docs clean (arb-ruff-b62749b00f44431dbc5c1bf121f676f2 / arb-step-typecheck-048f2a89fd5e4350b7d4613e7e5870f8 / arb-step-mkdocs-536e8584d3594582b8086bcc674f4e23), REQ parity 5/5 via gz covers.
+- Date: 2026-05-17
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-17
 
 **Evidence Hash:** -
