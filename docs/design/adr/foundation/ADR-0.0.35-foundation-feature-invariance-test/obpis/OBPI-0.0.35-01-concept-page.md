@@ -3,7 +3,7 @@ id: OBPI-0.0.35-01-concept-page
 parent: ADR-0.0.35-foundation-feature-invariance-test
 item: 1
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.35-01-concept-page: Foundation/Feature Invariance Test — Concept Page
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.35-foundation-feature-invariance-test/ADR-0.0.35-foundation-feature-invariance-test.md`
 - **Checklist Item:** #1 — "Concept page authoring — `docs/user/concepts/foundation-feature-invariance-test.md` as canonical reference (verbatim test, hexagonal-ports lens, both worked examples, anti-pattern), bidirectional cross-link with ADR-0.0.18's concepts page, `docs/user/index.md` integration, runbook navigation entry. Parallel-root."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -208,16 +208,18 @@ Before this OBPI: adopters facing a foundation-vs-feature kind decision had ADR-
 
 ### Key Proof
 
-Walk-through example added inline on the page: an adopter faces *"should ledger storage backend selection be a foundation ADR or a feature ADR?"* and resolves it in one sentence by applying the invariance test (the project remains the project under either backend; storage is a plug; the ADR is feature).
+
+Walk-through example landed inline on the concept page: an adopter facing 'should ledger storage backend selection be foundation or feature?' applies the invariance test in one sentence — 'The project would still be the project under either backend; storage is a plug; the ADR is feature.' Verified: grep -F 'Foundation = without it, we wouldn't be doing the project' docs/user/concepts/foundation-feature-invariance-test.md returns the verbatim quote at line 14. ARB receipts: arb-step-mkdocs-f92446d4bb964b22b00021bbbf08801c (mkdocs --strict clean), arb-step-unittest-4c1f40c066044f85a4efaffb056eaebc (5198/5198 pass), arb-ruff-b0ceeb3ea6c24161b23cfca18127d454, arb-step-typecheck-da169ce739c04370b772de6b12904af9.
 
 ### Implementation Summary
 
-- Files created: `docs/user/concepts/foundation-feature-invariance-test.md`
-- Files modified: `docs/user/concepts/adr-taxonomy.md`, `docs/user/index.md`, `mkdocs.yml`, `docs/user/runbook.md`
-- Tests added: none (doc-only)
-- Date completed: -
-- Attestation status: -
-- Defects noted: -
+
+- Files created: docs/user/concepts/foundation-feature-invariance-test.md — canonical concept page with verbatim invariance test, hexagonal-ports lens with explicit port/plug definitions, two worked-example classes (ledger discipline vs. backend; ADR-0.0.33/0.0.34 paired foundations), and named anti-pattern with corrective
+- Files modified: docs/user/concepts/adr-taxonomy.md (forward cross-link in Related section), docs/user/index.md (new Concepts section with entry), mkdocs.yml (nav entry under Concepts: block after ADR Taxonomy), docs/user/runbook.md (cross-references at PRD->ADR Derivation line 763 and Anti-pattern section line 821)
+- Tests added: none — documentation OBPI, no test tier per brief Gate 2
+- Date completed: 2026-05-17
+- Attestation status: operator-verbatim 'attest completed' — foundation-kind brief-level Gate 5 satisfied
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -225,14 +227,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` — required (foundation-kind parent)
-- Attestation: -
-- Date: -
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — operator-verbatim Gate 5 for foundation-kind Lite-lane brief; concept page authoring landed verbatim invariance test + hexagonal-ports lens + both worked examples + anti-pattern, bidirectional cross-link with adr-taxonomy.md confirmed, index.md and mkdocs.yml nav reachable, runbook.md cross-references at PRD->ADR Derivation (line 763) and Anti-pattern (line 821) sections; ARB receipts arb-ruff-b0ceeb3ea6c24161b23cfca18127d454, arb-step-typecheck-da169ce739c04370b772de6b12904af9, arb-step-unittest-4c1f40c066044f85a4efaffb056eaebc (5198/5198), arb-step-mkdocs-f92446d4bb964b22b00021bbbf08801c.
+- Date: 2026-05-17
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-17
 
 **Evidence Hash:** -

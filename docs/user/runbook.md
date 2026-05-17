@@ -757,7 +757,10 @@ exist — [foundation](concepts/adr-taxonomy.md#foundation),
 decision to the right kind. See
 [`docs/user/concepts/adr-taxonomy.md`](concepts/adr-taxonomy.md) for the
 canonical definitions, the kind-versus-lane orthogonality, and the kind /
-semver binding.
+semver binding. For edge cases where the heuristic leaves classification
+ambiguous — substrate-vs-port or doctrine-vs-tooling decisions — apply the
+one-line invariance test in
+[`concepts/foundation-feature-invariance-test.md`](concepts/foundation-feature-invariance-test.md).
 
 ### Heuristic
 
@@ -815,6 +818,7 @@ Foundation ADRs should not be created defensively or speculatively to
 invariant that actual feature or pool work needs to rely on. If nothing
 downstream consults the invariant you are about to codify, you do not have
 a foundation decision — you have a preference.
+See also the [Foundation/Feature Invariance Test](concepts/foundation-feature-invariance-test.md) for the one-line test that distinguishes this anti-pattern from legitimate foundation authoring.
 
 Foundation-first drift produces ADRs that declare invariants nobody
 violates and that no feature consults. The cost compounds: every adopter
