@@ -63,6 +63,15 @@ _UTF8_PIPE_WAIVERS: dict[str, str] = {
         "ADR-0.0.26 audit document explains why the anti-pattern appeared in audit "
         "proof text — meta-documentation of the rule, not actual usage."
     ),
+    (
+        "docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate"
+        "/obpis/OBPI-0.0.34-04-authoring-cli.md:255"
+    ): (
+        "Key-proof verification command showing how to inspect coverage output — "
+        "the pipe is a usage example in an OBPI brief, not production code that runs "
+        "in gzkit's runtime. The evidence block illustrates the operator action; "
+        "no reconfigure() guard is needed at the documentation layer."
+    ),
 }
 
 _PYTHONUTF8_PREFIX = re.compile(r"PYTHONUTF8=1\s+uv\s+run\s+(?:gz|-m\s+gzkit)")

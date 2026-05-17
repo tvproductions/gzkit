@@ -58,6 +58,11 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "skill covers dependency upgrades; a dedicated gz-upgrade skill for "
         "canonical surface refresh is deferred post-ADR-0.0.32 closeout."
     ),
+    "content": (
+        "ADR-0.0.34 OBPI-04 delivers the content CLI surface as an agent-mediated "
+        "dialogical authoring entry point; no separate wielding skill is in the "
+        "eight-component delivery plan — the agent IS the authoring UI per ADR-0.0.34 § Decision."
+    ),
 }
 
 
