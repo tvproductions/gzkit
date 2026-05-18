@@ -1,7 +1,6 @@
 """Skill catalog, mirror management, and validation for gzkit sync.
 
 Extracted from sync.py to keep modules under 600 lines.
-Validation helpers live in sync_skills_validation.py.
 """
 
 import re
