@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-03-16
 metadata:
-  skill-version: "6.0.2"
+  skill-version: "6.1.0"
 model: haiku
 ---
 
@@ -83,7 +83,7 @@ Path: `.gzkit/locks/obpi/{OBPI-ID}.lock.json`
 3. **Release** deletes the lock file
 4. **Stale lock detection** — locks older than TTL are automatically released on next claim attempt
 5. **Same-agent re-claim** — if the claiming agent already holds the lock, refresh the timestamp
-6. **Exception mode concurrent locks** — When the parent ADR has `## Execution Mode: Exception (SVFR)`, multiple OBPIs from the same ADR can be locked concurrently by different agents. In Normal mode, only one OBPI lock per ADR at a time
+6. **Concurrent locks** — Multiple OBPIs from the same ADR can be locked concurrently by different agents when their allowed paths are non-overlapping. One lock per OBPI at a time; each OBPI's human attestation is independent (universal per ADR-0.0.36).
 
 ---
 

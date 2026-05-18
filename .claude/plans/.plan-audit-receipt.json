@@ -1,9 +1,9 @@
 {
-  "obpi_id": "OBPI-0.0.36-04-historical-self-close-waivers",
-  "timestamp": "2026-05-18T02:05:00.000000+00:00",
+  "obpi_id": "OBPI-0.0.36-05-skill-prose-sweep-self-close",
+  "timestamp": "2026-05-18T07:55:30.000000+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.36-04-historical-self-close-waivers.md",
+  "plan_file": "OBPI-0.0.36-05-skill-prose-sweep-self-close.md",
   "gaps_found": 0,
   "gaps": [],
-  "notes": "CLI structural FAIL for 5 new-file paths (expected pre-implementation). Semantic alignment solid after correcting brief Allowed Paths: trust_audits.py -> trust_audits/receipt_shape.py. ADR<->OBPI: all checks Aligned. Plan authored covering TDD RED/GREEN, Pydantic model, 48-receipt enumeration, receipt_shape.py extension (added_under validation + warn-only behavior), docs, and ARB receipts."
+  "notes": "CLI structural FAIL for 4 pre-implementation paths (expected). Vendor mirror paths are sync-generated per brief; test file created in Step 1. Semantic alignment solid: ADR Decision item #5 maps directly to brief objective; all 7 REQs covered; lane=Heavy consistent."
 }
