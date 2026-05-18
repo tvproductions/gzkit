@@ -1,0 +1,27 @@
+test_agents_md_matrix_names_third_axis (tests.test_adr_audit_predicates.TestAgentsMatrixThirdAxis.test_agents_md_matrix_names_third_axis) ... ok
+test_frontmatter_argument_is_optional_for_call_site_compat (tests.test_adr_audit_predicates.TestRequiresHumanObpiAttestationORComposition.test_frontmatter_argument_is_optional_for_call_site_compat) ... ok
+test_heavy_feature_no_sensitivity_still_required (tests.test_adr_audit_predicates.TestRequiresHumanObpiAttestationORComposition.test_heavy_feature_no_sensitivity_still_required) ... ok
+test_heavy_lane_security_brief_still_required (tests.test_adr_audit_predicates.TestRequiresHumanObpiAttestationORComposition.test_heavy_lane_security_brief_still_required) ... ok
+test_lite_feature_no_sensitivity_requires_attestation (tests.test_adr_audit_predicates.TestRequiresHumanObpiAttestationORComposition.test_lite_feature_no_sensitivity_requires_attestation) ... ok
+test_lite_feature_security_brief_requires_attestation (tests.test_adr_audit_predicates.TestRequiresHumanObpiAttestationORComposition.test_lite_feature_security_brief_requires_attestation) ... ok
+test_lite_foundation_no_sensitivity_still_required (tests.test_adr_audit_predicates.TestRequiresHumanObpiAttestationORComposition.test_lite_foundation_no_sensitivity_still_required) ... ok
+test_empty_frontmatter_returns_false (tests.test_adr_audit_predicates.TestRequiresSecurityReviewAttestation.test_empty_frontmatter_returns_false) ... ok
+test_no_sensitivity_key_returns_false (tests.test_adr_audit_predicates.TestRequiresSecurityReviewAttestation.test_no_sensitivity_key_returns_false) ... ok
+test_non_mapping_input_returns_false (tests.test_adr_audit_predicates.TestRequiresSecurityReviewAttestation.test_non_mapping_input_returns_false) ... ok
+test_none_returns_false (tests.test_adr_audit_predicates.TestRequiresSecurityReviewAttestation.test_none_returns_false) ... ok
+test_other_sensitivity_value_returns_false (tests.test_adr_audit_predicates.TestRequiresSecurityReviewAttestation.test_other_sensitivity_value_returns_false) ... ok
+test_sensitivity_security_returns_true (tests.test_adr_audit_predicates.TestRequiresSecurityReviewAttestation.test_sensitivity_security_returns_true) ... ok
+test_post_cutoff_agent_attestor_case_insensitive (tests.governance.test_validate_receipt_shape.TestPostCutoffAgentAttestorFails.test_post_cutoff_agent_attestor_case_insensitive) ... ok
+test_post_cutoff_agent_attestor_fails (tests.governance.test_validate_receipt_shape.TestPostCutoffAgentAttestorFails.test_post_cutoff_agent_attestor_fails) ... ok
+test_post_cutoff_canonical_attestation_passes (tests.governance.test_validate_receipt_shape.TestPostCutoffOptionalAttestationFails.test_post_cutoff_canonical_attestation_passes) ... ok
+test_post_cutoff_optional_attestation_requirement_fails (tests.governance.test_validate_receipt_shape.TestPostCutoffOptionalAttestationFails.test_post_cutoff_optional_attestation_requirement_fails) ... ok
+test_post_cutoff_bare_completed_fails (tests.governance.test_validate_receipt_shape.TestPostCutoffUnprefixedCompletionFails.test_post_cutoff_bare_completed_fails) ... ok
+test_pre_cutoff_with_waiver_passes_silently (tests.governance.test_validate_receipt_shape.TestPreCutoffWaiverBehavior.test_pre_cutoff_with_waiver_passes_silently)
+When waiver file present with matching receipt_id, no errors returned. ... ok
+test_pre_cutoff_without_waiver_file_is_warn_only (tests.governance.test_validate_receipt_shape.TestPreCutoffWaiverBehavior.test_pre_cutoff_without_waiver_file_is_warn_only)
+When waiver file absent, pre-cutoff deprecated shape is warn-only (not fail-closed). ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 0.013s
+
+OK

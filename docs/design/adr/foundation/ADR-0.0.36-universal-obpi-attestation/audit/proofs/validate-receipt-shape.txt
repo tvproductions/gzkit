@@ -1,0 +1,4 @@
+Validated: manifest, surfaces, ledger, instructions, briefs, documents,
+personas, frontmatter, version, taxonomy
+
+✓ All validations passed (10 scopes).
