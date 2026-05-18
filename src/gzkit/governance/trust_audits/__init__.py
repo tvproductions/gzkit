@@ -89,6 +89,7 @@ from gzkit.governance.trust_audits.orphaned_implementation import (
 from gzkit.governance.trust_audits.pointer_integrity import (
     validate_pointer_integrity,
 )
+from gzkit.governance.trust_audits.receipt_shape import audit_receipt_shape
 from gzkit.governance.trust_audits.reconcile import audit_reconcile_freshness
 from gzkit.governance.trust_audits.release import (
     audit_advisory_scorecard,
@@ -153,6 +154,7 @@ __all__ = [
     "audit_orphaned_implementation",
     "audit_pool_adr_isolation",
     "audit_pydantic_models",
+    "audit_receipt_shape",
     "audit_reconcile_freshness",
     "audit_sensitivity_binding",
     "audit_skill_alignment",

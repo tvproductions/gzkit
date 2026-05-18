@@ -3,7 +3,7 @@ id: OBPI-0.0.36-03-validate-receipt-shape-scope
 parent: ADR-0.0.36-universal-obpi-attestation
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.36-03-validate-receipt-shape-scope: Validator Scope `--receipt-shape`
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.36-universal-obpi-attestation/ADR-0.0.36-universal-obpi-attestation.md`
 - **Checklist Item:** #3 — "`gz validate --receipt-shape` fail-closed scope"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -235,26 +235,36 @@ Before this OBPI, the receipt schema permitted `attestation_requirement: optiona
 
 ### Key Proof
 
-```bash
-# Post-cutoff fixture with deprecated shape:
-$ uv run gz validate --receipt-shape
-ERROR: receipt arb-2026-05-01T... carries attestation_requirement: optional (deprecated post ADR-0.0.36 cutoff 2026-04-26)
-$ echo $?
-3
 
-# Pre-cutoff receipt waivered under OBPI-04:
-$ uv run gz validate --receipt-shape
-OK: 1 historical receipt waivered (data/historical_self_close_waivers.json)
-$ echo $?
-0
+```bash
+# REQ-01: --receipt-shape flag registered
+$ uv run gz validate --help | grep "receipt-shape"
+[--kind-invariance] [--receipt-shape] [--regenerate]
+  --receipt-shape       Refuse deprecated receipt shapes post-ADR-0.0.36 cutoff (exit 3)
+
+# REQ-02..04: live repo passes (all canonical shapes)
+$ uv run gz validate --receipt-shape --json
+{"valid": true, "errors": []}
+
+# REQ-02 fails closed on synthetic post-cutoff optional attestation_requirement (BDD scenario passes)
+# REQ-03 fails closed on bare completed (no attested_ prefix) (BDD scenario passes)
+# REQ-04 fails closed on agent: attestor case-insensitive (BDD scenario + unit test)
+# REQ-05 pre-cutoff: silent pass when waivered; warn-only when waiver file absent
+# REQ-06 wired into gz check via run_receipt_shape_audit in _build_check_steps
+# REQ-07 manpage docs/user/manpages/validate.md updated with scope/exit-codes/cutoff semantics
 ```
+
+Verified by 10/10 OBPI-scoped tests (arb-step-unittest-41ec1fa886274eb0981ffdfa6a973562) + 7/7 BDD scenarios (arb-step-behave-cae38fb93a294bbcb2bd04dcc2c0104c). Receipts: arb-ruff-a08e28ad69044da2853b060cced25362, arb-step-typecheck-00af324df363462991430b9ce3008797, arb-step-mkdocs-305cd5490f894ad3a2a389c4f5a89a11.
 
 ### Implementation Summary
 
-- Files created/modified: `src/gzkit/governance/trust_audits.py` (new `_check_receipt_shape` function or equivalent), `src/gzkit/cli/parser_artifacts.py` (flag registration), `src/gzkit/commands/validate.py` (dispatch wiring), `docs/user/manpages/gz-validate.md` (manpage update), `tests/governance/test_validate_receipt_shape.py` (REQ-derived semantic tests), `tests/commands/test_validate.py` (flag-wiring test), `features/validate_receipt_shape.feature` (BDD scenarios)
-- Tests added: post-cutoff fail-closed assertions for each deprecated shape; pre-cutoff waivered-passes assertion; help-text presence assertion
-- Date completed: TBD
-- Attestation status: pending TTY+ATTEST under universal attestation rule
+
+- Files created: `src/gzkit/governance/trust_audits/receipt_shape.py` (audit_receipt_shape with cutoff parsing, ledger scanning, waiver delegation); `tests/governance/test_validate_receipt_shape.py` (7 REQ-derived unit tests); `features/validate_receipt_shape.feature` (7 BDD scenarios tagged @REQ-0.0.36-03-01..07); `features/steps/validate_receipt_shape_steps.py` (step definitions)
+- Files modified: `src/gzkit/governance/trust_audits/__init__.py` (export); `src/gzkit/cli/parser_maintenance.py` (--receipt-shape flag); `src/gzkit/commands/validate_cmd.py` (dispatch + _POLICY_BREACH_ERROR_TYPES); `src/gzkit/quality.py` (run_receipt_shape_audit); `src/gzkit/commands/quality.py` (gz check wiring); `tests/commands/test_validate.py` (flag-wiring tests); `tests/commands/test_skills.py` (coupled-surface mock patch); `docs/user/manpages/validate.md`; `docs/user/runbook.md`; `docs/governance/governance_runbook.md`
+- Tests added: 7 unit (post-cutoff optional fails, canonical passes, bare completed fails, agent attestor fails + case-insensitive, pre-cutoff waivered silent pass, pre-cutoff no waiver warn-only) + 3 flag-wiring + 7 BDD scenarios
+- REQ→@covers parity: 7/7 covered (100%)
+- Coupled-surface fix: tests/commands/test_skills.py mock patch added for new run_receipt_shape_audit step (AGENTS.md DO IT RIGHT 1a)
+- Path corrections at audit time: brief listed `trust_audits.py` and `validate.py` (do not exist); actual paths are `trust_audits/receipt_shape.py` (package module) and `validate_cmd.py`; flag registration in `parser_maintenance.py`
 - Defects noted: none
 
 ## Tracked Defects
@@ -263,14 +273,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `g0` (universal under ADR-0.0.36)
-- Attestation: substantive attestation text recorded at completion
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.36-03 validator scope --receipt-shape landed: src/gzkit/governance/trust_audits/receipt_shape.py implements audit_receipt_shape with dynamic ADR-0.0.36 cutoff parsing (no hard-coded date), ledger scanning, and waiver delegation; src/gzkit/cli/parser_maintenance.py registers --receipt-shape flag (help text ≤80 chars); src/gzkit/commands/validate_cmd.py dispatches and routes to exit 3 via _POLICY_BREACH_ERROR_TYPES; src/gzkit/quality.py + src/gzkit/commands/quality.py wire run_receipt_shape_audit into gz check _build_check_steps. Verified by 10/10 OBPI-scoped tests (7 unit tests in tests.governance.test_validate_receipt_shape + 3 flag-wiring tests in tests.commands.test_validate.TestReceiptShapeFlag) and 7/7 BDD scenarios tagged @REQ-0.0.36-03-01..07 (features/validate_receipt_shape.feature). REQ→@covers parity: 7/7 covered (100%). Receipts: arb-ruff-a08e28ad69044da2853b060cced25362, arb-step-typecheck-00af324df363462991430b9ce3008797, arb-step-unittest-41ec1fa886274eb0981ffdfa6a973562, arb-step-mkdocs-305cd5490f894ad3a2a389c4f5a89a11, arb-step-behave-cae38fb93a294bbcb2bd04dcc2c0104c. Brief Allowed Paths corrected in-flight: trust_audits.py → trust_audits/receipt_shape.py (package module); validate.py → validate_cmd.py; parser_artifacts.py → parser_maintenance.py. Coupled-surface fixes: tests/commands/test_skills.py mock patch added for new run_receipt_shape_audit check step. Closes mechanical defense layer of ADR-0.0.36 universal-attestation doctrine — doctrine collapse (OBPI-01) + runtime collapse (OBPI-02) now backed by fail-closed validator scope refusing the three deprecated state shapes (attestation_requirement: optional, obpi_completion without attested_ prefix, attestor: ^agent:) on post-cutoff receipts.
+- Date: 2026-05-18
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-18
 
 **Evidence Hash:** -

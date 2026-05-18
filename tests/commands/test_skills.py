@@ -360,6 +360,7 @@ class TestSkillCommands(unittest.TestCase):
                 patch("gzkit.quality.run_unscoped_rules_audit", return_value=ok),
                 patch("gzkit.quality.run_adr_status_fresh_audit", return_value=ok),
                 patch("gzkit.quality.run_kind_invariance_audit", return_value=ok),
+                patch("gzkit.quality.run_receipt_shape_audit", return_value=ok),
                 patch("gzkit.quality.run_orientation_freshness_audit", return_value=ok),
                 patch("gzkit.quality.run_insights_shape_audit", return_value=ok),
                 patch(

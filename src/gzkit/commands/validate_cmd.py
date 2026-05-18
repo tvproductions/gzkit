@@ -424,6 +424,7 @@ def _collect_errors(
     check_surface_fidelity: bool = False,
     check_vendor_manifest: bool = False,
     check_kind_invariance: bool = False,
+    check_receipt_shape: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -486,6 +487,7 @@ def _collect_errors(
         "surface_fidelity": check_surface_fidelity,
         "vendor_manifest": check_vendor_manifest,
         "kind_invariance": check_kind_invariance,
+        "receipt_shape": check_receipt_shape,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
@@ -581,6 +583,7 @@ def _explicit_scope_runners(
         "surface_fidelity": lambda: trust_audits.validate_surface_fidelity(project_root),
         "vendor_manifest": lambda: trust_audits.validate_vendor_manifest(project_root),
         "kind_invariance": lambda: trust_audits.audit_kind_invariance(project_root),
+        "receipt_shape": lambda: trust_audits.audit_receipt_shape(project_root),
     }
 
 
@@ -1077,6 +1080,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "pointer_anchors",
         "scenario_reachability",
         "kind_invariance",
+        "receipt_shape",
     }
 )
 
@@ -1319,6 +1323,7 @@ def validate(
     check_surface_fidelity: bool = False,
     check_vendor_manifest: bool = False,
     check_kind_invariance: bool = False,
+    check_receipt_shape: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1393,6 +1398,7 @@ def validate(
             check_surface_fidelity,
             check_vendor_manifest,
             check_kind_invariance,
+            check_receipt_shape,
         ]
     )
     if _dispatch_early_return_scopes(
@@ -1468,6 +1474,7 @@ def validate(
         check_surface_fidelity=check_surface_fidelity,
         check_vendor_manifest=check_vendor_manifest,
         check_kind_invariance=check_kind_invariance,
+        check_receipt_shape=check_receipt_shape,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -1545,6 +1552,7 @@ def validate(
         "surface_fidelity": check_surface_fidelity,
         "vendor_manifest": check_vendor_manifest,
         "kind_invariance": check_kind_invariance,
+        "receipt_shape": check_receipt_shape,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]

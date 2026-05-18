@@ -556,6 +556,68 @@ $ uv run gz validate --kind-invariance
 | 0 | All foundation ADRs have Why-foundation-tier section | — |
 | 1 | Parsing or discovery error; foundation ADR missing the section | Add `## Why foundation tier?` section to the ADR and document the architectural justification |
 
+### `--receipt-shape`
+
+Validates every `obpi_receipt_emitted` event in `.gzkit/ledger.jsonl` against the
+ADR-0.0.36 receipt-shape requirements. The cutoff date is read from the ADR-0.0.36
+frontmatter `date:` field (currently 2026-04-26).
+
+Three deprecated shapes are rejected on post-cutoff receipts:
+
+1. `attestation_requirement: optional` — universal attestation is required; use `required`.
+2. `obpi_completion` value without the `attested_` prefix (e.g., `completed`) — use
+   `attested_completed`.
+3. `attestor` matching `^agent:` (case-insensitive) — attestor must be a human identity.
+
+**Pre-cutoff receipts with deprecated shapes** are handled as follows:
+
+- If `data/historical_self_close_waivers.json` is present and the receipt ID appears
+  in its `waivers` list → silent pass (waivered).
+- If the waiver file is absent → warn-only, no policy-breach errors returned.
+- If the waiver file is present but the receipt is not listed → fail-closed.
+
+Pre-cutoff waivers are registered under OBPI-0.0.36-04.
+
+**When to use:** Run after emitting new receipts, or as part of a governance sweep to
+ensure the ledger contains no deprecated attestation shapes since the ADR-0.0.36 cutoff.
+Also wired into `gz check`.
+
+```bash
+uv run gz validate --receipt-shape
+```
+
+**Examples:**
+
+```text
+$ uv run gz validate --receipt-shape
+Validated: receipt_shape
+
+✓ All validations passed (1 scope).
+$ echo $?
+0
+```
+
+```text
+$ uv run gz validate --receipt-shape
+Validated: receipt_shape
+
+❌ Validation failed with 1 error(s):
+
+   → [receipt_shape] obpi-receipt-abc123
+    Post-cutoff receipt 'obpi-receipt-abc123' has deprecated attestor: 'agent:claude-code'
+    (matches ^agent: pattern). Attestor must be a human identity per ADR-0.0.36.
+    Recovery: re-emit the receipt with a human attestor.
+$ echo $?
+3
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | All post-cutoff receipts use canonical shapes; pre-cutoff receipts are waivered or absent | — |
+| 3 | Post-cutoff receipt has a deprecated shape, or pre-cutoff receipt is not waivered when a waiver file is present | Re-emit the receipt with the canonical shape, or register the legacy receipt ID in `data/historical_self_close_waivers.json` (OBPI-0.0.36-04) |
+
 ### `--surface-fidelity`
 
 Composite scope: runs all four surface-fidelity invariants in declared order
@@ -1016,6 +1078,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--intrinsic-attestation` | opt-in | Validate `intrinsic-complexity-attestation` ledger events against canonical schema (OBPI-0.0.29-07) |
 | `--advisor-proof-binding` | opt-in | Verdict <-> proof binding audit across fixtures, ledger-cited diagnoses, and JSON Schema (OBPI-0.0.29-08) |
 | `--distribution` | opt-in | T0 static distribution audit: ON\_DISK\_NOT\_INCLUDED / BASELINE\_NOT\_ON\_DISK / ON\_DISK\_NOT\_BASELINE drift classes (ADR-0.0.32-07) |
+| `--receipt-shape` | opt-in | Fail-closed on post-cutoff `obpi_receipt_emitted` events with deprecated shapes (optional attestation, unprefixed completion, agent: attestor); pre-cutoff receipts can be waivered via `data/historical_self_close_waivers.json` (ADR-0.0.36, OBPI-0.0.36-03) |
 | `--bullet-retention` | opt-in | Assert every Mechanical/Promotable bullet in advisory-rules-audit.md is verbatim in per-turn surface (ADR-0.0.33-01) |
 | `--scenario-reachability` | opt-in | Assert every Mechanical/Promotable bullet reachable from a declared loading scenario (ADR-0.0.33-04; Era-1 advisory) |
 | `--surface-fidelity` | opt-in | Composite: run all four surface-fidelity invariants in declared order; exit code is worst-of-four (ADR-0.0.33-05) |

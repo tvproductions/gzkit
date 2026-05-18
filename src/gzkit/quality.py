@@ -585,6 +585,18 @@ def run_kind_invariance_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --kind-invariance", cwd=project_root)
 
 
+def run_receipt_shape_audit(project_root: Path) -> QualityResult:
+    """Run the receipt-shape deprecated-shape audit (OBPI-0.0.36-03).
+
+    Fails closed (exit 3) when any obpi_receipt_emitted event dated on or after
+    ADR-0.0.36's cutoff carries a deprecated shape: attestation_requirement:optional,
+    obpi_completion without attested_ prefix, or attestor matching ^agent:.
+    Recovery: pre-cutoff receipts are registered in data/historical_self_close_waivers.json
+    under OBPI-0.0.36-04.
+    """
+    return run_command("uv run gz validate --receipt-shape", cwd=project_root)
+
+
 def run_insights_shape_audit(project_root: Path) -> QualityResult:
     """Run the agent-insights.jsonl record-shape audit (GHI #358).
 
