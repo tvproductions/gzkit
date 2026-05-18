@@ -1,0 +1,7 @@
+**Agent MUST NOT mark an OBPI brief as `Completed` without explicit human attestation. Brief-level human attestation is universal (ADR-0.0.36, GHI #342). Enforced by `_requires_human_obpi_attestation`.**
+
+**REQ-coverage gate (ADR-0.0.25).** Every REQ must have a covering passing test before `gz obpi complete`. Uncovered REQs require `--accept-uncovered <REQ-ID> --accept-uncovered-reason <REASON>`. Failing-cover REQs cannot be waived.
+--
+fire* — they NEVER determine whether Gate 5 brief-level attestation fires. Gate 5 is universal:
+
+- **`foundation` kind** — determines whether Gate 3 (docs scope) and Gate 4 (BDD scope)

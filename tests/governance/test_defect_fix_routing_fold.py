@@ -26,6 +26,11 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 BUCKET_3_ROOTS = (
     ".git/",
     ".claude/plans/",
+    # Local git worktrees mirror the working tree under the parent repo path;
+    # scanning into them creates duplicate-path false positives identical to
+    # the canonical surface they shadow. Worktree contents are never source-
+    # of-truth for this audit (state lives in the parent repo).
+    ".claude/worktrees/",
     # Closed / historical ADRs that reference the legacy path in narrative.
     "docs/design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard/",
     "docs/design/adr/foundation/ADR-0.0.17-adr-taxonomy-mechanical/",

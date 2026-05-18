@@ -1,0 +1,16 @@
+test_adr_audit (unittest.loader._FailedTest.test_adr_audit) ... ERROR
+
+======================================================================
+ERROR: test_adr_audit (unittest.loader._FailedTest.test_adr_audit)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_adr_audit
+Traceback (most recent call last):
+  File "/Users/jeff/.local/share/uv/python/cpython-3.14.3-macos-aarch64-none/lib/python3.14/unittest/loader.py", line 137, in loadTestsFromName
+    module = __import__(module_name)
+ModuleNotFoundError: No module named 'tests.commands.test_adr_audit'
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)

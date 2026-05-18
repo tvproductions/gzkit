@@ -1,0 +1,14 @@
+def _requires_human_obpi_attestation(
+    parent_adr: str | None,
+    parent_lane: str,
+    brief_frontmatter: Mapping[str, Any] | None = None,
+) -> bool:
+    """Return whether completed evidence must include human-attestation fields.
+
+    Per ADR-0.0.36 and OBPI-0.0.36-02, human attestation is UNIVERSAL: every
+    OBPI completion requires it regardless of parent ADR kind, lane, or
+    sensitivity. The foundation/lane/security branching logic has been
+    collapsed. The signature is preserved for call-site compatibility; all
+    three parameters are accepted but not evaluated.
+    """
+    return True

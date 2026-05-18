@@ -1,0 +1,1 @@
+.gzkit/skills/gz-obpi-specify/assets/OBPI_BRIEF-template.md:- [ ] **Parent ADR is Lite** → Agent may self-close after presenting evidence
