@@ -1,0 +1,11 @@
+{
+  "obpi_id": "OBPI-0.0.36-02-runtime-gate-collapse",
+  "timestamp": "2026-05-17T23:34:00.000000+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.36-02-runtime-gate-collapse.md",
+  "gaps_found": 1,
+  "gaps": [
+    "Brief Allowed Paths lists tests/commands/test_adr_audit.py (non-existent); real existing predicate test file is tests/test_adr_audit_predicates.py. Plan Task 1 corrects the brief."
+  ],
+  "notes": "ADR<->OBPI alignment solid. Gap is a brief path drift corrected in Task 1. tests/governance/test_attestation_universality.py is a new file (expected absence). Scope collisions are advisory (30 completed sibling ADRs on adr_audit.py — no active lock conflicts)."
+}

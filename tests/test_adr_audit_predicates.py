@@ -77,9 +77,11 @@ class TestRequiresHumanObpiAttestationORComposition(unittest.TestCase):
         )
 
     @covers("REQ-0.0.22-04-03")
-    def test_lite_feature_no_sensitivity_remains_self_closeable(self):
-        # Self-closeable baseline must be preserved when sensitivity is absent.
-        self.assertFalse(
+    @covers("REQ-0.0.36-02-04")
+    def test_lite_feature_no_sensitivity_requires_attestation(self):
+        # ADR-0.0.36 collapses the self-close cell: feature x lite now requires
+        # attestation unconditionally, regardless of sensitivity absence.
+        self.assertTrue(
             _requires_human_obpi_attestation(
                 "ADR-0.1.0-some-feature",
                 "lite",
@@ -110,11 +112,12 @@ class TestRequiresHumanObpiAttestationORComposition(unittest.TestCase):
         )
 
     @covers("REQ-0.0.22-04-02")
+    @covers("REQ-0.0.36-02-04")
     def test_frontmatter_argument_is_optional_for_call_site_compat(self):
         # ADR-level callers (`adr_emit_receipt_cmd`) do not have per-brief
-        # frontmatter. The two-argument call shape must keep working — the
-        # third argument defaults to None and is treated as "no security axis."
-        self.assertFalse(_requires_human_obpi_attestation("ADR-0.1.0-some-feature", "lite"))
+        # frontmatter. The two-argument call shape must keep working.
+        # Per ADR-0.0.36 the gate is universal: feature x lite now returns True.
+        self.assertTrue(_requires_human_obpi_attestation("ADR-0.1.0-some-feature", "lite"))
         self.assertTrue(_requires_human_obpi_attestation("ADR-0.0.99-some-foundation", "lite"))
 
     @covers("REQ-0.0.22-04-02")

@@ -426,7 +426,10 @@ class TestObpiPipelineCommand(unittest.TestCase):
 
     @patch("gzkit.cli.main.run_command")
     @covers("REQ-0.13.0-04-02")
-    def test_ceremony_lite_parent_self_closes_and_chains_sync(self, run_command_mock) -> None:
+    @covers("REQ-0.0.36-02-04")
+    def test_ceremony_lite_parent_requires_human_attestation(self, run_command_mock) -> None:
+        # ADR-0.0.36 collapse: feature×lite parents no longer self-close;
+        # all parents now require human attestation before Stage 5 can run.
         runner = CliRunner()
         with runner.isolated_filesystem():
             self._seed_runtime(
@@ -450,12 +453,8 @@ class TestObpiPipelineCommand(unittest.TestCase):
             )
 
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("Self-closing and chaining into sync.", result.output)
-            self.assertIn("Stage 5: Sync And Account", result.output)
-            self.assertIn("Pipeline complete.", result.output)
-            marker_path, legacy_path = self._pipeline_paths(Path.cwd())
-            self.assertFalse(marker_path.exists())
-            self.assertFalse(legacy_path.exists())
+            self.assertIn("Human attestation required.", result.output)
+            self.assertIn("--from=sync", result.output)
 
     @covers("REQ-0.13.0-04-01")
     @covers("REQ-0.13.0-04-03")

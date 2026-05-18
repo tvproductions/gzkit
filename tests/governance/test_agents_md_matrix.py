@@ -83,9 +83,7 @@ class TestAgentsMdMatrixCollapse(unittest.TestCase):
             ("ALWAYS required", "regardless"),
         ]
 
-        found = any(
-            all(marker in agents_text for marker in combo) for combo in universal_markers
-        )
+        found = any(all(marker in agents_text for marker in combo) for combo in universal_markers)
 
         self.assertTrue(
             found,
@@ -143,7 +141,6 @@ class TestAgentsMdMatrixCollapse(unittest.TestCase):
             "AGENTS.md must connect Gate 3/Gate 4 scope explicitly to lane/kind axes. "
             "The collapse must not remove or obscure this connection.",
         )
-
 
     @covers("REQ-0.0.36-01-04")
     def test_amendment_cites_ghi_and_adr_inline(self) -> None:

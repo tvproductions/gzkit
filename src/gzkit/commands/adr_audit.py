@@ -362,7 +362,15 @@ def adr_covers_check(adr: str, as_json: bool) -> None:
 
 
 def _is_foundation_adr(adr_id: str) -> bool:
-    """Return True when ADR ID is in the 0.0.x foundation series."""
+    """Return True when ADR ID is in the 0.0.x foundation series.
+
+    NOTE: This predicate is retained for taxonomy classification purposes only
+    (e.g. ``adr_audit.py`` line 264 — ``adr_kind`` derivation for audit
+    reporting). It is NO LONGER load-bearing for attestation routing.
+    ``_requires_human_obpi_attestation`` now returns True unconditionally per
+    ADR-0.0.36 and OBPI-0.0.36-02. Do not re-introduce attestation routing
+    logic that calls this function.
+    """
     return re.match(r"^ADR-0\.0\.\d+(?:[.-].*)?$", adr_id) is not None
 
 
@@ -389,22 +397,13 @@ def _requires_human_obpi_attestation(
 ) -> bool:
     """Return whether completed evidence must include human-attestation fields.
 
-    Foundation ADRs (0.0.x) always require human attestation. For non-foundation
-    ADRs, the parent lane sets the compliance floor -- a Lite OBPI under a Heavy
-    ADR still requires attestation per AGENTS.md
-    § Lane & Kind & Sensitivity Attestation Matrix. Briefs carrying
-    ``sensitivity: security`` (ADR-0.0.22) require attestation regardless of
-    lane or kind via :func:`_requires_security_review_attestation`. The
-    ``brief_frontmatter`` argument is optional so ADR-level callers (which do
-    not have per-brief frontmatter) can keep the two-argument call shape.
+    Per ADR-0.0.36 and OBPI-0.0.36-02, human attestation is UNIVERSAL: every
+    OBPI completion requires it regardless of parent ADR kind, lane, or
+    sensitivity. The foundation/lane/security branching logic has been
+    collapsed. The signature is preserved for call-site compatibility; all
+    three parameters are accepted but not evaluated.
     """
-    if not isinstance(parent_adr, str) or not parent_adr:
-        return False
-    if _is_foundation_adr(parent_adr):
-        return True
-    if parent_lane == "heavy":
-        return True
-    return _requires_security_review_attestation(brief_frontmatter)
+    return True
 
 
 # ---------------------------------------------------------------------------
