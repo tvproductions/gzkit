@@ -5,9 +5,9 @@ description: Promote a pool ADR into canonical ADR package structure. Use when m
 category: adr-lifecycle
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-21
+last_reviewed: 2026-05-18
 metadata:
-  skill-version: "1.4.0"
+  skill-version: "1.4.1"
 model: sonnet
 ---
 
