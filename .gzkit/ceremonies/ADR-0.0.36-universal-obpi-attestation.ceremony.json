@@ -1,0 +1,62 @@
+{
+  "adr_id": "ADR-0.0.36-universal-obpi-attestation",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-05-18T09:20:38Z",
+  "updated_at": "2026-05-18T10:19:02Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-05-18T09:20:38Z",
+      "acknowledged_at": "2026-05-18T09:20:40Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-05-18T09:20:40Z",
+      "acknowledged_at": "2026-05-18T09:28:54Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-05-18T09:28:54Z",
+      "acknowledged_at": "2026-05-18T09:29:08Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-05-18T09:29:08Z",
+      "acknowledged_at": "2026-05-18T09:29:51Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-05-18T09:29:51Z",
+      "acknowledged_at": "2026-05-18T09:32:47Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-05-18T09:32:47Z",
+      "acknowledged_at": "2026-05-18T09:59:47Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-05-18T09:59:47Z",
+      "acknowledged_at": "2026-05-18T10:01:01Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-05-18T10:01:01Z",
+      "acknowledged_at": "2026-05-18T10:19:02Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-05-18T10:19:02Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz validate --help"
+  ],
+  "walkthrough_index": 0,
+  "attestation": "Completed — operator attested verbatim 'attest completed' on 2026-05-18; 5/5 OBPIs completed with brief-level human attestation, validator --receipt-shape scope landed (arb receipts: ruff ff45cc0a, unittest 130a76b7 [5300 tests], typecheck 19a1a3dd, mkdocs d703186e), GHIs #342 and #332 already closed, doctrine boundary holding with zero post-cutoff ledger drift.",
+  "completed_at": "2026-05-18T10:19:02Z",
+  "attempt": 1,
+  "paused_at": null
+}
