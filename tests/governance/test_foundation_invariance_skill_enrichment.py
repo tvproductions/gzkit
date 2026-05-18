@@ -22,10 +22,10 @@ _HEXAGONAL_LENS = "ports point to invariance; plugs are features"
 _CONCEPT_PAGE_LINK = "foundation-feature-invariance-test"
 
 _EXPECTED_VERSIONS: dict[str, str] = {
-    "gz-plan": "1.2.0",
-    "gz-adr-create": "6.3.0",
+    "gz-plan": "1.3.1",
+    "gz-adr-create": "6.4.1",
     "gz-design": "1.3.0",
-    "gz-adr-promote": "1.3.0",
+    "gz-adr-promote": "1.4.1",
 }
 
 
