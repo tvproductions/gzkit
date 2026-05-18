@@ -11,13 +11,13 @@ REQs covered: REQ-0.0.36-03-02, REQ-0.0.36-03-03, REQ-0.0.36-03-04,
 from __future__ import annotations
 
 import json
+import logging
 import tempfile
 import unittest
 from pathlib import Path
 
 # RED: this module does not exist yet; import fails at collection time.
 from gzkit.governance.trust_audits.receipt_shape import audit_receipt_shape
-
 from gzkit.traceability import covers
 
 # ---------------------------------------------------------------------------
@@ -69,9 +69,18 @@ def _write_ledger(project_root: Path, events: list[dict]) -> None:
 def _write_waiver(project_root: Path, receipt_ids: list[str]) -> None:
     waiver_path = project_root / _WAIVER_REL
     waiver_path.parent.mkdir(parents=True, exist_ok=True)
-    waivers = [{"receipt_id": rid, "reason": "pre-doctrine"} for rid in receipt_ids]
+    waivers = [
+        {
+            "receipt_id": rid,
+            "obpi_id": rid,
+            "deprecated_shape": "attestation_requirement:optional",
+            "rationale": "Pre-doctrine receipt; test fixture.",
+            "added_under": "OBPI-0.0.36-04-historical-self-close-waivers",
+        }
+        for rid in receipt_ids
+    ]
     waiver_path.write_text(
-        json.dumps({"waivers": waivers}),
+        json.dumps({"waivers": waivers}, indent=2),
         encoding="utf-8",
     )
 
@@ -319,7 +328,10 @@ class TestPreCutoffWaiverBehavior(unittest.TestCase):
                 ],
             )
             # No waiver file written — warn-only, not fail-closed
-            errors = audit_receipt_shape(project_root)
+            with self.assertLogs(
+                "gzkit.governance.trust_audits.receipt_shape", level=logging.WARNING
+            ) as cm:
+                errors = audit_receipt_shape(project_root)
             # Validator MUST NOT return policy-breach errors for pre-cutoff receipts
             # when no waiver file is present (warn-only path).
             policy_errors = [e for e in errors if e.type == "receipt_shape"]
@@ -330,6 +342,11 @@ class TestPreCutoffWaiverBehavior(unittest.TestCase):
                     "pre-cutoff deprecated receipts without waiver file must be "
                     "warn-only, not fail-closed (no 'receipt_shape' errors)"
                 ),
+            )
+            # Verify warning was emitted about the unwaivered receipt
+            self.assertTrue(
+                any("waiver file absent" in msg for msg in cm.output),
+                msg=f"Expected warning about 'waiver file absent' in logs: {cm.output}",
             )
 
 

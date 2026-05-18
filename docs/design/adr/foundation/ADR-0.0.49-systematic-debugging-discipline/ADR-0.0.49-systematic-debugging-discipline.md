@@ -1,5 +1,5 @@
 ---
-id: ADR-0.0.49-systematic-debugging-discipline
+id: ADR-0.0.49
 status: Proposed
 kind: foundation
 semver: 0.0.49

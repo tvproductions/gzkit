@@ -3,7 +3,7 @@ id: OBPI-0.0.36-04-historical-self-close-waivers
 parent: ADR-0.0.36-universal-obpi-attestation
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.36-04-historical-self-close-waivers: Historical Self-Close Waivers
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.36-universal-obpi-attestation/ADR-0.0.36-universal-obpi-attestation.md`
 - **Checklist Item:** #4 — "`data/historical_self_close_waivers.json` enumeration + waiver-list validator integration"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -27,7 +27,7 @@ Enumerate every pre-doctrine receipt in `.gzkit/ledger.jsonl` that carries one o
 
 - `data/historical_self_close_waivers.json` — new data artifact
 - `src/gzkit/models/historical_waiver.py` — new Pydantic model module (`HistoricalAttestationWaiver`, `HistoricalAttestationWaiverFile`) per `.gzkit/rules/models.md`
-- `src/gzkit/governance/trust_audits.py` — extend `_check_receipt_shape` (from OBPI-03) to consume the waiver list
+- `src/gzkit/governance/trust_audits/receipt_shape.py` — extend `_load_waiver_ids` and waiver-list validation (from OBPI-03) to add `added_under` lock and warn-only behavior for un-waivered pre-cutoff receipts
 - `tests/models/test_historical_waiver.py` — Pydantic model tests
 - `tests/governance/test_historical_waiver_integration.py` — waiver-list-aware validator tests
 - `docs/governance/historical-self-close-waivers.md` — narrative documentation of the waiver list, why it is closed to new entries, and the audit trail back to GHI #332
@@ -221,24 +221,35 @@ Before this OBPI, ledger immutability and the new validator from OBPI-03 were in
 
 ### Key Proof
 
-```bash
-$ uv run gz validate --receipt-shape
-WARNING: 0 historical receipts un-waivered (all pre-cutoff drift accounted for)
-OK: 0 post-cutoff violations
-$ echo $?
+
+```
+$ uv run gz validate --receipt-shape && echo OK
+✓ All validations passed (10 scopes).
+OK
+
+$ uv run python -c "from pathlib import Path; from gzkit.governance.trust_audits.receipt_shape import audit_receipt_shape; print(len(audit_receipt_shape(Path('.'))))"
 0
 
-$ python -c "import json; w = json.load(open('data/historical_self_close_waivers.json')); print(len(w['waivers']), 'waivers registered')"
-N waivers registered
+$ uv run -m unittest tests.models.test_historical_waiver tests.governance.test_historical_waiver_integration 2>&1 | tail -3
+----------------------------------------------------------------------
+Ran 12 tests in 0.005s
+OK
+
+$ uv run gz covers OBPI-0.0.36-04-historical-self-close-waivers --json | grep coverage_percent
+    "coverage_percent": 100.0
 ```
+
+ARB receipts (Heavy lane attestation): arb-ruff-4f7ff896dcdb4389a9779b211407d782 (lint clean), arb-step-typecheck-20a0be166b9f4bb3a303a56b90e0a27c (typecheck clean), arb-step-mkdocs-6f0607f1ac0b4b6f88d5f5324609ea14 (docs clean), arb-step-behave-9aedc68765384b74b92c2173cd3a6762 (3/3 OBPI-04 BDD scenarios pass).
 
 ### Implementation Summary
 
-- Files created/modified: `data/historical_self_close_waivers.json` (new), `src/gzkit/models/historical_waiver.py` (new), `src/gzkit/governance/trust_audits.py` (extend `_check_receipt_shape` to consume waivers), `docs/governance/historical-self-close-waivers.md` (new), `tests/models/test_historical_waiver.py` (new), `tests/governance/test_historical_waiver_integration.py` (new)
-- Tests added: Pydantic frozen/extra-forbid/required-field assertions; waiver-list integration RED→GREEN; bad-`added_under` rejection
-- Date completed: TBD
-- Attestation status: pending TTY+ATTEST under universal attestation rule
-- Defects noted: none
+
+- Files created: `data/historical_self_close_waivers.json` (42 enumerated pre-cutoff deprecated receipts, all stamped `added_under = OBPI-0.0.36-04-historical-self-close-waivers`); `src/gzkit/models/historical_waiver.py` (Pydantic models `HistoricalAttestationWaiver` + `HistoricalAttestationWaiverFile` with `ConfigDict(frozen=True, extra="forbid")`); `tests/models/test_historical_waiver.py` (6 model tests); `tests/governance/test_historical_waiver_integration.py` (6 integration tests, all REQs covered); `docs/governance/historical-self-close-waivers.md` (purpose, schema, closed-to-new-entries posture, audit lineage)
+- Files modified: `src/gzkit/governance/trust_audits/receipt_shape.py` (added Pydantic validation, `added_under` lock enforcement that drops rejected entries from waiver_ids, warn-only behavior for un-waivered pre-cutoff in both file-absent and file-present paths, refactored all functions to ≤50 lines); `tests/governance/test_validate_receipt_shape.py` (_write_waiver fixture writes all 5 required fields; test_pre_cutoff_without_waiver_file_is_warn_only strengthened with assertLogs); `docs/governance/state-doctrine.md` (See Also cross-reference); brief Allowed Paths corrected (trust_audits.py → trust_audits/receipt_shape.py); `features/validate_receipt_shape.feature` + steps (3 OBPI-04 BDD scenarios); `data/behave_coverage_waivers.json` (waiver for unit-test-only REQs 01/02/05/06)
+- Tests added: 12 (6 Pydantic-model tests + 6 integration tests including 2 added for REQ-02/REQ-05 coverage); 3 behave scenarios for REQ-03/REQ-04
+- Date completed: 2026-05-18
+- Attestation status: operator-verbatim-conversational ("attest completed", recorded Stage 4 2026-05-18T02:42Z)
+- Defects noted: 3 pre-existing unrelated test failures logged to `.gzkit/insights/agent-insights.jsonl` (GHI #486 covers utf8_prefix in OBPI-02 brief; lock_manager env-var tests are regression from GHI #484 fix needing CLAUDECODE/CLAUDE_CODE_SESSION_ID allowlist update)
 
 ## Tracked Defects
 
@@ -246,14 +257,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `Jeffry Babb` (universal under ADR-0.0.36)
-- Attestation: substantive attestation text recorded at completion
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — OBPI-0.0.36-04 historical waiver list landed: 42 pre-cutoff receipts enumerated; live-ledger receipt-shape validator returns 0 errors; ARB receipts arb-ruff-4f7ff896dcdb4389a9779b211407d782, arb-step-typecheck-20a0be166b9f4bb3a303a56b90e0a27c, arb-step-mkdocs-6f0607f1ac0b4b6f88d5f5324609ea14, arb-step-behave-9aedc68765384b74b92c2173cd3a6762; 12 OBPI-scoped tests pass; 6/6 REQs covered; 3 BDD scenarios pass.
+- Date: 2026-05-18
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-18
 
 **Evidence Hash:** -

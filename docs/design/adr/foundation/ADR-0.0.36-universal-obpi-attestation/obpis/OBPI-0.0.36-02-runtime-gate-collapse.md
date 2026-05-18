@@ -257,9 +257,10 @@ Ran 5270 tests in 147.201s — OK (skipped=1)
 $ uv run -m behave --tags=@REQ-0.0.36-02-01,@REQ-0.0.36-02-02,@REQ-0.0.36-02-03,@REQ-0.0.36-02-04,@REQ-0.0.36-02-05 features/universal_obpi_attestation.feature
 2 scenarios passed, 0 failed, 5 skipped
 
-# REQ → @covers parity gate
-$ uv run gz covers OBPI-0.0.36-02-runtime-gate-collapse --json | jq '.summary'
-{ "total_reqs": 5, "covered_reqs": 5, "uncovered_reqs": 0, "coverage_percent": 100.0 }
+# REQ → @covers parity gate (rendered summary)
+$ uv run gz covers OBPI-0.0.36-02-runtime-gate-collapse --output /tmp/covers.json
+$ python -c "import json; print(json.load(open('/tmp/covers.json'))['summary'])"
+{ 'total_reqs': 5, 'covered_reqs': 5, 'uncovered_reqs': 0, 'coverage_percent': 100.0 }
 ```
 
 ### Implementation Summary

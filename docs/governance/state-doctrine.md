@@ -178,3 +178,9 @@ Frontmatter `status:` terms in circulation across gzkit (as of ADR-0.0.16 author
 | archived | abandoned | Retired; no longer active |
 
 Canonical targets are drawn from `OBPI_RUNTIME_STATES` (at `src/gzkit/ledger.py`) and ADR lifecycle states (`pending`/`validated`/`completed`/`abandoned`). Lookups are case-insensitive; consumers that encounter a frontmatter term not in this mapping MUST block with a clear error naming the unmapped term — they never silently skip.
+
+---
+
+## See Also
+
+- [Historical Self-Close Waivers](historical-self-close-waivers.md) — closed waiver list for pre-doctrine receipts (ADR-0.0.36, OBPI-0.0.36-04).

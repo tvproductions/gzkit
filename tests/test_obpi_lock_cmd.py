@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 from datetime import UTC, datetime, timedelta
@@ -230,7 +231,11 @@ class TestLockManagerIO(unittest.TestCase):
         self.assertEqual(result, "my-custom-agent")
 
     def test_resolve_agent_claude_code_env(self):
+        # Clear session-id env vars so resolve_agent returns bare "claude-code"
+        # without a session-id suffix (GHI #484 added session-id-aware identity).
         with patch.dict("os.environ", {"CLAUDE_CODE": "1"}, clear=False):
+            for var in ("CLAUDE_CODE_SESSION_ID", "CLAUDE_SESSION_ID", "CLAUDECODE"):
+                os.environ.pop(var, None)
             result = resolve_agent()
             self.assertEqual(result, "claude-code")
 

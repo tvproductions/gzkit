@@ -1,0 +1,298 @@
+{
+  "waivers": [
+    {
+      "receipt_id": "OBPI-0.7.0-01-obpi-completion-validator-gate",
+      "obpi_id": "OBPI-0.7.0-01-obpi-completion-validator-gate",
+      "deprecated_shape": "attestor:agent:automated-recorder",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.7.0-02-obpi-completion-recorder-and-anchor",
+      "obpi_id": "OBPI-0.7.0-02-obpi-completion-recorder-and-anchor",
+      "deprecated_shape": "attestor:agent:automated-recorder",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.7.0-03-ledger-first-obpi-audit-consumption",
+      "obpi_id": "OBPI-0.7.0-03-ledger-first-obpi-audit-consumption",
+      "deprecated_shape": "attestor:agent:automated-recorder",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.7.0-04-obpi-drift-and-status-reconciliation",
+      "obpi_id": "OBPI-0.7.0-04-obpi-drift-and-status-reconciliation",
+      "deprecated_shape": "attestor:agent:automated-recorder",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.1.0-01",
+      "obpi_id": "OBPI-0.1.0-01",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.1.0-02",
+      "obpi_id": "OBPI-0.1.0-02",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.1.0-03",
+      "obpi_id": "OBPI-0.1.0-03",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.1.0-04",
+      "obpi_id": "OBPI-0.1.0-04",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.1.0-05",
+      "obpi_id": "OBPI-0.1.0-05",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.1.0-06",
+      "obpi_id": "OBPI-0.1.0-06",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.1.0-07",
+      "obpi_id": "OBPI-0.1.0-07",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.1.0-08",
+      "obpi_id": "OBPI-0.1.0-08",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.1.0-09",
+      "obpi_id": "OBPI-0.1.0-09",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.1.0-10",
+      "obpi_id": "OBPI-0.1.0-10",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.9.0-01-claude-governance-hooks-intake",
+      "obpi_id": "OBPI-0.9.0-01-claude-governance-hooks-intake",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.9.0-02-compatibility-adaptation-blocking-hooks",
+      "obpi_id": "OBPI-0.9.0-02-compatibility-adaptation-blocking-hooks",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed,attestor:agent:automated-recorder",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.9.0-03-gzkit-breadth-parity-intake-tranche-plan",
+      "obpi_id": "OBPI-0.9.0-03-gzkit-breadth-parity-intake-tranche-plan",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.9.0-04-gzkit-surface-import-and-mirror-sync",
+      "obpi_id": "OBPI-0.9.0-04-gzkit-surface-import-and-mirror-sync",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.9.0-05-parity-qc-and-closeout-readiness",
+      "obpi_id": "OBPI-0.9.0-05-parity-qc-and-closeout-readiness",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed,attestor:agent:codex",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.16.0-02-rules-as-content",
+      "obpi_id": "OBPI-0.16.0-02-rules-as-content",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed,attestor:agent:claude",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.16.0-03-vendor-manifest-schema",
+      "obpi_id": "OBPI-0.16.0-03-vendor-manifest-schema",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed,attestor:agent:claude-code",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.16.0-04-template-engine",
+      "obpi_id": "OBPI-0.16.0-04-template-engine",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed,attestor:agent:claude-code,attestor:agent:claude",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.16.0-05-content-lifecycle-state-machine",
+      "obpi_id": "OBPI-0.16.0-05-content-lifecycle-state-machine",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed,attestor:agent:claude",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.18.0-01-agent-role-taxonomy",
+      "obpi_id": "OBPI-0.18.0-01-agent-role-taxonomy",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.18.0-03-two-stage-review-protocol",
+      "obpi_id": "OBPI-0.18.0-03-two-stage-review-protocol",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.18.0-04-req-verification-dispatch",
+      "obpi_id": "OBPI-0.18.0-04-req-verification-dispatch",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.19.0-01-gz-closeout-adr-x-y-z-end-to-end-closeout-pipeline",
+      "obpi_id": "OBPI-0.19.0-01-gz-closeout-adr-x-y-z-end-to-end-closeout-pipeline",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.19.0-02-gz-audit-adr-x-y-z-end-to-end-audit-pipeline",
+      "obpi_id": "OBPI-0.19.0-02-gz-audit-adr-x-y-z-end-to-end-audit-pipeline",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.19.0-03-equivalent-commands-in-airlineops-opsdev-closeout-opsdev-audit",
+      "obpi_id": "OBPI-0.19.0-03-equivalent-commands-in-airlineops-opsdev-closeout-opsdev-audit",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed,attestor:agent:automated-recorder",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.19.0-04-audit-includes-attestation-record-gate-results-evidence-links",
+      "obpi_id": "OBPI-0.19.0-04-audit-includes-attestation-record-gate-results-evidence-links",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.19.0-05-audit-generated-event-appended-to-ledger",
+      "obpi_id": "OBPI-0.19.0-05-audit-generated-event-appended-to-ledger",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.19.0-06-audit-templates-and-evidence-aggregation-from-ledger",
+      "obpi_id": "OBPI-0.19.0-06-audit-templates-and-evidence-aggregation-from-ledger",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.19.0-07-adr-status-transition-completed-validated-after-audit",
+      "obpi_id": "OBPI-0.19.0-07-adr-status-transition-completed-validated-after-audit",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.19.0-08-deprecate-gz-gates-as-a-standalone-command-subsumed-by-closeout",
+      "obpi_id": "OBPI-0.19.0-08-deprecate-gz-gates-as-a-standalone-command-subsumed-by-closeout",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.19.0-09-deprecate-manual-gz-attest-during-closeout-subsumed-by-closeout",
+      "obpi_id": "OBPI-0.19.0-09-deprecate-manual-gz-attest-during-closeout-subsumed-by-closeout",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.0.3-05-config-precedence-injection",
+      "obpi_id": "OBPI-0.0.3-05-config-precedence-injection",
+      "deprecated_shape": "attestor:agent:automated-recorder",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.12.0-01-canonical-hook-inventory-and-parity-contract",
+      "obpi_id": "OBPI-0.12.0-01-canonical-hook-inventory-and-parity-contract",
+      "deprecated_shape": "attestor:agent:automated-recorder",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.24.0-01-documentation-taxonomy",
+      "obpi_id": "OBPI-0.24.0-01-documentation-taxonomy",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.24.0-02-skill-manpage-template",
+      "obpi_id": "OBPI-0.24.0-02-skill-manpage-template",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.24.0-03-skills-surface-and-index",
+      "obpi_id": "OBPI-0.24.0-03-skills-surface-and-index",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.24.0-04-runbook-skill-entries",
+      "obpi_id": "OBPI-0.24.0-04-runbook-skill-entries",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    },
+    {
+      "receipt_id": "OBPI-0.24.0-05-pilot-skill-manpages",
+      "obpi_id": "OBPI-0.24.0-05-pilot-skill-manpages",
+      "deprecated_shape": "attestation_requirement:optional,obpi_completion:completed",
+      "rationale": "Pre-ADR-0.0.36 receipt; doctrine cutoff 2026-04-26. GHI #332 audit.",
+      "added_under": "OBPI-0.0.36-04-historical-self-close-waivers"
+    }
+  ]
+}

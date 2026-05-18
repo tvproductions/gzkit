@@ -163,7 +163,140 @@ def step_pre_cutoff_waivered(context) -> None:  # type: ignore[no-untyped-def]
     waiver_path = root / "data" / "historical_self_close_waivers.json"
     waiver_path.parent.mkdir(parents=True, exist_ok=True)
     waiver_path.write_text(
-        json.dumps({"waivers": [{"receipt_id": receipt_id, "reason": "pre-doctrine"}]}),
+        json.dumps(
+            {
+                "waivers": [
+                    {
+                        "receipt_id": receipt_id,
+                        "obpi_id": "OBPI-0.0.36-04",
+                        "deprecated_shape": "attestation_requirement: optional",
+                        "rationale": "Pre-cutoff self-close receipt.",
+                        "added_under": "OBPI-0.0.36-04-historical-self-close-waivers",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    os.chdir(root)
+
+
+@given("a minimal project with a pre-cutoff receipt and a waiver entry with bad added_under")
+def step_pre_cutoff_with_bad_added_under_waiver(context) -> None:  # type: ignore[no-untyped-def]
+    """Pre-cutoff receipt with waiver entry having invalid added_under value."""
+    root: Path = context._tmpdir
+    receipt_id = "OBPI-bad-added-under-01"
+    _write_minimal_project(
+        root,
+        [
+            _receipt_event(
+                receipt_id=receipt_id,
+                ts=_PRE_CUTOFF_TS,
+                attestor="agent:legacy",
+                attestation_requirement="optional",
+                obpi_completion="completed",
+            )
+        ],
+    )
+    waiver_path = root / "data" / "historical_self_close_waivers.json"
+    waiver_path.parent.mkdir(parents=True, exist_ok=True)
+    waiver_path.write_text(
+        json.dumps(
+            {
+                "waivers": [
+                    {
+                        "receipt_id": receipt_id,
+                        "obpi_id": "OBPI-0.0.36-04",
+                        "deprecated_shape": "attestation_requirement: optional",
+                        "rationale": "Pre-cutoff self-close receipt.",
+                        # Invalid: should be OBPI-0.0.36-04-historical-self-close-waivers
+                        "added_under": "OBPI-0.0.36-03-wrong-obpi",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    os.chdir(root)
+
+
+@given(
+    "a minimal project with a pre-cutoff receipt and a "
+    "matching waiver entry having valid added_under"
+)
+def step_pre_cutoff_with_valid_waiver(context) -> None:  # type: ignore[no-untyped-def]
+    """Pre-cutoff receipt with waiver entry having valid added_under."""
+    root: Path = context._tmpdir
+    receipt_id = "OBPI-valid-waiver-01"
+    _write_minimal_project(
+        root,
+        [
+            _receipt_event(
+                receipt_id=receipt_id,
+                ts=_PRE_CUTOFF_TS,
+                attestor="agent:legacy",
+                attestation_requirement="optional",
+                obpi_completion="completed",
+            )
+        ],
+    )
+    waiver_path = root / "data" / "historical_self_close_waivers.json"
+    waiver_path.parent.mkdir(parents=True, exist_ok=True)
+    waiver_path.write_text(
+        json.dumps(
+            {
+                "waivers": [
+                    {
+                        "receipt_id": receipt_id,
+                        "obpi_id": "OBPI-0.0.36-04",
+                        "deprecated_shape": "attestation_requirement: optional",
+                        "rationale": "Pre-cutoff self-close receipt.",
+                        "added_under": "OBPI-0.0.36-04-historical-self-close-waivers",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    os.chdir(root)
+
+
+@given("a minimal project with a pre-cutoff receipt and a waiver file lacking that receipt")
+def step_pre_cutoff_with_waiver_file_missing_receipt(
+    context,
+) -> None:  # type: ignore[no-untyped-def]
+    """Unwaivered pre-cutoff receipt (waiver file present but missing this receipt)."""
+    root: Path = context._tmpdir
+    receipt_id = "OBPI-unwaivered-pre-cutoff-01"
+    _write_minimal_project(
+        root,
+        [
+            _receipt_event(
+                receipt_id=receipt_id,
+                ts=_PRE_CUTOFF_TS,
+                attestor="agent:legacy",
+                attestation_requirement="optional",
+                obpi_completion="completed",
+            )
+        ],
+    )
+    waiver_path = root / "data" / "historical_self_close_waivers.json"
+    waiver_path.parent.mkdir(parents=True, exist_ok=True)
+    # Waiver file exists but has a DIFFERENT receipt_id
+    waiver_path.write_text(
+        json.dumps(
+            {
+                "waivers": [
+                    {
+                        "receipt_id": "OBPI-some-other-receipt-01",
+                        "obpi_id": "OBPI-0.0.36-04",
+                        "deprecated_shape": "attestation_requirement: optional",
+                        "rationale": "Some other pre-cutoff receipt.",
+                        "added_under": "OBPI-0.0.36-04-historical-self-close-waivers",
+                    }
+                ]
+            }
+        ),
         encoding="utf-8",
     )
     os.chdir(root)
