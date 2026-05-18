@@ -25,7 +25,9 @@ ENV_VAR_ALLOWLIST: frozenset[str] = frozenset(
         "TERM",
         "SKIP",  # CI/hook bypass detection (git_sync, cli/main)
         "CLAUDE_CODE",  # Agent identity resolution (obpi lock)
+        "CLAUDECODE",  # Agent identity resolution variant (lock_manager, GHI #484)
         "CLAUDE_SESSION_ID",  # Agent session identification (hooks, obpi lock)
+        "CLAUDE_CODE_SESSION_ID",  # Agent session identification variant (lock_manager, GHI #484)
         "CODEX_SANDBOX",  # Agent identity resolution (obpi lock)
         "COPILOT_SESSION_ID",  # Agent session identification (hooks)
         "GZKIT_CLAUDE_HOME",  # Plan-discovery test isolation (#128)

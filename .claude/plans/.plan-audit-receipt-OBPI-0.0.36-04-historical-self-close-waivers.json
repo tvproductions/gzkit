@@ -1,0 +1,30 @@
+{
+  "obpi_id": "OBPI-0.0.36-04-historical-self-close-waivers",
+  "timestamp": "2026-05-18T02:46:21.679250+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.36-04-historical-self-close-waivers.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.15.0",
+      "sibling_obpi": "OBPI-0.15.0-02-content-type-frontmatter-models",
+      "contested_paths": [
+        "src/gzkit/models/historical_waiver.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.24",
+      "sibling_obpi": "OBPI-0.0.24-01-validator-scope",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/receipt_shape.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-03-storybook-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/receipt_shape.py"
+      ]
+    }
+  ]
+}

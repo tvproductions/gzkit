@@ -1,9 +1,9 @@
 {
-  "obpi_id": "OBPI-0.0.35-03-why-foundation-tier-convention",
-  "timestamp": "2026-05-17T15:34:43.279420+00:00",
+  "obpi_id": "OBPI-0.0.36-04-historical-self-close-waivers",
+  "timestamp": "2026-05-18T02:05:00.000000+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.35-03-why-foundation-tier-convention.md",
+  "plan_file": "OBPI-0.0.36-04-historical-self-close-waivers.md",
   "gaps_found": 0,
   "gaps": [],
-  "notes": "Brief Allowed Paths corrected (gz-plan.md -> plan-create.md) before plan was written. ADR<->OBPI alignment: all checks Aligned after brief fix."
+  "notes": "CLI structural FAIL for 5 new-file paths (expected pre-implementation). Semantic alignment solid after correcting brief Allowed Paths: trust_audits.py -> trust_audits/receipt_shape.py. ADR<->OBPI: all checks Aligned. Plan authored covering TDD RED/GREEN, Pydantic model, 48-receipt enumeration, receipt_shape.py extension (added_under validation + warn-only behavior), docs, and ARB receipts."
 }
