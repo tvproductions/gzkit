@@ -130,20 +130,45 @@ class TestResolveAgent(unittest.TestCase):
     def test_override_returned_verbatim(self):
         self.assertEqual(resolve_agent("my-agent"), "my-agent")
 
-    def test_claude_code_env(self):
+    def test_claudecode_env_stable_identity(self):
+        # Claude Code exports CLAUDECODE=1 (no underscore), not CLAUDE_CODE.
+        # Stable identity prevents per-invocation PID drift (GHI #484).
+        # Strip session-ID vars so the fallback-to-bare-"claude-code" branch fires.
+        clean = {
+            k: v
+            for k, v in __import__("os").environ.items()
+            if k not in ("CLAUDE_CODE_SESSION_ID", "CLAUDE_SESSION_ID", "CLAUDE_CODE", "CLAUDECODE")
+        }
+        with patch.dict("os.environ", {**clean, "CLAUDECODE": "1"}, clear=True):
+            agent = resolve_agent()
+            self.assertEqual(agent, "claude-code")
+
+    def test_claudecode_env_with_session_id(self):
+        env = {"CLAUDECODE": "1", "CLAUDE_CODE_SESSION_ID": "abcd1234efgh5678"}
+        with patch.dict("os.environ", env, clear=False):
+            agent = resolve_agent()
+            self.assertEqual(agent, "claude-code-abcd1234")
+
+    def test_legacy_claude_code_env_still_accepted(self):
+        # CLAUDE_CODE (with underscore) is accepted for backwards compatibility.
         with patch.dict("os.environ", {"CLAUDE_CODE": "1"}, clear=False):
-            self.assertEqual(resolve_agent(), "claude-code")
+            agent = resolve_agent()
+            self.assertTrue(agent.startswith("claude-code"))
 
     def test_codex_env(self):
-        env = {k: v for k, v in __import__("os").environ.items() if k != "CLAUDE_CODE"}
-        with patch.dict("os.environ", {**env, "CODEX_SANDBOX": "1"}, clear=True):
+        clean = {
+            k: v
+            for k, v in __import__("os").environ.items()
+            if k not in ("CLAUDECODE", "CLAUDE_CODE")
+        }
+        with patch.dict("os.environ", {**clean, "CODEX_SANDBOX": "1"}, clear=True):
             self.assertEqual(resolve_agent(), "codex")
 
     def test_fallback_unknown(self):
         clean = {
             k: v
             for k, v in __import__("os").environ.items()
-            if k not in ("CLAUDE_CODE", "CODEX_SANDBOX")
+            if k not in ("CLAUDECODE", "CLAUDE_CODE", "CODEX_SANDBOX")
         }
         with patch.dict("os.environ", clean, clear=True):
             agent = resolve_agent()
