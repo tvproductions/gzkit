@@ -1,0 +1,12 @@
+{
+  "obpi_id": "OBPI-0.0.36-03-validate-receipt-shape-scope",
+  "timestamp": "2026-05-18T00:39:12.875904+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.36-03-receipt-shape-validator.md",
+  "gaps_found": 2,
+  "gaps": [
+    "Brief path drift: trust_audits.py -> trust_audits/receipt_shape.py (package); parser_artifacts.py -> parser_maintenance.py; validate.py -> validate_cmd.py",
+    "OBPI-04 waiver file absent (expected; REQ-5 handles warn-only when absent)"
+  ],
+  "verdict_rationale": "ADR intent and OBPI scope aligned. All 9 REQs covered by plan. Gaps are advisory and non-blocking."
+}

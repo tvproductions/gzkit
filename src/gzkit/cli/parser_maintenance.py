@@ -613,6 +613,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Validate foundation ADRs have Why-foundation-tier section",
     )
     p_validate.add_argument(
+        "--receipt-shape",
+        dest="check_receipt_shape",
+        action="store_true",
+        help="Refuse deprecated receipt shapes post-ADR-0.0.36 cutoff (exit 3)",
+    )
+    p_validate.add_argument(
         "--regenerate",
         dest="check_distribution_regenerate",
         action="store_true",
@@ -699,6 +705,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_surface_fidelity=a.check_surface_fidelity,
             check_vendor_manifest=a.check_vendor_manifest,
             check_kind_invariance=a.check_kind_invariance,
+            check_receipt_shape=a.check_receipt_shape,
             attestation_receipts=a.attestation_receipts,
             attestation_lane=a.attestation_lane,
             attestation_kind=a.attestation_kind,

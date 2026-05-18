@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.0.36-03-validate-receipt-shape-scope",
+  "parent_adr": "ADR-0.0.36-universal-obpi-attestation",
+  "lane": "heavy",
+  "entry": "full",
+  "execution_mode": "normal",
+  "current_stage": "implement",
+  "started_at": "2026-05-18T00:40:08Z",
+  "updated_at": "2026-05-18T00:40:08Z",
+  "receipt_state": "pass",
+  "nonce": "5b0be4ca4ef815265ea41368abb2b8ef",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz obpi pipeline OBPI-0.0.36-03-validate-receipt-shape-scope --from=verify",
+  "resume_point": "verify"
+}

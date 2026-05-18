@@ -82,6 +82,18 @@ uv run gz parity check
 uv run mkdocs build --strict
 ```
 
+### Receipt-shape integrity (ADR-0.0.36)
+
+```bash
+uv run gz validate --receipt-shape  # Refuse post-cutoff deprecated receipt shapes (exit 3 on violation)
+```
+
+Fails closed when any `obpi_receipt_emitted` event dated on or after the ADR-0.0.36 cutoff
+(`2026-04-26`, read from ADR frontmatter) carries: `attestation_requirement: optional`,
+`obpi_completion: completed` without the `attested_` prefix, or `attestor` matching `^agent:`.
+Pre-cutoff receipts: warn-only when `data/historical_self_close_waivers.json` is absent;
+fail-closed on unwaivers when the waiver list is present (authored under OBPI-0.0.36-04).
+
 ### Complexity doctrine surfaces (ADR-0.0.27 cluster)
 
 ```bash
