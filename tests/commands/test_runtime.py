@@ -775,6 +775,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             self.assertIn("Invalid --evidence-json", result.output)
 
     def test_obpi_emit_receipt_dry_run_writes_nothing(self) -> None:
+        # ADR-0.0.36: _requires_human_obpi_attestation returns True for all
+        # OBPIs; evidence must include human_attestation + attestation_text.
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -793,7 +795,10 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--evidence-json",
                     (
                         '{"value_narrative":"before/after capability",'
-                        '"key_proof":"uv run gz status --table"}'
+                        '"key_proof":"uv run gz status --table",'
+                        '"human_attestation":true,'
+                        '"attestation_text":"dry-run test attestation",'
+                        '"attestation_date":"2026-01-01"}'
                     ),
                     "--dry-run",
                 ],

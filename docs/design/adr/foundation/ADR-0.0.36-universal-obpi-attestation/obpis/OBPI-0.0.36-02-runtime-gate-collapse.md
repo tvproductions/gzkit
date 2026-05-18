@@ -3,7 +3,7 @@ id: OBPI-0.0.36-02-runtime-gate-collapse
 parent: ADR-0.0.36-universal-obpi-attestation
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.36-02-runtime-gate-collapse: Runtime Gate Collapse
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.36-universal-obpi-attestation/ADR-0.0.36-universal-obpi-attestation.md`
 - **Checklist Item:** #2 — "`_requires_human_obpi_attestation` collapse + `_is_foundation_adr` orphan audit (runtime gate)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -26,8 +26,10 @@ Collapse `_requires_human_obpi_attestation` in `src/gzkit/commands/adr_audit.py`
 ## Allowed Paths
 
 - `src/gzkit/commands/adr_audit.py` — primary runtime gate file containing `_requires_human_obpi_attestation` and `_is_foundation_adr`
-- `tests/commands/test_adr_audit.py` — existing test module for `adr_audit.py` (any test path that asserts the lane/kind branching needs to flip to assert universality)
+- `tests/test_adr_audit_predicates.py` — existing predicate test module for `_requires_human_obpi_attestation` (two lane-conditional `assertFalse` calls must flip to `assertTrue`)
 - `tests/governance/test_attestation_universality.py` — new test module asserting the gate returns True across the full kind × lane cross product
+- `tests/commands/test_obpi_pipeline.py` — pipeline ceremony test asserting old lite-parent self-close path; must flip to assert "Human attestation required." (REQ-0.0.36-02-04 scope expansion, discovered at Stage 2)
+- `tests/commands/test_runtime.py` — emit-receipt dry-run test lacking now-required human attestation fields; must add attestation_text and human_attestation to evidence (REQ-0.0.36-02-04 scope expansion, discovered at Stage 2)
 
 ## Denied Paths
 
@@ -216,23 +218,59 @@ Before this OBPI, `_requires_human_obpi_attestation` branched on parent ADR kind
 
 ### Key Proof
 
-```bash
-# Before (sketch):
-$ python -c "from gzkit.commands.adr_audit import _requires_human_obpi_attestation; print(_requires_human_obpi_attestation('ADR-0.16.0', 'lite'))"
-False
 
-# After:
-$ python -c "from gzkit.commands.adr_audit import _requires_human_obpi_attestation; print(_requires_human_obpi_attestation('ADR-0.16.0', 'lite'))"
-True
+```bash
+# Before (pre-collapse): feature×lite returns False — the self-close path
+$ git show HEAD~5:src/gzkit/commands/adr_audit.py | grep -A 8 "def _requires_human_obpi_attestation"
+def _requires_human_obpi_attestation(
+    parent_adr, parent_lane, brief_frontmatter=None,
+):
+    if not isinstance(parent_adr, str) or not parent_adr:
+        return False
+    if _is_foundation_adr(parent_adr):
+        return True
+    if parent_lane == "heavy":
+        return True
+    return _requires_security_review_attestation(brief_frontmatter)
+
+# After (post-collapse): True for every input — no self-close path can be constructed
+$ uv run python -c "from gzkit.commands.adr_audit import _requires_human_obpi_attestation as f; \
+    print({'feature_lite': f('ADR-0.1.0','lite'), 'feature_heavy': f('ADR-0.1.0','heavy'), \
+           'foundation_lite': f('ADR-0.0.99','lite'), 'foundation_heavy': f('ADR-0.0.99','heavy'), \
+           'parent_none': f(None,'lite')})"
+{'feature_lite': True, 'feature_heavy': True, 'foundation_lite': True, 'foundation_heavy': True, 'parent_none': True}
+
+# AST-verified body shape (TestGateBodyShape.test_function_body_is_unconditional_return_true)
+$ uv run -m unittest tests.governance.test_attestation_universality.TestGateBodyShape -v
+test_function_body_is_unconditional_return_true ... ok
+test_function_signature_preserved ... ok
+
+# Full universality + predicate test suites
+$ uv run -m unittest tests.governance.test_attestation_universality tests.test_adr_audit_predicates -v
+Ran 28 tests in 0.001s — OK
+
+# Full unittest suite (receipt arb-step-unittest-2954ab50123e4195835b4437629feed7)
+$ uv run gz arb step --name unittest -- uv run -m unittest -q
+Ran 5270 tests in 147.201s — OK (skipped=1)
+
+# OBPI-scoped BDD (receipt arb-step-behave-5db101dafc9346f993d68db363c102f1)
+$ uv run -m behave --tags=@REQ-0.0.36-02-01,@REQ-0.0.36-02-02,@REQ-0.0.36-02-03,@REQ-0.0.36-02-04,@REQ-0.0.36-02-05 features/universal_obpi_attestation.feature
+2 scenarios passed, 0 failed, 5 skipped
+
+# REQ → @covers parity gate
+$ uv run gz covers OBPI-0.0.36-02-runtime-gate-collapse --json | jq '.summary'
+{ "total_reqs": 5, "covered_reqs": 5, "uncovered_reqs": 0, "coverage_percent": 100.0 }
 ```
 
 ### Implementation Summary
 
-- Files created/modified: `src/gzkit/commands/adr_audit.py` (gate collapse; possibly `_is_foundation_adr` removal), `tests/commands/test_adr_audit.py` (assertion flips for any pre-OBPI lane-conditional tests), `tests/governance/test_attestation_universality.py` (new universality test module)
-- Tests added: `test_gate_returns_true_for_foundation_lite`, `test_gate_returns_true_for_foundation_heavy`, `test_gate_returns_true_for_feature_lite`, `test_gate_returns_true_for_feature_heavy`, `test_gate_returns_true_for_parent_adr_none`
-- Date completed: TBD
-- Attestation status: pending TTY+ATTEST under universal attestation rule
-- Defects noted: none
+
+- Files modified: src/gzkit/commands/adr_audit.py (gate body collapsed to `return True`; signature preserved; _is_foundation_adr docstring disclaims attestation-routing role with OBPI-0.0.36-02 + ADR-0.0.36 inline citations); tests/test_adr_audit_predicates.py (2 lane-conditional assertFalse → assertTrue + test renames + @covers REQ-0.0.36-02-04); tests/commands/test_obpi_pipeline.py (self-close pipeline test → "Human attestation required." per REQ-04); tests/commands/test_runtime.py (dry-run evidence + human_attestation/attestation_text/attestation_date); tests/governance/test_agents_md_matrix.py (ruff auto-format only); features/universal_obpi_attestation.feature (2 new @REQ-0.0.36-02 scenarios); brief Allowed Paths corrected
+- Files created: tests/governance/test_attestation_universality.py (10 tests, 4 classes — TestAttestationUniversality REQ-01, TestGateBodyShape REQ-02 AST-verified, TestIsFoundationAdrRetainedForTaxonomy REQ-03, TestEnforceAuthenticityUnmodified REQ-05); features/steps/universal_obpi_attestation_steps.py (docstring-JSON-evidence step); .claude/plans/OBPI-0.0.36-02-runtime-gate-collapse.md (Stage 1 plan)
+- Tests added: test_gate_returns_true_for_foundation_lite, test_gate_returns_true_for_foundation_heavy, test_gate_returns_true_for_feature_lite, test_gate_returns_true_for_feature_heavy, test_gate_returns_true_for_parent_adr_none, test_function_body_is_unconditional_return_true, test_function_signature_preserved, test_helper_still_exists_and_returns_classification, test_helper_docstring_cites_obpi_and_adr_and_disclaims_routing, test_authenticity_gate_three_branches_present
+- Date completed: 2026-05-17
+- Attestation status: operator-verbatim-conversational ("attest completed") per ADR-0.0.36 Intent Addendum
+- Defects noted: pre-existing ADR-0.0.8 missing Decomposition Scorecard (out of scope; will file GHI as follow-up if not already tracked); spec-review advisory: hard-coded "line 264" in _is_foundation_adr docstring (non-correctness)
 
 ## Tracked Defects
 
@@ -240,14 +278,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `Jeffry Babb` (universal under ADR-0.0.36)
-- Attestation: substantive attestation text recorded at completion
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — OBPI-0.0.36-02 runtime gate collapse landed: _requires_human_obpi_attestation in src/gzkit/commands/adr_audit.py now returns True unconditionally for all parent_adr × parent_lane combinations (foundation/feature × lite/heavy + None), with 3-parameter signature preserved for call-site compatibility. _is_foundation_adr retained for taxonomy classification with docstring disclaiming attestation-routing role (REQ-03). _enforce_human_attestation_authenticity byte-unmodified per REQ-05. Verified by 10/10 universality tests (tests.governance.test_attestation_universality, AST-verified body shape) + 18/18 predicate tests (tests.test_adr_audit_predicates) + 5270/5270 full unittest suite + 2/2 OBPI-scoped BDD scenarios (features/universal_obpi_attestation.feature @REQ-0.0.36-02-01..05). REQ→@covers parity: 5/5 covered (100%). Receipts: arb-ruff-eddf58c1d8c74eea8ed878812c7a00e1, arb-step-typecheck-91ac284f47304b9e9398d48c6a5c9526, arb-step-unittest-2954ab50123e4195835b4437629feed7, arb-step-mkdocs-d0836b8b834c4e1a83f6695027653b67, arb-step-behave-5db101dafc9346f993d68db363c102f1. Brief Allowed Paths corrected in-flight: drift (tests/commands/test_adr_audit.py non-existent → tests/test_adr_audit_predicates.py) + REQ-04 scope expansion for two regression-fix files (tests/commands/test_obpi_pipeline.py, tests/commands/test_runtime.py). Closes the runtime mechanism behind GHIs #290/#292/#332/#342/#412/#434/#458 attestation/TTY/self-close shitshow per ADR-0.0.36 Intent Addendum.
+- Date: 2026-05-18
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-18
 
 **Evidence Hash:** -
