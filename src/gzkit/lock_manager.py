@@ -48,13 +48,15 @@ def resolve_agent(agent_override: str | None = None) -> str:
     """Resolve agent identity.
 
     If *agent_override* is provided it is returned as-is. Otherwise the
-    running environment is inspected: ``CLAUDE_CODE`` env var → ``"claude-code"``,
+    running environment is inspected: ``CLAUDECODE`` env var (Claude Code
+    exports this, not ``CLAUDE_CODE``) → ``"claude-code[-<sid8>]"``,
     ``CODEX_SANDBOX`` env var → ``"codex"``, fallback → ``"unknown-<pid>"``.
     """
     if agent_override is not None:
         return agent_override
-    if os.environ.get("CLAUDE_CODE"):
-        return "claude-code"
+    if os.environ.get("CLAUDECODE") or os.environ.get("CLAUDE_CODE"):
+        sid = os.environ.get("CLAUDE_CODE_SESSION_ID") or os.environ.get("CLAUDE_SESSION_ID")
+        return f"claude-code-{sid[:8]}" if sid else "claude-code"
     if os.environ.get("CODEX_SANDBOX"):
         return "codex"
     return f"unknown-{os.getpid()}"
@@ -62,7 +64,11 @@ def resolve_agent(agent_override: str | None = None) -> str:
 
 def resolve_session_id() -> str:
     """Return session identifier from environment, or fall back to PID."""
-    return os.environ.get("CLAUDE_SESSION_ID", str(os.getpid()))
+    return (
+        os.environ.get("CLAUDE_CODE_SESSION_ID")
+        or os.environ.get("CLAUDE_SESSION_ID")
+        or str(os.getpid())
+    )
 
 
 def current_branch() -> str:
