@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.10.0"
+  skill-version: "7.11.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -253,6 +253,16 @@ uv run gz git-sync --apply
 # working tree is truly clean after closeout.
 uv run gz git-sync --apply
 ```
+
+**GHI closure discipline (cross-reference):** When GHI close comments are
+committed as part of closeout (sync 1 above), apply `ghi-close` v2.4.0's
+dead-letter doctrine: every GHI close MUST cite a real, registered destination
+(commit SHA, ADR ID in `gz adr report`, OBPI brief ID, or higher-numbered open
+GHI). A close comment pointing to an unregistered ADR draft or a vague
+"route to the team" is a dead-letter and is forbidden. If no destination exists
+at closeout time, leave the GHI open with a blocker comment and note it in
+the closeout summary. See `.gzkit/skills/ghi-close/SKILL.md` § Doctrine —
+NEVER, EVER, EVER dead-letter a GHI for the binding rule.
 
 **Why two syncs:**
 

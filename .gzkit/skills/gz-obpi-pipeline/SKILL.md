@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.16.0"
+skill-version: "6.17.0"
 last_reviewed: 2026-04-25
 model: sonnet
 ---
@@ -126,15 +126,13 @@ The pipeline executes 5 stages sequentially. **Stage 4 behavior depends on execu
 │  ├─ DO NOT STOP HERE. Proceed to Stage 3.                    │
 │  Stage 3: VERIFY             (autonomous)                    │
 │  ├─ DO NOT STOP HERE. Proceed to Stage 4.                    │
-│  Stage 4: PRESENT EVIDENCE   (mode-dependent — see below)   │
-│  ├─ Normal: WAIT for human attestation, then Stage 5.        │
-│  ├─ Exception: Self-close, then Stage 5.                     │
+│  Stage 4: PRESENT EVIDENCE   (human gate — universal)        │
+│  ├─ WAIT for human attestation, then Stage 5.                │
 │  Stage 5: SYNC AND ACCOUNT   (autonomous)                   │
 │  └─ Pipeline complete. NOW you may report status.            │
 └──────────────────────────────────────────────────────────────┘
 
-Normal mode:    Stage 4 = HUMAN GATE (wait for attestation)
-Exception mode: Stage 4 = SELF-CLOSE (record evidence, proceed)
+Stage 4 = HUMAN GATE (wait for attestation) — universal per ADR-0.0.36
 ```
 
 ### Stage 1: Load Context
@@ -154,9 +152,7 @@ Exception mode: Stage 4 = SELF-CLOSE (record evidence, proceed)
    lookup. Set a variable like `obpi_slug` at this step and reuse it throughout.
 5. Extract: objective, requirements, allowed/denied paths, acceptance criteria, lane, verification commands
 6. Identify the parent ADR and inherit its lane and execution constraints.
-7. Determine execution mode from the parent ADR:
-   - `Exception (SVFR)` → set mode=exception
-   - anything else → set mode=normal
+7. All OBPIs require human attestation — universal per ADR-0.0.36.
 8. Check for existing handoffs and resume context when present:
    - `docs/design/adr/**/handoffs/*.md`
 9. Claim OBPI lock: `uv run gz obpi lock claim {OBPI-SLUG}` (use the full slug from step 3)
@@ -199,8 +195,7 @@ At `>= 90%` confidence, skip the walkthrough and proceed directly to Stage 2. Th
 
 1. **Extract plan tasks** from the approved plan file using `extract_plan_tasks()` patterns (headings or numbered items).
 2. **Create task list:**
-   - Normal mode: Last task MUST be "Present OBPI Acceptance Ceremony"
-   - Exception mode: Last task MUST be "Record OBPI Evidence and Self-Close"
+   - Last task MUST be "Present OBPI Acceptance Ceremony" (universal human gate per ADR-0.0.36)
 3. **Read brief requirements** — extract the `## Requirements (FAIL-CLOSED)` section from the OBPI brief. These are passed to each implementer as scoped context.
 4. **For each plan task** (sequential — one implementer at a time, never parallel):
 
@@ -542,21 +537,11 @@ Do NOT mark ceremony task `completed` until attestation is received.
 
 **Human rejects:** Record feedback, return to Stage 2 with corrections.
 
-#### Exception Mode — SELF-CLOSE
-
-**Trigger:** "Record OBPI Evidence and Self-Close" task becomes next pending. Mark `in_progress`.
-
-Present evidence using the **same template as Normal mode** (all fields populated), then:
-
-4. **Self-close** — Record `attestation_type: "self-close-exception"` in ledger. Proceed to Stage 5.
-
-Evidence is full-fidelity. Human reviews at ADR closeout.
-
-**MANDATORY TRANSITION → Stage 5.** Once attestation is received (Normal) or self-close is recorded (Exception), proceed to Stage 5 immediately. Do not summarize. Do not wait.
+**MANDATORY TRANSITION → Stage 5.** Once attestation is received, proceed to Stage 5 immediately. Do not summarize. Do not wait.
 
 ### Stage 5: Sync And Account
 
-After attestation (Normal) or self-close (Exception):
+After attestation:
 
 **Two-sync pattern:** Stage 5 uses two git-sync cycles. The `gz obpi complete`
 command atomically writes the attestation to the ADR-level audit ledger, updates
@@ -594,7 +579,7 @@ the reconcile output and ADR status refresh.
    **Source:** [--key-proof flag | existing brief body at <line range>]
    ```
 
-   In Normal mode: the operator already attested in Stage 4, but the prose is the artifact that survives the ledger event — name it explicitly so the operator can refuse before write. In Exception mode: this is the only operator-visible checkpoint on the prose itself.
+   The operator already attested in Stage 4, but the prose is the artifact that survives the ledger event — name it explicitly so the operator can refuse before write.
 
    If the operator silently accepts (no objection), proceed. If they reject, return to authoring the brief sections directly, then re-present.
 
@@ -603,8 +588,7 @@ the reconcile output and ADR status refresh.
    ADR-level audit ledger, updates the brief (status, evidence sections, human
    attestation), and emits the completion receipt to the main ledger. If any step
    fails, all changes are rolled back — no partial writes.
-   - Normal mode: pass the operator's attestation phrase (e.g. "attest completed") verbatim through `--attestation-text`, enriched per `AGENTS.md` § Attestation (em-dash + session evidence + receipt IDs). The operator's `attest completed` (or equivalent) IS the attestation — it is not a request for more instructions. Do not stop the turn to ask the operator to run the command themselves.
-   - Exception mode: pass `--attestation-text "self-close-exception"`
+   - Pass the operator's attestation phrase (e.g. "attest completed") verbatim through `--attestation-text`, enriched per `AGENTS.md` § Attestation (em-dash + session evidence + receipt IDs). The operator's `attest completed` (or equivalent) IS the attestation — it is not a request for more instructions. Do not stop the turn to ask the operator to run the command themselves.
    - Use `--implementation-summary` and `--key-proof` to supply evidence sections.
      If omitted, the command reads existing content from the brief — but it MUST
      be substantive (non-empty, non-placeholder, satisfies
@@ -647,6 +631,16 @@ the reconcile output and ADR status refresh.
    Commits the reconcile output (step 7) and ADR status refresh (step 8).
 10. Create a session handoff if more OBPIs remain or follow-up work is deferred.
 
+**GHI closure discipline (cross-reference):** When a GHI is closed as part of
+pipeline execution or handoff, apply `ghi-close` v2.4.0's dead-letter doctrine:
+every close MUST cite a real, registered destination (commit SHA, ADR ID visible
+in `gz adr report`, OBPI brief ID, or higher-numbered open GHI). A GHI closed
+with a vague route-promise ("should become an ADR", "the operator can handle this
+later") is a dead-letter and is forbidden. If no destination exists yet, leave the
+GHI open with a blocker comment naming the next concrete operator action. See
+`.gzkit/skills/ghi-close/SKILL.md` § Doctrine — NEVER, EVER, EVER dead-letter a
+GHI for the binding rule.
+
 ---
 
 ## Error Recovery
@@ -680,16 +674,16 @@ the reconcile output and ADR status refresh.
 
 ---
 
-## Parallel Execution (Exception Mode)
+## Parallel Execution
 
-Multiple independent OBPIs within the same ADR can run this pipeline concurrently in separate agent sessions when Exception mode is granted. Requirements:
+Multiple independent OBPIs within the same ADR can run this pipeline concurrently
+in separate agent sessions. Requirements:
 
-1. ADR has `## Execution Mode: Exception (SVFR)` section (granted at ADR Defense)
-2. OBPIs have non-overlapping allowed paths
-3. Each session claims its OBPI via `uv run gz obpi lock claim`
-4. Sync operations (Stage 5) are atomic per-brief
+1. OBPIs have non-overlapping allowed paths
+2. Each session claims its OBPI via `uv run gz obpi lock claim`
+3. Sync operations (Stage 5) are atomic per-brief
 
-In Normal mode, OBPIs run sequentially with per-OBPI human attestation.
+All OBPIs require per-OBPI human attestation (universal per ADR-0.0.36).
 
 ---
 
