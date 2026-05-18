@@ -5,7 +5,7 @@ description: Create and book a GovZero ADR with its OBPI briefs. Enforces minor-
 category: adr-lifecycle
 compatibility: Requires GovZero v6 framework; provides governance rules internally for portable use across repositories
 metadata:
-  skill-version: "6.3.0"
+  skill-version: "6.4.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), linkage (ADR/OBPI/GHI), minor-release (odometer discipline)"
@@ -255,16 +255,17 @@ the decision before any artifacts exist, preventing scope ambiguity at the sourc
 7. Add the ADR entry to `docs/design/adr/adr_index.md`.
 8. Add/refresh the ADR row in `docs/design/adr/adr_status.md`.
 9. Add/refresh the ADR row in `docs/governance/GovZero/adr-status.md`.
-10. **OBPI Co-Creation (Mandatory):** Create one OBPI brief per checklist item.
+10. **Register the ADR in the ledger (Mandatory):** Run `uv run gz register-adrs ADR-X.Y.Z` immediately after the ADR file exists on disk. Emits the `adr_registered` ledger event so `gz adr report` and downstream gates recognize the ADR. Required for every kind — foundation, feature, and pool — regardless of whether OBPIs are co-created in the same session. Skipping this step is the canonical failure that produces "ADR exists on disk but is not registered in ledger" warnings.
+11. **OBPI Co-Creation (Mandatory):** Create one OBPI brief per checklist item.
     - Count checklist items in Feature Checklist
     - **Preferred:** Run `uv run gz specify <slug> --parent ADR-X.Y.Z --item N --author` for each item
     - After generation, author each brief semantically from the ADR before treating the package as ready
     - **Alternative:** Create files manually in `obpis/` with YAML frontmatter (`id:`, `parent:`, `item:`, `lane:`, `status:`)
-    - **Then register:** Run `uv run gz register-adrs ADR-X.Y.Z --all` to ensure `obpi_created` ledger events
+    - **Re-register after OBPIs exist:** Run `uv run gz register-adrs ADR-X.Y.Z --all` to emit `obpi_created` ledger events for the newly authored briefs
     - Verify: `ls obpis/ | wc -l` matches checklist item count
     - Validate authored readiness: `uv run gz obpi validate --adr ADR-X.Y.Z --authored`
     - This is NOT optional — briefs are co-created with the ADR, never deferred
-11. **Post-Authoring QC (Mandatory before proposal/defense):**
+12. **Post-Authoring QC (Mandatory before proposal/defense):**
     Invoke `gz-adr-evaluate ADR-X.Y.Z` to run the ADR and its OBPIs through the
     evaluation framework.
     - Score the ADR on all 8 dimensions
@@ -273,7 +274,7 @@ the decision before any artifacts exist, preventing scope ambiguity at the sourc
       before proceeding
     - Optionally use `gz-adr-evaluate ADR-X.Y.Z --red-team` for adversarial review
     - Record the output as `EVALUATION_SCORECARD.md` in the ADR directory
-12. Validate:
+13. Validate:
 
 ```bash
 uv run -m unittest -q

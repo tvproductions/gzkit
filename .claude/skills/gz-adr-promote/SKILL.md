@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-21
 metadata:
-  skill-version: "1.3.0"
+  skill-version: "1.4.0"
 model: sonnet
 ---
 
@@ -69,11 +69,12 @@ keeping rich prose in a `### Detailed specification` subsection below.
 4.  **Run the promotion**:
     *   Preview with `--dry-run` if unsure of the layout.
     *   Execute: `uv run gz adr promote <POOL-ADR> --semver <X.Y.Z>`
-5.  **Verify the transition**:
+5.  **Register the promoted ADR in the ledger (Mandatory):** `gz adr promote` emits `artifact_renamed` but does not emit `adr_registered`. Run `uv run gz register-adrs <NEW-ADR-ID>` immediately after promotion so `gz adr report` and downstream gates recognize the ADR. Skipping this step is the failure that produces "ADR exists on disk but is not registered in ledger" warnings.
+6.  **Verify the transition**:
     *   Confirm the new ADR file exists in the correct SemVer bucket (`foundation/`, `pre-release/`, or `<major>.0/`).
     *   Confirm matching OBPI briefs were created under the promoted ADR `obpis/` directory.
     *   Confirm the original pool file is updated with `status: Superseded`.
-    *   Confirm the ledger records an `artifact_renamed` event and `obpi_created` events for the generated briefs.
+    *   Confirm the ledger records an `adr_registered` event (from step 5) and `obpi_created` events for the generated briefs.
 
 ## Options
 
