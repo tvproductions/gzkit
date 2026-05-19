@@ -6848,3 +6848,4 @@
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.obpi-state-machine.md","ts":"2026-05-19T08:27:35.422442+00:00","path":"docs/design/adr/pool/ADR-pool.obpi-state-machine.md"}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.workflow-specification.md","ts":"2026-05-19T08:27:48.390971+00:00","path":"docs/design/adr/pool/ADR-pool.workflow-specification.md"}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.workflow-specification.md","ts":"2026-05-19T08:28:41.875540+00:00","path":"docs/design/adr/pool/ADR-pool.workflow-specification.md"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.investigator-tracing-skill.md","ts":"2026-05-19T08:52:29.752645+00:00","path":"docs/design/adr/pool/ADR-pool.investigator-tracing-skill.md"}
