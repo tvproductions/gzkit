@@ -1,9 +1,9 @@
 {
-  "obpi_id": "OBPI-0.0.36-05-skill-prose-sweep-self-close",
-  "timestamp": "2026-05-18T07:55:30.000000+00:00",
+  "obpi_id": "OBPI-0.0.37-01-invariant-schema-and-registry",
+  "timestamp": "2026-05-19T00:31:00.000000+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.36-05-skill-prose-sweep-self-close.md",
+  "plan_file": "OBPI-0.0.37-01-invariant-schema-and-registry.md",
   "gaps_found": 0,
   "gaps": [],
-  "notes": "CLI structural FAIL for 4 pre-implementation paths (expected). Vendor mirror paths are sync-generated per brief; test file created in Step 1. Semantic alignment solid: ADR Decision item #5 maps directly to brief objective; all 7 REQs covered; lane=Heavy consistent."
+  "notes": "CLI structural FAIL for 6 pre-implementation paths (expected). All 6 are new files to be created in Stage 2 — not semantic misalignment. ADR<->OBPI alignment solid: ADR checklist item #1 maps directly to OBPI objective; all 4 REQs covered; lane=Heavy consistent; Gate 3/4 deferral explicitly noted in brief. Advisory scope collisions with OBPI-0.15.0-04, OBPI-0.0.42-01/03/04, OBPI-0.0.11-06 are non-blocking (no active locks on any contested path)."
 }

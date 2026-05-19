@@ -1,0 +1,10 @@
+{
+  "id": "CIC-1",
+  "claim": "Every claim that AGENTS.md asserts as foundational MUST originate from an addressable, schema-validated, ledger-witnessed entry in the constitutional invariant registry at .gzkit/invariants/. AGENTS.md is rendered from the registry; drift between rendered view and committed AGENTS.md is fail-closed at gz validate --invariant-coherence (and gz check). Hand-authoring foundational claims directly into AGENTS.md is the same class of failure as hand-writing ledger entries (AGENTS.md § Behavior Rules — Never #2 applied at the canon layer).",
+  "structural_witness": [
+    "gz validate --invariant-coherence"
+  ],
+  "composition_targets": [
+    "AGENTS.md"
+  ]
+}

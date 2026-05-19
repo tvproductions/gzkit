@@ -6,6 +6,8 @@ lane: Heavy
 status: Draft
 ---
 
+<!-- gz-validate-skip: brief-demo-section -->
+
 # OBPI-0.0.37-03-composition-drift-validator: Composition Drift Validator
 
 ## ADR Item

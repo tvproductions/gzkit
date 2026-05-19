@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ConstitutionalInvariant",
+  "description": "Schema-validated constitutional invariant entry (ADR-0.0.37).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "claim", "structural_witness", "composition_targets"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique invariant identifier (e.g. CIC-1)."
+    },
+    "claim": {
+      "type": "string",
+      "description": "The foundational claim this invariant asserts."
+    },
+    "structural_witness": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      },
+      "description": "One or more commands or gates that mechanically witness this invariant."
+    },
+    "composition_targets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Surfaces rendered from this invariant (e.g. AGENTS.md). May be empty."
+    }
+  }
+}
