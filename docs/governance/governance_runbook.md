@@ -98,6 +98,8 @@ fail-closed on unwaivers when the waiver list is present (authored under OBPI-0.
 
 ```bash
 uv run gz validate --complexity-doctrine-links  # Citation link integrity
+uv run gz governance render --target agents-md --check   # Drift-check AGENTS.md against invariant registry
+uv run gz governance render --target agents-md           # Write AGENTS.md from invariant registry
 uv run gz complexity distill                     # Run a distillation pass
 uv run gz complexity distill --no-prior          # Cold-start invocation
 uv run gz complexity distill --allow-dated-sibling  # Same-date sibling

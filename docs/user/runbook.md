@@ -931,6 +931,9 @@ uv run gz validate --kind-invariance             # ADR-0.0.35 Why-foundation-tie
 uv run gz validate --receipt-shape               # ADR-0.0.36 post-cutoff receipt deprecated-shape audit (exit 3 on violation)
 uv run gz validate --complexity-doctrine-links  # ADR-0.0.27 citation link integrity
 uv run gz validate --complexity-thresholds       # ADR-0.0.28 threshold table shape audit
+uv run gz governance render --target agents-md --check   # Check AGENTS.md matches the invariant registry
+uv run gz governance render --target agents-md --stdout  # Stream rendered bytes to stdout
+uv run gz governance render --target agents-md           # Write rendered bytes to AGENTS.md
 uv run gz complexity distill                     # Run a distillation pass against the corpus
 uv run gz complexity distill --no-prior          # Cold-start invocation
 uv run gz complexity distill --allow-dated-sibling # Same-date sibling on collision

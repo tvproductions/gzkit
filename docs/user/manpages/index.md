@@ -79,6 +79,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz test`](test.md) | Run unit tests |
 | [`gz typecheck`](typecheck.md) | Run static type checks |
 | [`gz validate`](validate.md) | Validate governance artifacts |
+| [`gz governance render`](governance-render.md) | Render a governance surface (AGENTS.md) from the constitutional invariant registry |
 | [`gz complexity distill`](complexity-distill.md) | Run a complexity distillation pass and emit a distilled-characteristics document |
 | [`gz complexity advise`](complexity-advise.md) | Run the trigger-time complexity advisor against a file or directory and emit AdvisorDiagnosis output |
 | [`gz complexity guide`](complexity-guide.md) | Surface authoring-time complexity hints for functions approaching the warn threshold (advise-band only, never blocks) |

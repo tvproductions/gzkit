@@ -63,6 +63,11 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "dialogical authoring entry point; no separate wielding skill is in the "
         "eight-component delivery plan — the agent IS the authoring UI per ADR-0.0.34 § Decision."
     ),
+    "governance": (
+        "ADR-0.0.37 OBPI-0.0.37-02 delivers the `gz governance render` CLI surface. "
+        "A dedicated gz-governance-render skill is deferred to a subsequent feature ADR "
+        "once the full governance command group lands (OBPI-03 through OBPI-10)."
+    ),
 }
 
 

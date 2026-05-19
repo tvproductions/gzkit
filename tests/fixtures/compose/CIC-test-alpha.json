@@ -1,0 +1,6 @@
+{
+  "id": "CIC-test-alpha",
+  "claim": "Alpha test invariant claim.",
+  "structural_witness": ["gz validate --alpha"],
+  "composition_targets": ["AGENTS.md"]
+}
