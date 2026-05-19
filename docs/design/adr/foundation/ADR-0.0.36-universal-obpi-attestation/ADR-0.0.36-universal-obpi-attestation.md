@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.36-universal-obpi-attestation
-status: Draft
+status: Validated
 kind: foundation
 semver: 0.0.36
 lane: heavy

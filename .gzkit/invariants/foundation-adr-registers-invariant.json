@@ -1,0 +1,8 @@
+{
+  "id": "foundation-adr-registers-invariant",
+  "claim": "Every foundation-kind ADR registers at least one invariant in .gzkit/invariants/.",
+  "structural_witness": [
+    "gz validate --foundation-registers-invariant"
+  ],
+  "composition_targets": []
+}

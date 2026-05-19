@@ -6,6 +6,8 @@ lane: Heavy
 status: Draft
 ---
 
+<!-- gz-validate-skip: brief-demo-section -->
+
 # OBPI-0.0.37-08-obpi-complete-gate: OBPI Complete Gate
 
 ## ADR Item

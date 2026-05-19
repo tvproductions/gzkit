@@ -1,0 +1,10 @@
+{
+  "id": "CIC-2",
+  "claim": "Every OBPI brief is a structural artifact whose Allowed Paths, Discovery Checklist, Verification commands, REQ-IDs, and citation tuples MUST reconcile against current project shape before Stage 2 implementation begins. Drift is fail-closed at gz obpi pipeline Stage 1 (refuses Stage 2 entry without a fresh reconciliation receipt) and at gz obpi complete Stage 5 (refuses completion without a reconciliation receipt newer than the most recent mutation in the brief's allowlist domain).",
+  "structural_witness": [
+    "gz validate --brief-reconcile",
+    "gz obpi pipeline (stage 1)",
+    "gz obpi complete (stage 5)"
+  ],
+  "composition_targets": []
+}
