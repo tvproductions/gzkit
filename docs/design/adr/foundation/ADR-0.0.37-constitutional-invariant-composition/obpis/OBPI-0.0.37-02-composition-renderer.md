@@ -3,7 +3,7 @@ id: OBPI-0.0.37-02-composition-renderer
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 <!-- gz-validate-skip: brief-demo-section -->
@@ -15,7 +15,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 - **Checklist Item:** #2 — "OBPI-0.0.37-02 — Composition renderer (`gz governance render --target agents-md`; deterministic byte output; `--check` mode)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -33,7 +33,7 @@ Land the deterministic composition renderer: consume the invariant registry from
 - `tests/governance/test_compose.py` (new) — renderer unit tests (byte-determinism, template projection)
 - `tests/commands/test_governance_render.py` (new) — CLI tests (--check mode, exit codes)
 - `tests/fixtures/compose/` (new) — fixture registries + expected rendered output for byte-comparison tests
-- `docs/user/manpages/gz-governance.md` (new) — manpage per gate5-runbook-code-covenant
+- `docs/user/manpages/governance-render.md` (new) — manpage per gate5-runbook-code-covenant (naming follows the project convention `<verb>-<subverb>.md` per `complexity-distill.md`, `arb-ruff.md` precedent)
 - `features/constitutional_invariants.feature` (new) — BDD scenarios for CIC-1 renderer; tagged `@REQ-0.0.37-02-*`; subsequent OBPIs (03, 04, 09) add scenarios to this file
 - `docs/user/runbook.md` (modify) — operator runbook entry for `gz governance render`
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-02-composition-renderer.md` (this brief)
@@ -75,17 +75,19 @@ Land the deterministic composition renderer: consume the invariant registry from
 - [ ] `.gzkit/rules/cli.md` — CLI verb registration conventions
 - [ ] `.gzkit/rules/gate5-runbook-code-covenant.md` — manpage and runbook obligations
 
-**Context (existing exemplars):**
-
-- [ ] `src/gzkit/commands/specify_cmd.py` — example of a `gz` subcommand with `--check` / write modes
-- [ ] `src/gzkit/cli/parser_artifacts.py` — verb-registration pattern
-- [ ] `src/gzkit/templates/agents.md` — current template shape (consumed as the projection target)
-- [ ] OBPI-0.0.37-01 brief and its produced files (`invariants.py`, `.gzkit/invariants/*.yaml`)
-
 **Prerequisites:**
 
 - [ ] OBPI-0.0.37-01 landed (registry primitive available)
 - [ ] `src/gzkit/templates/agents.md` exists (used as template root)
+
+**Existing Code:**
+
+- [ ] `src/gzkit/commands/specify_cmd.py` — example of a `gz` subcommand with `--check` / write modes
+- [ ] `src/gzkit/cli/parser_artifacts.py` — verb-registration pattern (`_LAZY_HANDLERS` + `_register_*_parsers` + lazy func dispatch)
+- [ ] `src/gzkit/templates/agents.md` — current template shape (consumed as the projection target)
+- [ ] `src/gzkit/governance/invariants.py` — `ConstitutionalInvariant` Pydantic model and `load_invariants()` from OBPI-0.0.37-01
+- [ ] `.gzkit/invariants/*.json` — three seed invariants (CIC-1, CIC-2, foundation-adr-registers-invariant) registered by OBPI-01
+- [ ] `tests/governance/test_invariants.py` — REQ-derived test pattern for governance modules (use as template for `test_compose.py`)
 
 ## Quality Gates
 
@@ -150,7 +152,7 @@ uv run gz governance render --target skill-readme 2>&1 | rg -q "unsupported targ
 ## Completion Checklist
 
 - [ ] Gate 1 / 2 / 3 / 4 / 5 satisfied as above
-- [ ] `gz brief reconcile OBPI-0.0.37-02-composition-renderer` reports zero drift before completion
+- [ ] `gz obpi reconcile OBPI-0.0.37-02-composition-renderer` reports zero drift before completion
 
 ## Evidence
 
@@ -166,15 +168,41 @@ uv run gz governance render --target skill-readme 2>&1 | rg -q "unsupported targ
 
 ### Key Proof
 
-<!-- e.g. `diff <(gz governance render --stdout) <(gz governance render --stdout)` returns empty -->
+
+REQ-0.0.37-02-01 (byte-determinism) — verified live:
+
+```
+$ diff <(uv run gz governance render --target agents-md --stdout) \
+       <(uv run gz governance render --target agents-md --stdout) \
+  && echo "REQ-01 OK: byte-identical across runs"
+REQ-01 OK: byte-identical across runs
+```
+
+REQ-0.0.37-02-04 (unsupported target) — verified live:
+
+```
+$ uv run gz governance render --target skill-readme
+unsupported target: 'skill-readme'. Supported targets: ['agents-md']
+```
+
+Quality gates (canonical ARB receipts):
+- Lint: `arb-ruff-c1ba28b870744ebbb39be736ed3f53ab` (exit 0)
+- Typecheck: `arb-step-typecheck-61e6b65d7c2947da952c764992d126c8` (exit 0)
+- Unittest: `arb-step-unittest-a67ab049e79147f0a83ac4e41232a434` (5339/5339 pass)
+- Mkdocs --strict: `arb-step-mkdocs-0863cbce74764376919ea219e6252068` (exit 0)
+- Behave (constitutional_invariants.feature): 6/6 scenarios pass, 31/31 steps, all 5 REQs tagged
+
+REQ coverage (verified by `uv run gz covers OBPI-0.0.37-02-composition-renderer --json`): 0 uncovered REQs.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `src/gzkit/governance/compose.py` (Jinja2-based byte-deterministic renderer), `src/gzkit/commands/governance_render.py` (CLI handler with `--check`, `--stdout`, write modes), `tests/governance/test_compose.py` (9 unit tests), `tests/commands/test_governance_render.py` (12 CLI tests), `tests/fixtures/compose/{agents.md,CIC-test-alpha.json,CIC-test-beta.json}` (test fixtures), `docs/user/manpages/governance-render.md` (manpage with NAME/SYNOPSIS/DESCRIPTION/OPTIONS/EXAMPLES), `features/constitutional_invariants.feature` (6 BDD scenarios), `features/steps/constitutional_invariants_steps.py` (step definitions).
+- Files modified: `src/gzkit/cli/parser_artifacts.py` (registered `_register_governance_parsers` and `governance_render_cmd` lazy handler), `src/gzkit/governance/trust_audits/cli.py` (added `governance` to `_NO_SKILL_VERBS` with rationale), `config/doc-coverage.json` (added `governance render` entry with 4 surface requirements), `docs/user/manpages/index.md` (added index row), `docs/user/runbook.md` + `docs/governance/governance_runbook.md` (added runbook entries).
+- Tests added: 9 compose unit tests + 12 CLI command tests + 6 BDD scenarios (31 steps) = 27 new test entries; all 5 REQs covered via `@covers` decorators and `@REQ-0.0.37-02-NN` scenario tags.
+- Date completed: 2026-05-19.
+- Attestation status: Human-attested via operator-verbatim "attest completed" relayed in Stage 4.
+- Defects noted: (1) Brief drift — original brief listed `docs/user/manpages/gz-governance.md` but project convention (`complexity-distill.md`, `arb-ruff.md` precedent) is `<verb>-<subverb>.md`. Brief allowed path updated to `governance-render.md` in same OBPI per Coupled-Surface Coherence. (2) Discovery Checklist refactored from non-canonical "Context (existing exemplars)" section to required `**Existing Code**` block per `gz obpi validate --authored` contract. (3) Brief Completion Checklist referenced unregistered `gz brief reconcile` verb (OBPI-06 future scope) — replaced with `gz obpi reconcile` for current pipeline parity.
 
 ## Tracked Defects
 
@@ -183,14 +211,14 @@ uv run gz governance render --target skill-readme 2>&1 | rg -q "unsupported targ
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: substantive text grounded in `--check` exit-code demonstration
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — operator-verbatim attestation relayed from Stage 4 conversational gate; OBPI-0.0.37-02-composition-renderer ships byte-deterministic Jinja2 composition renderer (`gz governance render --target agents-md` with `--check`/`--stdout`/write modes), all 5 acceptance REQs covered by unit + BDD tests, Heavy-lane gates green: lint receipt `arb-ruff-c1ba28b870744ebbb39be736ed3f53ab`, typecheck receipt `arb-step-typecheck-61e6b65d7c2947da952c764992d126c8`, unittest receipt `arb-step-unittest-a67ab049e79147f0a83ac4e41232a434` (5339/5339), mkdocs receipt `arb-step-mkdocs-0863cbce74764376919ea219e6252068`, behave 6/6 scenarios pass. Plan-audit receipt PASS; precomplete 7/7. attestation_type: operator-verbatim-conversational per ADR-0.0.36.
+- Date: 2026-05-19
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-19
 
 **Evidence Hash:** -

@@ -1,0 +1,6 @@
+{
+  "id": "CIC-test-beta",
+  "claim": "Beta test invariant claim.",
+  "structural_witness": ["gz validate --beta"],
+  "composition_targets": []
+}

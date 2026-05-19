@@ -1,9 +1,9 @@
 {
-  "obpi_id": "OBPI-0.0.37-01-invariant-schema-and-registry",
-  "timestamp": "2026-05-19T00:31:00.000000+00:00",
+  "obpi_id": "OBPI-0.0.37-02-composition-renderer",
+  "timestamp": "2026-05-19T02:00:00.000000+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.37-01-invariant-schema-and-registry.md",
+  "plan_file": "OBPI-0.0.37-02-composition-renderer.md",
   "gaps_found": 0,
   "gaps": [],
-  "notes": "CLI structural FAIL for 6 pre-implementation paths (expected). All 6 are new files to be created in Stage 2 — not semantic misalignment. ADR<->OBPI alignment solid: ADR checklist item #1 maps directly to OBPI objective; all 4 REQs covered; lane=Heavy consistent; Gate 3/4 deferral explicitly noted in brief. Advisory scope collisions with OBPI-0.15.0-04, OBPI-0.0.42-01/03/04, OBPI-0.0.11-06 are non-blocking (no active locks on any contested path)."
+  "notes": "Post-implementation re-audit: all 7 allowed paths now exist; CLI structural check PASS. ADR<->OBPI alignment solid; all 5 acceptance REQs covered by unit + BDD tests; lane=Heavy with all gates green. Scope collisions advisory only."
 }

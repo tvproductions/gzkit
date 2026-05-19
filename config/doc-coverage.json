@@ -72,6 +72,16 @@
       },
       "governance_relevant": true
     },
+    "governance render": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": false
+      },
+      "governance_relevant": true
+    },
     "complexity distill": {
       "surfaces": {
         "manpage": true,

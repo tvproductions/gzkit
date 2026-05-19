@@ -55,6 +55,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "complexity_distill_cmd": "gzkit.commands.complexity_distill_cmd",
     "complexity_advise_cmd": "gzkit.commands.complexity_advise",
     "complexity_guide_cmd": "gzkit.commands.complexity_guide",
+    "governance_render_cmd": "gzkit.commands.governance_render",
 }
 
 _HANDLER_CACHE: dict[str, Callable[..., Any]] = {}
@@ -83,13 +84,14 @@ def _dispatch_adr_report(a: argparse.Namespace) -> None:
 
 
 def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
-    """Register adr, obpi, task, justify, issue, and complexity sub-command groups."""
+    """Register adr, obpi, task, justify, issue, complexity, and governance sub-command groups."""
     _register_adr_parsers(commands)
     _register_obpi_parsers(commands)
     _register_task_parsers(commands)
     _register_justify_parser(commands)
     _register_issue_parsers(commands)
     _register_complexity_parsers(commands)
+    _register_governance_parsers(commands)
 
 
 def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:
@@ -333,6 +335,65 @@ def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:
             quiet=a.quiet,
             verbose=a.verbose,
             server=a.server,
+        )
+    )
+
+
+def _register_governance_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register the ``gz governance`` sub-command group (ADR-0.0.37, OBPI-0.0.37-02).
+
+    Exposes the ``render`` subverb that projects the constitutional invariant
+    registry into a governance surface (initially ``agents-md``).
+    """
+    p_gov = commands.add_parser(
+        "governance",
+        help="Constitutional invariant governance commands",
+        description="Commands for rendering governance surfaces from the invariant registry.",
+        epilog=build_epilog(
+            [
+                "gz governance render --target agents-md --check",
+                "gz governance render --target agents-md --stdout",
+                "gz governance render --target agents-md",
+            ]
+        ),
+    )
+    gov_commands = p_gov.add_subparsers(dest="governance_command")
+    gov_commands.required = True
+
+    p_render = gov_commands.add_parser(
+        "render",
+        help="Render a governance surface from the constitutional invariant registry",
+        description=(
+            "Render a governance surface from the invariant registry at "
+            "``.gzkit/invariants/``. Output is byte-deterministic. "
+            "Supports ``--check`` (drift detection) and ``--stdout`` (inspection)."
+        ),
+        epilog=build_epilog(
+            [
+                "gz governance render --target agents-md --check",
+                "gz governance render --target agents-md --stdout",
+                "gz governance render --target agents-md",
+            ]
+        ),
+    )
+    p_render.add_argument(
+        "--target",
+        required=True,
+        help="Render target. Only 'agents-md' is supported at this time.",
+    )
+    p_render.add_argument(
+        "--check",
+        action="store_true",
+        help="Byte-compare rendered output against the committed file. Exit 3 on drift.",
+    )
+    p_render.add_argument(
+        "--stdout",
+        action="store_true",
+        help="Emit rendered bytes to stdout. Does not write the file.",
+    )
+    p_render.set_defaults(
+        func=lambda a: _lazy("governance_render_cmd")(
+            target=a.target, check=a.check, stdout=a.stdout
         )
     )
 
