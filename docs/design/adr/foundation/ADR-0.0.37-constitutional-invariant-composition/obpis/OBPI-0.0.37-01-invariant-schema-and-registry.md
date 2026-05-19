@@ -54,6 +54,8 @@ Land the foundation primitive of CIC-1: a frozen Pydantic `ConstitutionalInvaria
    - `foundation-adr-registers-invariant.yaml` — self-referential check (claim: "Every foundation-kind ADR registers ≥1 invariant in `.gzkit/invariants/`"; structural_witness: `gz validate --foundation-registers-invariant` — forward-reference; composition_targets: `[]`).
 5. REQUIREMENT: This OBPI does NOT introduce the renderer (OBPI-02), the drift validator (OBPI-03), or any CLI verb. The registry primitive is loadable but unconsumed at landing.
 
+> **Forward-reference acknowledgment:** The seed YAML `structural_witness` entries reference verbs that land in later OBPIs: `gz validate --invariant-coherence` (OBPI-03), `gz validate --brief-reconcile` (OBPI-05), and `gz validate --foundation-registers-invariant` (future). At OBPI-01 landing time these are intentional forward-references per the ADR sequencing mandate; they are unresolvable until their respective OBPIs land. Resolvability is verified at OBPI-03 (REQ-0.0.37-03-02 exercises `--invariant-coherence`) and OBPI-05 (REQ-0.0.37-05-06 exercises `--brief-reconcile`). This is not a "placeholder structural witness" defect — it is an explicitly-sequenced forward-reference. The anti-pattern named in ADR § Consequences Negative #2 is a witness that *never* becomes real; the sequenced forward-reference here becomes real at OBPI-03/05 landing.
+
 > STOP-on-BLOCKERS: if `src/gzkit/governance/` is not a package, or if `src/gzkit/schemas/` does not exist, halt and report the missing prerequisite.
 
 ## Discovery Checklist

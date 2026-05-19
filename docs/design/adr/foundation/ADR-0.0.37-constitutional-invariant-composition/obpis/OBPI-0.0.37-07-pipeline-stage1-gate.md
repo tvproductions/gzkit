@@ -29,6 +29,7 @@ Extend `gz obpi pipeline` Stage 1 to refuse Stage 2 entry unless the active OBPI
 - `src/gzkit/governance/reconcile_freshness.py` (new) — pure helper: `is_receipt_fresh(receipt_ts, brief_allowed_paths, project_root) -> bool` (compares receipt timestamp against `os.path.getmtime` of each Allowed Path)
 - `tests/test_pipeline_runtime.py` (modify or new test file) — Stage 1 gate tests
 - `tests/governance/test_reconcile_freshness.py` (new) — freshness helper tests
+- `features/brief_reconcile.feature` (modify) — add Stage 1 gate scenarios tagged `@REQ-0.0.37-07-*`; file created by OBPI-05
 - `docs/user/runbook.md` (modify) — operator runbook entry: "When Stage 1 blocks: run `gz brief reconcile <OBPI-ID>` to refresh the receipt"
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-07-pipeline-stage1-gate.md` (this brief)
 

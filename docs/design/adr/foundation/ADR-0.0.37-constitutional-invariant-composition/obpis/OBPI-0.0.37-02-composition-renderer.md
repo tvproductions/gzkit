@@ -32,6 +32,7 @@ Land the deterministic composition renderer: consume the invariant registry from
 - `tests/commands/test_governance_render.py` (new) — CLI tests (--check mode, exit codes)
 - `tests/fixtures/compose/` (new) — fixture registries + expected rendered output for byte-comparison tests
 - `docs/user/manpages/gz-governance.md` (new) — manpage per gate5-runbook-code-covenant
+- `features/constitutional_invariants.feature` (new) — BDD scenarios for CIC-1 renderer; tagged `@REQ-0.0.37-02-*`; subsequent OBPIs (03, 04, 09) add scenarios to this file
 - `docs/user/runbook.md` (modify) — operator runbook entry for `gz governance render`
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-02-composition-renderer.md` (this brief)
 

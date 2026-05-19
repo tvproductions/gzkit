@@ -29,6 +29,7 @@ Land the structural schema that OBPI-05's reconciliation engine reads briefs thr
 - `src/gzkit/schemas/obpi_brief_structure.json` (new) — JSON Schema mirror
 - `tests/governance/test_brief_structure.py` (new) — REQ-derived assertions
 - `tests/fixtures/brief_structure/` (new) — fixture briefs (compliant, legacy, malformed)
+- `features/constitutional_invariants.feature` (modify) — add schema-parse scenarios tagged `@REQ-0.0.37-04-*`; file created by OBPI-02
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-04-brief-structural-schema.md` (this brief)
 
 ## Denied Paths

@@ -30,6 +30,7 @@ Extend `gz obpi complete` (Stage 5) to refuse completion when the active OBPI la
 - `.gzkit/schemas/ledger_events.json` (modify) — schema definition for the new event type
 - `tests/commands/test_obpi_complete.py` (modify or new test file `test_obpi_complete_reconcile_gate.py`) — Stage 5 gate tests + escape-hatch tests
 - `docs/user/manpages/gz-obpi.md` (modify, if exists) — document `--accept-stale-reconciliation` flag
+- `features/brief_reconcile.feature` (modify) — add Stage 5 + escape-hatch scenarios tagged `@REQ-0.0.37-08-*`; file created by OBPI-05
 - `docs/user/runbook.md` (modify) — operator runbook entry: "2am Stage 5 escape: `--accept-stale-reconciliation --reason \"<text>\"` records override to ledger; never silent"
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-08-obpi-complete-gate.md` (this brief)
 

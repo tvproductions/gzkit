@@ -114,8 +114,9 @@ rg -nl "CIC-2" docs/design/adr/pool/ | rg -q "brief-authoring-evidence-checks|ob
 # REQ-04: contributing doc has the new section
 rg -n "Before proposing a foundation-kind ADR" docs/governance/ && echo "REQ-04 OK"
 
-# REQ-05: this OBPI did NOT touch AGENTS.md or any src/ file (Allowed-Path enforcement)
-git diff --name-only HEAD..HEAD~1 2>/dev/null | rg -v '^(docs/|$)' | rg -v 'OBPI-0\.0\.37-10' && echo "WARNING: out-of-scope edits detected" || echo "REQ-05 OK"
+# REQ-05: this OBPI did NOT touch AGENTS.md or any src/ file
+# Check working-tree status (not post-commit history, which is commit-boundary-dependent)
+git status --porcelain | rg -v '^.. docs/' | rg -v '^.. \.gzkit/(ledger|insights)' | grep -q . && echo "WARNING: out-of-scope edits detected" || echo "REQ-05 OK: only docs/ and governance files modified"
 ```
 
 ## Acceptance Criteria

@@ -33,6 +33,7 @@ Migrate every existing AGENTS.md section into a constitutional invariant registe
 - `src/gzkit/templates/adr.md` (modify) — adjacent template surface for future composition targets
 - `src/gzkit/sync_surfaces.py` (modify) — AGENTS.md regeneration path must call into OBPI-02 renderer when the registry is present (sync becomes a renderer wrapper)
 - `tests/governance/test_invariant_coherence.py` (modify) — add migration round-trip test: parse pre-migration AGENTS.md sections, assert each section's canonical claim text appears in some registered invariant
+- `features/constitutional_invariants.feature` (modify) — add migration round-trip scenarios tagged `@REQ-0.0.37-09-*`; file created by OBPI-02
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-09-agents-md-migration.md` (this brief)
 
 ## Denied Paths
