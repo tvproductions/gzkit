@@ -30,6 +30,7 @@ Land the engine that walks a brief (parsed via OBPI-04's `BriefStructure`), walk
 - `src/gzkit/governance/trust_audits/__init__.py` (modify) — register the validator
 - `tests/governance/test_brief_reconcile.py` (new)
 - `tests/fixtures/brief_reconcile/` (new) — fixture briefs + project trees (matching, allowlist-drift, verb-drift, req-drift, citation-drift)
+- `features/brief_reconcile.feature` (new) — BDD scenarios for CIC-2 reconcile engine; tagged `@REQ-0.0.37-05-*`; subsequent OBPIs (06, 07, 08) add scenarios to this file
 - `docs/governance/advisory-rules-audit.md` (modify) — scorecard entry for `--brief-reconcile`
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-05-brief-reconcile-engine.md` (this brief)
 

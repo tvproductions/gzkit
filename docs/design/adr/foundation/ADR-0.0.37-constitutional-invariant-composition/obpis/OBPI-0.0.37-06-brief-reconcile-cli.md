@@ -31,6 +31,7 @@ Land the operator-runnable surface that wraps OBPI-05's engine: `gz brief reconc
 - `.gzkit/schemas/ledger_events.json` (modify) — schema definitions for the two new event types
 - `tests/commands/test_brief_reconcile.py` (new) — CLI tests
 - `docs/user/manpages/gz-brief.md` (new) — manpage per gate5-runbook-code-covenant
+- `features/brief_reconcile.feature` (modify) — add CLI-level scenarios tagged `@REQ-0.0.37-06-*`; file created by OBPI-05
 - `docs/user/runbook.md` (modify) — operator runbook entry: "When briefs drift: `gz brief reconcile <OBPI-ID>` then `--apply` after review"
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-06-brief-reconcile-cli.md` (this brief)
 

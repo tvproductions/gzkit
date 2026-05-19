@@ -32,6 +32,7 @@ Wire OBPI-02's renderer into the `gz validate` scope catalog as `--invariant-coh
 - `src/gzkit/commands/validate_cmd.py` (modify) OR wherever `gz validate` flag-dispatch lives — wire `--invariant-coherence` flag
 - `tests/governance/test_invariant_coherence.py` (new) — REQ-derived validator assertions
 - `tests/fixtures/invariant_coherence/` (new) — fixture registries + AGENTS.md pairs (matching, drifted)
+- `features/constitutional_invariants.feature` (modify) — add drift-validator scenarios tagged `@REQ-0.0.37-03-*`; file created by OBPI-02
 - `docs/governance/advisory-rules-audit.md` (modify) — add scorecard entry for the new validator scope
 - `docs/user/manpages/gz-validate.md` (modify, if exists) — add `--invariant-coherence` flag documentation
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-03-composition-drift-validator.md` (this brief)
