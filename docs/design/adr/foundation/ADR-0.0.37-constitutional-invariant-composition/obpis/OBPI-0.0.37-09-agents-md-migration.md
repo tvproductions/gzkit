@@ -6,247 +6,169 @@ lane: Heavy
 status: Draft
 ---
 
-# OBPI-0.0.37-09-agents-md-migration: Agents Md Migration
+# OBPI-0.0.37-09-agents-md-migration: AGENTS.md Migration
 
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
-- **Checklist Item:** #9 - "OBPI-0.0.37-09 — AGENTS.md migration (register existing AGENTS.md content as constitutional invariants; render AGENTS.md from registry; lock the inversion in CI)"
+- **Checklist Item:** #9 — "OBPI-0.0.37-09 — AGENTS.md migration (register existing AGENTS.md content as constitutional invariants; render AGENTS.md from registry; lock the inversion in CI)"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-OBPI-0.0.37-09 — AGENTS.md migration (register existing AGENTS.md content as constitutional invariants; render AGENTS.md from registry; lock the inversion in CI).
+Migrate every existing AGENTS.md section into a constitutional invariant registered under `.gzkit/invariants/`, then re-render AGENTS.md from the registry via OBPI-02's renderer, then lock the inversion: `gz validate --invariant-coherence` (OBPI-03) becomes part of CI; future hand-edits to AGENTS.md fail-close. This is the test of the framework — without it, CIC-1 ships as theater.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** — Rewrites `AGENTS.md` (the universal agent contract) and adds CI enforcement. The most blast-radius surface in the project. Heavy + foundation + universal Gate 5 per ADR-0.0.36.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md` — parent ADR for intent and scope
-- `AGENTS.md` — primary context-frame contract
-- `src/gzkit/templates/agents.md` — generated AGENTS template source
-- `src/gzkit/templates/adr.md` — ADR template surface for future context frames
-- `src/gzkit/sync_surfaces.py` — AGENTS regeneration surface
+- `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md` (parent reference; read-only)
+- `AGENTS.md` (rewritten from registry output via OBPI-02 renderer)
+- `.gzkit/invariants/*.yaml` (new entries — one per migrated AGENTS.md section)
+- `.gzkit/invariants/MIGRATION-MANIFEST.md` (new) — per-section → invariant-id mapping for traceability
+- `src/gzkit/templates/agents.md` (modify) — template body updated to consume rendered invariant slots from OBPI-02
+- `src/gzkit/templates/adr.md` (modify) — adjacent template surface for future composition targets
+- `src/gzkit/sync_surfaces.py` (modify) — AGENTS.md regeneration path must call into OBPI-02 renderer when the registry is present (sync becomes a renderer wrapper)
+- `tests/governance/test_invariant_coherence.py` (modify) — add migration round-trip test: parse pre-migration AGENTS.md sections, assert each section's canonical claim text appears in some registered invariant
+- `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-09-agents-md-migration.md` (this brief)
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
 - Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `CLAUDE.md` (operator-facing summary that includes `@AGENTS.md` — out of scope here; if it ever becomes a composition target, that's a future feature ADR)
+- `.claude/rules/*.md`, `.gzkit/rules/*.md` (rules are separate canon surface — out of scope; covered by future feature ADR per ADR § Scope boundary)
+- Skill READMEs, persona files (forward-references per ADR § Scope boundary)
+- CI workflow files (CI lock for `gz validate --invariant-coherence` lands via existing `gz check` inclusion in OBPI-03; this OBPI does not modify `.github/workflows/`)
+- CI files (other), lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: Every section in pre-migration AGENTS.md (every H2 heading and its content) is analyzed and either:
+   - (a) registered as one constitutional invariant in `.gzkit/invariants/<slug>.yaml` with a non-empty `structural_witness` array, OR
+   - (b) explicitly downgraded out of AGENTS.md if no structural witness is available (downgraded content moves to a rule file under `.gzkit/rules/` or to a runbook). Downgrade decisions are recorded in `MIGRATION-MANIFEST.md` with rationale.
+2. REQUIREMENT: `MIGRATION-MANIFEST.md` is the migration audit trail: a table of (pre-migration AGENTS.md § heading, action: register|downgrade, target: invariant-id or rule path, rationale).
+3. REQUIREMENT: Per ADR § Consequences Negative #2 (mitigation against "theater of structure"): every migrated invariant MUST have at least one assertion-bearing test in `tests/governance/` whose assertion enforces the invariant. An invariant with placeholder `structural_witness` and no enforcing test counts as a migration failure.
+4. REQUIREMENT: After migration, `uv run gz governance render --target agents-md` reproduces the AGENTS.md content byte-for-byte from the registry. `uv run gz validate --invariant-coherence` exits 0.
+5. REQUIREMENT: Round-trip semantic preservation: for each pre-migration H2 section, the canonical claim text (the core load-bearing assertion of that section) appears in at least one registered invariant's `claim` field. Round-trip test enforces this by parsing pre-migration AGENTS.md, extracting canonical claims, and asserting their presence in the registry.
+6. REQUIREMENT: `src/gzkit/sync_surfaces.py` AGENTS.md regeneration path now routes through OBPI-02's renderer when `.gzkit/invariants/` contains entries beyond the OBPI-01 seeds. Existing template-based synthesis path remains as fallback only when registry is empty.
+7. REQUIREMENT: Operator attests EACH migrated section individually (foundation-kind brief-level Gate 5 stacks; per-section attestation is recorded inline in the MIGRATION-MANIFEST.md with attestor name and date).
+8. REQUIREMENT: This OBPI does NOT change the AGENTS.md content semantics — it only changes the authoring layer (canonical YAML invariants → rendered markdown). Any operator-judgment changes to AGENTS.md text belong in a separate ADR amendment (per ADR § Scope boundary, formal constitution-amendment ceremony is `ADR-pool.adr-amendment-tracking`'s scope).
 
-1. REQUIREMENT: **Foundation requires structural witness, not prose.** A foundational claim asserted only in AGENTS.md is indistinguishable from doctrine drift at the next agent session — it can be edited, reinterpreted, partially-loaded, or outright forgotten. The mantra (MAKE LLM STOCHASTIC VIBES INERT) names this failure class explicitly; this ADR mechanizes the structural defense the mantra calls for at the canon layer itself.
-1. REQUIREMENT: **Two invariants in one ADR because they are co-load-bearing.** CIC-2 (brief↔reality coherence) cannot be trusted without CIC-1's witness mechanism — a brief-reconciliation invariant codified in prose without a structural-witness framework underneath it would re-instance the inversion. CIC-1 (composition) cannot be tested without an instance. Sequencing them across two ADR ceremonies doubles the gate ceremony with no separability gain.
-1. REQUIREMENT: **The composition framework's first composition target is AGENTS.md** because AGENTS.md is the most-read, most-edited, highest-blast-radius prose surface in the project. Other composition targets (skill READMEs, persona files, rule mirrors) are forward-references; the registry abstraction supports them but this ADR scopes the AGENTS.md instance only.
-1. REQUIREMENT: **The brief-reconciliation invariant covers five drift dimensions** (allowlist, Discovery Checklist, Verification verbs, REQ counts, citation tuples) because each is a separately-observed drift class with a distinct mechanical signature. The cluster's recurring evidence (OBPI-0.0.29-01 / 02 allowlist drift, GHI #380 manpage-anchor + scope-collision, GHI #406 cluster-coherence dimensions, GHI #407 evaluation-time dimensions) names all five.
-1. REQUIREMENT: **Reconciliation receipts must be fresher than the most recent mutation in the brief's allowlist domain** because a stale receipt that predates a coupled-surface change carries the same misinformation as no receipt. Freshness is the structural test for receipt validity (parallel to the receipt-freshness rule already governing `.plan-audit-receipt-*.json` per `.claude/rules/governance-core.md`).
-1. REQUIREMENT: **Fail-closed at both Stage 1 and Stage 5** because Stage 1 catches authoring drift (brief ≠ project shape at implementation start) and Stage 5 catches in-flight drift (brief shape mutated during implementation, e.g. when a sibling OBPI lands and shifts the allowlist domain). One-gate-only would leave half the failure surface open.
-1. REQUIREMENT: **Pool stubs for `brief-authoring-evidence-checks` and `obpi-pipeline-dispatch-attestation` remain in pool** because they're feature-shaped defenses of CIC-2 once this foundation lands. Promoting them now (as the agent's flawed pre-correction recommendation proposed) would entrench the inversion.
-1. REQUIREMENT: **Ten OBPIs is the right size** because each codifies one separable invariant or surface: schema + registry primitive, composition renderer, composition drift validator, brief structural schema, reconciliation engine, CLI verb, Stage 1 gate, Stage 5 gate, AGENTS.md migration, doctrine refresh. Bundling produces one Gate 5 witness for ten separable concerns; over-fragmenting produces ceremony without invariant addition.
-1. REQUIREMENT: `src/gzkit/governance/invariants.py` (new): frozen Pydantic `ConstitutionalInvariant` (id, claim, structural_witness, composition_targets fields).
-1. REQUIREMENT: `src/gzkit/schemas/constitutional_invariant.json` (new): JSON Schema mirror; `additionalProperties: false`; structural-witness array `minItems: 1`.
-1. REQUIREMENT: `.gzkit/invariants/*.yaml` (new directory): one YAML per invariant; CIC-1, CIC-2, plus the self-referential "every foundation ADR registers ≥1 invariant" check are the seed entries.
-1. REQUIREMENT: `src/gzkit/governance/compose.py` (new): composition renderer; consumes registry, projects into AGENTS.md template, emits deterministic byte sequence.
-1. REQUIREMENT: `src/gzkit/commands/governance_render.py` (new): `gz governance render --target agents-md` CLI verb.
-1. REQUIREMENT: `src/gzkit/governance/trust_audits.py`: extend with `validate_invariant_coherence` (re-renders, byte-compares to committed AGENTS.md) and `validate_brief_reconcile` (drift detection across the five reconciliation dimensions).
-1. REQUIREMENT: `src/gzkit/schemas/obpi_brief_structure.json` (new): structural schema for OBPI briefs beyond markdown frontmatter.
-1. REQUIREMENT: `src/gzkit/governance/brief_reconcile.py` (new): reconciliation engine; per-dimension delta computation.
-1. REQUIREMENT: `src/gzkit/commands/brief_reconcile.py` (new): `gz brief reconcile <OBPI-ID> [--apply]` CLI verb.
-1. REQUIREMENT: `src/gzkit/cli/parser_artifacts.py`: register the new verbs (`governance render`, `brief reconcile`).
-1. REQUIREMENT: `src/gzkit/pipeline_runtime.py`: extend Stage 1 to require fresh reconciliation receipt before Stage 2 entry.
-1. REQUIREMENT: `src/gzkit/commands/obpi_complete.py`: extend to require fresh reconciliation receipt before completion event emission.
-1. REQUIREMENT: `.gzkit/schemas/ledger_events.json`: extend ledger event family with `invariant_registered`, `invariant_amended`, `composition_rendered`, `composition_drift_detected`, `brief_reconciled`, `brief_reconcile_drift_detected`.
-1. REQUIREMENT: `tests/governance/test_invariants.py`, `tests/governance/test_compose.py`, `tests/governance/test_brief_reconcile.py`, `tests/commands/test_governance_render.py`, `tests/commands/test_brief_reconcile.py`: REQ-derived assertions across the ten OBPIs.
-1. REQUIREMENT: `features/constitutional_invariants.feature` + `features/brief_reconcile.feature` (new): BDD scenarios tagged `@REQ-0.0.37-NN-MM`.
-1. REQUIREMENT: `docs/user/manpages/gz-governance.md` + `docs/user/manpages/gz-brief.md` (new): manpages per gate5-runbook-code-covenant.
-1. REQUIREMENT: `docs/user/runbook.md`: runbook entries for the new ceremony surfaces.
-1. REQUIREMENT: `docs/governance/advisory-rules-audit.md`: scorecard entries classifying the new validator scopes.
-1. REQUIREMENT: AGENTS.md: hand-authored content migrated to `.gzkit/invariants/` registry entries; the file becomes a rendered output.
-1. REQUIREMENT: Does NOT specify the full constitution-amendment ceremony — the registry primitive (OBPI-01) supports `gz adr amend`-style amendments via emerging amendment pool stubs, but the formal amendment-tracking ceremony is `ADR-pool.adr-amendment-tracking`'s scope.
-1. REQUIREMENT: Does NOT cover composition targets beyond AGENTS.md — skill READMEs, persona files, rule mirrors are forward-references; the registry abstraction supports them but each composition target is its own (likely future) feature ADR.
-1. REQUIREMENT: Does NOT cover frontmatter↔body↔ledger metadata coherence — that is `ADR-pool.adr-layer-coherence`'s scope (parallel concern at the metadata layer; this ADR addresses the canon-prose layer).
-1. REQUIREMENT: Does NOT promote `ADR-pool.brief-authoring-evidence-checks` or `ADR-pool.obpi-pipeline-dispatch-attestation` — those remain in pool until CIC-2 lands; they then become feature-kind ADRs that consume CIC-2.
-1. REQUIREMENT: Does NOT modify the ledger event schema beyond the new event family added here — broader ledger schema changes are out of scope.
-1. REQUIREMENT: Does NOT introduce a new attestation type — the existing `human` / `agent-relayed-operator-attestation` / `self-close-exception` taxonomy carries through.
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: OBPIs 01, 02, 03 must be landed (registry + renderer + drift validator).
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first.
-     Order matters: read the structured input (parent ADR § Decision)
-     before the unstructured one (allowed paths, prerequisites). -->
+**Parent ADR:**
 
-**Parent ADR (read first; order pinned — GHI #321):**
+- [ ] Quote ADR § Decision item #9 (migration) verbatim
+- [ ] ADR § Consequences Negative #2 (one-shot risk + mitigation: every migrated invariant requires an assertion-bearing test)
+- [ ] ADR § Consequences Negative #10 (reversibility assessment — one-way door justification)
 
-- [ ] **Parent ADR § Decision item — quote the line this OBPI implements** verbatim into the brief's Implementation Summary. The Decision item is the contract; everything else hangs off it.
-- [ ] Parent ADR § Intent — the why-frame for the Decision read above.
-- [ ] Parent ADR file: `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
+**Governance:**
 
-> **STOP:** If you cannot quote the parent ADR § Decision item that this OBPI implements, STOP and re-read. Do not proceed to Allowed Paths, Prerequisites, or implementation until the Decision quote is in hand.
+- [ ] `AGENTS.md` (every H2 section — the migration source-of-truth)
+- [ ] `docs/governance/state-doctrine.md` — Layer 1 / 3 distinction this migration enacts
+- [ ] `docs/governance/trust-doctrine.md` — T1/T2/T3 invariants that the migrated invariants must satisfy
 
-**Governance (read once, cache):**
+**Context (exemplars):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [ ] `src/gzkit/templates/agents.md` — current template synthesis (will route through renderer post-migration)
+- [ ] `src/gzkit/sync_surfaces.py` — current AGENTS.md regeneration path
+- [ ] Three seed invariants from OBPI-01 — the schema shape every migrated invariant must satisfy
 
-**Context:**
+**Prerequisites:**
 
-- [ ] Related OBPIs in same ADR
-
-**Prerequisites (check existence, STOP if missing):**
-
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `AGENTS.md`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
-
-**Existing Code (understand current state):**
-
-- [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
-- [ ] Parent ADR integration points reviewed for local conventions
+- [ ] OBPIs 01/02/03 landed
+- [ ] `AGENTS.md` is present and readable
+- [ ] Existing test suite in `tests/governance/` is the target dir for new assertion-bearing tests
 
 ## Quality Gates
 
-<!-- Which gates apply and how to verify them. -->
-
-### Gate 1: ADR
-
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
-
-### Gate 2: TDD (Red-Green-Refactor)
-
-- [ ] Tests derived from brief acceptance criteria, not from implementation
-- [ ] Red-Green-Refactor cycle followed per behavior increment
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
-
-### Code Quality
-
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
-
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
+- [ ] Gate 1: Migration paragraph quoted; per-section migration decision recorded in MIGRATION-MANIFEST.md
+- [ ] Gate 2: Round-trip semantic-preservation test + per-invariant assertion-bearing tests; RGR followed
+- [ ] Code Quality: lint + typecheck
+- [ ] Gate 3: Migration manifest published as governance doc; runbook update for "if AGENTS.md needs an edit: go via `.gzkit/invariants/` and re-render"; mkdocs strict
+- [ ] Gate 4: `features/constitutional_invariants.feature` includes migration round-trip scenarios tagged `@REQ-0.0.37-09-*`; behave passes
+- [ ] Gate 5: Per-section operator attestation in MIGRATION-MANIFEST.md (foundation-kind + universal Gate 5)
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
-uv run gz test
+uv run -m unittest tests.governance.test_invariant_coherence -v
+uv run mkdocs build --strict
+uv run -m behave features/constitutional_invariants.feature --tags=REQ-0.0.37-09
 
-# Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md
-rg -n "^## Persona$" AGENTS.md
-test -f src/gzkit/templates/agents.md
-test -f src/gzkit/templates/adr.md
-test -f src/gzkit/sync_surfaces.py
+# REQ-04: registry renders AGENTS.md exactly
+uv run gz governance render --target agents-md --check && echo "REQ-04 OK"
+uv run gz validate --invariant-coherence && echo "REQ-04 OK validator"
+
+# REQ-05: round-trip — every pre-migration H2 has a registered invariant
+uv run python -c "
+from pathlib import Path
+from gzkit.governance.invariants import load_invariants
+inv = load_invariants(Path('.'))
+# pre-migration AGENTS.md saved as fixture under tests/fixtures/agents_md_pre_migration.md
+pre = Path('tests/fixtures/agents_md_pre_migration.md').read_text()
+import re
+h2s = re.findall(r'^## (.+)$', pre, re.MULTILINE)
+claim_texts = ' '.join(i.claim for i in inv.values())
+missing = [h for h in h2s if h not in claim_texts]
+assert not missing, f'sections not represented in registry: {missing}'
+print(f'REQ-05 OK — all {len(h2s)} pre-migration H2 sections represented')
+"
+
+# REQ-03: every invariant has an enforcing test
+uv run python -c "
+import subprocess
+from pathlib import Path
+from gzkit.governance.invariants import load_invariants
+inv = load_invariants(Path('.'))
+tests_dir = Path('tests/governance')
+for inv_id in inv:
+    grep = subprocess.run(['rg', '-q', inv_id, str(tests_dir)], capture_output=True)
+    assert grep.returncode == 0, f'no enforcing test references invariant {inv_id}'
+print(f'REQ-03 OK — all {len(inv)} invariants have enforcing tests')
+"
+
+# Migration manifest exists and is non-trivial
+test -f .gzkit/invariants/MIGRATION-MANIFEST.md
+wc -l .gzkit/invariants/MIGRATION-MANIFEST.md
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.37-09-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.37-09-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.37-09-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.37-09-01: Every H2 section in pre-migration AGENTS.md is accounted for in `MIGRATION-MANIFEST.md` with action (register|downgrade), target (invariant-id or rule-path), and rationale
+- [ ] REQ-0.0.37-09-02: After migration, `gz governance render --target agents-md --check` exits 0 (rendered registry output byte-equals committed AGENTS.md)
+- [ ] REQ-0.0.37-09-03: After migration, `gz validate --invariant-coherence` exits 0
+- [ ] REQ-0.0.37-09-04: Round-trip — for each pre-migration H2 section, the section's canonical claim text appears in at least one registered invariant's `claim` field (test asserts against `tests/fixtures/agents_md_pre_migration.md` snapshot)
+- [ ] REQ-0.0.37-09-05: Every registered invariant has at least one assertion-bearing test in `tests/governance/` whose test body references the invariant id (anti-theater-of-structure mitigation per ADR § Consequences Negative #2)
+- [ ] REQ-0.0.37-09-06: `src/gzkit/sync_surfaces.py` routes AGENTS.md regeneration through OBPI-02's renderer when `.gzkit/invariants/` contains entries beyond OBPI-01 seeds
+- [ ] REQ-0.0.37-09-07: Operator attestation per migrated section recorded in `MIGRATION-MANIFEST.md` with name + date
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
-
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** RGR cycle followed, tests derived from brief, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
-
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
+- [ ] All gates satisfied
+- [ ] `gz brief reconcile OBPI-0.0.37-09-agents-md-migration` reports zero drift
+- [ ] Per-section attestation table in MIGRATION-MANIFEST.md is complete
 
 ## Evidence
 
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
-### Gate 1 (ADR)
-
-- [ ] Intent and scope recorded
-
-### Gate 2 (TDD — Red-Green-Refactor)
-
 ```text
-# Paste test output here
-```
-
-### Code Quality
-
-```text
-# Paste lint/format/type check output here
-```
-
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
+# Per-gate outputs
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+<!-- Before: AGENTS.md was Layer-1 prose canon — every claim only as trustworthy as the prose it was encoded in. After: AGENTS.md is a derived view rendered from schema-validated, ledger-witnessed YAML invariants; hand-edits fail-close in CI. -->
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+<!-- `gz governance render --target agents-md --check` exit 0 + `gz validate --invariant-coherence` exit 0 + MIGRATION-MANIFEST.md with attestor-signed table -->
 
 ### Implementation Summary
 
@@ -258,16 +180,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
-
-_No defects tracked._
+- GHI #495, GHI #485
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `<name>` per-section in MIGRATION-MANIFEST.md
+- Attestation: substantive text per section grounded in semantic-preservation diff
+- Date: YYYY-MM-DD
 
 ---
 

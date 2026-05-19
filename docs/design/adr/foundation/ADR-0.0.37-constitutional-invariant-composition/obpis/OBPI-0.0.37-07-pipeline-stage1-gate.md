@@ -6,240 +6,129 @@ lane: Heavy
 status: Draft
 ---
 
-# OBPI-0.0.37-07-pipeline-stage1-gate: Pipeline Stage1 Gate
+# OBPI-0.0.37-07-pipeline-stage1-gate: Pipeline Stage 1 Gate
 
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
-- **Checklist Item:** #7 - "OBPI-0.0.37-07 — Pipeline Stage 1 fail-close gate (refuses Stage 2 entry without fresh reconciliation receipt)"
+- **Checklist Item:** #7 — "OBPI-0.0.37-07 — Pipeline Stage 1 fail-close gate (refuses Stage 2 entry without fresh reconciliation receipt)"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-OBPI-0.0.37-07 — Pipeline Stage 1 fail-close gate (refuses Stage 2 entry without fresh reconciliation receipt).
+Extend `gz obpi pipeline` Stage 1 to refuse Stage 2 entry unless the active OBPI has a fresh `brief_reconciled` ledger receipt — where "fresh" means newer than the most recent mutation timestamp of any file in the brief's Allowed Paths domain. This is the authoring-time half of CIC-2's fail-closed enforcement.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** — Modifies pipeline-runtime behavior (a runtime contract surface used by every pipeline run). Operator-observable.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md` — parent ADR for intent and scope
-- `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/**` — parent ADR package scope
+- `src/gzkit/pipeline_runtime.py` (modify) — extend Stage 1 entry-check with reconcile-receipt freshness
+- `src/gzkit/governance/reconcile_freshness.py` (new) — pure helper: `is_receipt_fresh(receipt_ts, brief_allowed_paths, project_root) -> bool` (compares receipt timestamp against `os.path.getmtime` of each Allowed Path)
+- `tests/test_pipeline_runtime.py` (modify or new test file) — Stage 1 gate tests
+- `tests/governance/test_reconcile_freshness.py` (new) — freshness helper tests
+- `docs/user/runbook.md` (modify) — operator runbook entry: "When Stage 1 blocks: run `gz brief reconcile <OBPI-ID>` to refresh the receipt"
+- `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-07-pipeline-stage1-gate.md` (this brief)
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
 - Paths not listed in Allowed Paths
-- New dependencies
+- `src/gzkit/commands/obpi_complete.py` (Stage 5 — OBPI-08)
+- Reconcile engine / CLI / schema (OBPI-04/05/06 — consume only)
+- New CLI verbs or ledger event types (this OBPI consumes existing receipts; it does not emit new event types)
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `is_receipt_fresh(receipt_ts: datetime, allowed_paths: list[str], project_root: Path) -> bool` returns True when `receipt_ts` is later than `max(getmtime(p)) for p in allowed_paths` (expanding any globs). Missing path returns False (forces re-reconcile). Pure function.
+2. REQUIREMENT: Stage 1 entry in `pipeline_runtime.py` queries the ledger for the most recent `brief_reconciled` event whose `brief_id` matches the active OBPI. If absent, Stage 1 fail-closes with exit code 3 and message: "Stage 2 entry blocked: no `brief_reconciled` receipt for <OBPI-ID>. Run `gz brief reconcile <OBPI-ID>` then retry."
+3. REQUIREMENT: If a `brief_reconciled` receipt exists but `is_receipt_fresh` returns False, Stage 1 fail-closes with exit code 3 and message: "Stage 2 entry blocked: receipt for <OBPI-ID> stale (receipt_ts=<ts>, max_allowed_path_mtime=<mtime>, drifted path=<path>). Run `gz brief reconcile <OBPI-ID>` to refresh."
+4. REQUIREMENT: If receipt exists AND is fresh AND `has_drift` payload is False, Stage 1 passes; Stage 2 entry permitted; existing Stage 1 behavior preserved.
+5. REQUIREMENT: If receipt exists, is fresh, but `has_drift` payload is True, Stage 1 fail-closes with exit code 3 and message naming the drifted dimensions.
+6. REQUIREMENT: This OBPI does NOT introduce an escape hatch — Stage 1 is fail-closed-no-bypass. The escape hatch is at Stage 5 (OBPI-08's `--accept-stale-reconciliation`) where 2am-operator recovery is unavoidable.
+7. REQUIREMENT: Existing Stage 1 behaviors (REQ coverage gate, brief validation) are preserved. The reconciliation check is additive, not a replacement.
 
-1. REQUIREMENT: **Foundation requires structural witness, not prose.** A foundational claim asserted only in AGENTS.md is indistinguishable from doctrine drift at the next agent session — it can be edited, reinterpreted, partially-loaded, or outright forgotten. The mantra (MAKE LLM STOCHASTIC VIBES INERT) names this failure class explicitly; this ADR mechanizes the structural defense the mantra calls for at the canon layer itself.
-1. REQUIREMENT: **Two invariants in one ADR because they are co-load-bearing.** CIC-2 (brief↔reality coherence) cannot be trusted without CIC-1's witness mechanism — a brief-reconciliation invariant codified in prose without a structural-witness framework underneath it would re-instance the inversion. CIC-1 (composition) cannot be tested without an instance. Sequencing them across two ADR ceremonies doubles the gate ceremony with no separability gain.
-1. REQUIREMENT: **The composition framework's first composition target is AGENTS.md** because AGENTS.md is the most-read, most-edited, highest-blast-radius prose surface in the project. Other composition targets (skill READMEs, persona files, rule mirrors) are forward-references; the registry abstraction supports them but this ADR scopes the AGENTS.md instance only.
-1. REQUIREMENT: **The brief-reconciliation invariant covers five drift dimensions** (allowlist, Discovery Checklist, Verification verbs, REQ counts, citation tuples) because each is a separately-observed drift class with a distinct mechanical signature. The cluster's recurring evidence (OBPI-0.0.29-01 / 02 allowlist drift, GHI #380 manpage-anchor + scope-collision, GHI #406 cluster-coherence dimensions, GHI #407 evaluation-time dimensions) names all five.
-1. REQUIREMENT: **Reconciliation receipts must be fresher than the most recent mutation in the brief's allowlist domain** because a stale receipt that predates a coupled-surface change carries the same misinformation as no receipt. Freshness is the structural test for receipt validity (parallel to the receipt-freshness rule already governing `.plan-audit-receipt-*.json` per `.claude/rules/governance-core.md`).
-1. REQUIREMENT: **Fail-closed at both Stage 1 and Stage 5** because Stage 1 catches authoring drift (brief ≠ project shape at implementation start) and Stage 5 catches in-flight drift (brief shape mutated during implementation, e.g. when a sibling OBPI lands and shifts the allowlist domain). One-gate-only would leave half the failure surface open.
-1. REQUIREMENT: **Pool stubs for `brief-authoring-evidence-checks` and `obpi-pipeline-dispatch-attestation` remain in pool** because they're feature-shaped defenses of CIC-2 once this foundation lands. Promoting them now (as the agent's flawed pre-correction recommendation proposed) would entrench the inversion.
-1. REQUIREMENT: **Ten OBPIs is the right size** because each codifies one separable invariant or surface: schema + registry primitive, composition renderer, composition drift validator, brief structural schema, reconciliation engine, CLI verb, Stage 1 gate, Stage 5 gate, AGENTS.md migration, doctrine refresh. Bundling produces one Gate 5 witness for ten separable concerns; over-fragmenting produces ceremony without invariant addition.
-1. REQUIREMENT: `src/gzkit/governance/invariants.py` (new): frozen Pydantic `ConstitutionalInvariant` (id, claim, structural_witness, composition_targets fields).
-1. REQUIREMENT: `src/gzkit/schemas/constitutional_invariant.json` (new): JSON Schema mirror; `additionalProperties: false`; structural-witness array `minItems: 1`.
-1. REQUIREMENT: `.gzkit/invariants/*.yaml` (new directory): one YAML per invariant; CIC-1, CIC-2, plus the self-referential "every foundation ADR registers ≥1 invariant" check are the seed entries.
-1. REQUIREMENT: `src/gzkit/governance/compose.py` (new): composition renderer; consumes registry, projects into AGENTS.md template, emits deterministic byte sequence.
-1. REQUIREMENT: `src/gzkit/commands/governance_render.py` (new): `gz governance render --target agents-md` CLI verb.
-1. REQUIREMENT: `src/gzkit/governance/trust_audits.py`: extend with `validate_invariant_coherence` (re-renders, byte-compares to committed AGENTS.md) and `validate_brief_reconcile` (drift detection across the five reconciliation dimensions).
-1. REQUIREMENT: `src/gzkit/schemas/obpi_brief_structure.json` (new): structural schema for OBPI briefs beyond markdown frontmatter.
-1. REQUIREMENT: `src/gzkit/governance/brief_reconcile.py` (new): reconciliation engine; per-dimension delta computation.
-1. REQUIREMENT: `src/gzkit/commands/brief_reconcile.py` (new): `gz brief reconcile <OBPI-ID> [--apply]` CLI verb.
-1. REQUIREMENT: `src/gzkit/cli/parser_artifacts.py`: register the new verbs (`governance render`, `brief reconcile`).
-1. REQUIREMENT: `src/gzkit/pipeline_runtime.py`: extend Stage 1 to require fresh reconciliation receipt before Stage 2 entry.
-1. REQUIREMENT: `src/gzkit/commands/obpi_complete.py`: extend to require fresh reconciliation receipt before completion event emission.
-1. REQUIREMENT: `.gzkit/schemas/ledger_events.json`: extend ledger event family with `invariant_registered`, `invariant_amended`, `composition_rendered`, `composition_drift_detected`, `brief_reconciled`, `brief_reconcile_drift_detected`.
-1. REQUIREMENT: `tests/governance/test_invariants.py`, `tests/governance/test_compose.py`, `tests/governance/test_brief_reconcile.py`, `tests/commands/test_governance_render.py`, `tests/commands/test_brief_reconcile.py`: REQ-derived assertions across the ten OBPIs.
-1. REQUIREMENT: `features/constitutional_invariants.feature` + `features/brief_reconcile.feature` (new): BDD scenarios tagged `@REQ-0.0.37-NN-MM`.
-1. REQUIREMENT: `docs/user/manpages/gz-governance.md` + `docs/user/manpages/gz-brief.md` (new): manpages per gate5-runbook-code-covenant.
-1. REQUIREMENT: `docs/user/runbook.md`: runbook entries for the new ceremony surfaces.
-1. REQUIREMENT: `docs/governance/advisory-rules-audit.md`: scorecard entries classifying the new validator scopes.
-1. REQUIREMENT: AGENTS.md: hand-authored content migrated to `.gzkit/invariants/` registry entries; the file becomes a rendered output.
-1. REQUIREMENT: Does NOT specify the full constitution-amendment ceremony — the registry primitive (OBPI-01) supports `gz adr amend`-style amendments via emerging amendment pool stubs, but the formal amendment-tracking ceremony is `ADR-pool.adr-amendment-tracking`'s scope.
-1. REQUIREMENT: Does NOT cover composition targets beyond AGENTS.md — skill READMEs, persona files, rule mirrors are forward-references; the registry abstraction supports them but each composition target is its own (likely future) feature ADR.
-1. REQUIREMENT: Does NOT cover frontmatter↔body↔ledger metadata coherence — that is `ADR-pool.adr-layer-coherence`'s scope (parallel concern at the metadata layer; this ADR addresses the canon-prose layer).
-1. REQUIREMENT: Does NOT promote `ADR-pool.brief-authoring-evidence-checks` or `ADR-pool.obpi-pipeline-dispatch-attestation` — those remain in pool until CIC-2 lands; they then become feature-kind ADRs that consume CIC-2.
-1. REQUIREMENT: Does NOT modify the ledger event schema beyond the new event family added here — broader ledger schema changes are out of scope.
-1. REQUIREMENT: Does NOT introduce a new attestation type — the existing `human` / `agent-relayed-operator-attestation` / `self-close-exception` taxonomy carries through.
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: OBPI-06's `brief_reconciled` ledger event type must be registered.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first.
-     Order matters: read the structured input (parent ADR § Decision)
-     before the unstructured one (allowed paths, prerequisites). -->
+**Parent ADR:**
 
-**Parent ADR (read first; order pinned — GHI #321):**
+- [ ] Quote ADR § Decision item #7 (Stage 1 gate) verbatim
+- [ ] ADR § Decision Rationale point 5 (freshness defined by mutation-timestamp comparison) — the freshness semantics
+- [ ] ADR § Decision Rationale point 6 (fail-closed at both Stage 1 and Stage 5)
 
-- [ ] **Parent ADR § Decision item — quote the line this OBPI implements** verbatim into the brief's Implementation Summary. The Decision item is the contract; everything else hangs off it.
-- [ ] Parent ADR § Intent — the why-frame for the Decision read above.
-- [ ] Parent ADR file: `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
+**Governance:**
 
-> **STOP:** If you cannot quote the parent ADR § Decision item that this OBPI implements, STOP and re-read. Do not proceed to Allowed Paths, Prerequisites, or implementation until the Decision quote is in hand.
+- [ ] `.gzkit/rules/governance-core.md` § Required workflow order — Stage 1 sits between brief validation and implementation start
+- [ ] `.claude/rules/governance-core.md` § ADR status index regeneration — example of "fail-closed in `gz check`" pattern
 
-**Governance (read once, cache):**
+**Context (exemplars):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [ ] `src/gzkit/pipeline_runtime.py` — current Stage 1 implementation; understand the entry-check hook
+- [ ] `src/gzkit/governance/ledger.py` (or wherever ledger queries live) — receipt-query pattern
+- [ ] `src/gzkit/commands/adr_emit_receipt_coverage_gate.py` or similar — existing fail-closed gate pattern in tests
 
-**Context:**
+**Prerequisites:**
 
-- [ ] Related OBPIs in same ADR
-
-**Prerequisites (check existence, STOP if missing):**
-
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
-
-**Existing Code (understand current state):**
-
-- [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
-- [ ] Parent ADR integration points reviewed for local conventions
+- [ ] OBPI-04/05/06 landed (engine + CLI + event types)
+- [ ] `src/gzkit/pipeline_runtime.py` exposes Stage 1 entry hook
 
 ## Quality Gates
 
-<!-- Which gates apply and how to verify them. -->
-
-### Gate 1: ADR
-
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
-
-### Gate 2: TDD (Red-Green-Refactor)
-
-- [ ] Tests derived from brief acceptance criteria, not from implementation
-- [ ] Red-Green-Refactor cycle followed per behavior increment
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
-
-### Code Quality
-
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
-
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
+- [ ] Gate 1: Stage-1-gate paragraph quoted
+- [ ] Gate 2: Tests for: missing receipt, stale receipt, fresh-but-drifted receipt, fresh-no-drift receipt (4 cases minimum); RGR followed
+- [ ] Code Quality: lint + typecheck
+- [ ] Gate 3: Runbook entry; mkdocs strict
+- [ ] Gate 4: `features/brief_reconcile.feature` includes Stage 1 gate scenarios tagged `@REQ-0.0.37-07-*`; behave passes
+- [ ] Gate 5: Foundation-kind attestation
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
-uv run gz test
+uv run -m unittest tests.test_pipeline_runtime tests.governance.test_reconcile_freshness -v
+uv run mkdocs build --strict
+uv run -m behave features/brief_reconcile.feature --tags=REQ-0.0.37-07
 
-# Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md
+# REQ-02: missing receipt fail-closes
+# (exercised in tests against a fixture project)
+
+# REQ-04: fresh + no-drift passes
+uv run gz brief reconcile OBPI-0.0.37-07-pipeline-stage1-gate
+uv run gz obpi pipeline OBPI-0.0.37-07-pipeline-stage1-gate --stage 1 --dry-run && echo "REQ-04 OK: fresh receipt admits Stage 2"
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.37-07-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.37-07-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.37-07-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.37-07-01: `is_receipt_fresh(ts, allowed_paths, root)` is a pure function returning True iff `ts > max(getmtime(p))` over expanded allowed_paths; returns False if any allowed path is missing
+- [ ] REQ-0.0.37-07-02: Stage 1 fail-closes (exit 3) with explicit message when no `brief_reconciled` receipt exists for the active OBPI
+- [ ] REQ-0.0.37-07-03: Stage 1 fail-closes (exit 3) when the most recent `brief_reconciled` receipt's timestamp is older than the max mtime of any Allowed Path; error names the drifted path
+- [ ] REQ-0.0.37-07-04: Stage 1 fail-closes (exit 3) when a fresh receipt's `has_drift` payload is True; error names the drifted dimensions
+- [ ] REQ-0.0.37-07-05: Stage 1 admits Stage 2 only when a `brief_reconciled` receipt is both fresh (per REQ-01) AND drift-free
+- [ ] REQ-0.0.37-07-06: Existing Stage 1 behaviors (REQ-coverage gate, brief schema validation) are preserved — additive check, not replacement
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
-
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** RGR cycle followed, tests derived from brief, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
-
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
+- [ ] All gates satisfied
+- [ ] `gz brief reconcile OBPI-0.0.37-07-pipeline-stage1-gate` reports zero drift
 
 ## Evidence
 
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
-### Gate 1 (ADR)
-
-- [ ] Intent and scope recorded
-
-### Gate 2 (TDD — Red-Green-Refactor)
-
 ```text
-# Paste test output here
-```
-
-### Code Quality
-
-```text
-# Paste lint/format/type check output here
-```
-
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
+# Per-gate outputs
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+<!-- Before: an OBPI could enter Stage 2 implementation with a brief whose Allowed Paths no longer matched the project tree (the ADR-0.0.37 scaffold defect itself). After: Stage 1 mechanically refuses entry without a fresh reconciliation receipt. -->
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+<!-- Demonstrate: edit a file in the brief's Allowed Paths after the receipt timestamp, run `gz obpi pipeline --stage 1`, observe fail-close with named drifted path. -->
 
 ### Implementation Summary
 
@@ -251,16 +140,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
-
-_No defects tracked._
+- GHI #495, GHI #485
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `<name>`
+- Attestation: substantive text grounded in stale-receipt fail-close demonstration
+- Date: YYYY-MM-DD
 
 ---
 

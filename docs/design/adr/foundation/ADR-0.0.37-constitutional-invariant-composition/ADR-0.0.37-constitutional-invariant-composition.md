@@ -1,5 +1,5 @@
 ---
-id: ADR-0.0.37
+id: ADR-0.0.37-constitutional-invariant-composition
 status: Draft
 kind: foundation
 semver: 0.0.37
@@ -67,7 +67,7 @@ Codify two co-load-bearing foundation invariants in one ADR:
 - `.gzkit/invariants/*.yaml` (new directory): one YAML per invariant; CIC-1, CIC-2, plus the self-referential "every foundation ADR registers ≥1 invariant" check are the seed entries.
 - `src/gzkit/governance/compose.py` (new): composition renderer; consumes registry, projects into AGENTS.md template, emits deterministic byte sequence.
 - `src/gzkit/commands/governance_render.py` (new): `gz governance render --target agents-md` CLI verb.
-- `src/gzkit/governance/trust_audits.py`: extend with `validate_invariant_coherence` (re-renders, byte-compares to committed AGENTS.md) and `validate_brief_reconcile` (drift detection across the five reconciliation dimensions).
+- `src/gzkit/governance/trust_audits/` (package): add `invariant_coherence.py` (re-renders, byte-compares to committed AGENTS.md) and `brief_reconcile.py` (drift detection across the five reconciliation dimensions); register both in the package `__init__.py` validator registry. Note: `trust_audits` is a package with per-scope modules (one module per validator scope), not a monolithic file.
 - `src/gzkit/schemas/obpi_brief_structure.json` (new): structural schema for OBPI briefs beyond markdown frontmatter.
 - `src/gzkit/governance/brief_reconcile.py` (new): reconciliation engine; per-dimension delta computation.
 - `src/gzkit/commands/brief_reconcile.py` (new): `gz brief reconcile <OBPI-ID> [--apply]` CLI verb.

@@ -11,235 +11,160 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
-- **Checklist Item:** #3 - "OBPI-0.0.37-03 — Composition drift validator (`gz validate --invariant-coherence`; fail-closed on drift; `composition_drift_detected` ledger event)"
+- **Checklist Item:** #3 — "OBPI-0.0.37-03 — Composition drift validator (`gz validate --invariant-coherence`; fail-closed on drift; `composition_drift_detected` ledger event)"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-OBPI-0.0.37-03 — Composition drift validator (`gz validate --invariant-coherence`; fail-closed on drift; `composition_drift_detected` ledger event).
+Wire OBPI-02's renderer into the `gz validate` scope catalog as `--invariant-coherence`, fail-closed on byte-drift between rendered registry and committed AGENTS.md, and register the `composition_rendered` / `composition_drift_detected` ledger event types so every render and every drift is a replayable Layer-2 receipt.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** — Introduces a new validator scope (`--invariant-coherence`), registers new ledger event types, extends the `gz check` default pipeline. Validator-scope and ledger-schema surfaces trigger Heavy.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md` — parent ADR for intent and scope
-- `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/**` — parent ADR package scope
+- `src/gzkit/governance/trust_audits/invariant_coherence.py` (new) — validator scope implementation
+- `src/gzkit/governance/trust_audits/__init__.py` (modify) — register the validator in the package registry
+- `src/gzkit/governance/events.py` (modify) — register `composition_rendered` and `composition_drift_detected` event types
+- `.gzkit/schemas/ledger_events.json` (modify) — extend with the two new event type definitions
+- `src/gzkit/commands/validate_cmd.py` (modify) OR wherever `gz validate` flag-dispatch lives — wire `--invariant-coherence` flag
+- `tests/governance/test_invariant_coherence.py` (new) — REQ-derived validator assertions
+- `tests/fixtures/invariant_coherence/` (new) — fixture registries + AGENTS.md pairs (matching, drifted)
+- `docs/governance/advisory-rules-audit.md` (modify) — add scorecard entry for the new validator scope
+- `docs/user/manpages/gz-validate.md` (modify, if exists) — add `--invariant-coherence` flag documentation
+- `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-03-composition-drift-validator.md` (this brief)
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
 - Paths not listed in Allowed Paths
-- New dependencies
+- `AGENTS.md` (read-only here; written only by OBPI-09 migration via OBPI-02 renderer)
+- `src/gzkit/governance/compose.py` (OBPI-02 — consume, do not modify)
+- `src/gzkit/governance/invariants.py` (OBPI-01 — consume)
+- Brief reconciliation surfaces — OBPI-05/06
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `trust_audits/invariant_coherence.py` defines `validate_invariant_coherence(root: Path) -> AuditResult`. The function loads the registry (OBPI-01), re-renders to bytes (OBPI-02 `--stdout` path), reads committed `AGENTS.md`, and byte-compares. Mismatch returns AuditResult with severity=ERROR and the first 50 lines of unified diff in `detail`.
+2. REQUIREMENT: The validator is registered in the trust-audits package registry so `gz validate --invariant-coherence` dispatches to it.
+3. REQUIREMENT: `gz validate --invariant-coherence` exits 0 on match; exit code 3 on drift (consistent with other `gz validate --*` scopes per `.gzkit/rules/governance-core.md`).
+4. REQUIREMENT: Every invocation of the validator emits a `composition_rendered` ledger event regardless of drift outcome. On drift, an additional `composition_drift_detected` event is emitted with the diff payload.
+5. REQUIREMENT: `.gzkit/schemas/ledger_events.json` is extended with the two new event type definitions, conforming to the existing event-type schema (id, name, schema, required-fields). The two events are: `composition_rendered` (fields: invariant_count, target, byte_count, render_ts) and `composition_drift_detected` (fields: target, diff_first_50_lines, render_ts).
+6. REQUIREMENT: `gz check` (the default pipeline) includes `--invariant-coherence`. The validator scope is added to the canonical scope list so operators get drift detection by default.
+7. REQUIREMENT: This OBPI does NOT modify the renderer (OBPI-02) and does NOT introduce brief-reconciliation surfaces (OBPI-05).
 
-1. REQUIREMENT: **Foundation requires structural witness, not prose.** A foundational claim asserted only in AGENTS.md is indistinguishable from doctrine drift at the next agent session — it can be edited, reinterpreted, partially-loaded, or outright forgotten. The mantra (MAKE LLM STOCHASTIC VIBES INERT) names this failure class explicitly; this ADR mechanizes the structural defense the mantra calls for at the canon layer itself.
-1. REQUIREMENT: **Two invariants in one ADR because they are co-load-bearing.** CIC-2 (brief↔reality coherence) cannot be trusted without CIC-1's witness mechanism — a brief-reconciliation invariant codified in prose without a structural-witness framework underneath it would re-instance the inversion. CIC-1 (composition) cannot be tested without an instance. Sequencing them across two ADR ceremonies doubles the gate ceremony with no separability gain.
-1. REQUIREMENT: **The composition framework's first composition target is AGENTS.md** because AGENTS.md is the most-read, most-edited, highest-blast-radius prose surface in the project. Other composition targets (skill READMEs, persona files, rule mirrors) are forward-references; the registry abstraction supports them but this ADR scopes the AGENTS.md instance only.
-1. REQUIREMENT: **The brief-reconciliation invariant covers five drift dimensions** (allowlist, Discovery Checklist, Verification verbs, REQ counts, citation tuples) because each is a separately-observed drift class with a distinct mechanical signature. The cluster's recurring evidence (OBPI-0.0.29-01 / 02 allowlist drift, GHI #380 manpage-anchor + scope-collision, GHI #406 cluster-coherence dimensions, GHI #407 evaluation-time dimensions) names all five.
-1. REQUIREMENT: **Reconciliation receipts must be fresher than the most recent mutation in the brief's allowlist domain** because a stale receipt that predates a coupled-surface change carries the same misinformation as no receipt. Freshness is the structural test for receipt validity (parallel to the receipt-freshness rule already governing `.plan-audit-receipt-*.json` per `.claude/rules/governance-core.md`).
-1. REQUIREMENT: **Fail-closed at both Stage 1 and Stage 5** because Stage 1 catches authoring drift (brief ≠ project shape at implementation start) and Stage 5 catches in-flight drift (brief shape mutated during implementation, e.g. when a sibling OBPI lands and shifts the allowlist domain). One-gate-only would leave half the failure surface open.
-1. REQUIREMENT: **Pool stubs for `brief-authoring-evidence-checks` and `obpi-pipeline-dispatch-attestation` remain in pool** because they're feature-shaped defenses of CIC-2 once this foundation lands. Promoting them now (as the agent's flawed pre-correction recommendation proposed) would entrench the inversion.
-1. REQUIREMENT: **Ten OBPIs is the right size** because each codifies one separable invariant or surface: schema + registry primitive, composition renderer, composition drift validator, brief structural schema, reconciliation engine, CLI verb, Stage 1 gate, Stage 5 gate, AGENTS.md migration, doctrine refresh. Bundling produces one Gate 5 witness for ten separable concerns; over-fragmenting produces ceremony without invariant addition.
-1. REQUIREMENT: `src/gzkit/governance/invariants.py` (new): frozen Pydantic `ConstitutionalInvariant` (id, claim, structural_witness, composition_targets fields).
-1. REQUIREMENT: `src/gzkit/schemas/constitutional_invariant.json` (new): JSON Schema mirror; `additionalProperties: false`; structural-witness array `minItems: 1`.
-1. REQUIREMENT: `.gzkit/invariants/*.yaml` (new directory): one YAML per invariant; CIC-1, CIC-2, plus the self-referential "every foundation ADR registers ≥1 invariant" check are the seed entries.
-1. REQUIREMENT: `src/gzkit/governance/compose.py` (new): composition renderer; consumes registry, projects into AGENTS.md template, emits deterministic byte sequence.
-1. REQUIREMENT: `src/gzkit/commands/governance_render.py` (new): `gz governance render --target agents-md` CLI verb.
-1. REQUIREMENT: `src/gzkit/governance/trust_audits.py`: extend with `validate_invariant_coherence` (re-renders, byte-compares to committed AGENTS.md) and `validate_brief_reconcile` (drift detection across the five reconciliation dimensions).
-1. REQUIREMENT: `src/gzkit/schemas/obpi_brief_structure.json` (new): structural schema for OBPI briefs beyond markdown frontmatter.
-1. REQUIREMENT: `src/gzkit/governance/brief_reconcile.py` (new): reconciliation engine; per-dimension delta computation.
-1. REQUIREMENT: `src/gzkit/commands/brief_reconcile.py` (new): `gz brief reconcile <OBPI-ID> [--apply]` CLI verb.
-1. REQUIREMENT: `src/gzkit/cli/parser_artifacts.py`: register the new verbs (`governance render`, `brief reconcile`).
-1. REQUIREMENT: `src/gzkit/pipeline_runtime.py`: extend Stage 1 to require fresh reconciliation receipt before Stage 2 entry.
-1. REQUIREMENT: `src/gzkit/commands/obpi_complete.py`: extend to require fresh reconciliation receipt before completion event emission.
-1. REQUIREMENT: `.gzkit/schemas/ledger_events.json`: extend ledger event family with `invariant_registered`, `invariant_amended`, `composition_rendered`, `composition_drift_detected`, `brief_reconciled`, `brief_reconcile_drift_detected`.
-1. REQUIREMENT: `tests/governance/test_invariants.py`, `tests/governance/test_compose.py`, `tests/governance/test_brief_reconcile.py`, `tests/commands/test_governance_render.py`, `tests/commands/test_brief_reconcile.py`: REQ-derived assertions across the ten OBPIs.
-1. REQUIREMENT: `features/constitutional_invariants.feature` + `features/brief_reconcile.feature` (new): BDD scenarios tagged `@REQ-0.0.37-NN-MM`.
-1. REQUIREMENT: `docs/user/manpages/gz-governance.md` + `docs/user/manpages/gz-brief.md` (new): manpages per gate5-runbook-code-covenant.
-1. REQUIREMENT: `docs/user/runbook.md`: runbook entries for the new ceremony surfaces.
-1. REQUIREMENT: `docs/governance/advisory-rules-audit.md`: scorecard entries classifying the new validator scopes.
-1. REQUIREMENT: AGENTS.md: hand-authored content migrated to `.gzkit/invariants/` registry entries; the file becomes a rendered output.
-1. REQUIREMENT: Does NOT specify the full constitution-amendment ceremony — the registry primitive (OBPI-01) supports `gz adr amend`-style amendments via emerging amendment pool stubs, but the formal amendment-tracking ceremony is `ADR-pool.adr-amendment-tracking`'s scope.
-1. REQUIREMENT: Does NOT cover composition targets beyond AGENTS.md — skill READMEs, persona files, rule mirrors are forward-references; the registry abstraction supports them but each composition target is its own (likely future) feature ADR.
-1. REQUIREMENT: Does NOT cover frontmatter↔body↔ledger metadata coherence — that is `ADR-pool.adr-layer-coherence`'s scope (parallel concern at the metadata layer; this ADR addresses the canon-prose layer).
-1. REQUIREMENT: Does NOT promote `ADR-pool.brief-authoring-evidence-checks` or `ADR-pool.obpi-pipeline-dispatch-attestation` — those remain in pool until CIC-2 lands; they then become feature-kind ADRs that consume CIC-2.
-1. REQUIREMENT: Does NOT modify the ledger event schema beyond the new event family added here — broader ledger schema changes are out of scope.
-1. REQUIREMENT: Does NOT introduce a new attestation type — the existing `human` / `agent-relayed-operator-attestation` / `self-close-exception` taxonomy carries through.
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if OBPI-02 has not landed (`gz governance render --stdout` missing or non-deterministic), halt — drift detection requires a deterministic producer.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first.
-     Order matters: read the structured input (parent ADR § Decision)
-     before the unstructured one (allowed paths, prerequisites). -->
+**Parent ADR:**
 
-**Parent ADR (read first; order pinned — GHI #321):**
+- [ ] Quote ADR § Decision item #3 (drift validator) verbatim
+- [ ] ADR § Decision Rationale point 1 (foundation requires structural witness) — the "why" the validator exists
 
-- [ ] **Parent ADR § Decision item — quote the line this OBPI implements** verbatim into the brief's Implementation Summary. The Decision item is the contract; everything else hangs off it.
-- [ ] Parent ADR § Intent — the why-frame for the Decision read above.
-- [ ] Parent ADR file: `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
+**Governance:**
 
-> **STOP:** If you cannot quote the parent ADR § Decision item that this OBPI implements, STOP and re-read. Do not proceed to Allowed Paths, Prerequisites, or implementation until the Decision quote is in hand.
+- [ ] `docs/governance/advisory-rules-audit.md` — scorecard conventions (Mechanical / Promotable / Judgment classifications)
+- [ ] `.gzkit/rules/governance-core.md` § Proof commands — `gz validate` exit-code convention
+- [ ] `src/gzkit/governance/trust_audits/__init__.py` — how scopes are registered
 
-**Governance (read once, cache):**
+**Context (exemplars):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [ ] `src/gzkit/governance/trust_audits/advisor_proof_binding.py` — example of a validator-scope module shape
+- [ ] `src/gzkit/governance/trust_audits/distribution.py` — another validator-scope example
+- [ ] `src/gzkit/governance/events.py` — event-registration pattern
 
-**Context:**
+**Prerequisites:**
 
-- [ ] Related OBPIs in same ADR
-
-**Prerequisites (check existence, STOP if missing):**
-
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
-
-**Existing Code (understand current state):**
-
-- [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
-- [ ] Parent ADR integration points reviewed for local conventions
+- [ ] OBPI-01 landed (registry primitive)
+- [ ] OBPI-02 landed (deterministic renderer with `--stdout`)
+- [ ] `src/gzkit/governance/events.py` exists and exposes event-registration API
 
 ## Quality Gates
 
-<!-- Which gates apply and how to verify them. -->
-
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [ ] Drift-validator paragraph quoted
 
-### Gate 2: TDD (Red-Green-Refactor)
+### Gate 2: TDD
 
-- [ ] Tests derived from brief acceptance criteria, not from implementation
-- [ ] Red-Green-Refactor cycle followed per behavior increment
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [ ] `test_invariant_coherence.py` covers: match-no-drift, mismatch-drift, registry-load-error, event-emission for both event types
+- [ ] Tests pass
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [ ] Lint, typecheck clean
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
+### Gate 3: Docs (Heavy)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [ ] `docs/governance/advisory-rules-audit.md` includes a scorecard row for `--invariant-coherence` (classification: Mechanical, fail-closed)
+- [ ] If `docs/user/manpages/gz-validate.md` exists, it documents `--invariant-coherence`
+- [ ] `mkdocs build --strict` passes
 
-### Gate 4: BDD (Heavy only)
+### Gate 4: BDD (Heavy)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] `features/constitutional_invariants.feature` includes drift-validator scenarios tagged `@REQ-0.0.37-03-*`
+- [ ] `behave` passes
 
-### Gate 5: Human (Heavy only)
+### Gate 5: Human
 
-- [ ] Human attestation recorded
+- [ ] Attestation recorded
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
-uv run gz test
+uv run -m unittest tests.governance.test_invariant_coherence -v
+uv run mkdocs build --strict
+uv run -m behave features/constitutional_invariants.feature --tags=REQ-0.0.37-03
 
-# Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md
+# REQ-03: exit codes
+uv run gz validate --invariant-coherence && echo "REQ-03 OK on match"
+# (drift case in test)
+
+# REQ-04/05: ledger events registered and emitted
+uv run python -c "
+import json
+events = json.load(open('.gzkit/schemas/ledger_events.json'))
+types = {e.get('name') or e.get('id') for e in (events.get('events') or events.get('types') or events.values() if isinstance(events, dict) else events)}
+assert 'composition_rendered' in str(events) and 'composition_drift_detected' in str(events), 'event types not registered'
+print('REQ-05 OK: event types registered in schema')
+"
+
+# REQ-06: scope is part of gz check
+uv run gz check --list-scopes 2>&1 | rg -q 'invariant-coherence' && echo "REQ-06 OK: scope included in gz check"
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.37-03-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.37-03-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.37-03-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.37-03-01: `gz validate --invariant-coherence` exits 0 when rendered registry bytes match committed AGENTS.md
+- [ ] REQ-0.0.37-03-02: `gz validate --invariant-coherence` exits 3 when bytes differ; output includes a unified diff of the first 50 differing lines
+- [ ] REQ-0.0.37-03-03: Each invocation emits a `composition_rendered` ledger event with (invariant_count, target, byte_count, render_ts); drift case additionally emits `composition_drift_detected`
+- [ ] REQ-0.0.37-03-04: `.gzkit/schemas/ledger_events.json` includes both event type definitions; existing events-schema validator (`gz validate --events` or equivalent) passes
+- [ ] REQ-0.0.37-03-05: `gz check` runs `--invariant-coherence` as part of the default scope list
+- [ ] REQ-0.0.37-03-06: `docs/governance/advisory-rules-audit.md` lists `--invariant-coherence` with classification Mechanical / fail-closed
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
-
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** RGR cycle followed, tests derived from brief, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
-
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
+- [ ] All gates satisfied
+- [ ] `gz brief reconcile OBPI-0.0.37-03-composition-drift-validator` reports zero drift
 
 ## Evidence
 
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
-### Gate 1 (ADR)
-
-- [ ] Intent and scope recorded
-
-### Gate 2 (TDD — Red-Green-Refactor)
-
 ```text
-# Paste test output here
-```
-
-### Code Quality
-
-```text
-# Paste lint/format/type check output here
-```
-
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
+# Per-gate outputs
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+<!-- Before: hand-edits to AGENTS.md could not be mechanically distinguished from intentional edits. After: any AGENTS.md content not flowing through the registry fails `gz check`. -->
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+<!-- A drift case: edit AGENTS.md, run `gz validate --invariant-coherence`, observe exit 3 + diff. -->
 
 ### Implementation Summary
 
@@ -251,16 +176,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
-
-_No defects tracked._
+- GHI #495, GHI #485
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `<name>`
+- Attestation: per ADR-0.0.36 universal Gate 5
+- Date: YYYY-MM-DD
 
 ---
 
