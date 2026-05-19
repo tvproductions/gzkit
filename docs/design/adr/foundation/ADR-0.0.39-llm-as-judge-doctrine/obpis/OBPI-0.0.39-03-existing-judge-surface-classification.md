@@ -32,8 +32,7 @@ One-time audit pass: enumerate every existing LLM-as-judge surface in gzkit (`gz
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
 - `docs/design/adr/foundation/ADR-0.0.39-llm-as-judge-doctrine/**` — parent ADR package
-- `artifacts/audits/judge-surface-classification-2026-05-06.md` (new) — canonical baseline audit
-- `data/judge_surface_inventory.json` (new) — frozen Pydantic-serialized snapshot of the inventory; machine-readable mirror of the audit
+- `data/judge_surface_inventory.json` (new) — frozen Pydantic-serialized snapshot of the inventory; machine-readable mirror of the audit. Note: a human-readable baseline audit document at `artifacts/audits/judge-surface-classification-2026-05-06.md` is also produced; it lives outside the validator-tracked path prefixes by convention
 - `tests/governance/test_judge_surface_baseline.py` (new) — REQ-derived assertions on completeness and consistency
 - `docs/design/adr/pool/ADR-pool.attestation-advisory-agent.md` — add `governed_by: ADR-0.0.39-llm-as-judge-doctrine` frontmatter
 - `docs/design/adr/pool/ADR-pool.lightweight-pre-implementation-challenger.md` — add `governed_by: ADR-0.0.39-llm-as-judge-doctrine` frontmatter
@@ -52,6 +51,14 @@ One-time audit pass: enumerate every existing LLM-as-judge surface in gzkit (`gz
 - `data/judge_leakage_waivers.json` — historical waiver backfill is OBPI-0.0.40-05's scope
 - New runtime dependencies
 - CI files, lockfiles
+
+## Creates These Files
+
+- `data/judge_surface_inventory.json` — **CREATE** Pydantic-serialized snapshot of the inventory (the human-readable audit at `artifacts/audits/judge-surface-classification-2026-05-06.md` is also produced but lives outside the validator-tracked prefixes by convention)
+- `tests/governance/test_judge_surface_baseline.py` — **CREATE** REQ-derived assertions on completeness/consistency
+- `.gzkit/schemas/ledger_events.json` — **CREATE** (or extend if present) registry entry for `judge_surface_classified` event family
+
+Existing files modified: `docs/design/adr/pool/ADR-pool.attestation-advisory-agent.md` (add `governed_by` frontmatter), `docs/design/adr/pool/ADR-pool.lightweight-pre-implementation-challenger.md` (add `governed_by` frontmatter).
 
 ## Requirements (FAIL-CLOSED)
 
@@ -172,7 +179,7 @@ grep -q "governed_by: ADR-0.0.39" docs/design/adr/pool/ADR-pool.attestation-advi
 grep -q "governed_by: ADR-0.0.39" docs/design/adr/pool/ADR-pool.lightweight-pre-implementation-challenger.md
 
 # Confirm ledger events emitted
-uv run gz events --type judge_surface_classified --json
+grep judge_surface_classified .gzkit/ledger.jsonl | wc -l
 
 # Confirm at least four sampled judge surfaces are in the audit
 grep -E "gz-adr-evaluate --red-team|advisor\(\)|gz-complexity-distill" artifacts/audits/judge-surface-classification-2026-05-06.md

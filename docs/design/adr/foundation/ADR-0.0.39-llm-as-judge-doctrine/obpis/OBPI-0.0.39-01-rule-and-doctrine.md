@@ -49,6 +49,13 @@ Author the canonical foundation rule codifying the LLM-as-judge doctrine — the
 - New dependencies
 - CI files, lockfiles
 
+## Creates These Files
+
+- `.gzkit/rules/llm-as-judge.md` — **CREATE** canonical rule file with the doctrine invariants
+- `tests/governance/test_llm_as_judge_rule.py` — **CREATE** REQ-derived assertions on rule shape
+
+Existing files modified: `docs/governance/advisory-rules-audit.md` (scorecard registration), `docs/user/runbook.md`, `docs/governance/governance_runbook.md`.
+
 ## Requirements (FAIL-CLOSED)
 
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
@@ -63,7 +70,7 @@ Author the canonical foundation rule codifying the LLM-as-judge doctrine — the
 7. REQUIREMENT: The rule file enumerates the methodology menu with the survey paper's classification: single-grading, pairwise, list-wise, reference-based, criteria-decomposed, ensemble, red-team-challenge. Each methodology names "when appropriate" and "rationale shape" per the parent ADR § Decision § Invariant 7 table.
 8. REQUIREMENT: The rule file declares the explanation-precedes-verdict mechanical floor: prompts elicit explanation before verdict; receipt fields ordered explanation_text-then-verdict; receipts with verdict populated but explanation_text empty are rejected at emit time; trivial explanations (length < 50 chars default) are flagged.
 9. REQUIREMENT: The rule file declares the meta-evaluation cadence floor: every N=100 verdicts (configurable), human-agreement sample is taken; Cohen's kappa default; floor 0.6 (Landis-Koch substantial) configurable in `data/judge_meta_eval_floor.json`; metric NEVER itself a gate.
-10. REQUIREMENT: `docs/governance/advisory-rules-audit.md` is updated with a new entry classifying `llm-as-judge.md` as **Mechanical**, naming the validator scopes that will fire on its invariants (`gz validate --judge-leakage`, `gz validate --judge-output-discipline`, `gz judge meta-eval`) and the OBPIs under ADR-0.0.40 that will land them.
+10. REQUIREMENT: `docs/governance/advisory-rules-audit.md` is updated with a new entry classifying `llm-as-judge.md` as **Mechanical**, naming the validator scopes that will fire on its invariants (`gz validate --judge-leakage`, `gz validate --judge-output-discipline`, `judge meta-eval`) and the OBPIs under ADR-0.0.40 that will land them.
 11. REQUIREMENT: `docs/user/runbook.md` adds a new section under "Operator workflows" describing how an operator interprets a judge verdict (read explanation first; verify methodology declaration; check bias-mitigation receipt fields; never treat verdict as gate).
 12. REQUIREMENT: `docs/governance/governance_runbook.md` adds a new section under "Foundation-rule maintenance" describing how a maintainer adds a new what/how/where axis enum value or a new bias to the roster (foundation-kind ADR amendment required).
 13. REQUIREMENT: `tests/governance/test_llm_as_judge_rule.py` asserts: (a) rule file exists at canonical path; (b) version marker shape; (c) all nine invariants enumerated with forward-references to mechanical witnesses; (d) self-classification as `authoritative`; (e) bias roster covers all five named biases; (f) methodology menu covers all seven named methodologies. Assertions are semantic, not byte-level.
@@ -183,7 +190,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.39-01-03: Given the rule body, when the body marker is parsed, then the file declares `<!-- surface-axis: authoritative -->`.
 - [ ] REQ-0.0.39-01-04: Given the bias roster section, when read, then five biases are named (position, verbosity, self-preference, preference leakage, calibration drift) each with default mitigation matching the parent ADR § Invariant 6 table.
 - [ ] REQ-0.0.39-01-05: Given the methodology menu section, when read, then seven methodologies are named (single-grading, pairwise, list-wise, reference-based, criteria-decomposed, ensemble, red-team-challenge) with "when appropriate" and "rationale shape" per the parent ADR § Invariant 7 table.
-- [ ] REQ-0.0.39-01-06: Given `docs/governance/advisory-rules-audit.md`, when read, then the new entry classifies `llm-as-judge.md` as **Mechanical** and names the three ADR-0.0.40 validator scopes (`--judge-leakage`, `--judge-output-discipline`, `gz judge meta-eval`).
+- [ ] REQ-0.0.39-01-06: Given `docs/governance/advisory-rules-audit.md`, when read, then the new entry classifies `llm-as-judge.md` as **Mechanical** and names the three ADR-0.0.40 validator scopes (`--judge-leakage`, `--judge-output-discipline`, `judge meta-eval`).
 - [ ] REQ-0.0.39-01-07: Given `gz agent sync control-surfaces`, when run after the rule lands, then mirrors at `.claude/rules/llm-as-judge.md` and `.github/instructions/llm-as-judge.md` are produced with body-content parity.
 - [ ] REQ-0.0.39-01-08: Given the runbook entries, when read, then `docs/user/runbook.md` describes operator-side judge-verdict interpretation and `docs/governance/governance_runbook.md` describes the foundation-rule amendment protocol for adding axes/biases.
 - [ ] REQ-0.0.39-01-09: Given the Denied Paths boundary, when this OBPI's diff is reviewed, then no `judge_invocation.py` Pydantic model, no JSON Schema, and no axis backfill on existing judge surfaces are added.

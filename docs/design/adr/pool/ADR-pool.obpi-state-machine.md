@@ -7,6 +7,7 @@ enabler: null
 inspired_by: openai/symphony
 amendments:
   - 2026-05-02 — added § Amendment 2026-05-02 (per-lane concurrency caps as state-machine invariant)
+  - 2026-05-19 — added § Amendment 2026-05-19 (canonical failure-class taxonomy + named runtime event vocabulary, inspired by Symphony SPEC.md §14 + §10.4)
 ---
 
 # ADR-pool.obpi-state-machine: OBPI State Machine and Runtime Invariant Monitor
@@ -327,3 +328,178 @@ source of truth (matrix and cap are projections).
 § Per-State Concurrency Control (`agent.max_concurrent_agents_by_state`).
 The mechanism is generalizable; the axes (workflow-state vs. attestation-
 attention) are domain-specific.
+
+---
+
+## Amendment 2026-05-19: Canonical failure-class taxonomy + named runtime event vocabulary
+
+The `openai/symphony` SPEC.md (re-read 2026-05-19 in full) names two
+mechanisms gzkit's pool ADR has implied but not enumerated: **§14 Failure
+Model and Recovery Strategy** (closed-enum failure classes, each with named
+recovery behavior) and **§10.4 Emitted Runtime Events** (closed-enum named
+event vocabulary emitted upstream from workers to the orchestrator). The
+gzkit equivalents are the **pipeline-state failure taxonomy** and the
+**transition-event vocabulary** — both schema-bound, both runtime-monitored
+under rule 4, both first-class.
+
+### Seventh state-machine property (added to § Decision)
+
+7. **Canonical failure-class taxonomy with named recovery behaviors.**
+   Pipeline-state failures form a closed enum, schema-bound in
+   `data/obpi_failure_classes.json`, each with a declared recovery
+   behavior the runtime monitor (rule 4) consults when the transition is
+   rejected. Initial classes (extensible by amendment, closed at
+   any given release):
+
+   | Failure class | Trigger | Recovery behavior |
+   |---|---|---|
+   | `precondition_unsatisfied` | Transition attempted from a state whose declared preconditions do not hold (e.g., `attested` attempted while predecessor state is not `verified`) | Emit `RemediationPayload` (ADR-0.0.53) naming the predecessor-transition CLI; no state change; no receipt |
+   | `witness_missing` | Transition attempted without the witness declared in rule 2 (e.g., `attested` without TTY-typed human or `--attestor-present`) | Block transition; emit `obpi.witness_required` event; operator-required-action surface |
+   | `receipt_fabrication_detected` | Transition's witness receipt fails ARB receipt-binding (ADR-0.0.24) — receipt ID does not resolve, hash does not match, name does not satisfy CANONICAL_STEP_COMMANDS regex | Reject transition; emit `obpi.receipt_fabrication_blocked`; ARB receipt-binding error in operator stream |
+   | `vocab_out_of_enum` | Hand-edited frontmatter status term not in the closed enum (rule 1) and not in the legacy-import vocab table | Reject edit at monitor (rule 4); emit `obpi.frontmatter_rejected`; recovery payload names canonical CLI verb |
+   | `frontmatter_ledger_disagreement` | L1 (canon) and L2 (ledger) disagree after a write (the failure mode GHI #348 named) | Auto-emit the declared transition that reconciles them OR reject the write (depending on which side mutated last); never silent rewrite |
+   | `monitor_rejected_edit` | Read/write to the artifact graph names a transition not declared in rule 2 | Reject at the monitor boundary; emit `obpi.unknown_transition_blocked`; operator must either route through a declared CLI verb or add the transition to the enum under an amendment ADR |
+   | `concurrency_cap_violated` | Heavy-lane / foundation-kind / security-sensitivity single-flight cap from Amendment 2026-05-02 is occupied | Reject dispatch with a `structured-blocker-envelope` naming the occupying OBPI; no queueing |
+
+   The taxonomy is **fail-closed by default** — unrecognized failure
+   shapes route to `monitor_rejected_edit` rather than silently producing
+   an unclassified rejection. Each class's recovery binds to the
+   `RemediationPayload` contract from ADR-0.0.53 so the agent reading the
+   rejection has a structured next step.
+
+### Eighth state-machine property (added to § Decision)
+
+8. **Named runtime event vocabulary table.** Every state-affecting
+   operation emits a named event from a closed enum declared in
+   `data/obpi_event_vocabulary.json`. The vocabulary is the same shape
+   as the state enum (rule 1) and transition enum (rule 2) — closed,
+   schema-bound, monotonically growing only via amendment ADRs. Initial
+   vocabulary (extensible):
+
+   **Transition events** (one per declared transition; mirror rule 2):
+
+   - `obpi.transitioned.drafted` — emitted on initial brief creation
+   - `obpi.transitioned.planned` — emitted on plan-audit attestation
+   - `obpi.transitioned.implementing` — emitted on Stage 1 → Stage 2
+   - `obpi.transitioned.verified` — emitted on Gate 2 pass with receipt
+   - `obpi.transitioned.attested` — emitted on Gate 5 human/agent-relayed witness
+   - `obpi.transitioned.synced` — emitted on `gz git-sync` ceremony completion
+   - `obpi.transitioned.withdrawn` — emitted on `gz obpi withdraw`
+   - `obpi.transitioned.superseded` — emitted on `gz obpi supersede`
+
+   **Precondition / witness events** (one per failure-class category from rule 7):
+
+   - `obpi.precondition_check_failed` — predecessor state not satisfied
+   - `obpi.witness_required` — transition blocked pending witness
+   - `obpi.receipt_emitted` — ARB receipt produced for a transition
+   - `obpi.receipt_fabrication_blocked` — receipt rejected by binding rule
+   - `obpi.frontmatter_rejected` — hand-edit refused by monitor
+   - `obpi.unknown_transition_blocked` — undeclared transition rejected
+   - `obpi.cap_blocked` — concurrency-cap rejection (rule 6)
+
+   **Lifecycle / observability events** (decoupled from individual transitions):
+
+   - `obpi.monitor_started` / `obpi.monitor_stopped` — runtime-monitor lifecycle
+   - `obpi.reconcile_started` / `obpi.reconcile_completed` — batch reconciliation boundaries
+   - `obpi.attestation_walkthrough_started` / `obpi.attestation_walkthrough_completed` — Gate 5 walkthrough boundaries
+
+   Every event has a Pydantic model in `src/gzkit/models/` declaring the
+   payload shape; every event consumer (validators, hooks, reporters,
+   trace bundles per `ADR-pool.harness-trace-bundles`) imports from
+   the canonical vocabulary rather than parsing event-type strings ad hoc.
+
+### Mechanical predicate (binding when promoted)
+
+The runtime monitor (rule 4) routes every state-affecting operation through
+a uniform decision:
+
+```
+def monitor(operation: GraphOperation) -> Outcome:
+    transition = classify(operation)  # → declared transition or None
+    if transition is None:
+        return reject(FailureClass.monitor_rejected_edit, operation)
+    if not transition.preconditions_satisfied(state):
+        return reject(FailureClass.precondition_unsatisfied, transition)
+    if not transition.witness_satisfied(witness_context):
+        return reject(FailureClass.witness_missing, transition)
+    if transition.requires_receipt and not arb.receipt_validates(transition.receipt):
+        return reject(FailureClass.receipt_fabrication_detected, transition)
+    if not concurrency_cap_admits(transition):
+        return reject(FailureClass.concurrency_cap_violated, transition)
+    emit(transition.event_name, payload=transition.payload)  # from rule 8 vocabulary
+    return accept(transition)
+```
+
+Every `reject(FailureClass.X, ...)` carries a `RemediationPayload` (ADR-0.0.53)
+whose `recovery` field names the canonical resolution path declared in rule 7's
+table. The agent reading the failure stream gets the structured next step
+without parsing.
+
+### Coupled-surface coherence
+
+- **[ADR-0.0.53](../foundation/ADR-0.0.53-validator-remediation-payload-invariant/)
+  (Validator Remediation Payload Invariant, Draft 2026-05-19)** — every
+  rule-7 rejection emits a `RemediationPayload`; the failure-class table is
+  the rule-citation source for the payload's `rule_citation` field. The
+  two doctrines compose: ADR-0.0.53 provides the *shape*, this property
+  provides the *enumeration*.
+- **[ADR-0.0.24](../foundation/ADR-0.0.24-attestation-receipt-binding/)
+  (Attestation Receipt Binding)** — `receipt_fabrication_detected` is the
+  failure-class form of ADR-0.0.24's binding rule. The state machine
+  surfaces ADR-0.0.24's binding decision into the unified monitor stream.
+- **[ADR-pool.harness-trace-bundles](ADR-pool.harness-trace-bundles.md)** —
+  trace bundles consume the rule-8 event vocabulary as canonical span
+  names. Trace-bundle span types and rule-8 event names share one
+  enumeration; drift between them is a coupled-surface coherence defect.
+- **[ADR-pool.workflow-specification](ADR-pool.workflow-specification.md)
+  § Amendment 2026-05-19** — the JSON workflow spec's `ledger events`
+  field consumes rule-8's vocabulary directly. The workflow validator
+  fail-closes on any workflow-stage declaring an event not in the
+  vocabulary.
+- **[ADR-pool.harness-fitness-report](ADR-pool.harness-fitness-report.md)** —
+  the fitness report measures rule-7 failure-class hit rates over time
+  (which classes fire most; which are zero-hit retirement candidates) and
+  rule-8 event emission distribution per transition.
+- **[`.gzkit/rules/agent-failure-modes.md`](../../../../.gzkit/rules/agent-failure-modes.md)** —
+  agent-behavior failure modes (6-pattern taxonomy). Distinct axis: agent
+  behavior vs pipeline state. Rule 7's taxonomy does NOT subsume
+  agent-failure-modes; they are orthogonal — an agent in `Skipped cheap
+  verification` mode can produce a `receipt_fabrication_detected`
+  pipeline-state failure, but the two surfaces fire independently.
+
+### Distinct from Symphony
+
+- **Closed enum, not free-form strings.** Symphony §14 names failure
+  classes as documentation; gzkit binds them in `data/obpi_failure_classes.json`
+  as a schema-validated closed enum. Adding a class requires an amendment
+  ADR; agents cannot rename or invent classes mid-run.
+- **Receipt-bound recovery, not retry-loop recovery.** Symphony §14.2
+  recovery emphasizes retry/backoff/handoff. gzkit's recovery emphasizes
+  *receipt emission* — the recovery action is itself a witnessed state
+  transition, not an opaque retry attempt. The doctrines differ because
+  the threat models differ (Symphony: keep the daemon running; gzkit:
+  preserve audit truth).
+- **Event vocabulary as L2 truth, not telemetry.** Symphony §10.4 events
+  are observability/telemetry signals flowing upstream from worker to
+  orchestrator. gzkit's rule-8 events ARE the ledger — they are the
+  canonical L2 facts the system is built around. Symphony's events can
+  be dropped without state corruption; gzkit's events being dropped IS
+  state corruption.
+- **Failure-class is a state-machine concept, not a recovery-strategy concept.**
+  Symphony §14.1 enumerates failures and §14.2 enumerates recoveries as
+  separate sections. gzkit binds them in one table because the recovery is
+  declared *at the failure-class boundary*, not as a separate strategy
+  layer — the recovery IS what the runtime monitor does next.
+
+### Inspired By (extended)
+
+[openai/symphony SPEC.md](https://github.com/openai/symphony/blob/main/SPEC.md)
+**§14 Failure Model and Recovery Strategy** (closed-enum failure classes
+with named recovery behaviors) and **§10.4 Emitted Runtime Events**
+(closed-enum named event vocabulary emitted upstream). Both mechanisms
+generalize cleanly to a state-machined governance harness; the gzkit
+adaptations (receipt-bound recovery, L2-truth event semantics) are domain-
+specific. The full re-read of Symphony SPEC.md on 2026-05-19 surfaced these
+as the two mechanisms gzkit had *implied* in earlier amendments but never
+*enumerated*; this amendment closes the enumeration gap so the runtime
+monitor (rule 4) has structured truth to consult rather than ad-hoc tables.
