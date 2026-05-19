@@ -10,6 +10,8 @@ complements:
   - ADR-pool.harness-lab
   - ADR-pool.harness-fitness-report
   - ADR-pool.tool-permission-classifier
+amendments:
+  - 2026-05-19 — added § Amendment 2026-05-19 (conformance matrix dimension, inspired by Symphony SPEC.md §17 + §18)
 ---
 
 # ADR-pool.workflow-specification: JSON Workflow Specification
@@ -220,3 +222,149 @@ Promotion into the active tree (foundation or feature) is performed via
 This ADR captures a gzkit intake decision from the Archon comparison: absorb the
 machine-readable workflow-shape lesson, not Archon's YAML format or product
 surface. gzkit remains a governed meta-harness and agent runner.
+
+---
+
+## Amendment 2026-05-19: Conformance matrix dimension
+
+The `openai/symphony` SPEC.md (re-read 2026-05-19 in full) names two
+mechanisms this ADR's original Target Scope implied but did not enumerate:
+**§17 Test and Validation Matrix** (per-scope conformance dimensions with
+REQUIRED test categories per scope) and **§18 Implementation Checklist —
+Definition of Done** (REQUIRED-for-conformance vs RECOMMENDED-extensions
+split, plus operational-validation-before-production list). The gzkit
+equivalent is a **workflow conformance matrix** that the JSON workflow
+schema MUST expose as a first-class surface — distinct from
+`harness-fitness-report` (which measures operational reality), distinct
+from `gz validate --<scope>` outputs (which check individual artifacts).
+
+### Added Target Scope item
+
+Append to § Target Scope:
+
+- **Conformance matrix surface.** The workflow spec MUST expose a
+  `conformance_matrix` field per workflow, enumerating: (a) the set of
+  REQUIRED-for-conformance test categories the workflow must satisfy
+  (e.g., `stage_id_uniqueness`, `gate_reference_resolves`,
+  `ledger_event_in_vocabulary`, `receipt_binding_per_attestation`,
+  `failure_class_per_rejection_path`); (b) the set of
+  RECOMMENDED-but-not-required categories (e.g., `trace_bundle_emission`,
+  `observability_event_per_stage`); (c) a structured Definition-of-Done
+  block naming which CLI command produces each conformance witness and
+  which ledger event records the witness. Each category resolves to one
+  or more `gz validate --<scope>` invocations; the matrix is the join.
+
+### Added CLI surfaces
+
+```bash
+gz workflow conformance path/to/workflow.json
+# → renders matrix as table: each REQUIRED category, witness command,
+#   pass/fail/not-run, witness receipt ID
+gz workflow conformance --json path/to/workflow.json
+# → same, machine-readable
+gz workflow conformance-checklist path/to/workflow.json
+# → renders Definition-of-Done block: which CLI verbs MUST have run and
+#   produced what receipt before the workflow is conforming
+```
+
+### Conformance category schema (illustrative; closed-set at promotion time)
+
+| Category | Required? | Witness command | Witness receipt | Failure routes to |
+|---|---|---|---|---|
+| `stage_id_uniqueness` | REQUIRED | `gz workflow validate` | structural-validator output | workflow author |
+| `gate_reference_resolves` | REQUIRED | `gz workflow validate` | structural-validator output | workflow author |
+| `ledger_event_in_vocabulary` | REQUIRED | `gz validate --workflow-event-vocab` | `arb-step-workflow-validate-*` | `ADR-pool.obpi-state-machine` rule 8 vocabulary |
+| `receipt_binding_per_attestation` | REQUIRED | `gz validate --attestation-receipt-binding` | `arb-step-receipt-binding-*` | ADR-0.0.24 |
+| `failure_class_per_rejection_path` | REQUIRED | `gz validate --failure-class-coverage` | `arb-step-failure-class-*` | `ADR-pool.obpi-state-machine` rule 7 taxonomy |
+| `trace_bundle_emission` | RECOMMENDED | `gz harness trace inspect` | trace-bundle manifest | `ADR-pool.harness-trace-bundles` |
+| `observability_event_per_stage` | RECOMMENDED | `gz harness report --surface workflow-events` | fitness-report row | `ADR-pool.harness-fitness-report` |
+| `concurrency_cap_declared` | RECOMMENDED (REQUIRED for heavy lane) | `gz workflow validate` | structural-validator output | `ADR-pool.obpi-state-machine` Amendment 2026-05-02 |
+
+### Distinct from sibling surfaces
+
+- **Distinct from `harness-fitness-report`.** Fitness measures operational
+  reality (validator-hit rate, surface weight, redundancy, retirement
+  candidates) — *how the harness behaves at runtime*. The conformance
+  matrix verifies that a workflow declaration satisfies the spec's
+  structural requirements — *whether the workflow is well-formed*. Both
+  surface together: a workflow may pass conformance but rank low on
+  fitness, or pass fitness but fail conformance under a new doctrine
+  release. Two orthogonal axes; the conformance matrix is the prerequisite,
+  the fitness report is the operational measurement.
+- **Distinct from `gz validate --<scope>` outputs.** Individual validators
+  check individual artifacts (a brief, an ADR file, the manifest, the
+  ledger). The conformance matrix is the *aggregator* — given a workflow
+  spec, which set of validators MUST have passed for the workflow to be
+  conforming. A workflow's conformance status is "all REQUIRED-category
+  witness commands have produced a passing receipt." Individual `gz
+  validate` exits are the inputs; the conformance matrix is the join.
+- **Distinct from `obpi-state-machine` rules 7 and 8.** The state machine
+  enumerates failure classes and event vocabulary as *runtime concepts*
+  (what the monitor consults). The conformance matrix is a *spec concept*
+  (what a workflow declaration must include and what witnesses must exist
+  before the workflow is conforming). The state machine produces the
+  runtime evidence; the conformance matrix verifies the evidence is
+  structurally sufficient.
+
+### Coupled-surface coherence
+
+- **[ADR-pool.obpi-state-machine](ADR-pool.obpi-state-machine.md)
+  § Amendment 2026-05-19** — supplies the rule-7 failure-class taxonomy
+  and the rule-8 event vocabulary that this amendment's `failure_class_per_rejection_path`
+  and `ledger_event_in_vocabulary` categories consume. The two amendments
+  ship in lockstep; the workflow conformance matrix cannot validate
+  rule-7 / rule-8 references without the state-machine ADR's enumerations
+  being authored.
+- **[ADR-pool.harness-fitness-report](ADR-pool.harness-fitness-report.md)** —
+  consumes the conformance-matrix-pass-rate signal as one input to fitness
+  measurement. Workflows ranking high on conformance but low on fitness
+  surface as "well-formed but operationally cold" candidates for redesign;
+  workflows ranking low on conformance surface as immediate
+  doctrine-debt fixes.
+- **[ADR-pool.harness-trace-bundles](ADR-pool.harness-trace-bundles.md)** —
+  the `trace_bundle_emission` RECOMMENDED category resolves to trace-bundle
+  manifest existence; trace bundles declare their workflow association so
+  the conformance check can find them.
+- **[ADR-0.0.53](../foundation/ADR-0.0.53-validator-remediation-payload-invariant/)
+  (Draft 2026-05-19)** — `gz workflow conformance` failure output emits
+  `RemediationPayload`s naming the canonical witness-command-to-run for
+  each missing category. The matrix is one specific consumer of the
+  payload contract.
+
+### Distinct from Symphony
+
+- **Workflow-scoped, not implementation-scoped.** Symphony §17 / §18
+  measure conformance of an *implementation* of the Symphony spec (does
+  this Rust/Python/Go service satisfy Symphony's REQUIRED categories?).
+  The gzkit conformance matrix measures conformance of a *workflow
+  declaration* (does this OBPI-pipeline / patch-release / ADR-closeout
+  workflow satisfy the gzkit workflow spec's REQUIRED structure?). gzkit
+  has one implementation (the Python `gz` CLI); the conformance question
+  applies per-workflow, not per-implementation.
+- **Receipt-witnessed, not test-suite-witnessed.** Symphony's conformance
+  is verified by running the spec's reference test suite against an
+  implementation. gzkit's conformance is verified by ARB receipts produced
+  during normal runtime — the same receipts that bind attestation.
+  Conformance is not a separate offline check; it is a property the live
+  workflow produces evidence of as it runs.
+- **Distinct REQUIRED vs RECOMMENDED split.** Symphony's REQUIRED set is
+  what every Symphony implementation MUST do; gzkit's REQUIRED set is
+  what every conforming workflow declaration MUST include. The split
+  exists in both surfaces but the surfaces are different (implementation
+  vs declaration). Symphony's §18 Operational Validation Before
+  Production list maps to gzkit's RECOMMENDED set, not the REQUIRED set.
+
+### Inspired By (extended)
+
+[openai/symphony SPEC.md](https://github.com/openai/symphony/blob/main/SPEC.md)
+**§17 Test and Validation Matrix** (per-scope conformance dimensions with
+REQUIRED test categories per scope: Workflow and Config Parsing, Workspace
+Manager and Safety, Issue Tracker Client, Orchestrator Dispatch, Coding-
+Agent App-Server Client, Observability, CLI and Host Lifecycle, Real
+Integration Profile) and **§18 Implementation Checklist — Definition of
+Done** (REQUIRED-for-Conformance vs RECOMMENDED-Extensions split + Operational
+Validation Before Production list). The full re-read of Symphony SPEC.md on
+2026-05-19 surfaced the *matrix-as-first-class-surface* pattern that this
+ADR's original Target Scope omitted — workflow conformance was implicit in
+"validate" but never enumerated as a structured matrix consumers can
+program against. This amendment closes the enumeration gap.

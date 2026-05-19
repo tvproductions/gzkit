@@ -46,11 +46,22 @@ Define the canonical `JudgeInvocation` declaration schema as the mechanical surf
 
 - `.gzkit/rules/llm-as-judge.md` — rule body authored under OBPI-0.0.39-01; this OBPI may not edit it
 - `artifacts/audits/judge-surface-classification-*.md` — produced under OBPI-0.0.39-03
-- `gz validate --judge-leakage` / `gz validate --judge-output-discipline` / `gz judge meta-eval` — these CLI surfaces land under ADR-0.0.40, NOT here. This OBPI may NOT register new validator scopes or new top-level CLI verbs.
+- `gz validate --judge-leakage` / `gz validate --judge-output-discipline` / `judge meta-eval` — these CLI surfaces land under ADR-0.0.40, NOT here. This OBPI may NOT register new validator scopes or new top-level CLI verbs.
 - `data/judge_meta_eval_floor.json` — meta-eval floor configuration is ADR-0.0.40's scope
 - `data/judge_leakage_waivers.json` — leakage waiver registry is ADR-0.0.40's scope
 - New runtime dependencies
 - CI files, lockfiles
+
+## Creates These Files
+
+- `src/gzkit/governance/judge_invocation.py` — **CREATE** Pydantic models (`JudgeInvocation`, `BiasMitigations`, `CandidateProvenance`) + axis enums
+- `src/gzkit/schemas/judge_invocation.json` — **CREATE** JSON Schema mirror of `JudgeInvocation`
+- `data/judge_axis_enums.json` — **CREATE** single-source-of-truth enum/literal vocabulary
+- `tests/governance/test_judge_invocation_schema.py` — **CREATE** REQ-derived schema assertions
+- `tests/arb/test_judge_receipt_validation.py` — **CREATE** receipt-validator integration tests
+- `features/governance/llm_as_judge_schema.feature` — **CREATE** BDD scenarios tagged `@REQ-0.0.39-02-NN`
+
+Existing files modified: `src/gzkit/arb/validator.py` (extend to route judge-prefixed receipts).
 
 ## Requirements (FAIL-CLOSED)
 
@@ -70,7 +81,7 @@ Define the canonical `JudgeInvocation` declaration schema as the mechanical surf
 11. REQUIREMENT: `tests/arb/test_judge_receipt_validation.py` asserts: (a) judge-prefixed receipts are routed to schema validation; (b) compliant receipts pass; (c) non-compliant receipts are rejected with a diagnostic naming the failing field; (d) non-judge receipts (other ARB step prefixes) pass through unchanged.
 12. REQUIREMENT: `features/governance/llm_as_judge_schema.feature` defines BDD acceptance scenarios for Gate 4 covering: emitting a compliant judge receipt; rejecting a receipt with empty explanation_text; rejecting a receipt with off-enum what_axis; rejecting a receipt declaring same-family-waived without a corresponding waiver-registry entry (ADR-0.0.40 will add the waiver registry; for this OBPI, the feature scenario asserts the rejection mechanism but the waiver-registry side is fixture-stubbed).
 13. REQUIREMENT: `gz cli audit` exits 0 after this OBPI lands — no new top-level verb is added, only the schema validator path inside ARB. The schema landing is invisible at the CLI verb-roster surface.
-14. REQUIREMENT: NEVER add `gz validate --judge-leakage`, `gz validate --judge-output-discipline`, `gz judge meta-eval`, or any other new validator scope or CLI verb in this OBPI. Those land under ADR-0.0.40. Adding them here is a brief-boundary violation per AGENTS.md § Behavior Rules — Never #5.
+14. REQUIREMENT: NEVER add `gz validate --judge-leakage`, `gz validate --judge-output-discipline`, `judge meta-eval`, or any other new validator scope or CLI verb in this OBPI. Those land under ADR-0.0.40. Adding them here is a brief-boundary violation per AGENTS.md § Behavior Rules — Never #5.
 15. REQUIREMENT: NEVER backfill receipts from existing judge surfaces in this OBPI; the existing-surface retrofit is OBPI-0.0.40-05's scope. Existing red-team receipts emitted before this OBPI lands continue to validate under their pre-schema shape; the new schema applies only to receipts emitted after the schema lands.
 16. REQUIREMENT: Pydantic and JSON Schema MUST stay in lockstep — a test asserts `JudgeInvocation.model_json_schema()` matches the committed `judge_invocation.json` byte-for-byte (modulo formatting whitespace per a documented normalization step). Drift is fail-closed.
 
@@ -199,7 +210,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.39-02-09: Given the `JudgeInvocation.model_json_schema()` output, when compared to the committed `judge_invocation.json`, then the two are byte-identical (modulo documented normalization).
 - [ ] REQ-0.0.39-02-10: Given `gz cli audit`, when run after this OBPI lands, then exit code is 0 and no new top-level verbs appear in the verb roster (the schema landing is invisible at the verb surface).
 - [ ] REQ-0.0.39-02-11: Given `features/governance/llm_as_judge_schema.feature`, when run via `uv run -m behave`, then all scenarios pass with `@REQ-0.0.39-02-NN` tags covering the requirement set above.
-- [ ] REQ-0.0.39-02-12: Given the Denied Paths boundary, when this OBPI's diff is reviewed, then no `gz validate --judge-leakage`, `--judge-output-discipline`, or `gz judge meta-eval` CLI verb is registered, no leakage waiver registry is added, no meta-eval floor file is added — those scopes belong to ADR-0.0.40.
+- [ ] REQ-0.0.39-02-12: Given the Denied Paths boundary, when this OBPI's diff is reviewed, then no `gz validate --judge-leakage`, `--judge-output-discipline`, or `judge meta-eval` CLI verb is registered, no leakage waiver registry is added, no meta-eval floor file is added — those scopes belong to ADR-0.0.40.
 
 ## Completion Checklist
 

@@ -1,9 +1,9 @@
 ---
 id: ADR-0.0.39-llm-as-judge-doctrine
-status: Draft
+status: Proposed
 kind: foundation
 semver: 0.0.39
-lane: lite
+lane: heavy
 parent: PRD-GZKIT-1.0.0
 date: 2026-05-06
 promoted_from: ADR-pool.advisory-judge-surface
@@ -123,6 +123,8 @@ The mechanical floor (ADR-0.0.40 ships the validator):
 ### Judge-invocation declaration schema (the surface every receipt must populate)
 
 Authored in OBPI-0.0.39-02. The schema is the mechanical surface for invariants 5–8.
+
+**Contract stability declaration (binding at `Proposed` and after):** The field set, types, ordering, and Pydantic / JSON-Schema mirror invariants enumerated below — together with OBPI-0.0.39-02's REQ-01 through REQ-09 — constitute the **contract-stable judge surface** that downstream ADRs depend on. From the moment ADR-0.0.39 reaches `Proposed`, additions to the schema require a foundation-kind ADR amendment with explicit propagation accounting (per ADR-0.0.52); removals or type changes require ADR supersession. This declaration is what ADR-0.0.52's hard-prereq language ("ADR-0.0.39 must `Proposed` with named judge-contract surface subsection locked") binds to.
 
 ```text
 JudgeInvocation:
