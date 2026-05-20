@@ -1,0 +1,51 @@
+{
+  "obpi_id": "OBPI-0.0.37-04-brief-structural-schema",
+  "timestamp": "2026-05-20T00:33:52.129260+00:00",
+  "verdict": "FAIL",
+  "plan_file": null,
+  "gaps_found": 5,
+  "gaps": [
+    "No plan file found for OBPI-0.0.37-04-brief-structural-schema in .claude/plans/ or ~/.claude/plans/",
+    "Allowed path does not exist in repository: src/gzkit/governance/brief_structure.py",
+    "Allowed path does not exist in repository: src/gzkit/schemas/obpi_brief_structure.json",
+    "Allowed path does not exist in repository: tests/governance/test_brief_structure.py",
+    "Allowed path does not exist in repository: tests/fixtures/brief_structure/"
+  ],
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.15.0",
+      "sibling_obpi": "OBPI-0.15.0-04-schema-generation-unification",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi_brief_structure.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-04-brief-structural-schema.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-01-doctrine-and-canon",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi_brief_structure.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-03-storybook-validator",
+      "contested_paths": [
+        "src/gzkit/governance/brief_structure.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-06-persona-schema-validation",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi_brief_structure.json"
+      ]
+    }
+  ]
+}
