@@ -132,8 +132,8 @@ uv run -m unittest tests.test_obpi_schema tests.governance.test_obpi_complete_pa
 git diff src/gzkit/schemas/obpi.json
 
 # Complete an OBPI in dry-run; observe populated actual_paths_touched
-uv run gz obpi complete OBPI-0.0.52-09-bdd-coverage-staleness-propagation --dry-run --json \
-  | python -c "import json,sys; print(json.load(sys.stdin).get('actual_paths_touched'))"
+uv run gz obpi complete OBPI-0.0.52-09-bdd-coverage-staleness-propagation --dry-run --json > /tmp/obpi-complete.json
+python -c "import json; print(json.load(open('/tmp/obpi-complete.json')).get('actual_paths_touched'))"
 
 # Negative case: staging a file outside allowed paths fails the ceremony
 git add unrelated/file.py

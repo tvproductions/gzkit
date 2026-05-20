@@ -186,5 +186,75 @@ class PrefixRegressionTests(unittest.TestCase):
             )
 
 
+class PipeContinuationTests(unittest.TestCase):
+    """``\\``-continued gz pipelines must be flagged despite the line split (GHI #486)."""
+
+    def _write_doc(self, root: Path, body: str) -> Path:
+        target = root / "docs" / "sample.md"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(body, encoding="utf-8")
+        return target
+
+    def test_continuation_pipe_python_is_flagged_at_start_line(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_doc(
+                root,
+                "```bash\n"
+                "uv run gz obpi complete OBPI-0.0.X-NN --dry-run --json \\\n"
+                '  | python -c "import json,sys; print(json.load(sys.stdin))"\n'
+                "```\n",
+            )
+            flagged = [e for e in audit_utf8_prefix(root) if e.type == "utf8_prefix"]
+            self.assertEqual(len(flagged), 1, msg=f"got: {flagged}")
+            self.assertEqual(flagged[0].artifact, "docs/sample.md:2")
+
+    def test_continuation_pipe_jq_is_flagged(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_doc(
+                root,
+                "```bash\n"
+                "uv run gz patch release --dry-run --json \\\n"
+                "  | jq -r '.qualifications[].ghi.number'\n"
+                "```\n",
+            )
+            errors = audit_utf8_prefix(root)
+            self.assertTrue(
+                any(e.type == "utf8_prefix" for e in errors),
+                msg=f"expected utf8_prefix error, got: {errors}",
+            )
+
+    def test_continuation_pipe_with_reconfigure_passes(self) -> None:
+        """A continuation whose helper reconfigures stdio is one clean logical command."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_doc(
+                root,
+                "```bash\n"
+                "uv run gz state --json \\\n"
+                '  | uv run python -c "import sys; '
+                "sys.stdout.reconfigure(encoding='utf-8'); "
+                "sys.stdin.reconfigure(encoding='utf-8'); print('ok')\"\n"
+                "```\n",
+            )
+            errors = audit_utf8_prefix(root)
+            self.assertFalse(errors, msg=f"expected clean, got: {errors}")
+
+    def test_file_handoff_continuation_is_not_flagged(self) -> None:
+        """``gz --json > file`` then a separate consumer line is the remediation shape."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_doc(
+                root,
+                "```bash\n"
+                "uv run gz state --json > /tmp/state.json\n"
+                "python -c \"import json; print(json.load(open('/tmp/state.json')))\"\n"
+                "```\n",
+            )
+            errors = audit_utf8_prefix(root)
+            self.assertFalse(errors, msg=f"expected clean, got: {errors}")
+
+
 if __name__ == "__main__":
     unittest.main()

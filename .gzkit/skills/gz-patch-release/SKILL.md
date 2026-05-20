@@ -5,7 +5,7 @@ description: "Orchestrate the GHI-driven patch release ceremony: draft narrative
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.4.0"
+  skill-version: "1.4.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-20
+last_reviewed: 2026-05-20
 model: sonnet
 ---
 
@@ -132,8 +132,8 @@ mechanism. The recovery is binding before the ceremony proceeds:
 1. Enumerate `diff_only` GHIs:
 
    ```bash
-   uv run gz patch release --dry-run --json \
-     | jq -r '.qualifications[] | select(.status == "diff_only") | .ghi.number'
+   uv run gz patch release --dry-run --json > /tmp/patch-release.json
+   jq -r '.qualifications[] | select(.status == "diff_only") | .ghi.number' /tmp/patch-release.json
    ```
 
 2. For each enumerated GHI, read the body to confirm the `runtime`
