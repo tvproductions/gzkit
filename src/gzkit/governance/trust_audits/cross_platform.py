@@ -4,7 +4,9 @@ The CLI entrypoint reconfigures stdio at runtime; the env-var prefix is
 redundant. The runtime guard does NOT cover fresh-interpreter helpers,
 so doc/skill/feature surfaces must either reconfigure their own stdio or
 use the file-handoff pattern for non-Python tools (jq/awk/sed). GHI #275
-extends the original GHI #206 check to those classes.
+extends the original GHI #206 check to those classes. GHI #486 extends
+the doc scan to ``\\``-continued shell pipelines, which the line-scoped
+regexes would otherwise silently miss.
 """
 
 from __future__ import annotations
@@ -159,6 +161,29 @@ def _iter_doc_pipe_paths(project_root: Path) -> list[Path]:
     return paths
 
 
+def _coalesce_continuations(content: str) -> list[tuple[int, str]]:
+    """Join trailing-backslash shell continuations into logical lines.
+
+    A ``gz ... | tool`` pipeline may be split across physical lines with a
+    trailing ``\\``. The pipe regexes are line-scoped, so a continuation
+    silently evades the scan (GHI #486). Each logical line is reported at
+    the physical line where it begins, so waivers keyed to a start line and
+    the standalone single-line case both keep their original line numbers.
+    """
+    physical = content.splitlines()
+    logical: list[tuple[int, str]] = []
+    index = 0
+    while index < len(physical):
+        start = index + 1
+        buffer = physical[index]
+        while buffer.rstrip().endswith("\\") and index + 1 < len(physical):
+            buffer = f"{buffer.rstrip()[:-1]} {physical[index + 1]}"
+            index += 1
+        logical.append((start, buffer))
+        index += 1
+    return logical
+
+
 def _scan_one_doc_pipe_file(path: Path, project_root: Path) -> list[ValidationError]:
     try:
         content = path.read_text(encoding="utf-8")
@@ -166,7 +191,7 @@ def _scan_one_doc_pipe_file(path: Path, project_root: Path) -> list[ValidationEr
         return []
     rel_path = path.relative_to(project_root).as_posix()
     errors: list[ValidationError] = []
-    for lineno, line in enumerate(content.splitlines(), 1):
+    for lineno, line in _coalesce_continuations(content):
         artifact = f"{rel_path}:{lineno}"
         if artifact in _UTF8_PIPE_WAIVERS:
             continue

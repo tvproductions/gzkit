@@ -127,11 +127,11 @@ uv run -m unittest tests.governance.test_propagation_trigger tests.governance.te
 ## Demo
 
 ```bash
-uv run gz closeout ADR-0.0.X --dry-run --json \
-  | python -c "import json,sys; e=json.load(sys.stdin); print('events:', [v['event'] for v in e.get('emitted_events', [])])"
+uv run gz closeout ADR-0.0.X --dry-run --json > /tmp/closeout.json
+python -c "import json; e=json.load(open('/tmp/closeout.json')); print('events:', [v['event'] for v in e.get('emitted_events', [])])"
 
-uv run gz obpi complete OBPI-0.0.X-NN --dry-run --json \
-  | python -c "import json,sys; e=json.load(sys.stdin); print('tier2_fired:', e.get('tier2_fired', False))"
+uv run gz obpi complete OBPI-0.0.X-NN --dry-run --json > /tmp/obpi-complete.json
+python -c "import json; e=json.load(open('/tmp/obpi-complete.json')); print('tier2_fired:', e.get('tier2_fired', False))"
 
 # tx_id pairing check
 tail -5 .gzkit/ledger.jsonl \

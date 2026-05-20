@@ -140,7 +140,8 @@ test ! -e .gzkit/chores/coverage-40pct && echo "dry-run made no changes"
 
 # JSON output parses
 uv run gz chores \
-  doctor --json | uv run python -c "import sys, json; json.load(sys.stdin); print('valid JSON')"
+  doctor --json > /tmp/chores-doctor.json
+uv run python -c "import json; json.load(open('/tmp/chores-doctor.json')); print('valid JSON')"
 
 # Type-check + tests
 uv run gz typecheck
