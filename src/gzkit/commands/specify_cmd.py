@@ -333,42 +333,37 @@ def _infer_allowed_paths(
     return "\n".join(deduped)
 
 
-def _extract_decision_as_requirements(adr_content: str) -> str:
-    """Extract Decision bullets from ADR as OBPI requirement seeds.
+def _build_item_requirements(
+    checklist_item_text: str,
+    wbs_spec_summary: str,
+    adr_content: str,
+) -> str:
+    """Build per-item OBPI requirement seeds from one checklist item.
 
-    Converts ADR Decision section bullets into numbered REQUIREMENT lines.
+    The parent ADR Decision section is ADR-wide and cannot be filtered per
+    item; using it as the requirement source over-bundles every brief with
+    all items' scope (GHI #485). The checklist item text and WBS spec
+    summary are the per-item intent. The ADR-wide Critical Constraint
+    genuinely binds every item, so it is still appended.
     """
-    section = extract_markdown_section(adr_content, "Decision")
-    if not section:
-        return (
-            "1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief\n"
-            "1. REQUIREMENT: Verification commands MUST be concrete and runnable "
-            "before acceptance\n"
-            "1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief\n"
-            "1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins"
-        )
-
-    bullet_re = re.compile(r"^\s*(?:-|\d+\.)\s+(.+)$")
+    item_intent = _normalized_objective_from_checklist_item(checklist_item_text)
     reqs: list[str] = []
-    for line in section.splitlines():
-        m = bullet_re.match(line)
-        if not m:
-            continue
-        text = m.group(1).strip()
-        if not text or text.startswith("{"):
-            continue
-        reqs.append(f"1. REQUIREMENT: {text}")
+    if item_intent and item_intent != "TBD" and not item_intent.startswith("{"):
+        reqs.append(f"1. REQUIREMENT: This OBPI MUST deliver: {item_intent}")
 
-    if not reqs:
-        return (
-            "1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief\n"
-            "1. REQUIREMENT: Verification commands MUST be concrete and runnable "
-            "before acceptance\n"
-            "1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief\n"
-            "1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins"
+    spec = wbs_spec_summary.strip().rstrip(".")
+    if spec and spec.lower() not in ("tbd", "pending") and spec.lower() not in item_intent.lower():
+        reqs.append(f"1. REQUIREMENT: Scoped acceptance per WBS: {spec}.")
+
+    reqs.extend(
+        (
+            "1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief",
+            "1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance",
+            "1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief",
+            "1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins",
         )
+    )
 
-    # Add critical constraint if present
     constraint_match = re.search(
         r"\*\*Critical Constraint:\*\*\s*(.+?)(?:\n\n|\n\*\*)",
         adr_content,
@@ -529,7 +524,7 @@ def _build_obpi_plan(
         project_root, adr_file, adr_content, checklist_item_text
     )
     denied_paths_md = _extract_denied_paths(adr_content)
-    requirements_md = _extract_decision_as_requirements(adr_content)
+    requirements_md = _build_item_requirements(checklist_item_text, wbs_spec_summary, adr_content)
     prerequisites_md = _build_discovery_prerequisites(allowed_paths_md)
     existing_code_md = _build_existing_code_checklist(allowed_paths_md, adr_content)
     verification_specific_md = _build_verification_specific(

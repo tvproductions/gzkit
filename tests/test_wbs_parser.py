@@ -6,7 +6,7 @@
 import unittest
 
 from gzkit.commands.specify_cmd import (
-    _extract_decision_as_requirements,
+    _build_item_requirements,
     _extract_denied_paths,
     _extract_integration_points,
     _resolve_lane_from_wbs,
@@ -179,29 +179,55 @@ class TestExtractIntegrationPoints(unittest.TestCase):
         self.assertTrue(all(line.startswith("- `") for line in lines))
 
 
-class TestExtractDecisionAsRequirements(unittest.TestCase):
-    """Verify Decision bullets become OBPI requirements."""
+class TestBuildItemRequirements(unittest.TestCase):
+    """Verify Requirements seed from the per-item checklist text, not the
+    ADR-wide Decision section (GHI #485)."""
 
-    def test_extracts_decision_bullets(self):
-        result = _extract_decision_as_requirements(SAMPLE_ADR_WITH_CONTEXT)
+    def test_requirements_scoped_to_checklist_item(self):
+        result = _build_item_requirements(
+            "OBPI-0.0.11-02: Define the persona control surface schema",
+            "",
+            SAMPLE_ADR_WITH_CONTEXT,
+        )
         self.assertIn("REQUIREMENT:", result)
-        self.assertIn("control surface", result)
-        self.assertIn("virtue-ethics", result)
+        self.assertIn("persona control surface schema", result)
 
-    def test_includes_critical_constraint(self):
-        result = _extract_decision_as_requirements(SAMPLE_ADR_WITH_CONTEXT)
+    def test_distinct_items_produce_distinct_requirements(self):
+        item_one = _build_item_requirements(
+            "OBPI-0.0.11-01: Research synthesis and design principles",
+            "",
+            SAMPLE_ADR_WITH_CONTEXT,
+        )
+        item_two = _build_item_requirements(
+            "OBPI-0.0.11-02: Define the persona control surface schema",
+            "",
+            SAMPLE_ADR_WITH_CONTEXT,
+        )
+        self.assertIn("Research synthesis", item_one)
+        self.assertNotIn("Research synthesis", item_two)
+        self.assertIn("control surface schema", item_two)
+        self.assertNotIn("control surface schema", item_one)
+
+    def test_includes_generic_fail_closed_block(self):
+        result = _build_item_requirements("OBPI-0.0.11-01: Anything", "", "# bare")
+        self.assertIn("Work MUST stay inside the Allowed Paths", result)
+
+    def test_includes_adr_wide_critical_constraint(self):
+        result = _build_item_requirements(
+            "OBPI-0.0.11-01: Research synthesis",
+            "",
+            SAMPLE_ADR_WITH_CONTEXT,
+        )
         self.assertIn("ALWAYS:", result)
         self.assertIn("virtue-ethics", result)
 
-    def test_fallback_when_no_decision(self):
-        result = _extract_decision_as_requirements("# No decision here")
-        self.assertIn("Work MUST stay inside the Allowed Paths", result)
-
-    def test_skips_template_placeholders(self):
-        adr = "## Decision\n\n- {Testable bullet 1}\n- Real requirement\n"
-        result = _extract_decision_as_requirements(adr)
-        self.assertNotIn("{Testable", result)
-        self.assertIn("Real requirement", result)
+    def test_wbs_spec_summary_contributes_when_distinct(self):
+        result = _build_item_requirements(
+            "OBPI-0.0.11-03: Trait model",
+            "Trait composition orthogonality proof",
+            SAMPLE_ADR_WITH_CONTEXT,
+        )
+        self.assertIn("Trait composition orthogonality proof", result)
 
 
 class TestExtractDeniedPaths(unittest.TestCase):
