@@ -674,3 +674,96 @@ class TestValidateDocumentsNestedIteration(unittest.TestCase):
                 [],
                 msg=f"Expected no id errors for slug-id ADR; got {id_errors}",
             )
+
+
+_MANIFEST_WITH_OBPI_AND_ADR = {
+    "schema": "gzkit.manifest.v2",
+    "structure": {
+        "source_root": "src",
+        "tests_root": "tests",
+        "docs_root": "docs",
+        "design_root": "docs/design",
+    },
+    "artifacts": {
+        "obpi": {"path": "docs/design/adr", "schema": "gzkit.obpi.v1"},
+        "adr": {"path": "docs/design/adr", "schema": "gzkit.adr.v1"},
+    },
+    "data": {},
+    "ops": {},
+    "thresholds": {},
+    "control_surfaces": {},
+    "verification": {},
+    "gates": {},
+    "rules": {},
+}
+
+_HISTORICAL_OBPI_BRIEF = """\
+---
+id: OBPI-0.0.99-01-historical-thing
+parent: ADR-0.0.99
+item: 1
+lane: lite
+status: Completed
+---
+# OBPI-0.0.99-01 — Historical Thing
+
+This attested-completed brief predates the current authored-brief schema and
+carries none of the required `## Lane` / `## Allowed Paths` / `## Denied Paths`
+/ `## Requirements (FAIL-CLOSED)` / `## Quality Gates` sections.
+"""
+
+
+class TestValidateDocumentsSkipsObpiCorpus(unittest.TestCase):
+    """REQ-500-01: documents scope must not raw-schema-validate OBPI briefs.
+
+    GHI #500: the `documents` scope treated every OBPI brief as a
+    newly-authored document and produced thousands of non-actionable
+    schema-section failures against the historical corpus. OBPI corpus
+    hygiene is owned by the version-aware `briefs` scope; strict authored
+    checks by `gz obpi validate --authored`.
+    """
+
+    def _write_manifest(self, root: Path) -> None:
+        gzkit_dir = root / ".gzkit"
+        gzkit_dir.mkdir(parents=True, exist_ok=True)
+        (gzkit_dir / "manifest.json").write_text(
+            json.dumps(_MANIFEST_WITH_OBPI_AND_ADR), encoding="utf-8"
+        )
+
+    def test_historical_obpi_brief_produces_no_documents_errors(self) -> None:
+        """A schema-incomplete historical OBPI brief must raise no documents-scope errors."""
+        from gzkit.commands.validate_cmd import _validate_manifest_documents
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_manifest(root)
+            obpi_dir = root / "docs" / "design" / "adr" / "pre-release" / "ADR-0.0.99-x" / "obpis"
+            obpi_dir.mkdir(parents=True)
+            (obpi_dir / "OBPI-0.0.99-01-historical-thing.md").write_text(
+                _HISTORICAL_OBPI_BRIEF, encoding="utf-8"
+            )
+            errors = _validate_manifest_documents(root)
+            obpi_errors = [e for e in errors if Path(e.artifact).name.startswith("OBPI-")]
+            self.assertEqual(
+                obpi_errors,
+                [],
+                msg=f"documents scope must skip OBPI briefs (GHI #500); got {obpi_errors}",
+            )
+
+    def test_adr_validation_still_fires(self) -> None:
+        """Regression guard: removing OBPI from documents must not stop ADR validation."""
+        from gzkit.commands.validate_cmd import _validate_manifest_documents
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_manifest(root)
+            pkg_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.43-ddd"
+            pkg_dir.mkdir(parents=True)
+            (pkg_dir / "ADR-0.0.43-ddd.md").write_text(_BARE_ID_ADR_FRONTMATTER, encoding="utf-8")
+            errors = _validate_manifest_documents(root)
+            id_errors = [e for e in errors if e.type == "frontmatter" and e.field == "id"]
+            self.assertGreater(
+                len(id_errors),
+                0,
+                msg="ADR frontmatter validation must still fire in the documents scope",
+            )

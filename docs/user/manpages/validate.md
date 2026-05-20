@@ -1074,7 +1074,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | Scope flag | Default? | Purpose |
 |------------|----------|---------|
 | `--manifest` | yes | Validate `.gzkit/manifest.json` against the manifest schema |
-| `--documents` | yes | Validate governance docs (PRDs, constitutions, ADRs, OBPI briefs) |
+| `--documents` | yes | Validate governance docs (PRDs, constitutions, ADRs); OBPI briefs are owned by `--briefs` |
 | `--surfaces` | yes | Validate control-surface existence, frontmatter shape, and canonical sync parity |
 | `--ledger` | yes | Validate ledger integrity (event ordering, payload schema, append-only invariant) |
 | `--instructions` | yes | Validate agent-instruction surfaces (`AGENTS.md`, `CLAUDE.md`, hooks) |

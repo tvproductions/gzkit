@@ -989,8 +989,15 @@ def _validate_manifest_documents(project_root: Path) -> list[ValidationError]:
         artifact_dir = project_root / artifact_config.get("path", "")
         schema = artifact_config.get("schema", "")
         schema_name = schema.replace("gzkit.", "").replace(".v1", "")
+        # OBPI corpus hygiene is owned by the version-aware `briefs` scope
+        # (_validate_obpi_briefs); strict authored checks by `gz obpi validate
+        # --authored`. Raw-schema-validating the historical OBPI corpus here
+        # treats every attested-completed brief as newly-authored and produces
+        # thousands of non-actionable schema-section failures (GHI #500).
+        if schema_name == "obpi":
+            continue
         if artifact_dir.exists():
-            _PREFIX = {"adr": "ADR-", "obpi": "OBPI-"}
+            _PREFIX = {"adr": "ADR-"}
             prefix = _PREFIX.get(schema_name, "")
             doc_iter = artifact_dir.rglob(f"{prefix}*.md") if prefix else artifact_dir.glob("*.md")
             for doc in doc_iter:
