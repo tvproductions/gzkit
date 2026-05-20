@@ -28,7 +28,7 @@ def _render_registry(root: Path) -> tuple[bytes, int]:
     """
     invariants = load_invariants(root)
     template_root = root / ".gzkit" / "templates"
-    rendered_bytes = render_agents_md(invariants, template_root)
+    rendered_bytes = render_agents_md(invariants, template_root, root)
     return rendered_bytes, len(invariants)
 
 

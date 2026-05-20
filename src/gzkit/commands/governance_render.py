@@ -38,7 +38,7 @@ def governance_render_cmd(
 
     root = get_project_root()
     invariants = load_invariants(root)
-    rendered = render_agents_md(invariants, _TEMPLATE_ROOT)
+    rendered = render_agents_md(invariants, _TEMPLATE_ROOT, root)
 
     if stdout:
         stdout_dest = getattr(sys.stdout, "buffer", None)

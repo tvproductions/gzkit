@@ -32,6 +32,8 @@ Promoted audits run via `uv run gz validate --<scope>` — see `gz validate --he
 - **Heavy/foundation lane requires explicit human attestation before completion** — see § OBPI Acceptance Protocol; enforced by `gz closeout` pipeline.
 - **`.gzkit/rules/*.md` with `paths: "**"` or missing `paths:` may not live under any vendor-surface rules directory** (ADR-0.0.20) — enforced by `gz validate --unscoped-rules`.
 - **Every canonical surface (skills, rules, hooks, templates, chores, personas) MUST be reproducibly delivered by `pip install py-gzkit && gz init` to a fresh project, byte-equivalent to the wheel's authored canonical content** (T0 distribution invariant, ADR-0.0.31) — enforced by `gz validate --distribution`.
+- **`gz validate --invariant-coherence` — composition drift fail-close** re-renders the constitutional invariant registry and byte-compares against committed AGENTS.md; exit 3 on drift; in the `gz check` default scope (ADR-0.0.37 / OBPI-0.0.37-03).
+- **OBPI brief reconciles against current project shape before Stage 2 and before completion** — the five-dimension reconciliation engine (`reconcile_brief`) computes per-dimension drift; `gz validate --brief-reconcile` escalates drift for structured `BriefStructure` briefs (ADR-0.0.37 / OBPI-0.0.37-05).
 
 ## Architectural Boundaries
 
