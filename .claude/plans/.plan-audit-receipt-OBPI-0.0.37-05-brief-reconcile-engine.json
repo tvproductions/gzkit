@@ -1,0 +1,198 @@
+{
+  "obpi_id": "OBPI-0.0.37-05-brief-reconcile-engine",
+  "timestamp": "2026-05-20T01:39:02.646370+00:00",
+  "verdict": "PASS",
+  "plan_file": "brief-reconcile-engine-OBPI-0.0.37-05.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-04-validate-taxonomy",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.31",
+      "sibling_obpi": "OBPI-0.0.31-02-register-t0-scorecard",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.30",
+      "sibling_obpi": "OBPI-0.0.30-04-editor-protocol-contract",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.23",
+      "sibling_obpi": "OBPI-0.0.23-02-cross-link-and-scorecard",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-06-rule-file-matrix-scorecard",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.52",
+      "sibling_obpi": "OBPI-0.0.52-05-adr-eval-fresh-and-coherence-validators",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.38",
+      "sibling_obpi": "OBPI-0.0.38-01-rule-and-schema",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-07-validate-distribution",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.34",
+      "sibling_obpi": "OBPI-0.0.34-08-vendor-manifest-expansion",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-08-verdict-proof-binding",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py",
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.28",
+      "sibling_obpi": "OBPI-0.0.28-01-threshold-rule-file",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.28",
+      "sibling_obpi": "OBPI-0.0.28-03-threshold-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py",
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.20",
+      "sibling_obpi": "OBPI-0.0.20-01-validator-and-allowlist",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.24",
+      "sibling_obpi": "OBPI-0.0.24-01-validator-scope",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/brief_reconcile.py",
+        "src/gzkit/governance/trust_audits/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-07-link-integrity-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py",
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-01-selection-methodology",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-01-bullet-retention-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-02-surface-weight-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-05-surface-fidelity-composite",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-04-scenario-reachability-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-03-pointer-integrity-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.45",
+      "sibling_obpi": "OBPI-0.0.45-05-cli-mode-density-doctrine",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.39",
+      "sibling_obpi": "OBPI-0.0.39-01-rule-and-doctrine",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-05-brief-reconcile-engine.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-03-storybook-validator",
+      "contested_paths": [
+        "src/gzkit/governance/brief_reconcile.py",
+        "src/gzkit/governance/trust_audits/brief_reconcile.py",
+        "src/gzkit/governance/trust_audits/__init__.py",
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.49",
+      "sibling_obpi": "OBPI-0.0.49-05-systematic-debugging-rule-file",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    }
+  ]
+}

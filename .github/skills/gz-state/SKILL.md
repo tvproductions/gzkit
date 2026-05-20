@@ -4,7 +4,7 @@ description: Query artifact relationships and readiness state. Use when reportin
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-02-18
+last_reviewed: 2026-05-20
 model: haiku
 ---
 

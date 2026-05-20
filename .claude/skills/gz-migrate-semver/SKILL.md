@@ -4,7 +4,7 @@ description: Record semver identifier migration events. Use when applying canoni
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-02-18
+last_reviewed: 2026-05-20
 model: haiku
 ---
 

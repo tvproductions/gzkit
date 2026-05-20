@@ -216,6 +216,12 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 |---|------|-------|-----|
 | 58 | `gz validate --invariant-coherence` — composition drift fail-close | **Mechanical** | Enforced by `gz validate --invariant-coherence` (OBPI-0.0.37-03, `src/gzkit/governance/trust_audits/invariant_coherence.py`) — fails closed (exit 3) on byte-drift between the rendered constitutional invariant registry output and the committed AGENTS.md. Emits `composition_rendered` event on every invocation; additionally emits `composition_drift_detected` event with diff payload on drift. Included in `gz check` default scope list (REQ-0.0.37-03-05). Validator validated by `tests/governance/test_invariant_coherence.py` (17 tests across match-no-drift, mismatch-drift, event-emission, schema-registration, gz-check-default test classes). Scorecard citation: ADR-0.0.37 (parent), OBPI-0.0.37-01 (registry primitive), OBPI-0.0.37-02 (composition renderer), OBPI-0.0.37-03 (validator). |
 
+### Brief Reconciliation Invariant (CIC-2) (`ADR-0.0.37` / OBPI-0.0.37-05)
+
+| # | Rule | Score | Notes |
+|---|------|-------|-------|
+| 59 | OBPI brief reconciles against current project shape before Stage 2 and before completion | **Mechanical** | Enforced by `gz validate --brief-reconcile` (OBPI-0.0.37-05, `src/gzkit/governance/trust_audits/brief_reconcile.py`) — walks all OBPI briefs under `docs/design/adr/**/{obpis,briefs}/`, computes per-dimension delta across five drift classes (allowlist coherence, Discovery Checklist path existence, Verification verb resolution against parser registry, REQ-count parity against Acceptance Criteria, citation-tuple file existence); reports ERROR severity per dimension with drift; routed to exit 3 via `_POLICY_BREACH_ERROR_TYPES`. Enforcement scope: drift is escalated only for briefs that parse as a structured `BriefStructure` — legacy briefs are walked and reconciled but not escalated, honoring OBPI-0.0.37-04's permissive-mode deprecation window; the validator scope widens automatically as briefs migrate to structured frontmatter. Scorecard citation: ADR-0.0.37 (parent), OBPI-0.0.37-05 (engine), OBPI-0.0.37-06 (CLI verb, pending). |
+
 ### Token Block Discipline (`.gzkit/rules/token-block-discipline.md`)
 
 | # | Rule | Score | Why |
@@ -254,12 +260,12 @@ Counts updated 2026-05-13 after T0 Distribution Invariant promoted Promotable �
 
 | Score | Count | % |
 |-------|-------|---|
-| **Mechanical** | 40 | 62% |
+| **Mechanical** | 41 | 63% |
 | **Promotable** | 6 | 9% |
 | **Judgment** | 19 | 29% |
 | **Ambiguous** | 0 | 0% |
 
-**The mechanical floor rose from 30 % to 62 %** under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules were mechanized as `gz validate --<scope>` flags and two became pre-commit guards under `gzkit.hooks.guards`. ADR-0.0.22 added the security-sensitivity third axis as `gz validate --sensitivity`, lifting the floor by a further point. ADR-0.0.23 OBPI-02 added the **Judgment**-classed agent failure-mode taxonomy as shared reviewer vocabulary (mechanical promotion `gz validate --failure-mode-coverage` tracked under follow-up GHIs #308–#312). ADR-0.0.27 OBPI-01 added the **Mechanical**-classed exemplar-corpus doctrine rule. ADR-0.0.28 OBPI-01 added the **Mechanical**-classed complexity-thresholds rule (forthcoming `gz validate --complexity-thresholds` validator under OBPI-0.0.28-03). ADR-0.0.30 OBPI-04 added the **Mechanical**-classed editor/IDE protocol surface rule, with envelope validation enforced by JSON Schema. ADR-0.0.31 OBPI-02 added the T0 distribution invariant rule, promoted to **Mechanical** in OBPI-0.0.32-07 via `gz validate --distribution` (static check: pyproject.toml include + baseline manifest + on-disk canonical trees, exit 3 on any drift class). The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.
+**The mechanical floor rose from 30 % to 62 %** under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules were mechanized as `gz validate --<scope>` flags and two became pre-commit guards under `gzkit.hooks.guards`. ADR-0.0.22 added the security-sensitivity third axis as `gz validate --sensitivity`, lifting the floor by a further point. ADR-0.0.23 OBPI-02 added the **Judgment**-classed agent failure-mode taxonomy as shared reviewer vocabulary (mechanical promotion `gz validate --failure-mode-coverage` tracked under follow-up GHIs #308–#312). ADR-0.0.27 OBPI-01 added the **Mechanical**-classed exemplar-corpus doctrine rule. ADR-0.0.28 OBPI-01 added the **Mechanical**-classed complexity-thresholds rule (forthcoming `gz validate --complexity-thresholds` validator under OBPI-0.0.28-03). ADR-0.0.30 OBPI-04 added the **Mechanical**-classed editor/IDE protocol surface rule, with envelope validation enforced by JSON Schema. ADR-0.0.31 OBPI-02 added the T0 distribution invariant rule, promoted to **Mechanical** in OBPI-0.0.32-07 via `gz validate --distribution` (static check: pyproject.toml include + baseline manifest + on-disk canonical trees, exit 3 on any drift class). ADR-0.0.37 OBPI-05 added the **Mechanical**-classed brief-reconciliation invariant (CIC-2) rule, enforced by `gz validate --brief-reconcile`. The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.
 
 ---
 

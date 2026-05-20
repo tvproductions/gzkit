@@ -36,6 +36,9 @@ from gzkit.governance.trust_audits.attestation_receipts import (
     audit_attestation_receipts,
     validate_attestation_receipts,
 )
+from gzkit.governance.trust_audits.brief_reconcile import (
+    validate_brief_reconcile,
+)
 from gzkit.governance.trust_audits.briefs import (
     audit_behave_req_tags,
     audit_brief_cross_references,
@@ -170,6 +173,7 @@ __all__ = [
     "BOOTSTRAP_MODE_NOTICE_PREFIX",
     "validate_advisor_proof_binding",
     "validate_attestation_receipts",
+    "validate_brief_reconcile",
     "validate_bullet_retention",
     "validate_complexity_doctrine_links",
     "validate_complexity_thresholds",

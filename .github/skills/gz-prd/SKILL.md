@@ -4,7 +4,7 @@ description: Create product requirement artifacts. Use when defining or revising
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-02-18
+last_reviewed: 2026-05-20
 model: opus
 ---
 
