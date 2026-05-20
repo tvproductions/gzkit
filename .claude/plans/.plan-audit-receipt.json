@@ -1,9 +1,13 @@
 {
-  "obpi_id": "OBPI-0.0.37-02-composition-renderer",
-  "timestamp": "2026-05-19T02:00:00.000000+00:00",
+  "obpi_id": "OBPI-0.0.37-03-composition-drift-validator",
+  "timestamp": "2026-05-19T10:20:00.000000+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.37-02-composition-renderer.md",
-  "gaps_found": 0,
-  "gaps": [],
-  "notes": "Post-implementation re-audit: all 7 allowed paths now exist; CLI structural check PASS. ADR<->OBPI alignment solid; all 5 acceptance REQs covered by unit + BDD tests; lane=Heavy with all gates green. Scope collisions advisory only."
+  "plan_file": "OBPI-0.0.37-03-composition-drift-validator.md",
+  "gaps_found": 3,
+  "gaps": [
+    "src/gzkit/governance/events.py does not exist (brief says modify; will be created)",
+    ".gzkit/schemas/ledger_events.json does not exist (brief says modify; will be created)",
+    "Coupled-surface coherence (AGENTS.md§1a): src/gzkit/ledger_events.py and src/gzkit/schemas/ledger.json must also be extended for audit_event_schemas to pass; authorized by AGENTS.md§1a"
+  ],
+  "notes": "ADR<->OBPI alignment solid. Plan addresses all 3 advisory gaps: events.py will be created, ledger_events.json will be created, and ledger_events.py + schemas/ledger.json will be extended as coupled-surface coherence. --invariant-coherence added to default_scopes (gz check per REQ-6). Parser wiring via parser_maintenance.py covered by brief's OR-clause."
 }

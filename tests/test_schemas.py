@@ -21,6 +21,8 @@ from gzkit.events import (
     AuditGeneratedEvent,
     AuditReceiptEmittedEvent,
     CloseoutInitiatedEvent,
+    CompositionDriftDetectedEvent,
+    CompositionRenderedEvent,
     ConstitutionCreatedEvent,
     DistributionBaselineRegeneratedEvent,
     GateCheckedEvent,
@@ -257,6 +259,8 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "task_completed": TaskCompletedEvent,
     "task_blocked": TaskBlockedEvent,
     "task_escalated": TaskEscalatedEvent,
+    "composition_rendered": CompositionRenderedEvent,
+    "composition_drift_detected": CompositionDriftDetectedEvent,
 }
 
 # Base fields present on _EventBase -- not event-specific

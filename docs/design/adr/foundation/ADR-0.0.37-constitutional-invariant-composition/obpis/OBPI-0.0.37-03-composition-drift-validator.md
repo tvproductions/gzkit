@@ -3,7 +3,7 @@ id: OBPI-0.0.37-03-composition-drift-validator
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 <!-- gz-validate-skip: brief-demo-section -->
@@ -15,7 +15,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 - **Checklist Item:** #3 — "OBPI-0.0.37-03 — Composition drift validator (`gz validate --invariant-coherence`; fail-closed on drift; `composition_drift_detected` ledger event)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -29,14 +29,20 @@ Wire OBPI-02's renderer into the `gz validate` scope catalog as `--invariant-coh
 
 - `src/gzkit/governance/trust_audits/invariant_coherence.py` (new) — validator scope implementation
 - `src/gzkit/governance/trust_audits/__init__.py` (modify) — register the validator in the package registry
-- `src/gzkit/governance/events.py` (modify) — register `composition_rendered` and `composition_drift_detected` event types
-- `.gzkit/schemas/ledger_events.json` (modify) — extend with the two new event type definitions
-- `src/gzkit/commands/validate_cmd.py` (modify) OR wherever `gz validate` flag-dispatch lives — wire `--invariant-coherence` flag
-- `tests/governance/test_invariant_coherence.py` (new) — REQ-derived validator assertions
-- `tests/fixtures/invariant_coherence/` (new) — fixture registries + AGENTS.md pairs (matching, drifted)
+- `src/gzkit/governance/events.py` (new) — `emit_composition_rendered` / `emit_composition_drift_detected` governance-layer emission helpers
+- `src/gzkit/ledger_events.py` (modify; coupled-surface coherence per AGENTS.md §1a) — `composition_rendered_event` / `composition_drift_detected_event` factories so `audit_event_schemas` resolves
+- `src/gzkit/events.py` (modify; coupled-surface coherence) — `CompositionRenderedEvent` / `CompositionDriftDetectedEvent` typed models
+- `src/gzkit/schemas/ledger.json` (modify; coupled-surface coherence) — schema entries for both event types so `gz validate --ledger` does not fail-close
+- `src/gzkit/governance/trust_audits/events.py` (modify; coupled-surface coherence) — `_NO_GRAPH_IMPACT` waivers for the two new events
+- `.gzkit/schemas/ledger_events.json` (new) — per-event-type registry schema definitions (REQ-05)
+- `src/gzkit/commands/validate_cmd.py` (modify) — wire `--invariant-coherence` into `default_scopes`, runner, and `_POLICY_BREACH_ERROR_TYPES`
+- `src/gzkit/cli/parser_maintenance.py` (modify) — `--invariant-coherence` argparse flag (the `gz validate` flag-dispatch surface)
+- `tests/governance/test_invariant_coherence.py` (new) — REQ-derived validator assertions (tempdir-based; no static fixtures dir)
+- `tests/test_schemas.py` (modify; coupled-surface coherence) — register the two new event models in `_EVENT_MODELS`
 - `features/constitutional_invariants.feature` (modify) — add drift-validator scenarios tagged `@REQ-0.0.37-03-*`; file created by OBPI-02
+- `features/steps/constitutional_invariants_steps.py` (modify) — step definitions for the new scenarios
 - `docs/governance/advisory-rules-audit.md` (modify) — add scorecard entry for the new validator scope
-- `docs/user/manpages/gz-validate.md` (modify, if exists) — add `--invariant-coherence` flag documentation
+- `docs/user/manpages/validate.md` (modify) — add `--invariant-coherence` flag documentation
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-03-composition-drift-validator.md` (this brief)
 
 ## Denied Paths
@@ -73,17 +79,21 @@ Wire OBPI-02's renderer into the `gz validate` scope catalog as `--invariant-coh
 - [ ] `.gzkit/rules/governance-core.md` § Proof commands — `gz validate` exit-code convention
 - [ ] `src/gzkit/governance/trust_audits/__init__.py` — how scopes are registered
 
-**Context (exemplars):**
-
-- [ ] `src/gzkit/governance/trust_audits/advisor_proof_binding.py` — example of a validator-scope module shape
-- [ ] `src/gzkit/governance/trust_audits/distribution.py` — another validator-scope example
-- [ ] `src/gzkit/governance/events.py` — event-registration pattern
-
 **Prerequisites:**
 
-- [ ] OBPI-01 landed (registry primitive)
-- [ ] OBPI-02 landed (deterministic renderer with `--stdout`)
-- [ ] `src/gzkit/governance/events.py` exists and exposes event-registration API
+- [ ] OBPI-01 landed (registry primitive: `load_invariants`, `ConstitutionalInvariant`)
+- [ ] OBPI-02 landed (deterministic renderer `render_agents_md`)
+
+**Existing Code:**
+
+- [ ] `src/gzkit/governance/trust_audits/advisor_proof_binding.py` — canonical validator-scope module shape (public `validate_*` fn + private `_` helpers, top-level imports)
+- [ ] `src/gzkit/governance/trust_audits/__init__.py` — validator-scope registry (import + `__all__` registration pattern)
+- [ ] `src/gzkit/governance/compose.py` — OBPI-02 `render_agents_md(invariants, template_root) -> bytes` consumed by the validator
+- [ ] `src/gzkit/governance/invariants.py` — OBPI-01 `load_invariants(root) -> dict[str, ConstitutionalInvariant]`
+- [ ] `src/gzkit/ledger_events.py` — event factory pattern (`<name>_event() -> LedgerEvent` with `event=` literal)
+- [ ] `src/gzkit/commands/validate_cmd.py` — `default_scopes` dict, `_default_scope_runners`, `_POLICY_BREACH_ERROR_TYPES` (exit-3 routing)
+- [ ] `src/gzkit/cli/parser_maintenance.py` — `gz validate` argparse flag registration (`--advisor-proof-binding` precedent)
+- [ ] `src/gzkit/governance/trust_audits/events.py` — `audit_event_schemas` (the coupled-surface validator the new events must satisfy)
 
 ## Quality Gates
 
@@ -153,7 +163,7 @@ uv run gz check --list-scopes 2>&1 | rg -q 'invariant-coherence' && echo "REQ-06
 ## Completion Checklist
 
 - [ ] All gates satisfied
-- [ ] `gz brief reconcile OBPI-0.0.37-03-composition-drift-validator` reports zero drift
+- [ ] `gz obpi reconcile OBPI-0.0.37-03-composition-drift-validator` reports zero drift
 
 ## Evidence
 
@@ -167,15 +177,20 @@ uv run gz check --list-scopes 2>&1 | rg -q 'invariant-coherence' && echo "REQ-06
 
 ### Key Proof
 
-<!-- A drift case: edit AGENTS.md, run `gz validate --invariant-coherence`, observe exit 3 + diff. -->
+
+Drift case — committed AGENTS.md differs from rendered registry: `uv run gz validate --invariant-coherence` exits 3 and prints a unified diff (first 50 lines) of committed vs. rendered AGENTS.md.
+
+ARB receipts (all exit_status=0): arb-ruff-954f16380568456d9fe6d2feca02cf38 (lint clean), arb-step-typecheck-c66836b1981d4557a5fbd46a00cdc294 (typecheck clean), arb-step-unittest-a96b904094ac47b99629e0b6ed8a6007 (5358 tests pass), arb-step-mkdocs-3e633550eb0f473aa5286c6d0e610f37 (docs strict), arb-step-behave-3a8990d943474609924a9a23d1cc80ce (3/3 BDD scenarios). gz covers: 6/6 REQ coverage.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/governance/trust_audits/invariant_coherence.py (validator scope), src/gzkit/governance/events.py (ledger emission helpers), .gzkit/schemas/ledger_events.json (per-event-type registry schema), tests/governance/test_invariant_coherence.py (21 tests, 6 classes)
+- Files modified: trust_audits/__init__.py, ledger_events.py, events.py, schemas/ledger.json, trust_audits/events.py, validate_cmd.py, parser_maintenance.py, tests/test_schemas.py, features/constitutional_invariants.feature + steps, advisory-rules-audit.md, validate.md, behave_coverage_waivers.json
+- Tests added: 21 unit tests + 3 BDD scenarios (@REQ-0.0.37-03-01/02/03)
+- Date completed: 2026-05-19
+- Attestation status: operator-attested ("attest completed")
+- Defects noted: GHI #500 (gz validate --documents 3589 historical-brief schema errors), GHI #501 (events.py module split + frozen=True parity), GHI #502 (agent-insights.jsonl:75 invalid type=discovery); comment added to GHI #486 (utf8_prefix in ADR-0.0.52 briefs). _EventBase frozen=True direct-fixed in-flight.
 
 ## Tracked Defects
 
@@ -183,14 +198,14 @@ uv run gz check --list-scopes 2>&1 | rg -q 'invariant-coherence' && echo "REQ-06
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: per ADR-0.0.36 universal Gate 5
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — composition drift validator gz validate --invariant-coherence wired into gz check default scope, fail-closed exit 3 on AGENTS.md byte-drift from the rendered constitutional invariant registry; composition_rendered/composition_drift_detected ledger events registered. 6/6 REQs covered (21 unit tests + 3 BDD scenarios); full unittest sweep green (5358 tests). ARB receipts: arb-ruff-954f16380568456d9fe6d2feca02cf38, arb-step-typecheck-c66836b1981d4557a5fbd46a00cdc294, arb-step-unittest-a96b904094ac47b99629e0b6ed8a6007, arb-step-mkdocs-3e633550eb0f473aa5286c6d0e610f37, arb-step-behave-3a8990d943474609924a9a23d1cc80ce. Pre-existing failures cleared in-flight (utf8_prefix in ADR-0.0.52 briefs; discovery InsightType variant); defects routed to GHI #500/#501/#502/#486.
+- Date: 2026-05-20
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-20
 
 **Evidence Hash:** -

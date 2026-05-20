@@ -141,7 +141,8 @@ uv run -m unittest tests.governance.test_status_stale_column tests.governance.te
 uv run gz status --table | head -20
 
 # Staleness flags in state JSON
-uv run gz state --json | python -c "import json,sys; print(json.dumps({k:v.get('staleness_flags',[]) for k,v in json.load(sys.stdin).items() if v.get('staleness_flags')}, indent=2))"
+uv run gz state --json > /tmp/gz-state.json
+python -c "import json; data=json.load(open('/tmp/gz-state.json')); print(json.dumps({k:v.get('staleness_flags',[]) for k,v in data.items() if v.get('staleness_flags')}, indent=2))"
 
 # Read-only explain query
 uv run gz adr explain-stale ADR-0.0.B

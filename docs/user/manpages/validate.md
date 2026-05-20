@@ -14,7 +14,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--scenario-reachability] [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
             [--advisor-proof-binding] [--vendor-manifest]
-            [--kind-invariance]
+            [--invariant-coherence] [--kind-invariance]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
 ```
 
@@ -955,6 +955,25 @@ gz validate --advisor-proof-binding
 |------|---------|----------|
 | 0 | All scopes pass (vacuous when fixtures/ledger absent) | — |
 | 1 | One or more diagnoses lack non-empty `proof` | Inspect named fixture/event/schema and restore the binding (or remove the empty-proof artifact) |
+
+### `--invariant-coherence`
+
+Validate that the committed `AGENTS.md` matches the rendered constitutional invariant registry output. Fails closed (exit 3) on byte-drift; emits `composition_rendered` event on every run; additionally emits `composition_drift_detected` on drift.
+
+**Usage:**
+
+```bash
+gz validate --invariant-coherence
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Registry matches committed AGENTS.md | — |
+| 3 | Drift detected (output includes unified diff, first 50 lines) | Run `gz governance render --target agents-md` to regenerate AGENTS.md from the registry |
+
+**Related:** ADR-0.0.37 (constitutional invariant composition), OBPI-0.0.37-03 (this validator).
 
 ### `--sensitivity`
 

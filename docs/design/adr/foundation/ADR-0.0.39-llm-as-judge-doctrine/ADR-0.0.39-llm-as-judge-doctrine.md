@@ -3,7 +3,7 @@ id: ADR-0.0.39-llm-as-judge-doctrine
 status: Proposed
 kind: foundation
 semver: 0.0.39
-lane: heavy
+lane: lite
 parent: PRD-GZKIT-1.0.0
 date: 2026-05-06
 promoted_from: ADR-pool.advisory-judge-surface

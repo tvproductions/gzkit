@@ -462,6 +462,44 @@ def patch_release_event(
     )
 
 
+def composition_rendered_event(
+    invariant_count: int,
+    target: str,
+    byte_count: int,
+) -> LedgerEvent:
+    """Create an event recording a successful constitutional invariant composition render."""
+    timestamp = datetime.now(UTC).isoformat()
+    return LedgerEvent(
+        event="composition_rendered",
+        id=f"composition-rendered-{timestamp}",
+        ts=timestamp,
+        extra={
+            "invariant_count": invariant_count,
+            "target": target,
+            "byte_count": byte_count,
+            "render_ts": timestamp,
+        },
+    )
+
+
+def composition_drift_detected_event(
+    target: str,
+    diff_first_50_lines: str,
+) -> LedgerEvent:
+    """Create an event recording drift between rendered registry and committed target."""
+    timestamp = datetime.now(UTC).isoformat()
+    return LedgerEvent(
+        event="composition_drift_detected",
+        id=f"composition-drift-{timestamp}",
+        ts=timestamp,
+        extra={
+            "target": target,
+            "diff_first_50_lines": diff_first_50_lines,
+            "render_ts": timestamp,
+        },
+    )
+
+
 def intrinsic_complexity_attestation_event(
     *,
     file_path: str,

@@ -82,6 +82,16 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "symmetric to agent_sync_completed; consumed by distribution drift audits, "
         "not the artifact graph."
     ),
+    "composition_rendered": (
+        "Constitutional invariant composition render record (ADR-0.0.37, OBPI-0.0.37-03). "
+        "Layer-2 witness for successful registry renders; consumed by drift validator "
+        "and governance audit tooling, not the artifact graph."
+    ),
+    "composition_drift_detected": (
+        "Constitutional invariant composition drift record (ADR-0.0.37, OBPI-0.0.37-03). "
+        "Layer-2 witness for detected drift between rendered registry and committed target; "
+        "consumed by drift validator and governance audit tooling, not the artifact graph."
+    ),
 }
 
 _VALIDATOR_FIELD_WAIVERS: dict[str, str] = {}
