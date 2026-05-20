@@ -12,6 +12,11 @@ from gzkit.templates import render_template
 
 _FOUNDATION_SEMVER_RE = re.compile(r"^0\.0\.\d+$")
 _SEMVER_LITERAL_RE = re.compile(r"^\d+\.\d+\.\d+$")
+# Canonical non-pool ADR id: ADR-<semver>-<slug>. Mirrors the non-pool branch
+# of the schema `id` pattern in src/gzkit/schemas/adr.json (GHI #346). A bare
+# `ADR-X.Y.Z` (no slug suffix) does NOT match — emitting it produced the
+# GHI #494 bare-id `adr_created` regression.
+_CANONICAL_ADR_ID_RE = re.compile(r"^ADR-[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9-]+$")
 
 # ADR-0.0.35 § Decision item #6 — every foundation-kind ADR scaffolds with a
 # `## Why foundation tier?` section between `## Persona` and `## Intent`,
@@ -41,13 +46,24 @@ def _compose_canonical_adr_id(name: str, semver: str) -> str:
       ``ADR-<semver>-<name>`` so the ledger, the on-disk directory, and
       the file name all share the same canonical slugged form.
 
-    Bare-semver names (e.g. ``"0.0.27"``) are rejected with ``ValueError``.
-    Bare-semver-only emission produced the GHI #279 / GHI #344 shadow-row
-    defect: a bare ``adr_created`` event diverges from the slugged on-disk
-    directory and renders as two rows in ``gz adr report``. Closing the
-    class requires fail-fast at composition time, not catch-up renames.
+    Bare-semver names (e.g. ``"0.0.27"``) and bare ``ADR-`` ids (e.g.
+    ``"ADR-0.0.49"``) are rejected with ``ValueError``. Bare-id emission
+    produced the GHI #279 / GHI #344 / GHI #494 shadow-row defect: a bare
+    ``adr_created`` event diverges from the slugged on-disk directory and
+    renders as two rows in ``gz adr report``. Closing the class requires
+    fail-fast at composition time, not catch-up renames.
     """
     if name.startswith("ADR-"):
+        if not _CANONICAL_ADR_ID_RE.match(name):
+            raise ValueError(
+                f"name argument is a bare ADR id without a slug suffix "
+                f"(got {name!r}). Non-pool ADR ids require the canonical "
+                f"slug-form ADR-<semver>-<slug>; a bare id emits an "
+                f"unslugged adr_created event and produces shadow rows in "
+                f"`gz adr report` (GHI #279 / GHI #344 / GHI #494). Pass a "
+                f"descriptive slug instead, e.g. "
+                f"`gz plan create my-doctrine-name --semver {semver}`."
+            )
         return name
     if _SEMVER_LITERAL_RE.match(name):
         raise ValueError(
@@ -60,28 +76,38 @@ def _compose_canonical_adr_id(name: str, semver: str) -> str:
     return f"ADR-{semver}-{name}"
 
 
-def _reject_bare_semver_name(name: str, kind: str) -> None:
-    """Reject bare-semver positional `name` for non-pool ADRs (GHI #344).
+def _reject_noncanonical_name(name: str, kind: str) -> None:
+    """Reject non-canonical positional `name` for non-pool ADRs.
 
-    Pool ADRs route through ``ADR-pool.<slug>`` composition and are not
-    affected. For foundation/feature ADRs, a bare-semver positional name
-    silently discarded the slug under the prior contract; this gate exits
-    1 with operator-facing recovery before any file or ledger write.
+    Two non-canonical shapes are rejected fail-fast before any file or
+    ledger write:
+
+    - Bare semver literal (e.g. ``0.0.27``) — GHI #344.
+    - Bare ``ADR-`` id with no slug suffix (e.g. ``ADR-0.0.49``) — GHI #494.
+
+    Both silently discarded the slug under the prior contract and emitted a
+    bare-ID ``adr_created`` event whose ledger row diverged from the slugged
+    on-disk directory. Pool ADRs route through ``ADR-pool.<slug>``
+    composition and are not affected.
     """
     if kind == "pool":
         return
-    if _SEMVER_LITERAL_RE.match(name):
-        console.print(
-            f"[red]ERROR:[/red] name argument must be a descriptive slug, "
-            f"not a bare semver literal (got {name!r}). Bare-semver names "
-            "emit unslugged adr_created events and produce shadow rows in "
-            "`gz adr report` (GHI #279 / GHI #344)."
-        )
-        console.print(
-            "Pass a descriptive slug, e.g. "
-            "[bold]gz plan create my-doctrine-name --semver <X.Y.Z>[/bold]."
-        )
-        sys.exit(1)
+    is_bare_semver = bool(_SEMVER_LITERAL_RE.match(name))
+    is_bare_adr_id = name.startswith("ADR-") and not _CANONICAL_ADR_ID_RE.match(name)
+    if not (is_bare_semver or is_bare_adr_id):
+        return
+    shape = "ADR id" if is_bare_adr_id else "semver literal"
+    console.print(
+        f"[red]ERROR:[/red] name argument must be a descriptive slug, not a "
+        f"bare {shape} (got {name!r}). Bare-id names emit unslugged "
+        "adr_created events and produce shadow rows in `gz adr report` "
+        "(GHI #279 / GHI #344 / GHI #494)."
+    )
+    console.print(
+        "Pass a descriptive slug, e.g. "
+        "[bold]gz plan create my-doctrine-name --semver <X.Y.Z>[/bold]."
+    )
+    sys.exit(1)
 
 
 def _next_available_foundation_semver(foundation_root: Path) -> str:
@@ -233,24 +259,42 @@ def _render_adr_by_kind(
 
 
 def _register_adr_in_ledger(
-    *, adr_id: str, canonical_parent: str, lane: str, adr_file: Path, ledger_path: Path
+    *, canonical_parent: str, lane: str, adr_file: Path, ledger_path: Path
 ) -> None:
     """Append adr_created event and verify registration. Exit 2 on failure.
 
-    Idempotent: if an ``adr_created`` event already resolves to ``adr_id``
+    GHI #494: the ``adr_created`` id is derived from the on-disk directory
+    name (T1) rather than from an intermediate id variable, so the ledger
+    event (T2) provably matches canonical on-disk truth. A directory name
+    that is not canonical slug-form is refused fail-closed (exit 3) rather
+    than recorded as a bare-id event that diverges from the directory.
+
+    Idempotent: if an ``adr_created`` event already resolves to the id
     (via the ledger's rename-aware ``has_adr_created``), the append is
     skipped with a warning. Prevents the duplicate-emission class surfaced
     in GHI #279.
     """
-    ledger = Ledger(ledger_path)
-    if ledger.has_adr_created(adr_id):
+    canonical_id = adr_file.parent.name
+    if not _CANONICAL_ADR_ID_RE.match(canonical_id):
         console.print(
-            f"[yellow]WARNING:[/yellow] {adr_id} already has an adr_created event; "
-            "skipping duplicate emission."
+            f"[red]ERROR:[/red] ADR file written at {adr_file} but its on-disk "
+            f"directory name {canonical_id!r} is not a canonical ADR id; "
+            "refusing to emit a bare-id adr_created event (GHI #494)."
+        )
+        console.print(
+            "Rename the directory to ADR-<semver>-<slug> and run "
+            "[bold]gz register-adrs --all[/bold] to recover."
+        )
+        sys.exit(3)
+    ledger = Ledger(ledger_path)
+    if ledger.has_adr_created(canonical_id):
+        console.print(
+            f"[yellow]WARNING:[/yellow] {canonical_id} already has an adr_created "
+            "event; skipping duplicate emission."
         )
         return
     try:
-        ledger.append(adr_created_event(adr_id, canonical_parent, lane))
+        ledger.append(adr_created_event(canonical_id, canonical_parent, lane))
     except OSError as exc:
         console.print(
             f"[red]ERROR:[/red] ADR file created at {adr_file} but ledger write failed: {exc}"
@@ -259,11 +303,13 @@ def _register_adr_in_ledger(
         sys.exit(2)
 
     graph = ledger.get_artifact_graph()
-    if adr_id in graph:
+    if canonical_id in graph:
         return
-    if ledger.canonicalize_id(adr_id) in graph:
+    if ledger.canonicalize_id(canonical_id) in graph:
         return
-    console.print(f"[yellow]WARNING:[/yellow] ADR file written but {adr_id} not found in ledger.")
+    console.print(
+        f"[yellow]WARNING:[/yellow] ADR file written but {canonical_id} not found in ledger."
+    )
     console.print("Run [bold]gz register-adrs --all[/bold] to recover.")
     sys.exit(2)
 
@@ -295,7 +341,7 @@ def plan_cmd(
     _validate_kind_and_semver(kind, semver, adrs_root)
     # After _validate_kind_and_semver, kind is guaranteed non-None.
     assert kind is not None
-    _reject_bare_semver_name(name, kind)
+    _reject_noncanonical_name(name, kind)
 
     adr_title = title or name.replace("-", " ").title()
 
@@ -346,7 +392,7 @@ def plan_cmd(
             console.print(f"  Would append ledger event: adr_created ({adr_id_preview})")
         return
 
-    adr_id, adr_file = _render_adr_by_kind(
+    _, adr_file = _render_adr_by_kind(
         kind=kind,
         name=name,
         adr_title=adr_title,
@@ -363,7 +409,6 @@ def plan_cmd(
         return
 
     _register_adr_in_ledger(
-        adr_id=adr_id,
         canonical_parent=canonical_parent,
         lane=lane,
         adr_file=adr_file,
