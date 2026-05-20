@@ -1,6 +1,22 @@
+---
+id: ADR-0.0.12-agent-role-persona-profiles
+status: Validated
+semver: 0.0.12
+lane: lite
+kind: foundation
+parent: PRD-GZKIT-1.0.0
+date: 2026-03-30
+---
+
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
 # ADR-0.0.12 — Agent Role Persona Profiles
+
+## Why foundation tier?
+
+Without this ADR, the persona control surface from ADR-0.0.11 has no concrete profiles — each agent role still defaults to "helpful AI assistant" instead of activating the behavioral trait cluster its specific work demands.
+
+This ADR authors a port: the per-role persona profile set — main session, implementer, spec-reviewer, quality-reviewer, narrator, pipeline orchestrator — that agent dispatch reads to seat the correct identity for each unit of work.
 
 ## Tidy First Plan
 

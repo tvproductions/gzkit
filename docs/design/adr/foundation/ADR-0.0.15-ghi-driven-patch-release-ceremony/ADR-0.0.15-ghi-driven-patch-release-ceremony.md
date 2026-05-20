@@ -1,6 +1,22 @@
+---
+id: ADR-0.0.15-ghi-driven-patch-release-ceremony
+status: Validated
+semver: 0.0.15
+lane: lite
+kind: foundation
+parent: PRD-GZKIT-1.0.0
+date: 2026-03-31
+---
+
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
 # ADR-0.0.15 — GHI-Driven Patch Release Ceremony
+
+## Why foundation tier?
+
+Without this ADR, gzkit has only the ADR-driven minor-release path — patch releases have no ceremony, no GHI-to-release cross-validation of intent against evidence, and would grow a second divergent version-sync code path.
+
+This ADR authors a port: the GHI-driven patch-release ceremony and the single shared version-sync code path that every release — minor or patch — runs through.
 
 ## Tidy First Plan
 

@@ -1,3 +1,13 @@
+---
+id: ADR-0.0.2-stdlib-cli-and-agent-sync
+status: Completed
+semver: 0.0.2
+lane: lite
+kind: foundation
+parent: PRD-GZKIT-1.0.0
+date: 2026-02-07
+---
+
 # ADR-0.0.2: Stdlib CLI Foundation and Agent Sync Grammar
 
 <!--
@@ -7,6 +17,12 @@ This ADR authorizes migration and command normalization work.
 -->
 
 ---
+
+## Why foundation tier?
+
+Without this ADR, gzkit's CLI rests on a third-party framework with no stdlib-first invariant and no stable command grammar — the dependency posture is unanchored and agent control-surface synchronization becomes ambiguous.
+
+This ADR authors a port: the stdlib-only CLI invariant (`argparse` over Click) and the canonical `gz` command grammar that every generated agent control surface and skill is synchronized against.
 
 ## Tidy First Plan
 

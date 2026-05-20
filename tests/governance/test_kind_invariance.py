@@ -72,8 +72,8 @@ class TestKindInvarianceAudit(unittest.TestCase):
     def test_selects_only_foundation_adrs(self) -> None:
         """Feature ADR without the section does not produce errors.
 
-        Semantic: the validator enumerates only docs/design/adr/foundation/
-        ADRs with kind: foundation. A feature ADR in pre-release/ with no
+        Semantic: the validator enumerates only canonical ADR files under
+        docs/design/adr/foundation/. A feature ADR in pre-release/ with no
         section must not appear in the error list.
         """
         # Foundation ADR passes (has the section)
@@ -94,30 +94,68 @@ class TestKindInvarianceAudit(unittest.TestCase):
             "Feature ADR must not be enumerated by kind-invariance validator",
         )
 
-    @covers("REQ-0.0.35-04-05")
-    def test_feature_adr_not_enumerated(self) -> None:
-        """Feature ADR path is not checked even when it lives in foundation/ dir with feature kind.
+    @covers("REQ-0.0.35-04-03")
+    def test_no_frontmatter_foundation_adr_is_enumerated(self) -> None:
+        """Foundation-dir ADR with no frontmatter block is still checked (GHI #483).
 
-        Semantic: kind: feature frontmatter causes the ADR to be skipped
-        even if its file lives under the foundation/ directory subtree.
+        Semantic: directory placement is the foundation predicate. An ADR that
+        predates the mechanical kind: frontmatter mandate (ADR-0.0.17) carries
+        no frontmatter at all; the prior frontmatter-keyed filter silently
+        exempted it from the ## Why foundation tier? section requirement. It
+        must now be enumerated and flagged like any other foundation ADR.
         """
-        adr_id = "ADR-0.0.88-wrong-kind"
+        adr_id = "ADR-0.0.97-legacy-no-frontmatter"
         adr_dir = self.root / "docs" / "design" / "adr" / "foundation" / adr_id
         adr_dir.mkdir(parents=True, exist_ok=True)
         adr_file = adr_dir / f"{adr_id}.md"
         adr_file.write_text(
-            f"---\nid: {adr_id}\nstatus: Draft\nkind: feature\nlane: lite\nsemver: 0.1.0\n---\n\n"
-            f"# {adr_id}: Not a foundation ADR\n\n## Intent\n\nBody.\n",
+            f"# {adr_id}: Legacy ADR\n\n## Intent\n\nNo frontmatter, no section.\n",
             encoding="utf-8",
         )
 
         errors = audit_kind_invariance(self.root)
 
-        wrong_kind_errors = [e for e in errors if adr_id in (e.artifact or "")]
+        legacy_errors = [e for e in errors if adr_id in (e.artifact or "")]
+        self.assertGreater(
+            len(legacy_errors),
+            0,
+            "No-frontmatter foundation-dir ADR must be enumerated and flagged",
+        )
+        self.assertTrue(
+            all(e.type == "kind_invariance" for e in legacy_errors),
+            "Error type must be kind_invariance",
+        )
+
+    @covers("REQ-0.0.35-04-05")
+    def test_closeout_form_sidecar_not_enumerated(self) -> None:
+        """ADR-CLOSEOUT-FORM.md sidecar is not the canonical ADR file (GHI #483).
+
+        Semantic: the canonical ADR file of a package is the one whose stem
+        matches its parent directory name. Sidecar files (closeout forms,
+        audit forms) living beside it in the same directory are not foundation
+        ADRs and must not be enumerated even though they match the ADR-*.md
+        glob and lack the section.
+        """
+        adr_id = "ADR-0.0.96-with-sidecar"
+        adr_dir = self.root / "docs" / "design" / "adr" / "foundation" / adr_id
+        adr_dir.mkdir(parents=True, exist_ok=True)
+        (adr_dir / f"{adr_id}.md").write_text(
+            f"---\nid: {adr_id}\nstatus: Draft\nkind: foundation\nlane: lite\nsemver: 0.0.96\n"
+            f"---\n\n# {adr_id}: Test ADR\n\n{_SUBSTANTIVE_BODY}",
+            encoding="utf-8",
+        )
+        (adr_dir / "ADR-CLOSEOUT-FORM.md").write_text(
+            "# ADR Closeout Form\n\n## Attestation\n\nNo section here.\n",
+            encoding="utf-8",
+        )
+
+        errors = audit_kind_invariance(self.root)
+
+        sidecar_errors = [e for e in errors if "ADR-CLOSEOUT-FORM" in (e.artifact or "")]
         self.assertEqual(
-            wrong_kind_errors,
+            sidecar_errors,
             [],
-            "ADR with kind: feature must not be enumerated even if in foundation/ dir",
+            "Closeout-form sidecar must not be enumerated as a foundation ADR",
         )
 
     # -------------------------------------------------------------------

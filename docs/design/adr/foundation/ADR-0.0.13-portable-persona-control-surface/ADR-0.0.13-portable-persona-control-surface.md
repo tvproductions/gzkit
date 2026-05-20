@@ -1,6 +1,22 @@
+---
+id: ADR-0.0.13-portable-persona-control-surface
+status: Validated
+semver: 0.0.13
+lane: lite
+kind: foundation
+parent: PRD-GZKIT-1.0.0
+date: 2026-03-30
+---
+
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
 # ADR-0.0.13 — Portable Persona Control Surface
+
+## Why foundation tier?
+
+Without this ADR, persona frames are gzkit-local — no other GovZero-compliant repository can bootstrap, sync, or load them, so persona is not a portable primitive the way rules and skills already are.
+
+This ADR authors a port: the persona portability contract — `gz init` scaffolding, `gz agent sync` mirroring to vendor surfaces, manifest registration, and vendor-neutral loading — that every GovZero-compliant repository inherits.
 
 ## Tidy First Plan
 
