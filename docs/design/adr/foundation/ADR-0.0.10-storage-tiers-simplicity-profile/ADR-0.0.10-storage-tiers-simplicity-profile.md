@@ -1,6 +1,22 @@
+---
+id: ADR-0.0.10-storage-tiers-simplicity-profile
+status: Validated
+semver: 0.0.10
+lane: lite
+kind: foundation
+parent: PRD-GZKIT-1.0.0
+date: 2026-03-30
+---
+
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
 # ADR-0.0.10 — Storage Tiers and Simplicity Profile
+
+## Why foundation tier?
+
+Without this ADR, gzkit's storage locations have no tier classification — a rebuildable cache can silently accumulate non-derivable state and escalate to an unaudited external-dependency tier, and there is no guarantee that full project state survives a fresh `git clone`.
+
+This ADR authors a port: the three-tier storage classification and the git-recoverability invariant against which every storage location and identity surface is held, keeping core governance free of external runtime dependencies.
 
 ## Tidy First Plan
 

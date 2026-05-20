@@ -1,6 +1,22 @@
+---
+id: ADR-0.0.7-config-first-resolution-discipline
+status: Validated
+semver: 0.0.7
+lane: lite
+kind: foundation
+parent: PRD-GZKIT-1.0.0
+date: 2026-03-29
+---
+
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
 # ADR-0.0.7 — Config-First Resolution Discipline
+
+## Why foundation tier?
+
+Without this ADR, gzkit's paths, thresholds, and structural assumptions are scattered across module-level constants and `Path(__file__).parents[N]` derivations — configuration is implicit, unportable, and silently breaks when the repository is relocated or vendored into another project.
+
+This ADR authors a port: the config-first resolution contract that every path, threshold, and structural lookup in gzkit source must satisfy at the call site, resolved from the manifest rather than from import-time constants.
 
 ## Tidy First Plan
 

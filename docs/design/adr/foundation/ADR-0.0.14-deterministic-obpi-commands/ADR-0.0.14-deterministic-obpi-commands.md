@@ -1,6 +1,22 @@
+---
+id: ADR-0.0.14-deterministic-obpi-commands
+status: Validated
+semver: 0.0.14
+lane: heavy
+kind: foundation
+parent: PRD-GZKIT-1.0.0
+date: 2026-03-31
+---
+
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
 # ADR-0.0.14 — Deterministic OBPI Commands
+
+## Why foundation tier?
+
+Without this ADR, OBPI lifecycle mutations are written directly by skills — lock files, ledger entries, and brief status changes bypass deterministic, testable tooling, leaving partial-write states and an unauditable mutation path.
+
+This ADR authors a port: the deterministic OBPI command contract — `gz obpi lock` coordination and all-or-nothing `gz obpi complete` — that every lifecycle mutation must flow through, reducing skills to pure orchestration.
 
 ## Tidy First Plan
 

@@ -1,3 +1,13 @@
+---
+id: ADR-0.0.1-canonical-govzero-parity
+status: Pending
+semver: 0.0.1
+lane: lite
+kind: foundation
+parent: PRD-GZKIT-1.0.0
+date: 2026-01-25
+---
+
 # ADR-0.0.1: Canonical GovZero Parity with AirlineOps
 
 <!--
@@ -7,6 +17,12 @@ This ADR authorizes work; it does not implement it.
 -->
 
 ---
+
+## Why foundation tier?
+
+Without this ADR, gzkit has no canonical reference for what "GovZero-compliant" means — every governance abstraction is re-derived per author from memory, and there is no frozen source against which parity drift can be measured.
+
+This ADR authors a port: the designation of AirlineOps as the canonical GovZero implementation and the frozen, non-reinterpretible artifact set every parity check reads against.
 
 ## Tidy First Plan
 

@@ -1,6 +1,22 @@
+---
+id: ADR-0.0.11-persona-driven-agent-identity-frames
+status: Validated
+semver: 0.0.11
+lane: heavy
+kind: foundation
+parent: PRD-GZKIT-1.0.0
+date: 2026-03-30
+---
+
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
 # ADR-0.0.11 — Persona-Driven Agent Identity Frames
+
+## Why foundation tier?
+
+Without this ADR, gzkit agents have no designed identity surface — every interaction defaults to the generic "helpful AI assistant" persona, and behavioral framing is ad-hoc prompt engineering with no storage, schema, or composition rules.
+
+This ADR authors a port: the persona control surface — storage location, schema, loading mechanism, and research-grounded design principles — that every agent identity frame in the project composes against.
 
 ## Tidy First Plan
 

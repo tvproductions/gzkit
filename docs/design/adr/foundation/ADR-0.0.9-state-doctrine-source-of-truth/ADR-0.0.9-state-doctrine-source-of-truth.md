@@ -1,6 +1,22 @@
+---
+id: ADR-0.0.9-state-doctrine-source-of-truth
+status: Validated
+semver: 0.0.9
+lane: lite
+kind: foundation
+parent: PRD-GZKIT-1.0.0
+date: 2026-03-30
+---
+
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
 # ADR-0.0.9 — State Doctrine and Source-of-Truth Hierarchy
+
+## Why foundation tier?
+
+Without this ADR, gzkit has no agreed answer to "which storage layer is authoritative?" — commands read status from frontmatter, pipeline markers, or caches interchangeably, and a derived Layer 3 view can silently become source-of-truth, letting unproven work pass gates.
+
+This ADR authors a port: the state-doctrine layer hierarchy — ledger-authoritative, frontmatter a lazy mirror, Layer 3 rebuildable and never fail-closing a gate — that every state-reading and state-writing command must honor.
 
 ## Tidy First Plan
 
