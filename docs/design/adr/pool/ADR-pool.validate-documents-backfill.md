@@ -25,6 +25,19 @@ The downstream cost is **silent governance signal degradation**: `gz check` and 
 
 Discovered during ADR-0.0.35 closeout ceremony (2026-05-17); filed as GHI #480.
 
+**Update — 2026-05-20 (GHI #500, operator decision).** Cohort B's
+`gz validate --documents`-scope symptom is resolved. GHI #500 was filed as a
+standalone defect for the OBPI-brief cohort; during its `ghi-close` the
+conflict with this ADR's Decision #3 ("preserve validator behavior until
+promotion") was surfaced, and the operator chose to decide the OBPI cohort
+early rather than hold it for the promotion ceremony. Commit `4bfbddab` lands
+the fix: `_validate_manifest_documents` no longer raw-schema-validates OBPI
+briefs — OBPI corpus hygiene is delegated to the version-aware `briefs` scope
+(`_validate_obpi_briefs`), and strict authored checks remain in
+`gz obpi validate --authored`. The live `gz validate --documents` count is now
+**1725 errors — Cohort A (ADR documents) only**; Cohort B no longer appears in
+the `--documents` scope.
+
 ## Decision
 
 This ADR is **pool** — backlog awaiting promotion. The substantive decision (whether to backfill artifacts, adjust validator scope, or both) is reserved for the promotion ceremony when this ADR is lifted to `feature` lane. Promotion criteria below.
@@ -33,7 +46,7 @@ What this pool ADR commits to *now*:
 
 1. **The class of failure is named and homed.** GHI #480 closes `superseded` citing this ADR. The 3536-error backlog has a registered tracker in the artifact graph, not a session-memory ghost.
 2. **The two cohorts are bounded.** Cohort A = ADR documents missing Decomposition Scorecard (298 instances). Cohort B = OBPI briefs missing Lane / Allowed Paths / Denied Paths / Requirements / Quality Gates (240+ instances). Promotion will produce one OBPI brief per cohort plus a third OBPI for validator scope semantics (grandfather vs. backfill policy).
-3. **The validator's current behavior is preserved until promotion.** No silent suppression, no `--allow-pre-convention` flag, no schema rollback. The 3536-error count is the honest signal until decided otherwise.
+3. **The validator's behavior for Cohort A is preserved until promotion.** No silent suppression, no `--allow-pre-convention` flag, no schema rollback for the ADR-document cohort. The OBPI cohort (Cohort B) was decided early — see Intent § Update (GHI #500): `--documents` delegates OBPI validation to the dedicated `briefs` scope. The remaining **1725-error count (Cohort A)** is the honest signal until decided otherwise.
 
 ## Alternatives Considered
 
@@ -46,6 +59,8 @@ What this pool ADR commits to *now*:
 
 The decision deferred to promotion is which combination of #2 (substantive per-artifact backfill), #3 (explicit grandfather frontmatter), and #4 (selective withdrawal) resolves the backlog, and what validator-scope semantics result.
 
+**Cohort B resolution (GHI #500, 2026-05-20).** GHI #500 resolved Cohort B by a fifth approach not in the table above: `--documents` delegates OBPI corpus validation to the dedicated version-aware `briefs` scope. This is **not** rejected Alternative #1 — it is not an authoring-date heuristic and produces no implicit grandfather semantics: OBPI compliance remains answerable via `gz validate --briefs` and `gz obpi validate --authored`. The deferred decision above now covers Cohort A only.
+
 ## Promotion plan
 
 Pre-promotion (during pool lifetime):
@@ -54,12 +69,13 @@ Pre-promotion (during pool lifetime):
 
 Promotion ceremony will decompose into at least three OBPIs:
 1. **OBPI-N-01 — Cohort A backfill (foundation ADRs):** author `## Decomposition Scorecard` for each failing foundation ADR with the actual scoring those ADRs would have received under the current scorecard. Lite lane, doc-only.
-2. **OBPI-N-02 — Cohort B disposition (pre-release OBPI briefs):** either backfill the missing sections from authoring-time evidence or withdraw the parent ADR. Operator-driven per ADR; lite lane.
-3. **OBPI-N-03 — Validator scope semantics:** decide whether `--documents` grandfathers pre-convention artifacts, requires explicit `schema-version` frontmatter exemptions, or strictly enforces current schema. Heavy lane (runtime contract change).
+2. **OBPI-N-02 — Cohort B disposition (pre-release OBPI briefs):** the `--documents`-scope symptom is resolved (GHI #500, commit `4bfbddab`); residual scope is whether the historical OBPI briefs are substantively backfilled or their parent ADRs withdrawn — now surfaced by the `briefs` scope and `gz obpi validate --authored`, not `--documents`. Operator-driven per ADR; lite lane.
+3. **OBPI-N-03 — Validator scope semantics (Cohort A):** decide whether `--documents` grandfathers pre-convention ADR documents, requires explicit `schema-version` frontmatter exemptions, or strictly enforces current schema. The OBPI-brief side of this question was decided by GHI #500 (delegation to the `briefs` scope); OBPI-N-03 now covers the ADR-document cohort only. Heavy lane (runtime contract change).
 
 ## ADR relationship
 
 - **Upstream evidence:** GHI #480 (filed 2026-05-17)
+- **Cohort B early resolution:** GHI #500 (closed 2026-05-20) — commit `4bfbddab`; OBPI cohort decided ahead of promotion per operator decision (see Intent § Update)
 - **Discovered during:** ADR-0.0.35-foundation-feature-invariance-test closeout ceremony (2026-05-17)
 - **Adjacent canon:** AGENTS.md § Architectural Boundaries #6 (derived views never authoritative); `.gzkit/rules/brief-heading-conventions.md` (OBPI brief heading schema)
 
