@@ -426,6 +426,7 @@ def _collect_errors(
     check_kind_invariance: bool = False,
     check_receipt_shape: bool = False,
     check_invariant_coherence: bool = False,
+    check_brief_reconcile: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -490,6 +491,7 @@ def _collect_errors(
         "vendor_manifest": check_vendor_manifest,
         "kind_invariance": check_kind_invariance,
         "receipt_shape": check_receipt_shape,
+        "brief_reconcile": check_brief_reconcile,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
@@ -594,6 +596,7 @@ def _explicit_scope_runners(
         "vendor_manifest": lambda: trust_audits.validate_vendor_manifest(project_root),
         "kind_invariance": lambda: trust_audits.audit_kind_invariance(project_root),
         "receipt_shape": lambda: trust_audits.audit_receipt_shape(project_root),
+        "brief_reconcile": lambda: trust_audits.validate_brief_reconcile(project_root),
     }
 
 
@@ -1057,6 +1060,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "scenario_reachability",
         "surface_fidelity",
         "vendor_manifest",
+        "brief_reconcile",
     ]
 
     run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
@@ -1092,6 +1096,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "kind_invariance",
         "receipt_shape",
         "invariant_coherence",
+        "brief_reconcile",
     }
 )
 
@@ -1336,6 +1341,7 @@ def validate(
     check_kind_invariance: bool = False,
     check_receipt_shape: bool = False,
     check_invariant_coherence: bool = False,
+    check_brief_reconcile: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1411,6 +1417,7 @@ def validate(
             check_vendor_manifest,
             check_kind_invariance,
             check_receipt_shape,
+            check_brief_reconcile,
         ]
     )
     if _dispatch_early_return_scopes(
@@ -1488,6 +1495,7 @@ def validate(
         check_kind_invariance=check_kind_invariance,
         check_receipt_shape=check_receipt_shape,
         check_invariant_coherence=check_invariant_coherence,
+        check_brief_reconcile=check_brief_reconcile,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -1567,6 +1575,7 @@ def validate(
         "kind_invariance": check_kind_invariance,
         "receipt_shape": check_receipt_shape,
         "invariant_coherence": check_invariant_coherence,
+        "brief_reconcile": check_brief_reconcile,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]

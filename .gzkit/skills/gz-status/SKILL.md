@@ -4,7 +4,7 @@ description: Report gate and lifecycle status across ADRs. Use when checking blo
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-02-18
+last_reviewed: 2026-05-20
 model: haiku
 ---
 

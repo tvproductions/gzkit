@@ -4,7 +4,7 @@ description: Run Gate 2 verification and record result events. Use when validati
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-02-18
+last_reviewed: 2026-05-20
 model: haiku
 ---
 

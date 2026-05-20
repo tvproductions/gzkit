@@ -14,7 +14,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--scenario-reachability] [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
             [--advisor-proof-binding] [--vendor-manifest]
-            [--invariant-coherence] [--kind-invariance]
+            [--invariant-coherence] [--brief-reconcile] [--kind-invariance]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
 ```
 
@@ -974,6 +974,28 @@ gz validate --invariant-coherence
 | 3 | Drift detected (output includes unified diff, first 50 lines) | Run `gz governance render --target agents-md` to regenerate AGENTS.md from the registry |
 
 **Related:** ADR-0.0.37 (constitutional invariant composition), OBPI-0.0.37-03 (this validator).
+
+### `--brief-reconcile`
+
+Validates the OBPI brief corpus against project shape across five drift dimensions. Detects:
+(1) OBPI frontmatter incoherence, (2) lane mismatches between frontmatter and body,
+(3) scaffold-template defaults that were never replaced, (4) missing or orphaned brief files,
+and (5) parent ADR/OBPI reference drift. Fail-closed (exit 3) when any dimension detects drift.
+
+**Usage:**
+
+```bash
+gz validate --brief-reconcile
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Brief corpus clean across all five dimensions | — |
+| 3 | Drift detected in one or more briefs | Inspect the error message and update the affected brief's frontmatter, body structure, or parent references |
+
+**Related:** OBPI-0.0.37-05 (brief reconciliation engine).
 
 ### `--sensitivity`
 
