@@ -37,6 +37,19 @@ def _gzkit_project_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+def _project_python(gzkit_root: Path) -> str:
+    """Return the project's pinned Python version for the smoke venv.
+
+    The T0 distribution invariant proves the wheel installs and imports under
+    the project's declared interpreter. The smoke venv must pin to it: a
+    floating ``uv venv`` tests whatever interpreter uv happens to discover,
+    not the ``requires-python`` floor the invariant claims to prove (GHI #482).
+    """
+    pin = (gzkit_root / ".python-version").read_text(encoding="utf-8").strip()
+    assert pin, f".python-version is empty at {gzkit_root}"
+    return pin
+
+
 def _venv_bin(venv_path: Path, name: str) -> Path:
     # uv venv lays out interpreter/scripts at Scripts/*.exe on Windows, bin/* on POSIX.
     if sys.platform == "win32":
@@ -98,7 +111,11 @@ def step_install_into_venv(context) -> None:  # type: ignore[no-untyped-def]
             shutil.rmtree(venv_path, ignore_errors=True)
 
     context.add_cleanup(_cleanup_venv)
-    code, output = _run(["uv", "venv", str(venv_path)], cwd=context.project_root)
+    python_pin = _project_python(context.gzkit_root)
+    code, output = _run(
+        ["uv", "venv", "--python", python_pin, str(venv_path)],
+        cwd=context.project_root,
+    )
     assert code == 0, f"uv venv failed (exit {code}):\n{output}"
     venv_python = _venv_bin(venv_path, "python")
     assert venv_python.exists(), f"venv python missing at {venv_python}"
