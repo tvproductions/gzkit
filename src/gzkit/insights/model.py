@@ -19,7 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field
 _ISO8601_PATTERN = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})$"
 """ISO8601 with timezone designator (Z or ±HH:MM); date-only is rejected."""
 
-InsightType = Literal["defect", "defect-resolution", "improvement"]
+InsightType = Literal["defect", "defect-resolution", "improvement", "discovery"]
 
 
 class InsightRecord(BaseModel):

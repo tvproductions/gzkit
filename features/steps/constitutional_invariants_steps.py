@@ -30,7 +30,12 @@ def _invoke_capture(*args: str) -> tuple[int, str]:
 
 
 def _seed_registry(root: Path) -> None:
-    """Write one minimal valid invariant JSON to the registry directory."""
+    """Write one minimal valid invariant JSON to the registry directory.
+
+    Also copies the canonical agents.md template into the workspace so the
+    drift validator's bootstrap-safe guard (template-present check) is
+    satisfied (OBPI-0.0.37-03).
+    """
     inv_dir = root / ".gzkit" / "invariants"
     inv_dir.mkdir(parents=True, exist_ok=True)
     entry = {
@@ -40,6 +45,12 @@ def _seed_registry(root: Path) -> None:
         "composition_targets": ["AGENTS.md"],
     }
     (inv_dir / "CIC-test-seed.json").write_text(json.dumps(entry), encoding="utf-8")
+
+    template_src = Path(__file__).parent.parent.parent / "src" / "gzkit" / "templates" / "agents.md"
+    if template_src.exists():
+        template_dst_dir = root / ".gzkit" / "templates"
+        template_dst_dir.mkdir(parents=True, exist_ok=True)
+        (template_dst_dir / "agents.md").write_bytes(template_src.read_bytes())
 
 
 def _render_bytes(root: Path) -> bytes:
@@ -126,3 +137,44 @@ def step_outputs_byte_identical(context) -> None:  # type: ignore[no-untyped-def
 # - @then("the command exits non-zero") / @then("the command exits with a non-zero code")
 # - @then('the output contains "{text}"')
 # The constitutional invariant steps below are scenario-specific only.
+
+
+# -- OBPI-0.0.37-03 — Composition drift validator steps --
+
+
+@given("AGENTS.md matches the rendered registry output")
+def step_agents_md_matches_registry(context) -> None:  # type: ignore[no-untyped-def]
+    rendered = _render_bytes(Path.cwd())
+    (Path.cwd() / "AGENTS.md").write_bytes(rendered)
+
+
+@given("AGENTS.md differs from the rendered registry output")
+def step_agents_md_differs_registry(context) -> None:  # type: ignore[no-untyped-def]
+    (Path.cwd() / "AGENTS.md").write_text(
+        "drifted content — does not match rendered output", encoding="utf-8"
+    )
+
+
+@when('I run "gz validate --invariant-coherence"')
+def step_run_invariant_coherence(context) -> None:  # type: ignore[no-untyped-def]
+    code, output = _invoke_capture("validate", "--invariant-coherence")
+    context.exit_code = code
+    context.output = output
+
+
+@then('a "composition_rendered" event is appended to the ledger')
+def step_composition_rendered_in_ledger(context) -> None:  # type: ignore[no-untyped-def]
+    ledger_path = Path.cwd() / ".gzkit" / "ledger.jsonl"
+    assert ledger_path.exists(), "ledger.jsonl does not exist"
+    found = False
+    for line in ledger_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if event.get("event") == "composition_rendered":
+            found = True
+            break
+    assert found, "no composition_rendered event found in ledger.jsonl"

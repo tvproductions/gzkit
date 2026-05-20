@@ -565,6 +565,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Audit advisor verdict <-> proof binding (OBPI-0.0.29-08).",
     )
     p_validate.add_argument(
+        "--invariant-coherence",
+        dest="check_invariant_coherence",
+        action="store_true",
+        default=False,
+        help="Validate that AGENTS.md matches the rendered constitutional invariant registry.",
+    )
+    p_validate.add_argument(
         "--distribution",
         dest="check_distribution",
         action="store_true",
@@ -696,6 +703,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_evaluation_justify_binding=(a.check_evaluation_justify_binding),
             check_intrinsic_attestation=a.check_intrinsic_attestation,
             check_advisor_proof_binding=a.check_advisor_proof_binding,
+            check_invariant_coherence=a.check_invariant_coherence,
             check_distribution=a.check_distribution,
             check_distribution_regenerate=a.check_distribution_regenerate,
             check_bullet_retention=a.check_bullet_retention,

@@ -232,7 +232,7 @@ def pydantic_loc_to_field_path(prefix: str, loc: tuple[str | int, ...]) -> str:
 class _EventBase(BaseModel):
     """Common fields shared by all ledger event types."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     id: str
     ts: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
@@ -608,6 +608,25 @@ class DistributionBaselineRegeneratedEvent(_EventBase):
     manifest_hash_after: str
 
 
+class CompositionRenderedEvent(_EventBase):
+    """composition_rendered event — constitutional invariant composition render (ADR-0.0.37)."""
+
+    event: Literal["composition_rendered"]
+    invariant_count: int
+    target: str
+    byte_count: int
+    render_ts: str
+
+
+class CompositionDriftDetectedEvent(_EventBase):
+    """composition_drift_detected event — registry vs. committed target drift (ADR-0.0.37)."""
+
+    event: Literal["composition_drift_detected"]
+    target: str
+    diff_first_50_lines: str
+    render_ts: str
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -639,7 +658,9 @@ TypedLedgerEvent = Annotated[
     | TaskBlockedEvent
     | TaskEscalatedEvent
     | IntrinsicComplexityAttestationEvent
-    | DistributionBaselineRegeneratedEvent,
+    | DistributionBaselineRegeneratedEvent
+    | CompositionRenderedEvent
+    | CompositionDriftDetectedEvent,
     Field(discriminator="event"),
 ]
 

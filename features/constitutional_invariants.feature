@@ -43,3 +43,27 @@ Feature: Constitutional invariant composition renderer (ADR-0.0.37, OBPI-0.0.37-
     When I run "gz governance render --help"
     Then the command exits with code 0
     And the output contains "render"
+
+  # OBPI-0.0.37-03 — Composition drift validator (gz validate --invariant-coherence)
+
+  @REQ-0.0.37-03-01
+  Scenario: gz validate --invariant-coherence exits 0 on matching AGENTS.md
+    Given the constitutional invariant registry has at least one entry
+    And AGENTS.md matches the rendered registry output
+    When I run "gz validate --invariant-coherence"
+    Then the command exits with code 0
+
+  @REQ-0.0.37-03-02
+  Scenario: gz validate --invariant-coherence exits 3 on drift
+    Given the constitutional invariant registry has at least one entry
+    And AGENTS.md differs from the rendered registry output
+    When I run "gz validate --invariant-coherence"
+    Then the command exits with code 3
+    And the output contains "Diff (first 50 lines)"
+    And the output contains "@@"
+
+  @REQ-0.0.37-03-03
+  Scenario: gz validate --invariant-coherence emits composition_rendered event
+    Given the constitutional invariant registry has at least one entry
+    When I run "gz validate --invariant-coherence"
+    Then a "composition_rendered" event is appended to the ledger

@@ -1,0 +1,32 @@
+{
+  "description": "Constitutional invariant ledger event type definitions (ADR-0.0.37, OBPI-0.0.37-03)",
+  "event_types": [
+    {
+      "id": "composition_rendered",
+      "name": "composition_rendered",
+      "schema": {
+        "required": ["invariant_count", "target", "byte_count", "render_ts"],
+        "properties": {
+          "invariant_count": {"type": "integer"},
+          "target": {"type": "string"},
+          "byte_count": {"type": "integer"},
+          "render_ts": {"type": "string", "format": "date-time"}
+        }
+      },
+      "required_fields": ["invariant_count", "target", "byte_count", "render_ts"]
+    },
+    {
+      "id": "composition_drift_detected",
+      "name": "composition_drift_detected",
+      "schema": {
+        "required": ["target", "diff_first_50_lines", "render_ts"],
+        "properties": {
+          "target": {"type": "string"},
+          "diff_first_50_lines": {"type": "string"},
+          "render_ts": {"type": "string", "format": "date-time"}
+        }
+      },
+      "required_fields": ["target", "diff_first_50_lines", "render_ts"]
+    }
+  ]
+}

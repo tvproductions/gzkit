@@ -371,6 +371,23 @@
         "escalated_to": { "type": "string", "min_length": 1 }
       }
     },
+    "composition_rendered": {
+      "required": ["invariant_count", "target", "byte_count", "render_ts"],
+      "properties": {
+        "invariant_count": { "type": "integer" },
+        "target": { "type": "string", "min_length": 1 },
+        "byte_count": { "type": "integer" },
+        "render_ts": { "type": "string" }
+      }
+    },
+    "composition_drift_detected": {
+      "required": ["target", "diff_first_50_lines", "render_ts"],
+      "properties": {
+        "target": { "type": "string", "min_length": 1 },
+        "diff_first_50_lines": { "type": "string", "min_length": 1 },
+        "render_ts": { "type": "string" }
+      }
+    },
     "intrinsic-complexity-attestation": {
       "required": ["file_path", "qualname", "reason", "attestor", "attestation_date", "metric", "crossing_band", "crossing_value"],
       "properties": {

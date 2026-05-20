@@ -80,6 +80,9 @@ from gzkit.governance.trust_audits.instructions_files_budget import (
 from gzkit.governance.trust_audits.intrinsic_attestation import (
     validate_intrinsic_attestation,
 )
+from gzkit.governance.trust_audits.invariant_coherence import (
+    validate_invariant_coherence,
+)
 from gzkit.governance.trust_audits.kind_invariance import audit_kind_invariance
 from gzkit.governance.trust_audits.models import audit_pydantic_models
 from gzkit.governance.trust_audits.orientation import audit_orientation_freshness
@@ -171,6 +174,7 @@ __all__ = [
     "validate_complexity_doctrine_links",
     "validate_complexity_thresholds",
     "validate_evaluation_justify_binding",
+    "validate_invariant_coherence",
     "validate_intrinsic_attestation",
     "validate_pointer_integrity",
     "validate_scenario_reachability",

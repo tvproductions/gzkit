@@ -204,7 +204,8 @@ Before: OBPI completion produced no canon-side record of which files an OBPI's i
 ### Key Proof
 
 ```bash
-$ uv run gz obpi complete OBPI-X.Y.Z-NN --json | jq '.actual_paths_touched'
+$ uv run gz obpi complete OBPI-X.Y.Z-NN --json > /tmp/obpi-complete.json
+$ jq '.actual_paths_touched' /tmp/obpi-complete.json
 [
   "src/gzkit/governance/propagation/detect.py",
   "tests/governance/test_propagation.py"

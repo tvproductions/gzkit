@@ -210,6 +210,12 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 |---|------|-------|-----|
 | 54 | `Field(min_length=1)` on `AdvisorDiagnosis.proof` | **Mechanical** | Enforced by `gz validate --advisor-proof-binding` (OBPI-0.0.29-08, `src/gzkit/governance/trust_audits/advisor_proof_binding.py`) — fails closed (exit 1) on (a) any fixture under `tests/fixtures/advisor/*.json` whose top-level `proof` array is empty, (b) any `intrinsic-complexity-attestation` ledger event whose payload references a diagnosis id whose fixture has empty proof, or (c) `src/gzkit/schemas/advisor_diagnosis.json` whose `properties.proof.minItems` is missing or `< 1`. Speculative-marker escape: a fixture's top-level `"_negative_case": true` skips it (the OBPI-01 model test that asserts `ValidationError` on empty proof is the test of the defense, not a defect). Wired into `--all` aggregation and `gz check` (`_run_scope_checks` opt-in scope). Behave scenarios at `features/advisor_proof_binding.feature` cover the two canonical failure paths (REQ-0.0.29-08-02: empty fixture; REQ-0.0.29-08-03: ledger event citing empty-proof diagnosis). Validator validated by `tests/governance/test_advisor_proof_binding_validator.py` (16 tests across fixture, ledger, schema, error-message-quality, and CLI-integration test classes). Scorecard citation: ADR-0.0.29 (parent), OBPI-0.0.29-01 (model layer), OBPI-0.0.29-02 (engine layer), OBPI-0.0.29-08 (validator layer). |
 
+### Constitutional Invariant Composition (ADR-0.0.37 / OBPI-0.0.37-03)
+
+| # | Rule | Score | Why |
+|---|------|-------|-----|
+| 58 | `gz validate --invariant-coherence` — composition drift fail-close | **Mechanical** | Enforced by `gz validate --invariant-coherence` (OBPI-0.0.37-03, `src/gzkit/governance/trust_audits/invariant_coherence.py`) — fails closed (exit 3) on byte-drift between the rendered constitutional invariant registry output and the committed AGENTS.md. Emits `composition_rendered` event on every invocation; additionally emits `composition_drift_detected` event with diff payload on drift. Included in `gz check` default scope list (REQ-0.0.37-03-05). Validator validated by `tests/governance/test_invariant_coherence.py` (17 tests across match-no-drift, mismatch-drift, event-emission, schema-registration, gz-check-default test classes). Scorecard citation: ADR-0.0.37 (parent), OBPI-0.0.37-01 (registry primitive), OBPI-0.0.37-02 (composition renderer), OBPI-0.0.37-03 (validator). |
+
 ### Token Block Discipline (`.gzkit/rules/token-block-discipline.md`)
 
 | # | Rule | Score | Why |

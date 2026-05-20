@@ -425,6 +425,7 @@ def _collect_errors(
     check_vendor_manifest: bool = False,
     check_kind_invariance: bool = False,
     check_receipt_shape: bool = False,
+    check_invariant_coherence: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -440,6 +441,7 @@ def _collect_errors(
         "frontmatter": check_frontmatter,
         "version": check_version,
         "taxonomy": check_taxonomy,
+        "invariant_coherence": check_invariant_coherence,
     }
     # Scopes that only run when explicitly requested
     explicit_scopes: dict[str, bool] = {
@@ -514,6 +516,7 @@ def _default_scope_runners(
         ),
         "version": lambda: list(validate_version_consistency(project_root)),
         "taxonomy": lambda: _taxonomy_runner(project_root),
+        "invariant_coherence": lambda: _invariant_coherence_runner(project_root),
     }
 
 
@@ -522,6 +525,13 @@ def _taxonomy_runner(project_root: Path) -> list[ValidationError]:
     from gzkit.governance import trust_audits  # noqa: PLC0415
 
     return trust_audits.audit_adr_taxonomy(project_root)
+
+
+def _invariant_coherence_runner(project_root: Path) -> list[ValidationError]:
+    """Import trust_audits lazily (avoids circular-import risk at module load)."""
+    from gzkit.governance import trust_audits  # noqa: PLC0415
+
+    return trust_audits.validate_invariant_coherence(project_root)
 
 
 def _explicit_scope_runners(
@@ -1081,6 +1091,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "scenario_reachability",
         "kind_invariance",
         "receipt_shape",
+        "invariant_coherence",
     }
 )
 
@@ -1324,6 +1335,7 @@ def validate(
     check_vendor_manifest: bool = False,
     check_kind_invariance: bool = False,
     check_receipt_shape: bool = False,
+    check_invariant_coherence: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1475,6 +1487,7 @@ def validate(
         check_vendor_manifest=check_vendor_manifest,
         check_kind_invariance=check_kind_invariance,
         check_receipt_shape=check_receipt_shape,
+        check_invariant_coherence=check_invariant_coherence,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -1553,6 +1566,7 @@ def validate(
         "vendor_manifest": check_vendor_manifest,
         "kind_invariance": check_kind_invariance,
         "receipt_shape": check_receipt_shape,
+        "invariant_coherence": check_invariant_coherence,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]
