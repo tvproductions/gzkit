@@ -1,0 +1,12 @@
+{
+  "obpi_id": "OBPI-0.0.37-04-brief-structural-schema",
+  "timestamp": "2026-05-19T00:32:00Z",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.37-04-brief-structural-schema.md",
+  "gaps_found": 0,
+  "cli_verdict": "FAIL",
+  "cli_gaps_note": "CLI FAIL was false-positive: 5 gaps were (1) missing plan file — now resolved, (2-5) allowed-path files not yet existing on disk — expected for new-file OBPIs. ADR<->OBPI semantic alignment: FULLY ALIGNED. Plan<->OBPI alignment: FULLY ALIGNED.",
+  "scope_collisions": "ADVISORY ONLY (5 sibling-ADR overlaps with ADR-0.0.42 / ADR-0.0.11) — these OBPIs have not landed; proceed.",
+  "adr_obpi_alignment": "PASS",
+  "plan_obpi_alignment": "PASS"
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gzkit.obpi_brief_structure.v1",
+  "title": "gzkit OBPI Brief Structure Schema",
+  "description": "Machine-readable structured fields for OBPI briefs (OBPI-0.0.37-04). Mirrors BriefStructure Pydantic model.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "parent", "lane", "status", "allowlist", "reqs", "verification", "citations"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^OBPI-\\d+\\.\\d+\\.\\d+-\\d{2}(-[a-z0-9-]+)?$",
+      "description": "OBPI identifier"
+    },
+    "parent": {
+      "type": "string",
+      "pattern": "^ADR-\\d+\\.\\d+\\.\\d+-[a-z0-9-]+$",
+      "description": "Parent ADR identifier"
+    },
+    "lane": {
+      "type": "string",
+      "enum": ["Lite", "Heavy"],
+      "description": "Execution lane"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Draft", "Validated", "Completed"],
+      "description": "Brief lifecycle status"
+    },
+    "allowlist": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1,
+      "description": "Allowed paths for this OBPI"
+    },
+    "reqs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^REQ-\\d+\\.\\d+\\.\\d+-\\d{2}-\\d{2}$"
+      },
+      "minItems": 1,
+      "description": "REQ-ID array"
+    },
+    "verification": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1,
+      "description": "Verification commands"
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "prefixItems": [{"type": "string"}, {"type": "string"}],
+        "minItems": 2,
+        "maxItems": 2
+      },
+      "description": "Citation tuples (artifact_path, anchor)"
+    }
+  }
+}

@@ -3,7 +3,26 @@ id: OBPI-0.0.37-04-brief-structural-schema
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
+allowlist:
+  - src/gzkit/governance/brief_structure.py
+  - src/gzkit/schemas/obpi_brief_structure.json
+  - tests/governance/test_brief_structure.py
+  - tests/fixtures/brief_structure/
+  - features/constitutional_invariants.feature
+  - docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-04-brief-structural-schema.md
+reqs:
+  - REQ-0.0.37-04-01
+  - REQ-0.0.37-04-02
+  - REQ-0.0.37-04-03
+  - REQ-0.0.37-04-04
+  - REQ-0.0.37-04-05
+verification:
+  - uv run gz lint
+  - uv run gz typecheck
+  - uv run -m unittest tests.governance.test_brief_structure -v
+  - uv run mkdocs build --strict
+citations: []
 ---
 
 # OBPI-0.0.37-04-brief-structural-schema: Brief Structural Schema
@@ -13,7 +32,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 - **Checklist Item:** #4 — "OBPI-0.0.37-04 — OBPI brief structural schema (`BriefStructure` Pydantic + JSON Schema mirror; structured allowlist + REQs + Verification + citations; permissive mode with deprecation window)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -75,16 +94,19 @@ Land the structural schema that OBPI-05's reconciliation engine reads briefs thr
 - [ ] `.gzkit/rules/brief-heading-conventions.md` — H3 evidence sections, H2 top-level (informs the parser)
 - [ ] `.gzkit/rules/models.md` — Pydantic conventions
 
-**Context (exemplars):**
-
-- [ ] `src/gzkit/schemas/obpi.json` — current frontmatter schema (companion, not replaced)
-- [ ] `src/gzkit/governance/briefs.py` — current brief parsing entry points (parser additions should compose, not replace)
-- [ ] One real brief, e.g. `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-01-invariant-schema-and-registry.md` — the shape parse_brief must round-trip
-
 **Prerequisites:**
 
-- [ ] `src/gzkit/schemas/obpi.json` exists (frontmatter schema — companion artifact)
-- [ ] `src/gzkit/governance/briefs.py` exists (existing brief module to extend, not replace)
+- [x] `src/gzkit/schemas/obpi.json` exists (OBPI frontmatter schema — companion artifact)
+- [x] OBPI-0.0.37-01 landed — `invariants.py` provides the frozen-model + JSON-Schema-mirror + loader pattern
+- [x] `features/constitutional_invariants.feature` exists (created by OBPI-0.0.37-02)
+
+**Existing Code:**
+
+- [x] `src/gzkit/schemas/obpi.json` — current OBPI frontmatter schema; `obpi_brief_structure.json` follows its `$id` / `additionalProperties` package convention
+- [x] `src/gzkit/governance/invariants.py` — OBPI-01 sibling: frozen Pydantic model + JSON Schema mirror + loader; the canonical module shape `brief_structure.py` mirrors
+- [x] `src/gzkit/governance/trust_audits/briefs.py` — existing brief trust-audit module (regex-based frontmatter extraction); `parse_brief` is a distinct schema-layer surface, not a replacement
+- [x] `tests/governance/test_invariants.py` — OBPI-01 test pattern (`unittest.TestCase` + `@covers` decorator) mirrored by `test_brief_structure.py`
+- [x] `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-01-invariant-schema-and-registry.md` — a real brief; the markdown + frontmatter shape `parse_brief` must round-trip
 
 ## Quality Gates
 
@@ -155,7 +177,8 @@ print('REQ-03 OK: permissive path exercised')
 ## Completion Checklist
 
 - [ ] All gates satisfied
-- [ ] `gz brief reconcile OBPI-0.0.37-04-brief-structural-schema` reports zero drift
+<!-- gz-validate-skip: command-shape -->
+- [ ] `gz brief reconcile OBPI-0.0.37-04-brief-structural-schema` reports zero drift (CLI verb lands in OBPI-0.0.37-06; speculative forward-reference)
 
 ## Evidence
 
@@ -169,15 +192,25 @@ print('REQ-03 OK: permissive path exercised')
 
 ### Key Proof
 
-<!-- Round-trip parse of this OBPI brief into BriefStructure with no warnings. -->
+
+Round-trip self-parse — OBPI-0.0.37-04's own brief loads as BriefStructure with zero DeprecationWarnings (REQ-05 proof): "REQ-05 OK: BriefStructure, 0 warnings, 5 REQs, lane=Heavy".
+
+Quality gates (ARB receipts):
+- arb-step-unittest-fd36385011e14413b89c942cb859823c — 5377/5377 tests pass
+- arb-ruff-ee52f020b44a415baefbdf0d0a5d77ce — lint clean
+- arb-step-typecheck-1f56b4b6f63043a6b2841748bdefb72f — typecheck clean
+- arb-step-mkdocs-da3eec5729ec40d5a8dbbdeb238ca3cf — mkdocs --strict clean
+- arb-step-unittest-c7b7c0dc5b164c7dbbfc82c3f18a302e — OBPI-scoped 19/19 pass
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/governance/brief_structure.py (BriefStructure frozen Pydantic model + LegacyBriefShape + parse_brief loader), src/gzkit/schemas/obpi_brief_structure.json (JSON Schema mirror), tests/governance/test_brief_structure.py (19 REQ-derived tests), tests/fixtures/brief_structure/{compliant,legacy,malformed}.md
+- Files modified: features/constitutional_invariants.feature (5 scenarios @REQ-0.0.37-04-01..05); OBPI-0.0.37-04 brief (structured YAML frontmatter + Discovery Checklist Existing Code block)
+- Tests added: 19 unittest cases (all pass), 5 BDD scenarios; @covers parity 5/5 REQs, uncovered_reqs=0
+- Defects fixed in-cycle: spec+quality review caught extra="forbid" rejecting real briefs carrying item: frontmatter; parse_brief now filters input to BriefStructure.model_fields before construction
+- Date completed: 2026-05-19
+- Attestation status: operator-attested
 
 ## Tracked Defects
 
@@ -185,14 +218,14 @@ print('REQ-03 OK: permissive path exercised')
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: substantive text grounded in round-trip parse demonstration
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — OBPI-0.0.37-04 brief structural schema: BriefStructure frozen Pydantic model + obpi_brief_structure.json mirror + permissive-mode parse_brief loader landed; 19/19 OBPI-scoped unittest (receipt arb-step-unittest-c7b7c0dc5b164c7dbbfc82c3f18a302e), 5377/5377 full suite, 5/5 @covers REQ parity, lint+typecheck+mkdocs clean (receipts arb-ruff-ee52f020b44a415baefbdf0d0a5d77ce, arb-step-typecheck-1f56b4b6f63043a6b2841748bdefb72f, arb-step-mkdocs-da3eec5729ec40d5a8dbbdeb238ca3cf).
+- Date: 2026-05-20
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-20
 
 **Evidence Hash:** -
