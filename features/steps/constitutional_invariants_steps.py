@@ -61,7 +61,7 @@ def _render_bytes(root: Path) -> bytes:
 
     template_root = Path(__file__).parent.parent.parent / "src" / "gzkit" / "templates"
     invariants = load_invariants(root)
-    return render_agents_md(invariants, template_root)
+    return render_agents_md(invariants, template_root, root)
 
 
 @given("the constitutional invariant registry has at least one entry")

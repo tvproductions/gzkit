@@ -70,7 +70,7 @@ def _write_agents_md(root: Path, content: bytes) -> None:
 def _render_expected(root: Path) -> bytes:
     """Render AGENTS.md bytes using the project's template and invariants."""
     invariants = load_invariants(root)
-    return render_agents_md(invariants, root / ".gzkit" / "templates")
+    return render_agents_md(invariants, root / ".gzkit" / "templates", root)
 
 
 def _read_ledger_events(root: Path) -> list[dict]:

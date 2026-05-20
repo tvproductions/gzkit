@@ -152,7 +152,7 @@ class TestGovernanceRenderCheckMode(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            rendered = render_agents_md({}, _FIXTURE_ROOT)
+            rendered = render_agents_md({}, _FIXTURE_ROOT, root)
             agents_path = root / "AGENTS.md"
             agents_path.write_bytes(rendered)
 
