@@ -7,6 +7,7 @@
 """
 
 import json
+import tempfile
 import unittest
 import unittest.mock
 from io import StringIO
@@ -1573,6 +1574,274 @@ class TestDryRunNoManifest(unittest.TestCase):
 
             releases_dir = root / "docs" / "releases"
             self.assertFalse(releases_dir.exists(), "docs/releases/ should not be created")
+
+
+# ---------------------------------------------------------------------------
+# Test: _discover_foundation_closeouts (GHI #490 — foundation closeout enum)
+# ---------------------------------------------------------------------------
+
+
+def _foundation_receipt(
+    adr_id: str,
+    semver: str,
+    ts: str,
+    *,
+    receipt_event: str = "validated",
+    commit: str = "abc1234",
+) -> dict:
+    """Build an audit_receipt_emitted ledger event for a closed-out ADR."""
+    return {
+        "schema": "gzkit.ledger.v1",
+        "event": "audit_receipt_emitted",
+        "id": adr_id,
+        "ts": ts,
+        "receipt_event": receipt_event,
+        "anchor": {"commit": commit, "semver": semver},
+    }
+
+
+def _ledger_from_events(directory: Path, events: list[dict]):
+    """Materialize a real Ledger over a temp JSONL file."""
+    from gzkit.ledger import Ledger
+
+    path = directory / "ledger.jsonl"
+    path.write_text("".join(json.dumps(e) + "\n" for e in events), encoding="utf-8")
+    return Ledger(path)
+
+
+class TestDiscoverFoundationCloseouts(unittest.TestCase):
+    """Foundation-ADR closeout enumeration from ledger Gate-5 receipts.
+
+    A foundation closeout qualifies a patch release as a code surface equal
+    to a behavior-level GHI, per the hexagonal port/adapter doctrine.
+
+    @covers GHI #490 — patch-release qualifier enumerates foundation closeouts
+    """
+
+    def test_foundation_validated_after_tag_is_discovered(self) -> None:
+        from gzkit.commands.patch_release import _discover_foundation_closeouts
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = _ledger_from_events(
+                Path(tmp),
+                [_foundation_receipt("ADR-0.0.15-x", "0.0.15", "2026-05-10T00:00:00+00:00")],
+            )
+            result = _discover_foundation_closeouts(ledger, "2026-05-01T00:00:00+00:00")
+        self.assertEqual([c.adr_id for c in result], ["ADR-0.0.15-x"])
+        self.assertEqual(result[0].semver, "0.0.15")
+
+    def test_validated_at_or_before_tag_is_excluded(self) -> None:
+        """A closeout shipped under a prior tag does not re-qualify (GHI #233 axis)."""
+        from gzkit.commands.patch_release import _discover_foundation_closeouts
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = _ledger_from_events(
+                Path(tmp),
+                [_foundation_receipt("ADR-0.0.9-old", "0.0.9", "2026-04-01T00:00:00+00:00")],
+            )
+            result = _discover_foundation_closeouts(ledger, "2026-05-01T00:00:00+00:00")
+        self.assertEqual(result, [])
+
+    def test_feature_adr_closeout_is_not_a_foundation_closeout(self) -> None:
+        """A 0.y.z feature ADR is not a foundation (0.0.x) closeout."""
+        from gzkit.commands.patch_release import _discover_foundation_closeouts
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = _ledger_from_events(
+                Path(tmp),
+                [_foundation_receipt("ADR-0.48.0-feat", "0.48.0", "2026-05-10T00:00:00+00:00")],
+            )
+            result = _discover_foundation_closeouts(ledger, "2026-05-01T00:00:00+00:00")
+        self.assertEqual(result, [])
+
+    def test_none_tag_date_includes_all_foundation_closeouts(self) -> None:
+        from gzkit.commands.patch_release import _discover_foundation_closeouts
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = _ledger_from_events(
+                Path(tmp),
+                [_foundation_receipt("ADR-0.0.1-a", "0.0.1", "2026-01-01T00:00:00+00:00")],
+            )
+            result = _discover_foundation_closeouts(ledger, None)
+        self.assertEqual(len(result), 1)
+
+    def test_dedupes_multiple_receipts_keeps_latest(self) -> None:
+        from gzkit.commands.patch_release import _discover_foundation_closeouts
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = _ledger_from_events(
+                Path(tmp),
+                [
+                    _foundation_receipt(
+                        "ADR-0.0.15-x", "0.0.15", "2026-05-05T00:00:00+00:00", commit="early"
+                    ),
+                    _foundation_receipt(
+                        "ADR-0.0.15-x", "0.0.15", "2026-05-12T00:00:00+00:00", commit="late"
+                    ),
+                ],
+            )
+            result = _discover_foundation_closeouts(ledger, "2026-05-01T00:00:00+00:00")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].anchor_commit, "late")
+
+    def test_non_validated_receipt_event_is_excluded(self) -> None:
+        """Only the Gate-5 `validated` receipt is a closeout — not `recorded`."""
+        from gzkit.commands.patch_release import _discover_foundation_closeouts
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = _ledger_from_events(
+                Path(tmp),
+                [
+                    _foundation_receipt(
+                        "ADR-0.0.20-r",
+                        "0.0.20",
+                        "2026-05-10T00:00:00+00:00",
+                        receipt_event="recorded",
+                    )
+                ],
+            )
+            result = _discover_foundation_closeouts(ledger, "2026-05-01T00:00:00+00:00")
+        self.assertEqual(result, [])
+
+    def test_empty_ledger_returns_empty(self) -> None:
+        from gzkit.commands.patch_release import _discover_foundation_closeouts
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = _ledger_from_events(Path(tmp), [])
+            result = _discover_foundation_closeouts(ledger, "2026-05-01T00:00:00+00:00")
+        self.assertEqual(result, [])
+
+    def test_results_sorted_semantically_not_lexically(self) -> None:
+        """0.0.9 sorts before 0.0.15 — semantic order, not string order."""
+        from gzkit.commands.patch_release import _discover_foundation_closeouts
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = _ledger_from_events(
+                Path(tmp),
+                [
+                    _foundation_receipt("ADR-0.0.15-o", "0.0.15", "2026-05-10T00:00:00+00:00"),
+                    _foundation_receipt("ADR-0.0.9-n", "0.0.9", "2026-05-11T00:00:00+00:00"),
+                ],
+            )
+            result = _discover_foundation_closeouts(ledger, "2026-05-01T00:00:00+00:00")
+        self.assertEqual([c.semver for c in result], ["0.0.9", "0.0.15"])
+
+    def test_naive_tag_date_compares_against_aware_receipt(self) -> None:
+        """A date-only tag_date must not crash against tz-aware receipt timestamps."""
+        from gzkit.commands.patch_release import _discover_foundation_closeouts
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = _ledger_from_events(
+                Path(tmp),
+                [_foundation_receipt("ADR-0.0.30-z", "0.0.30", "2026-05-10T00:00:00+00:00")],
+            )
+            result = _discover_foundation_closeouts(ledger, "2026-05-01")
+        self.assertEqual([c.adr_id for c in result], ["ADR-0.0.30-z"])
+
+
+# ---------------------------------------------------------------------------
+# Test: foundation closeouts surface in dry-run discovery output (GHI #490)
+# ---------------------------------------------------------------------------
+
+
+class TestPatchReleaseFoundationCloseoutsDryRun(unittest.TestCase):
+    """Integration: dry-run enumerates and renders foundation-ADR closeouts.
+
+    @covers GHI #490
+    """
+
+    @patch("gzkit.commands.patch_release.get_project_root", return_value=_PROJECT_ROOT)
+    @patch("gzkit.commands.patch_release.run_exec")
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_dry_run_json_lists_foundation_closeouts(
+        self, mock_git: object, mock_exec: object, _root: object
+    ) -> None:
+        from gzkit.commands.patch_release import patch_release_cmd
+
+        mock_exec.side_effect = _build_mock_run_exec(view_payloads={})
+        mock_git.side_effect = _build_mock_git_cmd(
+            tag_output="v0.0.14", tag_date="2026-05-01T00:00:00+00:00", src_commits={}
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = _ledger_from_events(
+                Path(tmp),
+                [_foundation_receipt("ADR-0.0.16-y", "0.0.16", "2026-05-10T00:00:00+00:00")],
+            )
+            with (
+                patch("gzkit.commands.patch_release.Ledger", return_value=ledger),
+                patch("builtins.print") as mock_print,
+            ):
+                patch_release_cmd(dry_run=True, as_json=True)
+        payload = json.loads(mock_print.call_args[0][0])
+        self.assertIn("foundation_closeouts", payload)
+        self.assertEqual(len(payload["foundation_closeouts"]), 1)
+        self.assertEqual(payload["foundation_closeouts"][0]["adr_id"], "ADR-0.0.16-y")
+        self.assertEqual(payload["foundation_closeouts"][0]["semver"], "0.0.16")
+
+    @patch("gzkit.commands.patch_release.get_project_root", return_value=_PROJECT_ROOT)
+    @patch("gzkit.commands.patch_release.run_exec")
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_dry_run_rich_renders_foundation_section(
+        self, mock_git: object, mock_exec: object, _root: object
+    ) -> None:
+        from gzkit.commands.patch_release import patch_release_cmd
+
+        mock_exec.side_effect = _build_mock_run_exec(view_payloads={})
+        mock_git.side_effect = _build_mock_git_cmd(
+            tag_output="v0.0.14", tag_date="2026-05-01T00:00:00+00:00", src_commits={}
+        )
+        buf = StringIO()
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = _ledger_from_events(
+                Path(tmp),
+                [_foundation_receipt("ADR-0.0.16-y", "0.0.16", "2026-05-10T00:00:00+00:00")],
+            )
+            with (
+                patch("gzkit.commands.patch_release.Ledger", return_value=ledger),
+                patch("gzkit.commands.patch_release.console", Console(file=buf)),
+            ):
+                patch_release_cmd(dry_run=True, as_json=False)
+        output = buf.getvalue()
+        self.assertIn("Foundation-ADR closeouts", output)
+        self.assertIn("ADR-0.0.16-y", output)
+
+
+# ---------------------------------------------------------------------------
+# Test: foundation closeouts in the release manifest (GHI #490)
+# ---------------------------------------------------------------------------
+
+
+class TestManifestFoundationCloseouts(unittest.TestCase):
+    """The markdown manifest records qualifying foundation closeouts.
+
+    @covers GHI #490
+    """
+
+    def test_manifest_markdown_includes_foundation_section(self) -> None:
+        from gzkit.commands.patch_release import (
+            FoundationCloseout,
+            PatchManifest,
+            _render_manifest_markdown,
+        )
+
+        manifest = PatchManifest(
+            version="0.0.16",
+            previous_version="0.0.15",
+            date="2026-05-21",
+            tag="v0.0.15",
+            ghis=[],
+            foundation_closeouts=[
+                FoundationCloseout(
+                    adr_id="ADR-0.0.16-y",
+                    semver="0.0.16",
+                    validated_at="2026-05-10T00:00:00+00:00",
+                    anchor_commit="abc1234",
+                )
+            ],
+        )
+        rendered = _render_manifest_markdown(manifest)
+        self.assertIn("Foundation", rendered)
+        self.assertIn("ADR-0.0.16-y", rendered)
 
 
 if __name__ == "__main__":

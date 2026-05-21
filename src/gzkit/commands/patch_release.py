@@ -67,6 +67,26 @@ class GhiQualification(BaseModel):
     warning: str | None = Field(None, description="Warning when label and diff disagree")
 
 
+class FoundationCloseout(BaseModel):
+    """A foundation ADR validated since the last tag — a release-worthy port closeout.
+
+    Per the hexagonal port/adapter doctrine
+    (``docs/governance/hexagonal-architecture.md``), foundation ADRs ship
+    code surfaces — validators, runtime engines, schemas — exactly as feature
+    ADRs do. A foundation closeout is therefore a patch-release qualifier in
+    its own right, enumerated mechanically alongside behavior-level GHIs
+    rather than left to operator memory (GHI #490; completes the GHI #330
+    residual CLI-enumeration TODO).
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    adr_id: str = Field(..., description="Foundation ADR identifier")
+    semver: str = Field(..., description="Foundation semver (0.0.x)")
+    validated_at: str = Field(..., description="ISO 8601 timestamp of the Gate-5 validated receipt")
+    anchor_commit: str = Field("", description="Commit anchor recorded on the closeout receipt")
+
+
 class DiscoveryResult(BaseModel):
     """Aggregated GHI discovery output."""
 
@@ -76,6 +96,9 @@ class DiscoveryResult(BaseModel):
     tag_date: str | None = Field(None, description="ISO date of latest tag")
     ghi_count: int = Field(..., description="Total GHIs discovered")
     qualifications: list[GhiQualification] = Field(..., description="Per-GHI results")
+    foundation_closeouts: list[FoundationCloseout] = Field(
+        default_factory=list, description="Foundation ADRs validated since the last tag"
+    )
     warnings: list[str] = Field(default_factory=list, description="Top-level warnings")
     current_version: str | None = Field(None, description="Current version from pyproject.toml")
     proposed_version: str | None = Field(None, description="Proposed patch version (Z+1)")
@@ -103,6 +126,9 @@ class PatchManifest(BaseModel):
     date: str = Field(..., description="Release date (ISO 8601)")
     tag: str | None = Field(None, description="Git tag of previous version")
     ghis: list[ManifestGhi] = Field(..., description="GHIs with cross-validation results")
+    foundation_closeouts: list[FoundationCloseout] = Field(
+        default_factory=list, description="Foundation ADR closeouts qualifying this release"
+    )
     operator_approval: str = Field(
         "Approved by gz patch release", description="Operator approval text"
     )
@@ -312,6 +338,74 @@ def _classify_ghi(project_root: Path, ghi: GhiRecord, base_ref: str | None) -> G
     )
 
 
+# A foundation ADR carries a 0.0.x semver (AGENTS.md § Kinds). The patch-Z
+# component is unbounded; the major/minor components are pinned to 0.0.
+_FOUNDATION_SEMVER_RE = re.compile(r"^0\.0\.\d+$")
+
+
+def _parse_ts(value: str | None) -> datetime | None:
+    """Parse an ISO 8601 timestamp to a tz-aware datetime; ``None`` if unparseable.
+
+    A naive timestamp (no offset — e.g. a date-only ``tag_date``) is assumed
+    UTC so it compares cleanly against the tz-aware ledger receipt timestamps.
+    """
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    return parsed.replace(tzinfo=UTC) if parsed.tzinfo is None else parsed
+
+
+def _semver_key(semver: str) -> tuple[int, ...]:
+    """Sort key for semantic (not lexical) version ordering — 0.0.9 before 0.0.15."""
+    try:
+        return tuple(int(part) for part in semver.split("."))
+    except ValueError:
+        return (0,)
+
+
+def _discover_foundation_closeouts(
+    ledger: Ledger, tag_date: str | None
+) -> list[FoundationCloseout]:
+    """Find foundation ADRs that reached Validated since the last tag.
+
+    A foundation closeout is a Gate-5 ``audit_receipt_emitted`` ledger event
+    with ``receipt_event == "validated"`` whose anchor semver is a foundation
+    (``0.0.x``) version. Scoped to the release range by receipt timestamp:
+    receipts at or before *tag_date* shipped under a prior tag, mirroring the
+    GHI #233 range-anchor doctrine on the ledger axis.
+
+    Discovery anchors on the ledger receipt, not ADR frontmatter: the ledger
+    is the Layer-2 system-of-record and frontmatter ``status:`` is Layer-1
+    authorship (AGENTS.md § Never #7). Foundation closeouts are release-worthy
+    code surfaces equal to behavior-level GHIs per the hexagonal port/adapter
+    doctrine (GHI #490; completes the GHI #330 residual TODO).
+    """
+    cutoff = _parse_ts(tag_date)
+    latest: dict[str, FoundationCloseout] = {}
+    for event in ledger.query(event_type="audit_receipt_emitted"):
+        if event.extra.get("receipt_event") != "validated":
+            continue
+        anchor = event.extra.get("anchor") or {}
+        semver = str(anchor.get("semver", ""))
+        if not _FOUNDATION_SEMVER_RE.match(semver):
+            continue
+        event_ts = _parse_ts(event.ts)
+        if cutoff is not None and event_ts is not None and event_ts <= cutoff:
+            continue
+        prior = latest.get(event.id)
+        if prior is None or event.ts > prior.validated_at:
+            latest[event.id] = FoundationCloseout(
+                adr_id=event.id,
+                semver=semver,
+                validated_at=event.ts,
+                anchor_commit=str(anchor.get("commit", "")),
+            )
+    return sorted(latest.values(), key=lambda c: _semver_key(c.semver))
+
+
 # ---------------------------------------------------------------------------
 # Rendering
 # ---------------------------------------------------------------------------
@@ -340,6 +434,7 @@ def _render_dry_run_rich(result: DiscoveryResult) -> None:
     else:
         console.print("  Version: [dim]unknown (pyproject.toml unreadable)[/dim]")
     console.print(f"  GHIs discovered: {result.ghi_count}")
+    console.print(f"  Foundation closeouts: {len(result.foundation_closeouts)}")
     console.print()
 
     for q in result.qualifications:
@@ -348,6 +443,12 @@ def _render_dry_run_rich(result: DiscoveryResult) -> None:
         if q.warning:
             line += f"  [yellow]![/yellow] {q.warning}"
         console.print(line)
+
+    if result.foundation_closeouts:
+        console.print()
+        console.print("[bold]Foundation-ADR closeouts[/bold]")
+        for fc in result.foundation_closeouts:
+            console.print(f"  {fc.adr_id:<44} [green]validated[/green]  ({fc.validated_at[:10]})")
 
     if result.warnings:
         console.print()
@@ -383,6 +484,20 @@ def _render_manifest_markdown(manifest: PatchManifest) -> str:
     for ghi in manifest.ghis:
         warning_cell = ghi.warning or ""
         lines.append(f"| {ghi.number} | {ghi.title} | {ghi.status} | {warning_cell} |")
+    if manifest.foundation_closeouts:
+        lines.extend(
+            [
+                "",
+                "## Qualifying Foundation Closeouts",
+                "",
+                "| ADR | Semver | Validated | Anchor |",
+                "|-----|--------|-----------|--------|",
+            ]
+        )
+        for fc in manifest.foundation_closeouts:
+            lines.append(
+                f"| {fc.adr_id} | {fc.semver} | {fc.validated_at[:10]} | {fc.anchor_commit} |"
+            )
     lines.extend(["", "## Operator Approval", "", manifest.operator_approval, ""])
     return "\n".join(lines)
 
@@ -410,6 +525,7 @@ def _author_release_notes(
     project_root: Path,
     version: str,
     qualifications: list[GhiQualification],
+    foundation_closeouts: list[FoundationCloseout] | None = None,
 ) -> str:
     """Generate and prepend a RELEASE_NOTES.md entry. Returns the entry text."""
     today = datetime.now(UTC).strftime("%Y-%m-%d")
@@ -453,6 +569,12 @@ def _author_release_notes(
         lines.append("### Changed")
         lines.append("")
         lines.extend(changed)
+        lines.append("")
+    if foundation_closeouts:
+        lines.append("### Foundation")
+        lines.append("")
+        for fc in foundation_closeouts:
+            lines.append(f"- **{fc.adr_id}** closed out (validated {fc.validated_at[:10]})")
         lines.append("")
 
     lines.append("---")
@@ -608,6 +730,13 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
     ghis = _discover_ghis(project_root, tag)
     qualifications = [_classify_ghi(project_root, ghi, tag) for ghi in ghis]
 
+    # The ledger is the source-of-truth for foundation-ADR closeouts — a
+    # release qualifier equal to behavior-level GHIs (GHI #490). Constructed
+    # here so dry-run enumerates closeouts too, not only the execute path.
+    config = ensure_initialized()
+    ledger = Ledger(project_root / config.paths.ledger)
+    foundation_closeouts = _discover_foundation_closeouts(ledger, tag_date)
+
     current_version = _read_current_project_version(project_root)
     proposed_version = compute_patch_increment(current_version) if current_version else None
 
@@ -622,6 +751,7 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
         tag_date=tag_date,
         ghi_count=len(qualifications),
         qualifications=qualifications,
+        foundation_closeouts=foundation_closeouts,
         warnings=top_warnings,
         current_version=current_version,
         proposed_version=proposed_version,
@@ -666,6 +796,7 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
         date=datetime.now(UTC).strftime("%Y-%m-%d"),
         tag=tag,
         ghis=manifest_ghis,
+        foundation_closeouts=foundation_closeouts,
     )
 
     # Write markdown manifest (REQ-01, REQ-03)
@@ -676,15 +807,18 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
         {"number": g.number, "title": g.title, "status": g.status, "warning": g.warning}
         for g in manifest_ghis
     ]
+    foundation_summary = [
+        {"adr_id": fc.adr_id, "semver": fc.semver, "validated_at": fc.validated_at}
+        for fc in foundation_closeouts
+    ]
     event = patch_release_event(
         version=proposed_version,
         previous_version=current_version,
         tag=tag,
         ghi_summary=ghi_summary,
         manifest_path=str(manifest_rel),
+        foundation_summary=foundation_summary,
     )
-    config = ensure_initialized()
-    ledger = Ledger(project_root / config.paths.ledger)
     ledger.append(event)
 
     if as_json:
@@ -708,7 +842,9 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
     # --- Full ceremony: release notes, commit, push, release, verify ---
     console.print()
     console.print("[bold]Release notes[/bold]")
-    entry = _author_release_notes(project_root, proposed_version, qualifications)
+    entry = _author_release_notes(
+        project_root, proposed_version, qualifications, foundation_closeouts
+    )
     console.print(entry)
 
     if not _confirm("Proceed with commit, push, and GitHub release?"):

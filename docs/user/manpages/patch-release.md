@@ -8,12 +8,17 @@ gz patch release [--dry-run] [--json] [--full]
 
 ## DESCRIPTION
 
-Execute the GHI-driven patch release ceremony. Discovers qualifying
-GHIs closed since the last tag, cross-validates them (runtime label
-AND source diff), bumps the patch version, and writes a dual-format
-release manifest.
+Execute the GHI-driven patch release ceremony. Discovers two release
+qualifiers since the last tag — behavior-level GHIs (cross-validated by
+runtime label AND source diff) and foundation-ADR closeouts (Gate-5
+`validated` receipts in the ledger) — bumps the patch version, and writes
+a dual-format release manifest. With `--full`, also drafts release notes,
+commits, pushes behind lint/test gates, and creates the GitHub release.
 
-Currently a scaffold. Full logic is tracked by ADR-0.0.15 OBPIs 02-06.
+Both qualifiers carry equal weight: per the hexagonal port/adapter
+doctrine, foundation ADRs (ports) ship code surfaces just as feature ADRs
+(adapters) do, so a foundation closeout is a release-worthy event in its
+own right.
 
 ## OPTIONS
 
@@ -41,6 +46,20 @@ Preview what the patch release would do:
 
 ```bash
 uv run gz patch release --dry-run
+```
+
+```
+Patch Release Discovery (dry run)
+  Latest tag: v0.26.5 (2026-05-17T17:32:41-05:00)
+  Version: 0.26.5 -> 0.26.6 (proposed)
+  GHIs discovered: 17
+  Foundation closeouts: 1
+
+  #483    kind-invariance: 10 legacy foundation ADRs ...   qualified
+  ...
+
+Foundation-ADR closeouts
+  ADR-0.0.36-universal-obpi-attestation        validated  (2026-05-18)
 ```
 
 Machine-readable output:

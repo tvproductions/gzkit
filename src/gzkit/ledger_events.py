@@ -447,8 +447,13 @@ def patch_release_event(
     tag: str | None,
     ghi_summary: list[dict[str, Any]],
     manifest_path: str,
+    foundation_summary: list[dict[str, Any]] | None = None,
 ) -> LedgerEvent:
-    """Create a patch-release event for the governance ledger."""
+    """Create a patch-release event for the governance ledger.
+
+    *foundation_summary* records foundation-ADR closeouts that qualified the
+    release as a code surface equal to behavior-level GHIs (GHI #490).
+    """
     return LedgerEvent(
         event="patch-release",
         id=f"v{version}",
@@ -457,6 +462,7 @@ def patch_release_event(
             "previous_version": previous_version,
             "tag": tag,
             "ghi_summary": ghi_summary,
+            "foundation_summary": foundation_summary or [],
             "manifest_path": manifest_path,
         },
     )

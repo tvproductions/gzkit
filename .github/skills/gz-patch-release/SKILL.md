@@ -5,7 +5,7 @@ description: "Orchestrate the GHI-driven patch release ceremony: draft narrative
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.4.1"
+  skill-version: "1.5.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-21
 model: sonnet
 ---
 
@@ -46,31 +46,35 @@ using GHI evidence and CLI outputs.
   - **Behavior-level GHIs** closed since last tag with runtime label + src diff
     (auto-discovered by `gz patch release --dry-run`)
   - **Foundation-ADR closeouts** — a foundation ADR (`0.0.x`) reached
-    `Validated` status with all OBPIs `Validated` and Gate-5 attestation
-    evidence in the ledger since last tag (operator-asserted; the CLI does
-    not yet enumerate these)
+    `Validated` status with all OBPIs `Validated` and a Gate-5 `validated`
+    receipt in the ledger since the last tag (auto-discovered by
+    `gz patch release --dry-run`)
 - The operator wants to cut a patch version bump driven by either qualifier
 
 ## When NOT to Use
 
 - For minor or major releases — use `gz closeout` ceremony instead
-- When neither qualifier holds — no closed GHIs surface in
-  `gz patch release --dry-run` AND no foundation ADR has reached `Validated`
-  since the last tag
+- When neither qualifier holds — no closed GHIs **and no foundation
+  closeouts** surface in `gz patch release --dry-run` since the last tag
 - When the operator wants to manually edit version files — this ceremony owns
   version sync via `sync_project_version`
 
 ## Qualifier Doctrine
 
 Foundation ADRs codify app/system invariants and identity-shaping semantics.
-A foundation closeout (Validated, all OBPIs Validated, Gate-5 attestation in
-ledger) is a release-worthy event in its own right — the operator does not
-need to bundle it into an unrelated behavior-level GHI to ship it.
+Per the hexagonal port/adapter doctrine (`docs/governance/hexagonal-architecture.md`),
+ports (foundation ADRs) and adapters (feature ADRs) are equal code surfaces —
+both ship validators, runtime engines, and schemas, and both participate in
+the patch-release cadence on the same footing. A foundation closeout
+(Validated, all OBPIs Validated, Gate-5 `validated` receipt in the ledger) is a
+release-worthy event in its own right — the operator does not need to bundle it
+into an unrelated behavior-level GHI to ship it, and the CLI enumerates it
+mechanically rather than leaving it to operator memory.
 
 | Qualifier | Source of truth | Discovery |
 |-----------|-----------------|-----------|
 | Behavior-level GHIs | `gh issue list` + commit cross-validation | `gz patch release --dry-run` |
-| Foundation-ADR closeout | ADR frontmatter `status: Validated` + ledger attestation events | Operator-asserted; cite ADR ID + closeout receipt in narrative |
+| Foundation-ADR closeout | Ledger Gate-5 `validated` receipt (`audit_receipt_emitted`), scoped to the release range by receipt timestamp | `gz patch release --dry-run` (mechanically enumerated — GHI #490) |
 
 When the qualifier is a foundation-ADR closeout, the Step 2 narrative
 references the ADR ID and its decision rather than listing GHIs. The release
