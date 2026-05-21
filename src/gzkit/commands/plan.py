@@ -10,13 +10,13 @@ from gzkit.decomposition import build_checklist_seed, compute_scorecard, default
 from gzkit.ledger import Ledger, adr_created_event
 from gzkit.templates import render_template
 
-_FOUNDATION_SEMVER_RE = re.compile(r"^0\.0\.\d+$")
+FOUNDATION_SEMVER_RE = re.compile(r"^0\.0\.\d+$")
 _SEMVER_LITERAL_RE = re.compile(r"^\d+\.\d+\.\d+$")
 # Canonical non-pool ADR id: ADR-<semver>-<slug>. Mirrors the non-pool branch
 # of the schema `id` pattern in src/gzkit/schemas/adr.json (GHI #346). A bare
 # `ADR-X.Y.Z` (no slug suffix) does NOT match — emitting it produced the
 # GHI #494 bare-id `adr_created` regression.
-_CANONICAL_ADR_ID_RE = re.compile(r"^ADR-[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9-]+$")
+CANONICAL_ADR_ID_RE = re.compile(r"^ADR-[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9-]+$")
 
 # ADR-0.0.35 § Decision item #6 — every foundation-kind ADR scaffolds with a
 # `## Why foundation tier?` section between `## Persona` and `## Intent`,
@@ -24,7 +24,7 @@ _CANONICAL_ADR_ID_RE = re.compile(r"^ADR-[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9-]+$")
 # port-vs-plug framing. The heading is byte-identical (sentence case,
 # trailing question mark) so OBPI-04's validator can pin it. Feature- and
 # pool-kind ADRs MUST NOT scaffold this section.
-_WHY_FOUNDATION_TIER_SECTION = """\
+WHY_FOUNDATION_TIER_SECTION = """\
 ## Why foundation tier?
 
 _[Author: Answer the invariance test in one sentence: "Without this ADR, would \
@@ -54,7 +54,7 @@ def _compose_canonical_adr_id(name: str, semver: str) -> str:
     fail-fast at composition time, not catch-up renames.
     """
     if name.startswith("ADR-"):
-        if not _CANONICAL_ADR_ID_RE.match(name):
+        if not CANONICAL_ADR_ID_RE.match(name):
             raise ValueError(
                 f"name argument is a bare ADR id without a slug suffix "
                 f"(got {name!r}). Non-pool ADR ids require the canonical "
@@ -93,7 +93,7 @@ def _reject_noncanonical_name(name: str, kind: str) -> None:
     if kind == "pool":
         return
     is_bare_semver = bool(_SEMVER_LITERAL_RE.match(name))
-    is_bare_adr_id = name.startswith("ADR-") and not _CANONICAL_ADR_ID_RE.match(name)
+    is_bare_adr_id = name.startswith("ADR-") and not CANONICAL_ADR_ID_RE.match(name)
     if not (is_bare_semver or is_bare_adr_id):
         return
     shape = "ADR id" if is_bare_adr_id else "semver literal"
@@ -156,7 +156,7 @@ def _validate_kind_and_semver(kind: str | None, semver: str, adrs_root: Path) ->
         console.print("  [bold]pool[/bold]       — backlog ADR; no semver required")
         sys.exit(1)
 
-    if kind == "foundation" and not _FOUNDATION_SEMVER_RE.match(semver):
+    if kind == "foundation" and not FOUNDATION_SEMVER_RE.match(semver):
         next_available = _next_available_foundation_semver(adrs_root / "foundation")
         console.print(
             f"[red]ERROR:[/red] --kind foundation requires --semver matching 0.0.x "
@@ -164,7 +164,7 @@ def _validate_kind_and_semver(kind: str | None, semver: str, adrs_root: Path) ->
             f"[bold]{next_available}[/bold]."
         )
         sys.exit(1)
-    if kind == "feature" and _FOUNDATION_SEMVER_RE.match(semver):
+    if kind == "feature" and FOUNDATION_SEMVER_RE.match(semver):
         console.print(
             f"[red]ERROR:[/red] --kind feature rejects 0.0.x semver (got {semver!r}). "
             "Feature ADRs carry release-carrying semver (0.y.z and up). "
@@ -234,7 +234,7 @@ def _render_adr_by_kind(
         # ADR-0.0.35 § Decision item #6 — only foundation-kind ADRs scaffold
         # the `## Why foundation tier?` section; feature-kind ADRs render an
         # empty string for the placeholder so no spurious heading appears.
-        why_foundation_tier = _WHY_FOUNDATION_TIER_SECTION if kind == "foundation" else ""
+        why_foundation_tier = WHY_FOUNDATION_TIER_SECTION if kind == "foundation" else ""
         content = render_template(
             "adr",
             id=adr_id,
@@ -258,10 +258,16 @@ def _render_adr_by_kind(
     return adr_id, adr_file
 
 
-def _register_adr_in_ledger(
+def register_adr_in_ledger(
     *, canonical_parent: str, lane: str, adr_file: Path, ledger_path: Path
 ) -> None:
     """Append adr_created event and verify registration. Exit 2 on failure.
+
+    Shared canonical-ADR ledger-registration helper: wielded by ``plan_cmd``
+    (``gz plan create``) and by the ``gz interview adr`` scaffolder. Both
+    non-pool ADR-creation surfaces emit ``adr_created`` through this single
+    on-disk-derived path so neither can regress the bare-id class on its own
+    (GHI #494 closed the scaffolder; GHI #505 routed the interview path here).
 
     GHI #494: the ``adr_created`` id is derived from the on-disk directory
     name (T1) rather than from an intermediate id variable, so the ledger
@@ -275,7 +281,7 @@ def _register_adr_in_ledger(
     in GHI #279.
     """
     canonical_id = adr_file.parent.name
-    if not _CANONICAL_ADR_ID_RE.match(canonical_id):
+    if not CANONICAL_ADR_ID_RE.match(canonical_id):
         console.print(
             f"[red]ERROR:[/red] ADR file written at {adr_file} but its on-disk "
             f"directory name {canonical_id!r} is not a canonical ADR id; "
@@ -408,7 +414,7 @@ def plan_cmd(
         console.print(f"Created pool ADR: {adr_file}")
         return
 
-    _register_adr_in_ledger(
+    register_adr_in_ledger(
         canonical_parent=canonical_parent,
         lane=lane,
         adr_file=adr_file,

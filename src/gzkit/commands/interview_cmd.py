@@ -13,13 +13,19 @@ from gzkit.commands.common import (
     get_project_root,
     resolve_adr_file,
 )
+from gzkit.commands.plan import (
+    CANONICAL_ADR_ID_RE,
+    FOUNDATION_SEMVER_RE,
+    WHY_FOUNDATION_TIER_SECTION,
+    register_adr_in_ledger,
+)
 from gzkit.interview import (
     check_interview_complete,
     format_answers_for_template,
     format_transcript,
     get_interview_questions,
 )
-from gzkit.ledger import Ledger, adr_created_event, obpi_created_event, prd_created_event
+from gzkit.ledger import Ledger, obpi_created_event, prd_created_event
 from gzkit.templates import render_template
 
 
@@ -149,6 +155,48 @@ def _load_answers_from_file(from_file: str, document_type: str) -> dict[str, str
     return answers
 
 
+def _resolve_adr_doc(
+    answers: dict[str, str],
+    template_vars: dict[str, str],
+    adrs_root: Path,
+) -> tuple[Path, str]:
+    """Resolve the canonical slug-package path for an interview-created ADR.
+
+    Validates the ``id`` answer is canonical slug-form, derives kind and
+    foundation/pre-release routing from the semver embedded in the id, and
+    seats the derived ``kind`` / ``semver`` / ``why_foundation_tier`` into
+    *template_vars*. Returns ``(doc_dir, doc_id)`` for the slug-package
+    layout ``<adrs>/{foundation,pre-release}/<id>/<id>.md`` (GHI #505).
+
+    Raises:
+        GzCliError: If the ``id`` answer is not canonical slug-form.
+
+    """
+    doc_id = answers.get("id", "").strip()
+    if not CANONICAL_ADR_ID_RE.match(doc_id):
+        msg = (
+            "BLOCKERS:\n"
+            f"- ADR id {doc_id!r} is not canonical slug-form. The interview "
+            "scaffolds non-pool ADRs only; the id must match "
+            "ADR-<semver>-<slug> (e.g. ADR-0.1.0-jwt-authentication). A bare "
+            "id (ADR-0.1.0) emits an unslugged adr_created event and a "
+            "flat-directory ADR that diverges from the canonical slug-package "
+            "layout (GHI #279 / #344 / #494 / #505). For a pool ADR use "
+            "`gz plan create <slug> --kind pool`."
+        )
+        raise GzCliError(msg)  # noqa: TRY003
+    # The canonical id embeds the semver; it is the single source of truth
+    # for kind and directory routing. foundation <=> 0.0.x is the ADR-0.0.17
+    # taxonomy binding enforced by `gz validate --taxonomy`.
+    embedded_semver = doc_id.split("-")[1]
+    is_foundation = bool(FOUNDATION_SEMVER_RE.match(embedded_semver))
+    sub = "foundation" if is_foundation else "pre-release"
+    template_vars["semver"] = embedded_semver
+    template_vars["kind"] = "foundation" if is_foundation else "feature"
+    template_vars["why_foundation_tier"] = WHY_FOUNDATION_TIER_SECTION if is_foundation else ""
+    return adrs_root / sub / doc_id, doc_id
+
+
 def interview(document_type: str, from_file: str | None = None) -> None:
     """Q&A mode for document creation.
 
@@ -207,8 +255,7 @@ def interview(document_type: str, from_file: str | None = None) -> None:
         doc_dir = project_root / config.paths.prd
         doc_id = answers.get("id", "PRD-DRAFT")
     elif document_type == "adr":
-        doc_dir = project_root / config.paths.adrs
-        doc_id = answers.get("id", "ADR-DRAFT")
+        doc_dir, doc_id = _resolve_adr_doc(answers, template_vars, project_root / config.paths.adrs)
     else:
         parent_input = answers.get("parent", "").strip()
         if not parent_input:
@@ -234,15 +281,17 @@ def interview(document_type: str, from_file: str | None = None) -> None:
     if document_type == "prd":
         ledger.append(prd_created_event(doc_id))
     elif document_type == "adr":
-        parent = answers.get("parent", "")
-        lane = answers.get("lane", "lite")
-        if ledger.has_adr_created(doc_id):
-            console.print(
-                f"[yellow]WARNING:[/yellow] {doc_id} already has an adr_created event; "
-                "skipping duplicate emission."
-            )
-        else:
-            ledger.append(adr_created_event(doc_id, parent, lane))
+        # Emit through the shared on-disk-derived registration helper so the
+        # interview path and `gz plan create` cannot diverge on the bare-id
+        # `adr_created` class (GHI #494 / #505). The helper derives the event
+        # id from `doc_file.parent.name` — the canonical slug-package
+        # directory validated above — and is idempotent on re-run.
+        register_adr_in_ledger(
+            canonical_parent=answers.get("parent", ""),
+            lane=answers.get("lane", "lite").lower(),
+            adr_file=doc_file,
+            ledger_path=project_root / config.paths.ledger,
+        )
     else:
         ledger.append(obpi_created_event(doc_id, resolved_obpi_parent))
 

@@ -121,9 +121,9 @@ PRD_QUESTIONS = [
 ADR_QUESTIONS = [
     Question(
         id="id",
-        prompt="What is the ADR identifier? (e.g., ADR-0.1.0)",
+        prompt="What is the ADR identifier? (canonical slug-form: ADR-<semver>-<slug>)",
         section="frontmatter",
-        example="ADR-0.1.0",
+        example="ADR-0.1.0-jwt-authentication",
     ),
     Question(
         id="title",
