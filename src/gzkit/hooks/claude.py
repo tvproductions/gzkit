@@ -126,6 +126,18 @@ def _ruff_format_dir(directory: Path) -> None:
         )
 
 
+def _hook_command(hooks_dir: str, script: str) -> str:
+    """Build a Claude hook command anchored to the project root.
+
+    Claude Code exports ``CLAUDE_PROJECT_DIR`` (the absolute project root)
+    into the hook execution environment. Anchoring each script path there
+    keeps the hook resolvable even when the Bash tool's tracked cwd drifts
+    out of the project root — a bare relative path makes the entire
+    PreToolUse/PostToolUse surface fail on any cwd drift (GHI #509).
+    """
+    return f'uv run python "$CLAUDE_PROJECT_DIR/{hooks_dir}/{script}"'
+
+
 def generate_claude_settings(config: GzkitConfig) -> dict:
     """Generate .claude/settings.json content.
 
@@ -146,7 +158,7 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                     "hooks": [
                         {
                             "type": "command",
-                            "command": f"uv run python {hooks_dir}/plan-audit-gate.py",
+                            "command": _hook_command(hooks_dir, "plan-audit-gate.py"),
                         }
                     ],
                 },
@@ -155,19 +167,19 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                     "hooks": [
                         {
                             "type": "command",
-                            "command": f"uv run python {hooks_dir}/session-staleness-check.py",
+                            "command": _hook_command(hooks_dir, "session-staleness-check.py"),
                         },
                         {
                             "type": "command",
-                            "command": f"uv run python {hooks_dir}/pipeline-gate.py",
+                            "command": _hook_command(hooks_dir, "pipeline-gate.py"),
                         },
                         {
                             "type": "command",
-                            "command": f"uv run python {hooks_dir}/obpi-completion-validator.py",
+                            "command": _hook_command(hooks_dir, "obpi-completion-validator.py"),
                         },
                         {
                             "type": "command",
-                            "command": f"uv run python {hooks_dir}/instruction-router.py",
+                            "command": _hook_command(hooks_dir, "instruction-router.py"),
                         },
                     ],
                 },
@@ -176,13 +188,11 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                     "hooks": [
                         {
                             "type": "command",
-                            "command": (
-                                f"uv run python {hooks_dir}/pipeline-completion-reminder.py"
-                            ),
+                            "command": _hook_command(hooks_dir, "pipeline-completion-reminder.py"),
                         },
                         {
                             "type": "command",
-                            "command": (f"uv run python {hooks_dir}/ghi-triage-chat-silence.py"),
+                            "command": _hook_command(hooks_dir, "ghi-triage-chat-silence.py"),
                         },
                     ],
                 },
@@ -193,7 +203,7 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                     "hooks": [
                         {
                             "type": "command",
-                            "command": f"uv run python {hooks_dir}/pipeline-router.py",
+                            "command": _hook_command(hooks_dir, "pipeline-router.py"),
                         }
                     ],
                 },
@@ -202,15 +212,15 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                     "hooks": [
                         {
                             "type": "command",
-                            "command": f"uv run python {hooks_dir}/post-edit-ruff.py",
+                            "command": _hook_command(hooks_dir, "post-edit-ruff.py"),
                         },
                         {
                             "type": "command",
-                            "command": f"uv run python {hooks_dir}/ledger-writer.py",
+                            "command": _hook_command(hooks_dir, "ledger-writer.py"),
                         },
                         {
                             "type": "command",
-                            "command": f"uv run python {hooks_dir}/control-surface-sync.py",
+                            "command": _hook_command(hooks_dir, "control-surface-sync.py"),
                         },
                     ],
                 },

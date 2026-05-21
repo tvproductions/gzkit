@@ -19,6 +19,16 @@ from gzkit.hooks.core import (
 )
 from gzkit.traceability import covers
 
+
+def _expected_hook_command(script: str) -> str:
+    """The $CLAUDE_PROJECT_DIR-anchored command form the settings fixtures expect.
+
+    Independently authored from the production builder so a regression in
+    `generate_claude_settings` is caught rather than mirrored (GHI #509).
+    """
+    return f'uv run python "$CLAUDE_PROJECT_DIR/.claude/hooks/{script}"'
+
+
 # Module-level hook template: generate once, copy per test.
 _HOOK_TEMPLATE_DIR = tempfile.mkdtemp(prefix="gzkit-hooks-tpl-")
 setup_claude_hooks(Path(_HOOK_TEMPLATE_DIR), GzkitConfig(project_name="gzkit-test"))
@@ -219,7 +229,7 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                     "hooks": [
                         {
                             "type": "command",
-                            "command": "uv run python .claude/hooks/plan-audit-gate.py",
+                            "command": _expected_hook_command("plan-audit-gate.py"),
                         }
                     ],
                 },
@@ -228,19 +238,19 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                     "hooks": [
                         {
                             "type": "command",
-                            "command": "uv run python .claude/hooks/session-staleness-check.py",
+                            "command": _expected_hook_command("session-staleness-check.py"),
                         },
                         {
                             "type": "command",
-                            "command": "uv run python .claude/hooks/pipeline-gate.py",
+                            "command": _expected_hook_command("pipeline-gate.py"),
                         },
                         {
                             "type": "command",
-                            "command": ("uv run python .claude/hooks/obpi-completion-validator.py"),
+                            "command": _expected_hook_command("obpi-completion-validator.py"),
                         },
                         {
                             "type": "command",
-                            "command": "uv run python .claude/hooks/instruction-router.py",
+                            "command": _expected_hook_command("instruction-router.py"),
                         },
                     ],
                 },
@@ -249,13 +259,11 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                     "hooks": [
                         {
                             "type": "command",
-                            "command": (
-                                "uv run python .claude/hooks/pipeline-completion-reminder.py"
-                            ),
+                            "command": _expected_hook_command("pipeline-completion-reminder.py"),
                         },
                         {
                             "type": "command",
-                            "command": ("uv run python .claude/hooks/ghi-triage-chat-silence.py"),
+                            "command": _expected_hook_command("ghi-triage-chat-silence.py"),
                         },
                     ],
                 },
@@ -269,7 +277,7 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                     "hooks": [
                         {
                             "type": "command",
-                            "command": "uv run python .claude/hooks/pipeline-router.py",
+                            "command": _expected_hook_command("pipeline-router.py"),
                         }
                     ],
                 },
@@ -278,20 +286,73 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                     "hooks": [
                         {
                             "type": "command",
-                            "command": "uv run python .claude/hooks/post-edit-ruff.py",
+                            "command": _expected_hook_command("post-edit-ruff.py"),
                         },
                         {
                             "type": "command",
-                            "command": "uv run python .claude/hooks/ledger-writer.py",
+                            "command": _expected_hook_command("ledger-writer.py"),
                         },
                         {
                             "type": "command",
-                            "command": "uv run python .claude/hooks/control-surface-sync.py",
+                            "command": _expected_hook_command("control-surface-sync.py"),
                         },
                     ],
                 },
             ],
         )
+
+    def test_hook_commands_anchor_scripts_to_project_dir(self) -> None:
+        """Every generated hook command resolves its script via $CLAUDE_PROJECT_DIR.
+
+        A bare relative script path (`python .claude/hooks/X.py`) resolves
+        against the Bash tool's tracked cwd. Once that cwd drifts out of the
+        project root, every PreToolUse/PostToolUse hook fails to find its
+        script and the matched tool is blocked (GHI #509). Anchoring each
+        script to the Claude-exported $CLAUDE_PROJECT_DIR keeps the hook
+        resolvable regardless of cwd.
+        """
+        config = GzkitConfig(project_name="gzkit-test")
+
+        settings = generate_claude_settings(config)
+
+        commands = [
+            hook["command"]
+            for phase in ("PreToolUse", "PostToolUse")
+            for group in settings["hooks"][phase]
+            for hook in group["hooks"]
+        ]
+        self.assertEqual(len(commands), 11, commands)
+        for command in commands:
+            self.assertIn('"$CLAUDE_PROJECT_DIR/', command, command)
+            self.assertNotIn("python .claude/hooks/", command, command)
+
+
+class TestRepoClaudeSettingsAnchorScripts(unittest.TestCase):
+    """GHI #509: every hook command in the repo's committed settings.json
+    must anchor its script path to $CLAUDE_PROJECT_DIR.
+
+    This reads the project's own `.claude/settings.json` across every hook
+    phase — including the hand-maintained SessionStart/PreCompact
+    orientation hooks the generator does not emit — so a bare relative
+    path reintroduced in any phase, generated or hand-edited, fails closed
+    here.
+    """
+
+    def test_all_hook_commands_anchor_to_project_dir(self) -> None:
+        repo_root = Path(__file__).resolve().parents[1]
+        settings = json.loads((repo_root / ".claude" / "settings.json").read_text(encoding="utf-8"))
+
+        commands = [
+            hook["command"]
+            for phase_groups in settings.get("hooks", {}).values()
+            for group in phase_groups
+            for hook in group.get("hooks", [])
+        ]
+        self.assertTrue(commands, "settings.json declares no hook commands")
+        for command in commands:
+            self.assertIn('"$CLAUDE_PROJECT_DIR/', command, command)
+            self.assertNotIn("python .claude/hooks/", command, command)
+            self.assertNotIn("python scripts/", command, command)
 
 
 class TestSetupClaudeHooks(unittest.TestCase):
@@ -360,7 +421,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
                         "hooks": [
                             {
                                 "type": "command",
-                                "command": "uv run python .claude/hooks/plan-audit-gate.py",
+                                "command": _expected_hook_command("plan-audit-gate.py"),
                             }
                         ],
                     },
@@ -369,21 +430,19 @@ class TestSetupClaudeHooks(unittest.TestCase):
                         "hooks": [
                             {
                                 "type": "command",
-                                "command": "uv run python .claude/hooks/session-staleness-check.py",
+                                "command": _expected_hook_command("session-staleness-check.py"),
                             },
                             {
                                 "type": "command",
-                                "command": "uv run python .claude/hooks/pipeline-gate.py",
+                                "command": _expected_hook_command("pipeline-gate.py"),
                             },
                             {
                                 "type": "command",
-                                "command": (
-                                    "uv run python .claude/hooks/obpi-completion-validator.py"
-                                ),
+                                "command": _expected_hook_command("obpi-completion-validator.py"),
                             },
                             {
                                 "type": "command",
-                                "command": "uv run python .claude/hooks/instruction-router.py",
+                                "command": _expected_hook_command("instruction-router.py"),
                             },
                         ],
                     },
@@ -392,15 +451,13 @@ class TestSetupClaudeHooks(unittest.TestCase):
                         "hooks": [
                             {
                                 "type": "command",
-                                "command": (
-                                    "uv run python .claude/hooks/pipeline-completion-reminder.py"
+                                "command": _expected_hook_command(
+                                    "pipeline-completion-reminder.py"
                                 ),
                             },
                             {
                                 "type": "command",
-                                "command": (
-                                    "uv run python .claude/hooks/ghi-triage-chat-silence.py"
-                                ),
+                                "command": _expected_hook_command("ghi-triage-chat-silence.py"),
                             },
                         ],
                     },
@@ -414,7 +471,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
                         "hooks": [
                             {
                                 "type": "command",
-                                "command": "uv run python .claude/hooks/pipeline-router.py",
+                                "command": _expected_hook_command("pipeline-router.py"),
                             }
                         ],
                     },
@@ -423,15 +480,15 @@ class TestSetupClaudeHooks(unittest.TestCase):
                         "hooks": [
                             {
                                 "type": "command",
-                                "command": "uv run python .claude/hooks/post-edit-ruff.py",
+                                "command": _expected_hook_command("post-edit-ruff.py"),
                             },
                             {
                                 "type": "command",
-                                "command": "uv run python .claude/hooks/ledger-writer.py",
+                                "command": _expected_hook_command("ledger-writer.py"),
                             },
                             {
                                 "type": "command",
-                                "command": "uv run python .claude/hooks/control-surface-sync.py",
+                                "command": _expected_hook_command("control-surface-sync.py"),
                             },
                         ],
                     },

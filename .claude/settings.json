@@ -9,7 +9,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run python scripts/session_orientation.py"
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/scripts/session_orientation.py\""
           }
         ]
       }
@@ -20,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run python scripts/session_orientation.py"
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/scripts/session_orientation.py\""
           }
         ]
       }
@@ -31,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run python .claude/hooks/plan-audit-gate.py"
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/plan-audit-gate.py\""
           }
         ]
       },
@@ -40,19 +40,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run python .claude/hooks/session-staleness-check.py"
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-staleness-check.py\""
           },
           {
             "type": "command",
-            "command": "uv run python .claude/hooks/pipeline-gate.py"
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/pipeline-gate.py\""
           },
           {
             "type": "command",
-            "command": "uv run python .claude/hooks/obpi-completion-validator.py"
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/obpi-completion-validator.py\""
           },
           {
             "type": "command",
-            "command": "uv run python .claude/hooks/instruction-router.py"
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/instruction-router.py\""
           }
         ]
       },
@@ -61,11 +61,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run python .claude/hooks/pipeline-completion-reminder.py"
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/pipeline-completion-reminder.py\""
           },
           {
             "type": "command",
-            "command": "uv run python .claude/hooks/ghi-triage-chat-silence.py"
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/ghi-triage-chat-silence.py\""
           }
         ]
       }
@@ -76,7 +76,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run python .claude/hooks/pipeline-router.py"
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/pipeline-router.py\""
           }
         ]
       },
@@ -85,15 +85,15 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run python .claude/hooks/post-edit-ruff.py"
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-ruff.py\""
           },
           {
             "type": "command",
-            "command": "uv run python .claude/hooks/ledger-writer.py"
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/ledger-writer.py\""
           },
           {
             "type": "command",
-            "command": "uv run python .claude/hooks/control-surface-sync.py"
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/control-surface-sync.py\""
           }
         ]
       }
