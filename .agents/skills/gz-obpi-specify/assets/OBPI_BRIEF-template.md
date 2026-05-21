@@ -96,14 +96,16 @@ This brief template defers to the canonical repo policies (GovZero v6):
 >
 > **Quality Gates:**
 >
-> - **Lite:** Gate 1 (ADR) + Gate 2 (TDD) → brief completion
-> - **Heavy:** Gates 1-4 for implementation → Gate 5 required to complete the
->   brief
-> - **Gate 5:** Human attestation via ADR closeout ceremony; present
->   paths/commands only (see `docs/governance/GovZero/audit-protocol.md`)
+> - **Lite:** Gate 1 (ADR) + Gate 2 (TDD) → Gate 5 (brief-level human attestation)
+> - **Heavy:** Gates 1-4 for implementation → Gate 5 (brief-level human attestation)
+> - **Gate 5 (brief level):** Brief-level human attestation is required for
+>   EVERY OBPI completion, regardless of parent ADR kind or lane — there is no
+>   self-close path (ADR-0.0.36). Lane and kind determine which of Gates 3-4
+>   fire, never whether Gate 5 fires. See `AGENTS.md § OBPI Acceptance Protocol`.
 > - **Gate definitions:** `docs/governance/GovZero/charter.md`
 >
-> **Note:** Foundation/0.0.x ADRs do not use the ADR closeout ceremony.
+> **Note:** The ADR-level Gate 5 closeout ceremony is a separate, ADR-scoped
+> surface; Foundation/0.0.x ADRs do not use the ADR closeout ceremony.
 
 ## Agent Mode (All Lanes)
 
@@ -340,13 +342,18 @@ Lite — ADR note + stdlib unittest + smoke (≤60s). Escalate to Heavy if a CLI
 
 ### ATTESTATION REMINDER (Lite — MANDATORY CHECK)
 
-**Before marking this OBPI as Completed, verify the parent ADR lane:**
+**Before marking this OBPI as Completed — STOP. Human attestation is required.**
 
-- [ ] **Parent ADR is Lite** → Agent may self-close after presenting evidence
-- [ ] **Parent ADR is Heavy/Foundation (0.0.x)** → **STOP — Human attestation required**
+- [ ] **STOP — Brief-level human attestation is required.** Present completion
+      evidence; do NOT mark the OBPI Completed until a human attests. This holds
+      for every OBPI regardless of parent ADR kind or lane — there is no
+      self-close path (ADR-0.0.36).
 
-> **Lane Inheritance Rule:** An OBPI within a Heavy or Foundation ADR inherits the parent's
-> attestation rigor, regardless of this OBPI's own lane. Lite lane work ≠ no human oversight.
+> **Universal Attestation Rule:** Brief-level human attestation is required for
+> every OBPI completion, regardless of parent ADR kind or lane. There is no
+> self-close path (ADR-0.0.36, GHI #342). Lane and kind determine which gates
+> fire (Gate 3 docs, Gate 4 BDD); they never determine whether Gate 5
+> brief-level attestation fires.
 >
 > See `AGENTS.md § OBPI Acceptance Protocol` for ceremony steps.
 
@@ -474,7 +481,7 @@ Item-specific gates and commands (if any) are listed below.
 - [ ] **Gate 2 (TDD):** ✓ RGR cycle followed, tests derived from brief (N tests, 0 failures)
 - [ ] **Code Quality:** ✓ Lint, format, type checks clean
 - [ ] **Coverage:** ✓ Coverage ≥40% maintained
-- [ ] **Lane Inheritance Check:** ✓ Parent ADR lane verified (if Heavy/Foundation → human attestation required)
+- [ ] **Human Attestation:** ✓ Brief-level human attestation received — required for every OBPI completion regardless of lane/kind (ADR-0.0.36)
 - [ ] **OBPI Completion:** Record evidence in brief with gate status and test output
 
 #### Evidence to capture
@@ -499,7 +506,9 @@ Item-specific gates and commands (if any) are listed below.
 
 **Brief Status:** Completed (YYYY-MM-DD)
 
-**Note:** Gate 5 attestation is human-only and applies to Heavy lane closeout
+**Note:** Gate 5 brief-level attestation is human-only and required for every
+OBPI completion regardless of parent ADR kind or lane — there is no self-close
+path (ADR-0.0.36). The ADR-level Gate 5 closeout ceremony is a separate surface
 per `docs/governance/GovZero/charter.md` and
 `docs/governance/GovZero/audit-protocol.md`.
 
