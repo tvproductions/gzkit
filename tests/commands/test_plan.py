@@ -592,7 +592,7 @@ class TestPlanCreateKindFoundation(unittest.TestCase):
     Foundation-kind ADRs scaffolded by `gz plan create --kind foundation`
     must carry the `## Why foundation tier?` heading between `## Persona`
     and `## Intent`, pre-populated with two author prompts (invariance-test
-    answer + port-vs-plug framing). Feature-kind ADRs must not.
+    answer + port-vs-adapter framing). Feature-kind ADRs must not.
 
     @covers REQ-0.0.35-03-02 (foundation scaffolds the section)
     @covers REQ-0.0.35-03-03 (feature does NOT scaffold the section)
@@ -652,7 +652,7 @@ class TestPlanCreateKindFoundation(unittest.TestCase):
                 msg="`## Why foundation tier?` must appear before `## Intent`",
             )
 
-            # REQ-0.0.35-03-04 — two prompts present (invariance-test + port-vs-plug)
+            # REQ-0.0.35-03-04 — two prompts present (invariance-test + port-vs-adapter)
             # Section body extracted between its heading and the next H2.
             section_body = content[why_idx:intent_idx]
             self.assertIn(
@@ -663,12 +663,12 @@ class TestPlanCreateKindFoundation(unittest.TestCase):
             self.assertIn(
                 "port",
                 section_body.lower(),
-                msg="section must include port-vs-plug framing prompt",
+                msg="section must include port-vs-adapter framing prompt",
             )
             self.assertIn(
-                "plug",
+                "adapter",
                 section_body.lower(),
-                msg="section must include port-vs-plug framing prompt",
+                msg="section must include port-vs-adapter framing prompt",
             )
 
     @covers("REQ-0.0.35-03-03")

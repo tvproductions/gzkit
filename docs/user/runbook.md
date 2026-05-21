@@ -764,7 +764,7 @@ one-line invariance test in
 When you classify a decision as foundation and run `gz plan create --kind foundation`,
 the scaffolded ADR includes a `## Why foundation tier?` section (between `## Persona`
 and `## Intent`) pre-populated with author prompts for the invariance-test answer and
-port-vs-plug framing. See [Why foundation tier? (the convention)](concepts/foundation-feature-invariance-test.md#why-foundation-tier-the-convention)
+port-vs-adapter framing. See [Why foundation tier? (the convention)](concepts/foundation-feature-invariance-test.md#why-foundation-tier-the-convention)
 for the exact heading and a filled-in example.
 
 ### Heuristic

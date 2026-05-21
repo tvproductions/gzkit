@@ -5,14 +5,14 @@ description: Create and book a GovZero ADR with its OBPI briefs. Enforces minor-
 category: adr-lifecycle
 compatibility: Requires GovZero v6 framework; provides governance rules internally for portable use across repositories
 metadata:
-  skill-version: "6.4.1"
+  skill-version: "6.4.2"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), linkage (ADR/OBPI/GHI), minor-release (odometer discipline)"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-18
+last_reviewed: 2026-05-21
 model: opus
 ---
 
@@ -175,7 +175,7 @@ them or confirm from context. The interview's value comes from two tiers:
 
 **Tier 1 — ADR Pro-Forma (required, populate the template):**
 
-- **What kind of ADR is this?** — `foundation` (app/system invariant, always 0.0.x) / `feature` (release-carrying capability) / `pool` (noted, not committed). Heuristic: Does this decision shape what the app IS (identity/invariant)? → `foundation`. Does this decision ship a named capability to users? → `feature`. Is this decision noted but not committed? → `pool`. For deeper context see `docs/user/concepts/adr-taxonomy.md`. **Invariance Test (Foundation/Feature Boundary):** *"Foundation = without it, we wouldn't be doing the project."* Use the hexagonal-ports lens to resolve edge cases: **ports point to invariance; plugs are features**. See `docs/user/concepts/foundation-feature-invariance-test.md` for worked examples and anti-patterns. `gz plan create` and `gz adr promote` require `--kind` with **no default** — the operator must choose. Never pre-fill; never propose a default.
+- **What kind of ADR is this?** — `foundation` (app/system invariant, always 0.0.x) / `feature` (release-carrying capability) / `pool` (noted, not committed). Heuristic: Does this decision shape what the app IS (identity/invariant)? → `foundation`. Does this decision ship a named capability to users? → `feature`. Is this decision noted but not committed? → `pool`. For deeper context see `docs/user/concepts/adr-taxonomy.md`. **Invariance Test (Foundation/Feature Boundary):** *"Foundation = without it, we wouldn't be doing the project."* Use the hexagonal-ports lens to resolve edge cases: **ports point to invariance; adapters are features**. See `docs/user/concepts/foundation-feature-invariance-test.md` for worked examples and anti-patterns. `gz plan create` and `gz adr promote` require `--kind` with **no default** — the operator must choose. Never pre-fill; never propose a default.
 - **What problem are we solving?** — forces concrete articulation of the need
 - **What did we decide?** — forces specificity beyond "we'll add a field"
 - **What alternatives were considered?** — forces decision justification

@@ -18,7 +18,7 @@ date: 2026-05-18
 
 Without this ADR, cross-artifact design-assumption coupling at the ADR/OBPI graph tier has no mechanical witness. Invariant 1a (coupled-surface coherence) holds at the file level; the `last_reviewed` ↔ skill-version coupling holds at the rule level; the artifact-graph tier — the upstream-canon → downstream-canon coherence boundary — is the missing third tier. Without it, downstream artifacts carry silently-invalidated design assumptions through the lifecycle window with no surface to detect or attest. This is identity-shaping: gzkit's commitment to T1/T2/T3 trust invariants requires that every cross-artifact coupling surface have a mechanical witness, not just the file and rule tiers.
 
-**Port-vs-plug framing:** Port. This ADR authors an abstract contract (the propagation pipeline interface that every artifact-lifecycle advance must honor). The specific detection algorithms (declared-edge walking, path-overlap, fan-in downweight, TF-IDF prefilter, LLM-as-judge ranker) are plug implementations of the port. Future ADRs that swap algorithms (embedding similarity instead of TF-IDF, alternative judge frameworks per ADR-0.0.39 evolution) reuse the port unchanged.
+**Port-vs-adapter framing:** Port. This ADR authors an abstract contract (the propagation pipeline interface that every artifact-lifecycle advance must honor). The specific detection algorithms (declared-edge walking, path-overlap, fan-in downweight, TF-IDF prefilter, LLM-as-judge ranker) are adapter implementations of the port. Future ADRs that swap algorithms (embedding similarity instead of TF-IDF, alternative judge frameworks per ADR-0.0.39 evolution) reuse the port unchanged.
 
 ## Intent
 

@@ -4,11 +4,11 @@ persona: main-session
 description: Collaborative design dialogue that produces GovZero ADR artifacts. Use when exploring a new feature, capability, or architectural change before implementation — replaces superpowers brainstorming for this project. Triggers on "design X", "let's design", "brainstorm X", "I want to build X", "gz-design".
 category: adr-lifecycle
 metadata:
-  skill-version: "1.3.0"
+  skill-version: "1.3.1"
   govzero-framework-version: "v6"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-03-27
+last_reviewed: 2026-05-21
 model: opus
 ---
 
@@ -134,7 +134,7 @@ After design approval, ask:
 **Canonical ADR** (ready to implement):
 - Confirm: next available ADR semver (check `uv run gz status --table`)
 - Confirm: lane (Lite = gates 1–2 only; Heavy = gates 1–5)
-- **Confirm: kind (foundation/feature).** Foundation = app/system invariant (0.0.x versions only). Feature = release-carrying capability. Use the invariance test to resolve edge cases: *"Foundation = without it, we wouldn't be doing the project."* The hexagonal-ports lens clarifies: **ports point to invariance; plugs are features**. See `docs/user/concepts/foundation-feature-invariance-test.md` for worked examples and anti-patterns.
+- **Confirm: kind (foundation/feature).** Foundation = app/system invariant (0.0.x versions only). Feature = release-carrying capability. Use the invariance test to resolve edge cases: *"Foundation = without it, we wouldn't be doing the project."* The hexagonal-ports lens clarifies: **ports point to invariance; adapters are features**. See `docs/user/concepts/foundation-feature-invariance-test.md` for worked examples and anti-patterns, and `docs/governance/hexagonal-architecture.md` for Cockburn's source and gzkit's port/adapter mapping.
 - Invoke `gz-adr-create` with semver, slug, lane, and OBPI count
 - OBPIs are co-created with the ADR — never deferred
 - Design content from this conversation populates the ADR's Intent, Decision, Rationale, and Consequences sections

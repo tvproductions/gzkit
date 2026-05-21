@@ -21,7 +21,7 @@ CANONICAL_ADR_ID_RE = re.compile(r"^ADR-[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9-]+$")
 # ADR-0.0.35 § Decision item #6 — every foundation-kind ADR scaffolds with a
 # `## Why foundation tier?` section between `## Persona` and `## Intent`,
 # pre-populated with two author prompts: the invariance-test answer and the
-# port-vs-plug framing. The heading is byte-identical (sentence case,
+# port-vs-adapter framing. The heading is byte-identical (sentence case,
 # trailing question mark) so OBPI-04's validator can pin it. Feature- and
 # pool-kind ADRs MUST NOT scaffold this section.
 WHY_FOUNDATION_TIER_SECTION = """\
@@ -30,8 +30,8 @@ WHY_FOUNDATION_TIER_SECTION = """\
 _[Author: Answer the invariance test in one sentence: "Without this ADR, would \
 the project still be the project?" State yes and name the invariance.]_
 
-_[Port-vs-plug framing: Is this ADR a port (an abstract contract every \
-implementation must honor) or a plug (one implementation behind an existing port)?]_
+_[Port-vs-adapter framing: Is this ADR a port (an abstract contract every \
+implementation must honor) or an adapter (one implementation behind an existing port)?]_
 
 """
 

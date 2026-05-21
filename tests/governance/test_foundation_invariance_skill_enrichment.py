@@ -18,14 +18,14 @@ _CLAUDE_SKILLS_ROOT = _PROJECT_ROOT / ".claude" / "skills"
 _GITHUB_SKILLS_ROOT = _PROJECT_ROOT / ".github" / "skills"
 
 _INVARIANCE_TEST = "Foundation = without it, we wouldn't be doing the project"
-_HEXAGONAL_LENS = "ports point to invariance; plugs are features"
+_HEXAGONAL_LENS = "ports point to invariance; adapters are features"
 _CONCEPT_PAGE_LINK = "foundation-feature-invariance-test"
 
 _EXPECTED_VERSIONS: dict[str, str] = {
-    "gz-plan": "1.3.1",
-    "gz-adr-create": "6.4.1",
-    "gz-design": "1.3.0",
-    "gz-adr-promote": "1.4.1",
+    "gz-plan": "1.3.2",
+    "gz-adr-create": "6.4.2",
+    "gz-design": "1.3.1",
+    "gz-adr-promote": "1.4.2",
 }
 
 

@@ -24,8 +24,8 @@ _PLACEHOLDER_BODY = (
     '_[Author: Answer the invariance test in one sentence: "Without this ADR, '
     'would the project still be the project?" State yes and name the invariance.]_\n'
     "\n"
-    "_[Port-vs-plug framing: Is this ADR a port (an abstract contract every "
-    "implementation must honor) or a plug (one implementation behind an "
+    "_[Port-vs-adapter framing: Is this ADR a port (an abstract contract every "
+    "implementation must honor) or an adapter (one implementation behind an "
     "existing port)?]_\n"
 )
 

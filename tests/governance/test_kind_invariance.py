@@ -243,7 +243,7 @@ class TestKindInvarianceAudit(unittest.TestCase):
             "## Why foundation tier?\n\n"
             "_[Author: Answer the invariance test in one sentence: "
             "without this ADR, the project would not be the project because ...]_\n"
-            "_[Port-vs-plug framing: ...]_\n\n"
+            "_[Port-vs-adapter framing: ...]_\n\n"
             "## Other\n\nFoo.\n"
         )
         _write_foundation_adr(
