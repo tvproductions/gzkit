@@ -28,15 +28,6 @@ repos:
         types: [python]
         exclude: ^site/
 
-      - id: unittest
-        name: unittest
-        entry: uv run -m unittest discover -q tests
-        language: system
-        pass_filenames: false
-        types: [python]
-        # Unit tests mock subprocess boundaries. End-to-end CLI behavior
-        # is covered by behave under features/ — see .gzkit/rules/tests.md.
-
       - id: forbid-pytest
         name: forbid pytest (unittest-only policy)
         entry: uv run -m gzkit.hooks.guards
@@ -93,3 +84,17 @@ repos:
         language: system
         pass_filenames: false
         stages: [pre-commit]
+
+      # Listed LAST on purpose. With fail_fast: true (top of file), a failure
+      # in any cheap gate above — ruff, ty, xenon, interrogate,
+      # surface-fidelity, gitleaks — aborts the run before this ~51s suite
+      # executes. Do not reorder this hook earlier: a cheap-gate failure
+      # downstream of it cannot stop a run it has already started.
+      - id: unittest
+        name: unittest
+        entry: uv run -m unittest discover -q tests
+        language: system
+        pass_filenames: false
+        types: [python]
+        # Unit tests mock subprocess boundaries. End-to-end CLI behavior
+        # is covered by behave under features/ — see .gzkit/rules/tests.md.
