@@ -87,12 +87,20 @@ repos:
 
       # Listed LAST on purpose. With fail_fast: true (top of file), a failure
       # in any cheap gate above — ruff, ty, xenon, interrogate,
-      # surface-fidelity, gitleaks — aborts the run before this ~51s suite
-      # executes. Do not reorder this hook earlier: a cheap-gate failure
+      # surface-fidelity, gitleaks — aborts the run before this ~15s parallel
+      # suite executes. Do not reorder this hook earlier: a cheap-gate failure
       # downstream of it cannot stop a run it has already started.
       - id: unittest
         name: unittest
-        entry: uv run -m unittest discover -q tests
+        # unittest-parallel runs the stdlib unittest suite across worker
+        # processes (~15s wall vs ~52s serial baseline, 10-core host). Invoked
+        # via `uv run --with` — NOT `uvx` — because a test runner must import
+        # project code (gzkit, pydantic) and `uvx`'s isolated env lacks the
+        # project dependencies. `--with` keeps unittest-parallel un-pinned
+        # (absent from pyproject.toml), matching the un-pinned xenon/gitleaks
+        # precedent. The serial canonical/ARB attestation path is unchanged
+        # (see GHI #512 Non-goals).
+        entry: uv run --with unittest-parallel unittest-parallel -t . -s tests
         language: system
         pass_filenames: false
         types: [python]
