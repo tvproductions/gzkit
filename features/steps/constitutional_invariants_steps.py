@@ -1,20 +1,29 @@
-"""Behave step definitions for constitutional invariant composition renderer (OBPI-0.0.37-02).
+"""Behave step definitions for constitutional invariant composition (OBPI-0.0.37-02/03/04).
 
 @covers REQ-0.0.37-02-01
 @covers REQ-0.0.37-02-02
 @covers REQ-0.0.37-02-04
+@covers REQ-0.0.37-04-01
+@covers REQ-0.0.37-04-02
+@covers REQ-0.0.37-04-03
+@covers REQ-0.0.37-04-04
+@covers REQ-0.0.37-04-05
 """
 
 from __future__ import annotations
 
 import io
 import json
+import warnings
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
+import jsonschema
 from behave import given, then, when  # type: ignore[import-untyped]
+from pydantic import ValidationError
 
 from gzkit.cli import main
+from gzkit.governance.brief_structure import BriefStructure, LegacyBriefShape, parse_brief
 
 
 def _invoke_capture(*args: str) -> tuple[int, str]:
@@ -178,3 +187,175 @@ def step_composition_rendered_in_ledger(context) -> None:  # type: ignore[no-unt
             found = True
             break
     assert found, "no composition_rendered event found in ledger.jsonl"
+
+
+# -- OBPI-0.0.37-04 — Brief structural schema (BriefStructure / parse_brief) --
+#
+# These steps wrap the already-landed src/gzkit/governance/brief_structure.py
+# API; the scenarios were authored by OBPI-0.0.37-04 without step definitions
+# (GHI #513). Assertions derive from the REQ semantics, mirroring
+# tests/governance/test_brief_structure.py.
+
+_BRIEF_FIXTURES = Path(__file__).parent.parent.parent / "tests" / "fixtures" / "brief_structure"
+_BRIEF_SCHEMA = (
+    Path(__file__).parent.parent.parent / "src" / "gzkit" / "schemas" / "obpi_brief_structure.json"
+)
+_OBPI_0_0_37_04_BRIEF = (
+    Path(__file__).parent.parent.parent
+    / "docs"
+    / "design"
+    / "adr"
+    / "foundation"
+    / "ADR-0.0.37-constitutional-invariant-composition"
+    / "obpis"
+    / "OBPI-0.0.37-04-brief-structural-schema.md"
+)
+
+_VALID_BRIEF_FIELDS = {
+    "id": "OBPI-0.0.37-04-brief-structural-schema",
+    "parent": "ADR-0.0.37-constitutional-invariant-composition",
+    "lane": "Heavy",
+    "status": "Draft",
+    "allowlist": ["src/x.py"],
+    "reqs": ["REQ-0.0.37-04-01"],
+    "verification": ["uv run gz lint"],
+    "citations": [],
+}
+
+
+@given("a valid BriefStructure field set")
+def step_valid_brief_field_set(context) -> None:  # type: ignore[no-untyped-def]
+    context.brief_fields = dict(_VALID_BRIEF_FIELDS)
+
+
+@when("I construct a BriefStructure instance")
+def step_construct_brief_structure(context) -> None:  # type: ignore[no-untyped-def]
+    context.brief = BriefStructure(**context.brief_fields)
+
+
+@then("the model is frozen and mutation raises an error")
+def step_brief_is_frozen(context) -> None:  # type: ignore[no-untyped-def]
+    try:
+        context.brief.id = "MUTATED"
+    except (ValueError, TypeError):
+        return
+    raise AssertionError("BriefStructure mutation did not raise — model is not frozen")
+
+
+@then("constructing with an empty allowlist raises ValidationError")
+def step_empty_allowlist_rejected(context) -> None:  # type: ignore[no-untyped-def]
+    try:
+        BriefStructure(**{**_VALID_BRIEF_FIELDS, "allowlist": []})
+    except ValidationError:
+        return
+    raise AssertionError("empty allowlist did not raise ValidationError")
+
+
+@then("constructing with an empty reqs list raises ValidationError")
+def step_empty_reqs_rejected(context) -> None:  # type: ignore[no-untyped-def]
+    try:
+        BriefStructure(**{**_VALID_BRIEF_FIELDS, "reqs": []})
+    except ValidationError:
+        return
+    raise AssertionError("empty reqs list did not raise ValidationError")
+
+
+@given("the obpi_brief_structure.json schema file")
+def step_brief_schema_file(context) -> None:  # type: ignore[no-untyped-def]
+    context.brief_schema = json.loads(_BRIEF_SCHEMA.read_text(encoding="utf-8"))
+
+
+@when("I validate a compliant brief instance against it")
+def step_validate_compliant_instance(context) -> None:  # type: ignore[no-untyped-def]
+    context.schema_error = None
+    try:
+        jsonschema.validate(dict(_VALID_BRIEF_FIELDS), context.brief_schema)
+    except jsonschema.ValidationError as exc:
+        context.schema_error = exc
+
+
+@then("validation succeeds")
+def step_schema_validation_succeeds(context) -> None:  # type: ignore[no-untyped-def]
+    assert context.schema_error is None, (
+        f"compliant instance failed schema validation: {context.schema_error}"
+    )
+
+
+@then("an instance missing the reqs field fails validation")
+def step_schema_rejects_missing_reqs(context) -> None:  # type: ignore[no-untyped-def]
+    incomplete = {k: v for k, v in _VALID_BRIEF_FIELDS.items() if k != "reqs"}
+    try:
+        jsonschema.validate(incomplete, context.brief_schema)
+    except jsonschema.ValidationError:
+        return
+    raise AssertionError("instance missing 'reqs' did not fail schema validation")
+
+
+@given("a legacy OBPI brief file without structured frontmatter fields")
+def step_legacy_brief_file(context) -> None:  # type: ignore[no-untyped-def]
+    context.brief_path = _BRIEF_FIXTURES / "legacy.md"
+    assert context.brief_path.is_file(), f"missing fixture: {context.brief_path}"
+
+
+@when("I call parse_brief on it in permissive mode")
+def step_parse_brief_permissive(context) -> None:  # type: ignore[no-untyped-def]
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        context.parsed = parse_brief(context.brief_path)
+    context.warnings = list(caught)
+
+
+@then("the result is a LegacyBriefShape instance")
+def step_result_is_legacy_shape(context) -> None:  # type: ignore[no-untyped-def]
+    assert isinstance(context.parsed, LegacyBriefShape), (
+        f"expected LegacyBriefShape, got {type(context.parsed).__name__}"
+    )
+
+
+@then("a DeprecationWarning is emitted")
+def step_deprecation_warning_emitted(context) -> None:  # type: ignore[no-untyped-def]
+    deprecations = [w for w in context.warnings if issubclass(w.category, DeprecationWarning)]
+    assert deprecations, "parse_brief emitted no DeprecationWarning for a legacy brief"
+
+
+@when("I call parse_brief on it with strict=True")
+def step_parse_brief_strict(context) -> None:  # type: ignore[no-untyped-def]
+    context.parse_error = None
+    try:
+        parse_brief(context.brief_path, strict=True)
+    except ValueError as exc:
+        context.parse_error = exc
+
+
+@then("a ValueError is raised")
+def step_value_error_raised(context) -> None:  # type: ignore[no-untyped-def]
+    assert isinstance(context.parse_error, ValueError), (
+        "parse_brief(strict=True) did not raise ValueError on a legacy brief"
+    )
+
+
+@given("the OBPI-0.0.37-04 brief file with structured frontmatter")
+def step_obpi_0_0_37_04_brief(context) -> None:  # type: ignore[no-untyped-def]
+    context.brief_path = _OBPI_0_0_37_04_BRIEF
+    assert context.brief_path.is_file(), f"missing brief: {context.brief_path}"
+
+
+@when("I call parse_brief on it")
+def step_parse_brief_default(context) -> None:  # type: ignore[no-untyped-def]
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        context.parsed = parse_brief(context.brief_path)
+    context.warnings = list(caught)
+
+
+@then("the result is a BriefStructure instance")
+def step_result_is_brief_structure(context) -> None:  # type: ignore[no-untyped-def]
+    assert isinstance(context.parsed, BriefStructure), (
+        f"expected BriefStructure, got {type(context.parsed).__name__}"
+    )
+
+
+@then("no DeprecationWarning is emitted")
+def step_no_deprecation_warning(context) -> None:  # type: ignore[no-untyped-def]
+    deprecations = [w for w in context.warnings if issubclass(w.category, DeprecationWarning)]
+    assert not deprecations, f"unexpected DeprecationWarning(s): {deprecations}"
