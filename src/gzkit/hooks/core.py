@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from gzkit.config import GzkitConfig
-from gzkit.events import EventAnchor
+from gzkit.event_evidence import EventAnchor
 from gzkit.git_sync import assess_git_sync_readiness
 from gzkit.hooks.obpi import (
     ObpiValidator,

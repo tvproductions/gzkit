@@ -8,7 +8,7 @@ from typing import Any
 from pydantic import ValidationError as PydanticValidationError
 
 from gzkit.core.validation_rules import ValidationError
-from gzkit.events import ObpiReceiptEvidence, pydantic_loc_to_field_path
+from gzkit.event_evidence import ObpiReceiptEvidence, pydantic_loc_to_field_path
 from gzkit.schemas import load_schema
 
 

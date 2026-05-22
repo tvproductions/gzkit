@@ -16,7 +16,7 @@ from behave import given, then, when
 
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
-from gzkit.events import EventAnchor
+from gzkit.event_evidence import EventAnchor
 from gzkit.ledger import (
     Ledger,
     adr_created_event,

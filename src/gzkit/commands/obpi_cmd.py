@@ -30,7 +30,7 @@ from gzkit.commands.obpi_stages import (  # noqa: F401
     _run_pipeline_verify_stage,
 )
 from gzkit.commands.status import _inspect_obpi_brief
-from gzkit.events import EventAnchor
+from gzkit.event_evidence import EventAnchor
 from gzkit.hooks.obpi import ObpiValidator
 from gzkit.ledger import (
     Ledger,

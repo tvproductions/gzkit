@@ -1343,7 +1343,7 @@ class TestEventAnchor(unittest.TestCase):
 
     def test_valid_short_sha_accepted(self) -> None:
         """EventAnchor accepts a 7-character short SHA."""
-        from gzkit.events import EventAnchor
+        from gzkit.event_evidence import EventAnchor
 
         anchor = EventAnchor(commit="abc1234", semver="0.25.0")
         self.assertEqual(anchor.commit, "abc1234")
@@ -1352,7 +1352,7 @@ class TestEventAnchor(unittest.TestCase):
 
     def test_valid_full_sha_accepted(self) -> None:
         """EventAnchor accepts a 40-character full SHA."""
-        from gzkit.events import EventAnchor
+        from gzkit.event_evidence import EventAnchor
 
         full_sha = "a" * 40
         anchor = EventAnchor(commit=full_sha, semver="1.2.3", tag="v1.2.3")
@@ -1363,7 +1363,7 @@ class TestEventAnchor(unittest.TestCase):
         """EventAnchor rejects a SHA with non-hex characters."""
         from pydantic import ValidationError as PydanticValidationError
 
-        from gzkit.events import EventAnchor
+        from gzkit.event_evidence import EventAnchor
 
         with self.assertRaises(PydanticValidationError):
             EventAnchor(commit="xyz1234", semver="0.25.0")
@@ -1372,7 +1372,7 @@ class TestEventAnchor(unittest.TestCase):
         """EventAnchor rejects a SHA shorter than 7 characters."""
         from pydantic import ValidationError as PydanticValidationError
 
-        from gzkit.events import EventAnchor
+        from gzkit.event_evidence import EventAnchor
 
         with self.assertRaises(PydanticValidationError):
             EventAnchor(commit="abc123", semver="0.25.0")
@@ -1381,7 +1381,7 @@ class TestEventAnchor(unittest.TestCase):
         """EventAnchor rejects a SHA longer than 40 characters."""
         from pydantic import ValidationError as PydanticValidationError
 
-        from gzkit.events import EventAnchor
+        from gzkit.event_evidence import EventAnchor
 
         with self.assertRaises(PydanticValidationError):
             EventAnchor(commit="a" * 41, semver="0.25.0")
@@ -1390,7 +1390,7 @@ class TestEventAnchor(unittest.TestCase):
         """EventAnchor rejects a semver missing the patch component."""
         from pydantic import ValidationError as PydanticValidationError
 
-        from gzkit.events import EventAnchor
+        from gzkit.event_evidence import EventAnchor
 
         with self.assertRaises(PydanticValidationError):
             EventAnchor(commit="abc1234", semver="0.25")
@@ -1399,7 +1399,7 @@ class TestEventAnchor(unittest.TestCase):
         """EventAnchor rejects unknown fields per extra=forbid."""
         from pydantic import ValidationError as PydanticValidationError
 
-        from gzkit.events import EventAnchor
+        from gzkit.event_evidence import EventAnchor
 
         with self.assertRaises(PydanticValidationError):
             EventAnchor.model_validate(
@@ -1410,7 +1410,7 @@ class TestEventAnchor(unittest.TestCase):
         """EventAnchor is immutable — mutation raises."""
         from pydantic import ValidationError as PydanticValidationError
 
-        from gzkit.events import EventAnchor
+        from gzkit.event_evidence import EventAnchor
 
         anchor = EventAnchor(commit="abc1234", semver="0.25.0")
         with self.assertRaises(PydanticValidationError):
@@ -1418,9 +1418,9 @@ class TestEventAnchor(unittest.TestCase):
 
     def test_audit_receipt_event_accepts_typed_anchor(self) -> None:
         """AuditReceiptEmittedEvent parses a dict-shaped anchor into EventAnchor."""
+        from gzkit.event_evidence import EventAnchor
         from gzkit.events import (
             AuditReceiptEmittedEvent,
-            EventAnchor,
             parse_typed_event,
         )
 
@@ -1443,8 +1443,8 @@ class TestEventAnchor(unittest.TestCase):
 
     def test_obpi_receipt_event_accepts_typed_anchor(self) -> None:
         """ObpiReceiptEmittedEvent parses a dict-shaped anchor into EventAnchor."""
+        from gzkit.event_evidence import EventAnchor
         from gzkit.events import (
-            EventAnchor,
             ObpiReceiptEmittedEvent,
             parse_typed_event,
         )
@@ -1506,7 +1506,7 @@ class TestEventAnchor(unittest.TestCase):
 
     def test_capture_validation_anchor_returns_typed_model(self) -> None:
         """capture_validation_anchor_with_warnings returns an EventAnchor instance."""
-        from gzkit.events import EventAnchor
+        from gzkit.event_evidence import EventAnchor
         from gzkit.utils import capture_validation_anchor_with_warnings
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -1537,7 +1537,7 @@ class TestNestedEvidenceModels(unittest.TestCase):
 
     def test_valid_req_proof_input(self) -> None:
         """Valid ReqProofInput parses successfully."""
-        from gzkit.events import ReqProofInput
+        from gzkit.event_evidence import ReqProofInput
 
         data = {
             "name": "key_proof",
@@ -1553,7 +1553,7 @@ class TestNestedEvidenceModels(unittest.TestCase):
         """Invalid kind in ReqProofInput raises validation error."""
         from pydantic import ValidationError as PydanticValidationError
 
-        from gzkit.events import ReqProofInput
+        from gzkit.event_evidence import ReqProofInput
 
         data = {
             "name": "key_proof",
@@ -1566,7 +1566,7 @@ class TestNestedEvidenceModels(unittest.TestCase):
 
     def test_valid_obpi_receipt_evidence(self) -> None:
         """Valid ObpiReceiptEvidence parses successfully."""
-        from gzkit.events import ObpiReceiptEvidence
+        from gzkit.event_evidence import ObpiReceiptEvidence
 
         data = {
             "parent_lane": "heavy",
@@ -1597,7 +1597,7 @@ class TestNestedEvidenceModels(unittest.TestCase):
 
     def test_pydantic_loc_to_field_path(self) -> None:
         """Field path conversion produces expected dotted paths with indices."""
-        from gzkit.events import pydantic_loc_to_field_path
+        from gzkit.event_evidence import pydantic_loc_to_field_path
 
         self.assertEqual(
             pydantic_loc_to_field_path("evidence", ("req_proof_inputs", 0, "kind")),

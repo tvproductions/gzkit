@@ -34,7 +34,7 @@ from unittest.mock import MagicMock, patch
 from rich.console import Console
 
 from gzkit.commands.obpi_complete import obpi_complete_cmd
-from gzkit.events import EventAnchor
+from gzkit.event_evidence import EventAnchor
 from gzkit.traceability import covers
 
 _BRIEF_TEMPLATE = """\

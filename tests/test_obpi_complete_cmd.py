@@ -26,7 +26,7 @@ from gzkit.commands.obpi_complete import (
     _validate_would_be_content,
     obpi_complete_cmd,
 )
-from gzkit.events import EventAnchor
+from gzkit.event_evidence import EventAnchor
 
 
 def covers(target: str):  # noqa: D401

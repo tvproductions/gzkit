@@ -11,7 +11,7 @@ from behave import given
 
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
-from gzkit.events import EventAnchor
+from gzkit.event_evidence import EventAnchor
 from gzkit.ledger import Ledger, obpi_created_event, obpi_receipt_emitted_event
 
 

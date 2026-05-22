@@ -37,7 +37,7 @@ from gzkit.commands.common import (
     resolve_adr_ledger_id,
 )
 from gzkit.commands.status import _collect_obpi_files_for_adr, _inspect_obpi_brief
-from gzkit.events import EventAnchor
+from gzkit.event_evidence import EventAnchor
 from gzkit.hooks.core import enrich_completed_receipt_evidence
 from gzkit.hooks.obpi import normalize_git_sync_state, normalize_scope_audit
 from gzkit.ledger import (

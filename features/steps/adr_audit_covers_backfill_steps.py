@@ -24,7 +24,7 @@ from pathlib import Path
 from behave import given  # type: ignore[import-untyped]
 
 from gzkit.config import GzkitConfig
-from gzkit.events import EventAnchor
+from gzkit.event_evidence import EventAnchor
 from gzkit.ledger import (
     Ledger,
     adr_created_event,

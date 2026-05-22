@@ -8,7 +8,7 @@ from unittest.mock import patch
 from gzkit.cli import main
 from gzkit.commands.status_render import TABLE_TITLE_FEATURE  # noqa: F401
 from gzkit.config import GzkitConfig
-from gzkit.events import EventAnchor
+from gzkit.event_evidence import EventAnchor
 from gzkit.ledger import (
     Ledger,
     adr_created_event,

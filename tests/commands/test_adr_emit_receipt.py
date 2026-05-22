@@ -27,7 +27,7 @@ from unittest.mock import MagicMock, patch
 from rich.console import Console
 
 from gzkit.commands.adr_audit import adr_emit_receipt_cmd
-from gzkit.events import EventAnchor
+from gzkit.event_evidence import EventAnchor
 from gzkit.traceability import covers
 
 

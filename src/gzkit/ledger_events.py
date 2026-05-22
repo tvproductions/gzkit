@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any
 from gzkit.ledger import LedgerEvent
 
 if TYPE_CHECKING:
-    from gzkit.events import EventAnchor
+    from gzkit.event_evidence import EventAnchor
 
 # ---------------------------------------------------------------------------
 # Event factory functions for type safety and documentation

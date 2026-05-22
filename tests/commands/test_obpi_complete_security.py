@@ -34,7 +34,7 @@ from gzkit.commands.obpi_complete import (
     _security_canonical_slot_filled,
     obpi_complete_cmd,
 )
-from gzkit.events import EventAnchor
+from gzkit.event_evidence import EventAnchor
 from gzkit.traceability import covers
 
 # ---------------------------------------------------------------------------

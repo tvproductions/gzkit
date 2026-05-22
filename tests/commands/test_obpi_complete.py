@@ -35,7 +35,7 @@ from rich.console import Console
 
 from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
 from gzkit.commands.obpi_complete import obpi_complete_cmd
-from gzkit.events import EventAnchor
+from gzkit.event_evidence import EventAnchor
 from gzkit.traceability import covers
 
 # ---------------------------------------------------------------------------

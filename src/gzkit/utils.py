@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from gzkit.events import EventAnchor
+    from gzkit.event_evidence import EventAnchor
 
 
 def run_exec(cmd: list[str], cwd: Path, timeout: int | None = None) -> tuple[int, str, str]:
@@ -76,7 +76,7 @@ def capture_validation_anchor_with_warnings(
     is degraded (missing required fields). The typed return shape replaces
     the legacy ``dict[str, str] | None`` per GHI #143.
     """
-    from gzkit.events import EventAnchor
+    from gzkit.event_evidence import EventAnchor
 
     warnings: list[str] = []
 
@@ -112,7 +112,7 @@ def capture_validation_anchor(project_root: Path, adr_id: str | None = None) -> 
     Degraded fallback returns a sentinel ``EventAnchor`` with zeroed commit
     and semver so downstream consumers always receive a typed value.
     """
-    from gzkit.events import EventAnchor
+    from gzkit.event_evidence import EventAnchor
 
     anchor, warnings = capture_validation_anchor_with_warnings(project_root, adr_id)
     if anchor is not None:
