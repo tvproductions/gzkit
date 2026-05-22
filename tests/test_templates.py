@@ -167,9 +167,10 @@ class TestAdapterTemplatesReferenceCanon(unittest.TestCase):
         self.assertIn("AGENTS.md", content)
         self.assertIn("Available Skills", content)
 
-    def test_agents_template_keeps_full_catalog(self) -> None:
+    def test_agents_template_points_to_live_catalog(self) -> None:
         content = render_template("agents", skills_catalog="- `test-skill`: Desc")
-        self.assertIn("`test-skill`", content)
+        self.assertNotIn("`test-skill`", content)
+        self.assertIn("uv run gz skill list", content)
 
 
 class TestRootSurfaceSlimming(unittest.TestCase):

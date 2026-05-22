@@ -177,7 +177,7 @@ Standardized and synchronized by `gz agent sync control-surfaces`.
 
 ### Available Skills
 
-{skills_catalog}
+Run `uv run gz skill list` for the authoritative active catalog. For details on any skill, read `.gzkit/skills/<skill-name>/SKILL.md`.
 
 ## Gate Covenant
 

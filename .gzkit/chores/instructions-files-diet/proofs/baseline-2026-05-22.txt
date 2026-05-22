@@ -1,0 +1,48 @@
+Baseline inventory for 2026-05-22 before this diet pass.
+
+Command:
+`wc -l AGENTS.md CLAUDE.md .gzkit/rules/*.md`
+
+Output:
+
+```text
+     392 AGENTS.md
+      27 CLAUDE.md
+     216 .gzkit/rules/AGENTS.md
+      61 .gzkit/rules/adr-audit.md
+      29 .gzkit/rules/agent-failure-modes.md
+      52 .gzkit/rules/brief-heading-conventions.md
+     138 .gzkit/rules/chores.md
+      89 .gzkit/rules/cli.md
+     123 .gzkit/rules/complexity-doctrine.md
+      99 .gzkit/rules/complexity-thresholds.md
+      46 .gzkit/rules/cross-platform.md
+      39 .gzkit/rules/gate5-runbook-code-covenant.md
+      38 .gzkit/rules/gh-cli.md
+      73 .gzkit/rules/governance-core.md
+      84 .gzkit/rules/model-selection.md
+      46 .gzkit/rules/models.md
+      62 .gzkit/rules/pythonic.md
+      40 .gzkit/rules/security-sensitivity.md
+     197 .gzkit/rules/skill-surface-sync.md
+      83 .gzkit/rules/tests.md
+     135 .gzkit/rules/token-block-discipline.md
+      41 .gzkit/rules/tool-skill-runbook-alignment.md
+    2110 total
+```
+
+Baseline validation:
+
+- `uv run gz validate --advisory-scorecard` exited 0.
+- `uv run gz validate --surfaces` exited 0.
+- `uv run gz validate --instructions-files-budget` exited 0.
+- `uv run gz lint` exited 0 during `uv run gz chores advise instructions-files-diet`.
+- `uv run mkdocs build --strict` exited 0 during `uv run gz chores advise instructions-files-diet`.
+- `uv run -m unittest -q` exited 0 during `uv run gz chores advise instructions-files-diet`.
+
+Known baseline blocker:
+
+- `uv run gz validate --documents --surfaces` exited 1 before edits because
+  legacy pool/pre-release ADR documents fail the current document schema.
+  `uv run gz validate --surfaces` is clean, so this diet pass tracks the
+  documents failure as unrelated corpus debt rather than a new regression.

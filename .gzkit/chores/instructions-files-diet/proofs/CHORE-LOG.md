@@ -546,3 +546,55 @@ Ran 4049 tests in 31.243s
 
 OK (skipped=1)
 ```
+
+---
+
+## 2026-05-22 Pass 4 — Catalog Indirection + Token-Block Compression
+
+### Summary
+
+Trimmed hot-path instruction weight without relaxing invariants:
+
+- Replaced the generated skill-name catalog in `AGENTS.md` with the live discovery command `uv run gz skill list` and the canonical skill-body path.
+- Compressed `.gzkit/agents.local.md` governance-doctrine and architectural-boundary rationale while keeping every binding boundary.
+- Compressed `.gzkit/rules/token-block-discipline.md` railway-history rationale into pointers to `docs/governance/token-block-doctrine.md`, preserving all binding sub-invariants.
+- Updated sync/template tests to assert the new skill-catalog indirection contract.
+
+### Inventory
+
+| Surface | Before | After | Delta |
+|---|---:|---:|---:|
+| `AGENTS.md` | 392 | 366 | -26 |
+| `CLAUDE.md` | 27 | 27 | 0 |
+| `.gzkit/rules/token-block-discipline.md` | 135 | 132 | -3 |
+| Total measured surface | 2110 | 2081 | -29 |
+
+Proof files:
+
+- `baseline-2026-05-22.txt`
+- `post-trim-2026-05-22.txt`
+- `bullet-retention-audit.md` Run 5 section
+
+### Validation
+
+| Command | Result |
+|---|---|
+| `uv run gz validate --advisory-scorecard` | PASS |
+| `uv run gz validate --surfaces` | PASS |
+| `uv run gz validate --instructions-files-budget` | PASS |
+| `uv run gz validate --invariant-coherence` | PASS |
+| `uv run gz lint` | PASS |
+| `uv run mkdocs build --strict` | PASS |
+| `uv run -m unittest -q` | PASS, 5432 tests |
+| `uv run gz validate --documents --surfaces` | FAIL, 1736 known legacy ADR document-corpus errors present before this pass |
+## 2026-05-22T05:52:54-05:00
+- Status: FAIL
+- Chore: instructions-files-diet
+- Title: Instructions & Memory Files Diet (Progressive Disclosure)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run gz validate --advisory-scorecard` => exit 0
+  - [FAIL] `uv run gz validate --documents --surfaces` => exit 1 (known 1736 legacy ADR document-corpus errors present before this pass)
+
+Full failure output intentionally omitted from this proof log; see `baseline-2026-05-22.txt` and `post-trim-2026-05-22.txt` for the tracked blocker summary.

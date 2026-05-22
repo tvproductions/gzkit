@@ -94,17 +94,15 @@ uv run gz test                       # Run tests
 
 ## Governance doctrine surfaces
 
-Read before touching governance code, rules, or audits:
+Read these before touching governance code, rules, or audits:
 
 - `docs/governance/trust-doctrine.md` — trust-chain poisoning pattern and the T1/T2/T3 invariants every layer boundary must satisfy.
 - `docs/governance/advisory-rules-audit.md` — the scorecard catalogue of every rule in `CLAUDE.md` and `.gzkit/rules/`. Score each new rule **Mechanical / Promotable / Judgment / Ambiguous**; promote Promotable rules to mechanical under a tracking GHI.
 - `docs/governance/state-doctrine.md` — storage-tier doctrine; Layer 3 derived views are never source-of-truth.
 
-The advisory scorecard is self-testing via `uv run gz validate --advisory-scorecard`: a new rule file under `.gzkit/rules/` without a scorecard entry fails the audit.
+The scorecard is self-testing via `uv run gz validate --advisory-scorecard`; promoted audits run via `uv run gz validate --<scope>` and are catalogued in the doctrine pages above.
 
-Promoted audits run via `uv run gz validate --<scope>` — see `gz validate --help` for the full flag list. The trust-doctrine and scorecard pages list every promoted scope and the GHI under which it landed.
-
-### Mechanical scopes that bind here (companion to advisory-rules-audit catalog)
+### Mechanical scopes that bind here
 
 - **Per-file char budget for AGENTS.md / CLAUDE.md / `.claude/rules/*.md`** (companion to Anti-vibing operative claim 2) — enforced by `gz validate --instructions-files-budget` (GHI #373). Tracked file budgets live in `data/instructions_files_budget.json` (defaults: 40k chars AGENTS.md/CLAUDE.md, 16k per rule file). Fail-closed on overrun with remediation pointer to `/gz-context-diet`.
 - **The editor/IDE authoring-guide protocol envelope (LSP-style Content-Length–framed JSON)** is defined by `src/gzkit/schemas/authoring_guide_protocol.json`. Every request, response, notification, and error shape MUST be named in the schema; protocol drift is caught by JSON Schema validation at server runtime, not by human review (ADR-0.0.30 / OBPI-0.0.30-04).
@@ -120,13 +118,13 @@ Promoted audits run via `uv run gz validate --<scope>` — see `gz validate --he
 
 ## Architectural Boundaries
 
-*Source: Architecture Planning Memo Section 12 (Decision Record 2026-03-29).*
+Source: Architecture Planning Memo Section 12 (Decision Record 2026-03-29).
 
-1. **Do not promote post-1.0 pool ADRs into active work.** `ai-runtime-foundations`, `controlled-agency-recovery`, and `evaluation-infrastructure` (the pool version) are post-1.0 concerns. The graph spine, proof architecture, and pipeline lifecycle are not stable enough to support AI runtime controls on top.
-2. **Do not add more pool ADRs to the runtime track.** The pool has sufficient architectural intent for 2-3 years of work. The problem is insufficient foundation locking, not insufficient vision.
+1. **Do not promote post-1.0 pool ADRs into active work.** `ai-runtime-foundations`, `controlled-agency-recovery`, and `evaluation-infrastructure` remain parked until the graph spine, proof architecture, and pipeline lifecycle are stable.
+2. **Do not add more pool ADRs to the runtime track.** The pool has sufficient runtime intent; lock foundation first.
 3. **Do not build the graph engine without locking state doctrine first.** A graph engine built on implicit state assumptions becomes the single biggest source of reconciliation bugs.
-4. **Do not let reconciliation remain a maintenance chore.** If the state doctrine says "derived state is rebuildable," then reconciliation is a core architectural operation — tested, gated, and part of the pipeline. **Freshness check applies once reconciliation has run at least once; zero-event history is bootstrap, not drift** (see `gz validate --reconcile-freshness` fail-open at `src/gzkit/governance/trust_audits.py:1024-1028`).
+4. **Do not let reconciliation remain a maintenance chore.** Reconciliation is a core architectural operation. Freshness check applies once reconciliation has run at least once; zero-event history is bootstrap, not drift.
 5. **Do not let AirlineOps parity become perpetual catch-up.** Current parity is sufficient baseline. Future parity should flow from gzkit innovations adopted by AirlineOps, not gzkit chasing AirlineOps patches.
-6. **Do not let derived views silently become source-of-truth.** `gz status` output, pipeline markers, and reconciliation caches are Layer 3. Every fact must trace to Layer 1 (canon) or Layer 2 (ledger).
+6. **Do not let derived views silently become source-of-truth.** `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger.
 
 <!-- END agents.local.md -->

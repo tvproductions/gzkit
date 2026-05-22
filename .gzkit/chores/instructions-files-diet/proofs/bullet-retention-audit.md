@@ -122,3 +122,54 @@ Every lift left a `> See [...]` one-line pointer at the origin site, or relied o
 | `.claude/rules/agent-failure-modes.md` | 228 | 200 | −28 |
 | Other rule files | unchanged | unchanged | 0 |
 | **Total per-turn** | **2200** | **2156** | **−44** |
+
+---
+
+# Bullet Retention Audit — Run 5 (Pass 4: catalog indirection + token-block compression)
+
+**Date:** 2026-05-22
+**Pass:** Pass 4
+**Origin GHI:** #327 follow-up
+**Session baseline:** 2110 lines (`AGENTS.md` + `CLAUDE.md` + `.gzkit/rules/**`)
+
+## Lift inventory
+
+| # | Origin | Class lifted | Destination | Lines removed | Pointer left |
+|---|---|---|---|---|---|
+| A | `AGENTS.md` § Available Skills generated catalog | Generated discovery list | `uv run gz skill list` live catalog + `.gzkit/skills/<skill-name>/SKILL.md` | 31 lines -> 1 line | Yes |
+| B | `.gzkit/agents.local.md` governance-scorecard prose | Judgment explanation | Existing governance doctrine pages | 3 lines -> 1 line | Yes |
+| C | `.gzkit/agents.local.md` architectural-boundary rationale | Judgment rationale around binding boundary bullets | Architecture Planning Memo Section 12 + existing doctrine links | 6 bullets compressed in place | Source pointer retained |
+| D | `.gzkit/rules/token-block-discipline.md` railway-history and register-entry rationale | Judgment pedagogy | `docs/governance/token-block-doctrine.md` | 6 lines -> 2 pointers | Yes |
+
+## Mechanical/Promotable bullet preservation
+
+The advisory-scorecard validator result after the pass: **exit 0, all scopes valid**.
+
+- **Lift A** changed discovery form, not skill availability. The generated per-turn file now points to `uv run gz skill list`, and the canonical skill files remain under `.gzkit/skills/<skill-name>/SKILL.md`. Tests were updated to assert the new indirection contract.
+- **Lifts B and C** retained the governance-doctrine links and every `Do not ...` architectural-boundary command. Only explanatory phrases around those commands were compressed.
+- **Lift D** retained every binding sub-invariant, enum, validator rule, TTL value, release precondition, vocabulary item, cross-link, and audit command. Railway-history prose now lives in the already-existing token-block doctrine page.
+
+**Conclusion:** zero Mechanical or Promotable bullets removed. The pass trims generated catalog text and Judgment-class rationale while retaining binding rules in the per-turn contract.
+
+## Validation gates (post-trim)
+
+| Gate | Command | Result |
+|---|---|---|
+| Advisory scorecard | `uv run gz validate --advisory-scorecard` | exit 0 |
+| Surfaces | `uv run gz validate --surfaces` | exit 0 |
+| Instruction budget | `uv run gz validate --instructions-files-budget` | exit 0 |
+| Invariant coherence | `uv run gz validate --invariant-coherence` | exit 0 |
+| Lint | `uv run gz lint` | exit 0 |
+| Docs build strict | `uv run mkdocs build --strict` | exit 0 |
+| Unit tests | `uv run -m unittest -q` | exit 0 (5432 tests) |
+| Documents + surfaces | `uv run gz validate --documents --surfaces` | exit 1 (known legacy ADR corpus failures present at baseline) |
+
+## Line-count delta
+
+| Surface | Before | After | Δ |
+|---|---|---|---|
+| `AGENTS.md` | 392 | 366 | −26 |
+| `CLAUDE.md` | 27 | 27 | 0 |
+| `.gzkit/rules/token-block-discipline.md` | 135 | 132 | −3 |
+| Other canonical rule files | unchanged | unchanged | 0 |
+| **Total measured surface** | **2110** | **2081** | **−29** |

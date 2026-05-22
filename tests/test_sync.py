@@ -491,8 +491,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertIn('"docs": "uv run mkdocs build --strict"', manifest)
             self.assertIn('"bdd": "uv run -m behave features/"', manifest)
 
-    def test_sync_includes_skills_in_generated_surfaces(self) -> None:
-        """Generated AGENTS/CLAUDE/Copilot files include the skill catalog."""
+    def test_sync_points_generated_surfaces_to_skill_catalog_command(self) -> None:
+        """Generated AGENTS/CLAUDE/Copilot files avoid embedding the skill catalog."""
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             config = GzkitConfig(project_name="gzkit-test")
@@ -509,8 +509,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
             claude = (project_root / config.paths.claude_md).read_text(encoding="utf-8")
             copilot = (project_root / config.paths.copilot_instructions).read_text(encoding="utf-8")
 
-            self.assertIn("`demo-skill`", agents)
-            # Categorized format no longer includes per-skill paths
+            self.assertNotIn("`demo-skill`", agents)
+            self.assertIn("uv run gz skill list", agents)
             self.assertIn(".gzkit/skills/<skill-name>/", agents)
             # Slim CLAUDE.md no longer includes skill catalog
             self.assertNotIn("`demo-skill`", claude)
@@ -519,8 +519,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertIn("AGENTS.md", copilot)
             self.assertIn("Available Skills", copilot)
 
-    def test_sync_skills_catalog_uses_frontmatter_description(self) -> None:
-        """Skill catalog entries use frontmatter descriptions, not `---` placeholders."""
+    def test_sync_skills_catalog_indirection_omits_frontmatter_description(self) -> None:
+        """AGENTS points to the live skill catalog instead of embedding descriptions."""
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             config = GzkitConfig(project_name="gzkit-test")
@@ -532,7 +532,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
             sync_all(project_root, config)
 
             agents = (project_root / config.paths.agents_md).read_text(encoding="utf-8")
-            self.assertIn("`demo-skill`", agents)
+            self.assertNotIn("`demo-skill`", agents)
+            self.assertIn("uv run gz skill list", agents)
             self.assertNotIn("---: ---", agents)
 
     def test_sync_mirrors_skills_into_all_tool_directories(self) -> None:

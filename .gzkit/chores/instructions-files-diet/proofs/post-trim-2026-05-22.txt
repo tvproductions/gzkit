@@ -1,0 +1,51 @@
+Post-trim inventory for 2026-05-22 after this diet pass.
+
+Command:
+`wc -l AGENTS.md CLAUDE.md .gzkit/rules/*.md`
+
+Output:
+
+```text
+     366 AGENTS.md
+      27 CLAUDE.md
+     216 .gzkit/rules/AGENTS.md
+      61 .gzkit/rules/adr-audit.md
+      29 .gzkit/rules/agent-failure-modes.md
+      52 .gzkit/rules/brief-heading-conventions.md
+     138 .gzkit/rules/chores.md
+      89 .gzkit/rules/cli.md
+     123 .gzkit/rules/complexity-doctrine.md
+      99 .gzkit/rules/complexity-thresholds.md
+      46 .gzkit/rules/cross-platform.md
+      39 .gzkit/rules/gate5-runbook-code-covenant.md
+      38 .gzkit/rules/gh-cli.md
+      73 .gzkit/rules/governance-core.md
+      84 .gzkit/rules/model-selection.md
+      46 .gzkit/rules/models.md
+      62 .gzkit/rules/pythonic.md
+      40 .gzkit/rules/security-sensitivity.md
+     197 .gzkit/rules/skill-surface-sync.md
+      83 .gzkit/rules/tests.md
+     132 .gzkit/rules/token-block-discipline.md
+      41 .gzkit/rules/tool-skill-runbook-alignment.md
+    2081 total
+```
+
+Delta from `baseline-2026-05-22.txt`:
+
+- `AGENTS.md`: 392 -> 366, delta -26.
+- `CLAUDE.md`: 27 -> 27, delta 0.
+- `.gzkit/rules/token-block-discipline.md`: 135 -> 132, delta -3.
+- Total measured surface: 2110 -> 2081, delta -29.
+
+Post-trim validation:
+
+- `uv run gz validate --advisory-scorecard` exited 0.
+- `uv run gz validate --surfaces` exited 0.
+- `uv run gz validate --instructions-files-budget` exited 0.
+- `uv run gz validate --invariant-coherence` exited 0.
+- `uv run gz lint` exited 0.
+- `uv run mkdocs build --strict` exited 0.
+- `uv run -m unittest -q` exited 0: 5432 tests passed.
+- `uv run gz validate --documents --surfaces` exited 1 with the same
+  known legacy ADR document corpus failures recorded at baseline.
