@@ -1612,6 +1612,55 @@ class TestNestedEvidenceModels(unittest.TestCase):
             "evidence.git_sync_state.dirty",
         )
 
+    def test_evidence_models_are_frozen(self) -> None:
+        """Nested evidence models are immutable — post-construction mutation raises."""
+        from pydantic import ValidationError as PydanticValidationError
+
+        from gzkit.event_evidence import (
+            GitSyncState,
+            ObpiReceiptEvidence,
+            ReqProofInput,
+            ScopeAudit,
+        )
+
+        cases: list[tuple[object, str, object]] = [
+            (
+                ReqProofInput(
+                    name="key_proof",
+                    kind="command",
+                    source="uv run gz test",
+                    status="present",
+                ),
+                "name",
+                "mutated",
+            ),
+            (
+                ScopeAudit(allowlist=["a"], changed_files=["b"], out_of_scope_files=[]),
+                "allowlist",
+                ["x"],
+            ),
+            (
+                GitSyncState(
+                    dirty=False,
+                    ahead=0,
+                    behind=0,
+                    diverged=False,
+                    actions=[],
+                    warnings=[],
+                    blockers=[],
+                ),
+                "dirty",
+                True,
+            ),
+            (ObpiReceiptEvidence(), "parent_lane", "heavy"),
+        ]
+        for model, field, value in cases:
+            with (
+                self.subTest(model=type(model).__name__),
+                self.assertRaises(PydanticValidationError),
+            ):
+                setattr(model, field, value)
+
 
 class TestAuditGeneratedEvent(unittest.TestCase):
     """Tests for audit_generated_event() factory (OBPI-0.19.0-05)."""

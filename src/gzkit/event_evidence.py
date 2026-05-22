@@ -38,7 +38,7 @@ NonEmptyStr = Annotated[str, AfterValidator(_check_non_empty_str)]
 class ReqProofInput(BaseModel):
     """Structured REQ-proof input row."""
 
-    model_config = ConfigDict(strict=True, extra="forbid")
+    model_config = ConfigDict(strict=True, frozen=True, extra="forbid")
 
     name: str
     kind: str
@@ -89,7 +89,7 @@ class ReqProofInput(BaseModel):
 class ScopeAudit(BaseModel):
     """Scope audit evidence for OBPI receipts."""
 
-    model_config = ConfigDict(strict=True, extra="forbid")
+    model_config = ConfigDict(strict=True, frozen=True, extra="forbid")
 
     allowlist: list[NonEmptyStr]
     changed_files: list[NonEmptyStr]
@@ -99,7 +99,7 @@ class ScopeAudit(BaseModel):
 class GitSyncState(BaseModel):
     """Git sync state evidence for OBPI receipts."""
 
-    model_config = ConfigDict(strict=True, extra="forbid")
+    model_config = ConfigDict(strict=True, frozen=True, extra="forbid")
 
     branch: str | None = None
     remote: str | None = None
@@ -130,7 +130,7 @@ class ObpiReceiptEvidence(BaseModel):
     unstructured fields (e.g. 'acceptance', 'human_attestation', 'value_narrative').
     """
 
-    model_config = ConfigDict(strict=True, extra="allow")
+    model_config = ConfigDict(strict=True, frozen=True, extra="allow")
 
     req_proof_inputs: list[ReqProofInput] | None = None
     attestation_requirement: str | None = None
