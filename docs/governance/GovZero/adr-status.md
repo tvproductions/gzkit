@@ -7,7 +7,7 @@ Status: Active
 
 Source-of-truth: filesystem under `docs/design/adr/{foundation,pre-release}/`; this table is a Layer 3 derived view per `docs/governance/state-doctrine.md`. Regenerate via `gz register-adrs` (which calls `regenerate_adr_status_md` after ledger reconciliation); drift is fail-closed by `gz validate --adr-status-fresh`.
 
-Last regenerated: 2026-05-20 (count: 101 ADRs).
+Last regenerated: 2026-05-22 (count: 102 ADRs).
 
 | ID | Title | Kind | Lane | Status | Date | Path |
 |---|---|---|---|---|---|---|
@@ -66,6 +66,7 @@ Last regenerated: 2026-05-20 (count: 101 ADRs).
 | [ADR-0.0.53-validator-remediation-payload-invariant](../../design/adr/foundation/ADR-0.0.53-validator-remediation-payload-invariant/ADR-0.0.53-validator-remediation-payload-invariant.md) | Validator Remediation Payload Invariant | foundation | heavy | Draft | 2026-05-19 | `design/adr/foundation/ADR-0.0.53-validator-remediation-payload-invariant/ADR-0.0.53-validator-remediation-payload-invariant.md` |
 | [ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine](../../design/adr/foundation/ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine/ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine.md) | AGENTS.md Map-Not-Encyclopedia Doctrine | foundation | heavy | Draft | 2026-05-19 | `design/adr/foundation/ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine/ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine.md` |
 | [ADR-0.0.55-package-import-direction-invariant](../../design/adr/foundation/ADR-0.0.55-package-import-direction-invariant/ADR-0.0.55-package-import-direction-invariant.md) | Package Import Direction Invariant | foundation | heavy | Draft | 2026-05-19 | `design/adr/foundation/ADR-0.0.55-package-import-direction-invariant/ADR-0.0.55-package-import-direction-invariant.md` |
+| [ADR-0.0.56-closeout-defect-accounting-invariant](../../design/adr/foundation/ADR-0.0.56-closeout-defect-accounting-invariant/ADR-0.0.56-closeout-defect-accounting-invariant.md) | Closeout Defect-Accounting Invariant | foundation | heavy | Draft | 2026-05-21 | `design/adr/foundation/ADR-0.0.56-closeout-defect-accounting-invariant/ADR-0.0.56-closeout-defect-accounting-invariant.md` |
 | [ADR-0.2.0-gate-verification](../../design/adr/pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md) | Gate Verification + Dry Run | feature | heavy | Validated | 2026-01-29 | `design/adr/pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md` |
 | [ADR-0.3.0-airlineops-canon-reconciliation](../../design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) | AirlineOps Canon Reconciliation | feature | heavy | Validated | 2026-02-13 | `design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md` |
 | [ADR-0.4.0-skill-capability-mirroring](../../design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) | Skill Capability Mirroring | feature | heavy | Validated | 2026-02-17 | `design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md` |
