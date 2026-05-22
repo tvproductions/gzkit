@@ -87,7 +87,7 @@ status: Draft
 
 **Context:**
 
-- [ ] `src/gzkit/events.py` existing frozen-model patterns (e.g. `ObpiReceiptEvidence`, `EventAnchor`) — `RoutingReceipt` shape match
+- [ ] `src/gzkit/event_evidence.py` existing frozen-model patterns (e.g. `ObpiReceiptEvidence`, `EventAnchor`) — `RoutingReceipt` shape match
 - [ ] `src/gzkit/commands/closeout.py` `_complete_closeout_pipeline` (line ~474) — where the completion event (`attested_event`, `lifecycle_transition_event`) is recorded; the gate inserts before these
 - [ ] OBPI-02's `closeout_defect_accounting` reconcile module — the predicate this OBPI wires into the completion path
 - [ ] **Related OBPIs:** depends on OBPI-01 (snapshot) and OBPI-02 (reconcile scope). OBPI-04 and OBPI-05 extend this gate to `gz obpi complete` and ghi-close. Sequencing 01 → 02 → 03 → {04, 05} (this is step 03).

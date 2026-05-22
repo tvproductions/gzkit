@@ -33,7 +33,7 @@ Closeout defect-baseline snapshot — extend `gz closeout` to run `gz check --js
 
 - `docs/design/adr/foundation/ADR-0.0.56-closeout-defect-accounting-invariant/ADR-0.0.56-closeout-defect-accounting-invariant.md` — parent ADR; READ reference for intent and the § Decision item 1 contract
 - `src/gzkit/commands/closeout.py` — `gz closeout` command; the snapshot-emit site (alongside `_record_closeout_initiation`, line ~359, which already records the `closeout_initiated` event)
-- `src/gzkit/events.py` — frozen Pydantic event models; add the `CloseoutDefectSnapshot` payload model and a `CloseoutDefectSnapshotEvent` class (sibling shape: `CloseoutInitiatedEvent`, line ~346)
+- `src/gzkit/events.py` — frozen Pydantic event models; add the `CloseoutDefectSnapshot` payload model and a `CloseoutDefectSnapshotEvent` class (sibling shape: `CloseoutInitiatedEvent`, line ~142)
 - `src/gzkit/ledger_events.py` — event-factory functions; add a `closeout_defect_snapshot_event(...)` factory (sibling shape: `closeout_initiated_event`, line ~129)
 - `src/gzkit/schemas/ledger.json` — ledger event schema; add the `closeout_defect_snapshot` event entry under `events` (sibling: the `closeout_initiated` entry)
 - `tests/test_closeout_pipeline.py` — closeout command tests; add snapshot-emit and fingerprint-stability tests here
@@ -90,7 +90,7 @@ Closeout defect-baseline snapshot — extend `gz closeout` to run `gz check --js
 **Context:**
 
 - [ ] `src/gzkit/commands/closeout.py` `_record_closeout_initiation` (line ~359) — sibling pattern for emitting a closeout-open ledger event
-- [ ] `src/gzkit/events.py` `CloseoutInitiatedEvent` (line ~346) — sibling frozen-event-model shape
+- [ ] `src/gzkit/events.py` `CloseoutInitiatedEvent` (line ~142) — sibling frozen-event-model shape
 - [ ] `src/gzkit/ledger_events.py` `closeout_initiated_event` (line ~129) — sibling event-factory shape
 - [ ] `src/gzkit/commands/quality.py` `check` (line ~331) — the `gz check --json` surface this OBPI captures from
 - [ ] **Related OBPIs:** this OBPI is the load-bearing primitive — OBPI-02 reconciles against this snapshot, OBPI-03 wires the gate. Sequencing 01 → 02 → 03 (this is step 01).
