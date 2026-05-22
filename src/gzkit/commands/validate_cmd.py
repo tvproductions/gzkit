@@ -77,10 +77,23 @@ def _validate_obpi_briefs(project_root: Path) -> list[ValidationError]:
     return errors
 
 
+_QA_TRANSCRIPT_HEADING_RE = re.compile(r"^##\s+Q&A\s+Transcript\b", re.MULTILINE)
+
+
 def _validate_interviews(project_root: Path) -> list[ValidationError]:
-    """Check that ADRs with OBPIs have an interview transcript artifact."""
+    """Check that ADRs with OBPIs carry an embedded ``## Q&A Transcript`` section.
+
+    Every ADR with an ``obpis/`` subdirectory must record the design-conversation
+    receipt as a ``## Q&A Transcript`` section inside its ADR body — the form
+    ADRs are authored with (``gz-adr-create`` / ``gz plan``).
+
+    This check was retargeted under GHI #511. It previously required a separate
+    ``.gzkit/transcripts/<ADR-ID>-interview.md`` file (GHI #96), but no such
+    file was ever produced for any ADR: the authoring workflow embeds the
+    transcript in the ADR body instead. The prior check therefore never passed
+    for any input and was dead enforcement saturated with false positives.
+    """
     adr_root = project_root / "docs" / "design" / "adr"
-    transcript_dir = project_root / ".gzkit" / "transcripts"
     if not adr_root.is_dir():
         return []
 
@@ -98,15 +111,25 @@ def _validate_interviews(project_root: Path) -> list[ValidationError]:
         if not match:
             continue
         adr_id = match.group(1)
-        transcript_path = transcript_dir / f"{adr_id}-interview.md"
-        if not transcript_path.exists():
+        adr_body = next(iter(sorted(adr_dir.glob("ADR-*.md"))), None)
+        if adr_body is None:
+            errors.append(
+                ValidationError(
+                    type="interview",
+                    artifact=adr_dir.relative_to(project_root).as_posix(),
+                    message=f"No ADR body file found for {adr_id}",
+                )
+            )
+            continue
+        content = adr_body.read_text(encoding="utf-8")
+        if not _QA_TRANSCRIPT_HEADING_RE.search(content):
             errors.append(
                 ValidationError(
                     type="interview",
                     artifact=adr_dir.relative_to(project_root).as_posix(),
                     message=(
-                        f"No interview transcript found for {adr_id}"
-                        f" (expected {transcript_path.relative_to(project_root).as_posix()})"
+                        f"No '## Q&A Transcript' section found in {adr_id}"
+                        f" ({adr_body.relative_to(project_root).as_posix()})"
                     ),
                 )
             )

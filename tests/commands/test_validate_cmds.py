@@ -118,6 +118,53 @@ Rules here
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("does not match", result.output)
 
+    def test_validate_interviews_flag_accepted(self) -> None:
+        """--interviews flag is accepted and runs the interviews scope."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            result = runner.invoke(main, ["validate", "--interviews"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("interviews", result.output.lower())
+
+    def test_validate_interviews_detects_missing_qa_transcript(self) -> None:
+        """An ADR with OBPI briefs but no '## Q&A Transcript' section is flagged.
+
+        The interviews scope verifies the design-conversation receipt lives in
+        the ADR body as a ``## Q&A Transcript`` section (GHI #511 retarget).
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            obpi_dir = Path("docs/design/adr/foundation/ADR-0.0.99-test/obpis")
+            obpi_dir.mkdir(parents=True, exist_ok=True)
+            (obpi_dir / "OBPI-0.0.99-01-thing.md").write_text(
+                "# OBPI-0.0.99-01\n", encoding="utf-8"
+            )
+            (obpi_dir.parent / "ADR-0.0.99-test.md").write_text(
+                "# ADR-0.0.99 Test\n\n## Decision\n\nDo the thing.\n", encoding="utf-8"
+            )
+            result = runner.invoke(main, ["validate", "--interviews"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Q&A Transcript", result.output)
+
+    def test_validate_interviews_passes_with_embedded_qa_transcript(self) -> None:
+        """An ADR carrying a '## Q&A Transcript' section passes the scope."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            obpi_dir = Path("docs/design/adr/foundation/ADR-0.0.99-test/obpis")
+            obpi_dir.mkdir(parents=True, exist_ok=True)
+            (obpi_dir / "OBPI-0.0.99-01-thing.md").write_text(
+                "# OBPI-0.0.99-01\n", encoding="utf-8"
+            )
+            (obpi_dir.parent / "ADR-0.0.99-test.md").write_text(
+                "# ADR-0.0.99 Test\n\n## Q&A Transcript\n\nQ: why? A: because.\n",
+                encoding="utf-8",
+            )
+            result = runner.invoke(main, ["validate", "--interviews"])
+            self.assertEqual(result.exit_code, 0)
+
     def test_validate_requirements_flag_accepted(self) -> None:
         """--requirements flag runs the requirements scope without crashing."""
         runner = CliRunner()
