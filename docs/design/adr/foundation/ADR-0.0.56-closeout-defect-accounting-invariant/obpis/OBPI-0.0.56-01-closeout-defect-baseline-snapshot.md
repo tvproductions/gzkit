@@ -33,7 +33,8 @@ Closeout defect-baseline snapshot — extend `gz closeout` to run `gz check --js
 
 - `docs/design/adr/foundation/ADR-0.0.56-closeout-defect-accounting-invariant/ADR-0.0.56-closeout-defect-accounting-invariant.md` — parent ADR; READ reference for intent and the § Decision item 1 contract
 - `src/gzkit/commands/closeout.py` — `gz closeout` command; the snapshot-emit site (alongside `_record_closeout_initiation`, line ~359, which already records the `closeout_initiated` event)
-- `src/gzkit/events.py` — frozen Pydantic event models; add the `CloseoutDefectSnapshot` payload model and a `CloseoutDefectSnapshotEvent` class (sibling shape: `CloseoutInitiatedEvent`, line ~142)
+- `src/gzkit/event_evidence.py` — frozen Pydantic evidence/payload models; add the `CloseoutDefectSnapshot` payload model (sibling shape: `ObpiReceiptEvidence`)
+- `src/gzkit/events.py` — typed ledger event classes; add the `CloseoutDefectSnapshotEvent` class (sibling shape: `CloseoutInitiatedEvent`, line ~142)
 - `src/gzkit/ledger_events.py` — event-factory functions; add a `closeout_defect_snapshot_event(...)` factory (sibling shape: `closeout_initiated_event`, line ~129)
 - `src/gzkit/schemas/ledger.json` — ledger event schema; add the `closeout_defect_snapshot` event entry under `events` (sibling: the `closeout_initiated` entry)
 - `tests/test_closeout_pipeline.py` — closeout command tests; add snapshot-emit and fingerprint-stability tests here
@@ -60,13 +61,13 @@ Closeout defect-baseline snapshot — extend `gz closeout` to run `gz check --js
 1. REQUIREMENT: `gz closeout`, at the closeout-open anchor where it already records the `closeout_initiated` ledger event, MUST additionally run `gz check --json`, extract the structured defect set, and emit a new `closeout_defect_snapshot` ledger event in the same closeout-open transaction. NEVER emit the snapshot from a different ceremony verb or a side path.
 2. REQUIREMENT: The `closeout_defect_snapshot` event payload MUST carry exactly `{closeout_id, defect_fingerprints, gz_check_invocation, captured_at}` — `closeout_id` linking the snapshot to its closeout, `defect_fingerprints` the diffable defect set, `gz_check_invocation` the args + sha of the `gz check` run, `captured_at` an ISO-8601 timestamp.
 3. REQUIREMENT: The defect fingerprint MUST be a stable, diffable identity derived from scope + predicate + structural location ONLY. The fingerprint MUST exclude volatile fields — line numbers, run timestamps, result ordering — so the same defect produces an identical fingerprint across two `gz check` runs. This is the load-bearing risk named in the parent ADR § Consequences/Negative #1; it gets its own dedicated test.
-4. REQUIREMENT: A `CloseoutDefectSnapshot` frozen Pydantic model (`model_config` frozen) MUST be added to `src/gzkit/events.py`, and the `closeout_defect_snapshot` event MUST be added to the `src/gzkit/schemas/ledger.json` `events` block. The model and the schema MUST agree on field names and types — schema/model drift is fail-closed by existing ledger-schema coverage tests.
+4. REQUIREMENT: A `CloseoutDefectSnapshot` frozen Pydantic model (`model_config` frozen) MUST be added to `src/gzkit/event_evidence.py`, and the `closeout_defect_snapshot` event MUST be added to the `src/gzkit/schemas/ledger.json` `events` block. The model and the schema MUST agree on field names and types — schema/model drift is fail-closed by existing ledger-schema coverage tests.
 5. REQUIREMENT: The `gz_check_invocation` field MUST record the actual `gz check` invocation (canonical full args + commit sha) so a downstream reconcile can reject a snapshot captured under a narrowed scope (parent ADR § Consequences/Negative #8, performative-snapshot risk).
 6. REQUIREMENT: Before relying on `gz check --json` as the fingerprint source, the implementation MUST verify the `--json` payload shape is diffable — each defect carries a scope, a predicate, and a structural location distinguishable from volatile run metadata (parent ADR § Consequences/Negative #3a).
 7. REQUIREMENT: This OBPI emits the snapshot ONLY. It MUST NOT add the reconcile predicate, the `RoutingReceipt` model, or any fail-closed completion gate — a `gz closeout` with no recorded snapshot still completes after this OBPI (the gate lands in OBPI-03). NEVER bundle OBPI-02/03 surfaces into this brief.
 8. REQUIREMENT: Work MUST stay inside the Allowed Paths; NEVER touch `.gzkit/ledger.jsonl` directly — ledger writes go through the event factory and `Ledger.append`.
 
-> STOP-on-BLOCKERS: if `src/gzkit/commands/closeout.py`, `src/gzkit/events.py`, or `src/gzkit/schemas/ledger.json` is absent, or `gz check --json` does not emit structured output, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if `src/gzkit/commands/closeout.py`, `src/gzkit/events.py`, `src/gzkit/event_evidence.py`, or `src/gzkit/schemas/ledger.json` is absent, or `gz check --json` does not emit structured output, print a BLOCKERS list and halt.
 
 ## Discovery Checklist
 

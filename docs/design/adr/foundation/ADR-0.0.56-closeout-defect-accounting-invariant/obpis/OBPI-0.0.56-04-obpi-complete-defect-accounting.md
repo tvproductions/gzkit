@@ -44,7 +44,7 @@ Extend the mechanism to `gz obpi complete` — snapshot at the OBPI-pipeline ver
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
 - `src/gzkit/commands/closeout.py` — the `gz closeout` surface is OBPI-01/03 scope; this OBPI only extends to `gz obpi complete`
-- `src/gzkit/events.py` `CloseoutDefectSnapshot` / `RoutingReceipt` model definitions — OBPI-01 and OBPI-03 author these; this OBPI reuses them as-is. This OBPI MUST NOT add a parallel OBPI-snapshot event class: the OBPI-completion anchor is carried as a discriminated field on the existing snapshot event, not as a second event type. If the existing snapshot event cannot carry an OBPI-completion anchor, that is a blocker the implementer escalates per the STOP-on-BLOCKERS rule — never resolved by silently adding a new event class.
+- `src/gzkit/event_evidence.py` `CloseoutDefectSnapshot` / `RoutingReceipt` model definitions — OBPI-01 and OBPI-03 author these; this OBPI reuses them as-is. This OBPI MUST NOT add a parallel OBPI-snapshot event class: the OBPI-completion anchor is carried as a discriminated field on the existing snapshot event, not as a second event type. If the existing snapshot event cannot carry an OBPI-completion anchor, that is a blocker the implementer escalates per the STOP-on-BLOCKERS rule — never resolved by silently adding a new event class.
 - `.claude/hooks/`, `.gzkit/skills/ghi-close/` — ghi-close backstop is OBPI-05 scope
 - `docs/governance/advisory-rules-audit.md`, `docs/user/runbook.md`, `docs/user/manpages/validate.md` — docs + scorecard reclassification is OBPI-06 scope
 - Paths not listed in Allowed Paths

@@ -43,7 +43,7 @@ status: Draft
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
-- `src/gzkit/commands/closeout.py`, `src/gzkit/events.py`, `src/gzkit/ledger_events.py`, `src/gzkit/schemas/ledger.json` — the `closeout_defect_snapshot` model, factory, and schema are delivered by OBPI-01; this OBPI consumes the recorded snapshot, it does not author it
+- `src/gzkit/commands/closeout.py`, `src/gzkit/events.py`, `src/gzkit/event_evidence.py`, `src/gzkit/ledger_events.py`, `src/gzkit/schemas/ledger.json` — the `closeout_defect_snapshot` model, factory, and schema are delivered by OBPI-01; this OBPI consumes the recorded snapshot, it does not author it
 - `RoutingReceipt` model and the `gz closeout` fail-closed completion wiring — OBPI-03 scope (this OBPI authors the reconcile predicate; OBPI-03 wires it into the completion path as a gate)
 - `src/gzkit/commands/obpi_complete.py`, `src/gzkit/commands/obpi_stages.py` — OBPI-completion extension is OBPI-04 scope
 - `.claude/hooks/`, `.gzkit/skills/ghi-close/` — ghi-close backstop is OBPI-05 scope

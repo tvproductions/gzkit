@@ -32,7 +32,7 @@ status: Draft
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
 - `docs/design/adr/foundation/ADR-0.0.56-closeout-defect-accounting-invariant/ADR-0.0.56-closeout-defect-accounting-invariant.md` — parent ADR; READ reference for the § Decision item 3 contract
-- `src/gzkit/events.py` — frozen Pydantic models; add the `RoutingReceipt` model (`ghi:<N>` | `commit:<sha>` | `waiver:<operator>+<reason>`)
+- `src/gzkit/event_evidence.py` — frozen Pydantic evidence/payload models; add the `RoutingReceipt` model (`ghi:<N>` | `commit:<sha>` | `waiver:<operator>+<reason>`)
 - `src/gzkit/commands/closeout.py` — `gz closeout` completion path; wire the reconcile scope into `_complete_closeout_pipeline` (line ~474) as a fail-closed condition before the completion event is recorded
 - `src/gzkit/governance/trust_audits/closeout_defect_accounting.py` **CREATE** — the reconcile module. It is net-new across the ADR; OBPI-02 lands its initial form ahead of this OBPI in the `01 → 02 → 03` sequence, and this OBPI extends it to consume the canonical `RoutingReceipt` model and add the no-recorded-snapshot fail-closed branch. The `CREATE` marker records that the path does not exist at brief-authoring time — it is not a claim of sole authorship by this OBPI.
 - `tests/test_closeout_pipeline.py` — closeout completion-gate tests; add fail-closed-on-unrouted and fail-closed-on-missing-snapshot tests here
@@ -55,7 +55,7 @@ status: Draft
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: A `RoutingReceipt` frozen Pydantic model (`model_config` frozen) MUST be authored in `src/gzkit/events.py`. The model MUST validate exactly three receipt forms: `ghi:<N>` (N a positive integer), `commit:<sha>` (sha a hex commit identifier), and `waiver:<operator>+<reason>` (operator and reason both non-empty). Any other string MUST be rejected by model validation.
+1. REQUIREMENT: A `RoutingReceipt` frozen Pydantic model (`model_config` frozen) MUST be authored in `src/gzkit/event_evidence.py`. The model MUST validate exactly three receipt forms: `ghi:<N>` (N a positive integer), `commit:<sha>` (sha a hex commit identifier), and `waiver:<operator>+<reason>` (operator and reason both non-empty). Any other string MUST be rejected by model validation.
 2. REQUIREMENT: A `waiver:` receipt MUST require a NAMED operator. An agent-authored waiver — a waiver whose operator field is an agent identity or is empty — MUST be rejected. The agent is NEVER the waiver authority (parent ADR § Consequences/Negative #2).
 3. REQUIREMENT: The `gz closeout` completion path (`_complete_closeout_pipeline`) MUST run the `--closeout-defect-accounting` reconcile scope as a fail-closed condition. `gz closeout` MUST NOT record its completion event (attested / lifecycle-transition) while the reconcile exits non-zero.
 4. REQUIREMENT: A `gz closeout` completion attempted with NO recorded `closeout_defect_snapshot` event MUST fail closed. This structurally forces the open-anchor — an agent cannot complete a closeout it never opened through `gz closeout` (parent ADR § Consequences/Negative #3c, shakiest-condition mitigation). This is a DISTINCT requirement from REQ #3; both fail-closed branches must exist independently.
@@ -174,9 +174,9 @@ uv run gz closeout ADR-0.0.56; echo "exit=$?"
 uv run gz closeout ADR-0.0.56; echo "exit=$?"
 
 # Validate a routing receipt round-trips the model (all three forms):
-uv run python -c "from gzkit.events import RoutingReceipt; print(RoutingReceipt(value='ghi:514')); print(RoutingReceipt(value='commit:8be8d64'))"
+uv run python -c "from gzkit.event_evidence import RoutingReceipt; print(RoutingReceipt(value='ghi:514')); print(RoutingReceipt(value='commit:8be8d64'))"
 # An agent-authored waiver is rejected:
-uv run python -c "from gzkit.events import RoutingReceipt; RoutingReceipt(value='waiver:agent+wip')" || echo "agent-authored waiver rejected as expected"
+uv run python -c "from gzkit.event_evidence import RoutingReceipt; RoutingReceipt(value='waiver:agent+wip')" || echo "agent-authored waiver rejected as expected"
 ```
 
 ## Acceptance Criteria

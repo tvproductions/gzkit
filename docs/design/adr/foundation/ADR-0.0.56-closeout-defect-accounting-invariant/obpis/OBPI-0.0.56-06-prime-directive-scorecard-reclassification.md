@@ -41,7 +41,7 @@ Reclassify PRIME DIRECTIVE #5/#6 Judgment → Mechanical on `docs/governance/adv
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
-- `src/gzkit/commands/closeout.py`, `src/gzkit/events.py`, `src/gzkit/governance/trust_audits/`, `src/gzkit/commands/validate_cmd.py` — the mechanism is delivered by OBPI-01/02/03; this OBPI documents and reclassifies, it does not author runtime code
+- `src/gzkit/commands/closeout.py`, `src/gzkit/events.py`, `src/gzkit/event_evidence.py`, `src/gzkit/governance/trust_audits/`, `src/gzkit/commands/validate_cmd.py` — the mechanism is delivered by OBPI-01/02/03; this OBPI documents and reclassifies, it does not author runtime code
 - `.claude/hooks/`, `.gzkit/skills/ghi-close/` — OBPI-05 scope
 - `CLAUDE.md`, `AGENTS.md` — the PRIME DIRECTIVE text itself is NOT edited; the ADR § Scope boundary states the prose obligation stays. This OBPI reclassifies the *scorecard entry*, not the directive
 - Paths not listed in Allowed Paths
