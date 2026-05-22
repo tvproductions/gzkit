@@ -125,8 +125,7 @@ gzkit is the extracted governance methodology from AirlineOps, intended as a sta
 
 - PRD and ADR creation REQUIRE structured interview process
 - Interview shapes/steers document content (not just metadata collection)
-- Q&A transcript preserved as artifact alongside document
-- Transcript stored in `.gzkit/transcripts/{document-id}-interview.md`
+- Q&A transcript preserved as an embedded `## Q&A Transcript` section in the document body
 
 **Closeout Ceremony Protocol:**
 
@@ -255,8 +254,7 @@ gz audit ADR-0.1.0                    # Day N: generate audit
 
 - Run mandatory Q&A interview to shape PRD content
 - Create PRD from hardened template populated with interview answers
-- Save Q&A transcript to `.gzkit/transcripts/{prd-id}-interview.md`
-- Embed transcript in PRD Q&A section
+- Embed the Q&A transcript in the PRD body as a `## Q&A Transcript` section
 - Link PRD to constitution
 - Append `prd_created` event to ledger
 - Support `--template` flag for custom templates
@@ -292,8 +290,7 @@ gz audit ADR-0.1.0                    # Day N: generate audit
 - Create `obpis/` subdirectory for OBPIs
 - Create `audit/` subdirectory for post-attestation audit
 - Create `ADR-CLOSEOUT-FORM.md` template
-- Save Q&A transcript to `.gzkit/transcripts/{adr-id}-interview.md`
-- Embed transcript in ADR Q&A section
+- Embed the Q&A transcript in the ADR body as a `## Q&A Transcript` section
 - Link to specified brief(s) via `--brief` flag
 - Determine lane (Lite/Heavy) from interview
 - Append `adr_created` event to ledger with `parent` and `blocks` references
@@ -545,7 +542,7 @@ PreToolUse hooks MAY:
 
 - [ ] `gz plan ADR-0.1.0 --brief my-feature` runs mandatory Q&A interview
 - [ ] Interview answers populate ADR template
-- [ ] Q&A transcript saved to `.gzkit/transcripts/ADR-0.1.0-interview.md`
+- [ ] ADR body carries the Q&A transcript as a `## Q&A Transcript` section
 - [ ] ADR folder structure created: `docs/design/adr/pre-release/ADR-0.1.0-{slug}/`
 - [ ] `obpis/` and `audit/` subdirectories created
 - [ ] `ADR-CLOSEOUT-FORM.md` template created
@@ -604,8 +601,7 @@ PreToolUse hooks MAY:
 
 - [ ] `gz prd PRD-GZKIT-1.0.0` runs mandatory Q&A interview
 - [ ] Interview answers populate PRD template
-- [ ] Q&A transcript saved to `.gzkit/transcripts/PRD-GZKIT-1.0.0-interview.md`
-- [ ] Transcript embedded in PRD Q&A section
+- [ ] PRD body carries the Q&A transcript as a `## Q&A Transcript` section
 - [ ] PRD contains all hardened sections (invariants, gate mapping, Q&A, attestation)
 - [ ] `prd_created` event appended to ledger
 - [ ] PRD links to constitution

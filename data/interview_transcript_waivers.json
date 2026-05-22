@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "default_rationale": {
+    "pre-convention": "Predates the embedded `## Q&A Transcript` ADR-body convention added to `src/gzkit/templates/adr.md` by commit 99569a63. The design conversation for these ADRs was never recorded as a transcript receipt; authoring a `## Q&A Transcript` section now would fabricate a governance receipt for a conversation that did not happen. Waived under GHI #515 (Finding 1). ADRs authored after the convention landed are NOT exempt and must carry a `## Q&A Transcript` section \u2014 `gz validate --interviews` fails closed for every unwaived ADR."
+  },
+  "waivers": {
+    "ADR-0.0.1": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.0.2": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.0.4": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.0.5": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.0.7": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.0.8": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.0.9": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.0.10": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.0.11": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.0.12": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.0.13": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.0.14": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.0.15": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.0.17": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.0.18": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.1.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.2.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.3.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.4.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.5.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.6.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.15.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.16.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.18.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.20.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.21.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.22.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.23.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.24.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.25.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.26.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.27.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.28.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.29.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.30.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.31.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.32.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.33.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.34.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.35.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.36.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.37.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.38.0": {
+      "rationale": "pre-convention"
+    },
+    "ADR-0.39.0": {
+      "rationale": "pre-convention"
+    }
+  }
+}

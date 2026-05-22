@@ -80,6 +80,27 @@ def _validate_obpi_briefs(project_root: Path) -> list[ValidationError]:
 _QA_TRANSCRIPT_HEADING_RE = re.compile(r"^##\s+Q&A\s+Transcript\b", re.MULTILINE)
 
 
+def _load_interview_transcript_waivers(project_root: Path) -> set[str]:
+    """Return the set of ADR IDs waived from the ``## Q&A Transcript`` check.
+
+    The sidecar ``data/interview_transcript_waivers.json`` exempts ADRs that
+    predate the embedded-transcript authoring convention — their design
+    conversation was never recorded, and backfilling a transcript that did
+    not happen would fabricate a governance receipt (GHI #515). An absent or
+    malformed file loads as no waivers, so the check fails closed for every
+    ADR authored after the convention landed.
+    """
+    waiver_path = project_root / "data" / "interview_transcript_waivers.json"
+    if not waiver_path.is_file():
+        return set()
+    try:
+        payload = json.loads(waiver_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError, OSError):
+        return set()
+    waivers = payload.get("waivers", {}) or {}
+    return {adr_id for adr_id in waivers if isinstance(adr_id, str) and adr_id.startswith("ADR-")}
+
+
 def _validate_interviews(project_root: Path) -> list[ValidationError]:
     """Check that ADRs with OBPIs carry an embedded ``## Q&A Transcript`` section.
 
@@ -92,11 +113,15 @@ def _validate_interviews(project_root: Path) -> list[ValidationError]:
     file was ever produced for any ADR: the authoring workflow embeds the
     transcript in the ADR body instead. The prior check therefore never passed
     for any input and was dead enforcement saturated with false positives.
+
+    ADRs listed in ``data/interview_transcript_waivers.json`` are skipped: they
+    predate the convention and have no recoverable transcript (GHI #515).
     """
     adr_root = project_root / "docs" / "design" / "adr"
     if not adr_root.is_dir():
         return []
 
+    waived = _load_interview_transcript_waivers(project_root)
     errors: list[ValidationError] = []
     # Find ADR directories that contain an obpis/ subdirectory
     for obpis_dir in sorted(adr_root.rglob("obpis")):
@@ -111,6 +136,8 @@ def _validate_interviews(project_root: Path) -> list[ValidationError]:
         if not match:
             continue
         adr_id = match.group(1)
+        if adr_id in waived:
+            continue
         adr_body = next(iter(sorted(adr_dir.glob("ADR-*.md"))), None)
         if adr_body is None:
             errors.append(

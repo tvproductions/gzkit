@@ -3,6 +3,7 @@ import os
 import shutil
 import tempfile
 import unittest
+from contextlib import ExitStack
 from datetime import date, timedelta
 from pathlib import Path
 from unittest.mock import patch
@@ -347,37 +348,43 @@ class TestSkillCommands(unittest.TestCase):
                 stderr="",
                 returncode=0,
             )
-            with (
-                patch("gzkit.commands.quality.run_lint", return_value=ok),
-                patch("gzkit.quality.run_format_check", return_value=ok),
-                patch("gzkit.commands.quality.run_typecheck", return_value=ok),
-                patch("gzkit.commands.quality.run_tests", return_value=ok),
-                patch("gzkit.commands.quality.run_behave", return_value=ok),
-                patch("gzkit.quality.run_skill_audit", return_value=warning_skill_audit),
-                patch("gzkit.quality.run_parity_check", return_value=ok),
-                patch("gzkit.quality.run_readiness_audit", return_value=ok),
-                patch("gzkit.quality.run_cli_audit", return_value=ok),
-                patch("gzkit.quality.run_unscoped_rules_audit", return_value=ok),
-                patch("gzkit.quality.run_adr_status_fresh_audit", return_value=ok),
-                patch("gzkit.quality.run_kind_invariance_audit", return_value=ok),
-                patch("gzkit.quality.run_receipt_shape_audit", return_value=ok),
-                patch("gzkit.quality.run_orientation_freshness_audit", return_value=ok),
-                patch("gzkit.quality.run_insights_shape_audit", return_value=ok),
-                patch(
-                    "gzkit.quality.run_instructions_files_budget_audit",
-                    return_value=ok,
-                ),
-                patch(
-                    "gzkit.quality.run_complexity_doctrine_links_audit",
-                    return_value=ok,
-                ),
-                patch(
-                    "gzkit.quality.run_complexity_thresholds_audit",
-                    return_value=ok,
-                ),
-                patch("gzkit.quality.run_preflight", return_value=ok),
-                patch("gzkit.quality.run_surface_fidelity_audit", return_value=ok),
-            ):
+            # Every gz check step is stubbed so the aggregate result depends
+            # only on the non-blocking skill-audit warning under test. The
+            # stubs are entered through an ExitStack rather than a
+            # parenthesized `with`: the check pipeline has grown past 20
+            # steps, and a parenthesized `with` hits Python's 20-block
+            # static-nesting limit (SyntaxError) once it does.
+            ok_steps = (
+                "gzkit.commands.quality.run_lint",
+                "gzkit.quality.run_format_check",
+                "gzkit.commands.quality.run_typecheck",
+                "gzkit.commands.quality.run_tests",
+                "gzkit.commands.quality.run_behave",
+                "gzkit.quality.run_parity_check",
+                "gzkit.quality.run_readiness_audit",
+                "gzkit.quality.run_cli_audit",
+                "gzkit.quality.run_unscoped_rules_audit",
+                "gzkit.quality.run_adr_status_fresh_audit",
+                "gzkit.quality.run_kind_invariance_audit",
+                "gzkit.quality.run_interviews_audit",
+                "gzkit.quality.run_receipt_shape_audit",
+                "gzkit.quality.run_orientation_freshness_audit",
+                "gzkit.quality.run_insights_shape_audit",
+                "gzkit.quality.run_instructions_files_budget_audit",
+                "gzkit.quality.run_complexity_doctrine_links_audit",
+                "gzkit.quality.run_complexity_thresholds_audit",
+                "gzkit.quality.run_preflight",
+                "gzkit.quality.run_surface_fidelity_audit",
+            )
+            with ExitStack() as stack:
+                for target in ok_steps:
+                    stack.enter_context(patch(target, return_value=ok))
+                stack.enter_context(
+                    patch(
+                        "gzkit.quality.run_skill_audit",
+                        return_value=warning_skill_audit,
+                    )
+                )
                 result = runner.invoke(main, ["check"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("all checks passed", result.output.lower())

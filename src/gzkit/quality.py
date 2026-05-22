@@ -661,6 +661,21 @@ def run_surface_fidelity_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --surface-fidelity", cwd=project_root)
 
 
+def run_interviews_audit(project_root: Path) -> QualityResult:
+    """Run the interview-transcript audit (GHI #511 retarget / GHI #515).
+
+    Fails closed when an ADR with OBPI briefs lacks an embedded
+    ``## Q&A Transcript`` section and is not waived in
+    ``data/interview_transcript_waivers.json``. Wiring this scope into the
+    gated pipeline closes the structural root cause GHI #511 named: a
+    validator outside ``gz check`` is never exercised, so its divergence
+    from reality goes unnoticed. Recovery: add the section to the ADR body,
+    or — for a pre-convention ADR with no recoverable transcript — append a
+    waiver entry with rationale.
+    """
+    return run_command("uv run gz validate --interviews", cwd=project_root)
+
+
 def run_preflight(project_root: Path) -> QualityResult:
     """Run preflight scan for stale pipeline markers and orphan receipts.
 

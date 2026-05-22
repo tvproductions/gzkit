@@ -22,7 +22,6 @@ from gzkit.commands.plan import (
 from gzkit.interview import (
     check_interview_complete,
     format_answers_for_template,
-    format_transcript,
     get_interview_questions,
 )
 from gzkit.ledger import Ledger, obpi_created_event, prd_created_event
@@ -74,35 +73,6 @@ def run_interview(document_type: str) -> dict[str, str]:
         console.print()  # Spacing between questions
 
     return answers
-
-
-def save_transcript(
-    project_root: Path,
-    document_type: str,
-    document_id: str,
-    answers: dict[str, str],
-) -> Path:
-    """Save the Q&A transcript as a separate artifact.
-
-    Args:
-        project_root: Project root directory.
-        document_type: Type of document (prd, adr).
-        document_id: The document identifier.
-        answers: Interview answers.
-
-    Returns:
-        Path to the saved transcript.
-
-    """
-    transcript = format_transcript(document_type, answers)
-
-    # Save in .gzkit/transcripts/
-    transcript_dir = project_root / ".gzkit" / "transcripts"
-    transcript_dir.mkdir(parents=True, exist_ok=True)
-    transcript_file = transcript_dir / f"{document_id}-interview.md"
-    transcript_file.write_text(f"# Q&A Transcript: {document_id}\n\n{transcript}", encoding="utf-8")
-
-    return transcript_file
 
 
 def _load_answers_from_file(from_file: str, document_type: str) -> dict[str, str]:

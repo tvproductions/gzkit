@@ -165,6 +165,41 @@ Rules here
             result = runner.invoke(main, ["validate", "--interviews"])
             self.assertEqual(result.exit_code, 0)
 
+    def test_validate_interviews_skips_waived_adr(self) -> None:
+        """An ADR listed in interview_transcript_waivers.json is exempt.
+
+        Pre-convention ADRs whose design conversation was never recorded are
+        waived from the embedded ``## Q&A Transcript`` check (GHI #515): the
+        validator skips any ADR ID present in the sidecar waiver registry
+        rather than flagging a transcript that cannot be honestly produced.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            obpi_dir = Path("docs/design/adr/foundation/ADR-0.0.99-test/obpis")
+            obpi_dir.mkdir(parents=True, exist_ok=True)
+            (obpi_dir / "OBPI-0.0.99-01-thing.md").write_text(
+                "# OBPI-0.0.99-01\n", encoding="utf-8"
+            )
+            # ADR carries OBPI briefs but no '## Q&A Transcript' section.
+            (obpi_dir.parent / "ADR-0.0.99-test.md").write_text(
+                "# ADR-0.0.99 Test\n\n## Decision\n\nDo the thing.\n",
+                encoding="utf-8",
+            )
+            Path("data").mkdir(exist_ok=True)
+            Path("data/interview_transcript_waivers.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "default_rationale": {"pre-convention": "Predates the convention."},
+                        "waivers": {"ADR-0.0.99": {"rationale": "pre-convention"}},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            result = runner.invoke(main, ["validate", "--interviews"])
+            self.assertEqual(result.exit_code, 0)
+
     def test_validate_requirements_flag_accepted(self) -> None:
         """--requirements flag runs the requirements scope without crashing."""
         runner = CliRunner()

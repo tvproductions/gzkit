@@ -394,6 +394,28 @@ class TestKindInvarianceInCheckPipeline(unittest.TestCase):
         )
 
 
+class TestInterviewTranscriptsInCheckPipeline(unittest.TestCase):
+    """GHI #515 (Finding 3): the interview-transcript audit must run in gz check."""
+
+    def test_interview_transcripts_in_check_steps(self) -> None:
+        """gz check pipeline includes the interview-transcript scope.
+
+        A validator outside ``gz check`` is never exercised, so its
+        divergence from reality goes unnoticed — the structural root cause
+        GHI #511 named. Re-gating ``--interviews`` into the aggregator
+        closes that class of dead enforcement (GHI #515).
+        """
+        from gzkit.commands.quality import _build_check_steps
+
+        steps = _build_check_steps()
+        step_names = [name for name, _ in steps]
+        self.assertIn(
+            "Interview transcripts",
+            step_names,
+            "gz check aggregator must include the Interview transcripts step",
+        )
+
+
 class TestDecisionDocProof(unittest.TestCase):
     """Tests for decision_doc proof type in product proof gate.
 
