@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "gzkit_version": "0.26.2",
+  "gzkit_version": "0.26.5",
   "surfaces": {
     "personas": [
       "implementer.md",
@@ -34,8 +34,6 @@
     ],
     "skills": [
       "airlineops-parity-scan/SKILL.md",
-      "complexity-advisor/SKILL.md",
-      "complexity-guide/SKILL.md",
       "ghi-author/SKILL.md",
       "ghi-close/SKILL.md",
       "ghi-triage/SKILL.md",
@@ -56,7 +54,9 @@
       "gz-chore-runner/SKILL.md",
       "gz-cli-audit/SKILL.md",
       "gz-competitor-radar/SKILL.md",
+      "gz-complexity-advisor/SKILL.md",
       "gz-complexity-distill/SKILL.md",
+      "gz-complexity-guide/SKILL.md",
       "gz-constitute/SKILL.md",
       "gz-context-diet/SKILL.md",
       "gz-deps-upgrade/SKILL.md",

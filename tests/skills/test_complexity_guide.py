@@ -1,4 +1,4 @@
-"""Skill-shape tests for `.gzkit/skills/complexity-guide/SKILL.md`.
+"""Skill-shape tests for `.gzkit/skills/gz-complexity-guide/SKILL.md`.
 
 Pins REQ-0.0.30-02-01 through REQ-0.0.30-02-06 from
 `docs/design/adr/foundation/ADR-0.0.30-complexity-authoring-guidance/obpis/OBPI-0.0.30-02-complexity-guide-skill.md`.
@@ -20,13 +20,13 @@ import yaml
 from gzkit.traceability import covers
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-SKILL_DIR = PROJECT_ROOT / ".gzkit" / "skills" / "complexity-guide"
+SKILL_DIR = PROJECT_ROOT / ".gzkit" / "skills" / "gz-complexity-guide"
 SKILL_PATH = SKILL_DIR / "SKILL.md"
 
 VENDOR_MIRROR_PATHS = (
-    PROJECT_ROOT / ".claude" / "skills" / "complexity-guide" / "SKILL.md",
-    PROJECT_ROOT / ".agents" / "skills" / "complexity-guide" / "SKILL.md",
-    PROJECT_ROOT / ".github" / "skills" / "complexity-guide" / "SKILL.md",
+    PROJECT_ROOT / ".claude" / "skills" / "gz-complexity-guide" / "SKILL.md",
+    PROJECT_ROOT / ".agents" / "skills" / "gz-complexity-guide" / "SKILL.md",
+    PROJECT_ROOT / ".github" / "skills" / "gz-complexity-guide" / "SKILL.md",
 )
 
 
@@ -58,7 +58,7 @@ class TestSkillFrontmatter(unittest.TestCase):
     @covers("REQ-0.0.30-02-01")
     def test_frontmatter_required_identity_fields_present(self) -> None:
         fm = _parse_frontmatter(_read_skill_text())
-        self.assertEqual(fm.get("name"), "complexity-guide")
+        self.assertEqual(fm.get("name"), "gz-complexity-guide")
         description = fm.get("description")
         self.assertIsInstance(description, str)
         self.assertGreaterEqual(len(str(description or "")), 40)
@@ -72,12 +72,12 @@ class TestSkillFrontmatter(unittest.TestCase):
         self.assertRegex(str(fm.get("last_reviewed", "")), r"^\d{4}-\d{2}-\d{2}$")
 
     @covers("REQ-0.0.30-02-01")
-    def test_skill_version_is_initial_release(self) -> None:
+    def test_skill_version_pinned(self) -> None:
         fm = _parse_frontmatter(_read_skill_text())
         metadata = fm.get("metadata")
         self.assertIsInstance(metadata, dict)
         meta = cast(dict[str, object], metadata)
-        self.assertEqual(str(meta.get("skill-version", "")), "0.1.0")
+        self.assertEqual(str(meta.get("skill-version", "")), "0.1.1")
 
     @covers("REQ-0.0.30-02-01")
     def test_description_triggers_on_operator_phrases(self) -> None:
@@ -190,15 +190,15 @@ class TestGzCommandResolution(unittest.TestCase):
 
 
 class TestCrossReference(unittest.TestCase):
-    """REQ-0.0.30-02-05 — cross-reference to complexity-advisor with trigger-time distinction."""
+    """REQ-0.0.30-02-05 — cross-reference to gz-complexity-advisor with trigger-time distinction."""
 
     @covers("REQ-0.0.30-02-05")
     def test_complexity_advisor_sister_skill_named(self) -> None:
         text = _read_skill_text()
         self.assertIn(
-            "complexity-advisor",
+            "gz-complexity-advisor",
             text,
-            "Skill body must cross-reference the complexity-advisor sister skill",
+            "Skill body must cross-reference the gz-complexity-advisor sister skill",
         )
 
     @covers("REQ-0.0.30-02-05")

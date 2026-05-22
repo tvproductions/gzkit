@@ -1,4 +1,4 @@
-# /complexity-advisor
+# /gz-complexity-advisor
 
 Preview complexity advisor diagnosis, understand auto-chain context, or check intrinsic complexity attestation guidance.
 
@@ -6,7 +6,7 @@ Preview complexity advisor diagnosis, understand auto-chain context, or check in
 
 ## Purpose
 
-`/complexity-advisor` wraps the `gz complexity advise` CLI verb from the
+`/gz-complexity-advisor` wraps the `gz complexity advise` CLI verb from the
 four-ADR complexity-doctrine cluster (ADR-0.0.27 through ADR-0.0.30). It
 gives operators a single entry point for previewing per-function complexity
 diagnosis before commit, understanding what the auto-chain hook produced when
@@ -46,8 +46,8 @@ workflow context.
 ## Invocation
 
 ```text
-/complexity-advisor
-/complexity-advisor src/gzkit/commands/validate.py
+/gz-complexity-advisor
+/gz-complexity-advisor src/gzkit/commands/validate.py
 ```
 
 | Argument / Flag | Required | Description |
@@ -61,7 +61,7 @@ workflow context.
 
 | File | Role | Read/Write |
 |------|------|------------|
-| `.gzkit/skills/complexity-advisor/SKILL.md` | Agent execution instructions | Read |
+| `.gzkit/skills/gz-complexity-advisor/SKILL.md` | Agent execution instructions | Read |
 | `.gzkit/rules/complexity-thresholds.json` | Canonical threshold table (ADR-0.0.28) | Read |
 | `data/exemplar_corpus.json` | Exemplar corpus for distillation | Read |
 | `docs/user/manpages/gz-complexity-advise.md` | CLI verb manpage | Read |

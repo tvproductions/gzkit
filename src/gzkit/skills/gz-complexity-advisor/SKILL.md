@@ -1,19 +1,19 @@
 ---
-name: complexity-advisor
+name: gz-complexity-advisor
 description: Preview complexity advisor diagnosis, understand auto-chain context, or check intrinsic complexity attestation guidance. Use when the operator says "preview complexity advisor", "complexity diagnosis", "advisor recommendation", "what does the advisor say", or "intrinsic complexity attestation".
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-06
+last_reviewed: 2026-05-22
 metadata:
-  skill-version: "0.1.0"
+  skill-version: "0.1.1"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity advise
 model: opus
 ---
 
-# complexity-advisor
+# gz-complexity-advisor
 
 Operator-runnable skill wrapping the `gz complexity advise` CLI verb
 (ADR-0.0.29, OBPI-0.0.29-03). The advisor is the trigger-time doctrinal-frame

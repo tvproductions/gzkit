@@ -127,6 +127,35 @@ class TestForbidSkillSyncDrift(unittest.TestCase):
         with mock.patch.object(guards, "_run_git", return_value=names):
             self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 0)
 
+    def test_canonical_skill_rename_with_mirror_renames_returns_zero(self) -> None:
+        """A skill directory rename stages `R<score>\\t<old>\\t<new>` three-field
+        entries. The drift hook must parse those, keying detection on the new
+        path so a renamed canonical skill stays paired with its renamed mirrors.
+        Keying on the new path is also immune to git rename detection
+        cross-pairing byte-identical SKILL.md files across vendor trees (GHI
+        #488)."""
+        names = (
+            "R098\t.gzkit/skills/foo/SKILL.md\t.gzkit/skills/gz-foo/SKILL.md\n"
+            "R098\t.claude/skills/foo/SKILL.md\t.claude/skills/gz-foo/SKILL.md\n"
+            "R098\t.github/skills/foo/SKILL.md\t.github/skills/gz-foo/SKILL.md\n"
+        )
+        with mock.patch.object(guards, "_run_git", return_value=names):
+            self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 0)
+
+    def test_canonical_skill_rename_without_mirror_fails(self) -> None:
+        """A renamed canonical skill still requires its mirror in the same
+        commit — the rename's new path is checked exactly like an edit, so
+        rename handling does not open a drift escape hatch (GHI #488)."""
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
+        names = "R098\t.gzkit/skills/foo/SKILL.md\t.gzkit/skills/gz-foo/SKILL.md\n"
+        with (
+            mock.patch.object(guards, "_run_git", return_value=names),
+            contextlib.redirect_stdout(io.StringIO()),
+        ):
+            self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

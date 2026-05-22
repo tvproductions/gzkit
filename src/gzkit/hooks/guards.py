@@ -180,6 +180,34 @@ def forbid_manual_ledger_edits(root: Path) -> int:
     return 0
 
 
+def _parse_staged_name_status(staged: str) -> dict[str, str]:
+    """Parse ``git diff --cached --name-status`` into a ``{path: code}`` map.
+
+    Rename/copy entries are the three-field form ``R<score>\\t<old>\\t<new>``:
+    the new path maps to the rename code, the old path maps to ``D``. Plain
+    entries are the two-field ``<code>\\t<path>`` form.
+    """
+    status: dict[str, str] = {}
+    for line in staged.splitlines():
+        fields = line.split("\t")
+        if len(fields) < 2:
+            continue
+        code = fields[0].strip()[:1]
+        if not code:
+            continue
+        if code in ("R", "C") and len(fields) >= 3:
+            old_path, new_path = fields[1].strip(), fields[2].strip()
+            if old_path:
+                status[old_path] = "D"
+            if new_path:
+                status[new_path] = code
+        else:
+            path = fields[1].strip()
+            if path:
+                status[path] = code
+    return status
+
+
 def forbid_skill_sync_drift(root: Path) -> int:
     """Reject canonical skill/rule edits without their vendor mirrors (GHI #210).
 
@@ -194,18 +222,19 @@ def forbid_skill_sync_drift(root: Path) -> int:
     permits canonical deletions where the mirror is already absent. A
     deletion that requires mirror cleanup will surface in the next sync
     pass; absence is not drift.
+
+    Renames (a skill directory ``gz-`` prefix migration, GHI #488) stage as
+    ``git diff --name-status`` three-field ``R<score>\\t<old>\\t<new>``
+    entries. Detection keys on the new path; the old path is treated as a
+    deletion.
     """
     staged = _run_git(["diff", "--cached", "--name-status"], root)
     if not staged:
         return 0
-    staged_status: dict[str, str] = {}
-    for line in staged.splitlines():
-        parts = line.split("\t", 1)
-        if len(parts) != 2:
-            continue
-        status, path = parts[0].strip(), parts[1].strip()
-        if status and path:
-            staged_status[path] = status[:1]
+    # Renames key on the new path; this also sidesteps git rename detection
+    # cross-pairing byte-identical SKILL.md files across vendor trees when
+    # several are renamed at once (GHI #488). See _parse_staged_name_status.
+    staged_status = _parse_staged_name_status(staged)
     staged_paths = set(staged_status)
 
     errors: list[str] = []

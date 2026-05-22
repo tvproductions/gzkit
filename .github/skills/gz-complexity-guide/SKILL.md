@@ -1,19 +1,19 @@
 ---
-name: complexity-guide
+name: gz-complexity-guide
 description: Preview authoring-time complexity hints before committing. Use when the operator says "authoring-time complexity hint", "complexity guide preview", "preview before commit", or "advise-band hints".
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-09
+last_reviewed: 2026-05-22
 metadata:
-  skill-version: "0.1.0"
+  skill-version: "0.1.1"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity guide
 model: sonnet
 ---
 
-# complexity-guide
+# gz-complexity-guide
 
 Operator-runnable skill wrapping the `gz complexity guide` CLI verb
 (ADR-0.0.30, OBPI-0.0.30-01). The guide is the authoring-time hint surface
@@ -36,7 +36,7 @@ at two operator moments:
    land at design time.
 
 If a function has already crossed into `warn` or `block`, use the trigger-time
-advisor instead (see `complexity-advisor` in § Related).
+advisor instead (see `gz-complexity-advisor` in § Related).
 
 ## Operator Moment: Authoring-Time Review
 
@@ -77,8 +77,8 @@ model with fields: `archetype`, `precedence_band`, `doctrinal_frame_headline`,
 
 | Surface | Skill | Trigger | Blocks? |
 |---------|-------|---------|---------|
-| Authoring-time hints | `complexity-guide` (this skill) | Operator-invoked while editing | Never |
-| Trigger-time diagnosis | `complexity-advisor` | Xenon-as-gate at pre-commit | At `block` band |
+| Authoring-time hints | `gz-complexity-guide` (this skill) | Operator-invoked while editing | Never |
+| Trigger-time diagnosis | `gz-complexity-advisor` | Xenon-as-gate at pre-commit | At `block` band |
 
 Use the guide **before commit** for design-time decisions. Use the advisor
 **at commit time** when xenon-as-gate fires or to preview a full structured
@@ -87,12 +87,12 @@ the `AdvisorDiagnosis` schema at the architecture level (the guide projects to
 the lighter `AuthoringHint` shape via OBPI-0.0.30-03), but serve different
 operator moments.
 
-See `.gzkit/skills/complexity-advisor/SKILL.md` for the trigger-time surface
+See `.gzkit/skills/gz-complexity-advisor/SKILL.md` for the trigger-time surface
 (ADR-0.0.29).
 
 ## Related
 
-- Sister skill: `.gzkit/skills/complexity-advisor/SKILL.md` (ADR-0.0.29)
+- Sister skill: `.gzkit/skills/gz-complexity-advisor/SKILL.md` (ADR-0.0.29)
 - Manpage: `docs/user/manpages/complexity-guide.md`
 - Runbook: `docs/user/runbook.md` § Complexity doctrine surfaces
 - Parent ADR: `docs/design/adr/foundation/ADR-0.0.30-complexity-authoring-guidance/`
