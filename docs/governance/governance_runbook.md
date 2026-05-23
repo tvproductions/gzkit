@@ -350,6 +350,22 @@ uv run gz status --table
 uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z --status proposed
 ```
 
+#### Nominal ID allocation for foundation ADRs
+
+Foundation ADR IDs (0.0.x) are **nominal integers** — the allocator assigns
+the next-free integer (gap-filling), not the next sequential one. This means
+you can create ADR-0.0.57 after ADR-0.0.55 without filling 0.0.56 first.
+
+If `gz plan create` reports an error hint like `"suggest: 0.0.3"`, that means
+0.0.3 is a gap in the foundation tree. Use the suggested ID to fill the gap:
+
+```bash
+gz plan create my-adr --kind foundation --semver 0.0.3 --lane lite
+```
+
+Foundation ID sequence no longer reflects work order. Use `/gz-foundation-triage`
+to rank in-flight foundations by priority before picking the next increment.
+
 3. Create or update OBPI briefs for checklist items.
 
 ```text
@@ -738,6 +754,32 @@ Rules:
 - Canonical `.gzkit/skills` is authoritative; mirrors are derived artifacts.
 - Do not deprecate/retire without communication and migration evidence.
 - Do not bypass stale review failures; they are blocking policy failures.
+
+---
+
+## Foundation-Triage Planning Workflow
+
+Run foundation triage before committing to a foundation increment, especially
+when multiple Draft/Proposed foundations compete for the next sprint.
+
+**Trigger:** Operator invokes `/gz-foundation-triage` in Claude Code.
+
+**Procedure:** The skill executes a three-step triage:
+1. Mechanical pre-pass gathering all in-flight foundations with governance-signal counts
+2. Cognitive pass — agent reads each candidate, classifies severity
+3. Deterministic rendering — ranked report delivered as markdown
+
+**Acting on results:**
+- `urgent` severity → prioritize this quarter
+- `next-quarter` → queue for planning
+- `latent` → leave in backlog
+
+**Constraints:**
+- The skill output is diagnosis only — it does NOT modify any ADR or ledger
+- Promotion remains a manual decision: `gz adr promote --kind foundation <slug>`
+- Do not run foundation triage as a commit gate; it is on-demand
+
+**Cross-reference:** Operator runbook `§ Foundation Triage`, manpage `foundation-triage.md`
 
 ---
 

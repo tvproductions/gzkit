@@ -1092,6 +1092,60 @@ across 3 categories — see the skills index for the full list.
 
 ---
 
+## Foundation Triage
+
+Foundation triage ranks in-flight foundation ADRs by priority — cross-referencing
+agent-insights.jsonl signal count, GHI occurrence count, and declared feature
+dependencies — to help operators pull highest-impact foundations first.
+
+Foundation IDs (0.0.x) are nominal integers, not sequential work orders. The
+allocator in `gz plan create` finds the next-free integer rather than the
+next-sequential one; triage decouples the priority decision from the ID.
+
+**When to run:** Before committing to the next foundation increment, especially
+when several Draft/Proposed foundations are in flight.
+
+**Invocation:** `/gz-foundation-triage` (Claude Code skill)
+
+**What it produces:** An ephemeral ranked report — diagnosis only. No mutation
+of any ADR, ledger, or promotion state occurs.
+
+### Three-step procedure
+
+1. **Mechanical pre-pass** — The skill runs the bundled triage script to gather
+   in-flight foundations with governance-signal counts:
+   ```bash
+   uv run python .gzkit/skills/gz-foundation-triage/scripts/triage.py --format json
+   ```
+
+2. **Cognitive pass** — The agent reads each candidate's `§ Intent` and `§ Decision`,
+   classifies severity (`urgent` / `next-quarter` / `latent`), and flags
+   port/adapter reclassification candidates.
+
+3. **Deterministic rendering** — The skill writes a rank-input JSON and runs the
+   renderer for a structured markdown deliverable.
+
+### Signal dimensions
+
+| Dimension | Weight | Source |
+|-----------|--------|--------|
+| `insights_signal` | ×3 | Rows in `.gzkit/insights/agent-insights.jsonl` mentioning the ADR ID |
+| `ghi_occurrence` | ×2 | Unique GHI numbers in those same rows |
+| `feature_unblocking` | ×5 | Pool/feature ADRs with `depends_on` referencing the foundation |
+
+### Acting on results
+
+- **urgent**: Pull this quarter — high feature-unblocking or GHI pressure.
+- **next-quarter**: Queued but not blocking anything urgent.
+- **latent**: Low signal; leave in the backlog until signal rises.
+
+Promotion remains a manual operator decision via `gz adr promote`. Do not
+auto-promote from triage output.
+
+See also: [`foundation-triage.md` manpage](skills/gz-foundation-triage.md)
+
+---
+
 ## AirlineOps Parity Scan Canonical-Root Rules
 
 Use [`/airlineops-parity-scan`](skills/airlineops-parity-scan.md) to run the full repeatable governance parity scan between airlineops and gzkit.

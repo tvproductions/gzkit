@@ -3,7 +3,7 @@ id: OBPI-0.0.57-05-docs-runbook-fixtures
 parent: ADR-0.0.57-foundation-adr-nominal-id-triage
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.57-05-docs-runbook-fixtures: Docs Runbook Fixtures
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.57-foundation-adr-nominal-id-triage/ADR-0.0.57-foundation-adr-nominal-id-triage.md`
 - **Checklist Item:** #5 - "OBPI-0.0.57-05: **docs-runbook-fixtures** — Update gz-adr-create manpage and governance runbook for nominal-ID allocation; add examples and fixtures for Foundation Triage invocation."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -269,15 +269,18 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+The nominal allocator's gap-suggestion is reproducible — `gz plan create my-adr --kind foundation --semver 99.0.0` against a workspace with foundation IDs 0.0.1, 0.0.2, and 0.0.4 emits `"ERROR: --kind foundation requires --semver matching 0.0.x (got '99.0.0'). Next free nominal foundation ID: 0.0.3."`. That verbatim output now lives in `docs/user/manpages/plan-create.md` § Nominal Allocator — Gap-Filling Example (REQ-7, no placeholders), is exercised by BDD scenario `nominal-allocator gap-allocation suggests lowest free integer` (receipt `arb-step-behave-263d0f196f204ec6b1973d6bb7a27ce2`), and is verified by `TestNominalAllocatorE2E.test_gap_fill_suggests_0_0_3`. The triage script's `--format json` output is reproducible from `tests/fixtures/foundation_triage_e2e/` and is embedded verbatim in `docs/user/skills/gz-foundation-triage.md` Step 1 Output Example. All five quality receipts (lint/typecheck/unittest/mkdocs/behave) exited 0.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `tests/fixtures/foundation_triage_e2e/` (3 foundation ADR stubs at IDs 0.0.1/0.0.2/0.0.4 with gap at 3, insights.jsonl, 2 pool ADRs), `tests/test_foundation_triage_e2e.py` (11 tests across 4 classes), `features/foundation_triage.feature` (2 BDD scenarios @REQ-0.0.57-05-03), `features/steps/foundation_triage_steps.py` (BDD steps for triage script invocation)
+- Files modified: `docs/user/manpages/plan-create.md` (Nominal Allocator gap-filling example with real CLI output), `docs/user/skills/gz-foundation-triage.md` (signal dimensions table, ephemeral output property, step-1 example with real fixture JSON), `docs/user/runbook.md` (Foundation Triage section), `docs/governance/governance_runbook.md` (nominal ID allocation note + Foundation-Triage Planning Workflow section), `data/behave_coverage_waivers.json` (OBPI-05 waiver: 6 docs/structural REQs waived to unit-tier TestDocsFixturesCoverageE2E, REQ-03 covered by 2 BDD scenarios)
+- Tests added: 11 (5 e2e covering OBPI-02/03/04 surfaces + 5 docs-coverage assertions for REQs 01/02/05/06/07); 2 BDD scenarios covering REQ-03
+- Date completed: 2026-05-23
+- Attestation status: attested by operator (`attest completed`)
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -288,12 +291,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.57-05-docs-runbook-fixtures heavy-lane delivery verified against 7/7 REQs (gz covers 100%), 5494/5494 unittest pass (arb-step-unittest-659b28ee3fef42c39b500da1a65a3ffa), lint+typecheck clean (arb-ruff-29dd713b50af4ce1aea5d91af5490142, arb-step-typecheck-e9d07de99d6042fcb1bb55be91f293fd), mkdocs --strict clean (arb-step-mkdocs-0593689e0cf447e3bcb8db94e0d7ae0a), behave 2/2 scenarios pass (arb-step-behave-263d0f196f204ec6b1973d6bb7a27ce2), cli audit 101/101 commands covered.
+- Date: 2026-05-23
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-05-23
 
 **Evidence Hash:** -

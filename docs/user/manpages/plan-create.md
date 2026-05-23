@@ -76,6 +76,37 @@ gz plan create login-impl --kind feature --semver 0.2.0 --dry-run
 
 ---
 
+## Nominal Allocator — Gap-Filling Example
+
+Foundation ADR IDs (0.0.x) are **nominal integers** — the allocator assigns
+the next-free integer rather than the next sequential one. If IDs 0.0.1, 0.0.2,
+and 0.0.4 exist, the next-free slot is 0.0.3 (gap-filling), not 0.0.5.
+
+Passing a semver that doesn't match the `0.0.x` pattern triggers a validation
+error with a gap-fill hint:
+
+```bash
+# With IDs 0.0.1, 0.0.2, 0.0.4 present (gap at 0.0.3):
+$ gz plan create my-adr --kind foundation --semver 99.0.0
+```
+
+```
+ERROR: --kind foundation requires --semver matching 0.0.x (got '99.0.0'). Next
+free nominal foundation ID: 0.0.3.
+```
+
+Use the suggested ID to fill the gap:
+
+```bash
+gz plan create my-adr --kind foundation --semver 0.0.3
+```
+
+Foundation ID sequence no longer reflects work order — use
+[`/gz-foundation-triage`](../skills/gz-foundation-triage.md) to rank in-flight
+foundations by impact before choosing the next increment.
+
+---
+
 ## Output
 
 ```

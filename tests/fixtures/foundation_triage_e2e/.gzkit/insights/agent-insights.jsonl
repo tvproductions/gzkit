@@ -1,0 +1,3 @@
+{"scope": "ADR-0.0.1", "summary": "ADR-0.0.1 needs attention — references GHI #100", "evidence": "agent flagged ADR-0.0.1 block", "next_action": "implement ADR-0.0.1"}
+{"scope": "ADR-0.0.1", "summary": "Second signal for ADR-0.0.1 — GHI #100 still open", "evidence": "ADR-0.0.1 priority escalated", "next_action": "prioritize ADR-0.0.1"}
+{"scope": "ADR-0.0.2", "summary": "ADR-0.0.2 noted once", "evidence": "ADR-0.0.2 mentioned", "next_action": "review ADR-0.0.2"}

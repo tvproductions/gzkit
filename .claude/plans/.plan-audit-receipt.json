@@ -1,11 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.57-04-foundation-triage-rubric",
-  "timestamp": "2026-05-23T13:20:00.000000+00:00",
+  "obpi_id": "OBPI-0.0.57-05-docs-runbook-fixtures",
+  "timestamp": "2026-05-23T14:49:22.002612+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.57-04-foundation-triage-rubric.md",
-  "gaps_found": 1,
-  "gaps": [
-    "CLI flags 5 'allowed path does not exist' items — all 5 are listed under ## Creates these files in the brief (GHI #419 CREATE exemption). 6 scope-collision advisories are informational; no active locks on contested paths."
-  ],
-  "notes": "ADR<->OBPI alignment solid. All 6 REQs map to ADR Decision item #2 dimensions and structural-only/evidence-citation requirements. Plan covers: (1) TDD test fixtures, (2) EvidenceRef + FoundationTriageRankEntry Pydantic models with frozen/extra=forbid, (3) three signal-dimension counters (insights_signal, ghi_occurrence, feature_unblocking via depends_on scan), (4) schema generation from Pydantic model emit, (5) governance docs, (6) PRD feature-unblocking-count term addition, (7) quality gates. Scope-collision advisory: OBPI-0.51.0-01 adds a distinct heading-anchored section to PRD (no overlap with this OBPI's additive bullet)."
+  "plan_file": "OBPI-0.0.57-05-docs-runbook-fixtures.md",
+  "gaps_found": 0,
+  "notes": "89 sibling-ADR scope-collision advisories are all informational; no active locks contesting these paths. ADR<->OBPI alignment solid. Plan covers: (1) e2e fixture, (2) e2e integration tests, (3) plan-create.md gap-allocation example, (4) new foundation-triage.md manpage, (5) both runbook updates, (6) foundation_triage.feature BDD scenarios."
 }
