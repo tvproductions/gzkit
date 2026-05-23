@@ -17,7 +17,9 @@ promoted_from: ADR-pool.obpi-pipeline-redteam-retrofit
      Frame as values and craftsmanship standards, not expertise claims.
      See .gzkit/personas/ for reusable persona definitions. -->
 
-{persona}
+**Active driver:** `pipeline-orchestrator` — see `.gzkit/personas/pipeline-orchestrator.md`.
+
+Agents working on this ADR add a redteam-verify terminal stage to `gz-obpi-pipeline` following the contract ADR-0.0.50 established for all three artifact-lifecycle pipelines. Stage-discipline is binding: the Iron Law updates from "Stage 5 finishes" to "redteam-verify receipt is PASS or operator-bypassed with logged reason" — declaring completion at the old boundary is the named failure mode this retrofit closes. Cross-vendor adversarial review (Codex inline via `codex:codex-rescue`; fallback to opposite-Claude-model) is the mechanism, not a stylistic choice — a single-vendor self-check is not redteam. The `--from=redteam` resume point and the `redteam-obpi-pipeline-<OBPI-ID>-<iso>.json` receipt format must align with the parent ADR-0.0.50 validator scope; receipt-format drift breaks the validator. Ceremony-completion demands that retrofitted pipelines never silently degrade to the pre-retrofit terminal.
 
 ## Intent
 

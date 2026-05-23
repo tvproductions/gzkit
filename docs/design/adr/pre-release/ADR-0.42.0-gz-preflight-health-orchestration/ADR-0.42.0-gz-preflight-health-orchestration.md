@@ -17,7 +17,9 @@ promoted_from: ADR-pool.gz-preflight-health-orchestration
      Frame as values and craftsmanship standards, not expertise claims.
      See .gzkit/personas/ for reusable persona definitions. -->
 
-{persona}
+**Active driver:** `pipeline-orchestrator` — see `.gzkit/personas/pipeline-orchestrator.md`.
+
+Agents working on this ADR build preflight as a tiered, self-healing ceremony — check → repair → escalate — and treat each tier as a disciplined stage, not a fallback. Stage-discipline demands that the auto-repair tier never silently passes when a check fails: every repair produces a receipt artifact that survives the session, and the advisory gate names what would have blocked. Bundling preflight orchestration with GovZero-native design tooling is a single ADR because both are pre-condition improvements — mid-session blockers and design-artifact drift share the root cause of work landing outside the governance envelope. Governance-fidelity demands that GovZero-native design artifacts go through the same surface as every other governed artifact; parallel product surfaces that bypass ADR/OBPI/ledger flow are the named anti-pattern.
 
 ## Intent
 

@@ -114,6 +114,19 @@ Rationale: baseline of 3 for pure-doctrine work, plus a surface-boundary split b
 - `gz status --epic <slug>` transcript against fixture epic
 - Skill version bumps recorded in ledger
 
+## Amendment 2026-05-23 — ADR-0.0.57
+
+ADR-0.0.57 (Foundation ADR Nominal ID Semantics and Priority Triage, 2026-05-22) adds operator guidance that companions this ADR's foundation/feature/pool taxonomy guidance (Decision items 1 and 3, verbatim):
+
+> "The third component of foundation ADR IDs (0.0.x) is a nominal integer: a unique identifier, not a sequence position."
+> "The CLAUDE.md 'order versioned identifiers semantically' rule scope shrinks to feature ADRs only — nominal foundation IDs have no semantic ordering."
+
+**Nominal vs. semver guidance for operators (additive — preserves existing guidance):**
+
+- Foundation ADRs (kind: foundation, semver 0.0.x): the 0.0.x component is a **nominal integer** — uniquely identifies the ADR but carries no ordering signal. Agents and operators MUST NOT infer work order, precedence, or relative importance from foundation ID sequence. Priority of foundation work is determined by the `gz-foundation-triage` skill (ADR-0.0.57 Decision item 2), not by ID number.
+- Feature ADRs (kind: feature, semver 0.y.z and up): retain genuine semver semantics — ordering, comparison, and precedence all apply as before.
+- The existing pool/foundation/feature taxonomy guidance, kind constraints, and semver format rules in this ADR remain fully in force.
+
 ## Attestation Block
 
 | Term | Status | Attested By | Date | Reason |

@@ -3,7 +3,7 @@ id: OBPI-0.0.57-01-nominal-id-doctrine
 parent: ADR-0.0.57-foundation-adr-nominal-id-triage
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.57-01-nominal-id-doctrine: Nominal Id Doctrine
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.57-foundation-adr-nominal-id-triage/ADR-0.0.57-foundation-adr-nominal-id-triage.md`
 - **Checklist Item:** #1 - "OBPI-0.0.57-01: **nominal-id-doctrine** — Amend ADR-0.0.17/ADR-0.0.18 to document 0.0.x as a nominal identifier; update CLAUDE.md ordering-rule scope to feature ADRs only; audit validators for sequence-position assumptions."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -261,15 +261,32 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+The operator-observable behavior change is in the `gz validate --taxonomy` posture and the AGENTS.md doctrine — both demonstrable in one breath:
+
+```text
+$ uv run -m unittest tests.test_taxonomy_validator_nominal.TestNominalIdTaxonomyValidator.test_sparse_foundation_ids_produce_no_taxonomy_errors -v
+test_sparse_foundation_ids_produce_no_taxonomy_errors ... ok
+Ran 1 test in 0.001s
+OK
+(arb receipt: arb-step-unittest-b578b154a4b141ac9dd6ad9adf6fd6bc)
+
+$ grep "Foundation ADR IDs.*nominal" AGENTS.md
+- **Foundation ADR IDs (0.0.x) are nominal foundation identifiers — NEVER order or sequence them.** ADR-0.0.57 declares the third component a unique identifier with no sequence-position semantics. No ordering, comparison, or work-order inference is permitted for 0.0.x IDs.
+
+$ uv run gz covers OBPI-0.0.57-01-nominal-id-doctrine --json | python3 -c "import json,sys; print('uncovered:', json.load(sys.stdin)['summary']['uncovered_reqs'])"
+uncovered: 0
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Doctrine amendments: ADR-0.0.17 (taxonomy-mechanical) and ADR-0.0.18 (taxonomy-doctrine) received dated `## Amendment 2026-05-23 — ADR-0.0.57` blocks before the Attestation Block, quoting Decision items 1 and 3 verbatim; original ADR bodies preserved intact per the Validated-ADR amendment protocol (REQ-9).
+- Agent contract: AGENTS.md § Local Agent Rules ordering rule narrowed to feature ADRs only (non-`0.0.x`); explicit counter-rule forbids any ordering inference on 0.0.x foundation IDs.
+- Audit annotation: `src/gzkit/trust_audits.py` created as stable public facade re-exporting `audit_adr_taxonomy`, `audit_pool_adr_isolation`, `audit_adr_status_fresh` from the canonical `gzkit.governance.trust_audits.taxonomy`; docstring records the audit finding — ZERO sequence-position assumptions in the validator surface.
+- Tests added: 7 REQ-derived tests in `tests/test_taxonomy_validator_nominal.py` covering all six brief REQs (TestNominalIdTaxonomyValidator for REQ-04/05, TestNominalIdDoctrineAmendments for REQ-01/02/03/06); gz covers reports uncovered_reqs: 0.
+- BDD waiver: `data/behave_coverage_waivers.json` records `adr-0.0.57-01-foundation-bdd-deferred` rationale; foundation doctrine amendment + annotation-only OBPI verified via Python tests + surface checks per established precedent (mirrors adr-0.0.22 and obpi-0.0.36-05).
+- Defect noted: `gz adr emit-receipt --event amendment` is not exposed in the CLI parser (only `completed/validated/closed`); REQ-9's amendment ledger event was not emitted; the amendment record lives in Layer-1 (ADR files) as primary truth. A GHI will be filed before OBPI-0.0.57-02 lands.
 
 ## Tracked Defects
 
@@ -280,12 +297,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — ADR-0.0.17/ADR-0.0.18 received dated amendment blocks documenting nominal-ID doctrine; AGENTS.md ordering rule narrowed to feature ADRs only with foundation counter-rule added; src/gzkit/trust_audits.py created as audit record + public facade documenting ZERO sequence-position assumptions in governance/trust_audits/taxonomy.py; 7/7 REQ-derived tests pass (uncovered_reqs: 0); ARB receipts arb-step-unittest-4b9db9a69c8b4f4f9dac54aa45ccf5fa (full 5438/5438), arb-step-unittest-b578b154a4b141ac9dd6ad9adf6fd6bc (OBPI scope), arb-ruff-c2e27f0e331149819aeda0374c977b0d, arb-step-typecheck-4c948a5f2dbc4f00977116e43f9b1b6e, arb-step-mkdocs-34d97cca6a0648a68e6d800c26400d6f.
+- Date: 2026-05-23
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-05-23
 
 **Evidence Hash:** -

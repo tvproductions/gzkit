@@ -17,7 +17,9 @@ promoted_from: ADR-pool.pool-management
      Frame as values and craftsmanship standards, not expertise claims.
      See .gzkit/personas/ for reusable persona definitions. -->
 
-{persona}
+**Active driver:** `main-session` — see `.gzkit/personas/main-session.md`.
+
+Agents working on this ADR build the pool as managed planning infrastructure, not as an intake queue. Pool state is Layer-1 document truth + Layer-2 ledger history; computed ranking is Layer-3 derived view and must never silently become decision authority. The craftsperson trait demands that metadata schema, validation rules, triage command, ranking registry, and operator-override surface land as one coherent system — each must trust the others' contracts. Operator judgment is preserved as explicit override state with a reason; replacing operator decisions with computed scores is the named anti-pattern. Whole-file reasoning across schema, CLI, ledger snapshot, and runbook is the standard; partial implementations that ship the rank command without the override surface are a defect, not a milestone.
 
 ## Why foundation tier?
 

@@ -6,6 +6,11 @@
   per ADR-0.0.17.
 * ``audit_adr_status_fresh`` — drift between on-disk ADR canon and the
   derived ``adr-status.md`` index (GHI #322).
+* Audit (ADR-0.0.57 OBPI-01): no sequence-position assumptions present —
+  nominal-ID semantics are correctly implicit. The validator enforces format
+  and kind coherence only; no max-N, consecutive-integer, or gap-detection
+  logic exists. Foundation IDs with gaps (e.g. 0.0.54, 0.0.56) return zero
+  taxonomy errors by design.
 
 Also exports ``_parse_adr_frontmatter`` — a stdlib YAML reader used here
 and re-imported by ``sensitivity.py``.

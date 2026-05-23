@@ -17,7 +17,9 @@ promoted_from: ADR-pool.pool-dag-promotion-routing
      Frame as values and craftsmanship standards, not expertise claims.
      See .gzkit/personas/ for reusable persona definitions. -->
 
-{persona}
+**Active driver:** `main-session` — see `.gzkit/personas/main-session.md`.
+
+Agents working on this ADR lift implicit relationships from prose into a machine-readable DAG that validators, queries, and promotion guards can all consult. The craftsperson trait demands that the frontmatter schema, the graph builder, the cycle/missing-reference detector, and the `gz adr promote` guard share a single source of truth — divergence between them is how silent promotion-before-prerequisite bugs slip in. Narrative recall of dependencies is the named failure mode; the goal is to make the dependency graph queryable so it doesn't have to live in agent memory. Backfill from existing prose `## Dependencies` sections is reviewed, not auto-merged — operator judgment ratifies the lift before the new contract binds.
 
 ## Why foundation tier?
 

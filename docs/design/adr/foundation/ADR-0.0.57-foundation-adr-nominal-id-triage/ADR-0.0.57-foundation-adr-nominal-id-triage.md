@@ -17,7 +17,9 @@ date: 2026-05-22
      Frame as values and craftsmanship standards, not expertise claims.
      See .gzkit/personas/ for reusable persona definitions. -->
 
-{persona}
+**Active driver:** `main-session` — see `.gzkit/personas/main-session.md`.
+
+Agents working on this ADR carry the craftsperson, governance-aware, whole-file-reasoning, and direct traits. The work touches three coupled surfaces — doctrine (validated ADR amendments + agent contract), runtime contract (`gz plan create` allocator), and a new operator-facing skill — and each edit must land complete: amendments paired with their ledger receipts, the allocator rename paired with every call-site and its skill description, the skill body paired with its rubric module references and vendor-mirror sync. Incremental patching across these surfaces is the named failure mode; whole-file reasoning that sees doctrine, code, and skill as one governed artifact is the standard. Foundation IDs after this ADR carry no ordering semantics — agents extending this work treat the nominal identifier doctrine as a binding invariant, not a convention.
 
 ## Why foundation tier?
 

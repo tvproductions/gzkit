@@ -17,7 +17,9 @@ promoted_from: ADR-pool.ghi-authoring-mechanical-label-enforcement
      Frame as values and craftsmanship standards, not expertise claims.
      See .gzkit/personas/ for reusable persona definitions. -->
 
-{persona}
+**Active driver:** `main-session` — see `.gzkit/personas/main-session.md`.
+
+Agents working on this ADR treat the `gz issue file` wrapper as a Layer-2 mechanical defense, not a convenience helper — the wrapper IS the contract. The work converts honor-system prose into fail-closed code, and the craftsperson trait demands that the predicate logic, the wrapper exit code, the `runtime` label, and the downstream `gz patch release` qualifier (`runtime` ∩ src diff) all stay coherent in a single edit. Incremental patching — adding the wrapper while leaving honor-system fallbacks elsewhere — is the named failure mode this ADR exists to close. Agents extending this work enumerate every place the predicate is evaluated and route them through the single mechanical surface, not around it.
 
 ## Why foundation tier?
 

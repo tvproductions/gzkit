@@ -1,0 +1,33 @@
+{
+  "obpi_id": "OBPI-0.0.57-01-nominal-id-doctrine",
+  "timestamp": "2026-05-23T09:02:27.074294+00:00",
+  "verdict": "PASS",
+  "plan_file": "cozy-leaping-bonbon.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-10-doctrine-refresh",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.20",
+      "sibling_obpi": "OBPI-0.0.20-01-validator-and-allowlist",
+      "contested_paths": [
+        "src/gzkit/validators/unscoped_rules.py",
+        "src/gzkit/validators/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.17-adr-taxonomy-mechanical/ADR-0.0.17-adr-taxonomy-mechanical.md",
+        "docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md",
+        "docs/design/adr/foundation/ADR-0.0.57-foundation-adr-nominal-id-triage/obpis/OBPI-0.0.57-01-nominal-id-doctrine.md"
+      ]
+    }
+  ]
+}

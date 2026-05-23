@@ -17,7 +17,9 @@ promoted_from: ADR-pool.ghi-triage-closeout
      Frame as values and craftsmanship standards, not expertise claims.
      See .gzkit/personas/ for reusable persona definitions. -->
 
-{persona}
+**Active driver:** `main-session` — see `.gzkit/personas/main-session.md`.
+
+Agents working on this ADR honor the three-layer tool/skill/runbook alignment contract: CLI verbs (`gz ghi …`), operator-facing skills (`gz-ghi-fix`, `gz-ghi-triage`), and runbook entries must ship together — landing one layer without the other two is the named drift mode `.claude/rules/tool-skill-runbook-alignment.md` exists to close. The craftsperson trait demands that the `gh` wrapper, the ADR-correlation logic, the skill bodies, and the runbook prescriptions agree on what operator moment each verb serves. Output-form-honored is a hard invariant: if a skill's Output Contract promises a table, the wrapped verb's default rendering must be a table; mismatch is a defect, not a documentation gap.
 
 ## Intent
 

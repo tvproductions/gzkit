@@ -147,6 +147,16 @@ Evidence accumulates in `audit/proofs/` as OBPIs complete. Expected artifacts:
 - Round-trip test output (scaffolder → validator zero errors)
 - Backfill receipt (per-file diff of added `kind:` field)
 
+## Amendment 2026-05-23 — ADR-0.0.57
+
+ADR-0.0.57 (Foundation ADR Nominal ID Semantics and Priority Triage, 2026-05-22) extends this ADR's taxonomy by declaring (Decision item 1, verbatim):
+
+> "The third component of foundation ADR IDs (0.0.x) is a nominal integer: a unique identifier, not a sequence position. gz-adr-create's minor-version odometer becomes a next-free-integer nominal allocator."
+
+**Impact on ADR-0.0.17 mechanical enforcement:** The `gz validate --taxonomy` validator enforces format and kind coherence (0.0.x pattern, kind: foundation / feature, pool id-prefix). It has never enforced consecutive ordering of foundation integers — the amendment documents that as intentional nominal-identifier semantics, not an oversight. Sparse foundation trees (e.g. 0.0.54 present, 0.0.55 absent, 0.0.56 present) correctly return no taxonomy errors.
+
+No existing foundation ADR directories or files are renamed or renumbered by this amendment. Recorded digits are preserved; the doctrine shift is semantic only (ADR-0.0.57 § Anti-pattern).
+
 ## Attestation Block
 
 | Term | Status | Attested By | Date | Reason |

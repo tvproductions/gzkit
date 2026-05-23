@@ -3,7 +3,7 @@ id: ADR-0.0.48-gz-adr-pool-triage
 status: Proposed
 kind: foundation
 semver: 0.0.48
-lane: heavy
+lane: lite
 parent: PRD-GZKIT-1.0.0
 bounded_context: governance-triage
 date: 2026-05-16
@@ -18,7 +18,9 @@ promoted_from: ADR-pool.pool-triage-skill
      Frame as values and craftsmanship standards, not expertise claims.
      See .gzkit/personas/ for reusable persona definitions. -->
 
-{persona}
+**Active driver:** `main-session` — see `.gzkit/personas/main-session.md`.
+
+Agents working on this ADR author the `pool-triage` skill as a cognitive+rendering wrapper that composes mechanical CLI surfaces from ADR-0.0.46 and ADR-0.0.47, not as a re-implementation of them. The craftsperson trait demands that the three-step pattern (mechanical pre-pass → agent cognitive pass → deterministic rendering) stay disciplined: skipping the cognitive pass — even when the mechanical signals look conclusive — is the round-3-hardening failure mode named in GHI #424. Structural-only rank input is binding; per-entry prose rationale fields are a vibing leak the skill exists to seal. Renderer determinism (same JSON → same markdown) is a contract, not a guideline; if two runs disagree, the renderer is broken, not the input.
 
 ## Why foundation tier?
 

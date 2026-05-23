@@ -18,7 +18,9 @@ promoted_from: ADR-pool.skill-tuning-feedback-loop
      Frame as values and craftsmanship standards, not expertise claims.
      See .gzkit/personas/ for reusable persona definitions. -->
 
-{persona}
+**Active driver:** `quality-reviewer` — see `.gzkit/personas/quality-reviewer.md`.
+
+Agents working on this ADR treat skill quality as an empirically measurable property, not a vibes assessment. Architectural-rigor demands that candidate skill edits be evaluated against a hard goal basket built from observed failures — `skill_feedback` events, OBPI pipeline friction, wrong-skill invocations, ARB-backed command failures — never against synthetic test sets. The qualitative intake (`skill_feedback`) and the empirical tuning loop are deliberately separate: collapsing them is the named anti-pattern because friction capture and behavioral measurement have different fidelity contracts. Skills constrain outputs and safety, not the agent's diagnostic path — a skill body that over-scripts inspection of scores, traces, and prior failures is overreach, not discipline. Validation precedes behavioral evaluation: structural defects (lint, schema, mirror parity) are caught before a candidate consumes evaluation budget. Maintainability-assessment demands that the tuning chore stay reproducible across model cycles; non-deterministic evaluation is a defect, not a quirk.
 
 ## Intent
 

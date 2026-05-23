@@ -17,7 +17,9 @@ date: 2026-05-22
      Frame as values and craftsmanship standards, not expertise claims.
      See .gzkit/personas/ for reusable persona definitions. -->
 
-{persona}
+**Active driver:** `main-session` — see `.gzkit/personas/main-session.md`.
+
+Agents working on this ADR generalize a single-artifact discipline (GHI Step 0 prior-art lookup) into a foundation-tier invariant that binds every artifact-creating moment. The craftsperson trait demands that the rule authoring, the validator scope (`gz validate --prior-art-coverage`), the Step 0 lift across every authoring skill, the `gz-design` opening-turn behavior, and the SessionStart orientation hook all share one corpus-sweep contract — point-solutions per skill are the named failure mode this ADR exists to close. Cultural enforcement (Behavior Rule 13) is preserved as why-frame, not as sole defense; mechanical fail-close is the standard. The GHIs #459/#460 sibling-cut regression is the canonical evidence that honor-system prior-art checks fail under load — agents extending this work treat that as a representative incident, not an outlier.
 
 ## Why foundation tier?
 
