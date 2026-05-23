@@ -1,0 +1,20 @@
+ADR audit-check: ADR-0.0.57-foundation-adr-nominal-id-triage
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.57-01-nominal-id-doctrine
+  - OBPI-0.0.57-02-gz-adr-create-nominal-allocator
+  - OBPI-0.0.57-03-foundation-triage-skill
+  - OBPI-0.0.57-04-foundation-triage-rubric
+  - OBPI-0.0.57-05-docs-runbook-fixtures
+Advisory 2 REQ(s) without @covers traceability (non-blocking):
+  - REQ-0.0.57-01-05
+  - REQ-0.0.57-02-07
+
+Coverage: 30/32 REQs covered (93.8%)
+  OBPI-0.0.57-01: 5/6 (83.3%)
+  OBPI-0.0.57-02: 6/7 (85.7%)
+  OBPI-0.0.57-03: 6/6 (100.0%)
+  OBPI-0.0.57-04: 6/6 (100.0%)
+  OBPI-0.0.57-05: 7/7 (100.0%)
+Uncovered REQs (2):
+  - REQ-0.0.57-01-05
+  - REQ-0.0.57-02-07

@@ -1,0 +1,61 @@
+=== SHORTFALL S-01: gather_records empty against real corpus ===
+
+Symptom:
+  uv run python .gzkit/skills/gz-foundation-triage/scripts/triage.py --format json
+  returns []
+
+Reality:
+  22 in-flight foundation ADRs exist (16 Draft + 6 Proposed):
+ADR-0.0.37-constitutional-invariant-composition
+ADR-0.0.38-evidence-authority-projection-doctrine
+ADR-0.0.40-judge-enforcement-validators
+ADR-0.0.41-token-block-lock-discipline
+ADR-0.0.44-ghi-authoring-mechanical-label-enforcement
+ADR-0.0.45-cli-mode-density-doctrine
+ADR-0.0.48-gz-adr-pool-triage
+ADR-0.0.50-validation-pipeline-with-redteam-verification
+ADR-0.0.49-systematic-debugging-discipline
+ADR-0.0.53-validator-remediation-payload-invariant
+ADR-0.0.51-milestone-maintenance-pipeline-with-goal
+ADR-0.0.57-foundation-adr-nominal-id-triage
+ADR-0.0.39-llm-as-judge-doctrine
+ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine
+ADR-0.0.43-ddd-domain-cascade
+ADR-0.0.46-pool-management
+ADR-0.0.47-pool-dag-promotion-routing
+ADR-0.0.42-storybook-doctrine
+ADR-0.0.52-artifact-staleness-propagation
+ADR-0.0.58-prior-art-sensitivity-invariant
+ADR-0.0.55-package-import-direction-invariant
+ADR-0.0.56-closeout-defect-accounting-invariant
+
+Root cause:
+  .gzkit/skills/gz-foundation-triage/scripts/triage.py:125 splits adr_id on
+  '-foundation-' to extract the bare ID — but no foundation ADR ID uses that
+  infix (they are 'ADR-0.0.N-<slug>'). The split is a no-op, and the
+  _FOUNDATION_ID_PATTERN regex '^ADR-\d+\.\d+\.\d+$' then rejects every
+  full slug. Coincidentally ADR-0.0.57's own slug begins 'ADR-0.0.57-foundation-'
+  so the split happens to produce 'ADR-0.0.57' — but ADR-0.0.57 is Completed,
+  not in-flight, so it's filtered out by the status check above.
+
+Verification (in-line):
+  id='ADR-0.0.38-evidence-authority-projection-doctrine'          -> short='ADR-0.0.38-evidence-authority-projection-doctrine' matches=False
+  id='ADR-0.0.41-token-block-lock-discipline'                     -> short='ADR-0.0.41-token-block-lock-discipline' matches=False
+  id='ADR-0.0.57-foundation-adr-nominal-id-triage'                -> short='ADR-0.0.57'                   matches=True
+
+REQ coverage:
+  REQ-0.0.57-03-02 (Step 1 gather in-flight foundations): the test asserts
+  the SKILL.md prose contains the three steps, NOT that gather_records()
+  returns non-empty against a fixture with in-flight foundation ADRs.
+  → Semantic gap: the test passes while gather_records is structurally broken.
+
+Severity: Non-blocking for ADR-0.0.57 audit (skill structurally present,
+registered, three-step body, ephemeral-invariant verified). The defect is
+in the IMPLEMENTATION of Step 1's mechanical helper. Foundation Triage
+as a feature ships unable to actually rank real in-flight foundations.
+
+Proposed remediation route:
+  - File GHI via /ghi-author with class: defect/skill-impl
+  - Fix in fresh OBPI under a follow-up brief (not silent fix inside audit)
+  - Test must assert gather_records() returns >=1 record against a fixture
+    with at least one in-flight foundation ADR (semantic, not string-based)
