@@ -2,13 +2,13 @@
   "hooks": {
     "SessionStart": [
       {
-        "command": ["uv", "run", "python", "scripts/session_orientation.py"],
+        "command": ["sh", "-c", "uv run python \"$(git rev-parse --show-toplevel)/scripts/session_orientation.py\""],
         "inject": "additionalContext"
       }
     ],
     "UserPromptSubmit": [
       {
-        "command": ["uv", "run", "python", "scripts/session_orientation.py"],
+        "command": ["sh", "-c", "uv run python \"$(git rev-parse --show-toplevel)/scripts/session_orientation.py\""],
         "inject": "additionalContext",
         "guard": "post_compaction"
       }

@@ -355,6 +355,40 @@ class TestRepoClaudeSettingsAnchorScripts(unittest.TestCase):
             self.assertNotIn("python scripts/", command, command)
 
 
+class TestRepoCodexHooksAnchorScripts(unittest.TestCase):
+    """GHI #510: every hook command in the repo's committed .codex/hooks.json
+    must anchor its script path to the git toplevel.
+
+    Codex executes hook commands in the session's per-dispatch ``cwd``
+    (per the Codex docs at https://developers.openai.com/codex/hooks and
+    confirmed in ``codex-rs/hooks/src/engine/command_runner.rs``). A bare
+    relative path like ``scripts/session_orientation.py`` therefore
+    resolves against whatever cwd the session has drifted to, the same
+    exposure shape GHI #509 closed for Claude Code's settings.json hooks.
+    Codex exports no ``CODEX_PROJECT_DIR`` analogue, so the canonical
+    anchor is ``$(git rev-parse --show-toplevel)`` (the idiom the Codex
+    docs themselves recommend).
+    """
+
+    def test_all_hook_commands_anchor_to_git_toplevel(self) -> None:
+        repo_root = Path(__file__).resolve().parents[1]
+        hooks_payload = json.loads(
+            (repo_root / ".codex" / "hooks.json").read_text(encoding="utf-8")
+        )
+
+        commands: list[list[str] | str] = []
+        for entries in hooks_payload.get("hooks", {}).values():
+            for entry in entries:
+                if "command" in entry:
+                    commands.append(entry["command"])
+
+        self.assertTrue(commands, ".codex/hooks.json declares no hook commands")
+        for command in commands:
+            joined = " ".join(command) if isinstance(command, list) else command
+            self.assertIn("$(git rev-parse --show-toplevel)", joined, joined)
+            self.assertNotIn("python scripts/", joined, joined)
+
+
 class TestSetupClaudeHooks(unittest.TestCase):
     """Tests for Claude hook setup."""
 
