@@ -307,6 +307,81 @@ Claude Code](harness-engineering-appraisal.md#external-validation-greyling-on-cl
 for the codebase-ratio framing, subsystem mapping, and the triangulation
 with Böckeler's "Harness Engineering" thesis.
 
+## External harness-engineering theses — appraisal and deliberate inversion
+
+*Origin: GHI #498 (cite OpenAI Harness Engineering as external
+corroboration + name merge-philosophy inversion). Pairs with
+[`harness-engineering-appraisal.md`](harness-engineering-appraisal.md),
+which carries the long-form appraisal against Böckeler 2×2, Greyling
+codebase-ratio, and CE compounding-leverage framings.*
+
+A third external thesis lands in scope here: OpenAI's
+[*"Harness Engineering: leveraging Codex in an agent-first world"*](https://openai.com/index/harness-engineering/)
+(Ryan Lopopolo, 2026-02-11). The piece is a first-person account of how
+the Codex team built and tuned the runtime its own agents work inside.
+The appraisal vector against gzkit doctrine is mixed — three clean
+alignments and one deliberate inversion that future readers must not
+misread as lag.
+
+### Clean alignments
+
+1. **Repo-as-system-of-record / agent legibility.** OpenAI: *"anything it
+   can't access in-context while running effectively doesn't exist."*
+   gzkit: the [trust doctrine](trust-doctrine.md) T1/T2/T3 invariants
+   and the ledger-of-truth posture in `AGENTS.md § Never #7` say the
+   same thing in a different vocabulary — derived views (Layer 3) are
+   never source-of-truth because a derived view the agent cannot trace
+   back to canon or ledger is, operationally, not there.
+2. **Promote rule into code.** OpenAI: *"when documentation falls
+   short, we promote the rule into code."* gzkit:
+   [`advisory-rules-audit.md`](advisory-rules-audit.md)'s
+   Promotable→Mechanical pipeline is the formal version of the same
+   move — every Promotable scorecard row is a candidate for a
+   `gz validate --<scope>` audit. The convergence on the underlying
+   mechanism (advisory rules are provisional; the structural endpoint
+   is mechanical enforcement) is independent of the surface vocabulary.
+3. **Rigid architectural model with mechanical enforcement.** OpenAI:
+   *"constraints are what allow speed without decay or architectural
+   drift."* gzkit: ADR-0.0.3 (hexagonal architecture), ADR-0.0.43 (DDD
+   cascade), and the package import-direction invariant in ADR-0.0.55
+   (Draft) are the structural floor that the corresponding
+   `gz validate` scopes pin mechanically. The shared claim is that
+   architectural constraints are velocity-enabling, not
+   velocity-throttling, once they are mechanically pinned.
+
+### Deliberate inversion — merge philosophy
+
+OpenAI argues for minimal blocking merge gates because *"corrections
+are cheap, waiting is expensive"* in an internal-beta context where
+Codex generates everything and human attention is the bottleneck.
+gzkit takes the opposite stance, deliberately: Gate 5 is universal,
+brief-level human attestation is mandatory (ADR-0.0.36), the ledger is
+fail-closed, and the OBPI ceremony preserves a wait-then-attest order
+that the runtime enforces (`gz obpi pipeline`).
+
+The inversion is doctrinal, not lag. The two stances are responses to
+different threat models:
+
+- **OpenAI's threat model is velocity-bound.** Internal-beta context;
+  Codex generates everything; the cost of a missed correction is the
+  cycle time to re-issue it; agent-trust is the working capital.
+  Blocking gates would idle the bottleneck (human attention).
+- **gzkit's threat model is trust-bound.** Multi-agent, multi-session,
+  auditable governance; the product *is* the auditable wait-then-attest
+  stance; the cost of a missed attestation is a corrupted artifact
+  graph that reconciliation has to untangle months later. Non-blocking
+  gates would collapse the audit-trail invariant that distinguishes
+  gzkit from a thinner harness.
+
+This is the same axis as the Karpathy *"Surgical Changes"* inversion
+above: both upstream theses are defensible for their problem class;
+gzkit's inversion is the named answer to a different problem class
+(auditable trust over velocity), not lag behind a sharper external
+thesis. The § is canonical so that future readers — who will encounter
+OpenAI's piece as a high-status published artifact — do not misread
+the Gate 5 covenant as failing to keep up. The covenant is the product
+of choosing a different threat model, and the choice is on record.
+
 <!-- lifted-from: AGENTS.md#anti-vibing-mantra--relationship-to-the-rest-of-the-contract -->
 ## Anti-vibing mantra — relationship to the rest of the contract
 
@@ -398,6 +473,25 @@ The Exemplar-Corpus Doctrine is a *learning relationship*, not an *adoption
 relationship*. gzkit measures click's design metrics to inform CLI doctrine;
 gzkit does not depend on click. Conflating them is the same
 training-corpus failure pattern Stdlib-First defends against.
+
+**External corroboration (OpenAI Codex harness engineering, 2026).**
+OpenAI's
+[*"Harness Engineering: leveraging Codex in an agent-first world"*](https://openai.com/index/harness-engineering/)
+(Ryan Lopopolo, 2026-02-11) independently reaches the same
+defaults-vs-departures shape. The article describes preferring a
+tightly-scoped reimplementation over a generic dependency for
+`map-with-concurrency`: *"rather than pulling in a generic p-limit-style
+package, we implemented our own map-with-concurrency helper: it's
+tightly integrated with our OpenTelemetry instrumentation, has 100%
+test coverage, and behaves exactly the way our runtime expects."* This
+is the same shape as Stdlib-First's *named-departure* clause (Pydantic
+warrants its dependency cost on validation semantics stdlib cannot
+supply; *"popularity"* and *"hot topic"* are explicit anti-rationales).
+Independent convergence between a production-Codex harness team and
+gzkit's training-corpus-bias defense is corroborating evidence that
+the discipline is doctrinal, not stylistic. See § *External
+harness-engineering theses — appraisal and deliberate inversion* above
+for the broader appraisal vector against the same source.
 
 ## Agent failure-mode taxonomy — loading posture and worked examples
 
