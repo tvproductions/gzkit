@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "gzkit_version": "0.26.5",
+  "gzkit_version": "0.26.6",
   "surfaces": {
     "personas": [
       "implementer.md",
@@ -61,6 +61,7 @@
       "gz-context-diet/SKILL.md",
       "gz-deps-upgrade/SKILL.md",
       "gz-design/SKILL.md",
+      "gz-foundation-triage/SKILL.md",
       "gz-gates/SKILL.md",
       "gz-implement/SKILL.md",
       "gz-init/SKILL.md",

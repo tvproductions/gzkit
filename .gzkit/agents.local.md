@@ -1,7 +1,8 @@
 # Local Agent Rules
 
-- Order versioned identifiers semantically, never lexicographically. Example: `ADR-0.9.0` comes before `ADR-0.10.0`.
-- Apply semantic-version ordering in ADR summaries, comparisons, and any operator-facing status narration.
+- Order versioned identifiers semantically, never lexicographically — **scope: feature ADRs only** (non-`0.0.x` semver). Example: `ADR-0.9.0` comes before `ADR-0.10.0`.
+- Apply semantic-version ordering in feature-ADR summaries, comparisons, and any operator-facing status narration over feature ADRs.
+- **Counter-rule (foundation ADRs):** Foundation ADR IDs (`0.0.x`) are nominal integers — unique identifiers, not sequence positions. Do not order, sort, or compare foundation IDs as semver; foundations have no semantic ordering and may form sparse sets (e.g. `0.0.54`, `0.0.56` with `0.0.55` absent is valid). Doctrine: ADR-0.0.57 § Decision item 1; rule-scope shrink: ADR-0.0.57 § Decision item 3.
 - When adding imports in an Edit call, always include the code that uses them in the same edit. The post-edit ruff hook removes unused imports immediately — splitting import addition and usage across separate edits causes the import to be deleted before it's referenced.
 - Never prefix `uv run gz` or `uv run -m gzkit` commands with `PYTHONUTF8=1`. The CLI entrypoint handles UTF-8 encoding at runtime.
 - Attestation and commit-message enrichment: pass user words verbatim, append concrete characterization grounded in session evidence. See `AGENTS.md` § Attestation.

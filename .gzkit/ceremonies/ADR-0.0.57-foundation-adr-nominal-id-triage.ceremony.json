@@ -1,0 +1,77 @@
+{
+  "adr_id": "ADR-0.0.57-foundation-adr-nominal-id-triage",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-05-23T15:22:06Z",
+  "updated_at": "2026-05-23T15:54:48Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-05-23T15:22:06Z",
+      "acknowledged_at": "2026-05-23T15:22:59Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-05-23T15:22:59Z",
+      "acknowledged_at": "2026-05-23T15:23:20Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-05-23T15:23:20Z",
+      "acknowledged_at": "2026-05-23T15:24:13Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-05-23T15:24:13Z",
+      "acknowledged_at": "2026-05-23T15:24:35Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-05-23T15:24:35Z",
+      "acknowledged_at": "2026-05-23T15:42:19Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-05-23T15:42:19Z",
+      "acknowledged_at": "2026-05-23T15:43:59Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-05-23T15:43:59Z",
+      "acknowledged_at": "2026-05-23T15:54:43Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-05-23T15:54:43Z",
+      "acknowledged_at": "2026-05-23T15:54:48Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-05-23T15:54:48Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "sed -n '/^## Nominal identifier doctrine/,/^## /p' docs/design/adr/foundation/ADR-0.0.17-adr-taxonomy-mechanical/ADR-0.0.17-adr-taxonomy-mechanical.md",
+    "rg -n \"Order versioned identifiers\" AGENTS.md",
+    "uv run gz validate --taxonomy",
+    "sed -n '/^## Foundation triage$/,/^## /p' docs/user/runbook.md",
+    "sed -n '/^## Nominal ADR allocation$/,/^## /p' docs/governance/governance_runbook.md",
+    "uv run -m behave features/foundation_triage.feature --no-capture",
+    "uv run python -m unittest -v tests.test_foundation_triage_e2e",
+    "uv run python -c \"",
+    "from pathlib import Path",
+    "from gzkit.commands.plan import _next_free_nominal_foundation_id",
+    "print(_next_free_nominal_foundation_id(Path('tests/fixtures/foundation_nominal_allocator/sparse_with_gap')))",
+    "\"",
+    "uv run python -m gzkit.foundation.rubric --foundation-root tests/fixtures/foundation_triage_rubric/backlog --insights tests/fixtures/foundation_triage_rubric/insights.jsonl --format json | jq '.rank_input'",
+    "uv run python -m gzkit.foundation.rubric --foundation-root tests/fixtures/foundation_triage_rubric/backlog --insights tests/fixtures/foundation_triage_rubric/insights.jsonl --format json | jq '.rank_input[0].evidence'",
+    "uv run python -m gzkit.foundation.rubric --foundation-root tests/fixtures/foundation_triage_rubric/backlog --format json | jq '.rank_input[0] | keys'",
+    "md5 .gzkit/skills/gz-foundation-triage/SKILL.md .claude/skills/gz-foundation-triage/SKILL.md .github/skills/gz-foundation-triage/SKILL.md"
+  ],
+  "walkthrough_index": 15,
+  "attestation": null,
+  "completed_at": "2026-05-23T15:54:48Z",
+  "attempt": 1,
+  "paused_at": null
+}
