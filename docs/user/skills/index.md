@@ -112,6 +112,7 @@ audience split.
 | [`/gz-issue-file`](gz-issue-file.md) | Cross-repo defect/enhancement filing wrapper for gzkit-owned surfaces (routes to `tvproductions/gzkit`) |
 | [`/ghi-close`](ghi-close.md) | Do the work described in a GHI, verify artifacts, and close with evidence |
 | [`/ghi-triage`](ghi-triage.md) | Evaluate and triage all open GitHub Issues with routing + urgency scoring |
+| [`/gz-foundation-triage`](gz-foundation-triage.md) | Rank the in-flight foundation backlog by priority — diagnosis only, ephemeral ranked report |
 | [`/git-sync`](git-sync.md) | Run the guarded repository sync ritual with lint/test gates |
 | [`/gz-agent-sync`](gz-agent-sync.md) | Synchronize generated control surfaces and skill mirrors |
 | [`/gz-check-config-paths`](gz-check-config-paths.md) | Validate configured and manifest path coherence |

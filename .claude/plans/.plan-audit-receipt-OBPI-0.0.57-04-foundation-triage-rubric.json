@@ -1,0 +1,58 @@
+{
+  "obpi_id": "OBPI-0.0.57-04-foundation-triage-rubric",
+  "timestamp": "2026-05-23T11:56:55.338183+00:00",
+  "verdict": "FAIL",
+  "plan_file": "prancy-juggling-globe.md",
+  "gaps_found": 5,
+  "gaps": [
+    "Allowed path does not exist in repository: src/gzkit/foundation/rubric.py",
+    "Allowed path does not exist in repository: src/gzkit/schemas/foundation_triage_rank_input.json",
+    "Allowed path does not exist in repository: docs/governance/foundation-triage-rubric.md",
+    "Allowed path does not exist in repository: tests/test_foundation_triage_rubric.py",
+    "Allowed path does not exist in repository: tests/fixtures/foundation_triage_rubric/"
+  ],
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.51.0",
+      "sibling_obpi": "OBPI-0.51.0-01-evaluation-episode-contract",
+      "contested_paths": [
+        "docs/design/prd/PRD-GZKIT-1.0.0.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.15.0",
+      "sibling_obpi": "OBPI-0.15.0-04-schema-generation-unification",
+      "contested_paths": [
+        "src/gzkit/schemas/foundation_triage_rank_input.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-13-prd-gzkit-amendment",
+      "contested_paths": [
+        "docs/design/prd/PRD-GZKIT-1.0.0.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.57-foundation-adr-nominal-id-triage/obpis/OBPI-0.0.57-04-foundation-triage-rubric.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-01-doctrine-and-canon",
+      "contested_paths": [
+        "src/gzkit/schemas/foundation_triage_rank_input.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-06-persona-schema-validation",
+      "contested_paths": [
+        "src/gzkit/schemas/foundation_triage_rank_input.json"
+      ]
+    }
+  ]
+}
