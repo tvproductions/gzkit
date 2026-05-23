@@ -1,5 +1,53 @@
 # gzkit Release Notes
 
+## v0.26.6 (2026-05-22)
+
+Governance infrastructure hardening: lock-manager identity fix, validator corpus scoping, scaffolder regression closure, hexagonal terminology correction, and closeout of the Universal OBPI Attestation (ADR-0.0.36) foundation ADR.
+
+### Foundation ADR Closeout
+
+- **ADR-0.0.36** — Universal OBPI Attestation reached `Validated` status. Human attestation is now universally required for every OBPI completion regardless of parent ADR kind or lane. The `lite`-lane self-close path is formally closed, enforced at runtime by `_requires_human_obpi_attestation`.
+
+### Runtime Fixes
+
+- **#484** — Fixed `CLAUDECODE` env-var typo in `lock_manager.py`. The check read `CLAUDE_CODE` (with underscore) while Claude Code exports `CLAUDECODE=1` (no underscore), causing `resolve_agent()` to fall through to a PID-based id on every call. Two `uv run gz` subprocesses in the same session always got different ids, making every Stage 5 lock release fail with an ownership error and forcing `--force` as a workaround. Both `resolve_agent` and `resolve_session_id` are now correct.
+
+### Validator & Schema
+
+- **#483** — Fixed `gz validate --kind-invariance` silently skipping 10 legacy foundation ADRs that predate ADR-0.0.17's `kind:` frontmatter mandate. The validator now uses filesystem location (`/foundation/` directory) as the primary predicate and flags ADRs without `kind: foundation` frontmatter, producing the work list ADR-0.0.35 Negative Consequence #5 promised.
+- **#486** — Added waiver entry for the `| jq` pipe on OBPI-0.0.36-02 line 261 (a historical evidence block recording a command actually executed during implementation). The `test_utf8_prefix_rule_9` test now passes; the waiver preserves evidence-chain integrity rather than retroactively rewriting it.
+- **#500** — Scoped `gz validate --documents` to skip the historical OBPI brief corpus for section-presence checks. The validator now distinguishes historical (pre-current-schema) briefs from newly-authored ones, eliminating 3,589 non-actionable false positives. Strict authored and completion-readiness checks remain in `gz obpi validate --authored` and `gz obpi complete`.
+- **#502** — Fixed `agent-insights.jsonl:75` schema violation: `type=discovery` is not a valid `InsightType` (`Literal['defect', 'defect-resolution', 'improvement']`). The entry's type was corrected with operator attestation. The test `test_insights_shape_ghi_358` now passes.
+- **#511** — Retargeted `gz validate --interviews` to check for an embedded `## Q&A Transcript` section in the ADR body rather than a separate `.gzkit/transcripts/<ADR-ID>-interview.md` file that has never been produced by any ADR authoring flow. Converts 104 false positives into 44 true findings (ADRs that predate the transcript convention and genuinely lack a receipt).
+- **#515** — Reconciled the interview-transcript surface after the GHI #511 retarget. Updated `docs/design/prd/PRD-GZKIT-1.0.0.md` (3 references) and `gz interview` writer to the embedded-section form; documented the 44 pre-convention ADRs awaiting operator decision on backfill vs. waiver vs. grandfather cutoff. Wired `--interviews` into the `gz check` default scope once the corpus is clean.
+
+### Scaffolder / ADR Pipeline
+
+- **#494** — Closed scaffolder regression #4 of the bare-id `adr_created` class. The `gz plan create` scaffolder now derives the `adr_created` ledger event id from the canonical on-disk slug-form directory name rather than an intermediate variable, preventing bare-semver events regardless of intermediate frontmatter state.
+- **#505** — Fixed `gz interview adr` scaffold path: corrected the flat-directory layout (was writing to `docs/design/adr/<id>.md` instead of the slug-package layout) and validated `doc_id` against canonical slug-form before ledger emission. Closes the sibling-cut of the GHI #494 bare-id class in the interview path.
+- **#495** — Authored all 10 ADR-0.0.37 OBPI briefs with per-OBPI scope: actual `src/`, schema, test, and doc targets in Allowed Paths; OBPI-specific Requirements (not the full 33-item ADR Decision dump); falsifiable Acceptance Criteria with REQ-IDs; relevant Verification commands. OBPI-10 lane corrected to Lite (docs-only scope).
+
+### CLI Improvements
+
+- **#485** — Fixed `gz specify --author` mode scoping bug. `_extract_decision_as_requirements` received no `--item N` filter and dumped every ADR Decision bullet into every OBPI brief. The function now accepts and applies the checklist item index to scope requirements to the specific OBPI, making `--author`-mode briefs pipeline-ready without manual narrowing.
+- **#490** — `gz patch release --dry-run` now mechanically enumerates foundation-ADR closeouts (ADRs at `Validated` status with a Gate-5 `validated` receipt in the ledger since the last tag). Removes operator-memory dependency for the foundation-closeout release qualifier, achieving hexagonal port/adapter parity in the patch-release cadence.
+- **#504** — Fixed `gz governance render --target agents-md` emitting literal `{project_name}`, `{project_purpose}`, `{tech_stack}`, `{skills_canon_path}` tokens instead of concrete substituted values. The broken template-variable substitution step in `src/gzkit/governance/compose.py` caused `gz validate --invariant-coherence` to exit 3 and `gz check` to go repo-wide red.
+
+### Governance / Doctrine
+
+- **#488** — Renamed `complexity-advisor` and `complexity-guide` skills to `gz-complexity-advisor` and `gz-complexity-guide` to align with the `gz-` prefix convention followed by 45 of 52 skill directories. Added `data/skill_naming_exemptions.json` (whitelisting `ghi-*`, `git-sync`, `airlineops-parity-scan`) and a mechanical `gz validate --skill-naming` scope to fail-close future naming drift.
+- **#489** — Corrected hexagonal terminology from "plug"/"plugs" to "adapter"/"adapters" across `gz-design` SKILL.md, `docs/user/concepts/foundation-feature-invariance-test.md` (13 instances), and the ADR scaffold template stub. The canonical term is Alistair Cockburn's "Ports and Adapters" (2005); every new foundation ADR now prompts "port vs. adapter" instead of "port vs. plug."
+
+### Code Quality
+
+- **#493** — Deleted orphaned `src/gzkit/sync_skills_validation.py` (plural variant, zero importers, dead code). Documented the consolidation path for the remaining two overlapping skill-frontmatter validation modules (`skills_audit.py` and `sync_skill_validation.py`).
+- **#501** — Split `src/gzkit/events.py` (673 lines, over the 600-line module limit) into `event_evidence.py` (nested evidence models) and `events.py` (typed ledger event union). Added `frozen=True` to `ReqProofInput`, `ScopeAudit`, `GitSyncState` per `.claude/rules/models.md` immutable-model doctrine.
+
+### Stats
+
+- 17 GHIs closed
+- 1 foundation ADR closeout (ADR-0.0.36)
+
 ## v0.26.5 (2026-05-17)
 
 Patch release fixing a section-scoping defect in `gz obpi complete` that caused attestation substitution to target the wrong line when the implementation summary contained a `- Attestation:` bullet.
