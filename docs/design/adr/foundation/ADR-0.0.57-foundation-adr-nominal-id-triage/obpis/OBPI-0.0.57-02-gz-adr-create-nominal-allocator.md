@@ -3,7 +3,7 @@ id: OBPI-0.0.57-02-gz-adr-create-nominal-allocator
 parent: ADR-0.0.57-foundation-adr-nominal-id-triage
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.57-02-gz-adr-create-nominal-allocator: Gz Adr Create Nominal Allocator
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.57-foundation-adr-nominal-id-triage/ADR-0.0.57-foundation-adr-nominal-id-triage.md`
 - **Checklist Item:** #2 - "OBPI-0.0.57-02: **gz-adr-create-nominal-allocator** — Update gz-adr-create to replace the minor-version odometer with a next-free-integer nominal allocator (runtime-contract change; Gate 5 attestation required)."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -269,15 +269,18 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+Fixture tree tests/fixtures/foundation_nominal_allocator/sparse_with_gap/ contains ADR-0.0.{1,2,5,7}-*; allocator returns "0.0.3" (gap-fill), not "0.0.8" (max+1). Same surface via CLI: `gz plan create my-adr --kind foundation --semver 99.0.0` prints "Next free nominal foundation ID: 0.0.3". Receipts: arb-step-unittest-889d9e6d (5449/5449), arb-step-behave-110aab86 (2/2 scoped @REQ tags), arb-ruff-76eab7ef (clean), arb-step-typecheck-8801ff81 (clean), arb-step-mkdocs-46586bdb (clean).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: tests/test_plan_command.py (8 tests covering REQ-01..06); tests/fixtures/foundation_nominal_allocator/{sparse_with_gap,contiguous,empty}/ (8 stub ADR dirs + .gitkeep); features/plan_create_nominal.feature (2 scenarios @REQ-0.0.57-02-01, @REQ-0.0.57-02-03); features/steps/plan_create_nominal_steps.py (1 step def).
+- Files modified: src/gzkit/commands/plan.py (rename _next_available_foundation_semver -> _next_free_nominal_foundation_id; update sole call site + error message); tests/test_taxonomy_validator_nominal.py (coupled-surface AGENTS.md§1a — removed obsolete import + test_plan_allocator_is_unchanged); .gzkit/skills/gz-adr-create/SKILL.md (description + govzero-compliance-areas updated; skill-version 6.4.2->6.5.0; last_reviewed 2026-05-21->2026-05-23); docs/user/manpages/plan-create.md (error-hint language -> nominal-allocator semantics); tests/governance/test_foundation_invariance_skill_enrichment.py (coupled-surface §1a — expected gz-adr-create version 6.4.2->6.5.0); data/behave_coverage_waivers.json (REQ-02/04/05/06/07 non-CLI-surface waiver).
+- Tests added: 8 unit + 2 BDD scenarios + 1 step def. Coverage 6/7 mechanical; REQ-07 is the attestation gate itself (waived via --accept-uncovered).
+- Date completed: 2026-05-23.
+- Attestation status: attest completed (operator verbatim).
+- Defects noted: none.
 
 ## Tracked Defects
 
@@ -288,12 +291,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.57-02 lands the foundation ADR nominal allocator (max+1 odometer → lowest-unused-integer gap-fill). 5449/5449 tests pass (arb-step-unittest-889d9e6ddbf544e7ab8e167f580c559c), ruff clean (arb-ruff-76eab7ef166a438e90a41060c7d3534b), typecheck clean (arb-step-typecheck-8801ff81889c4a6f874a2e6044d34a65), mkdocs --strict clean (arb-step-mkdocs-46586bdb5a6445199174e12661d5968f), 2/2 scoped BDD scenarios pass (arb-step-behave-110aab8648974de59668b3052020e2eb). REQ-coverage 6/7 mechanical; REQ-07 is the attestation itself.
+- Date: 2026-05-23
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-05-23
 
 **Evidence Hash:** -

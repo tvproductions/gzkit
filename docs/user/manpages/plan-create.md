@@ -24,7 +24,7 @@ gz plan <name> [OPTIONS]
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `--kind` | `pool` \| `foundation` \| `feature` | — (**required**) | ADR taxonomy: `foundation` requires `--semver 0.0.x`; `feature` requires non-`0.0.x` semver; `pool` writes a flat backlog ADR with no `kind:`/`semver:` frontmatter. |
+| `--kind` | `pool` \| `foundation` \| `feature` | — (**required**) | ADR taxonomy: `foundation` requires `--semver 0.0.x`; foundation IDs are allocated nominally (next-free-integer, not sequential — gap-filling when IDs have been retired); `feature` requires non-`0.0.x` semver; `pool` writes a flat backlog ADR with no `kind:`/`semver:` frontmatter. |
 | `--obpi` | string | — | Optional parent OBPI ID |
 | `--semver` | string | `0.1.0` | Semantic version (ignored for `--kind pool`) |
 | `--lane` | `lite` \| `heavy` | `lite` | Governance lane |

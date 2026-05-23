@@ -1,0 +1,9 @@
+{
+  "obpi_id": "OBPI-0.0.57-02-gz-adr-create-nominal-allocator",
+  "agent": "claude-code-5c1518f5",
+  "pid": 75152,
+  "session_id": "5c1518f5-5a9e-4b53-8fe8-d16df2df0601",
+  "claimed_at": "2026-05-23T10:23:54.242136+00:00",
+  "branch": "main",
+  "ttl_minutes": 120
+}

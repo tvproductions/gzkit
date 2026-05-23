@@ -13,7 +13,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gzkit.commands.plan import _next_available_foundation_semver
 from gzkit.governance.trust_audits import audit_adr_taxonomy
 from gzkit.traceability import covers
 
@@ -60,21 +59,6 @@ class TestNominalIdTaxonomyValidator(unittest.TestCase):
             _make_foundation_adr(root, "0.0.10", "slug-c")
             errors = audit_adr_taxonomy(root)
             self.assertEqual(errors, [], f"Expected no errors, got: {errors}")
-
-    @covers("REQ-0.0.57-01-05")
-    def test_plan_allocator_is_unchanged(self) -> None:
-        """commands/plan.py _next_available_foundation_semver still uses max+1.
-
-        This assertion confirms plan.py was not modified by OBPI-0.0.57-01.
-        The nominal-allocator replacement is OBPI-0.0.57-02's surface.
-        """
-        with tempfile.TemporaryDirectory() as tmpdir:
-            root = Path(tmpdir)
-            foundation = root / "docs" / "design" / "adr" / "foundation"
-            adr_dir = foundation / "ADR-0.0.3-some-slug"
-            adr_dir.mkdir(parents=True)
-            result = _next_available_foundation_semver(foundation)
-            self.assertEqual(result, "0.0.4", "max+1 allocator must remain unchanged")
 
 
 class TestNominalIdDoctrineAmendments(unittest.TestCase):

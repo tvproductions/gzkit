@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.0.57-02-gz-adr-create-nominal-allocator",
+  "parent_adr": "ADR-0.0.57-foundation-adr-nominal-id-triage",
+  "lane": "heavy",
+  "entry": "sync",
+  "execution_mode": "normal",
+  "current_stage": "sync",
+  "started_at": "2026-05-23T11:37:23Z",
+  "updated_at": "2026-05-23T11:37:23Z",
+  "receipt_state": "pass",
+  "nonce": "f43ddb38ea89470a2a1a986d1198f8a9",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz git-sync --apply --lint --test",
+  "resume_point": null
+}

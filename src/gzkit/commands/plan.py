@@ -110,19 +110,26 @@ def _reject_noncanonical_name(name: str, kind: str) -> None:
     sys.exit(1)
 
 
-def _next_available_foundation_semver(foundation_root: Path) -> str:
-    """Scan existing foundation/<id>/ dirs and return next available 0.0.N."""
+def _next_free_nominal_foundation_id(foundation_root: Path) -> str:
+    """Scan foundation/<id>/ dirs and return the lowest unused 0.0.N (N >= 1).
+
+    Nominal allocation: returns the smallest integer N >= 1 not present in
+    the existing directory set, tolerating gaps.
+    E.g. {0.0.1, 0.0.2, 0.0.5, 0.0.7} -> "0.0.3" (not "0.0.8").
+    """
     if not foundation_root.exists():
         return "0.0.1"
-    max_n = -1
+    used: set[int] = set()
     for entry in foundation_root.iterdir():
         if not entry.is_dir():
             continue
-        match = re.match(r"^ADR-0\.0\.(\d+)(?:-.*)?$", entry.name)
-        if match:
-            n = int(match.group(1))
-            max_n = max(max_n, n)
-    return f"0.0.{max_n + 1}" if max_n >= 0 else "0.0.1"
+        m = re.match(r"^ADR-0\.0\.(\d+)(?:-.*)?$", entry.name)
+        if m:
+            used.add(int(m.group(1)))
+    n = 1
+    while n in used:
+        n += 1
+    return f"0.0.{n}"
 
 
 def _render_pool_adr(*, name: str, title: str, parent: str, lane: str) -> tuple[str, str, str]:
@@ -157,11 +164,11 @@ def _validate_kind_and_semver(kind: str | None, semver: str, adrs_root: Path) ->
         sys.exit(1)
 
     if kind == "foundation" and not FOUNDATION_SEMVER_RE.match(semver):
-        next_available = _next_available_foundation_semver(adrs_root / "foundation")
+        next_free = _next_free_nominal_foundation_id(adrs_root / "foundation")
         console.print(
             f"[red]ERROR:[/red] --kind foundation requires --semver matching 0.0.x "
-            f"(got {semver!r}). Next available foundation semver: "
-            f"[bold]{next_available}[/bold]."
+            f"(got {semver!r}). Next free nominal foundation ID: "
+            f"[bold]{next_free}[/bold]."
         )
         sys.exit(1)
     if kind == "feature" and FOUNDATION_SEMVER_RE.match(semver):

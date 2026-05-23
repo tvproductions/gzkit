@@ -1,13 +1,11 @@
 {
-  "obpi_id": "OBPI-0.0.37-03-composition-drift-validator",
-  "timestamp": "2026-05-19T10:20:00.000000+00:00",
+  "obpi_id": "OBPI-0.0.57-02-gz-adr-create-nominal-allocator",
+  "timestamp": "2026-05-23T10:18:30.000000+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.37-03-composition-drift-validator.md",
-  "gaps_found": 3,
+  "plan_file": "OBPI-0.0.57-02-gz-adr-create-nominal-allocator.md",
+  "gaps_found": 1,
   "gaps": [
-    "src/gzkit/governance/events.py does not exist (brief says modify; will be created)",
-    ".gzkit/schemas/ledger_events.json does not exist (brief says modify; will be created)",
-    "Coupled-surface coherence (AGENTS.md§1a): src/gzkit/ledger_events.py and src/gzkit/schemas/ledger.json must also be extended for audit_event_schemas to pass; authorized by AGENTS.md§1a"
+    "tests/test_plan_command.py and tests/fixtures/foundation_nominal_allocator/ are marked CREATE in brief — false-positive CLI flags; plan addresses both as new file creation"
   ],
-  "notes": "ADR<->OBPI alignment solid. Plan addresses all 3 advisory gaps: events.py will be created, ledger_events.json will be created, and ledger_events.py + schemas/ledger.json will be extended as coupled-surface coherence. --invariant-coherence added to default_scopes (gz check per REQ-6). Parser wiring via parser_maintenance.py covered by brief's OR-clause."
+  "notes": "ADR<->OBPI alignment solid. All 8 REQs map to ADR Decision item #2. Plan addresses: (1) function rename with gap-allocation algorithm, (2) one call site update, (3) coupled-surface fix in test_taxonomy_validator_nominal.py (AGENTS.md §1a), (4) skill-version + last_reviewed bump, (5) agent sync for mirror parity, (6) manpage update, (7) BDD scenario for Heavy Gate 4. Scope-collision advisory (38 sibling OBPIs share plan.py) is informational only — no active locks on contested paths."
 }
