@@ -31,28 +31,45 @@ status: Draft
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/ADR-0.0.48-gz-adr-pool-triage.md` — parent ADR for intent and scope
-- `docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/**` — parent ADR package scope
+- `src/gzkit/pool/blocked_foundation.py` — pure-function filter that consumes prepass record set + the active foundation backlog, returns `(rank_input_filtered, blocked_annotations)`
+- `tests/test_pool_blocked_foundation.py` — REQ-derived tests covering blocked-detection, near-closeout urgent-elevation, and annotation surface
+- `tests/fixtures/pool_blocked_foundation/` — fixture pool ADRs with `depends_on` pointing at in-flight + near-closeout + completed foundation ADRs
+- `docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/obpis/OBPI-0.0.48-04-blocked-foundation-filter.md` — this brief (evidence updates only)
 
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
-- Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `src/gzkit/pool/triage_prepass.py` — prepass is OBPI-0.0.48-01's surface (this OBPI consumes its output)
+- `src/gzkit/pool/cognitive_pass.py` — rank-input is OBPI-0.0.48-02's surface (this OBPI consumes its output)
+- `src/gzkit/pool/triage_renderer.py` — renderer is OBPI-0.0.48-03's surface (renderer accepts this OBPI's annotation list)
+- `.gzkit/skills/pool-triage/**` — skill body is OBPI-0.0.48-05's surface
+- Edits to any pool ADR file or foundation ADR file — the filter is read-only over the ADR corpus
+- New runtime dependencies; CI files; lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
-1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
-1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
-1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
+1. REQUIREMENT: `filter_blocked_foundation(prepass: list[PoolTriagePrepassRecord], foundation_state: FoundationStateSnapshot) -> tuple[list, list]` MUST be a pure function returning `(retained, blocked_annotations)` where retained excludes every candidate whose `depends_on` includes an in-flight (non-completed) foundation ADR.
+2. REQUIREMENT: A candidate whose `depends_on` references an in-flight foundation ADR MUST be emitted as `{id, blocked_on: [<foundation_id>, ...]}` in the blocked-annotations list — never as a rank-input entry.
+3. REQUIREMENT: Per ADR § Optional cross-check, when an in-flight blocking foundation ADR is *near closeout* (defined as having all Gate 1-4 evidence recorded and only awaiting Gate 5 attestation), the candidate MUST be elevated to severity `urgent` rather than annotated as blocked.
+4. REQUIREMENT: Near-closeout detection MUST query foundation state from the ledger (`adr_eval_completed` / `validated` event sequence) — never from frontmatter `status:` strings, which are Layer-1 authorship not Layer-2 truth (CLAUDE.md state-doctrine).
+5. NEVER: Mutate any foundation ADR file or pool ADR file during filter execution — the filter is read-only.
+6. NEVER: Silently drop a candidate from both lists — every prepass record MUST appear in exactly one of `retained` or `blocked_annotations` (partition invariant).
+7. ALWAYS: Render the blocking foundation IDs in `blocked_on` via canonical `ADR-0.0.NN-<slug>` form, never bare semver.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+
+
+## Creates these files
+
+<!-- Net-new files this OBPI creates. Path existence is exempt for these entries per GHI #419. -->
+
+- `src/gzkit/pool/blocked_foundation.py` **CREATE**
+- `tests/test_pool_blocked_foundation.py` **CREATE**
+- `tests/fixtures/pool_blocked_foundation/` **CREATE**
 
 ## Discovery Checklist
 
@@ -134,10 +151,21 @@ status: Draft
 uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
-uv run gz test
+uv run gz arb step --name unittest -- uv run -m unittest -q tests.test_pool_blocked_foundation
 
-# Specific verification for this OBPI
-rg -n "Superseded|supersede" docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/ADR-0.0.48-gz-adr-pool-triage.md
+# OBPI-specific surface checks
+test -f src/gzkit/pool/blocked_foundation.py
+ls tests/fixtures/pool_blocked_foundation/ | grep -E "in_flight|near_closeout|completed"
+
+# Partition invariant: |retained| + |blocked| == |prepass|
+uv run python -c "
+from gzkit.pool.blocked_foundation import filter_blocked_foundation
+import json
+prepass = json.load(open('tests/fixtures/pool_blocked_foundation/prepass.json'))
+state   = json.load(open('tests/fixtures/pool_blocked_foundation/foundation_state.json'))
+retained, blocked = filter_blocked_foundation(prepass, state)
+assert len(retained) + len(blocked) == len(prepass), 'partition invariant violated'
+"
 ```
 
 ## Demo
@@ -150,7 +178,11 @@ rg -n "Superseded|supersede" docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-t
      and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
 
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+# Run filter against a fixture where one candidate depends on an in-flight foundation
+uv run python -m gzkit.pool.blocked_foundation --prepass tests/fixtures/pool_blocked_foundation/prepass.json --foundation-state tests/fixtures/pool_blocked_foundation/foundation_state.json --format json | jq '.blocked_annotations'
+
+# Run filter against a fixture where the blocking foundation is near-closeout — expect urgent elevation, not annotation
+uv run python -m gzkit.pool.blocked_foundation --prepass tests/fixtures/pool_blocked_foundation/near_closeout_prepass.json --foundation-state tests/fixtures/pool_blocked_foundation/near_closeout_state.json --format json | jq '.retained[] | select(.severity == "urgent")'
 ```
 
 ## Acceptance Criteria
@@ -161,9 +193,12 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.48-04-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.48-04-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.48-04-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.48-04-01: Given a prepass record whose `depends_on` includes an in-flight foundation ADR, when the filter runs, then the record is emitted in `blocked_annotations` with `{id, blocked_on: [<foundation_id>]}` and is absent from `retained`.
+- [ ] REQ-0.0.48-04-02: Given a prepass record whose `depends_on` includes only completed foundation ADRs, when the filter runs, then the record is emitted in `retained` and is absent from `blocked_annotations`.
+- [ ] REQ-0.0.48-04-03: Given a prepass record whose blocking foundation has all Gate 1-4 ledger evidence recorded and only Gate 5 attestation pending, when the filter runs, then the record is retained with severity elevated to `urgent` per ADR § Optional cross-check.
+- [ ] REQ-0.0.48-04-04: Given near-closeout detection runs, when foundation state is queried, then state is sourced from ledger events (`adr_eval_completed` / `validated`) — never from frontmatter `status:` strings (state-doctrine).
+- [ ] REQ-0.0.48-04-05: Given any prepass input, when the filter runs, then `len(retained) + len(blocked_annotations) == len(prepass)` (partition invariant — no silent drops).
+- [ ] REQ-0.0.48-04-06: Given the filter executes, when execution completes, then no file under `docs/design/adr/foundation/**` or `docs/design/adr/pool/**` has been modified (read-only invariant).
 
 ## Completion Checklist
 

@@ -6,18 +6,18 @@ lane: Heavy
 status: Draft
 ---
 
-# OBPI-0.0.48-02-candidate-cognitive-pass: **candidate-cognitive-pass** — Author the skill's read-each-candidate procedure, requiring Intent and Decision review before structural-only rank input is produced.
+# OBPI-0.0.48-02-candidate-cognitive-pass: **candidate-cognitive-pass** — Author the skill's read-each-candidate procedure, requiring Intent and Decision review before structural-only rank input is produced; includes port/adapter reclassification check that flags foundation-appropriate pool items.
 
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/ADR-0.0.48-gz-adr-pool-triage.md`
-- **Checklist Item:** #2 - "OBPI-0.0.48-02: **candidate-cognitive-pass** — Author the skill's read-each-candidate procedure, requiring Intent and Decision review before structural-only rank input is produced."
+- **Checklist Item:** #2 - "OBPI-0.0.48-02: **candidate-cognitive-pass** — Author the skill's read-each-candidate procedure, requiring Intent and Decision review before structural-only rank input is produced; includes port/adapter reclassification check that flags foundation-appropriate pool items."
 
 **Status:** Draft
 
 ## Objective
 
-**candidate-cognitive-pass** — Author the skill's read-each-candidate procedure, requiring Intent and Decision review before structural-only rank input is produced.
+**candidate-cognitive-pass** — Author the skill's read-each-candidate procedure, requiring Intent and Decision review before structural-only rank input is produced; includes port/adapter reclassification check that flags foundation-appropriate pool items.
 
 ## Lane
 
@@ -31,28 +31,49 @@ status: Draft
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/ADR-0.0.48-gz-adr-pool-triage.md` — parent ADR for intent and scope
-- `docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/**` — parent ADR package scope
+- `src/gzkit/pool/cognitive_pass.py` — port/adapter classifier + structural-only rank-input emitter; Pydantic model `PoolTriageRankInputEntry`
+- `src/gzkit/schemas/pool_triage_rank_input.json` — JSON schema for the structural-only `{id, severity}` rank-input contract
+- `docs/governance/pool-triage-cognitive-pass.md` — procedural document the OBPI-05 skill body includes verbatim (read-each-candidate + Intent/Decision pin + port/adapter reclassification rule)
+- `tests/test_pool_cognitive_pass.py` — REQ-derived tests covering rank-input shape, severity enumeration, reclassification surface, and structural-only constraint
+- `tests/fixtures/pool_cognitive_pass/` — fixture pool ADR set + golden rank-input + golden reclassification annotation
+- `docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/obpis/OBPI-0.0.48-02-candidate-cognitive-pass.md` — this brief (evidence updates only)
 
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
-- Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `.gzkit/skills/pool-triage/SKILL.md` — skill body is OBPI-0.0.48-05's surface (this OBPI's docs/governance file is included by reference, not edited here)
+- `src/gzkit/pool/triage_prepass.py` — prepass record set is OBPI-0.0.48-01's surface
+- `src/gzkit/pool/triage_renderer.py` — markdown rendering is OBPI-0.0.48-03's surface
+- `src/gzkit/pool/blocked_foundation.py` — blocked-foundation cross-check is OBPI-0.0.48-04's surface
+- Edits to any pool ADR file under `docs/design/adr/pool/**` — the cognitive pass is read-only over the corpus
+- New runtime dependencies; CI files; lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
-1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
-1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
-1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
+1. REQUIREMENT: `PoolTriageRankInputEntry` MUST be a frozen Pydantic `BaseModel` with `extra="forbid"` and MUST expose exactly two fields: `id: str` and `severity: Literal["urgent", "next-quarter", "latent"]` (ADR § Step 2 structural-only schema, mirroring `ghi-triage` round-3 hardening per GHI #424).
+2. REQUIREMENT: The cognitive-pass procedure MUST require reading the candidate ADR's § Intent AND § Decision sections before emitting any rank-input entry — encoded as a STOP-guarded checklist in `docs/governance/pool-triage-cognitive-pass.md`.
+3. REQUIREMENT: The port/adapter reclassification check MUST flag any candidate whose scope authors an invariant or prerequisite without which downstream features cannot exist (ADR § Step 2 "port/adapter reclassification check"); flagged candidates are emitted as `{id, reclassify: "foundation"}` in a separate annotation list, NOT as a rank-input entry.
+4. REQUIREMENT: Reclassified candidates MUST NOT appear in the promotion-rank list under any code path — the rank-input list and the reclassification annotation list are mutually exclusive.
+5. NEVER: Emit prose narrative, rationale, or per-entry justification fields in rank-input — the structural-only schema is the deliverable (GHI #424 round-3 hardening).
+6. NEVER: Mutate any pool ADR file during cognitive-pass execution — the pass is read-only over the ADR corpus.
+7. ALWAYS: Validate every emitted rank-input record against `src/gzkit/schemas/pool_triage_rank_input.json` before returning from the cognitive pass.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+
+
+## Creates these files
+
+<!-- Net-new files this OBPI creates. Path existence is exempt for these entries per GHI #419. -->
+
+- `src/gzkit/pool/cognitive_pass.py` **CREATE**
+- `src/gzkit/schemas/pool_triage_rank_input.json` **CREATE**
+- `docs/governance/pool-triage-cognitive-pass.md` **CREATE**
+- `tests/test_pool_cognitive_pass.py` **CREATE**
+- `tests/fixtures/pool_cognitive_pass/` **CREATE**
 
 ## Discovery Checklist
 
@@ -134,10 +155,17 @@ status: Draft
 uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
-uv run gz test
+uv run gz arb step --name unittest -- uv run -m unittest -q tests.test_pool_cognitive_pass
 
-# Specific verification for this OBPI
-rg -n "Superseded|supersede" docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/ADR-0.0.48-gz-adr-pool-triage.md
+# OBPI-specific surface checks
+test -f src/gzkit/pool/cognitive_pass.py
+test -f src/gzkit/schemas/pool_triage_rank_input.json
+test -f docs/governance/pool-triage-cognitive-pass.md
+uv run python -c "from gzkit.pool.cognitive_pass import PoolTriageRankInputEntry; PoolTriageRankInputEntry(id='ADR-pool.x', severity='urgent')"
+uv run python -m json.tool tests/fixtures/pool_cognitive_pass/golden_rank_input.json > /dev/null
+
+# Verify schema dual matches Pydantic model emission
+uv run python -c "from gzkit.pool.cognitive_pass import PoolTriageRankInputEntry; import json; print(json.dumps(PoolTriageRankInputEntry.model_json_schema(), indent=2))" | diff - src/gzkit/schemas/pool_triage_rank_input.json
 ```
 
 ## Demo
@@ -150,7 +178,15 @@ rg -n "Superseded|supersede" docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-t
      and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
 
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+# Run the cognitive pass against a fixture pool corpus; emit structural-only rank-input
+uv run python -m gzkit.pool.cognitive_pass --pool-root tests/fixtures/pool_cognitive_pass --format json | jq '.rank_input'
+
+# Inspect port/adapter reclassification annotations on a corpus with one foundation-shaped pool ADR
+uv run python -m gzkit.pool.cognitive_pass --pool-root tests/fixtures/pool_cognitive_pass --format json | jq '.reclassify_foundation'
+
+# Verify no prose narrative leaks into rank-input (structural-only enforcement)
+uv run python -m gzkit.pool.cognitive_pass --pool-root tests/fixtures/pool_cognitive_pass --format json | jq '.rank_input[0] | keys'
+# Expected output: ["id", "severity"]
 ```
 
 ## Acceptance Criteria
@@ -161,9 +197,12 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.48-02-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.48-02-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.48-02-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.48-02-01: Given `PoolTriageRankInputEntry`, when an entry is constructed with `severity="urgent"`/`"next-quarter"`/`"latent"`, then construction succeeds; any other severity value raises `ValidationError` (Literal enforcement).
+- [ ] REQ-0.0.48-02-02: Given a rank-input entry, when extra fields like `rationale` or `why` are passed, then `extra="forbid"` raises `ValidationError` — the structural-only contract is fail-closed.
+- [ ] REQ-0.0.48-02-03: Given a fixture candidate ADR whose scope authors an invariant (port-shape), when the cognitive pass runs, then the candidate appears in `reclassify_foundation` annotation list with `{id, reclassify: "foundation"}` AND does NOT appear in the rank-input list (mutual exclusion).
+- [ ] REQ-0.0.48-02-04: Given the procedural document `docs/governance/pool-triage-cognitive-pass.md`, when it is read, then it includes a STOP-guarded Intent + Decision pre-read checklist and is referenced verbatim from the OBPI-05 skill body.
+- [ ] REQ-0.0.48-02-05: Given the JSON schema `src/gzkit/schemas/pool_triage_rank_input.json`, when a Pydantic-emitted rank-input record is validated against it, then validation succeeds — schema/model drift fail-closes the test suite.
+- [ ] REQ-0.0.48-02-06: Given the cognitive pass is invoked, when execution completes, then no file under `docs/design/adr/pool/**` has been modified — read-only invariant.
 
 ## Completion Checklist
 

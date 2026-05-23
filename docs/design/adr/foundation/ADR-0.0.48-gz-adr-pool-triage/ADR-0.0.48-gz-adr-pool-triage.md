@@ -3,8 +3,9 @@ id: ADR-0.0.48-gz-adr-pool-triage
 status: Proposed
 kind: foundation
 semver: 0.0.48
-lane: lite
+lane: heavy
 parent: PRD-GZKIT-1.0.0
+bounded_context: governance-triage
 date: 2026-05-16
 promoted_from: ADR-pool.pool-triage-skill
 ---
@@ -119,8 +120,8 @@ binding decisions:
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-- [ ] OBPI-0.0.48-01: **triage-prepass-contract** — Define the single mechanical pre-pass record set that composes ready-pool graph output and pool-overlap triage output.
-- [ ] OBPI-0.0.48-02: **candidate-cognitive-pass** — Author the skill's read-each-candidate procedure, requiring Intent and Decision review before structural-only rank input is produced.
+- [ ] OBPI-0.0.48-01: **triage-prepass-contract** — Define the single mechanical pre-pass record set that composes ready-pool graph output, pool-overlap triage output, GHI occurrence counts, and agent-insights signal counts.
+- [ ] OBPI-0.0.48-02: **candidate-cognitive-pass** — Author the skill's read-each-candidate procedure, requiring Intent and Decision review before structural-only rank input is produced; includes port/adapter reclassification check that flags foundation-appropriate pool items.
 - [ ] OBPI-0.0.48-03: **deterministic-renderer** — Implement the deterministic markdown renderer for the ranked promotion recommendation deliverable.
 - [ ] OBPI-0.0.48-04: **blocked-foundation-filter** — Add the dependency cross-check that filters or annotates candidates blocked by in-flight foundation work.
 - [ ] OBPI-0.0.48-05: **skill-surface-sync** — Add the canonical gz ADR pool triage skill, sync mirrors, and expose the operator invocation surface.
@@ -146,6 +147,12 @@ single JSON record set per pool ADR. Per-record fields:
 - `age_class` — `fresh` (<3mo) / `aging` (3-6mo) / `stale` (>6mo)
 - `overlap_cluster_id` (if any)
 - `intent_summary`, `decision_summary`
+- `ghi_occurrence_count` — count of open GHIs whose body or title references
+  this pool ADR's ID; higher count signals operator friction with the gap this
+  pool item addresses (structured dimension, not LLM ranking prose)
+- `insights_signal_count` — count of records in `.gzkit/insights/agent-insights.jsonl`
+  whose scope references this pool ADR's design space; higher count signals
+  a recurring governance concern that warrants earlier promotion
 
 ### Step 2 — Agent cognitive pass
 
@@ -157,6 +164,13 @@ entry per recommended-promotion ADR, in agent-recommended order.
 GHI #424): `{id, severity}` where severity is one of `urgent` /
 `next-quarter` / `latent`. No prose, no narrative. The rank list IS the
 deliverable.
+
+**Port/adapter reclassification check.** During the cognitive pass, if a
+candidate pool ADR's scope matches hexagonal-port characteristics — it
+authors an invariant or prerequisite without which downstream features
+cannot exist — flag it as `reclassify: foundation` and exclude it from the
+promotion-rank list. Reclassified items surface in a separate annotation for
+the operator to route via `gz adr promote --kind foundation`.
 
 ### Step 3 — Deterministic markdown renderer
 

@@ -31,28 +31,48 @@ status: Draft
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/ADR-0.0.48-gz-adr-pool-triage.md` — parent ADR for intent and scope
-- `docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/**` — parent ADR package scope
+- `src/gzkit/pool/triage_renderer.py` — pure-function renderer that takes a validated rank-input list and returns a deterministic markdown deliverable
+- `tests/test_pool_triage_renderer.py` — REQ-derived tests covering determinism (same input → same output), section ordering, and reclassification surfacing
+- `tests/fixtures/pool_triage_renderer/inputs/` — fixture rank-input JSON files (urgent-only, mixed-severity, reclassify-only, empty)
+- `tests/fixtures/pool_triage_renderer/golden/` — golden markdown output files paired byte-for-byte with each fixture input
+- `docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/obpis/OBPI-0.0.48-03-deterministic-renderer.md` — this brief (evidence updates only)
 
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
-- Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `src/gzkit/pool/triage_prepass.py` — prepass record set is OBPI-0.0.48-01's surface
+- `src/gzkit/pool/cognitive_pass.py` — rank-input emitter is OBPI-0.0.48-02's surface
+- `src/gzkit/pool/blocked_foundation.py` — filter logic is OBPI-0.0.48-04's surface
+- `.gzkit/skills/pool-triage/**` — skill body is OBPI-0.0.48-05's surface
+- `docs/user/manpages/**` — manpage authoring is OBPI-0.0.48-06's surface
+- Edits to any pool ADR file under `docs/design/adr/pool/**` — the renderer is a pure transform over JSON
+- New runtime dependencies; CI files; lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
-1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
-1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
-1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
+1. REQUIREMENT: `render_pool_triage(rank_input: list[PoolTriageRankInputEntry], reclassify: list[dict]) -> str` MUST be a pure function — identical inputs MUST produce byte-identical output across runs, processes, and platforms.
+2. REQUIREMENT: The renderer MUST emit three severity sections in fixed order — `## Urgent`, `## Next Quarter`, `## Latent` — and a final `## Reclassify as Foundation` section when the reclassify list is non-empty (omitted entirely when empty).
+3. REQUIREMENT: Within each severity section, entries MUST be ordered lexicographically by `id` — never by any agent-supplied ordering — to preserve determinism under set-shuffled inputs.
+4. REQUIREMENT: A `## Blocked on Foundation` annotation section MUST be reserved in the renderer's contract for OBPI-04's filter output (renderer accepts the optional list; emits the section when populated).
+5. NEVER: Embed timestamps, run-IDs, hostnames, or any non-input-derived content in the rendered output — the renderer is deterministic per ADR § Step 3.
+6. NEVER: Invoke subprocess, network, or filesystem reads inside the renderer — it is a pure transform from JSON input to markdown string.
+7. ALWAYS: Validate the rank-input list against `src/gzkit/schemas/pool_triage_rank_input.json` (OBPI-02's contract) before rendering; reject malformed inputs with explicit Pydantic `ValidationError`.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+
+
+## Creates these files
+
+<!-- Net-new files this OBPI creates. Path existence is exempt for these entries per GHI #419. -->
+
+- `src/gzkit/pool/triage_renderer.py` **CREATE**
+- `tests/test_pool_triage_renderer.py` **CREATE**
+- `tests/fixtures/pool_triage_renderer/inputs/` **CREATE**
+- `tests/fixtures/pool_triage_renderer/golden/` **CREATE**
 
 ## Discovery Checklist
 
@@ -134,10 +154,18 @@ status: Draft
 uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
-uv run gz test
+uv run gz arb step --name unittest -- uv run -m unittest -q tests.test_pool_triage_renderer
 
-# Specific verification for this OBPI
-rg -n "Superseded|supersede" docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/ADR-0.0.48-gz-adr-pool-triage.md
+# OBPI-specific surface checks
+test -f src/gzkit/pool/triage_renderer.py
+ls tests/fixtures/pool_triage_renderer/inputs/ | wc -l   # >= 4 fixtures
+ls tests/fixtures/pool_triage_renderer/golden/ | wc -l   # paired golden files
+
+# Determinism check — render twice and diff
+for fx in tests/fixtures/pool_triage_renderer/inputs/*.json; do
+  diff <(uv run python -m gzkit.pool.triage_renderer --input "$fx") \
+       <(uv run python -m gzkit.pool.triage_renderer --input "$fx") || exit 1
+done
 ```
 
 ## Demo
@@ -150,7 +178,15 @@ rg -n "Superseded|supersede" docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-t
      and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
 
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+# Render a mixed-severity fixture and inspect the deliverable
+uv run python -m gzkit.pool.triage_renderer --input tests/fixtures/pool_triage_renderer/inputs/mixed.json
+
+# Render a reclassify-only fixture — expect ## Reclassify as Foundation section, no severity sections
+uv run python -m gzkit.pool.triage_renderer --input tests/fixtures/pool_triage_renderer/inputs/reclassify_only.json
+
+# Verify byte-equivalence with golden output
+diff <(uv run python -m gzkit.pool.triage_renderer --input tests/fixtures/pool_triage_renderer/inputs/mixed.json) \
+     tests/fixtures/pool_triage_renderer/golden/mixed.md
 ```
 
 ## Acceptance Criteria
@@ -161,9 +197,12 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.48-03-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.48-03-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.48-03-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.48-03-01: Given any rank-input fixture, when the renderer is invoked twice in two separate processes, then the two outputs are byte-identical (determinism invariant).
+- [ ] REQ-0.0.48-03-02: Given a mixed-severity rank-input list, when the renderer emits markdown, then the section order is exactly `## Urgent` → `## Next Quarter` → `## Latent` and entries within each section are lexicographically sorted by `id`.
+- [ ] REQ-0.0.48-03-03: Given a rank-input where the reclassify list is non-empty, when the renderer emits markdown, then a `## Reclassify as Foundation` section appears as the final block; given an empty reclassify list, the section is omitted entirely.
+- [ ] REQ-0.0.48-03-04: Given a `blocked_on_foundation` annotation list is passed to the renderer, when it is non-empty, then a `## Blocked on Foundation` section is emitted between the severity sections and the reclassify section.
+- [ ] REQ-0.0.48-03-05: Given a rank-input fixture, when rendered, then the output contains no timestamp, hostname, run-ID, or other non-input-derived substring (regex assertion on golden output).
+- [ ] REQ-0.0.48-03-06: Given a malformed rank-input record (missing field, invalid severity), when passed to the renderer, then a Pydantic `ValidationError` is raised before any markdown is emitted.
 
 ## Completion Checklist
 

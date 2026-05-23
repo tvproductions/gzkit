@@ -31,28 +31,51 @@ status: Draft
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/ADR-0.0.48-gz-adr-pool-triage.md` — parent ADR for intent and scope
-- `docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/**` — parent ADR package scope
+- `docs/user/manpages/pool-triage.md` — operator-facing manpage for the skill (mirrors existing manpage convention under `docs/user/manpages/`)
+- `docs/user/runbook.md` — add `pool-triage` invocation flow alongside `ghi-triage`
+- `docs/governance/governance_runbook.md` — add `pool-triage` to governance-maintainer planning workflow
+- `features/pool_triage.feature` — BDD scenarios for full-pool and `--tags`-filtered runs (heavy lane Gate 4)
+- `tests/fixtures/pool_triage_e2e/full_pool/` — end-to-end fixture (multi-candidate pool, mixed staleness, one blocked, one reclassify-foundation)
+- `tests/fixtures/pool_triage_e2e/tag_filtered/` — fixture restricting to a single thematic tag
+- `tests/test_pool_triage_e2e.py` — end-to-end integration tests exercising the full skill chain (prepass + cognitive + filter + renderer) on the fixtures
+- `docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/obpis/OBPI-0.0.48-06-docs-validation-fixtures.md` — this brief (evidence updates only)
 
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
-- Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `src/gzkit/pool/**` — module surfaces are OBPI-01/02/03/04's territory (this OBPI imports them, does not edit)
+- `.gzkit/skills/pool-triage/SKILL.md` — skill body is OBPI-0.0.48-05's surface
+- `docs/user/manpages/pool-management.md`, `docs/user/manpages/pool-graph.md` — upstream CLI manpages owned by ADR-0.0.46/47
+<!-- gz-validate-skip: command-shape -->
+- Edits to `gz pool *` CLI verbs — upstream contract is ADR-0.0.46/47's surface
+- New runtime dependencies; CI files; lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
-1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
-1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
-1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
+1. REQUIREMENT: `docs/user/manpages/pool-triage.md` MUST satisfy the manpage template (description, usage, options, examples, exit codes per `.claude/rules/cli.md` § Help Text Requirements).
+2. REQUIREMENT: Every `gz <verb>` reference appearing in the manpage, runbook updates, or BDD feature MUST resolve to a registered parser verb — `gz validate --cli-alignment` MUST exit 0 (governance-core rule).
+3. REQUIREMENT: `features/pool_triage.feature` MUST encode at least two scenarios — full-pool triage and `--tags <theme>` filter — and `uv run -m behave features/pool_triage.feature` MUST pass (Gate 4 for heavy lane).
+4. REQUIREMENT: End-to-end fixtures MUST exercise all four upstream OBPIs: a pool ADR triggering OBPI-01 signal counters, an OBPI-02 reclassify-foundation case, an OBPI-04 blocked-foundation case, and OBPI-03 renderer determinism.
+5. REQUIREMENT: `uv run mkdocs build --strict` MUST exit 0 after manpage and runbook additions (Gate 3 for heavy lane).
+6. NEVER: Embed expected output strings in BDD scenarios that drift from the deterministic renderer's golden outputs (OBPI-03); reference golden files instead.
+7. ALWAYS: Update both `docs/user/runbook.md` (operator) and `docs/governance/governance_runbook.md` (maintainer) in the same edit per `.claude/rules/gate5-runbook-code-covenant.md` (three-layer documentation model).
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+
+
+## Creates these files
+
+<!-- Net-new files this OBPI creates. Path existence is exempt for these entries per GHI #419. -->
+
+- `docs/user/manpages/pool-triage.md` **CREATE**
+- `features/pool_triage.feature` **CREATE**
+- `tests/fixtures/pool_triage_e2e/full_pool/` **CREATE**
+- `tests/fixtures/pool_triage_e2e/tag_filtered/` **CREATE**
+- `tests/test_pool_triage_e2e.py` **CREATE**
 
 ## Discovery Checklist
 
@@ -132,12 +155,18 @@ status: Draft
 
 ```bash
 uv run gz validate --documents
+uv run gz validate --cli-alignment
 uv run gz lint
 uv run gz typecheck
-uv run gz test
+uv run gz arb step --name unittest -- uv run -m unittest -q tests.test_pool_triage_e2e
+uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
+uv run -m behave features/pool_triage.feature
 
-# Specific verification for this OBPI
-rg -n "Superseded|supersede" docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/ADR-0.0.48-gz-adr-pool-triage.md
+# OBPI-specific surface checks
+test -f docs/user/manpages/pool-triage.md
+grep -q "pool-triage" docs/user/runbook.md
+grep -q "pool-triage" docs/governance/governance_runbook.md
+ls tests/fixtures/pool_triage_e2e/{full_pool,tag_filtered}/ > /dev/null
 ```
 
 ## Demo
@@ -150,7 +179,17 @@ rg -n "Superseded|supersede" docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-t
      and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
 
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+# Render the manpage to verify formatting
+uv run mkdocs serve & sleep 2; curl -s http://localhost:8000/user/manpages/pool-triage/ | head -40; kill %1
+
+# Run the end-to-end test on the full-pool fixture
+uv run python -m unittest -v tests.test_pool_triage_e2e.TestFullPool
+
+# Run the BDD scenarios
+uv run -m behave features/pool_triage.feature --no-capture
+
+# Walk an operator through the runbook section
+sed -n '/^## Pool triage$/,/^## /p' docs/user/runbook.md
 ```
 
 ## Acceptance Criteria
@@ -161,9 +200,12 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.48-06-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.48-06-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.48-06-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.48-06-01: Given `docs/user/manpages/pool-triage.md` exists, when `gz cli audit` runs, then the manpage is covered across manpage/command-doc/index (exit 0).
+- [ ] REQ-0.0.48-06-02: Given the manpage and runbook updates, when `gz validate --cli-alignment` runs, then every `gz <verb>` reference resolves to a registered parser verb (exit 0).
+- [ ] REQ-0.0.48-06-03: Given `features/pool_triage.feature`, when `uv run -m behave features/pool_triage.feature` runs, then at least the `full-pool triage` and `--tags <theme> filter` scenarios pass.
+- [ ] REQ-0.0.48-06-04: Given the end-to-end fixtures, when `tests/test_pool_triage_e2e.py` runs, then OBPI-01 signal counters, OBPI-02 reclassify-foundation surfacing, OBPI-03 renderer determinism, and OBPI-04 blocked-foundation annotation are each exercised by at least one test case.
+- [ ] REQ-0.0.48-06-05: Given the docs additions, when `uv run mkdocs build --strict` runs, then exit code is 0 with no warnings.
+- [ ] REQ-0.0.48-06-06: Given the documentation updates, when reading `docs/user/runbook.md` AND `docs/governance/governance_runbook.md`, then both contain a `pool-triage` section consistent with the manpage (three-layer doc covenant).
 
 ## Completion Checklist
 

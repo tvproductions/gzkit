@@ -1,6 +1,6 @@
 ---
 id: ADR-pool.skill-tuning-feedback-loop
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
@@ -9,13 +9,16 @@ consumes:
   - ADR-pool.harness-trace-bundles
   - ADR-pool.harness-lab
 inspired_by: arXiv:2603.28052v1 Meta-Harness
+promoted_to: ADR-0.51.0-skill-tuning-feedback-loop
 ---
 
 # ADR-pool.skill-tuning-feedback-loop: Skill Tuning Feedback Loop
+> Promoted to `ADR-0.51.0-skill-tuning-feedback-loop` on 2026-05-22. This pool file is retained as historical intake context.
+
 
 ## Status
 
-Pool
+Superseded
 
 ## Intent
 
@@ -147,12 +150,12 @@ incompatible experiment loop from forming.
 
 ## Target Scope
 
-- Define the `skill_tuning` episode record shape and storage layer.
-- Extend skill-quality chores to build and run hard goal baskets.
-- Add a report surface showing baseline vs candidate skill behavior.
-- Define promotion criteria for accepting a candidate skill edit.
-- Add provenance links from accepted skill edits to tuning episodes.
-- Preserve human review and existing `skill-version` / mirror-sync discipline.
+- **evaluation-episode-contract** — Define the skill_tuning episode shape: dry-run walkthrough method (evaluator narrates the tool calls it would make against reference tasks, scored on call-shape fidelity), rubric dimensions (comprehension + tool-fidelity; tool-fidelity weight → 0 for non-tool skills), pass threshold, and cross-model-family evaluator protocol.
+- **hard-basket-builder** — Extend the skill-authoring-quality and skill-trigger-testing chores to build and run hard goal baskets from agent-insights.jsonl, skill_feedback events, OBPI pipeline friction, wrong-skill invocations, and ARB-backed failures.
+- **skill-md-frontmatter-schema** — Define the optimize: metadata block in SKILL.md frontmatter: tested_against (model + date), content_hash, rubric_score, prior_opinion_trail. Persists the evaluation genealogy with no per-model skill forks.
+- **chore-run-modes** — Implement the Optimize ad-hoc chore with two run-modes: trim-and-verify (proposes a trim, evaluates fidelity before and after) and recalibrate-verify (new-model landing, no trim, re-scores against current model). Logging and report artifact with governance trail.
+- **prose-improvement-loop** — Add the evaluator prose-improvement suggestion step: after rubric scoring the evaluator suggests specific skill prose improvements; human gate and attestation closes the loop.
+- **docs-validation-fixtures** — Add docs, examples, and validation fixtures for ad-hoc chore invocation patterns and skill coverage tracking.
 
 ## Non-Goals
 

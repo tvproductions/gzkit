@@ -68,6 +68,70 @@ gzkit is a Python CLI that implements the GovZero development covenant methodolo
 
 ---
 
+## 2.1 Ubiquitous Language
+
+<!-- gzkit-namespace glossary entries. Each entry conforms to UbiquitousLanguageTerm schema (ADR-0.0.43):
+     term, scope (cross-cutting | <bc-slug>), definition (≥10 chars), provenance (list of ADR IDs).
+     Backticked `gz-glossary-<term>` markers in prose resolve here. -->
+
+### Cross-cutting
+
+- **term:** `rubric-dimension` · **scope:** cross-cutting · **provenance:** ADR-0.51.0-skill-tuning-feedback-loop, ADR-0.0.57-foundation-adr-nominal-id-triage
+  **definition:** A named axis along which a rubric scores an artifact, with associated weight and pass-threshold; the basis for the structured-dimension scoring pattern shared across `gz adr evaluate`, Optimize, and Triage skills.
+- **term:** `rubric-finding` · **scope:** cross-cutting · **provenance:** ADR-0.51.0-skill-tuning-feedback-loop, ADR-0.0.57-foundation-adr-nominal-id-triage
+  **definition:** A specific actionable observation produced when a rubric dimension scores below a calibrated threshold; cites the prose or behavior fragment that caused the deduction.
+- **term:** `evidence-citation` · **scope:** cross-cutting · **provenance:** ADR-0.51.0-skill-tuning-feedback-loop, ADR-0.0.57-foundation-adr-nominal-id-triage
+  **definition:** A pointer from a rubric finding or triage ranking to its source artifact (GHI ID, insight record, file:line, ADR ID); enables auditability and prevents narrative-only justification.
+
+### Skill Evaluation
+
+- **term:** `evaluation-episode` · **scope:** skill-evaluation · **provenance:** ADR-0.51.0-skill-tuning-feedback-loop
+  **definition:** A single run of the Optimize chore evaluating a baseline-vs-candidate skill version against a hard goal basket and producing rubric scores and findings.
+- **term:** `hard-basket` · **scope:** skill-evaluation · **provenance:** ADR-0.51.0-skill-tuning-feedback-loop
+  **definition:** A reproducible set of failure cases drawn from agent-insights, skill_feedback events, OBPI friction, wrong-skill invocations, and ARB-backed failures, used to test whether a candidate skill edit improves observed behavior.
+- **term:** `dry-run-walkthrough` · **scope:** skill-evaluation · **provenance:** ADR-0.51.0-skill-tuning-feedback-loop
+  **definition:** An evaluator narration of the tool calls a skill would issue against a reference task, scored on call-shape fidelity without actually executing the tools.
+- **term:** `tool-fidelity` · **scope:** skill-evaluation · **provenance:** ADR-0.51.0-skill-tuning-feedback-loop
+  **definition:** The degree to which an evaluator's predicted tool-call shape (tool name, argument structure, order) matches the contract the skill is designed to drive; weighted to zero for non-tool-operating skills.
+- **term:** `baseline-vs-candidate` · **scope:** skill-evaluation · **provenance:** ADR-0.51.0-skill-tuning-feedback-loop
+  **definition:** The pairing of a current skill version (baseline) against a proposed edit (candidate), evaluated against the same hard basket to attribute behavior change to the edit.
+- **term:** `prior-opinion-trail` · **scope:** skill-evaluation · **provenance:** ADR-0.51.0-skill-tuning-feedback-loop
+  **definition:** The append-only sequence of past Optimize attestations recorded in SKILL.md frontmatter, naming evaluator model, date, content-hash, and findings; persists evaluation genealogy across model cycles.
+
+### Governance Triage
+
+- **term:** `triage-rubric` · **scope:** governance-triage · **provenance:** ADR-0.0.57-foundation-adr-nominal-id-triage, ADR-0.0.48-gz-adr-pool-triage
+  **definition:** The structured scoring system that converts pool/foundation ADR backlog records into ranked recommendations using insights-signal-count, ghi-occurrence-count, and feature-unblocking-count dimensions.
+- **term:** `insights-signal-count` · **scope:** governance-triage · **provenance:** ADR-0.0.57-foundation-adr-nominal-id-triage, ADR-0.0.48-gz-adr-pool-triage
+  **definition:** Count of records in `.gzkit/insights/agent-insights.jsonl` whose scope references the candidate ADR; structured signal source for triage ranking, not LLM-prose ranking.
+- **term:** `ghi-occurrence-count` · **scope:** governance-triage · **provenance:** ADR-0.0.57-foundation-adr-nominal-id-triage, ADR-0.0.48-gz-adr-pool-triage
+  **definition:** Count of open GHIs whose body or title references the candidate ADR's identifier; structured signal of operator friction with the gap the ADR addresses.
+- **term:** `port-adapter-reclassification-flag` · **scope:** governance-triage · **provenance:** ADR-0.0.48-gz-adr-pool-triage, ADR-0.0.57-foundation-adr-nominal-id-triage
+  **definition:** Triage output that marks a pool ADR whose scope matches hexagonal-port characteristics (authors an invariant, prerequisite for features) and recommends promotion as foundation kind rather than feature.
+- **term:** `nominal-identifier` · **scope:** governance-triage · **provenance:** ADR-0.0.57-foundation-adr-nominal-id-triage
+  **definition:** A governance ID component whose value uniquely identifies the artifact but carries no ordering semantics; pool slugs, GHI numbers, and foundation 0.0.x third components are nominal identifiers; feature ADR versions are genuine semver.
+
+## 2.2 Bounded Contexts
+
+<!-- Each entry conforms to BoundedContextDeclaration schema (ADR-0.0.43):
+     slug, purpose (≥10 chars), owner_persona (registered persona), lifecycle_state, dm_ref, introduced_in. -->
+
+- **slug:** `skill-evaluation` · **owner_persona:** main-session · **lifecycle_state:** active · **dm_ref:** _(none yet)_ · **introduced_in:** ADR-0.51.0-skill-tuning-feedback-loop
+  **purpose:** Empirically score skill behavior (control-surface text) against observed failure classes using cross-model-family evaluators, producing reproducible signals for trim-and-recalibrate decisions across model cycles.
+
+- **slug:** `governance-triage` · **owner_persona:** main-session · **lifecycle_state:** active · **dm_ref:** _(none yet)_ · **introduced_in:** ADR-0.0.57-foundation-adr-nominal-id-triage
+  **purpose:** Rank governance backlogs (pool ADRs, foundation ADRs) by impact and structured signals so highest-value next-work surfaces as a reproducible ephemeral report rather than recall-based agent narration.
+
+## 2.3 Context Map
+
+<!-- Each entry conforms to ContextMapEntry schema (ADR-0.0.43):
+     from, to, type (Evans-7 + Vernon Partnership + Big-Ball-of-Mud), description (≥10 words). -->
+
+- **from:** `skill-evaluation` · **to:** `governance-triage` · **type:** `shared-kernel`
+  **description:** Both contexts share a kernel of rubric vocabulary (`rubric-dimension`, `rubric-finding`, `evidence-citation`) registered as cross-cutting terms; changes to the shared kernel require coordination across both contexts to preserve scoring consistency.
+
+---
+
 ## 3. Context & Background
 
 ### Business Context
