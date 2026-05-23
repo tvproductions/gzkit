@@ -350,6 +350,20 @@ uv run gz status --table
 uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z --status proposed
 ```
 
+3. If reversing a promotion (e.g., the get-out-of-jail prequel sweep, or any
+   ADR that was promoted but is not actually committed work), use the
+   deterministic inverse:
+
+```bash
+uv run gz adr demote ADR-<X.Y.Z>-<slug> --ghi <NUMBER>
+```
+
+Demotion strips `kind`/`semver` frontmatter, moves the file from
+`pre-release/` or `foundation/` to `pool/`, deletes the source package
+directory (briefs + closeout form per Q1=b of the 2026-05-23 prequel), and
+emits an `artifact_renamed` ledger event with `reason="pool_demotion"`. The
+`--ghi` flag is mandatory for auditability. See `docs/user/manpages/adr-demote.md`.
+
 #### Nominal ID allocation for foundation ADRs
 
 Foundation ADR IDs (0.0.x) are **nominal integers** — the allocator assigns

@@ -709,6 +709,7 @@ Use [`/gz-check`](skills/gz-check.md) to run all quality checks in one pass, or 
 - `uv run gz adr report`
 - `uv run gz adr status ADR-<X.Y.Z> --json`
 - `uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z`
+- `uv run gz adr demote ADR-<X.Y.Z>-<slug> --ghi <N>` (inverse of promote; demotes a feature/foundation ADR back to pool)
 - `uv run gz status --json`
 - `uv run gz status --show-gates --full` (every linked OBPI rendered as a Rich-table row, no `... and N more` truncation — use for attestation evidence and bug reports per GHI #319)
 - `uv run gz status --table --full` (foundation/feature/pool ADR summary with full IDs, no ellipsis)

@@ -103,11 +103,13 @@ the sweep commit SHA when the 24 demotions land.
 **Tooling prerequisite:** `gz adr demote` does not exist as of 2026-05-23.
 Build it as a single Day-0 housekeeping deliverable (single GHI, no new
 ADR), mirroring `gz adr promote`'s schema-edit + file-move + ledger-event
-pattern. The new `adr_demoted` ledger event carries the payload
-`{prior_id, prior_kind, prior_semver, new_id, demoted_at, reason, operator,
-ghi}`. Pool file stays clean (no `previously:` frontmatter); history is
-queryable via `gz state <pool-id>` per state doctrine (Layer 2 ledger =
-source of truth for state transitions).
+pattern. Demotion emits an `artifact_renamed` ledger event with
+`reason="pool_demotion"` and `extra={prior_kind, prior_semver, demoted_at,
+ghi, operator?, note?}` — reusing the existing event factory (per Q5=a
+2026-05-23) rather than introducing a new event type. The `new_id` lives
+on the rename event itself, not in extras. Pool file stays clean (no
+`previously:` frontmatter); history is queryable via `gz state <pool-id>`
+per state doctrine (Layer 2 ledger = source of truth for state transitions).
 
 **After the prequel:**
 - Highest active feature ADR = `0.26.0`

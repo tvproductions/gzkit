@@ -25,6 +25,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz adr status`](adr-status.md) | Show focused OBPI progress for one ADR |
 | [`gz adr report`](adr-report.md) | Deterministic tabular report (summary or single ADR) |
 | [`gz adr promote`](adr-promote.md) | Promote a pool ADR into canonical ADR package structure |
+| [`gz adr demote`](adr-demote.md) | Demote a feature/foundation ADR back to pool (inverse of promote) |
 | [`gz adr evaluate`](adr-evaluate.md) | Evaluate ADR/OBPI quality (deterministic scoring with verdict) |
 | [`gz adr audit-check`](adr-audit-check.md) | Verify OBPI completeness/evidence for one ADR |
 | [`gz adr covers-check`](adr-covers-check.md) | Verify ADR/OBPI @covers traceability in tests |

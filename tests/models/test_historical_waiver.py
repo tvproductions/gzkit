@@ -10,12 +10,12 @@ from __future__ import annotations
 
 import unittest
 
+from pydantic import ValidationError
+
 from gzkit.models.historical_waiver import (
     HistoricalAttestationWaiver,
     HistoricalAttestationWaiverFile,
 )
-from pydantic import ValidationError
-
 from gzkit.traceability import covers
 
 

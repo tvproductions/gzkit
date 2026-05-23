@@ -29,6 +29,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "adr_audit_end_cmd": "gzkit.commands.adr_audit",
     "adr_covers_check": "gzkit.commands.adr_audit",
     "adr_emit_receipt_cmd": "gzkit.commands.adr_audit",
+    "adr_demote_cmd": "gzkit.commands.adr_demote",
     "adr_eval_cmd": "gzkit.commands.adr_promote",
     "adr_promote_cmd": "gzkit.commands.adr_promote",
     "obpi_audit_cmd": "gzkit.commands.obpi_audit_cmd",
@@ -637,6 +638,62 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
             lane=a.lane,
             kind=a.kind,
             target_status=a.target_status,
+            as_json=a.as_json,
+            dry_run=a.dry_run,
+            force=a.force,
+        )
+    )
+
+    p_adr_demote = adr_commands.add_parser(
+        "demote",
+        help="Demote a feature or foundation ADR back to pool",
+        description=(
+            "Inverse of ``gz adr promote``: strip kind/semver frontmatter, "
+            "move the ADR file from pre-release/ or foundation/ to pool/, "
+            "delete the source package directory (briefs + closeout form), "
+            "and emit an artifact_renamed ledger event with "
+            "reason=pool_demotion."
+        ),
+        epilog=build_epilog(
+            [
+                "gz adr demote ADR-0.27.0-arb-receipt-system-absorption --ghi 520",
+                "gz adr demote ADR-0.27.0 --ghi 520 --dry-run",
+                "gz adr demote ADR-0.27.0 --ghi 520 --note 'queue collapse' --json",
+            ]
+        ),
+    )
+    p_adr_demote.add_argument(
+        "adr_id",
+        help="ADR id to demote (e.g., ADR-0.27.0-arb-receipt-system-absorption or ADR-0.27.0)",
+    )
+    p_adr_demote.add_argument(
+        "--ghi",
+        required=True,
+        type=int,
+        help="GitHub Issue number this demotion is tracked under (required for auditability)",
+    )
+    p_adr_demote.add_argument(
+        "--note",
+        default=None,
+        help="Free-text operator rationale stored in the ledger event extras",
+    )
+    p_adr_demote.add_argument(
+        "--operator",
+        default=None,
+        help="Operator identity (name only; never email per Local Agent Rules)",
+    )
+    add_json_flag(p_adr_demote)
+    add_dry_run_flag(p_adr_demote)
+    add_force_flag(
+        p_adr_demote,
+        help_override="Override dependent-children safety check (orphans the children)",
+    )
+    p_adr_demote.set_defaults(
+        func=lambda a: _lazy("adr_demote_cmd")(
+            adr_id=a.adr_id,
+            ghi=a.ghi,
+            note=a.note,
+            operator=a.operator,
             as_json=a.as_json,
             dry_run=a.dry_run,
             force=a.force,
