@@ -386,6 +386,9 @@ class TestRepoCodexHooksAnchorScripts(unittest.TestCase):
         for command in commands:
             joined = " ".join(command) if isinstance(command, list) else command
             self.assertIn("$(git rev-parse --show-toplevel)", joined, joined)
+            self.assertIn("uv run", joined, joined)
+            self.assertIn("--cache-dir", joined, joined)
+            self.assertIn(".gzkit/cache/uv", joined, joined)
             self.assertNotIn("python scripts/", joined, joined)
 
 

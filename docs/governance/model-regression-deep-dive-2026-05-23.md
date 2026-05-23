@@ -111,6 +111,12 @@ probe should run the generated hook command in the same execution class Codex
 will use, with cache/write paths pinned inside the workspace or with a
 stdlib-only wrapper that does not depend on `uv` cache initialization.
 
+Follow-up applied in the same session: keep the hook in the project-scoped
+`.codex/hooks.json` surface and keep the uv runtime, but pin uv's mutable cache
+to `.gzkit/cache/uv` via `uv run --cache-dir "$(git rev-parse
+--show-toplevel)/.gzkit/cache/uv" ...`. The orientation freshness validator now
+rejects Codex SessionStart hooks that depend on the user-level uv cache.
+
 ### 2. `gz check` is red, and its output is hard to triage
 
 Evidence:
@@ -309,10 +315,10 @@ observed outputs.
 
 | Risk | Severity | Evidence | Route |
 |---|---|---|---|
-| Codex SessionStart hook fails under sandbox while validator passes | High | exact hook command failed; orientation validator passed | likely ADR-0.44.0 / focused GHI |
+| Codex SessionStart hook fails under sandbox while validator passes | High, patched in-session | exact hook command failed; orientation validator passed; replacement command passes with project-local uv cache | direct fix anchored to GHI #510 follow-up |
 | Closeout ceremony passive presenter lacks REQ/evidence verification | Critical | GHI #516, #517 | #517 diagnosis, then pool ADR(s) |
 | 258K-window Codex run cannot reliably carry gzkit through work | Critical | operator report during this review | immediate context-collapse track coupled to #517 |
-| `gz check` hides one blocking preflight issue behind advisory bulk | High | `gz check` failed Preflight; `gz preflight` shows one orphan receipt | direct fix or GHI depending diff |
+| `gz check` hid one blocking preflight issue behind advisory bulk | High, orphan cleaned in-session | `gz check` failed Preflight; `gz preflight` showed one orphan receipt; `gz preflight --apply` cleaned it | output-design fix remains separate |
 | Executable governance scripts outside `gz typecheck` scope | Medium/High | `gz typecheck` passes; `ty check .` fails with 41 diagnostics | typecheck-scope design |
 | Large pending governance queue creates selection pressure and context load | Medium | 173 pending ADRs, 126 pending pool ADRs | pool triage / foundation triage |
 

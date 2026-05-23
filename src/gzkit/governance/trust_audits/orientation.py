@@ -20,6 +20,8 @@ _ORIENTATION_SCRIPT = "scripts/session_orientation.py"
 _ORIENTATION_REMOTE_HEADING = "Git remote state"
 _ORIENTATION_COLLECTOR = "collect_remote_state"
 _ORIENTATION_AGGREGATOR = "collect_state"
+_CODEX_PROJECT_CACHE = ".gzkit/cache/uv"
+_GIT_TOPLEVEL_ANCHOR = "$(git rev-parse --show-toplevel)"
 
 
 def _read_session_start_blocks(path: Path) -> list[Any]:
@@ -157,6 +159,34 @@ def _check_hook_wired(
     )
 
 
+def _check_codex_hook_runtime(hooks_path: Path) -> ValidationError | None:
+    """Ensure Codex orientation runs through uv with project-local mutable state."""
+    if not hooks_path.exists():
+        return None
+    commands = [
+        cmd
+        for cmd in _codex_session_start_command_strings(hooks_path)
+        if _ORIENTATION_SCRIPT in cmd
+    ]
+    if not commands:
+        return None
+    if any(
+        "uv run" in cmd
+        and "--cache-dir" in cmd
+        and _CODEX_PROJECT_CACHE in cmd
+        and _GIT_TOPLEVEL_ANCHOR in cmd
+        for cmd in commands
+    ):
+        return None
+    return _orientation_error(
+        ".codex/hooks.json",
+        "Codex SessionStart orientation hook must run through `uv run` with a "
+        "project-local uv cache (`--cache-dir "
+        f'"{_GIT_TOPLEVEL_ANCHOR}/{_CODEX_PROJECT_CACHE}"`). User-level uv '
+        "cache dependencies fail under Codex hook sandboxing.",
+    )
+
+
 def _check_orientation_headings(script: Path) -> ValidationError | None:
     headings = _script_section_headings(script)
     if headings is None:
@@ -223,6 +253,10 @@ def audit_orientation_freshness(project_root: Path) -> list[ValidationError]:
     )
     if codex_err is not None:
         errors.append(codex_err)
+    else:
+        codex_runtime_err = _check_codex_hook_runtime(project_root / ".codex" / "hooks.json")
+        if codex_runtime_err is not None:
+            errors.append(codex_runtime_err)
 
     script = project_root / _ORIENTATION_SCRIPT
     if not script.exists():

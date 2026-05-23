@@ -18,6 +18,14 @@ from pathlib import Path
 
 from gzkit.governance.trust_audits import audit_orientation_freshness
 
+_CODEX_PROJECT_UV_HOOK = (
+    'uv run --cache-dir "$(git rev-parse --show-toplevel)/.gzkit/cache/uv" '
+    'python "$(git rev-parse --show-toplevel)/scripts/session_orientation.py"'
+)
+_CODEX_USER_CACHE_HOOK = (
+    'uv run python "$(git rev-parse --show-toplevel)/scripts/session_orientation.py"'
+)
+
 _CLAUDE_OK = {
     "hooks": {
         "SessionStart": [
@@ -39,7 +47,11 @@ _CODEX_OK = {
     "hooks": {
         "SessionStart": [
             {
-                "command": ["uv", "run", "python", "scripts/session_orientation.py"],
+                "command": [
+                    "sh",
+                    "-c",
+                    _CODEX_PROJECT_UV_HOOK,
+                ],
                 "inject": "additionalContext",
             }
         ]
@@ -146,6 +158,34 @@ class TestOrientationFreshnessFailClose(unittest.TestCase):
             self.assertTrue(
                 any(e.artifact == ".codex/hooks.json" for e in errors),
                 f"expected hook-drift error on .codex/hooks.json, got {errors}",
+            )
+
+    def test_codex_hooks_user_cache_dependency_fails_close(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _seed_baseline(root)
+            drifted = {
+                "hooks": {
+                    "SessionStart": [
+                        {
+                            "command": [
+                                "sh",
+                                "-c",
+                                _CODEX_USER_CACHE_HOOK,
+                            ],
+                            "inject": "additionalContext",
+                        }
+                    ]
+                }
+            }
+            (root / ".codex" / "hooks.json").write_text(json.dumps(drifted), encoding="utf-8")
+            errors = audit_orientation_freshness(root)
+            self.assertTrue(
+                any(
+                    e.artifact == ".codex/hooks.json" and "project-local uv cache" in e.message
+                    for e in errors
+                ),
+                f"expected project-local cache error on .codex/hooks.json, got {errors}",
             )
 
     def test_section_heading_missing_fails_close(self):
