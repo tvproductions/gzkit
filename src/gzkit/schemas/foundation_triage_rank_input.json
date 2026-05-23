@@ -1,0 +1,83 @@
+{
+  "$defs": {
+    "EvidenceRef": {
+      "additionalProperties": false,
+      "description": "Foundation-triage rubric-dimension record \u2014 adapts canonical ``DimensionScore``.\n\nPer the PRD ``rubric-dimension`` term (\u00a7 2.1; provenance ADR-0.0.57 +\nADR-0.51.0), a rubric dimension is \"a named axis along which a rubric\nscores an artifact, with associated weight and pass-threshold.\" This\nclass is the foundation-triage adaptation of\n``gzkit.adr_eval.DimensionScore``, with two intentional divergences:\n\n1. **Adds ``source`` field** per the PRD ``evidence-citation`` term\n   \u2014 foundation-triage dimensions are *mechanically counted* from\n   observable artifacts (insights stream, GHI references, pool-ADR\n   ``depends_on``), so each dimension carries the path of the artifact\n   it counted. This is the citation pointer.\n2. **Omits the ``findings: list[str]`` field** per REQ-0.0.57-04-03\n   (structural-only, no prose); foundation-triage is mechanical\n   counting, not judgment scoring with actionable observations. This\n   mirrors ``ghi-triage`` round-3 hardening per GHI #424 \u2014 removing\n   prose fields makes operator-chat duplication structurally\n   impossible.\n\nNaming and bound-checking patterns mirror ``DimensionScore``: ``weight``\nas an integer factor, ``weighted = weight * count`` as the contribution\nto the parent entry's ``priority_score``. Weights are integers here\n(3 / 2 / 5) rather than the ``DimensionScore`` ``float`` summing to 1.0,\nbecause foundation-triage emits a discrete priority score rather than a\n1-4 weighted average.",
+      "properties": {
+        "dimension": {
+          "description": "Canonical signal-dimension name (mirrors `DimensionScore.dimension`)",
+          "enum": [
+            "insights_signal",
+            "ghi_occurrence",
+            "feature_unblocking"
+          ],
+          "title": "Dimension",
+          "type": "string"
+        },
+        "source": {
+          "description": "Relative POSIX path of the artifact counted (PRD term `evidence-citation`)",
+          "title": "Source",
+          "type": "string"
+        },
+        "weight": {
+          "description": "Per-dimension weight (mirrors `DimensionScore.weight`)",
+          "minimum": 1,
+          "title": "Weight",
+          "type": "integer"
+        },
+        "count": {
+          "description": "Raw signal count for this dimension (>= 0)",
+          "minimum": 0,
+          "title": "Count",
+          "type": "integer"
+        },
+        "weighted": {
+          "description": "weight \u00d7 count contribution (mirrors `DimensionScore.weighted`)",
+          "minimum": 0,
+          "title": "Weighted",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "dimension",
+        "source",
+        "weight",
+        "count",
+        "weighted"
+      ],
+      "title": "EvidenceRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Structural-only rank entry for one foundation ADR \u2014 no prose fields.\n\nThe ``evidence`` tuple is non-empty by belt-and-braces design:\n``Field(min_length=1)`` gives Pydantic 2 the declarative constraint;\n``_check_evidence_nonempty`` catches edge-case looseness observed in\npydantic-core 2.10\u20132.18 where ``min_length`` on tuple fields was\nintermittently lax. Mirrors the ADR-0.0.29 advisor-proof binding\nprecedent (REQ-0.0.57-04-07).",
+  "properties": {
+    "id": {
+      "description": "Short foundation ADR id, e.g. ADR-0.0.57",
+      "title": "Id",
+      "type": "string"
+    },
+    "priority_score": {
+      "description": "Weighted composite score across all signal dimensions (>= 0)",
+      "minimum": 0,
+      "title": "Priority Score",
+      "type": "integer"
+    },
+    "evidence": {
+      "description": "One EvidenceRef per signal dimension; min_length=1 ensures at least one citation",
+      "items": {
+        "$ref": "#/$defs/EvidenceRef"
+      },
+      "minItems": 1,
+      "title": "Evidence",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "priority_score",
+    "evidence"
+  ],
+  "title": "FoundationTriageRankEntry",
+  "type": "object"
+}

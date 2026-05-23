@@ -1,16 +1,9 @@
 {
   "obpi_id": "OBPI-0.0.57-04-foundation-triage-rubric",
-  "timestamp": "2026-05-23T11:56:55.338183+00:00",
-  "verdict": "FAIL",
-  "plan_file": "prancy-juggling-globe.md",
-  "gaps_found": 5,
-  "gaps": [
-    "Allowed path does not exist in repository: src/gzkit/foundation/rubric.py",
-    "Allowed path does not exist in repository: src/gzkit/schemas/foundation_triage_rank_input.json",
-    "Allowed path does not exist in repository: docs/governance/foundation-triage-rubric.md",
-    "Allowed path does not exist in repository: tests/test_foundation_triage_rubric.py",
-    "Allowed path does not exist in repository: tests/fixtures/foundation_triage_rubric/"
-  ],
+  "timestamp": "2026-05-23T14:30:24.361400+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.57-04-foundation-triage-rubric.md",
+  "gaps_found": 0,
   "scope_collisions": [
     {
       "sibling_adr": "ADR-0.51.0",

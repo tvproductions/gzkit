@@ -106,6 +106,8 @@ gzkit is a Python CLI that implements the GovZero development covenant methodolo
   **definition:** Count of records in `.gzkit/insights/agent-insights.jsonl` whose scope references the candidate ADR; structured signal source for triage ranking, not LLM-prose ranking.
 - **term:** `ghi-occurrence-count` · **scope:** governance-triage · **provenance:** ADR-0.0.57-foundation-adr-nominal-id-triage, ADR-0.0.48-gz-adr-pool-triage
   **definition:** Count of open GHIs whose body or title references the candidate ADR's identifier; structured signal of operator friction with the gap the ADR addresses.
+- **term:** `feature-unblocking-count` · **scope:** governance-triage · **provenance:** ADR-0.0.57-foundation-adr-nominal-id-triage
+  **definition:** Count of pool or feature ADRs whose `depends_on` frontmatter references the candidate foundation ADR; measures how many downstream items are blocked by this foundation's absence. Highest-weight dimension in the rubric scoring formula (weight 5 vs 3 for insights and 2 for GHI).
 - **term:** `port-adapter-reclassification-flag` · **scope:** governance-triage · **provenance:** ADR-0.0.48-gz-adr-pool-triage, ADR-0.0.57-foundation-adr-nominal-id-triage
   **definition:** Triage output that marks a pool ADR whose scope matches hexagonal-port characteristics (authors an invariant, prerequisite for features) and recommends promotion as foundation kind rather than feature.
 - **term:** `nominal-identifier` · **scope:** governance-triage · **provenance:** ADR-0.0.57-foundation-adr-nominal-id-triage

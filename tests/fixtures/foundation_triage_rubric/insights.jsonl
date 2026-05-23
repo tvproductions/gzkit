@@ -1,0 +1,5 @@
+{"scope": "ADR-0.0.90", "summary": "ADR-0.0.90 needs implementation before GHI #101 can be resolved", "evidence": "ADR-0.0.90 blocks downstream work", "next_action": "implement ADR-0.0.90"}
+{"scope": "ADR-0.0.90", "summary": "Second signal for ADR-0.0.90, references GHI #202 and GHI #303", "evidence": "ADR-0.0.90 mentioned in multiple GHI contexts", "next_action": "prioritize ADR-0.0.90"}
+{"scope": "ADR-0.0.90", "summary": "Third signal for ADR-0.0.90", "evidence": "ADR-0.0.90 still outstanding", "next_action": "track ADR-0.0.90"}
+{"scope": "ADR-0.0.91", "summary": "Single mention of ADR-0.0.91", "evidence": "ADR-0.0.91 noted once", "next_action": "review ADR-0.0.91"}
+{"scope": "ADR-0.0.55", "summary": "Unrelated entry for different ADR", "evidence": "other work", "next_action": "track ADR-0.0.55"}

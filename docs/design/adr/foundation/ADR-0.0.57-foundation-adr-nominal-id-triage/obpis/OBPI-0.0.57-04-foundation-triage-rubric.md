@@ -3,7 +3,7 @@ id: OBPI-0.0.57-04-foundation-triage-rubric
 parent: ADR-0.0.57-foundation-adr-nominal-id-triage
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.57-04-foundation-triage-rubric: Foundation Triage Rubric
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.57-foundation-adr-nominal-id-triage/ADR-0.0.57-foundation-adr-nominal-id-triage.md`
 - **Checklist Item:** #4 - "OBPI-0.0.57-04: **foundation-triage-rubric** — Define the ranking rubric: structured signal dimensions (insights-signal count, GHI-occurrence count, feature-unblocking count), judgment-assisted ranking with structural-only output, evidence citations; register the governance-triage vocabulary in PRD-GZKIT-1.0.0 § 2.1 with provenance to this ADR (per ADR-0.0.43 cascade contract)."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -265,15 +265,31 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+Demo invocation (REQ-02, REQ-03, REQ-06):
+
+uv run python -m gzkit.foundation.rubric --foundation-root tests/fixtures/foundation_triage_rubric/backlog --insights tests/fixtures/foundation_triage_rubric/insights.jsonl --format json
+
+<!-- gz-validate-skip: brief-cross-references -->
+Observed structural-only output keys per rank-input entry: {"evidence", "id", "priority_score"} (no prose). Each evidence ref carries the canonical rubric-dimension contract {dimension, source, weight, count, weighted}. Fixture foundation `ADR-0.0.90` (under `tests/fixtures/foundation_triage_rubric/backlog/`, not registered as a real foundation ADR) yields priority_score=15 = insights(3×3=9) + ghi(2×3=6) + unblocking(5×0=0). All three signal dimensions present with non-zero evidence-citation source paths.
+
+Schema parity (REQ-05): FoundationTriageRankEntry.model_json_schema() byte-equal to src/gzkit/schemas/foundation_triage_rank_input.json; jsonschema.validate rejects entries with extra fields.
+
+Belt-and-braces (REQ-01, ADR-0.0.29 precedent): both Field(min_length=1) and _check_evidence_nonempty model validator reject empty evidence tuple.
+
+Verification receipts: lint arb-ruff-c81001dd82304b5188d214ea2a6bbc28 (clean); typecheck arb-step-typecheck-e79328d97446402da24be6f20e0976b1 (clean); OBPI-scoped tests arb-step-unittest-60cc9689b4194d3ba138cbb4391d2966 (20/20); full sweep arb-step-unittest-0d1df76163d04a9b9bb5b7ab838cbc6c (5483/5483); REQ parity 6/6 via gz covers.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/foundation/rubric.py (EvidenceRef + FoundationTriageRankEntry + 3 signal counters + score_foundation + __main__); src/gzkit/schemas/foundation_triage_rank_input.json (emitted from Pydantic model, additionalProperties=false, minItems=1); docs/governance/foundation-triage-rubric.md (dimensions, formula, DimensionScore divergence rationale); tests/test_foundation_triage_rubric.py (20 tests, 6/6 REQ coverage); tests/fixtures/foundation_triage_rubric/ (5 ADR fixtures + insights.jsonl)
+- Files modified: docs/design/prd/PRD-GZKIT-1.0.0.md (standalone feature-unblocking-count vocabulary term); data/behave_coverage_waivers.json (rubric-tier BDD waiver, library surface deferred to OBPI-05 operator flow)
+- Canonical alignment: EvidenceRef adapts gzkit.adr_eval.DimensionScore (dimension, weight, weighted with bound-checking); two deliberate divergences documented (source added per evidence-citation; findings omitted per REQ-03 structural-only)
+- Belt-and-braces defense: Field(min_length=1) + _check_evidence_nonempty model validator mirrors AdvisorDiagnosis.proof per ADR-0.0.29; weighted=weight*count model validator
+- Tests added: 20 unittest cases at tests/test_foundation_triage_rubric.py — TestFoundationTriageRankEntry (7), TestStructuralOnly (1), TestRubricSignals (6), TestPrdRegistration (2), TestJsonSchema (3)
+- Date completed: 2026-05-23
+- Attestation status: human-attested via operator verbatim "attest completed"
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -284,12 +300,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.57-04 foundation-triage-rubric lands the rubric scoring layer that brings foundation-triage into gzkit's canonical structured-rubric family. EvidenceRef adapts gzkit.adr_eval.DimensionScore with two deliberate, documented divergences (adds source per PRD evidence-citation; omits findings per REQ-03 structural-only). Belt-and-braces non-empty evidence mirrors AdvisorDiagnosis.proof (ADR-0.0.29). 20/20 OBPI-scoped tests + 5483/5483 full-sweep pass; REQ parity 6/6 via gz covers. Receipts: lint arb-ruff-c81001dd82304b5188d214ea2a6bbc28; typecheck arb-step-typecheck-e79328d97446402da24be6f20e0976b1; OBPI-scoped tests arb-step-unittest-60cc9689b4194d3ba138cbb4391d2966; full sweep arb-step-unittest-0d1df76163d04a9b9bb5b7ab838cbc6c; docs build mkdocs --strict clean. BDD waived per adr-0.0.57-04-rubric-bdd-deferred-to-obpi-05 (library-tier; OBPI-05 carries operator-flow scenarios). Prior-art scrutiny applied in three rounds at operator direction.
+- Date: 2026-05-23
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-05-23
 
 **Evidence Hash:** -
