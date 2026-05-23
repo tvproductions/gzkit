@@ -521,18 +521,21 @@ def _plan_audit_gate_script() -> str:
                     f"self-running 'gz plan audit {target_obpi}'...",
                     file=sys.stderr,
                 )
-                self_audit_ok, self_audit_output = attempt_self_audit(target_obpi, cwd)
-                if self_audit_ok:
-                    is_valid, reason = check_audit_receipt(
-                        plans_dir, obpi_ids, plan_file.stat().st_mtime
+                _, self_audit_output = attempt_self_audit(target_obpi, cwd)
+                # Re-check receipt regardless of self-audit exit code: gz plan
+                # audit writes the receipt even when it exits non-zero (FAIL
+                # verdict with CREATE-path gaps is the common case), and FAIL
+                # is a valid receipt verdict per check_audit_receipt's contract.
+                is_valid, reason = check_audit_receipt(
+                    plans_dir, obpi_ids, plan_file.stat().st_mtime
+                )
+                if is_valid:
+                    print(
+                        f"plan-audit-gate: self-audit succeeded ({reason}); "
+                        f"allowing ExitPlanMode.",
+                        file=sys.stderr,
                     )
-                    if is_valid:
-                        print(
-                            f"plan-audit-gate: self-audit succeeded ({reason}); "
-                            f"allowing ExitPlanMode.",
-                            file=sys.stderr,
-                        )
-                        sys.exit(0)
+                    sys.exit(0)
 
                 self_audit_summary = self_audit_output or "(no output)"
                 print(

@@ -945,6 +945,7 @@ class TestPlanAuditGateHook(unittest.TestCase):
         plans_dir: Path,
         verdict: str = "PASS",
         succeed: bool = True,
+        exit_code: int = 0,
     ) -> str:
         """Create a cross-platform fake gz fixture that mimics 'plan audit'.
 
@@ -954,10 +955,14 @@ class TestPlanAuditGateHook(unittest.TestCase):
 
         When ``succeed=True`` the script writes a per-OBPI receipt at
         ``plans_dir/.plan-audit-receipt-<obpi>.json`` with the requested
-        verdict and exits 0. When ``succeed=False`` it writes nothing and
-        exits 1, mirroring an audit that itself failed (e.g. brief missing).
-        Argv shape mirrors ``gz plan audit OBPI-X``: the OBPI id is the
-        last argument the hook passes.
+        verdict and exits with ``exit_code`` (default 0). Pass
+        ``exit_code=1`` together with ``verdict="FAIL"`` to mimic the real
+        ``gz plan audit`` shape: receipt written, non-zero exit because of
+        gaps (CREATE-path false positives are the common case). When
+        ``succeed=False`` it writes nothing and exits 1, mirroring an audit
+        that itself failed (e.g. brief missing). Argv shape mirrors
+        ``gz plan audit OBPI-X``: the OBPI id is the last argument the hook
+        passes.
 
         Returns the shell-safe GZKIT_PLAN_AUDIT_CMD string the hook's
         ``shlex.split`` resolves back to ``[sys.executable, fake_gz_path]``.
@@ -985,7 +990,7 @@ class TestPlanAuditGateHook(unittest.TestCase):
                     + "\\n",
                     encoding="utf-8",
                 )
-                sys.exit(0)
+                sys.exit({exit_code})
                 """
             )
         else:
@@ -1068,6 +1073,28 @@ class TestPlanAuditGateHook(unittest.TestCase):
             # operator sees the audit failure surfaced separately.
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             self.assertIn("self-audit succeeded", result.stderr)
+
+    def test_allows_when_self_audit_writes_fail_receipt_with_nonzero_exit(self) -> None:
+        """Real `gz plan audit` writes a FAIL receipt AND exits 1 when the brief
+        has CREATE-path gaps (the common new-OBPI case). The hook must re-check
+        the freshly written receipt regardless of the subprocess exit code —
+        FAIL is a valid receipt verdict per check_audit_receipt's contract.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            self._write_plan(plans_dir, "active.md", "Implement OBPI-0.12.0-02\n")
+            fake_gz = self._make_fake_gz(
+                project_root, plans_dir=plans_dir, verdict="FAIL", exit_code=1
+            )
+
+            result = self._run_hook(script_path, project_root, plan_audit_cmd=fake_gz)
+
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+            self.assertIn("self-audit succeeded", result.stderr)
+            receipt = plans_dir / ".plan-audit-receipt-OBPI-0.12.0-02.json"
+            self.assertTrue(receipt.exists(), "self-audit must write the receipt")
 
 
 class TestPipelineRouterHook(unittest.TestCase):
