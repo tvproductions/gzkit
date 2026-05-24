@@ -3,7 +3,7 @@ id: OBPI-0.27.0-03-router-tables-validator
 parent: ADR-0.27.0-namespace-router-product-surface
 item: 3
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.27.0-03-router-tables-validator: **router-tables-validator** — Add `gz validate --router-tables` mechanical check — every routed skill resolves to a registered skill on disk, and every concrete skill is reachable from at least one router.
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.27.0-namespace-router-product-surface/ADR-0.27.0-namespace-router-product-surface.md`
 - **Checklist Item:** #3 - "OBPI-0.27.0-03: **router-tables-validator** — Add `gz validate --router-tables` mechanical check — every routed skill resolves to a registered skill on disk, and every concrete skill is reachable from at least one router."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -246,9 +246,10 @@ Cross-coverage: 102/102 commands fully covered.
 
 **After:** `uv run gz validate --router-tables` mechanically enforces both directions. Direction 1 (routed slug must resolve) fail-closes via the policy-breach taxonomy (exit 3 in mixed runs). Direction 2 (concrete skill must be router-reachable) emits advisory `router_tables_coverage` findings (exit 1) — surfaces coverage gaps without blocking `gz check`. Router detection is structural (any skill body containing the `| Intent | Skill |` table header), so future routers and the existing `gz-skill-router` lookup aid both qualify without hard-coded slug lists.
 
-Current run against the live canonical surface: **0 direction-1 errors** (every routed slug from OBPI-01 resolves), **16 direction-2 advisories** (concrete skills not yet routed: `gz-adr-evaluate`, `gz-check-config-paths`, `gz-chore-runner`, `gz-cli-audit`, `gz-competitor-radar`, `gz-deps-upgrade`, `gz-foundation-triage`, `gz-gates`, `gz-issue-file`, `gz-justify`, `gz-migrate-semver`, `gz-obpi-lock`, `gz-obpi-simplify`, `gz-plan-audit`, `gz-pythonic-pattern-apply`, `gz-pythonic-pattern-detect`). These advisories are the planned cleanup surface; the recovery plan's anti-temptation rule keeps them out of OBPI-03 scope.
+Current run against the live canonical surface: **0 direction-1 errors** (every routed slug from OBPI-01 resolves), **16 direction-2 advisories** (concrete skills not yet routed: `gz-adr-evaluate`, `gz-check-config-paths`, `gz-chore-runner`, `gz-cli-audit`, `gz-competitor-radar`, `gz-deps-upgrade`, `gz-foundation-triage`, `gz-gates`, `gz-issue-file`, `gz-justify`, `gz-migrate-semver`, `gz-obpi-lock`, `gz-obpi-simplify`, `gz-plan-audit`, `gz-pythonic-pattern-apply`, `gz-pythonic-pattern-detect`). These advisories are the validator doing its job — surfacing the unrouted skills the parent ADR's "no orphaned high-use skills" criterion left undefined. The surfaced work is scoped to OBPI-0.27.0-04-router-coverage-completion (authored 2026-05-24 under GHI #522); OBPI-03's deliverable is the validator itself, which functions as REQ-01/02/03 specify.
 
 ### Key Proof
+
 
 ```text
 $ uv run gz validate --router-tables; echo "EXIT: $?"
@@ -267,6 +268,7 @@ EXIT: 1
 
 ### Implementation Summary
 
+
 - Files created:
   - `src/gzkit/governance/trust_audits/router_tables.py` (115 LoC; well under the OBPI's ~150 ceiling)
   - `tests/governance/test_router_tables_validator.py` (three REQ-derived tempfile-isolated tests)
@@ -279,7 +281,7 @@ EXIT: 1
 - Tests added: 3 (one per REQ); all GREEN; 9-test suite covering OBPI-01/02/03 runs in 0.034s.
 - Date completed: 2026-05-23 (pending Stage 5 attestation)
 - Attestation status: pending Gate 5 human attestation per ADR-0.0.36
-- Defects noted: 16 direction-2 advisories surface unrouted concrete skills — routing them is post-recovery cleanup, deliberately out of scope per recovery-plan anti-temptation #1.
+- Defects noted: 16 direction-2 advisories surface unrouted concrete skills — these are the validator working correctly. The surfaced work was routed to a new OBPI-0.27.0-04-router-coverage-completion (authored 2026-05-24 under GHI #522, closed `superseded`); OBPI-04 will land the 7th `gz-chores` router and route all 16 skills under their natural router homes, restoring `gz validate --router-tables` to exit 0.
 
 ## Tracked Defects
 
@@ -290,12 +292,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: I can attest to obpi-03 now, its work is fine, it just surfaced the work of obpi-04 — `audit_router_tables` ships as REQ-01/02/03 specify (3/3 scoped tests green per arb-step-unittestscoped-5c5784eb255842fa9d17bf0da34e293e; full 5508/5508 unittest sweep green per arb-step-unittest-33716fff2ddd486ab73b2409b23b239d; lint clean per arb-ruff-64d8727299814330960f7e52b9103b05; typecheck clean per arb-step-typecheck-8e4cf7c1774647648c0c291dc07bc9b1); the 16 direction-2 advisories surfaced by the validator are the validator working correctly and have been routed to OBPI-0.27.0-04-router-coverage-completion (authored 2026-05-24 under GHI #522, closed `superseded`); parent ADR-0.27.0 amended in the same session to make Promotion Criteria #2 mechanical ("every concrete skill routed by exactly one router").
+- Date: 2026-05-24
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-05-24
 
 **Evidence Hash:** -
