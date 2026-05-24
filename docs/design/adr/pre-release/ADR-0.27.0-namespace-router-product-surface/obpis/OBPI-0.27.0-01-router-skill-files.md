@@ -17,7 +17,7 @@ status: Completed
 
 ## Objective
 
-**router-skill-files** — Author the six namespace-router skill files (`gz-workflow`, `gz-governance`, `gz-quality`, `gz-project`, `gz-context`, `gz-manage`) under `.gzkit/skills/`. Each ≤ 700 bytes (operator-reconciled from plan's ≤500 byte target, see § Byte-budget reconciliation), intent-to-skill table only, no duplicated procedure or ceremony.
+**router-skill-files** — Author the six namespace-router skill files (`gz-workflow`, `gz-governance`, `gz-quality`, `gz-project`, `gz-context`, `gz-manage`) under `.gzkit/skills/`. Each ≤ 950 bytes (operator-reconciled from plan's ≤500 byte target, see § Byte-budget reconciliation), intent-to-skill table only, no duplicated procedure or ceremony.
 
 ## Lane
 
@@ -32,7 +32,14 @@ status: Completed
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
 - `docs/design/adr/pre-release/ADR-0.27.0-namespace-router-product-surface/ADR-0.27.0-namespace-router-product-surface.md` — parent ADR for intent and scope
-- `.gzkit/skills/` — explicitly referenced by the checklist item
+- `.gzkit/skills/gz-workflow/SKILL.md` — router skill file (workflow namespace)
+- `.gzkit/skills/gz-governance/SKILL.md` — router skill file (governance namespace)
+- `.gzkit/skills/gz-quality/SKILL.md` — router skill file (quality namespace)
+- `.gzkit/skills/gz-project/SKILL.md` — router skill file (project namespace)
+- `.gzkit/skills/gz-context/SKILL.md` — router skill file (context namespace)
+- `.gzkit/skills/gz-manage/SKILL.md` — router skill file (manage namespace)
+
+> **Amendment 2026-05-24 (operator decision, ADR-0.27.0 closeout ceremony):** The original `.gzkit/skills/` directory entry was replaced with the six concrete router `SKILL.md` paths above to satisfy the closeout product-proof gate's `_check_governance_artifact_proof` classifier (which requires `.is_file()` matches under `.gzkit/`, not directory entries). The six files were already authored in this OBPI's implementation; this is a brief-shape remediation, not a scope change.
 
 ## Denied Paths
 
@@ -170,6 +177,8 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Byte-budget reconciliation (operator call, 2026-05-23)
 
 The recovery plan (`docs/governance/get-out-of-jail-plan-2026-05-23.md` § Move 1) targets ≤500 bytes per router file. Existing skills floor at 761 bytes (`gz-state`) and average 8440 bytes; schema-required frontmatter (`name`, `description`, `category`, `lifecycle_state`, `owner`, `last_reviewed`, `model`) alone is ~270 bytes. **Operator decision in session:** target ≤700 bytes per router — honor the plan's *spirit* (intent table only, no procedure, ~12× smaller than mean) while staying schema-compliant. The plan number remains the aspirational ceiling; recovery doctrine is preserved without striking the field.
+
+**Second reconciliation (operator call, 2026-05-24, ADR-0.27.0 closeout ceremony):** target ≤950 bytes per router. After OBPI-0.27.0-04 added `gz-chores` (the seventh router) and routers absorbed expanded intent tables for the full 16-skill catalog, the closeout-ceremony re-measurement (`wc -c .gzkit/skills/gz-{workflow,project,governance,quality,context,manage,chores}/SKILL.md`) showed 4 of 7 routers exceeded ≤700: `gz-governance` 926, `gz-quality` 740, `gz-chores` 736, `gz-manage` 720. ≤950 covers the worst case (`gz-governance` 926) with ~24 byte headroom while preserving the plan's *spirit* — intent table only, no procedure, still ~9× smaller than the 8440-byte mean. The ≤500-byte plan ceiling remains the aspirational floor and is not struck.
 
 ## Completion Checklist
 

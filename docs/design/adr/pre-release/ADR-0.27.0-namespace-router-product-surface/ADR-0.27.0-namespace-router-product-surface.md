@@ -177,4 +177,4 @@ Promotion derived from `ADR-pool.namespace-router-product-surface` on 2026-05-23
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.27.0 | Pending | | | |
+| 0.27.0 | Completed | Jeffry | 2026-05-24 | Completed — 4 OBPIs attested with product proof verified post brief-path remediation; 7 routers (5001 bytes total, worst case gz-governance 926 bytes ≤ 950 reconciled budget) with mechanical `gz validate --router-tables` exit 0; ARB receipts: ruff arb-ruff-e5c1276f5f654147857eb8df73606df7, unittest 5508/5508 arb-step-unittest-901eac2fc358421db70c8feafcb53904, typecheck arb-step-typecheck-0959e17ce0b046ebb5fa14888ba66981 (mkdocs skipped — lane is lite per ADR-0.0.36 axis rules); surfaced ADR-0.2.0 doc-validate defect filed as GHI #524 (re-filing of #523 closed under AGENTS.md Behavior Rule #13 remediation); attestor g0 |

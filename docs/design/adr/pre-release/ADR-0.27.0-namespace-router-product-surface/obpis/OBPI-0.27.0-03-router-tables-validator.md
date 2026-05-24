@@ -32,7 +32,14 @@ status: Completed
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
 - `docs/design/adr/pre-release/ADR-0.27.0-namespace-router-product-surface/ADR-0.27.0-namespace-router-product-surface.md` — parent ADR for intent and scope
-- `docs/design/adr/pre-release/ADR-0.27.0-namespace-router-product-surface/**` — parent ADR package scope
+- `src/gzkit/governance/trust_audits/router_tables.py` — new validator (`audit_router_tables`)
+- `src/gzkit/governance/trust_audits/__init__.py` — import + `__all__` export for the new validator
+- `src/gzkit/commands/validate_cmd.py` — kwarg threading, scope dicts, runner registration, policy-breach taxonomy entry for `router_tables`
+- `src/gzkit/cli/parser_maintenance.py` — argparse `--router-tables` flag + dispatcher wiring
+- `tests/governance/test_router_tables_validator.py` — three REQ-derived tempfile-isolated tests
+- `docs/user/manpages/validate.md` — Synopsis update + `--router-tables` section
+
+> **Amendment 2026-05-24 (operator decision, ADR-0.27.0 closeout ceremony):** The original `docs/design/adr/pre-release/ADR-0.27.0-namespace-router-product-surface/**` glob entry was replaced with the seven concrete file paths above to satisfy the closeout product-proof gate's classifiers (`_check_docstring_proof` for `src/gzkit/**`, `_check_test_evidence_proof` for `tests/governance/**`, `_check_command_doc_proof` for `docs/user/manpages/**`). The files were already authored in this OBPI's implementation; this is a brief-shape remediation, not a scope change.
 
 ## Denied Paths
 

@@ -32,9 +32,17 @@ status: Completed
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
 - `docs/design/adr/pre-release/ADR-0.27.0-namespace-router-product-surface/ADR-0.27.0-namespace-router-product-surface.md` — parent ADR for intent and scope
-- `.gzkit/skills/` — canonical skill catalog; the six router skill files from OBPI-01 live here and `gz agent sync control-surfaces` reads from this surface
+- `.gzkit/skills/gz-workflow/SKILL.md` — canonical router (sync input)
+- `.gzkit/skills/gz-governance/SKILL.md` — canonical router (sync input)
+- `.gzkit/skills/gz-quality/SKILL.md` — canonical router (sync input)
+- `.gzkit/skills/gz-project/SKILL.md` — canonical router (sync input)
+- `.gzkit/skills/gz-context/SKILL.md` — canonical router (sync input)
+- `.gzkit/skills/gz-manage/SKILL.md` — canonical router (sync input)
+- `tests/skills/test_namespace_router_surface_sync.py` — REQ-derived parity tests (vendor mirrors, pkg copy, active-catalog discovery)
 
-Vendor mirrors (`.agents/skills/`, `.claude/skills/`, `.github/skills/`) are *outputs* of `gz agent sync control-surfaces`, not editable surfaces — per `.gzkit/rules/skill-surface-sync.md` and the promote-time `Allowed path is a generated vendor mirror` guard. Run the sync command; do not hand-edit mirror files.
+Vendor mirrors (`.agents/skills/`, `.claude/skills/`, `.github/skills/`) and the wheel-shipping `src/gzkit/skills/` pkg copy are *outputs* of `gz agent sync control-surfaces`, not editable surfaces — per `.gzkit/rules/skill-surface-sync.md` and the promote-time `Allowed path is a generated vendor mirror` guard. Run the sync command; do not hand-edit mirror files.
+
+> **Amendment 2026-05-24 (operator decision, ADR-0.27.0 closeout ceremony):** The original `.gzkit/skills/` directory entry was replaced with the six concrete canonical router `SKILL.md` paths plus the test file above to satisfy the closeout product-proof gate's `_check_governance_artifact_proof` and `_check_test_evidence_proof` classifiers (both require `.is_file()` matches, not directory entries). The files were already authored in this OBPI's implementation; this is a brief-shape remediation, not a scope change.
 
 ## Denied Paths
 

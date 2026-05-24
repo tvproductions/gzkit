@@ -1,0 +1,82 @@
+{
+  "adr_id": "ADR-0.27.0-namespace-router-product-surface",
+  "current_step": 11,
+  "is_foundation": false,
+  "started_at": "2026-05-24T12:12:21Z",
+  "updated_at": "2026-05-24T15:14:01Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-05-24T12:12:21Z",
+      "acknowledged_at": "2026-05-24T12:12:32Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-05-24T12:12:32Z",
+      "acknowledged_at": "2026-05-24T12:23:05Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-05-24T12:23:05Z",
+      "acknowledged_at": "2026-05-24T12:23:20Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-05-24T12:23:20Z",
+      "acknowledged_at": "2026-05-24T12:36:04Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-05-24T12:36:04Z",
+      "acknowledged_at": "2026-05-24T13:36:04Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-05-24T13:36:04Z",
+      "acknowledged_at": "2026-05-24T15:04:44Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-05-24T15:04:44Z",
+      "acknowledged_at": "2026-05-24T15:06:05Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-05-24T15:06:05Z",
+      "acknowledged_at": "2026-05-24T15:06:17Z"
+    },
+    {
+      "step": 9,
+      "presented_at": "2026-05-24T15:06:17Z",
+      "acknowledged_at": "2026-05-24T15:06:56Z"
+    },
+    {
+      "step": 10,
+      "presented_at": "2026-05-24T15:06:56Z",
+      "acknowledged_at": "2026-05-24T15:14:01Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-05-24T15:14:01Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "$ uv run gz validate --router-tables; echo \"EXIT: $?\"",
+    "Validated: router_tables",
+    "❌ Validation failed with 16 error(s):",
+    "→  .gzkit/skills/gz-adr-evaluate/SKILL.md",
+    "concrete skill 'gz-adr-evaluate' is not reachable from any router; ...",
+    "EXIT: 1",
+    "$ uv run gz validate --router-tables; echo \"EXIT: $?\"",
+    "Validated: router_tables",
+    "✅ All checks passed.",
+    "EXIT: 0",
+    "$ wc -c .gzkit/skills/gz-{workflow,project,governance,quality,context,manage,chores}/SKILL.md"
+  ],
+  "walkthrough_index": 10,
+  "attestation": "Completed — 4 OBPIs attested with product proof verified post brief-path remediation; 7 routers (5001 bytes total, worst case gz-governance 926 bytes ≤ 950 reconciled budget) with mechanical `gz validate --router-tables` exit 0; ARB receipts: ruff arb-ruff-e5c1276f5f654147857eb8df73606df7, unittest 5508/5508 arb-step-unittest-901eac2fc358421db70c8feafcb53904, typecheck arb-step-typecheck-0959e17ce0b046ebb5fa14888ba66981 (mkdocs skipped — lane is lite per ADR-0.0.36 axis rules); surfaced ADR-0.2.0 doc-validate defect filed as GHI #524 (re-filing of #523 closed under AGENTS.md Behavior Rule #13 remediation); attestor g0",
+  "completed_at": "2026-05-24T15:14:01Z",
+  "attempt": 1,
+  "paused_at": null
+}

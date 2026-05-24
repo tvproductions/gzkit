@@ -1,5 +1,39 @@
 # gzkit Release Notes
 
+## v0.27.0 (2026-05-24)
+
+**ADR:** ADR-0.27.0-namespace-router-product-surface
+
+Feature ADR closeout: the first-stage namespace-router surface lands as product, giving operators and agents a thin intent-table layer over the flat skill catalog so the GSD-comparison surface is no longer the only entry point. Seven routers, mechanical coverage enforcement, and full vendor-mirror parity ship in one cut.
+
+### Delivered
+
+- **OBPI-0.27.0-01 — router-skill-files.** Six namespace-router `SKILL.md` files under `.gzkit/skills/` (`gz-workflow`, `gz-governance`, `gz-quality`, `gz-project`, `gz-context`, `gz-manage`) carry intent-to-skill tables only — no procedure, no ceremony duplication. Each router stays under the reconciled ≤950-byte budget (5001 bytes total across the 7-router set after OBPI-04 added `gz-chores`; worst case `gz-governance` 926 bytes), roughly 9× smaller than the 8440-byte mean skill.
+- **OBPI-0.27.0-02 — router-surface-sync.** Routers propagate from the canonical `.gzkit/skills/` surface to all three vendor mirrors (`.agents/skills/`, `.claude/skills/`, `.github/skills/`) plus the wheel-shipping `src/gzkit/skills/` pkg copy via `gz agent sync control-surfaces`. Three locked-in REQ-derived tests in `tests/skills/test_namespace_router_surface_sync.py` assert byte-equivalence across all 24 router-mirror pairs and active-catalog discoverability on every test run.
+- **OBPI-0.27.0-03 — router-tables-validator.** New `gz validate --router-tables` mechanically enforces both directions of the router contract: Direction 1 (routed slug must resolve to a canonical `.gzkit/skills/<slug>/SKILL.md`) fail-closes via the policy-breach taxonomy (exit 3); Direction 2 (every concrete skill reachable from at least one router) emits advisory findings (exit 1). Router detection is structural — any skill body containing `| Intent | Skill |` qualifies — so future routers register without hard-coded slug lists.
+- **OBPI-0.27.0-04 — router-coverage-completion.** Added the 7th `gz-chores` router and routed the 16 previously-unrouted concrete skills under their natural router homes, closing every Direction-2 advisory surfaced by OBPI-03's validator. `gz validate --router-tables` now exits 0.
+
+### Gate Evidence
+
+All applicable gates satisfied for the Lite-lane foundation closeout:
+
+- **Gate 1 (ADR):** ADR-0.27.0 recorded with full Checklist / Decomposition Scorecard / per-OBPI evidence.
+- **Gate 2 (TDD):** `arb-step-unittest-901eac2fc358421db70c8feafcb53904` — full suite 5508/5508 pass.
+- **Code Quality:** `arb-ruff-e5c1276f5f654147857eb8df73606df7` (ruff clean) and `arb-step-typecheck-0959e17ce0b046ebb5fa14888ba66981` (ty clean).
+- **Gate 5 (Human):** Operator attestation `Completed` recorded by g0 at ceremony Step 6 (2026-05-24); brief-level attestation universal per ADR-0.0.36.
+- **Validator proof:** `uv run gz validate --router-tables` exits 0.
+- Gate 3 (docs/mkdocs) and Gate 4 (BDD) not required — lane is `lite` per ADR-0.0.36 axis rules.
+
+### Surfaced & tracked
+
+- **#524** — `ADR-0.2.0-gate-verification` fails `gz validate --documents` (status enum `Validated` not in canonical set; missing `## Decomposition Scorecard` and `## Checklist`). Pre-convention-era ADR package not caught by GHI #480/#500 bulk migrations (which targeted `foundation/`, not `pre-release/`). Filed under `/ghi-author` after #523 was closed for Behavior Rule #13 remediation (original filed via direct `gh issue create`).
+
+### Stats
+
+- 1 feature ADR closeout (ADR-0.27.0)
+- 4 OBPIs completed, each with universal human attestation
+- 1 GHI surfaced (#524); 1 GHI re-filed under canonical authoring path (#523 → #524)
+
 ## v0.26.6 (2026-05-22)
 
 Governance infrastructure hardening: lock-manager identity fix, validator corpus scoping, scaffolder regression closure, hexagonal terminology correction, and closeout of the Universal OBPI Attestation (ADR-0.0.36) foundation ADR.
