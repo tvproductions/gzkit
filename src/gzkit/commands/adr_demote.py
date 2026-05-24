@@ -36,6 +36,7 @@ from gzkit.sync import parse_artifact_metadata
 _DEMOTABLE_KINDS = {"feature", "foundation"}
 _FRONTMATTER_STRIP_KEYS = ("kind", "semver", "date")
 _CANONICAL_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+-(?P<slug>.+)$")
+_ON_COLLISION_CHOICES = ("fail", "keep-pool")
 
 
 def _derive_pool_slug_from_adr_id(adr_id: str) -> str:
@@ -162,8 +163,12 @@ def _build_demote_plan(
     ghi: int,
     note: str | None,
     operator: str | None,
+    on_collision: str = "fail",
 ) -> dict[str, Any]:
     """Compute every action and target path before any write."""
+    if on_collision not in _ON_COLLISION_CHOICES:
+        msg = f"on_collision must be one of {_ON_COLLISION_CHOICES}, got {on_collision!r}"
+        raise GzCliError(msg)
     source_file, source_id, metadata, source_content = _resolve_demote_source(
         project_root, config, adr_id
     )
@@ -171,10 +176,13 @@ def _build_demote_plan(
     new_id = f"ADR-pool.{source_slug}"
     pool_dir = project_root / config.paths.adrs / "pool"
     target_file = pool_dir / f"{new_id}.md"
+    collision_keep_pool = False
     if target_file.exists():
-        rel = target_file.relative_to(project_root).as_posix()
-        msg = f"Pool slug collision: target file already exists: {rel}"
-        raise GzCliError(msg)
+        if on_collision == "fail":
+            rel = target_file.relative_to(project_root).as_posix()
+            msg = f"Pool slug collision: target file already exists: {rel}"
+            raise GzCliError(msg)
+        collision_keep_pool = True
     source_dir = source_file.parent
     if source_dir == project_root / config.paths.adrs:
         # Defensive: a top-level loose .md should not have a parent dir to remove.
@@ -189,6 +197,8 @@ def _build_demote_plan(
         "demoted_at": datetime.now(UTC).isoformat(),
         "ghi": ghi,
     }
+    if collision_keep_pool:
+        extras["collision_resolution"] = "keep-pool"
     if operator:
         extras["operator"] = operator
     if note:
@@ -203,6 +213,7 @@ def _build_demote_plan(
         "pool_content": pool_content,
         "extras": extras,
         "children": children,
+        "collision_keep_pool": collision_keep_pool,
     }
 
 
@@ -228,10 +239,17 @@ def _print_demote_dry_run(project_root: Path, plan: dict[str, Any]) -> None:
     source_file = cast(Path, plan["source_file"])
     target_file = cast(Path, plan["target_file"])
     source_dir = cast(Path, plan["source_dir"])
+    collision_keep_pool = cast(bool, plan.get("collision_keep_pool", False))
     console.print("[yellow]Dry run:[/yellow] no files or ledger events will be written.")
     console.print(f"  Source ADR: {plan['source_id']}")
     console.print(f"  Target pool ID: {plan['new_id']}")
-    console.print(f"  Would write: {target_file.relative_to(project_root).as_posix()}")
+    if collision_keep_pool:
+        console.print(
+            f"  [yellow]Pool collision — keeping existing pool:[/yellow] "
+            f"{target_file.relative_to(project_root).as_posix()}"
+        )
+    else:
+        console.print(f"  Would write: {target_file.relative_to(project_root).as_posix()}")
     if source_dir.is_dir():
         console.print(f"  Would remove dir: {source_dir.relative_to(project_root).as_posix()}")
     else:
@@ -252,8 +270,10 @@ def _apply_demote(ledger: Ledger, plan: dict[str, Any]) -> None:
     target_file = cast(Path, plan["target_file"])
     source_file = cast(Path, plan["source_file"])
     source_dir = cast(Path, plan["source_dir"])
-    target_file.parent.mkdir(parents=True, exist_ok=True)
-    target_file.write_text(cast(str, plan["pool_content"]), encoding="utf-8")
+    collision_keep_pool = cast(bool, plan.get("collision_keep_pool", False))
+    if not collision_keep_pool:
+        target_file.parent.mkdir(parents=True, exist_ok=True)
+        target_file.write_text(cast(str, plan["pool_content"]), encoding="utf-8")
     if source_dir.is_dir() and source_dir != source_file:
         shutil.rmtree(source_dir)
     elif source_file.exists():
@@ -272,8 +292,12 @@ def _print_demote_applied(project_root: Path, plan: dict[str, Any]) -> None:
     """Print the post-apply summary."""
     target_file = cast(Path, plan["target_file"])
     source_dir = cast(Path, plan["source_dir"])
+    collision_keep_pool = cast(bool, plan.get("collision_keep_pool", False))
     console.print(f"[green]Demoted ADR:[/green] {plan['source_id']} -> {plan['new_id']}")
-    console.print(f"  Created: {target_file.relative_to(project_root).as_posix()}")
+    if collision_keep_pool:
+        console.print(f"  Kept existing pool: {target_file.relative_to(project_root).as_posix()}")
+    else:
+        console.print(f"  Created: {target_file.relative_to(project_root).as_posix()}")
     if source_dir.is_dir():
         console.print(f"  Removed dir: {source_dir.relative_to(project_root).as_posix()}")
     extras = cast(dict[str, Any], plan["extras"])
@@ -288,6 +312,7 @@ def adr_demote_cmd(
     as_json: bool,
     dry_run: bool,
     force: bool,
+    on_collision: str = "fail",
 ) -> None:
     """Demote a feature/foundation ADR back to pool (inverse of ``adr promote``)."""
     config = ensure_initialized()
@@ -300,6 +325,7 @@ def adr_demote_cmd(
         ghi=ghi,
         note=note,
         operator=operator,
+        on_collision=on_collision,
     )
     children = cast(list[str], plan["children"])
     if children and not force:

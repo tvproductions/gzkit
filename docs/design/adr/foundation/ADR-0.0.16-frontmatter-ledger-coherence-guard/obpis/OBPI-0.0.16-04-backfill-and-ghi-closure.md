@@ -201,6 +201,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
   - `Pending-Attestation → Validated` × 1
 - **Non-status rewrites (3, structural):**
   - `lane: heavy → lite` × 1
+<!-- gz-validate-skip: brief-cross-references -->
   - `id: OBPI-0.27.0-09-arb-telemetry-sync → OBPI-0.27.0-09-arb-supabase-sync` × 1
   - `parent: ADR-0.3.0 → PRD-GZKIT-1.0.0` × 1
 - **Operator sign-off:** _Granted 2026-04-18 ("go") after risk review of 204 `Completed → in_progress` rewrites_

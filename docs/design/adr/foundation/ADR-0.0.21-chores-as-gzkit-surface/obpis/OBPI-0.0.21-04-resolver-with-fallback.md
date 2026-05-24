@@ -76,6 +76,7 @@ Rewrite the chore lookup logic in `src/gzkit/commands/chores.py` and `src/gzkit/
 
 **Existing Code:**
 
+<!-- gz-validate-skip: brief-cross-references -->
 - [ ] Read `src/gzkit/commands/chores.py` whole (~667 lines per ADR-0.28.0 context) — understand every path-resolution site
 - [ ] Read `src/gzkit/commands/chores_exec.py:138, 214` — the two call sites assembling chore paths
 - [ ] Read `src/gzkit/commands/common.py:94-96` — `get_project_root()` helper; the resolver consumes it

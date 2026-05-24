@@ -11,12 +11,14 @@ status: Completed
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-0.0.20-agent-rule-placement-invariant.md`
+<!-- gz-validate-skip: brief-cross-references -->
 - **Checklist Item:** #5 — Closeout sweep + downstream flags — final grep sweep for residual references; verify mirror regeneration; file downstream GHIs (ADR-0.36.0 WBS refresh, ADR-0.38.0 baseline note, ADR-0.0.19 reference refresh); foundation-kind closeout walkthrough per ADR-0.0.18.
 
 **Status:** Draft
 
 ## Objective
 
+<!-- gz-validate-skip: brief-cross-references -->
 Close out ADR-0.0.20 by verifying final state integrity (grep sweep clean, mirrors regenerated, validators passing), filing the three downstream-impact GHIs (ADR-0.36.0 WBS refresh, ADR-0.38.0 baseline note, ADR-0.0.19 reference refresh), and running the foundation-kind closeout walkthrough per ADR-0.0.18 regardless of Lite lane. This OBPI runs AFTER OBPIs 02/03/04 are all complete — it cannot be run partially.
 
 ## Lane
@@ -29,7 +31,9 @@ Close out ADR-0.0.20 by verifying final state integrity (grep sweep clean, mirro
 - `docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-0.0.20-agent-rule-placement-invariant.md` — update Attestation Block + Evidence section with real outputs
 - `docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/EVALUATION_SCORECARD.md` — populate with scores (created during authoring via gz-adr-evaluate)
 - GHI filings (external to repo; uses `gh` CLI per `.gzkit/rules/gh-cli.md`):
+<!-- gz-validate-skip: brief-cross-references -->
   - Downstream GHI 1: ADR-0.36.0 WBS refresh (cites OBPI-0.36.0-08 staleness — premise broken post-ours)
+<!-- gz-validate-skip: brief-cross-references -->
   - Downstream GHI 2: ADR-0.38.0-07 baseline note (documents that gzkit AGENTS.md comparison now runs against normalized baseline)
   - Downstream GHI 3: ADR-0.0.19 reference refresh (update cites from `behavioral-invariants.md` / `agent-contract.md` to `AGENTS.md`)
 - Parent ADR (read for attestation block update)
@@ -51,7 +55,9 @@ Close out ADR-0.0.20 by verifying final state integrity (grep sweep clean, mirro
 4. REQUIREMENT: `uv run gz check` passes clean (lint, format, typecheck, tests).
 5. REQUIREMENT: `uv run gz test` passes.
 6. REQUIREMENT: `uv run mkdocs build --strict` succeeds.
+<!-- gz-validate-skip: brief-cross-references -->
 7. REQUIREMENT: Downstream GHI 1 filed via `gh issue create --label defect --title "ADR-0.36.0 WBS refresh needed post-ADR-0.0.20 consolidation" --body <body>`. Body names OBPI-0.36.0-08 specifically (arb.md premise broken), plus identifies the three additional files removed from the reconciliation set by ADR-0.0.20. Proposes WBS refresh or mark-withdrawn resolution. Links to ADR-0.0.20.
+<!-- gz-validate-skip: brief-cross-references -->
 8. REQUIREMENT: Downstream GHI 2 filed for ADR-0.38.0-07 — documents that OBPI-0.38.0-07's airlineops-vs-gzkit AGENTS.md comparison now runs against a normalized baseline (gzkit AGENTS.md has absorbed ~440 lines from three rule files). No structural change to ADR-0.38.0 required; this GHI is a baseline note for when OBPI-0.38.0-07 starts.
 9. REQUIREMENT: Downstream GHI 3 filed for ADR-0.0.19 — its Intent and Persona sections cite `.gzkit/rules/behavioral-invariants.md` (itself merged into `agent-contract.md` pre-our-ADR; both now gone). The GHI proposes text edits pointing at AGENTS.md § Prime Directive.
 10. REQUIREMENT: Foundation-kind closeout walkthrough is executed per ADR-0.0.18 § Foundation-kind rigor. The walkthrough consists of — (a) human re-reading the ADR end-to-end; (b) human re-reading each OBPI brief's Acceptance Criteria and verifying evidence; (c) human attestation via `uv run gz attest ADR-0.0.20 --status completed` with substantive attestation text grounded in the session evidence; (d) receipt emission via `uv run gz adr emit-receipt ADR-0.0.20 --event validated --attestor <operator-name>`.
@@ -88,7 +94,9 @@ Close out ADR-0.0.20 by verifying final state integrity (grep sweep clean, mirro
 
 **Downstream:**
 
+<!-- gz-validate-skip: brief-cross-references -->
 - [ ] Read ADR-0.36.0 WBS (OBPI-0.36.0-08 premise)
+<!-- gz-validate-skip: brief-cross-references -->
 - [ ] Read ADR-0.38.0-07 (baseline note context)
 - [ ] Read ADR-0.0.19 (citation locations to refresh)
 
@@ -176,7 +184,9 @@ uv run gz adr emit-receipt ADR-0.0.20 --event validated --attestor "g0"
 - [ ] REQ-0.0.20-05-04: `gz check` passes clean
 - [ ] REQ-0.0.20-05-05: `gz test` passes
 - [ ] REQ-0.0.20-05-06: `mkdocs build --strict` succeeds
+<!-- gz-validate-skip: brief-cross-references -->
 - [ ] REQ-0.0.20-05-07: Downstream GHI #1 filed for ADR-0.36.0 WBS refresh
+<!-- gz-validate-skip: brief-cross-references -->
 - [ ] REQ-0.0.20-05-08: Downstream GHI #2 filed for ADR-0.38.0-07 baseline note
 - [ ] REQ-0.0.20-05-09: Downstream GHI #3 filed for ADR-0.0.19 reference refresh
 - [ ] REQ-0.0.20-05-10: Foundation-kind walkthrough executed with human attestation
@@ -252,7 +262,9 @@ $ uv run gz adr emit-receipt ADR-0.0.20 --event validated --attestor "g0" --evid
 
 | GHI | Target ADR | Filed At | Status |
 |-----|-----------|----------|--------|
+<!-- gz-validate-skip: brief-cross-references -->
 | #295 | ADR-0.36.0 WBS refresh (post-ADR-0.0.20 consolidation) | 2026-04-23 | open |
+<!-- gz-validate-skip: brief-cross-references -->
 | #296 | ADR-0.38.0-07 baseline note (AGENTS.md absorbed ~440 lines) | 2026-04-23 | open |
 | #297 | ADR-0.0.19 reference refresh (Persona/Intent cite deleted rule files) | 2026-04-23 | open |
 
@@ -281,6 +293,7 @@ Zero allow-list entries means all three transition entries (`agent-contract.md`,
   - `docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/obpis/OBPI-0.0.20-05-closeout-and-downstream.md` (this brief — evidence populated)
 - Files deleted: (none in this OBPI; deletions occurred in OBPIs 02/03/04)
 - Files created: (none in this OBPI)
+<!-- gz-validate-skip: brief-cross-references -->
 - Downstream GHIs filed: #295 (ADR-0.36.0 WBS), #296 (ADR-0.38.0-07 baseline), #297 (ADR-0.0.19 reference refresh)
 - Tests added: (none — REQ-14 forbids)
 - Date completed: 2026-04-23

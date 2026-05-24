@@ -73,8 +73,8 @@ using its own foundation. Stop the plan there.
 Before Move 1 can promote a pool ADR into a coherent product-semver position,
 the existing feature-ADR queue must be honest. As of 2026-05-23, `pyproject.toml`
 is at `0.26.6` and the last Validated feature ADR is `0.26.0` — but `0.27.0`–
-`0.50.0` sit as `Pending` feature ADRs, effectively all `0/N` OBPI completion.
-That's a 24-deep queue of unkept release promises blocking the next-shippable
+`0.51.0` sit as `Pending` feature ADRs, effectively all `0/N` OBPI completion.
+That's a 25-deep queue of unkept release promises blocking the next-shippable
 minor. The kind-table doctrine reads feature = *"Active/committed (or queued)
 release-carrying capability"*; "queued" was supposed to mean "next up," not
 "claimed slot 24 deep."
@@ -87,18 +87,23 @@ release-carrying capability"*; "queued" was supposed to mean "next up," not
 > are uncommitted by doctrine and do not carry OBPIs; briefs are
 > re-authored if the ADR is later re-promoted.
 
-**Scope:** `0.27.0`–`0.50.0`, all 24 ADRs. The two with token (1/5) OBPI
+**Scope:** `0.27.0`–`0.51.0`, all 25 ADRs. The two with token (1/5) OBPI
 progress (`0.40.0-reporter-render`, `0.47.0-owasp-top10`) are included — the
 operator's call 2026-05-23 is that those partial OBPIs were model hiccups,
-not in-flight work, so they demote with the rest.
+not in-flight work, so they demote with the rest. Seven of the 25 carry a
+pre-existing pool-slug counterpart (a promote-bug or fork artifact) and demote
+via `--on-collision keep-pool`, deleting the feature package and leaving the
+existing pool ADR untouched; the ledger event records `collision_resolution`.
 
 **Tracking:** Single GHI [#520](https://github.com/tvproductions/gzkit/issues/520)
-(`adr-taxonomy: 24-deep Pending feature queue blocks recovery semver`),
-labeled `defect`, `runtime`, `tech-debt`, `recovery-prerequisite`. Authored
-via `/ghi-author` 2026-05-23 (per Behavior Rule — Always #13). Every
-`adr_demoted` ledger event in the sweep carries `"ghi": 520` in its payload
-for narrative anchor and re-litigation context. GHI closes `fixed` against
-the sweep commit SHA when the 24 demotions land.
+(`adr-taxonomy: 24-deep Pending feature queue blocks recovery semver`; the
+GHI title undercounts by one — actual queue depth is 25, captured here and
+in the sweep ledger events), labeled `defect`, `runtime`, `tech-debt`,
+`recovery-prerequisite`. Authored via `/ghi-author` 2026-05-23 (per Behavior
+Rule — Always #13). Every `artifact_renamed` event in the sweep carries
+`"reason": "pool_demotion"` and `"ghi": 520` in its payload for narrative
+anchor and re-litigation context. GHI closes `fixed` against the sweep commit
+SHA when the 25 demotions land.
 
 **Tooling prerequisite:** `gz adr demote` does not exist as of 2026-05-23.
 Build it as a single Day-0 housekeeping deliverable (single GHI, no new

@@ -327,6 +327,82 @@ class TestAdrDemoteCommand(unittest.TestCase):
             pool_file = Path(config.paths.adrs) / "pool" / f"{_SAMPLE_POOL_ID}.md"
             self.assertTrue(pool_file.exists())
 
+    def test_on_collision_keep_pool_deletes_source_and_leaves_pool(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            _seed_feature_adr(config)
+            pool_dir = Path(config.paths.adrs) / "pool"
+            pool_dir.mkdir(parents=True, exist_ok=True)
+            pool_file = pool_dir / f"{_SAMPLE_POOL_ID}.md"
+            pre_existing = (
+                "---\nid: ADR-pool.arb-receipt-system-absorption\n"
+                "status: Pool\n---\n\n# Pre-existing pool\n"
+            )
+            pool_file.write_text(pre_existing, encoding="utf-8")
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event(_SAMPLE_FEATURE_ADR_ID, "", "heavy"))
+
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "demote",
+                    _SAMPLE_FEATURE_ADR_ID,
+                    "--ghi",
+                    "520",
+                    "--on-collision",
+                    "keep-pool",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            # Pool file content unchanged (pre-existing preserved).
+            self.assertEqual(pool_file.read_text(encoding="utf-8"), pre_existing)
+            # Source feature directory removed.
+            source_dir = Path(config.paths.adrs) / "pre-release" / _SAMPLE_FEATURE_ADR_ID
+            self.assertFalse(source_dir.exists())
+            # Ledger event records the collision resolution.
+            events = [
+                json.loads(line)
+                for line in Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ]
+            rename_events = [e for e in events if e.get("event") == "artifact_renamed"]
+            self.assertEqual(len(rename_events), 1)
+            self.assertEqual(rename_events[0].get("collision_resolution"), "keep-pool")
+            self.assertEqual(rename_events[0].get("reason"), "pool_demotion")
+
+    def test_on_collision_fail_is_default(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            _seed_feature_adr(config)
+            pool_dir = Path(config.paths.adrs) / "pool"
+            pool_dir.mkdir(parents=True, exist_ok=True)
+            (pool_dir / f"{_SAMPLE_POOL_ID}.md").write_text(
+                "---\nid: pre-existing\n---\n", encoding="utf-8"
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event(_SAMPLE_FEATURE_ADR_ID, "", "heavy"))
+
+            # Explicit --on-collision fail behaves identically to default.
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "demote",
+                    _SAMPLE_FEATURE_ADR_ID,
+                    "--ghi",
+                    "520",
+                    "--on-collision",
+                    "fail",
+                ],
+            )
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("collision", result.output)
+
     def test_argparse_requires_ghi(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():

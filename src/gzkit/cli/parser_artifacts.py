@@ -688,6 +688,12 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
         p_adr_demote,
         help_override="Override dependent-children safety check (orphans the children)",
     )
+    p_adr_demote.add_argument(
+        "--on-collision",
+        choices=("fail", "keep-pool"),
+        default="fail",
+        help="Pool-slug collision policy: fail (default) or keep-pool",
+    )
     p_adr_demote.set_defaults(
         func=lambda a: _lazy("adr_demote_cmd")(
             adr_id=a.adr_id,
@@ -697,6 +703,7 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
             as_json=a.as_json,
             dry_run=a.dry_run,
             force=a.force,
+            on_collision=a.on_collision,
         )
     )
 

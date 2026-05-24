@@ -294,6 +294,7 @@ The script emits a JSON list of in-flight foundation ADRs with signal counts (in
 - BDD: waived under data/behave_coverage_waivers.json key adr-0.0.57-03-skill-bundle-bdd-deferred-to-obpi-05 — no CLI verb in this OBPI; runnable-flow scenarios reserved for OBPI-05 (docs-runbook-fixtures).
 - Date completed: 2026-05-23
 - Attestation status: attested (operator verbatim "attest completed" on Stage 4 evidence packet).
+<!-- gz-validate-skip: brief-cross-references -->
 - Defects noted in flight (NOT introduced by this OBPI): `gz validate --documents` flags ADR-0.37.0-govzero-methodology-doc-absorption missing `## Decomposition Scorecard`; verified pre-existing via `git stash`. Will route via /ghi-author after closeout. Also: hook fix `fix(plan-audit-gate): re-check receipt after self-audit regardless of exit code` (commit a186718e) shipped as a separate in-flight direct fix to unblock this pipeline's ExitPlanMode.
 
 ## Tracked Defects

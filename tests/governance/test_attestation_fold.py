@@ -39,7 +39,7 @@ BUCKET_3_ROOTS = (
     "docs/design/adr/pool/ADR-pool.interpretability-hardened-agent-surfaces.md",
     "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/",
     "docs/design/adr/pre-release/ADR-0.36.0-instruction-file-reconciliation/",
-    "docs/design/adr/pre-release/ADR-0.41.0-tdd-emission-and-graph-rot-remediation/",
+    "docs/design/adr/pool/ADR-pool.tdd-emission-and-graph-rot-remediation.md",
     "RELEASE_NOTES.md",
     # Governance pedagogy + lineage docs.
     "docs/governance/agent-contract-rationale.md",

@@ -11,12 +11,14 @@ status: Completed
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-0.0.20-agent-rule-placement-invariant.md`
+<!-- gz-validate-skip: brief-cross-references -->
 - **Checklist Item:** #3 — Fold `attestation-enrichment.md` — migrate em-dash pattern + canonical invocations table + lane behavior to AGENTS.md § Attestation; move ARB middleware detail to `docs/governance/arb-middleware.md`; update 6 Python docstring citations + 8 ARB command docs; delete canonical + allow-list entry + sync; flag ADR-0.36.0-OBPI-08 staleness.
 
 **Status:** Draft
 
 ## Objective
 
+<!-- gz-validate-skip: brief-cross-references -->
 Migrate `.gzkit/rules/attestation-enrichment.md` (155 lines, `paths: "**"`) to its proper homes — binding content (em-dash enrichment pattern, canonical invocations table, lane behavior rules) to a new AGENTS.md § Attestation section; ARB middleware detail (schemas, commands, exit codes, storage paths, rationale) to a new `docs/governance/arb-middleware.md`. Update 6 Python docstring citations that reference the rule file by path. Update 8 ARB command docs under `docs/user/commands/`. Delete the canonical file, remove its allow-list entry, regenerate mirrors. File a GHI flagging ADR-0.36.0-OBPI-08 staleness (its `.claude/rules/arb.md` premise is broken).
 
 ## Lane
@@ -64,6 +66,7 @@ Migrate `.gzkit/rules/attestation-enrichment.md` (155 lines, `paths: "**"`) to i
 10. REQUIREMENT: `uv run gz validate --all` exits 0.
 11. REQUIREMENT: `uv run gz test` passes (Python docstring changes don't break any ARB test).
 12. REQUIREMENT: `uv run mkdocs build --strict` succeeds.
+<!-- gz-validate-skip: brief-cross-references -->
 13. REQUIREMENT: ADR-0.36.0 staleness flag GHI filed via `gh issue create --label defect`. The GHI body specifies that OBPI-0.36.0-08's premise (`.claude/rules/arb.md`) is broken because arb content moved to `attestation-enrichment.md` in 2026-04-21 and is now consolidated into AGENTS.md per ADR-0.0.20. The GHI proposes refreshing ADR-0.36.0's WBS or marking OBPI-0.36.0-08 as withdrawn.
 14. REQUIREMENT: TDD test at `tests/governance/test_attestation_fold.py` asserts — (a) AGENTS.md § Attestation contains the canonical-invocations table entries (lint, typecheck, tests, coverage); (b) `docs/governance/arb-middleware.md` exists and contains the commands reference; (c) `.gzkit/rules/attestation-enrichment.md` does not exist; (d) no Python file under `src/gzkit/arb/**` or `src/gzkit/commands/arb.py` references the deleted rule path.
 15. REQUIREMENT: No `arb_lint_receipt.schema.json` or `arb_step_receipt.schema.json` schema changes. No new receipts generated during this OBPI (no substantive ARB work).
@@ -78,6 +81,7 @@ Migrate `.gzkit/rules/attestation-enrichment.md` (155 lines, `paths: "**"`) to i
 - [ ] Parent ADR: ADR-0.0.20
 - [ ] `.gzkit/rules/attestation-enrichment.md` (current content)
 - [ ] Existing AGENTS.md sections (find appropriate placement for § Attestation)
+<!-- gz-validate-skip: brief-cross-references -->
 - [ ] ADR-0.36.0 OBPI-08 content (to cite in staleness GHI)
 
 **Context:**
@@ -101,6 +105,7 @@ Migrate `.gzkit/rules/attestation-enrichment.md` (155 lines, `paths: "**"`) to i
 - [ ] Read `src/gzkit/arb/__init__.py` and `src/gzkit/commands/arb.py` docstring patterns for consistency
 - [ ] Review existing ARB receipts under `artifacts/receipts/` to confirm no schema change is needed (runtime behavior unchanged)
 - [ ] Review `data/schemas/arb_lint_receipt.schema.json` + `arb_step_receipt.schema.json` for the `$id` values cited in the migration (preserve verbatim)
+<!-- gz-validate-skip: brief-cross-references -->
 - [ ] Review ADR-0.36.0's OBPI-0.36.0-08 content to draft the staleness GHI accurately
 
 ## Quality Gates
@@ -166,6 +171,7 @@ uv run -m unittest tests.governance.test_attestation_fold -v
 - [ ] REQ-0.0.20-03-10: `gz validate --all` exits 0
 - [ ] REQ-0.0.20-03-11: `gz test` passes (no ARB test regression)
 - [ ] REQ-0.0.20-03-12: `mkdocs build --strict` succeeds
+<!-- gz-validate-skip: brief-cross-references -->
 - [ ] REQ-0.0.20-03-13: ADR-0.36.0 staleness GHI filed with `--label defect`
 - [ ] REQ-0.0.20-03-14: TDD test covers semantic migration properties
 - [ ] REQ-0.0.20-03-15: No ARB schema changes; no new receipts generated
@@ -177,6 +183,7 @@ uv run -m unittest tests.governance.test_attestation_fold -v
 - [ ] Gate 2 (TDD): RGR
 - [ ] Code Quality: Lint, typecheck, mkdocs clean
 - [ ] Value Narrative: 155 lines removed from per-turn context; ARB middleware remains documented as pedagogy
+<!-- gz-validate-skip: brief-cross-references -->
 - [ ] Key Proof: Side-by-side diff + sync output + ADR-0.36.0 GHI link
 - [ ] OBPI Acceptance: Evidence recorded
 
@@ -201,6 +208,7 @@ uv run -m unittest tests.governance.test_attestation_fold -v
 ### Key Proof
 
 
+<!-- gz-validate-skip: brief-cross-references -->
 Canonical .gzkit/rules/attestation-enrichment.md deleted; vendor mirrors (.claude/rules/, .github/instructions/) pruned by gz agent sync control-surfaces; manifest allowlist shrank 2->1 (defect-fix-routing.md remains, pending OBPI-04). AGENTS.md § Attestation contains all 5 canonical invocation rows (Lint/Typecheck/Tests/Coverage/Docs), em-dash pattern, applies-to list (obpi complete, adr emit-receipt, git commit), Lite warn / Heavy fail-closed lane behavior, and worked example. docs/governance/arb-middleware.md contains Core Concept, Available Commands (ruff/step/typecheck/coverage/validate/advise/patterns), Receipt Schema/Storage (arb_lint_receipt.schema.json, arb_step_receipt.schema.json, artifacts/receipts/, arb.receipts_root), Exit Codes (0/1/2), Rationale (receipts-not-narrative, canonical-commands-GHI#199, TDD-RED-not-ARB-shaped-GHI#157). Receipts: lint arb-ruff-ce59a40bf094442483826e125f171bc8; types arb-step-typecheck-5f815a4c50c940ceaea2882ae88325b8; tests arb-step-unittest-3c717762545843c8b20a06efee79059a (3524 pass / 1 skip); mkdocs arb-step-mkdocs-dae4b573ab9940e782646c0bc465cb64; coverage arb-step-coverage-4abbbf184ddc44f8aa0cf87721741cef. gz validate --unscoped-rules exit 0; gz validate --all exit 0; mkdocs build --strict clean. GHI #291 filed (label=defect) citing ADR-0.36.0 OBPI-08 premise broken.
 
 ### Implementation Summary
@@ -210,6 +218,7 @@ Canonical .gzkit/rules/attestation-enrichment.md deleted; vendor mirrors (.claud
 - Files deleted: .gzkit/rules/attestation-enrichment.md (156 lines, canonical); .claude/rules/attestation-enrichment.md (mirror); .github/instructions/attestation_enrichment.instructions.md (mirror)
 - Files created: docs/governance/arb-middleware.md (ARB middleware deep-dive, 5 sections); tests/governance/test_attestation_fold.py (8 REQ-pinned tests)
 - Docstring updates: 6 files (5 brief-listed Python + src/gzkit/templates/agents.md)
+<!-- gz-validate-skip: brief-cross-references -->
 - Downstream GHIs filed: #291 (ADR-0.36.0 OBPI-08 arb-instructions staleness; label=defect)
 - Tests added: 8 (REQ-pinned, all pass); 17 tests pass when combined with OBPI-02 fold tests
 - Date completed: 2026-04-23
