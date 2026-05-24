@@ -57,6 +57,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "complexity_advise_cmd": "gzkit.commands.complexity_advise",
     "complexity_guide_cmd": "gzkit.commands.complexity_guide",
     "governance_render_cmd": "gzkit.commands.governance_render",
+    "context_cmd": "gzkit.commands.context_cmd",
 }
 
 _HANDLER_CACHE: dict[str, Callable[..., Any]] = {}
@@ -85,7 +86,7 @@ def _dispatch_adr_report(a: argparse.Namespace) -> None:
 
 
 def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
-    """Register adr, obpi, task, justify, issue, complexity, and governance sub-command groups."""
+    """Register adr, obpi, task, justify, issue, complexity, governance, and context groups."""
     _register_adr_parsers(commands)
     _register_obpi_parsers(commands)
     _register_task_parsers(commands)
@@ -93,6 +94,43 @@ def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
     _register_issue_parsers(commands)
     _register_complexity_parsers(commands)
     _register_governance_parsers(commands)
+    _register_context_parser(commands)
+
+
+def _register_context_parser(commands: argparse._SubParsersAction) -> None:
+    """Register the top-level ``gz context <ADR-ID>`` verb (ADR-0.28.0).
+
+    Renders a focused Markdown context payload combining the target ADR
+    body, OBPI briefs under its ``obpis/`` directory, covering-test paths
+    discovered via ``@covers`` decorators, and applicable governance
+    rules. ``--slim`` (OBPI-0.28.0-02) subtracts the governance section
+    for non-governance harnesses.
+    """
+    p_context = commands.add_parser(
+        "context",
+        help="Render a focused context payload for one ADR-ID",
+        description=(
+            "Render a single Markdown document combining the target ADR's body, "
+            "every OBPI brief under its obpis/ directory, the test files carrying "
+            "@covers(REQ-<ADR-semver>-...) decorators, and a governance-rules "
+            "section (lane, lifecycle, current gate, next required action). "
+            "Output is suitable for verbatim piping to any agent harness. "
+            "Exit codes: 0 success; 1 unresolvable ADR-ID."
+        ),
+        epilog=build_epilog(
+            [
+                "gz context ADR-0.0.3-hexagonal-architecture-tune-up",
+            ]
+        ),
+    )
+    p_context.add_argument(
+        "adr",
+        metavar="ADR-ID",
+        help="ADR identifier (e.g., ADR-0.0.3 or ADR-0.0.3-hexagonal-architecture-tune-up)",
+    )
+    p_context.set_defaults(
+        func=lambda a: _lazy("context_cmd")(adr=a.adr),
+    )
 
 
 def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:

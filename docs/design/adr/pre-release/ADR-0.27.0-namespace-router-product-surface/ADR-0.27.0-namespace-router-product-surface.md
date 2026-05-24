@@ -1,6 +1,6 @@
 ---
 id: ADR-0.27.0-namespace-router-product-surface
-status: Proposed
+status: Validated
 kind: feature
 semver: 0.27.0
 lane: lite

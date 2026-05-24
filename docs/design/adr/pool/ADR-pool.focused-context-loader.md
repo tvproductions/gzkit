@@ -1,17 +1,20 @@
 ---
 id: ADR-pool.focused-context-loader
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: lite
 enabler: null
 inspired_by: openspec
+promoted_to: ADR-0.28.0-focused-context-loader
 ---
 
 # ADR-pool.focused-context-loader: Focused Context Loader
+> Promoted to `ADR-0.28.0-focused-context-loader` on 2026-05-24. This pool file is retained as historical intake context.
+
 
 ## Status
 
-Pool
+Superseded
 
 ## Date
 
@@ -35,13 +38,8 @@ agent accuracy on specific tasks.
 
 ## Target Scope
 
-- New CLI command: `gz context <adr-id>` that outputs:
-  - The target ADR file content
-  - Associated task/OBPI brief contents
-  - Related test file paths (discovered via @covers decorators or naming convention)
-  - Applicable governance rules (lane, current gate, next required action)
-- Output format: single markdown document suitable for piping to an AI agent
-- Optional: `--slim` flag to omit governance rules (for non-governance agents)
+- **context-core** — Implement `gz context <ADR-ID>` rendering the target ADR file, associated OBPI brief contents, related test file paths (discovered via `@covers` decorators or naming convention), and applicable governance rules (lane, current gate, next required action) as a single Markdown payload suitable for piping to an AI agent.
+- **context-slim** — Implement `gz context --slim <ADR-ID>` variant that omits the governance-rules section for non-governance agent harnesses.
 
 ---
 

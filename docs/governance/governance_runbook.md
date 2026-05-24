@@ -440,6 +440,24 @@ See [`/gz-justify`](../user/skills/gz-justify.md) and
 [`commands/justify.md`](../user/commands/justify.md) for the full
 walkthrough protocol.
 
+### Step 5c: Focused-context payload (`gz context`)
+
+When loading a single ADR's worth of context into an agent harness
+(target ADR body, every OBPI brief under that ADR, the covering-test
+file paths grouped by REQ, and a governance-rules section naming lane
+/ lifecycle / current gate / next action), invoke `gz context` rather
+than asking the agent to discover the bundle by repeated reads.
+
+```bash
+# Render the focused-context payload to stdout
+uv run gz context ADR-<X.Y.Z>
+```
+
+The payload is plain Markdown without ANSI escapes, suitable for
+verbatim piping. Exit 1 with a `BLOCKERS:`-prefixed stderr line names
+an unresolvable ADR ID. See [`manpages/context.md`](../user/manpages/context.md)
+for the option reference and exit-code matrix.
+
 6. Validate artifact and document integrity.
 
 ```bash

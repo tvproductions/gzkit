@@ -69,10 +69,14 @@ After Loop 0, daily iteration moves to [Loop A: OBPI Increment](#loop-a-obpi-inc
 | `/gz-adr-status ADR-<X.Y.Z>` | `uv run gz adr status ADR-<X.Y.Z> --json` |
 | `/gz-status` | `uv run gz status --table` |
 | `/gz-adr-evaluate ADR-<X.Y.Z>` | `uv run gz adr evaluate ADR-<X.Y.Z>` |
+| `/gz-context ADR-<X.Y.Z>` | `uv run gz context ADR-<X.Y.Z>` |
 
 ```bash
 # Validate OBPI briefs before pipeline (authored execution contracts only)
 uv run gz obpi validate --adr ADR-<X.Y.Z> --authored
+
+# Load focused context for an ADR (body + OBPIs + covering tests + governance)
+uv run gz context ADR-<X.Y.Z>
 ```
 
 ### Step 1b: Pre-execution reasoning walkthrough (`gz justify`)

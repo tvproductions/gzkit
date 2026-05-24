@@ -1,0 +1,9 @@
+{
+  "obpi_id": "OBPI-0.28.0-01-context-core",
+  "agent": "claude-code-2ae8dab7",
+  "pid": 43564,
+  "session_id": "2ae8dab7-bb48-4481-8345-01397329542c",
+  "claimed_at": "2026-05-24T19:30:42.992043+00:00",
+  "branch": "main",
+  "ttl_minutes": 120
+}
