@@ -205,4 +205,4 @@ Promotion derived from `ADR-pool.focused-context-loader` on 2026-05-24; executab
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.28.0 | Pending | | | |
+| 0.28.0 | Completed | g0 | 2026-05-24 | Completed |

@@ -1,5 +1,41 @@
 # gzkit Release Notes
 
+## v0.28.0 (2026-05-24)
+
+**ADR:** ADR-0.28.0-focused-context-loader
+
+Feature ADR closeout: the focused-context loader ships as Move 2 of the five-move get-out-of-jail recovery plan. A single CLI verb, `gz context <ADR-ID>`, now renders one Markdown payload — target ADR body, every OBPI brief under `obpis/`, the test files carrying matching `@covers` decorators, and a governance-rules section — suitable for piping verbatim into any agent harness. Together with the v0.27.0 namespace routers, an ADR session becomes "load AGENTS.md (lean) + invoke `gz context` once," replacing the per-turn "reload the encyclopedia" pattern that burned ~40 KB of context budget before productive work began. Ungates Move 3 (AGENTS.md ≤ 5 KB) by giving AGENTS.md somewhere to offload to.
+
+### Delivered
+
+- **OBPI-0.28.0-01 — context-core.** New `gz context <ADR-ID>` command in `src/gzkit/commands/context_cmd.py` (160 lines, all functions <50 lines, no class — appropriately functional composition). Renders the target ADR's full Markdown body verbatim, every OBPI brief delimited by an OBPI-ID heading, every `@covers(REQ-<target-ADR-semver>-…)` test path grouped by REQ (discovered via `scan_test_tree` static AST parse), and a governance-rules section naming lane / lifecycle / current gate / next required action. Payload is plain Markdown (no ANSI escapes, no Rich frames) suitable for verbatim piping. Eight REQ-derived tests in `tests/commands/test_context_cmd.py` use sentinel-token assertions against seeded inputs — `SENTINEL_ADR_BODY_TOKEN_4471`, `BRIEF_TOKEN_ALPHA`/`BETA` — to prove semantic coverage rather than string snapshots. Unresolvable ADR IDs exit non-zero with a `BLOCKERS:`-prefixed stderr message.
+- **OBPI-0.28.0-02 — context-slim.** Wired a `--slim` flag onto `gz context <ADR-ID>` as a single-guard pure subtraction at `context_cmd.py:137-139` — `if not slim:` wraps the governance-rules append; no helper bypass, no conditional fan-out. Five REQ-derived tests prove the purely-subtractive contract: `test_slim_delta_is_only_governance_section` diffs default vs slim outputs at line level and asserts every slim line appears in default AND default is strictly longer. Live ceremony walkthrough confirmed the contract — `diff <(uv run gz context ADR-0.0.3) <(uv run gz context --slim ADR-0.0.3)` produced exactly a 9-line `2504,2512d2503` delta consisting entirely of the governance-rules section. OBPI-01's contract is preserved by a regression-invariant overlay (`test_obpi01_default_mode_still_includes_governance_section`).
+
+### Gate Evidence
+
+All applicable gates satisfied for the Lite-lane feature closeout:
+
+- **Gate 1 (ADR):** ADR-0.28.0-focused-context-loader recorded with full Checklist / Decomposition Scorecard / per-OBPI evidence; closeout pipeline verified.
+- **Gate 2 (TDD):** `arb-step-unittest-b54f5d70aa82473680b0fd34d602be1f` — full suite 5528/5528 pass (1 skipped) in 164.2s.
+- **Code Quality:** `arb-ruff-1f35a0b79e9047e4a81e65e4c712d87f` (ruff clean) and `arb-step-typecheck-78fa880f318549c6af0abb4d2ea1ffea` (ty clean).
+- **REQ→@covers parity:** 100% — 8/8 (OBPI-01) and 5/5 (OBPI-02), each REQ named to a specific covering test under `TestContextCmdCore` / `TestContextCmdSlim`.
+- **Gate 5 (Human):** Operator attestation `Completed` recorded by g0 at ceremony Step 6 (2026-05-24); brief-level attestation universal per ADR-0.0.36. Independent spec-reviewer (ACCEPT-WITH-CONCERNS) and quality-reviewer (ACCEPT) confirmed REQ coverage and architectural coherence respectively.
+- Gate 3 (docs/mkdocs) and Gate 4 (BDD) not required — lane is `lite` per ADR-0.0.36 axis rules. `gz context` manpage and runbook entry confirmed present at ceremony Step 3.
+
+### Surfaced & tracked (recovery-deferred)
+
+- **#528** — `gz-session-handoff` skill and orientation hook disagree on location. Surfaced during OBPI-0.28.0-01 handoff authoring when the operator asked whether the handoff system could be used for the recovery plan. The skill writes to `docs/design/adr/.../handoffs/` while `scripts/session_orientation.py` reads `.gzkit/handoffs/`. T1→T2 doctrine drift.
+- **#529** — Handoff system not wired into OBPI pipeline; no `gz handoff` CLI verb. Sibling-cut of #528 — the skill, template, staleness classifier, chain traversal, and Pydantic validation all exist, but no pipeline stage invokes them and no top-level CLI verb registers them.
+
+Both deferred per `docs/governance/get-out-of-jail-plan-2026-05-23.md` § anti-temptation #6; future routing target `ADR-pool.handoff-system-pipeline-integration` (to be authored post-recovery). Not closed by this closeout — dead-letter discipline forbids closing without a real registered destination.
+
+### Stats
+
+- 1 feature ADR closeout (ADR-0.28.0)
+- 2 OBPIs completed, each with universal human attestation
+- 2 GHIs surfaced (#528, #529); both recovery-deferred
+- Move 2 of 5 complete in the get-out-of-jail recovery plan
+
 ## v0.27.1 (2026-05-24)
 
 **Build defect fix.** The v0.27.0 PyPI publish job failed at `uv build` because the repository tracked an absolute symlink in `.antigravitycli/` (a local Gemini CLI artifact accidentally committed). PyPI's sdist validation rejects external absolute symlinks. This patch removes the symlink, adds `.antigravitycli/` to `.gitignore`, and excludes the path from both sdist and wheel builds in `pyproject.toml`. `uv build` now produces a clean sdist + wheel. The v0.27.0 GitHub release remains; PyPI receives the namespace-router product surface here at v0.27.1.
