@@ -54,6 +54,7 @@ Thumbs.db
 .claude/settings.local.json
 .claude/worktrees/
 .gzkit/cache/
+.antigravitycli/
 artifacts/
 
 # MkDocs
