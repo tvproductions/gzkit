@@ -34,9 +34,11 @@ The payload contains no ANSI escapes or Rich-terminal frames and is
 suitable for piping verbatim to any agent harness (Claude Code, Codex,
 Copilot) or for redirecting to a file for archival inspection.
 
-The `--slim` variant (omitting the governance-rules section for
-non-governance harnesses) is delivered by OBPI-0.28.0-02 and is not
-yet wired in this command.
+The `--slim` variant omits the governance-rules section (lane,
+lifecycle, current gate, next required action) for non-governance
+agent harnesses; pass `--slim` to subtract that section from the
+payload. The other three sections (ADR body, OBPI briefs, covering
+tests) are unaffected.
 
 ## OPTIONS
 
@@ -44,6 +46,11 @@ yet wired in this command.
   (e.g. `ADR-0.0.3`) or the full slug form
   (e.g. `ADR-0.0.3-hexagonal-architecture-tune-up`). Resolution uses
   the project's configured ADR root.
+- `--slim` — Omit the governance-rules section (lane, lifecycle,
+  current gate, next required action) from the payload. Use for
+  non-governance agent harnesses that do not need governance metadata.
+  Subtractive: the other three sections (ADR body, OBPI briefs,
+  covering tests) are byte-identical to the default-mode payload.
 - `--quiet`, `-q` — Suppress non-error output.
 - `--verbose`, `-v` — Enable verbose output.
 - `--debug` — Enable debug mode with full tracebacks.
@@ -65,6 +72,9 @@ uv run gz context ADR-0.0.3-hexagonal-architecture-tune-up
 
 # Pipe directly to another agent harness (the load-on-demand path)
 uv run gz context ADR-0.0.3-hexagonal-architecture-tune-up | wc -c
+
+# Slim payload — governance section omitted (non-governance harness)
+uv run gz context --slim ADR-0.0.3-hexagonal-architecture-tune-up
 
 # Error path — unresolvable ADR ID exits non-zero with BLOCKERS:
 uv run gz context ADR-9.9.9-does-not-exist; echo "exit=$?"

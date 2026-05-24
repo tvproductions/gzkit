@@ -37,8 +37,7 @@ def _seed_adr(adr_root: Path, adr_id: str, *, body: str = "") -> Path:
     (pkg_dir / "obpis").mkdir(exist_ok=True)
     adr_file = pkg_dir / f"{adr_id}.md"
     adr_file.write_text(
-        body
-        or f"---\nid: {adr_id}\nkind: foundation\nlane: lite\n---\n\n# {adr_id}: seeded\n",
+        body or f"---\nid: {adr_id}\nkind: foundation\nlane: lite\n---\n\n# {adr_id}: seeded\n",
         encoding="utf-8",
     )
     return adr_file
@@ -179,6 +178,96 @@ class TestContextCmdCore(unittest.TestCase):
             result = runner.invoke(main, ["context", "ADR-0.0.99"])
             self.assertNotIn("\x1b[", result.output)
             self.assertNotIn("[", result.output)
+
+
+class TestContextCmdSlim(unittest.TestCase):
+    """REQ-derived tests for ``gz context --slim <ADR-ID>``."""
+
+    @covers("REQ-0.28.0-02-01")
+    def test_help_documents_slim_flag(self) -> None:
+        """REQ-01: gz context --help exits 0 and documents --slim."""
+        runner = CliRunner()
+        result = runner.invoke(main, ["context", "--help"])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("--slim", result.output)
+
+    @covers("REQ-0.28.0-02-02")
+    def test_slim_omits_governance_section(self) -> None:
+        """REQ-02: --slim payload omits the governance-rules section entirely."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            adr_file = _seed_adr(_adr_root(), "ADR-0.0.99")
+            _seed_obpi(adr_file, 1, "seeded-unit")
+            result = runner.invoke(main, ["context", "--slim", "ADR-0.0.99"])
+            self.assertEqual(result.exit_code, 0)
+            lower = result.output.lower()
+            self.assertNotIn("governance rules", lower)
+            self.assertNotIn("lifecycle", lower)
+            self.assertNotIn("current gate", lower)
+            self.assertNotIn("next required action", lower)
+
+    @covers("REQ-0.28.0-02-03")
+    def test_slim_preserves_adr_body_and_obpi_briefs(self) -> None:
+        """REQ-03: --slim preserves ADR body and OBPI brief bodies (purely subtractive)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            sentinel_adr = "SENTINEL_ADR_SLIM_4472"
+            body = (
+                f"---\nid: ADR-0.0.99\nkind: foundation\nlane: lite\n---\n\n"
+                f"# ADR-0.0.99: seeded\n\n{sentinel_adr}\n"
+            )
+            adr_file = _seed_adr(_adr_root(), "ADR-0.0.99", body=body)
+            _seed_obpi(
+                adr_file,
+                1,
+                "seeded-unit",
+                body="---\nid: OBPI-0.0.99-01-seeded-unit\nlane: Lite\n---\n\nBRIEF_SLIM_TOKEN\n",
+            )
+            result = runner.invoke(main, ["context", "--slim", "ADR-0.0.99"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn(sentinel_adr, result.output)
+            self.assertIn("BRIEF_SLIM_TOKEN", result.output)
+
+    @covers("REQ-0.28.0-02-04")
+    def test_slim_delta_is_only_governance_section(self) -> None:
+        """REQ-04: The only delta between default and --slim is the governance-rules section."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            adr_file = _seed_adr(_adr_root(), "ADR-0.0.99")
+            _seed_obpi(adr_file, 1, "seeded-unit")
+            default_result = runner.invoke(main, ["context", "ADR-0.0.99"])
+            slim_result = runner.invoke(main, ["context", "--slim", "ADR-0.0.99"])
+            self.assertEqual(default_result.exit_code, 0)
+            self.assertEqual(slim_result.exit_code, 0)
+            # The slim payload must be a strict prefix/subset of the default payload.
+            # Every line in slim must appear in default (slim is purely subtractive).
+            slim_lines = slim_result.output.splitlines()
+            default_lines = default_result.output.splitlines()
+            for line in slim_lines:
+                self.assertIn(
+                    line,
+                    default_lines,
+                    f"Line present in --slim but not default: {line!r}",
+                )
+            # The default payload must be longer (contains the governance section).
+            self.assertGreater(len(default_result.output), len(slim_result.output))
+
+    @covers("REQ-0.28.0-02-05")
+    def test_obpi01_default_mode_still_includes_governance_section(self) -> None:
+        """REQ-05: OBPI-01 contract preserved — default mode payload includes governance section."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            adr_file = _seed_adr(_adr_root(), "ADR-0.0.99")
+            _seed_obpi(adr_file, 1, "seeded-unit")
+            result = runner.invoke(main, ["context", "ADR-0.0.99"])
+            lower = result.output.lower()
+            self.assertIn("governance rules", lower)
+            self.assertIn("lane", lower)
+            self.assertIn("lifecycle", lower)
 
 
 if __name__ == "__main__":

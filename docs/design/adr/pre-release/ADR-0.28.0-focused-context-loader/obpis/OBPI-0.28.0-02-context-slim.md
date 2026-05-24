@@ -3,7 +3,7 @@ id: OBPI-0.28.0-02-context-slim
 parent: ADR-0.28.0-focused-context-loader
 item: 2
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.28.0-02-context-slim: **context-slim** — Implement `gz context --slim <ADR-ID>` variant that omits the governance-rules section for non-governance agent harnesses. ---
@@ -13,13 +13,11 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.28.0-focused-context-loader/ADR-0.28.0-focused-context-loader.md`
 - **Checklist Item:** #2 - "OBPI-0.28.0-02: **context-slim** — Implement `gz context --slim <ADR-ID>` variant that omits the governance-rules section for non-governance agent harnesses. ---"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-**context-slim** — Implement `gz context --slim <ADR-ID>` variant that omits the governance-rules section for non-governance agent harnesses. ---.
+Wire a `--slim` flag onto `gz context <ADR-ID>` that subtracts the governance-rules section (lane / lifecycle / current gate / next required action) from the rendered payload, leaving the ADR body, OBPI brief bodies, and `@covers`-discovered test paths byte-identical to the default-mode payload, so non-governance agent harnesses can consume the focused-context output without governance metadata noise.
 
 ## Lane
 
@@ -239,15 +237,36 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```bash
+$ diff <(uv run gz context ADR-0.0.3-hexagonal-architecture-tune-up) \
+       <(uv run gz context --slim ADR-0.0.3-hexagonal-architecture-tune-up)
+2504,2512d2503
+< 
+< ---
+< 
+< ## Governance rules
+< 
+< - **Lane:** heavy
+< - **Lifecycle:** Validated
+< - **Current gate:** Gate 5
+< - **Next required action:** Run `gz adr audit <ADR-ID>` to harvest Validated -> Completed.
+```
+
+Single delta: 9 lines of governance section omitted; every other byte identical (REQ-04 line-subset assertion mechanically verified this in `test_slim_delta_is_only_governance_section`).
+
+Receipts cited: `arb-ruff-58804f96e5fd4b12a4898479065748b1`, `arb-step-typecheck-2c5c3e4db6924ba08695a84ff1ab2eb0`, `arb-step-unittest-0ead3d9df88d4ef09a33642b9f7d577f`.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files modified: `src/gzkit/cli/parser_artifacts.py` (added `--slim` flag to `_register_context_parser`; updated lambda to pass `slim=a.slim`; added `--slim` epilog example); `tests/commands/test_context_cmd.py` (added `TestContextCmdSlim` class with 5 REQ-derived tests; `TestContextCmdCore` untouched); `docs/user/manpages/context.md` (removed "not yet wired" placeholder; added `--slim` to OPTIONS; added `--slim` example)
+- Files created: `.claude/plans/OBPI-0.28.0-02-context-slim.md` (canonical plan file)
+- Renderer untouched: `src/gzkit/commands/context_cmd.py` already carried `slim: bool = False` from OBPI-01 — REQ-06 (no duplicate renderer path) satisfied by reusing the single conditional branch
+- Tests added: 5 (REQ-0.28.0-02-01 through -05); 13/13 context tests pass; 5528/5528 full unittest sweep pass (1 skipped)
+- Date completed: 2026-05-24
+- Attestation status: human-attested by g0
+- Defects noted: none in scope; spec-reviewer surfaced a missing `assertNotIn("lifecycle", lower)` in Task 2 which was fixed in flight before review-cycle completion
 
 ## Tracked Defects
 
@@ -258,12 +277,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.28.0-02-context-slim wired `--slim` flag onto `gz context` (renderer reused from OBPI-01, REQ-06 no-duplicate-renderer satisfied); 5/5 REQ-0.28.0-02-NN tests pass (TestContextCmdSlim); full unittest sweep 5528/5528 pass (1 skipped); REQ→@covers parity 100% (5/5); receipts arb-ruff-58804f96e5fd4b12a4898479065748b1, arb-step-typecheck-2c5c3e4db6924ba08695a84ff1ab2eb0, arb-step-unittest-0ead3d9df88d4ef09a33642b9f7d577f; live `diff` between default and --slim modes confirms purely-subtractive 9-line governance-section omission.
+- Date: 2026-05-24
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-05-24
 
 **Evidence Hash:** -

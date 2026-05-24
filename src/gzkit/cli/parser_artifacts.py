@@ -120,6 +120,7 @@ def _register_context_parser(commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(
             [
                 "gz context ADR-0.0.3-hexagonal-architecture-tune-up",
+                "gz context --slim ADR-0.0.3-hexagonal-architecture-tune-up",
             ]
         ),
     )
@@ -128,8 +129,14 @@ def _register_context_parser(commands: argparse._SubParsersAction) -> None:
         metavar="ADR-ID",
         help="ADR identifier (e.g., ADR-0.0.3 or ADR-0.0.3-hexagonal-architecture-tune-up)",
     )
+    p_context.add_argument(
+        "--slim",
+        action="store_true",
+        default=False,
+        help="Omit governance-rules section for non-governance agent harnesses",
+    )
     p_context.set_defaults(
-        func=lambda a: _lazy("context_cmd")(adr=a.adr),
+        func=lambda a: _lazy("context_cmd")(adr=a.adr, slim=a.slim),
     )
 
 
