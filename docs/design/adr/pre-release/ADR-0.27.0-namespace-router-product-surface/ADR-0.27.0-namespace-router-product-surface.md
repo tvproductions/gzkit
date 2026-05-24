@@ -1,20 +1,23 @@
 ---
-id: ADR-pool.namespace-router-product-surface
-status: Superseded
-parent: PRD-GZKIT-1.0.0
+id: ADR-0.27.0-namespace-router-product-surface
+status: Proposed
+kind: feature
+semver: 0.27.0
 lane: lite
-enabler: null
-inspired_by: gsd
-promoted_to: ADR-0.27.0-namespace-router-product-surface
+parent: PRD-GZKIT-1.0.0
+date: 2026-05-23
+promoted_from: ADR-pool.namespace-router-product-surface
 ---
 
-# ADR-pool.namespace-router-product-surface: Namespace Router Product Surface
-> Promoted to `ADR-0.27.0-namespace-router-product-surface` on 2026-05-23. This pool file is retained as historical intake context.
+# ADR-0.27.0-namespace-router-product-surface: Namespace Router Product Surface
 
+## Persona
 
-## Status
+<!-- Describe the behavioral identity for agents working on this ADR.
+     Frame as values and craftsmanship standards, not expertise claims.
+     See .gzkit/personas/ for reusable persona definitions. -->
 
-Superseded
+{persona}
 
 ## Intent
 
@@ -30,7 +33,6 @@ full concrete skill surface remains directly invocable. The model first
 chooses an intent namespace, then routes to a concrete sub-skill. gzkit
 should adopt that product-surface pattern without weakening the underlying
 governance machinery.
-
 
 ## Decision
 
@@ -55,46 +57,44 @@ single instruction to invoke the matched concrete skill directly. The router
 must not duplicate the concrete skill's procedure, governance contract, or
 verification steps.
 
+## Consequences
 
-## Alternatives Considered
+### Positive
 
-### Keep Flat Skill Listing
+- Promotion preserves backlog intent as executable ADR scope.
+- Checklist items now map 1:1 to generated OBPI briefs immediately.
 
-Rejected. Flat exposure preserves maximum explicitness but keeps token and
-choice cost high. It also presents gzkit's internal governance vocabulary as
-the first user experience, which is a product adoption defect.
+### Negative
 
-### Improve `gz-skill-router` Only
+- Promotion fails closed when the pool ADR lacks actionable execution scope.
 
-Rejected. `gz-skill-router` is a lookup aid once invoked; it does not reduce
-the first-stage skill-selection surface or make the product shape legible to
-new users. Namespace routers solve the earlier choice point.
+## Decomposition Scorecard
 
-### Collapse Concrete Skills
+<!-- Deterministic OBPI sizing: score each dimension 0/1/2. -->
+<!-- Cutoffs are notional defaults and should be calibrated over time from project evidence. -->
 
-Rejected. Removing concrete skills would damage direct invocation, break
-existing workflows, and make the router layer too powerful. GSD's pattern is
-additive: namespace routers coexist with direct concrete commands.
+- Data/State: 1
+- Logic/Engine: 1
+- Interface: 1
+- Observability: 1
+- Lineage: 0
+- Dimension Total: 4
+- Baseline Range: 3
+- Baseline Selected: 3
+- Split Single-Narrative: 0
+- Split Surface Boundary: 0
+- Split State Anchor: 0
+- Split Testability Ceiling: 0
+- Split Total: 0
+- Final Target OBPI Count: 3
 
-### CLI Aliases Only
+## Checklist
 
-Rejected. Human-readable CLI aliases help operators, but they do not solve
-model skill-selection cost, eager context loading, or agent routing ambiguity.
-This ADR complements `ADR-pool.command-aliases`; it does not replace it.
+<!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-### Context Loader Only
-
-Rejected. `ADR-pool.focused-context-loader` addresses how much context is
-loaded after a target is known. Namespace routers address how the target is
-chosen in the first place.
-
-## Proposed OBPI Decomposition
-
-| # | Slug | Description | Lane |
-|---|------|-------------|------|
-| 01 | router-skill-files | Author the six namespace-router skill files (`gz-workflow`, `gz-governance`, `gz-quality`, `gz-project`, `gz-context`, `gz-manage`) under `.gzkit/skills/`. Each ≤ 500 bytes, intent-to-skill table only, no duplicated procedure or ceremony. | Lite |
-| 02 | router-surface-sync | Register the six router skills in the canonical skill catalog under `.gzkit/skills/` and refresh generated control-surface mirrors by running `gz agent sync control-surfaces` (mirrors are sync outputs, not edited surfaces). | Lite |
-| 03 | router-tables-validator | Add `gz validate --router-tables` mechanical check — every routed skill resolves to a registered skill on disk, and every concrete skill is reachable from at least one router. | Lite |
+- [ ] OBPI-0.27.0-01: **router-skill-files** — Author the six namespace-router skill files (`gz-workflow`, `gz-governance`, `gz-quality`, `gz-project`, `gz-context`, `gz-manage`) under `.gzkit/skills/`. Each ≤ 500 bytes, intent-to-skill table only, no duplicated procedure or ceremony.
+- [ ] OBPI-0.27.0-02: **router-surface-sync** — Register the six router skills in the canonical skill catalog under `.gzkit/skills/` and refresh generated control-surface mirrors by running `gz agent sync control-surfaces` (mirrors are sync outputs, not edited surfaces).
+- [ ] OBPI-0.27.0-03: **router-tables-validator** — Add `gz validate --router-tables` mechanical check — every routed skill resolves to a registered skill on disk, and every concrete skill is reachable from at least one router.
 
 ## Target Scope
 
@@ -150,3 +150,26 @@ This is a product-surface correction, not a governance retreat. The underlying
 gzkit machinery remains stricter than GSD: append-only ledger, ARB receipts,
 lane-aware gates, and human attestation stay intact. The router layer makes
 that machinery approachable.
+
+## Q&A Transcript
+
+<!-- Interview transcript preserved for context -->
+
+Promotion derived from `ADR-pool.namespace-router-product-surface` on 2026-05-23; executable scope was carried forward from the pool ADR instead of reseeded as placeholders.
+
+## Evidence
+
+<!-- Links to tests, documentation, and other artifacts that prove completion -->
+
+- [ ] Tests: `tests/`
+- [ ] Docs: `docs/`
+
+## Alternatives Considered
+
+- Keep this work in the pool backlog until reprioritized.
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.27.0 | Pending | | | |
