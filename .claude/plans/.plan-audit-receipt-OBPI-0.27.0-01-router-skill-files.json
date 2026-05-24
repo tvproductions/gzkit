@@ -1,0 +1,349 @@
+{
+  "obpi_id": "OBPI-0.27.0-01-router-skill-files",
+  "timestamp": "2026-05-24T02:43:27.752920+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.27.0-01-router-skill-files.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.5.0",
+      "sibling_obpi": "OBPI-0.5.0-04-maintenance-and-deprecation-operations",
+      "contested_paths": [
+        ".gzkit/skills/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.5.0",
+      "sibling_obpi": "OBPI-0.5.0-01-skill-taxonomy-and-capability-model",
+      "contested_paths": [
+        ".gzkit/skills/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.5.0",
+      "sibling_obpi": "OBPI-0.5.0-03-lifecycle-state-transitions",
+      "contested_paths": [
+        ".gzkit/skills/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.14.0",
+      "sibling_obpi": "OBPI-0.14.0-03-root-surface-slimming-and-workflow-relocation",
+      "contested_paths": [
+        ".gzkit/skills/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.11.0",
+      "sibling_obpi": "OBPI-0.11.0-06-template-closeout-and-migration-alignment",
+      "contested_paths": [
+        ".gzkit/skills/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.11.0",
+      "sibling_obpi": "OBPI-0.11.0-01-obpi-transaction-contract-and-scope-isolation",
+      "contested_paths": [
+        ".gzkit/skills/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.11.0",
+      "sibling_obpi": "OBPI-0.11.0-05-gz-obpi-pipeline-skill-and-mirror-surface",
+      "contested_paths": [
+        ".gzkit/skills/gz-obpi-pipeline/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-33-arb-analysis-pattern",
+      "contested_paths": [
+        ".gzkit/skills/gz-arb/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-08-wire-req-verification-dispatch",
+      "contested_paths": [
+        ".gzkit/skills/gz-obpi-pipeline/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-06-wire-implementer-dispatch",
+      "contested_paths": [
+        ".gzkit/skills/gz-obpi-pipeline/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-05-pipeline-runtime-integration",
+      "contested_paths": [
+        ".gzkit/skills/gz-obpi-pipeline/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-07-wire-two-stage-review",
+      "contested_paths": [
+        ".gzkit/skills/gz-obpi-pipeline/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.4.0",
+      "sibling_obpi": "OBPI-0.4.0-03-sync-determinism-and-recovery",
+      "contested_paths": [
+        ".gzkit/skills/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.4.0",
+      "sibling_obpi": "OBPI-0.4.0-02-agent-native-mirror-contracts",
+      "contested_paths": [
+        ".gzkit/skills/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.4.0",
+      "sibling_obpi": "OBPI-0.4.0-04-mirror-compat-migration",
+      "contested_paths": [
+        ".gzkit/skills/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-01-runtime-command-contract",
+      "contested_paths": [
+        ".gzkit/skills/gz-obpi-pipeline/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-04-human-gate-boundary",
+      "contested_paths": [
+        ".gzkit/skills/gz-obpi-pipeline/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-05-runtime-engine-integration",
+      "contested_paths": [
+        ".gzkit/skills/gz-obpi-pipeline/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-03-structured-stage-outputs",
+      "contested_paths": [
+        ".gzkit/skills/gz-obpi-pipeline/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-02-persist-stage-state",
+      "contested_paths": [
+        ".gzkit/skills/gz-obpi-pipeline/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.12.0",
+      "sibling_obpi": "OBPI-0.12.0-03-pipeline-router-and-active-marker-bridge",
+      "contested_paths": [
+        ".gzkit/skills/gz-obpi-pipeline/**",
+        ".gzkit/skills/gz-plan-audit/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.12.0",
+      "sibling_obpi": "OBPI-0.12.0-07-plan-audit-skill-and-receipt-parity",
+      "contested_paths": [
+        ".gzkit/skills/gz-plan-audit/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.12.0",
+      "sibling_obpi": "OBPI-0.12.0-01-canonical-hook-inventory-and-parity-contract",
+      "contested_paths": [
+        ".gzkit/skills/gz-obpi-pipeline/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.12.0",
+      "sibling_obpi": "OBPI-0.12.0-06-settings-registration-and-operator-verification-alignment",
+      "contested_paths": [
+        ".gzkit/skills/gz-plan-audit/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-08-gz-domain-skills-canonical-mirrors",
+      "contested_paths": [
+        ".gzkit/skills/gz-domain-enumerate/SKILL.md",
+        ".gzkit/skills/gz-domain-enumerate/agents/",
+        ".gzkit/skills/gz-domain-model/SKILL.md",
+        ".gzkit/skills/gz-domain-model/agents/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-10-ghi-workflow-extensions",
+      "contested_paths": [
+        ".gzkit/skills/ghi-author/SKILL.md",
+        ".gzkit/skills/ghi-close/SKILL.md",
+        ".gzkit/skills/ghi-triage/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-09-existing-skill-extensions",
+      "contested_paths": [
+        ".gzkit/skills/gz-prd/SKILL.md",
+        ".gzkit/skills/gz-design/SKILL.md",
+        ".gzkit/skills/gz-adr-evaluate/SKILL.md",
+        ".gzkit/skills/gz-adr-closeout-ceremony/SKILL.md",
+        ".gzkit/skills/gz-adr-audit/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.30",
+      "sibling_obpi": "OBPI-0.0.30-05-justify-integration",
+      "contested_paths": [
+        ".gzkit/skills/gz-justify/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.30",
+      "sibling_obpi": "OBPI-0.0.30-02-complexity-guide-skill",
+      "contested_paths": [
+        ".gzkit/skills/complexity-guide/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.56",
+      "sibling_obpi": "OBPI-0.0.56-05-ghi-close-defect-accounting-backstop",
+      "contested_paths": [
+        ".gzkit/skills/ghi-close/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.14",
+      "sibling_obpi": "OBPI-0.0.14-03-pipeline-skill-migration",
+      "contested_paths": [
+        ".gzkit/skills/gz-obpi-pipeline/SKILL.md",
+        ".gzkit/skills/gz-obpi-lock/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.38",
+      "sibling_obpi": "OBPI-0.0.38-03-retroactive-classification",
+      "contested_paths": [
+        ".gzkit/skills/**/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-01-skills-physical-migration",
+      "contested_paths": [
+        ".gzkit/skills/<slug>/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-04-complexity-advisor-skill",
+      "contested_paths": [
+        ".gzkit/skills/complexity-advisor/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.15",
+      "sibling_obpi": "OBPI-0.0.15-05-ceremony-skill",
+      "contested_paths": [
+        ".gzkit/skills/gz-patch-release/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.19",
+      "sibling_obpi": "OBPI-0.0.19-04-skill-and-upstream-integrations",
+      "contested_paths": [
+        ".gzkit/skills/gz-justify/SKILL.md",
+        ".gzkit/skills/gz-justify/assets/",
+        ".gzkit/skills/gz-adr-evaluate/SKILL.md",
+        ".gzkit/skills/gz-obpi-pipeline/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.36",
+      "sibling_obpi": "OBPI-0.0.36-05-skill-prose-sweep-self-close",
+      "contested_paths": [
+        ".gzkit/skills/gz-obpi-pipeline/SKILL.md",
+        ".gzkit/skills/gz-obpi-reconcile/SKILL.md",
+        ".gzkit/skills/ghi-close/SKILL.md",
+        ".gzkit/skills/gz-adr-closeout-ceremony/SKILL.md",
+        ".gzkit/skills/**/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-06-distill-skill",
+      "contested_paths": [
+        ".gzkit/skills/gz-complexity-distill/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.48",
+      "sibling_obpi": "OBPI-0.0.48-05-skill-surface-sync",
+      "contested_paths": [
+        ".gzkit/skills/pool-triage/SKILL.md",
+        ".gzkit/skills/pool-triage/scripts/triage.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-05-skill-prompt-enrichment",
+      "contested_paths": [
+        ".gzkit/skills/gz-plan/SKILL.md",
+        ".gzkit/skills/gz-adr-create/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.57",
+      "sibling_obpi": "OBPI-0.0.57-02-gz-adr-create-nominal-allocator",
+      "contested_paths": [
+        ".gzkit/skills/gz-adr-create/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.57",
+      "sibling_obpi": "OBPI-0.0.57-03-foundation-triage-skill",
+      "contested_paths": [
+        ".gzkit/skills/gz-foundation-triage/SKILL.md",
+        ".gzkit/skills/gz-foundation-triage/scripts/triage.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        ".gzkit/skills/gz-adr-create/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.49",
+      "sibling_obpi": "OBPI-0.0.49-04-ghi-skills-cross-link",
+      "contested_paths": [
+        ".gzkit/skills/ghi-author/SKILL.md",
+        ".gzkit/skills/ghi-close/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.35",
+      "sibling_obpi": "OBPI-0.0.35-02-skill-prompt-enrichment",
+      "contested_paths": [
+        ".gzkit/skills/gz-design/SKILL.md",
+        ".gzkit/skills/gz-plan/SKILL.md",
+        ".gzkit/skills/gz-adr-create/SKILL.md",
+        ".gzkit/skills/gz-adr-promote/SKILL.md"
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.57-foundation-adr-nominal-id-triage
-status: Draft
+status: Validated
 kind: foundation
 semver: 0.0.57
 lane: heavy
