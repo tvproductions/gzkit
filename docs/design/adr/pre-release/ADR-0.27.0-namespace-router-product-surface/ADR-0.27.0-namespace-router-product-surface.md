@@ -41,21 +41,24 @@ matching operator-facing command/help surfaces. Concrete gzkit skills remain
 directly invocable; routers are additive entry points that organize intent
 before exposing ceremony.
 
-Proposed initial routers:
+Router set (seven, amended GHI #522 from initial six):
 
 | Router | Routes to |
 |---|---|
-| `/gz-workflow` | design, plan, implement, verify, attest, release |
-| `/gz-project` | init, upgrade, PRD, constitution, status, state |
-| `/gz-governance` | ADR, OBPI, gates, ledger, attestation, reconcile |
-| `/gz-quality` | check, lint, test, typecheck, complexity, tech-debt |
+| `/gz-workflow` | design, plan, implement, verify, attest, release, justify, plan-audit |
+| `/gz-project` | init, upgrade, PRD, constitution, status, state, competitor-radar |
+| `/gz-governance` | ADR, OBPI, gates, ledger, attestation, reconcile, adr-evaluate, migrate-semver, obpi-lock |
+| `/gz-quality` | check, lint, test, typecheck, complexity, tech-debt, obpi-simplify |
 | `/gz-context` | handoff, state, map, parity, docs, orientation |
-| `/gz-manage` | git-sync, issue, patch release, agent sync, tidy |
+| `/gz-manage` | git-sync, issue, patch release, agent sync, tidy, issue-file |
+| `/gz-chores` | chore-runner, deps-upgrade, foundation-triage, pythonic-pattern-detect, pythonic-pattern-apply, check-config-paths, cli-audit |
 
 Each namespace router should be short: an intent-to-skill table plus a
 single instruction to invoke the matched concrete skill directly. The router
 must not duplicate the concrete skill's procedure, governance contract, or
-verification steps.
+verification steps. Router byte budget is empirical, not hard-capped — GSD
+reference routers range 696–1131 bytes (avg ~930, ~60 bytes per routed
+skill); the original ≤500-byte aspiration was unbacked.
 
 ## Consequences
 
@@ -82,11 +85,11 @@ verification steps.
 - Baseline Range: 3
 - Baseline Selected: 3
 - Split Single-Narrative: 0
-- Split Surface Boundary: 0
+- Split Surface Boundary: 1
 - Split State Anchor: 0
 - Split Testability Ceiling: 0
-- Split Total: 0
-- Final Target OBPI Count: 3
+- Split Total: 1
+- Final Target OBPI Count: 4
 
 ## Checklist
 
@@ -95,6 +98,7 @@ verification steps.
 - [ ] OBPI-0.27.0-01: **router-skill-files** — Author the six namespace-router skill files (`gz-workflow`, `gz-governance`, `gz-quality`, `gz-project`, `gz-context`, `gz-manage`) under `.gzkit/skills/`. Each ≤ 500 bytes, intent-to-skill table only, no duplicated procedure or ceremony.
 - [ ] OBPI-0.27.0-02: **router-surface-sync** — Register the six router skills in the canonical skill catalog under `.gzkit/skills/` and refresh generated control-surface mirrors by running `gz agent sync control-surfaces` (mirrors are sync outputs, not edited surfaces).
 - [ ] OBPI-0.27.0-03: **router-tables-validator** — Add `gz validate --router-tables` mechanical check — every routed skill resolves to a registered skill on disk, and every concrete skill is reachable from at least one router.
+- [ ] OBPI-0.27.0-04: **router-coverage-completion** (added GHI #522) — Author the 7th `gz-chores` router skill file, route the 16 concrete skills currently unrouted across `gz-chores` (7 chore-flavored) and the existing six routers (9 by natural namespace), re-run `gz agent sync control-surfaces`, and confirm `gz validate --router-tables` returns 0 errors. Closes the "no orphaned high-use skills" gap by making the policy "every concrete skill routed by exactly one router" mechanical.
 
 ## Target Scope
 
@@ -133,8 +137,9 @@ verification steps.
 This pool ADR can be promoted when all are true:
 
 1. The first-stage router set is accepted as the product surface.
-2. The concrete skill inventory is mapped under routers without orphaned
-   high-use skills.
+2. Every concrete skill is routed by exactly one router (mechanical, no
+   "high-use" predicate — amended GHI #522). Enforced by
+   `gz validate --router-tables` returning 0 errors.
 3. The generated skill index presents routers before the full flat catalog.
 4. Token-cost and choice-cost success metrics are defined.
 5. A first-10-minute user path uses routers rather than governance internals as
