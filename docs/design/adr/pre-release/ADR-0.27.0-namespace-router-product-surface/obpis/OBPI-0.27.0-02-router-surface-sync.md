@@ -3,7 +3,7 @@ id: OBPI-0.27.0-02-router-surface-sync
 parent: ADR-0.27.0-namespace-router-product-surface
 item: 2
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.27.0-02-router-surface-sync: **router-surface-sync** — Register the six router skills in the canonical skill catalog and refresh control surfaces via `gz agent sync control-surfaces` so routers mirror to `.agents/skills/`, `.claude/skills/`, and `.github/skills/`.
@@ -13,11 +13,9 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.27.0-namespace-router-product-surface/ADR-0.27.0-namespace-router-product-surface.md`
 - **Checklist Item:** #2 - "OBPI-0.27.0-02: **router-surface-sync** — Register the six router skills in the canonical skill catalog and refresh control surfaces via `gz agent sync control-surfaces` so routers mirror to `.agents/skills/`, `.claude/skills/`, and `.github/skills/`."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
-
-<!-- One-sentence concrete outcome. What does "done" look like? -->
 
 **router-surface-sync** — Register the six router skills in the canonical skill catalog and refresh control surfaces via `gz agent sync control-surfaces` so routers mirror to `.agents/skills/`, `.claude/skills/`, and `.github/skills/`.
 
@@ -253,6 +251,7 @@ $ uv run ruff format --check tests/skills/test_namespace_router_surface_sync.py
 
 ### Key Proof
 
+
 ```text
 $ uv run gz agent sync control-surfaces
 ... (idempotent on this run; routers already mirrored by post-Write hook during OBPI-01)
@@ -268,6 +267,7 @@ $ uv run gz skill list 2>&1 | grep -E '^\| gz-(workflow|governance|quality|proje
 ```
 
 ### Implementation Summary
+
 
 - Files created:
   - `tests/skills/test_namespace_router_surface_sync.py` (three REQ-derived tests covering vendor mirrors, pkg copy, active-catalog discovery)
@@ -287,12 +287,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.27.0-02 router-surface-sync verified: 3/3 REQ-derived parity tests GREEN (vendor-mirror byte-parity REQ-01, pkg-copy byte-parity REQ-02, active-catalog discovery REQ-03) in tests/skills/test_namespace_router_surface_sync.py; full unittest sweep 5508/5508 pass (receipt arb-step-unittest-a05d6823769e41768642022463357941); ruff clean (receipt arb-ruff-ae62d9f035aa497da1696856796bf4d1); ty typecheck clean (receipt arb-step-typecheck-dc7ce9c675fa426ca4d6e9c632eaf4d9); six namespace-router skills (gz-workflow, gz-governance, gz-quality, gz-project, gz-context, gz-manage) propagated from .gzkit/skills/ canonical to .agents/skills/, .claude/skills/, .github/skills/, and src/gzkit/skills/ via gz agent sync control-surfaces; plan-audit PASS receipt at .plan-audit-receipt-OBPI-0.27.0-02.json.
+- Date: 2026-05-24
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-05-24
 
 **Evidence Hash:** -
