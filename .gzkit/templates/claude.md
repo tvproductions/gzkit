@@ -1,8 +1,8 @@
 # CLAUDE.md
 
-@AGENTS.md
+> **Doctrine:** CLAUDE.md redirects to AGENTS.md. The Claude-specific addenda below extend the universal contract; they do not replace it. (GHI #525.)
 
-<!-- Claude-Code-specific guidance only. AGENTS.md is the authoritative contract. -->
+@AGENTS.md
 
 ### Invariant 10a — skill-tool-invoke-same-turn
 
