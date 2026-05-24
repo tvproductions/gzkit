@@ -1,5 +1,11 @@
 # gzkit Release Notes
 
+## v0.27.1 (2026-05-24)
+
+**Build defect fix.** The v0.27.0 PyPI publish job failed at `uv build` because the repository tracked an absolute symlink in `.antigravitycli/` (a local Gemini CLI artifact accidentally committed). PyPI's sdist validation rejects external absolute symlinks. This patch removes the symlink, adds `.antigravitycli/` to `.gitignore`, and excludes the path from both sdist and wheel builds in `pyproject.toml`. `uv build` now produces a clean sdist + wheel. The v0.27.0 GitHub release remains; PyPI receives the namespace-router product surface here at v0.27.1.
+
+Fix commit: `7c81501f`.
+
 ## v0.27.0 (2026-05-24)
 
 **ADR:** ADR-0.27.0-namespace-router-product-surface
