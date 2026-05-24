@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.11.0"
+  skill-version: "7.12.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -13,16 +13,13 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-20
+last_reviewed: 2026-05-24
 model: opus
 ---
 
 # gz-adr-closeout-ceremony
 
 Execute the ADR closeout ceremony by driving the CLI state machine.
-
-
-> **Self-Escalation (opus-tier).** Spawn an `Agent` with `model="opus"` to execute this skill. Pass the operator's request verbatim, any relevant context (ADR IDs, OBPI IDs, design topic, prior decisions), and instruct the subagent to read `.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md` for the full workflow. Relay the subagent's output to the operator.
 
 **Authority:** `docs/governance/GovZero/audit-protocol.md`
 
