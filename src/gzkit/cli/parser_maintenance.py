@@ -572,6 +572,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Validate that AGENTS.md matches the rendered constitutional invariant registry.",
     )
     p_validate.add_argument(
+        "--router-tables",
+        dest="check_router_tables",
+        action="store_true",
+        default=False,
+        help="Router slugs resolve; concrete skills are router-reachable (ADR-0.27.0).",
+    )
+    p_validate.add_argument(
         "--brief-reconcile",
         dest="check_brief_reconcile",
         action="store_true",
@@ -711,6 +718,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_advisor_proof_binding=a.check_advisor_proof_binding,
             check_invariant_coherence=a.check_invariant_coherence,
             check_brief_reconcile=a.check_brief_reconcile,
+            check_router_tables=a.check_router_tables,
             check_distribution=a.check_distribution,
             check_distribution_regenerate=a.check_distribution_regenerate,
             check_bullet_retention=a.check_bullet_retention,

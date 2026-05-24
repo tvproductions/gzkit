@@ -164,9 +164,9 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.27.0-03-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.27.0-03-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.27.0-03-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.27.0-03-01: `audit_router_tables` emits a `router_tables`-typed `ValidationError` when a router routes an intent to a slug that has no canonical `.gzkit/skills/<slug>/SKILL.md`. (Direction 1 — fail-closed; exit 3 via policy_breach.)
+- [ ] REQ-0.27.0-03-02: `audit_router_tables` emits a `router_tables_coverage`-typed `ValidationError` when a concrete (non-router) skill is not routed from any router. (Direction 2 — advisory; exit 1.)
+- [ ] REQ-0.27.0-03-03: `audit_router_tables` emits zero errors on a sandbox where every router's routed slugs resolve and every concrete skill is routed at least once. (Clean baseline.)
 
 ## Completion Checklist
 
@@ -188,18 +188,40 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded (parent ADR-0.27.0 § Checklist row 03; three concrete REQs covering Direction 1 fail-closed, Direction 2 advisory, and clean baseline)
 
 ### Gate 2 (TDD — Red-Green-Refactor)
 
 ```text
-# Paste test output here
+$ uv run -m unittest -v tests.governance.test_router_tables_validator
+test_zero_errors_when_routers_cover_every_concrete_skill ... ok
+test_unrouted_concrete_skill_emits_coverage_advisory ... ok
+test_routed_slug_missing_emits_router_tables_error ... ok
+----------------------------------------------------------------------
+Ran 3 tests in 0.034s
+OK
+
+$ uv run gz covers OBPI-0.27.0-03 --plain
+REQ-0.27.0-03-01    covered    tests/governance/test_router_tables_validator.py
+REQ-0.27.0-03-02    covered    tests/governance/test_router_tables_validator.py
+REQ-0.27.0-03-03    covered    tests/governance/test_router_tables_validator.py
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run ruff check src/gzkit/governance/trust_audits/router_tables.py \
+                    src/gzkit/commands/validate_cmd.py \
+                    src/gzkit/cli/parser_maintenance.py \
+                    tests/governance/test_router_tables_validator.py
+All checks passed!
+
+$ uv run gz typecheck
+Type check passed.
+
+$ uv run gz cli audit
+CLI audit passed.
+Cross-coverage: 102/102 commands fully covered.
 ```
 
 ### Gate 3 (Docs)
@@ -222,19 +244,44 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+**Before:** Router slug routes were verified by hand. A typo in any router's intent table would silently route to a non-existent skill until a human noticed (the GSD-comparison failure mode the parent ADR exists to close). And no mechanism surfaced concrete skills that had drifted out of router coverage — the "every concrete skill reachable from at least one router" invariant was prose, not enforcement.
+
+**After:** `uv run gz validate --router-tables` mechanically enforces both directions. Direction 1 (routed slug must resolve) fail-closes via the policy-breach taxonomy (exit 3 in mixed runs). Direction 2 (concrete skill must be router-reachable) emits advisory `router_tables_coverage` findings (exit 1) — surfaces coverage gaps without blocking `gz check`. Router detection is structural (any skill body containing the `| Intent | Skill |` table header), so future routers and the existing `gz-skill-router` lookup aid both qualify without hard-coded slug lists.
+
+Current run against the live canonical surface: **0 direction-1 errors** (every routed slug from OBPI-01 resolves), **16 direction-2 advisories** (concrete skills not yet routed: `gz-adr-evaluate`, `gz-check-config-paths`, `gz-chore-runner`, `gz-cli-audit`, `gz-competitor-radar`, `gz-deps-upgrade`, `gz-foundation-triage`, `gz-gates`, `gz-issue-file`, `gz-justify`, `gz-migrate-semver`, `gz-obpi-lock`, `gz-obpi-simplify`, `gz-plan-audit`, `gz-pythonic-pattern-apply`, `gz-pythonic-pattern-detect`). These advisories are the planned cleanup surface; the recovery plan's anti-temptation rule keeps them out of OBPI-03 scope.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```text
+$ uv run gz validate --router-tables; echo "EXIT: $?"
+Validated: router_tables
+❌ Validation failed with 16 error(s):
+   →  .gzkit/skills/gz-adr-evaluate/SKILL.md
+    concrete skill 'gz-adr-evaluate' is not reachable from any router; consider
+    routing it under one of ['gz-context', 'gz-governance', 'gz-manage',
+    'gz-project', 'gz-quality', 'gz-workflow'] or accept the coverage gap
+   ... (15 more advisories)
+EXIT: 1
+
+# Direction 1 would emit exit 3 — synthesized & test-asserted in
+# tests/governance/test_router_tables_validator.py::TestRoutedSlugMustResolve
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created:
+  - `src/gzkit/governance/trust_audits/router_tables.py` (115 LoC; well under the OBPI's ~150 ceiling)
+  - `tests/governance/test_router_tables_validator.py` (three REQ-derived tempfile-isolated tests)
+- Files modified:
+  - `src/gzkit/governance/trust_audits/__init__.py` (import + `__all__` export)
+  - `src/gzkit/commands/validate_cmd.py` (kwarg threading, scope dicts, runner registration, policy-breach taxonomy entry for `router_tables`)
+  - `src/gzkit/cli/parser_maintenance.py` (argparse flag + dispatcher wiring)
+  - `docs/user/manpages/validate.md` (Synopsis update + `--router-tables` section)
+  - This OBPI brief (REQ rewrites + evidence)
+- Tests added: 3 (one per REQ); all GREEN; 9-test suite covering OBPI-01/02/03 runs in 0.034s.
+- Date completed: 2026-05-23 (pending Stage 5 attestation)
+- Attestation status: pending Gate 5 human attestation per ADR-0.0.36
+- Defects noted: 16 direction-2 advisories surface unrouted concrete skills — routing them is post-recovery cleanup, deliberately out of scope per recovery-plan anti-temptation #1.
 
 ## Tracked Defects
 

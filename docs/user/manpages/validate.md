@@ -14,7 +14,8 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--scenario-reachability] [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
             [--advisor-proof-binding] [--vendor-manifest]
-            [--invariant-coherence] [--brief-reconcile] [--kind-invariance]
+            [--invariant-coherence] [--brief-reconcile] [--router-tables]
+            [--kind-invariance]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
 ```
 
@@ -996,6 +997,37 @@ gz validate --brief-reconcile
 | 3 | Drift detected in one or more briefs | Inspect the error message and update the affected brief's frontmatter, body structure, or parent references |
 
 **Related:** OBPI-0.0.37-05 (brief reconciliation engine).
+
+### `--router-tables`
+
+Audits the six namespace-router skills authored under ADR-0.27.0 (`gz-workflow`,
+`gz-governance`, `gz-quality`, `gz-project`, `gz-context`, `gz-manage`) plus any other
+skill whose body carries a `| Intent | Skill |` intent-to-skill markdown table. Two
+directional invariants:
+
+1. **Routed slug resolves.** Every routed-skill cell (the slug wrapped in backticks in
+   the right column of an intent table) must resolve to a real canonical skill at
+   `.gzkit/skills/<slug>/SKILL.md`. Fail-closed (`router_tables` type, exit 3) — a
+   router pointing at a non-existent skill is a structural break.
+2. **Concrete skill is reachable.** Every concrete (non-router) canonical skill must be
+   routed from at least one router. Advisory (`router_tables_coverage` type, exit 1) —
+   surfaces coverage gaps without blocking `gz check`.
+
+**Usage:**
+
+```bash
+gz validate --router-tables
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every routed slug resolves AND every concrete skill is router-reachable | — |
+| 1 | One or more concrete skills are not routed (advisory) | Route the orphaned skill under the appropriate router, or accept the coverage gap |
+| 3 | A router routes an intent to a slug with no canonical SKILL.md | Fix the routed slug typo, or author the missing skill before the router edits land |
+
+**Related:** ADR-0.27.0 / OBPI-0.27.0-03 (router-tables validator).
 
 ### `--sensitivity`
 
