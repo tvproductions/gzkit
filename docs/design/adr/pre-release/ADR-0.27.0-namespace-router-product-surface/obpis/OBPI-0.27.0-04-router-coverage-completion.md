@@ -3,7 +3,7 @@ id: OBPI-0.27.0-04-router-coverage-completion
 parent: ADR-0.27.0-namespace-router-product-surface
 item: 4
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.27.0-04-router-coverage-completion: Router Coverage Completion
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.27.0-namespace-router-product-surface/ADR-0.27.0-namespace-router-product-surface.md`
 - **Checklist Item:** #4 - "OBPI-0.27.0-04: **router-coverage-completion** (added GHI #522) — Author the 7th `gz-chores` router skill file, route the 16 concrete skills currently unrouted across `gz-chores` (7 chore-flavored) and the existing six routers (9 by natural namespace), re-run `gz agent sync control-surfaces`, and confirm `gz validate --router-tables` returns 0 errors. Closes the "no orphaned high-use skills" gap by making the policy "every concrete skill routed by exactly one router" mechanical."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -249,13 +249,43 @@ $ wc -c .gzkit/skills/gz-{workflow,project,governance,quality,context,manage,cho
 
 ### Key Proof
 
+
+Uniqueness + reachability scan (Python over `.gzkit/skills/*/SKILL.md`):
+
+```
+ROUTERS: 7, CONCRETE: 53, ROUTED: 53
+DUPLICATES: none
+UNROUTED (0): []
+```
+
+Router-tables validator:
+
+```
+$ uv run gz validate --router-tables; echo "EXIT: $?"
+Validated: router_tables
+✓ All validations passed (1 scopes).
+EXIT: 0
+```
+
+ARB receipts (quality gates):
+- Lint: `arb-ruff-b283c45e9ca1411499dea3b3f279f9c9` (clean)
+- Typecheck: `arb-step-typecheck-802d1c81c7214e18b0337ec140398b74` (clean)
+- Tests: `arb-step-unittest-7543c70635a4444e8745668e84193fad` (5508/5508 pass)
+- Docs build: `uv run mkdocs build --strict` exit 0
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Created `.gzkit/skills/gz-chores/SKILL.md` — 7th namespace router with 7 chore skills (skill-version 0.1.0)
+- Updated 5 existing router SKILL.mds to canonical placements per ADR-0.27.0 router table; skill-version + last_reviewed bumped in same edit
+- Resolved all duplicates: gz-state, gz-adr-closeout-ceremony, gz-patch-release, gz-migrate-semver each now route from exactly one router
+- Created `docs/user/skills/gz-chores.md` manpage and updated `docs/user/skills/index.md` + `docs/user/skills/gz-workflow.md`
+- Synced canonical -> pkg copy + 3 vendor mirrors with 0 drift
+- Files modified: 7 canonical SKILL.mds + 2 docs + propagated mirrors
+- Tests added: none (tests/** denied per brief; "behavioral change is data-side")
+- Date completed: 2026-05-24
+- Attestation status: operator-verbatim ("attest completed")
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -263,12 +293,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — Stage 4 evidence reviewed: gz-chores 7th router created with 7 chore skills; 5 routers corrected to canonical placements per ADR-0.27.0 router table; uniqueness invariant verified (0 duplicates, 0 unrouted across 53 concrete skills); validator exit 0 (receipt arb-step-unittest-7543c70635a4444e8745668e84193fad, 5508/5508 pass); lint/typecheck clean (arb-ruff-b283c45e9ca1411499dea3b3f279f9c9, arb-step-typecheck-802d1c81c7214e18b0337ec140398b74); agent sync propagated to all 4 mirrors with 0 drift; 6 REQs accepted as uncovered (tests/** in Denied Paths; behavioral change is data-side).
+- Date: 2026-05-24
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-05-24
 
 **Evidence Hash:** -

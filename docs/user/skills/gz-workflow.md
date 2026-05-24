@@ -20,8 +20,8 @@ Use `/gz-workflow` when you know you're doing end-to-end workflow work but haven
 | plan | `/gz-plan` |
 | implement | `/gz-obpi-pipeline` |
 | verify | `/gz-implement` |
-| attest | `/gz-adr-closeout-ceremony` |
-| release | `/gz-patch-release` |
+| justify | `/gz-justify` |
+| plan audit | `/gz-plan-audit` |
 
 ## Related
 

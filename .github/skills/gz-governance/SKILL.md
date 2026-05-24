@@ -5,7 +5,7 @@ category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-05-24
-skill-version: 0.2.0
+skill-version: 0.3.0
 model: haiku
 ---
 
@@ -23,11 +23,8 @@ model: haiku
 | obpi specify | `gz-obpi-specify` |
 | obpi reconcile | `gz-obpi-reconcile` |
 | obpi lock | `gz-obpi-lock` |
-| plan audit | `gz-plan-audit` |
+| semver migrate | `gz-migrate-semver` |
 | gates | `gz-gates` |
-| justify | `gz-justify` |
-| foundation triage | `gz-foundation-triage` |
-| competitor discovery | `gz-competitor-radar` |
 | ledger receipt | `gz-adr-emit-receipt` |
 | validate | `gz-validate` |
 

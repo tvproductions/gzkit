@@ -5,7 +5,7 @@ category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-05-24
-skill-version: 0.2.0
+skill-version: 0.3.0
 model: haiku
 ---
 
@@ -17,8 +17,6 @@ model: haiku
 | prd | `gz-prd` |
 | constitution | `gz-constitute` |
 | status | `gz-status` |
-| state | `gz-state` |
-| config check | `gz-check-config-paths` |
-| deps upgrade | `gz-deps-upgrade` |
+| competitor radar | `gz-competitor-radar` |
 
 Invoke the matched skill directly. See `gz-skill-router` for the full catalog.

@@ -54,11 +54,13 @@ Behavioral framing via `.gzkit/personas/` (YAML-frontmatter markdown). Every age
 2. **No vibe coding.** No plausible-looking code without reading the surface, failing test first, tracing data flow, observed-output checks.
 3. **Prefer the more thorough fix.** "Smaller diff" / "faster to land" are not concrete downsides.
 4. **Verify observed behavior, not assumed behavior.** Run the command, paste actual output.
-5. **Read the code before you change it.** Read the surface. Trace callers. Then change.
-6. **Tests assert semantics, not strings.** Assertions derive from the REQ, not from a run of the code.
+5. **Read the code before you change it.** Read exports, immediate callers, shared utilities. If unsure why existing code is structured a certain way, ask. (Sharpened by Rule 6, 2026-05-24.)
+6. **Tests assert semantics, not strings.** Assertions derive from the REQ, not from a run of the code. Tests must encode WHY behavior matters, not just WHAT it does — a test that can't fail when business logic changes is wrong. (Sharpened by Rule 7, 2026-05-24.)
 7. **Invariant 6c — choose fix scope per § Defect-fix routing thresholds, not intuition.** Run `git log --since='60 days ago' --oneline --grep='^fix('` before deciding.
 8. **Invariant 6g — verify the runtime surface before recommending an incantation.** Run, observe, paste, recommend.
 9. **Invariant 6h — quote the rule and the conflicting directive verbatim.** No unquoted "competing directives" narrative.
+10. **Simplicity first.** Minimum code that solves the problem. Nothing speculative. No abstractions for single-use code. (Rule 2, 2026-05-24.)
+11. **Surgical changes.** Touch only what you must. Don't improve adjacent code. Match existing style. Don't refactor what isn't broken. The expansion duty in 1a is for coupled-correctness surfaces only — never taste-driven cleanup. (Rule 3, 2026-05-24.)
 
 See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md) for the six-pattern failure-mode taxonomy. See [`docs/governance/agent-contract-rationale.md`](docs/governance/agent-contract-rationale.md) for pedagogy, worked examples, and rationale for 6g/6h.
 
@@ -128,11 +130,13 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 6. When spawning a subagent, always include a 'Why' parameter in the subagent system prompt to filter signal from noise.
 7. **<90% sure of direction → ask the human.** Confident-wrong-direction runs are the most expensive failure mode — burn context, produce discarded work, erode trust. 30-second clarification beats 10-minute wrong-direction implementation. Applies to architectural choices, scope interpretation, file targeting, upstream comparison.
 8. **Surface assumptions explicitly before implementing.** Building on unstated assumptions the human would have corrected is how confident-wrong-direction runs start. Name; let human ratify or replace. (Judgment 12)
-9. **On inconsistencies: STOP, name confusion, present tradeoff, wait.** Silently picking one interpretation is vibe-coding's judgment-time face. When brief, ADR, runbook, code disagree, the disagreement is the signal — raise it, don't resolve unilaterally. (Judgment 13)
+9. **On inconsistencies: STOP, name confusion, present tradeoff, wait.** Silently picking one interpretation is vibe-coding's judgment-time face. When brief, ADR, runbook, code disagree, the disagreement is the signal — raise it, don't resolve unilaterally. When a unilateral pick IS forced (operator absent, autonomous run): pick one — more recent / more tested — explain why, flag the loser for cleanup. Never blend conflicting patterns. (Judgment 13; sharpened by Rule 5, 2026-05-24.)
 10. **Push back when an approach has clear problems.** Sycophantic agreement with a flawed plan is a trust defect. Say "this breaks X" or "this contradicts Y"; cite the rule or constraint. (Judgment 14)
 11. **When the operator course-corrects in flight, append an `improvement` record to `.gzkit/insights/agent-insights.jsonl` before completing the corrected work.** Required fields: `scope`, `summary`, `evidence`, `next_action`. See [`docs/governance/agent-contract-rationale.md` § Rationale for Behavior Rule 11](docs/governance/agent-contract-rationale.md#rationale-for-behavior-rule-11-course-correction--insights) (GHI #357).
 12. When a rule edit landing under a GHI labeled `eval-feedback` is committed, include `Eval-feedback-source: <event-id-or-artifact-path>` in the commit trailer. The trailer is validated by `gz validate --commit-trailers` and traces the rule change back to the evaluation feedback loop source artifacts (ADR-0.0.26).
 13. **Author GHIs through `/ghi-author` — never call `gh issue create` directly.** The skill's Step 0 prior-art lookup (`gh issue list --state all --search …` + recent-by-date skim) is the only mechanical defense against sibling-cut duplicates that bypass `ghi-close`'s destination-routing rule. The canonical regression is GHIs #459/#460 (2026-05-12): same T1→T2 doctrine-drift root cause, no shared title keywords, second filed ~17 min after first without cross-link until follow-up. Cross-repo filing through `gz issue file` inherits the same Step-0 obligation against the target repository.
+14. **Goal-driven execution.** Define success criteria. Loop until verified. Strong success criteria let Claude loop independently. (Rule 4, 2026-05-24.)
+15. **Match the codebase's conventions, even if you disagree.** Conformance > taste inside the codebase. If you think a convention is harmful, surface it. Don't fork it silently. (Rule 8, 2026-05-24.)
 
 ### Never
 

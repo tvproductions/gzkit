@@ -5,7 +5,7 @@ category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-05-24
-skill-version: 0.2.0
+skill-version: 0.3.0
 model: haiku
 ---
 
@@ -19,7 +19,6 @@ model: haiku
 | issue triage | `ghi-triage` |
 | issue file | `gz-issue-file` |
 | patch release | `gz-patch-release` |
-| semver migrate | `gz-migrate-semver` |
 | agent sync | `gz-agent-sync` |
 | tidy | `gz-tidy` |
 

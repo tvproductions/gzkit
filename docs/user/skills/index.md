@@ -15,12 +15,13 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 
 | Skill | Description |
 |-------|-------------|
-| [`/gz-workflow`](gz-workflow.md) | End-to-end workflow intents — design, plan, implement, verify, attest, release |
+| [`/gz-workflow`](gz-workflow.md) | End-to-end workflow intents — design, plan, implement, verify, justify, plan-audit |
 | [`/gz-governance`](gz-governance.md) | ADR, OBPI, and ledger governance intents |
 | [`/gz-quality`](gz-quality.md) | Quality and complexity intents — check, lint, tech debt, complexity |
-| [`/gz-project`](gz-project.md) | Project lifecycle intents — init, requirements, constitution, status |
+| [`/gz-project`](gz-project.md) | Project lifecycle intents — init, requirements, constitution, competitor-radar |
 | [`/gz-context`](gz-context.md) | Context preservation and orientation intents — handoff, parity, map |
 | [`/gz-manage`](gz-manage.md) | Repo and release management intents — git-sync, issues, releases, tidy |
+| [`/gz-chores`](gz-chores.md) | Maintenance and code-quality chore intents — chore runner, deps upgrade, foundation triage, pythonic patterns, config check, cli audit |
 
 ---
 
