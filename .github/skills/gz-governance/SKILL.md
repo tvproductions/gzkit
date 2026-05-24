@@ -4,7 +4,8 @@ description: Namespace router → ADR/OBPI/ledger governance skills. Use to pick
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-23
+last_reviewed: 2026-05-24
+skill-version: 0.2.0
 model: haiku
 ---
 
@@ -15,10 +16,18 @@ model: haiku
 | adr create | `gz-adr-create` |
 | adr promote | `gz-adr-promote` |
 | adr audit | `gz-adr-audit` |
+| adr evaluate | `gz-adr-evaluate` |
 | adr status | `gz-adr-status` |
 | adr sync | `gz-adr-sync` |
+| adr closeout | `gz-adr-closeout-ceremony` |
 | obpi specify | `gz-obpi-specify` |
 | obpi reconcile | `gz-obpi-reconcile` |
+| obpi lock | `gz-obpi-lock` |
+| plan audit | `gz-plan-audit` |
+| gates | `gz-gates` |
+| justify | `gz-justify` |
+| foundation triage | `gz-foundation-triage` |
+| competitor discovery | `gz-competitor-radar` |
 | ledger receipt | `gz-adr-emit-receipt` |
 | validate | `gz-validate` |
 

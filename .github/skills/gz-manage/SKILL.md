@@ -4,7 +4,8 @@ description: Namespace router → repo and release management skills (git-sync, 
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-23
+last_reviewed: 2026-05-24
+skill-version: 0.2.0
 model: haiku
 ---
 
@@ -16,7 +17,9 @@ model: haiku
 | issue author | `ghi-author` |
 | issue close | `ghi-close` |
 | issue triage | `ghi-triage` |
+| issue file | `gz-issue-file` |
 | patch release | `gz-patch-release` |
+| semver migrate | `gz-migrate-semver` |
 | agent sync | `gz-agent-sync` |
 | tidy | `gz-tidy` |
 

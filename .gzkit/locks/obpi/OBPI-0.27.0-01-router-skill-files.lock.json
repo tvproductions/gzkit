@@ -1,9 +1,0 @@
-{
-  "obpi_id": "OBPI-0.27.0-01-router-skill-files",
-  "agent": "claude-code-a0abf5fe",
-  "pid": 33352,
-  "session_id": "a0abf5fe-b432-43bb-8b1b-8b04e47e5132",
-  "claimed_at": "2026-05-24T01:18:53.715014+00:00",
-  "branch": "main",
-  "ttl_minutes": 120
-}

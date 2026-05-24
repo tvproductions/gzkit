@@ -4,7 +4,8 @@ description: Namespace router → quality and complexity skills. Use to pick the
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-23
+last_reviewed: 2026-05-24
+skill-version: 0.2.0
 model: haiku
 ---
 
@@ -18,5 +19,10 @@ model: haiku
 | complexity distill | `gz-complexity-distill` |
 | tech debt | `gz-tech-debt-review` |
 | arb receipts | `gz-arb` |
+| chore runner | `gz-chore-runner` |
+| cli audit | `gz-cli-audit` |
+| obpi simplify | `gz-obpi-simplify` |
+| pythonic detect | `gz-pythonic-pattern-detect` |
+| pythonic apply | `gz-pythonic-pattern-apply` |
 
 Invoke the matched skill directly. See `gz-skill-router` for the full catalog.
