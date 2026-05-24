@@ -1,0 +1,26 @@
+ADR audit-check: ADR-0.27.0-namespace-router-product-surface
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.27.0-01-router-skill-files
+  - OBPI-0.27.0-02-router-surface-sync
+  - OBPI-0.27.0-03-router-tables-validator
+  - OBPI-0.27.0-04-router-coverage-completion
+Advisory 6 REQ(s) without @covers traceability (non-blocking):
+  - REQ-0.27.0-04-01
+  - REQ-0.27.0-04-02
+  - REQ-0.27.0-04-03
+  - REQ-0.27.0-04-04
+  - REQ-0.27.0-04-05
+  - REQ-0.27.0-04-06
+
+Coverage: 9/15 REQs covered (60.0%)
+  OBPI-0.27.0-01: 3/3 (100.0%)
+  OBPI-0.27.0-02: 3/3 (100.0%)
+  OBPI-0.27.0-03: 3/3 (100.0%)
+  OBPI-0.27.0-04: 0/6 (0.0%)
+Uncovered REQs (6):
+  - REQ-0.27.0-04-01
+  - REQ-0.27.0-04-02
+  - REQ-0.27.0-04-03
+  - REQ-0.27.0-04-04
+  - REQ-0.27.0-04-05
+  - REQ-0.27.0-04-06
