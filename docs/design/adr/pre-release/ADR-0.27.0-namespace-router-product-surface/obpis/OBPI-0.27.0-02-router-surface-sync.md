@@ -174,9 +174,9 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.27.0-02-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.27.0-02-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.27.0-02-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.27.0-02-01: For each of the six router slugs, `.gzkit/skills/<slug>/SKILL.md` (canonical) is byte-equivalent to its three vendor-mirror counterparts at `.agents/skills/<slug>/SKILL.md`, `.claude/skills/<slug>/SKILL.md`, and `.github/skills/<slug>/SKILL.md`. (Mirrors are sync outputs per `.claude/rules/skill-surface-sync.md` — drift is fail-closed.)
+- [ ] REQ-0.27.0-02-02: For each of the six router slugs, `.gzkit/skills/<slug>/SKILL.md` (canonical) is byte-equivalent to its wheel-shipping pkg copy at `src/gzkit/skills/<slug>/SKILL.md` (per the surface-layout table in `.claude/rules/skill-surface-sync.md`).
+- [ ] REQ-0.27.0-02-03: The active skill catalog (returned by `gzkit.skills.audit_skills` against the canonical project root) lists each of the six router slugs with `lifecycle_state: active`. (Discoverability proof — the routers register through normal catalog discovery, not as one-off entries.)
 
 ## Completion Checklist
 
@@ -198,18 +198,33 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded (parent ADR-0.27.0 § Checklist row 02; this brief § Acceptance Criteria with three concrete REQs covering vendor-mirror parity, pkg-copy parity, and active-catalog discovery)
 
 ### Gate 2 (TDD — Red-Green-Refactor)
 
 ```text
-# Paste test output here
+$ uv run -m unittest -v tests.skills.test_namespace_router_surface_sync
+test_each_router_byte_equivalent_in_wheel_pkg_copy ... ok
+test_each_router_listed_active_in_skill_catalog ... ok
+test_each_router_byte_equivalent_in_every_vendor_mirror ... ok
+----------------------------------------------------------------------
+Ran 3 tests in 0.018s
+OK
+
+$ uv run gz covers OBPI-0.27.0-02 --plain
+REQ-0.27.0-02-01    covered    tests/skills/test_namespace_router_surface_sync.py
+REQ-0.27.0-02-02    covered    tests/skills/test_namespace_router_surface_sync.py
+REQ-0.27.0-02-03    covered    tests/skills/test_namespace_router_surface_sync.py
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run ruff check tests/skills/test_namespace_router_surface_sync.py
+All checks passed!
+
+$ uv run ruff format --check tests/skills/test_namespace_router_surface_sync.py
+1 file already formatted
 ```
 
 ### Gate 3 (Docs)
@@ -232,19 +247,36 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+**Before:** The six router skills authored in OBPI-01 lived only on the canonical surface (`.gzkit/skills/`). Vendor-harness agents (Codex via `.agents/`, Claude Code via `.claude/`, Copilot via `.github/`) would not see them until sync ran, and there was no asserted parity proof to back the claim that mirrors stay byte-equivalent.
+
+**After:** `gz agent sync control-surfaces` propagated each canonical router to all four downstream surfaces (three vendor mirrors + the wheel-shipping `src/gzkit/skills/` pkg copy). Three locked-in tests assert byte-equivalence across all 24 router-mirror pairs (6 routers × 4 surfaces) on every test run, plus active-catalog discoverability. Any future drift fails closed via the existing test suite, not via narrative.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```text
+$ uv run gz agent sync control-surfaces
+... (idempotent on this run; routers already mirrored by post-Write hook during OBPI-01)
+Sync complete.
+
+$ uv run gz skill list 2>&1 | grep -E '^\| gz-(workflow|governance|quality|project|context|manage)'
+| gz-context                 | Namespace router → context preservation ...
+| gz-governance              | Namespace router → ADR/OBPI/ledger ...
+| gz-manage                  | Namespace router → repo and release ...
+| gz-project                 | Namespace router → project lifecycle ...
+| gz-quality                 | Namespace router → quality and complexity ...
+| gz-workflow                | Namespace router → end-to-end workflow ...
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created:
+  - `tests/skills/test_namespace_router_surface_sync.py` (three REQ-derived tests covering vendor mirrors, pkg copy, active-catalog discovery)
+- Files modified:
+  - `docs/design/adr/pre-release/ADR-0.27.0-namespace-router-product-surface/obpis/OBPI-0.27.0-02-router-surface-sync.md` (REQ rewrites, evidence)
+- Tests added: 3 (one per REQ); all GREEN; no implementation code changed — sync was already complete from the post-Write hook in OBPI-01.
+- Date completed: 2026-05-23 (pending Stage 5 attestation)
+- Attestation status: pending Gate 5 human attestation per ADR-0.0.36
+- Defects noted: none in OBPI-02 scope. (Pre-existing observation, not OBPI-02 work: `.gzkit/locks/` lock files are untracked runtime state; current state-doctrine treats them as runtime, formal gitignore deferred per `ADR-pool.canonical-vs-runtime-separation`.)
 
 ## Tracked Defects
 
