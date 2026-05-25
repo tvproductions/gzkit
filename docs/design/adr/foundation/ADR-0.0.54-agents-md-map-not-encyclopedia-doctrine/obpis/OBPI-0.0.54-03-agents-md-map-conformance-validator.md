@@ -32,30 +32,35 @@ Ship the `gz validate --agents-md-map-conformance` mechanical validator that bin
 - `docs/user/manpages/validate.md` — documents the new scope with a real EXAMPLES entry
 - `tests/governance/` — OBPI creates `tests/governance/test_agents_md_map_conformance.py`
 - `docs/design/adr/foundation/ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine/**` — parent ADR package scope
+- **`src/gzkit/templates/agents.md`** — *(R1+expansion amendment 2026-05-25)*: the validator's primary audit surface is the template, not the rendered Layer-3 AGENTS.md. This OBPI absorbs the lift pass that OBPI-02 did not complete, lifting template-side prose violations (the 2 prohibited subsection titles + 4 long paragraphs the validator surfaces on first run) to existing canonical lift targets. Per PRIME DIRECTIVE Rule 4: scope expansion is not scope creep.
+- **`docs/governance/agent-contract-rationale.md`** — *(R1+expansion amendment 2026-05-25)*: existing canonical lift target with 6 prior lifted sections; receives the verbatim lift of the template's prohibited shapes per the same per-section convention OBPI-02 used.
 
 ## Denied Paths
 
-- `AGENTS.md` — the lift is OBPI-02; this OBPI runs the validator against the already-lifted file, never edits it
+- `AGENTS.md` (the rendered Layer-3 artifact at project root) — never hand-edit; fixes flow through the template + `gz governance render`. Per `docs/governance/state-doctrine.md` § Layer-3, derived views are never source-of-truth.
 - `.gzkit/rules/agents-md-map-doctrine.md` — authored in OBPI-01
-- `docs/governance/agents-md-doctrine.md` and the OBPI-02 lift targets — not edited here
-- `data/instructions_files_budget.json` — the validator reads it; budget changes are OBPI-01/04 scope
+- `data/instructions_files_budget.json` — the validator reads it; budget changes are OBPI-01/04 scope. 15k budget stays; 5k destination tracked in GHI #533 as ADR-0.0.37-dependent.
 - `CLAUDE.md`, `.claude/rules/*.md` — doctrine application to these is OBPI-04 scope
+- `.gzkit/invariants/*.json` — registry entry authoring belongs to ADR-0.0.37's OBPIs; this OBPI reads the registry for the validator's secondary audit surface but does not author entries
 - Any path not listed in Allowed Paths
 - New runtime dependencies, CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: `src/gzkit/governance/trust_audits/agents_md_map_conformance.py` defines a validator scope that asserts, against AGENTS.md: (a) every paragraph is ≤ 5 lines OR begins with a binding-bullet marker (`- `, `1.`, `**`); (b) no subsection title is in the prohibited set (`Worked example`, `Anti-patterns`, `Rationale`, `Why this is canon`, `Why X is canon`); (c) every `See [text](path)` link resolves to an existing file with the named anchor; (d) the file size is within the budget declared in `data/instructions_files_budget.json`.
+> **R1+expansion amendment 2026-05-25:** REQ-01, REQ-02, REQ-07, REQ-08 reframed against the **template layer** (`src/gzkit/templates/agents.md`) — the doctrine's edit surface. The rendered AGENTS.md remains Layer-3 (derived view) and is covered by `gz validate --invariant-coherence` (ADR-0.0.37 / OBPI-0.0.37-03), which re-renders and byte-compares. This OBPI's validator focuses where operator action lands. The first-run validator output against the current template surfaces the lift gap OBPI-02 did not close — REQ-10 (new) absorbs that lift per PRIME DIRECTIVE Rule 4.
+
+1. REQUIREMENT: `src/gzkit/governance/trust_audits/agents_md_map_conformance.py` defines a validator scope that asserts, against `src/gzkit/templates/agents.md` (the primary audit surface) and against populated `.gzkit/invariants/*.json` `claim` fields (the secondary audit surface, when registry entries exist): (a) every paragraph is ≤ 5 lines OR begins with a binding-bullet marker (`- `, `1.`, `**`); (b) no subsection title is in the prohibited set (`Worked example`, `Anti-patterns`, `Rationale`, `Why this is canon`, `Why X is canon`); (c) every `See [text](path)` link resolves to an existing file with the named anchor; (d) the rendered AGENTS.md file size is within the budget declared in `data/instructions_files_budget.json` — the budget check runs against the rendered artifact since size is the projected property; the shape checks (a/b/c) run against the template + registry.
 2. REQUIREMENT: `gz validate --agents-md-map-conformance` is a registered scope — the flag resolves against the `gz validate` parser and dispatches the validator.
 3. REQUIREMENT: On any conformance failure the validator emits a `RemediationPayload` (per ADR-0.0.53) whose `recovery` field is `/gz-context-diet`. If ADR-0.0.53's `RemediationPayload` port has not yet landed, the validator uses a forward-compatible failure shape that becomes payload-conformant under ADR-0.0.53's migration — the dependency is recorded in the Implementation Summary.
 4. REQUIREMENT: `--agents-md-map-conformance` is added to the `gz check` default pipeline as a fail-closed step.
 5. REQUIREMENT: Per ADR § Consequences Negative #3 / Negative #7, the per-bullet 3-line heuristic in the binding-rule sections emits a WARNING (not a hard rejection); hard rejection is reserved for the prohibited-subsection-title set. The validator does not block a new binding rule that legitimately exceeds 3 lines.
 6. REQUIREMENT: `docs/user/manpages/validate.md` documents the `--agents-md-map-conformance` scope with a real EXAMPLES entry showing observed CLI output.
-7. REQUIREMENT: Tests in `tests/governance/test_agents_md_map_conformance.py` assert REQ-derived semantics — each of the four rejection paths (a/b/c/d) flags a deliberately non-conforming fixture; the happy path passes against the lifted AGENTS.md; the per-bullet heuristic warns rather than rejects. Tests assert semantics, not output strings.
-8. REQUIREMENT: NEVER edit AGENTS.md, the OBPI-01 rule file, or the OBPI-02 lift targets — this OBPI ships the validator only.
+7. REQUIREMENT: Tests in `tests/governance/test_agents_md_map_conformance.py` assert REQ-derived semantics — each of the four rejection paths (a/b/c/d) flags a deliberately non-conforming fixture; the happy path passes against the post-lift template + the rendered AGENTS.md; the per-bullet heuristic warns rather than rejects. Tests assert semantics, not output strings.
+8. REQUIREMENT: NEVER hand-edit the rendered `AGENTS.md` file at project root; NEVER edit OBPI-01 / OBPI-04 surfaces (rule file, CLAUDE.md, `.claude/rules/`, budget JSON, registry entries). Fixes to template-side violations flow through `src/gzkit/templates/agents.md` + `gz governance render`.
 9. REQUIREMENT: NEVER include the operator's personal email in the validator, the manpage, or any test.
+10. REQUIREMENT *(new, R1+expansion 2026-05-25)*: Absorb the lift pass OBPI-02 did not complete. Lift the template-side violations the validator surfaces on first run (verified 2026-05-25 against `src/gzkit/templates/agents.md` 23,248 chars + rendered AGENTS.md 31,387 chars: 1 budget overrun, 2 prohibited subsection titles at template lines corresponding to rendered AGENTS.md lines 113 + 278, 4 long paragraphs at template lines corresponding to rendered lines 19/188/266/288) to `docs/governance/agent-contract-rationale.md` verbatim, preserving binding-bullet text and replacing prose with `See [...]` link-only references per the OBPI-02 lift convention. Re-render via `uv run gz governance render --target agents-md`. Validator must pass against template + rendered post-lift, within the 15k budget. The 5k recovery-plan destination is tracked separately under GHI #533 as ADR-0.0.37-dependent.
 
-> STOP-on-BLOCKERS: if OBPI-02 has not landed (AGENTS.md not lifted; the happy-path test would have no green file to assert against), print BLOCKERS and halt — ADR § Sequencing pins OBPI-03 after OBPI-02.
+> **STOP-on-BLOCKERS (revised 2026-05-25):** OBPI-02 is marked `attested_completed` in the ledger but did not deliver doctrine-conformant template (verified: 7 hard validator findings against rendered output traceable to template prose). The original blocker clause anticipated a literal "OBPI-02 not landed" case; the actual case is "OBPI-02 attested but lift incomplete." Per PRIME DIRECTIVE Rule 4 + Rule 5 anti-rationalization ("'Not in scope' → flag and expand, or file GHI"), this OBPI absorbs the gap via REQ-10 rather than re-opening the attested OBPI-02 record. The completeness gap is also documented in GHI #533's `## Class of failure` section as an instance of the broader 5-alarm pattern (#517).
 
 ## Discovery Checklist
 

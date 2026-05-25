@@ -1,0 +1,28 @@
+{
+  "obpi_id": "OBPI-0.0.54-03",
+  "timestamp": "2026-05-25T16:15:00Z",
+  "verdict": "PASS",
+  "plan_file": null,
+  "gaps_found": 3,
+  "gaps": [
+    {
+      "severity": "minor",
+      "kind": "adr-typo",
+      "detail": "ADR-0.0.54 Decision item 3 + Evidence references 'docs/user/manpages/gz-validate.md'; actual file is 'docs/user/manpages/validate.md'. Brief REQ-06 uses correct path.",
+      "status": "FIXED in-session (2 edits to ADR-0.0.54 at lines 97 + 201; in-scope per Allowed Paths)"
+    },
+    {
+      "severity": "acknowledged",
+      "kind": "forward-dependency",
+      "detail": "ADR-0.0.53 RemediationPayload not landed (0/4 OBPIs; no class in src/gzkit). Brief REQ-03 correctly hedges with forward-compatible failure shape.",
+      "status": "TRACKED structurally; ADR-0.0.53-02 (migrate-validators-remediation-meta) is the bookkeeping that picks up agents_md_map_conformance when 0.0.53 ships"
+    },
+    {
+      "severity": "minor",
+      "kind": "broader-pattern-discovered-in-flight",
+      "detail": "ADR-0.0.54 typo fix surfaced the same drift across 4 other brief files (ADR-0.0.36 OBPI-03, ADR-0.0.37 OBPI-03, ADR-0.0.38 main + OBPI-02) with 9 total stale references. Out-of-scope for OBPI-0.0.54-03 per Allowed Paths.",
+      "status": "TRACKED in GHI #532 (label: defect, tech-debt) with blocker comment naming 3 candidate routes for operator decision"
+    }
+  ],
+  "notes": "ADR<->OBPI alignment: 7/7 aligned. Plan<->OBPI: N/A (no plan file yet). Sequencing unblocked (OBPI-01/02 both attested_completed). Safe to enter plan mode."
+}
