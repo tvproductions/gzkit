@@ -39,7 +39,26 @@ complements:
 
 ## Decision
 
-### CLI surface
+### Architectural precedents and exemplars
+
+This ADR composes three established gzkit patterns rather than inventing new ones; the implementation OBPIs are pure factoring of existing capability.
+
+- **Precedent — canonical-surface scaffolders ([ADR-0.0.32](../ADR-0.0.32-canonical-surfaces-bytewise-byparity/ADR-0.0.32-canonical-surfaces-bytewise-byparity.md)).** The seven `scaffold_core_*` functions (skills, rules, personas, templates, chores, plus `setup_*_hooks` and `sync_all`) are the **exemplar contract** this ADR factors into individually addressable CLI verbs. Every `gz harness install <component>` wraps a function whose semantics, idempotency contract, and EDITED-detection mechanism are already locked by ADR-0.0.32. The CLI surface is new; the underlying capability is byte-identical to today's `gz init` repair-mode invocation.
+- **Precedent — `--update` refresh-and-marker mechanism ([init_cmd.py:66–93](../../../../src/gzkit/commands/init_cmd.py#L66-L93)).** The `_detect_refresh_state` IDENTICAL/STALE/EDITED classifier and the `<!-- gzkit-canonical-version: X.Y.Z -->` marker are the **exemplar conflict-handling pattern** this ADR reuses for `gz harness install <component> --force`. EDITED detection on canonical content goes through the existing marker mechanism; no new conflict-resolution doctrine is introduced.
+- **Precedent — `gz harness` noun namespace ([ADR-0.0.60](../ADR-0.0.60-harness-fitness-report/ADR-0.0.60-harness-fitness-report.md)).** ADR-0.0.60 established `gz harness report` as the first verb in the `gz harness` namespace. This ADR adds `gz harness install` as the second, sharing the noun's semantic anchor: *capability operations on the gzkit harness itself, distinct from `gz status` (project state) and `gz check` (gate evaluation)*. The namespace is a deliberate composition target, not an accidental one.
+- **Anti-precedent — multi-mode init alternatives.** This ADR explicitly rejects the multi-profile patterns common in adjacent toolchains (cookiecutter's template variants, Yeoman's generator sub-types, Cargo's `--lib`/`--bin`). Those exemplars segment users by use-case at scaffold time; gzkit's two-profile choice (`default` + `minimal`) intentionally rejects user-segmentation in favor of a single profile-upgrade path. Named in Alternatives Considered §3.
+
+The seven decisions below are ordered by dependency: data shape (1) before CLI surface (2, 3) before behavior (4, 5, 6) before architectural assertion (7). Each item is independently testable per the OBPI decomposition in the Checklist.
+
+1. Add `gz init --minimal` flag and `gz harness install <component>` CLI surface (Decision 1, below) **because** the existing `gz init` lands ~150 files in one shot and adoption-PR friction is the named factory failure mode this ADR addresses.
+2. Compose canonical surfaces (skills, rules, personas, templates, chores) as independent peers; derive `surfaces` from them; chain `hooks` last (Decision 2) **because** the dependency graph reflects what each component reads and writes — operator-chosen ordering on individual installs respects operator agency, aggregate ordering on `install all` avoids generating empty mirrors.
+3. Map every `gz harness install <component>` to an existing `scaffold_core_*` function (Decision 3) **because** the OBPI is pure CLI factoring — no new scaffolders, no new validators, no rewrite of canonical-surface logic. The rationale for pure factoring is risk minimization: every wrapped function is already locked by ADR-0.0.32 byte-parity invariants.
+4. Add `installation_profile` to `GzkitConfig` and stamp it in the manifest; emit `HarnessComponentInstalledEvent` per install call (Decision 4) **because** without per-install ledger events, the ADR-0.0.60 fitness surface cannot measure files-per-adoption-PR or time-from-minimal-to-default. The data shape is the seed for the factory metric.
+5. Render profile-aware output: `gz init --minimal` post-init text lists `gz harness install` next steps; `gz status` adds a profile indicator with per-component counts (Decision 5) **because** discoverability of the layered-adoption path must equal the discoverability of full-flavor `gz init` — otherwise operators default back to the monolithic path.
+6. Exit codes follow the canonical 4-code map; EDITED conflicts exit 3 (Decision 6) **because** `.claude/rules/cli.md` already binds the 4-code contract — this ADR introduces no new exit semantics.
+7. Assert that all derived caches (status profile indicator, manifest profile field, component counts) are Layer-3 derived views regenerable from `.gzkit/<surface>/` contents (Decision 7) **because** doctrine drift starts when a derived view becomes source-of-truth (Architectural Boundary 6, `docs/governance/state-doctrine.md`). The directory contents are the canon; the profile is observational.
+
+### Decision 1 — CLI surface
 
 ```bash
 gz init --minimal                        # minimal scaffold (5–10 files)
@@ -62,7 +81,7 @@ gz harness install all                   # all of above in dependency order
 
 `gz harness install` slots into the `gz harness` noun namespace alongside `gz harness report` (ADR-0.0.60).
 
-### Component dependency graph
+### Decision 2 — Component dependency graph
 
 ```
                     skills, rules, personas, templates, chores   ← canonical surfaces
@@ -79,7 +98,7 @@ gz harness install all                   # all of above in dependency order
 
 **Individual install ordering: operator-chosen.** No ordering enforcement on individual `gz harness install <component>` calls — operators may install in any sequence. **Aggregate `install all` ordering: canonicals → surfaces → hooks** to avoid generating empty-shell mirrors.
 
-### Component → scaffolder mapping (pure factoring, no new code)
+### Decision 3 — Component → scaffolder mapping (pure factoring, no new code)
 
 | Component | Wraps existing function | Source |
 |-----------|-------------------------|--------|
@@ -91,7 +110,7 @@ gz harness install all                   # all of above in dependency order
 | `surfaces` | `sync_all(project_root, config)` | `gzkit.sync` |
 | `hooks` | `setup_claude_hooks(...)` + `setup_copilot_hooks(...)` + `setup_copilotignore(...)` | `gzkit.hooks.claude`, `gzkit.hooks.copilot` |
 
-### Data flow
+### Decision 4 — Data flow
 
 **`installation_profile` field** added to `GzkitConfig` (`src/gzkit/config.py`) as `Literal["default", "minimal"] = "default"`. Written by `gz init --minimal` (value `"minimal"`); default `gz init` writes `"default"`. The field is **observational, not authoritative** — it tracks adoption *intent at init time*, not current installation state. Current state is always computed fresh by inspecting `.gzkit/<surface>/` contents.
 
@@ -103,16 +122,16 @@ gz harness install all                   # all of above in dependency order
 
 **`gz check` skip-absent-surface policy:** validator-scope registry annotated with `required_surfaces`. Dispatcher in `src/gzkit/trust_audits.py` checks surface presence; on a minimal-profile project with an absent surface, the scope emits a structured SKIP receipt (`arb-step-skip-<scope>-`) with `reason: "surface_not_installed"` and exits 0 for that scope. On a default-profile project with an absent surface, existing FAIL behavior is preserved (a default project missing its surfaces is broken). SKIP receipts surface in ceremony narrator output, `gz obpi complete` evidence, and `gz closeout` audit reports — the visibility is the anti-vibing backstop.
 
-### Output rendering
+### Decision 5 — Output rendering
 
 `gz init --minimal` post-init text replaces the default "Next steps" block with profile-aware adoption guidance (every `gz harness install <component>` form listed; SKIP-receipt behavior named). `gz harness install <component>` renders per-component progress (items scaffolded, items skipped, EDITED conflicts); `--json` mode returns a `HarnessInstallReport` model. `install all` renders a 7-step progress table and writes a `Profile upgraded: minimal -> default` line on full success. Default mode is human-first prose + counts; `--json` mode is parseable JSON to stdout with diagnostics on stderr (per `.claude/rules/cli.md`).
 
-### Exit codes
+### Decision 6 — Exit codes
 
 - `0` — success (install, dry-run, repair, skip-on-minimal)
 - `3` — policy breach: EDITED canonical-surface conflict without `--force`; `--minimal` invoked on already-initialized project without `--force`
 
-### Layer-3 assertion
+### Decision 7 — Layer-3 assertion
 
 The cache surfaces this ADR creates (status profile indicator, manifest profile field, harness component counts) are **Layer-3 derived views** per `docs/governance/state-doctrine.md`. They are regenerable from `.gzkit/<surface>/` contents (canonical) and the ledger (truth). They are never source-of-truth for installation state — the directory contents are.
 
