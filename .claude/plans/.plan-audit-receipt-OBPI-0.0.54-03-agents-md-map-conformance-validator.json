@@ -1,6 +1,6 @@
 {
   "obpi_id": "OBPI-0.0.54-03-agents-md-map-conformance-validator",
-  "timestamp": "2026-05-25T17:32:48.813685+00:00",
+  "timestamp": "2026-05-25T21:09:38.505233+00:00",
   "verdict": "PASS",
   "plan_file": "quiet-dazzling-starfish.md",
   "gaps_found": 0,
@@ -1335,6 +1335,13 @@
       "sibling_obpi": "OBPI-0.0.6-01-ast-scanner",
       "contested_paths": [
         "src/gzkit/commands/cli_audit.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.61",
+      "sibling_obpi": "OBPI-0.0.61-05-gz-status-profile-indicator",
+      "contested_paths": [
+        "src/gzkit/commands/status_cmd.py"
       ]
     },
     {

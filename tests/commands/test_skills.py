@@ -371,6 +371,7 @@ class TestSkillCommands(unittest.TestCase):
                 "gzkit.quality.run_orientation_freshness_audit",
                 "gzkit.quality.run_insights_shape_audit",
                 "gzkit.quality.run_instructions_files_budget_audit",
+                "gzkit.quality.run_agents_md_map_conformance_audit",
                 "gzkit.quality.run_complexity_doctrine_links_audit",
                 "gzkit.quality.run_complexity_thresholds_audit",
                 "gzkit.quality.run_preflight",

@@ -287,6 +287,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
     """
     from gzkit.quality import (
         run_adr_status_fresh_audit,
+        run_agents_md_map_conformance_audit,
         run_cli_audit,
         run_complexity_doctrine_links_audit,
         run_complexity_thresholds_audit,
@@ -323,6 +324,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Orientation freshness", run_orientation_freshness_audit),
         ("Insights shape", run_insights_shape_audit),
         ("Instructions files budget", run_instructions_files_budget_audit),
+        ("AGENTS.md map conformance", run_agents_md_map_conformance_audit),
         ("Complexity-doctrine links", run_complexity_doctrine_links_audit),
         ("Complexity-thresholds", run_complexity_thresholds_audit),
         ("Preflight", run_preflight),

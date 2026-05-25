@@ -30,6 +30,9 @@ from gzkit.governance.trust_audits.absorption_duplicates import (
 from gzkit.governance.trust_audits.advisor_proof_binding import (
     validate_advisor_proof_binding,
 )
+from gzkit.governance.trust_audits.agents_md_map_conformance import (
+    audit_agents_md_map_conformance,
+)
 from gzkit.governance.trust_audits.attestation_receipts import (
     AttestationReceiptEntry,
     AttestationReceiptValidationResult,
@@ -147,6 +150,7 @@ __all__ = [
     "audit_brief_cross_references",
     "audit_brief_demo_section",
     "audit_brief_headings",
+    "audit_agents_md_map_conformance",
     "audit_chores_layout",
     "audit_class_size",
     "audit_distribution",

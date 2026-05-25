@@ -65,6 +65,17 @@ to make structurally impossible (AGENTS.md § Make LLM Stochastic Vibes
 Inert, operative claim 2). The floor MUST be advisory; accountability comes
 from auto-filed GHIs, not from refused attestations.
 
+## Why foundation tier?
+
+Without this ADR, the project would not be the project because the
+anti-vibing mantra ("5:1 governance-to-output ratio is the product") has no
+empirical floor — without observable loop time per lane, every claim that
+gzkit's heavy ceremony is justified by structural integrity is operator
+narrative, not measured fact. Harness fitness is identity-shaping: it is the
+mechanism by which the factory metabolizes its own ledger into a falsifiable
+performance claim. Feature ADRs cannot encode this invariant; it sits below
+every release.
+
 ## Decision
 
 Add `gz harness report --surface lane-latency` as the first concrete surface

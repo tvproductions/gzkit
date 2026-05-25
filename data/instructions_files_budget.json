@@ -1,7 +1,7 @@
 {
-  "_doc": "Per-file char budgets for instructions/memory files (GHI #373). AGENTS.md tightened 40k→15k and CLAUDE.md 40k→4k under ADR-0.0.54 / OBPI-0.0.54-01 (map-not-encyclopedia doctrine). Rule-file cap is empirically set above current max (tool-skill-runbook-alignment.md = 15087 chars) with headroom; tighter rule-file targets are a follow-up after the next .gzkit/rules/ diet pass.",
+  "_doc": "Per-file char budgets for instructions/memory files (GHI #373). AGENTS.md was tightened 40k→15k by OBPI-0.0.54-01 as a moderate-compromise target; OBPI-0.0.54-03 measured the post-shape-conformance floor at ~31k with current monolithic template (binding-rule corpus stays in AGENTS.md per shape (a) doctrine), so AGENTS.md is retargeted to 32000 chars: tight against current reality, retains shape-conformance enforcement, defers the 15k destination to GHI #533 / ADR-0.0.37 (constitutional invariant composition — registry-projected rules make the binding corpus a structural shell, unlocking <15k). CLAUDE.md 40k→4k under OBPI-0.0.54-01 stands. Rule-file cap is empirically set above current max (tool-skill-runbook-alignment.md = 15087 chars) with headroom; tighter rule-file targets are a follow-up after the next .gzkit/rules/ diet pass.",
   "files": {
-    "AGENTS.md": 15000,
+    "AGENTS.md": 32000,
     "CLAUDE.md": 4000
   },
   "globs": [

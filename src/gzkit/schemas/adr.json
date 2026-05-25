@@ -18,8 +18,8 @@
         },
         "status": {
           "type": "string",
-          "enum": ["Draft", "Proposed", "Accepted", "Superseded", "Deprecated"],
-          "description": "Document status"
+          "enum": ["Pool", "Pending", "Draft", "Proposed", "Accepted", "Completed", "Validated", "Superseded", "Deprecated"],
+          "description": "ADR lifecycle status. Union of the core/lifecycle.py ADR_TRANSITIONS state machine (Pool, Draft, Proposed, Accepted, Completed, Validated, Superseded, Deprecated) plus 'Pending' for legacy on-disk values. Prior enum drifted from the canonical state machine and rejected 60+ valid corpus ADRs (OBPI-0.0.54-03 closeout)."
         },
         "semver": {
           "type": "string",

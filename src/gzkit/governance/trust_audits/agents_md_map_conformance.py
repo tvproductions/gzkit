@@ -236,7 +236,12 @@ def _parse_paragraphs(text: str) -> list[dict[str, Any]]:
 
     Returns: list of {"lines": [str], "start_line": int}.
     Skips: blank lines, heading lines (starts with #), fenced code blocks
-    (between ``` delimiters), and any line containing only whitespace.
+    (between ``` delimiters), markdown table rows (lines starting with '|'),
+    and any line containing only whitespace.
+
+    Table rows are skipped because tables are allowed shape (b) under
+    `.gzkit/rules/agents-md-map-doctrine.md` § Invariant — distinct from
+    prose paragraphs (shape a/c) and exempt from criterion (a)'s length limit.
     """
     paragraphs: list[dict[str, Any]] = []
     current_lines: list[str] = []
@@ -251,6 +256,11 @@ def _parse_paragraphs(text: str) -> list[dict[str, Any]]:
                 current_lines = []
             continue
         if in_code_fence:
+            continue
+        if line.lstrip().startswith("|"):
+            if current_lines:
+                paragraphs.append({"lines": current_lines, "start_line": current_start})
+                current_lines = []
             continue
         if line.startswith("#") or not line.strip():
             if current_lines:

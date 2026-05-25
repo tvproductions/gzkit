@@ -618,6 +618,18 @@ def run_instructions_files_budget_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --instructions-files-budget", cwd=project_root)
 
 
+def run_agents_md_map_conformance_audit(project_root: Path) -> QualityResult:
+    """Run the AGENTS.md map-not-encyclopedia conformance audit (ADR-0.0.54).
+
+    Fails closed (exit 3) when the template `src/gzkit/templates/agents.md`
+    violates shape criteria (a)/(b)/(c) — paragraph length without binding
+    marker, prohibited subsection title, unresolvable link — or when the
+    rendered `AGENTS.md` exceeds the budget declared in
+    `data/instructions_files_budget.json`. Recovery: `/gz-context-diet`.
+    """
+    return run_command("uv run gz validate --agents-md-map-conformance", cwd=project_root)
+
+
 def run_complexity_doctrine_links_audit(project_root: Path) -> QualityResult:
     """Run the ADR-0.0.27 complexity-doctrine link-integrity audit.
 

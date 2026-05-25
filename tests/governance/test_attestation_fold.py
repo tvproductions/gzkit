@@ -145,7 +145,12 @@ class TestAttestationFold(unittest.TestCase):
                 "fail-closed",
             ),
             "(e) worked example": (
-                "Worked example",
+                # OBPI-0.0.54-03 lifted the "### Worked example" heading and
+                # its inline content into docs/governance/agent-contract-rationale.md
+                # (map-not-encyclopedia doctrine — prohibited heading title).
+                # AGENTS.md now surfaces the guidance via the one-line pointer
+                # only. REQ semantic preserved: AGENTS.md surfaces worked-example
+                # guidance to the operator, now through the anchored link.
                 "agent-contract-rationale.md#attestation--worked-example",
             ),
         }

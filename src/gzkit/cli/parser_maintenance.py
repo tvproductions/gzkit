@@ -467,6 +467,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="AGENTS.md/CLAUDE.md/.claude/rules char budget (GHI #373)",
     )
     p_validate.add_argument(
+        "--agents-md-map-conformance",
+        dest="check_agents_md_map_conformance",
+        action="store_true",
+        help="AGENTS.md template + rendered shape conformance (ADR-0.0.54 / OBPI-0.0.54-03)",
+    )
+    p_validate.add_argument(
         "--adr-status-fresh",
         dest="check_adr_status_fresh",
         action="store_true",
@@ -699,6 +705,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_reconcile_freshness=a.check_reconcile_freshness,
             check_insights_shape=a.check_insights_shape,
             check_instructions_files_budget=a.check_instructions_files_budget,
+            check_agents_md_map_conformance=a.check_agents_md_map_conformance,
             check_adr_status_fresh=a.check_adr_status_fresh,
             check_orientation_freshness=a.check_orientation_freshness,
             check_taxonomy=a.check_taxonomy,

@@ -26,7 +26,17 @@ class AdrFrontmatter(BaseModel):
     id: str = Field(
         ..., pattern=r"^(?:ADR-pool\.[a-z0-9-]+|ADR-[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9-]+)$"
     )
-    status: Literal["Draft", "Proposed", "Accepted", "Superseded", "Deprecated"]
+    status: Literal[
+        "Pool",
+        "Pending",
+        "Draft",
+        "Proposed",
+        "Accepted",
+        "Completed",
+        "Validated",
+        "Superseded",
+        "Deprecated",
+    ]
     semver: str = Field(..., pattern=r"^[0-9]+\.[0-9]+\.[0-9]+$")
     lane: Literal["lite", "heavy"]
     kind: Literal["foundation", "feature"]

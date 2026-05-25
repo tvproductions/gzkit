@@ -110,13 +110,7 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 5. **Decisions accumulate; agent maintains running state.** Every decision in a design dialogue is captured in agent's running model and surfaces in subsequent drafts. Operator never re-states a prior booked decision.
 6. **Agent never asks operator to type more than necessary.** Bundled questions, unjustified open prompts, *"please specify"* when a draft would have sufficed are violations.
 
-### Anti-patterns
-
-- Asking operator to draft prose, read raw JSON/YAML, or re-state prior decisions
-- Bundled clarifying questions; open prompts when multiple-choice would suffice
-- Rewriting operator's verbatim phrasing; drafts without grounding; reasoning without recommendation
-
-> See [`docs/governance/agent-contract-rationale.md` § Operator economy](docs/governance/agent-contract-rationale.md#operator-economy--why-this-is-canon) for rationale.
+> See [`docs/governance/agent-contract-rationale.md` § Operator economy](docs/governance/agent-contract-rationale.md#operator-economy--why-this-is-canon) for rationale and anti-pattern catalog.
 
 ## Behavior Rules
 
@@ -274,8 +268,6 @@ uv run gz agent sync control-surfaces  # Regenerate surfaces
 Locked by `CANONICAL_STEP_COMMANDS`; `gz arb validate` flags drift. Applies to `uv run gz obpi complete`, `uv run gz adr emit-receipt`, any `gz` CLI attestation string, and `git commit -m` messages.
 
 **Lane behavior:** **Lite lane:** missing receipt IDs produce a warning. **Heavy lane:** missing receipt IDs are fail-closed. Fabricating a receipt ID is the same failure as fabricating the claim.
-
-### Worked example
 
 See [`docs/governance/agent-contract-rationale.md` § Attestation — worked example](docs/governance/agent-contract-rationale.md#attestation--worked-example) for the canonical worked example, and [`docs/governance/arb-middleware.md`](docs/governance/arb-middleware.md) for ARB deep-dive.
 

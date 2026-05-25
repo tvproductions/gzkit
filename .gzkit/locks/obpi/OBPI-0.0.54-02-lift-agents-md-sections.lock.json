@@ -1,9 +1,0 @@
-{
-  "obpi_id": "OBPI-0.0.54-02-lift-agents-md-sections",
-  "agent": "claude-code-0e767582",
-  "pid": 32648,
-  "session_id": "0e767582-3282-4938-9c3d-79b439c03f32",
-  "claimed_at": "2026-05-25T14:18:22.119778+00:00",
-  "branch": "main",
-  "ttl_minutes": 120
-}

@@ -23,6 +23,7 @@ from pathlib import Path
 from gzkit.governance.trust_audits.agents_md_map_conformance import (
     audit_agents_md_map_conformance,
 )
+from gzkit.traceability import covers
 
 _TEMPLATE_REL = Path("src") / "gzkit" / "templates" / "agents.md"
 _RENDERED_REL = Path("AGENTS.md")
@@ -55,6 +56,7 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
     against the rendered file (AGENTS.md).
     """
 
+    @covers("REQ-0.0.54-03-01")
     def test_paragraph_over_5_lines_without_marker_rejects(self) -> None:
         """REQ-0.0.54-03-01a: prose paragraph >5 lines without a marker must be rejected.
 
@@ -86,6 +88,50 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
             self.assertEqual(len(hard_errors), 1)
             self.assertEqual(hard_errors[0].artifact, _TEMPLATE_REL.as_posix())
 
+    @covers("REQ-0.0.54-03-01")
+    def test_table_shape_passes_paragraph_check_at_any_length(self) -> None:
+        """REQ-0.0.54-03-01a table-shape: tables are allowed shape (b), exempt from criterion (a).
+
+        The rule `.gzkit/rules/agents-md-map-doctrine.md` § Invariant enumerates
+        five allowed shapes for AGENTS.md content:
+        (a) binding bullet rules
+        (b) **structured tables** (Persona, Gate Covenant, OBPI kinds,
+            canonical-invocations, defect-fix routing thresholds)
+        (c) canonical-link references
+
+        Criterion (a) (paragraph length limit) MUST NOT fire on table content,
+        regardless of row count. Table rows (lines beginning with `|`) are a
+        structurally distinct shape from prose paragraphs and are exempt by
+        the rule. This test fixtures a 9-row table (one each for the five
+        named example tables, exceeding the 5-line paragraph limit) and
+        asserts ZERO hard-rejection errors of type 'agents_md_map_conformance'.
+
+        Criterion (a) is checked against the template (Layer-1 edit surface).
+        """
+        table_lines = [
+            "| Persona | Role | Traits |",
+            "|---------|------|--------|",
+            "| `main-session` | Primary operator session | direct |",
+            "| `implementer` | Task subagent | methodical |",
+            "| `narrator` | Evidence presenter | clarity |",
+            "| `pipeline-orchestrator` | Pipeline coordination | discipline |",
+            "| `quality-reviewer` | Code review | rigor |",
+            "| `spec-reviewer` | Spec compliance review | skepticism |",
+            "| `extra-row` | Padding to exceed 5-line paragraph limit | extra |",
+        ]
+        content = "\n".join(["# AGENTS.md", "", "## Persona", ""] + table_lines + [""])
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_template(root, content)
+            errors = audit_agents_md_map_conformance(root)
+            hard_errors = [e for e in errors if e.type == "agents_md_map_conformance"]
+            self.assertEqual(
+                len(hard_errors),
+                0,
+                f"A markdown table is allowed shape (b) and must NOT trigger "
+                f"criterion (a) regardless of row count; got: {hard_errors}",
+            )
+
     def test_paragraph_with_binding_marker_passes_at_any_length(self) -> None:
         """REQ-0.0.54-03-01a corner: `- ` prefix exempts any paragraph from the length limit.
 
@@ -112,6 +158,7 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
                 f"got: {hard_errors}",
             )
 
+    @covers("REQ-0.0.54-03-01")
     def test_prohibited_subsection_title_rejects(self) -> None:
         """REQ-0.0.54-03-01b: any heading from the prohibited-title set must be rejected.
 
@@ -155,6 +202,7 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
                     )
                     self.assertEqual(hard_errors[0].artifact, _TEMPLATE_REL.as_posix())
 
+    @covers("REQ-0.0.54-03-01")
     def test_dangling_link_rejects(self) -> None:
         """REQ-0.0.54-03-01c file-existence: a link to a nonexistent file must be rejected.
 
@@ -275,6 +323,7 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
                 f"Expected no errors for file within budget; got: {hard_errors}",
             )
 
+    @covers("REQ-0.0.54-03-01")
     def test_file_size_over_budget_rejects(self) -> None:
         """REQ-0.0.54-03-01d fail: an AGENTS.md exceeding the declared budget must be rejected.
 
@@ -304,56 +353,33 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
             )
             self.assertEqual(hard_errors[0].artifact, "AGENTS.md")
 
-    @unittest.skip(
-        "RED until OBPI-0.0.54-03 Task 2.6 lifts template-side prohibited shapes "
-        "to docs/governance/agent-contract-rationale.md and re-renders AGENTS.md. "
-        "Resume context: .gzkit/handoffs/20260525T180000Z-obpi-0.0.54-03-r1-expansion-task-2.5-complete.md. "
-        "Remove this @skip when Task 2.6+2.7 land and the test naturally passes. "
-        "Designed-to-fail unit tests violate .gzkit/rules/tests.md Rule 6; this skip "
-        "is the bridge while the keystone test remains in this file."
-    )
+    @covers("REQ-0.0.54-03-02")
     def test_happy_path_against_lifted_agents_md(self) -> None:
-        """REQ-0.0.54-03-02: the real template must satisfy shape criteria (a)/(b)/(c).
+        """REQ-0.0.54-03-02: the real template + rendered AGENTS.md satisfy all four criteria.
 
-        Currently @skip — see decorator. After Task 2.6 + Task 2.7 (re-render),
-        remove the skip and this test must pass naturally against the conformant
-        template + rendered AGENTS.md.
+        Audits the real project state at `Path(__file__).resolve().parents[2]`
+        — the template at `src/gzkit/templates/agents.md`, the rendered
+        AGENTS.md, and the budget config at `data/instructions_files_budget.json`.
+        Zero hard findings means: shape (a/b/c) clean on the template AND
+        budget (d) clean on the rendered file. This is the keystone end-to-end
+        assertion that the named OBPI deliverables hold against real state.
 
-        This test copies the real template (src/gzkit/templates/agents.md) and the
-        real rendered AGENTS.md into a tempdir, writes a permissive budget so
-        criterion (d) does not confound shape results, then asserts ZERO hard
-        findings of type 'agents_md_map_conformance'.
-
-        The RED state is the forcing function for Task 2.6 — do NOT silence or skip.
+        Criterion (c) (link resolution) requires the real `docs/governance/`,
+        `.gzkit/rules/`, and ADR package files to exist on disk — copying the
+        template into a tempdir would break every relative link, so this
+        test runs against the real root by design.
         """
         project_root = Path(__file__).resolve().parents[2]
-        real_template = project_root / "src" / "gzkit" / "templates" / "agents.md"
-        real_rendered = project_root / "AGENTS.md"
-        self.assertTrue(
-            real_template.is_file(),
-            f"Expected real template at {real_template}.",
+        errors = audit_agents_md_map_conformance(project_root)
+        hard_errors = [e for e in errors if e.type == "agents_md_map_conformance"]
+        self.assertEqual(
+            len(hard_errors),
+            0,
+            f"Real project should pass all map-conformance criteria "
+            f"(a)/(b)/(c)/(d); got hard-rejection errors: {hard_errors}",
         )
-        self.assertTrue(
-            real_rendered.is_file(),
-            f"Expected real rendered AGENTS.md at {real_rendered}.",
-        )
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            _write_template(root, real_template.read_text(encoding="utf-8"))
-            _write_rendered(root, real_rendered.read_text(encoding="utf-8"))
-            # Permissive budget: isolates shape from budget concerns.
-            # Task 2.6 will tighten the template to fit 15k; until then this
-            # test expects shape conformance only.
-            _write_budget(root, {"AGENTS.md": 200000})
-            errors = audit_agents_md_map_conformance(root)
-            hard_errors = [e for e in errors if e.type == "agents_md_map_conformance"]
-            self.assertEqual(
-                len(hard_errors),
-                0,
-                f"Real template should pass all map-conformance shape criteria "
-                f"(a)/(b)/(c); got hard-rejection errors: {hard_errors}",
-            )
 
+    @covers("REQ-0.0.54-03-05")
     def test_advisory_warning_for_long_binding_bullet(self) -> None:
         """REQ-0.0.54-03-05: a long binding bullet emits a WARNING, not a hard rejection.
 
@@ -400,6 +426,7 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
             )
             self.assertEqual(advisory_errors[0].artifact, _TEMPLATE_REL.as_posix())
 
+    @covers("REQ-0.0.54-03-03")
     def test_remediation_message_points_at_gz_context_diet(self) -> None:
         """REQ-0.0.54-03-03 forward-compat: rejection messages must embed `/gz-context-diet`.
 
@@ -437,6 +464,37 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
                 errors[0].message,
                 f"Expected '/gz-context-diet' in errors[0].message; got: '{errors[0].message}'",
             )
+
+
+class GzCheckPipelineWiringTests(unittest.TestCase):
+    """REQ-04: `gz check` default pipeline includes the new validator as a fail-closed step."""
+
+    @covers("REQ-0.0.54-03-04")
+    def test_check_pipeline_includes_agents_md_map_conformance(self) -> None:
+        """REQ-0.0.54-03-04: `gz check` runs the new validator scope as a default step.
+
+        Structural test: `_build_check_steps()` (the runtime constructor that
+        `gz check` invokes) must include a step labeled with the validator
+        name and bound to the `run_agents_md_map_conformance_audit` runner.
+        REQ semantic: the validator is in the default pipeline, not opt-in.
+        """
+        from gzkit.commands.quality import _build_check_steps
+        from gzkit.quality import run_agents_md_map_conformance_audit
+
+        steps = _build_check_steps()
+        names = [name for name, _runner in steps]
+        runners = {runner for _name, runner in steps}
+
+        self.assertIn(
+            "AGENTS.md map conformance",
+            names,
+            f"Expected check step 'AGENTS.md map conformance' in pipeline; got: {names}",
+        )
+        self.assertIn(
+            run_agents_md_map_conformance_audit,
+            runners,
+            "Expected run_agents_md_map_conformance_audit bound to a check step",
+        )
 
 
 if __name__ == "__main__":

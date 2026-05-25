@@ -1,5 +1,6 @@
 {
   "default_rationale": {
+    "obpi-0.0.54-03-non-cli-validator-internals-unittest-correct-runner": "OBPI-0.0.54-03-agents-md-map-conformance-validator covers REQ-02 (gz validate --agents-md-map-conformance external invocation) and REQ-04 (gz check pipeline external surface) via behave scenarios in features/agents_md_map_conformance.feature. REQ-01 (validator's pure-Python audit function asserts four criteria), REQ-03 (ValidationError.message contains /gz-context-diet -- internal data-structure semantic), REQ-05 (advisory-vs-hard-rejection error-type semantic), and REQ-06 (scope-boundary PR-review structural) are NOT external CLI/API behaviors per .gzkit/rules/tests.md Two-runners doctrine -- they are pure-Python validator semantics with mocked-or-no subprocess boundaries. The correct proof channel is unittest under tests/governance/test_agents_md_map_conformance.py (12 tests pass; semantics asserted per Invariant 6f). Per .gzkit/rules/tests.md runner anti-patterns, 'porting to behave without checking if features/ already covers it' is the named anti-pattern -- the genuine external CLI behavior IS covered (REQ-02/REQ-04). Adding behave scenarios for REQ-01/03/05/06 would test internal Python data structures via an inappropriate runner -- exactly the categorical anti-pattern ADR-0.0.59 (Move 6 -- REQ scope discipline and test-shape doctrine) is currently in flight to systematize. When ADR-0.0.59 lands, these waivers route to behavior:false REQ classifications with ledger-event citations as proof-channel.",
     "obpi-0.0.54-02-content-lift-bdd-not-applicable": "OBPI-0.0.54-02-lift-agents-md-sections is the content-lift OBPI under ADR-0.0.54 (map-not-encyclopedia doctrine). All 6 REQs are content-structural assertions: REQ-01 (verbatim prose moved to named target), REQ-02 (one-line See [...] links replace lifted prose; binding bullets unchanged), REQ-03 (new docs/governance/{prime-directive,behavior-rules,obpi-attestation}.md exist + agent-contract-rationale.md expanded), REQ-04 (skills-catalog.md auto-generated from manifest, not hand-authored), REQ-05 (post-lift AGENTS.md <=15000 chars or overrun routed to OBPI-04), REQ-06 (every See [...] link resolves). Per the brief's Gate 4: 'No BDD scenario applies -- this OBPI is a content lift, not an operator-facing CLI behavior. The behavior-bearing surface (the conformance validator) lands in OBPI-03. Waiver noted.' Verification surface for OBPI-02 is mechanical: gz validate --instructions-files-budget for REQ-05, gz validate --documents for REQ-06, on-disk file existence for REQ-03/04, byte-equality of lifted prose for REQ-01, and gz validate --advisory-scorecard for REQ-02 (every rule still resolves to a binding bullet). End-to-end BDD coverage of the AGENTS.md map-shape lands at OBPI-0.0.54-03 (gz validate --agents-md-map-conformance). Same shape as adr-0.0.30-02-skill-only-bdd-deferred and adr-0.0.34-01-foundation-bdd-deferred-to-cli-obpis: content-only OBPIs verified via mechanical validators; BDD reserved for the operator-runnable validator surface that wields them.",
     "ghi-276-historical": "Preceded OBPI\u2192feature direction for audit_behave_req_tags (GHI #276). Historical heavy-lane OBPI shipped without scenario-level @REQ-* tags; re-authoring attested evidence is itself doctrine drift. New heavy OBPIs must either add scenario tags or add an explicit rationale here.",
     "adr-0.44.0-pre-release": "ADR-0.44.0 vendor-alignment-codex is pre-release/draft (not yet promoted). Heavy-lane BDD scenario coverage deferred until the ADR is promoted and Gate 4 fires; waived to unblock ADR-0.0.20 closeout since the failing OBPIs are in unrelated downstream territory.",
@@ -60,6 +61,16 @@
         "REQ-0.0.54-02-04",
         "REQ-0.0.54-02-05",
         "REQ-0.0.54-02-06"
+      ]
+    },
+    "OBPI-0.0.54-03-agents-md-map-conformance-validator": {
+      "rationale": "obpi-0.0.54-03-non-cli-validator-internals-unittest-correct-runner",
+      "status_at_landing": "in-progress",
+      "waived_reqs": [
+        "REQ-0.0.54-03-01",
+        "REQ-0.0.54-03-03",
+        "REQ-0.0.54-03-05",
+        "REQ-0.0.54-03-06"
       ]
     },
     "OBPI-0.0.57-01-nominal-id-doctrine": {

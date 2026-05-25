@@ -1139,6 +1139,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--reconcile-freshness` | opt-in | Flag if no reconcile event has fired since HEAD (24-hour grace window) |
 | `--insights-shape` | opt-in | Validate `.gzkit/insights/agent-insights.jsonl` records against the canonical `InsightRecord` schema (GHI #358) |
 | `--instructions-files-budget` | opt-in | AGENTS.md / CLAUDE.md / `.claude/rules/*.md` must stay within per-file char budgets defined in `data/instructions_files_budget.json` (GHI #373) |
+| `--agents-md-map-conformance` | opt-in | AGENTS.md template + rendered shape conformance: four criteria (paragraph <=5 lines or binding-bullet marker; no prohibited subsection titles; relative links resolve with anchors; rendered AGENTS.md within budget). Tables and code fences exempt from criterion (a). Hard-rejection exit 3 with `/gz-context-diet` remediation pointer (ADR-0.0.54 / OBPI-0.0.54-03) |
 | `--adr-status-fresh` | yes | `docs/governance/GovZero/adr-status.md` must agree with on-disk ADR canon (GHI #322) |
 | `--orientation-freshness` | opt-in | The SessionStart orientation hook + script must remain wired (GHI #341) |
 | `--brief-headings` | opt-in | OBPI brief evidence sections must be H3, not H2 (GHI #238) |
