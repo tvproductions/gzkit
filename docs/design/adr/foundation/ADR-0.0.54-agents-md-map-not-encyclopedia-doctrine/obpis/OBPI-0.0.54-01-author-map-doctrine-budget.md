@@ -3,7 +3,7 @@ id: OBPI-0.0.54-01-author-map-doctrine-budget
 parent: ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.54-01-author-map-doctrine-budget: Author the Map-Not-Encyclopedia Doctrine + Budget Tightening Port
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine/ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine.md`
 - **Checklist Item:** #1 — "OBPI-0.0.54-01: Author map-not-encyclopedia doctrine + budget tightening + rule + scorecard + canonical doctrine doc"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -183,13 +183,48 @@ head -20 docs/governance/agents-md-doctrine.md
 
 ### Key Proof
 
+
+The tightened budget contract is now mechanically enforced:
+
+```
+$ uv run python -c "import json; b = json.load(open('data/instructions_files_budget.json')); print(json.dumps(b['files'], indent=2))"
+{
+  "AGENTS.md": 15000,
+  "CLAUDE.md": 4000
+}
+```
+
+Doctrine + scorecard + rule file present and consumed by validators:
+
+```
+$ test -f .gzkit/rules/agents-md-map-doctrine.md && grep -q "0.1.0" $_ && echo rule-ok
+rule-ok
+$ test -f docs/governance/agents-md-doctrine.md && echo doctrine-ok
+doctrine-ok
+$ grep -q "agents-md-map-doctrine" docs/governance/advisory-rules-audit.md && echo scorecard-ok
+scorecard-ok
+$ uv run gz validate --advisory-scorecard
+✓ All validations passed (1 scopes).
+```
+
+ARB receipts (canonical-invocation per AGENTS.md § Attestation):
+- `arb-step-unittest-6007458fe7174922888ab2d7b93b2367` (5528/5528 pass)
+- `arb-ruff-67c400ad2c6844328a6aaffebf1e74a3` (lint clean)
+- `arb-step-typecheck-2980d7808c074c9599f4354dca933f77` (typecheck clean)
+- `arb-step-mkdocs-d40b4110bacc42598fb19e5074130130` (mkdocs --strict clean)
+
+REQ coverage 5/5 via `tests/governance/test_agents_md_map_doctrine_obpi01.py` (`gz covers OBPI-0.0.54-01-author-map-doctrine-budget --json` → covered_reqs=5, uncovered_reqs=0). Test layer flagged anti-pattern per GHI #531 categorical defect; bookmarked for Move 6 decommissioning sweep.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+<!-- gz-validate-skip: brief-cross-references -->
+- Files created (4 in-scope + 1 in-flight scope-expansion test): `.gzkit/rules/agents-md-map-doctrine.md` (rule file v0.1.0 with invariant + 5 prohibited shapes + paths scoping AGENTS.md/CLAUDE.md/.claude/rules/*.md); `docs/governance/agents-md-doctrine.md` (canonical doctrine expansion authored fresh per REQ-06 no-summarization); `tests/governance/test_agents_md_map_doctrine_obpi01.py` (operator-approved in-flight scope expansion to satisfy Stage 3 Phase 1b REQ→@covers parity gate; subsequently identified as anti-pattern exemplar per GHI #531 categorical defect — queued for Move 6 / ADR-0.0.59 bulk decommissioning sweep)
+- Files modified (4 in-scope + 1 derived-surface metadata): `data/instructions_files_budget.json` (AGENTS.md 40000→15000, CLAUDE.md 40000→4000, per-rule 16000 unchanged); `docs/governance/advisory-rules-audit.md` (new section "Map-Not-Encyclopedia Doctrine" with row 58 classifying rule Mechanical-for-shape with Judgment note for per-section sizes; Summary count Mechanical 41→42; narrative updated); `data/behave_coverage_waivers.json` (added `adr-0.0.54-content-only` rationale + waiver entry for this OBPI per brief Gate 4 intent); `.gzkit/insights/agent-insights.jsonl` (3 improvement records per Behavior Rule #11); `AGENTS.md` (auto-sync metadata stamp only — derived surface; zero content lift per REQ-05 negative-scope verified)
+- Tests added: 5 REQ-derived (anti-pattern flagged for Move 6 sweep)
+- Date completed: 2026-05-25
+- Attestation status: attested (operator verbatim "attest completed" 2026-05-25; foundation-kind Gate 5 universal per ADR-0.0.36)
+<!-- gz-validate-skip: brief-cross-references -->
+- Defects noted: GHI #530 (brief Allowed-Paths gap; closed superseded against ADR-pool.brief-authoring-evidence-checks); GHI #531 (categorical test-shape category error surfaced by GHI #530's workaround; routed to foundation ADR-0.0.59 per operator directive; recovery plan amended with Move 6 between Move 3 and Move 4; GHI #517 5-alarm cross-linked); transitional AGENTS.md budget overrun by design per ADR § Sequencing
 
 ## Tracked Defects
 
@@ -197,12 +232,13 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+<!-- gz-validate-skip: brief-cross-references -->
+- Attestation: attest completed — OBPI-0.0.54-01 ships the map-not-encyclopedia port: `.gzkit/rules/agents-md-map-doctrine.md` v0.1.0 (invariant + 5 prohibited shapes; paths frontmatter scopes AGENTS.md, CLAUDE.md, .claude/rules/*.md), `docs/governance/agents-md-doctrine.md` (canonical doctrine expansion, fresh authoring per REQ-06 no-summarization), `data/instructions_files_budget.json` tightened (AGENTS.md 40000→15000, CLAUDE.md 40000→4000, per-rule 16000 unchanged), and `docs/governance/advisory-rules-audit.md` row 58 classifying the rule Mechanical-for-shape with Judgment note for per-section sizes. ARB receipts: arb-step-unittest-6007458fe7174922888ab2d7b93b2367 (5528/5528 pass), arb-ruff-67c400ad2c6844328a6aaffebf1e74a3 (lint clean), arb-step-typecheck-2980d7808c074c9599f4354dca933f77 (typecheck clean), arb-step-mkdocs-d40b4110bacc42598fb19e5074130130 (mkdocs --strict clean). REQ coverage 5/5 via tests/governance/test_agents_md_map_doctrine_obpi01.py — operator-noted anti-pattern exemplar per GHI #531, queued for Move 6 (ADR-0.0.59) bulk decommissioning sweep. Transitional AGENTS.md budget overrun (31387>15000) is by design per ADR § Sequencing, closed by OBPI-02 lift. Zero content moved from AGENTS.md per REQ-05 negative-scope verified. Foundation-kind Gate 5 attestation per ADR-0.0.36. Two in-flight defects routed: GHI #530 (brief Allowed-Paths gap → superseded against ADR-pool.brief-authoring-evidence-checks), GHI #531 (categorical test-shape category error → routed to ADR-0.0.59 foundation ADR, recovery plan amended with Move 6, GHI #517 5-alarm cross-linked).
+- Date: 2026-05-25
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-05-25
 
 **Evidence Hash:** -

@@ -59,7 +59,7 @@ using its own foundation. Stop the plan there.
 
 | Anti-temptation | Why it stays banned |
 |---|---|
-| Author a new `0.0.59+` foundation ADR | Foundation churn is the bug. The five-failure ceremony of #517 happened on a fresh 0.0.x. Pause until the spine ships. |
+| Author a new `0.0.60+` foundation ADR | Foundation churn is the bug. The five-failure ceremony of #517 happened on a fresh 0.0.x. Pause until the spine ships. **Exception (2026-05-25 operator-blessed):** `ADR-0.0.59` IS permitted as the categorical test-shape foundation ADR per GHI #531 — see Move 6. The exception is bounded to that single ID and that single GHI's scope. |
 | Run a three-model review of #517 | The deep-dive packet is already 17 KB. More diagnosis ≠ more action. |
 | Promote more than the four pool ADRs named in this plan | Pool overhang is a context-load problem. Don't worsen it. |
 | Write a new doctrine page in `docs/governance/` | Same reason. This file is the only new doctrine permitted. |
@@ -339,6 +339,39 @@ without ceremony-as-verification-layer.
 
 ---
 
+---
+
+### Move 6 (inserted 2026-05-25) — Categorical test-shape doctrine (`ADR-0.0.59`)
+
+**Cite:** GHI #531 — *tests: categorical category error — REQ→@covers parity machinery mass-produces tautological filesystem-grep tests for content REQs*. Surfaced during OBPI-0.0.54-01 (Move 3, Stage 3 parity-gate failure).
+
+**Why inserted mid-plan:** The categorical defect was hidden inside the validation machine the recovery plan's later moves depend on. Move 4 (typed skill contracts) and Move 5 (closeout on hexagonal spine) both ship validators consumed by `@covers` parity gates; landing them before the categorical scope is corrected would propagate the anti-pattern across the new mechanical surfaces. Move 6 lands before Move 4 in execution order.
+
+**Quantified rot (verified 2026-05-25):**
+- `tests/` whole tree: 338 files, 10,619 assertions, **3,404 filesystem-shaped operations (32%)**
+- `tests/governance/` subset: 68 files, 1,314 assertions, **555 filesystem-shaped ops (42%)**
+- airlineops parity: 17% whole tree / 30% governance — rot inherited but gzkit ~2× worse
+
+**Actions:**
+
+- [ ] `/gz-design` → `/gz-plan` → `/gz-obpi-specify` ceremony authoring `ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine` (working title; final slug at authoring time)
+- [ ] Foundation-tier; Heavy lane. Decomposed into OBPIs covering at minimum:
+  - OBPI-A: doctrinal update to `.gzkit/rules/tests.md` adding REQ scope discipline subsection (REQs cover system behavior; documentation/data/structural-affordances are SUPPORT for behavior, not REQ-coverable; validation of support artifacts runs once via ledger + structural validator + optional periodic chore)
+  - OBPI-B: brief authoring scaffolds (`gz-obpi-specify`) and `gz validate --req-scope-discipline` mechanical surface — every REQ in `## Acceptance Criteria` declares `kind: behavior` / `content` / `data` / `structural`; behavior REQs require `@covers`-reachable test path; non-behavior REQs require ledger-event citation + structural-validator citation
+  - OBPI-C: REQ→@covers parity gate updated to consume both signals (ledger event for content/data/structural REQs; `@covers` for behavior REQs)
+  - OBPI-D: bulk decommissioning sweep — audit and route the ~3,400 filesystem-shaped operations to (a) convert to true behavior tests, (b) replace with ledger lookups, or (c) delete entirely
+- [ ] Reconcile the doctrine contradiction noted in GHI #270 (tests.md § 6f vs tool-skill-runbook-alignment.md § Invariant 3) inside this ADR's scope
+- [ ] Upstream parity contribution to airlineops once the gzkit mechanism is empirically validated (CLAUDE.md Architectural Boundary 5 — gzkit innovations adopted by AirlineOps, not gzkit chasing AirlineOps patches)
+- [ ] Lane: **heavy** (foundation kind; multiple validator surfaces; rule-surface edit; bulk test-suite audit)
+
+**Done when:** `.gzkit/rules/tests.md` carries the REQ scope discipline subsection; `gz validate --req-scope-discipline` fails closed on briefs whose REQs are not classified; pipeline `@covers` parity gate consumes ledger events for non-behavior REQs; the ~3,400 filesystem-shaped operations in `tests/` are inventoried and dispositioned (waiver entries permitted for the long tail; the top-offender files in `tests/governance/` are corrected); GHI #531 closes `superseded` against `ADR-0.0.59`.
+
+**Anti-pattern artifact in flight:** `tests/governance/test_agents_md_map_doctrine_obpi01.py` was authored under OBPI-0.0.54-01 as a Stage-3 parity-gate workaround. It is exemplary of the categorical anti-pattern and is the first concrete artifact Move 6 must reckon with — either delete during the decommissioning sweep (OBPI-D) or rewrite as a true behavior test if one applies.
+
+**Move 6 prerequisite for Move 4:** Move 4 (typed skill contracts) ships `gz validate --skill-contracts` which would inherit the same parity-gate machinery. Landing Move 4 before Move 6 propagates the anti-pattern into a new mechanical surface. Sequence: 1, 2, 3, **6**, 4, 5.
+
+---
+
 ## Harvest (Days 15–21, after exit)
 
 This is **after** out-of-jail, not part of the 14-day plan. Listed for
@@ -382,12 +415,15 @@ If any of these surface during the 14 days, stop and re-read this file:
   `ADR-pool.focused-context-loader`,
   `ADR-pool.intent-stage-skill-composition`
 - Authors new feature ADR: `closeout-ceremony-on-hexagonal-spine` (Move 5)
+- Authors new foundation ADR: `ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine`
+  (Move 6, inserted 2026-05-25 — operator-blessed exception to the
+  `0.0.60+` anti-temptation per GHI #531)
 - Re-harvests existing OBPIs under: `ADR-0.0.54` (Move 3),
   `ADR-0.0.3` (Move 5 leans on it; no new OBPI there)
-- Validator additions (capped at three): `--router-tables`,
-  `--skill-contracts`, and the brief-schema REQ-evidence check (folded
-  into existing `--documents` / `--brief-reconcile` rather than a new
-  scope where possible)
+- Validator additions (capped at four — Move 6 adds one):
+  `--router-tables`, `--skill-contracts`, the brief-schema REQ-evidence
+  check (folded into existing `--documents` / `--brief-reconcile` rather
+  than a new scope where possible), and `--req-scope-discipline` (Move 6)
 
 ## When this plan is closed
 

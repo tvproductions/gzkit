@@ -3,5 +3,10 @@
     "expires": "2026-07-15",
     "delta_lines": 15,
     "reason": "Companion bullets added to .gzkit/agents.local.md § Governance doctrine surfaces under GHI #470 — restore T1 contract surface that ADR-pool.obpi-pipeline-dispatch-attestation T5/T6 mechanism will bind to. Each bullet is the verbatim substring required by an advisory-rules-audit Mechanical-class catalog cell (rows 17b, 35, 47, 48, 50, 51, 53, 54, 55, 57). Reduction path: re-floor the surface_weight snapshot once the doctrine has stabilized; this waiver is a 60-day bridge."
+  },
+  {
+    "expires": "2026-07-25",
+    "delta_lines": 42,
+    "reason": "OBPI-0.0.54-01 (ADR-0.0.54 Move 3) lands the map-not-encyclopedia rule file at .gzkit/rules/agents-md-map-doctrine.md plus mirrors at .claude/rules/, .github/instructions/, and src/gzkit/rules/. Doctrine doc docs/governance/agents-md-doctrine.md adds surface mass. The rule file is the port; OBPI-0.0.54-02 (the lift) reduces AGENTS.md by ~16k chars which will net-decrease total surface weight. Yellow-band overrun is the transitional window between rule-file authoring (OBPI-01) and the lift (OBPI-02), explicitly documented in ADR § Sequencing and in .gzkit/rules/agents-md-map-doctrine.md § Budget. Reduction path: OBPI-0.0.54-02 lift closes this gap; re-floor surface_weight snapshot after OBPI-02 lands. This waiver is a 60-day bridge."
   }
 ]
