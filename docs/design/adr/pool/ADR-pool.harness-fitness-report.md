@@ -1,6 +1,6 @@
 ---
 id: ADR-pool.harness-fitness-report
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
@@ -9,13 +9,16 @@ complements:
   - ADR-pool.harness-lab
   - ADR-pool.harness-trace-bundles
   - ADR-pool.workflow-specification
+promoted_to: ADR-0.0.60-harness-fitness-report
 ---
 
 # ADR-pool.harness-fitness-report: Harness Fitness Report
+> Promoted to `ADR-0.0.60-harness-fitness-report` on 2026-05-25. This pool file is retained as historical intake context.
+
 
 ## Status
 
-Pool
+Superseded
 
 ## Date
 
@@ -90,6 +93,31 @@ that ADR lands first.
   described failure class lacks a corresponding sensor.
 - Add harness-lab episode summary ingestion once `ADR-pool.harness-lab` exists.
 
+## Proposed OBPI Decomposition
+
+Inaugural metric for promotion: **prompt→Stage-5 latency per OBPI lane** (the
+factory loop time). Floor policy: advisory + auto-file GHI on persistent
+regression; never gate authority. Sequencing: ride coarse on today's wired
+`pipeline_launched` / `obpi_receipt_emitted` events; upgrade to per-stage
+breakdown when `pipeline_stage_entered` lands via `ADR-pool.tdd-receipt-stream`.
+Architecture: pluggable surface registry — `lane-latency` is the first entry;
+future surfaces (validators, control-surfaces, receipt-citation, stage-latency)
+add registry entries without restructuring this ADR.
+
+| # | Slug | Description | Lane |
+|---|------|-------------|------|
+| 01 | lane-latency-models | Pydantic models (`LaneLatencyRecord`, `LaneLatencyAggregate`, `LaneLatencyReport`, `HarnessRegressionInsight`, `HarnessLaneLatencyConfig`) + JSON schema export to `src/gzkit/schemas/harness_lane_latency.json` + schema-drift CI gate. | heavy |
+| 02 | lane-latency-scanner | Ledger scanner pairing `pipeline_launched` → `obpi_receipt_emitted` (with `obpi_completion ∈ {"completed","attested_completed"}`); orphan handling; lane drift detection; rolling-window aggregation; cache write to `.gzkit/telemetry/lane-latency.json`. | heavy |
+| 03 | lane-latency-renderer | Rich-table renderer matching `gz status` house style; `--json` emits `LaneLatencyReport.model_dump_json()` to stdout, diagnostics to stderr; `--lane`, `--since <commit>`, `--list-surfaces`, `--no-auto-ghi` flags; soft-non-zero exit 3 on breach. | heavy |
+| 04 | harness-regression-helper | Shared `file_or_comment_ghi` helper in `src/gzkit/harness/regression.py` routing through `/ghi-author` (Behavior Rule 13); deterministic label policy (`harness-regression` + `lane:<lane>` + `surface:<surface>`); always emits `HarnessRegressionInsight` to `.gzkit/insights/agent-insights.jsonl` regardless of file-vs-comment outcome. | heavy |
+| 05 | harness-telemetry-validator | New `gz validate --harness-telemetry` scope: schema validity, ledger-event resolution for both event IDs per record, high-water-mark monotonicity, in-flight count sanity. Exit 3 fail-closed on drift; wired into default `gz check`. | heavy |
+| 06 | lane-latency-docs-and-attestation | Operator runbook section; `gz harness report` manpage with examples; Gate 4 BDD scenarios; threshold-config doc at `docs/governance/harness/lane-latency-config.md`; Gate 5 attestation evidence bundle. | heavy |
+
+OBPIs 01→02→03 form the implementation spine; 04 plugs into 03; 05 validates
+01+02+03 output; 06 closes documentation/attestation gates. Each OBPI carries
+its own REQs and tests; no implementation OBPI ships without paired test
+coverage per `.gzkit/rules/tests.md`.
+
 ## Non-Goals
 
 - No web dashboard.
@@ -97,6 +125,8 @@ that ADR lands first.
 - No automatic deletion of rules or validators.
 - No telemetry emission into `.gzkit/ledger.jsonl`.
 - No operator-facing raw JSON/YAML report as the primary review surface.
+- No per-stage latency breakdown (deferred to future ADR after `pipeline_stage_entered` lands).
+- No fail-closed gate authority for floor breaches (advisory-only per anti-vibing mantra).
 
 ## Alternatives Considered
 
