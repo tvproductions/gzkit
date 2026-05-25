@@ -1,0 +1,9 @@
+{
+  "obpi_id": "OBPI-0.0.54-03-agents-md-map-conformance-validator",
+  "agent": "claude-code-595954b5",
+  "pid": 1560,
+  "session_id": "595954b5-e85f-4e7d-a148-54e283529e24",
+  "claimed_at": "2026-05-25T16:20:42.987217+00:00",
+  "branch": "main",
+  "ttl_minutes": 120
+}
