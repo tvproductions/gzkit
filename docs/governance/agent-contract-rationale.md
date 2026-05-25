@@ -425,6 +425,15 @@ All three are vibing through the interaction layer — the failure mode
 the entire contract is engineered against. The operator-economy mode is
 the conscience that names the shape *before* it leaks through.
 
+### Anti-patterns
+
+*Lifted from `AGENTS.md` § OPERATOR ECONOMY OF EFFORT § Anti-patterns
+under OBPI-0.0.54-02.*
+
+- Asking operator to draft prose, read raw JSON/YAML, or re-state prior decisions
+- Bundled clarifying questions; open prompts when multiple-choice would suffice
+- Rewriting operator's verbatim phrasing; drafts without grounding; reasoning without recommendation
+
 ## Attestation — worked example
 
 *Lifted from `AGENTS.md` § Attestation § Worked example under GHI #327.*
@@ -445,6 +454,15 @@ tests arb-2026-04-14T12-36-18-unittest; coverage arb-2026-04-14T12-37-44-coverag
 See [`docs/governance/arb-middleware.md`](arb-middleware.md) for ARB
 middleware deep-dive: core concept, command surface, receipt schema and
 storage, exit codes, and rationale.
+
+### Lane behavior
+
+*Lifted from `AGENTS.md` § Attestation § Lane behavior under
+OBPI-0.0.54-02.*
+
+**Lite lane:** missing receipt IDs produce a warning. **Heavy lane:**
+missing receipt IDs are fail-closed. Fabricating a receipt ID is the
+same failure as fabricating the claim.
 
 <!-- lifted-from: AGENTS.md#stdlib-first-doctrine--rationale -->
 ## Stdlib-First doctrine — rationale
@@ -493,6 +511,15 @@ the discipline is doctrinal, not stylistic. See § *External
 harness-engineering theses — appraisal and deliberate inversion* above
 for the broader appraisal vector against the same source.
 
+### Existing canonical applications
+
+*Lifted from `AGENTS.md` § STDLIB-FIRST DOCTRINE § Existing canonical
+applications under OBPI-0.0.54-02.*
+
+- **Testing:** `unittest` over pytest. Enforced by `forbid-pytest` pre-commit hook and `.gzkit/rules/tests.md`.
+- **CLI:** `argparse` over click/typer. Anchored by ADR-0.0.2.
+- **Models:** Pydantic is the explicit *named departure* — its validation semantics genuinely cannot be supplied by stdlib. Anchored by `.gzkit/rules/models.md`.
+
 ## Agent failure-mode taxonomy — loading posture and worked examples
 
 *Lifted from `.gzkit/rules/agent-failure-modes.md` § Loading posture and
@@ -537,6 +564,84 @@ naming or quoting either directive. The rule was added under DO IT RIGHT 6h
 to require verbatim quotation; the post-hoc narrative fails the check by
 construction.
 See also: `Rationale for 6g and 6h` above.
+
+## Governance doctrine surfaces — mechanical scopes that bind
+
+*Lifted from `AGENTS.md` § Governance doctrine surfaces § Mechanical scopes
+that bind here under OBPI-0.0.54-02. The top-three doctrine pointers
+(trust-doctrine, advisory-rules-audit, state-doctrine) remain in AGENTS.md
+as binding pointers; the per-scope mechanical enforcement detail is
+preserved here verbatim.*
+
+- **Per-file char budget for AGENTS.md / CLAUDE.md / `.claude/rules/*.md`** (companion to Anti-vibing operative claim 2) — enforced by `gz validate --instructions-files-budget` (GHI #373). Tracked file budgets live in `data/instructions_files_budget.json` (defaults: 40k chars AGENTS.md/CLAUDE.md, 16k per rule file). Fail-closed on overrun with remediation pointer to `/gz-context-diet`.
+- **The editor/IDE authoring-guide protocol envelope (LSP-style Content-Length–framed JSON)** is defined by `src/gzkit/schemas/authoring_guide_protocol.json`. Every request, response, notification, and error shape MUST be named in the schema; protocol drift is caught by JSON Schema validation at server runtime, not by human review (ADR-0.0.30 / OBPI-0.0.30-04).
+- **Eval-feedback-source commit trailer** — when a rule edit lands under a GHI labeled `eval-feedback`, include `Eval-feedback-source: <event-id-or-artifact-path>` in the commit trailer. The trailer is validated by `gz validate --commit-trailers` (ADR-0.0.26).
+- **`abandon categories are closed`** — lock release is coupled to a handoff/register entry per ADR-0.0.41; runtime warning / fail-closed enforcement and `gz validate --lock-handoff-coupling` are tracked under pending OBPIs (`.gzkit/rules/token-block-discipline.md`).
+- **Advisor diagnosis non-empty `proof: tuple[ProofRange, ...]`** binding (`Field(min_length=1)` on `AdvisorDiagnosis.proof`) is enforced by `gz validate --advisor-proof-binding` (OBPI-0.0.29-08).
+- **Complexity calibration is grounded in an empirically-measured exemplar corpus** with seven selection criteria (longevity, maintenance health, practitioner reputation NOT GitHub-star count, pure-Python LOC share, author craftsmanship signal, project doctrine fitness, pinned commit SHA); link-integrity enforced by `gz validate --complexity-doctrine-links` (OBPI-0.0.27-07).
+- **Heavy/foundation lane requires explicit human attestation before completion** — see § OBPI Acceptance Protocol; enforced by `gz closeout` pipeline.
+- **`.gzkit/rules/*.md` with `paths: "**"` or missing `paths:`** may not live under any vendor-surface rules directory (ADR-0.0.20) — enforced by `gz validate --unscoped-rules`.
+- **Every canonical surface (skills, rules, hooks, templates, chores, personas) MUST be reproducibly delivered by `pip install py-gzkit && gz init`** to a fresh project, byte-equivalent to the wheel's authored canonical content (T0 distribution invariant, ADR-0.0.31) — enforced by `gz validate --distribution`.
+- **`gz validate --invariant-coherence` — composition drift fail-close** re-renders the constitutional invariant registry and byte-compares against committed AGENTS.md; exit 3 on drift; in the `gz check` default scope (ADR-0.0.37 / OBPI-0.0.37-03).
+- **OBPI brief reconciles against current project shape before Stage 2 and before completion** — the five-dimension reconciliation engine (`reconcile_brief`) computes per-dimension drift; `gz validate --brief-reconcile` escalates drift for structured `BriefStructure` briefs (ADR-0.0.37 / OBPI-0.0.37-05).
+
+## DO IT RIGHT — pedagogical expansions for bullets 5, 6, 11
+
+*Lifted from `AGENTS.md` § DO IT RIGHT bullets 5, 6, 11 under OBPI-0.0.54-02.
+The binding bullets remain canonical in AGENTS.md as one-line statements;
+the trailing pedagogical narrative (the "(Sharpened by Rule N, ...)" /
+"(Rule N, ...)" lineage notes and full rationale clauses) is preserved here.*
+
+### DO IT RIGHT #5 — Read the code before you change it
+
+Read exports, immediate callers, shared utilities. If unsure why existing code is structured a certain way, ask. (Sharpened by Rule 6, 2026-05-24.)
+
+### DO IT RIGHT #6 — Tests assert semantics, not strings
+
+Assertions derive from the REQ, not from a run of the code. Tests must encode WHY behavior matters, not just WHAT it does — a test that can't fail when business logic changes is wrong. (Sharpened by Rule 7, 2026-05-24.)
+
+### DO IT RIGHT #10 — Simplicity first
+
+Minimum code that solves the problem. Nothing speculative. No abstractions for single-use code. (Rule 2, 2026-05-24.)
+
+### DO IT RIGHT #11 — Surgical changes
+
+Touch only what you must. Don't improve adjacent code. Match existing style. Don't refactor what isn't broken. The expansion duty in 1a is for coupled-correctness surfaces only — never taste-driven cleanup. (Rule 3, 2026-05-24.)
+
+## Operator economy — claim expansions for 3, 4
+
+*Lifted from `AGENTS.md` § OPERATOR ECONOMY OF EFFORT § Operative claims
+3 and 4 under OBPI-0.0.54-02. The binding claim names remain in AGENTS.md;
+the trailing prose explanation is preserved here.*
+
+### Operative claim 3 — Operator verbatim phrasing is preserved
+
+When operator supplies specific words for a doctrine/attestation/commit message/canon entry, those words pass through unchanged. Agent's role is to seat them correctly, not rewrite. (Same rule as § Attestation.)
+
+### Operative claim 4 — Forcing functions are agent-driven, operator-attested
+
+Pre-mortem, WWHTBT, constraint archaeology, assumption surfacing drafted by agent against session evidence. Operator audits, names what was missed, confirms.
+
+### Operative claim 5 — Decisions accumulate; agent maintains running state
+
+Every decision in a design dialogue is captured in agent's running model and surfaces in subsequent drafts. Operator never re-states a prior booked decision.
+
+### Operative claim 6 — Agent never asks operator to type more than necessary
+
+Bundled questions, unjustified open prompts, *"please specify"* when a draft would have sufficed are violations.
+
+## Architectural Boundaries — planning-memo rationale
+
+*Lifted from `.gzkit/agents.local.md` § Architectural Boundaries under OBPI-0.0.54-02. The binding boundaries remain canonical in `agents.local.md` as one-line bullets; the planning-memo source narrative is preserved here verbatim.*
+
+Source: Architecture Planning Memo Section 12 (Decision Record 2026-03-29).
+
+1. **Do not promote post-1.0 pool ADRs into active work.** `ai-runtime-foundations`, `controlled-agency-recovery`, and `evaluation-infrastructure` remain parked until the graph spine, proof architecture, and pipeline lifecycle are stable.
+2. **Do not add more pool ADRs to the runtime track.** The pool has sufficient runtime intent; lock foundation first.
+3. **Do not build the graph engine without locking state doctrine first.** A graph engine built on implicit state assumptions becomes the single biggest source of reconciliation bugs.
+4. **Do not let reconciliation remain a maintenance chore.** Reconciliation is a core architectural operation. Freshness check applies once reconciliation has run at least once; zero-event history is bootstrap, not drift.
+5. **Do not let AirlineOps parity become perpetual catch-up.** Current parity is sufficient baseline. Future parity should flow from gzkit innovations adopted by AirlineOps, not gzkit chasing AirlineOps patches.
+6. **Do not let derived views silently become source-of-truth.** `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger.
 
 ## Attribution
 

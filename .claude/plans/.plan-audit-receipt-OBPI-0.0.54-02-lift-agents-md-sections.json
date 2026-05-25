@@ -1,0 +1,625 @@
+{
+  "obpi_id": "OBPI-0.0.54-02-lift-agents-md-sections",
+  "timestamp": "2026-05-25T14:20:31.814871+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.54-02-lift-agents-md-sections.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-01-persona-research-synthesis",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-02-persona-control-surface-definition",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-03-trait-composition-model",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-04-agents-md-persona-section",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-05-supersede-pool-persona-context",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.13",
+      "sibling_obpi": "OBPI-0.0.13-03-manifest-schema-persona-sync",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.13",
+      "sibling_obpi": "OBPI-0.0.13-06-cross-project-validation",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.16",
+      "sibling_obpi": "OBPI-0.0.16-05-status-vocab-mapping",
+      "contested_paths": [
+        "docs/governance/state-doctrine.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-04-validate-taxonomy",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-02-runbook-prd-to-adr",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-03-pool-curation-policy",
+      "contested_paths": [
+        "docs/governance/pool-curation.md",
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-04-epic-grouping",
+      "contested_paths": [
+        "docs/governance/pool-curation.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.19",
+      "sibling_obpi": "OBPI-0.0.19-05-docs-bdd-closeout",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.20",
+      "sibling_obpi": "OBPI-0.0.20-01-validator-and-allowlist",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.20",
+      "sibling_obpi": "OBPI-0.0.20-02-fold-agent-contract",
+      "contested_paths": [
+        "docs/governance/agent-contract-rationale.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.20",
+      "sibling_obpi": "OBPI-0.0.20-03-fold-attestation-enrichment",
+      "contested_paths": [
+        "docs/governance/arb-middleware.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.20",
+      "sibling_obpi": "OBPI-0.0.20-04-fold-defect-fix-routing",
+      "contested_paths": [
+        "docs/governance/defect-fix-routing.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.21",
+      "sibling_obpi": "OBPI-0.0.21-06-rule-and-doc-updates",
+      "contested_paths": [
+        "docs/governance/GovZero/gzkit-structure.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-06-rule-file-matrix-scorecard",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.23",
+      "sibling_obpi": "OBPI-0.0.23-02-cross-link-and-scorecard",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.24",
+      "sibling_obpi": "OBPI-0.0.24-03-doc-updates",
+      "contested_paths": [
+        "docs/governance/arb-middleware.md",
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.25",
+      "sibling_obpi": "OBPI-0.0.25-03-bdd-and-doc",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.26",
+      "sibling_obpi": "OBPI-0.0.26-04-ghi-promotion-and-trailer",
+      "contested_paths": [
+        "docs/governance/arb-middleware.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-01-selection-methodology",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-03-measurement-pipeline",
+      "contested_paths": [
+        "docs/governance/complexity/baselines/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-04-distillation-pass",
+      "contested_paths": [
+        "docs/governance/complexity/baselines/{YYYY-MM-DD}/baseline.json",
+        "docs/governance/complexity/baselines/{YYYY-MM-DD}/baseline.summary.md",
+        "docs/governance/complexity/distilled-characteristics-{YYYY-MM-DD}.md",
+        "docs/governance/complexity/distilled-characteristics.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-07-link-integrity-validator",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.28",
+      "sibling_obpi": "OBPI-0.0.28-01-threshold-rule-file",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.28",
+      "sibling_obpi": "OBPI-0.0.28-03-threshold-validator",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-08-verdict-proof-binding",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.30",
+      "sibling_obpi": "OBPI-0.0.30-04-editor-protocol-contract",
+      "contested_paths": [
+        "docs/governance/complexity/authoring-guide-protocol.md",
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.31",
+      "sibling_obpi": "OBPI-0.0.31-01-author-t0-doctrine",
+      "contested_paths": [
+        "docs/governance/trust-doctrine.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.31",
+      "sibling_obpi": "OBPI-0.0.31-02-register-t0-scorecard",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.31",
+      "sibling_obpi": "OBPI-0.0.31-03-t0-failure-mode-catalog",
+      "contested_paths": [
+        "docs/governance/distribution_invariant_catalog.md",
+        "docs/governance/trust-doctrine.md",
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-06-t0-smoke-test",
+      "contested_paths": [
+        "docs/governance/distribution_baseline.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-07-validate-distribution",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.36",
+      "sibling_obpi": "OBPI-0.0.36-04-historical-self-close-waivers",
+      "contested_paths": [
+        "docs/governance/historical-self-close-waivers.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-03-composition-drift-validator",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-05-brief-reconcile-engine",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-10-doctrine-refresh",
+      "contested_paths": [
+        "docs/governance/contributing.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.38",
+      "sibling_obpi": "OBPI-0.0.38-01-rule-and-schema",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.38",
+      "sibling_obpi": "OBPI-0.0.38-02-surface-axis-validator",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.39",
+      "sibling_obpi": "OBPI-0.0.39-01-rule-and-doctrine",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md",
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.40",
+      "sibling_obpi": "OBPI-0.0.40-02-judge-leakage-validator",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.40",
+      "sibling_obpi": "OBPI-0.0.40-03-judge-output-discipline-validator",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.40",
+      "sibling_obpi": "OBPI-0.0.40-04-meta-eval-cli",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.41",
+      "sibling_obpi": "OBPI-0.0.41-01-token-block-canon",
+      "contested_paths": [
+        "docs/governance/token-block-doctrine.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-03-storybook-validator",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-11-cross-context-ast-import-enforcer",
+      "contested_paths": [
+        "docs/governance/cascade-import-enforcer.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-12-documentation-cross-coverage",
+      "contested_paths": [
+        "docs/governance/agent-contract-rationale.md",
+        "docs/governance/governance_runbook.md",
+        "docs/governance/domain-cascade.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.45",
+      "sibling_obpi": "OBPI-0.0.45-05-cli-mode-density-doctrine",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.48",
+      "sibling_obpi": "OBPI-0.0.48-02-candidate-cognitive-pass",
+      "contested_paths": [
+        "docs/governance/pool-triage-cognitive-pass.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.48",
+      "sibling_obpi": "OBPI-0.0.48-06-docs-validation-fixtures",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.49",
+      "sibling_obpi": "OBPI-0.0.49-03-agents-md-integration",
+      "contested_paths": [
+        "docs/governance/agent-contract-rationale.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.49",
+      "sibling_obpi": "OBPI-0.0.49-05-systematic-debugging-rule-file",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.52",
+      "sibling_obpi": "OBPI-0.0.52-10-docs-and-runbook-updates",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md",
+        "docs/governance/state-doctrine.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-01-validator-remediation-payload-port",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-04-extend-payload-blocking-hooks",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-01-author-layer-order-manifest",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-04-promote-import-direction-fail-closed",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.56",
+      "sibling_obpi": "OBPI-0.0.56-06-prime-directive-scorecard-reclassification",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.57",
+      "sibling_obpi": "OBPI-0.0.57-04-foundation-triage-rubric",
+      "contested_paths": [
+        "docs/governance/foundation-triage-rubric.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.57",
+      "sibling_obpi": "OBPI-0.0.57-05-docs-runbook-fixtures",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-01-author-doctrine-and-supersession",
+      "contested_paths": [
+        "docs/governance/req-scope-discipline.md",
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.8",
+      "sibling_obpi": "OBPI-0.0.8-08-operator-docs",
+      "contested_paths": [
+        "docs/governance/feature-flags.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-01-three-layer-model-documentation",
+      "contested_paths": [
+        "docs/governance/state-doctrine.md",
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.11.0",
+      "sibling_obpi": "OBPI-0.11.0-01-obpi-transaction-contract-and-scope-isolation",
+      "contested_paths": [
+        "docs/governance/GovZero/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.11.0",
+      "sibling_obpi": "OBPI-0.11.0-03-obpi-completion-recorder-and-anchor-receipts",
+      "contested_paths": [
+        "docs/governance/GovZero/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.11.0",
+      "sibling_obpi": "OBPI-0.11.0-05-gz-obpi-pipeline-skill-and-mirror-surface",
+      "contested_paths": [
+        "docs/governance/GovZero/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.11.0",
+      "sibling_obpi": "OBPI-0.11.0-06-template-closeout-and-migration-alignment",
+      "contested_paths": [
+        "docs/governance/GovZero/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.12.0",
+      "sibling_obpi": "OBPI-0.12.0-01-canonical-hook-inventory-and-parity-contract",
+      "contested_paths": [
+        "docs/governance/GovZero/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-02-persist-stage-state",
+      "contested_paths": [
+        "docs/governance/GovZero/obpi-runtime-contract.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-03-structured-stage-outputs",
+      "contested_paths": [
+        "docs/governance/GovZero/obpi-runtime-contract.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-04-human-gate-boundary",
+      "contested_paths": [
+        "docs/governance/GovZero/obpi-runtime-contract.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.23.0",
+      "sibling_obpi": "OBPI-0.23.0-03-reviewer-agent",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.24.0",
+      "sibling_obpi": "OBPI-0.24.0-04-runbook-skill-entries",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.3.0",
+      "sibling_obpi": "OBPI-0.3.0-03-govzero-canonical-doc-surface",
+      "contested_paths": [
+        "docs/governance/GovZero/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.4.0",
+      "sibling_obpi": "OBPI-0.4.0-04-mirror-compat-migration",
+      "contested_paths": [
+        "docs/governance/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.5.0",
+      "sibling_obpi": "OBPI-0.5.0-01-skill-taxonomy-and-capability-model",
+      "contested_paths": [
+        "docs/governance/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.5.0",
+      "sibling_obpi": "OBPI-0.5.0-03-lifecycle-state-transitions",
+      "contested_paths": [
+        "docs/governance/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.5.0",
+      "sibling_obpi": "OBPI-0.5.0-04-maintenance-and-deprecation-operations",
+      "contested_paths": [
+        "docs/governance/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.5.0",
+      "sibling_obpi": "OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity",
+      "contested_paths": [
+        "docs/governance/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.6.0",
+      "sibling_obpi": "OBPI-0.6.0-01-pool-source-contract",
+      "contested_paths": [
+        "docs/governance/GovZero/adr-lifecycle.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.6.0",
+      "sibling_obpi": "OBPI-0.6.0-03-operator-narratives-and-auditability",
+      "contested_paths": [
+        "docs/governance/GovZero/adr-lifecycle.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.9.0",
+      "sibling_obpi": "OBPI-0.9.0-04-gzkit-surface-import-and-mirror-sync",
+      "contested_paths": [
+        "docs/governance/GovZero/gzkit-structure.md"
+      ]
+    }
+  ]
+}

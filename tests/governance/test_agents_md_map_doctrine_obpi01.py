@@ -175,22 +175,28 @@ class ScorecardEntry(unittest.TestCase):
         )
 
 
-class ScopeBoundaryZeroLift(unittest.TestCase):
-    """REQ-05: this OBPI moves zero content out of AGENTS.md.
+class ScopeBoundaryLiftTargetsPresent(unittest.TestCase):
+    """REQ-05 (post-OBPI-02): OBPI-02 has executed; lift targets now exist.
 
-    Verified negatively: OBPI-02's lift targets MUST NOT exist yet under
-    docs/governance/. If any exist, content was lifted prematurely.
+    OBPI-01's authoring contract was a zero-lift scope (content stays in
+    AGENTS.md). OBPI-02 (lift) has since landed, populating the named lift
+    targets under docs/governance/. This test was originally a negative
+    assertion ("targets MUST NOT exist yet") authored under OBPI-01. Under
+    coupled-surface coherence (DO IT RIGHT 1a), OBPI-02 retires the negative
+    form and replaces it with the positive form: lift targets are present
+    at the expected paths. The REQ-0.0.54-01-05 zero-lift constraint applied
+    to OBPI-01's authoring window only; OBPI-02's completion is the lift.
     """
 
     @covers("REQ-0.0.54-01-05")
-    def test_obpi02_lift_targets_absent(self) -> None:
+    def test_obpi02_lift_targets_present_after_obpi02_landed(self) -> None:
         governance = _PROJECT_ROOT / "docs" / "governance"
         for target in _OBPI02_LIFT_TARGETS:
             path = governance / target
             rel = path.relative_to(_PROJECT_ROOT).as_posix()
-            self.assertFalse(
+            self.assertTrue(
                 path.exists(),
-                f"OBPI-02 lift target MUST NOT exist yet (zero-lift scope): {rel}",
+                f"OBPI-02 lift target expected after OBPI-02 landed: {rel}",
             )
 
 
