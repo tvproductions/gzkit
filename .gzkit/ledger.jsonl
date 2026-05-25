@@ -7491,3 +7491,5 @@
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.28.0-focused-context-loader","ts":"2026-05-24T23:40:15.878366+00:00","gate":2,"status":"pass","command":"uv run gz typecheck","returncode":0}
 {"schema":"gzkit.ledger.v1","event":"attested","id":"ADR-0.28.0-focused-context-loader","ts":"2026-05-24T23:40:15.892298+00:00","status":"completed","by":"g0"}
 {"schema":"gzkit.ledger.v1","event":"lifecycle_transition","id":"ADR-0.28.0-focused-context-loader","ts":"2026-05-24T23:40:15.893974+00:00","content_type":"adr","from_state":"Proposed","to_state":"Completed"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs\\design\\adr\\pool\\ADR-pool.validate-documents-backfill.md","ts":"2026-05-25T00:18:44.126586+00:00","path":"docs\\design\\adr\\pool\\ADR-pool.validate-documents-backfill.md"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs\\design\\adr\\pool\\ADR-pool.validate-documents-backfill.md","ts":"2026-05-25T00:19:02.375727+00:00","path":"docs\\design\\adr\\pool\\ADR-pool.validate-documents-backfill.md"}

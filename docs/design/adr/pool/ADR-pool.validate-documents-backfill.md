@@ -38,6 +38,37 @@ briefs — OBPI corpus hygiene is delegated to the version-aware `briefs` scope
 **1725 errors — Cohort A (ADR documents) only**; Cohort B no longer appears in
 the `--documents` scope.
 
+**Update — 2026-05-24 (cohort redistribution discovered; ADR-0.28.0 closeout).**
+The 1725-count framing implicitly bundled pool ADRs with foundation/feature
+ADRs into "Cohort A." Re-measuring during ADR-0.28.0 closeout produced
+**1825 errors** (delta +100 since 2026-05-20) with the following
+distribution by ADR kind:
+
+- **Cohort C — pool ADRs:** **1599 errors (87.6%)** across `ADR-pool.*`
+  identifiers — `Field 'status' must be one of` (the schema enum rejects
+  `Pool` though pool ADRs use it), `Missing required section: 'Decomposition
+  Scorecard'`, `Missing required section: 'Checklist'`, `Missing required
+  section: 'Attestation Block'`, `Missing required section: 'Consequences'`,
+  `Missing required section: 'Decision'`. **These sections describe work in
+  flight; pool ADRs by definition have no work in flight** (per
+  `## Notes` below: "Pool ADRs are backlog items — they carry no `semver:`
+  or `kind:` frontmatter"). The validator is applying foundation/feature
+  shape requirements to pool placeholders.
+- **Cohort A (now narrower) — foundation / feature ADR documents:**
+  **~226 errors (12.4%)** — the actually-pre-convention case the original
+  framing named. This count is roughly stable across recent recovery
+  sessions and is the genuine backfill question.
+
+The cohort shift surfaces a fifth alternative not previously considered —
+see Alt #5 in the table below. Cohort C is not "pre-convention pool ADRs
+needing backfill"; it is "pool ADRs validated against the wrong kind
+schema." Promotion ceremony now decides over Cohort A and Cohort C
+independently.
+
+GHI #480 reopened 2026-05-24 with the regression evidence and the Cohort C
+discovery. The reopen does not invalidate this ADR's prior framing — it
+provides a sharper lens for the eventual promotion decision.
+
 ## Decision
 
 This ADR is **pool** — backlog awaiting promotion. The substantive decision (whether to backfill artifacts, adjust validator scope, or both) is reserved for the promotion ceremony when this ADR is lifted to `feature` lane. Promotion criteria below.
@@ -56,8 +87,9 @@ What this pool ADR commits to *now*:
 | 2 | **Bulk-backfill every artifact mechanically with placeholder section content** | Violates AGENTS.md PRIME DIRECTIVE 4 / DO IT RIGHT #2 ("no vibe coding"). Decomposition Scorecard requires the actual decomposition decision per ADR; OBPI brief Lane/Paths require what was true at authoring time. Mechanical placeholder = canon corruption. |
 | 3 | **Add explicit `schema-version:` frontmatter to grandfather pre-convention artifacts** | Adds a new schema field whose only purpose is exception-tracking. Trades 259 noisy errors for 259 frontmatter exemption markers — same problem, different surface. Acceptable only if paired with a deprecation timeline that retires the exemption. |
 | 4 | **Withdraw or archive the failing pre-release ADRs (most of the 200+ cohort)** | Many failing pre-release ADRs carry substantive design work the project still intends to land. Wholesale withdrawal is data loss; selective withdrawal is the right operator-driven decision but doesn't fit a single bulk operation. |
+| 5 | **Validator scope by `kind`: pool ADRs validate against a pool-shape contract (Intent / Target Scope / Non-Goals + reduced frontmatter); foundation / feature ADRs validate against the current full schema** | Net-new lens introduced 2026-05-24. **Distinct from Alt #1** — Alt #1 was "suppress real errors via authoring-date heuristic" (Layer-3 derived view, can't answer compliance question). Alt #5 is "apply the correct schema for the kind in the first place" (Layer-1 canon — pool ADRs have a documented, structurally-distinct shape contract per `## Notes` below and per `src/gzkit/schemas/adr.json:37`). Resolves Cohort C (1599 errors, 87.6%) without backfilling or grandfathering anything. Cohort A (226 errors) remains for Alt #2 / #3 / #4 decision. Reframes the question from "how do we forgive pool ADRs their missing sections?" to "why are we asking pool ADRs about sections they were never supposed to carry?". Trade-off: needs a published "pool ADR schema" JSON or equivalent contract — without that, the validator has no authoritative shape to check against, so this alternative ships paired with a pool-kind schema artifact, not as standalone scope logic. |
 
-The decision deferred to promotion is which combination of #2 (substantive per-artifact backfill), #3 (explicit grandfather frontmatter), and #4 (selective withdrawal) resolves the backlog, and what validator-scope semantics result.
+The decision deferred to promotion is which combination of #2 (substantive per-artifact backfill), #3 (explicit grandfather frontmatter), #4 (selective withdrawal), and #5 (validator scope by kind) resolves the backlog, and what validator-scope semantics result. Alt #5 resolves Cohort C; #2 / #3 / #4 resolve Cohort A.
 
 **Cohort B resolution (GHI #500, 2026-05-20).** GHI #500 resolved Cohort B by a fifth approach not in the table above: `--documents` delegates OBPI corpus validation to the dedicated version-aware `briefs` scope. This is **not** rejected Alternative #1 — it is not an authoring-date heuristic and produces no implicit grandfather semantics: OBPI compliance remains answerable via `gz validate --briefs` and `gz obpi validate --authored`. The deferred decision above now covers Cohort A only.
 
