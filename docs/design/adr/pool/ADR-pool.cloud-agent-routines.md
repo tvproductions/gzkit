@@ -1,16 +1,19 @@
 ---
 id: ADR-pool.cloud-agent-routines
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: lite
 enabler: null
+promoted_to: ADR-0.0.62-afk-diagnosis-cloud-routines
 ---
 
 # ADR-pool.cloud-agent-routines: Cloud Agent Routines for Governance Automation
+> Promoted to `ADR-0.0.62-afk-diagnosis-cloud-routines` on 2026-05-25. This pool file is retained as historical intake context.
+
 
 ## Status
 
-Pool
+Superseded
 
 ## Date
 
@@ -98,6 +101,29 @@ debt before it becomes architectural. Emit findings to insights or
 file as a GHI.
 
 ---
+
+## Proposed OBPI Decomposition
+
+Inaugural routine for promotion: **R-3 Trust Audit Suite** (parallels ADR-0.0.60's
+choice of `lane-latency` as inaugural surface). Framing refined at promotion
+time from "cloud agent routines for governance automation" to **"AFK-diagnosis
+via cloud routines"** — read-only / surface findings / never remediate. Architecture:
+pluggable `ROUTINE_REGISTRY` (content-addressable by `.gzkit/routines/<name>.yaml`);
+future routines (R-1, R-2, R-4, R-5, R-6) plug in via separate ADRs without
+restructuring this ADR.
+
+| # | Slug | Description | Lane |
+|---|------|-------------|------|
+| 01 | routine-models-registry-and-canonical-surface | Pydantic `Routine` models (`diagnosis_only: Literal[True]`) + `RoutineExecEvent` with `recorder_source` field + `.gzkit/routines/` canonical-surface class + `_classify_routine_file` + schema export + `ROUTINE_REGISTRY` loader. | heavy |
+| 02 | gz-routine-exec-with-enforcement | `gz routine exec <name>` CLI with subprocess wrapper whitelist (`gz validate`/`check`/`status`/`state`/`routine results`/`issue file` prefixes only); `GZKIT_ROUTINE_CONTEXT=1` env injection; `--json` emits one `RoutineExecEvent` line; new `forbid-routine-mutation` pre-commit hook (defense-in-depth). | heavy |
+| 03 | gz-routine-read-only-commands | `gz routine list`, `gz routine show <name>`, `gz routine validate <name>`; `RoutineListReport` + `RoutineSummary` models; read-only surface. | heavy |
+| 04 | gz-routine-deploy | `gz routine deploy <name>` generates Claude Code routine config to `.gzkit/routines/.deployed/`; prints operator-action handoff text; explicitly does NOT push to Anthropic infrastructure. | heavy |
+| 05 | gz-routine-reconcile-and-issue-idempotency | `gz routine reconcile [--apply] [--since] [--dry-run]` queries routine-finding GHIs, parses embedded `RoutineExecEvent`, dedups, appends with `local_reconciled_at`/`local_reconciled_by`; `gz issue file --idempotency-key` extension. | heavy |
+| 06 | gz-routine-results-and-status-integration | `gz routine results <name>` Layer-3 derived view + 30-day rollup; `gz status --table` "Most recent AFK-routine activity" line with STALE detection. | heavy |
+| 07 | trust-audit-suite-inaugural-routine | `.gzkit/routines/trust-audit-suite.yaml` (4 validator scopes) + headless-executability tests + GHI template tests + budget assertion. | heavy |
+| 08 | afk-routines-docs-and-attestation | Runbook section, manpages for 7 routine subcommands, threshold/cadence doc, Gate 4 BDD, Gate 5 attestation evidence bundle (incl. beta-tier-acceptance attestation). | heavy |
+
+OBPIs 02, 03, 04, 05 can execute in parallel once 01 lands. 06 gates on 05. 07 gates on 02. 08 closes the docs/attestation gates.
 
 ## Non-Goals
 
