@@ -8,6 +8,10 @@ description: Documentation-code covenant for Gate 5
 
 # Gate 5 Runbook-Code Covenant (gzkit)
 
+<!-- rule-version: 0.1.0 -->
+
+> **Rule version:** `0.1.0` — initial shape conformance pass; renamed prohibited heading (OBPI-0.0.54-04).
+
 Documentation is a first-class deliverable and must track behavior changes in the same patch set.
 
 ## Three-layer documentation model
@@ -32,7 +36,7 @@ uv run gz validate --documents --surfaces
 uv run mkdocs build --strict
 ```
 
-## Anti-patterns
+## Do Not
 
 - Do not leave placeholder output examples.
 - Do not update code without docs when command output changes.

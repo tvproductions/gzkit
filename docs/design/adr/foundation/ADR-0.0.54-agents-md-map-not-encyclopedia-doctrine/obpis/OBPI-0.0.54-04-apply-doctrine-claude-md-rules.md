@@ -3,7 +3,7 @@ id: OBPI-0.0.54-04-apply-doctrine-claude-md-rules
 parent: ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.54-04-apply-doctrine-claude-md-rules: Apply the Doctrine to CLAUDE.md and `.claude/rules/*.md`
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine/ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine.md`
 - **Checklist Item:** #4 — "OBPI-0.0.54-04: Apply doctrine to CLAUDE.md and `.claude/rules/*.md` + final budget amendments + runbook updates"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -190,13 +190,42 @@ grep -A2 "gz-context-diet" docs/user/runbook.md
 
 ### Key Proof
 
+
+```
+$ uv run gz validate --agents-md-map-conformance
+✓ All validations passed (1 scopes).
+
+$ uv run gz covers OBPI-0.0.54-04
+ADR-0.0.54  6  6  100.0%
+OBPI-0.0.54-04  6  6  100.0%
+Summary: 6/6 REQs covered (100.0%)
+
+$ uv run gz arb step --name unittest -- uv run -m unittest -q
+Ran 5571 tests in 56.522s — OK
+  receipt: arb-step-unittest-33ad353e8a024f09a131b5d2e438d85f
+
+$ uv run gz arb ruff && uv run gz arb typecheck && uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
+  receipts: arb-ruff-b22ae43f20284282bd260e985b9e0215, arb-step-typecheck-fa1445287ba4408a99151140f5450201, arb-step-mkdocs-99413b85062b4af6a29f05737282284b
+
+$ uv run gz validate --documents --surfaces --instructions-files-budget
+✓ All validations passed.
+```
+
+CLAUDE.md (1,443 chars) and all 20 canonical `.gzkit/rules/*.md` files now pass the map-not-encyclopedia shape contract (ADR-0.0.54). Tightened `.claude/rules/*.md` glob budget (16000→15000) holds against post-lift max (13,565 chars in skill-surface-sync.md → 1,435-char buffer). Cross-link to `agents-md-map-conformance` validator added to trust-doctrine promoted-scope table; recovery path `/gz-context-diet` documented in operator runbook § Recovery flows; map-not-encyclopedia named as resting state in governance runbook § Instruction Files.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `docs/governance/model-selection-rationale.md` (verbatim Rationale prose lifted from model-selection.md); `docs/governance/skill-surface-sync-rationale.md` (verbatim Rationale prose lifted from skill-surface-sync.md); `tests/governance/test_agents_md_map_doctrine_obpi04.py` (18 @covers tests covering 6/6 REQs)
+- Files modified: 6 canonical rule files under `.gzkit/rules/` — `models.md` (## Anti-Patterns → ## Do Not; rule-version 0.1.0 added), `gate5-runbook-code-covenant.md` (## Anti-patterns → ## Do Not; rule-version 0.1.0 added), `security-sensitivity.md` (## Anti-patterns → ## Do Not; rule-version 0.3.1→0.3.2), `complexity-doctrine.md` (## Corpus Anti-Patterns → ## Corpus Disqualifiers; rule-version 0.3.0→0.3.1), `model-selection.md` (## Anti-patterns → ## Do Not; ## Rationale lifted; rule-version 0.2.0→0.3.0), `skill-surface-sync.md` (## Anti-patterns → ## Do Not; ## Rationale lifted; rule-version 0.8.0→0.9.0)
+- Files modified (governance/data): `data/instructions_files_budget.json` (glob 16000→15000); `data/behave_coverage_waivers.json` (Gate 4 waiver entry per brief); `docs/user/runbook.md` (§ Recovery flows naming gz-context-diet); `docs/governance/governance_runbook.md` (## Instruction Files section); `docs/governance/trust-doctrine.md` (agents-md-map-conformance cross-linked in promoted-scope table)
+- Files modified (tests): 3 existing tests adjusted for new rule-version markers (`test_complexity_doctrine_rule.py`, `test_security_sensitivity_rule.py`, `test_citation.py`); 1 budget test adjusted (`test_agents_md_map_doctrine_obpi01.py` per-rule-file budget assertion: 16000→15000 with OBPI-04 attribution)
+- Mirrors regenerated: `.claude/rules/*.md` propagated via `uv run gz agent sync control-surfaces`
+- Tests added: 18 @covers tests in `test_agents_md_map_doctrine_obpi04.py` (6/6 REQs covered, 100%)
+- Date completed: 2026-05-26
+- Attestation status: Operator attested verbatim ("attest completed")
+- Defects noted: None
+- BDD waiver: added per brief Gate 4 (validator surface landed in OBPI-03; new BDD scenarios for content-shape assertions would be the categorical anti-pattern named in GHI #531)
 
 ## Tracked Defects
 
@@ -204,12 +233,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.54-04 ships map-not-encyclopedia doctrine to CLAUDE.md (clean audit, no edits) and all 20 .gzkit/rules/*.md files: 4 heading-only renames (models.md, gate5-runbook-code-covenant.md, security-sensitivity.md, complexity-doctrine.md), 2 Rationale lifts to expansion docs (model-selection.md→model-selection-rationale.md; skill-surface-sync.md→skill-surface-sync-rationale.md), glob budget tightened 16000→15000 (max file 13565, 1435 buffer), runbooks updated (gz-context-diet recovery + ## Instruction Files section), trust-doctrine cross-linked. 18 new @covers tests cover 6/6 REQs (100%); 5571/5571 unittest pass (receipt arb-step-unittest-33ad353e8a024f09a131b5d2e438d85f); lint clean (arb-ruff-b22ae43f20284282bd260e985b9e0215); typecheck clean (arb-step-typecheck-fa1445287ba4408a99151140f5450201); docs clean (arb-step-mkdocs-99413b85062b4af6a29f05737282284b); BDD waived per brief Gate 4 (validator surface landed in OBPI-03).
+- Date: 2026-05-26
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-05-26
 
 **Evidence Hash:** -

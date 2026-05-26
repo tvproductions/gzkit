@@ -933,6 +933,21 @@ with four traits and three anti-traits.
 
 ---
 
+## Instruction Files
+
+`AGENTS.md`, `CLAUDE.md`, and `.gzkit/rules/*.md` MUST conform to the map-not-encyclopedia shape contract (ADR-0.0.54). These files are maps of binding bullets, structured tables, and canonical links — not encyclopedias of rationale prose, worked examples, or anti-pattern catalogs.
+
+Shape enforcement: `uv run gz validate --agents-md-map-conformance`
+
+Recovery: `/gz-context-diet` (or `uv run gz chores show instructions-files-diet`) lifts prohibited shapes to `docs/governance/` expansion docs behind one-line pointers.
+
+Prohibited shapes in any instruction file:
+- Multi-paragraph rationale prose (paragraph > 5 lines without binding-bullet anchor)
+- Subsections titled "Anti-patterns", "Worked example", "Rationale", or "Why X is canon"
+- "Why X is canon" blockquote codas
+- Narrative pedagogical sections
+- Operative-claims expansions restating rules already stated as binding bullets
+
 ## Reference Links
 
 - [State Doctrine — Three-Layer Model and Authority Rules](state-doctrine.md)

@@ -5,9 +5,9 @@ applyTo: "src/gzkit/pipeline_runtime.py, .gzkit/skills/**/SKILL.md, .claude/agen
 
 # Model Selection (gzkit)
 
-<!-- rule-version: 0.2.0 -->
+<!-- rule-version: 0.3.0 -->
 
-> **Rule version:** `0.2.0` — skill `model:` frontmatter required + Literal-validated; all 67 skills declare tier (GHI #409).
+> **Rule version:** `0.3.0` — renamed prohibited headings; lifted Rationale to expansion doc (OBPI-0.0.54-04 shape conformance pass).
 
 ## Operative claims (binding)
 
@@ -61,7 +61,7 @@ Subagents use effort directives, not model names. The Agent tool maps effort →
 
 **Rule:** Prompt the subagent with the effort level needed to close the decision, not the effort level that would be "nice to have."
 
-## Anti-patterns
+## Do Not
 
 - Declaring `model: opus` for a read-only task (use Haiku)
 - Defaulting subagents to `effort: xhigh` when `effort: light` would suffice
@@ -69,12 +69,4 @@ Subagents use effort directives, not model names. The Agent tool maps effort →
 - Omitting the `model:` directive from a skill and inferring it at runtime
 - Using Sonnet as a "middle ground" between Haiku and Opus without naming what decision complexity requires it
 
-## Rationale
-
-At 20x max subscription and beyond, context and token budgets are real constraints. Model selection is not a comfort/speed optimization — it is a strategic resource allocation decision. A Haiku that closes its decision space is strictly better than an Opus doing the same work; an Opus that is necessary is worth the cost.
-
-Every decision made by a lower model frees tokens for a higher model to spend on work that genuinely needs it. The routing matrix names the decision complexity (what would make this task fail if assigned to a weaker model?) so that the choice is mechanical, not intuitive.
-
-**See also:**
-- `docs/governance/opus-tuning.md` — per-turn thinking and effort tuning within Opus
-- `docs/governance/agent-contract-rationale.md` — context and token economy rationale
+See [Model-Selection Rationale](../../docs/governance/model-selection-rationale.md) for context and token economy reasoning.

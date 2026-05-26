@@ -136,6 +136,7 @@ The following tests and validator scopes are the current implementation of this 
 | CLI verb → documentation | `gz validate --cli-alignment` (from `tests/governance/test_behave_cli_alignment.py`) | Stale `gz <verb>` in features, runbook, manpages |
 | ARB step → command provenance | `gz arb validate` (from `src/gzkit/arb/validator.py::CANONICAL_STEP_COMMANDS`) | Heavy-lane receipt measures the wrong scope |
 | Commit → governance intent | `gz validate --commit-trailers` (accepts `Task:` or `Ceremony:` trailer) | Code-touching commits with no governance anchor |
+| Instruction file → map-not-encyclopedia shape | `gz validate --agents-md-map-conformance` (from `src/gzkit/governance/trust_audits/agents_md_map_conformance.py`) | Rationale prose, anti-pattern sections, or pedagogy accreted into per-turn context files (ADR-0.0.54-03) |
 
 Each audit is fail-closed. Each one catches a specific trust-boundary violation. The pattern they collectively close is trust-chain poisoning.
 

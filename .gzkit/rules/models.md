@@ -5,7 +5,11 @@ paths:
 description: Pydantic data model policy
 ---
 
+<!-- rule-version: 0.1.0 -->
+
 # Data Model Policy (canonical)
+
+> **Rule version:** `0.1.0` — initial shape conformance pass; renamed prohibited heading (OBPI-0.0.54-04).
 
 - Use **Pydantic `BaseModel`** for all data models; no stdlib `dataclasses`.
 - Use `ConfigDict(frozen=True, extra="forbid")` for immutable models.
@@ -33,7 +37,7 @@ class WorldState(BaseModel):
     contract_hash: str | None = Field(None, description="Contract fingerprint hash")
 ```
 
-## Anti-Patterns (DO NOT USE)
+## Do Not
 
 - stdlib `dataclass` for governance data
 - Pydantic without `ConfigDict`

@@ -6,11 +6,11 @@ paths:
 description: Security-sensitivity third axis of attestation rigor (ADR-0.0.22).
 ---
 
-<!-- rule-version: 0.3.1 -->
+<!-- rule-version: 0.3.2 -->
 
 # Security Sensitivity (gzkit)
 
-> **Rule version:** `0.3.1` — drop dead `docs/design/adr/**/briefs/**` applyTo glob; the canonical directory is `obpis/` (briefs/ rename predates this rule). Reachability audit flagged the orphan pattern during the GHI #520 sweep.
+> **Rule version:** `0.3.2` — renamed prohibited `## Anti-patterns` heading → `## Do Not` (OBPI-0.0.54-04 shape conformance pass).
 
 ## Invariant
 
@@ -29,7 +29,7 @@ Security surfaces are named in [`data/security_surfaces.json`](../../data/securi
 
 `gz obpi complete` on a `sensitivity: security` brief fires an extended Gate 5 walkthrough: surface enumeration, `arb-step-security-scan-*` receipt confirmation, classification confirmation, and co-presence proxy gate. Scanner-unavailable is fail-closed (no degradation).
 
-## Anti-patterns
+## Do Not
 
 - Declaring `sensitivity: absent` while touching a registered surface
 - Editing `data/security_surfaces.json` without declaring `sensitivity: security`

@@ -150,10 +150,12 @@ class BudgetTightening(unittest.TestCase):
 
         globs = payload["globs"]
         rule_glob = next(g for g in globs if g["pattern"] == ".claude/rules/*.md")
+        # OBPI-0.0.54-04 tightened the rule-file glob from 16000 to 15000 after the
+        # diet pass measured the post-lift max at 13565 chars (skill-surface-sync.md).
         self.assertEqual(
             rule_glob["max_chars_per_file"],
-            16000,
-            "per-rule-file budget MUST remain 16000 chars (unchanged)",
+            15000,
+            "per-rule-file budget MUST be 15000 chars (tightened by OBPI-0.0.54-04)",
         )
 
 

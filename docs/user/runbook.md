@@ -903,6 +903,13 @@ See [`gz init`](manpages/init.md#rules-scaffolding) for rules scaffolding detail
 and [`.claude/rules/skill-surface-sync.md`](../../../.gzkit/rules/skill-surface-sync.md)
 for the "Edit `.gzkit/` first" editing invariant.
 
+### Recovery flows
+
+**Instruction-file shape drift** (`AGENTS.md`, `CLAUDE.md`, or `.gzkit/rules/*.md` violates map-not-encyclopedia doctrine):
+- Validator: `uv run gz validate --agents-md-map-conformance`
+- Recovery: run `/gz-context-diet` (or `uv run gz chores show instructions-files-diet`)
+  to lift inline rationale prose to `docs/governance/` behind one-line pointers.
+
 ---
 
 ## Chores Commands
