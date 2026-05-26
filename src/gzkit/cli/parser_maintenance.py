@@ -247,6 +247,19 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         default=False,
         help="Include doc-kind REQs (default: excluded — tests are for code)",
     )
+    p_covers.add_argument(
+        "--bypass-req-kind-discipline-once",
+        dest="bypass_req_kind_discipline_once",
+        action="store_true",
+        default=False,
+        help="Skip parity gate; emits bypass_used event (requires --bypass-reason)",
+    )
+    p_covers.add_argument(
+        "--bypass-reason",
+        dest="bypass_reason",
+        default=None,
+        help="Reason for bypass (required with --bypass-req-kind-discipline-once)",
+    )
     p_covers.set_defaults(
         func=lambda a: _lazy("covers_cmd")(
             target=a.target,
@@ -256,6 +269,8 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             test_dir=a.test_dir,
             features_dir=a.features_dir,
             include_doc=a.include_doc,
+            bypass_req_kind_discipline_once=a.bypass_req_kind_discipline_once,
+            bypass_reason=a.bypass_reason,
         )
     )
 

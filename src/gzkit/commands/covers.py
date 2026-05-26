@@ -11,6 +11,7 @@ plain output modes.
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -149,6 +150,24 @@ def _format_plain(report: CoverageReport) -> str:
     return "\n".join(lines)
 
 
+def _emit_bypass_ledger_event(project_root: Path, reason: str) -> None:
+    """Append a bypass_used ledger event for --bypass-req-kind-discipline-once."""
+    import datetime
+
+    from gzkit.config import load_config
+
+    config = load_config()
+    ledger_path = project_root / config.paths.ledger
+    event = {
+        "event": "bypass_used",
+        "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+        "scope": "gz-covers-req-kind-discipline",
+        "reason": reason,
+    }
+    with ledger_path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(event) + "\n")
+
+
 def covers_cmd(
     target: str | None = None,
     as_json: bool = False,
@@ -157,6 +176,8 @@ def covers_cmd(
     test_dir: str | None = None,
     features_dir: str | None = None,
     include_doc: bool = False,
+    bypass_req_kind_discipline_once: bool = False,
+    bypass_reason: str | None = None,
 ) -> None:
     """Report requirement coverage from @covers annotations and @REQ scenario tags.
 
@@ -168,7 +189,15 @@ def covers_cmd(
     ``include_doc=True`` surfaces doc-kind REQs in the report (governance
     graph completeness rather than test coverage). The default excludes
     them because tests are for code.
+
+    ``bypass_req_kind_discipline_once=True`` skips the three-channel
+    parity fail-close gate for this run and emits a ``bypass_used`` ledger
+    event.  ``bypass_reason`` is required when bypassing.
     """
+    if bypass_req_kind_discipline_once and not bypass_reason:
+        console.print("[red]--bypass-req-kind-discipline-once requires --bypass-reason[/red]")
+        sys.exit(1)
+
     project_root = get_project_root()
     briefs_dir = Path(adr_dir) if adr_dir else project_root / "docs" / "design" / "adr"
     tests_dir = Path(test_dir) if test_dir else project_root / "tests"
@@ -180,6 +209,22 @@ def covers_cmd(
 
     if target:
         report = _filter_report(report, target)
+
+    # Three-channel enrichment for OBPI-scoped targets
+    if target and target.upper().startswith("OBPI-"):
+        import contextlib
+
+        from gzkit.req_kind import compute_three_channel_coverage
+
+        cache_path = project_root / "data" / "req_kind_grandfathering.json"
+        cache: dict[str, str] = {}
+        if cache_path.exists():
+            with contextlib.suppress(json.JSONDecodeError, OSError):
+                cache = json.loads(cache_path.read_text(encoding="utf-8"))
+        report = compute_three_channel_coverage(report, discovered, grandfathering_cache=cache)
+
+    if bypass_req_kind_discipline_once and bypass_reason:
+        _emit_bypass_ledger_event(project_root, bypass_reason)
 
     if as_json:
         sys.stdout.write(report.model_dump_json(indent=2) + "\n")

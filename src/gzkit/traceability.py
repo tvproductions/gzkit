@@ -567,6 +567,20 @@ class CoverageEntry(BaseModel):
     covering_tests: list[str] = Field(
         default_factory=list, description="Qualified names of tests covering this REQ"
     )
+    taxonomy_kind: str | None = Field(
+        None, description="ADR-0.0.59 kind (BEHAVIOR/SUPPORT/STRUCTURAL-FENCE) or None"
+    )
+    proof_channel: str | None = Field(None, description="Proof channel for this REQ kind")
+    proof_status: str = Field(
+        "unknown",
+        description="pass/fail/advisory-support/grandfathered/inferred-*/unknown",
+    )
+    ledger_event_ids: list[str] = Field(
+        default_factory=list, description="Ledger event IDs for SUPPORT REQs (advisory)"
+    )
+    parent_adr_anchor: str | None = Field(
+        None, description="Parent ADR anchor for STRUCTURAL-FENCE REQs"
+    )
 
 
 class CoverageRollup(BaseModel):
@@ -577,8 +591,14 @@ class CoverageRollup(BaseModel):
     identifier: str = Field(..., description="ADR-X.Y.Z, OBPI-X.Y.Z-NN, or 'all'")
     total_reqs: int = Field(..., description="Total REQs at this level")
     covered_reqs: int = Field(..., description="REQs with at least one @covers")
-    uncovered_reqs: int = Field(..., description="REQs with no @covers")
+    uncovered_reqs: int = Field(..., description="REQs with no @covers (all kinds)")
     coverage_percent: float = Field(..., description="Covered / total * 100")
+    behavior_uncovered_reqs: int = Field(
+        0, description="BEHAVIOR-kind REQs without @covers (fail-close count)"
+    )
+    grandfathered_reqs: int = Field(
+        0, description="Advisory-only REQs (SUPPORT + STRUCTURAL-FENCE + inferred)"
+    )
 
 
 class CoverageReport(BaseModel):

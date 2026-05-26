@@ -36,6 +36,8 @@ Coverage reporting is informational and always exits with code 0.
 | `--test-dir DIR` | Override test directory (default: `tests`) |
 | `--features-dir DIR` | Override behave features directory (default: `features`); the scanner reads BDD scenario `@REQ-...` tags from this tree to mark requirements covered by behave alongside `@covers(REQ-...)` decorators in unit tests |
 | `--include-doc` | Include doc-kind REQs in the coverage scan (default: excluded — coverage reporting is for code REQs; doc REQs are tracked separately) |
+| `--bypass-req-kind-discipline-once` | Skip the three-channel parity fail-close gate for this run; emits a `bypass_used` ledger event. Requires `--bypass-reason`. |
+| `--bypass-reason REASON` | Mandatory reason string for `--bypass-req-kind-discipline-once` |
 
 ## Exit Codes
 

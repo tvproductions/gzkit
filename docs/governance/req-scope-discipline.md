@@ -225,6 +225,65 @@ invokes this validator. Failing briefs cause `gz check` to report failure.
 
 ---
 
+## Three-channel parity gate (`gz covers OBPI --json`)
+
+`gz covers OBPI-X.Y.Z-NN --json` runs the parity gate at Stage 3 Phase 1b of
+the OBPI pipeline. As of OBPI-0.0.59-03, the gate is three-channel-aware:
+
+### Per-REQ fields in JSON output
+
+When an OBPI-scoped target is supplied, each entry in `entries[]` gains:
+
+| Field | Description |
+|-------|-------------|
+| `taxonomy_kind` | `BEHAVIOR` / `SUPPORT` / `STRUCTURAL-FENCE` / `null` |
+| `proof_channel` | `TEST_COVERS` / `LEDGER_PLUS_VALIDATOR` / `PARENT_ADR_INVARIANT` |
+| `proof_status` | `pass` / `fail` / `advisory-support` / `grandfathered` / `inferred-*` |
+| `ledger_event_ids` | Event IDs (advisory; SUPPORT channel — deferred to future OBPI) |
+| `parent_adr_anchor` | Parent ADR invariant anchor (STRUCTURAL-FENCE channel) |
+
+### Rollup fields
+
+`summary` (and per-OBPI / per-ADR rollups) gain:
+
+| Field | Semantics |
+|-------|-----------|
+| `behavior_uncovered_reqs` | BEHAVIOR-kind REQs without `@covers` — the fail-close count |
+| `grandfathered_reqs` | Advisory-only REQs (SUPPORT + STRUCTURAL-FENCE + inferred) |
+| `uncovered_reqs` | Total uncovered across all kinds (unchanged for backward compat) |
+
+**Fail-close rule:** only `behavior_uncovered_reqs > 0` triggers a pipeline Stage
+3 Phase 1b failure. SUPPORT and STRUCTURAL-FENCE REQs are advisory at the OBPI
+layer; they are never fail-closed per-OBPI.
+
+### Grandfathering (legacy untagged REQs)
+
+Legacy briefs without `[kind]` tags receive a one-shot inference classification
+(`infer_req_kind`). The inferred kind is stored in `data/req_kind_grandfathering.json`
+for operator amendment. Inferred REQs carry `proof_status` of `inferred-behavior`,
+`inferred-support`, or `inferred-structural-fence` and are always advisory (never
+fail-closed), regardless of coverage state.
+
+### Emergency bypass (`--bypass-req-kind-discipline-once`)
+
+```bash
+gz covers OBPI-X.Y.Z-NN --json \
+  --bypass-req-kind-discipline-once \
+  --bypass-reason "unblocking CI: SUPPORT REQ ledger query deferred"
+```
+
+Skips the three-channel parity fail-close for the run and emits a `bypass_used`
+ledger event with the mandatory reason string. `--bypass-reason` is required.
+
+### SUPPORT advisory note
+
+SUPPORT proof-channel verification (ledger-event query at scan time) is advisory
+in the current implementation — `gz covers` cannot query live ledger events during
+a scan. SUPPORT REQs always receive `proof_status="advisory-support"`. Full
+ledger-event querying is deferred to a future OBPI.
+
+---
+
 ## Related artifacts
 
 - `ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine` — parent ADR; § Decision

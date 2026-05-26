@@ -85,6 +85,10 @@ class ReqEntity(BaseModel):
     status: ReqStatus = Field(..., description="Checked or unchecked in the brief")
     parent_obpi: str = Field(..., description="Parent OBPI reference (e.g. 'OBPI-0.15.0-03')")
     kind: ReqKind = Field(ReqKind.CODE, description="Code (testable) or doc (non-testable)")
+    taxonomy_kind: str | None = Field(
+        None,
+        description="ADR-0.0.59 taxonomy kind (BEHAVIOR/SUPPORT/STRUCTURAL-FENCE) from inline tag",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -221,6 +225,8 @@ def extract_reqs_from_brief(content: str, parent_obpi: str) -> list[ReqEntity]:
 
         status = ReqStatus.CHECKED if m.group("check").lower() == "x" else ReqStatus.UNCHECKED
         kind = ReqKind.DOC if m.group("kind") == "doc" else ReqKind.CODE
+        raw_taxonomy = m.group("taxonomy_kind")
+        taxonomy_kind = raw_taxonomy.upper() if raw_taxonomy else None
 
         reqs.append(
             ReqEntity(
@@ -229,6 +235,7 @@ def extract_reqs_from_brief(content: str, parent_obpi: str) -> list[ReqEntity]:
                 status=status,
                 parent_obpi=parent_obpi,
                 kind=kind,
+                taxonomy_kind=taxonomy_kind,
             )
         )
 

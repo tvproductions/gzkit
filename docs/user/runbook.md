@@ -674,6 +674,26 @@ After annotating, verify coverage improved:
 uv run gz covers OBPI-<X.Y.Z-NN>
 ```
 
+For three-channel enriched output (BEHAVIOR/SUPPORT/STRUCTURAL-FENCE per-REQ):
+
+```bash
+uv run gz covers OBPI-<X.Y.Z-NN> --json
+```
+
+The JSON output includes `taxonomy_kind`, `proof_channel`, `proof_status`,
+`behavior_uncovered_reqs`, and `grandfathered_reqs` fields per ADR-0.0.59-03.
+
+**Emergency bypass** (2am-operator forcing function — requires a reason):
+
+```bash
+uv run gz covers OBPI-<X.Y.Z-NN> --json \
+  --bypass-req-kind-discipline-once \
+  --bypass-reason "<mandatory reason string>"
+```
+
+Emits a `bypass_used` ledger event with the reason. `--bypass-reason` is required
+when `--bypass-req-kind-discipline-once` is set.
+
 ### Non-Python Tests
 
 Non-Python test stacks use comment-based annotations:
