@@ -3,7 +3,7 @@ id: OBPI-0.0.54-03-agents-md-map-conformance-validator
 parent: ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.54-03-agents-md-map-conformance-validator: Ship the `gz validate --agents-md-map-conformance` Validator
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine/ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine.md`
 - **Checklist Item:** #3 — "OBPI-0.0.54-03: Ship `gz validate --agents-md-map-conformance` validator + tests + `gz check` integration + manpage"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -201,15 +201,22 @@ uv run gz check
 
 ### Value Narrative
 
+Unlocks the AGENTS.md map-not-encyclopedia doctrine with mechanical enforcement (`gz validate --agents-md-map-conformance` + `gz check` step). Side-effect: the schema-enum lifecycle-vocabulary sync exposed a corpus-wide documents-validator drift (1825 → 1643 errors after enum fix, with pool ADRs cascading through to required_headers checks); narrow lifecycle-aware + kind-aware guards in `src/gzkit/validate_pkg/document.py` landed under GHI #480 as coupled-surface coherence, repairing the trust-doctrine T1 violation (canonical schema retroactively binding pre-attestation provenance) while preserving the pool ADR's eventual Alt #5 destination work in `ADR-pool.validate-documents-backfill`. Move 3 of `docs/governance/get-out-of-jail-plan-2026-05-23.md` closes; the recovery plan's ordering survives intact.
+
 ### Key Proof
+
+
+gz validate --documents 1643 -> 0 errors. ARB receipts arb-ruff-3806b0bd1f3d46d18dae452e70ab57ca, arb-step-typecheck-9b315cacd67c40c09c33562f791cf4eb, arb-step-unittest-c66b4ec49de34e97a1edc9710676a963, arb-step-mkdocs-203985ef001c43fbad61ae6ea87fa116, arb-step-behave-8581ddbcb2f94855be5f2a3ccd3e6331 all PASS. 5553/5553 full unittest suite GREEN. gz obpi precomplete: 7/7 preconditions met.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files: src/gzkit/governance/trust_audits/agents_md_map_conformance.py (validator); src/gzkit/validate_pkg/document.py (narrow guards under GHI #480); src/gzkit/schemas/adr.json + src/gzkit/core/models.py (enum sync); src/gzkit/templates/agents.md + AGENTS.md byte-parity (template lift); data/instructions_files_budget.json (15k -> 32k); docs/user/manpages/validate.md (manpage); CLI wiring in parser_maintenance + validate_cmd + quality; bounded ADR-0.0.1 authoring (Decomposition Scorecard + Checklist + Evidence)
+- Tests: 13 unittest in tests/governance/test_agents_md_map_conformance.py + 7 narrow-guard in tests/test_validate.py + 2 behave scenarios + 4 waivers
+- Verification: gz validate --documents 1643 -> 0; 11 Stage 3 ARB receipts PASS; 5553/5553 full unittest suite GREEN; gz obpi precomplete 7/7
+- Date completed: 2026-05-25
+- Attestation: Operator-attested verbatim attest completed
+- Defects: GHI #480 OPEN with Route X comment; GHI #533 (5k budget target)
 
 ## Tracked Defects
 
@@ -217,12 +224,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed -- OBPI-0.0.54-03 ships the AGENTS.md map-not-encyclopedia validator (table-shape categorical fix; two-layer audit: template shape a/b/c + rendered budget d); schema-enum lifecycle-vocabulary sync (Nygard-legacy 5-state -> canonical 9-state); AGENTS.md budget retarget 15k -> 32k (GHI #533 / ADR-0.0.37 dependency); narrow lifecycle-aware + kind-aware guards in src/gzkit/validate_pkg/document.py landed under GHI #480 (Alt #5 preserved); ADR-0.0.1 bounded authoring absorbed under PRIME DIRECTIVE Rule 4. Verification receipts: arb-ruff-3806b0bd1f3d46d18dae452e70ab57ca, arb-step-typecheck-9b315cacd67c40c09c33562f791cf4eb, arb-step-unittest-c66b4ec49de34e97a1edc9710676a963, arb-step-mkdocs-203985ef001c43fbad61ae6ea87fa116, arb-step-behave-8581ddbcb2f94855be5f2a3ccd3e6331. gz validate --documents 1643 -> 0; gz obpi precomplete 7/7; 5553/5553 full unittest suite GREEN.
+- Date: 2026-05-26
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-05-26
 
 **Evidence Hash:** -

@@ -60,30 +60,38 @@ STOP / BLOCKERS:
 
 ---
 
-## Feature Checklist — Appraisal of Completeness
+## Decomposition Scorecard
 
-Each item below is an **execution authorization** and MUST decompose into exactly
+- Data/State: 1
+- Logic/Engine: 2
+- Interface: 2
+- Observability: 1
+- Lineage: 2
+- Dimension Total: 8
+- Baseline Range: 4-4
+- Baseline Selected: 4
+- Split Single-Narrative: 1
+- Split Surface Boundary: 1
+- Split State Anchor: 1
+- Split Testability Ceiling: 1
+- Split Total: 4
+- Final Target OBPI Count: 8
+
+---
+
+## Checklist
+
+Each item below is an **execution authorization** and decomposes into exactly
 one OBPI. Order is intentional.
 
-### Canon & Source of Truth
-
-1. Designate AirlineOps as the canonical GovZero implementation.
-2. Freeze canonical governance artifacts as non-reinterpretible inputs.
-
-### OBPI System Parity
-
-3. Establish canonical Agent Brief structure parity with AirlineOps.
-4. Enforce OBPI ⇄ ADR source-of-truth and drift-detection semantics.
-
-### Discovery & Verification Machinery
-
-5. Introduce a discovery-index control surface equivalent to AirlineOps.
-6. Enforce ADR → tests traceability semantics for Gate 2.
-
-### Lane & Gate Semantics
-
-7. Encode lane-correct gate semantics for Foundational, Lite, and Heavy lanes.
-8. Prohibit non-canonical or generic governance abstractions in `gzkit`.
+- [ ] OBPI-0.0.1-01: Designate AirlineOps as the canonical GovZero implementation.
+- [ ] OBPI-0.0.1-02: Freeze canonical governance artifacts as non-reinterpretible inputs.
+- [ ] OBPI-0.0.1-03: Establish canonical Agent Brief structure parity with AirlineOps.
+- [ ] OBPI-0.0.1-04: Enforce OBPI ⇄ ADR source-of-truth and drift-detection semantics.
+- [ ] OBPI-0.0.1-05: Introduce a discovery-index control surface equivalent to AirlineOps.
+- [ ] OBPI-0.0.1-06: Enforce ADR → tests traceability semantics for Gate 2.
+- [ ] OBPI-0.0.1-07: Encode lane-correct gate semantics for Foundational, Lite, and Heavy lanes.
+- [ ] OBPI-0.0.1-08: Prohibit non-canonical or generic governance abstractions in `gzkit`.
 
 ---
 
@@ -172,7 +180,7 @@ These tradeoffs are intentional.
 
 ---
 
-## Evidence (Foundational Gates)
+## Evidence
 
 - **Gate 1 (ADR):** This document records intent and constraints.
 - **Gate 3 (Docs):** Canon and constraints are explicitly documented.

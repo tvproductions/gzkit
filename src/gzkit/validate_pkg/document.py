@@ -12,6 +12,32 @@ from gzkit.core.validation_rules import (
 from gzkit.decomposition import parse_checklist_items, parse_scorecard
 from gzkit.schemas import load_schema
 
+# ADR lifecycle states that are grandfather-exempted from the
+# ``required_headers`` and decomposition scorecard checks. Mirror of the
+# lifecycle-aware precedent at
+# ``src/gzkit/governance/trust_audits/briefs.py`` (``_BDD_GATED_BRIEF_STATUSES``)
+# with inverted polarity: ``behave_req_tags`` fires only on Completed/
+# Validated briefs; ``required_headers`` *skips* only on Completed/Validated
+# ADRs, because post-Accepted artifacts had their shape locked at authoring
+# and attestation time. Retroactively binding new section requirements is a
+# trust-doctrine T1 violation -- the canonical schema does not bind the
+# canonical provenance of what Validated artifacts actually carry. Narrow
+# guard landed in OBPI-0.0.54-03 under GHI #480 as coupled-surface coherence
+# under the schema-enum fix; full kind-aware schema split is the eventual
+# disposition under ``ADR-pool.validate-documents-backfill`` (Alt #5).
+_ADR_GRANDFATHERED_STATUSES = frozenset({"completed", "validated"})
+
+# Filename-stem prefix identifying a pool ADR. Pool ADRs carry a structurally
+# distinct shape contract (Intent / Target Scope / Non-Goals plus optional
+# Decision / Alternatives / Promotion Criteria per AGENTS.md s Kinds; pool
+# ADRs have no ``kind:`` or ``semver:`` frontmatter per
+# ``src/gzkit/schemas/adr.json``). Applying the foundation/feature adr schema
+# to them is the "validator scope mismatch" named in GHI #480 reopen comment.
+# This narrow kind-aware skip is the minimum trust-doctrine repair to unblock
+# OBPI-0.0.54-03 Stage 3 verify; full pool-shape validation is the pool ADR's
+# eventual destination work.
+_POOL_ADR_STEM_PREFIX = "ADR-pool."
+
 
 def validate_frontmatter(
     frontmatter: dict[str, Any],
@@ -250,13 +276,40 @@ def validate_document(path: Path, schema_name: str) -> list[ValidationError]:
     if not frontmatter:
         return []
 
+    # Kind-aware pool ADR skip (GHI #480). Pool ADRs are structurally distinct
+    # from foundation/feature ADRs and the current adr schema does not encode
+    # their shape contract; full disposition is the pool ADR's Alt #5 work.
+    if schema_name == "adr" and path.stem.startswith(_POOL_ADR_STEM_PREFIX):
+        return []
+
     headers = extract_headers(body)
 
-    errors.extend(validate_frontmatter(frontmatter, schema, str(path)))
-    errors.extend(validate_headers(headers, schema, str(path)))
+    # Lifecycle-aware grandfather skip (GHI #480). Validated/Completed ADRs
+    # had their shape locked at authoring/attestation time; do not retroactively
+    # bind them to required_headers, decomposition, or missing-required-field
+    # checks added after their closeout. Pattern/enum/type checks on present
+    # fields continue to fire (those are mechanical invariants, not authoring-
+    # era shape requirements).
+    is_grandfathered_adr = (
+        schema_name == "adr"
+        and str(frontmatter.get("status", "")).lower() in _ADR_GRANDFATHERED_STATUSES
+    )
+
+    frontmatter_errors = validate_frontmatter(frontmatter, schema, str(path))
+    if is_grandfathered_adr:
+        frontmatter_errors = [
+            err
+            for err in frontmatter_errors
+            if not err.message.startswith("Missing required frontmatter field")
+        ]
+    errors.extend(frontmatter_errors)
+
+    if not is_grandfathered_adr:
+        errors.extend(validate_headers(headers, schema, str(path)))
+        if schema_name == "adr":
+            errors.extend(_validate_adr_decomposition(body, str(path)))
+
     if schema_name == "obpi":
         errors.extend(_validate_obpi_id_matches_stem(frontmatter, path))
-    if schema_name == "adr":
-        errors.extend(_validate_adr_decomposition(body, str(path)))
 
     return errors

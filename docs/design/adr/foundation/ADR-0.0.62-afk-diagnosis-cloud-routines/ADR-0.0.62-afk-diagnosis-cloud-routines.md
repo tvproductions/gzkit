@@ -3,7 +3,7 @@ id: ADR-0.0.62-afk-diagnosis-cloud-routines
 status: Draft
 kind: foundation
 semver: 0.0.62
-lane: heavy
+lane: lite
 parent: PRD-GZKIT-1.0.0
 date: 2026-05-25
 promoted_from: ADR-pool.cloud-agent-routines

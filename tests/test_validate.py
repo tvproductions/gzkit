@@ -296,6 +296,215 @@ Content but missing Decision section.
             self.assertTrue(any(e.field == "Decision" for e in errors))
 
 
+class TestValidateDocumentNarrowGuards(unittest.TestCase):
+    """Narrow scope guards on ADR validation (GHI #480; OBPI-0.0.54-03).
+
+    Two coupled-surface coherence guards landed under the schema-enum fix:
+
+    1. Kind-aware pool ADR skip -- pool ADRs carry a structurally distinct
+       shape contract; applying the foundation/feature adr schema to them is
+       the "validator scope mismatch" named in GHI #480 reopen comment.
+    2. Lifecycle-aware grandfather skip -- ADRs in ``status: Validated`` or
+       ``Completed`` had their shape locked at authoring/attestation time;
+       retroactively binding new required sections is a trust-doctrine T1
+       violation. Mirror of the lifecycle-aware precedent at
+       ``trust_audits/briefs.py:_BDD_GATED_BRIEF_STATUSES`` with inverted
+       polarity.
+    """
+
+    def _write_adr(self, dir_path: Path, stem: str, content: str) -> Path:
+        path = dir_path / f"{stem}.md"
+        path.write_text(content, encoding="utf-8")
+        return path
+
+    def test_pool_adr_stem_skips_all_adr_schema_validation(self) -> None:
+        """Pool ADRs (stem ``ADR-pool.*``) bypass adr-schema validation entirely.
+
+        Asserts the kind-aware guard returns ``[]`` for a pool ADR file
+        whose frontmatter and body deliberately omit the foundation/feature
+        required fields and sections. Pool ADRs by Layer-1-canon contract
+        carry only Intent / Target Scope / Non-Goals; the foundation schema
+        is the wrong instrument for them.
+        """
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = self._write_adr(
+                Path(temp_dir),
+                "ADR-pool.test-skip-scope",
+                "---\n"
+                "id: ADR-pool.test-skip-scope\n"
+                "status: Pool\n"
+                "---\n\n"
+                "# ADR-pool.test-skip-scope: Test\n\n"
+                "## Intent\n\nPool placeholder.\n",
+            )
+            errors = validate_document(path, "adr")
+            self.assertEqual(errors, [])
+
+    def test_validated_adr_skips_required_sections(self) -> None:
+        """``status: Validated`` ADRs are exempt from required_headers enforcement.
+
+        Trust-doctrine T1: Validated artifacts had their shape locked at
+        attestation time and the canonical schema does not retroactively
+        bind canonical provenance.
+        """
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".md", delete=False, encoding="utf-8"
+        ) as f:
+            f.write(
+                "---\n"
+                "id: ADR-0.1.0\n"
+                "status: Validated\n"
+                "semver: 0.1.0\n"
+                "lane: lite\n"
+                "parent: OBPI-core\n"
+                "date: 2026-01-01\n"
+                "---\n\n"
+                "# Title\n\n"
+                "## Intent\n\n"
+                "Body but missing Decision, Consequences, Decomposition Scorecard, etc.\n"
+            )
+            f.flush()
+            errors = validate_document(Path(f.name), "adr")
+            section_errors = [e for e in errors if e.type == "header"]
+            decomposition_errors = [e for e in errors if e.type == "decomposition"]
+            self.assertEqual(section_errors, [])
+            self.assertEqual(decomposition_errors, [])
+
+    def test_completed_adr_skips_required_sections(self) -> None:
+        """``status: Completed`` ADRs are exempt from required_headers enforcement.
+
+        Completed is a post-Accepted lifecycle state; same trust-doctrine
+        argument as Validated.
+        """
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".md", delete=False, encoding="utf-8"
+        ) as f:
+            f.write(
+                "---\n"
+                "id: ADR-0.1.0\n"
+                "status: Completed\n"
+                "semver: 0.1.0\n"
+                "lane: lite\n"
+                "parent: OBPI-core\n"
+                "date: 2026-01-01\n"
+                "---\n\n"
+                "# Title\n\n"
+                "## Intent\n\nBody without Decomposition Scorecard.\n"
+            )
+            f.flush()
+            errors = validate_document(Path(f.name), "adr")
+            section_errors = [e for e in errors if e.type == "header"]
+            self.assertEqual(section_errors, [])
+
+    def test_validated_adr_keeps_enum_and_pattern_frontmatter_checks(self) -> None:
+        """Lifecycle skip preserves mechanical-invariant frontmatter checks.
+
+        Missing-required-field checks are grandfathered along with
+        required_headers (same trust-doctrine T1 argument across both axes).
+        Enum, pattern, and type checks continue to fire because they are
+        mechanical invariants on values that ARE present, not authoring-era
+        shape requirements.
+        """
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".md", delete=False, encoding="utf-8"
+        ) as f:
+            f.write(
+                "---\n"
+                "id: ADR-0.1.0\n"
+                "status: Validated\n"
+                "semver: 0.1.0\n"
+                "lane: bogus-lane-value\n"
+                "parent: OBPI-core\n"
+                "date: 2026-01-01\n"
+                "---\n\n"
+                "# Title\n\n"
+                "## Intent\n\nBody.\n"
+            )
+            f.flush()
+            errors = validate_document(Path(f.name), "adr")
+            self.assertTrue(any(e.field == "lane" for e in errors))
+
+    def test_validated_adr_skips_missing_required_frontmatter_field(self) -> None:
+        """``status: Validated`` ADRs are exempt from missing-required-field checks.
+
+        Same trust-doctrine T1 argument as required_headers: the schema
+        cannot retroactively require frontmatter fields that did not exist
+        in the schema at attestation time. Symmetric coverage with the
+        sections grandfather.
+        """
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".md", delete=False, encoding="utf-8"
+        ) as f:
+            f.write(
+                "---\n"
+                "id: ADR-0.1.0\n"
+                "status: Validated\n"
+                "semver: 0.1.0\n"
+                "lane: lite\n"
+                "parent: OBPI-core\n"
+                "---\n\n"
+                "# Title\n\n"
+                "## Intent\n\nBody but missing date frontmatter.\n"
+            )
+            f.flush()
+            errors = validate_document(Path(f.name), "adr")
+            missing_field_errors = [
+                e for e in errors if e.message.startswith("Missing required frontmatter field")
+            ]
+            self.assertEqual(missing_field_errors, [])
+
+    def test_draft_adr_still_requires_sections(self) -> None:
+        """Regression invariant: pre-Accepted ADRs are NOT grandfathered.
+
+        Only ``Validated`` and ``Completed`` are grandfather-exempt. Draft,
+        Proposed, Accepted, etc. continue to receive the full ``required_headers``
+        enforcement so in-flight authoring catches missing sections.
+        """
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".md", delete=False, encoding="utf-8"
+        ) as f:
+            f.write(
+                "---\n"
+                "id: ADR-0.1.0\n"
+                "status: Draft\n"
+                "semver: 0.1.0\n"
+                "lane: lite\n"
+                "parent: OBPI-core\n"
+                "date: 2026-01-01\n"
+                "---\n\n"
+                "# Title\n\n"
+                "## Intent\n\nBody but missing Decision.\n"
+            )
+            f.flush()
+            errors = validate_document(Path(f.name), "adr")
+            self.assertTrue(any(e.field == "Decision" for e in errors))
+
+    def test_accepted_adr_still_requires_sections(self) -> None:
+        """Accepted is pre-Validated; not grandfathered.
+
+        Grandfather threshold is post-Accepted (Validated/Completed). Accepted
+        ADRs are still in their authoring window and must satisfy current shape.
+        """
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".md", delete=False, encoding="utf-8"
+        ) as f:
+            f.write(
+                "---\n"
+                "id: ADR-0.1.0\n"
+                "status: Accepted\n"
+                "semver: 0.1.0\n"
+                "lane: lite\n"
+                "parent: OBPI-core\n"
+                "date: 2026-01-01\n"
+                "---\n\n"
+                "# Title\n\n"
+                "## Intent\n\nBody but missing Decision.\n"
+            )
+            f.flush()
+            errors = validate_document(Path(f.name), "adr")
+            self.assertTrue(any(e.field == "Decision" for e in errors))
+
+
 class TestValidateManifest(unittest.TestCase):
     """Tests for manifest validation."""
 
