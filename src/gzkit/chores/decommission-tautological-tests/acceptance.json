@@ -1,0 +1,19 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run gz validate --tautological-test-audit",
+      "expected": 0
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run gz validate --chores-layout",
+      "expected": 0
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run -m unittest tests/governance/test_tautological_tests.py -q",
+      "expected": 0
+    }
+  ]
+}

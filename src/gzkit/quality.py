@@ -677,6 +677,17 @@ def run_orientation_freshness_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --orientation-freshness", cwd=project_root)
 
 
+def run_tautological_test_audit(project_root: Path) -> QualityResult:
+    """Run the tautological-test drift gate (OBPI-0.0.59-04).
+
+    Fails closed (exit 3) when the current count of filesystem-op+assertion
+    co-occurrences in tests/** exceeds baseline + waivers count.
+    Recovery: update data/tautological_test_baseline.json or add waivers to
+    data/tautological_test_waivers.json with rationale-key entries.
+    """
+    return run_command("uv run gz validate --tautological-test-audit", cwd=project_root)
+
+
 def run_surface_fidelity_audit(project_root: Path) -> QualityResult:
     """Run the ADR-0.0.33-05 surface-fidelity composite (all four invariants).
 

@@ -667,6 +667,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Fail closed (exit 3) on OBPI briefs with missing [kind] tags (ADR-0.0.59-02).",
     )
     p_validate.add_argument(
+        "--tautological-test-audit",
+        dest="check_tautological_test_audit",
+        action="store_true",
+        default=False,
+        help="Fail closed (exit 3) when tautological-test count drifts (OBPI-0.0.59-04).",
+    )
+    p_validate.add_argument(
         "--regenerate",
         dest="check_distribution_regenerate",
         action="store_true",
@@ -749,6 +756,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_brief_reconcile=a.check_brief_reconcile,
             check_router_tables=a.check_router_tables,
             check_req_kind_discipline=a.check_req_kind_discipline,
+            check_tautological_test_audit=a.check_tautological_test_audit,
             check_distribution=a.check_distribution,
             check_distribution_regenerate=a.check_distribution_regenerate,
             check_bullet_retention=a.check_bullet_retention,

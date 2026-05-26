@@ -407,6 +407,15 @@ class CompositionDriftDetectedEvent(_EventBase):
     render_ts: str
 
 
+class ChoreDecommissionProcessedEvent(_EventBase):
+    """chore_decommission_processed event — file processed by the tautological-tests chore."""
+
+    event: Literal["chore_decommission_processed"]
+    file_path: str
+    disposition: str
+    obpi_id: str
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -440,7 +449,8 @@ TypedLedgerEvent = Annotated[
     | IntrinsicComplexityAttestationEvent
     | DistributionBaselineRegeneratedEvent
     | CompositionRenderedEvent
-    | CompositionDriftDetectedEvent,
+    | CompositionDriftDetectedEvent
+    | ChoreDecommissionProcessedEvent,
     Field(discriminator="event"),
 ]
 

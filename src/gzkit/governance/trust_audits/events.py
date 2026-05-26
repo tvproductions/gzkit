@@ -92,6 +92,11 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "Layer-2 witness for detected drift between rendered registry and committed target; "
         "consumed by drift validator and governance audit tooling, not the artifact graph."
     ),
+    "chore_decommission_processed": (
+        "Operator-paced chore-processing record (OBPI-0.0.59-04). "
+        "Layer-2 witness for each file processed by the decommission-tautological-tests chore; "
+        "consumed by chore audit tooling, not the artifact graph."
+    ),
 }
 
 _VALIDATOR_FIELD_WAIVERS: dict[str, str] = {}

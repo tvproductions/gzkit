@@ -400,6 +400,14 @@
         "crossing_band": { "type": "string", "enum": ["block", "warn", "advise"] },
         "crossing_value": { "type": "number" }
       }
+    },
+    "chore_decommission_processed": {
+      "required": ["file_path", "disposition", "obpi_id"],
+      "properties": {
+        "file_path": { "type": "string", "min_length": 1 },
+        "disposition": { "type": "string", "enum": ["convert", "replace-with-ledger", "fold-to-validator", "keep-as-fixture"] },
+        "obpi_id": { "type": "string", "min_length": 1 }
+      }
     }
   }
 }

@@ -1,0 +1,9 @@
+{
+  "obpi_id": "OBPI-0.0.59-04-decommission-tautological-tests-chore",
+  "timestamp": "2026-05-26T11:32:15.000000+00:00",
+  "verdict": "PASS",
+  "plan_file": "decommission-tautological-tests-chore-OBPI-0.0.59-04.md",
+  "gaps_found": 0,
+  "gaps": [],
+  "override_reason": "CLI FAIL was 11 green-field new files (new infrastructure OBPI — AST scanner, Pydantic models, data state files, chore dirs, test file). Parent directories confirmed on disk. ADR-OBPI alignment confirmed PASS via manual audit: all 11 REQs trace to ADR-0.0.59 Decision item 4, no scope creep or gaps. Scope collisions advisory (55 completed sibling OBPIs, no active locks). Plan authored: decommission-tautological-tests-chore-OBPI-0.0.59-04.md."
+}

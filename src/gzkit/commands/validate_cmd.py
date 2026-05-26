@@ -522,6 +522,19 @@ def _validate_req_kind_discipline_for_brief(
     return errors
 
 
+def _validate_tautological_test_audit(project_root: Path) -> list[ValidationError]:
+    """Validate tautological-test drift gate (OBPI-0.0.59-04).
+
+    Rules:
+    - current count > baseline + waivers → fail (exit 3)
+    - current count <= baseline + waivers → pass
+    Waivers file path is self-exempt from the scan (circular-dependency analysis).
+    """
+    from gzkit.tautological_tests import audit_drift  # noqa: PLC0415
+
+    return audit_drift(project_root)
+
+
 def _validate_req_kind_discipline(project_root: Path) -> list[ValidationError]:
     """Validate that OBPI brief acceptance-criteria REQs carry [kind] tags (ADR-0.0.59-02).
 
@@ -671,6 +684,7 @@ def _collect_errors(
     check_brief_reconcile: bool = False,
     check_router_tables: bool = False,
     check_req_kind_discipline: bool = False,
+    check_tautological_test_audit: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -739,6 +753,7 @@ def _collect_errors(
         "brief_reconcile": check_brief_reconcile,
         "router_tables": check_router_tables,
         "req_kind_discipline": check_req_kind_discipline,
+        "tautological_test_audit": check_tautological_test_audit,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
@@ -849,6 +864,7 @@ def _explicit_scope_runners(
         "brief_reconcile": lambda: trust_audits.validate_brief_reconcile(project_root),
         "router_tables": lambda: trust_audits.audit_router_tables(project_root),
         "req_kind_discipline": lambda: _validate_req_kind_discipline(project_root),
+        "tautological_test_audit": lambda: _validate_tautological_test_audit(project_root),
     }
 
 
@@ -1323,6 +1339,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "brief_reconcile",
         "router_tables",
         "req_kind_discipline",
+        "tautological_test_audit",
     ]
 
     run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
@@ -1362,6 +1379,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "brief_reconcile",
         "router_tables",
         "req_kind_discipline",
+        "tautological_test_audit",
     }
 )
 
@@ -1610,6 +1628,7 @@ def validate(
     check_brief_reconcile: bool = False,
     check_router_tables: bool = False,
     check_req_kind_discipline: bool = False,
+    check_tautological_test_audit: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1689,6 +1708,7 @@ def validate(
             check_brief_reconcile,
             check_router_tables,
             check_req_kind_discipline,
+            check_tautological_test_audit,
         ]
     )
     if _dispatch_early_return_scopes(
@@ -1770,6 +1790,7 @@ def validate(
         check_brief_reconcile=check_brief_reconcile,
         check_router_tables=check_router_tables,
         check_req_kind_discipline=check_req_kind_discipline,
+        check_tautological_test_audit=check_tautological_test_audit,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -1852,6 +1873,8 @@ def validate(
         "invariant_coherence": check_invariant_coherence,
         "brief_reconcile": check_brief_reconcile,
         "router_tables": check_router_tables,
+        "req_kind_discipline": check_req_kind_discipline,
+        "tautological_test_audit": check_tautological_test_audit,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]

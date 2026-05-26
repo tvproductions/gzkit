@@ -506,6 +506,23 @@ def composition_drift_detected_event(
     )
 
 
+def chore_decommission_processed_event(
+    file_path: str,
+    disposition: str,
+    obpi_id: str,
+) -> LedgerEvent:
+    """Create a chore_decommission_processed event (OBPI-0.0.59-04)."""
+    return LedgerEvent(
+        event="chore_decommission_processed",
+        id=file_path,
+        extra={
+            "file_path": file_path,
+            "disposition": disposition,
+            "obpi_id": obpi_id,
+        },
+    )
+
+
 def intrinsic_complexity_attestation_event(
     *,
     file_path: str,

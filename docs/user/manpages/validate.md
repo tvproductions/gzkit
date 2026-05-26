@@ -15,7 +15,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
             [--advisor-proof-binding] [--vendor-manifest]
             [--invariant-coherence] [--brief-reconcile] [--router-tables]
-            [--kind-invariance] [--req-kind-discipline]
+            [--kind-invariance] [--req-kind-discipline] [--tautological-test-audit]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
 ```
 
@@ -1061,6 +1061,65 @@ gz validate --req-kind-discipline
 **Related:** ADR-0.0.59 / OBPI-0.0.59-02 (req-kind-discipline validator).
 See `docs/governance/req-scope-discipline.md` for the full three-kind taxonomy doctrine.
 
+### `--tautological-test-audit`
+
+Enforces the ADR-0.0.59-04 tautological-test drift gate: the count of filesystem-shaped
+operations co-occurring with assertions in `tests/**` must not exceed the baselined count
+plus waived count. Fails closed (exit 3) when drift is detected.
+
+**Drift gate formula:** `current_count > baseline_count + waived_count` → exit 3.
+
+**Scope semantics:**
+
+- Scanner walks all `.py` files under `tests/**` via AST.
+- A _tautological test operation_ is a co-occurrence of a filesystem-shaped op
+  (`open()`, `Path.read_text()`, `os.path.*`, etc.) and an assertion statement
+  (`self.assert*` or bare `assert`) within the same function body.
+- Baseline is persisted at `data/tautological_test_baseline.json`.
+- Waivers are persisted at `data/tautological_test_waivers.json` (rationale-key indirection).
+- The waivers file itself is unconditionally excluded from the scan (hardcoded
+  self-exemption — the file that governs exemptions cannot be subject to the gate it governs).
+
+**Usage:**
+
+```bash
+gz validate --tautological-test-audit
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Current count ≤ baseline + waivers | — |
+| 3 | Current count > baseline + waivers (drift detected) | Apply a disposition from the scan output, update baseline via the chore workflow, or add a waiver entry with rationale key |
+
+**Waiver file (`data/tautological_test_waivers.json`):**
+
+```json
+{
+  "default_rationale": {
+    "my-rationale-key": "Explanation of why this file is exempt"
+  },
+  "file_waivers": {
+    "tests/path/to/test_file.py": ["my-rationale-key"]
+  }
+}
+```
+
+Each entry in `file_waivers[file_path]` represents one waived operation for that file.
+
+**Proposing dispositions:** The scanner emits one of four suggested dispositions per operation:
+
+| Disposition | Meaning |
+|-------------|---------|
+| `convert` | Rewrite as a behavior test (inject state, assert on extracted value) |
+| `replace-with-ledger` | Use ledger queries or `gz adr emit-receipt` instead of reading files |
+| `fold-to-validator` | Delegate to `gz validate --<scope>` and assert exit code |
+| `keep-as-fixture` | Legitimate fixture pattern in `setUp`/`tearDown` — no change needed |
+
+**Related:** ADR-0.0.59-04 / OBPI-0.0.59-04 (decommission-tautological-tests chore).
+See `.gzkit/chores/decommission-tautological-tests/CHORE.md` for the operator workflow.
+
 ### `--sensitivity`
 
 Enforces the ADR-0.0.22 security-sensitivity invariant. Reads `data/security_surfaces.json` (the canonical glob-to-category registry) and walks every OBPI brief's `## ALLOWED PATHS` block. Any intersection between a brief's allowlist and the registry forces `sensitivity: security` (the auto-detect floor); frontmatter MAY escalate to `sensitivity: security` when paths don't trigger detection, but MAY NOT declare a value below the detected floor (escalate-not-escape). Fail-closed when the registry is missing, malformed, or schema-invalid.
@@ -1189,6 +1248,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--scenario-reachability` | opt-in | Assert every Mechanical/Promotable bullet reachable from a declared loading scenario (ADR-0.0.33-04; Era-1 advisory) |
 | `--surface-fidelity` | opt-in | Composite: run all four surface-fidelity invariants in declared order; exit code is worst-of-four (ADR-0.0.33-05) |
 | `--req-kind-discipline` | opt-in | Fail closed (exit 3) on OBPI briefs with mixed-state [kind] tags or per-kind proof-citation gaps (ADR-0.0.59-02) |
+| `--tautological-test-audit` | opt-in | Fail closed (exit 3) when tautological-test count exceeds baseline + waivers; `current > baseline + W` → exit 3; waivers at `data/tautological_test_waivers.json` (OBPI-0.0.59-04) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
 
 The `--allowlist-only` flag is a sub-modifier for `--unscoped-rules` —

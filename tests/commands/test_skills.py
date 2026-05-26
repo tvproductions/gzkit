@@ -375,6 +375,7 @@ class TestSkillCommands(unittest.TestCase):
                 "gzkit.quality.run_complexity_doctrine_links_audit",
                 "gzkit.quality.run_complexity_thresholds_audit",
                 "gzkit.quality.run_req_kind_discipline_audit",
+                "gzkit.quality.run_tautological_test_audit",
                 "gzkit.quality.run_preflight",
                 "gzkit.quality.run_surface_fidelity_audit",
             )
