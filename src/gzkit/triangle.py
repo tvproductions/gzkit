@@ -160,6 +160,7 @@ class LinkageRecord(BaseModel):
 _AC_LINE_PATTERN = re.compile(
     r"^-\s+\[(?P<check>[xX ])\]\s+"
     r"\*{0,2}(?P<req_id>REQ-\d+\.\d+\.\d+-\d+-\d+)"
+    r"(?:\s+\[(?P<taxonomy_kind>BEHAVIOR|SUPPORT|STRUCTURAL-FENCE|behavior|support|structural-fence)\])?"
     r":\*{0,2}\s*(?:\[(?P<kind>doc)\]\s+)?(?P<description>.+)$"
 )
 

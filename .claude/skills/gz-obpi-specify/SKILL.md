@@ -5,9 +5,9 @@ description: Create and semantically author OBPI briefs linked to parent ADR ite
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-26
 metadata:
-  skill-version: "1.6.0"
+  skill-version: "1.7.0"
 model: opus
 ---
 
@@ -218,6 +218,47 @@ That gate requires each brief to have substantive:
 - OBPI-specific verification commands
 - REQ-backed acceptance criteria
 
+## REQ Kind Authoring
+
+Every REQ in an OBPI brief's `## Acceptance Criteria` MUST carry exactly one kind tag
+between the REQ ID and the colon (ADR-0.0.59-02; enforced by `gz validate --req-kind-discipline`):
+
+```text
+REQ-X.Y.Z-NN-01 [BEHAVIOR]: the system does X when Y
+REQ-X.Y.Z-NN-02 [SUPPORT]: the rule file carries subsection Z — gz validate --documents + artifact_edited event
+REQ-X.Y.Z-NN-03 [STRUCTURAL-FENCE]: cross-OBPI boundary invariant P holds
+```
+
+### Choosing the kind
+
+| Use [BEHAVIOR] when... | Use [SUPPORT] when... | Use [STRUCTURAL-FENCE] when... |
+|----------------------|----------------------|-------------------------------|
+| The REQ is about code behavior — a function produces output X, a CLI command exits Y, a state machine transitions Z | The REQ is about a governance artifact, doc, rule file, or data file that supports behavior but is not behavior itself | The REQ spans multiple OBPIs and can only be audited at ADR closeout, not per-OBPI |
+
+### Per-kind requirements
+
+**BEHAVIOR** — must include `tests/**` in Allowed Paths. The proof is a `@covers`-decorated test.
+
+**SUPPORT** — must include BOTH in the REQ text:
+- A `gz validate --` scope reference (e.g. `gz validate --documents`)
+- A ledger event keyword (e.g. `artifact_edited`, `obpi_created`)
+
+Example: `REQ-X.Y.Z-NN-02 [SUPPORT]: docs/governance/X.md gets Y section — gz validate --documents + artifact_edited event`
+
+**STRUCTURAL-FENCE** — the parent ADR must have a `## Boundary Invariants` section naming this invariant.
+Add it to the parent ADR before running `gz validate --req-kind-discipline`.
+
+### Validator
+
+```bash
+# Fails closed (exit 3) on mixed-state or missing proof citations
+uv run gz validate --req-kind-discipline
+```
+
+Also runs as part of `uv run gz check`.
+
+---
+
 ## Skill Responsibility
 
 The skill does not stop at `uv run gz specify`.
@@ -232,7 +273,7 @@ The intended workflow is:
    - rewrite Requirements into OBPI-specific fail-closed rules
    - populate Discovery Checklist with real prerequisite and existing-code reads
    - replace generic verification with commands that prove this item specifically
-   - ensure Acceptance Criteria are concrete and mapped to REQ IDs
+   - ensure Acceptance Criteria are concrete and mapped to REQ IDs (with `[kind]` tags)
 4. Run `uv run gz obpi validate --authored <path>` and keep authoring until it passes.
 
 The CLI owns deterministic decomposition. The skill owns the semantic authoring

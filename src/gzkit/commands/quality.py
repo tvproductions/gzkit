@@ -301,6 +301,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_preflight,
         run_readiness_audit,
         run_receipt_shape_audit,
+        run_req_kind_discipline_audit,
         run_skill_audit,
         run_surface_fidelity_audit,
         run_unscoped_rules_audit,
@@ -327,6 +328,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("AGENTS.md map conformance", run_agents_md_map_conformance_audit),
         ("Complexity-doctrine links", run_complexity_doctrine_links_audit),
         ("Complexity-thresholds", run_complexity_thresholds_audit),
+        ("REQ kind discipline", run_req_kind_discipline_audit),
         ("Preflight", run_preflight),
         ("Surface fidelity", run_surface_fidelity_audit),
     ]

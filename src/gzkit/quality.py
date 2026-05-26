@@ -597,6 +597,19 @@ def run_receipt_shape_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --receipt-shape", cwd=project_root)
 
 
+def run_req_kind_discipline_audit(project_root: Path) -> QualityResult:
+    """Run the REQ kind discipline audit (OBPI-0.0.59-02).
+
+    Fails closed (exit 3) when any OBPI brief has mixed-state [kind] tags
+    (some tagged, some not) or per-kind proof-citation gaps. All-untagged
+    briefs pass in legacy/grandfathered mode.
+    Recovery: add [BEHAVIOR], [SUPPORT], or [STRUCTURAL-FENCE] tag to each
+    untagged REQ in the brief's Acceptance Criteria section, and supply the
+    required proof citations per the kind.
+    """
+    return run_command("uv run gz validate --req-kind-discipline", cwd=project_root)
+
+
 def run_insights_shape_audit(project_root: Path) -> QualityResult:
     """Run the agent-insights.jsonl record-shape audit (GHI #358).
 

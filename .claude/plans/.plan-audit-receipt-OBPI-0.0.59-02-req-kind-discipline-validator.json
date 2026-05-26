@@ -1,0 +1,9 @@
+{
+  "obpi_id": "OBPI-0.0.59-02-req-kind-discipline-validator",
+  "timestamp": "2026-05-26T09:06:00.000000+00:00",
+  "verdict": "PASS",
+  "plan_file": "plan-OBPI-0.0.59-02-req-kind-discipline-validator.md",
+  "gaps_found": 0,
+  "gaps": [],
+  "override_reason": "CLI FAIL was 2 green-field new files (src/gzkit/req_kind.py, tests/governance/test_req_kind_discipline.py) — parent directories confirmed on disk with correct extension convention. ADR-OBPI alignment confirmed PASS via manual audit. Scope collisions advisory (42 completed sibling OBPIs, no active locks). Plan authored: plan-OBPI-0.0.59-02-req-kind-discipline-validator.md."
+}

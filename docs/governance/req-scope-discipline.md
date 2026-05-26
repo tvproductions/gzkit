@@ -188,6 +188,43 @@ amendment surface.
 
 ---
 
+## Brief-time validation
+
+`gz validate --req-kind-discipline` enforces the three-kind taxonomy at brief-authoring
+time (ADR-0.0.59 Decision item 2; OBPI-0.0.59-02). It exits 3 (policy breach) on:
+
+- **Mixed-state brief** — a brief whose `## Acceptance Criteria` section contains at
+  least one REQ with a `[kind]` tag and at least one without. All-untagged legacy briefs
+  pass (grandfathered mode).
+- **Per-kind proof-citation gap:**
+  - `[BEHAVIOR]` REQ with no `tests/**` path in the brief's `## Allowed Paths` section
+  - `[SUPPORT]` REQ whose text lacks both a `gz validate --` scope reference and a ledger
+    event keyword (`artifact_edited`, `obpi_created`, `adr_created`, etc.)
+  - `[STRUCTURAL-FENCE]` REQ when the parent ADR file has no `## Boundary Invariants` heading
+
+**Tag syntax:**
+
+```text
+REQ-X.Y.Z-NN-01 [BEHAVIOR]: code behavior claim
+REQ-X.Y.Z-NN-02 [SUPPORT]: artifact claim — gz validate --documents + artifact_edited event
+REQ-X.Y.Z-NN-03 [STRUCTURAL-FENCE]: cross-OBPI boundary invariant
+```
+
+**Exit codes:**
+
+| Code | Meaning |
+|------|---------|
+| 0 | All tagged REQs pass per-kind checks; or all briefs are all-untagged (legacy) |
+| 3 | Policy breach — mixed-state or proof-citation gap |
+
+**Preview (dry-run):** run `gz validate --req-kind-discipline` before completing an OBPI
+to see the full error list before the completion gate fires.
+
+**gz check integration:** `uv run gz check` includes a "REQ kind discipline" step that
+invokes this validator. Failing briefs cause `gz check` to report failure.
+
+---
+
 ## Related artifacts
 
 - `ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine` — parent ADR; § Decision

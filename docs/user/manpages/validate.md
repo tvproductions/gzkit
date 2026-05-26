@@ -15,7 +15,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
             [--advisor-proof-binding] [--vendor-manifest]
             [--invariant-coherence] [--brief-reconcile] [--router-tables]
-            [--kind-invariance]
+            [--kind-invariance] [--req-kind-discipline]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
 ```
 
@@ -1029,6 +1029,38 @@ gz validate --router-tables
 
 **Related:** ADR-0.27.0 / OBPI-0.27.0-03 (router-tables validator).
 
+### `--req-kind-discipline`
+
+Enforces the ADR-0.0.59 REQ kind discipline: every REQ in an OBPI brief's `## Acceptance
+Criteria` must carry exactly one `[BEHAVIOR]`, `[SUPPORT]`, or `[STRUCTURAL-FENCE]` kind
+tag, and each kind must satisfy its proof-channel requirement.
+
+Rules enforced:
+
+1. **Mixed-state fails closed** — a brief with some tagged and some untagged REQs exits 3.
+   All-untagged legacy briefs pass (grandfathered mode).
+2. **Per-kind proof-citation gaps fail closed:**
+   - `[BEHAVIOR]` REQ without `tests/**` in the brief's `## Allowed Paths` → exit 3.
+   - `[SUPPORT]` REQ without both a `gz validate --` scope reference and a ledger event
+     keyword in the REQ text → exit 3.
+   - `[STRUCTURAL-FENCE]` REQ when the parent ADR has no `## Boundary Invariants` → exit 3.
+
+**Usage:**
+
+```bash
+gz validate --req-kind-discipline
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | All tagged REQs pass per-kind checks; or all briefs are all-untagged | — |
+| 3 | Mixed-state brief or proof-citation gap | Add `[kind]` tags and citations per `.gzkit/rules/tests.md` § REQ Scope Discipline |
+
+**Related:** ADR-0.0.59 / OBPI-0.0.59-02 (req-kind-discipline validator).
+See `docs/governance/req-scope-discipline.md` for the full three-kind taxonomy doctrine.
+
 ### `--sensitivity`
 
 Enforces the ADR-0.0.22 security-sensitivity invariant. Reads `data/security_surfaces.json` (the canonical glob-to-category registry) and walks every OBPI brief's `## ALLOWED PATHS` block. Any intersection between a brief's allowlist and the registry forces `sensitivity: security` (the auto-detect floor); frontmatter MAY escalate to `sensitivity: security` when paths don't trigger detection, but MAY NOT declare a value below the detected floor (escalate-not-escape). Fail-closed when the registry is missing, malformed, or schema-invalid.
@@ -1156,6 +1188,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--bullet-retention` | opt-in | Assert every Mechanical/Promotable bullet in advisory-rules-audit.md is verbatim in per-turn surface (ADR-0.0.33-01) |
 | `--scenario-reachability` | opt-in | Assert every Mechanical/Promotable bullet reachable from a declared loading scenario (ADR-0.0.33-04; Era-1 advisory) |
 | `--surface-fidelity` | opt-in | Composite: run all four surface-fidelity invariants in declared order; exit code is worst-of-four (ADR-0.0.33-05) |
+| `--req-kind-discipline` | opt-in | Fail closed (exit 3) on OBPI briefs with mixed-state [kind] tags or per-kind proof-citation gaps (ADR-0.0.59-02) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
 
 The `--allowlist-only` flag is a sub-modifier for `--unscoped-rules` —
