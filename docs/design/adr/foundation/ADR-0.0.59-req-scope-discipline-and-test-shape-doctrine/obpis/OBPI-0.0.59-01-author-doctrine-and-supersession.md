@@ -3,7 +3,7 @@ id: OBPI-0.0.59-01-author-doctrine-and-supersession
 parent: ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine
 item: 1
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.59-01-author-doctrine-and-supersession: Author REQ Scope Discipline Doctrine + Supersede Pool ADR + Close Superseded GHIs
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine/ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine.md`
 - **Checklist Item:** #1 — "OBPI-0.0.59-01: Author REQ scope discipline doctrine (.gzkit/rules/tests.md § REQ Scope Discipline + docs/governance/req-scope-discipline.md canonical expansion) + reconcile GHI #270 tests.md § 6f vs tool-skill-runbook-alignment.md § Invariant 3 contradiction (output-form fixture tests are BEHAVIOR proofs) + supersede ADR-pool.obpi-req-taxonomy-scope-fence (its Path A/B/C/D rolls into Alternatives Considered with credit) + close GHI #165 and GHI #531 superseded against this ADR + add advisory-rules-audit.md scorecard entry classifying --req-kind-discipline Mechanical (lite lane: doctrine + scorecard only, no code/schema)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -233,13 +233,44 @@ gh issue view 531 --json state,closedAt
 
 ### Key Proof
 
+
+The new `## REQ Scope Discipline (binding)` subsection in `.gzkit/rules/tests.md` is the load-bearing artifact:
+
+```bash
+grep -A 5 "## REQ Scope Discipline" .gzkit/rules/tests.md
+```
+
+Output:
+```
+## REQ Scope Discipline (binding)
+
+Every REQ in an OBPI brief's `## Acceptance Criteria` carries exactly one of three kinds,
+declared as a bracketed inline tag: `REQ-X.Y.Z-NN-NN [kind]: claim text`.
+```
+
+Quality gate receipts (Gate 2 floor + Gate 3 docs build):
+- Lint: arb-ruff-b5ad3ead3d9d4e3baa36b66266314bac
+- Typecheck: arb-step-typecheck-58b56f3e02d14623be5afa32ba242d64
+- Unittest (5571 tests OK): arb-step-unittest-685f0d2d8749431597e4f34e8096208f
+- Docs build (mkdocs --strict): arb-step-mkdocs-ef6eb3d17bba4746ad2623d88cefd4f1
+- Structural validators: gz validate --documents --advisory-scorecard PASS (2 scopes)
+
+REQ→@covers parity gate: 0 uncovered_reqs (8/8 [support]-kind REQs vacuously satisfy — OBPI-0.0.59-02 will add the kind-aware classifier; until then, the SUPPORT-kind REQs witness via ledger artifact_edited events + structural validator passes per the doctrine being shipped).
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added: none (doctrine prohibits @covers tests for SUPPORT-kind REQs)
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Doctrine landed: .gzkit/rules/tests.md § REQ Scope Discipline (rule-version 0.4.0→0.5.0) names the three-kind taxonomy (BEHAVIOR / SUPPORT / STRUCTURAL-FENCE) with proof-channel matrix and [kind] tag syntax
+- Canonical expansion: docs/governance/req-scope-discipline.md (~160 lines) — failure-pattern framing, quantification (32%/42% with airlineops parity), per-kind detail, GHI #270 reconciliation, lift-targets matrix, consequences, related artifacts
+- Scorecard: docs/governance/advisory-rules-audit.md row 59 added (Mechanical); Summary table Mechanical 42→43 (64%); narrative paragraph extended to name ADR-0.0.59 OBPI-01 as addition source
+- GHI #270 reconciliation: inline note in Output-form fixture carve-out paragraph classifying render-form fixture tests as BEHAVIOR proofs (CLI render-code behavior, not file content) — resolves the tests.md § 6f vs tool-skill-runbook-alignment.md § Invariant 3 apparent contradiction
+- Pool ADR supersession: ADR-pool.obpi-req-taxonomy-scope-fence gains ## Disposition section pointing to ADR-0.0.59; Path A/B/C/D analysis preserved; Path D adopted as STRUCTURAL-FENCE proof channel
+- GHI actions: #165 retroactive supersession comment (registers ADR-0.0.59 as destination per ghi-close doctrine); #531 closed superseded against ADR-0.0.59
+- Tests added: none (anti-pattern under the doctrine being shipped — SUPPORT-kind REQs are witnessed by ledger event + structural validator, NOT @covers)
+- Control surfaces synced via `uv run gz agent sync control-surfaces`
+- Date completed: 2026-05-26
+- Attestation status: operator-verbatim ("attest completed") relayed Stage-4 → Stage-5
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -247,12 +278,12 @@ _No defects tracked. Will populate during implementation if surfaced._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.59-01 ships the REQ Scope Discipline doctrine port (3-kind taxonomy + proof-channel matrix) as canonical rule + canonical expansion + scorecard row 59 + GHI #270 reconciliation + ADR-pool.obpi-req-taxonomy-scope-fence supersession; GHI #165 retroactive supersession comment + GHI #531 closed superseded against ADR-0.0.59; 8/8 [support]-kind REQs witnessed by ledger artifact_edited events + structural validators (gz validate --documents --advisory-scorecard PASS, 2 scopes). Receipts: arb-ruff-b5ad3ead3d9d4e3baa36b66266314bac, arb-step-typecheck-58b56f3e02d14623be5afa32ba242d64, arb-step-unittest-685f0d2d8749431597e4f34e8096208f (5571/5571), arb-step-mkdocs-ef6eb3d17bba4746ad2623d88cefd4f1. No new test files authored (per doctrine being shipped). Move 6 of get-out-of-jail recovery plan; precondition for OBPIs 02-05.
+- Date: 2026-05-26
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-05-26
 
 **Evidence Hash:** -

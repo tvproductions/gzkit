@@ -5,11 +5,11 @@ paths:
 description: Test policy and coverage requirements
 ---
 
-<!-- rule-version: 0.4.0 -->
+<!-- rule-version: 0.5.0 -->
 
 # Test Policy (canonical)
 
-> **Rule version:** `0.4.0` — diet pass under GHI #327; lifted pedagogy to `docs/governance/tests-rationale.md`.
+> **Rule version:** `0.5.0` — added REQ Scope Discipline subsection (three-kind taxonomy + GHI #270 reconciliation); GHI #327 diet pass preserved.
 
 ## General Rules (binding)
 
@@ -49,7 +49,7 @@ Gate 2 is named TDD. Red-Green-Refactor is a repeating cycle per behavior increm
 
 **Eval-awareness corollary.** Audit-helper names MUST NOT pattern-match as audit-step names — name them by behavior, not audit role (e.g. `assert_receipt_id_resolves` not `assert_audit_passes`).
 
-**Output-form fixture carve-out.** Output-form assertions are permitted in dedicated fixture tests per `.gzkit/rules/tool-skill-runbook-alignment.md` § Invariant 3. Keep them in separate test classes from REQ-derived unit tests.
+**Output-form fixture carve-out.** Output-form assertions are permitted in dedicated fixture tests per `.gzkit/rules/tool-skill-runbook-alignment.md` § Invariant 3. Keep them in separate test classes from REQ-derived unit tests. *(GHI #270 reconciliation: output-form fixture tests are **BEHAVIOR** REQ proofs under the REQ Scope Discipline taxonomy — they test CLI render-code behavior, not file content. The apparent contradiction between § 6f's prose-content prohibition and Invariant 3's render-form requirement dissolves once REQ kind is named.)*
 
 **Per-increment rhythm:** One test → one observed RED → minimum code to GREEN → next increment.
 
@@ -79,5 +79,46 @@ Every src/tests commit carries a governance-intent trailer: `Task:`, `Ceremony:`
 ### Behave scenario tagging
 
 Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM` as a scenario tag. Enforced by `gz validate --behave-req-tags` (fires on `Completed`/`Validated` briefs only, GHI #276/#323). Waivers in `data/behave_coverage_waivers.json`.
+
+## REQ Scope Discipline (binding)
+
+Every REQ in an OBPI brief's `## Acceptance Criteria` carries exactly one of three kinds,
+declared as a bracketed inline tag: `REQ-X.Y.Z-NN-NN [kind]: claim text`.
+
+### Three-kind taxonomy
+
+| Kind | What it covers | Proof channel |
+|------|---------------|---------------|
+| **BEHAVIOR** | Code behavior — functions, commands, CLI outputs, state transitions | `@covers`-decorated test in `tests/**` (existing pattern, unchanged) |
+| **SUPPORT** | Governance artifacts, doctrine docs, rule files, data files that *support* behavior but are not behavior themselves | Ledger `artifact_edited` event citing the artifact path **AND** structural validator scope (e.g. `gz validate --documents`) admitting the artifact's shape |
+| **STRUCTURAL-FENCE** | Integration-state properties scoped to the parent ADR's boundary — cross-OBPI invariants that audit at ADR closeout, not per-OBPI | Parent-ADR `## Boundary Invariants` entry, audited at ADR closeout layer |
+
+### Brief-authoring tag syntax
+
+```text
+REQ-X.Y.Z-NN-01 [behavior]: the system does X when Y
+REQ-X.Y.Z-NN-02 [support]: the rule file carries subsection Z
+REQ-X.Y.Z-NN-03 [structural-fence]: cross-OBPI boundary invariant P holds
+```
+
+### Proof-channel matrix
+
+| Kind | Test `@covers`? | Ledger event? | Structural validator? | Parent-ADR invariant? |
+|------|:--------------:|:------------:|:--------------------:|:--------------------:|
+| BEHAVIOR | **required** | — | — | — |
+| SUPPORT | — | **required** | **required** | — |
+| STRUCTURAL-FENCE | — | — | — | **required** |
+
+### What this replaces
+
+Before ADR-0.0.59: every REQ used the BEHAVIOR proof channel uniformly, producing
+tautological filesystem-grep tests for content REQs (32% project-wide / 42% governance).
+SUPPORT-kind REQs are now witnessed by the ledger + structural validator; no `@covers`
+test is required or appropriate for them — authoring one is the anti-pattern this rule
+names.
+
+> See [`docs/governance/req-scope-discipline.md`](../../docs/governance/req-scope-discipline.md)
+> for canonical expansion: problem framing, proof-channel detail, GHI #270 reconciliation,
+> quantification, and consequences.
 
 > See [`docs/governance/tests-rationale.md`](../../docs/governance/tests-rationale.md) for TDD anti-patterns, eval-awareness corollary details, behave enforcement direction, runner anti-patterns, TASK workflow details, and code patterns.

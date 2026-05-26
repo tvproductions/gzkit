@@ -136,3 +136,17 @@ Promotion into the active tree (foundation or feature) is performed via
 ### Promotion guidance
 
 The promotion author must commit to one of Path A, B, C, or D (or articulate a fifth option grounded in evidence) and re-derive the Rejected Alternatives matrix in the canonical ADR-template format. Until promotion, this ADR is the routing destination for any new GHI surfacing additional scope-fence REQ instances — close those `superseded` against this pool ADR and add their evidence to the Intent section's table.
+
+## Disposition
+
+**Superseded** by `ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine` (2026-05-26).
+
+This pool ADR's prior-art analysis is preserved by inclusion in the parent ADR's
+§ Alternatives Considered with full credit:
+
+- **Path A** (schema-level REQ kind marker) — subsumed into ADR-0.0.59's `[kind]` inline tag syntax
+- **Path B** (doctrine-only guidance) — rejected standalone; doctrine without mechanism violates operative claim 3
+- **Path C** (phased A+B) — moot once the categorical fix ships as one cycle
+- **Path D** (promote scope-fence REQs to parent-ADR invariants) — **adopted** as the STRUCTURAL-FENCE proof channel
+
+The pool ADR retires having served its design-conversation purpose.

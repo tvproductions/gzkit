@@ -8,5 +8,10 @@
     "expires": "2026-07-25",
     "delta_lines": 42,
     "reason": "OBPI-0.0.54-01 (ADR-0.0.54 Move 3) lands the map-not-encyclopedia rule file at .gzkit/rules/agents-md-map-doctrine.md plus mirrors at .claude/rules/, .github/instructions/, and src/gzkit/rules/. Doctrine doc docs/governance/agents-md-doctrine.md adds surface mass. The rule file is the port; OBPI-0.0.54-02 (the lift) reduces AGENTS.md by ~16k chars which will net-decrease total surface weight. Yellow-band overrun is the transitional window between rule-file authoring (OBPI-01) and the lift (OBPI-02), explicitly documented in ADR § Sequencing and in .gzkit/rules/agents-md-map-doctrine.md § Budget. Reduction path: OBPI-0.0.54-02 lift closes this gap; re-floor surface_weight snapshot after OBPI-02 lands. This waiver is a 60-day bridge."
+  },
+  {
+    "expires": "2026-07-25",
+    "delta_lines": 80,
+    "reason": "OBPI-0.0.59-01 (ADR-0.0.59 Move 6, get-out-of-jail recovery plan) lands the REQ Scope Discipline doctrine: .gzkit/rules/tests.md § REQ Scope Discipline subsection (rule-version 0.4.0→0.5.0); docs/governance/req-scope-discipline.md (~160 lines canonical expansion); docs/governance/advisory-rules-audit.md scorecard row 59 (Mechanical); ADR-pool.obpi-req-taxonomy-scope-fence § Disposition supersession note; companion bullet added to .gzkit/agents.local.md § Mechanical scopes that bind here (verbatim substring required by bullet-retention validator for advisory-rules-audit Mechanical-class row 59). Foundation precondition for OBPIs 02-05 of ADR-0.0.59. Reduction path: OBPI-0.0.59-04 ships the decommissioning chore that retires the existing ~3,400 tautological filesystem-shaped tests, which net-decreases overall surface weight; re-floor surface_weight snapshot after the chore's first sweep wave (OBPI-0.0.59-05) lands. This waiver is a 60-day bridge."
   }
 ]
