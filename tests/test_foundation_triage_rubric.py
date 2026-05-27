@@ -106,6 +106,42 @@ class TestFoundationTriageRankEntry(unittest.TestCase):
             entry.id = "ADR-0.0.91"  # type: ignore
 
 
+class TestGatherFoundationIdsHandlesCanonicalSlug(unittest.TestCase):
+    """Regression: _gather_foundation_ids must recover ADR-X.Y.Z from canonical-slug ids (GHI #548).
+
+    The defective code split raw frontmatter `id` on the literal `-foundation-`
+    substring; real ids are shaped `ADR-X.Y.Z-<slug>` with no `-foundation-`
+    substring, so the split returned the input unchanged and the
+    `^ADR-\\d+\\.\\d+\\.\\d+$` filter rejected every real entry. Sibling
+    class-of-failure to GHI #518 (composer + bundled triage script).
+    """
+
+    def test_gather_returns_canonical_slug_id(self) -> None:
+        from gzkit.foundation.rubric import _gather_foundation_ids
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            adr_dir = (
+                project_root
+                / "docs"
+                / "design"
+                / "adr"
+                / "foundation"
+                / "ADR-0.0.77-canonical-slug-no-foundation-substring"
+            )
+            adr_dir.mkdir(parents=True)
+            (adr_dir / "ADR-0.0.77-canonical-slug-no-foundation-substring.md").write_text(
+                "---\n"
+                "id: ADR-0.0.77-canonical-slug-no-foundation-substring\n"
+                "status: Draft\n"
+                "---\n"
+                "# ADR-0.0.77\n",
+                encoding="utf-8",
+            )
+            ids = _gather_foundation_ids(project_root)
+            self.assertEqual(ids, ["ADR-0.0.77"])
+
+
 class TestStructuralOnly(unittest.TestCase):
     """REQ-0.0.57-04-03: output is structural-only, no prose fields."""
 

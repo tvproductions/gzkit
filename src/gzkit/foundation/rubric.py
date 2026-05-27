@@ -31,6 +31,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 _GHI_PATTERN = re.compile(r"GHI\s*#(\d+)", re.IGNORECASE)
 _IN_FLIGHT_STATUSES: frozenset[str] = frozenset({"Draft", "Proposed"})
+_FOUNDATION_SHORT_ID_PREFIX = re.compile(r"^(ADR-\d+\.\d+\.\d+)")
 
 # Score weights — kept as module-level constants so downstream callers can read them.
 _WEIGHT_INSIGHTS = 3
@@ -283,10 +284,8 @@ def _gather_foundation_ids(project_root: Path) -> list[str]:
         if status not in _IN_FLIGHT_STATUSES:
             continue
         raw_id = str(frontmatter.get("id", ""))
-        short_id = raw_id.split("-foundation-", 1)[0] if raw_id else ""
-        if not short_id:
-            short_id = raw_id.split("-", 3)[:3]
-            short_id = "-".join(short_id) if isinstance(short_id, list) else short_id
+        match = _FOUNDATION_SHORT_ID_PREFIX.match(raw_id) if raw_id else None
+        short_id = match.group(1) if match else ""
         if _foundation_pattern.match(short_id):
             ids.append(short_id)
     return ids
@@ -312,9 +311,8 @@ def main(argv: list[str] | None = None) -> None:
             text = adr_path.read_text(encoding="utf-8")
             frontmatter = _parse_frontmatter(text)
             raw_id = str(frontmatter.get("id", ""))
-            short_id = raw_id.split("-foundation-", 1)[0] if raw_id else ""
-            if not _foundation_pattern.match(short_id):
-                short_id = re.sub(r"(-[a-z].*)$", "", raw_id)
+            match = _FOUNDATION_SHORT_ID_PREFIX.match(raw_id) if raw_id else None
+            short_id = match.group(1) if match else ""
             if _foundation_pattern.match(short_id):
                 foundation_ids.append(short_id)
     else:
