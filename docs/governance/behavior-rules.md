@@ -70,7 +70,7 @@ When the operator course-corrects in flight, append an `improvement`
 record to `.gzkit/insights/agent-insights.jsonl` before completing the
 corrected work. Required fields: `scope`, `summary`, `evidence`,
 `next_action`. See
-[`docs/governance/agent-contract-rationale.md` § Rationale for Behavior Rule 11](agent-contract-rationale.md#rationale-for-behavior-rule-11-course-correction--insights)
+[`docs/governance/agent-contract-rationale.md` § Rationale for Behavior Rule 11](agent-contract-rationale.md#rationale-for-behavior-rule-11-course-correction-insights)
 (GHI #357).
 
 ### Always #12 — Eval-feedback-source commit trailer
