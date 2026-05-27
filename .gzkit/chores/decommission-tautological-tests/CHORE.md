@@ -69,13 +69,23 @@ from datetime import datetime, timezone
 from gzkit.tautological_tests import scan_test_tree
 ops = scan_test_tree(Path('tests'))
 baseline = {
-    'operations': [op.model_dump() for op in ops],
+    'operations': [op.model_dump(exclude={'context_hint'}) for op in ops],
     'generated_at': datetime.now(timezone.utc).isoformat(),
 }
 Path('data/tautological_test_baseline.json').write_text(json.dumps(baseline, indent=2))
 print(f'Baseline updated: {len(ops)} operations')
 "
 ```
+
+> **Why `exclude={'context_hint'}`:** `context_hint` carries source-file docstring fragments
+> for human review during the scan. Persisting them in `data/tautological_test_baseline.json`
+> caused sibling trust-audit tests (`tests/governance/test_attestation_fold.py` and
+> `tests/governance/test_defect_fix_routing_fold.py`) to fail-close when test docstrings
+> legitimately quoted retired rule paths — the baseline file would carry those quoted paths
+> as a derived artifact and trip the "no inbound references to legacy paths" structural
+> fence. Drift-gate logic compares `(file_path, line_number, operation_kind, function_name)`
+> tuples; `context_hint` is informational only and not part of the drift comparison key.
+> (Defect surfaced in OBPI-0.0.59-05; direct-fix landed post-completion.)
 
 ## Acceptance Criteria
 

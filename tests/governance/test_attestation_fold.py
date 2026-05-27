@@ -56,6 +56,12 @@ BUCKET_3_ROOTS = (
     # files preserve their legacy-path references by design.
     "src/gzkit/chores/",
     "artifacts/audits/",
+    # ARB receipts are immutable evidentiary records; their stderr_tail can
+    # legitimately quote retired path names from the failure messages they
+    # are tailing — that's exactly what an ARB receipt is supposed to
+    # capture. Mirrors the sibling exclusion in
+    # tests/governance/test_defect_fix_routing_fold.py BUCKET_3_ROOTS.
+    "artifacts/receipts/",
     "tests/governance/test_attestation_fold.py",
     "tests/governance/test_agent_contract_fold.py",
     # mkdocs build artifact; regenerated from sources
