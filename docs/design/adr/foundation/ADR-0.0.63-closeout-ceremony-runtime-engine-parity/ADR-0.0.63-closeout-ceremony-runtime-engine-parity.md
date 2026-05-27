@@ -25,6 +25,12 @@ ADR-0.19.0 validated the closeout-pipeline *shell* (consolidate `gz closeout` in
 
 Surfaced by cross-analyst diagnosis in GHI #517 (`artifacts/reports/ghi-517-cross-analyst-reconciliation.md`).
 
+## Why foundation tier?
+
+**Invariance test:** Without this ADR, the project would not be the project because the closeout ceremony's `--next` step counter would let agents self-advance past Gate 5, breaking the universal human-attestation invariant (ADR-0.0.36) that anchors every audit receipt and turning the ledger trust chain into agent-narrated state. Closeout-runtime parity with `gz obpi pipeline`'s CLI state machine is structural identity for gzkit: it is the mechanism that makes ledger evidence — not agent claims — the source of truth at the moment of attestation.
+
+**Port-vs-adapter framing:** This ADR is a **port** — it specifies that closeout transitions MUST consult ledger state for the prior step's expected receipt and fail-close on absence, that demo-extraction ARB receipts MUST bind to re-executed observations rather than T1 prose, and that `--ceremony --attest` and the Step 7 pipeline MUST emit identical ledger surfaces. The CLI state machine in `closeout_ceremony.py` is the canonical adapter; `gz validate --closeout-proof-binding` is the mechanical adapter for the REQ↔receipt-ID binding rule.
+
 ### Absorbed findings
 
 | ID | Surface | Defect |

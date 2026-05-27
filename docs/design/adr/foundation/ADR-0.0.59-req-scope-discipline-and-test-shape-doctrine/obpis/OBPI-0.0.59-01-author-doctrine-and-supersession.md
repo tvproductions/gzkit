@@ -194,11 +194,11 @@ gh issue view 531 --json state,closedAt
 - [ ] REQ-0.0.59-01-01 [support]: `.gzkit/rules/tests.md` § REQ Scope Discipline added with three-kind taxonomy + proof-channel matrix + tag syntax. Witness: ledger `artifact_edited` event; `gz validate --documents` exit 0.
 - [ ] REQ-0.0.59-01-02 [support]: `docs/governance/req-scope-discipline.md` authored as canonical expansion. Witness: ledger `artifact_edited` event; `gz validate --documents` exit 0; `mkdocs build --strict` clean.
 - [ ] REQ-0.0.59-01-03 [support]: Scorecard row 59 added; Mechanical count 42→43. Witness: ledger `artifact_edited` event; `gz validate --advisory-scorecard` exit 0.
-- [ ] REQ-0.0.59-01-04 [support]: GHI #270 reconciliation note present in tests.md naming output-form fixture tests as BEHAVIOR proofs. Witness: grep confirms text presence; doctrine doc cross-references the reconciliation.
-- [ ] REQ-0.0.59-01-05 [support]: Pool ADR carries Disposition section pointing to ADR-0.0.59. Witness: ledger `artifact_edited` event; pool-ADR body preserved unchanged (no Path A/B/C/D edits).
-- [ ] REQ-0.0.59-01-06 [support]: GHI #165 closed superseded against ADR-0.0.59. Witness: `gh issue view 165 --json state` returns CLOSED.
-- [ ] REQ-0.0.59-01-07 [support]: GHI #531 closed superseded against ADR-0.0.59. Witness: `gh issue view 531 --json state` returns CLOSED.
-- [ ] REQ-0.0.59-01-08 [support]: Zero operator PII in authored content. Witness: explicit grep absence check before commit.
+- [ ] REQ-0.0.59-01-04 [support]: GHI #270 reconciliation note present in tests.md naming output-form fixture tests as BEHAVIOR proofs. Witness: grep confirms text presence; ledger `artifact_edited` event for `.gzkit/rules/tests.md`; `gz validate --documents` accepts the rule file.
+- [ ] REQ-0.0.59-01-05 [support]: Pool ADR carries Disposition section pointing to ADR-0.0.59. Witness: ledger `artifact_edited` event; pool-ADR body preserved unchanged (no Path A/B/C/D edits); `gz validate --documents` accepts the appended pool-ADR file.
+- [ ] REQ-0.0.59-01-06 [support]: GHI #165 closed superseded against ADR-0.0.59. Witness: `gh issue view 165 --json state` returns CLOSED; close-comment event references ADR-0.0.59 (registered destination per `gz validate --documents`).
+- [ ] REQ-0.0.59-01-07 [support]: GHI #531 closed superseded against ADR-0.0.59. Witness: `gh issue view 531 --json state` returns CLOSED; close-comment event references ADR-0.0.59 (registered destination per `gz validate --documents`).
+- [ ] REQ-0.0.59-01-08 [support]: Zero operator PII in authored content. Witness: explicit grep absence check before commit; `artifact_edited` ledger events for each authored file carry PII-free payloads; `gz validate --documents` exit 0 across the OBPI's edits.
 
 ## Completion Checklist
 

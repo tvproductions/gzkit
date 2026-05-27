@@ -1,9 +1,0 @@
-{
-  "obpi_id": "OBPI-0.0.54-04",
-  "agent": "claude-code-5692b876",
-  "pid": 79439,
-  "session_id": "5692b876-a8b5-465d-9ec8-0a87d1050c8c",
-  "claimed_at": "2026-05-26T07:01:52.884356+00:00",
-  "branch": "main",
-  "ttl_minutes": 120
-}
