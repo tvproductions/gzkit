@@ -1,0 +1,51 @@
+{
+  "obpi_id": "OBPI-0.0.59-05-first-sweep-wave-top-5-offenders",
+  "timestamp": "2026-05-27T07:01:40.007569+00:00",
+  "verdict": "PASS",
+  "plan_file": "first-sweep-wave-top-5-offenders-OBPI-0.0.59-05.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-04-validate-taxonomy",
+      "contested_paths": [
+        "tests/governance/test_promoted_advisory_audits.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.56",
+      "sibling_obpi": "OBPI-0.0.56-06-prime-directive-scorecard-reclassification",
+      "contested_paths": [
+        "tests/governance/test_promoted_advisory_audits.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.23",
+      "sibling_obpi": "OBPI-0.0.23-05-audit-check-covers-backfill-heuristic",
+      "contested_paths": [
+        "tests/governance/test_audit_check_covers_backfill.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-15-t0-maintenance-surfaces",
+      "contested_paths": [
+        "tests/governance/test_distribution_audit.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-07-validate-distribution",
+      "contested_paths": [
+        "tests/governance/test_distribution_audit.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine/obpis/OBPI-0.0.59-05-first-sweep-wave-top-5-offenders.md"
+      ]
+    }
+  ]
+}

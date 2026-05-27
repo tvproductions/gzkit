@@ -364,40 +364,7 @@ class TestStaticOnlyInvariant(unittest.TestCase):
 
 
 class TestDocumentationAndScorecard(unittest.TestCase):
-    """REQ-0.0.32-07-08/09/10: manpage, scorecard, and flag registration."""
-
-    @covers("REQ-0.0.32-07-08")
-    def test_validate_manpage_documents_distribution_scope(self) -> None:
-        manpage = Path(__file__).parent.parent.parent / "docs" / "user" / "manpages" / "validate.md"
-        content = manpage.read_text(encoding="utf-8")
-        self.assertIn("--distribution", content, "manpage must document --distribution scope")
-        self.assertIn(
-            "ON_DISK_NOT_INCLUDED", content, "manpage must document ON_DISK_NOT_INCLUDED class"
-        )
-        self.assertIn(
-            "BASELINE_NOT_ON_DISK", content, "manpage must document BASELINE_NOT_ON_DISK class"
-        )
-        self.assertIn(
-            "ON_DISK_NOT_BASELINE", content, "manpage must document ON_DISK_NOT_BASELINE class"
-        )
-
-    @covers("REQ-0.0.32-07-09")
-    def test_advisory_scorecard_t0_flipped_to_mechanical(self) -> None:
-        scorecard = (
-            Path(__file__).parent.parent.parent / "docs" / "governance" / "advisory-rules-audit.md"
-        )
-        content = scorecard.read_text(encoding="utf-8")
-        # The T0 row must say Mechanical, not Promotable
-        self.assertIn(
-            "**Mechanical**",
-            content[content.find("Distribution Invariant") :],
-            "T0 scorecard entry must be Mechanical",
-        )
-        self.assertNotIn(
-            "pending OBPI-0.0.32-07",
-            content,
-            "Scorecard must not still say 'pending OBPI-0.0.32-07'",
-        )
+    """REQ-0.0.32-07-10: CLI flag registration (BEHAVIOR — exercises parser)."""
 
     @covers("REQ-0.0.32-07-10")
     def test_distribution_flag_registered_in_cli(self) -> None:

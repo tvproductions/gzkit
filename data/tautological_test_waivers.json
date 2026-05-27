@@ -1,4 +1,16 @@
 {
-  "default_rationale": {},
-  "file_waivers": {}
+  "default_rationale": {
+    "obpi-0.0.59-05-hash-compare-non-mutation": "Hash comparison via Path.read_bytes() before/after running an audit is a legitimate BEHAVIOR test of the audit's non-mutation invariant — assertion is on hash equality, not file content. Scanner false-positive. (OBPI-0.0.59-05, file test_promoted_advisory_audits.py)",
+    "obpi-0.0.59-05-tempdir-manifest-idempotence": "Test exercises regenerate_distribution_baseline() and asserts on structural equality of the produced manifest across two runs (idempotence invariant). read_text reads a tempdir-scoped manifest produced by the regenerator under test — production-code behavior is tested, not file content. Scanner false-positive. (OBPI-0.0.59-05, file test_distribution_audit.py)",
+    "obpi-0.0.59-05-tempdir-ledger-emission": "Test exercises regenerate_distribution_baseline() and asserts that a distribution_baseline_regenerated event is appended to the tempdir ledger. read_text reads a tempdir-scoped ledger.jsonl produced by the regenerator under test — ledger emission BEHAVIOR is tested, not file content. Scanner false-positive. (OBPI-0.0.59-05, file test_distribution_audit.py)"
+  },
+  "file_waivers": {
+    "tests/governance/test_promoted_advisory_audits.py": [
+      "obpi-0.0.59-05-hash-compare-non-mutation"
+    ],
+    "tests/governance/test_distribution_audit.py": [
+      "obpi-0.0.59-05-tempdir-manifest-idempotence",
+      "obpi-0.0.59-05-tempdir-ledger-emission"
+    ]
+  }
 }

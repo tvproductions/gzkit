@@ -310,43 +310,17 @@ class PromotedAdvisoryAudits(unittest.TestCase):
         # REQ-0.0.17-04-09: lock-in passes on the live tree (backfill landed).
         self._assert_clean(audit_adr_taxonomy(_PROJECT_ROOT), "taxonomy")
 
-    @covers("REQ-0.0.17-04-10")
-    def test_taxonomy_scorecard_entry_exists(self) -> None:
-        """REQ-0.0.17-04-10: advisory scorecard cites gz validate --taxonomy."""
-        scorecard = _PROJECT_ROOT / "docs" / "governance" / "advisory-rules-audit.md"
-        text = scorecard.read_text(encoding="utf-8")
-        self.assertIn("gz validate --taxonomy", text)
-        self.assertIn("ADR-0.0.17", text)
-
     def test_brief_headings_ghi_238(self) -> None:
         """GHI #238: live tree has no H2 drift for evidence sections."""
         self._assert_clean(audit_brief_headings(_PROJECT_ROOT), "brief_headings")
-
-    def test_brief_headings_scorecard_entry_exists(self) -> None:
-        """GHI #238: advisory scorecard cites gz validate --brief-headings."""
-        scorecard = _PROJECT_ROOT / "docs" / "governance" / "advisory-rules-audit.md"
-        text = scorecard.read_text(encoding="utf-8")
-        self.assertIn("gz validate --brief-headings", text)
 
     def test_brief_cross_references_ghi_436(self) -> None:
         """GHI #436: live tree has no unresolvable brief identifier references."""
         self._assert_clean(audit_brief_cross_references(_PROJECT_ROOT), "brief_cross_references")
 
-    def test_brief_cross_references_scorecard_entry_exists(self) -> None:
-        """GHI #436: advisory scorecard cites gz validate --brief-cross-references."""
-        scorecard = _PROJECT_ROOT / "docs" / "governance" / "advisory-rules-audit.md"
-        text = scorecard.read_text(encoding="utf-8")
-        self.assertIn("gz validate --brief-cross-references", text)
-
     def test_brief_demo_section_ghi_431(self) -> None:
         """GHI #431: live tree has no active heavy-lane CLI brief missing Demo."""
         self._assert_clean(audit_brief_demo_section(_PROJECT_ROOT), "brief_demo_section")
-
-    def test_brief_demo_section_scorecard_entry_exists(self) -> None:
-        """GHI #431: advisory scorecard cites gz validate --brief-demo-section."""
-        scorecard = _PROJECT_ROOT / "docs" / "governance" / "advisory-rules-audit.md"
-        text = scorecard.read_text(encoding="utf-8")
-        self.assertIn("gz validate --brief-demo-section", text)
 
 
 class BriefHeadingsAuditNegativeCases(unittest.TestCase):

@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.0.59-05-first-sweep-wave-top-5-offenders",
+  "parent_adr": "ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine",
+  "lane": "heavy",
+  "entry": "sync",
+  "execution_mode": "normal",
+  "current_stage": "sync",
+  "started_at": "2026-05-27T07:18:19Z",
+  "updated_at": "2026-05-27T07:18:19Z",
+  "receipt_state": "pass",
+  "nonce": "2e30c6216035e041dbc98d066790b5a9",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz git-sync --apply --lint --test",
+  "resume_point": null
+}

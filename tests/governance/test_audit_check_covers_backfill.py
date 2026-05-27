@@ -1234,17 +1234,6 @@ class TestCliSurfaceCoverage(unittest.TestCase):
     """Surface-level parity assertions complementing the wiring tests."""
 
     @covers("REQ-0.0.23-05-10")
-    def test_strict_flag_documented_in_command_doc(self) -> None:
-        """gz cli audit demands per-flag doc coverage; this asserts --strict
-        is named in the canonical command doc the audit walks (REQ-10)."""
-        repo_root = Path(__file__).resolve().parents[2]
-        doc = (repo_root / "docs" / "user" / "manpages" / "adr-audit-check.md").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("--strict", doc)
-        self.assertIn("audit_thresholds.json", doc)
-
-    @covers("REQ-0.0.23-05-10")
     def test_strict_flag_registered_on_parser(self) -> None:
         """The --strict flag must reach the parser layer, not just the doc
         (REQ-10 mechanical surface)."""
