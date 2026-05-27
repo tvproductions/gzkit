@@ -59,7 +59,7 @@ ls .gzkit/locks/obpi/  # should be empty
 
 ---
 
-## Workstream B — ADR-0.0.59 closeout ceremony (HOT — B.1/B.2 GREEN, awaiting B.3 operator attestation)
+## Workstream B — ADR-0.0.59 closeout ceremony (CLOSED 2026-05-27T08:50Z — ATTESTED)
 
 **One sentence:** Once workstream A closes, ADR-0.0.59 is `pre_closeout` with 5/5 OBPIs READY and QC PENDING (TDD, Docs, BDD, Human attestation) — drive the closeout ceremony to attested.
 
@@ -86,6 +86,21 @@ ls .gzkit/locks/obpi/  # should be empty
 ### B.3 evidence-package defects (informational, surfaced during B.1)
 - mkdocs INFO: `docs/governance/behavior-rules.md` references anchor `#rationale-for-behavior-rule-11-course-correction--insights` in `agent-contract-rationale.md` that does not exist. Direct-fix candidate (≤10 lines, single file) — fix during closeout or after operator preference.
 - typecheck: 5 unused `# type: ignore` suppression comments. Advisory, exit 0. Direct-fix candidate.
+
+### B.3 closeout outcome (2026-05-27T08:50Z)
+- ✅ Attestation: `attest completed` (operator verbatim) + concrete characterization per AGENTS.md § Attestation
+- ✅ All 5 quality gates PASS in closeout pipeline (Gate 2 TDD, Lint, Typecheck, Gate 3 Docs, Gate 4 BDD)
+- ✅ ADR lifecycle: `Completed` / closeout phase `attested`
+- ✅ Two-sync pattern applied (sync 1 committed closeout artifacts; sync 2 clean no-op)
+- ✅ ADR status index regenerated (87 ADRs)
+
+### B.3 follow-ups to file (6 new GHIs via /ghi-author post-closeout)
+1. **Completion-layer validator gap (HIGH):** does not enforce "BEHAVIOR-kind cannot be uncovered-accepted" — the fail-close gap that let OBPI-05 REQ-01/04 close through SUPPORT advisory while tagged BEHAVIOR. spec-reviewer caught this manually; no mechanical gate.
+2. **STRUCTURAL-FENCE parent-ADR shape check:** ADR-0.0.59 ships STRUCTURAL-FENCE kind but lacks `## Boundary Invariants` H2 in parent body. Suggests `gz validate --documents` should fire a check whenever an ADR's children tag STRUCTURAL-FENCE REQs.
+3. **Brief-side demo extractor multi-line split:** `## Examples` python -c heredocs split per-line, producing ~65% noise in walkthroughs (37 demos → 13 real for ADR-0.0.59). Routing: OBPI ceremony (ceremony renderer + brief schema).
+4. **Brief-side demo correctness audit:** demos in briefs claim to exercise REQs but often don't (demo 8: stdin ignored; demo 9: ambiguous `--brief` flag). Mechanical defense: `gz validate --brief-demo-section` should execute each demo and assert exit-code matches claim.
+5. **`req_kind.py:200` no-op `replace("-", "-")`:** quality-reviewer minor cleanup — direct-fix candidate.
+6. **`docs/governance/behavior-rules.md` broken anchor:** `agent-contract-rationale.md#rationale-for-behavior-rule-11-course-correction--insights` target anchor missing — direct-fix candidate.
 
 ### Next mechanical actions
 
