@@ -197,7 +197,7 @@ def compute_three_channel_coverage(
             raw_kind_str = cache[entry.req_id].upper()
             resolved_kind = _KIND_STR_TO_ENUM.get(raw_kind_str, ReqKind.BEHAVIOR)
             inferred = False
-            status_suffix = resolved_kind.value.lower().replace("-", "-")
+            status_suffix = resolved_kind.value.lower().replace("_", "-")
         elif dreq is not None and dreq.entity.taxonomy_kind:
             resolved_kind = _KIND_STR_TO_ENUM.get(dreq.entity.taxonomy_kind, ReqKind.BEHAVIOR)
             inferred = False
