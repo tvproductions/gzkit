@@ -20,16 +20,16 @@ Use the **Status snapshot** of each workstream below to compare observed state v
 
 ---
 
-## Workstream A — OBPI-0.0.59-05 sync → complete (HOT)
+## Workstream A — OBPI-0.0.59-05 sync → complete (CLOSED 2026-05-27T07:34Z)
 
 **One sentence:** Top-5 governance-test sweep is done and attested but uncommitted; the only thing between here and OBPI-05 closure is the staged git-sync and pipeline drainage.
 
-### Status snapshot (as of 2026-05-27T07:18Z)
-- Lock claimed: `.gzkit/locks/obpi/OBPI-0.0.59-05-first-sweep-wave-top-5-offenders.lock.json` (TTL 240m, claimed 06:26Z — **expires ~10:26Z**).
-- Pipeline state: `current_stage: sync`, `receipt_state: pass`, `next_command: uv run gz git-sync --apply --lint --test`.
-- ADR table: OBPI-05 row reads `attested_completed` (Layer-2 truth — the attestation receipt has emitted).
-- Working tree: 4 modified governance test files, 1 deletion (`test_token_block_discipline.py`), 3 modified state JSONs, 1 modified ADR brief, 1 modified audit log, 4 new `.claude/plans/` artifacts, 1 new lock file. All staged or unstaged but uncommitted.
-- Plan-audit receipt: `PASS`, gaps_found=0, 6 advisory scope-collisions (all noted in brief as benign).
+### Status snapshot (as of 2026-05-27T07:34Z — CLOSED)
+- ✅ Lock released at 07:22Z (`obpi_lock_released` event).
+- ✅ `.claude/plans/.pipeline-active*` markers removed (Layer-3 stale-marker cleanup, advisor-sanctioned).
+- ✅ git-sync applied (commit + push to origin/main).
+- ✅ OBPI-05 row reads `attested_completed`; ADR closeout phase advances to `pre_closeout` READY.
+- ✅ Pipeline launch attempt confirmed blocker: "OBPI is already completed in the ledger" — Layer-2 ground truth wins.
 
 ### Next mechanical actions
 
@@ -59,16 +59,33 @@ ls .gzkit/locks/obpi/  # should be empty
 
 ---
 
-## Workstream B — ADR-0.0.59 closeout ceremony (WARM)
+## Workstream B — ADR-0.0.59 closeout ceremony (HOT — B.1/B.2 GREEN, awaiting B.3 operator attestation)
 
 **One sentence:** Once workstream A closes, ADR-0.0.59 is `pre_closeout` with 5/5 OBPIs READY and QC PENDING (TDD, Docs, BDD, Human attestation) — drive the closeout ceremony to attested.
 
-### Status snapshot
+### Status snapshot (as of 2026-05-27T07:38Z)
 - Lifecycle: `Pending` / `pre_closeout`.
 - OBPI completion: 5/5 attested.
 - Closeout readiness: `READY`.
 - QC: `PENDING` on four channels — TDD, Docs, BDD, Human attestation.
 - Sensitivity: absent. Lane: heavy. Kind: foundation.
+
+### B.1 ARB receipts (all PASS)
+- `arb-ruff-606059e831ba4244b0044cc0340a03f6` — ruff lint clean
+- `arb-step-typecheck-4400bd085e354a0ea12141361ff2d543` — ty typecheck clean (5 advisory unused-ignore diagnostics, exit 0)
+- `arb-step-unittest-48897982a060478fb616c3da639be17e` — 5637 tests OK in 58s
+- `arb-step-coverage-ce1430c23a6c463e8dbafaed8f4cde50` — 5637 tests OK (skipped=1) in 74s
+- `arb-step-mkdocs-eca4173bdcfc43e5aa945934d3b74ef3` — strict build OK in 2.87s
+
+### B.2 validators (all PASS)
+- `gz validate --documents` ✓
+- `gz validate --req-kind-discipline` ✓
+- `gz validate --tautological-test-audit` ✓
+- `gz adr audit-check ADR-0.0.59-…` ✓ PASS — 19/36 REQs @covers-covered; 17 advisory uncovered (non-blocking; expected for SUPPORT/STRUCTURAL-FENCE kinds)
+
+### B.3 evidence-package defects (informational, surfaced during B.1)
+- mkdocs INFO: `docs/governance/behavior-rules.md` references anchor `#rationale-for-behavior-rule-11-course-correction--insights` in `agent-contract-rationale.md` that does not exist. Direct-fix candidate (≤10 lines, single file) — fix during closeout or after operator preference.
+- typecheck: 5 unused `# type: ignore` suppression comments. Advisory, exit 0. Direct-fix candidate.
 
 ### Next mechanical actions
 

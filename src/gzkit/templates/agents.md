@@ -66,13 +66,13 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 
 ## MAKE LLM STOCHASTIC VIBES INERT (ANTI-VIBING MANTRA)
 
-> gzkit's purpose is to make stochastic LLM vibing structurally inert. A 5:1 governance-to-output ratio is not overhead — it is the product. Every option is framed by *"which choice leaves the smallest surface for vibing to leak through,"* never by maintenance burden or velocity. *"Lighter ceremony"* is not a tradeoff axis.
+> gzkit's purpose is to make stochastic LLM vibing structurally inert. Governance is the surface that steers direction and holds agent-driven work accountable — not overhead to be optimized against. Every option is framed by *"which choice leaves the smallest surface for vibing to leak through,"* never by maintenance burden or velocity. *"Lighter ceremony"* is not a tradeoff axis on its own.
 
 > See [`docs/governance/agent-contract-rationale.md` § Anti-vibing mantra](docs/governance/agent-contract-rationale.md#anti-vibing-mantra--relationship-to-the-rest-of-the-contract) for the rationale and relationship to the other contract pillars; see [`docs/governance/harness-engineering-appraisal.md`](docs/governance/harness-engineering-appraisal.md) for the appraisal of gzkit's harness fitness against the Böckeler ("Harness Engineering") and Greyling ("98% of Claude Code Is Not AI") external theses.
 
 ### Operative claims (binding)
 
-1. **5:1 governance-to-output ratio is the product, not overhead.**
+1. **Governance is the steering and accountability surface for agent-driven work, not overhead.** Volume follows steering need; "lighter ceremony" alone is never the tradeoff axis. (Prior framings invoking a literal "5:1 ratio" were rhetorical — read the rule, not the metaphor.)
 2. **Every option is framed by smallest-vibing-surface, never maintenance burden or velocity.**
 3. **Doctrine drift is invariant drift.** Silent rule/threshold changes without a witness are the root failure.
 4. **Stochastic LLM vibing is the named failure class.** Pattern-matching from training memory, narrative-recall claims, "graceful degradation" exits, bundled Gate 5 attestations.

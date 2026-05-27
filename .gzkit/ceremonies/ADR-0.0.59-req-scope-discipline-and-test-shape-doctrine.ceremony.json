@@ -1,0 +1,98 @@
+{
+  "adr_id": "ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-05-27T07:43:39Z",
+  "updated_at": "2026-05-27T08:35:43Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-05-27T07:43:39Z",
+      "acknowledged_at": "2026-05-27T07:44:14Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-05-27T07:44:14Z",
+      "acknowledged_at": "2026-05-27T07:44:42Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-05-27T07:44:42Z",
+      "acknowledged_at": "2026-05-27T07:52:39Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-05-27T07:52:39Z",
+      "acknowledged_at": "2026-05-27T07:53:41Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-05-27T07:53:41Z",
+      "acknowledged_at": "2026-05-27T08:30:56Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-05-27T08:30:56Z",
+      "acknowledged_at": "2026-05-27T08:33:35Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-05-27T08:33:35Z",
+      "acknowledged_at": "2026-05-27T08:35:13Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-05-27T08:35:13Z",
+      "acknowledged_at": "2026-05-27T08:35:43Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-05-27T08:35:43Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "cat data/req_kind_grandfathering.json",
+    "grep -A 20 \"## REQ Scope Discipline\" .gzkit/rules/tests.md | head -25",
+    "head -30 docs/governance/req-scope-discipline.md",
+    "grep -B1 -A3 \"REQ Scope Discipline\" docs/governance/advisory-rules-audit.md",
+    "grep -A 10 \"## Disposition\" docs/design/adr/pool/ADR-pool.obpi-req-taxonomy-scope-fence.md",
+    "gh issue view 165 --json state,closedAt",
+    "gh issue view 531 --json state,closedAt",
+    "echo \"- [ ] REQ-0.0.59-99-01: Some claim\" | uv run gz validate --req-kind-discipline",
+    "uv run gz validate --req-kind-discipline --brief docs/design/adr/.../obpis/OBPI-0.0.59-02-req-kind-discipline-validator.md",
+    "python -c \"from gzkit.req_kind import ReqKind, ProofChannel, ReqClassification; print(ReqKind.BEHAVIOR)\"",
+    "uv run python -c \"",
+    "from pathlib import Path",
+    "from gzkit.tautological_tests import scan_test_tree, propose_dispositions",
+    "ops = scan_test_tree(Path('tests'))",
+    "print(f'{len(ops)} tautological operations found')",
+    "for op in ops[:5]:",
+    "print(f'  {op.file_path}:{op.line_number} — {op.operation_kind} in {op.function_name}')",
+    "print(f'    disposition: {propose_dispositions(op).value}')",
+    "\"",
+    "uv run gz validate --tautological-test-audit",
+    "uv run python -c \"",
+    "from pathlib import Path",
+    "from gzkit.tautological_tests import scan_test_tree, propose_disposition",
+    "ops = [o for o in scan_test_tree(Path('tests')) if o.file_path == 'tests/governance/test_token_block_discipline.py']",
+    "for op in ops:",
+    "print(f'{op.line_number} {op.operation_kind} in {op.function_name}: propose={propose_disposition(op).value}')",
+    "\"",
+    "grep '\"event\":\"chore_decommission_processed\"' .gzkit/ledger.jsonl | grep \"OBPI-0.0.59-05\" | head -1 | uv run python -m json.tool",
+    "uv run python -c \"",
+    "import json",
+    "from pathlib import Path",
+    "b = json.loads(Path('data/tautological_test_baseline.json').read_text())",
+    "from collections import Counter",
+    "c = Counter(op['file_path'] for op in b['operations'])",
+    "for f, n in c.most_common(10):",
+    "print(f'{f}: {n}')",
+    "\""
+  ],
+  "walkthrough_index": 36,
+  "attestation": "attest completed — ADR-0.0.59 closeout: 5/5 OBPIs attested_completed; 36 REQs (19 @covers + 17 advisory routed SUPPORT/STRUCTURAL-FENCE); ARB receipts arb-ruff-606059e831ba4244b0044cc0340a03f6, arb-step-typecheck-4400bd085e354a0ea12141361ff2d543, arb-step-unittest-48897982a060478fb616c3da639be17e, arb-step-coverage-ce1430c23a6c463e8dbafaed8f4cde50, arb-step-mkdocs-eca4173bdcfc43e5aa945934d3b74ef3; validators --documents/--req-kind-discipline/--tautological-test-audit/adr audit-check all PASS; walkthrough 37 demos (13 real, 24 brief-side extractor noise); spec-reviewer DO_NOT_ATTEST resolved via OBPI-05 REQ-01/04 BEHAVIOR→SUPPORT retag (4 line edits, validators clean post-edit); quality-reviewer COHERENT with 3 minor non-blocking follow-ups; 6 follow-up GHIs to file; 2 course-correction improvement records appended per Behavior Rule 11; Move 6 of get-out-of-jail recovery plan, one of GHI #517's 5-alarm structural-emergency remediations",
+  "completed_at": "2026-05-27T08:35:43Z",
+  "attempt": 1,
+  "paused_at": null
+}
