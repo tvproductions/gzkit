@@ -1,9 +1,0 @@
-{
-  "obpi_id": "OBPI-0.0.59-05-first-sweep-wave-top-5-offenders",
-  "agent": "claude-code-e7c3ff5b",
-  "pid": 34223,
-  "session_id": "e7c3ff5b-e8c4-4218-b8ae-246e427921ce",
-  "claimed_at": "2026-05-27T06:26:08.176166+00:00",
-  "branch": "main",
-  "ttl_minutes": 240
-}
