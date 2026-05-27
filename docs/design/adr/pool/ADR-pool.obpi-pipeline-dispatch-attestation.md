@@ -23,7 +23,23 @@ amendments:
       Non-Goals, Decision, Alternatives Considered, and Origin preserved
       verbatim. No new dispatch infrastructure introduced consistent with
       original Non-Goals.
----
+  - date: 2026-05-26
+    scope: |
+      Recording GHI #517 cross-analyst diagnosis corroboration
+      (`artifacts/reports/ghi-517-cross-analyst-reconciliation.md` §
+      Pattern A). Four independent analyst pillars cited this pool ADR's
+      pending status as a blocker: `gz-obpi-pipeline/SKILL.md:39,431`,
+      `gz-adr-closeout-ceremony/SKILL.md:70`, `gz-adr-audit/SKILL.md:43`,
+      `gz-adr-evaluate/SKILL.md:67`. The Lead Architect rated P4 (OBPI
+      pipeline) as gold-standard with 7×PASS on the rubric; primary-source
+      verification (this reconciliation's Dispute D6) revealed P4 is
+      3-4 PASS + 3-4 PARTIAL because dispatch attestation is the missing
+      Stage-2-runtime piece — exactly what this pool ADR scopes. No new
+      Target Scopes added; this amendment elevates the existing scope's
+      priority by recording that this pool ADR is the *single* lever that
+      lifts P4 D3 from PARTIAL to PASS and unblocks Pattern A across four
+      SKILL surfaces. Pattern routing: prose-vs-mechanics + tautological-
+      test-surface (GHI #531) per GHI #517 operator tie-break D8.
 
 # ADR-pool.obpi-pipeline-dispatch-attestation: OBPI Pipeline Subagent Dispatch Attestation
 

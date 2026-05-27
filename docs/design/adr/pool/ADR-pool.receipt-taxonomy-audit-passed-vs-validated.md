@@ -5,7 +5,28 @@ parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
 inspired_by: GHI #354
----
+amendments:
+  - date: 2026-05-26
+    scope: |
+      Absorbing audit-runtime defects surfaced by GHI #517 cross-analyst
+      diagnosis (`artifacts/reports/ghi-517-cross-analyst-reconciliation.md`).
+      Findings F7 (`gz audit` auto-validates with `attestor=get_git_user()`
+      at `audit_cmd.py:318-348`), F8 (AUDIT.md template completion not
+      checked before `validated` receipt at `audit_cmd.py:138-199`), and
+      P3-r5 (`validated` receipt emitted on audit failure — `audit_cmd.py:306`
+      comment: "Emit validation receipt (always -- even on failure, to record
+      the audit)") all fit the existing event-taxonomy frame proposed by this
+      ADR — splitting `validated` into agent-emittable `audit-passed` plus
+      operator-typed `validated` mechanically separates the failures: F7's
+      auto-validation becomes legal `audit-passed` emission (no TTY gate); F8's
+      template incompletion blocks `audit-passed`; P3-r5's audit-failure
+      receipt becomes a distinct `audit-failed` event rather than misnamed
+      `validated`. Existing five-event taxonomy and `--attestor-present`
+      proxy preserved; no new scope claimed beyond surfacing the GHI #517
+      evidence trail and renaming the on-failure receipt within the same
+      taxonomy. Pattern routing: prose-vs-mechanics + tautological-test-
+      surface (GHI #531) per GHI #517 operator tie-break D8 (two parallel
+      dominant patterns).
 
 # ADR-pool.receipt-taxonomy-audit-passed-vs-validated: Receipt Taxonomy: agent-emittable audit-passed vs operator-typed validated
 

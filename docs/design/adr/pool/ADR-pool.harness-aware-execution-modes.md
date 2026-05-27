@@ -9,7 +9,29 @@ complements:
   - ADR-pool.workflow-specification
   - ADR-pool.tool-permission-classifier
   - ADR-pool.harness-trace-bundles
----
+amendments:
+  - date: 2026-05-26
+    scope: |
+      Absorbing GHI #517 finding F16 — turn-lock ceremony gate is harness-
+      asymmetric. The duplicate-`gz closeout --ceremony --next` defense lives
+      at `.claude/hooks/ceremony-step-gate.py:62-82` (PreToolUse hook reads
+      `presented_step` from the Layer-2 lock and exits 2 when it matches
+      `last_allowed_step`). Codex, Gemini, and plain-shell sessions have no
+      equivalent gate — the same `gz closeout --ceremony --next` invocation
+      has different safety properties depending on which agent harness wraps
+      the shell. Codex's GHI #517 diagnosis pass was literally blind to the
+      protection. This is the canonical execution-mode-asymmetry shape this
+      pool ADR was scoped to address (ceremony gates are execution-mode
+      invariants by definition: they govern *which step the operator is
+      allowed to take next* across the harness boundary). Fix shape: lift
+      the lock-state read into a `gz closeout --ceremony --next` CLI
+      preflight that fail-closes when `presented_step == last_allowed_step`,
+      independent of any PreToolUse hook. The Claude Code hook remains as a
+      defense-in-depth layer but is no longer the sole gate. Reference:
+      `artifacts/reports/ghi-517-cross-analyst-reconciliation.md` § Dispute
+      D4 and § New finding F16. Pattern routing: prose-vs-mechanics +
+      tautological-test-surface (GHI #531) per GHI #517 operator tie-break
+      D8.
 
 # ADR-pool.harness-aware-execution-modes: Harness-Aware Two-Mode Execution Architecture
 

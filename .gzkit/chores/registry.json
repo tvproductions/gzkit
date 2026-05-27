@@ -307,6 +307,14 @@
             "path": ".gzkit/chores/eval-feedback-cluster",
             "lane": "lite",
             "timeoutSeconds": 300
+        },
+        {
+            "slug": "decommission-tautological-tests",
+            "title": "Decommission Tautological Tests (ADR-0.0.59-04)",
+            "version": "1.0.0",
+            "path": ".gzkit/chores/decommission-tautological-tests",
+            "lane": "heavy",
+            "timeoutSeconds": 900
         }
     ]
 }
