@@ -18,6 +18,7 @@ from pathlib import Path
 
 _IN_FLIGHT_STATUSES: frozenset[str] = frozenset({"Draft", "Proposed"})
 _FOUNDATION_ID_PATTERN = re.compile(r"^ADR-\d+\.\d+\.\d+$")
+_FOUNDATION_SHORT_ID_PREFIX = re.compile(r"^(ADR-\d+\.\d+\.\d+)")
 _GHI_PATTERN = re.compile(r"GHI\s*#\d+|GHI-\d+", re.IGNORECASE)
 
 
@@ -48,8 +49,16 @@ def _extract_h1_title(text: str) -> str:
 
 
 def _foundation_short_id(raw_id: str) -> str:
-    """Strip any canonical-slug suffix, leaving the short form ADR-X.Y.Z."""
-    return raw_id.split("-foundation-", 1)[0] if raw_id else ""
+    """Extract the leading ADR-X.Y.Z prefix from a raw id string.
+
+    Accepts either bare short form (``ADR-0.0.57``) or canonical-slug form
+    (``ADR-0.0.57-<slug>``) and returns the leading ``ADR-X.Y.Z`` prefix.
+    Returns the empty string when the input does not start with that shape.
+    """
+    if not raw_id:
+        return ""
+    match = _FOUNDATION_SHORT_ID_PREFIX.match(raw_id)
+    return match.group(1) if match else ""
 
 
 def gather_in_flight_foundations(project_root: Path) -> list[dict[str, str]]:

@@ -14,6 +14,7 @@ import json
 import re
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -200,6 +201,78 @@ class TestFoundationSubpackage(unittest.TestCase):
         for entry in entries:
             self.assertIn("id", entry)
             self.assertIn("status", entry)
+
+
+class TestFoundationShortIdHandlesCanonicalSlug(unittest.TestCase):
+    """Regression for GHI #518: canonical-slug id shape (no `-foundation-`
+    substring) is the real corpus convention; the previous split heuristic
+    filtered every real entry. Asserts gather_in_flight_foundations recovers
+    the short-id from the leading ``ADR-X.Y.Z`` prefix."""
+
+    def test_gather_in_flight_returns_entry_for_canonical_slug_id(self) -> None:
+        from gzkit.foundation import gather_in_flight_foundations
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            adr_dir = (
+                project_root
+                / "docs"
+                / "design"
+                / "adr"
+                / "foundation"
+                / "ADR-0.0.37-constitutional-invariant-composition"
+            )
+            adr_dir.mkdir(parents=True)
+            (adr_dir / "ADR-0.0.37-constitutional-invariant-composition.md").write_text(
+                "---\n"
+                "id: ADR-0.0.37-constitutional-invariant-composition\n"
+                "status: Draft\n"
+                "title: Composition\n"
+                "kind: foundation\n"
+                "---\n\n"
+                "# ADR-0.0.37: Composition\n",
+                encoding="utf-8",
+            )
+            entries = gather_in_flight_foundations(project_root)
+        self.assertEqual(
+            len(entries),
+            1,
+            msg=(
+                "GHI #518: gather_in_flight_foundations must return one entry "
+                "for a canonical-slug id (no '-foundation-' substring); got "
+                f"{entries!r}"
+            ),
+        )
+        self.assertEqual(entries[0]["id"], "ADR-0.0.37")
+        self.assertEqual(entries[0]["status"], "Draft")
+
+
+class TestTriageScriptProjectRootResolution(unittest.TestCase):
+    """Regression for GHI #518: triage script's ``_project_root_from_script``
+    was off-by-one and resolved to ``<repo>/.gzkit/`` instead of ``<repo>``,
+    causing the bare CLI invocation to scan a non-existent foundation dir
+    and return ``[]``. ``--project-root`` consumers (e2e fixtures) masked it."""
+
+    def test_resolves_repo_root_from_skills_scripts_location(self) -> None:
+        spec = importlib.util.spec_from_file_location("_triage_script", _TRIAGE_SCRIPT)
+        self.assertIsNotNone(spec)
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp).resolve()
+            script_path = repo / ".gzkit" / "skills" / "x" / "scripts" / "y.py"
+            script_path.parent.mkdir(parents=True)
+            script_path.write_text("", encoding="utf-8")
+            resolved = module._project_root_from_script(script_path)
+        self.assertEqual(
+            resolved,
+            repo,
+            msg=(
+                "GHI #518: _project_root_from_script must resolve to the "
+                "repository root (4 levels above the script), not .gzkit/."
+            ),
+        )
 
 
 if __name__ == "__main__":

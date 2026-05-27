@@ -28,11 +28,16 @@ from pathlib import Path
 _IN_FLIGHT_STATUSES: frozenset[str] = frozenset({"Draft", "Proposed"})
 _ADR_ID_PATTERN = re.compile(r"^ADR-(?:pool\.[a-z0-9-]+|\d+\.\d+\.\d+)", re.IGNORECASE)
 _FOUNDATION_ID_PATTERN = re.compile(r"^ADR-\d+\.\d+\.\d+$")
+_FOUNDATION_SHORT_ID_PREFIX = re.compile(r"^(ADR-\d+\.\d+\.\d+)")
 
 
 def _project_root_from_script(script_path: Path) -> Path:
-    """Resolve repo root from this script's location (.gzkit/skills/.../scripts)."""
-    return script_path.resolve().parents[3]
+    """Resolve repo root from this script's location.
+
+    Script lives at ``<repo>/.gzkit/skills/<skill>/scripts/triage.py`` —
+    four directory levels below the repository root.
+    """
+    return script_path.resolve().parents[4]
 
 
 def _parse_simple_frontmatter(text: str) -> dict[str, str]:
@@ -122,7 +127,8 @@ def gather_records(project_root: Path) -> list[dict[str, object]]:
         if status not in _IN_FLIGHT_STATUSES:
             continue
         adr_id = frontmatter.get("id", "")
-        adr_short = adr_id.split("-foundation-", 1)[0] if adr_id else ""
+        prefix_match = _FOUNDATION_SHORT_ID_PREFIX.match(adr_id) if adr_id else None
+        adr_short = prefix_match.group(1) if prefix_match else ""
         if not _FOUNDATION_ID_PATTERN.match(adr_short):
             continue
         title = _extract_title(text)
