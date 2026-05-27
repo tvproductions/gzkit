@@ -42,7 +42,7 @@ Implement `gz validate --surface-axis` as a new validator scope: enumerate every
 - `tests/governance/test_surface_axis_inventory.py` (new) — surface enumeration assertions
 - `tests/governance/test_surface_axis_callgraph.py` (new) — Projection-as-gate detector assertions
 - `features/governance/surface_axis.feature` (new) — BDD acceptance scenarios tagged `@REQ-0.0.38-02-NN`
-- `docs/user/manpages/gz-validate.md` — document `--surface-axis` scope
+- `docs/user/manpages/validate.md` — document `--surface-axis` scope
 - `docs/user/runbook.md` — operator workflow entry
 - `docs/governance/governance_runbook.md` — governance-maintainer workflow entry
 - `data/surface_axis_waivers.json` (new) — explicit waiver list for legitimate Projection-as-input cases (parallel to `_UTF8_PIPE_WAIVERS`)
@@ -78,7 +78,7 @@ Implement `gz validate --surface-axis` as a new validator scope: enumerate every
 6. REQUIREMENT: `data/surface_axis_waivers.json` is a frozen Pydantic-validated registry naming explicit waivers (legitimate Projection-as-input cases — e.g., a CLI smoke-test that genuinely wants to run a status command and exit-code-check it as a sanity gate, with the named-and-cited reason). Waivers require a `reason` field, a `cited_authority` field (foundation ADR or operator decision-record reference), and a `expires_after` field (date or `null` for permanent). Adding a waiver requires the brief authoring it to declare `sensitivity: security` if the waiver covers a security-surface-overlapping path; otherwise default sensitivity. The waiver registry's own schema enforces this.
 7. REQUIREMENT: `tests/governance/test_surface_axis_validator.py` asserts each of the three audit functions returns `passed=True` on a fixture repo with all surfaces correctly classified, and returns explicit failure with named-violation evidence on each of the three failure modes. Fixtures must include at least one Projection-as-gate-input violation, one missing-declaration violation, and one Evidentiary→Authoritative promotion violation.
 8. REQUIREMENT: `features/governance/surface_axis.feature` defines the Gate 4 BDD acceptance scenarios — at minimum: the validator passes on a clean fixture; the validator fails-closed (exit 3) on each of the three failure classes; the validator honors waivers from `data/surface_axis_waivers.json`; the `--json` output shape matches the documented schema. Tags use `@REQ-0.0.38-02-NN`.
-9. REQUIREMENT: `docs/user/manpages/gz-validate.md` documents the new `--surface-axis` scope, including an EXAMPLES section with real CLI output (per `.gzkit/rules/cli.md` § "Adding CLI Features" → "New Subcommand (Heavy Lane)" item 4).
+9. REQUIREMENT: `docs/user/manpages/validate.md` documents the new `--surface-axis` scope, including an EXAMPLES section with real CLI output (per `.gzkit/rules/cli.md` § "Adding CLI Features" → "New Subcommand (Heavy Lane)" item 4).
 10. REQUIREMENT: `docs/user/runbook.md` and `docs/governance/governance_runbook.md` add entries for `gz validate --surface-axis` per `.gzkit/rules/gate5-runbook-code-covenant.md`.
 11. REQUIREMENT: `gz cli audit` exits 0 with the new `validate --surface-axis` scope appearing in the manpage, command doc index, and SKILL coverage roster, per `.gzkit/rules/cli.md` § "Consistency".
 12. REQUIREMENT: The validator MUST NOT modify any existing surface's axis declaration — it reads-only and reports. Surface declaration edits are OBPI-0.0.38-03's exclusive scope.
@@ -193,7 +193,7 @@ test -f src/gzkit/governance/surface_axis_inventory.py
 test -f src/gzkit/governance/surface_axis_callgraph.py
 test -f data/surface_axis_waivers.json
 test -f features/governance/surface_axis.feature
-test -f docs/user/manpages/gz-validate.md
+test -f docs/user/manpages/validate.md
 grep -q "surface-axis" docs/user/runbook.md
 grep -q "surface-axis" docs/governance/governance_runbook.md
 grep -q "arb-step-surface-axis" src/gzkit/arb/validator.py

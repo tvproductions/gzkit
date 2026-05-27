@@ -331,7 +331,7 @@ Promotion derived from `ADR-pool.evidence-vs-authority-doctrine` on 2026-05-06; 
 - [ ] Ledger events: `surface_axis_classified` (one per surface, emitted under OBPI-0.0.38-03)
 - [ ] Operator runbook update: `docs/user/runbook.md` — `gz validate --surface-axis` workflow added
 - [ ] Governance runbook update: `docs/governance/governance_runbook.md` — surface classification protocol added
-- [ ] Manpage: `docs/user/manpages/gz-validate.md` — `--surface-axis` scope documented
+- [ ] Manpage: `docs/user/manpages/validate.md` — `--surface-axis` scope documented
 - [ ] Three-axis taxonomy table: see § Decision in this ADR
 - [ ] OBPI briefs: OBPI-0.0.38-01-rule-and-schema, OBPI-0.0.38-02-surface-axis-validator, OBPI-0.0.38-03-retroactive-classification
 
