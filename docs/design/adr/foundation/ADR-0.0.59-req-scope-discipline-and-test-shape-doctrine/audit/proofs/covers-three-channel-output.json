@@ -1,0 +1,136 @@
+{
+  "by_adr": [
+    {
+      "identifier": "ADR-0.0.59",
+      "total_reqs": 6,
+      "covered_reqs": 5,
+      "uncovered_reqs": 1,
+      "coverage_percent": 83.3,
+      "behavior_uncovered_reqs": 0,
+      "grandfathered_reqs": 1
+    }
+  ],
+  "by_obpi": [
+    {
+      "identifier": "OBPI-0.0.59-03",
+      "total_reqs": 6,
+      "covered_reqs": 5,
+      "uncovered_reqs": 1,
+      "coverage_percent": 83.3,
+      "behavior_uncovered_reqs": 0,
+      "grandfathered_reqs": 1
+    }
+  ],
+  "entries": [
+    {
+      "req_id": "REQ-0.0.59-03-01",
+      "covered": true,
+      "covering_tests": [
+        "TestComputeThreeChannelCoverage.test_behavior_covered_req_has_pass_status",
+        "TestComputeThreeChannelCoverage.test_structural_fence_req_is_grandfathered",
+        "TestComputeThreeChannelCoverage.test_support_req_is_advisory_not_fail_closed",
+        "TestCoverageEntryExtendedFields.test_coverage_entry_has_ledger_event_ids_field",
+        "TestCoverageEntryExtendedFields.test_coverage_entry_has_parent_adr_anchor_field",
+        "TestCoverageEntryExtendedFields.test_coverage_entry_has_proof_channel_field",
+        "TestCoverageEntryExtendedFields.test_coverage_entry_has_proof_status_field",
+        "TestCoverageEntryExtendedFields.test_coverage_entry_has_taxonomy_kind_field",
+        "TestReqEntityTaxonomyKind.test_behavior_tag_stored_on_req_entity",
+        "TestReqEntityTaxonomyKind.test_structural_fence_tag_stored_on_req_entity",
+        "TestReqEntityTaxonomyKind.test_support_tag_stored_on_req_entity",
+        "TestReqEntityTaxonomyKind.test_untagged_req_has_none_taxonomy_kind"
+      ],
+      "taxonomy_kind": "BEHAVIOR",
+      "proof_channel": "TEST_COVERS",
+      "proof_status": "pass",
+      "ledger_event_ids": [],
+      "parent_adr_anchor": null
+    },
+    {
+      "req_id": "REQ-0.0.59-03-02",
+      "covered": true,
+      "covering_tests": [
+        "TestComputeThreeChannelCoverage.test_grandfathering_cache_overrides_inference",
+        "TestComputeThreeChannelCoverage.test_legacy_untagged_req_inferred_as_grandfathered",
+        "TestInferReqKind.test_artifact_edited_text_infers_support",
+        "TestInferReqKind.test_boundary_invariants_text_infers_structural_fence",
+        "TestInferReqKind.test_default_inference_is_behavior",
+        "TestInferReqKind.test_denied_paths_text_infers_structural_fence",
+        "TestInferReqKind.test_gz_validate_text_infers_support",
+        "TestInferReqKind.test_remains_inside_scope_infers_structural_fence",
+        "TestInferReqKind.test_structural_fence_beats_support_on_denied_paths"
+      ],
+      "taxonomy_kind": "BEHAVIOR",
+      "proof_channel": "TEST_COVERS",
+      "proof_status": "pass",
+      "ledger_event_ids": [],
+      "parent_adr_anchor": null
+    },
+    {
+      "req_id": "REQ-0.0.59-03-03",
+      "covered": true,
+      "covering_tests": [
+        "TestReqCoverageRecordModelContract.test_req_coverage_record_constructs_with_valid_inputs",
+        "TestReqCoverageRecordModelContract.test_req_coverage_record_is_frozen",
+        "TestReqCoverageRecordModelContract.test_req_coverage_record_rejects_extra_fields",
+        "TestReqCoverageRecordModelContract.test_req_coverage_record_serializes_to_json",
+        "TestReqCoverageRecordModelContract.test_req_coverage_summary_constructs_with_valid_inputs",
+        "TestReqCoverageRecordModelContract.test_req_coverage_summary_is_frozen",
+        "TestReqCoverageRecordModelContract.test_req_coverage_summary_rejects_extra_fields"
+      ],
+      "taxonomy_kind": "BEHAVIOR",
+      "proof_channel": "TEST_COVERS",
+      "proof_status": "pass",
+      "ledger_event_ids": [],
+      "parent_adr_anchor": null
+    },
+    {
+      "req_id": "REQ-0.0.59-03-04",
+      "covered": true,
+      "covering_tests": [
+        "TestBypassFlagLedgerEvent.test_bypass_emits_bypass_used_ledger_event",
+        "TestBypassFlagLedgerEvent.test_bypass_flag_requires_bypass_reason"
+      ],
+      "taxonomy_kind": "BEHAVIOR",
+      "proof_channel": "TEST_COVERS",
+      "proof_status": "pass",
+      "ledger_event_ids": [],
+      "parent_adr_anchor": null
+    },
+    {
+      "req_id": "REQ-0.0.59-03-05",
+      "covered": true,
+      "covering_tests": [
+        "TestComputeThreeChannelCoverage.test_behavior_covered_req_has_pass_status",
+        "TestComputeThreeChannelCoverage.test_behavior_uncovered_req_has_fail_status",
+        "TestComputeThreeChannelCoverage.test_structural_fence_req_is_grandfathered",
+        "TestComputeThreeChannelCoverage.test_support_req_is_advisory_not_fail_closed",
+        "TestCoverageEntryExtendedFields.test_coverage_rollup_has_behavior_uncovered_reqs",
+        "TestCoverageEntryExtendedFields.test_coverage_rollup_has_grandfathered_reqs"
+      ],
+      "taxonomy_kind": "BEHAVIOR",
+      "proof_channel": "TEST_COVERS",
+      "proof_status": "pass",
+      "ledger_event_ids": [],
+      "parent_adr_anchor": null
+    },
+    {
+      "req_id": "REQ-0.0.59-03-06",
+      "covered": false,
+      "covering_tests": [],
+      "taxonomy_kind": "SUPPORT",
+      "proof_channel": "LEDGER_PLUS_VALIDATOR",
+      "proof_status": "advisory-support",
+      "ledger_event_ids": [],
+      "parent_adr_anchor": null
+    }
+  ],
+  "summary": {
+    "identifier": "OBPI-0.0.59-03",
+    "total_reqs": 6,
+    "covered_reqs": 5,
+    "uncovered_reqs": 1,
+    "coverage_percent": 83.3,
+    "behavior_uncovered_reqs": 0,
+    "grandfathered_reqs": 1
+  }
+}

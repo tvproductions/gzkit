@@ -1,0 +1,50 @@
+ADR audit-check: ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.59-01-author-doctrine-and-supersession
+  - OBPI-0.0.59-02-req-kind-discipline-validator
+  - OBPI-0.0.59-03-parity-gate-three-channel-extension
+  - OBPI-0.0.59-04-decommission-tautological-tests-chore
+  - OBPI-0.0.59-05-first-sweep-wave-top-5-offenders
+Advisory 17 REQ(s) without @covers traceability (non-blocking):
+  - REQ-0.0.59-01-01
+  - REQ-0.0.59-01-02
+  - REQ-0.0.59-01-03
+  - REQ-0.0.59-01-04
+  - REQ-0.0.59-01-05
+  - REQ-0.0.59-01-06
+  - REQ-0.0.59-01-07
+  - REQ-0.0.59-01-08
+  - REQ-0.0.59-03-06
+  - REQ-0.0.59-04-09
+  - REQ-0.0.59-04-10
+  - REQ-0.0.59-04-11
+  - REQ-0.0.59-05-01
+  - REQ-0.0.59-05-02
+  - REQ-0.0.59-05-03
+  - REQ-0.0.59-05-04
+  - REQ-0.0.59-05-05
+
+Coverage: 19/36 REQs covered (52.8%)
+  OBPI-0.0.59-01: 0/8 (0.0%)
+  OBPI-0.0.59-02: 6/6 (100.0%)
+  OBPI-0.0.59-03: 5/6 (83.3%)
+  OBPI-0.0.59-04: 8/11 (72.7%)
+  OBPI-0.0.59-05: 0/5 (0.0%)
+Uncovered REQs (17):
+  - REQ-0.0.59-01-01
+  - REQ-0.0.59-01-02
+  - REQ-0.0.59-01-03
+  - REQ-0.0.59-01-04
+  - REQ-0.0.59-01-05
+  - REQ-0.0.59-01-06
+  - REQ-0.0.59-01-07
+  - REQ-0.0.59-01-08
+  - REQ-0.0.59-03-06
+  - REQ-0.0.59-04-09
+  - REQ-0.0.59-04-10
+  - REQ-0.0.59-04-11
+  - REQ-0.0.59-05-01
+  - REQ-0.0.59-05-02
+  - REQ-0.0.59-05-03
+  - REQ-0.0.59-05-04
+  - REQ-0.0.59-05-05

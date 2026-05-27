@@ -1,0 +1,30 @@
+usage: gz chores [-h] [--quiet | --verbose] [--debug]
+                 {list,show,plan,advise,run,audit,doctor,propose-ghi} ...
+
+Discover, plan, execute, and audit repository chores.
+
+positional arguments:
+  {list,show,plan,advise,run,audit,doctor,propose-ghi}
+    list                List chores from registry
+    show                Display CHORE.md for one chore
+    plan                Show plan details for one chore
+    advise              Dry-run criteria and report status
+    run                 Execute one chore by slug
+    audit               Audit chore log presence
+    doctor              Re-scaffold missing or damaged canonical chores;
+                        preserve proofs/
+    propose-ghi         File GHI proposals for unfiled cluster proposal
+                        records
+
+options:
+  -h, --help            show this help message and exit
+  --quiet, -q           Suppress non-error output
+  --verbose, -v         Enable verbose output
+  --debug               Enable debug mode with full tracebacks
+
+Examples
+    gz chores list
+    gz chores show my-chore
+    gz chores run my-chore
+
+Exit codes

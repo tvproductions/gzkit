@@ -1,0 +1,5 @@
+.gzkit/rules/tests.md:## REQ Scope Discipline (binding)
+docs/governance/req-scope-discipline.md:### BEHAVIOR
+docs/governance/req-scope-discipline.md:### SUPPORT
+docs/governance/req-scope-discipline.md:### STRUCTURAL-FENCE
+docs/governance/req-scope-discipline.md:### SUPPORT advisory note

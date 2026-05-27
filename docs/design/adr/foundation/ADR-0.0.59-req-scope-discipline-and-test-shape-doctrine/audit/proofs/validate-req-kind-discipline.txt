@@ -1,0 +1,3 @@
+Validated: req_kind_discipline
+
+✓ All validations passed (1 scopes).

@@ -1,0 +1,6 @@
+-rw-r--r--@ 1 jeff  staff    6750 May 26 03:32 .gzkit/rules/tests.md
+-rw-r--r--@ 1 jeff  staff     102 May 27 02:25 data/req_kind_grandfathering.json
+-rw-r--r--@ 1 jeff  staff  180452 May 27 02:19 data/tautological_test_baseline.json
+-rw-r--r--@ 1 jeff  staff   14239 May 26 05:10 docs/governance/req-scope-discipline.md
+-rw-r--r--@ 1 jeff  staff   11326 May 27 03:43 src/gzkit/req_kind.py
+-rw-r--r--@ 1 jeff  staff    8518 May 26 07:45 src/gzkit/tautological_tests.py

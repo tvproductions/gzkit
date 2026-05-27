@@ -1,0 +1,50 @@
+                                Chores Registry
+┏━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┓
+┃ Slug              ┃ Lane  ┃ Version ┃ Vendor ┃ Criteria ┃ Title              ┃
+┡━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━┩
+│ agents-md-archit… │ lite  │ 1.0.0   │        │        7 │ Add Architectural  │
+│                   │       │         │        │          │ Boundaries to      │
+│                   │       │         │        │          │ AGENTS.md          │
+│ arb-pattern-extr… │ lite  │ 1.0.0   │        │        1 │ ARB Pattern        │
+│                   │       │         │        │          │ Extraction (Code   │
+│                   │       │         │        │          │ Style Feedback     │
+│                   │       │         │        │          │ Loop)              │
+│ cli-contract-gov… │ heavy │ 1.0.0   │        │        2 │ CLI Contract       │
+│                   │       │         │        │          │ Governance (Drift  │
+│                   │       │         │        │          │ & Evolution)       │
+│ complexity-reduc… │ lite  │ 1.0.0   │        │        2 │ Complexity         │
+│                   │       │         │        │          │ Reduction (Xenon   │
+│                   │       │         │        │          │ C/C/C)             │
+│ config-paths-rem… │ lite  │ 1.0.0   │        │        2 │ Config Paths       │
+│                   │       │         │        │          │ Remediation        │
+│ control-surface-… │ lite  │ 1.0.0   │        │        5 │ Control Surface    │
+│                   │       │         │        │          │ Audit — Rule-Pair  │
+│                   │       │         │        │          │ Conflict Matrix    │
+│                   │       │         │        │          │ (Pass A)           │
+│ control-surface-… │ lite  │ 1.0.0   │        │        5 │ Control Surface    │
+│                   │       │         │        │          │ Audit — Rule Prose │
+│                   │       │         │        │          │ vs Promoted Check  │
+│                   │       │         │        │          │ Parity (Pass C)    │
+│ control-surface-… │ lite  │ 1.0.0   │        │        4 │ Control Surface    │
+│                   │       │         │        │          │ Audit — Skill/Rule │
+│                   │       │         │        │          │ Reachability       │
+│                   │       │         │        │          │ Matrix (Pass B)    │
+│ coverage-40pct    │ lite  │ 1.0.0   │        │        3 │ Coverage >=40%     │
+│                   │       │         │        │          │ Baseline           │
+│ cross-platform-t… │ lite  │ 1.0.0   │        │        1 │ Cross-Platform     │
+│                   │       │         │        │          │ Test Cleanup       │
+│                   │       │         │        │          │ (Windows-Safe      │
+│                   │       │         │        │          │ Patterns)          │
+│ decommission-tau… │ heavy │ 1.0.0   │        │        3 │ Decommission       │
+│                   │       │         │        │          │ Tautological Tests │
+│                   │       │         │        │          │ (ADR-0.0.59-04)    │
+│ dependency-curre… │ lite  │ 1.0.0   │        │        2 │ Dependency         │
+│                   │       │         │        │          │ Currency (Tooling  │
+│                   │       │         │        │          │ Stack Drift Scan)  │
+│ doc-coverage      │ heavy │ 1.0.0   │        │        1 │ Documentation      │
+│                   │       │         │        │          │ Cross-Coverage     │
+│                   │       │         │        │          │ Enforcement        │
+│ eval-feedback-cl… │ lite  │ 1.0.0   │        │        2 │ Evaluation         │
+│                   │       │         │        │          │ Feedback           │
+│                   │       │         │        │          │ Clustering         │
+│                   │       │         │        │          │ (ADR-0.0.26)       │
