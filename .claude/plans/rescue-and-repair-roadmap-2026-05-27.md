@@ -134,6 +134,23 @@ uv run gz adr audit-check ADR-0.0.59-req-scope-discipline-and-test-shape-doctrin
 
 ---
 
+## Workstream B′ — ADR-0.0.59 post-closeout audit pass (CLOSED 2026-05-27T09:39Z — VALIDATED)
+
+**One sentence:** After B closed at Completed, operator ran an ADR audit pipeline that transitioned ADR-0.0.59 Completed→Validated; commit `7aeb6a65` landed the audit artifacts that had been sitting uncommitted at session start.
+
+### Status snapshot
+- ✅ ADR-0.0.59 lifecycle: `Validated` / closeout phase `validated` / QC `READY`.
+- ✅ Audit emitted `audit_receipt_emitted` events (meta-receipt-bind + validated) attested by g0.
+- ✅ Versioning table row appended: `0.0.59 | Validated | g0 | 2026-05-27 | accept audit — …`.
+- ✅ Audit artifacts under `docs/design/adr/foundation/ADR-0.0.59-…/audit/` (`AUDIT_PLAN.md`, `AUDIT.md`, 10 proof files in `proofs/`) committed in `7aeb6a65`.
+- ✅ git-sync clean, no active locks, no pipeline markers.
+- ✅ B.3 follow-up GHIs all filed/fixed pre-session (#537, #538, #539, #540 filed; #541 `req_kind` no-op replace, #542 broken anchor — both already shipped as direct-fix commits `6588d35a`, `e7d9630f`).
+
+### Audit-surfaced follow-ups (6 non-blocking, identified in AUDIT.md)
+Per the Validated row enrichment, the audit identified six channel-depth shortfalls worth tracking. Re-read `audit/AUDIT.md` § Follow-up GHIs to enumerate them before opening tickets — they are distinct from the 6 closeout-time follow-ups above.
+
+---
+
 ## Workstream C — Defect / tech-debt GHI cluster (BACKLOG)
 
 **One sentence:** Open repair-flavored GHIs that aren't blocking workstreams A/B but are the next plate after ADR-0.0.59 closes — route each per AGENTS.md § Defect-fix routing thresholds.
@@ -203,3 +220,4 @@ uv run gz adr audit-check ADR-0.0.59-req-scope-discipline-and-test-shape-doctrin
 ## Update log
 
 - 2026-05-27 — Initial roadmap authored from session orientation. Three workstreams: A=OBPI-05 sync, B=ADR-0.0.59 closeout, C=defect/tech-debt GHI cluster. Active OBPI lock TTL ~10:26Z.
+- 2026-05-27T09:39Z — Added Workstream B′ (post-closeout audit pass, CLOSED Validated). Sync of uncommitted audit artifacts landed in `7aeb6a65`. Workstreams A, B, B′ all closed; Workstream C is the next plate.
