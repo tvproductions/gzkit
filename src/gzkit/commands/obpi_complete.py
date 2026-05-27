@@ -1076,6 +1076,21 @@ def _execute_transaction(
         # Phase 3: Emit receipt to main ledger
         ledger.append(receipt_event)
 
+        # Phase 4: Auto-complete in_progress TASKs tied to this OBPI
+        # (GHI #552 layer 4 — TASK auto-coordination at completion).
+        # Mirrors the auto-start at pipeline launch; closes the per-REQ
+        # execution witnesses without requiring manual `gz task complete`.
+        from gzkit.commands.task import auto_complete_obpi_tasks  # noqa: PLC0415
+
+        obpi_id_str = receipt_event.id if hasattr(receipt_event, "id") else ""
+        parent_adr_str = receipt_event.parent if hasattr(receipt_event, "parent") else ""
+        if obpi_id_str and parent_adr_str:
+            auto_complete_obpi_tasks(
+                ledger,
+                obpi_id=obpi_id_str,
+                parent_adr=parent_adr_str,
+            )
+
     except Exception:
         # Rollback: restore brief if it was changed
         if obpi_file.read_text(encoding="utf-8") != original_content:

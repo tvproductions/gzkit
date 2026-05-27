@@ -12,8 +12,9 @@ from gzkit.events import (
     TaskEscalatedEvent,
     TaskStartedEvent,
 )
-from gzkit.ledger import LEDGER_SCHEMA, Ledger
-from gzkit.tasks import TaskId, TaskStatus
+from gzkit.ledger import LEDGER_SCHEMA, Ledger, LedgerEvent
+from gzkit.tasks import TaskId, TaskStatus, derive_req_task_id
+from gzkit.triangle import extract_reqs_from_brief
 
 
 def _load_tasks_for_obpi(ledger: Ledger, obpi_id: str) -> dict[str, dict[str, str]]:
@@ -78,9 +79,81 @@ def _emit_task_event(
 ) -> None:
     """Serialize a typed task event and append to the ledger."""
     data = json.loads(event_model.model_dump_json())
-    from gzkit.ledger import LedgerEvent
-
     ledger.append(LedgerEvent.model_validate(data))
+
+
+def auto_start_obpi_tasks(
+    ledger: Ledger,
+    *,
+    obpi_id: str,
+    parent_adr: str,
+    brief_content: str,
+    agent: str = "gz-obpi-pipeline",
+) -> list[str]:
+    """Auto-start one TASK (seq=01) per REQ declared in an OBPI brief.
+
+    Called by ``gz obpi pipeline`` at full-launch entry (GHI #552 layer 4 —
+    pipeline TASK auto-coordination). Idempotent: TASKs already started in the
+    ledger are skipped silently. Returns the list of newly-started TASK IDs.
+
+    Eliminates the manual-coordination friction that drove silent TASK
+    abandonment (3 Task: vs. 305+ Ceremony: trailers in 30-day audit).
+    """
+    req_entities = extract_reqs_from_brief(brief_content, parent_obpi=obpi_id)
+    existing = _load_tasks_for_obpi(ledger, obpi_id)
+    started: list[str] = []
+    for req in req_entities:
+        try:
+            task_id = derive_req_task_id(str(req.id))
+        except ValueError:
+            continue
+        if task_id in existing:
+            continue
+        event = TaskStartedEvent(
+            event="task_started",
+            id=task_id,
+            schema_=LEDGER_SCHEMA,
+            task_id=task_id,
+            obpi_id=obpi_id,
+            adr_id=parent_adr,
+            agent=agent,
+        )
+        _emit_task_event(ledger, event)
+        started.append(task_id)
+    return started
+
+
+def auto_complete_obpi_tasks(
+    ledger: Ledger,
+    *,
+    obpi_id: str,
+    parent_adr: str,
+    agent: str = "gz-obpi-pipeline",
+) -> list[str]:
+    """Auto-complete every in_progress TASK tied to an OBPI on receipt emission.
+
+    Called by ``gz obpi complete`` after the ``obpi_receipt_emitted`` event
+    lands (GHI #552 layer 4). Transitions in_progress TASKs to completed;
+    skips terminal states (completed/blocked/escalated). Idempotent: already-
+    completed TASKs are not re-emitted.
+    """
+    tasks = _load_tasks_for_obpi(ledger, obpi_id)
+    completed: list[str] = []
+    for task_id, info in tasks.items():
+        if info["status"] != TaskStatus.IN_PROGRESS.value:
+            continue
+        event = TaskCompletedEvent(
+            event="task_completed",
+            id=task_id,
+            schema_=LEDGER_SCHEMA,
+            task_id=task_id,
+            obpi_id=obpi_id,
+            adr_id=parent_adr,
+            agent=agent,
+        )
+        _emit_task_event(ledger, event)
+        completed.append(task_id)
+    return completed
 
 
 def task_list_cmd(obpi: str, *, as_json: bool = False) -> None:

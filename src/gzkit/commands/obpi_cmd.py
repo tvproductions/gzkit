@@ -324,6 +324,35 @@ def obpi_emit_receipt_cmd(
     console.print(f"  Attestor: {attestor}")
 
 
+def _run_pipeline_full_launch_task_start(
+    ledger: Any,
+    *,
+    obpi_id: str,
+    parent_adr: str,
+    obpi_content: str,
+) -> None:
+    """Auto-start one TASK per brief REQ at pipeline full-launch entry.
+
+    GHI #552 layer 4. Eliminates the manual `gz task start` friction that
+    drove silent TASK abandonment. Idempotent — re-launches do not duplicate
+    `task_started` events.
+    """
+    from gzkit.commands.task import auto_start_obpi_tasks  # noqa: PLC0415
+
+    started = auto_start_obpi_tasks(
+        ledger,
+        obpi_id=obpi_id,
+        parent_adr=parent_adr,
+        brief_content=obpi_content,
+    )
+    if not started:
+        return
+    console.print("")
+    console.print(f"Auto-started {len(started)} TASK(s) for OBPI REQs:")
+    for task_id in started:
+        console.print(f"  - {task_id}")
+
+
 def obpi_pipeline_cmd(
     obpi: str,
     start_from: str | None,
@@ -440,6 +469,9 @@ def obpi_pipeline_cmd(
     )
 
     if start_from is None:
+        _run_pipeline_full_launch_task_start(
+            ledger, obpi_id=obpi_id, parent_adr=resolved_parent, obpi_content=obpi_content
+        )
         _print_pipeline_implementation_next_steps(obpi_id)
         return
 

@@ -113,6 +113,26 @@ class TaskEntity(BaseModel):
         return self.model_copy(update={"status": target})
 
 
+_REQ_TO_TASK_RE = re.compile(r"^REQ-(\d+\.\d+\.\d+)-(\d+)-(\d+)$")
+
+
+def derive_req_task_id(req_id: str, *, seq: int = 1) -> str:
+    """Derive the canonical TASK ID for a given REQ ID.
+
+    REQ-X.Y.Z-NN-MM → TASK-X.Y.Z-NN-MM-{seq:02d}
+
+    The default ``seq=1`` is the auto-coordinated TASK that the OBPI pipeline
+    creates on launch (one per REQ). Manual multi-cycle work increments seq
+    via subsequent `gz task start TASK-X.Y.Z-NN-MM-PP` invocations.
+    """
+    match = _REQ_TO_TASK_RE.match(req_id)
+    if not match:
+        msg = f"Invalid REQ ID format: {req_id!r} (expected REQ-X.Y.Z-NN-MM)"
+        raise ValueError(msg)
+    semver, obpi_item, req_index = match.groups()
+    return f"TASK-{semver}-{obpi_item}-{req_index}-{seq:02d}"
+
+
 # ---------------------------------------------------------------------------
 # Plan-derived factory
 # ---------------------------------------------------------------------------

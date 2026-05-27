@@ -27,6 +27,7 @@ from gzkit.tasks import (
     TaskId,
     TaskStatus,
     create_task_from_plan_step,
+    derive_req_task_id,
     format_commit_trailer,
     has_task_trailer,
     parse_ceremony_trailers,
@@ -635,6 +636,32 @@ class TestParseTaskTrailers(unittest.TestCase):
         self.assertEqual(str(result[0]), "TASK-0.20.0-01-01-01")
 
 
+class TestDeriveReqTaskId(unittest.TestCase):
+    """derive_req_task_id: REQ → canonical TASK ID mapping (GHI #552 layer 4)."""
+
+    def test_default_seq_01(self) -> None:
+        self.assertEqual(derive_req_task_id("REQ-0.0.41-01-03"), "TASK-0.0.41-01-03-01")
+
+    def test_explicit_seq(self) -> None:
+        self.assertEqual(derive_req_task_id("REQ-0.22.0-04-12", seq=5), "TASK-0.22.0-04-12-05")
+
+    def test_zero_padded_seq(self) -> None:
+        self.assertEqual(derive_req_task_id("REQ-1.2.3-01-01", seq=99), "TASK-1.2.3-01-01-99")
+
+    def test_invalid_req_raises(self) -> None:
+        with self.assertRaises(ValueError):
+            derive_req_task_id("TASK-0.0.41-01-01")
+
+    def test_malformed_req_raises(self) -> None:
+        with self.assertRaises(ValueError):
+            derive_req_task_id("REQ-0.0.41")
+
+    def test_kind_tag_suffix_rejected(self) -> None:
+        """REQ IDs with inline [kind] tags are not raw IDs; reject."""
+        with self.assertRaises(ValueError):
+            derive_req_task_id("REQ-0.0.41-01-03 [behavior]")
+
+
 class TestHasTaskTrailer(unittest.TestCase):
     """has_task_trailer: presence-detection for either formal or slug form (GHI #552)."""
 
@@ -1191,6 +1218,157 @@ class TestStateTaskIntegration(_TaskCliBase):
         ts = obpi_data["task_summary"]
         self.assertIn("tracing_policy", ts)
         self.assertIn(ts["tracing_policy"], ("advisory", "required"))
+
+
+class TestAutoStartObpiTasks(_TaskCliBase):
+    """auto_start_obpi_tasks: GHI #552 layer 4 — pipeline TASK auto-coordination."""
+
+    _BRIEF_WITH_REQS = """---
+id: OBPI-0.1.0-01
+parent: ADR-0.1.0-f
+item: 1
+lane: Lite
+status: Draft
+---
+
+# OBPI
+
+## Acceptance Criteria
+
+- [ ] REQ-0.1.0-01-01: First criterion
+- [ ] REQ-0.1.0-01-02: Second criterion
+- [ ] REQ-0.1.0-01-03: Third criterion
+"""
+
+    def test_auto_start_creates_one_task_per_req(self) -> None:
+        from gzkit.commands.task import auto_start_obpi_tasks
+
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        started = auto_start_obpi_tasks(
+            ledger,
+            obpi_id="OBPI-0.1.0-01",
+            parent_adr="ADR-0.1.0-f",
+            brief_content=self._BRIEF_WITH_REQS,
+            agent="test",
+        )
+        self.assertEqual(
+            started,
+            [
+                "TASK-0.1.0-01-01-01",
+                "TASK-0.1.0-01-02-01",
+                "TASK-0.1.0-01-03-01",
+            ],
+        )
+
+    def test_auto_start_idempotent(self) -> None:
+        """Re-launching the pipeline does not duplicate task_started events."""
+        from gzkit.commands.task import auto_start_obpi_tasks
+
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        first = auto_start_obpi_tasks(
+            ledger,
+            obpi_id="OBPI-0.1.0-01",
+            parent_adr="ADR-0.1.0-f",
+            brief_content=self._BRIEF_WITH_REQS,
+            agent="test",
+        )
+        second = auto_start_obpi_tasks(
+            ledger,
+            obpi_id="OBPI-0.1.0-01",
+            parent_adr="ADR-0.1.0-f",
+            brief_content=self._BRIEF_WITH_REQS,
+            agent="test",
+        )
+        self.assertEqual(len(first), 3)
+        self.assertEqual(second, [])
+
+    def test_auto_start_empty_when_no_reqs(self) -> None:
+        from gzkit.commands.task import auto_start_obpi_tasks
+
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        no_reqs_brief = "# OBPI\n\nNo Acceptance Criteria here.\n"
+        started = auto_start_obpi_tasks(
+            ledger,
+            obpi_id="OBPI-0.1.0-01",
+            parent_adr="ADR-0.1.0-f",
+            brief_content=no_reqs_brief,
+            agent="test",
+        )
+        self.assertEqual(started, [])
+
+
+class TestAutoCompleteObpiTasks(_TaskCliBase):
+    """auto_complete_obpi_tasks: GHI #552 layer 4 — TASK completion at OBPI receipt."""
+
+    _BRIEF_WITH_REQS = (
+        "## Acceptance Criteria\n- [ ] REQ-0.1.0-01-01: First\n- [ ] REQ-0.1.0-01-02: Second\n"
+    )
+
+    def test_auto_complete_transitions_in_progress_tasks(self) -> None:
+        from gzkit.commands.task import auto_complete_obpi_tasks, auto_start_obpi_tasks
+
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        auto_start_obpi_tasks(
+            ledger,
+            obpi_id="OBPI-0.1.0-01",
+            parent_adr="ADR-0.1.0-f",
+            brief_content=self._BRIEF_WITH_REQS,
+            agent="test",
+        )
+        completed = auto_complete_obpi_tasks(
+            ledger,
+            obpi_id="OBPI-0.1.0-01",
+            parent_adr="ADR-0.1.0-f",
+            agent="test",
+        )
+        self.assertEqual(sorted(completed), ["TASK-0.1.0-01-01-01", "TASK-0.1.0-01-02-01"])
+
+    def test_auto_complete_skips_blocked_tasks(self) -> None:
+        from gzkit.commands.task import auto_complete_obpi_tasks, auto_start_obpi_tasks
+
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        auto_start_obpi_tasks(
+            ledger,
+            obpi_id="OBPI-0.1.0-01",
+            parent_adr="ADR-0.1.0-f",
+            brief_content=self._BRIEF_WITH_REQS,
+            agent="test",
+        )
+        # Manually block one task
+        _invoke(["task", "block", "TASK-0.1.0-01-01-01", "--reason", "test-block"])
+        completed = auto_complete_obpi_tasks(
+            ledger,
+            obpi_id="OBPI-0.1.0-01",
+            parent_adr="ADR-0.1.0-f",
+            agent="test",
+        )
+        self.assertEqual(completed, ["TASK-0.1.0-01-02-01"])
+
+    def test_auto_complete_idempotent(self) -> None:
+        from gzkit.commands.task import auto_complete_obpi_tasks, auto_start_obpi_tasks
+
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        auto_start_obpi_tasks(
+            ledger,
+            obpi_id="OBPI-0.1.0-01",
+            parent_adr="ADR-0.1.0-f",
+            brief_content=self._BRIEF_WITH_REQS,
+            agent="test",
+        )
+        first = auto_complete_obpi_tasks(
+            ledger,
+            obpi_id="OBPI-0.1.0-01",
+            parent_adr="ADR-0.1.0-f",
+            agent="test",
+        )
+        second = auto_complete_obpi_tasks(
+            ledger,
+            obpi_id="OBPI-0.1.0-01",
+            parent_adr="ADR-0.1.0-f",
+            agent="test",
+        )
+        self.assertEqual(len(first), 2)
+        self.assertEqual(second, [])
 
 
 if __name__ == "__main__":
