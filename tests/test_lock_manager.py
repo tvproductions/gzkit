@@ -201,6 +201,21 @@ class TestCurrentBranch(unittest.TestCase):
         with patch("subprocess.run", return_value=mock_result):
             self.assertEqual(current_branch(), "unknown")
 
+    def test_subprocess_run_uses_errors_replace(self):
+        mock_result = unittest.mock.MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = "main\n"
+        with patch("subprocess.run", return_value=mock_result) as mock_run:
+            current_branch()
+            kwargs = mock_run.call_args.kwargs
+            self.assertEqual(
+                kwargs.get("errors"),
+                "replace",
+                "GHI #534: subprocess.run must pass errors='replace' so a git "
+                "rev-parse grandchild emitting non-utf8 stdout (e.g. CP1252 on "
+                "Windows) does not crash the _readerthread with UnicodeDecodeError.",
+            )
+
 
 # ---------------------------------------------------------------------------
 # lock_dir / lock_path

@@ -79,6 +79,7 @@ def current_branch() -> str:
             capture_output=True,
             text=True,
             encoding="utf-8",
+            errors="replace",
             timeout=5,
         )
         return result.stdout.strip() if result.returncode == 0 else "unknown"
