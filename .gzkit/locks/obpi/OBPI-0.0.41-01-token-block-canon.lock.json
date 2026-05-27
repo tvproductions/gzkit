@@ -1,9 +1,0 @@
-{
-  "obpi_id": "OBPI-0.0.41-01-token-block-canon",
-  "agent": "claude-code-fffb69b5",
-  "pid": 47806,
-  "session_id": "fffb69b5-652e-4d06-9f67-b986d68bc062",
-  "claimed_at": "2026-05-27T11:36:50.881234+00:00",
-  "branch": "main",
-  "ttl_minutes": 120
-}
