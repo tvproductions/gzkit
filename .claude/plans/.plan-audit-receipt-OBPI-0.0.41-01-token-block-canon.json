@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.0.41-01-token-block-canon",
+  "timestamp": "2026-05-27T11:36:56.057031+00:00",
+  "verdict": "PASS",
+  "plan_file": "rescue-and-repair-roadmap-2026-05-27.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.41-token-block-lock-discipline/ADR-0.0.41-token-block-lock-discipline.md"
+      ]
+    }
+  ]
+}

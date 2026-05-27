@@ -3,7 +3,7 @@ id: OBPI-0.0.41-01-token-block-canon
 parent: ADR-0.0.41-token-block-lock-discipline
 item: 1
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.41-01-token-block-canon: Token Block Canon
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.41-token-block-lock-discipline/ADR-0.0.41-token-block-lock-discipline.md`
 - **Checklist Item:** #1 - "OBPI-0.0.41-01: Token-block doctrine canon — author `.gzkit/rules/token-block-discipline.md` and `docs/governance/token-block-doctrine.md` (railway-historical reference). Specify the binding sub-invariants the structural enforcement alone does not close: (a) auditable `--abandon` reason categories (rejecting free-text-only reasons; categories include `network_loss`, `external_blocker`, `wrong_obpi_claimed`, `tool_failure`, with extension protocol); (b) minimum-information requirements for the register entry (last lock-event timestamp, last commit SHA, named decisions, branch state) so structurally-valid-but-semantically-empty handoffs are also rejected; (c) lock-takeover / reaping register-entry rule (the railway-analogue lost-token procedure: a reaping by agent-B emits an `abandoned_by_reaper` register entry recording agent-A's last-known state); (d) **time-bound discipline (TTL canon and reaping cadence): default TTL value with rationale, escalation policy (warn-then-reap windows), who-may-reap (any agent at next session-start; explicit operator override), and the attestation requirement that the reaping agent MUST produce the `abandoned_by_reaper` register entry as a precondition of the reap — mirroring the rule for ordinary release, so reaping is not a doctrine-bypass**; (e) cross-link from AGENTS.md § Behavior Rules and `docs/governance/state-doctrine.md`. Establishes vocabulary (token, register entry, traversal, abandonment, reaping) before any code change."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -131,23 +131,26 @@ Author the canonical rule file `.gzkit/rules/token-block-discipline.md` that spe
      outputs into Evidence. -->
 
 ```bash
-# File existence: primary artifact
-test -f .gzkit/rules/token-block-discipline.md && echo "✓ Rule file exists"
+# Each command below is a single-program invocation; the pipeline runtime
+# executes verification commands without shell wrapping, so compound `&&`
+# expressions fail with `test: unexpected operator`. Bare `grep` returns
+# exit 0 on match, non-zero on miss or missing file — sufficient signal.
 
-# Structure validation
-test -f .gzkit/rules/token-block-discipline.md && grep -q "^---$" .gzkit/rules/token-block-discipline.md && echo "✓ YAML frontmatter present"
-test -f .gzkit/rules/token-block-discipline.md && grep -q "<!-- rule-version:" .gzkit/rules/token-block-discipline.md && echo "✓ Body-level rule-version comment present"
+# File existence + structure
+grep -q . .gzkit/rules/token-block-discipline.md
+grep -q "^---$" .gzkit/rules/token-block-discipline.md
+grep -q "<!-- rule-version:" .gzkit/rules/token-block-discipline.md
 
-# Content validation: five binding sub-invariants
-test -f .gzkit/rules/token-block-discipline.md && grep -qE "(--abandon|reason.*category|network_loss|external_blocker)" .gzkit/rules/token-block-discipline.md && echo "✓ --abandon categories documented"
-test -f .gzkit/rules/token-block-discipline.md && grep -qE "(minimum-information|timestamp|commit SHA|branch state)" .gzkit/rules/token-block-discipline.md && echo "✓ Register-entry min-info rules documented"
-test -f .gzkit/rules/token-block-discipline.md && grep -qE "(abandoned_by_reaper|reaping)" .gzkit/rules/token-block-discipline.md && echo "✓ Reaping protocol documented"
-test -f .gzkit/rules/token-block-discipline.md && grep -qE "(TTL|time-bound|default.*value)" .gzkit/rules/token-block-discipline.md && echo "✓ TTL canon documented"
-test -f .gzkit/rules/token-block-discipline.md && grep -qE "(vocabulary|token|register entry|traversal)" .gzkit/rules/token-block-discipline.md && echo "✓ Vocabulary section present"
+# Five binding sub-invariants
+grep -qE "(--abandon|reason.*category|network_loss|external_blocker)" .gzkit/rules/token-block-discipline.md
+grep -qE "(minimum-information|timestamp|commit SHA|branch state)" .gzkit/rules/token-block-discipline.md
+grep -qE "(abandoned_by_reaper|reaping)" .gzkit/rules/token-block-discipline.md
+grep -qE "(TTL|time-bound|default.*value)" .gzkit/rules/token-block-discipline.md
+grep -qE "(vocabulary|token|register entry|traversal)" .gzkit/rules/token-block-discipline.md
 
 # Cross-link validation
-test -f .gzkit/rules/token-block-discipline.md && grep -q "AGENTS.md" .gzkit/rules/token-block-discipline.md && echo "✓ AGENTS.md cross-link present"
-test -f .gzkit/rules/token-block-discipline.md && grep -q "state-doctrine.md" .gzkit/rules/token-block-discipline.md && echo "✓ State-doctrine cross-link present"
+grep -q "AGENTS.md" .gzkit/rules/token-block-discipline.md
+grep -q "state-doctrine.md" .gzkit/rules/token-block-discipline.md
 
 # Overall lint and validation
 uv run gz validate --documents
@@ -180,35 +183,31 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [x] **Key Proof:** Rule file exists with five binding sub-invariants fully specified; lexically validated
 - [x] **OBPI Acceptance:** Evidence recorded; all requirements (REQ-0.0.41-01-01 through 06) satisfied
 
-> **Lane: Lite** — process/governance documentation work with no CLI/API/schema changes. No Gate 5 human attestation required for self-closure.
+> **Lane: Lite** — process/governance documentation work with no CLI/API/schema changes. Lite-lane scope determines which gates fire (no Gate 3 docs scope, no Gate 4 BDD scope, no Gate 5 security walkthrough), but per ADR-0.0.36 universal attestation, Gate 5 brief-level human attestation is REQUIRED regardless of lane — there is no self-close path.
 
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
+> For ceremony steps and universal-attestation rules, see `AGENTS.md` section `Universal OBPI Attestation (ADR-0.0.36, GHI #342)`.
 
 ### Implementation Summary
 
-Parent ADR § Decision item (quoted verbatim):
 
-> Couple lock-release to a handoff register entry. The binding invariant: A token cannot be surrendered without a register entry.
-
-**Implementation:** Authored `.gzkit/rules/token-block-discipline.md` specifying five binding sub-invariants before any structural code changes land:
-
-1. Auditable abandon categories: `--abandon <category>:<reason>` enum (base: network_loss, external_blocker, wrong_obpi_claimed, tool_failure; extension protocol via ADR)
-2. Register-entry minimum-information rule: timestamp, commit SHA, decision context, branch state required for validator acceptance
-3. Reaping register-entry rule: agent-B abandonment by reaper creates `abandoned_by_reaper` degenerate handoff before release succeeds
-4. TTL canon and reaping discipline: 24h default, 12h warn threshold, any-agent authorization, reaping-agent-attestation-before-release
-5. Release fail-closed precondition: lock-release refuses without register entry (or --abandon flag)
-
-Vocabulary section (token, issue, register entry, traversal, abandonment, reaping) establishes shared semantics before code changes. Cross-links to AGENTS.md, state-doctrine.md, and ADR-0.0.41.
+- Rule authored: .gzkit/rules/token-block-discipline.md on 2026-05-07 with all 5 binding sub-invariants per parent ADR § Decision item
+- Abandon enum: network_loss, external_blocker, wrong_obpi_claimed, tool_failure (extension protocol via published ADR; free-text-only rejection)
+- Register-entry minimum-info: last lock-event timestamp, last commit SHA, named decision context, branch state — entries lacking any of these fail validator
+- Reaping protocol: abandoned_by_reaper degenerate handoff created BEFORE release_lock() succeeds (mirrors ordinary release fail-closed precondition)
+- TTL canon: 24h default; 12h warn-then-reap escalation; any-agent authorization at SessionStart; operator override via --force; reaping-attestation-before-release universal rule
+- Vocabulary section: token (OBPI lock), issue (claim event), register entry (handoff doc), traversal (OBPI session), abandonment (degenerate handoff), reaping (lock takeover by other agent) — railway-historical mapping to absolute-block working
+- Brief drift corrections in this session: verification commands rewritten from shell-compound to bare single-program greps (test -f X && grep && echo failed with unexpected-operator under shell-less runtime); line-183 prose updated to reflect ADR-0.0.36 universal Gate-5 attestation
+- Ceremony exercises authored doctrine: lock claimed agent=claude-code-fffb69b5 at session-start; register-entry handoff to follow at release per token-block sub-invariant 5
 
 ### Key Proof
 
-Rule file exists and contains all five binding sub-invariants in fail-closed language:
 
-```bash
-$ test -f .gzkit/rules/token-block-discipline.md && wc -l .gzkit/rules/token-block-discipline.md
-229 .gzkit/rules/token-block-discipline.md
+- REQ coverage: 6/6 covered (REQ-0.0.41-01-01 through 06) via SUPPORT-kind proof channel (ledger artifact_edited events 2026-05-07/10 + structural validator gz validate --documents admitting rule-file shape)
+- Verification checks: 16/16 PASS including precomplete
+- Canonical ARB receipts: arb-ruff-790611fd5d1349b59b4888b9b2e50787, arb-step-typecheck-18f81962b9874950bffbf7d7a80cb8b1, arb-step-unittest-2d40900ae9d24e829e8ca253cd91e337, arb-step-mkdocs-75182a2ef39a48d4863fa07584a21e26
+- Precomplete preconditions: 7/7 met (lock_held, plan_audit_receipt, brief_readiness, reconcile_idempotent, arb_receipts, brief_headings, behave_req_coverage)
+- Plan-audit advisory: ADR-0.0.42 OBPI-04 sibling-overlap on parent ADR file (non-blocking)
 
-$ grep -E "^## Binding" .gzkit/rules/token-block-discipline.md
 ## Binding Sub-Invariant 1: Auditable Abandon Categories
 ## Binding Sub-Invariant 2: Register-Entry Minimum-Information Rule
 ## Binding Sub-Invariant 3: Reaping Register-Entry Rule
@@ -261,9 +260,9 @@ OBPI-0.0.41-01 establishes the governance vocabulary and binding sub-invariants 
 
 ## Human Attestation
 
-- Attestor: Jeffry
-- Attestation: OBPI-0.0.41-01 completes doctrine canon: `.gzkit/rules/token-block-discipline.md` authored with five binding sub-invariants (auditable abandon categories, register-entry minimum-information, reaping protocol, TTL canon, release precondition), vocabulary section, and cross-links to AGENTS.md and state-doctrine.md. Lite lane, self-closeable. All validations pass (commit 3c5f1d54).
-- Date: 2026-05-07
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.41-01 token-block canon: .gzkit/rules/token-block-discipline.md specifies all 5 binding sub-invariants per parent ADR § Decision item (abandon-category enum with extension protocol, register-entry minimum-info rule, reaping protocol via abandoned_by_reaper, TTL canon with 24h default + 12h warn-then-reap, vocabulary section grounding token/issue/register-entry/traversal/abandonment/reaping). 6/6 REQs covered (REQ-0.0.41-01-01 through 06) via SUPPORT-kind proof channel (ledger artifact_edited + structural validator) per REQ Scope Discipline (ADR-0.0.59); 16/16 verification checks PASS including precomplete (7/7 preconditions). Canonical ARB receipts: arb-ruff-790611fd5d1349b59b4888b9b2e50787, arb-step-typecheck-18f81962b9874950bffbf7d7a80cb8b1, arb-step-unittest-2d40900ae9d24e829e8ca253cd91e337, arb-step-mkdocs-75182a2ef39a48d4863fa07584a21e26. Closeout exercises the doctrine the OBPI authored: lock claimed at session-start (agent=claude-code-fffb69b5); register-entry handoff to follow at release.
+- Date: 2026-05-27
 ```
 
 ### Gate 3 (Docs)
@@ -317,6 +316,6 @@ _No defects tracked._
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-05-27
 
 **Evidence Hash:** -

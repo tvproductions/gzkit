@@ -10,10 +10,10 @@
 
 The SessionStart hook already prints orientation. Before doing anything else, run these in this order:
 
-1. `git status --short` — see what's uncommitted (workstream A's gauge).
+1. `git status --short` — see what's uncommitted.
 2. `cat .claude/plans/.pipeline-active.json` — current OBPI pipeline stage + next_command. Source of truth for "what's the next mechanical action".
 3. `ls .gzkit/locks/obpi/` — list active OBPI locks. Empty = no claim held.
-4. `uv run gz adr status ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine` — ADR-0.0.59 readiness.
+4. `uv run gz adr status <parent-ADR-of-active-OBPI>` — readiness of the ADR whose OBPI is active. Currently `ADR-0.0.41-token-block-lock-discipline` (Workstream D). Past hot ADRs (re-check Validated): `ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine`.
 5. `gh issue list --state open --label tech-debt --limit 20` — defect/repair backlog.
 
 Use the **Status snapshot** of each workstream below to compare observed state vs. expected and identify the next move.
@@ -151,9 +151,49 @@ Per the Validated row enrichment, the audit identified six channel-depth shortfa
 
 ---
 
+## Workstream D — OBPI-0.0.41-01-token-block-canon (HOT)
+
+**One sentence:** Token-block canon OBPI is in flight at `verify` (PASS); next mechanical step is `--from=ceremony`. ADR-0.0.41 is `Pending` / `pre_closeout` BLOCKED on this OBPI's ledger-proof gap, so D unblocks the entire token-block discipline ADR.
+
+### Status snapshot (as of 2026-05-27T11:37Z)
+- Lock claimed: `.gzkit/locks/obpi/OBPI-0.0.41-01-token-block-canon.lock.json`.
+- Pipeline state: `current_stage: verify`, `receipt_state: pass`, `next_command: uv run gz obpi pipeline OBPI-0.0.41-01-token-block-canon --from=ceremony`, `resume_point: ceremony`.
+- ADR table: ADR-0.0.41 lifecycle `Pending` / `pre_closeout` BLOCKED — `OBPI-0.0.41-01: state=pending, brief=draft, done=no`. Ledger-of-truth: no `obpi_receipt_emitted` for `-01` yet, so OBPI is effectively pre-attestation despite verify pass.
+- Working tree (uncommitted at session start, valid repair work):
+  - `M docs/governance/GovZero/adr-status.md` — regenerated via `gz register-adrs` (Layer-3 derived view).
+  - `M .gzkit/insights/agent-insights.jsonl` — schema-conformance fix on the trailing entry (`timestamp` → `ts`, `evidence` string → list); matches `InsightRecord` Pydantic schema.
+  - `M docs/design/adr/foundation/ADR-0.0.41-token-block-lock-discipline/obpis/OBPI-0.0.41-01-token-block-canon.md` — brief authoring work.
+  - `M .gzkit/ledger.jsonl` — pipeline_launched + verify events for OBPI-D.
+  - `?? .claude/plans/.pipeline-active*.json` — runtime markers.
+- Independent verification: `uv run gz check` exits 0 (24/24 quality checks pass; 1684 @covers advisories are non-blocking).
+
+### Next mechanical actions
+
+```bash
+# D.1 — Drive pipeline from ceremony through sync to completion
+uv run gz obpi pipeline OBPI-0.0.41-01-token-block-canon --from=ceremony
+
+# D.2 — Confirm closure (after pipeline runs through complete)
+uv run gz adr status ADR-0.0.41-token-block-lock-discipline  # OBPI-01 row should be attested_completed
+ls .gzkit/locks/obpi/  # should be empty
+tail -20 .gzkit/ledger.jsonl  # confirm obpi_lock_released + obpi_receipt_emitted for OBPI-01
+```
+
+### Exit criteria for workstream D
+- `OBPI-0.0.41-01-token-block-canon` row reads `attested_completed`.
+- ADR-0.0.41 closeout phase transitions out of `BLOCKED` (advances to `READY` or proceeds to closeout ceremony per pipeline orchestration).
+- `.gzkit/locks/obpi/` empty, no pipeline markers in `.claude/plans/`.
+
+### Watch for
+- **Ceremony stage may surface new spec-reviewer findings** like the ADR-0.0.59 OBPI-05 BEHAVIOR/SUPPORT mis-routing. Dispatch reviewers and act on findings before attesting.
+- **OBPI-01 brief is `draft` per Layer-1 frontmatter** but pipeline verify passed. If the ceremony surfaces brief-shape issues, fix the brief and re-verify; never bypass.
+- **Do NOT pre-commit to authoring OBPI-0.0.41-02/03/04 briefs until OBPI-01 closes.** That was the standing decision from the 2026-05-27T~14:30Z roadmap log entry.
+
+---
+
 ## Workstream C — Defect / tech-debt GHI cluster (BACKLOG)
 
-**One sentence:** Open repair-flavored GHIs that aren't blocking workstreams A/B but are the next plate after ADR-0.0.59 closes — route each per AGENTS.md § Defect-fix routing thresholds.
+**One sentence:** Open repair-flavored GHIs that aren't blocking workstreams A/B/D but are the next plate after token-block canon closes — route each per AGENTS.md § Defect-fix routing thresholds.
 
 ### Status snapshot (open GHIs, by rough cluster — re-run `gh issue list --state open --label tech-debt --limit 30` for current truth)
 
@@ -174,13 +214,17 @@ Per the Validated row enrichment, the audit identified six channel-depth shortfa
 | #518 | foundation-triage: id-slug split filters all real foundation ADRs | **Triage defect** | CLOSED 2026-05-27 (commit `390cb0a9`) |
 | #548 | foundation-rubric: id-slug split duplicates #518 at two sites | **Triage defect (sibling to #518)** | CLOSED 2026-05-27 (commit `2d69f340`) |
 | #516 | closeout-ceremony: passive-presenter loop lacks REQ-evidence mech verify | **Closeout discipline** | OBPI ceremony — touches attestation surface |
+| #539 | closeout-ceremony: brief demo extractor splits multi-line `python -c` heredocs per-line | **Ceremony renderer + brief schema** | OBPI ceremony — surfaced by ADR-0.0.59 closeout walkthrough (37 demos → 13 real) |
+| #540 | validate: brief `## Examples` demos are hand-authored and not executed against claimed REQ | **Brief-side mechanical defense** | OBPI ceremony — `gz validate --brief-demo-section` should execute each demo and assert exit-code matches claim |
+| #544 | covers: grandfathering cache loaded as raw dict, no schema validation | **Pydantic policy gap (eval-feedback)** | Direct-fix candidate — wrap in Pydantic model; silent decode-error swallowing is the live defect |
 
 ### Suggested prioritization (operator override at will)
 
-1. **Unblock workstream B first** — #527 and #524 may surface during ADR-0.0.59 closeout's `gz validate --documents` step. If so, decide in-flight: direct fix (≤10 lines, ≤2 files, precedent ≥3 fix() commits in 60d) vs. file under #480 umbrella.
-2. **Pipeline plumbing while context is hot** — #534 (utf8 crash) and #528/#529 (handoff coupling) touch the same runtime you just exercised in workstream A. Cheapest to fix now.
-3. **Codex context emergency** — #519 is labeled `emergency`. Triage scope before scheduling; may need its own ADR.
-4. **Big-bang validator backfill** — #480 is the heaviest piece. Author an ADR or absorb into ADR-0.0.59 successor; this is OBPI ceremony, not direct fix.
+1. **Unblock workstream D first** — drive OBPI-0.0.41-01 through ceremony to completion. ADR-0.0.41 cannot close until then.
+2. **Pipeline plumbing while context is hot** — #534 (already CLOSED), #528 (CLOSED dup), #529 (partial-overlap routed to pool ADR), #544 (Pydantic policy gap, direct-fix candidate).
+3. **Closeout-ceremony renderer cluster** — #539 + #540 surfaced together during ADR-0.0.59 walkthrough; same root cause class. Bundle into one OBPI scoped to ceremony renderer + brief schema.
+4. **Codex context emergency** — #519 is labeled `emergency`. Triage scope before scheduling; may need its own ADR.
+5. **Big-bang validator backfill** — #480 is the heaviest piece. Author an ADR or absorb into ADR-0.0.59 successor; this is OBPI ceremony, not direct fix.
 
 ### Per-GHI re-engagement protocol
 1. `gh issue view <N>` — re-read body.
@@ -228,4 +272,5 @@ Per the Validated row enrichment, the audit identified six channel-depth shortfa
 - 2026-05-27T~11:00Z — Workstream C continues. **GHI #518 CLOSED** via direct fix `390cb0a9` (`fix(foundation-triage): extract canonical short-id and resolve repo root`). Two coupled bugs in the bundled triage script's request path both caused the `[]` symptom: (1) `-foundation-` split heuristic mismatched real id shape (the GHI's analytical core), (2) `_project_root_from_script` parents[3]→parents[4] off-by-one (surfaced during fix verification — masked by `TestTriageScriptE2E`'s explicit `--project-root`). Live invocation now returns 25 entries. Sibling **GHI #548** filed for `src/gzkit/foundation/rubric.py` carrying the same split bug at two sites (lines 286, 315); kept out of #518's commit scope mirroring #534 routing pattern. Two regression tests fence both #518 fixes: `TestFoundationShortIdHandlesCanonicalSlug`, `TestTriageScriptProjectRootResolution`.
 - 2026-05-27T~12:30Z — Workstream C continues. **GHI #532 PARTIAL** via direct fix `d292321a` (`fix(briefs): retarget ADR-0.0.38 manpage refs to validate.md`). Routing call: Option 1 (still-open briefs only) per operator approval, then course-corrected to ADR-0.0.38-only after pre-edit observed-state check revealed ADR-0.0.37's OBPI-03 brief is `attested_completed` despite ADR lifecycle showing `Pending` (the ADR lifecycle reflects unbooked closeout, not unfinished OBPIs). 4/9 refs closed via commit; 5/9 attested-brief refs split to new **GHI #549** (doctrine question — pool-ADR-bound when operator green-lights); project-wide `gz-<verb>.md` sweep flagged as unfiled chore. #532 stays open as project-wide-sweep tracker. Course-correction logged to `.gzkit/insights/agent-insights.jsonl` per Behavior Rule 11.
 - 2026-05-27T~12:00Z — Workstream C continues. **GHI #548 CLOSED** via direct fix `2d69f340` (`fix(foundation-rubric): extract canonical short-id at both sites`). Closes the `-foundation-` substring-split class across all three gzkit surfaces (composer + script via #518, rubric composer + CLI path via #548). Site 1 (`_gather_foundation_ids`) was the live defect — `count=0` against 25 in-flight foundation ADRs. Site 2 (`main()` `--foundation-root` CLI path) arrived at the right answer by accident of a second-line `re.sub` fallback; normalized to the canonical regex pattern for consistency. Both sites now share the `_FOUNDATION_SHORT_ID_PREFIX = re.compile(r"^(ADR-\d+\.\d+\.\d+)")` module constant. Regression fence: `TestGatherFoundationIdsHandlesCanonicalSlug`. Observed-behavior verification: `_gather_foundation_ids(Path('.'))` returns 25 records covering `ADR-0.0.{37..62}` post-fix. Class-of-failure verification: `rg -n 'split("-foundation-"' src/gzkit/` returns zero matches post-fix. Next plate per priority order: #534-class pipeline plumbing already closed; next candidates are #528/#529 (handoff coupling), #532 (manpage path-drift trivial fix), or #519 (codex context emergency).
+- 2026-05-27T11:37Z — **Workstream D opened**: OBPI-0.0.41-01-token-block-canon launched, verify stage PASS, resume_point=ceremony. Lock claimed; brief frontmatter still `draft` (Layer-1) but Layer-2/3 advance. Second-agent (Gemini-Pro) verification pass confirmed: (a) `gz check` exits 0 (24/24 quality checks pass), (b) two uncommitted in-flight repairs are valid — `adr-status.md` regenerated via `gz register-adrs`, `agent-insights.jsonl` schema-conformance fix on trailing entry (`timestamp` → `ts`, `evidence` string → list). Three Workstream-C-listed GHIs cross-confirmed open and real (#539, #540, #544); added to Workstream C table with explicit routing intuition. Next plate: drive D through ceremony.
 - 2026-05-27T~14:30Z — Workstream C continues. **GHI #528 CLOSED as duplicate of ADR-0.0.41 checklist scope** (no code change). Routing investigation discovered ADR-0.0.41-token-block-lock-discipline's body checklist already specifies the work across two OBPIs: OBPI-0.0.41-03 (storage consolidation: `.gzkit/handoffs/` canonical write target, `{ADR-package}/handoffs/` becomes Layer-3 derived mirror, migrate existing) and OBPI-0.0.41-05 (update SKILL.md + `scripts/session_orientation.py` to single canonical store). Direct-fix variant (touch SKILL.md prescription only) considered and rejected: would recreate the GHI's own named anti-pattern — *"authored canon without mechanical wiring"* — at smaller scale, leaving migration + Layer-3 mirror machinery + orientation-hook AGENTS.md noise filter still pending for OBPI-03/05. **Sibling-cut #529 NOT closed**: partial-overlap finding — only item 4 of its Expected section (canonical-location convergence) is covered by ADR-0.0.41; items 1–3 (first-class `gz handoff` CLI verb, pipeline integration at every stage boundary, auto-load on `--from=<stage>` resume) remain net-new feature work routed to `ADR-pool.handoff-system-pipeline-integration` post-recovery (the destination #529's own body proposed). **Next decision point**: ADR-0.0.41 currently `Pending` / `pre_closeout` BLOCKED on OBPI-0.0.41-01 ledger-proof gap. Recommended next plate: run `uv run gz obpi pipeline OBPI-0.0.41-01-token-block-canon` to diagnose whether the gap is missed-ceremony (cheap unblock) or real implementation gap (re-route). Do NOT pre-commit to authoring OBPI-02/03/04 briefs until OBPI-01 unblocks.
