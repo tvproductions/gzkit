@@ -28,6 +28,7 @@ from gzkit.tasks import (
     TaskStatus,
     create_task_from_plan_step,
     format_commit_trailer,
+    has_task_trailer,
     parse_ceremony_trailers,
     parse_eval_feedback_source_trailers,
     parse_task_trailers,
@@ -632,6 +633,46 @@ class TestParseTaskTrailers(unittest.TestCase):
         result = parse_task_trailers(msg)
         self.assertEqual(len(result), 1)
         self.assertEqual(str(result[0]), "TASK-0.20.0-01-01-01")
+
+
+class TestHasTaskTrailer(unittest.TestCase):
+    """has_task_trailer: presence-detection for either formal or slug form (GHI #552)."""
+
+    def test_formal_task_trailer_returns_true(self) -> None:
+        msg = "Implement REQ model\n\nTask: TASK-0.20.0-01-01-01\n"
+        self.assertTrue(has_task_trailer(msg))
+
+    def test_slug_form_task_trailer_returns_true(self) -> None:
+        """Direct-fix slug form: ``Task: TASK-<slug>-#<ghi>``."""
+        msg = "fix(validator): tighten trailer rule\n\nTask: TASK-task-spine-restoration-#552\n"
+        self.assertTrue(has_task_trailer(msg))
+
+    def test_ceremony_only_returns_false(self) -> None:
+        msg = "chore: update mirrors\n\nCeremony: gz-git-sync\n"
+        self.assertFalse(has_task_trailer(msg))
+
+    def test_eval_feedback_only_returns_false(self) -> None:
+        msg = "fix: rule edit\n\nEval-feedback-source: 2026-05-27T12:00:00Z\n"
+        self.assertFalse(has_task_trailer(msg))
+
+    def test_no_trailers_returns_false(self) -> None:
+        msg = "Plain commit with no trailers.\n"
+        self.assertFalse(has_task_trailer(msg))
+
+    def test_task_keyword_in_body_returns_false(self) -> None:
+        """Only the trailer block is scanned; body mentions are ignored."""
+        msg = "Work on Task: TASK-0.20.0-01-01-99 in body\n\nCeremony: gz-git-sync\n"
+        self.assertFalse(has_task_trailer(msg))
+
+    def test_slug_form_rejects_uppercase(self) -> None:
+        """Slug form is kebab-lowercase; uppercase rejected to avoid TaskId confusion."""
+        msg = "fix: x\n\nTask: TASK-DoctrineFix-#552\n"
+        self.assertFalse(has_task_trailer(msg))
+
+    def test_slug_form_requires_ghi_suffix(self) -> None:
+        """Slug form requires ``-#<digits>`` suffix to anchor to a GHI."""
+        msg = "fix: x\n\nTask: TASK-no-ghi-suffix\n"
+        self.assertFalse(has_task_trailer(msg))
 
 
 class TestParseCeremonyTrailers(unittest.TestCase):

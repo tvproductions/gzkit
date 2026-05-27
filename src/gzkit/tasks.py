@@ -153,6 +153,15 @@ def create_task_from_plan_step(
 
 _TRAILER_LINE_RE = re.compile(r"^Task:\s+(TASK-\d+\.\d+\.\d+-\d+-\d+-\d+)\s*$")
 
+# Accepts the formal four-tier TASK ID `TASK-X.Y.Z-NN-MM-PP` (under an OBPI/REQ)
+# OR the slug-form `TASK-<kebab-slug>-#<ghi>` (direct-fix work outside OBPI scope,
+# per the convention established by GHI #160 Phase 7 backfill). The latter cannot
+# be parsed by `TaskId.parse`, so this regex is used only for trailer-presence
+# detection (`has_task_trailer`); `parse_task_trailers` keeps the strict form.
+_ANY_TASK_TRAILER_RE = re.compile(
+    r"^Task:\s+TASK-(?:\d+\.\d+\.\d+-\d+-\d+-\d+|[a-z][a-z0-9-]*-#\d+)\s*$"
+)
+
 
 def format_commit_trailer(task: TaskEntity | TaskId) -> str:
     """Produce a git commit trailer line from a TASK entity or identifier.
@@ -193,6 +202,29 @@ def parse_task_trailers(commit_message: str) -> list[TaskId]:
         if m:
             results.append(TaskId.parse(m.group(1)))
     return results
+
+
+def has_task_trailer(commit_message: str) -> bool:
+    """Return True if the commit's trailer block contains any ``Task:`` line.
+
+    Accepts BOTH the formal four-tier ID `TASK-X.Y.Z-NN-MM-PP` and the slug-form
+    `TASK-<slug>-#<ghi>` (direct-fix work outside OBPI scope). Used by
+    `gz validate --commit-trailers` to enforce TASK discipline on src/tests
+    commits without restricting direct-fix authors to formal IDs they have no
+    OBPI to mint against.
+    """
+    lines = commit_message.rstrip("\n").split("\n")
+    trailer_start = len(lines)
+    for i in range(len(lines) - 1, -1, -1):
+        line = lines[i]
+        if not line.strip():
+            break
+        if re.match(r"^[\w-]+:\s", line):
+            trailer_start = i
+        else:
+            trailer_start = len(lines)
+            break
+    return any(_ANY_TASK_TRAILER_RE.match(line) for line in lines[trailer_start:])
 
 
 _CEREMONY_TRAILER_RE = re.compile(r"^Ceremony:\s*(?P<value>\S+)\s*$")

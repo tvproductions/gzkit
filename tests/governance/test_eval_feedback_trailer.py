@@ -29,8 +29,15 @@ class TestEvalFeedbackTrailerValidation(unittest.TestCase):
     """Verify Eval-feedback-source: trailer recognition and enforcement."""
 
     @covers("REQ-0.0.26-04-05")
-    def test_recognizes_eval_feedback_source_trailer(self) -> None:
-        """Commit with Eval-feedback-source: trailer passes --commit-trailers."""
+    def test_eval_feedback_source_alone_rejected_for_src_commit(self) -> None:
+        """src/tests commit with only Eval-feedback-source: trailer is REJECTED under GHI #552.
+
+        Pre-GHI-#552 OBPI-0.0.26-04 doctrine accepted Eval-feedback-source: alone
+        as a substitute for Task: on src/tests scope. GHI #552 strict-mode
+        supersedes: src/tests scope requires Task: trailer. Eval-feedback-source:
+        remains valid on rule-edit (.gzkit/rules/) commits closing eval-feedback
+        GHIs (see test_passes_rule_edit_closing_eval_feedback_ghi_with_trailer).
+        """
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -52,7 +59,8 @@ class TestEvalFeedbackTrailerValidation(unittest.TestCase):
                 capture_output=True,
             )
             result = runner.invoke(main, ["validate", "--commit-trailers"])
-            self.assertEqual(result.exit_code, 0)
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Task:", result.output)
 
     @covers("REQ-0.0.26-04-04")
     def test_fails_rule_edit_closing_eval_feedback_ghi_without_trailer(self) -> None:
@@ -116,8 +124,13 @@ class TestEvalFeedbackTrailerValidation(unittest.TestCase):
         self.assertEqual(result.exit_code, 0)
 
     @covers("REQ-0.0.26-04-05")
-    def test_eval_feedback_source_trailer_alone_satisfies_code_commit(self) -> None:
-        """Eval-feedback-source: alone satisfies governance-intent check for src-touching commit."""
+    def test_eval_feedback_source_additive_with_task_passes_code_commit(self) -> None:
+        """Eval-feedback-source: + Task: trailer on src commit passes (GHI #552 additive).
+
+        Eval-feedback-source: is now an additive trailer on src/tests scope —
+        it co-exists with the required Task: trailer rather than substituting
+        for it. This test fences the additive composition.
+        """
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -134,6 +147,7 @@ class TestEvalFeedbackTrailerValidation(unittest.TestCase):
                     "-m",
                     (
                         "fix: apply eval feedback\n\n"
+                        "Task: TASK-eval-feedback-applied-#001\n"
                         "Eval-feedback-source: eval-2026-05-01T10-00-00-xyz"
                     ),
                 ],

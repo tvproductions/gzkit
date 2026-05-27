@@ -329,8 +329,15 @@ Do the thing.
             result = runner.invoke(main, ["validate", "--commit-trailers"])
             self.assertEqual(result.exit_code, 0)
 
-    def test_validate_commit_trailers_accepts_ceremony_trailer(self) -> None:
-        """HEAD commit with ``Ceremony: gz-git-sync`` trailer passes (GHI #201)."""
+    def test_validate_commit_trailers_rejects_ceremony_alone_for_src(self) -> None:
+        """src/tests commits with only Ceremony: trailer are REJECTED (GHI #552 strict mode).
+
+        Pre-GHI-#552 the OR-permissive rule allowed Ceremony: as a substitute for
+        Task: on src/tests scope. That was the doctrinal escape valve that
+        silently abandoned TASK discipline (3 Task: vs. 305+ Ceremony: in 30 days).
+        Strict mode: src/tests requires Task:. Ceremony: stays valid for
+        non-src/tests scope (docs/, .gzkit/, ledger reconciles).
+        """
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -346,6 +353,40 @@ Do the thing.
                     "commit",
                     "-m",
                     "chore: update src/mypkg (gz git-sync)\n\nCeremony: gz-git-sync",
+                ],
+                cwd=project_root,
+                check=True,
+                capture_output=True,
+            )
+            result = runner.invoke(main, ["validate", "--commit-trailers"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Task:", result.output)
+
+    def test_validate_commit_trailers_accepts_slug_form_task_trailer(self) -> None:
+        """src/tests commits with slug-form ``Task: TASK-<slug>-#<ghi>`` pass (GHI #552).
+
+        Direct-fix work outside OBPI scope cannot mint a formal
+        TASK-X.Y.Z-NN-MM-PP id (no parent OBPI), so the slug form is the
+        canonical convention (per GHI #160 Phase 7 backfill).
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            project_root = Path.cwd()
+            _init_git_repo(project_root)
+            src_file = project_root / "src" / "mypkg" / "module.py"
+            src_file.parent.mkdir(parents=True, exist_ok=True)
+            src_file.write_text("x = 1\n", encoding="utf-8")
+            subprocess.run(["git", "add", "src"], cwd=project_root, check=True, capture_output=True)
+            subprocess.run(
+                [
+                    "git",
+                    "commit",
+                    "-m",
+                    (
+                        "fix(validator): tighten trailer rule\n\n"
+                        "Task: TASK-task-spine-restoration-#552"
+                    ),
                 ],
                 cwd=project_root,
                 check=True,

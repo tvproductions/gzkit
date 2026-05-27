@@ -22,9 +22,8 @@ from gzkit.instruction_audit import audit_instructions
 from gzkit.models.exemplar import ExemplarCorpus
 from gzkit.models.persona import discover_persona_files, validate_persona_structure
 from gzkit.tasks import (
-    parse_ceremony_trailers,
+    has_task_trailer,
     parse_eval_feedback_source_trailers,
-    parse_task_trailers,
 )
 from gzkit.validate import (
     ValidationError,
@@ -217,10 +216,19 @@ def _head_commit_message_and_files(project_root: Path) -> tuple[str, list[str]] 
 def _validate_commit_trailers(project_root: Path) -> list[ValidationError]:
     """Flag HEAD commits touching src/ or tests/ without a Task: trailer.
 
-    GHI-160 Phase 6 rot-prevention check. Scans HEAD only — the check is
-    advisory and focused on preventing *new* trailer omissions rather than
-    retroactively flagging historical commits. Non-code commits (docs/,
-    config/, etc.) are skipped.
+    GHI #552 strict-mode (post-2026-05-27): src/tests commits MUST carry a
+    `Task:` trailer; `Ceremony:` and `Eval-feedback-source:` no longer
+    substitute for src/tests scope. The pre-GHI-#552 OR-permissive rule was
+    the doctrinal escape valve that silently abandoned TASK discipline
+    (3 Task: vs. 305+ Ceremony: trailers in 30-day audit window).
+
+    Task: trailer accepts BOTH the formal four-tier ID `TASK-X.Y.Z-NN-MM-PP`
+    (under an OBPI/REQ) AND the slug-form `TASK-<slug>-#<ghi>` (direct-fix
+    work outside OBPI scope, per GHI #160 Phase 7 convention).
+
+    Scans HEAD only — preventing new trailer omissions, not retroactively
+    flagging historical commits. Non-code commits (docs/, .gzkit/, etc.) are
+    skipped.
     """
     head = _head_commit_message_and_files(project_root)
     if head is None:
@@ -229,11 +237,7 @@ def _validate_commit_trailers(project_root: Path) -> list[ValidationError]:
     code_files = [f for f in files if f.startswith(_CODE_PATH_PREFIXES)]
     if not code_files:
         return []
-    if (
-        parse_task_trailers(message)
-        or parse_ceremony_trailers(message)
-        or parse_eval_feedback_source_trailers(message)
-    ):
+    if has_task_trailer(message):
         return []
     short_sha = subprocess.run(
         ["git", "rev-parse", "--short=7", "HEAD"],
@@ -248,10 +252,13 @@ def _validate_commit_trailers(project_root: Path) -> list[ValidationError]:
             type="commit_trailers",
             artifact=short_sha or "HEAD",
             message=(
-                "Commit touches src/ or tests/ but has no governance-intent "
-                "trailer — TASK chain is broken. Expected 'Task: TASK-X.Y.Z-NN-MM-PP' "
-                "for task-scoped work or 'Ceremony: <name>' for chore/sync commits "
-                "(e.g. 'Ceremony: gz-git-sync')."
+                "Commit touches src/ or tests/ but has no `Task:` trailer — "
+                "TASK chain is broken (GHI #552 strict-mode). Expected "
+                "'Task: TASK-X.Y.Z-NN-MM-PP' for OBPI-scoped work or "
+                "'Task: TASK-<slug>-#<ghi>' for direct-fix work. "
+                "`Ceremony:` and `Eval-feedback-source:` no longer substitute "
+                "for `Task:` on src/tests scope (per AGENTS.md § Workflow: "
+                "PRD → Constitution → ADR → OBPI → REQ → TASK → Attestation)."
             ),
         )
     ]

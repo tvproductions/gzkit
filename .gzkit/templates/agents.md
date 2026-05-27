@@ -152,7 +152,7 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 ### Workflow
 
 ```
-PRD → Constitution → Brief → ADR → Implementation → Attestation
+PRD → Constitution → ADR → OBPI → REQ → TASK → Attestation
 ```
 
 ## Skills
