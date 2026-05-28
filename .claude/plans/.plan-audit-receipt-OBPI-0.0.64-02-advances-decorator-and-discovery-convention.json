@@ -1,0 +1,72 @@
+{
+  "obpi_id": "OBPI-0.0.64-02-advances-decorator-and-discovery-convention",
+  "timestamp": "2026-05-28T07:14:00.639696+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.64-02-advances-decorator-and-discovery-convention.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.22.0",
+      "sibling_obpi": "OBPI-0.22.0-03-git-commit-linkage",
+      "contested_paths": [
+        "src/gzkit/tasks.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.22.0",
+      "sibling_obpi": "OBPI-0.22.0-01-task-entity-model",
+      "contested_paths": [
+        "src/gzkit/tasks.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.22.0",
+      "sibling_obpi": "OBPI-0.22.0-02-task-ledger-events",
+      "contested_paths": [
+        "src/gzkit/tasks.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.26",
+      "sibling_obpi": "OBPI-0.0.26-04-ghi-promotion-and-trailer",
+      "contested_paths": [
+        "src/gzkit/tasks.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-13-chores-normalization",
+      "contested_paths": [
+        ".gzkit/rules/skill-surface-sync.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-02-skills-scaffolder-refactor",
+      "contested_paths": [
+        ".gzkit/rules/skill-surface-sync.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-15-t0-maintenance-surfaces",
+      "contested_paths": [
+        ".gzkit/rules/skill-surface-sync.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-04-rules-scaffolder-authoring",
+      "contested_paths": [
+        ".gzkit/rules/skill-surface-sync.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.64-task-envelope-and-planning-decomposition/ADR-0.0.64-task-envelope-and-planning-decomposition.md"
+      ]
+    }
+  ]
+}

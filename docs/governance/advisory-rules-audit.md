@@ -264,6 +264,12 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 |---|------|-------|-------|
 | 59 | Every REQ in an OBPI brief's Acceptance Criteria MUST declare exactly one of three kinds — BEHAVIOR, SUPPORT, or STRUCTURAL-FENCE — via an inline tag `[kind]`; each kind has exactly one proof channel (BEHAVIOR → `@covers` test; SUPPORT → ledger event + structural validator; STRUCTURAL-FENCE → parent-ADR `## Boundary Invariants` entry) | **Mechanical** | `gz validate --req-kind-discipline` (OBPI-0.0.59-02 scope) fail-closes brief-time on missing `[kind]` tags and per-kind proof-citation gaps. Three-kind taxonomy is a closed StrEnum; brief-authoring scaffold prompts for kind (OBPI-0.0.59-02); parity gate consumes per-kind proof channels (OBPI-0.0.59-03). Added by OBPI-0.0.59-01 (2026-05-26). ADR-0.0.59. Canonical expansion: `docs/governance/req-scope-discipline.md`. |
 
+### TASK Discovery (`.gzkit/rules/task-discovery.md`)
+
+| # | Rule | Score | Notes |
+|---|------|-------|-------|
+| 60 | Every unit of labor traceable to a TASK MUST surface that attribution through at least one of four discovery channels | **Promotable** | Python `@advances` decorator landed in OBPI-0.0.64-02 with decoration-time fail-close on invalid TASK IDs and unknown parent REQs (mirrors `@covers` machinery). Commit-trailer channel already enforced by `gz validate --commit-trailers`. Ledger `task_id` channel added in OBPI-0.0.64-01. Frontmatter `tasks:` schema enforcement and four-channel coherence validator (`gz validate --task-envelope-coherence`) deferred to OBPI-0.0.64-04. Parent ADR-0.0.64. |
+
 ---
 
 ## Summary

@@ -3,7 +3,7 @@ id: OBPI-0.0.64-02-advances-decorator-and-discovery-convention
 parent: ADR-0.0.64-task-envelope-and-planning-decomposition
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.64-02-advances-decorator-and-discovery-convention: Advances Decorator And Discovery Convention
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.64-task-envelope-and-planning-decomposition/ADR-0.0.64-task-envelope-and-planning-decomposition.md`
 - **Checklist Item:** #2 - "OBPI-0.0.64-02: **advances-decorator-and-discovery-convention** — Add `@advances(TASK-...)` decorator in `src/gzkit/tasks.py` as substantive peer of `@covers`. Decoration-time validation; captures `fn.__code__.co_filename` (rendered `.as_posix()`) + `fn.__code__.co_firstlineno`; registers `TaskAttributionRecord` (Pydantic `BaseModel` + `ConfigDict(frozen=True, extra='forbid')`) into module-level registry following `@covers`'s lazy `_load_known_reqs` pattern. Frontmatter `tasks: list[str]` channel added to structured-artifact schemas (brief frontmatter + ADR-package frontmatter where applicable). Author new rule `.gzkit/rules/task-discovery.md` codifying the four-channel taxonomy (Python `@advances`, frontmatter `tasks:`, commit trailer, ledger `task_id`) with body-level `<!-- rule-version: 0.1.0 -->` marker + visible block quote per `.claude/rules/skill-surface-sync.md`. Tests: `@advances` decoration fail-closes on unknown TASK ID at import; registry surface exposes `TaskAttributionRecord` query API; frontmatter channel parses + validates via existing brief/ADR schema machinery. (heavy lane: new authoring contract; new rule)."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -230,15 +230,28 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```python
+>>> from gzkit.tasks import advances, get_task_registry
+>>> @advances("TASK-0.0.64-02-01-01")
+... def my_fn(): return 42
+>>> get_task_registry()[0].task_id
+'TASK-0.0.64-02-01-01'
+>>> @advances("TASK-9.9.9-99-99-01")
+... def bogus(): pass
+ValueError: Unknown parent REQ for TASK 'TASK-9.9.9-99-99-01': REQ-9.9.9-99-99 not found in extracted briefs
+```
+
+Mechanical evidence: `arb-step-unittest-4f7e2cf661334e39b06cb333fce6e33e` (13/13 OBPI-scoped pass), `arb-step-unittest-43b60cb184bd4814ac8478614e85aa4a` (5686/5686 full sweep), `arb-ruff-32ecfd6f982d48b0aa9f0cde4559b9a3` (clean), `arb-step-typecheck-27782e54de4d456ebe91db5a0e964eac` (clean), `arb-step-mkdocs-c100bc658b97486fb36cfbc56161649e` (docs build strict clean). REQ→@covers parity: 3/3 covered (100%), `behavior_uncovered_reqs=0`. BDD coverage waived per Two-runners doctrine.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created/modified: `src/gzkit/tasks.py` (added `@advances` decorator, `TaskAttributionRecord` frozen Pydantic model, module-level `_ADVANCES_REGISTRY`, lazy `_load_known_task_reqs()` mirroring `@covers`'s pattern, helpers); `.gzkit/rules/task-discovery.md` (CREATE — four-channel TASK-discovery taxonomy rule, v0.1.0); `tests/governance/test_advances_decorator.py` (CREATE — 13 tests covering 3 REQs); `docs/governance/advisory-rules-audit.md` (scorecard row #60 — Promotable, coupled-surface coherence per Rule 1a); `data/behave_coverage_waivers.json` (Two-runners-doctrine waiver entry, same shape as OBPI-01).
+- Tests added: 13 unittest cases under `tests/governance/test_advances_decorator.py` covering format-fail-close, unknown-parent-REQ-fail-close, registry registration, `.as_posix()` cross-platform rendering, frozen+extra-forbid model contract, multi-decoration interleaving with `@covers`, and structural scope/evidence assertions.
+- Date completed: 2026-05-28
+- Attestation status: operator-attested "attest completed"
+- Defects noted: none in-scope; advisory scope gap noted in plan (frontmatter `tasks:` schema enforcement deferred to OBPI-0.0.64-04 per ADR plan).
 
 ## Tracked Defects
 
@@ -249,12 +262,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.64-02 lands @advances decorator + TaskAttributionRecord + task-discovery rule v0.1.0 with 13/13 OBPI-scoped tests (receipt arb-step-unittest-4f7e2cf661334e39b06cb333fce6e33e), 5686/5686 full sweep (receipt arb-step-unittest-43b60cb184bd4814ac8478614e85aa4a), arb-ruff/arb-step-typecheck/arb-step-mkdocs all clean, 3/3 REQs covered (behavior_uncovered_reqs=0).
+- Date: 2026-05-28
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-05-28
 
 **Evidence Hash:** -

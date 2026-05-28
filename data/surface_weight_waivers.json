@@ -13,5 +13,10 @@
     "expires": "2026-07-25",
     "delta_lines": 80,
     "reason": "OBPI-0.0.59-01 (ADR-0.0.59 Move 6, get-out-of-jail recovery plan) lands the REQ Scope Discipline doctrine: .gzkit/rules/tests.md § REQ Scope Discipline subsection (rule-version 0.4.0→0.5.0); docs/governance/req-scope-discipline.md (~160 lines canonical expansion); docs/governance/advisory-rules-audit.md scorecard row 59 (Mechanical); ADR-pool.obpi-req-taxonomy-scope-fence § Disposition supersession note; companion bullet added to .gzkit/agents.local.md § Mechanical scopes that bind here (verbatim substring required by bullet-retention validator for advisory-rules-audit Mechanical-class row 59). Foundation precondition for OBPIs 02-05 of ADR-0.0.59. Reduction path: OBPI-0.0.59-04 ships the decommissioning chore that retires the existing ~3,400 tautological filesystem-shaped tests, which net-decreases overall surface weight; re-floor surface_weight snapshot after the chore's first sweep wave (OBPI-0.0.59-05) lands. This waiver is a 60-day bridge."
+  },
+  {
+    "expires": "2026-07-27",
+    "delta_lines": 200,
+    "reason": "OBPI-0.0.64-02 (ADR-0.0.64 Move 2) lands the @advances decorator authoring contract: .gzkit/rules/task-discovery.md (CREATE — four-channel TASK-discovery taxonomy rule, v0.1.0, ~90 lines canonical); mirrors at .claude/rules/task-discovery.md, .github/instructions/task_discovery.instructions.md, src/gzkit/rules/task-discovery.md. docs/governance/advisory-rules-audit.md scorecard row 60 (Promotable) plus the verbatim-substring bullet retained in the .claude mirror. Yellow-band overrun is the transitional window between rule-file authoring (OBPI-02) and the four-channel coherence validator + frontmatter schema enforcement (OBPI-04), which will mechanize and reduce surface mass as the convention is consumed structurally. Reduction path: OBPI-0.0.64-04 ships gz validate --task-envelope-coherence + BriefStructure tasks/req_atomic schema additives; re-floor surface_weight snapshot after the validator lands. This waiver is a 60-day bridge."
   }
 ]

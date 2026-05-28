@@ -10,7 +10,11 @@ Follows the ReqId/ReqEntity pattern in ``triangle.py``.
 from __future__ import annotations
 
 import enum
+import pathlib
 import re
+import types
+from collections.abc import Callable
+from typing import TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -317,3 +321,141 @@ def resolve_task_chain(task_id: TaskId) -> dict[str, str]:
         "obpi": f"OBPI-{task_id.semver}-{task_id.obpi_item}",
         "adr": f"ADR-{task_id.semver}",
     }
+
+
+# ---------------------------------------------------------------------------
+# @advances decorator and TASK attribution registry (OBPI-0.0.64-02)
+# ---------------------------------------------------------------------------
+
+_AF = TypeVar("_AF")
+
+
+class TaskAttributionRecord(BaseModel):
+    """A registered ``@advances`` decoration linking a function to a TASK.
+
+    Captured at decoration time. Mirrors the precedent set by
+    ``@covers``'s ``LinkageRecord`` but scoped to TASK-tier attribution
+    on source functions (as opposed to REQ-tier attribution on tests).
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    task_id: str = Field(..., description="TASK identifier (e.g. 'TASK-0.0.64-02-01-01')")
+    source_fn: str = Field(..., description="Fully qualified function name")
+    source_file: str | None = Field(
+        None, description="Source file path rendered via .as_posix() (cross-platform rule)"
+    )
+    source_line: int | None = Field(None, description="1-indexed first source line of fn")
+
+
+_ADVANCES_REGISTRY: list[TaskAttributionRecord] = []
+_KNOWN_TASK_REQS: frozenset[str] | None = None
+
+
+def _find_project_root_for_advances() -> pathlib.Path | None:
+    """Walk up from CWD to find the project root (directory containing .gzkit/)."""
+    current = pathlib.Path.cwd()
+    for parent in [current, *current.parents]:
+        if (parent / ".gzkit").is_dir():
+            return parent
+    return None
+
+
+def _load_known_task_reqs() -> frozenset[str]:
+    """Scan briefs and cache the set of known parent REQ identifiers for TASKs.
+
+    Follows ``@covers``'s ``_load_known_reqs`` lazy pattern. TASKs are validated
+    by checking that their derived parent REQ (``REQ-<semver>-<obpi_item>-<req_index>``)
+    exists in a discovered brief — TASK IDs themselves are not pre-registered.
+    """
+    global _KNOWN_TASK_REQS
+    if _KNOWN_TASK_REQS is not None:
+        return _KNOWN_TASK_REQS
+
+    root = _find_project_root_for_advances()
+    if root is None:
+        _KNOWN_TASK_REQS = frozenset()
+        return _KNOWN_TASK_REQS
+
+    adr_dir = root / "docs" / "design" / "adr"
+    if not adr_dir.is_dir():
+        _KNOWN_TASK_REQS = frozenset()
+        return _KNOWN_TASK_REQS
+
+    # Local import to avoid a top-level cycle (gzkit.traceability imports
+    # gzkit.triangle; gzkit.tasks is independent of both at import time).
+    from gzkit.triangle import scan_briefs
+
+    discovered = scan_briefs(adr_dir)
+    _KNOWN_TASK_REQS = frozenset(str(d.entity.id) for d in discovered)
+    return _KNOWN_TASK_REQS
+
+
+def _qualified_fn_name(fn: object) -> str:
+    """Return the fully qualified name of a function or method."""
+    module = getattr(fn, "__module__", None) or "<unknown>"
+    qualname = getattr(fn, "__qualname__", None) or getattr(fn, "__name__", "<unknown>")
+    return f"{module}.{qualname}"
+
+
+def advances(task_id_str: str) -> Callable[[_AF], _AF]:
+    """Declare that a function advances a governance TASK.
+
+    Validates the TASK identifier format at decoration time, then validates
+    that the parent REQ derived from the TASK ID exists in an extracted
+    brief. Registers a :class:`TaskAttributionRecord` mapping the function
+    to the TASK. The decorated function's behavior is unchanged — this is
+    metadata-only attribution, peer to ``@covers``.
+
+    Raises:
+        ValueError: If *task_id_str* has an invalid format, or if the
+            derived parent REQ is not found in the extracted brief-defined
+            REQ set.
+    """
+    task_id = TaskId.parse(task_id_str)
+    parent_req = f"REQ-{task_id.semver}-{task_id.obpi_item}-{task_id.req_index}"
+
+    known = _load_known_task_reqs()
+    if parent_req not in known:
+        msg = (
+            f"Unknown parent REQ for TASK {task_id_str!r}: "
+            f"{parent_req} not found in extracted briefs"
+        )
+        raise ValueError(msg)
+
+    def decorator(fn: _AF) -> _AF:
+        source_file: str | None = None
+        source_line: int | None = None
+        code = getattr(fn, "__code__", None)
+        if isinstance(code, types.CodeType):
+            source_file = pathlib.Path(code.co_filename).as_posix()
+            source_line = code.co_firstlineno
+
+        record = TaskAttributionRecord(
+            task_id=str(task_id),
+            source_fn=_qualified_fn_name(fn),
+            source_file=source_file,
+            source_line=source_line,
+        )
+        _ADVANCES_REGISTRY.append(record)
+        return fn
+
+    return decorator
+
+
+def get_task_registry() -> list[TaskAttributionRecord]:
+    """Return a copy of the global TASK attribution registry."""
+    return list(_ADVANCES_REGISTRY)
+
+
+def set_known_task_reqs(reqs: frozenset[str]) -> None:
+    """Inject known parent REQ identifiers for testing."""
+    global _KNOWN_TASK_REQS
+    _KNOWN_TASK_REQS = reqs
+
+
+def reset_task_registry() -> None:
+    """Clear the TASK attribution registry and cached known REQs. For testing only."""
+    global _KNOWN_TASK_REQS
+    _ADVANCES_REGISTRY.clear()
+    _KNOWN_TASK_REQS = None
