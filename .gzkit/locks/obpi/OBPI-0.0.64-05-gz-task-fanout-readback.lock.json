@@ -1,0 +1,9 @@
+{
+  "obpi_id": "OBPI-0.0.64-05-gz-task-fanout-readback",
+  "agent": "claude-code-562af5d9",
+  "pid": 85719,
+  "session_id": "562af5d9-54bb-49ae-b6b4-1129abf02dc5",
+  "claimed_at": "2026-05-28T10:48:58.884334+00:00",
+  "branch": "main",
+  "ttl_minutes": 120
+}

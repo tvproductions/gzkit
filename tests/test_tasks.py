@@ -1455,5 +1455,90 @@ class TestAutoCompleteObpiTasks(_TaskCliBase):
         self.assertEqual(second, [])
 
 
+class TestTaskFanoutCmd(_TaskCliBase):
+    """@covers REQ-0.0.64-05-01, REQ-0.0.64-05-02, REQ-0.0.64-05-03, REQ-0.0.64-05-04,
+    REQ-0.0.64-05-05."""
+
+    @covers("REQ-0.0.64-05-04")
+    def test_status_per_req_fanout(self) -> None:
+        """REQ-0.0.64-05-04: gz status shows per-REQ breakdown lines under Tasks: summary."""
+        self._seed_task_started("TASK-0.1.0-01-01-01")
+        code, out = _invoke(["status"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("REQ-0.1.0-01-01", out)
+
+    @covers("REQ-0.0.64-05-04")
+    def test_status_per_req_json(self) -> None:
+        """REQ-0.0.64-05-04: gz status --json includes per_req key in task_summary."""
+        self._seed_task_started("TASK-0.1.0-01-01-01")
+        code, out = _invoke(["status", "--json"])
+        self.assertEqual(code, 0, out)
+        data = json.loads(out)
+        adr_data = data["adrs"].get("ADR-0.1.0-f", {})
+        self.assertIn("task_summary", adr_data)
+        self.assertIn("per_req", adr_data["task_summary"])
+
+    @covers("REQ-0.0.64-05-01")
+    def test_fanout_table_default(self) -> None:
+        """REQ-0.0.64-05-01: gz task fanout shows table with TASK header and task row."""
+        self._seed_task_started("TASK-0.1.0-01-01-01")
+        code, out = _invoke(["task", "fanout", "REQ-0.1.0-01-01"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("TASK", out)
+        self.assertIn("TASK-0.1.0-01-01-01", out)
+
+    @covers("REQ-0.0.64-05-01")
+    def test_fanout_table_columns(self) -> None:
+        """REQ-0.0.64-05-01: Table output includes all required column headers."""
+        self._seed_task_started("TASK-0.1.0-01-01-01")
+        code, out = _invoke(["task", "fanout", "REQ-0.1.0-01-01"])
+        self.assertEqual(code, 0, out)
+        out_lower = out.lower()
+        for col in ("seq", "status", "files", "edits", "check"):
+            self.assertIn(col, out_lower, f"Missing column header: {col}")
+
+    @covers("REQ-0.0.64-05-03")
+    def test_fanout_json_mode(self) -> None:
+        """REQ-0.0.64-05-03: gz task fanout --json outputs valid JSON list with all fields."""
+        self._seed_task_started("TASK-0.1.0-01-01-01")
+        code, out = _invoke(["task", "fanout", "REQ-0.1.0-01-01", "--json"])
+        self.assertEqual(code, 0, out)
+        data = json.loads(out)
+        self.assertIsInstance(data, list)
+        self.assertGreater(len(data), 0)
+        item = data[0]
+        for key in ("task_id", "seq", "status", "files_touched", "edits", "attribution_check"):
+            self.assertIn(key, item, f"Missing key: {key}")
+
+    @covers("REQ-0.0.64-05-01")
+    def test_fanout_empty_req(self) -> None:
+        """REQ-0.0.64-05-01: gz task fanout with no tasks emits graceful empty message."""
+        code, out = _invoke(["task", "fanout", "REQ-0.1.0-01-01"])
+        self.assertEqual(code, 0, out)
+        self.assertTrue(len(out.strip()) > 0, "Expected non-empty output for empty REQ fanout")
+
+    @covers("REQ-0.0.64-05-02")
+    def test_fanout_detail_mode(self) -> None:
+        """REQ-0.0.64-05-02: gz task fanout --detail exits 0 with task info."""
+        self._seed_task_started("TASK-0.1.0-01-01-01")
+        code, out = _invoke(["task", "fanout", "REQ-0.1.0-01-01", "--detail"])
+        self.assertEqual(code, 0, out)
+
+    @covers("REQ-0.0.64-05-05")
+    def test_fanout_attribution_check_values(self) -> None:
+        """REQ-0.0.64-05-05: attribution_check column is 'pass' or 'drift' per validator state."""
+        self._seed_task_started("TASK-0.1.0-01-01-01")
+        code, out = _invoke(["task", "fanout", "REQ-0.1.0-01-01", "--json"])
+        self.assertEqual(code, 0, out)
+        data = json.loads(out)
+        self.assertGreater(len(data), 0)
+        check_val = data[0].get("attribution_check")
+        self.assertIn(
+            check_val,
+            ("pass", "drift"),
+            f"attribution_check must be 'pass' or 'drift', got {check_val!r}",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

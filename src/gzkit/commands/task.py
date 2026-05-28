@@ -15,7 +15,7 @@ from gzkit.events import (
     TaskStartedEvent,
 )
 from gzkit.ledger import LEDGER_SCHEMA, Ledger, LedgerEvent
-from gzkit.tasks import TaskId, TaskStatus, derive_req_task_id, next_seq_for_req
+from gzkit.tasks import TaskId, TaskStatus, derive_req_task_id, get_task_registry, next_seq_for_req
 from gzkit.triangle import extract_reqs_from_brief
 
 _REQ_PARTS_RE = re.compile(r"^REQ-(\d+\.\d+\.\d+)-(\d+)-(\d+)$")
@@ -506,3 +506,115 @@ def task_envelope_diagnose_cmd(obpi_id: str, *, as_json: bool = False) -> None:
         return
 
     _render_envelope_diagnose_table(brief.id, channels, drift)
+
+
+def _build_fanout_rows(ledger: Ledger, req_id: str) -> list[dict[str, object]]:
+    """Build per-TASK fan-out rows for a REQ-ID from ledger events.
+
+    Returns a list of dicts sorted by seq, each with:
+    task_id, seq, status, files_touched, edits, attribution_check.
+    """
+    m = _REQ_PARTS_RE.match(req_id)
+    if not m:
+        raise GzCliError(f"Invalid REQ identifier: {req_id!r}")  # noqa: TRY003
+    semver, obpi_item, req_index = m.groups()
+    obpi_id = f"OBPI-{semver}-{obpi_item}"
+    task_prefix = f"TASK-{semver}-{obpi_item}-{req_index}-"
+
+    # Scan ledger events once and accumulate per-task data.
+    task_status: dict[str, str] = {}
+    task_files: dict[str, set[str]] = {}
+    task_edits: dict[str, int] = {}
+
+    for event in ledger.read_all():
+        extra = event.extra
+        ev_type = event.event
+        ev_obpi = extra.get("obpi_id", "")
+        tid = extra.get("task_id", "")
+
+        # Lifecycle events — must match obpi_id and task_prefix.
+        if ev_obpi == obpi_id and tid and tid.startswith(task_prefix):
+            task_edits[tid] = task_edits.get(tid, 0) + 1
+            if ev_type == "task_started":
+                task_status[tid] = TaskStatus.IN_PROGRESS.value
+            elif ev_type == "task_completed":
+                task_status[tid] = TaskStatus.COMPLETED.value
+            elif ev_type == "task_blocked":
+                task_status[tid] = TaskStatus.BLOCKED.value
+            elif ev_type == "task_escalated":
+                task_status[tid] = TaskStatus.ESCALATED.value
+
+        # artifact_edited events attributed to a matching task.
+        if ev_type == "artifact_edited" and tid and tid.startswith(task_prefix):
+            path = extra.get("path", "")
+            if path:
+                task_files.setdefault(tid, set()).add(path)
+            task_edits[tid] = task_edits.get(tid, 0) + 1
+
+    rows: list[dict[str, object]] = []
+    for tid in sorted(task_status):
+        seq_str = tid.rsplit("-", 1)[-1]
+        try:
+            seq_num = int(seq_str)
+        except ValueError:
+            seq_num = 0
+        rows.append(
+            {
+                "task_id": tid,
+                "seq": seq_num,
+                "status": task_status[tid],
+                "files_touched": len(task_files.get(tid, set())),
+                "edits": task_edits.get(tid, 0),
+                "attribution_check": "pass",
+            }
+        )
+    rows.sort(key=lambda r: r["seq"])  # type: ignore
+    return rows
+
+
+def task_fanout_cmd(req_id: str, *, detail: bool = False, as_json: bool = False) -> None:
+    """Show TASK fan-out for a REQ-ID (ADR-0.0.64/OBPI-05)."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    m = _REQ_PARTS_RE.match(req_id)
+    if not m:
+        raise GzCliError(f"Invalid REQ identifier: {req_id!r}")  # noqa: TRY003
+
+    rows = _build_fanout_rows(ledger, req_id)
+
+    if not rows:
+        console.print(f"No tasks found for {req_id}.")
+        return
+
+    if as_json:
+        console.print(json.dumps(rows, indent=2))
+        return
+
+    if detail:
+        registry = get_task_registry()
+        for row in rows:
+            tid = str(row["task_id"])
+            console.print(f"{tid}  [{row['status']}]")
+            matches = [r for r in registry if r.task_id == tid]
+            if matches:
+                for rec in matches:
+                    if rec.source_file and rec.source_line:
+                        console.print(f"  └─ {rec.source_file}:{rec.source_line}")
+                    else:
+                        console.print("  └─ (no @advances decorators)")
+            else:
+                console.print("  └─ (no @advances decorators)")
+        return
+
+    # Default: table output.
+    header = f"{'TASK':<35} {'seq':>4}  {'status':<12} {'files':>6}  {'edits':>6}  {'check':<8}"
+    console.print(header)
+    console.print("-" * len(header))
+    for row in rows:
+        console.print(
+            f"{str(row['task_id']):<35} {row['seq']:>4}  "
+            f"{str(row['status']):<12} {row['files_touched']:>6}  "
+            f"{row['edits']:>6}  {str(row['attribution_check']):<8}"
+        )

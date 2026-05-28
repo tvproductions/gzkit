@@ -170,6 +170,19 @@ def _print_status_task_section(task_summary: dict[str, Any] | None) -> None:
     policy_label = "[bold]required[/bold]" if tracing_policy == "required" else "advisory"
     console.print(f"  Tasks:          {', '.join(parts)} (tracing: {policy_label})")
 
+    per_req = task_summary.get("per_req", {})
+    for req_id, counts in sorted(per_req.items()):
+        req_total = counts["total"]
+        req_completed = counts["completed"]
+        req_in_progress = counts.get("in_progress", 0)
+        req_parts = [f"{req_completed}/{req_total} done"]
+        if req_in_progress > 0:
+            req_parts.append(f"{req_in_progress} active")
+        req_pending = counts.get("pending", 0)
+        if req_pending > 0:
+            req_parts.append(f"{req_pending} pending")
+        console.print(f"    {req_id}:  {', '.join(req_parts)}")
+
 
 # ---------------------------------------------------------------------------
 # Row and table renderers

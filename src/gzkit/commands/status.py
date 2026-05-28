@@ -108,10 +108,11 @@ def _task_summary_for_adr(
     completed = 0
     blocked = 0
     escalated = 0
+    per_req: dict[str, dict[str, int]] = {}
 
     for obpi_id in obpi_ids:
         tasks = _load_tasks_for_obpi(ledger, obpi_id)
-        for info in tasks.values():
+        for task_id, info in tasks.items():
             total += 1
             status = info.get("status", "pending")
             if status == "pending":
@@ -125,10 +126,25 @@ def _task_summary_for_adr(
             elif status == "escalated":
                 escalated += 1
 
+            req_prefix = _req_prefix_from_task_id(task_id)
+            if req_prefix is not None:
+                if req_prefix not in per_req:
+                    per_req[req_prefix] = {
+                        "total": 0,
+                        "completed": 0,
+                        "in_progress": 0,
+                        "pending": 0,
+                        "blocked": 0,
+                        "escalated": 0,
+                    }
+                per_req[req_prefix]["total"] += 1
+                if status in per_req[req_prefix]:
+                    per_req[req_prefix][status] += 1
+
     if total == 0:
         return None
 
-    return {
+    result: dict[str, Any] = {
         "total": total,
         "pending": pending,
         "in_progress": in_progress,
@@ -136,6 +152,23 @@ def _task_summary_for_adr(
         "blocked": blocked,
         "escalated": escalated,
     }
+    if per_req:
+        result["per_req"] = per_req
+    return result
+
+
+_TASK_REQ_PREFIX_RE = re.compile(r"^TASK-([\d.]+)-(\d+)-(\d+)-\d+$")
+
+
+def _req_prefix_from_task_id(task_id: str) -> str | None:
+    """Extract the REQ prefix from a TASK ID string.
+
+    TASK-semver-obpi_item-req_index-seq → REQ-semver-obpi_item-req_index
+    """
+    m = _TASK_REQ_PREFIX_RE.match(task_id)
+    if m:
+        return f"REQ-{m.group(1)}-{m.group(2)}-{m.group(3)}"
+    return None
 
 
 ADR_SEMVER_STATUS_ID_RE = re.compile(

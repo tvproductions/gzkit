@@ -54,6 +54,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "task_start_cmd": "gzkit.commands.task",
     "task_start_by_req_cmd": "gzkit.commands.task",
     "task_envelope_diagnose_cmd": "gzkit.commands.task",
+    "task_fanout_cmd": "gzkit.commands.task",
     "issue_file_cmd": "gzkit.commands.issue_cmd",
     "complexity_distill_cmd": "gzkit.commands.complexity_distill_cmd",
     "complexity_advise_cmd": "gzkit.commands.complexity_advise",
@@ -1567,6 +1568,30 @@ def _register_task_parsers(commands: argparse._SubParsersAction) -> None:
     add_json_flag(p_diagnose)
     p_diagnose.set_defaults(
         func=lambda a: _lazy("task_envelope_diagnose_cmd")(a.obpi_id, as_json=a.as_json)
+    )
+
+    p_task_fanout = task_commands.add_parser(
+        "fanout",
+        help="Show TASK fan-out for a REQ-ID",
+        description="Display per-task attribution rows for a given REQ-ID.",
+        epilog=build_epilog(
+            [
+                "gz task fanout REQ-0.0.64-05-01",
+                "gz task fanout REQ-0.0.64-05-01 --json",
+                "gz task fanout REQ-0.0.64-05-01 --detail",
+            ]
+        ),
+    )
+    p_task_fanout.add_argument("req_id", help="REQ identifier (e.g. REQ-0.0.64-05-01)")
+    p_task_fanout.add_argument(
+        "--detail",
+        action="store_true",
+        default=False,
+        help="Render ASCII tree with file:line spans",  # noqa: E501
+    )
+    add_json_flag(p_task_fanout)
+    p_task_fanout.set_defaults(
+        func=lambda a: _lazy("task_fanout_cmd")(a.req_id, detail=a.detail, as_json=a.as_json)
     )
 
 
