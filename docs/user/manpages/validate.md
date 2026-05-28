@@ -1120,6 +1120,32 @@ Each entry in `file_waivers[file_path]` represents one waived operation for that
 **Related:** ADR-0.0.59-04 / OBPI-0.0.59-04 (decommission-tautological-tests chore).
 See `.gzkit/chores/decommission-tautological-tests/CHORE.md` for the operator workflow.
 
+### `--task-envelope-coherence`
+
+Validates TASK attribution coherence across the four discovery channels (ADR-0.0.64 / OBPI-04).
+Fail-closed (exit 3) on three Heavy-fail signatures:
+
+- **(a) Attribution drift** — worklog events (`artifact_edited`, `gate_checked`, etc.) emitted
+  under an active TASK with no `task_id` field in the ledger.
+- **(b) Subdivision skipped** — a completed OBPI has only `seq=01` TASKs across all REQs and no
+  `req_atomic` exemption declared in brief frontmatter.
+- **(c) Layer-drift** — different TASK IDs declared for the same OBPI across the frontmatter
+  `tasks:` channel and the ledger `task_id` channel.
+
+**`req_atomic` exemption:** REQs listed under `req_atomic: list[str]` in brief frontmatter are
+exempt from signature (b). When `req_atomic` covers every REQ in the brief, the check suppresses
+entirely for that OBPI. This is the sole mechanical bypass for signature (b) — no CLI flag, env
+var, or config file can override it.
+
+```bash
+gz validate --task-envelope-coherence
+```
+
+**Exit codes:** 0 = clean, 3 = policy breach (Heavy lane).
+
+**Related:** ADR-0.0.64 / OBPI-0.0.64-04. Use `gz task envelope diagnose <OBPI-ID>` to inspect
+per-channel TASK declarations when layer-drift blocks a closeout.
+
 ### `--sensitivity`
 
 Enforces the ADR-0.0.22 security-sensitivity invariant. Reads `data/security_surfaces.json` (the canonical glob-to-category registry) and walks every OBPI brief's `## ALLOWED PATHS` block. Any intersection between a brief's allowlist and the registry forces `sensitivity: security` (the auto-detect floor); frontmatter MAY escalate to `sensitivity: security` when paths don't trigger detection, but MAY NOT declare a value below the detected floor (escalate-not-escape). Fail-closed when the registry is missing, malformed, or schema-invalid.
@@ -1249,6 +1275,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--surface-fidelity` | opt-in | Composite: run all four surface-fidelity invariants in declared order; exit code is worst-of-four (ADR-0.0.33-05) |
 | `--req-kind-discipline` | opt-in | Fail closed (exit 3) on OBPI briefs with mixed-state [kind] tags or per-kind proof-citation gaps (ADR-0.0.59-02) |
 | `--tautological-test-audit` | opt-in | Fail closed (exit 3) when tautological-test count exceeds baseline + waivers; `current > baseline + W` → exit 3; waivers at `data/tautological_test_waivers.json` (OBPI-0.0.59-04) |
+| `--task-envelope-coherence` | opt-in | Fail closed (exit 3) on TASK attribution drift: worklog without task_id, all-seq=01 without req_atomic, or layer-drift across channels (ADR-0.0.64 / OBPI-04) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
 
 The `--allowlist-only` flag is a sub-modifier for `--unscoped-rules` —

@@ -47,6 +47,20 @@ class BriefStructure(BaseModel):
     citations: list[tuple[str, str]] = Field(
         default_factory=list, description="Citation tuples (artifact_path, anchor)"
     )
+    tasks: list[str] = Field(
+        default_factory=list,
+        description=(
+            "TASK IDs this artifact advances (ADR-0.0.64 / OBPI-02 channel). "
+            "Schema enforcement by OBPI-04."
+        ),
+    )
+    req_atomic: list[str] = Field(
+        default_factory=list,
+        description=(
+            "REQ IDs exempt from subdivision check (ADR-0.0.64 / OBPI-04). "
+            "Operator escape valve; requires inline rationale."
+        ),
+    )
 
     @field_validator("id")
     @classmethod

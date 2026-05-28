@@ -688,6 +688,18 @@ def run_tautological_test_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --tautological-test-audit", cwd=project_root)
 
 
+def run_task_envelope_coherence_audit(project_root: Path) -> QualityResult:
+    """Run the task-envelope-coherence audit (ADR-0.0.64 / OBPI-04).
+
+    Fails closed (exit 3) on Heavy lane when: (a) worklog events are emitted
+    under an active TASK with no task_id, (b) an OBPI has all-seq=01 TASKs and
+    no req_atomic exemption, or (c) layer-drift across the four discovery channels.
+    Recovery: populate task_id on worklog events, use gz task start --seq next
+    for subdivision, or declare req_atomic in brief frontmatter for atomic REQs.
+    """
+    return run_command("uv run gz validate --task-envelope-coherence", cwd=project_root)
+
+
 def run_surface_fidelity_audit(project_root: Path) -> QualityResult:
     """Run the ADR-0.0.33-05 surface-fidelity composite (all four invariants).
 

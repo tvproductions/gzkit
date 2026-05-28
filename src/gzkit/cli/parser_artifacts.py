@@ -53,6 +53,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "task_list_cmd": "gzkit.commands.task",
     "task_start_cmd": "gzkit.commands.task",
     "task_start_by_req_cmd": "gzkit.commands.task",
+    "task_envelope_diagnose_cmd": "gzkit.commands.task",
     "issue_file_cmd": "gzkit.commands.issue_cmd",
     "complexity_distill_cmd": "gzkit.commands.complexity_distill_cmd",
     "complexity_advise_cmd": "gzkit.commands.complexity_advise",
@@ -1541,6 +1542,31 @@ def _register_task_parsers(commands: argparse._SubParsersAction) -> None:
         func=lambda a: _lazy("task_escalate_cmd")(
             task_id_str=a.task_id, reason=a.reason, as_json=a.as_json
         )
+    )
+
+    p_task_envelope = task_commands.add_parser(
+        "envelope",
+        help="TASK envelope utilities",
+        description="TASK envelope inspection and diagnosis commands.",
+        epilog=build_epilog(["gz task envelope diagnose OBPI-0.0.64-04"]),
+    )
+    envelope_cmds = p_task_envelope.add_subparsers(dest="envelope_command", metavar="<command>")
+    envelope_cmds.required = True
+    p_diagnose = envelope_cmds.add_parser(
+        "diagnose",
+        help="Show per-channel TASK declarations side-by-side for an OBPI",
+        description="Render TASK IDs from all four discovery channels for an OBPI.",
+        epilog=build_epilog(
+            [
+                "gz task envelope diagnose OBPI-0.0.64-04",
+                "gz task envelope diagnose OBPI-0.0.64-04 --json",
+            ]
+        ),
+    )
+    p_diagnose.add_argument("obpi_id", help="OBPI identifier (e.g. OBPI-0.0.64-04)")
+    add_json_flag(p_diagnose)
+    p_diagnose.set_defaults(
+        func=lambda a: _lazy("task_envelope_diagnose_cmd")(a.obpi_id, as_json=a.as_json)
     )
 
 

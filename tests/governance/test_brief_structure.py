@@ -92,6 +92,28 @@ class TestBriefStructureModel(unittest.TestCase):
         b = BriefStructure(**{**_VALID_FIELDS, "citations": [("src/x.py", "#anchor")]})
         self.assertEqual(b.citations, [("src/x.py", "#anchor")])
 
+    def test_tasks_optional_defaults_empty(self) -> None:
+        """tasks field is optional and defaults to empty list (OBPI-0.0.64-04)."""
+        b = BriefStructure(**_VALID_FIELDS)
+        self.assertEqual(b.tasks, [])
+
+    def test_tasks_accepts_list_of_strings(self) -> None:
+        """tasks field accepts a list of TASK ID strings (OBPI-0.0.64-04)."""
+        b = BriefStructure(**{**_VALID_FIELDS, "tasks": ["TASK-0.0.64-04-01-01"]})
+        self.assertEqual(b.tasks, ["TASK-0.0.64-04-01-01"])
+
+    @covers("REQ-0.0.64-04-04")
+    def test_req_atomic_optional_defaults_empty(self) -> None:
+        """req_atomic field is optional and defaults to empty list (OBPI-0.0.64-04)."""
+        b = BriefStructure(**_VALID_FIELDS)
+        self.assertEqual(b.req_atomic, [])
+
+    @covers("REQ-0.0.64-04-04")
+    def test_req_atomic_accepts_list_of_strings(self) -> None:
+        """req_atomic accepts a list of REQ ID strings (OBPI-0.0.64-04)."""
+        b = BriefStructure(**{**_VALID_FIELDS, "req_atomic": ["REQ-0.0.64-04-01"]})
+        self.assertEqual(b.req_atomic, ["REQ-0.0.64-04-01"])
+
 
 class TestBriefStructureJsonSchema(unittest.TestCase):
     """REQ-0.0.37-04-02: JSON Schema mirror."""

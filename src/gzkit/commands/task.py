@@ -5,6 +5,7 @@ Subcommands: list, start, complete, block, escalate.
 
 import json
 import re
+from pathlib import Path
 
 from gzkit.commands.common import GzCliError, console, ensure_initialized, get_project_root
 from gzkit.events import (
@@ -418,3 +419,90 @@ def task_start_by_req_cmd(req_id: str, seq_arg: str, *, as_json: bool = False) -
         )
     else:
         console.print(f"[green]Started[/green] {task_id}")
+
+
+def _find_brief_path(project_root: Path, obpi_id: str) -> Path | None:
+    needle = obpi_id.removeprefix("OBPI-")
+    for candidate in sorted(project_root.rglob("OBPI-*.md")):
+        if needle in candidate.name:
+            return candidate
+    return None
+
+
+def _collect_ledger_task_ids_for_obpi_prefix(ledger_path: Path, obpi_prefix: str) -> set[str]:
+    import json as _json  # noqa: PLC0415
+
+    result: set[str] = set()
+    if not (ledger_path.exists() and obpi_prefix):
+        return result
+    for line in ledger_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            ev = _json.loads(line)
+        except _json.JSONDecodeError:
+            continue
+        tid = ev.get("task_id")
+        if tid and isinstance(tid, str):
+            tm = re.match(r"^TASK-([\d.]+?-\d{2})-\d{2}-\d{2}$", tid)
+            if tm and tm.group(1) == obpi_prefix:
+                result.add(tid)
+    return result
+
+
+def _render_envelope_diagnose_table(
+    brief_id: str, channels: dict[str, list[str]], drift: bool
+) -> None:
+    col = 44
+    print(f"\nTask envelope diagnosis: {brief_id}")
+    print("=" * (32 + col))
+    print(f"{'Channel':<32}{'Task IDs':<{col}}")
+    print("-" * (32 + col))
+    for ch_name, tasks in channels.items():
+        task_str = ", ".join(tasks) if tasks else "—"
+        print(f"{ch_name:<32}{task_str:<{col}}")
+    print("-" * (32 + col))
+    print("⚠  Layer-drift detected" if drift else "✓  No layer-drift")
+    print()
+
+
+def task_envelope_diagnose_cmd(obpi_id: str, *, as_json: bool = False) -> None:
+    """Render per-channel TASK declarations side-by-side for an OBPI (ADR-0.0.64/OBPI-04)."""
+    import json as _json  # noqa: PLC0415
+    import sys  # noqa: PLC0415
+
+    from gzkit.governance.brief_structure import LegacyBriefShape, parse_brief  # noqa: PLC0415
+
+    project_root = get_project_root()
+    brief_path = _find_brief_path(project_root, obpi_id)
+    if brief_path is None:
+        print(f"Brief not found for: {obpi_id}", file=sys.stderr)
+        raise SystemExit(1)
+
+    brief = parse_brief(brief_path)
+    if isinstance(brief, LegacyBriefShape):
+        print("Brief is legacy shape; structured frontmatter required.", file=sys.stderr)
+        raise SystemExit(1)
+
+    ch2: set[str] = set(brief.tasks)
+    m = re.match(r"^OBPI-([\d.]+?-\d{2})", brief.id)
+    obpi_prefix = m.group(1) if m else ""
+    ch4 = _collect_ledger_task_ids_for_obpi_prefix(
+        project_root / ".gzkit" / "ledger.jsonl", obpi_prefix
+    )
+
+    channels: dict[str, list[str]] = {
+        "@advances (ch1)": [],
+        "frontmatter tasks: (ch2)": sorted(ch2),
+        "commit trailers (ch3)": [],
+        "ledger task_id (ch4)": sorted(ch4),
+    }
+    populated = [s for s in [ch2, ch4] if s]
+    drift = len(populated) > 1 and len({frozenset(s) for s in populated}) > 1
+
+    if as_json:
+        print(_json.dumps({"obpi_id": brief.id, "channels": channels, "drift": drift}, indent=2))
+        return
+
+    _render_envelope_diagnose_table(brief.id, channels, drift)
