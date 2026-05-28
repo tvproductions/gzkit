@@ -7986,3 +7986,6 @@
 {"schema":"gzkit.ledger.v1","event":"obpi_lock_released","id":"OBPI-0.0.64-05-gz-task-fanout-readback","ts":"2026-05-28T11:24:53.274296+00:00","agent":"claude-code-562af5d9","force":false}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.feature-adr-semver-discipline.md","ts":"2026-05-28T11:44:27.319471+00:00","path":"docs/design/adr/pool/ADR-pool.feature-adr-semver-discipline.md"}
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.feature-adr-semver-discipline","ts":"2026-05-28T11:46:30.317197+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.adr-plan-pipeline-with-redteam.md","ts":"2026-05-28T11:53:18.887948+00:00","path":"docs/design/adr/pool/ADR-pool.adr-plan-pipeline-with-redteam.md"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.obpi-pipeline-redteam-retrofit.md","ts":"2026-05-28T11:53:25.117816+00:00","path":"docs/design/adr/pool/ADR-pool.obpi-pipeline-redteam-retrofit.md"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.gz-architecture-review-skill.md","ts":"2026-05-28T11:53:30.771405+00:00","path":"docs/design/adr/pool/ADR-pool.gz-architecture-review-skill.md"}

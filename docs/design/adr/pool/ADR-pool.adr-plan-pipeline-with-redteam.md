@@ -1,15 +1,12 @@
 ---
 id: ADR-pool.adr-plan-pipeline-with-redteam
-status: Superseded
+status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
-promoted_to: ADR-0.48.0-adr-plan-pipeline-with-redteam
 ---
 
 # ADR-pool.adr-plan-pipeline-with-redteam: ADR Plan Pipeline with Redteam Verification (gz-adr-plan-pipeline)
-> Promoted to `ADR-0.48.0-adr-plan-pipeline-with-redteam` on 2026-05-18. This pool file is retained as historical intake context.
-
 
 ## Status
 

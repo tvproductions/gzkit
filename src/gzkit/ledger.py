@@ -321,25 +321,34 @@ class Ledger:
 
     @staticmethod
     def _build_rename_map(events: list[LedgerEvent]) -> dict[str, str]:
-        """Build old->new artifact ID mapping from rename events."""
-        rename_map: dict[str, str] = {}
+        """Fold rename events temporally to map every observed ID to its latest canonical form.
+
+        For each rename A→B in temporal order: propagate every prior key whose
+        canonical pointer matches A's current canonical onto B, then map A
+        itself to B. This correctly handles cyclical chains (e.g. promote→
+        demote-back) where a flat last-write-wins dict would leave both
+        directions in the map and surface orphan entries in the artifact
+        graph (GHI #557).
+        """
+        canonical: dict[str, str] = {}
         for event in events:
             if event.event != "artifact_renamed":
                 continue
             new_id = event.extra.get("new_id")
-            if isinstance(new_id, str) and new_id and new_id != event.id:
-                rename_map[event.id] = new_id
-        return rename_map
+            if not isinstance(new_id, str) or not new_id or new_id == event.id:
+                continue
+            old_canonical = canonical.get(event.id, event.id)
+            if old_canonical != new_id:
+                for key in canonical:
+                    if canonical[key] == old_canonical:
+                        canonical[key] = new_id
+            canonical[event.id] = new_id
+        return canonical
 
     @staticmethod
     def _canonicalize_with_map(artifact_id: str, rename_map: dict[str, str]) -> str:
-        """Resolve an artifact ID through any rename chain."""
-        current = artifact_id
-        seen: set[str] = set()
-        while current in rename_map and current not in seen:
-            seen.add(current)
-            current = rename_map[current]
-        return current
+        """Resolve an artifact ID to its latest canonical form via the pre-folded rename map."""
+        return rename_map.get(artifact_id, artifact_id)
 
     def canonicalize_id(self, artifact_id: str) -> str:
         """Resolve an artifact ID to the latest canonical identifier."""

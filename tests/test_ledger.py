@@ -294,6 +294,33 @@ class TestLedger(unittest.TestCase):
             self.assertNotIn("ADR-0.2.1-pool.gz-chores-system", graph)
             self.assertTrue(graph["ADR-0.6.0-pool.gz-chores-system"]["attested"])
 
+    def test_get_artifact_graph_folds_cyclical_rename_chain(self) -> None:
+        """Promote→demote round-trip folds to latest-event terminal (GHI #557).
+
+        When an artifact is renamed A→B and later renamed back B→A (the canonical
+        shape of pool→feature promotion followed by feature→pool demotion), the
+        artifact graph must contain only the latest terminal (A), not both A and B.
+        Before the fix, a flat last-write-wins rename map left both directions of
+        the cycle present, and cycle detection in the canonicalize walker halted
+        at an arbitrary side — surfacing orphan feature rows in `gz adr report`.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            pool_id = "ADR-pool.example-promote-demote"
+            feature_id = "ADR-0.99.0-example-promote-demote"
+
+            ledger.append(adr_created_event(pool_id, "PRD-1", "heavy"))
+            ledger.append(artifact_renamed_event(pool_id, feature_id))
+            ledger.append(artifact_renamed_event(feature_id, pool_id))
+
+            graph = ledger.get_artifact_graph()
+            self.assertIn(pool_id, graph)
+            self.assertNotIn(feature_id, graph)
+            self.assertEqual(ledger.canonicalize_id(feature_id), pool_id)
+            self.assertEqual(ledger.canonicalize_id(pool_id), pool_id)
+
     def test_get_artifact_graph_resolves_short_form_parent_to_canonical(self) -> None:
         """Graph resolves short-form ADR parents to canonical long-form (GHI #222).
 

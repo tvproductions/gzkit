@@ -1,15 +1,12 @@
 ---
 id: ADR-pool.gz-architecture-review-skill
-status: Superseded
+status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
-promoted_to: ADR-0.50.0-gz-architecture-review-skill
 ---
 
 # ADR-pool.gz-architecture-review-skill: gz-architecture-review skill (deep/shallow modules, deletion test)
-> Promoted to `ADR-0.50.0-gz-architecture-review-skill` on 2026-05-18. This pool file is retained as historical intake context.
-
 
 ## Status
 

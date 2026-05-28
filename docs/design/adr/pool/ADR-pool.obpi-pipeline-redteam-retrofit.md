@@ -1,15 +1,12 @@
 ---
 id: ADR-pool.obpi-pipeline-redteam-retrofit
-status: Superseded
+status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
-promoted_to: ADR-0.49.0-obpi-pipeline-redteam-retrofit
 ---
 
 # ADR-pool.obpi-pipeline-redteam-retrofit: OBPI Pipeline Redteam Verification Retrofit (gz-obpi-pipeline)
-> Promoted to `ADR-0.49.0-obpi-pipeline-redteam-retrofit` on 2026-05-18. This pool file is retained as historical intake context.
-
 
 ## Status
 
