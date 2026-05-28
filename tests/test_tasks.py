@@ -30,6 +30,7 @@ from gzkit.tasks import (
     derive_req_task_id,
     format_commit_trailer,
     has_task_trailer,
+    next_seq_for_req,
     parse_ceremony_trailers,
     parse_eval_feedback_source_trailers,
     parse_task_trailers,
@@ -782,6 +783,53 @@ class TestResolveTaskChain(unittest.TestCase):
         self.assertEqual(set(chain.keys()), {"task", "req", "obpi", "adr"})
 
 
+class TestNextSeqForReq(unittest.TestCase):
+    """@covers REQ-0.0.64-03-01"""
+
+    @covers("REQ-0.0.64-03-01")
+    def test_returns_1_on_empty(self) -> None:
+        """Returns 1 when no existing task IDs match the req_id prefix."""
+        result = next_seq_for_req("REQ-0.0.64-03-01", existing_task_ids=[])
+        self.assertEqual(result, 1)
+
+    @covers("REQ-0.0.64-03-01")
+    def test_returns_n_plus_1_on_single(self) -> None:
+        """Returns 2 when seq=01 already exists."""
+        result = next_seq_for_req(
+            "REQ-0.0.64-03-01",
+            existing_task_ids=["TASK-0.0.64-03-01-01"],
+        )
+        self.assertEqual(result, 2)
+
+    @covers("REQ-0.0.64-03-01")
+    def test_returns_max_plus_1(self) -> None:
+        """Returns max(seq) + 1 across multiple existing IDs."""
+        result = next_seq_for_req(
+            "REQ-0.0.64-03-01",
+            existing_task_ids=[
+                "TASK-0.0.64-03-01-01",
+                "TASK-0.0.64-03-01-02",
+                "TASK-0.0.64-03-01-03",
+            ],
+        )
+        self.assertEqual(result, 4)
+
+    @covers("REQ-0.0.64-03-01")
+    def test_ignores_different_req_index(self) -> None:
+        """IDs for a different req_index are not counted."""
+        result = next_seq_for_req(
+            "REQ-0.0.64-03-01",
+            existing_task_ids=["TASK-0.0.64-03-02-01"],  # req_index=02, not 01
+        )
+        self.assertEqual(result, 1)
+
+    @covers("REQ-0.0.64-03-01")
+    def test_invalid_req_id_raises(self) -> None:
+        """Invalid req_id format raises ValueError."""
+        with self.assertRaises(ValueError):
+            next_seq_for_req("NOT-A-REQ", existing_task_ids=[])
+
+
 # ---------------------------------------------------------------------------
 # CLI smoke tests (OBPI-0.22.0-04)
 # ---------------------------------------------------------------------------
@@ -978,6 +1026,42 @@ class TestTaskStart(_TaskCliBase):
         code, out = _invoke(["task", "start", "TASK-0.1.0-01-01-01"])
         self.assertEqual(code, 0, out)
         self.assertIn("Resumed", out)
+
+    @covers("REQ-0.0.64-03-01")
+    def test_start_by_req_seq_next_empty_ledger(self) -> None:
+        """gz task start --req REQ-X --seq next mints TASK seq=01 on empty ledger."""
+        code, out = _invoke(["task", "start", "--req", "REQ-0.1.0-01-01", "--seq", "next"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("TASK-0.1.0-01-01-01", out)
+
+    @covers("REQ-0.0.64-03-01")
+    def test_start_by_req_seq_next_increments(self) -> None:
+        """gz task start --req REQ-X --seq next mints next-available seq."""
+        # Seed an existing task for TASK-0.1.0-01-01-01
+        self._seed_task_started("TASK-0.1.0-01-01-01")
+        code, out = _invoke(["task", "start", "--req", "REQ-0.1.0-01-01", "--seq", "next"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("TASK-0.1.0-01-01-02", out)
+
+    @covers("REQ-0.0.64-03-01")
+    def test_start_by_req_explicit_seq(self) -> None:
+        """gz task start --req REQ-X --seq N honors explicit N when no collision."""
+        code, out = _invoke(["task", "start", "--req", "REQ-0.1.0-01-01", "--seq", "3"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("TASK-0.1.0-01-01-03", out)
+
+    @covers("REQ-0.0.64-03-01")
+    def test_start_by_req_explicit_seq_collision_fails(self) -> None:
+        """gz task start --req REQ-X --seq N fails when N already exists."""
+        self._seed_task_started("TASK-0.1.0-01-01-01")
+        code, out = _invoke(["task", "start", "--req", "REQ-0.1.0-01-01", "--seq", "1"])
+        self.assertNotEqual(code, 0, out)
+
+    @covers("REQ-0.0.64-03-01")
+    def test_start_by_req_missing_seq_fails(self) -> None:
+        """gz task start --req REQ-X without --seq fails."""
+        code, out = _invoke(["task", "start", "--req", "REQ-0.1.0-01-01"])
+        self.assertNotEqual(code, 0, out)
 
 
 class TestTaskComplete(_TaskCliBase):

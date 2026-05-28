@@ -47,6 +47,8 @@ def _extract_handler_name(set_defaults_call: ast.Call) -> str | None:
     for kw in set_defaults_call.keywords:
         if kw.arg != "func":
             continue
+        if isinstance(kw.value, ast.Name):
+            return kw.value.id
         if not isinstance(kw.value, ast.Lambda):
             continue
         body = kw.value.body
@@ -265,10 +267,10 @@ def _build_import_map(source: str) -> dict[str, str]:
 
 
 def _extract_local_docstrings(source: str) -> dict[str, str]:
-    """Extract docstrings from module-level function definitions in source."""
+    """Extract docstrings from function definitions in source (any nesting depth)."""
     tree = ast.parse(source)
     result: dict[str, str] = {}
-    for node in ast.iter_child_nodes(tree):
+    for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and ast.get_docstring(node):
             result[node.name] = ast.get_docstring(node) or ""
     return result

@@ -52,6 +52,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "task_escalate_cmd": "gzkit.commands.task",
     "task_list_cmd": "gzkit.commands.task",
     "task_start_cmd": "gzkit.commands.task",
+    "task_start_by_req_cmd": "gzkit.commands.task",
     "issue_file_cmd": "gzkit.commands.issue_cmd",
     "complexity_distill_cmd": "gzkit.commands.complexity_distill_cmd",
     "complexity_advise_cmd": "gzkit.commands.complexity_advise",
@@ -1451,14 +1452,42 @@ def _register_task_parsers(commands: argparse._SubParsersAction) -> None:
             [
                 "gz task start TASK-0.20.0-01-01-01",
                 "gz task start TASK-0.20.0-01-01-01 --json",
+                "gz task start --req REQ-0.20.0-01-01 --seq next",
+                "gz task start --req REQ-0.20.0-01-01 --seq 2",
             ]
         ),
     )
-    p_task_start.add_argument("task_id", help="TASK identifier (e.g. TASK-0.20.0-01-01-01)")
-    add_json_flag(p_task_start)
-    p_task_start.set_defaults(
-        func=lambda a: _lazy("task_start_cmd")(task_id_str=a.task_id, as_json=a.as_json)
+    p_task_start.add_argument(
+        "task_id",
+        nargs="?",
+        help="TASK identifier (e.g. TASK-0.20.0-01-01-01); omit when using --req/--seq",
     )
+    p_task_start.add_argument(
+        "--req",
+        metavar="REQ_ID",
+        help="REQ identifier for subdivision-based start (e.g. REQ-0.0.64-03-01)",
+    )
+    p_task_start.add_argument(
+        "--seq",
+        metavar="NEXT_OR_N",
+        help="Sequence value: 'next' for auto-increment, or explicit positive integer",
+    )
+    add_json_flag(p_task_start)
+
+    def _dispatch_task_start(a: argparse.Namespace) -> None:
+        """Route gz task start to the positional-TASK-ID or --req/--seq handler."""
+        if a.req:
+            if a.task_id:
+                p_task_start.error("Cannot combine positional task_id with --req/--seq")
+            if not a.seq:
+                p_task_start.error("--seq is required when --req is provided")
+            _lazy("task_start_by_req_cmd")(req_id=a.req, seq_arg=a.seq, as_json=a.as_json)
+        elif a.task_id:
+            _lazy("task_start_cmd")(task_id_str=a.task_id, as_json=a.as_json)
+        else:
+            p_task_start.error("Provide a task_id positional OR --req + --seq")
+
+    p_task_start.set_defaults(func=_dispatch_task_start)
 
     p_task_complete = task_commands.add_parser(
         "complete",

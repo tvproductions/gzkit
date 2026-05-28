@@ -4,6 +4,7 @@ Subcommands: list, start, complete, block, escalate.
 """
 
 import json
+import re
 
 from gzkit.commands.common import GzCliError, console, ensure_initialized, get_project_root
 from gzkit.events import (
@@ -13,8 +14,10 @@ from gzkit.events import (
     TaskStartedEvent,
 )
 from gzkit.ledger import LEDGER_SCHEMA, Ledger, LedgerEvent
-from gzkit.tasks import TaskId, TaskStatus, derive_req_task_id
+from gzkit.tasks import TaskId, TaskStatus, derive_req_task_id, next_seq_for_req
 from gzkit.triangle import extract_reqs_from_brief
+
+_REQ_PARTS_RE = re.compile(r"^REQ-(\d+\.\d+\.\d+)-(\d+)-(\d+)$")
 
 
 def _load_tasks_for_obpi(ledger: Ledger, obpi_id: str) -> dict[str, dict[str, str]]:
@@ -349,3 +352,69 @@ def task_escalate_cmd(task_id_str: str, reason: str, *, as_json: bool = False) -
         )
     else:
         console.print(f"[red]Escalated[/red] {task_id}: {reason}")
+
+
+def task_start_by_req_cmd(req_id: str, seq_arg: str, *, as_json: bool = False) -> None:
+    """Start a new TASK for a REQ using --seq next|N (OBPI-0.0.64-03)."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    m = _REQ_PARTS_RE.match(req_id)
+    if not m:
+        raise GzCliError(f"Invalid REQ identifier: {req_id!r}")  # noqa: TRY003
+    semver, obpi_item, _ = m.groups()
+    obpi_id = f"OBPI-{semver}-{obpi_item}"
+    adr_id = f"ADR-{semver}"
+
+    existing_tasks = _load_tasks_for_obpi(ledger, obpi_id)
+    existing_ids = list(existing_tasks.keys())
+
+    if seq_arg == "next":
+        seq_num = next_seq_for_req(req_id, existing_task_ids=existing_ids)
+    else:
+        try:
+            seq_num = int(seq_arg)
+            if seq_num < 1:
+                raise ValueError  # noqa: TRY301
+        except ValueError:
+            raise GzCliError(  # noqa: TRY003
+                f"--seq must be 'next' or a positive integer, got {seq_arg!r}"
+            ) from None
+        candidate = derive_req_task_id(req_id, seq=seq_num)
+        if candidate in existing_tasks:
+            raise GzCliError(  # noqa: TRY003
+                f"TASK {candidate} already exists; use --seq next or a different N"
+            )
+
+    task_id_str = derive_req_task_id(req_id, seq=seq_num)
+    task_id = TaskId.parse(task_id_str)
+    current = _current_task_status(ledger, task_id_str, obpi_id)
+    if current not in (TaskStatus.PENDING, TaskStatus.BLOCKED):
+        raise GzCliError(f"Invalid TASK transition: {current.value} -> in_progress")  # noqa: TRY003
+
+    event = TaskStartedEvent(
+        event="task_started",
+        id=task_id_str,
+        schema_=LEDGER_SCHEMA,
+        task_id=task_id_str,
+        obpi_id=obpi_id,
+        adr_id=adr_id,
+        agent="claude-code",
+    )
+    _emit_task_event(ledger, event)
+
+    if as_json:
+        console.print(
+            json.dumps(
+                {
+                    "task_id": task_id_str,
+                    "event": "task_started",
+                    "from_status": current.value,
+                    "to_status": "in_progress",
+                },
+                indent=2,
+            )
+        )
+    else:
+        console.print(f"[green]Started[/green] {task_id}")

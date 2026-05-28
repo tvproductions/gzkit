@@ -7,11 +7,11 @@ paths:
 description: Four-channel TASK attribution discovery taxonomy for governance traceability
 ---
 
-<!-- rule-version: 0.1.0 -->
+<!-- rule-version: 0.2.0 -->
 
 # TASK Discovery (gzkit)
 
-> **Rule version:** `0.1.0` — initial authoring under OBPI-0.0.64-02; codifies the four-channel TASK-attribution taxonomy that fail-closes the GHI #553 "presence != envelope" gap at the TASK tier.
+> **Rule version:** `0.2.0` — OBPI-0.0.64-03: `gz task start --seq next|N` CLI surface implemented; subdivision sub-invariant now mechanically enforced via the new CLI surface rather than prose-only.
 
 ## Invariant
 

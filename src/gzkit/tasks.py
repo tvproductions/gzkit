@@ -120,6 +120,33 @@ class TaskEntity(BaseModel):
 _REQ_TO_TASK_RE = re.compile(r"^REQ-(\d+\.\d+\.\d+)-(\d+)-(\d+)$")
 
 
+def next_seq_for_req(req_id: str, *, existing_task_ids: list[str]) -> int:
+    """Return the next available seq for req_id given already-started TASK IDs.
+
+    Scans existing_task_ids for TASK IDs whose prefix matches req_id (same
+    semver, obpi_item, req_index) and returns max(seq) + 1. Returns 1 when
+    no matching IDs exist.
+
+    Raises:
+        ValueError: If req_id does not match the expected REQ ID format.
+    """
+    m = _REQ_TO_TASK_RE.match(req_id)
+    if not m:
+        msg = f"Invalid REQ ID format: {req_id!r} (expected REQ-X.Y.Z-NN-MM)"
+        raise ValueError(msg)
+    semver, obpi_item, req_index = m.groups()
+    prefix = f"TASK-{semver}-{obpi_item}-{req_index}-"
+    max_seq = 0
+    for task_id_str in existing_task_ids:
+        if task_id_str.startswith(prefix):
+            try:
+                tid = TaskId.parse(task_id_str)
+                max_seq = max(max_seq, int(tid.seq))
+            except ValueError:
+                pass
+    return max_seq + 1
+
+
 def derive_req_task_id(req_id: str, *, seq: int = 1) -> str:
     """Derive the canonical TASK ID for a given REQ ID.
 
