@@ -117,6 +117,7 @@ class ArtifactEditedEvent(_EventBase):
     event: Literal["artifact_edited"]
     path: str
     session: str | None = None
+    task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
 
 
 class AttestedEvent(_EventBase):
@@ -126,6 +127,7 @@ class AttestedEvent(_EventBase):
     status: str
     by: str
     reason: str | None = None
+    task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
 
 
 class GateCheckedEvent(_EventBase):
@@ -137,6 +139,7 @@ class GateCheckedEvent(_EventBase):
     command: str
     returncode: int
     evidence: str | None = None
+    task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
 
 
 class CloseoutInitiatedEvent(_EventBase):
@@ -156,6 +159,7 @@ class AuditReceiptEmittedEvent(_EventBase):
     attestor: str
     evidence: dict[str, Any] | None = None
     anchor: EventAnchor | None = None
+    task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
 
 
 class ObpiReceiptEmittedEvent(_EventBase):
@@ -175,6 +179,7 @@ class ArtifactRenamedEvent(_EventBase):
     event: Literal["artifact_renamed"]
     new_id: str
     reason: str | None = None
+    task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
 
 
 class AdrAnnotatedEvent(_EventBase):
@@ -270,6 +275,7 @@ class ObpiCompletionUncoveredAcceptEvent(_EventBase):
     operator: str
     rationale: str
     acceptance_type: str
+    task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
 
 
 class PatchReleaseEvent(_EventBase):
@@ -371,6 +377,7 @@ class IntrinsicComplexityAttestationEvent(_EventBase):
         ..., description="Threshold band crossed at attestation time"
     )
     crossing_value: float = Field(..., description="Observed metric value at attestation time")
+    task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
 
 
 class DistributionBaselineRegeneratedEvent(_EventBase):
@@ -396,6 +403,7 @@ class CompositionRenderedEvent(_EventBase):
     target: str
     byte_count: int
     render_ts: str
+    task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
 
 
 class CompositionDriftDetectedEvent(_EventBase):

@@ -1,11 +1,24 @@
 {
   "ledger_schema": "gzkit.ledger.v1",
-  "required": ["schema", "event", "id", "ts"],
+  "required": [
+    "schema",
+    "event",
+    "id",
+    "ts"
+  ],
   "events": {
     "project_init": {
-      "required": ["mode"],
+      "required": [
+        "mode"
+      ],
       "properties": {
-        "mode": { "type": "string", "enum": ["lite", "heavy"] }
+        "mode": {
+          "type": "string",
+          "enum": [
+            "lite",
+            "heavy"
+          ]
+        }
       }
     },
     "prd_created": {
@@ -15,150 +28,356 @@
       "required": []
     },
     "obpi_created": {
-      "required": ["parent"],
+      "required": [
+        "parent"
+      ],
       "properties": {
-        "parent": { "type": "string", "min_length": 1 }
+        "parent": {
+          "type": "string",
+          "min_length": 1
+        }
       }
     },
     "adr_created": {
-      "required": ["lane"],
+      "required": [
+        "lane"
+      ],
       "properties": {
-        "lane": { "type": "string", "enum": ["lite", "heavy"] },
-        "parent": { "type": "string" }
+        "lane": {
+          "type": "string",
+          "enum": [
+            "lite",
+            "heavy"
+          ]
+        },
+        "parent": {
+          "type": "string"
+        }
       }
     },
     "artifact_edited": {
-      "required": ["path"],
+      "required": [
+        "path"
+      ],
       "properties": {
-        "path": { "type": "string", "min_length": 1 },
-        "session": { "type": "string", "min_length": 1 }
+        "path": {
+          "type": "string",
+          "min_length": 1
+        },
+        "session": {
+          "type": "string",
+          "min_length": 1
+        },
+        "task_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "attested": {
-      "required": ["status", "by"],
+      "required": [
+        "status",
+        "by"
+      ],
       "properties": {
         "status": {
           "type": "string",
-          "enum": ["completed", "partial", "dropped"]
+          "enum": [
+            "completed",
+            "partial",
+            "dropped"
+          ]
         },
-        "by": { "type": "string", "min_length": 1 },
-        "reason": { "type": "string", "min_length": 1 }
+        "by": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        },
+        "task_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "gate_checked": {
-      "required": ["gate", "status", "command", "returncode"],
+      "required": [
+        "gate",
+        "status",
+        "command",
+        "returncode"
+      ],
       "properties": {
-        "gate": { "type": "integer", "min": 1 },
+        "gate": {
+          "type": "integer",
+          "min": 1
+        },
         "status": {
           "type": "string",
-          "enum": ["pass", "fail", "pending", "n/a"]
+          "enum": [
+            "pass",
+            "fail",
+            "pending",
+            "n/a"
+          ]
         },
-        "command": { "type": "string", "min_length": 1 },
-        "returncode": { "type": "integer" },
-        "evidence": { "type": "string" }
+        "command": {
+          "type": "string",
+          "min_length": 1
+        },
+        "returncode": {
+          "type": "integer"
+        },
+        "evidence": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "closeout_initiated": {
-      "required": ["by", "mode"],
+      "required": [
+        "by",
+        "mode"
+      ],
       "properties": {
-        "by": { "type": "string", "min_length": 1 },
-        "mode": { "type": "string", "enum": ["lite", "heavy"] },
-        "evidence": { "type": "object" }
+        "by": {
+          "type": "string",
+          "min_length": 1
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "lite",
+            "heavy"
+          ]
+        },
+        "evidence": {
+          "type": "object"
+        }
       }
     },
     "audit_receipt_emitted": {
-      "required": ["receipt_event", "attestor"],
+      "required": [
+        "receipt_event",
+        "attestor"
+      ],
       "properties": {
         "receipt_event": {
           "type": "string",
-          "enum": ["completed", "validated", "meta-receipt-bind", "closed"]
+          "enum": [
+            "completed",
+            "validated",
+            "meta-receipt-bind",
+            "closed"
+          ]
         },
-        "attestor": { "type": "string", "min_length": 1 },
-        "evidence": { "type": "object" },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        },
+        "evidence": {
+          "type": "object"
+        },
         "anchor": {
           "type": "object",
-          "required": ["commit", "semver"],
+          "required": [
+            "commit",
+            "semver"
+          ],
           "properties": {
-            "commit": { "type": "string", "pattern": "^[a-f0-9]{7,40}$" },
-            "tag": { "type": "string" },
-            "semver": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+            "commit": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{7,40}$"
+            },
+            "tag": {
+              "type": "string"
+            },
+            "semver": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+\\.\\d+$"
+            }
           }
+        },
+        "task_id": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
     "obpi_receipt_emitted": {
-      "required": ["receipt_event", "attestor"],
+      "required": [
+        "receipt_event",
+        "attestor"
+      ],
       "properties": {
-        "receipt_event": { "type": "string", "enum": ["completed", "validated"] },
-        "attestor": { "type": "string", "min_length": 1 },
+        "receipt_event": {
+          "type": "string",
+          "enum": [
+            "completed",
+            "validated"
+          ]
+        },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        },
         "evidence": {
           "type": "object",
           "properties": {
-            "value_narrative": { "type": "string", "min_length": 1 },
-            "key_proof": { "type": "string", "min_length": 1 },
-            "human_attestation": { "type": "boolean" },
-            "attestation_text": { "type": "string", "min_length": 1 },
-            "attestation_date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+            "value_narrative": {
+              "type": "string",
+              "min_length": 1
+            },
+            "key_proof": {
+              "type": "string",
+              "min_length": 1
+            },
+            "human_attestation": {
+              "type": "boolean"
+            },
+            "attestation_text": {
+              "type": "string",
+              "min_length": 1
+            },
+            "attestation_date": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
             "attestation_requirement": {
               "type": "string",
-              "enum": ["required", "optional"]
+              "enum": [
+                "required",
+                "optional"
+              ]
             },
-            "parent_adr": { "type": "string", "min_length": 1 },
-            "parent_lane": { "type": "string", "enum": ["lite", "heavy"] },
+            "parent_adr": {
+              "type": "string",
+              "min_length": 1
+            },
+            "parent_lane": {
+              "type": "string",
+              "enum": [
+                "lite",
+                "heavy"
+              ]
+            },
             "scope_audit": {
               "type": "object",
               "properties": {
                 "allowlist": {
                   "type": "array",
-                  "items": { "type": "string", "min_length": 1 }
+                  "items": {
+                    "type": "string",
+                    "min_length": 1
+                  }
                 },
                 "changed_files": {
                   "type": "array",
-                  "items": { "type": "string", "min_length": 1 }
+                  "items": {
+                    "type": "string",
+                    "min_length": 1
+                  }
                 },
                 "out_of_scope_files": {
                   "type": "array",
-                  "items": { "type": "string", "min_length": 1 }
+                  "items": {
+                    "type": "string",
+                    "min_length": 1
+                  }
                 }
               }
             },
             "git_sync_state": {
               "type": "object",
               "properties": {
-                "branch": { "type": "string" },
-                "remote": { "type": "string" },
-                "head": { "type": "string" },
-                "remote_head": { "type": "string" },
-                "dirty": { "type": "boolean" },
-                "ahead": { "type": "integer", "min": 0 },
-                "behind": { "type": "integer", "min": 0 },
-                "diverged": { "type": "boolean" },
+                "branch": {
+                  "type": "string"
+                },
+                "remote": {
+                  "type": "string"
+                },
+                "head": {
+                  "type": "string"
+                },
+                "remote_head": {
+                  "type": "string"
+                },
+                "dirty": {
+                  "type": "boolean"
+                },
+                "ahead": {
+                  "type": "integer",
+                  "min": 0
+                },
+                "behind": {
+                  "type": "integer",
+                  "min": 0
+                },
+                "diverged": {
+                  "type": "boolean"
+                },
                 "actions": {
                   "type": "array",
-                  "items": { "type": "string", "min_length": 1 }
+                  "items": {
+                    "type": "string",
+                    "min_length": 1
+                  }
                 },
                 "warnings": {
                   "type": "array",
-                  "items": { "type": "string", "min_length": 1 }
+                  "items": {
+                    "type": "string",
+                    "min_length": 1
+                  }
                 },
                 "blockers": {
                   "type": "array",
-                  "items": { "type": "string", "min_length": 1 }
+                  "items": {
+                    "type": "string",
+                    "min_length": 1
+                  }
                 }
               }
             },
-            "recorder_source": { "type": "string", "min_length": 1 },
+            "recorder_source": {
+              "type": "string",
+              "min_length": 1
+            },
             "recorder_warnings": {
               "type": "array",
-              "items": { "type": "string", "min_length": 1 }
+              "items": {
+                "type": "string",
+                "min_length": 1
+              }
             },
             "req_proof_inputs": {
               "type": "array",
               "items": {
                 "type": "object",
-                "required": ["name", "kind", "source", "status"],
+                "required": [
+                  "name",
+                  "kind",
+                  "source",
+                  "status"
+                ],
                 "properties": {
-                  "name": { "type": "string", "min_length": 1 },
+                  "name": {
+                    "type": "string",
+                    "min_length": 1
+                  },
                   "kind": {
                     "type": "string",
                     "enum": [
@@ -169,13 +388,25 @@
                       "legacy_key_proof"
                     ]
                   },
-                  "source": { "type": "string", "min_length": 1 },
+                  "source": {
+                    "type": "string",
+                    "min_length": 1
+                  },
                   "status": {
                     "type": "string",
-                    "enum": ["present", "missing"]
+                    "enum": [
+                      "present",
+                      "missing"
+                    ]
                   },
-                  "scope": { "type": "string", "min_length": 1 },
-                  "gap_reason": { "type": "string", "min_length": 1 }
+                  "scope": {
+                    "type": "string",
+                    "min_length": 1
+                  },
+                  "gap_reason": {
+                    "type": "string",
+                    "min_length": 1
+                  }
                 }
               }
             }
@@ -183,230 +414,633 @@
         },
         "obpi_completion": {
           "type": "string",
-          "enum": ["completed", "attested_completed", "not_completed"]
+          "enum": [
+            "completed",
+            "attested_completed",
+            "not_completed"
+          ]
         },
         "anchor": {
           "type": "object",
-          "required": ["commit", "semver"],
+          "required": [
+            "commit",
+            "semver"
+          ],
           "properties": {
-            "commit": { "type": "string", "pattern": "^[a-f0-9]{7,40}$" },
-            "tag": { "type": "string" },
-            "semver": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+            "commit": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{7,40}$"
+            },
+            "tag": {
+              "type": "string"
+            },
+            "semver": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+\\.\\d+$"
+            }
           }
         }
       }
     },
     "artifact_renamed": {
-      "required": ["new_id"],
+      "required": [
+        "new_id"
+      ],
       "properties": {
-        "new_id": { "type": "string", "min_length": 1 },
-        "reason": { "type": "string", "min_length": 1 }
+        "new_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        },
+        "task_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "adr_annotated": {
-      "required": ["annotation"],
+      "required": [
+        "annotation"
+      ],
       "properties": {
-        "annotation": { "type": "string", "min_length": 1 },
-        "source_framework": { "type": "string", "min_length": 1 },
-        "rationale": { "type": "string", "min_length": 1 }
+        "annotation": {
+          "type": "string",
+          "min_length": 1
+        },
+        "source_framework": {
+          "type": "string",
+          "min_length": 1
+        },
+        "rationale": {
+          "type": "string",
+          "min_length": 1
+        }
       }
     },
     "lifecycle_transition": {
-      "required": ["content_type", "from_state", "to_state"],
+      "required": [
+        "content_type",
+        "from_state",
+        "to_state"
+      ],
       "properties": {
-        "content_type": { "type": "string", "min_length": 1 },
-        "from_state": { "type": "string", "min_length": 1 },
-        "to_state": { "type": "string", "min_length": 1 }
+        "content_type": {
+          "type": "string",
+          "min_length": 1
+        },
+        "from_state": {
+          "type": "string",
+          "min_length": 1
+        },
+        "to_state": {
+          "type": "string",
+          "min_length": 1
+        }
       }
     },
     "distribution_baseline_regenerated": {
-      "required": ["surfaces_walked", "file_count", "manifest_hash_before", "manifest_hash_after"],
+      "required": [
+        "surfaces_walked",
+        "file_count",
+        "manifest_hash_before",
+        "manifest_hash_after"
+      ],
       "properties": {
         "surfaces_walked": {
           "type": "array",
-          "items": { "type": "string", "min_length": 1 }
+          "items": {
+            "type": "string",
+            "min_length": 1
+          }
         },
-        "file_count": { "type": "integer", "min": 0 },
-        "manifest_hash_before": { "type": "string" },
-        "manifest_hash_after": { "type": "string", "min_length": 1 }
+        "file_count": {
+          "type": "integer",
+          "min": 0
+        },
+        "manifest_hash_before": {
+          "type": "string"
+        },
+        "manifest_hash_after": {
+          "type": "string",
+          "min_length": 1
+        }
       }
     },
     "agent_sync_completed": {
-      "required": ["updated_paths", "canonical_rule_count"],
+      "required": [
+        "updated_paths",
+        "canonical_rule_count"
+      ],
       "properties": {
         "updated_paths": {
           "type": "array",
-          "items": { "type": "string", "min_length": 1 }
+          "items": {
+            "type": "string",
+            "min_length": 1
+          }
         },
-        "canonical_rule_count": { "type": "integer", "min": 0 }
+        "canonical_rule_count": {
+          "type": "integer",
+          "min": 0
+        }
       }
     },
     "adr_eval_completed": {
-      "required": ["verdict", "adr_weighted_total", "obpi_count", "action_item_count"],
+      "required": [
+        "verdict",
+        "adr_weighted_total",
+        "obpi_count",
+        "action_item_count"
+      ],
       "properties": {
-        "verdict": { "type": "string", "min_length": 1 },
-        "adr_weighted_total": { "type": "number" },
-        "obpi_count": { "type": "integer", "min": 0 },
-        "action_item_count": { "type": "integer", "min": 0 }
+        "verdict": {
+          "type": "string",
+          "min_length": 1
+        },
+        "adr_weighted_total": {
+          "type": "number"
+        },
+        "obpi_count": {
+          "type": "integer",
+          "min": 0
+        },
+        "action_item_count": {
+          "type": "integer",
+          "min": 0
+        }
       }
     },
     "adr-evaluation": {
-      "required": ["artifact_id", "artifact_type", "dimensions", "scores", "weighted_total", "red_team_challenges_fired", "evaluator_persona", "timestamp"],
+      "required": [
+        "artifact_id",
+        "artifact_type",
+        "dimensions",
+        "scores",
+        "weighted_total",
+        "red_team_challenges_fired",
+        "evaluator_persona",
+        "timestamp"
+      ],
       "properties": {
-        "artifact_id": { "type": "string", "min_length": 1 },
-        "artifact_type": { "type": "string", "min_length": 1 },
-        "dimensions": { "type": "object" },
-        "scores": { "type": "object" },
-        "weighted_total": { "type": "number" },
-        "red_team_challenges_fired": { "type": "array" },
-        "evaluator_persona": { "type": "string", "min_length": 1 },
-        "timestamp": { "type": "string", "min_length": 1 }
+        "artifact_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "artifact_type": {
+          "type": "string",
+          "min_length": 1
+        },
+        "dimensions": {
+          "type": "object"
+        },
+        "scores": {
+          "type": "object"
+        },
+        "weighted_total": {
+          "type": "number"
+        },
+        "red_team_challenges_fired": {
+          "type": "array"
+        },
+        "evaluator_persona": {
+          "type": "string",
+          "min_length": 1
+        },
+        "timestamp": {
+          "type": "string",
+          "min_length": 1
+        }
       }
     },
     "audit_generated": {
-      "required": ["audit_file", "audit_plan_file", "passed"],
+      "required": [
+        "audit_file",
+        "audit_plan_file",
+        "passed"
+      ],
       "properties": {
-        "audit_file": { "type": "string", "min_length": 1 },
-        "audit_plan_file": { "type": "string", "min_length": 1 },
-        "passed": { "type": "boolean" }
+        "audit_file": {
+          "type": "string",
+          "min_length": 1
+        },
+        "audit_plan_file": {
+          "type": "string",
+          "min_length": 1
+        },
+        "passed": {
+          "type": "boolean"
+        }
       }
     },
     "obpi_completion_uncovered_accept": {
-      "required": ["obpi_id", "req_id", "operator", "rationale", "acceptance_type"],
+      "required": [
+        "obpi_id",
+        "req_id",
+        "operator",
+        "rationale",
+        "acceptance_type"
+      ],
       "properties": {
-        "obpi_id": { "type": "string", "min_length": 1 },
-        "req_id": { "type": "string", "min_length": 1 },
-        "operator": { "type": "string", "min_length": 1 },
-        "rationale": { "type": "string", "min_length": 1 },
+        "obpi_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "req_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "operator": {
+          "type": "string",
+          "min_length": 1
+        },
+        "rationale": {
+          "type": "string",
+          "min_length": 1
+        },
         "acceptance_type": {
           "type": "string",
-          "enum": ["human", "agent-relayed-operator-attestation", "lite-auto"]
+          "enum": [
+            "human",
+            "agent-relayed-operator-attestation",
+            "lite-auto"
+          ]
+        },
+        "task_id": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
     "obpi_lock_claimed": {
-      "required": ["agent", "ttl_minutes", "branch", "session_id"],
+      "required": [
+        "agent",
+        "ttl_minutes",
+        "branch",
+        "session_id"
+      ],
       "properties": {
-        "agent": { "type": "string", "min_length": 1 },
-        "ttl_minutes": { "type": "integer", "min": 0 },
-        "branch": { "type": "string", "min_length": 1 },
-        "session_id": { "type": "string", "min_length": 1 }
+        "agent": {
+          "type": "string",
+          "min_length": 1
+        },
+        "ttl_minutes": {
+          "type": "integer",
+          "min": 0
+        },
+        "branch": {
+          "type": "string",
+          "min_length": 1
+        },
+        "session_id": {
+          "type": "string",
+          "min_length": 1
+        }
       }
     },
     "obpi_lock_released": {
-      "required": ["agent"],
+      "required": [
+        "agent"
+      ],
       "properties": {
-        "agent": { "type": "string", "min_length": 1 },
-        "force": { "type": "boolean" }
+        "agent": {
+          "type": "string",
+          "min_length": 1
+        },
+        "force": {
+          "type": "boolean"
+        }
       }
     },
     "obpi_withdrawn": {
-      "required": ["reason"],
+      "required": [
+        "reason"
+      ],
       "properties": {
-        "reason": { "type": "string", "min_length": 1 }
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        }
       }
     },
     "patch-release": {
-      "required": ["version", "previous_version", "ghi_summary", "manifest_path"],
+      "required": [
+        "version",
+        "previous_version",
+        "ghi_summary",
+        "manifest_path"
+      ],
       "properties": {
-        "version": { "type": "string", "min_length": 1 },
-        "previous_version": { "type": "string", "min_length": 1 },
+        "version": {
+          "type": "string",
+          "min_length": 1
+        },
+        "previous_version": {
+          "type": "string",
+          "min_length": 1
+        },
         "tag": {},
-        "ghi_summary": { "type": "array" },
-        "manifest_path": { "type": "string", "min_length": 1 }
+        "ghi_summary": {
+          "type": "array"
+        },
+        "manifest_path": {
+          "type": "string",
+          "min_length": 1
+        }
       }
     },
     "pipeline_marker_purged": {
-      "required": ["reason", "marker_path"],
+      "required": [
+        "reason",
+        "marker_path"
+      ],
       "properties": {
-        "reason": { "type": "string", "min_length": 1 },
-        "marker_path": { "type": "string", "min_length": 1 }
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        },
+        "marker_path": {
+          "type": "string",
+          "min_length": 1
+        }
       }
     },
     "pipeline_launched": {
-      "required": ["nonce", "marker_path", "lane"],
+      "required": [
+        "nonce",
+        "marker_path",
+        "lane"
+      ],
       "properties": {
-        "nonce": { "type": "string", "pattern": "^[a-f0-9]{32}$" },
-        "marker_path": { "type": "string", "min_length": 1 },
-        "lane": { "type": "string", "min_length": 1 },
-        "entry": { "type": "string" }
+        "nonce": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "marker_path": {
+          "type": "string",
+          "min_length": 1
+        },
+        "lane": {
+          "type": "string",
+          "min_length": 1
+        },
+        "entry": {
+          "type": "string"
+        }
       }
     },
     "task_started": {
-      "required": ["task_id", "obpi_id", "adr_id", "agent"],
+      "required": [
+        "task_id",
+        "obpi_id",
+        "adr_id",
+        "agent"
+      ],
       "properties": {
-        "task_id": { "type": "string", "min_length": 1 },
-        "obpi_id": { "type": "string", "min_length": 1 },
-        "adr_id": { "type": "string", "min_length": 1 },
-        "agent": { "type": "string", "min_length": 1 }
+        "task_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "obpi_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "adr_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "agent": {
+          "type": "string",
+          "min_length": 1
+        }
       }
     },
     "task_completed": {
-      "required": ["task_id", "obpi_id", "adr_id", "agent"],
+      "required": [
+        "task_id",
+        "obpi_id",
+        "adr_id",
+        "agent"
+      ],
       "properties": {
-        "task_id": { "type": "string", "min_length": 1 },
-        "obpi_id": { "type": "string", "min_length": 1 },
-        "adr_id": { "type": "string", "min_length": 1 },
-        "agent": { "type": "string", "min_length": 1 }
+        "task_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "obpi_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "adr_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "agent": {
+          "type": "string",
+          "min_length": 1
+        }
       }
     },
     "task_blocked": {
-      "required": ["task_id", "obpi_id", "adr_id", "agent", "reason"],
+      "required": [
+        "task_id",
+        "obpi_id",
+        "adr_id",
+        "agent",
+        "reason"
+      ],
       "properties": {
-        "task_id": { "type": "string", "min_length": 1 },
-        "obpi_id": { "type": "string", "min_length": 1 },
-        "adr_id": { "type": "string", "min_length": 1 },
-        "agent": { "type": "string", "min_length": 1 },
-        "reason": { "type": "string", "min_length": 1 }
+        "task_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "obpi_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "adr_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "agent": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        }
       }
     },
     "task_escalated": {
-      "required": ["task_id", "obpi_id", "adr_id", "agent", "reason"],
+      "required": [
+        "task_id",
+        "obpi_id",
+        "adr_id",
+        "agent",
+        "reason"
+      ],
       "properties": {
-        "task_id": { "type": "string", "min_length": 1 },
-        "obpi_id": { "type": "string", "min_length": 1 },
-        "adr_id": { "type": "string", "min_length": 1 },
-        "agent": { "type": "string", "min_length": 1 },
-        "reason": { "type": "string", "min_length": 1 },
-        "escalated_to": { "type": "string", "min_length": 1 }
+        "task_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "obpi_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "adr_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "agent": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        },
+        "escalated_to": {
+          "type": "string",
+          "min_length": 1
+        }
       }
     },
     "composition_rendered": {
-      "required": ["invariant_count", "target", "byte_count", "render_ts"],
+      "required": [
+        "invariant_count",
+        "target",
+        "byte_count",
+        "render_ts"
+      ],
       "properties": {
-        "invariant_count": { "type": "integer" },
-        "target": { "type": "string", "min_length": 1 },
-        "byte_count": { "type": "integer" },
-        "render_ts": { "type": "string" }
+        "invariant_count": {
+          "type": "integer"
+        },
+        "target": {
+          "type": "string",
+          "min_length": 1
+        },
+        "byte_count": {
+          "type": "integer"
+        },
+        "render_ts": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "composition_drift_detected": {
-      "required": ["target", "diff_first_50_lines", "render_ts"],
+      "required": [
+        "target",
+        "diff_first_50_lines",
+        "render_ts"
+      ],
       "properties": {
-        "target": { "type": "string", "min_length": 1 },
-        "diff_first_50_lines": { "type": "string", "min_length": 1 },
-        "render_ts": { "type": "string" }
+        "target": {
+          "type": "string",
+          "min_length": 1
+        },
+        "diff_first_50_lines": {
+          "type": "string",
+          "min_length": 1
+        },
+        "render_ts": {
+          "type": "string"
+        }
       }
     },
     "intrinsic-complexity-attestation": {
-      "required": ["file_path", "qualname", "reason", "attestor", "attestation_date", "metric", "crossing_band", "crossing_value"],
+      "required": [
+        "file_path",
+        "qualname",
+        "reason",
+        "attestor",
+        "attestation_date",
+        "metric",
+        "crossing_band",
+        "crossing_value"
+      ],
       "properties": {
-        "file_path": { "type": "string", "min_length": 1 },
-        "qualname": { "type": "string", "min_length": 1 },
-        "reason": { "type": "string", "min_length": 1 },
-        "attestor": { "type": "string", "min_length": 1 },
-        "attestation_date": { "type": "string", "min_length": 10 },
-        "metric": { "type": "string", "min_length": 1 },
-        "crossing_band": { "type": "string", "enum": ["block", "warn", "advise"] },
-        "crossing_value": { "type": "number" }
+        "file_path": {
+          "type": "string",
+          "min_length": 1
+        },
+        "qualname": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        },
+        "attestation_date": {
+          "type": "string",
+          "min_length": 10
+        },
+        "metric": {
+          "type": "string",
+          "min_length": 1
+        },
+        "crossing_band": {
+          "type": "string",
+          "enum": [
+            "block",
+            "warn",
+            "advise"
+          ]
+        },
+        "crossing_value": {
+          "type": "number"
+        },
+        "task_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "chore_decommission_processed": {
-      "required": ["file_path", "disposition", "obpi_id"],
+      "required": [
+        "file_path",
+        "disposition",
+        "obpi_id"
+      ],
       "properties": {
-        "file_path": { "type": "string", "min_length": 1 },
-        "disposition": { "type": "string", "enum": ["convert", "replace-with-ledger", "fold-to-validator", "keep-as-fixture"] },
-        "obpi_id": { "type": "string", "min_length": 1 }
+        "file_path": {
+          "type": "string",
+          "min_length": 1
+        },
+        "disposition": {
+          "type": "string",
+          "enum": [
+            "convert",
+            "replace-with-ledger",
+            "fold-to-validator",
+            "keep-as-fixture"
+          ]
+        },
+        "obpi_id": {
+          "type": "string",
+          "min_length": 1
+        }
       }
     }
   }

@@ -1,18 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.59-03-parity-gate-three-channel-extension",
-  "timestamp": "2026-05-26T09:58:31.193116+00:00",
+  "obpi_id": "OBPI-0.0.64-01-task-id-worklog-schema-additive",
+  "timestamp": "2026-05-28T06:44:01.734360+00:00",
   "verdict": "PASS",
-  "plan_file": "parity-gate-three-channel-extension-OBPI-0.0.59-03.md",
+  "plan_file": "OBPI-0.0.64-01-task-id-worklog-schema-additive.md",
   "gaps_found": 0,
-  "waived_gaps": [
-    {
-      "path": "data/req_kind_grandfathering.json",
-      "reason": "new file to be created by this OBPI"
-    },
-    {
-      "path": "tests/governance/test_req_coverage_record.py",
-      "reason": "new file to be created by this OBPI"
-    }
-  ],
-  "scope_collisions": "advisory-only \u2014 all contested sibling OBPIs are Completed"
+  "scope_collisions": "advisory-only — all 12 contested sibling OBPIs are attested_completed"
 }

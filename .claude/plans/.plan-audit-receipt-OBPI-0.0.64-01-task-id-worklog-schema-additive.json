@@ -1,0 +1,95 @@
+{
+  "obpi_id": "OBPI-0.0.64-01-task-id-worklog-schema-additive",
+  "timestamp": "2026-05-28T06:44:01.734360+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.64-01-task-id-worklog-schema-additive.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.5.0",
+      "sibling_obpi": "OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity",
+      "contested_paths": [
+        "src/gzkit/schemas/ledger.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.15.0",
+      "sibling_obpi": "OBPI-0.15.0-04-schema-generation-unification",
+      "contested_paths": [
+        "src/gzkit/schemas/ledger.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.22.0",
+      "sibling_obpi": "OBPI-0.22.0-02-task-ledger-events",
+      "contested_paths": [
+        "src/gzkit/events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-01-obpi-runtime-contract-and-state-model",
+      "contested_paths": [
+        "src/gzkit/schemas/ledger.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.26",
+      "sibling_obpi": "OBPI-0.0.26-01-persist-evaluation-events",
+      "contested_paths": [
+        "src/gzkit/schemas/ledger.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.56",
+      "sibling_obpi": "OBPI-0.0.56-01-closeout-defect-baseline-snapshot",
+      "contested_paths": [
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-03-composition-drift-validator",
+      "contested_paths": [
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-04-decommission-tautological-tests-chore",
+      "contested_paths": [
+        "src/gzkit/events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-07-intrinsic-complexity-attestation",
+      "contested_paths": [
+        "src/gzkit/schemas/ledger.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.64-task-envelope-and-planning-decomposition/obpis/OBPI-0.0.64-01-task-id-worklog-schema-additive.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-01-doctrine-and-canon",
+      "contested_paths": [
+        "src/gzkit/schemas/ledger.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-06-persona-schema-validation",
+      "contested_paths": [
+        "src/gzkit/schemas/ledger.json"
+      ]
+    }
+  ]
+}

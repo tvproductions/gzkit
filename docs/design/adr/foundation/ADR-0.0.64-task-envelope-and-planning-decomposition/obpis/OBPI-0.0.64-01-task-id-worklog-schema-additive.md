@@ -3,7 +3,7 @@ id: OBPI-0.0.64-01-task-id-worklog-schema-additive
 parent: ADR-0.0.64-task-envelope-and-planning-decomposition
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.64-01-task-id-worklog-schema-additive: Task Id Worklog Schema Additive
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.64-task-envelope-and-planning-decomposition/ADR-0.0.64-task-envelope-and-planning-decomposition.md`
 - **Checklist Item:** #1 — Worklog schema additive (Decision item 1).
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -248,14 +248,31 @@ uv run python -c "from gzkit.events import ArtifactEditedEvent; from gzkit.ledge
 
 ### Key Proof
 
+
+New-shape event with TASK attribution validates:
+```
+uv run python -c "from gzkit.events import ArtifactEditedEvent; e = ArtifactEditedEvent(event='artifact_edited', id='demo', schema_='gzkit.ledger.v1', ts='2026-05-28T06:00:00Z', agent='claude-code', path='src/gzkit/events.py', task_id='TASK-0.0.64-01-01-01'); print(e.task_id)"
+# → TASK-0.0.64-01-01-01
+```
+
+Legacy event without task_id still validates (grandfather path):
+```
+uv run python -c "from gzkit.events import ArtifactEditedEvent; e = ArtifactEditedEvent(event='artifact_edited', id='demo', schema_='gzkit.ledger.v1', ts='2026-05-28T06:00:00Z', agent='claude-code', path='src/gzkit/events.py'); print(e.task_id)"
+# → None
+```
+
+ARB receipts: arb-ruff-e14298b991fd41fa8918abfac1b8e98e (lint); arb-step-typecheck-465802effa20489196260e273326cc5a (typecheck); arb-step-unittest-68ca0cb8031847d89df2188b8625cd5c (5675/5675 full unittest); arb-step-unittest-98e2ca87e3214421b910b90aa4beb112 (13/13 scoped unittest); arb-step-mkdocs-43316414e55548d9bd562e7089b182de (mkdocs --strict OK 2.87s).
+
 ### Implementation Summary
 
-- Parent ADR § Decision item 1 (verbatim): _filled at completion_
-- Files created/modified: _filled at completion_
-- Tests added: _filled at completion_
-- Date completed: _filled at completion_
-- Attestation status: _filled at completion_
-- Defects noted: _filled at completion_
+
+- Parent ADR § Decision item 1 (verbatim): Worklog schema additive — task_id: str | None = None field added to 8 worklog event types in src/gzkit/events.py and src/gzkit/schemas/ledger.json. Pre-restoration events grandfathered (the field is optional; legacy events validate unchanged). Pydantic BaseModel with ConfigDict(extra='forbid') per .gzkit/rules/models.md.
+- Files modified: src/gzkit/events.py (8 worklog classes gain task_id: str | None = Field(default=None, ...)); src/gzkit/schemas/ledger.json (8 event entries gain "task_id": {"type": ["string", "null"]} in properties; none added to required)
+- Files created: tests/governance/test_task_id_worklog_field.py (13 REQ-derived @covers tests across 6 REQs)
+- BDD coverage: waived per data/behave_coverage_waivers.json (schema-additive belongs at unit tier; behave scenarios that instantiate Pydantic models are the anti-pattern ADR-0.0.59 names)
+- Date completed: 2026-05-28
+- Attestation status: operator verbatim "attest completed" relayed via --attestation-text
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -263,12 +280,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.64-01 schema additive landed: task_id: str | None field on 8 worklog event Pydantic models (src/gzkit/events.py) + 8 ledger.json event entries (additive nullable; none in required); 13 REQ-derived @covers tests added (tests/governance/test_task_id_worklog_field.py); 6/6 REQs covered per gz covers; 5675/5675 full unittest pass; ARB receipts arb-ruff-e14298b991fd41fa8918abfac1b8e98e, arb-step-typecheck-465802effa20489196260e273326cc5a, arb-step-unittest-68ca0cb8031847d89df2188b8625cd5c, arb-step-mkdocs-43316414e55548d9bd562e7089b182de; gz validate --documents PASS; mkdocs --strict OK 2.87s; BDD waived per data/behave_coverage_waivers.json (schema-additive belongs at unit tier — anti-tautological per ADR-0.0.59); STRUCTURAL-FENCE invariant 1 (additive-only, no revert of d70793c4 auto_start/complete_obpi_tasks) preserved.
+- Date: 2026-05-28
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-05-28
 
 **Evidence Hash:** -
