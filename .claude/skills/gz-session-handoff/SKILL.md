@@ -5,14 +5,14 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.3.0"
+  skill-version: "6.3.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-20
+last_reviewed: 2026-05-29
 model: sonnet
 ---
 
@@ -106,20 +106,30 @@ The CREATE workflow scaffolds a new handoff document when an agent is pausing wo
    - Validation result (pass or list of errors)
    - First item from "Immediate Next Steps" (for quick resumption context)
 
-### Programmatic API
+### Programmatic API (DESIGN TARGET — NOT YET IMPLEMENTED)
 
-The CREATE workflow is implemented as Python functions importable from `tests.governance.test_session_handoff`:
+> **NOT IMPLEMENTED.** `create_handoff` / `scaffold_handoff` /
+> `resolve_handoff_dir` / `generate_handoff_filename` / `CreateResult` do **not**
+> exist — `tests.governance.test_session_handoff` is not a real module
+> (`ModuleNotFoundError` on import). Building this API is **OBPI-02 of
+> `ADR-pool.handoff-system-consolidation`** (GHI #529). Until it lands, do CREATE
+> by following the manual procedure above and gating the result through the
+> validator that **does** exist:
+>
+> ```python
+> from pathlib import Path
+> from gzkit.handoff_validation import validate_handoff_document
+>
+> errors = validate_handoff_document(handoff_text, Path("."))  # [] == valid
+> ```
+>
+> Author with the canonical short-form frontmatter the `HandoffFrontmatter`
+> model requires (`adr_id: ADR-X.Y.Z`, `obpi_id: OBPI-X.Y.Z-NN`), then run the
+> validator BEFORE committing.
+
+Target signature, to be built under OBPI-02:
 
 ```python
-from tests.governance.test_session_handoff import (
-    scaffold_handoff,
-    resolve_handoff_dir,
-    generate_handoff_filename,
-    create_handoff,
-    CreateResult,
-)
-
-# Full workflow
 result = create_handoff(
     adr_id="ADR-0.0.25",
     branch="feature/handoff",
@@ -129,9 +139,6 @@ result = create_handoff(
     obpi_id="OBPI-0.0.25-03",
     base_path=Path("."),
 )
-
-assert result.is_valid
-print(result.file_path)
 ```
 
 ---
@@ -189,45 +196,28 @@ The RESUME workflow discovers, loads, validates, and reports on existing handoff
 
 When staleness is **Stale** or **Very Stale**, the `requires_human_verification` flag is set to `True`. The agent MUST present the handoff summary to the human operator and wait for explicit approval before proceeding with the next steps.
 
-### Programmatic API
+### Programmatic API (DESIGN TARGET — NOT YET IMPLEMENTED)
 
-The RESUME workflow is implemented as Python functions importable from `tests.governance.test_session_handoff`:
+> **NOT IMPLEMENTED.** `resume_handoff` / `classify_staleness` /
+> `extract_first_next_step` / `list_handoffs` / `load_handoff_chain` /
+> `verify_context` / `HandoffInfo` / `ResumeResult` / `StalenessLevel` do **not**
+> exist — `tests.governance.test_session_handoff` is not a real module. Building
+> this API is **OBPI-02 of `ADR-pool.handoff-system-consolidation`** (GHI #529).
+> Until it lands, RESUME by reading the newest handoff under the ADR package's
+> `handoffs/` directory directly and following its `continues_from` chain by
+> hand; the SessionStart orientation (`scripts/session_orientation.py`) already
+> surfaces the newest valid handoff with its freshness bucket and first next step.
+
+Target signature, to be built under OBPI-02:
 
 ```python
-from tests.governance.test_session_handoff import (
-    classify_staleness,
-    extract_first_next_step,
-    list_handoffs,
-    load_handoff_chain,
-    verify_context,
-    resume_handoff,
-    HandoffInfo,
-    ResumeResult,
-    StalenessLevel,
-)
-
-# Full workflow — auto-selects newest handoff
 result = resume_handoff(
     adr_id="ADR-0.0.25",
     expected_branch="feature/handoff",
     base_path=Path("."),
 )
-
-print(f"Staleness: {result.staleness}")
-print(f"Human verification: {result.requires_human_verification}")
-print(f"First next step: {result.first_next_step}")
-print(f"Chain length: {len(result.chain)}")
-
-if result.is_valid:
-    print("Ready to resume")
-else:
-    for err in result.validation_errors:
-        print(f"  WARNING: {err}")
-
-# List all handoffs for an ADR
-handoffs = list_handoffs("ADR-0.0.25")
-for h in handoffs:
-    print(f"{h.file_path.name}: {h.staleness} ({h.agent})")
+# → result.staleness, result.requires_human_verification,
+#   result.first_next_step, result.chain, result.is_valid
 ```
 
 ---
