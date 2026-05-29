@@ -5,10 +5,10 @@ description: Trim per-turn agent context weight by lifting pedagogical narrative
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-26
+last_reviewed: 2026-05-29
 gz_command: chores show instructions-files-diet
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.1.0"
 model: sonnet
 ---
 
@@ -28,6 +28,12 @@ This is **not** a substitute for reading the chore. The agent must read
 
 ## Trigger
 
+- **Binding (operator standing rule, 2026-05-29):** any budget-lift or
+  prose-trim edit to `AGENTS.md`, `CLAUDE.md`, or `.claude/rules/**` —
+  including lifting a bullet's rationale to `docs/governance/` to make
+  char-budget room for a new rule — routes through this skill, never a
+  direct `Edit`/`Write` to those files. Hand-editing instructions-file
+  prose to manage budget or shape is the bypass this skill exists to prevent.
 - Operator asks for a "diet," "trim," or "progressive disclosure" pass on
   the agent contract or memory files
 - `wc -l AGENTS.md CLAUDE.md .claude/rules/*.md` shows a baseline above
