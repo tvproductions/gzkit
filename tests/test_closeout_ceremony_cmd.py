@@ -327,6 +327,98 @@ class TestCeremonyAttestation(unittest.TestCase):
             self.assertIn("Attestation only valid at step 6", result.output)
 
 
+class TestCeremonyGate5Enforcement(unittest.TestCase):
+    """Step 6 (ATTESTATION) -> Step 7 (CLOSEOUT) is a ledger-gated edge.
+
+    ADR-0.0.63 BI-3: no closeout step transition past the human-attestation
+    boundary succeeds without ledger evidence (a fresh `attested` receipt) of the
+    prior step's expected receipt. The step-counter self-advance (finding F1) is
+    replaced by this gate.
+    """
+
+    @staticmethod
+    def _walk_to_attestation(runner):
+        """Init a feature-ADR ceremony and advance via --next to Step 6."""
+        runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+        runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony"])
+        for _ in range(5):  # 1->2->3->4->5->6
+            runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
+        state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+        assert state.current_step == CeremonyStep.ATTESTATION, state.current_step
+
+    @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.0.63-01-01")
+    def test_next_at_step6_without_receipt_fail_closes(self, mock_readiness):
+        """--next cannot self-advance Step 6->7 with no attested receipt (F1 bypass closed)."""
+        mock_readiness.return_value = {"blockers": [], "ready": True}
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
+            _quick_init()
+            self._walk_to_attestation(runner)
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
+            self.assertEqual(result.exit_code, 3, result.output)
+            self.assertIn("human-attestation boundary", result.output)
+            # The ceremony must NOT have advanced past the attestation gate.
+            state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            self.assertEqual(state.current_step, CeremonyStep.ATTESTATION)
+
+    @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.0.63-01-02")
+    def test_attest_emits_ledger_receipt_and_crosses(self, mock_readiness):
+        """--attest emits an `attested` ledger event then crosses 6->7 (pass-path)."""
+        from gzkit.commands.common import ensure_initialized, get_project_root
+        from gzkit.ledger import Ledger
+
+        mock_readiness.return_value = {"blockers": [], "ready": True}
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
+            _quick_init()
+            self._walk_to_attestation(runner)
+            result = runner.invoke(
+                main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--attest", "Completed"]
+            )
+            self.assertEqual(result.exit_code, 0, result.output)
+            state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            self.assertEqual(state.current_step, CeremonyStep.CLOSEOUT)
+            self.assertEqual(state.attestation, "Completed")
+            config = ensure_initialized()
+            ledger = Ledger(get_project_root() / config.paths.ledger)
+            attested = ledger.query(event_type="attested", artifact_id="ADR-0.1.0-f")
+            self.assertEqual(len(attested), 1, "exactly one ceremony-side attested receipt")
+            self.assertEqual(attested[0].extra.get("status"), "completed")
+
+    @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.0.63-01-03")
+    def test_stale_receipt_does_not_satisfy_gate(self, mock_readiness):
+        """A prior-run `attested` event (ts < this run's started_at) fail-closes --next."""
+        from gzkit.commands.common import ensure_initialized, get_project_root
+        from gzkit.ledger import Ledger, attested_event
+
+        mock_readiness.return_value = {"blockers": [], "ready": True}
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            # Inject a stale attestation receipt from a prior closeout (ts in 2020).
+            config = ensure_initialized()
+            ledger = Ledger(get_project_root() / config.paths.ledger)
+            stale = attested_event("ADR-0.1.0-f", "completed", "prior", None).model_copy(
+                update={"ts": "2020-01-01T00:00:00+00:00"}
+            )
+            ledger.append(stale)
+            # This run starts now (2026) >> the stale event's ts.
+            runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony"])
+            for _ in range(5):
+                runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
+            self.assertEqual(result.exit_code, 3, result.output)
+            state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            self.assertEqual(state.current_step, CeremonyStep.ATTESTATION)
+
+
 class TestCeremonyStatus(unittest.TestCase):
     """--ceremony --ceremony-status shows current step."""
 

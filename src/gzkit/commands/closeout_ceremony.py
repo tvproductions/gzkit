@@ -366,6 +366,116 @@ def _advance_demo_index(
     _output(as_json, new_state, output)
 
 
+def _classify_attestation_verdict(text: str) -> tuple[str, str | None]:
+    """Map a ceremony attestation string to ``(status, reason)`` for the ledger.
+
+    Mirrors ``closeout.py``'s canonical ``_parse_ceremony_attestation_text``; kept
+    inline because ``closeout.py`` imports from this module (importing back is
+    circular) and is outside this OBPI's scope. OBPI-0.0.63-05 (dual-runtime
+    collapse) unifies these emission paths under BI-2.
+    """
+    head = text.strip().lower()[:120]
+    if "dropped" in head:
+        return "dropped", text.strip()
+    if "partial" in head:
+        return "partial", text.strip()
+    return "completed", None
+
+
+def _has_fresh_attestation_receipt(project_root: Path, state: CeremonyState) -> bool:
+    """Return ``True`` iff an ``attested`` ledger event for this ADR was emitted
+    during the current ceremony run (event ``ts`` >= the run's ``started_at``).
+
+    An event emitted during this run necessarily postdates the run's start, so a
+    prior closeout's or a prior ``--restart`` attempt's attestation is correctly
+    ignored. Timestamps are parsed and compared as ``datetime`` objects — string
+    comparison is wrong because ``started_at`` is second-resolution Zulu
+    (``...SSZ``) while event ``ts`` carries fractional seconds and a ``+00:00``
+    offset (``.`` sorts before ``Z`` in ASCII).
+    """
+    config = ensure_initialized()
+    ledger = Ledger(project_root / config.paths.ledger)
+    run_start = datetime.fromisoformat(state.started_at)
+    events = ledger.query(event_type="attested", artifact_id=state.adr_id)
+    return any(datetime.fromisoformat(event.ts) >= run_start for event in events)
+
+
+def _gate_attestation_boundary(project_root: Path, state: CeremonyState) -> None:
+    """Fail-close the Step 6 -> Step 7 edge without a fresh ledger receipt (BI-3).
+
+    The ATTESTATION -> CLOSEOUT transition is the human-attestation boundary — the
+    one edge the agent must not self-advance with ``--next``. Every other
+    transition is a no-op here.
+    """
+    if state.current_step != CeremonyStep.ATTESTATION:
+        return
+    if _has_fresh_attestation_receipt(project_root, state):
+        return
+    from gzkit.core.exceptions import PolicyBreachError
+
+    raise PolicyBreachError(
+        f"Step {int(CeremonyStep.ATTESTATION)} (ATTESTATION) -> "
+        f"{int(CeremonyStep.CLOSEOUT)} (CLOSEOUT) is the human-attestation "
+        "boundary and cannot be self-advanced with --next: no `attested` ledger "
+        "receipt was recorded for this ceremony run. Record the operator's "
+        f'verdict first:\n  gz closeout {state.adr_id} --ceremony --attest "<verdict>"'
+    )
+
+
+def _commit_advance(
+    project_root: Path,
+    state: CeremonyState,
+    adr_file: Path,
+    lane: str,
+    manifest: dict[str, Any],
+    obpi_files: list[Path],
+    as_json: bool,
+    now: str,
+    *,
+    extra_update: dict[str, Any] | None = None,
+) -> None:
+    """Acknowledge the current step and advance to the next valid step.
+
+    The single shared advance path for both ``--next`` and ``--attest`` (BI-3):
+    the Step 6 -> 7 edge is ledger-gated here, so neither path can walk past the
+    human-attestation boundary without a fresh ``attested`` receipt.
+    """
+    _gate_attestation_boundary(project_root, state)
+
+    history = list(state.step_history)
+    if history and history[-1].acknowledged_at is None:
+        history[-1] = history[-1].model_copy(update={"acknowledged_at": now})
+
+    next_s = _next_step(state.current_step, state.is_foundation)
+    if next_s == -1:
+        new_state = state.model_copy(
+            update={"step_history": history, "completed_at": now, "updated_at": now}
+        )
+        save_ceremony_state(project_root, new_state)
+        _cleanup_hook_files(project_root, state.adr_id)
+        _output(as_json, new_state, "Ceremony already at final step.")
+        return
+
+    history.append(CeremonyStepRecord(step=next_s, presented_at=now))
+    completed_at = now if next_s == CeremonyStep.COMPLETE else None
+    update: dict[str, Any] = {
+        "current_step": next_s,
+        "step_history": history,
+        "updated_at": now,
+        "completed_at": completed_at,
+    }
+    if extra_update:
+        update.update(extra_update)
+    new_state = state.model_copy(update=update)
+    save_ceremony_state(project_root, new_state)
+    output = _present_step(new_state, project_root, adr_file, lane, manifest, obpi_files)
+    if completed_at:
+        _cleanup_hook_files(project_root, state.adr_id)
+    else:
+        _write_turn_lock(project_root, state.adr_id, next_s)
+    _output(as_json, new_state, output)
+
+
 def _advance_ceremony(
     project_root: Path,
     adr_id: str,
@@ -379,7 +489,9 @@ def _advance_ceremony(
 
     At Step 5 EXECUTE (GHI #260), ``--next`` advances one demo command at a
     time via ``walkthrough_index``; the ceremony only moves to Step 6
-    ATTESTATION after every command has been presented.
+    ATTESTATION after every command has been presented. The Step 6 -> 7
+    transition is ledger-gated by ``_commit_advance`` (BI-3): ``--next`` cannot
+    self-advance past the human-attestation boundary.
     """
     state = load_ceremony_state(project_root, adr_id)
     if state is None:
@@ -393,43 +505,7 @@ def _advance_ceremony(
         _advance_demo_index(project_root, state, adr_file, lane, manifest, obpi_files, as_json, now)
         return
 
-    # Acknowledge current step
-    history = list(state.step_history)
-    if history and history[-1].acknowledged_at is None:
-        history[-1] = history[-1].model_copy(update={"acknowledged_at": now})
-
-    next_s = _next_step(state.current_step, state.is_foundation)
-    if next_s == -1:
-        new_state = state.model_copy(
-            update={
-                "step_history": history,
-                "completed_at": now,
-                "updated_at": now,
-            }
-        )
-        save_ceremony_state(project_root, new_state)
-        _cleanup_hook_files(project_root, adr_id)
-        output = "Ceremony already at final step."
-        _output(as_json, new_state, output)
-        return
-
-    history.append(CeremonyStepRecord(step=next_s, presented_at=now))
-    completed_at = now if next_s == CeremonyStep.COMPLETE else None
-    new_state = state.model_copy(
-        update={
-            "current_step": next_s,
-            "step_history": history,
-            "updated_at": now,
-            "completed_at": completed_at,
-        }
-    )
-    save_ceremony_state(project_root, new_state)
-    output = _present_step(new_state, project_root, adr_file, lane, manifest, obpi_files)
-    if completed_at:
-        _cleanup_hook_files(project_root, adr_id)
-    else:
-        _write_turn_lock(project_root, adr_id, next_s)
-    _output(as_json, new_state, output)
+    _commit_advance(project_root, state, adr_file, lane, manifest, obpi_files, as_json, now)
 
 
 def _record_attestation(
@@ -442,7 +518,19 @@ def _record_attestation(
     attestation: str,
     as_json: bool,
 ) -> None:
-    """Record attestation at step 6 and advance to step 7."""
+    """Record attestation at step 6 and advance to step 7.
+
+    Emits the ``attested`` ledger receipt that is the BI-3 expected receipt for
+    the attestation step, then advances through the shared ledger-gated
+    ``_commit_advance`` — so ``--attest`` exercises the gate's fresh-receipt
+    pass-path while bare ``--next`` (no receipt) fail-closes. Reuses the existing
+    ``attested`` surface (BI-2: ``--attest`` is not a parallel emitter); the
+    transitional double-emit with the Step-7 closeout (``closeout.py``) is
+    collapsed by OBPI-0.0.63-05.
+    """
+    from gzkit.commands.common import get_git_user
+    from gzkit.ledger import attested_event
+
     state = load_ceremony_state(project_root, adr_id)
     if state is None:
         raise GzCliError(f"No ceremony in progress for {adr_id}.")
@@ -455,25 +543,22 @@ def _record_attestation(
             "Cannot attest outside the attestation step."
         )
 
-    now = _now_iso()
-    history = list(state.step_history)
-    if history and history[-1].acknowledged_at is None:
-        history[-1] = history[-1].model_copy(update={"acknowledged_at": now})
+    config = ensure_initialized()
+    ledger = Ledger(project_root / config.paths.ledger)
+    status, reason = _classify_attestation_verdict(attestation)
+    ledger.append(attested_event(adr_id, status, get_git_user(), reason))
 
-    next_s = _next_step(state.current_step, state.is_foundation)
-    history.append(CeremonyStepRecord(step=next_s, presented_at=now))
-    new_state = state.model_copy(
-        update={
-            "current_step": next_s,
-            "attestation": attestation,
-            "step_history": history,
-            "updated_at": now,
-        }
+    _commit_advance(
+        project_root,
+        state,
+        adr_file,
+        lane,
+        manifest,
+        obpi_files,
+        as_json,
+        _now_iso(),
+        extra_update={"attestation": attestation},
     )
-    save_ceremony_state(project_root, new_state)
-    output = _present_step(new_state, project_root, adr_file, lane, manifest, obpi_files)
-    _write_turn_lock(project_root, adr_id, next_s)
-    _output(as_json, new_state, output)
 
 
 def _pause_ceremony(
