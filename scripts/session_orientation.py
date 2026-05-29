@@ -85,21 +85,53 @@ def extract_first_next_step(text: str) -> str | None:
     return item.group(1).strip() if item else None
 
 
-def collect_handoff(handoffs_dir: Path, now: datetime) -> dict[str, str] | None:
-    if not handoffs_dir.exists() or not handoffs_dir.is_dir():
-        return None
-    candidates = sorted(
-        (p for p in handoffs_dir.glob("*.md") if p.is_file()),
-        key=lambda p: p.stat().st_mtime,
-        reverse=True,
-    )
+def _looks_like_handoff(text: str) -> bool:
+    """True only for markdown carrying handoff frontmatter (an ``adr_id:`` key).
+
+    Excludes non-handoff ``*.md`` that share a handoffs directory — notably
+    the generated ``.gzkit/handoffs/AGENTS.md`` subtree-rules file, which has
+    no frontmatter and would otherwise win the newest-by-mtime race and be
+    surfaced as "the most-recent handoff" (GHI #529).
+    """
+    match = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
+    if match is None:
+        return False
+    return re.search(r"^adr_id:\s*\S", match.group(1), re.MULTILINE) is not None
+
+
+def _candidate_handoff_dirs(repo_root: Path) -> list[Path]:
+    """Both canonical handoff locations (the read/write split-brain, GHI #529).
+
+    Token-block doctrine names ``.gzkit/handoffs/`` canonical; the
+    gz-session-handoff skill writes to ``{ADR-package}/handoffs/``. Until an
+    ADR resolves that conflict, orientation scans both so no handoff is
+    invisible at session start regardless of where it was written.
+    """
+    dirs = [repo_root / ".gzkit" / "handoffs"]
+    adr_root = repo_root / "docs" / "design" / "adr"
+    if adr_root.is_dir():
+        dirs.extend(sorted(p for p in adr_root.glob("**/handoffs") if p.is_dir()))
+    return dirs
+
+
+def collect_handoff(repo_root: Path, now: datetime) -> dict[str, str] | None:
+    candidates: list[tuple[datetime, Path, str]] = []
+    for handoffs_dir in _candidate_handoff_dirs(repo_root):
+        if not handoffs_dir.is_dir():
+            continue
+        for path in handoffs_dir.glob("*.md"):
+            if not path.is_file():
+                continue
+            text = path.read_text(encoding="utf-8")
+            if not _looks_like_handoff(text):
+                continue
+            ts = parse_frontmatter_timestamp(text)
+            if ts is None:
+                ts = datetime.fromtimestamp(path.stat().st_mtime, tz=UTC)
+            candidates.append((ts, path, text))
     if not candidates:
         return None
-    latest = candidates[0]
-    text = latest.read_text(encoding="utf-8")
-    ts = parse_frontmatter_timestamp(text)
-    if ts is None:
-        ts = datetime.fromtimestamp(latest.stat().st_mtime, tz=UTC)
+    ts, latest, text = max(candidates, key=lambda candidate: candidate[0])
     try:
         rel = str(latest.relative_to(REPO_ROOT))
     except ValueError:
@@ -260,7 +292,7 @@ def collect_state(repo_root: Path, now: datetime) -> dict:
     """Aggregate authoritative state. Best-effort; never raises."""
     return {
         "remote_state": collect_remote_state(),
-        "handoff": collect_handoff(repo_root / ".gzkit" / "handoffs", now),
+        "handoff": collect_handoff(repo_root, now),
         "session_handoff_ghis": collect_session_handoff_ghis(),
         "obpi_locks": [],
         "adr_pipeline": [],

@@ -179,32 +179,83 @@ class TestCollectHandoff(unittest.TestCase):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
 
+    @staticmethod
+    def _handoff(ts: str, action: str, *, adr_id: str = "ADR-0.0.1") -> str:
+        return (
+            f"---\nmode: CREATE\nadr_id: {adr_id}\ntimestamp: {ts}\nagent: claude-code\n---\n\n"
+            f"## Immediate Next Steps\n\n1. {action}\n"
+        )
+
     def test_returns_none_when_no_handoffs_dir(self):
         with tempfile.TemporaryDirectory() as tmp:
-            result = self.mod.collect_handoff(Path(tmp) / "missing", self.now)
+            result = self.mod.collect_handoff(Path(tmp), self.now)
             self.assertIsNone(result)
 
     def test_picks_latest_handoff_and_classifies_freshness(self):
         with tempfile.TemporaryDirectory() as tmp:
-            handoffs = Path(tmp) / "handoffs"
-            handoffs.mkdir()
+            handoffs = Path(tmp) / ".gzkit" / "handoffs"
+            handoffs.mkdir(parents=True)
             recent_ts = (self.now - timedelta(hours=2)).isoformat()
             stale_ts = (self.now - timedelta(days=4)).isoformat()
             (handoffs / "old-handoff.md").write_text(
-                f"---\ntimestamp: {stale_ts}\n---\n\n## Immediate Next Steps\n\n1. Old action\n",
-                encoding="utf-8",
+                self._handoff(stale_ts, "Old action"), encoding="utf-8"
             )
-            new_body = (
-                f"---\ntimestamp: {recent_ts}\n---\n\n"
-                "## Immediate Next Steps\n\n1. Resume new work\n"
+            (handoffs / "new-handoff.md").write_text(
+                self._handoff(recent_ts, "Resume new work"), encoding="utf-8"
             )
-            (handoffs / "new-handoff.md").write_text(new_body, encoding="utf-8")
-            result = self.mod.collect_handoff(handoffs, self.now)
+            result = self.mod.collect_handoff(Path(tmp), self.now)
             self.assertIsNotNone(result)
             assert result is not None
             self.assertIn("new-handoff.md", result["path"])
             self.assertEqual(result["freshness"], "Fresh")
             self.assertEqual(result["first_action"], "Resume new work")
+
+    def test_excludes_non_handoff_markdown_in_handoffs_dir(self):
+        """A non-handoff `.md` (no `adr_id` frontmatter, e.g. AGENTS.md) is never
+        surfaced as the most-recent handoff even when newest by mtime (GHI #529)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            handoffs = Path(tmp) / ".gzkit" / "handoffs"
+            handoffs.mkdir(parents=True)
+            ts = (self.now - timedelta(hours=2)).isoformat()
+            (handoffs / "real-handoff.md").write_text(
+                self._handoff(ts, "Resume work"), encoding="utf-8"
+            )
+            # AGENTS.md: generated subtree-rules file, no frontmatter; written last
+            # so it is newest by mtime — must still be excluded.
+            (handoffs / "AGENTS.md").write_text(
+                "<!-- Generated -->\n# Handoffs subtree rules\n", encoding="utf-8"
+            )
+            result = self.mod.collect_handoff(Path(tmp), self.now)
+            self.assertIsNotNone(result)
+            assert result is not None
+            self.assertIn("real-handoff.md", result["path"])
+            self.assertNotIn("AGENTS.md", result["path"])
+
+    def test_discovers_adr_package_handoffs_and_unions_with_gzkit(self):
+        """Newest-wins across both `.gzkit/handoffs/` and `{ADR-package}/handoffs/`
+        (the read/write split-brain, GHI #529)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            gzkit_handoffs = root / ".gzkit" / "handoffs"
+            gzkit_handoffs.mkdir(parents=True)
+            adr_handoffs = (
+                root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.63-x" / "handoffs"
+            )
+            adr_handoffs.mkdir(parents=True)
+            older = (self.now - timedelta(hours=10)).isoformat()
+            newer = (self.now - timedelta(hours=1)).isoformat()
+            (gzkit_handoffs / "gzkit-handoff.md").write_text(
+                self._handoff(older, "Old gzkit-dir action"), encoding="utf-8"
+            )
+            (adr_handoffs / "adr-handoff.md").write_text(
+                self._handoff(newer, "Latest ADR-package action", adr_id="ADR-0.0.63"),
+                encoding="utf-8",
+            )
+            result = self.mod.collect_handoff(root, self.now)
+            self.assertIsNotNone(result)
+            assert result is not None
+            self.assertIn("adr-handoff.md", result["path"])
+            self.assertEqual(result["first_action"], "Latest ADR-package action")
 
 
 class TestCollectRemoteState(unittest.TestCase):
