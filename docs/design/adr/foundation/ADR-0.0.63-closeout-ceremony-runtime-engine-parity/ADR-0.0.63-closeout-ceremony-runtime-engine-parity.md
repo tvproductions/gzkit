@@ -13,11 +13,13 @@ promoted_from: ADR-pool.closeout-ceremony-runtime-engine-parity
 
 ## Persona
 
-<!-- Describe the behavioral identity for agents working on this ADR.
-     Frame as values and craftsmanship standards, not expertise claims.
-     See .gzkit/personas/ for reusable persona definitions. -->
-
-{persona}
+You hold the ledger as the source of truth over agent narration. Every closeout
+transition is a state-machine edge that MUST consult recorded evidence before it
+advances — never a step counter the agent can walk past. You verify observed
+behavior: a re-executed command, an observed exit code, a stdout SHA — never the
+prose claim of what a command would have done. When a brief authors a command,
+you treat the runtime that executes it as the contract, not the shell the author
+imagined. Craftsperson, governance-aware, whole-file-reasoning, direct.
 
 ## Intent
 
@@ -74,13 +76,13 @@ Surfaced by cross-analyst diagnosis in GHI #517 (`artifacts/reports/ghi-517-cros
 - Lineage: 1
 - Dimension Total: 9
 - Baseline Range: 5+
-- Baseline Selected: 6
+- Baseline Selected: 7
 - Split Single-Narrative: 0
 - Split Surface Boundary: 0
 - Split State Anchor: 0
 - Split Testability Ceiling: 0
 - Split Total: 0
-- Final Target OBPI Count: 6
+- Final Target OBPI Count: 7
 
 ## Checklist
 
@@ -92,6 +94,7 @@ Surfaced by cross-analyst diagnosis in GHI #517 (`artifacts/reports/ghi-517-cros
 - [ ] OBPI-0.0.63-04: **closeout-skill-reverify-wording-fix** — `.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md:60-65`. Wording fix resolving the "Does NOT re-verify" vs spec-reviewer "Independent re-verification" contradiction (CLI pipeline does not re-execute; spec-reviewer persona-dispatch retains independent re-verification).
 - [ ] OBPI-0.0.63-05: **dual-runtime-collapse** — `gz closeout --ceremony --attest` vs Step 7 pipeline emit identical ledger surfaces. The runtime engine is single source; `--attest` becomes an orchestration shortcut.
 - [ ] OBPI-0.0.63-06: **req-evidence-schema-consumption** — Post-P2 increment. The runtime engine consumes the `req_evidence:` field added to `obpi_brief_structure.json` by `ADR-pool.obpi-authoring-mechanical-floor`; binding logic is mechanical, not prose.
+- [ ] OBPI-0.0.63-07: **verify-stage-command-shape-gate** — `src/gzkit/commands/obpi_stages.py:140-147` + `src/gzkit/quality.py:41-94`. The OBPI-pipeline verify stage and a fail-closed `gz validate` scope reject brief `## Verification` commands that are not single-program shell-less invocations (`&&`, `||`, `|`, `;`, `$(...)`, redirects), so authoring-vs-runtime mismatch (GHI #550) fails closed at authoring time rather than erroring confusingly at the verify gate. Reuses the shell-less command classifier built by OBPI-0.0.63-02.
 
 ## Target Scope
 
@@ -101,6 +104,7 @@ Surfaced by cross-analyst diagnosis in GHI #517 (`artifacts/reports/ghi-517-cros
 - **closeout-skill-reverify-wording-fix** — `.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md:60-65`. Wording fix resolving the "Does NOT re-verify" vs spec-reviewer "Independent re-verification" contradiction (CLI pipeline does not re-execute; spec-reviewer persona-dispatch retains independent re-verification).
 - **dual-runtime-collapse** — `gz closeout --ceremony --attest` vs Step 7 pipeline emit identical ledger surfaces. The runtime engine is single source; `--attest` becomes an orchestration shortcut.
 - **req-evidence-schema-consumption** — Post-P2 increment. The runtime engine consumes the `req_evidence:` field added to `obpi_brief_structure.json` by `ADR-pool.obpi-authoring-mechanical-floor`; binding logic is mechanical, not prose.
+- **verify-stage-command-shape-gate** — `src/gzkit/commands/obpi_stages.py:140-147` + `src/gzkit/quality.py:41-94`. The verify-stage extractor and a fail-closed `gz validate` scope classify each brief `## Verification` command against the shell-less executor's contract (`shlex.split` + `shell=False`, GHI #415) and reject compound forms (`&&`, `||`, `|`, `;`, `$(...)`, redirects) at authoring time. Closes GHI #550 by making the authoring-vs-runtime mismatch fail closed rather than surface as `test: unexpected operator` at the verify gate. The `## Verification` brief template gains guidance naming the single-program-only contract. Reuses the shell-less command classifier built by OBPI-0.0.63-02.
 
 ## Non-Goals
 
@@ -108,7 +112,30 @@ Surfaced by cross-analyst diagnosis in GHI #517 (`artifacts/reports/ghi-517-cros
 2. **Audit-ceremony runtime parity is out of scope.** Audit-side defects (F7, F8, P3-r5) route via `ADR-pool.receipt-taxonomy-audit-passed-vs-validated` (amended 2026-05-26).
 3. **Persona-dispatch attestation is out of scope.** Pattern A's persona-dispatch defects route via `ADR-pool.obpi-pipeline-dispatch-attestation` (amended 2026-05-26).
 4. **Backfill of prior closeouts is out of scope.** This ADR gates forward closeouts only; retroactive re-attestation is a separate operator decision.
-5. **No new quality checks are added** beyond `gz validate --closeout-proof-binding`. Per ADR-0.19.0's scope ceiling, this ADR orchestrates and gates existing checks; it does not introduce new gates.
+5. **No new quality checks are added** beyond `gz validate --closeout-proof-binding` and the brief-command-shape fail-close added by OBPI-0.0.63-07 (GHI #550). Per ADR-0.19.0's scope ceiling, this ADR otherwise orchestrates and gates existing checks. **Amendment (2026-05-29, operator-approved):** OBPI-07 was added to absorb GHI #550 — the verify-stage authoring-vs-runtime mismatch — because it is the same root-cause family as F3/#539 (briefs authored as shell-compatible text, executed under the shell-less runtime) and shares OBPI-02's command classifier. The `--closeout-proof-binding` ceiling stands for the *closeout* surface; the OBPI-07 gate fences the *verify* surface, which is upstream of closeout and was not in the original GHI #517 diagnosis scope. Demo-execution evidence (GHI #540) is achieved by OBPI-02's re-execution preflight (ARB receipt binds to observed exit code + stdout SHA), not by a separate validator, and therefore needs no carve-out here.
+
+## Boundary Invariants
+
+Cross-OBPI invariants auditable only at ADR closeout (the proof channel for
+`[STRUCTURAL-FENCE]` REQs per ADR-0.0.59). Each spans more than one OBPI in this
+ADR and cannot be verified inside a single brief.
+
+- **BI-1 — Shell-less brief-command executability.** Every command harvested from
+  an OBPI brief's `## Verification`, `## Demo`, or `## Examples` section MUST be a
+  single-program, shell-less-executable invocation: `shlex.split`-parseable argv,
+  no `&&`, `||`, `|`, `;`, `$(...)`, or redirects. Multi-line quoted constructs
+  (e.g. `python -c "…"` spanning lines) are joined into one logical command, never
+  split per physical line. Spans OBPI-02 (Demo/Examples extractor) and OBPI-07
+  (Verification extractor + validator); both consume one shared classifier.
+- **BI-2 — Single-runtime-engine ledger parity.** `gz closeout --ceremony --next`,
+  `gz closeout --ceremony --attest`, and the Step 7 pipeline emit byte-identical
+  ledger surfaces for the same logical closeout; the runtime engine is the single
+  source and `--attest` is an orchestration shortcut, never a parallel emitter.
+  Spans OBPI-01 (state machine) and OBPI-05 (dual-runtime collapse).
+- **BI-3 — Gate-5 cannot be self-advanced.** No closeout step transition past the
+  human-attestation boundary succeeds without ledger evidence of the prior step's
+  expected receipt; the step counter is replaced by ledger-gated edges. Anchored
+  by OBPI-01; consumed by OBPI-03 (proof-binding) and OBPI-06 (req-evidence).
 
 ## Q&A Transcript
 

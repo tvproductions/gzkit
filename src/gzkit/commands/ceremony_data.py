@@ -18,6 +18,7 @@ from typing import Any
 
 from rich.console import Console
 
+from gzkit.brief_commands import extract_fenced_commands
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.reporter.presets import ColumnDef, status_table
 
@@ -315,10 +316,12 @@ def _commands_from_demo_sections(obpi_files: list[Path]) -> list[str]:
     is *not* a synonym — Verification is construction housekeeping (lint,
     typecheck, mkdocs); Demo/Examples are the yielded product.
 
-    ``uv run gz ...`` lines are validated against the registered parser;
-    unregistered verb chains are dropped. Non-gz shell commands (``ls``,
-    ``cat``, etc.) pass through unchanged — operators may author them in
-    briefs and the ceremony has no mechanism to validate arbitrary shell.
+    Per-block parsing is delegated to ``brief_commands.extract_fenced_commands``
+    (BI-1) so a multi-line construct (``python -c "…"`` spanning lines) is one
+    logical command, not one demo per physical line (GHI #539). ``uv run gz ...``
+    lines are then validated against the registered parser; unregistered verb
+    chains are dropped. Non-gz commands pass through unchanged — operators may
+    author them and the ceremony has no mechanism to validate arbitrary shell.
     """
     registered = _collect_registered_invocations()
     commands: list[str] = []
@@ -328,18 +331,11 @@ def _commands_from_demo_sections(obpi_files: list[Path]) -> list[str]:
             section = _extract_section(lines, heading)
             if not section:
                 continue
-            in_code = False
-            for line in section.splitlines():
-                stripped = line.strip()
-                if stripped.startswith("```"):
-                    in_code = not in_code
-                    continue
-                if not (in_code and stripped) or stripped.startswith("#"):
-                    continue
-                verb_chain = _extract_gz_verb_chain(stripped)
+            for command in extract_fenced_commands(section):
+                verb_chain = _extract_gz_verb_chain(command)
                 if verb_chain is not None and verb_chain not in registered:
                     continue
-                commands.append(stripped)
+                commands.append(command)
     return commands
 
 
