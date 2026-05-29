@@ -1030,6 +1030,7 @@ def _collect_errors(
     check_evaluation_justify_binding: str | None = None,
     check_intrinsic_attestation: bool = False,
     check_advisor_proof_binding: bool = False,
+    check_closeout_proof_binding: bool = False,
     check_distribution: bool = False,
     check_bullet_retention: bool = False,
     check_surface_weight: bool = False,
@@ -1102,6 +1103,7 @@ def _collect_errors(
         "evaluation_justify_binding": check_evaluation_justify_binding is not None,
         "intrinsic_attestation": check_intrinsic_attestation,
         "advisor_proof_binding": check_advisor_proof_binding,
+        "closeout_proof_binding": check_closeout_proof_binding,
         "distribution": check_distribution,
         "bullet_retention": check_bullet_retention,
         "surface_weight": check_surface_weight,
@@ -1215,6 +1217,9 @@ def _explicit_scope_runners(
         ),
         "intrinsic_attestation": lambda: trust_audits.validate_intrinsic_attestation(project_root),
         "advisor_proof_binding": lambda: trust_audits.validate_advisor_proof_binding(project_root),
+        "closeout_proof_binding": lambda: trust_audits.validate_closeout_proof_binding(
+            project_root
+        ),
         "distribution": lambda: trust_audits.audit_distribution(project_root),
         "bullet_retention": lambda: trust_audits.validate_bullet_retention(project_root),
         "surface_weight": lambda: trust_audits.validate_surface_weight(project_root),
@@ -1694,6 +1699,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "intrinsic_attestation",
         "kind_invariance",
         "advisor_proof_binding",
+        "closeout_proof_binding",
         "distribution",
         "bullet_retention",
         "surface_weight",
@@ -1749,6 +1755,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "brief_command_shape",
         "tautological_test_audit",
         "task_envelope_coherence",
+        "closeout_proof_binding",
     }
 )
 
@@ -1983,6 +1990,7 @@ def validate(
     check_evaluation_justify_binding: str | None = None,
     check_intrinsic_attestation: bool = False,
     check_advisor_proof_binding: bool = False,
+    check_closeout_proof_binding: bool = False,
     check_distribution: bool = False,
     check_distribution_regenerate: bool = False,
     check_bullet_retention: bool = False,
@@ -2150,6 +2158,7 @@ def validate(
         check_evaluation_justify_binding=check_evaluation_justify_binding,
         check_intrinsic_attestation=check_intrinsic_attestation,
         check_advisor_proof_binding=check_advisor_proof_binding,
+        check_closeout_proof_binding=check_closeout_proof_binding,
         check_distribution=check_distribution,
         check_bullet_retention=check_bullet_retention,
         check_surface_weight=check_surface_weight,
@@ -2236,6 +2245,7 @@ def validate(
         "evaluation_justify_binding": check_evaluation_justify_binding is not None,
         "intrinsic_attestation": check_intrinsic_attestation,
         "advisor_proof_binding": check_advisor_proof_binding,
+        "closeout_proof_binding": check_closeout_proof_binding,
         "distribution": check_distribution,
         "bullet_retention": check_bullet_retention,
         "surface_weight": check_surface_weight,

@@ -1,0 +1,9 @@
+{
+  "obpi_id": "OBPI-0.0.63-03-evidence-summary-and-proof-binding",
+  "agent": "claude-code-cb1fa232",
+  "pid": 25425,
+  "session_id": "cb1fa232-53a3-480b-938b-6f843f8a0268",
+  "claimed_at": "2026-05-29T10:31:33.936809+00:00",
+  "branch": "main",
+  "ttl_minutes": 120
+}

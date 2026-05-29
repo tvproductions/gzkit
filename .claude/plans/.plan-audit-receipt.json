@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.64-05-gz-task-fanout-readback",
-  "timestamp": "2026-05-28T10:48:53.102599+00:00",
+  "obpi_id": "OBPI-0.0.63-03-evidence-summary-and-proof-binding",
+  "timestamp": "2026-05-29T10:30:00Z",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.64-05-gz-task-fanout-readback.md",
+  "plan_file": null,
   "gaps_found": 0,
-  "scope_collisions": "advisory-only \u2014 all 45 contested sibling OBPIs are attested_completed"
+  "note": "No plan file yet — plan mode required before implementation. Both CLI FAIL gaps (no plan; new file not yet created) are expected. ADR<->OBPI alignment: all 7 checks Aligned."
 }

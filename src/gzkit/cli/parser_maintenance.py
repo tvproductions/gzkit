@@ -586,6 +586,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Audit advisor verdict <-> proof binding (OBPI-0.0.29-08).",
     )
     p_validate.add_argument(
+        "--closeout-proof-binding",
+        dest="check_closeout_proof_binding",
+        action="store_true",
+        help="REQ↔receipt-ID binding gate for ADRs at closeout (ADR-0.0.63).",
+    )
+    p_validate.add_argument(
         "--invariant-coherence",
         dest="check_invariant_coherence",
         action="store_true",
@@ -766,6 +772,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_evaluation_justify_binding=(a.check_evaluation_justify_binding),
             check_intrinsic_attestation=a.check_intrinsic_attestation,
             check_advisor_proof_binding=a.check_advisor_proof_binding,
+            check_closeout_proof_binding=a.check_closeout_proof_binding,
             check_invariant_coherence=a.check_invariant_coherence,
             check_brief_reconcile=a.check_brief_reconcile,
             check_router_tables=a.check_router_tables,

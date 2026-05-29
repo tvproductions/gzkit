@@ -20,6 +20,28 @@ _ADR_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+-[a-z0-9-]+$")
 _REQ_ID_RE = re.compile(r"^REQ-\d+\.\d+\.\d+-\d{2}-\d{2}$")
 
 
+class ReqEvidence(BaseModel):
+    """Structured REQ↔receipt-ID proof-binding entry (ADR-0.0.63 / OBPI-0.0.63-03).
+
+    Every entry binds one REQ identifier to one or more receipt-IDs (ARB receipt
+    artifacts) and optional file:line references. Consumed by
+    ``gz validate --closeout-proof-binding`` at closeout time; optional at
+    authoring time (``ln`` defaults to an empty list on BriefStructure).
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    req_id: str = Field(..., description="REQ identifier, e.g. REQ-0.0.63-03-02")
+    receipt_ids: list[str] = Field(
+        default_factory=list,
+        description="Cited ARB receipt IDs; at least one required at closeout time",
+    )
+    file_lines: list[str] = Field(
+        default_factory=list,
+        description="file:line references supporting the binding, e.g. src/x.py:42",
+    )
+
+
 class LegacyBriefShape(BaseModel):
     """Container for an OBPI brief that lacks structured frontmatter fields."""
 
@@ -59,6 +81,14 @@ class BriefStructure(BaseModel):
         description=(
             "REQ IDs exempt from subdivision check (ADR-0.0.64 / OBPI-04). "
             "Operator escape valve; requires inline rationale."
+        ),
+    )
+    ln: list[ReqEvidence] = Field(
+        default_factory=list,
+        description=(
+            "REQ↔receipt-ID proof-binding entries (ADR-0.0.63 / OBPI-0.0.63-03). "
+            "Optional at authoring time; required by gz validate --closeout-proof-binding "
+            "at closeout time. Each entry binds a REQ-ID to ≥1 ledger-present receipt-IDs."
         ),
     )
 

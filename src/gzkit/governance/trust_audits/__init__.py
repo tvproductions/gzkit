@@ -55,6 +55,9 @@ from gzkit.governance.trust_audits.cli import (
     audit_cli_alignment,
     audit_skill_alignment,
 )
+from gzkit.governance.trust_audits.closeout_proof_binding import (
+    validate_closeout_proof_binding,
+)
 from gzkit.governance.trust_audits.code_quality import (
     audit_class_size,
     audit_test_tiers,
@@ -180,6 +183,7 @@ __all__ = [
     "explain_sensitivity_for_paths",
     "BOOTSTRAP_MODE_NOTICE_PREFIX",
     "validate_advisor_proof_binding",
+    "validate_closeout_proof_binding",
     "validate_attestation_receipts",
     "validate_brief_reconcile",
     "validate_bullet_retention",
