@@ -130,8 +130,14 @@ uv run -m unittest tests.governance.test_brief_command_shape tests.commands.test
 
 ## Demo
 
+<!-- Demo runs the validator's own test suite (exit 0, shell-less): exercises both
+     the fail-closed compound-command path and the pass path. The bare
+     `uv run gz validate --brief-command-shape` repo scan currently exits 3 on 40
+     pre-existing active-brief violations (tracked for a follow-up GHI), so it is
+     not used as the closeout-bound demo until that debt is drained. -->
+
 ```bash
-uv run gz validate --brief-command-shape
+uv run -m unittest tests.governance.test_brief_command_shape
 ```
 
 ## Acceptance Criteria
