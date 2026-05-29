@@ -128,9 +128,10 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 10. **Push back when an approach has clear problems.** Sycophantic agreement with a flawed plan is a trust defect. Say "this breaks X" or "this contradicts Y"; cite the rule or constraint. (Judgment 14)
 11. **When the operator course-corrects in flight, append an `improvement` record to `.gzkit/insights/agent-insights.jsonl` before completing the corrected work.** Required fields: `scope`, `summary`, `evidence`, `next_action`. See [`docs/governance/agent-contract-rationale.md` § Rationale for Behavior Rule 11](docs/governance/agent-contract-rationale.md#rationale-for-behavior-rule-11-course-correction--insights) (GHI #357).
 12. When a rule edit landing under a GHI labeled `eval-feedback` is committed, include `Eval-feedback-source: <event-id-or-artifact-path>` in the commit trailer. The trailer is validated by `gz validate --commit-trailers` and traces the rule change back to the evaluation feedback loop source artifacts (ADR-0.0.26).
-13. **Author GHIs through `/ghi-author` — never call `gh issue create` directly.** The skill's Step 0 prior-art lookup (`gh issue list --state all --search …` + recent-by-date skim) is the only mechanical defense against sibling-cut duplicates that bypass `ghi-close`'s destination-routing rule. The canonical regression is GHIs #459/#460 (2026-05-12): same T1→T2 doctrine-drift root cause, no shared title keywords, second filed ~17 min after first without cross-link until follow-up. Cross-repo filing through `gz issue file` inherits the same Step-0 obligation against the target repository.
+13. **Author GHIs through `/ghi-author` — never call `gh issue create` directly** (Step-0 prior-art lookup is the only sibling-cut-duplicate defense; `gz issue file` cross-repo). See [`docs/governance/behavior-rules.md` § Always #13](docs/governance/behavior-rules.md).
 14. **Goal-driven execution.** Define success criteria. Loop until verified. Strong success criteria let Claude loop independently. (Rule 4, 2026-05-24.)
 15. **Match the codebase's conventions, even if you disagree.** Conformance > taste inside the codebase. If you think a convention is harmful, surface it. Don't fork it silently. (Rule 8, 2026-05-24.)
+16. **Skills-first — when a skill covers the task, invoke it before reaching for raw tools.** Skills wrap Edit/Write/Bash/git in the canonical order; doing a skill's job by hand (hand-authoring a brief, hand-writing a handoff) bypasses expected behavior and is a governance violation even if the output passes validators. (CLAUDE.md Invariant 10a; failure mode: Correction-fails.)
 
 ### Never
 
@@ -170,7 +171,7 @@ Standardized and synchronized by `gz agent sync control-surfaces`.
 
 1. Discover from canonical directory
 2. Read `SKILL.md` before applying
-3. Prefer skill-defined workflows over ad-hoc behavior
+3. Prefer skill-defined workflows over ad-hoc behavior (binding: § Behavior Rules — Always #16)
 4. Re-run `gz agent sync control-surfaces` after adding/editing skills
 
 ### Available Skills
