@@ -501,7 +501,15 @@ def _complete_closeout_pipeline(
         attest_status, reason = _prompt_closeout_attestation(quiet=as_json)
         ceremony_attestation_text = None
     attester = get_git_user()
-    ledger.append(attested_event(adr_id, attest_status, attester, reason))
+    if consumed is None:
+        # BI-2 (OBPI-0.0.63-05 dual-runtime-collapse): the pipeline is the sole
+        # `attested` emitter only on the direct interactive path. When a ceremony
+        # attestation was consumed, the ceremony already emitted the authoritative
+        # `attested` event at Step 6 (closeout_ceremony.py:549, the BI-3 gate's
+        # single-source receipt); re-emitting here is the transitional double-emit
+        # OBPI-01 deferred and this OBPI collapses. `--attest` is an orchestration
+        # shortcut, never a parallel emitter.
+        ledger.append(attested_event(adr_id, attest_status, attester, reason))
 
     version_updated: list[str] = []
     if needs_bump and adr_ver is not None:

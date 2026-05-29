@@ -19,6 +19,7 @@ from gzkit.commands.closeout_ceremony import (
     CeremonyStep,
     save_ceremony_state,
 )
+from gzkit.ledger import Ledger, attested_event
 from gzkit.quality import QualityResult
 from tests.commands.common import CliRunner, _init_git_repo, _quick_init
 
@@ -33,8 +34,16 @@ def _seed_ceremony_state(
     *,
     current_step: int,
     attestation: str | None,
+    emit_attested_status: str | None = None,
 ) -> None:
-    """Persist a ceremony state file mirroring a partway-through ceremony run."""
+    """Persist a ceremony state file mirroring a partway-through ceremony run.
+
+    When ``emit_attested_status`` is set, also emit the ceremony's Step-6
+    ``attested`` ledger event (closeout_ceremony.py:549) the way a real
+    ``--attest`` does — the BI-2 single source the OBPI-0.0.63-05 collapse keeps.
+    Pre-collapse fixtures seeded only state and relied on the pipeline to emit;
+    post-collapse the ceremony is the emitter, so realistic fixtures seed it here.
+    """
     state = CeremonyState(
         adr_id=adr_id,
         current_step=current_step,
@@ -44,6 +53,9 @@ def _seed_ceremony_state(
         attestation=attestation,
     )
     save_ceremony_state(project_root, state)
+    if emit_attested_status is not None:
+        ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
+        ledger.append(attested_event(adr_id, emit_attested_status, "Tester", None))
 
 
 class TestCloseoutConsumesCeremonyAttestation(unittest.TestCase):
@@ -82,6 +94,7 @@ class TestCloseoutConsumesCeremonyAttestation(unittest.TestCase):
                 "ADR-0.1.0-f",
                 current_step=int(CeremonyStep.CLOSEOUT),
                 attestation="attest completed - Confirm decision: ADR-0.1.0-f closeout",
+                emit_attested_status="completed",
             )
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
@@ -89,6 +102,12 @@ class TestCloseoutConsumesCeremonyAttestation(unittest.TestCase):
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn('"event":"attested"', ledger_text.replace(" ", ""))
             self.assertIn("completed", ledger_text)
+            # BI-2 (OBPI-0.0.63-05): the ceremony is the single attested source;
+            # the pipeline consumes without duplicating.
+            attested_lines = [
+                ln for ln in ledger_text.splitlines() if '"event":"attested"' in ln.replace(" ", "")
+            ]
+            self.assertEqual(len(attested_lines), 1, "no ceremony/pipeline attested double-emit")
 
     @patch("gzkit.cli.main.run_command")
     @patch("builtins.input")
@@ -104,13 +123,16 @@ class TestCloseoutConsumesCeremonyAttestation(unittest.TestCase):
                 "ADR-0.1.0-f",
                 current_step=int(CeremonyStep.CLOSEOUT),
                 attestation="Dropped - design pivot rendered ADR moot",
+                emit_attested_status="dropped",
             )
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
             mock_input.assert_not_called()
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn('"status":"dropped"', ledger_text.replace(" ", ""))
-            self.assertIn("Dropped", ledger_text)
+            # Pipeline still drives the lifecycle transition to Dropped (BI-2:
+            # only the duplicate attested emit is removed, not the transition).
+            self.assertIn('"to_state":"Dropped"', ledger_text.replace(" ", ""))
 
     @patch("gzkit.cli.main.run_command")
     @patch("builtins.input")
@@ -126,6 +148,7 @@ class TestCloseoutConsumesCeremonyAttestation(unittest.TestCase):
                 "ADR-0.1.0-f",
                 current_step=int(CeremonyStep.CLOSEOUT),
                 attestation="Completed - Partial: REQ-04 deferred to follow-up brief",
+                emit_attested_status="partial",
             )
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
