@@ -1,13 +1,17 @@
 ---
 mode: CREATE
-adr_id: ADR-0.0.63-closeout-ceremony-runtime-engine-parity
+adr_id: ADR-0.0.63
 branch: main
 timestamp: "2026-05-29T06:17:28Z"
 agent: claude-code
-obpi_id: OBPI-0.0.63-07-verify-stage-command-shape-gate
+obpi_id: OBPI-0.0.63-07
 session_id: salvation-phase-i-adr-0.0.63
 continues_from:
 ---
+
+<!-- Full identifiers: parent ADR package ADR-0.0.63-closeout-ceremony-runtime-engine-parity ;
+     OBPI OBPI-0.0.63-07-verify-stage-command-shape-gate. Frontmatter uses the short canonical
+     forms the HandoffFrontmatter model requires (ADR-X.Y.Z / OBPI-X.Y.Z-NN). -->
 
 ## Current State Summary
 
