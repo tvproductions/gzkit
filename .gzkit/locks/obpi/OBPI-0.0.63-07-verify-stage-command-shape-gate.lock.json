@@ -1,9 +1,0 @@
-{
-  "obpi_id": "OBPI-0.0.63-07-verify-stage-command-shape-gate",
-  "agent": "claude-code-36273a4a",
-  "pid": 73484,
-  "session_id": "36273a4a-9bbf-4884-a43c-bb7fac2078f1",
-  "claimed_at": "2026-05-29T06:27:19.880373+00:00",
-  "branch": "main",
-  "ttl_minutes": 120
-}
