@@ -12,7 +12,8 @@ continues_from: 20260529T071016Z-obpi07-done-obpi01-next.md
 <!-- Token-block register fields (HandoffFrontmatter forbids them as keys; kept in body per
      token-block-discipline § Register-Entry Minimum-Information Rule "in frontmatter or body"):
      last lock-event timestamp: 2026-05-29T06:23:53Z (OBPI-0.0.63-07 lock claim, since released) ;
-     last commit SHA at handoff: 06b9cd80 ; branch state: main, synced with origin/main. -->
+     last commit SHA at handoff: c3480ff4 ; branch state: main, synced with origin/main.
+     Updated 2026-05-29T07:55Z to fold in the SKILL.md vaporware-doc fix. -->
 
 ## ADR / OBPI (full identifiers)
 
@@ -34,6 +35,7 @@ Handoff-system repair side-quest (all committed + pushed):
 - **Both ADR-0.0.63 handoff frontmatters corrected** to the short canonical `adr_id: ADR-0.0.63` / `obpi_id: OBPI-0.0.63-07` forms the `HandoffFrontmatter` model requires (they previously used the full package slug and failed `validate_handoff_document`).
 - **Pool ADR authored + registered**: `ADR-pool.handoff-system-consolidation` (visible in `gz adr report` Pool table) — captures the full handoff-system scope.
 - **GHI #529 closed `superseded`** citing the pool ADR + commit `2ab33914`.
+- **gz-session-handoff SKILL.md vaporware-doc trap fixed** (direct fix, synced commit through `c3480ff4`): both Programmatic API blocks now marked `DESIGN TARGET — NOT YET IMPLEMENTED`, stating the documented `tests.governance.test_session_handoff` module raises `ModuleNotFoundError`, pointing readers to the real `validate_handoff_document` gate + canonical short-form frontmatter, and citing OBPI-02 as the build owner. `skill-version` 6.3.0→6.3.1, `last_reviewed` bumped, mirrors synced, `--skill-alignment` passes. The API BUILD itself remains OBPI-02 (not done).
 - **GHI #565 filed** (unrelated to handoffs): 40 pre-existing brief `## Verification` compound-command violations the OBPI-07 gate surfaces.
 
 Last action succeeded: `gz git-sync --apply` reported `dirty=False`, tree synced.
@@ -61,7 +63,7 @@ Last action succeeded: `gz git-sync --apply` reported `dirty=False`, tree synced
 ## Pending Work / Open Loops
 
 - **5 OBPIs remain in ADR-0.0.63:** 01, 03, 05, 06 (blocked on `req_evidence` schema), 04.
-- **`ADR-pool.handoff-system-consolidation`** — parked backlog. Promotion decides the canonical handoff location, builds the real programmatic API, adds the `gz handoff` CLI verb, aligns the orientation reader. Provisional 4-OBPI plan in the ADR's Notes.
+- **`ADR-pool.handoff-system-consolidation`** — parked backlog. Promotion decides the canonical handoff location, builds the real programmatic API (OBPI-02), adds the `gz handoff` CLI verb, aligns the orientation reader. Provisional 4-OBPI plan in the ADR's Notes. NOTE: the SKILL.md doc-trap (documenting the non-existent API as real) is already fixed (see Current State); only the API BUILD remains for OBPI-02.
 - **GHI #565** — 40 pre-existing brief Verification compound commands; precondition for promoting `--brief-command-shape` to default `gz check`.
 - **Pre-existing repo-wide `gz check` failure (NOT this ADR):** GHI #561 (`ADR-0.0.64` `REQ-0.0.64-05-06` lacks a `gz validate --<scope>` citation → `--req-kind-discipline` fails). Will block ADR-0.0.63 closeout's quality pipeline; needs the 0.0.64 owner. Do NOT blind-fix.
 - **GHIs to close at ADR-0.0.63 closeout:** #539, #540 (OBPI-02), #550 (verify the OBPI-07 authoring-gate close satisfies it), #516 (relabel/close per OBPI-01/03).
@@ -82,6 +84,7 @@ Last action succeeded: `gz git-sync --apply` reported `dirty=False`, tree synced
 - `scripts/session_orientation.py` — `collect_handoff` union-scan + `_looks_like_handoff` filter (commit `2ab33914`)
 - `tests/scripts/test_session_orientation.py` — 3 new tests (exclusion, ADR-package discovery, union)
 - `docs/design/adr/pool/ADR-pool.handoff-system-consolidation.md` — handoff-system pool ADR
+- `.gzkit/skills/gz-session-handoff/SKILL.md` — vaporware-doc trap fixed (API blocks marked NOT-YET-IMPLEMENTED; skill-version 6.3.1)
 - `docs/design/adr/foundation/ADR-0.0.63-closeout-ceremony-runtime-engine-parity/handoffs/20260529T071016Z-obpi07-done-obpi01-next.md` — chained predecessor (OBPI-07 detail)
 - `.gzkit/insights/agent-insights.jsonl` — `skill-invocation-discipline` improvement + OBPI-07 40-violation finding
 - Commits this session: `6b85ebbc` (OBPI-07 code), `2ab33914` (orientation fix); pool ADR + GHI-close synced via `gz git-sync` ceremony commits through `06b9cd80`
