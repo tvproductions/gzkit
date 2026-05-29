@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.0.63-07-verify-stage-command-shape-gate",
+  "parent_adr": "ADR-0.0.63-closeout-ceremony-runtime-engine-parity",
+  "lane": "heavy",
+  "entry": "sync",
+  "execution_mode": "normal",
+  "current_stage": "sync",
+  "started_at": "2026-05-29T07:01:00Z",
+  "updated_at": "2026-05-29T07:01:00Z",
+  "receipt_state": "pass",
+  "nonce": "acd36e3853e0d5854dbbb06284c99090",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz git-sync --apply --lint --test",
+  "resume_point": null
+}

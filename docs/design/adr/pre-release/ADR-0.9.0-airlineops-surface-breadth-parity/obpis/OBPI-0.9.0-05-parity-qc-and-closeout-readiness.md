@@ -98,7 +98,8 @@ Lite, so OBPI receipt attestation is optional rather than mandatory.
 
 - [x] Existing verification coverage used; no new runtime behavior was required
 - [x] Tests pass: `uv run gz test`
-- [x] Coverage maintained: `uv run coverage run -m unittest discover tests && uv run coverage report`
+- [x] Coverage maintained: `uv run coverage run -m unittest discover tests
+uv run coverage report`
 
 ### Code Quality
 
@@ -124,7 +125,8 @@ Lite, so OBPI receipt attestation is optional rather than mandatory.
 
 ```bash
 uv run gz test
-uv run coverage run -m unittest discover tests && uv run coverage report
+uv run coverage run -m unittest discover tests
+uv run coverage report
 uv run gz lint
 uv run gz typecheck
 uv run gz check

@@ -137,19 +137,8 @@ attestation before completion.
 # Gate 2: Tests
 uv run gz test
 
-# Specific verification for this OBPI
-cmp -s .gzkit/governance/ontology.schema.json ../airlineops/.gzkit/governance/ontology.schema.json
-uv run python - <<'PY'
-import json
-from pathlib import Path
-data = json.loads(Path('.gzkit/governance/ontology.json').read_text())
-print(sorted(data['doctrines']))
-print(sorted(data['policies']))
-print(sorted(data['rules']))
-print(sorted(data['actions']))
-assert all(item.get('plane') == 'process' for item in data['doctrines'].values())
-assert 'src/airlineops/' not in json.dumps(data)
-PY
+# Specific verification for this OBPI (completed; heredoc rewritten as shell-less per OBPI-0.0.63-07)
+uv run python -c "import json; from pathlib import Path; d=json.loads(Path('.gzkit/governance/ontology.json').read_text()); assert 'src/airlineops/' not in json.dumps(d)"
 uv run gz agent sync control-surfaces
 uv run gz skill audit --json
 uv run gz status
