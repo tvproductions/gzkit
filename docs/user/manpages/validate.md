@@ -15,7 +15,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
             [--advisor-proof-binding] [--vendor-manifest]
             [--invariant-coherence] [--brief-reconcile] [--router-tables]
-            [--kind-invariance] [--req-kind-discipline] [--tautological-test-audit]
+            [--kind-invariance] [--req-kind-discipline] [--brief-command-shape] [--tautological-test-audit]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
 ```
 
@@ -1061,6 +1061,38 @@ gz validate --req-kind-discipline
 **Related:** ADR-0.0.59 / OBPI-0.0.59-02 (req-kind-discipline validator).
 See `docs/governance/req-scope-discipline.md` for the full three-kind taxonomy doctrine.
 
+### `--brief-command-shape`
+
+Enforces the OBPI-0.0.63-07 brief Verification contract: every fenced command in a
+brief's `## Verification` block must be a single-program, shell-less invocation
+(`shlex.split`-parseable argv with no `&&`, `||`, `|`, `;`, `$(...)`, or redirects).
+Compound commands fail at authoring time so the mismatch with the shell-less pipeline
+runtime (GHI #415, GHI #550) is caught before the verify stage.
+
+Rules enforced:
+
+1. **Compound commands fail closed** — any `## Verification` fenced command containing
+   `&&`, `||`, `|`, `;`, `$(...)`, or shell redirects exits 3. Reports the offending brief
+   and command with a "rewrite as separate single-program lines" message.
+2. **Data operators exempt** — operators inside quoted arguments (e.g. `python -c "a | b"`)
+   are not flagged; the BI-1 classifier (`brief_commands.is_shell_less_executable`) correctly
+   distinguishes data from syntax.
+
+**Usage:**
+
+```bash
+gz validate --brief-command-shape
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | All Verification commands are single-program shell-less | — |
+| 3 | One or more non-shell-less commands found | Rewrite as separate `uv run …` lines per authoring guidance in `.gzkit/templates/obpi.md` |
+
+**Related:** ADR-0.0.63 / OBPI-0.0.63-07 (verify-stage-command-shape-gate). GHI #550.
+
 ### `--tautological-test-audit`
 
 Enforces the ADR-0.0.59-04 tautological-test drift gate: the count of filesystem-shaped
@@ -1274,6 +1306,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--scenario-reachability` | opt-in | Assert every Mechanical/Promotable bullet reachable from a declared loading scenario (ADR-0.0.33-04; Era-1 advisory) |
 | `--surface-fidelity` | opt-in | Composite: run all four surface-fidelity invariants in declared order; exit code is worst-of-four (ADR-0.0.33-05) |
 | `--req-kind-discipline` | opt-in | Fail closed (exit 3) on OBPI briefs with mixed-state [kind] tags or per-kind proof-citation gaps (ADR-0.0.59-02) |
+| `--brief-command-shape` | opt-in | Fail closed (exit 3) when a brief Verification block contains non-shell-less commands (OBPI-0.0.63-07, GHI #550) |
 | `--tautological-test-audit` | opt-in | Fail closed (exit 3) when tautological-test count exceeds baseline + waivers; `current > baseline + W` → exit 3; waivers at `data/tautological_test_waivers.json` (OBPI-0.0.59-04) |
 | `--task-envelope-coherence` | opt-in | Fail closed (exit 3) on TASK attribution drift: worklog without task_id, all-seq=01 without req_atomic, or layer-drift across channels (ADR-0.0.64 / OBPI-04) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |

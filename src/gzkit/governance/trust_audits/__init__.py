@@ -44,6 +44,7 @@ from gzkit.governance.trust_audits.brief_reconcile import (
 )
 from gzkit.governance.trust_audits.briefs import (
     audit_behave_req_tags,
+    audit_brief_command_shape,
     audit_brief_cross_references,
     audit_brief_demo_section,
     audit_brief_headings,
@@ -147,6 +148,7 @@ __all__ = [
     "audit_advisory_scorecard",
     "audit_attestation_receipts",
     "audit_behave_req_tags",
+    "audit_brief_command_shape",
     "audit_brief_cross_references",
     "audit_brief_demo_section",
     "audit_brief_headings",

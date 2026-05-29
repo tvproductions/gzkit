@@ -1043,6 +1043,7 @@ def _collect_errors(
     check_brief_reconcile: bool = False,
     check_router_tables: bool = False,
     check_req_kind_discipline: bool = False,
+    check_brief_command_shape: bool = False,
     check_tautological_test_audit: bool = False,
     check_task_envelope_coherence: bool = False,
     frontmatter_adr: str | None = None,
@@ -1113,6 +1114,7 @@ def _collect_errors(
         "brief_reconcile": check_brief_reconcile,
         "router_tables": check_router_tables,
         "req_kind_discipline": check_req_kind_discipline,
+        "brief_command_shape": check_brief_command_shape,
         "tautological_test_audit": check_tautological_test_audit,
         "task_envelope_coherence": check_task_envelope_coherence,
     }
@@ -1225,6 +1227,7 @@ def _explicit_scope_runners(
         "brief_reconcile": lambda: trust_audits.validate_brief_reconcile(project_root),
         "router_tables": lambda: trust_audits.audit_router_tables(project_root),
         "req_kind_discipline": lambda: _validate_req_kind_discipline(project_root),
+        "brief_command_shape": lambda: trust_audits.audit_brief_command_shape(project_root),
         "tautological_test_audit": lambda: _validate_tautological_test_audit(project_root),
         "task_envelope_coherence": lambda: _validate_task_envelope_coherence(project_root),
     }
@@ -1701,6 +1704,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "brief_reconcile",
         "router_tables",
         "req_kind_discipline",
+        "brief_command_shape",
         "tautological_test_audit",
         "task_envelope_coherence",
     ]
@@ -1742,6 +1746,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "brief_reconcile",
         "router_tables",
         "req_kind_discipline",
+        "brief_command_shape",
         "tautological_test_audit",
         "task_envelope_coherence",
     }
@@ -1992,6 +1997,7 @@ def validate(
     check_brief_reconcile: bool = False,
     check_router_tables: bool = False,
     check_req_kind_discipline: bool = False,
+    check_brief_command_shape: bool = False,
     check_tautological_test_audit: bool = False,
     check_task_envelope_coherence: bool = False,
     attestation_receipts: str | None = None,
@@ -2073,6 +2079,7 @@ def validate(
             check_brief_reconcile,
             check_router_tables,
             check_req_kind_discipline,
+            check_brief_command_shape,
             check_tautological_test_audit,
             check_task_envelope_coherence,
         ]
@@ -2156,6 +2163,7 @@ def validate(
         check_brief_reconcile=check_brief_reconcile,
         check_router_tables=check_router_tables,
         check_req_kind_discipline=check_req_kind_discipline,
+        check_brief_command_shape=check_brief_command_shape,
         check_tautological_test_audit=check_tautological_test_audit,
         check_task_envelope_coherence=check_task_envelope_coherence,
         frontmatter_adr=frontmatter_adr,
@@ -2241,6 +2249,7 @@ def validate(
         "brief_reconcile": check_brief_reconcile,
         "router_tables": check_router_tables,
         "req_kind_discipline": check_req_kind_discipline,
+        "brief_command_shape": check_brief_command_shape,
         "tautological_test_audit": check_tautological_test_audit,
         "task_envelope_coherence": check_task_envelope_coherence,
     }

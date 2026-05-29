@@ -8,6 +8,8 @@
 * ``audit_brief_demo_section`` — heavy-lane CLI-shipping briefs must carry a
   ``## Demo`` H2 section so the closeout walkthrough does not fall back to
   ``--help`` (GHI #431).
+* ``audit_brief_command_shape`` — brief Verification blocks must contain only
+  single-program shell-less commands; compound forms exit 3 (GHI #550, OBPI-0.0.63-07).
 """
 
 from __future__ import annotations
@@ -17,6 +19,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+from gzkit.brief_commands import extract_fenced_commands, is_shell_less_executable
+from gzkit.decomposition import extract_markdown_section
 from gzkit.validate import ValidationError
 
 _REQ_ID_IN_BRIEF = re.compile(r"\bREQ-\d+\.\d+\.\d+-\d+-\d+\b")
@@ -536,4 +540,62 @@ def audit_behave_req_tags(project_root: Path) -> list[ValidationError]:
                 ),
             )
         )
+    return errors
+
+
+_BRIEF_STATUS_IN_FRONTMATTER = re.compile(r"^status:\s*(\S+)", re.MULTILINE)
+
+# Terminal statuses: briefs in these states are historical records, not active
+# authoring surfaces. The --brief-command-shape validator only gates at
+# authoring time (GHI #550 objective: "fails closed at authoring time"), so
+# pre-existing compound commands in completed/superseded briefs are not flagged.
+_BRIEF_TERMINAL_STATUSES: frozenset[str] = frozenset(
+    {
+        "Completed",
+        "attested_completed",
+        "Validated",
+        "Superseded",
+        "archived",
+        "Promoted",
+    }
+)
+
+
+def audit_brief_command_shape(project_root: Path) -> list[ValidationError]:
+    """Fail closed (exit 3) when a brief Verification block contains a
+    non-shell-less command (GHI #550, OBPI-0.0.63-07).
+
+    Walks active (non-terminal-status) OBPI-*.md briefs, extracts
+    ``## Verification`` fenced commands via ``extract_fenced_commands``,
+    and flags any command that fails ``is_shell_less_executable``
+    (the BI-1 shared classifier from OBPI-02).
+
+    Terminal-status briefs (Completed, attested_completed, Validated,
+    Superseded, archived, Promoted) are skipped — they are historical
+    records, not active authoring surfaces.
+    """
+    adr_root = project_root / "docs" / "design" / "adr"
+    if not adr_root.is_dir():
+        return []
+    errors: list[ValidationError] = []
+    for brief in sorted(adr_root.rglob("OBPI-*.md")):
+        text = brief.read_text(encoding="utf-8")
+        status_match = _BRIEF_STATUS_IN_FRONTMATTER.search(text)
+        if status_match and status_match.group(1) in _BRIEF_TERMINAL_STATUSES:
+            continue
+        section = extract_markdown_section(text, "Verification") or ""
+        for cmd in extract_fenced_commands(section):
+            if not is_shell_less_executable(cmd):
+                rel = brief.relative_to(project_root).as_posix()
+                errors.append(
+                    ValidationError(
+                        type="brief_command_shape",
+                        artifact=rel,
+                        message=(
+                            f"Non-shell-less Verification command in {rel!r}: {cmd!r}. "
+                            "Rewrite as separate single-program lines "
+                            "(no &&, ||, |, ;, $(...), or redirects)."
+                        ),
+                    )
+                )
     return errors

@@ -121,7 +121,14 @@ status: Draft
 <!-- What commands verify this work? Use real repo commands, then paste the
      outputs into Evidence. These are CONSTRUCTION HOUSEKEEPING (lint, type,
      test, mkdocs) — they prove the codebase is healthy, not what the OBPI
-     yielded. The yielded product belongs in the `## Demo` section below. -->
+     yielded. The yielded product belongs in the `## Demo` section below.
+
+     AUTHORING CONTRACT: Every command in this section must be a single-program,
+     shell-less invocation — no &&, ||, |, ;, $(...), or redirects. The
+     OBPI-pipeline verify stage executes commands via shlex.split + shell=False
+     (GHI #415); compound commands are blocked at authoring time by
+     gz validate --brief-command-shape and rejected at the verify stage.
+     Write multi-step verification as separate uv run ... lines. -->
 
 ```bash
 uv run gz validate --documents

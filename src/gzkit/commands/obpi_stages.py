@@ -15,6 +15,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
+from gzkit.brief_commands import is_shell_less_executable
 from gzkit.commands.common import GzCliError, _cli_main, console
 from gzkit.decomposition import extract_markdown_section
 from gzkit.pipeline_runtime import (
@@ -144,6 +145,13 @@ def _pipeline_verification_commands(
             line = raw_line.strip()
             if not line or line.startswith("#") or line == "command --to --verify":
                 continue
+            if not is_shell_less_executable(line):
+                console.print(
+                    f"[red]BLOCKED[/red] Non-shell-less Verification command: {line!r}. "
+                    "Rewrite as separate single-program lines "
+                    "(no &&, ||, |, ;, $(...), or redirects)."
+                )
+                raise SystemExit(1)
             commands.append(line)
     if lane == "heavy":
         commands.append("uv run gz arb step --name mkdocs -- uv run mkdocs build --strict")
