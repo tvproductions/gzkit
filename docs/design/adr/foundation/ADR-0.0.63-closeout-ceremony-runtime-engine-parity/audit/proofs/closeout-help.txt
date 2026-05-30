@@ -1,0 +1,31 @@
+=== Demo 2: closeout state machine surface (gz closeout --help) ===
+  adr                ADR identifier to close out (e.g. ADR-0.0.4)
+
+options:
+  -h, --help         show this help message and exit
+  --json             Output as JSON
+  --dry-run          Show planned actions without executing
+  --ceremony         Run interactive ceremony with deterministic step
+                     sequencing
+  --next             Advance ceremony to next step (requires --ceremony)
+  --ceremony-status  Show current ceremony step (requires --ceremony)
+  --attest TEXT      Record attestation at step 6 (e.g. --attest "Completed")
+  --pause            Pause ceremony for revise-and-resubmit
+  --restart          Restart ceremony (new attempt, fresh from Step 1)
+  --quiet, -q        Suppress non-error output
+  --verbose, -v      Enable verbose output
+  --debug            Enable debug mode with full tracebacks
+
+Examples
+    gz closeout ADR-0.1.0
+    gz closeout ADR-0.1.0 --dry-run
+    gz closeout ADR-0.1.0 --json
+    gz closeout ADR-0.1.0 --ceremony
+    gz closeout ADR-0.1.0 --ceremony --next
+    gz closeout ADR-0.1.0 --ceremony --attest "Completed"
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach

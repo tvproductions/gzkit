@@ -1,0 +1,3 @@
+Validated: closeout_proof_binding
+
+✓ All validations passed (1 scopes).

@@ -1,0 +1,4 @@
+=== Demo 1: verify-stage command-shape gate (OBPI-07, GHI #550) ===
+Validated: documents
+
+✓ All validations passed (1 scopes).
