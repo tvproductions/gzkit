@@ -1,0 +1,19 @@
+{
+  "obpi_id": "OBPI-0.0.65-01-canonical-location-migration",
+  "timestamp": "2026-05-30T00:22:03.870788+00:00",
+  "verdict": "FAIL",
+  "plan_file": null,
+  "gaps_found": 1,
+  "gaps": [
+    "No plan file found for OBPI-0.0.65-01-canonical-location-migration in .claude/plans/ or ~/.claude/plans/"
+  ],
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/*/handoffs/"
+      ]
+    }
+  ]
+}

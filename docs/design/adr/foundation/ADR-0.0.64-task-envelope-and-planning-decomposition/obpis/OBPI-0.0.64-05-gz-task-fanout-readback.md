@@ -192,7 +192,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.64-05-03 [BEHAVIOR]: Given a REQ-ID with tasks, when `gz task fanout <REQ-ID> --json` runs, then output is valid JSON containing task rows with all required fields (task_id, seq, status, files_touched, edits, attribution_check)
 - [ ] REQ-0.0.64-05-04 [BEHAVIOR]: Given an active OBPI with tasks, when `gz status` runs, then the TASK section shows per-REQ fan-out shape (REQ ID, task count, status breakdown) rather than only aggregate counts
 - [ ] REQ-0.0.64-05-05 [BEHAVIOR]: Given an OBPI with tasks where some have layer-drift (OBPI-04 validator detects drift), when `gz task fanout <REQ-ID>` runs, then the attribution_check column shows "drift" for affected tasks and "pass" for clean tasks
-- [ ] REQ-0.0.64-05-06 [SUPPORT]: Each output format (table/detail/json) is verified against a fixture ledger in tests; `gz status` integration is verified with per-REQ fan-out shape; all tests pass via `uv run gz arb step --name unittest -- uv run -m unittest -q`
+- [ ] REQ-0.0.64-05-06 [SUPPORT]: Each output format (table/detail/json) is verified against a fixture ledger in tests; `gz status` integration is verified with per-REQ fan-out shape; all tests pass via `uv run gz arb step --name unittest -- uv run -m unittest -q` — `gz validate --task-envelope-coherence` + `artifact_edited` event.
 
 ## Completion Checklist
 

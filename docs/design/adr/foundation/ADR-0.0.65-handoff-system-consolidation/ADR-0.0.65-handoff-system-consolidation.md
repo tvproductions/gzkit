@@ -1,19 +1,23 @@
 ---
-id: ADR-pool.handoff-system-consolidation
-status: Superseded
-parent: PRD-GZKIT-1.0.0
+id: ADR-0.0.65-handoff-system-consolidation
+status: Proposed
+kind: foundation
+semver: 0.0.65
 lane: heavy
-enabler: null
-promoted_to: ADR-0.0.65-handoff-system-consolidation
+parent: PRD-GZKIT-1.0.0
+date: 2026-05-29
+promoted_from: ADR-pool.handoff-system-consolidation
 ---
 
-# ADR-pool.handoff-system-consolidation: Handoff System Consolidation and CLI Surface
-> Promoted to `ADR-0.0.65-handoff-system-consolidation` on 2026-05-29. This pool file is retained as historical intake context.
+# ADR-0.0.65-handoff-system-consolidation: Handoff System Consolidation and CLI Surface
 
+## Persona
 
-## Status
+<!-- Describe the behavioral identity for agents working on this ADR.
+     Frame as values and craftsmanship standards, not expertise claims.
+     See .gzkit/personas/ for reusable persona definitions. -->
 
-Superseded
+{persona}
 
 ## Intent
 
@@ -81,23 +85,45 @@ skill, code, and CLI:
    union scan from `2ab33914` becomes a single-location read once one wins, or
    stays a union if both remain supported).
 
-## Alternatives Considered
+## Consequences
 
-1. **Leave the union-scan partial fix as the terminal state.** Rejected: it
-   masks the doctrine conflict (both locations keep accumulating handoffs) and
-   leaves the vaporware API and missing CLI verb unaddressed — handoffs stay
-   hand-authored and bypass validation.
-2. **Delete the skill's programmatic-API documentation, keep hand-authoring.**
-   Rejected: hand-authoring is exactly what shipped two invalid-frontmatter
-   handoffs this session; removing the API removes the validation gate's only
-   mechanical entry point.
-3. **Make `{ADR-package}/handoffs/` canonical and deprecate `.gzkit/handoffs/`.**
-   Viable but conflicts with token-block doctrine (OBPI-0.0.41-03) which couples
-   lock-release register entries to `.gzkit/handoffs/`; would require amending
-   that rule. A real candidate for the design pass, not a foregone conclusion.
-4. **Make `.gzkit/handoffs/` canonical and change the skill to write there.**
-   Viable but loses ADR-package co-location (handoffs no longer travel with the
-   ADR they describe). Also a real candidate.
+### Positive
+
+- Promotion preserves backlog intent as executable ADR scope.
+- Checklist items now map 1:1 to generated OBPI briefs immediately.
+
+### Negative
+
+- Promotion fails closed when the pool ADR lacks actionable execution scope.
+
+## Decomposition Scorecard
+
+<!-- Deterministic OBPI sizing: score each dimension 0/1/2. -->
+<!-- Cutoffs are notional defaults and should be calibrated over time from project evidence. -->
+
+- Data/State: 2
+- Logic/Engine: 2
+- Interface: 1
+- Observability: 1
+- Lineage: 1
+- Dimension Total: 7
+- Baseline Range: 4
+- Baseline Selected: 4
+- Split Single-Narrative: 0
+- Split Surface Boundary: 0
+- Split State Anchor: 0
+- Split Testability Ceiling: 0
+- Split Total: 0
+- Final Target OBPI Count: 4
+
+## Checklist
+
+<!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
+
+- [ ] OBPI-0.0.65-01: **canonical-location-migration** — Canonize `.gzkit/handoffs/` as the single handoff write location per ADR-0.0.41 / OBPI-0.0.41-03. Migrate the 24 per-ADR handoff files (across 10 ADR packages) into `.gzkit/handoffs/`, preserving `continues_from:` chains and frontmatter timestamps. Amend `gz-session-handoff/SKILL.md` output-path doctrine from `{ADR-package}/handoffs/` to `.gzkit/handoffs/`. Bump `skill-version` and `last_reviewed`; run `gz agent sync control-surfaces`.
+- [ ] OBPI-0.0.65-02: **programmatic-api-implementation** — Ship real `create_handoff`, `scaffold_handoff`, `list_handoffs`, `resume_handoff`, `load_handoff_chain` in `src/gzkit/handoff_api.py` (or equivalent runtime module) wrapping `handoff_validation.py`. Replace the `gz-session-handoff/SKILL.md` import references from `tests.governance.test_session_handoff` to the real runtime module. Remove the `NOT IMPLEMENTED` disclaimers.
+- [ ] OBPI-0.0.65-03: **gz-handoff-cli-verb** — Add `gz handoff` CLI verb with `create`, `resume`, `list` subcommands routing authoring through the validation gate. Add manpage under `docs/user/manpages/`. Add behave coverage for create/resume/list flows.
+- [ ] OBPI-0.0.65-04: **orientation-single-location-scan** — Collapse `_candidate_handoff_dirs()` in `scripts/session_orientation.py` to a single-surface scan of `.gzkit/handoffs/`. Delete the GHI #529 dual-scan workaround. Update orientation tests. (Depends on OBPI-01 completion: cannot collapse the scan until the per-ADR sources are empty.)
 
 ## Target Scope
 
@@ -105,20 +131,6 @@ skill, code, and CLI:
 - **programmatic-api-implementation** — Ship real `create_handoff` / `scaffold_handoff` / `list_handoffs` / `resume_handoff` / `load_handoff_chain` in `src/gzkit/handoff_api.py` wrapping `handoff_validation.py`; remove the `NOT IMPLEMENTED` disclaimers and replace `tests.governance.test_session_handoff` import references with the real module.
 - **gz-handoff-cli-verb** — Add `gz handoff` CLI verb with `create` / `resume` / `list` subcommands routing authoring through the validation gate; add manpage and behave coverage.
 - **orientation-single-location-scan** — Collapse `_candidate_handoff_dirs()` in `scripts/session_orientation.py` to a single-surface scan; delete the GHI #529 dual-scan workaround. Depends on `canonical-location-migration` completing first.
-
-## Proposed OBPI Decomposition
-
-Operator decision at promotion (2026-05-29): **`.gzkit/handoffs/` wins** as the
-single canonical handoff write location, honoring ADR-0.0.41 / OBPI-0.0.41-03.
-The `gz-session-handoff` skill output path is the losing surface and gets
-amended; the 24 existing per-ADR handoffs migrate into the canonical store.
-
-| # | Slug | Description | Lane |
-|---|------|-------------|------|
-| 01 | canonical-location-migration | Canonize `.gzkit/handoffs/` as the single handoff write location per ADR-0.0.41 / OBPI-0.0.41-03. Migrate the 24 per-ADR handoff files (across 10 ADR packages) into `.gzkit/handoffs/`, preserving `continues_from:` chains and frontmatter timestamps. Amend `gz-session-handoff/SKILL.md` output-path doctrine from `{ADR-package}/handoffs/` to `.gzkit/handoffs/`. Bump `skill-version` and `last_reviewed`; run `gz agent sync control-surfaces`. | heavy |
-| 02 | programmatic-api-implementation | Ship real `create_handoff`, `scaffold_handoff`, `list_handoffs`, `resume_handoff`, `load_handoff_chain` in `src/gzkit/handoff_api.py` (or equivalent runtime module) wrapping `handoff_validation.py`. Replace the `gz-session-handoff/SKILL.md` import references from `tests.governance.test_session_handoff` to the real runtime module. Remove the `NOT IMPLEMENTED` disclaimers. | heavy |
-| 03 | gz-handoff-cli-verb | Add `gz handoff` CLI verb with `create`, `resume`, `list` subcommands routing authoring through the validation gate. Add manpage under `docs/user/manpages/`. Add behave coverage for create/resume/list flows. | heavy |
-| 04 | orientation-single-location-scan | Collapse `_candidate_handoff_dirs()` in `scripts/session_orientation.py` to a single-surface scan of `.gzkit/handoffs/`. Delete the GHI #529 dual-scan workaround. Update orientation tests. (Depends on OBPI-01 completion: cannot collapse the scan until the per-ADR sources are empty.) | lite |
 
 ## Notes
 
@@ -136,3 +148,26 @@ adapter layer atop that invariant.
 unrelated to handoffs but was filed in the same audit session. Operator
 decision 2026-05-29 on the canonical-location forcing function captured in
 the OBPI Decomposition table above.
+
+## Q&A Transcript
+
+<!-- Interview transcript preserved for context -->
+
+Promotion derived from `ADR-pool.handoff-system-consolidation` on 2026-05-29; executable scope was carried forward from the pool ADR instead of reseeded as placeholders.
+
+## Evidence
+
+<!-- Links to tests, documentation, and other artifacts that prove completion -->
+
+- [ ] Tests: `tests/`
+- [ ] Docs: `docs/`
+
+## Alternatives Considered
+
+- Keep this work in the pool backlog until reprioritized.
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.0.65 | Pending | | | |

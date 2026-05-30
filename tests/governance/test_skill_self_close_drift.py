@@ -183,7 +183,7 @@ class TestSkillSelfCloseDrift(unittest.TestCase):
         # Skills known to have been edited in this sweep
         edited_skills = {
             ".gzkit/skills/gz-obpi-pipeline/SKILL.md": "6.17.0",
-            ".gzkit/skills/gz-adr-closeout-ceremony/SKILL.md": "7.13.0",
+            ".gzkit/skills/gz-adr-closeout-ceremony/SKILL.md": "7.13.1",
             ".gzkit/skills/gz-obpi-lock/SKILL.md": "6.1.0",
         }
         for rel_path, expected_version in edited_skills.items():

@@ -7,7 +7,7 @@ Status: Active
 
 Source-of-truth: filesystem under `docs/design/adr/{foundation,pre-release}/`; this table is a Layer 3 derived view per `docs/governance/state-doctrine.md`. Regenerate via `gz register-adrs` (which calls `regenerate_adr_status_md` after ledger reconciliation); drift is fail-closed by `gz validate --adr-status-fresh`.
 
-Last regenerated: 2026-05-29 (count: 88 ADRs).
+Last regenerated: 2026-05-30 (count: 89 ADRs).
 
 | ID | Title | Kind | Lane | Status | Date | Path |
 |---|---|---|---|---|---|---|
@@ -75,6 +75,7 @@ Last regenerated: 2026-05-29 (count: 88 ADRs).
 | [ADR-0.0.62-afk-diagnosis-cloud-routines](../../design/adr/foundation/ADR-0.0.62-afk-diagnosis-cloud-routines/ADR-0.0.62-afk-diagnosis-cloud-routines.md) | AFK-Diagnosis via Cloud Routines | foundation | lite | Draft | 2026-05-25 | `design/adr/foundation/ADR-0.0.62-afk-diagnosis-cloud-routines/ADR-0.0.62-afk-diagnosis-cloud-routines.md` |
 | [ADR-0.0.63-closeout-ceremony-runtime-engine-parity](../../design/adr/foundation/ADR-0.0.63-closeout-ceremony-runtime-engine-parity/ADR-0.0.63-closeout-ceremony-runtime-engine-parity.md) | Closeout Ceremony Runtime Engine Parity | foundation | heavy | Proposed | 2026-05-26 | `design/adr/foundation/ADR-0.0.63-closeout-ceremony-runtime-engine-parity/ADR-0.0.63-closeout-ceremony-runtime-engine-parity.md` |
 | [ADR-0.0.64-task-envelope-and-planning-decomposition](../../design/adr/foundation/ADR-0.0.64-task-envelope-and-planning-decomposition/ADR-0.0.64-task-envelope-and-planning-decomposition.md) | TASK Envelope and Planning Decomposition | foundation | heavy | Draft | 2026-05-27 | `design/adr/foundation/ADR-0.0.64-task-envelope-and-planning-decomposition/ADR-0.0.64-task-envelope-and-planning-decomposition.md` |
+| [ADR-0.0.65-handoff-system-consolidation](../../design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md) | Handoff System Consolidation and CLI Surface | foundation | heavy | Proposed | 2026-05-29 | `design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md` |
 | [ADR-0.2.0-gate-verification](../../design/adr/pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md) | Gate Verification + Dry Run | feature | heavy | Validated | 2026-01-29 | `design/adr/pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md` |
 | [ADR-0.3.0-airlineops-canon-reconciliation](../../design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) | AirlineOps Canon Reconciliation | feature | heavy | Validated | 2026-02-13 | `design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md` |
 | [ADR-0.4.0-skill-capability-mirroring](../../design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) | Skill Capability Mirroring | feature | heavy | Validated | 2026-02-17 | `design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md` |

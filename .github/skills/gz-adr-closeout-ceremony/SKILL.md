@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.13.0"
+  skill-version: "7.13.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -77,7 +77,7 @@ Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Val
 
 - **Reads:** Ledger entries, audit reports, ADR/OBPI files
 - **Writes:** Attestation records, status updates via CLI commands
-- **Does NOT re-verify:** Evidence (trusts Layer 1 proof)
+- **Does NOT re-execute (CLI layer):** The ledger-consumption layer trusts Layer-1 proof and never re-runs receipts. Independent re-verification is performed by the `spec-reviewer` persona-dispatch step (§ Persona Dispatch above), not by the CLI.
 - **Requires:** Human attestation before finalizing
 
 ---

@@ -1,0 +1,30 @@
+{
+  "obpi_id": "OBPI-0.0.63-04-closeout-skill-reverify-wording-fix",
+  "timestamp": "2026-05-30T00:29:00.546342+00:00",
+  "verdict": "PASS",
+  "plan_file": "playful-wandering-axolotl.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-09-existing-skill-extensions",
+      "contested_paths": [
+        ".gzkit/skills/gz-adr-closeout-ceremony/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.36",
+      "sibling_obpi": "OBPI-0.0.36-05-skill-prose-sweep-self-close",
+      "contested_paths": [
+        ".gzkit/skills/gz-adr-closeout-ceremony/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.63-closeout-ceremony-runtime-engine-parity/ADR-0.0.63-closeout-ceremony-runtime-engine-parity.md"
+      ]
+    }
+  ]
+}
