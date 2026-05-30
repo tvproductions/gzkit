@@ -709,6 +709,16 @@ def run_surface_fidelity_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --surface-fidelity", cwd=project_root)
 
 
+def run_line_endings_audit(project_root: Path) -> QualityResult:
+    """Run the cross-platform line-ending audit (GHI #570).
+
+    Fails closed when `.gitattributes` lacks the `* text=auto eol=lf`
+    directive or any tracked text surface still carries CRLF — the recurring
+    Windows<->Mac hazard (ADR-0.0.1; one-off fixes GHIs #478/#161/#384).
+    """
+    return run_command("uv run gz validate --line-endings", cwd=project_root)
+
+
 def run_interviews_audit(project_root: Path) -> QualityResult:
     """Run the interview-transcript audit (GHI #511 retarget / GHI #515).
 

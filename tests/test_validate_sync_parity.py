@@ -176,7 +176,11 @@ class SyncParityDateNormalizationTest(_SyncParityBase):
                 count=1,
             )
         self.assertNotEqual(stale, content, "test fixture must actually change the date")
-        agents_md.write_text(stale, encoding="utf-8")
+        # Preserve LF line endings: on Windows (ADR-0.0.1 primary platform)
+        # write_text with the default newline translates every \n to \r\n,
+        # surfacing as whole-file line-ending drift that would mask the
+        # date-only change this test asserts is normalized away.
+        agents_md.write_text(stale, encoding="utf-8", newline="\n")
 
         errors = check_sync_parity(Path.cwd(), expected=_expected_surfaces)
         agents_errors = [e for e in errors if e.artifact == "AGENTS.md"]

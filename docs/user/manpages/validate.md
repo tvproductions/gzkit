@@ -1304,6 +1304,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--event-handlers` | opt-in | Every ledger event type must be claimed by a graph handler |
 | `--validator-fields` | opt-in | Every validator `info.get(field)` lookup must have a matching graph writer |
 | `--utf8-prefix` | opt-in | Forbid the `PYTHONUTF8=1`-as-`uv-run-gz`-prefix anti-pattern in docs / skills / features (GHI #275) |
+| `--line-endings` | opt-in | Fail closed on CRLF line endings in tracked text surfaces, or a `.gitattributes` missing the `* text=auto eol=lf` LF-normalization rule (GHI #570) |
 | `--test-tiers` | opt-in | Forbid a third test tier under `tests/` (`integration`, `e2e`, `slow`, `bdd`) — runner boundary is the gate |
 | `--pydantic-models` | opt-in | Governance classes use Pydantic `BaseModel` + `ConfigDict`, not `@dataclass` |
 | `--class-size` | opt-in | Classes under `src/gzkit/` ≤300 lines unless explicitly waived |

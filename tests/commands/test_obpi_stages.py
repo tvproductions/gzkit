@@ -45,9 +45,15 @@ class TestVerifyStageCommandShapeClassification(unittest.TestCase):
         with redirect_stdout(rendered), self.assertRaises(SystemExit) as ctx:
             _pipeline_verification_commands(_COMPOUND_BRIEF, "lite")
         self.assertEqual(ctx.exception.code, 1)
-        self.assertIn("Non-shell-less Verification command", rendered.getvalue())
-        self.assertIn("test -f x && echo ok", rendered.getvalue())
-        self.assertIn("Rewrite as separate single-program lines", rendered.getvalue())
+        # Rich console.print soft-wraps the BLOCKED message at the captured
+        # stream width (~80 cols for a non-tty StringIO), so the guidance can
+        # span a line break. Assert against whitespace-normalized output rather
+        # than terminal-width-dependent layout (invariant 6f: semantics, not
+        # strings).
+        normalized = " ".join(rendered.getvalue().split())
+        self.assertIn("Non-shell-less Verification command", normalized)
+        self.assertIn("test -f x && echo ok", normalized)
+        self.assertIn("Rewrite as separate single-program lines", normalized)
 
     @covers(
         "REQ-0.0.63-07-02"

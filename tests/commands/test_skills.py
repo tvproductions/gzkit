@@ -379,6 +379,7 @@ class TestSkillCommands(unittest.TestCase):
                 "gzkit.quality.run_task_envelope_coherence_audit",
                 "gzkit.quality.run_preflight",
                 "gzkit.quality.run_surface_fidelity_audit",
+                "gzkit.quality.run_line_endings_audit",
             )
             with ExitStack() as stack:
                 for target in ok_steps:

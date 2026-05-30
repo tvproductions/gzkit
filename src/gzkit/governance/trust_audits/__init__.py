@@ -70,7 +70,7 @@ from gzkit.governance.trust_audits.complexity_thresholds import (
     BOOTSTRAP_MODE_NOTICE_PREFIX,
     validate_complexity_thresholds,
 )
-from gzkit.governance.trust_audits.cross_platform import audit_utf8_prefix
+from gzkit.governance.trust_audits.cross_platform import audit_line_endings, audit_utf8_prefix
 from gzkit.governance.trust_audits.distribution import audit_distribution
 from gzkit.governance.trust_audits.doc_surface_parity import (
     audit_doc_surface_parity,
@@ -174,6 +174,7 @@ __all__ = [
     "audit_reconcile_freshness",
     "audit_router_tables",
     "audit_sensitivity_binding",
+    "audit_line_endings",
     "audit_skill_alignment",
     "audit_test_tiers",
     "audit_type_ignores",

@@ -296,6 +296,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_instructions_files_budget_audit,
         run_interviews_audit,
         run_kind_invariance_audit,
+        run_line_endings_audit,
         run_orientation_freshness_audit,
         run_parity_check,
         run_preflight,
@@ -335,6 +336,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Task envelope coherence", run_task_envelope_coherence_audit),
         ("Preflight", run_preflight),
         ("Surface fidelity", run_surface_fidelity_audit),
+        ("Line endings", run_line_endings_audit),
     ]
 
 

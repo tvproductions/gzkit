@@ -1,0 +1,22 @@
+# gzkit line-ending normalization (cross-platform.md; ADR-0.0.1; GHI #570).
+#
+# Normalize every text file to LF in the repository on all platforms,
+# regardless of a clone's local `core.autocrlf`. This is the git-layer half
+# of the cross-platform line-ending discipline; the runtime half is
+# `gz validate --line-endings` (part of `gz check`), which fails closed on
+# any committed text surface that still carries CRLF.
+* text=auto eol=lf
+
+# Binary files git must never line-ending-normalize.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.whl binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary

@@ -404,6 +404,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Forbid `PYTHONUTF8=1 uv run gz` anti-pattern in docs/skills",
     )
     p_validate.add_argument(
+        "--line-endings",
+        dest="check_line_endings",
+        action="store_true",
+        help="Fail closed on CRLF text surfaces or a missing .gitattributes LF rule",
+    )
+    p_validate.add_argument(
         "--test-tiers",
         dest="check_test_tiers",
         action="store_true",
@@ -741,6 +747,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_event_handlers=a.check_event_handlers or a.check_audits,
             check_validator_fields=a.check_validator_fields or a.check_audits,
             check_utf8_prefix=a.check_utf8_prefix,
+            check_line_endings=a.check_line_endings,
             check_test_tiers=a.check_test_tiers,
             check_pydantic_models=a.check_pydantic_models,
             check_class_size=a.check_class_size,

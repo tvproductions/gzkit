@@ -1070,6 +1070,7 @@ def _collect_errors(
     check_brief_command_shape: bool = False,
     check_tautological_test_audit: bool = False,
     check_task_envelope_coherence: bool = False,
+    check_line_endings: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -1089,6 +1090,7 @@ def _collect_errors(
     }
     # Scopes that only run when explicitly requested
     explicit_scopes: dict[str, bool] = {
+        "line_endings": check_line_endings,
         "interviews": check_interviews,
         "decomposition": check_decomposition,
         "requirements": check_requirements,
@@ -1204,6 +1206,7 @@ def _explicit_scope_runners(
         "event_handlers": lambda: trust_audits.audit_event_handlers(project_root),
         "validator_fields": lambda: trust_audits.audit_validator_fields(project_root),
         "utf8_prefix": lambda: trust_audits.audit_utf8_prefix(project_root),
+        "line_endings": lambda: trust_audits.audit_line_endings(project_root),
         "test_tiers": lambda: trust_audits.audit_test_tiers(project_root),
         "pydantic_models": lambda: trust_audits.audit_pydantic_models(project_root),
         "class_size": lambda: trust_audits.audit_class_size(project_root),
@@ -1693,6 +1696,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "event_handlers",
         "validator_fields",
         "utf8_prefix",
+        "line_endings",
         "test_tiers",
         "pydantic_models",
         "class_size",
@@ -2035,6 +2039,7 @@ def validate(
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
     as_json: bool = False,
+    check_line_endings: bool = False,
     frontmatter_adr: str | None = None,
     frontmatter_explain: str | None = None,
 ) -> None:
@@ -2074,6 +2079,7 @@ def validate(
             check_event_handlers,
             check_validator_fields,
             check_utf8_prefix,
+            check_line_endings,
             check_test_tiers,
             check_pydantic_models,
             check_class_size,
@@ -2152,6 +2158,7 @@ def validate(
         check_event_handlers=check_event_handlers,
         check_validator_fields=check_validator_fields,
         check_utf8_prefix=check_utf8_prefix,
+        check_line_endings=check_line_endings,
         check_test_tiers=check_test_tiers,
         check_pydantic_models=check_pydantic_models,
         check_class_size=check_class_size,
@@ -2221,6 +2228,7 @@ def validate(
         return
 
     checks = {
+        "line_endings": check_line_endings,
         "manifest": check_manifest,
         "documents": check_documents,
         "surfaces": check_surfaces,

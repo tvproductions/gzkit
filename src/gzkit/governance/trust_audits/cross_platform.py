@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import ast
 import re
+import subprocess
 from pathlib import Path
 
 from gzkit.validate import ValidationError
@@ -273,3 +274,148 @@ def _is_entry_point_script(tree: ast.Module) -> bool:
         if _is_print_call(node):
             has_print = True
     return has_main_guard and has_print
+
+
+# GHI #570: mechanize the CRLF/LF cross-platform hazard that recurred as one-off
+# fixes (GHIs #478, #161, #384) for want of a gate. The git layer (.gitattributes)
+# normalizes line endings to LF regardless of a clone's local core.autocrlf; the
+# outcome scan fails closed on any committed text surface that still carries CRLF.
+_GITATTRIBUTES_LF_DIRECTIVE = re.compile(r"^\s*\*\s+text=auto\s+eol=lf\b", re.MULTILINE)
+_LINE_ENDING_TEXT_SUFFIXES: frozenset[str] = frozenset(
+    {
+        ".py",
+        ".md",
+        ".json",
+        ".jsonl",
+        ".toml",
+        ".yaml",
+        ".yml",
+        ".txt",
+        ".cfg",
+        ".ini",
+        ".feature",
+    }
+)
+_LINE_ENDING_SCAN_ROOTS = (
+    "src",
+    "tests",
+    ".gzkit",
+    ".claude",
+    ".agents",
+    ".github",
+    "docs",
+    "features",
+)
+_LINE_ENDING_SKIP_DIRS: frozenset[str] = frozenset(
+    {".git", ".venv", "__pycache__", "node_modules", ".mypy_cache", ".ruff_cache"}
+)
+_GITATTRIBUTES_MISSING_MESSAGE = (
+    "Missing `.gitattributes` — add `* text=auto eol=lf` so git normalizes line "
+    "endings to LF on every platform regardless of a clone's local `core.autocrlf` "
+    "(`.gzkit/rules/cross-platform.md`; ADR-0.0.1)."
+)
+_GITATTRIBUTES_WEAK_MESSAGE = (
+    "`.gitattributes` lacks the `* text=auto eol=lf` LF-normalization directive "
+    "(`.gzkit/rules/cross-platform.md`; ADR-0.0.1)."
+)
+_CRLF_SURFACE_MESSAGE = (
+    "CRLF line endings in a text surface — normalize to LF. A `write_text`/`open` "
+    'write without `newline="\\n"` emits CRLF on Windows '
+    "(`.gzkit/rules/cross-platform.md`; ADR-0.0.1)."
+)
+
+
+def audit_line_endings(project_root: Path) -> list[ValidationError]:
+    """Enforce cross-platform LF line endings (``cross-platform.md``; GHI #570).
+
+    Two failure surfaces mechanize the CRLF/LF hazard:
+
+    * ``.gitattributes`` MUST exist and carry ``* text=auto eol=lf`` so git
+      normalizes line endings to LF on every platform regardless of a clone's
+      local ``core.autocrlf``.
+    * No tracked text surface may contain a CRLF byte sequence — the outcome a
+      stray ``write_text``/``open`` without ``newline=`` produces on Windows,
+      which then surfaces as whole-file byte drift in parity comparisons.
+    """
+    errors: list[ValidationError] = []
+    errors.extend(_check_gitattributes_lf(project_root))
+    errors.extend(_scan_crlf_surfaces(project_root))
+    return errors
+
+
+def _check_gitattributes_lf(project_root: Path) -> list[ValidationError]:
+    """Fail closed when ``.gitattributes`` is missing or omits the LF directive."""
+    path = project_root / ".gitattributes"
+    if not path.is_file():
+        return [
+            ValidationError(
+                type="line_endings",
+                artifact=".gitattributes",
+                message=_GITATTRIBUTES_MISSING_MESSAGE,
+            )
+        ]
+    try:
+        content = path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        content = ""
+    if not _GITATTRIBUTES_LF_DIRECTIVE.search(content):
+        return [
+            ValidationError(
+                type="line_endings",
+                artifact=".gitattributes",
+                message=_GITATTRIBUTES_WEAK_MESSAGE,
+            )
+        ]
+    return []
+
+
+def _git_tracked_relposix(project_root: Path) -> frozenset[str] | None:
+    """Return git-tracked paths as project-relative posix strings.
+
+    Returns ``None`` outside a git work tree (e.g. fixture temp dirs), where the
+    caller falls back to scanning every text file. Inside a repo, untracked and
+    gitignored files — runtime state such as ``.instruction-state.json`` — are
+    exempt, matching the ``runtime_state`` class doctrine (skill-surface-sync.md).
+    """
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(project_root), "ls-files", "-z"],
+            capture_output=True,
+            check=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    rels = result.stdout.decode("utf-8", "surrogateescape").split("\0")
+    return frozenset(rel for rel in rels if rel)
+
+
+def _scan_crlf_surfaces(project_root: Path) -> list[ValidationError]:
+    """Fail closed on any tracked text surface that still carries a CRLF byte."""
+    tracked = _git_tracked_relposix(project_root)
+    errors: list[ValidationError] = []
+    for rel in _LINE_ENDING_SCAN_ROOTS:
+        root = project_root / rel
+        if not root.is_dir():
+            continue
+        for path in sorted(root.rglob("*")):
+            if not path.is_file() or path.suffix.lower() not in _LINE_ENDING_TEXT_SUFFIXES:
+                continue
+            if _LINE_ENDING_SKIP_DIRS.intersection(path.parts):
+                continue
+            rel_posix = path.relative_to(project_root).as_posix()
+            if tracked is not None and rel_posix not in tracked:
+                continue
+            try:
+                data = path.read_bytes()
+            except OSError:
+                continue
+            if b"\r\n" in data:
+                errors.append(
+                    ValidationError(
+                        type="line_endings",
+                        artifact=rel_posix,
+                        message=_CRLF_SURFACE_MESSAGE,
+                    )
+                )
+    return errors
