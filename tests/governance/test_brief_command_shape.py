@@ -54,7 +54,9 @@ def _root_with_verification(verification_block: str) -> Path:
 class TestBriefCommandShapeValidator(unittest.TestCase):
     """REQ-0.0.63-07-01 / REQ-0.0.63-07-02: audit_brief_command_shape()."""
 
-    @covers("REQ-0.0.63-07-01")  # audit-exempt: regression-invariant-overlay rederived-validator-fail-closed
+    @covers(
+        "REQ-0.0.63-07-01"
+    )  # audit-exempt: regression-invariant-overlay rederived-validator-fail-closed
     def test_compound_and_command_fails_validation(self) -> None:
         """A brief with a && compound in Verification must produce a ValidationError."""
         from gzkit.governance.trust_audits.briefs import audit_brief_command_shape
@@ -84,7 +86,9 @@ class TestBriefCommandShapeValidator(unittest.TestCase):
         errors = audit_brief_command_shape(root)
         self.assertEqual(len(errors), 2, f"Expected 2 errors; got {len(errors)}: {errors}")
 
-    @covers("REQ-0.0.63-07-02")  # audit-exempt: regression-invariant-overlay rederived-validator-pass-path
+    @covers(
+        "REQ-0.0.63-07-02"
+    )  # audit-exempt: regression-invariant-overlay rederived-validator-pass-path
     def test_shell_less_commands_pass_validation(self) -> None:
         """A brief with only shell-less commands must return no errors."""
         from gzkit.governance.trust_audits.briefs import audit_brief_command_shape

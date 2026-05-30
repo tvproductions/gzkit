@@ -34,7 +34,9 @@ uv run gz validate --documents
 class TestVerifyStageCommandShapeClassification(unittest.TestCase):
     """REQ-0.0.63-07-01 / REQ-0.0.63-07-02: _pipeline_verification_commands classification."""
 
-    @covers("REQ-0.0.63-07-01")  # audit-exempt: regression-invariant-overlay rederived-verify-stage-fail-closed
+    @covers(
+        "REQ-0.0.63-07-01"
+    )  # audit-exempt: regression-invariant-overlay rederived-verify-stage-fail-closed
     def test_compound_verification_command_raises_before_dispatch(self) -> None:
         """A non-shell-less Verification command must cause SystemExit before dispatch."""
         from gzkit.commands.obpi_stages import _pipeline_verification_commands
@@ -47,7 +49,9 @@ class TestVerifyStageCommandShapeClassification(unittest.TestCase):
         self.assertIn("test -f x && echo ok", rendered.getvalue())
         self.assertIn("Rewrite as separate single-program lines", rendered.getvalue())
 
-    @covers("REQ-0.0.63-07-02")  # audit-exempt: regression-invariant-overlay rederived-shell-less-pass-path
+    @covers(
+        "REQ-0.0.63-07-02"
+    )  # audit-exempt: regression-invariant-overlay rederived-shell-less-pass-path
     def test_shell_less_verification_commands_pass_through(self) -> None:
         """Shell-less Verification commands must be returned for dispatch."""
         from gzkit.commands.obpi_stages import _pipeline_verification_commands
@@ -58,7 +62,9 @@ class TestVerifyStageCommandShapeClassification(unittest.TestCase):
             ["uv run gz check", "uv run gz validate --documents"],
         )
 
-    @covers("REQ-0.0.63-07-04")  # audit-exempt: regression-invariant-overlay bi1-shared-classifier-fence
+    @covers(
+        "REQ-0.0.63-07-04"
+    )  # audit-exempt: regression-invariant-overlay bi1-shared-classifier-fence
     def test_bi1_classifier_is_used(self) -> None:
         """BI-1: the same is_shell_less_executable from brief_commands drives classification.
 

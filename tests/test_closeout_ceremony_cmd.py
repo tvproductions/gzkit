@@ -347,7 +347,9 @@ class TestCeremonyGate5Enforcement(unittest.TestCase):
         assert state.current_step == CeremonyStep.ATTESTATION, state.current_step
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
-    @covers("REQ-0.0.63-01-01")  # audit-exempt: regression-invariant-overlay rederived-step6-no-receipt-fail-closed
+    @covers(
+        "REQ-0.0.63-01-01"
+    )  # audit-exempt: regression-invariant-overlay rederived-step6-no-receipt-fail-closed
     def test_next_at_step6_without_receipt_fail_closes(self, mock_readiness):
         """--next cannot self-advance Step 6->7 with no attested receipt (F1 bypass closed)."""
         from gzkit.commands.common import ensure_initialized, get_project_root
@@ -370,7 +372,9 @@ class TestCeremonyGate5Enforcement(unittest.TestCase):
             self.assertEqual(ledger.query(event_type="attested", artifact_id="ADR-0.1.0-f"), [])
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
-    @covers("REQ-0.0.63-01-02")  # audit-exempt: regression-invariant-overlay rederived-step6-attest-pass-path
+    @covers(
+        "REQ-0.0.63-01-02"
+    )  # audit-exempt: regression-invariant-overlay rederived-step6-attest-pass-path
     def test_attest_emits_ledger_receipt_and_crosses(self, mock_readiness):
         """--attest emits an `attested` ledger event then crosses 6->7 (pass-path)."""
         from gzkit.commands.common import ensure_initialized, get_project_root
@@ -397,7 +401,9 @@ class TestCeremonyGate5Enforcement(unittest.TestCase):
             self.assertGreaterEqual(attested[0].ts, state.started_at.replace("Z", "+00:00"))
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
-    @covers("REQ-0.0.63-01-03")  # audit-exempt: regression-invariant-overlay rederived-stale-receipt-rejected
+    @covers(
+        "REQ-0.0.63-01-03"
+    )  # audit-exempt: regression-invariant-overlay rederived-stale-receipt-rejected
     def test_stale_receipt_does_not_satisfy_gate(self, mock_readiness):
         """A prior-run `attested` event (ts < this run's started_at) fail-closes --next."""
         from gzkit.commands.common import ensure_initialized, get_project_root
