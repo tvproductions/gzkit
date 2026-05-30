@@ -4,6 +4,23 @@ parent: ADR-0.0.63-closeout-ceremony-runtime-engine-parity
 item: 7
 lane: Heavy
 status: Completed
+ln:
+  - req_id: REQ-0.0.63-07-01
+    receipt_ids:
+      - arb-step-obpi07tests-7e3ebc43a13144c0afb33cead0e3dd19
+      - arb-step-unittest-2edb5e9913c5434b81ad9b93d9159a50
+  - req_id: REQ-0.0.63-07-02
+    receipt_ids:
+      - arb-step-obpi07tests-7e3ebc43a13144c0afb33cead0e3dd19
+      - arb-step-unittest-2edb5e9913c5434b81ad9b93d9159a50
+  - req_id: REQ-0.0.63-07-03
+    receipt_ids:
+      - arb-step-obpi07tests-7e3ebc43a13144c0afb33cead0e3dd19
+      - arb-step-unittest-2edb5e9913c5434b81ad9b93d9159a50
+  - req_id: REQ-0.0.63-07-04
+    receipt_ids:
+      - arb-step-obpi07tests-7e3ebc43a13144c0afb33cead0e3dd19
+      - arb-step-unittest-2edb5e9913c5434b81ad9b93d9159a50
 ---
 
 # OBPI-0.0.63-07-verify-stage-command-shape-gate: reject non-shell-less brief Verification commands at authoring time (gz validate scope) and at the verify stage (clear failure), reusing the BI-1 classifier

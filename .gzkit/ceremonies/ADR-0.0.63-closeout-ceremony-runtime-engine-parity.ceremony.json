@@ -1,0 +1,73 @@
+{
+  "adr_id": "ADR-0.0.63-closeout-ceremony-runtime-engine-parity",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-05-30T11:12:08Z",
+  "updated_at": "2026-05-30T11:48:46Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-05-30T11:12:08Z",
+      "acknowledged_at": "2026-05-30T11:12:12Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-05-30T11:12:12Z",
+      "acknowledged_at": "2026-05-30T11:15:06Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-05-30T11:15:06Z",
+      "acknowledged_at": "2026-05-30T11:15:33Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-05-30T11:15:33Z",
+      "acknowledged_at": "2026-05-30T11:15:48Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-05-30T11:15:48Z",
+      "acknowledged_at": "2026-05-30T11:42:50Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-05-30T11:42:50Z",
+      "acknowledged_at": "2026-05-30T11:44:24Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-05-30T11:44:24Z",
+      "acknowledged_at": "2026-05-30T11:46:04Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-05-30T11:46:04Z",
+      "acknowledged_at": "2026-05-30T11:48:46Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-05-30T11:48:46Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run python -c \"from pathlib import Path; from gzkit.commands.ceremony_data import _commands_from_demo_sections; cmds = _commands_from_demo_sections([Path('tests/fixtures/ceremony_demos/multiline_demo.md')]); print(len(cmds), 'logical command(s)'); print(cmds[0])\"",
+    "uv run python3 -c \"\nfrom pathlib import Path\nfrom gzkit.commands.ceremony_data import extract_brief_metadata\nimport json\nbrief = Path('docs/design/adr/foundation/ADR-0.0.63-closeout-ceremony-runtime-engine-parity/obpis/OBPI-0.0.63-06-req-evidence-schema-consumption.md')\nmeta = extract_brief_metadata(brief)\nprint(json.dumps({'ln_entries': meta.get('ln_entries', [])}, indent=2))\n\"",
+    "uv run python3 -c \"\nfrom gzkit.commands.ceremony_steps import render_step_6_attestation\nout = render_step_6_attestation('ADR-0.0.63-closeout-ceremony-runtime-engine-parity', ln_entries=[{'req_id': 'REQ-0.0.63-06-01', 'receipt_ids': ['arb-step-unittest-abc'], 'file_lines': ['tests/governance/test_ceremony_ln_consumption.py:42']}])\nprint(out[:400])\n\"",
+    "grep -n \"ledger-consumption layer trusts Layer-1 proof\" .gzkit/skills/gz-adr-closeout-ceremony/SKILL.md",
+    "grep -n \"Independent re-verification\" .gzkit/skills/gz-adr-closeout-ceremony/SKILL.md",
+    "grep -n \"ledger-consumption layer trusts Layer-1 proof\" .claude/skills/gz-adr-closeout-ceremony/SKILL.md",
+    "uv run gz validate --surfaces",
+    "uv run -m unittest tests.governance.test_brief_command_shape",
+    "uv run python -c \"from gzkit.governance.brief_structure import ReqEvidence; print(ReqEvidence(req_id='REQ-0.0.63-03-02', receipt_ids=['arb-ruff-0978e2824deb4f95ad1608af4a72e59b'], file_lines=['src/gzkit/governance/trust_audits/closeout_proof_binding.py:1']).model_dump())\"",
+    "uv run gz validate --closeout-proof-binding",
+    "uv run -m unittest tests.test_closeout_pipeline",
+    "uv run -m unittest tests.test_closeout_ceremony_cmd"
+  ],
+  "walkthrough_index": 11,
+  "attestation": "attest completed — ADR-0.0.63 closeout-ceremony-runtime-engine-parity: 7/7 OBPIs attested; 29 Acceptance-Criteria REQs bound via ln: to passing ARB receipts, gz validate --closeout-proof-binding exit 0; fresh closeout QA green: arb-ruff-f05703d8b5c74730b3be0fb2619cda93, arb-step-unittest-4bd33eccdf254997adc0a56dfe0f017e, arb-step-typecheck-3ef794e4b89d4cc5a13863aa2276e9b9, arb-step-mkdocs-3dbefdf3c0f14c6bac637cce21f2e59b; 67 ceremony/pipeline/brief-shape tests green across 12 live demos.",
+  "completed_at": "2026-05-30T11:48:46Z",
+  "attempt": 1,
+  "paused_at": null
+}

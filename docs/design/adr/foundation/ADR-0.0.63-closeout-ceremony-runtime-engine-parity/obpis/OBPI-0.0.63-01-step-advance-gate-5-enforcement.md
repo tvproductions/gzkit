@@ -4,6 +4,19 @@ parent: ADR-0.0.63-closeout-ceremony-runtime-engine-parity
 item: 1
 lane: Heavy
 status: Completed
+ln:
+  - req_id: REQ-0.0.63-01-01
+    receipt_ids:
+      - arb-step-unittest-70435b6035a6461689534fd5834e87ba
+  - req_id: REQ-0.0.63-01-02
+    receipt_ids:
+      - arb-step-unittest-70435b6035a6461689534fd5834e87ba
+  - req_id: REQ-0.0.63-01-03
+    receipt_ids:
+      - arb-step-unittest-70435b6035a6461689534fd5834e87ba
+  - req_id: REQ-0.0.63-01-04
+    receipt_ids:
+      - arb-step-unittest-70435b6035a6461689534fd5834e87ba
 ---
 
 # OBPI-0.0.63-01-step-advance-gate-5-enforcement: **step-advance-gate-5-enforcement** — `src/gzkit/commands/closeout_ceremony.py:401, 416-426, 449-456`. Step 6→7 `--next` reads ledger for the prior step's expected receipt and fail-closes if absent. Eliminates the Gate 5 bypass.
