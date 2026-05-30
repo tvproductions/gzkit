@@ -1194,6 +1194,10 @@ exempt from signature (b). When `req_atomic` covers every REQ in the brief, the 
 entirely for that OBPI. This is the sole mechanical bypass for signature (b) — no CLI flag, env
 var, or config file can override it.
 
+**Historical bootstrap boundary:** rows at or before `2026-05-30T14:44:00+00:00` are treated as
+pre-enforcement recovery history. The validator does not rewrite ledger history; it enforces the
+three signatures prospectively after that epoch.
+
 ```bash
 gz validate --task-envelope-coherence
 ```

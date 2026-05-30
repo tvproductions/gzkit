@@ -51,6 +51,13 @@ locations and filters to files carrying `adr_id` frontmatter. That fix is
 forward-compatible with either resolution of the doctrine conflict below; it
 does not resolve the conflict itself.
 
+## Why foundation tier?
+
+Without this ADR, the project would not be the project because handoff storage
+is a governance source-of-truth boundary: agents cannot preserve intent across
+sessions if the write surface, read surface, and executable authoring API
+disagree about where audit-bearing recovery state lives.
+
 ## Decision
 
 Consolidate the handoff system to a single source of truth across doctrine,

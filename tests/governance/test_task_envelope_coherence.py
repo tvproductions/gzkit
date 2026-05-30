@@ -68,7 +68,7 @@ class TestSignatureA(unittest.TestCase):
                             "obpi_id": "OBPI-0.0.64-04",
                             "id": "evt-1",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:00:00Z",
+                            "timestamp": "2026-05-30T15:00:00Z",
                         }
                     ),
                     json.dumps(
@@ -78,7 +78,7 @@ class TestSignatureA(unittest.TestCase):
                             "session": "s1",
                             "id": "evt-2",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:01:00Z",
+                            "timestamp": "2026-05-30T15:01:00Z",
                         }
                     ),
                     json.dumps(
@@ -88,7 +88,7 @@ class TestSignatureA(unittest.TestCase):
                             "obpi_id": "OBPI-0.0.64-04",
                             "id": "evt-3",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:02:00Z",
+                            "timestamp": "2026-05-30T15:02:00Z",
                         }
                     ),
                 ],
@@ -113,7 +113,7 @@ class TestSignatureA(unittest.TestCase):
                             "obpi_id": "OBPI-0.0.64-04",
                             "id": "evt-1",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:00:00Z",
+                            "timestamp": "2026-05-30T15:00:00Z",
                         }
                     ),
                     json.dumps(
@@ -124,7 +124,7 @@ class TestSignatureA(unittest.TestCase):
                             "task_id": "TASK-0.0.64-04-01-01",
                             "id": "evt-2",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:01:00Z",
+                            "timestamp": "2026-05-30T15:01:00Z",
                         }
                     ),
                     json.dumps(
@@ -134,7 +134,7 @@ class TestSignatureA(unittest.TestCase):
                             "obpi_id": "OBPI-0.0.64-04",
                             "id": "evt-3",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:02:00Z",
+                            "timestamp": "2026-05-30T15:02:00Z",
                         }
                     ),
                 ],
@@ -159,7 +159,42 @@ class TestSignatureA(unittest.TestCase):
                             "session": "s1",
                             "id": "evt-1",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:01:00Z",
+                            "timestamp": "2026-05-30T15:01:00Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (a)" in e.message
+            ]
+            self.assertEqual(len(errors), 0)
+
+    @covers("REQ-0.0.64-04-01")
+    def test_historical_worklog_before_enforcement_epoch_is_clean(self) -> None:
+        """Pre-recovery TASK rows are bounded historical drift, not current failure."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.64-04-01-01",
+                            "obpi_id": "OBPI-0.0.64-04",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-05-30T14:43:59Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "artifact_edited",
+                            "path": "src/foo.py",
+                            "session": "s1",
+                            "id": "evt-2",
+                            "schema_": "1.0",
+                            "timestamp": "2026-05-30T14:43:59Z",
                         }
                     ),
                 ],
@@ -189,7 +224,7 @@ class TestSignatureB(unittest.TestCase):
                             "obpi_id": "OBPI-0.0.64-04",
                             "id": "evt-1",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:00:00Z",
+                            "timestamp": "2026-05-30T15:00:00Z",
                         }
                     ),
                     json.dumps(
@@ -198,7 +233,7 @@ class TestSignatureB(unittest.TestCase):
                             "receipt_event": "completed",
                             "id": "OBPI-0.0.64-04",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:10:00Z",
+                            "timestamp": "2026-05-30T15:10:00Z",
                         }
                     ),
                 ],
@@ -224,7 +259,7 @@ class TestSignatureB(unittest.TestCase):
                             "obpi_id": "OBPI-0.0.64-04",
                             "id": "evt-1",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:00:00Z",
+                            "timestamp": "2026-05-30T15:00:00Z",
                         }
                     ),
                     json.dumps(
@@ -233,7 +268,7 @@ class TestSignatureB(unittest.TestCase):
                             "receipt_event": "completed",
                             "id": "OBPI-0.0.64-04",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:10:00Z",
+                            "timestamp": "2026-05-30T15:10:00Z",
                         }
                     ),
                 ],
@@ -260,7 +295,7 @@ class TestSignatureB(unittest.TestCase):
                             "obpi_id": "OBPI-0.0.64-04",
                             "id": "evt-1",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:00:00Z",
+                            "timestamp": "2026-05-30T15:00:00Z",
                         }
                     ),
                     json.dumps(
@@ -270,7 +305,7 @@ class TestSignatureB(unittest.TestCase):
                             "obpi_id": "OBPI-0.0.64-04",
                             "id": "evt-2",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:01:00Z",
+                            "timestamp": "2026-05-30T15:01:00Z",
                         }
                     ),
                     json.dumps(
@@ -279,7 +314,42 @@ class TestSignatureB(unittest.TestCase):
                             "receipt_event": "completed",
                             "id": "OBPI-0.0.64-04",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:10:00Z",
+                            "timestamp": "2026-05-30T15:10:00Z",
+                        }
+                    ),
+                ],
+            )
+            _write_brief(root, _BASE_FM)
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (b)" in e.message
+            ]
+            self.assertEqual(len(errors), 0)
+
+    @covers("REQ-0.0.64-04-02")
+    def test_historical_completed_obpi_before_enforcement_epoch_is_clean(self) -> None:
+        """Closed pre-recovery default-bucket OBPIs do not block the prospective gate."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.64-04-01-01",
+                            "obpi_id": "OBPI-0.0.64-04",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-05-30T14:43:59Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "obpi_receipt_emitted",
+                            "receipt_event": "completed",
+                            "id": "OBPI-0.0.64-04",
+                            "schema_": "1.0",
+                            "timestamp": "2026-05-30T14:43:59Z",
                         }
                     ),
                 ],
@@ -310,7 +380,7 @@ class TestSignatureC(unittest.TestCase):
                             "obpi_id": "OBPI-0.0.64-04",
                             "id": "evt-1",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:00:00Z",
+                            "timestamp": "2026-05-30T15:00:00Z",
                         }
                     ),
                 ],
@@ -341,7 +411,7 @@ class TestSignatureC(unittest.TestCase):
                             "obpi_id": "OBPI-0.0.64-04",
                             "id": "evt-1",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:00:00Z",
+                            "timestamp": "2026-05-30T15:00:00Z",
                         }
                     ),
                 ],
@@ -370,7 +440,7 @@ class TestSignatureC(unittest.TestCase):
                             "path": "src/foo.py",
                             "id": "evt-1",
                             "schema_": "1.0",
-                            "timestamp": "2026-01-01T00:00:00Z",
+                            "timestamp": "2026-05-30T15:00:00Z",
                         }
                     ),
                 ],

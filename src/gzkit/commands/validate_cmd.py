@@ -4,6 +4,7 @@ import json
 import re
 import subprocess
 from collections.abc import Callable
+from datetime import datetime
 from pathlib import Path
 
 from pydantic import ValidationError as PydanticValidationError
@@ -549,6 +550,24 @@ _TASK_WORKLOG_TYPES: frozenset[str] = frozenset(
     }
 )
 
+# Return-to-health bootstrap boundary, recorded 2026-05-30. ADR-0.0.64's
+# validator was promoted into `gz check` after historical TASK work had already
+# emitted ledger rows without `task_id` and closed several default-bucket OBPIs.
+# Do not rewrite ledger history; enforce prospectively from this epoch.
+_TASK_ENVELOPE_ENFORCEMENT_EPOCH = datetime.fromisoformat("2026-05-30T14:44:00+00:00")
+
+
+def _task_envelope_event_before_epoch(ev: dict[str, object]) -> bool:
+    """Return True when a ledger event predates prospective TASK-envelope enforcement."""
+    raw_ts = ev.get("ts") or ev.get("timestamp")
+    if not isinstance(raw_ts, str) or not raw_ts:
+        return False
+    try:
+        observed = datetime.fromisoformat(raw_ts.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return observed <= _TASK_ENVELOPE_ENFORCEMENT_EPOCH
+
 
 def _sig_a_attribution_drift(project_root: Path) -> list[ValidationError]:
     """Signature (a) — worklog event emitted under an active TASK with no ``task_id``.
@@ -579,6 +598,8 @@ def _sig_a_attribution_drift(project_root: Path) -> list[ValidationError]:
         try:
             ev = _json.loads(line)
         except _json.JSONDecodeError:
+            continue
+        if _task_envelope_event_before_epoch(ev):
             continue
         ev_type = ev.get("event", "")
         obpi_id = ev.get("obpi_id") or ""
@@ -655,6 +676,8 @@ def _scan_ledger_for_obpi_completions_and_tasks(
         try:
             ev = _json.loads(line)
         except _json.JSONDecodeError:
+            continue
+        if _task_envelope_event_before_epoch(ev):
             continue
         ev_type = ev.get("event", "")
         if ev_type == "obpi_receipt_emitted" and ev.get("receipt_event") == "completed":

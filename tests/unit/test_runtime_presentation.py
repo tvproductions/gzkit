@@ -10,6 +10,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from rich import box
+from rich.table import Table
 
 from gzkit.traceability import covers
 
@@ -59,25 +60,39 @@ class TestStatusTables(unittest.TestCase):
 
     @covers("REQ-0.0.4-08-01")
     def test_status_tables_use_rounded_box(self):
-        """Verify status.py creates tables with ROUNDED box style."""
-        import ast
-        from pathlib import Path
+        """Verify status table rendering constructs Rich tables with ROUNDED box style."""
+        from gzkit.commands import status_render
 
-        source = Path("src/gzkit/commands/status.py").read_text(encoding="utf-8")
-        tree = ast.parse(source)
+        printed: list[object] = []
 
-        # Find all Table() calls and check none use box.ASCII
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Call):
-                func = node.func
-                if isinstance(func, ast.Name) and func.id == "Table":
-                    for kw in node.keywords:
-                        if kw.arg == "box" and isinstance(kw.value, ast.Attribute):
-                            self.assertNotEqual(
-                                kw.value.attr,
-                                "ASCII",
-                                f"Line {node.lineno}: box.ASCII",
-                            )
+        with patch.object(
+            status_render.console,
+            "print",
+            side_effect=lambda value="", *_, **__: printed.append(value),
+        ):
+            status_render._render_adr_table(
+                "Foundation ADRs",
+                [
+                    (
+                        "ADR-0.0.1",
+                        {
+                            "lane": "lite",
+                            "gates": {"2": "pass"},
+                            "obpi_summary": {
+                                "total": 0,
+                                "completed": 0,
+                                "unit_status": "unscoped",
+                            },
+                            "lifecycle_status": "Pending",
+                        },
+                    )
+                ],
+                "lite",
+            )
+
+        tables = [value for value in printed if isinstance(value, Table)]
+        self.assertGreaterEqual(len(tables), 1)
+        self.assertIs(tables[0].box, box.ROUNDED)
 
     def test_box_rounded_is_not_ascii(self):
         """Sanity check: ROUNDED uses Unicode box-drawing characters."""

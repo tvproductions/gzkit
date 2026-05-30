@@ -6,6 +6,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import inspect
 import json
 import tempfile
 import unittest
@@ -231,6 +233,10 @@ def _make_project_root(root: Path, manifest: dict | None) -> Path:
     return rules
 
 
+def _file_digest(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 class TestRunUnscopedRules(unittest.TestCase):
     """REQ-0.0.20-01-06 / -07 / -18 — end-to-end classification + exit codes."""
 
@@ -385,7 +391,7 @@ class TestReadOnlyContract(unittest.TestCase):
 
         import gzkit.validators.unscoped_rules as mod
 
-        source = Path(mod.__file__).read_text(encoding="utf-8")
+        source = inspect.getsource(mod)
         # Collect NAME and OP tokens only — ignore strings, comments, docstrings.
         code_fragments: list[str] = []
         readline = io.StringIO(source).readline
@@ -445,9 +451,9 @@ class TestAllowlistListing(unittest.TestCase):
             root = Path(tmp)
             rules = _make_project_root(root, manifest={})
             rule = _write_rule(rules, "a.md", 'paths: "src/**"\n')
-            before = rule.read_text(encoding="utf-8")
+            before = _file_digest(rule)
 
             run_unscoped_rules(root)
 
-            after = rule.read_text(encoding="utf-8")
+            after = _file_digest(rule)
             self.assertEqual(before, after)

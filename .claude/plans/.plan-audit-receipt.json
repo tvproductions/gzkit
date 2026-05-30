@@ -1,8 +1,0 @@
-{
-  "obpi_id": "OBPI-0.0.63-03-evidence-summary-and-proof-binding",
-  "timestamp": "2026-05-29T10:30:00Z",
-  "verdict": "PASS",
-  "plan_file": null,
-  "gaps_found": 0,
-  "note": "No plan file yet — plan mode required before implementation. Both CLI FAIL gaps (no plan; new file not yet created) are expected. ADR<->OBPI alignment: all 7 checks Aligned."
-}
