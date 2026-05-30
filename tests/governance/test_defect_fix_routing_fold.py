@@ -26,6 +26,13 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 BUCKET_3_ROOTS = (
     ".git/",
     ".claude/plans/",
+    # Session handoffs are historical narrative snapshots (same category as
+    # .claude/plans/ above) that legitimately quote retired path names when
+    # describing past work. ADR-0.0.65 / OBPI-0.0.65-01 canonized
+    # .gzkit/handoffs/ as their single home; before that migration these files
+    # lived under per-ADR handoffs/ dirs already exempt below (e.g. the
+    # ADR-0.0.17 root). Exempting the canonical store preserves that exemption.
+    ".gzkit/handoffs/",
     # Local git worktrees mirror the working tree under the parent repo path;
     # scanning into them creates duplicate-path false positives identical to
     # the canonical surface they shadow. Worktree contents are never source-

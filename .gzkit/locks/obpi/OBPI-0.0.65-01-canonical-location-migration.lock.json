@@ -1,0 +1,9 @@
+{
+  "obpi_id": "OBPI-0.0.65-01-canonical-location-migration",
+  "agent": "claude-code",
+  "pid": 56254,
+  "session_id": "45afd733-4f1d-4735-a260-d41626ca70f2",
+  "claimed_at": "2026-05-30T06:49:09.895860+00:00",
+  "branch": "main",
+  "ttl_minutes": 120
+}

@@ -3,7 +3,7 @@ id: OBPI-0.0.65-01-canonical-location-migration
 parent: ADR-0.0.65-handoff-system-consolidation
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.65-01-canonical-location-migration: **canonical-location-migration** — Canonize `.gzkit/handoffs/` as the single handoff write location per ADR-0.0.41. Migrate the 24 per-ADR handoff files (across 10 ADR packages) into `.gzkit/handoffs/`, preserving `continues_from:` chains and frontmatter timestamps. Amend `gz-session-handoff/SKILL.md` output-path doctrine from `{ADR-package}/handoffs/` to `.gzkit/handoffs/`. Bump `skill-version` and `last_reviewed`; run `gz agent sync control-surfaces`.
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md`
 - **Checklist Item:** #1 - "OBPI-0.0.65-01: **canonical-location-migration** — Canonize `.gzkit/handoffs/` as the single handoff write location per ADR-0.0.41. Migrate the 24 per-ADR handoff files (across 10 ADR packages) into `.gzkit/handoffs/`, preserving `continues_from:` chains and frontmatter timestamps. Amend `gz-session-handoff/SKILL.md` output-path doctrine from `{ADR-package}/handoffs/` to `.gzkit/handoffs/`. Bump `skill-version` and `last_reviewed`; run `gz agent sync control-surfaces`."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -22,6 +22,19 @@ Migrate the 24 per-ADR session handoffs into `.gzkit/handoffs/`, preserving `con
 ### Scope Amendment (2026-05-30)
 
 The skill canon amendment originally bundled into this OBPI landed as a direct fix earlier in the same session — `.gzkit/skills/gz-session-handoff/SKILL.md` output-path doctrine has been amended (skill-version bumped 6.3.1 → 6.4.0, `last_reviewed` bumped to 2026-05-30, mirrors regenerated via `gz agent sync control-surfaces`). This OBPI's Allowed Paths no longer include SKILL.md; the Requirements that referenced the amendment (#5, #6, #7) are preserved as non-regression assertions verified by the post-migration test pass. See the `fix(skill):` commit on this session's HEAD for the amendment evidence.
+
+**Duplicate-source dedup (operator decision 2026-05-30).** One of the 24 legacy
+sources — `docs/design/adr/pre-release/ADR-0.28.0-focused-context-loader/handoffs/20260524T181428Z-obpi-01-context-core-green.md`
+— is **byte-identical** (sha256 `8bcf0c52…`) to a file already present in the
+canonical store (`.gzkit/handoffs/20260524T181428Z-obpi-01-context-core-green.md`,
+landed in commit `e639710a`). It is an artifact of an earlier ad-hoc partial
+migration, not a distinct handoff. Per operator decision it is removed from the
+source tree as a dedup (`git rm`) rather than migrated, so the canonical store
+gains **23** relocated handoffs, not 24, and the distinct post-migration total is
+**34** (11 pre-existing + 23 migrated), not 35. A same-name source whose content
+*differed* from the canonical copy would be a fail-closed collision (REQ #9
+STOP-on-BLOCKERS); only the byte-identical case is auto-deduped. The migration is
+performed by `scripts/migrate_handoffs.py` (REQ #6 reusable migration logic).
 
 ## Lane
 
@@ -100,7 +113,7 @@ The skill canon amendment originally bundled into this OBPI landed as a direct f
 **Prerequisites (check existence, STOP if missing):**
 
 - [ ] Parent ADR exists: `docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md`
-- [ ] Destination directory exists: `.gzkit/handoffs/` (currently 11 files + `AGENTS.md`; will hold 35 `*.md` files + `AGENTS.md` after migration)
+- [ ] Destination directory exists: `.gzkit/handoffs/` (currently 11 files + `AGENTS.md`; will hold 34 `*.md` files + `AGENTS.md` after migration — 23 migrated, 1 source deduped)
 - [ ] Source directories exist: `docs/design/adr/foundation/*/handoffs/` (6 packages, 16 files) and `docs/design/adr/pre-release/*/handoffs/` (4 packages, 8 files) — total 24 files for migration
 - [ ] ADR-0.0.41 is readable: anchors the `.gzkit/handoffs/` canonical-location doctrine the operator decision honors
 - [ ] `.gzkit/rules/token-block-discipline.md` is readable: line 112 names `.gzkit/handoffs/` as canonical storage per ADR-0.0.41 § token-block-discipline
@@ -198,7 +211,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
 - [ ] REQ-0.0.65-01-01 [BEHAVIOR]: After this OBPI, zero `.md` files exist under `docs/design/adr/**/handoffs/` (the per-ADR source surface is empty). Asserted by `@covers("REQ-0.0.65-01-01")` in `tests/governance/test_handoff_migration.py` via `pathlib.Path("docs/design/adr").rglob("handoffs/*.md")` returning an empty iterator.
-- [ ] REQ-0.0.65-01-02 [BEHAVIOR]: After this OBPI, exactly 35 `.md` files exist under `.gzkit/handoffs/` excluding `AGENTS.md` (11 pre-existing + 24 migrated). Asserted by `@covers("REQ-0.0.65-01-02")` in `tests/governance/test_handoff_migration.py` via filtered glob count.
+- [ ] REQ-0.0.65-01-02 [BEHAVIOR]: After this OBPI, exactly 34 `.md` files exist under `.gzkit/handoffs/` excluding `AGENTS.md` (11 pre-existing + 23 migrated; the 24th legacy source was a byte-identical duplicate removed as a dedup — see § Scope Amendment). Asserted by `@covers("REQ-0.0.65-01-02")` in `tests/governance/test_handoff_migration.py` via filtered glob count.
 - [ ] REQ-0.0.65-01-03 [BEHAVIOR]: Every `continues_from:` frontmatter pointer in a `.gzkit/handoffs/*.md` file resolves to an existing file in `.gzkit/handoffs/` (chain integrity preserved across migration). Asserted by `@covers("REQ-0.0.65-01-03")` in `tests/governance/test_handoff_migration.py` via frontmatter parse + `Path.is_file()`.
 - [ ] REQ-0.0.65-01-04 [BEHAVIOR]: `.gzkit/skills/gz-session-handoff/SKILL.md` contains zero occurrences of the literal string `{ADR-package}/handoffs/` after the amendment. Asserted by `@covers("REQ-0.0.65-01-04")` in `tests/governance/test_handoff_migration.py` via file read + substring count.
 - [ ] REQ-0.0.65-01-05 [SUPPORT]: `.gzkit/skills/gz-session-handoff/SKILL.md` `skill-version` is bumped per the skill-surface-sync rule and mirror surfaces under `.claude/skills/`, `.agents/skills/`, `.github/skills/` regenerate byte-identical to canon — `gz validate --surfaces` clean + `agent_sync_completed` event emitted by `uv run gz agent sync control-surfaces`.
@@ -261,15 +274,21 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+Command: uv run -m unittest tests.governance.test_handoff_migration -v
+Output: 4 tests pass (test_no_per_adr_handoffs_remain, test_canonical_store_holds_expected_count, test_continues_from_chains_resolve, test_skill_canon_has_no_per_adr_write_path) -- Ran 4 tests, OK. Receipt arb-step-unittest-226226b6fbac46aa91e3c2c1c4d7d67d. Confirms: 0 per-ADR residual handoffs, 34 canonical handoffs, all continues_from: pointers resolve, SKILL.md free of {ADR-package}/handoffs/ literal.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Migration: 23 per-ADR handoffs relocated docs/design/adr/**/handoffs/ -> .gzkit/handoffs/ via git mv (rename detection preserved); 1 byte-identical duplicate (ADR-0.28.0, sha 8bcf0c52) removed via git rm per operator dedup decision
+- Chain integrity: 10 continues_from: pointers rewritten from per-ADR paths to .gzkit/handoffs/ paths
+- Cleanup: 9 emptied handoffs/ directories removed; zero residual .md under docs/design/adr/**/handoffs/; canonical store holds 34 distinct handoffs (11 pre-existing + 23 migrated)
+- Reusable logic: scripts/migrate_handoffs.py (idempotent; fail-closed on differing-content name collision per REQ-09 STOP-on-BLOCKERS)
+- Tests: tests/governance/test_handoff_migration.py (4 @covers BEHAVIOR tests, REQ-01..04)
+- Gate 4: behave waiver added (filesystem migration; no Gherkin-observable runtime surface)
+- Date completed: 2026-05-30
+- Attestation status: operator-verbatim ("attest completed")
 
 ## Tracked Defects
 
@@ -280,12 +299,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.65-01 canonical-location-migration verified: 23 legacy per-ADR handoffs relocated to .gzkit/handoffs/ via git mv, 1 byte-identical duplicate deduped, 10 continues_from: chains rewritten, 9 empty source dirs removed; 34 canonical handoffs, zero per-ADR residuals. Full suite GREEN 5754/5754 (arb-step-unittest-b19d71ee861c4382a6d7a468c9f4424b), lint clean (arb-ruff-d202b65d48094be0b894ccaf714a0add), typecheck clean (arb-step-typecheck-b195fe0e99df4d8e90078748b5055bb6), mkdocs clean (arb-step-mkdocs-e3dea388f8d64e7c9dd74148dd793140); gz validate --documents/--surfaces clean; SUPPORT REQ-05 proven via agent_sync_completed ledger event + gz validate --surfaces. Two coupled-surface fixes landed in-flight: insights schema (evidence as list) and the defect-fix-routing fold test (exempt .gzkit/handoffs/ as historical narrative). Attestor: g0, 2026-05-30.
+- Date: 2026-05-30
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-05-30
 
 **Evidence Hash:** -

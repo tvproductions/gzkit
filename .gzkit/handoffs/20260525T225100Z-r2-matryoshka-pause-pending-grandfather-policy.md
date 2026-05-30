@@ -6,7 +6,7 @@ timestamp: "2026-05-25T22:51:00Z"
 agent: claude-code
 obpi_id: OBPI-0.0.54-03-agents-md-map-conformance-validator
 session_id: b6242215-bbe4-4b36-a491-89dfd581810b
-continues_from: docs/design/adr/foundation/ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine/handoffs/20260525T180500Z-r1-expansion-task-2.5-complete.md
+continues_from: .gzkit/handoffs/20260525T180500Z-r1-expansion-task-2.5-complete.md
 ---
 
 <!-- Handoff for OBPI-0.0.54-03 — created by claude-code at 2026-05-25T22:51:00Z after a multi-hour session that drove the OBPI through Tasks 2.6, 2.7, 3, 4, hit Stage 3 verify, and surfaced a corpus-wide documents-validator drift that exceeds OBPI scope. Operator invoked "rehydration because of context window" + "DO IT RIGHT" — this handoff is the rehydration artifact. -->

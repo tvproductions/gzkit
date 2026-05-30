@@ -6,7 +6,7 @@ timestamp: "2026-03-20T12:03:00Z"
 agent: claude-code
 obpi_id: OBPI-0.18.0-01
 session_id:
-continues_from: docs/design/adr/pre-release/ADR-0.18.0-subagent-driven-pipeline-execution/handoffs/20260320T000000Z-pause-for-task-governance.md
+continues_from: .gzkit/handoffs/20260320T000000Z-pause-for-task-governance.md
 ---
 
 <!-- Handoff document for ADR-0.18.0 — created by claude-code at 2026-03-20T12:03:00Z -->

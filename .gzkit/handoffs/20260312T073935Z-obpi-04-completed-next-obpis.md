@@ -6,7 +6,7 @@ timestamp: "2026-03-12T07:39:35Z"
 agent: codex
 obpi_id: OBPI-0.11.0-04-anchor-aware-obpi-drift-and-reconciliation
 session_id:
-continues_from: docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/handoffs/20260312T070240Z-obpi-03-completed-next-obpis.md
+continues_from: .gzkit/handoffs/20260312T070240Z-obpi-03-completed-next-obpis.md
 ---
 
 ## Current State Summary

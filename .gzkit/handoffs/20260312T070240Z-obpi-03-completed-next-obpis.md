@@ -6,7 +6,7 @@ timestamp: "2026-03-12T07:02:40Z"
 agent: codex
 obpi_id: OBPI-0.11.0-03-obpi-completion-recorder-and-anchor-receipts
 session_id:
-continues_from: docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/handoffs/20260311T105251Z-obpi-02-completed-next-obpis.md
+continues_from: .gzkit/handoffs/20260311T105251Z-obpi-02-completed-next-obpis.md
 ---
 
 ## Current State Summary

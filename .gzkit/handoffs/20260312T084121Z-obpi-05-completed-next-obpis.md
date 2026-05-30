@@ -6,7 +6,7 @@ timestamp: "2026-03-12T08:41:21Z"
 agent: codex
 obpi_id: OBPI-0.11.0-05-gz-obpi-pipeline-skill-and-mirror-surface
 session_id:
-continues_from: docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/handoffs/20260312T073935Z-obpi-04-completed-next-obpis.md
+continues_from: .gzkit/handoffs/20260312T073935Z-obpi-04-completed-next-obpis.md
 ---
 
 ## Current State Summary
