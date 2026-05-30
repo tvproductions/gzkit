@@ -5,9 +5,9 @@ description: Promote a pool ADR into canonical ADR package structure. Use when m
 category: adr-lifecycle
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-21
+last_reviewed: 2026-05-30
 metadata:
-  skill-version: "1.4.2"
+  skill-version: "1.5.0"
 model: sonnet
 ---
 
@@ -25,7 +25,7 @@ Operate the gz adr promote command surface to transition pool (backlog) ADRs int
     *   **Step 1: Baseline Structural Template (Rule of Three)**: Scaffold into three baseline layers (Registry, Core Execution, and Lifecycle/Operations).
     *   **Step 2: Refining Overlay (Matrix of Four)**: Apply the four core principles (Single-Narrative, Testability Ceiling, State Anchor, Surface Boundary) to each baseline unit. If a unit violates a principle, it MUST be further decomposed.
     *   **1:1 Synchronization**: The resulting Feature Checklist in the promoted ADR MUST remain in 1:1 synchronization with the generated OBPI brief files. No drift is permitted.
-    *   Promotion is fail-closed unless the pool ADR already contains actionable `## Target Scope` bullets (or a `## Proposed OBPI Decomposition` table — see Slug Source Contract below).
+    *   Promotion is fail-closed unless the pool ADR contains an actionable `## Target Scope` section. When a `## Proposed OBPI Decomposition` table is also present, it is the preferred slug source (see Slug Source Contract below) — but it **supplements, not replaces**, `## Target Scope`. The Target Scope section is always required: it is preserved verbatim into the promoted ADR as the narrative scope.
 
 ### Slug Source Contract (GHI #241)
 
