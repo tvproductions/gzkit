@@ -16,6 +16,7 @@ from io import StringIO
 from pathlib import Path
 from typing import Any
 
+import yaml
 from rich.console import Console
 
 from gzkit.brief_commands import extract_fenced_commands
@@ -29,6 +30,32 @@ _MANPAGE_INLINE_RE = re.compile(rf"`({re.escape(_MANPAGE_DIR_POSIX)}/(\S+?)\.md)
 # ---------------------------------------------------------------------------
 # Brief metadata extraction
 # ---------------------------------------------------------------------------
+
+
+def _parse_ln_entries(fm_lines: list[str]) -> list[dict[str, Any]]:
+    """Parse the structured ``ln:`` proof-binding entries from frontmatter lines.
+
+    YAML-parsed (OBPI-0.0.63-06) so nested list-of-dicts surfaces for downstream
+    attestation rendering. Malformed YAML falls through to an empty list rather
+    than raising on a governance-critical ceremony render path.
+    """
+    try:
+        fm = yaml.safe_load("\n".join(fm_lines)) or {}
+    except yaml.YAMLError:
+        return []
+    if not isinstance(fm, dict):
+        return []
+    entries: list[dict[str, Any]] = []
+    for entry in fm.get("ln") or []:
+        if isinstance(entry, dict):
+            entries.append(
+                {
+                    "req_id": entry.get("req_id", ""),
+                    "receipt_ids": list(entry.get("receipt_ids") or []),
+                    "file_lines": list(entry.get("file_lines") or []),
+                }
+            )
+    return entries
 
 
 def extract_brief_metadata(obpi_file: Path) -> dict[str, Any]:
@@ -47,20 +74,24 @@ def extract_brief_metadata(obpi_file: Path) -> dict[str, Any]:
         "status": "",
         "lane": "",
         "acceptance_criteria": [],
+        "ln_entries": [],
         "path": str(obpi_file),
     }
 
     # Frontmatter
     if lines and lines[0].strip() == "---":
+        fm_lines: list[str] = []
         for line in lines[1:]:
             if line.strip() == "---":
                 break
+            fm_lines.append(line)
             if line.startswith("id:"):
                 meta["id"] = line.split(":", 1)[1].strip()
             elif line.startswith("status:"):
                 meta["status"] = line.split(":", 1)[1].strip()
             elif line.startswith("lane:"):
                 meta["lane"] = line.split(":", 1)[1].strip()
+        meta["ln_entries"] = _parse_ln_entries(fm_lines)
 
     # Title from first # heading, strip OBPI-ID prefix
     for line in lines:

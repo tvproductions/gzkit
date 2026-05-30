@@ -243,7 +243,7 @@ def render_step_5_execute(
     )
 
 
-def render_step_6_attestation(adr_id: str) -> str:
+def render_step_6_attestation(adr_id: str, ln_entries: list[dict[str, Any]] | None = None) -> str:
     """Request attestation — supports R&R dialogue.
 
     Prompt ordering honors the gz-adr-closeout-ceremony skill Step 5
@@ -252,11 +252,35 @@ def render_step_6_attestation(adr_id: str) -> str:
     previous prompt listed operator moves first and closed with "I
     await your decision", which read as an operator-driven pattern
     and contradicted the skill's proactive-evidence directive.
+
+    When ``ln_entries`` is non-empty (OBPI-0.0.63-06), a REQ↔receipt binding
+    table is rendered from the brief's ``ln:`` field so the operator sees
+    which REQs are bound to which receipts before attesting. An empty list
+    renders no table — an unbound closeout must not show a blank table.
     """
-    return "\n".join(
+    lines = [
+        "ATTESTATION — Your Verdict",
+        "",
+    ]
+
+    if ln_entries:
+        lines.extend(
+            [
+                "REQ↔Receipt Binding (from brief `ln:` field):",
+                "",
+                "| REQ | Receipt IDs | File Lines |",
+                "|-----|-------------|------------|",
+            ]
+        )
+        for entry in ln_entries:
+            req_id = entry.get("req_id", "")
+            receipts = ", ".join(entry.get("receipt_ids") or []) or "(none)"
+            files = ", ".join(entry.get("file_lines") or [])
+            lines.append(f"| {req_id} | {receipts} | {files} |")
+        lines.append("")
+
+    lines.extend(
         [
-            "ATTESTATION — Your Verdict",
-            "",
             "The walkthrough is complete. Per the gz-adr-closeout-ceremony",
             "skill Step 5 contract, the agent will now present the structured",
             "Evidence Summary (see the skill template). Once you have the",
@@ -280,6 +304,7 @@ def render_step_6_attestation(adr_id: str) -> str:
             "the operator's decision.",
         ]
     )
+    return "\n".join(lines)
 
 
 def render_step_7_closeout(adr_id: str) -> str:

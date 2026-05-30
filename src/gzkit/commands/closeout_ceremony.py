@@ -8,16 +8,27 @@ future steps.
 GHI #110: Step-by-step redesign from walkthrough analysis.
 """
 
-import json
-import re
-from datetime import UTC, datetime
-from enum import IntEnum
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
-
-from gzkit.commands.ceremony_data import discover_demo_commands
+from gzkit.commands.ceremony_data import discover_demo_commands, extract_brief_metadata
+from gzkit.commands.ceremony_state import (
+    CeremonyState,
+    CeremonyStep,
+    CeremonyStepRecord,
+    _classify_attestation_verdict,
+    _cleanup_hook_files,
+    _has_more_demos,
+    _is_foundation_adr,
+    _next_step,
+    _now_iso,
+    _output,
+    _write_turn_lock,
+    ceremony_state_path,  # noqa: F401  re-export for closeout.py
+    load_ceremony_state,
+    save_ceremony_state,
+)
 from gzkit.commands.ceremony_steps import (
     render_step_1_readiness,
     render_step_2_summary,
@@ -45,137 +56,6 @@ from gzkit.commands.status import (
     _collect_obpi_files_for_adr,
 )
 from gzkit.ledger import Ledger, resolve_adr_lane
-
-# ---------------------------------------------------------------------------
-# Step enum
-# ---------------------------------------------------------------------------
-
-
-class CeremonyStep(IntEnum):
-    """Ceremony steps matching the audit-protocol.md ceremony."""
-
-    INITIALIZE = 1
-    SUMMARY = 2
-    DOCS_CHECK = 3
-    WALKTHROUGH = 4
-    EXECUTE = 5
-    ATTESTATION = 6
-    CLOSEOUT = 7
-    ISSUES = 8
-    RELEASE_NOTES = 9
-    RELEASE = 10
-    COMPLETE = 11
-
-
-FOUNDATION_SKIP_STEPS: frozenset[int] = frozenset(
-    {
-        CeremonyStep.RELEASE_NOTES,
-        CeremonyStep.RELEASE,
-    }
-)
-
-
-# ---------------------------------------------------------------------------
-# Pydantic models
-# ---------------------------------------------------------------------------
-
-
-class CeremonyStepRecord(BaseModel):
-    """One step's presentation/acknowledgment timestamps."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    step: int = Field(..., description="Step number")
-    presented_at: str = Field(..., description="ISO-8601 timestamp")
-    acknowledged_at: str | None = Field(None, description="ISO-8601 timestamp")
-
-
-class CeremonyState(BaseModel):
-    """Persistent ceremony state stored in .gzkit/ceremonies/."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    adr_id: str = Field(..., description="Canonical ADR ID")
-    current_step: int = Field(..., description="Current step number")
-    is_foundation: bool = Field(..., description="0.0.x foundation ADR")
-    started_at: str = Field(..., description="ISO-8601 timestamp")
-    updated_at: str = Field(..., description="ISO-8601 timestamp")
-    step_history: list[CeremonyStepRecord] = Field(default_factory=list, description="Step records")
-    walkthrough_commands: list[str] = Field(default_factory=list, description="Commands for Step 5")
-    walkthrough_index: int = Field(0, description="Current command index in Step 5")
-    attestation: str | None = Field(None, description="Human attestation text")
-    completed_at: str | None = Field(None, description="ISO-8601 when ceremony finished")
-    attempt: int = Field(1, description="R&R attempt number")
-    paused_at: str | None = Field(None, description="ISO-8601 when paused for revision")
-
-
-# ---------------------------------------------------------------------------
-# State I/O
-# ---------------------------------------------------------------------------
-
-
-def _now_iso() -> str:
-    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-
-def _ceremony_dir(project_root: Path) -> Path:
-    return project_root / ".gzkit" / "ceremonies"
-
-
-def ceremony_state_path(project_root: Path, adr_id: str) -> Path:
-    """Return the ceremony state file path for an ADR."""
-    return _ceremony_dir(project_root) / f"{adr_id}.ceremony.json"
-
-
-def _turn_lock_path(project_root: Path, adr_id: str) -> Path:
-    return _ceremony_dir(project_root) / f"{adr_id}.turn-lock"
-
-
-def _hook_state_path(project_root: Path, adr_id: str) -> Path:
-    return _ceremony_dir(project_root) / f"{adr_id}.hook-state.json"
-
-
-def load_ceremony_state(project_root: Path, adr_id: str) -> CeremonyState | None:
-    """Load ceremony state from disk, or None if not started."""
-    path = ceremony_state_path(project_root, adr_id)
-    if not path.is_file():
-        return None
-    return CeremonyState.model_validate_json(path.read_text(encoding="utf-8"))
-
-
-def save_ceremony_state(project_root: Path, state: CeremonyState) -> None:
-    """Persist ceremony state atomically."""
-    d = _ceremony_dir(project_root)
-    d.mkdir(parents=True, exist_ok=True)
-    path = ceremony_state_path(project_root, state.adr_id)
-    path.write_text(state.model_dump_json(indent=2) + "\n", encoding="utf-8")
-
-
-def _write_turn_lock(project_root: Path, adr_id: str, step: int) -> None:
-    d = _ceremony_dir(project_root)
-    d.mkdir(parents=True, exist_ok=True)
-    lock = _turn_lock_path(project_root, adr_id)
-    lock.write_text(json.dumps({"presented_step": step}) + "\n", encoding="utf-8")
-
-
-def _is_foundation_adr(adr_id: str) -> bool:
-    return re.match(r"^ADR-0\.0\.\d+(?:[.-].*)?$", adr_id) is not None
-
-
-# ---------------------------------------------------------------------------
-# Step transitions
-# ---------------------------------------------------------------------------
-
-
-def _next_step(current: int, is_foundation: bool) -> int:
-    """Return the next valid step, skipping foundation-excluded steps."""
-    candidate = current + 1
-    while is_foundation and candidate in FOUNDATION_SKIP_STEPS:
-        candidate += 1
-    if candidate > CeremonyStep.COMPLETE:
-        return -1
-    return candidate
-
 
 # ---------------------------------------------------------------------------
 # Ceremony context (shared across renderers)
@@ -252,7 +132,10 @@ def _present_step(
             state.walkthrough_index,
         )
     if step == CeremonyStep.ATTESTATION:
-        return render_step_6_attestation(adr_id)
+        ln_entries: list[dict[str, Any]] = []
+        for f in obpi_files:
+            ln_entries.extend(extract_brief_metadata(f).get("ln_entries", []))
+        return render_step_6_attestation(adr_id, ln_entries=ln_entries)
     if step == CeremonyStep.CLOSEOUT:
         return render_step_7_closeout(adr_id)
     if step == CeremonyStep.ISSUES:
@@ -337,12 +220,6 @@ def _initialize_ceremony(
     _output(as_json, state, output)
 
 
-def _has_more_demos(state: CeremonyState) -> bool:
-    """Return ``True`` when Step 5 has an unpresented demo after ``walkthrough_index``."""
-    commands = state.walkthrough_commands
-    return bool(commands) and state.walkthrough_index < len(commands) - 1
-
-
 def _advance_demo_index(
     project_root: Path,
     state: CeremonyState,
@@ -366,22 +243,6 @@ def _advance_demo_index(
     _output(as_json, new_state, output)
 
 
-def _classify_attestation_verdict(text: str) -> tuple[str, str | None]:
-    """Map a ceremony attestation string to ``(status, reason)`` for the ledger.
-
-    Mirrors ``closeout.py``'s canonical ``_parse_ceremony_attestation_text``; kept
-    inline because ``closeout.py`` imports from this module (importing back is
-    circular) and is outside this OBPI's scope. OBPI-0.0.63-05 (dual-runtime
-    collapse) unifies these emission paths under BI-2.
-    """
-    head = text.strip().lower()[:120]
-    if "dropped" in head:
-        return "dropped", text.strip()
-    if "partial" in head:
-        return "partial", text.strip()
-    return "completed", None
-
-
 def _has_fresh_attestation_receipt(project_root: Path, state: CeremonyState) -> bool:
     """Return ``True`` iff an ``attested`` ledger event for this ADR was emitted
     during the current ceremony run (event ``ts`` >= the run's ``started_at``).
@@ -398,6 +259,35 @@ def _has_fresh_attestation_receipt(project_root: Path, state: CeremonyState) -> 
     run_start = datetime.fromisoformat(state.started_at)
     events = ledger.query(event_type="attested", artifact_id=state.adr_id)
     return any(datetime.fromisoformat(event.ts) >= run_start for event in events)
+
+
+def _gate_proof_binding(project_root: Path, state: CeremonyState) -> None:
+    """Fail-close EXECUTE -> ATTESTATION when proof binding is incomplete (OBPI-0.0.63-06).
+
+    Only fires at the EXECUTE -> ATTESTATION transition edge: an in-progress
+    closeout whose Acceptance-Criteria REQs have no ledger-present receipt
+    bindings must not advance to the attestation step. No-op for every other
+    step. Mirrors the scope discipline of ``_gate_attestation_boundary``.
+    """
+    if state.current_step != CeremonyStep.EXECUTE:
+        return
+    from gzkit.governance.trust_audits.closeout_proof_binding import (
+        validate_closeout_proof_binding,
+    )
+
+    errors = validate_closeout_proof_binding(project_root)
+    if not errors:
+        return
+    from gzkit.core.exceptions import PolicyBreachError
+
+    unbound = [e.message for e in errors[:5]]
+    raise PolicyBreachError(
+        "EXECUTE -> ATTESTATION transition blocked: proof binding incomplete.\n"
+        + "\n".join(f"  {m}" for m in unbound)
+        + (f"\n  ... and {len(errors) - 5} more" if len(errors) > 5 else "")
+        + "\nFix the brief's `ln:` field to bind each REQ to a ledger-present "
+        "receipt-ID, then retry."
+    )
 
 
 def _gate_attestation_boundary(project_root: Path, state: CeremonyState) -> None:
@@ -439,7 +329,11 @@ def _commit_advance(
     The single shared advance path for both ``--next`` and ``--attest`` (BI-3):
     the Step 6 -> 7 edge is ledger-gated here, so neither path can walk past the
     human-attestation boundary without a fresh ``attested`` receipt.
+
+    The EXECUTE -> ATTESTATION edge is additionally proof-binding-gated
+    (OBPI-0.0.63-06): an unbound closeout cannot advance to attestation.
     """
+    _gate_proof_binding(project_root, state)
     _gate_attestation_boundary(project_root, state)
 
     history = list(state.step_history)
@@ -611,32 +505,6 @@ def _show_status(project_root: Path, adr_id: str, as_json: bool) -> None:
         )
         if state.attestation:
             console.print(f"  Attestation: {state.attestation}")
-
-
-def _cleanup_hook_files(project_root: Path, adr_id: str) -> None:
-    """Remove turn-lock and hook-state files after ceremony completes."""
-    for path in (_turn_lock_path(project_root, adr_id), _hook_state_path(project_root, adr_id)):
-        if path.exists():
-            path.unlink()
-
-
-def _output(as_json: bool, state: CeremonyState, text: str) -> None:
-    """Print output in the requested format."""
-    if as_json:
-        print(
-            json.dumps(
-                {
-                    "adr_id": state.adr_id,
-                    "step": state.current_step,
-                    "content": text,
-                    "completed": state.completed_at is not None,
-                    "attempt": state.attempt,
-                },
-                indent=2,
-            )
-        )
-    else:
-        console.print(text)
 
 
 # ---------------------------------------------------------------------------

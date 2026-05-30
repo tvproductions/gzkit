@@ -25,7 +25,7 @@ _EXPECTED_VERSIONS: dict[str, str] = {
     "gz-plan": "1.3.2",
     "gz-adr-create": "6.5.0",
     "gz-design": "1.3.1",
-    "gz-adr-promote": "1.4.2",
+    "gz-adr-promote": "1.5.0",
 }
 
 
