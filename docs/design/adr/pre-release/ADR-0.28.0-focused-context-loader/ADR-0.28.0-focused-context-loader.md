@@ -13,11 +13,11 @@ promoted_from: ADR-pool.focused-context-loader
 
 ## Persona
 
-Craftsperson; governance-aware; treats per-turn context budget as the scarce resource the
-five-move recovery plan (`docs/governance/get-out-of-jail-plan-2026-05-23.md`) was designed
-to defend. Builds a single-purpose loader rather than a configurable framework. Resists
-the temptation to bundle adjacent context-management ideas (`prime-context-hooks`,
-`progressive-context-disclosure`) into this scope.
+Craftsperson; governance-aware; treats per-turn context budget as the scarce resource
+that focused ADR context is designed to defend. Builds a single-purpose loader rather
+than a configurable framework. Resists the temptation to bundle adjacent
+context-management ideas (`prime-context-hooks`, `progressive-context-disclosure`)
+into this scope.
 
 ## Intent
 
@@ -196,10 +196,9 @@ Promotion derived from `ADR-pool.focused-context-loader` on 2026-05-24; executab
 5. **Auto-inject context into agent sessions via hook** — rejected as out-of-scope per
    the pool ADR's Non-Goals. That work lives in `ADR-pool.prime-context-hooks`; this
    ADR delivers the payload, not the injection mechanism.
-6. **Keep this work in the pool backlog until reprioritized** — rejected. The
-   get-out-of-jail recovery plan (`docs/governance/get-out-of-jail-plan-2026-05-23.md`)
-   identifies this as Move 2, blocking Move 3 (AGENTS.md shrink). Deferral would extend
-   the recovery timeline beyond 14 days.
+6. **Keep this work in the pool backlog until reprioritized** — rejected. Focused
+   ADR context was needed to reduce always-loaded recovery context. Deferral would
+   have extended the recovery timeline.
 
 ## Attestation Block
 

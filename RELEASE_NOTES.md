@@ -27,7 +27,7 @@ All applicable gates satisfied for the Lite-lane feature closeout:
 - **#528** — `gz-session-handoff` skill and orientation hook disagree on location. Surfaced during OBPI-0.28.0-01 handoff authoring when the operator asked whether the handoff system could be used for the recovery plan. The skill writes to `docs/design/adr/.../handoffs/` while `scripts/session_orientation.py` reads `.gzkit/handoffs/`. T1→T2 doctrine drift.
 - **#529** — Handoff system not wired into OBPI pipeline; no `gz handoff` CLI verb. Sibling-cut of #528 — the skill, template, staleness classifier, chain traversal, and Pydantic validation all exist, but no pipeline stage invokes them and no top-level CLI verb registers them.
 
-Both deferred per `docs/governance/get-out-of-jail-plan-2026-05-23.md` § anti-temptation #6; future routing target `ADR-pool.handoff-system-pipeline-integration` (to be authored post-recovery). Not closed by this closeout — dead-letter discipline forbids closing without a real registered destination.
+Both deferred per the current recovery posture in `docs/governance/return-to-health-plan-2026-05-30.md`; future routing target `ADR-pool.handoff-system-pipeline-integration` (to be authored post-recovery). Not closed by this closeout — dead-letter discipline forbids closing without a real registered destination.
 
 ### Stats
 

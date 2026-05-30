@@ -93,6 +93,6 @@ gz adr demote ADR-0.42.0 --ghi 520 --on-collision keep-pool
 ## See Also
 
 - `gz adr promote` — the forward inverse motion.
-- `docs/governance/get-out-of-jail-plan-2026-05-23.md` § Prequel (Day 0) — the canonical destination doc.
+- `docs/governance/return-to-health-plan-2026-05-30.md` — the current recovery plan; the prior emergency plan was removed.
 - GHI [#520](https://github.com/tvproductions/gzkit/issues/520) — the 24-ADR sweep this verb enables.
 - GHI [#521](https://github.com/tvproductions/gzkit/issues/521) — the tracking GHI for this verb's authoring.

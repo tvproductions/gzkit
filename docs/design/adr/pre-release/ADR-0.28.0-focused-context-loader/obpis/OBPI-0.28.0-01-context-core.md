@@ -149,8 +149,8 @@ uv run -m unittest tests.commands.test_context_cmd -v
 > Repo-wide `gz validate --documents` is intentionally NOT listed here. Pre-existing
 > foundation-ADR schema drift (status `Validated` not in enum; missing Decomposition
 > Scorecard / Checklist / Evidence sections on ADR-0.0.7, ADR-0.0.8, ADR-0.0.9) is
-> tracked by GHI #527 and recovery-deferred per the get-out-of-jail plan
-> (`docs/governance/get-out-of-jail-plan-2026-05-23.md` § anti-temptation #6). The
+> tracked by GHI #527 and recovery-deferred per the current recovery posture in
+> `docs/governance/return-to-health-plan-2026-05-30.md`. The
 > OBPI's own surface validation is covered by `gz obpi validate --authored` (run at
 > precomplete time) and the baseline ARB gates (`arb ruff`, `arb typecheck`,
 > `arb step --name unittest`).

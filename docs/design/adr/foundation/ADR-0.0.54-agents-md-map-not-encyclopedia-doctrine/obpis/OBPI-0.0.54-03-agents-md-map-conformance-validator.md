@@ -201,7 +201,7 @@ uv run gz check
 
 ### Value Narrative
 
-Unlocks the AGENTS.md map-not-encyclopedia doctrine with mechanical enforcement (`gz validate --agents-md-map-conformance` + `gz check` step). Side-effect: the schema-enum lifecycle-vocabulary sync exposed a corpus-wide documents-validator drift (1825 → 1643 errors after enum fix, with pool ADRs cascading through to required_headers checks); narrow lifecycle-aware + kind-aware guards in `src/gzkit/validate_pkg/document.py` landed under GHI #480 as coupled-surface coherence, repairing the trust-doctrine T1 violation (canonical schema retroactively binding pre-attestation provenance) while preserving the pool ADR's eventual Alt #5 destination work in `ADR-pool.validate-documents-backfill`. Move 3 of `docs/governance/get-out-of-jail-plan-2026-05-23.md` closes; the recovery plan's ordering survives intact.
+Unlocks the AGENTS.md map-not-encyclopedia doctrine with mechanical enforcement (`gz validate --agents-md-map-conformance` + `gz check` step). Side-effect: the schema-enum lifecycle-vocabulary sync exposed a corpus-wide documents-validator drift (1825 → 1643 errors after enum fix, with pool ADRs cascading through to required_headers checks); narrow lifecycle-aware + kind-aware guards in `src/gzkit/validate_pkg/document.py` landed under GHI #480 as coupled-surface coherence, repairing the trust-doctrine T1 violation (canonical schema retroactively binding pre-attestation provenance) while preserving the pool ADR's eventual Alt #5 destination work in `ADR-pool.validate-documents-backfill`. This work now feeds the current recovery posture in `docs/governance/return-to-health-plan-2026-05-30.md`.
 
 ### Key Proof
 

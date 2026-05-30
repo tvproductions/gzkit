@@ -292,6 +292,6 @@ ledger-event querying is deferred to a future OBPI.
 - `GHI #531` — categorical category error that prompted this ADR (closed superseded)
 - `GHI #165` — non-code REQ evidence channels (closed; SUPPORT + STRUCTURAL-FENCE channels address the request)
 - `GHI #270` — tests.md § 6f vs tool-skill-runbook-alignment.md § Invariant 3 contradiction (resolved above)
-- `GHI #517` — 5-alarm structural emergency; ADR-0.0.59 is one of the validation-machine remediations
-- `docs/governance/get-out-of-jail-plan-2026-05-23.md` — Move 6; ADR-0.0.59 is the operator-blessed exception
+- `GHI #517` — historical ceremony failure report; ADR-0.0.59 is one of the validation-machine remediations
+- `docs/governance/return-to-health-plan-2026-05-30.md` — current recovery plan; the prior emergency plan was removed
 - `docs/governance/advisory-rules-audit.md` — scorecard row 59 (Mechanical)

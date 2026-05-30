@@ -1,11 +1,11 @@
 """Focused context payload renderer for ``gz context <ADR-ID>``.
 
-Move 2 of the get-out-of-jail recovery plan
-(`docs/governance/get-out-of-jail-plan-2026-05-23.md`). Renders one
-Markdown document combining the target ADR body, every OBPI brief under
-its ``obpis/`` directory, the test files carrying matching ``@covers``
-decorators, and a governance-rules section. ``--slim`` (OBPI-02) omits
-the governance section for non-governance harnesses.
+Originally shipped during the 2026-05 recovery work; now referenced by
+``docs/governance/return-to-health-plan-2026-05-30.md`` as the preferred
+ADR-scoped context path. Renders one Markdown document combining the target
+ADR body, every OBPI brief under its ``obpis/`` directory, the test files
+carrying matching ``@covers`` decorators, and a governance-rules section.
+``--slim`` (OBPI-02) omits the governance section for non-governance harnesses.
 
 @covers ADR-0.28.0-focused-context-loader
 """

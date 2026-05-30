@@ -176,7 +176,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Byte-budget reconciliation (operator call, 2026-05-23)
 
-The recovery plan (`docs/governance/get-out-of-jail-plan-2026-05-23.md` § Move 1) targets ≤500 bytes per router file. Existing skills floor at 761 bytes (`gz-state`) and average 8440 bytes; schema-required frontmatter (`name`, `description`, `category`, `lifecycle_state`, `owner`, `last_reviewed`, `model`) alone is ~270 bytes. **Operator decision in session:** target ≤700 bytes per router — honor the plan's *spirit* (intent table only, no procedure, ~12× smaller than mean) while staying schema-compliant. The plan number remains the aspirational ceiling; recovery doctrine is preserved without striking the field.
+The original recovery target was ≤500 bytes per router file. Existing skills floor at 761 bytes (`gz-state`) and average 8440 bytes; schema-required frontmatter (`name`, `description`, `category`, `lifecycle_state`, `owner`, `last_reviewed`, `model`) alone is ~270 bytes. **Operator decision in session:** target ≤700 bytes per router — honor the intent-table-only shape while staying schema-compliant. The original number remains the aspirational ceiling; recovery doctrine is preserved without striking the field.
 
 **Second reconciliation (operator call, 2026-05-24, ADR-0.27.0 closeout ceremony):** target ≤950 bytes per router. After OBPI-0.27.0-04 added `gz-chores` (the seventh router) and routers absorbed expanded intent tables for the full 16-skill catalog, the closeout-ceremony re-measurement (`wc -c .gzkit/skills/gz-{workflow,project,governance,quality,context,manage,chores}/SKILL.md`) showed 4 of 7 routers exceeded ≤700: `gz-governance` 926, `gz-quality` 740, `gz-chores` 736, `gz-manage` 720. ≤950 covers the worst case (`gz-governance` 926) with ~24 byte headroom while preserving the plan's *spirit* — intent table only, no procedure, still ~9× smaller than the 8440-byte mean. The ≤500-byte plan ceiling remains the aspirational floor and is not struck.
 
@@ -292,7 +292,7 @@ _No defects tracked._
 ## Human Attestation
 
 - Attestor: `g0`
-- Attestation: attest completed — Move 1 of get-out-of-jail-plan-2026-05-23 delivered: 6 namespace router SKILL.md files under .gzkit/skills/ averaging 650 bytes (gz-workflow, gz-governance, gz-quality, gz-project, gz-context, gz-manage), 6 corresponding operator manpages under docs/user/skills/ with Namespace Routers index section, 16 previously-unrouted concrete skills now routed; 5508/5508 full unittest suite pass (receipt arb-step-unittest-5dfb5a9f85a742ff8854763fc7ccbbbe), 3/3 OBPI-scoped REQ-derived tests pass, ruff clean (arb-ruff-7a0998d953864055b378ece64168737d), typecheck clean (arb-step-typecheck-d99f8d5666874f7b866b10e4eafc4800), gz validate --router-tables PASS
+- Attestation: attest completed — 2026-05 recovery router work delivered: 6 namespace router SKILL.md files under .gzkit/skills/ averaging 650 bytes (gz-workflow, gz-governance, gz-quality, gz-project, gz-context, gz-manage), 6 corresponding operator manpages under docs/user/skills/ with Namespace Routers index section, 16 previously-unrouted concrete skills now routed; 5508/5508 full unittest suite pass (receipt arb-step-unittest-5dfb5a9f85a742ff8854763fc7ccbbbe), 3/3 OBPI-scoped REQ-derived tests pass, ruff clean (arb-ruff-7a0998d953864055b378ece64168737d), typecheck clean (arb-step-typecheck-d99f8d5666874f7b866b10e4eafc4800), gz validate --router-tables PASS
 - Date: 2026-05-24
 
 ---
