@@ -64,6 +64,15 @@ Behavioral framing via `.gzkit/personas/` (YAML-frontmatter markdown). Every age
 
 See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md) for the six-pattern failure-mode taxonomy. See [`docs/governance/agent-contract-rationale.md`](docs/governance/agent-contract-rationale.md) for pedagogy, worked examples, and rationale for 6g/6h.
 
+## SKILLS FIRST (EXECUTION ROUTING)
+
+**Matching skill first. No convenience exception.**
+
+1. Read matching `SKILL.md` before edits, shell, ledger, or governance claims.
+2. Follow the skill's order; raw tools are subordinate.
+3. Report tool evidence before prose.
+4. If blocked, name and track the blocker, then use the closest governed fallback.
+
 ## MAKE LLM STOCHASTIC VIBES INERT (ANTI-VIBING MANTRA)
 
 > gzkit's purpose is to make stochastic LLM vibing structurally inert. Governance is the surface that steers direction and holds agent-driven work accountable — not overhead to be optimized against. Every option is framed by *"which choice leaves the smallest surface for vibing to leak through,"* never by maintenance burden or velocity. *"Lighter ceremony"* is not a tradeoff axis on its own.
@@ -131,7 +140,7 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 13. **Author GHIs through `/ghi-author` — never call `gh issue create` directly** (Step-0 prior-art lookup is the only sibling-cut-duplicate defense; `gz issue file` cross-repo). See [`docs/governance/behavior-rules.md` § Always #13](docs/governance/behavior-rules.md).
 14. **Goal-driven execution.** Define success criteria. Loop until verified. Strong success criteria let Claude loop independently. (Rule 4, 2026-05-24.)
 15. **Match the codebase's conventions, even if you disagree.** Conformance > taste inside the codebase. If you think a convention is harmful, surface it. Don't fork it silently. (Rule 8, 2026-05-24.)
-16. **Skills-first — when a skill covers the task, invoke it before reaching for raw tools.** Skills wrap Edit/Write/Bash/git in the canonical order; doing a skill's job by hand (hand-authoring a brief, hand-writing a handoff) bypasses expected behavior and is a governance violation even if the output passes validators. (CLAUDE.md Invariant 10a; failure mode: Correction-fails.)
+16. **Skills-first.** Matching skill first; see § SKILLS FIRST.
 
 ### Never
 

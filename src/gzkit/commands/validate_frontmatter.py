@@ -160,15 +160,7 @@ def _filter_artifact_files(
     return results
 
 
-def _derive_status_with_index(
-    ledger_id: str,
-    info: dict,
-    project_root: Path,
-    config: object,
-    ledger: object,
-    obpi_index: list,
-    fm_status: str = "",
-) -> str | None:
+def _derive_status_from_graph(info: dict) -> str | None:
     """Derive status using the canonical ledger semantics API.
 
     For ADRs uses ``Ledger.derive_adr_semantics`` — the same O(1) classmethod
@@ -228,7 +220,6 @@ def validate_frontmatter_coherence(
     chore uses this to guarantee the receipt reflects the starting cursor's
     state only, never a mid-run mutation.
     """
-    from gzkit.commands.status_obpi import _build_obpi_index
     from gzkit.config import GzkitConfig
     from gzkit.core.validation_rules import parse_frontmatter
     from gzkit.ledger import Ledger
@@ -247,11 +238,6 @@ def validate_frontmatter_coherence(
     except (json.JSONDecodeError, KeyError, ValueError):
         return []
 
-    try:
-        obpi_index = _build_obpi_index(project_root, config, ledger)
-    except (KeyError, ValueError, AttributeError):
-        obpi_index = []
-
     # GHI #192: lazy import — frontmatter_coherence imports from this module,
     # so a top-level import would cycle. Single-source-of-truth pool detection
     # lives there (lines 123, 214 of governance/frontmatter_coherence.py); the
@@ -267,9 +253,7 @@ def validate_frontmatter_coherence(
 
     def _status_for(ledger_id: str, info: dict, fm_status: str) -> str | None:
         if ledger_id not in status_cache:
-            status_cache[ledger_id] = _derive_status_with_index(
-                ledger_id, info, project_root, config, ledger, obpi_index, fm_status=fm_status
-            )
+            status_cache[ledger_id] = _derive_status_from_graph(info)
         return status_cache[ledger_id]
 
     for artifact_type, files in (

@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.63-closeout-ceremony-runtime-engine-parity
-status: Proposed
+status: Validated
 kind: foundation
 semver: 0.0.63
 lane: heavy

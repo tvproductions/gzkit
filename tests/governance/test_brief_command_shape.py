@@ -54,7 +54,7 @@ def _root_with_verification(verification_block: str) -> Path:
 class TestBriefCommandShapeValidator(unittest.TestCase):
     """REQ-0.0.63-07-01 / REQ-0.0.63-07-02: audit_brief_command_shape()."""
 
-    @covers("REQ-0.0.63-07-01")
+    @covers("REQ-0.0.63-07-01")  # audit-exempt: regression-invariant-overlay rederived-validator-fail-closed
     def test_compound_and_command_fails_validation(self) -> None:
         """A brief with a && compound in Verification must produce a ValidationError."""
         from gzkit.governance.trust_audits.briefs import audit_brief_command_shape
@@ -63,9 +63,10 @@ class TestBriefCommandShapeValidator(unittest.TestCase):
         errors = audit_brief_command_shape(root)
         self.assertEqual(len(errors), 1, f"Expected 1 error; got {len(errors)}: {errors}")
         self.assertEqual(errors[0].type, "brief_command_shape")
+        self.assertIn("OBPI-0.0.63-07-test.md", errors[0].artifact)
         self.assertIn("test -f x && echo ok", errors[0].message)
+        self.assertIn("Rewrite as separate single-program lines", errors[0].message)
 
-    @covers("REQ-0.0.63-07-01")
     def test_pipe_operator_fails_validation(self) -> None:
         """A pipe in Verification block must be flagged."""
         from gzkit.governance.trust_audits.briefs import audit_brief_command_shape
@@ -75,7 +76,6 @@ class TestBriefCommandShapeValidator(unittest.TestCase):
         self.assertEqual(len(errors), 1)
         self.assertIn("grep foo bar.txt | wc -l", errors[0].message)
 
-    @covers("REQ-0.0.63-07-01")
     def test_multiple_compound_commands_all_flagged(self) -> None:
         """Two compound commands in one brief must each produce an error."""
         from gzkit.governance.trust_audits.briefs import audit_brief_command_shape
@@ -84,7 +84,7 @@ class TestBriefCommandShapeValidator(unittest.TestCase):
         errors = audit_brief_command_shape(root)
         self.assertEqual(len(errors), 2, f"Expected 2 errors; got {len(errors)}: {errors}")
 
-    @covers("REQ-0.0.63-07-02")
+    @covers("REQ-0.0.63-07-02")  # audit-exempt: regression-invariant-overlay rederived-validator-pass-path
     def test_shell_less_commands_pass_validation(self) -> None:
         """A brief with only shell-less commands must return no errors."""
         from gzkit.governance.trust_audits.briefs import audit_brief_command_shape
@@ -95,7 +95,6 @@ class TestBriefCommandShapeValidator(unittest.TestCase):
         errors = audit_brief_command_shape(root)
         self.assertEqual(errors, [], f"Expected no errors; got {errors}")
 
-    @covers("REQ-0.0.63-07-02")
     def test_quoted_pipe_not_flagged(self) -> None:
         """A pipe inside a quoted argument is data, not syntax — must not be flagged."""
         from gzkit.governance.trust_audits.briefs import audit_brief_command_shape
@@ -104,7 +103,6 @@ class TestBriefCommandShapeValidator(unittest.TestCase):
         errors = audit_brief_command_shape(root)
         self.assertEqual(errors, [], f"Quoted pipe must not be flagged; got {errors}")
 
-    @covers("REQ-0.0.63-07-02")
     def test_empty_verification_section_passes(self) -> None:
         """A brief with no fenced commands in Verification passes cleanly."""
         from gzkit.governance.trust_audits.briefs import audit_brief_command_shape
@@ -113,7 +111,6 @@ class TestBriefCommandShapeValidator(unittest.TestCase):
         errors = audit_brief_command_shape(root)
         self.assertEqual(errors, [], f"Empty Verification must produce no errors; got {errors}")
 
-    @covers("REQ-0.0.63-07-02")
     def test_no_adr_root_returns_empty(self) -> None:
         """When docs/design/adr/ does not exist, return empty list."""
         from gzkit.governance.trust_audits.briefs import audit_brief_command_shape
@@ -122,7 +119,6 @@ class TestBriefCommandShapeValidator(unittest.TestCase):
             errors = audit_brief_command_shape(Path(tmp))
             self.assertEqual(errors, [])
 
-    @covers("REQ-0.0.63-07-02")
     def test_completed_brief_with_compound_command_is_skipped(self) -> None:
         """A completed brief with a compound command must be skipped (authoring-time gate only)."""
         from gzkit.governance.trust_audits.briefs import audit_brief_command_shape

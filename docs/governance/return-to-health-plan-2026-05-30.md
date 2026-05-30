@@ -9,11 +9,13 @@ This plan replaces the prior emergency framing documents, which were removed on
 - `docs/governance/get-out-of-jail-extensions-2026-05-23.md`
 - `docs/governance/june-2026-road-to-salvation.md`
 - `.claude/plans/rescue-and-repair-roadmap-2026-05-27.md`
+- `docs/governance/model-regression-deep-dive-2026-05-23.md`
 
 Those documents captured real distress signals, but their tone and sequencing
 kept the project in emergency mode. The recovery posture now is narrower: make
 the repo healthy, keep it healthy, and stop expanding governance surfaces until
-the harness is green.
+the harness is green. The model-regression deep dive contributed durable
+diagnosis, but its dated command snapshot is superseded by the baseline below.
 
 ## Current Baseline
 
@@ -46,10 +48,35 @@ gzkit is healthy when all of these are true:
 - No open `emergency`-labeled issue remains.
 - Current failing gates have either been fixed or routed to active tracked work
   with a named owner and next command.
+- Known passive-ceremony risks are either mechanized or represented by active,
+  ranked GHIs with the next verification command named.
 - New doctrine, new foundation ADRs, and new validators are frozen unless they
   directly repair a failing gate.
 - Recovery work reduces always-loaded context or check failures; it does not add
   broad new process.
+
+## Merged Deep-Dive Findings
+
+The retired 2026-05-23 model-regression deep dive leaves these facts in the
+active plan:
+
+- The recovery frame is not "newer models are worse." The class of failure is
+  under-mechanized governance ceremonies and excessive always-loaded context;
+  model behavior exposes those weaknesses rather than explaining them away.
+- `gz-obpi-pipeline` remains the comparison target for trustworthy ceremonies:
+  staged runtime, explicit verification, human gate, guarded sync, and
+  fail-closed boundaries.
+- Passive presenter ceremonies, especially closeout and audit workflows, must
+  move toward observed runtime checks or stay explicitly routed through GHIs
+  such as #516 and #517.
+- Validators that claim runtime health must execute or otherwise prove the
+  runtime path that matters. The Codex SessionStart cache-pin fix from GHI #510
+  is the precedent: authored wiring was not enough.
+- `gz check` triage must show fail-closed blockers before advisory bulk. Large
+  advisory drift lists are useful only after the exit-code cause is visible.
+- Generated mirrors should not multiply diagnostics. Check canonical sources
+  first, and collapse or exclude mirror duplicates when reporting skill-script
+  and BDD-step findings.
 
 ## Operating Rules
 
@@ -64,7 +91,9 @@ gzkit is healthy when all of these are true:
    mechanical gates are the recovery mechanism.
 6. No new foundation ADRs during recovery unless the operator explicitly
    approves one after seeing the routing facts.
-7. Every recovery session starts with:
+7. Treat context as a budgeted runtime dependency. Keep always-loaded prose to
+   hard invariants, routing pointers, and task entrypoints.
+8. Every recovery session starts with:
    - `git status --short`
    - `uv run gz check`
    - `gh issue list --state open --label emergency --limit 20`
@@ -84,6 +113,8 @@ Known work:
   tests, not by suppressing the audit.
 - Resolve `--task-envelope-coherence` separately. It touches ledger semantics
   and should be treated as the highest-risk failing gate.
+- When `gz check` fails, record the first fail-closed blocker and its drilldown
+  command before reading advisory output.
 
 Exit criteria:
 
@@ -106,6 +137,11 @@ Work:
 - Do not re-expand `AGENTS.md` or skill bodies while recovery is active.
 - Prefer `gz context <ADR-ID>` over broad manual reading when working on a
   specific ADR.
+- Keep `AGENTS.md` as a map, not an encyclopedia: move explanatory doctrine to
+  routeable docs or skills only when an existing validator or command preserves
+  the invariant.
+- Replace always-loaded prose with runtime checks where a check can carry the
+  same safety property.
 - Treat issue #519 as the context-load tracking issue until closed.
 
 Exit criteria:
@@ -114,9 +150,10 @@ Exit criteria:
 - A session can orient from `AGENTS.md`, this file, `gz status`, and `gz check`
   without reading the old emergency plans.
 
-## Phase 3: Repair the State Drift Class
+## Phase 3: Repair State Drift And Ceremony Runtime Checks
 
-Goal: stop lifecycle and task state from presenting false confidence.
+Goal: stop lifecycle, task state, and core ceremonies from presenting false
+confidence.
 
 Work:
 
@@ -128,12 +165,22 @@ Work:
 - Do not edit `.gzkit/ledger.jsonl` directly.
 - If historical ledger drift needs accommodation, implement it as a validator
   rule or migration command with tests.
+- Use `gz-obpi-pipeline` as the mechanical bar when evaluating closeout,
+  authoring, evaluation, and audit ceremonies.
+- Keep GHI #516 and GHI #517 as the route for passive-presenter ceremony gaps
+  unless a specific defect qualifies for direct-fix routing.
+- Prefer execution probes over wiring checks when a validator claims a hook,
+  generated config, or command path is healthy.
+- Do not add prose-only ceremony instructions as remediation for skipped
+  verification.
 
 Exit criteria:
 
 - `gz check` includes a passing task-envelope check.
 - New worklog events emitted under active TASKs carry the expected attribution.
 - Historical exceptions, if any, are explicit and mechanically bounded.
+- Known high-risk passive-ceremony gaps have either runtime checks or an active
+  GHI route with a concrete next command.
 
 ## Phase 4: Drain Recovery Issues
 

@@ -44,3 +44,23 @@ sha256:9759369e16b433b88c9a7fe159730fc8f246da118a9b04441348a02cb54125b8
 .0.31-distribution-invariant-doctrine.md
       status: 'Draft' -> 'Validated'
 ```
+## 2026-05-30T09:39:57-05:00
+- Status: PASS
+- Chore: frontmatter-ledger-coherence
+- Title: Frontmatter-Ledger Reconciliation (ADR-0.0.16 OBPI-03)
+- Lane: heavy
+- Version: 2.0.0
+- Criteria Results:
+  - [PASS] `uv run gz frontmatter reconcile --dry-run` => rc=0 (1.49s) -- exit 0 == 0
+
+```text
+[uv run gz frontmatter reconcile --dry-run] stdout:
+Frontmatter-ledger reconciliation DRY-RUN
+  ledger cursor:     
+sha256:9bc59d99c62c21336692c66eb093be076a455426dd528f704bda593991015994
+  started / ended:   2026-05-30T14:39:56.679637+00:00 / 
+2026-05-30T14:39:57.795715+00:00
+  files rewritten:   0
+  pool ADRs skipped: 164
+  no drift detected
+```

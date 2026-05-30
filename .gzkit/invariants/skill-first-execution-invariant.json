@@ -1,0 +1,12 @@
+{
+  "id": "skill-first-execution-invariant",
+  "claim": "When a task matches an available skill, agents MUST read that skill's SKILL.md before raw tool use and MUST let the skill workflow govern command order, edits, ledger actions, and evidence reporting. Bypassing a matching skill is a process defect even when the final artifact appears valid.",
+  "structural_witness": [
+    "gz skill audit",
+    "gz validate --invariant-coherence",
+    "gz agent sync control-surfaces"
+  ],
+  "composition_targets": [
+    "AGENTS.md"
+  ]
+}

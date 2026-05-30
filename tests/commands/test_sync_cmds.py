@@ -188,6 +188,19 @@ class TestSyncCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Sync complete", result.output)
 
+    def test_agent_sync_agents_md_matches_governance_render(self) -> None:
+        """agent sync must write AGENTS.md bytes accepted by the CMS renderer."""
+        runner = CliRunner()
+        with _InitFromTemplate():
+            sync_result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
+            self.assertEqual(sync_result.exit_code, 0, msg=sync_result.output)
+
+            check_result = runner.invoke(
+                main, ["governance", "render", "--target", "agents-md", "--check"]
+            )
+
+            self.assertEqual(check_result.exit_code, 0, msg=check_result.output)
+
     def test_agent_sync_dry_run_reports_complete_write_set(self) -> None:
         """Dry-run output must list every path that sync_all() would touch."""
         runner = CliRunner()

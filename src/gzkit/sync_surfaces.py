@@ -361,7 +361,7 @@ def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
     content = render_template("agents", **context)
 
     agents_path = project_root / config.paths.agents_md
-    agents_path.write_text(content, encoding="utf-8")
+    agents_path.write_bytes(content.encode("utf-8"))
 
 
 def sync_claude_md(project_root: Path, config: GzkitConfig) -> None:
