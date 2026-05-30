@@ -5,14 +5,14 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.3.1"
+  skill-version: "6.4.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-29
+last_reviewed: 2026-05-30
 model: sonnet
 ---
 
@@ -28,8 +28,8 @@ Create and resume session handoff documents that preserve agent context across e
 
 **Layer 3 — File Sync:** This tool creates files without verification.
 
-- **Reads:** User input, handoff template, ADR package directory structure
-- **Writes:** Handoff markdown files under `{ADR-package}/handoffs/`
+- **Reads:** User input, handoff template, canonical handoff directory `.gzkit/handoffs/`
+- **Writes:** Handoff markdown files under `.gzkit/handoffs/` (canonical storage per ADR-0.0.41 / OBPI-0.0.41-03)
 - **Validates:** No placeholders, no secrets, all sections present, referenced files exist
 - **Does NOT touch:** Ledger files, ADR status, OBPI brief status
 
@@ -49,7 +49,7 @@ Create and resume session handoff documents that preserve agent context across e
 
 ## Outputs
 
-- Handoff markdown file at `{ADR-package}/handoffs/{timestamp}-{slug}.md`
+- Handoff markdown file at `.gzkit/handoffs/{timestamp}-{slug}.md`
 - Validation result (pass/fail with error details)
 - First next action from "Immediate Next Steps" section (for quick resumption)
 
@@ -76,11 +76,9 @@ The CREATE workflow scaffolds a new handoff document when an agent is pausing wo
    - `adr_id`, `branch`, `timestamp`, `agent` — from inputs
    - `obpi_id`, `session_id`, `continues_from` — from optional inputs (leave empty if not provided)
 
-5. **Create `handoffs/` directory** under the ADR package if it does not exist:
-   - Scan `docs/design/adr/` for a directory matching the ADR ID pattern
-   - Create `{ADR-package}/handoffs/` if needed
+5. **Ensure the canonical handoff directory** `.gzkit/handoffs/` exists at the project root. Create if missing (the directory is doctrine-canonical per ADR-0.0.41 / OBPI-0.0.41-03; `gz init` provisions it on bootstrap but defensive creation is acceptable on a stale clone).
 
-6. **Write the scaffold** to `{ADR-package}/handoffs/{timestamp}-{slug}.md` where the timestamp is filesystem-safe (e.g. `20260201T100000Z-create-workflow.md`).
+6. **Write the scaffold** to `.gzkit/handoffs/{timestamp}-{slug}.md` where the timestamp is filesystem-safe (e.g. `20260201T100000Z-create-workflow.md`).
 
 7. **Populate each required section** with session-specific content. The agent must replace the HTML comment guidance in each section with actual content describing the session state:
 
@@ -165,7 +163,7 @@ The RESUME workflow discovers, loads, validates, and reports on existing handoff
 
 ### Steps
 
-1. **List available handoffs** for the ADR using `list_handoffs(adr_id)`. This scans `{ADR-package}/handoffs/` for `.md` files, parses frontmatter, and returns them sorted newest-first.
+1. **List available handoffs** for the ADR using `list_handoffs(adr_id)`. This scans `.gzkit/handoffs/` for `.md` files whose `adr_id:` frontmatter matches, parses each frontmatter, and returns them sorted newest-first.
 
 2. **Select a handoff** — either the newest (default) or a specific file if `handoff_path` is provided.
 
@@ -203,8 +201,8 @@ When staleness is **Stale** or **Very Stale**, the `requires_human_verification`
 > `verify_context` / `HandoffInfo` / `ResumeResult` / `StalenessLevel` do **not**
 > exist — `tests.governance.test_session_handoff` is not a real module. Building
 > this API is **OBPI-02 of `ADR-pool.handoff-system-consolidation`** (GHI #529).
-> Until it lands, RESUME by reading the newest handoff under the ADR package's
-> `handoffs/` directory directly and following its `continues_from` chain by
+> Until it lands, RESUME by reading the newest handoff under `.gzkit/handoffs/`
+> directly (filter by `adr_id:` frontmatter) and following its `continues_from` chain by
 > hand; the SessionStart orientation (`scripts/session_orientation.py`) already
 > surfaces the newest valid handoff with its freshness bucket and first next step.
 
@@ -227,7 +225,7 @@ result = resume_handoff(
 | Failure | Cause | Resolution |
 |---------|-------|------------|
 | Template not found | `assets/handoff-template.md` missing or path incorrect | Verify skill directory structure |
-| ADR package not found | No directory matching ADR ID pattern in `docs/design/adr/` | Verify ADR exists and is properly structured |
+| Canonical handoff directory missing | `.gzkit/handoffs/` does not exist at project root | Run `gz init` or create the directory; the path is doctrine-canonical per ADR-0.0.41 |
 | Validation: placeholders | Body contains TBD, TODO, FIXME, or `...` markers | Replace all placeholder text with actual content |
 | Validation: secrets | Body contains password=, api_key=, Bearer tokens, etc. | Remove all secret material from the document |
 | Validation: missing sections | One or more of the 7 required sections not present | Add all required section headings |
@@ -245,7 +243,7 @@ result = resume_handoff(
 - All 7 required sections populated with session-specific content (no HTML comments or placeholders remaining)
 - Frontmatter validates against `HandoffFrontmatter` Pydantic model
 - Full validation pipeline passes (no placeholders, no secrets, sections present, references exist)
-- File written to correct path: `{ADR-package}/handoffs/{timestamp}-{slug}.md`
+- File written to correct path: `.gzkit/handoffs/{timestamp}-{slug}.md`
 
 ### RESUME
 - `list_handoffs()` discovers and sorts available handoffs newest-first
@@ -286,6 +284,6 @@ These thoughts mean STOP — you are about to lose context across the session bo
 
 | Skill | Relationship |
 |-------|-------------|
-| `gz-adr-create` | Creates ADR packages where handoffs are stored |
+| `gz-adr-create` | Creates ADR packages this handoff's `adr_id:` may reference (handoff storage is canonical at `.gzkit/handoffs/`, independent of ADR package layout) |
 | `gz-obpi-specify` | OBPI briefs that handoffs may reference |
 | `gz-adr-closeout-ceremony` | Closeout may reference handoff chain as evidence |
