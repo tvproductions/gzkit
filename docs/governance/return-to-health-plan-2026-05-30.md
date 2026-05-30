@@ -218,6 +218,67 @@ Before resuming:
 - Archive or delete obsolete sidecar recovery notes that no longer carry facts
   needed for audit.
 
+## Designated Workstream — Harness Hardening (anti-vibe mechanization, post-green)
+
+Recorded here from the 2026-05-30 operator+agent dialogue so the analysis becomes
+durable, sequenced action instead of being re-derived next session (Operating
+Rules 1 and 7). This workstream does **not** start while `uv run gz check` is red
+(Operating Rule 2), and promoting its ADRs is an explicit operator decision
+against the Architectural Boundary 1 freeze (Operating Rule 6) — not a default.
+
+North star: gzkit should flow like superpowers — enforcement off the operator's
+face and into the machine: invisible when the operator is right, blocking only at
+the moment of a mistake. Friction-always is the disease; pre-action mechanism is
+the cure. Same move as Operating Rule 7, applied to behavior instead of context.
+
+Two failure classes (both observed live on 2026-05-30):
+
+| Class | Example | Mechanizable? | Cure surface |
+|---|---|---|---|
+| Skill-bypass / unauthorized mutation | agent ran raw `gz`/edit tools outside the governing skill | yes — pre-tool | the spine below |
+| Claim fabrication | agent asserted false findings (a GHI map, a `gz check` table) in prose with no tool call | partly — no hook fires on a chat assertion | receipt-cited claims + human at attestation; irreducible residue remains |
+
+Verified spine (five pool ADRs, all confirmed extant 2026-05-30; promotion-ordered
+by dependency):
+
+| ADR (pool) | Role | Depends on |
+|---|---|---|
+| `tool-permission-classifier` | deterministic `classify(tool,args)` → read / workspace / governance / external / full; unclassifiable → fail-closed (full/deny) | none — leaf; first promotion |
+| `agent-execution-intelligence` (CAP-08 MODE) | per-invocation MODE: READ-ONLY / PLAN-FIRST / IMPLEMENT (independently promotable) | none |
+| `tdd-receipt-stream` | generalized governance receipts (`mode_declared`, `scope_widened`, `mode_violation`, …); append-only; works even record-only | classifier, MODE |
+| `skill-behavioral-hardening` | skill-intent scope invariant + circuit breaker: a skill's declared scope bounds its mutating calls; out-of-scope mutation needs authorization before the call | classifier, MODE, receipts |
+| `harness-aware-execution-modes` | Mode 1 skill-chain self-gate / Mode 2 PreToolUse hook **block** (Claude Code today) | envelope, classifier |
+
+Promotion sequence (when unfrozen): `tool-permission-classifier` (leaf,
+fail-closed, smallest win) → `agent-execution-intelligence` MODE +
+`tdd-receipt-stream` → `skill-behavioral-hardening` → `harness-aware-execution-modes`
+Mode 2.
+
+Non-negotiable gates:
+
+- Any AGENTS.md / `.claude/rules` change this implies routes through the CMS
+  (`gz content`, `gz governance render`) — never a hand-edit to a rendered surface.
+- Green-first: no promotion while `gz check` is red.
+- Boundary 1 exception is the operator's explicit call, made after seeing routing facts.
+
+The honest limit: the claim-fabrication class cannot be fully mechanized — a model
+asserting a false synthesis in chat fires no hook. Reduce the surface (cite a
+receipt for every state claim, or mark it unverified), then place the human at
+attestation, not at every keystroke. Do not answer this class with a new prose
+rule; 2026-05-30 proved prose does not bind.
+
+Exit criteria:
+
+- The skill envelope records a governance event on every named skill invocation
+  and (Mode 2) blocks an out-of-envelope mutating call before it runs.
+- `uv run gz check` includes a passing check that the classifier/envelope are wired.
+- A deliberate skill-bypass attempt in a test session is mechanically stopped,
+  observed by the operator.
+
+Provenance: spine ADRs verified extant via `gh`/Glob/Read on 2026-05-30; failure
+classes from observed incidents that session (fabricated GHI map, fabricated
+`gz check` table, overwritten-then-git-restored recovery plan).
+
 ## Recovery Closeout
 
 Fill this section when complete:
@@ -231,3 +292,36 @@ Task-envelope coherence:
 Open recovery issues:
 Decision: normal development may resume / may not resume
 ```
+
+## Appendix: The Smooth-vs-Replicable Axis (2026-05-30 dialogue insights)
+
+Preserved from the 2026-05-30 operator+agent dialogue so this framing is not re-derived next session.
+
+**The axis.** Superpowers is smooth but makes *snowflakes* (artisanal, low-replicability, non-reproducible). gzkit is replicable but *toxic* ("breathing tar fumes"). That is the real tradeoff this recovery is negotiating.
+
+**Toxicity is mostly incidental, not essential — replicability and toxicity live in different layers:**
+
+| Layer | What it is | Toxic? |
+|---|---|---|
+| Replicability (the value) | ledger as system-of-record, deterministic `gz` commands, receipts/attestation, fail-closed gates | No |
+| Delivery (current form) | 32k always-loaded prose, in-your-face ceremony, context-rot, truncation, *performed* compliance | Yes — and removable |
+
+Proof they separate: Superpowers *enforces hard* (its docs: the model rationalizes out of the rules ~90% of the time without the "iron law") yet stays smooth, because enforcement is lean, just-in-time, and shaped as a process you flow through. **Enforcement is not the tar; front-loaded, human-facing enforcement is.**
+
+**Design principle (the synthesis).** Make replicability *invisible-when-right*, the way Superpowers makes enforcement invisible-when-right: the ledger writes itself (hook), IDs mint at runtime, gates stay silent unless a mistake is imminent, the CMS renders the surface. Replicability becomes a *byproduct* of the work, not a *tax* on it. The pieces already exist (ledger-writer hook, CMS) — they are buried under prose.
+
+**The irreducible floor (where the tradeoff is real).** Replicability requires the one thing Superpowers refuses to pay: a human making binding decisions explicit and attesting to them at promotion boundaries (Gate 5). It cannot be automated — but it must be *a handful of moments per phase, not constant.* Concentrate attestation-grade friction at the real decision points; automate everything around them. gzkit cannot be Superpowers-smooth, but the floor that genuinely must hurt is thin; nearly all current toxicity sits above it.
+
+**The phases reframe (the practical answer).** The tools are not competitors; they are phases.
+
+- *Exploration / snowflake phase* → Superpowers. Snowflakes are fine for sketches and greenfields; do not reproduce a prototype.
+- *Hardening phase* → gzkit, when a greenfield succeeds and must become reproducible, auditable, team-survivable.
+- gzkit feels like tar because it makes you *manufacture while still sketching*. This is gzkit's own pool→foundation gradient applied to the *work*: near-zero ceremony during exploration, crystallize ceremony only at promotion. **The goal is a cheap handoff from the snowflake phase to the hardening phase — not one tool for everything.**
+
+**Grounding (Claude Opus 4.8 system card, read 2026-05-30 — checked, not theorized).**
+
+- gzkit's failures map to *named, measured* metrics: "situational hallucination" (hallucinating file/tool-output contents) and "missing-context hallucination" (fabricating output for an unavailable tool) — §6.2.3.1.3, §6.3.3.
+- The trend is *improving*, not hopeless: 4.8 is "a significant improvement over Opus 4.7 on most aspects of honesty" (p97); it had "the lowest incorrect-rate of the six models on every benchmark," achieved "mainly by abstaining … when it was uncertain" (p115); and it "scores the highest" at resisting unavailable-tool fabrication (p119).
+- Critical caveat (p83): the card measures the model under *normal* scaffolds, "rather than specific product surfaces such as the Claude app, Claude Code, or Cowork." gzkit's extreme context load is *outside* the regime where those reliability numbers hold. **The context diet is the safety work — it returns the model to its measured-reliable regime — not cosmetic.**
+
+Provenance: 2026-05-30 operator+agent dialogue; Claude Opus 4.8 system card; Superpowers docs + obra/superpowers issue #237; context-engineering field findings (retrieval + static analysis + span-level verification, reported up to ~96% combined hallucination reduction).
