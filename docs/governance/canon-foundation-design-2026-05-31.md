@@ -256,3 +256,50 @@ The blast radius is the *design* scope; the *build* sequences by failure-mass le
 
 Steps 1–2 retire the dominant failure family; 5 clears the #519 emergency; 6 is the formerly-
 deferred vision, designed now, built last.
+
+---
+
+## 13. Session 2026-05-31 (PM) — execution-model & taxonomy decisions (folds into this thread)
+
+> Captured per §11 (latent decisions get re-derived next session). **Decided** items are
+> operator-confirmed this session; **Open** items need major discussion before adoption.
+> Formalize with the canon ADR post-recovery (amends ADR-0.0.9).
+
+**Decided:**
+
+1. **Retire the `foundation` ADR kind.** "Invariant" had been used loosely to mean *plumbing
+   that facilitates features*; foundation was redundant with the pool (both = decide-without-
+   releasing) and an artifact of the ADR↔semver coupling. Genuine invariants live in **canon**
+   (this thread); ADRs become pure **design**. *This invalidates this document's own §8 /
+   disposition "foundation ADR" self-label — this is the canon-establishing **design** decision,
+   not a foundation ADR.*
+2. **Two demarcations + pool:** design (pool / *made*) → triage → built (*features*) → semver
+   (release tag). No foundation/feature metaphysics; "essence vs. accident" judged contrived.
+3. **Semver habits (normal):** GHI closure → **patch**; ADR completion → **minor**; "PRD
+   satisfied" → **major** + basis for the next round. Decouple ADR-id from semver (post-recovery).
+4. **Execution loop (Pocock-guided; attended vs. autopilot):** idea (`grill`) → [research] →
+   [prototype] → PRD/ADR → vertical-slice issues → execute + QA-loop.
+5. **AFK/HITL = gate-*placement*, classified at plan-time** (Pocock-confirmed): **HITL/attended**
+   → local gates + present operator (terminal witness now); **AFK/autopilot** → branch/worktree-
+   per-OBPI → PR → unattended mechanical gates → **async Gate-5 attestation on the PR**. Universal
+   Gate 5 (ADR-0.0.36) holds — **never self-close**, even AFK.
+6. **Per-OBPI worktree + PR + receipts + attestation** is gzkit's structural fix for AFK's
+   review-burden (Pocock's admitted, unfixed weakness).
+7. **Drop the OBPI lock system** — branches give the isolation locks faked on trunk; PRs +
+   `git branch -a` give visibility. (Pipeline change, post-recovery.)
+8. **Triage trio + router:** `ghi-triage` (corrective) · `gz-build-triage` (formerly
+   `gz-foundation-triage`; what to build from pool) · `design-triage` (what to *make* → pool);
+   chores self-surface (cadence: after each ADR ships). Unified by **`gz-next`** — the whole-
+   project "best next move," renamed away from Pocock's queue-"triage."
+9. **Keep the spine (sacrosanct):** ledger-of-truth, receipts, universal Gate 5, fail-closed
+   validators, the kind/lane/sensitivity axes. "Lighter" is not a trade (anti-vibing mantra).
+
+**Open — needs major discussion (NOT adopted):**
+
+- The specific Pocock borrowings beyond the loop + AFK/HITL — fenced `prototype`, sprint-lived
+  research/design-asset lifecycle, vertical-slice sizing + the horizontal-slicing anti-pattern
+  citation, the ADR-worthiness 3-gate, QA→GHI loopback — evaluated **per-item** against "does
+  this erode the spine?", deliberate, never wholesale. Baseline: GHI #567.
+
+**Immediate (this session):** re-home ADR-0.0.66 → pool (unbuilt design; its substance folds
+into this canon thread).

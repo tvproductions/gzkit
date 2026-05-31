@@ -271,6 +271,8 @@ fail-closed, smallest win) → `agent-execution-intelligence` MODE +
 `tdd-receipt-stream` → `skill-behavioral-hardening` → `harness-aware-execution-modes`
 Mode 2.
 
+**Orientation-layer sibling — `ADR-0.0.66-deterministic-steering-substrate` (booked 2026-05-31, operator-waived Boundary 1 / Operating Rule 6).** ADR-0.0.66 coalesces `tdd-receipt-stream` (the shared hub), `agent-execution-intelligence` CAP-22 (`gz next`) + CAP-08 MODE, `session-productivity-metrics`, the queryability verbs (`gz search` / `gz insights query`), and `solved-problem-pattern-corpus` into one deterministic read-substrate. The enforcement spine above reads the `tdd-receipt-stream` hub for *enforcement*; ADR-0.0.66 reads it for *orientation* — **same hub, two consumers.** Consequence for sequencing: `tdd-receipt-stream` and CAP-08 MODE promote **once**, as ADR-0.0.66's leaf-first OBPI-01 (hub) and OBPI-02 (`gz next` + MODE); the spine's enforcement layers (`skill-behavioral-hardening`, `harness-aware-execution-modes`) then consume the same hub rather than promoting it separately. ADR-0.0.66 also subsumes the booked-but-unbuilt `ADR-0.0.46/0.0.47/0.0.48` (pool-management / DAG-routing / pool-triage): `gz next --pool` becomes the pool-scoped predicate of the whole-project `gz next`. The supersession of those nine ADRs is *declared* in ADR-0.0.66's body and *executed* under its OBPI-06 (frontmatter → `gz register-adrs` reconcile, never `gz adr demote`); until then it is a tracked follow-up, not silent drift. The operator's Boundary-1 waiver covered the *booking* only — promotion of ADR-0.0.66 stays frozen behind recovery, leaf-first and operator-gated, like the spine.
+
 Non-negotiable gates:
 
 - Any AGENTS.md / `.claude/rules` change this implies routes through the CMS
