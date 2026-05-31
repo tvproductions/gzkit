@@ -1,9 +1,0 @@
-{
-  "obpi_id": "OBPI-0.0.37-11-density-aware-master-model",
-  "agent": "claude-code-b092f21e",
-  "pid": 28388,
-  "session_id": "b092f21e-1c98-448e-8dd1-fe42b78482d6",
-  "claimed_at": "2026-05-31T10:36:36.872121+00:00",
-  "branch": "main",
-  "ttl_minutes": 120
-}
