@@ -178,7 +178,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.66-05-01 [BEHAVIOR]: Given a corpus entry with NO primary-evidence citation, when the governed write path runs, then the write is rejected; given an entry citing a session ID / GHI / ADR ID / commit SHA, the write succeeds. A `@covers`-decorated test asserts both branches (citation enforcement is the load-bearing invariant).
 - [ ] REQ-0.0.66-05-02 [BEHAVIOR]: Given the corpus, when the read verb runs, then it returns the aggregated patterns with their citations; a `@covers`-decorated test asserts the read returns appended entries with citation fields intact.
 - [ ] REQ-0.0.66-05-03 [BEHAVIOR]: Given the corpus entry model, when instantiated with an unknown field, then `ValidationError` is raised per `ConfigDict(extra="forbid")`; a `@covers`-decorated test asserts the strict-shape rejection.
-- [ ] REQ-0.0.66-05-04 [SUPPORT]: The read verb exposes `--json`, is covered in its manpage, and `uv run gz cli audit` exits 0 with the verb covered; an `artifact_edited` event records the CLI addition.
+- [ ] REQ-0.0.66-05-04 [SUPPORT]: The read verb exposes `--json`, is covered in its manpage, and `uv run gz cli audit` exits 0 with the verb covered and `uv run gz validate --cli-alignment` passes for the new verb's doc references; an `artifact_edited` event records the CLI addition.
 - [ ] REQ-0.0.66-05-05 [STRUCTURAL-FENCE]: The corpus is append-only, skill-written, citation-bound, and the read-surface is Layer-3-never-source-of-truth and gate-non-binding. Parent ADR-0.0.66 § Boundary Invariants 1 (evidence-not-authority) and 3 (Layer-3-never-source-of-truth) name these invariants; the four governance invariants are inherited from `ADR-pool.solved-problem-pattern-corpus`.
 
 ## Completion Checklist

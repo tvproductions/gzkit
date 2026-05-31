@@ -90,10 +90,6 @@
           {
             "type": "command",
             "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/ledger-writer.py\""
-          },
-          {
-            "type": "command",
-            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/control-surface-sync.py\""
           }
         ]
       }

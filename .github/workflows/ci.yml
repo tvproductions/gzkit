@@ -1,0 +1,36 @@
+name: CI
+
+# Full gate runs server-side so the local loop can stay light.
+# Locally: ruff + ty + `gz test --obpi <id>` (~3s) for iteration;
+# `gz check` is the heavy sweep and belongs here, not on every keyboard.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # gz check has git-history-dependent validators
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Add uv to PATH
+        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Sync dependencies
+        run: uv sync --frozen --all-extras
+
+      - name: Run gz check (full gate — lint, format, typecheck, test, behave, validators)
+        run: uv run gz check

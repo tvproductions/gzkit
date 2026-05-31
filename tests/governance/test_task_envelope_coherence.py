@@ -14,9 +14,11 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import yaml
 
+from gzkit.commands import validate_cmd
 from gzkit.commands.validate_cmd import _validate_task_envelope_coherence
 from gzkit.traceability import covers
 
@@ -48,6 +50,23 @@ _BASE_FM = {
     "reqs": ["REQ-0.0.64-04-01"],
     "verification": ["uv run gz lint"],
 }
+
+
+def _write_brief_with_id(root: Path, obpi_id: str) -> Path:
+    """Write a minimal OBPI brief whose frontmatter ``id`` is ``obpi_id``.
+
+    Used to populate the drift loop with several distinct OBPIs so a per-OBPI
+    subprocess regression is observable as a call count > 1.
+    """
+    safe = obpi_id.replace(".", "_")
+    brief_dir = root / "docs" / "design" / "adr" / "foundation" / f"ADR-fixture-{safe}" / "obpis"
+    brief_dir.mkdir(parents=True, exist_ok=True)
+    fm = {**_BASE_FM, "id": obpi_id}
+    fm_text = yaml.dump(fm, default_flow_style=False)
+    body = "\n# Test Brief\n\n## Acceptance Criteria\n\n- [ ] REQ-0.0.64-04-01\n"
+    brief_path = brief_dir / f"{obpi_id}.md"
+    brief_path.write_text(f"---\n{fm_text}---\n{body}", encoding="utf-8")
+    return brief_path
 
 
 class TestSignatureA(unittest.TestCase):
@@ -477,6 +496,108 @@ class TestDiagnoseCmd(unittest.TestCase):
         from gzkit.commands.task import task_envelope_diagnose_cmd
 
         self.assertTrue(callable(task_envelope_diagnose_cmd))
+
+
+class TestSignatureCCommitTrailerChannel(unittest.TestCase):
+    """Signature (c): the commit-trailer channel participates in drift detection.
+
+    The temp-dir fixtures elsewhere are not git repos, so the commit-trailer
+    channel is never exercised there. These mock the single ``git log`` walk to
+    pin that commit-trailer declarations still feed drift detection across the
+    hoisted (once-per-audit) code path.
+    """
+
+    @covers("REQ-0.0.64-04-03")
+    def test_layer_drift_commit_trailer_vs_frontmatter_fails(self) -> None:
+        """A commit-trailer TASK id disagreeing with frontmatter → drift violation."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            fm = {**_BASE_FM, "tasks": ["TASK-0.0.64-04-01-01"]}
+            _write_brief(root, fm)
+            # Commit trailer declares a DIFFERENT TASK for the same OBPI.
+            git_log = "fix(x): change\n\nTask: TASK-0.0.64-04-01-02\n--EOC--\n"
+            fake = mock.Mock(returncode=0, stdout=git_log)
+            with mock.patch.object(validate_cmd.subprocess, "run", return_value=fake):
+                errors = [
+                    e
+                    for e in _validate_task_envelope_coherence(root)
+                    if "Signature (c)" in e.message or "layer-drift" in e.message.lower()
+                ]
+            self.assertGreater(len(errors), 0, "Expected commit-trailer vs frontmatter drift")
+
+    @covers("REQ-0.0.64-04-03")
+    def test_commit_trailer_agreeing_with_frontmatter_passes(self) -> None:
+        """Same TASK id in commit trailer and frontmatter → no drift."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            fm = {**_BASE_FM, "tasks": ["TASK-0.0.64-04-01-01"]}
+            _write_brief(root, fm)
+            git_log = "fix(x): change\n\nTask: TASK-0.0.64-04-01-01\n--EOC--\n"
+            fake = mock.Mock(returncode=0, stdout=git_log)
+            with mock.patch.object(validate_cmd.subprocess, "run", return_value=fake):
+                errors = [
+                    e
+                    for e in _validate_task_envelope_coherence(root)
+                    if "Signature (c)" in e.message or "layer-drift" in e.message.lower()
+                ]
+            self.assertEqual(len(errors), 0)
+
+
+class TestSignatureCPerformance(unittest.TestCase):
+    """Signature (c) scans git history once per audit, not once per OBPI."""
+
+    @covers("REQ-0.0.64-04-03")
+    def test_commit_history_scanned_once_regardless_of_obpi_count(self) -> None:
+        """The git-log commit-trailer scan runs once per audit, not once per brief.
+
+        Regression guard for the O(N) subprocess pattern: a fresh ``git log``
+        per OBPI (562 briefs on this repo) made this audit the single largest
+        time sink in ``gz check``. The semantic guarantee is that the number of
+        git invocations is independent of the brief count.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            for obpi_id in ("OBPI-0.0.64-91", "OBPI-0.0.64-92", "OBPI-0.0.64-93"):
+                _write_brief_with_id(root, obpi_id)
+            fake = mock.Mock(returncode=0, stdout="")
+            with mock.patch.object(validate_cmd.subprocess, "run", return_value=fake) as run_mock:
+                validate_cmd._sig_c_layer_drift(root)
+            self.assertEqual(
+                run_mock.call_count,
+                1,
+                "git history must be scanned once per audit, not once per OBPI "
+                f"(saw {run_mock.call_count} subprocess calls for 3 briefs)",
+            )
+
+
+class TestObpiIdForTask(unittest.TestCase):
+    """The TASK→OBPI grouping key mirrors ``_task_matches_obpi`` exactly."""
+
+    @covers("REQ-0.0.64-04-03")
+    def test_grouping_key_agrees_with_task_matches_obpi(self) -> None:
+        """``_obpi_id_for_task`` returns the one OBPI a TASK matches (or None)."""
+        from gzkit.commands.validate_cmd import _obpi_id_for_task, _task_matches_obpi
+
+        cases = [
+            "TASK-0.0.64-04-01-01",
+            "TASK-1.2.3-07-02-05",
+            "TASK-task-spine-restoration-#552",  # slug-form: no OBPI parent
+            "not-a-task",
+        ]
+        for tid in cases:
+            obpi = _obpi_id_for_task(tid)
+            if obpi is None:
+                self.assertFalse(
+                    _task_matches_obpi(tid, "OBPI-0.0.64-04"),
+                    f"{tid!r} mapped to no OBPI but matched one",
+                )
+            else:
+                self.assertTrue(
+                    _task_matches_obpi(tid, obpi),
+                    f"{tid!r} mapped to {obpi!r} but did not match it",
+                )
+        self.assertEqual(_obpi_id_for_task("TASK-0.0.64-04-01-01"), "OBPI-0.0.64-04")
+        self.assertIsNone(_obpi_id_for_task("TASK-task-spine-restoration-#552"))
 
 
 if __name__ == "__main__":

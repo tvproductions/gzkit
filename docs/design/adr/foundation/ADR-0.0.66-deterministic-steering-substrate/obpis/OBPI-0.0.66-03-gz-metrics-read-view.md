@@ -178,7 +178,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.66-03-01 [BEHAVIOR]: Given a fixture receipt stream/ledger with known events, when gz metrics runs, then it reports throughput, duration, defect rate, rework cycles, WIP, and trend computed from those events; a `@covers`-decorated test asserts each metric against the fixture's known-correct values.
 - [ ] REQ-0.0.66-03-02 [BEHAVIOR]: Given the metrics view computed at stream position N, when the stream advances to N+k, then the freshness drift validator fail-closes (exit 3) until the view is recomputed; a `@covers`-decorated test asserts the fail-close on stale view and pass after rebuild.
 - [ ] REQ-0.0.66-03-03 [BEHAVIOR]: Given the same source stream, when the view is rebuilt from scratch, then it reproduces the identical metrics (Layer-3 fully-rebuildable property); a `@covers`-decorated test asserts rebuild determinism.
-- [ ] REQ-0.0.66-03-04 [SUPPORT]: gz metrics exposes `--json`, is covered in its manpage, and `uv run gz cli audit` exits 0 with the verb covered; an `artifact_edited` event records the CLI addition.
+- [ ] REQ-0.0.66-03-04 [SUPPORT]: gz metrics exposes `--json`, is covered in its manpage, and `uv run gz cli audit` exits 0 with the verb covered and `uv run gz validate --cli-alignment` passes for the new verb's doc references; an `artifact_edited` event records the CLI addition.
 - [ ] REQ-0.0.66-03-05 [STRUCTURAL-FENCE]: gz metrics is a read-view only — no parallel metrics store is created, and the view never becomes source-of-truth or binds a gate. Parent ADR-0.0.66 § Boundary Invariants 1 (evidence-not-authority) and 3 (Layer-3-never-source-of-truth) name these invariants; ADR Alternative 6 rejects the parallel store.
 
 ## Completion Checklist

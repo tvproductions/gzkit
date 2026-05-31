@@ -296,19 +296,6 @@ _LINE_ENDING_TEXT_SUFFIXES: frozenset[str] = frozenset(
         ".feature",
     }
 )
-_LINE_ENDING_SCAN_ROOTS = (
-    "src",
-    "tests",
-    ".gzkit",
-    ".claude",
-    ".agents",
-    ".github",
-    "docs",
-    "features",
-)
-_LINE_ENDING_SKIP_DIRS: frozenset[str] = frozenset(
-    {".git", ".venv", "__pycache__", "node_modules", ".mypy_cache", ".ruff_cache"}
-)
 _GITATTRIBUTES_MISSING_MESSAGE = (
     "Missing `.gitattributes` — add `* text=auto eol=lf` so git normalizes line "
     "endings to LF on every platform regardless of a clone's local `core.autocrlf` "
@@ -333,9 +320,11 @@ def audit_line_endings(project_root: Path) -> list[ValidationError]:
     * ``.gitattributes`` MUST exist and carry ``* text=auto eol=lf`` so git
       normalizes line endings to LF on every platform regardless of a clone's
       local ``core.autocrlf``.
-    * No tracked text surface may contain a CRLF byte sequence — the outcome a
-      stray ``write_text``/``open`` without ``newline=`` produces on Windows,
-      which then surfaces as whole-file byte drift in parity comparisons.
+    * No tracked text surface may be COMMITTED with CRLF — verified against the
+      git index (``git ls-files --eol``), never the working tree. A correct
+      ``.gitattributes`` already makes committed CRLF impossible; this index
+      check is the defense-in-depth that confirms git did the work, without
+      policing volatile working-tree bytes that git normalizes away on commit.
     """
     errors: list[ValidationError] = []
     errors.extend(_check_gitattributes_lf(project_root))
@@ -369,53 +358,45 @@ def _check_gitattributes_lf(project_root: Path) -> list[ValidationError]:
     return []
 
 
-def _git_tracked_relposix(project_root: Path) -> frozenset[str] | None:
-    """Return git-tracked paths as project-relative posix strings.
+def _scan_crlf_surfaces(project_root: Path) -> list[ValidationError]:
+    """Fail closed on any tracked text surface COMMITTED with CRLF.
 
-    Returns ``None`` outside a git work tree (e.g. fixture temp dirs), where the
-    caller falls back to scanning every text file. Inside a repo, untracked and
-    gitignored files — runtime state such as ``.instruction-state.json`` — are
-    exempt, matching the ``runtime_state`` class doctrine (skill-surface-sync.md).
+    The line-ending contract lives at the git layer: ``.gitattributes``
+    (``* text=auto eol=lf``) normalizes every text blob to LF in the index on
+    commit. This scan verifies that contract is honored by inspecting the index
+    EOL via ``git ls-files --eol`` — not the working-tree bytes, which a Windows
+    checkout or a Python ``write_text`` may transiently render as CRLF and which
+    git normalizes away on commit. Trusting the index lets ``.gitattributes`` do
+    the work instead of the gate re-deriving it at every write site.
     """
     try:
         result = subprocess.run(
-            ["git", "-C", str(project_root), "ls-files", "-z"],
+            ["git", "-C", str(project_root), "ls-files", "--eol"],
             capture_output=True,
             check=True,
             timeout=30,
         )
     except (OSError, subprocess.SubprocessError):
-        return None
-    rels = result.stdout.decode("utf-8", "surrogateescape").split("\0")
-    return frozenset(rel for rel in rels if rel)
-
-
-def _scan_crlf_surfaces(project_root: Path) -> list[ValidationError]:
-    """Fail closed on any tracked text surface that still carries a CRLF byte."""
-    tracked = _git_tracked_relposix(project_root)
+        # Outside a git work tree (fixture temp dirs): no index to inspect; the
+        # .gitattributes-presence check still gates the contract.
+        return []
     errors: list[ValidationError] = []
-    for rel in _LINE_ENDING_SCAN_ROOTS:
-        root = project_root / rel
-        if not root.is_dir():
+    for entry in result.stdout.decode("utf-8", "surrogateescape").splitlines():
+        meta, tab, rel_posix = entry.partition("\t")
+        if not tab:
             continue
-        for path in sorted(root.rglob("*")):
-            if not path.is_file() or path.suffix.lower() not in _LINE_ENDING_TEXT_SUFFIXES:
-                continue
-            if _LINE_ENDING_SKIP_DIRS.intersection(path.parts):
-                continue
-            rel_posix = path.relative_to(project_root).as_posix()
-            if tracked is not None and rel_posix not in tracked:
-                continue
-            try:
-                data = path.read_bytes()
-            except OSError:
-                continue
-            if b"\r\n" in data:
-                errors.append(
-                    ValidationError(
-                        type="line_endings",
-                        artifact=rel_posix,
-                        message=_CRLF_SURFACE_MESSAGE,
-                    )
-                )
+        fields = meta.split()
+        if not fields or not fields[0].startswith("i/"):
+            continue
+        if fields[0][2:] not in ("crlf", "mixed"):
+            continue
+        if Path(rel_posix).suffix.lower() not in _LINE_ENDING_TEXT_SUFFIXES:
+            continue
+        errors.append(
+            ValidationError(
+                type="line_endings",
+                artifact=rel_posix,
+                message=_CRLF_SURFACE_MESSAGE,
+            )
+        )
     return errors

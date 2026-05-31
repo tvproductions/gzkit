@@ -828,6 +828,121 @@ def _channel_declarations_for_obpi(project_root: Path, obpi_id: str) -> dict[str
     }
 
 
+def _obpi_id_for_task(task_id: str) -> str | None:
+    """Return the OBPI id a TASK id belongs to, or ``None`` for non-formal ids.
+
+    Inverse of ``_task_matches_obpi``: ``_task_matches_obpi(tid, obpi)`` is true
+    iff ``_obpi_id_for_task(tid) == obpi``. Slug-form direct-fix ids
+    (``TASK-<slug>-#<ghi>``) have no OBPI parent and return ``None``.
+    """
+    m = re.match(r"^TASK-(\d+\.\d+\.\d+)-(\d+)-", task_id)
+    if not m:
+        return None
+    return f"OBPI-{m.group(1)}-{m.group(2)}"
+
+
+def _advances_channel_map() -> dict[str, set[str]]:
+    """Group every ``@advances``-registered TASK id by its OBPI (registry walked once)."""
+    out: dict[str, set[str]] = {}
+    try:
+        from gzkit.tasks import get_task_registry  # noqa: PLC0415
+
+        for rec in get_task_registry():
+            obpi_id = _obpi_id_for_task(rec.task_id)
+            if obpi_id:
+                out.setdefault(obpi_id, set()).add(rec.task_id)
+    except Exception:  # noqa: BLE001  -- defensive; registry walk is best-effort
+        return {}
+    return out
+
+
+def _frontmatter_channel_map(
+    brief_fms: dict[str, dict[str, object]],
+) -> dict[str, set[str]]:
+    """Group each brief's frontmatter ``tasks:`` declarations by OBPI id.
+
+    Reuses the already-collected ``brief_fms`` mapping so the brief corpus is
+    parsed once for the whole audit rather than once per OBPI.
+    """
+    out: dict[str, set[str]] = {}
+    for obpi_id, fm in brief_fms.items():
+        fm_tasks = fm.get("tasks") or []
+        if not isinstance(fm_tasks, list):
+            continue
+        tids = {str(t) for t in fm_tasks if isinstance(t, str)}
+        if tids:
+            out[obpi_id] = tids
+    return out
+
+
+def _commit_trailer_channel_map(project_root: Path) -> dict[str, set[str]]:
+    """Parse every commit's TASK trailers in ONE ``git log`` walk, grouped by OBPI.
+
+    Bulk-audit counterpart to ``_commit_trailer_channel_for_obpi``: one
+    ``git log --all`` walk for the whole audit instead of one subprocess per
+    brief.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "log", "--all", "--format=%B%n--EOC--"],
+            cwd=project_root,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=30,
+        )
+    except (subprocess.SubprocessError, OSError, FileNotFoundError):
+        return {}
+    if result.returncode != 0:
+        return {}
+    from gzkit.tasks import parse_task_trailers  # noqa: PLC0415
+
+    out: dict[str, set[str]] = {}
+    for chunk in result.stdout.split("--EOC--"):
+        for tid in parse_task_trailers(chunk):
+            tid_str = str(tid)
+            obpi_id = _obpi_id_for_task(tid_str)
+            if obpi_id:
+                out.setdefault(obpi_id, set()).add(tid_str)
+    return out
+
+
+def _ledger_task_channel(ledger_path: Path) -> tuple[dict[str, set[str]], set[str]]:
+    """Read the ledger ONCE; return (ledger TASK channel map, all OBPI ids seen).
+
+    The channel map groups ``task_started`` ``task_id`` values by ``obpi_id``
+    (matching ``_ledger_channel_for_obpi``). The second set carries every
+    ``obpi_id`` appearing on a ``task_started`` event even when the event omits
+    ``task_id`` — preserving the brief-less OBPI discovery the audit previously
+    did in a separate ledger pass.
+    """
+    import json as _json  # noqa: PLC0415
+
+    channel: dict[str, set[str]] = {}
+    seen_obpis: set[str] = set()
+    if not ledger_path.exists():
+        return channel, seen_obpis
+    for line in ledger_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            ev = _json.loads(line)
+        except _json.JSONDecodeError:
+            continue
+        if ev.get("event") != "task_started":
+            continue
+        obpi_id = ev.get("obpi_id")
+        if not obpi_id:
+            continue
+        obpi_str = str(obpi_id)
+        seen_obpis.add(obpi_str)
+        task_id = ev.get("task_id")
+        if task_id:
+            channel.setdefault(obpi_str, set()).add(str(task_id))
+    return channel, seen_obpis
+
+
 def _sig_c_layer_drift(project_root: Path) -> list[ValidationError]:
     """Signature (c) — layer-drift across the four discovery channels per OBPI.
 
@@ -836,29 +951,30 @@ def _sig_c_layer_drift(project_root: Path) -> list[ValidationError]:
     TASK ID present on one channel is missing from another non-empty channel).
     Conservative single-OBPI-and-REQ scoping: drift fires when channels
     disagree on the set of TASKs for the same OBPI.
+
+    Each channel is materialized ONCE for the whole audit (one ``git log``
+    walk, one frontmatter parse, one ledger read) and indexed per-OBPI inside
+    the loop, rather than re-scanning every channel per brief.
     """
     errors: list[ValidationError] = []
     brief_fms = _collect_obpi_brief_frontmatter(project_root)
-    obpi_ids = set(brief_fms.keys())
 
-    # Include OBPIs that have ledger task_started events even without a brief.
-    import json as _json  # noqa: PLC0415
+    ledger_map, ledger_obpis = _ledger_task_channel(project_root / ".gzkit" / "ledger.jsonl")
+    advances_map = _advances_channel_map()
+    frontmatter_map = _frontmatter_channel_map(brief_fms)
+    commit_trailer_map = _commit_trailer_channel_map(project_root)
 
-    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
-    if ledger_path.exists():
-        for line in ledger_path.read_text(encoding="utf-8").splitlines():
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                ev = _json.loads(line)
-            except _json.JSONDecodeError:
-                continue
-            if ev.get("event") == "task_started" and ev.get("obpi_id"):
-                obpi_ids.add(str(ev["obpi_id"]))
+    # OBPIs come from authored briefs plus any with ledger task_started events
+    # even without a brief.
+    obpi_ids = set(brief_fms.keys()) | ledger_obpis
 
     for obpi_id in sorted(obpi_ids):
-        channels = _channel_declarations_for_obpi(project_root, obpi_id)
+        channels = {
+            "advances": advances_map.get(obpi_id, set()),
+            "frontmatter": frontmatter_map.get(obpi_id, set()),
+            "commit_trailer": commit_trailer_map.get(obpi_id, set()),
+            "ledger": ledger_map.get(obpi_id, set()),
+        }
         non_empty = {k: v for k, v in channels.items() if v}
         if len(non_empty) < 2:
             continue  # need at least two channels with declarations to compare

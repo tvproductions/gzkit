@@ -30,9 +30,10 @@ _SKILL = _REPO_ROOT / ".gzkit" / "skills" / "gz-session-handoff" / "SKILL.md"
 # source (``20260524T181428Z-obpi-01-context-core-green.md``) was a byte-identical
 # duplicate of an already-canonical file and was removed as a dedup rather than
 # migrated, so the distinct migrated total was 34 (operator decision 2026-05-30); bumped
-# to 35 for the 2026-05-31 ADR-0.0.37 density-dial session handoff. Brittle exact-count
+# to 35 for the 2026-05-31 ADR-0.0.37 density-dial session handoff, then 36 for the
+# 2026-05-31 canon-foundation-design-captured session handoff. Brittle exact-count
 # assertion, slated for replacement.
-_EXPECTED_CANONICAL_COUNT = 35
+_EXPECTED_CANONICAL_COUNT = 36
 
 
 def _canonical_handoffs() -> list[Path]:

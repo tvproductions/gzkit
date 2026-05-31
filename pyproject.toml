@@ -107,13 +107,23 @@ indent-style = "space"
 
 [dependency-groups]
 dev = [
+    "bandit>=1.9.4",
     "behave>=1.3.3",
+    "cohesion>=1.2.0",
     "coverage>=7.13.5",
+    "detect-secrets>=1.5.0",
+    "interrogate>=1.7.0",
+    "lizard>=1.22.1",
     "mkdocs==1.6.1",
     "mkdocs-material==9.7.6",
+    "pygount>=3.2.0",
     "pyinstaller>=6.20.0",
+    "radon>=6.0.1",
     "ruff>=0.15.12",
     "ty>=0.0.34",
+    "vulture>=2.16",
+    "wily>=1.12.2",
+    "xenon>=0.9.3",
 ]
 
 # GHI #256: scope coverage to src/gzkit so ephemeral tempdir sources under

@@ -292,10 +292,6 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                             "type": "command",
                             "command": _expected_hook_command("ledger-writer.py"),
                         },
-                        {
-                            "type": "command",
-                            "command": _expected_hook_command("control-surface-sync.py"),
-                        },
                     ],
                 },
             ],
@@ -321,7 +317,7 @@ class TestGenerateClaudeSettings(unittest.TestCase):
             for group in settings["hooks"][phase]
             for hook in group["hooks"]
         ]
-        self.assertEqual(len(commands), 11, commands)
+        self.assertEqual(len(commands), 10, commands)
         for command in commands:
             self.assertIn('"$CLAUDE_PROJECT_DIR/', command, command)
             self.assertNotIn("python .claude/hooks/", command, command)
@@ -522,10 +518,6 @@ class TestSetupClaudeHooks(unittest.TestCase):
                             {
                                 "type": "command",
                                 "command": _expected_hook_command("ledger-writer.py"),
-                            },
-                            {
-                                "type": "command",
-                                "command": _expected_hook_command("control-surface-sync.py"),
                             },
                         ],
                     },

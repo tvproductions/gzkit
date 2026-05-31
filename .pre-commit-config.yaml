@@ -104,5 +104,8 @@ repos:
         language: system
         pass_filenames: false
         types: [python]
+        # Moved off per-commit to pre-push: commits stay fast (cheap gates only);
+        # the full suite runs once before push, and again in CI (gz check).
+        stages: [pre-push]
         # Unit tests mock subprocess boundaries. End-to-end CLI behavior
         # is covered by behave under features/ — see .gzkit/rules/tests.md.
