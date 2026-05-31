@@ -322,19 +322,65 @@ becomes its foundation-classified subset. The dial has an absolute floor — *"w
 0 Kelvin"*: `Judgment`-class bullets render at every temperature; the dial thins only
 Mechanical/Reference prose.
 
-**In-flight state.** ADR-0.0.37 Decision extended (new subsection "Decision Extension
-(2026-05-30): CIC-1 Density-Dial Composition"); checklist items 11–16 added; Decomposition
-Scorecard made coherent (final target 16); six brief stubs created (1:1 sync, 16↔16);
-`gz validate --documents` green. The six briefs are scaffolds pending semantic authoring;
-implementation follows. This is a foundation-ADR scope change made under explicit operator
-direction as #519 emergency relief (Architectural Boundary 1 / Operating Rule 6 waived by
-the operator's explicit call now that `gz check` is green).
+**In-flight state (updated 2026-05-30, post-authoring).** ADR-0.0.37 Decision extended
+(new subsection "Decision Extension (2026-05-30): CIC-1 Density-Dial Composition");
+checklist items 11–16 added; Decomposition Scorecard made coherent (final target 16); six
+briefs created (1:1 sync, 16↔16). The briefs are no longer scaffolds: OBPIs 11–16 are
+**semantically authored and committed** (commit `4014b85b`, GHI #519) — each passes
+`uv run gz obpi validate --authored` (six-for-six, verified this session). They remain
+`status: Draft` in lifecycle: authoring-completeness and lifecycle are orthogonal axes, and
+**no implementation pipeline has run** — `gz obpi pipeline OBPI-0.0.37-11` is the next
+action. Full `uv run gz check` exits 0 after the amendment (not just `gz validate
+--documents`). This is a foundation-ADR scope change made under explicit operator direction
+as #519 emergency relief (Architectural Boundary 1 / Operating Rule 6 waived by the
+operator's explicit call now that `gz check` is green).
 
 **Open loop named.** This session re-derived the rendering architecture from source despite
 the substrate doctrine already documenting it and three prior same-day insights logging the
 lesson — capture without re-injection does not bind. OBPI-0.0.37-16 (docs-for-agents
 orientation index) is the structural fix; the session handoff is the interim re-injection.
 See `.gzkit/insights/agent-insights.jsonl` (2026-05-30 open-loop entry).
+
+**Discoveries from the authoring pass (verified this session, 2026-05-30).** The six briefs
+landed ~1,400 lines of analysis; these are the findings that change the work's *size and stakes*,
+beyond the Diagnosis above. Each is verified against source this session, not taken from the
+brief prose.
+
+- **The two substrates are emptier than the Diagnosis stated — OBPI-11 is a model *build*, not
+  an extension.** On-disk `AgentContract` (`src/gzkit/content/models/agent_contract.py`) is a
+  four-field shell (`name`/`purpose`/`tech_stack`/`rules`); `Bullet` (`bullet.py`) carries only
+  `text` + `indent`. All four density fields the dial needs — `classification`, `witness`,
+  `rationale_ref`, `density_min` — are **net-new; none exist today**. The rich `AgentContract`
+  in the substrate doctrine's worked example is *aspirational*, not on disk.
+- **`gz validate --invariant-coherence` is registry-blind — a green that proves little.**
+  `src/gzkit/governance/trust_audits/invariant_coherence.py` renders via
+  `compose.render_agents_md` against `.gzkit/templates/agents.md`, a template with **zero Jinja
+  constructs** that never references the `invariants` variable it is handed, then byte-compares
+  against committed `AGENTS.md`. So the gate catches a hand-edit to `AGENTS.md` (real, narrow)
+  but is **structurally blind to whether the four `.gzkit/invariants/` entries
+  (CIC-1, CIC-2, foundation-adr-registers-invariant, skill-first-execution-invariant) project
+  anything into the surface.** This is the recovery plan's own *"validator that claims health
+  without proving the path that matters"* pattern, found live. Tracked: OBPI-0.0.37-14 repoints
+  this gate to diff the model render against the committed surface.
+- **The `{invariants}` slot is a literal placeholder string, on the production path too.**
+  `get_project_context` in `sync_surfaces.py` fills `invariants = "See governance documents"`;
+  the registry reaches the rendered surface through *neither* render path. The four registry
+  entries are confirmed orphans.
+- **The #519 byte magnitude is exact, not approximate.** Root `AGENTS.md` = **32,121 B =
+  98.0%** of the 32,768 B (32 KiB) cap (`data/instructions_files_budget.json`); the production
+  template = 23,378 B; the `.gzkit/agents.local.md` raw splice = 8,776 B.
+- **"Dumb 4× mirroring" is imprecise — the mirrors already differ.** No materialized
+  `.agents/AGENTS.md` or `.claude/AGENTS.md` sibling exists; `.github/AGENTS.md` is a distinct
+  1,384 B thin mirror, not a full copy. OBPI-15's per-vendor temperature targets render-time
+  selection; the Codex `lite` tier is the named #519 relief.
+- **OBPI-13 hardens two safety invariants the Diagnosis did not name.** (a) The round-trip
+  contract shifts from byte-preservation (OBPI-09) to *semantic* equality
+  `parse(render(model)) == model`, explicitly superseding OBPI-09. (b) A bullet with no
+  determinable witness classifies **`Ambiguous`, never silently `Mechanical`** — so the dial can
+  never thin an *unenforced* rule. That is the mechanical form of the 0-Kelvin floor.
+- **The authoring landed zero implementation — the green reflects briefs, not working code.**
+  Commit `4014b85b` touched no `src/gzkit/` file; companion `19820662` only bumped a brittle
+  exact-count handoff test (34→35), itself flagged for replacement.
 
 **Exit criteria.** OBPIs 11–16 authored and implemented; `sync_agents_md` renders from the
 master model; AGENTS.md and vendor mirrors render at per-vendor temperatures; zero
@@ -352,12 +398,12 @@ stays blocked until #519 closes.
 
 ```text
 Snapshot date:            2026-05-30 (recovery still open)
-uv run gz check:          exit 0 — 26/26 gates pass (advisory-only drift remains)
+uv run gz check:          exit 0 — 26/26 gates pass (advisory-only drift remains; 1714 findings this run, up from 1687)
 Emergency GHIs open:      1 — #519 (codex context surface exhausts 258K window)
-Context-load issue state: #519 OPEN — remediation route now IN-FLIGHT (ADR-0.0.37 density-dial CMS, OBPIs 11-16); see Designated Workstream — Context-Load CMS
+Context-load issue state: #519 OPEN — remediation route IN-FLIGHT and advanced one stage: ADR-0.0.37 density-dial CMS OBPIs 11-16 now AUTHORED + committed (4014b85b), all six pass gz obpi validate --authored, Draft lifecycle, implementation NOT started; see Designated Workstream — Context-Load CMS
 Task-envelope coherence:  PASS — gz check gate green
 Open recovery issues:     #519 (emergency; Phase 2 / Phase 4 item 1), #516 (closeout passive-presenter; Phase 3). #517 closed.
-Decision:                 normal development may NOT resume — blocked on emergency GHI #519
+Decision:                 normal development may NOT resume — blocked on emergency GHI #519 (authoring advanced the route; it did not land)
 ```
 
 ## Appendix: The Smooth-vs-Replicable Axis (2026-05-30 dialogue insights)
