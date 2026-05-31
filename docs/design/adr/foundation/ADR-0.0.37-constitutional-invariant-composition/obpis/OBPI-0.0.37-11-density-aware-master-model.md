@@ -3,7 +3,7 @@ id: OBPI-0.0.37-11-density-aware-master-model
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 11
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.37-11-density-aware-master-model: Density-Aware Master Content Model
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 - **Checklist Item:** #11 — "OBPI-0.0.37-11 — Density-aware master content model (reconcile ConstitutionalInvariant into AgentContract/Pillar/Bullet; classification + witness + rationale_ref + density_min; section order/enabled/tier)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -212,17 +212,29 @@ witness, rationale-pointer, density-floor, and section metadata the temperature 
 
 ### Key Proof
 
-A `Judgment` bullet constructed in the model is structurally pinned to render at every
-temperature; a `Mechanical` bullet carries its witness and a `density_min` above lite.
+
+reconcile_invariant + the Judgment 0-Kelvin floor proven live:
+
+    $ uv run python -c "from gzkit.governance.invariants import ConstitutionalInvariant, reconcile_invariant; b=reconcile_invariant(ConstitutionalInvariant(id='CIC-1', claim='Every claim originates from the registry.', structural_witness=['gz validate --invariant-coherence'], composition_targets=['AGENTS.md'])); print(b.text,'|',b.classification,'|',b.density_min)"
+    Every claim originates from the registry. | Mechanical | lite
+
+    $ uv run python -c "from gzkit.content.models import Bullet; b=Bullet(text='Surface assumptions before implementing.', classification='Judgment'); print(b.classification, b.density_min)"
+    Judgment lite
+
+OBPI-scoped suite 22/22 green — receipt arb-step-unittestobpi11-e97345a2f82f4b93a531e974c04db99c. Full suite 5790 pass — arb-step-unittest-ca37476312944e72afb8baa2a69872f8.
 
 ### Implementation Summary
 
-- Decision item implemented (verbatim): "OBPI-0.0.37-11 — Density-aware master content model (reconcile ConstitutionalInvariant into AgentContract/Pillar/Bullet; classification + witness + rationale_ref + density_min; section order/enabled/tier)."
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Decision item (ADR-0.0.37 Decision Extension, 2026-05-30): density-aware master content model — reconcile ConstitutionalInvariant into AgentContract/Pillar/Bullet; classification + witness + rationale_ref + density_min; section order/enabled/tier.
+- Bullet extended: classification (Mechanical|Promotable|Judgment|Ambiguous), witness (str|None), rationale_ref (str|None), density_min (lite|medium|heavy|None); model_validator pins Judgment bullets to density_min='lite' (the 0-Kelvin floor) and rejects any other value.
+- Pillar section primitive added (id, title, order, enabled, tier, bullets); AgentContract gains pillars: list[Pillar] with backward-compat default [].
+- reconcile_invariant(ConstitutionalInvariant) -> Bullet: claim->text, structural_witness[0]->witness, classification=Mechanical, density_min=lite — registry is the foundation-classified subset of the master model, not a parallel store.
+- constitutional_invariant.json schema mirrors the reconciled model (optional classification + density_min hint fields).
+- Files modified: src/gzkit/content/models/{bullet.py, agent_contract.py, __init__.py}; src/gzkit/governance/invariants.py; src/gzkit/schemas/constitutional_invariant.json; tests/content/models/test_fields.py; tests/content/test_round_trip_agent_contract.py.
+- Tests added: 22 (TestDensityBulletFields 8; TestPillarFields 9 incl. frozen/extra=forbid + no-untyped-field checks; TestReconcileInvariant 5). Full suite 5790 pass.
+- Spec-review + quality-review (two-stage) cleared; F-01 (Pillar registry) and F-04 (test-name over-claim) resolved in-flight.
+- Date completed: 2026-05-31. Attestor: g0 ("attest completed").
 
 ## Tracked Defects
 
@@ -230,12 +242,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.37-11 density-aware master content model: Bullet gains classification/witness/rationale_ref/density_min with the Judgment 0-Kelvin floor, the Pillar section primitive is added, and reconcile_invariant bridges the constitutional-invariant registry into the ADR-0.0.34 content substrate (one spine, not two). 22 OBPI-scoped tests green (arb-step-unittestobpi11-e97345a2f82f4b93a531e974c04db99c), full suite 5790 pass (arb-step-unittest-ca37476312944e72afb8baa2a69872f8), lint/typecheck/docs clean (arb-ruff-b2dfa561e53743178ea5dca14147a469, arb-step-typecheck-029f95ed1e07479b9cb0d41ae43fa3b0, arb-step-mkdocs-5d89b25cd4354577879a018950d0c51c). Behave coverage waived (schema-only; BDD deferred to ADR-0.0.37 closeout per sibling-OBPI precedent).
+- Date: 2026-05-31
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-05-31
 
 **Evidence Hash:** -

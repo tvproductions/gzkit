@@ -2,15 +2,21 @@
 
 Invariant data files under ``.gzkit/invariants/`` are JSON, not YAML, per the
 AGENTS.md "No YAML for gzkit data files" rule (2026-05-19).
+
+``reconcile_invariant`` maps registry entries to density-aware Bullets (OBPI-0.0.37-11).
 """
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import jsonschema
 from pydantic import BaseModel, ConfigDict, Field
+
+if TYPE_CHECKING:
+    from gzkit.content.models.bullet import Bullet
 
 
 def _load_schema() -> dict:
@@ -50,3 +56,23 @@ def load_invariants(root: Path) -> dict[str, ConstitutionalInvariant]:
         result[invariant.id] = invariant
 
     return result
+
+
+def reconcile_invariant(invariant: ConstitutionalInvariant) -> Bullet:
+    """Map a ConstitutionalInvariant registry entry into a density-aware Bullet.
+
+    Reconciliation contract (OBPI-0.0.37-11):
+    - claim -> text (the foundational assertion, verbatim)
+    - structural_witness[0] -> witness (the first gate command that enforces it)
+    - classification = "Mechanical" (constitutional invariants are mechanically enforced)
+    - density_min = "lite" (invariants render at every temperature; no gate carries them)
+    - rationale_ref = None (pointers added at composition time by the renderer, OBPI-12)
+    """
+    from gzkit.content.models.bullet import Bullet  # local import — avoids circular dep
+
+    return Bullet(
+        text=invariant.claim,
+        witness=invariant.structural_witness[0],
+        classification="Mechanical",
+        density_min="lite",
+    )

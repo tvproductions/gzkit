@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.0.37-11-density-aware-master-model",
+  "parent_adr": "ADR-0.0.37-constitutional-invariant-composition",
+  "lane": "heavy",
+  "entry": "sync",
+  "execution_mode": "normal",
+  "current_stage": "sync",
+  "started_at": "2026-05-31T10:43:32Z",
+  "updated_at": "2026-05-31T10:43:32Z",
+  "receipt_state": "pass",
+  "nonce": "24eb362f37f0b02965009d48e19027e3",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz git-sync --apply --lint --test",
+  "resume_point": null
+}

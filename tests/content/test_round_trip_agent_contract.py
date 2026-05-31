@@ -7,6 +7,7 @@ import unittest
 from gzkit.content.models import AgentContract, Bullet
 from gzkit.content.parse import parse
 from gzkit.content.render import render
+from gzkit.governance.invariants import ConstitutionalInvariant, reconcile_invariant
 from gzkit.traceability import covers
 
 
@@ -50,6 +51,66 @@ class TestRoundTripAgentContract(unittest.TestCase):
         parsed = parse(once.decode("utf-8"), "AgentContract")
         twice = render(parsed, "claude")
         self.assertEqual(once, twice)
+
+
+class TestReconcileInvariant(unittest.TestCase):
+    """REQ-0.0.37-11-04: reconcile_invariant maps ConstitutionalInvariant -> Bullet."""
+
+    @covers("REQ-0.0.37-11-04")
+    def test_reconcile_maps_claim_to_text(self) -> None:
+        inv = ConstitutionalInvariant(
+            id="CIC-1",
+            claim="Every claim originates from the registry.",
+            structural_witness=["gz validate --invariant-coherence"],
+            composition_targets=["AGENTS.md"],
+        )
+        bullet = reconcile_invariant(inv)
+        self.assertEqual(bullet.text, "Every claim originates from the registry.")
+
+    @covers("REQ-0.0.37-11-04")
+    def test_reconcile_maps_first_structural_witness_to_witness(self) -> None:
+        inv = ConstitutionalInvariant(
+            id="CIC-1",
+            claim="x",
+            structural_witness=["gz validate --first", "gz validate --second"],
+            composition_targets=[],
+        )
+        bullet = reconcile_invariant(inv)
+        self.assertEqual(bullet.witness, "gz validate --first")
+
+    @covers("REQ-0.0.37-11-04")
+    def test_reconcile_assigns_mechanical_classification(self) -> None:
+        inv = ConstitutionalInvariant(
+            id="CIC-1",
+            claim="x",
+            structural_witness=["gz validate --foo"],
+            composition_targets=[],
+        )
+        bullet = reconcile_invariant(inv)
+        self.assertEqual(bullet.classification, "Mechanical")
+
+    @covers("REQ-0.0.37-11-04")
+    def test_reconcile_assigns_lite_density_min(self) -> None:
+        inv = ConstitutionalInvariant(
+            id="CIC-1",
+            claim="x",
+            structural_witness=["gz validate --foo"],
+            composition_targets=[],
+        )
+        bullet = reconcile_invariant(inv)
+        self.assertEqual(bullet.density_min, "lite")
+
+    @covers("REQ-0.0.37-11-04")
+    def test_reconcile_bullet_round_trips_via_model_dump(self) -> None:
+        inv = ConstitutionalInvariant(
+            id="CIC-2",
+            claim="Every OBPI brief reconciles against project shape.",
+            structural_witness=["gz brief reconcile"],
+            composition_targets=["AGENTS.md"],
+        )
+        bullet = reconcile_invariant(inv)
+        rebuilt = Bullet(**bullet.model_dump())
+        self.assertEqual(bullet, rebuilt)
 
 
 if __name__ == "__main__":

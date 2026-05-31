@@ -145,3 +145,151 @@ class TestSemanticStructureValidators(unittest.TestCase):
         Chore(slug="my-chore", title="t")
         Persona(slug="my-persona", role="r")
         Handoff(session_id="abc-123", state_summary="s")
+
+
+class TestDensityBulletFields(unittest.TestCase):
+    @covers("REQ-0.0.37-11-01")
+    def test_bullet_accepts_classification_enum_values(self) -> None:
+        from gzkit.content.models import Bullet
+
+        for cls in ("Mechanical", "Promotable", "Judgment", "Ambiguous"):
+            b = Bullet(text="x", classification=cls)
+            self.assertEqual(b.classification, cls)
+
+    @covers("REQ-0.0.37-11-01")
+    def test_bullet_rejects_invalid_classification(self) -> None:
+        from gzkit.content.models import Bullet
+
+        with self.assertRaises(ValidationError):
+            Bullet(text="x", classification="Invalid")
+
+    @covers("REQ-0.0.37-11-01")
+    def test_bullet_accepts_witness_and_rationale_ref(self) -> None:
+        from gzkit.content.models import Bullet
+
+        b = Bullet(text="x", witness="gz validate --foo", rationale_ref="docs/foo.md")
+        self.assertEqual(b.witness, "gz validate --foo")
+        self.assertEqual(b.rationale_ref, "docs/foo.md")
+
+    @covers("REQ-0.0.37-11-01")
+    def test_bullet_new_fields_default_to_none(self) -> None:
+        from gzkit.content.models import Bullet
+
+        b = Bullet(text="x")
+        self.assertIsNone(b.classification)
+        self.assertIsNone(b.witness)
+        self.assertIsNone(b.rationale_ref)
+        self.assertIsNone(b.density_min)
+
+    @covers("REQ-0.0.37-11-03")
+    def test_judgment_bullet_density_min_auto_set_to_lite(self) -> None:
+        from gzkit.content.models import Bullet
+
+        b = Bullet(text="x", classification="Judgment")
+        self.assertEqual(b.density_min, "lite")
+
+    @covers("REQ-0.0.37-11-03")
+    def test_judgment_bullet_rejects_density_min_above_lite(self) -> None:
+        from gzkit.content.models import Bullet
+
+        with self.assertRaises(ValidationError):
+            Bullet(text="x", classification="Judgment", density_min="heavy")
+
+    @covers("REQ-0.0.37-11-01")
+    def test_density_min_accepts_valid_temperatures(self) -> None:
+        from gzkit.content.models import Bullet
+
+        for temp in ("lite", "medium", "heavy"):
+            b = Bullet(text="x", density_min=temp)
+            self.assertEqual(b.density_min, temp)
+
+    @covers("REQ-0.0.37-11-01")
+    def test_density_min_rejects_invalid_temperature(self) -> None:
+        from gzkit.content.models import Bullet
+
+        with self.assertRaises(ValidationError):
+            Bullet(text="x", density_min="ultra")
+
+
+class TestPillarFields(unittest.TestCase):
+    @covers("REQ-0.0.37-11-02")
+    def test_pillar_constructs_with_minimal_required_fields(self) -> None:
+        from gzkit.content.models.agent_contract import Pillar
+
+        p = Pillar(id="behavior-rules", title="Behavior Rules", order=1)
+        self.assertEqual(p.order, 1)
+        self.assertTrue(p.enabled)  # default True
+        self.assertEqual(p.tier, "lite")  # default "lite"
+        self.assertEqual(p.bullets, [])  # default empty
+
+    @covers("REQ-0.0.37-11-02")
+    def test_pillar_enabled_stores_false(self) -> None:
+        from gzkit.content.models.agent_contract import Pillar
+
+        p = Pillar(id="x", title="X", order=1, enabled=False)
+        self.assertFalse(p.enabled)
+
+    @covers("REQ-0.0.37-11-02")
+    def test_pillar_tier_controls_lowest_temperature(self) -> None:
+        from gzkit.content.models.agent_contract import Pillar
+
+        for tier in ("lite", "medium", "heavy"):
+            p = Pillar(id="x", title="X", order=1, tier=tier)
+            self.assertEqual(p.tier, tier)
+
+    @covers("REQ-0.0.37-11-02")
+    def test_pillar_tier_rejects_invalid_value(self) -> None:
+        from gzkit.content.models.agent_contract import Pillar
+
+        with self.assertRaises(ValidationError):
+            Pillar(id="x", title="X", order=1, tier="ultra")
+
+    @covers("REQ-0.0.37-11-02")
+    def test_pillar_carries_bullets(self) -> None:
+        from gzkit.content.models import Bullet
+        from gzkit.content.models.agent_contract import Pillar
+
+        p = Pillar(
+            id="x", title="X", order=1, bullets=[Bullet(text="rule one"), Bullet(text="rule two")]
+        )
+        self.assertEqual(len(p.bullets), 2)
+
+    @covers("REQ-0.0.37-11-02")
+    def test_agent_contract_accepts_pillars(self) -> None:
+        from gzkit.content.models import AgentContract
+        from gzkit.content.models.agent_contract import Pillar
+
+        p = Pillar(id="x", title="X", order=1)
+        ac = AgentContract(name="A", purpose="P", pillars=[p])
+        self.assertEqual(len(ac.pillars), 1)
+
+    @covers("REQ-0.0.37-11-02")
+    def test_agent_contract_pillars_defaults_to_empty(self) -> None:
+        from gzkit.content.models import AgentContract
+
+        ac = AgentContract(name="A", purpose="P")
+        self.assertEqual(ac.pillars, [])
+
+    @covers("REQ-0.0.37-11-02")
+    def test_pillar_frozen_and_extra_forbid(self) -> None:
+        """Pillar inherits frozen=True and extra='forbid' from BaseContentModel."""
+        from pydantic import ValidationError
+
+        from gzkit.content.models.agent_contract import Pillar
+
+        self.assertTrue(Pillar.model_config.get("frozen") is True)
+        self.assertEqual(Pillar.model_config.get("extra"), "forbid")
+        with self.assertRaises(ValidationError):
+            Pillar(id="x", title="X", order=1, _undeclared_field_xyz="boom")
+
+    @covers("REQ-0.0.37-11-02")
+    def test_pillar_no_untyped_fields(self) -> None:
+        """Pillar schema must not contain unconstrained Any/untyped dict fields."""
+        import typing
+
+        from gzkit.content.models.agent_contract import Pillar
+
+        for field_name, field_info in Pillar.model_fields.items():
+            annotation = field_info.annotation
+            with self.subTest(field=field_name):
+                self.assertIsNot(annotation, typing.Any, f"Pillar.{field_name} must not be Any")

@@ -3,7 +3,7 @@
 See ADR-0.0.34-agent-control-surface-rendering-substrate § Decision item #1.
 """
 
-from .agent_contract import AgentContract
+from .agent_contract import AgentContract, Pillar
 from .base import BaseContentModel
 from .bullet import Bullet
 from .chore import Chore
@@ -29,6 +29,7 @@ __all__ = [
     "AgentContract",
     "BaseContentModel",
     "Bullet",
+    "Pillar",
     "Chore",
     "Handoff",
     "Persona",

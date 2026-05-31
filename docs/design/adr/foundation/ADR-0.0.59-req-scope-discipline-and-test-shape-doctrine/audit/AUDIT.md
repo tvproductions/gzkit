@@ -144,6 +144,24 @@ Reviewer dispatch evidence (persona-dispatched judgment work) is captured in the
 
 The two independent reviewers concur: VALIDATED proceeds; the shortfalls are real but non-blocking and route to follow-up GHIs. The ADR ships the taxonomy + scaffold + chore as authored; the depth of two proof channels' resolution is the named follow-up surface.
 
+### 2026-05-31 unit-testing doctrine follow-up
+
+[`FOLLOW_UP_UNIT_TESTING_DOCTRINE_2026-05-31.md`](FOLLOW_UP_UNIT_TESTING_DOCTRINE_2026-05-31.md)
+records the post-validation unit-testing deep dive requested under GHI #571.
+It confirms ADR-0.0.59 is the correct design response to GHI #531 and routes
+the remaining recurrence-defense findings to the related GHIs:
+
+- hot-path unit-test wording should explicitly say only BEHAVIOR REQs produce
+  `@covers` unit tests;
+- `gz-obpi-pipeline` evidence language still treats `@covers location` as
+  universal and should be rewritten as proof-channel-specific;
+- `gz obpi complete` still applies old `discover_covers()` pressure at
+  completion time, tracked by GHI #537;
+- the tautological-test scanner is a growth gate, not a cleanup report, and
+  needs inventory output before broad cleanup waves;
+- output/render assertion detection should begin advisory-only until
+  output-contract fixture markers exist.
+
 ### Follow-up GHIs to file (5 from quality-reviewer + 1 from spec-reviewer)
 
 1. **SUPPORT channel: implement actual ledger-event query** — currently `_check_support_req` (`src/gzkit/commands/validate_cmd.py:403-425`) regex-matches REQ prose for `"gz validate --"` AND any of `{artifact_edited, obpi_created, ledger, event}`; no ledger query is made. `compute_three_channel_coverage` hardcodes `proof_status = "advisory-support"` (`src/gzkit/req_kind.py:218`). The "LEDGER_PLUS_VALIDATOR" channel name overstates what runs. Implement actual `gz events query` against `artifact_edited` events citing the asserted path + structural-validator dispatch.

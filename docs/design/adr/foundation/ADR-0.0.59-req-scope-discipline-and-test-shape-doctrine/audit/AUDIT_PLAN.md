@@ -76,3 +76,12 @@ subagents produce evidence the driver synthesizes:
   filesystem-shaped operations are not all decommissioned (OBPI-05 only
   processed top-5 of tests/governance/). Audit verifies this is acknowledged
   not papered over.
+
+## Post-validation follow-up
+
+On 2026-05-31, GHI #571 extended this audit with a unit-testing doctrine
+deep dive. The durable follow-up artifact is
+[`FOLLOW_UP_UNIT_TESTING_DOCTRINE_2026-05-31.md`](FOLLOW_UP_UNIT_TESTING_DOCTRINE_2026-05-31.md).
+It is scoped as recurrence defense for ADR-0.0.59, not a competing design:
+control-surface wording, stale skill evidence tables, completion-layer
+`@covers` pressure, scanner inventory, and output/render assertion triage.
