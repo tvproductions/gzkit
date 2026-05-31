@@ -117,6 +117,60 @@ Codify two co-load-bearing foundation invariants in one ADR:
 - Does NOT modify the ledger event schema beyond the new event family added here — broader ledger schema changes are out of scope.
 - Does NOT introduce a new attestation type — the existing `human` / `agent-relayed-operator-attestation` / `self-close-exception` taxonomy carries through.
 
+## Decision Extension (2026-05-30): CIC-1 Density-Dial Composition
+
+The original Decision scoped CIC-1's renderer as a *byte-preserving* migration of the
+existing AGENTS.md prose into a flat claim registry (OBPI-02/09). Post-landing review
+under the return-to-health emergency (#519) established that this under-delivers the
+mechanism's purpose and strands it short of the always-intended CMS vision. This
+extension re-aims CIC-1's **composition** half; the brief↔reality half (CIC-2,
+OBPIs 04–08) is untouched.
+
+**Operator vision (verbatim, preserved per OEE doctrine § 3):** *"We keep a master JSON
+file that has MAX richness, MAX depth, MAX specification, and then use different
+'temperatures' to dial up or down within. OR, even add/withhold sections. All of that can
+be templated: lite template, medium template, heavy template. These could become truly
+dynamic in the future → vendor-specific templates. We could even stop the 'dumb' mirroring
+and do some agent/harness/model detection and REALLY fine tune. This was always the vision
+for this system."*
+
+**The mechanism.** The constitutional-invariant registry is reconciled into ADR-0.0.34's
+`AgentContract`/`Pillar`/`Bullet` content-model substrate — one spine, not two parallel
+ones. Each bullet carries its full-fidelity prose plus a `classification`
+(Mechanical | Promotable | Judgment | Ambiguous), a `witness` (the gate that mechanically
+enforces it), a `rationale_ref` (a pointer, never rendered inline), and a `density_min`
+(the lowest temperature at which it still renders). Sections carry `order`, `enabled`, and
+`tier`. The renderer takes a **temperature** (lite / medium / heavy) and a
+**section-inclusion set** and projects the master model to a surface deterministically: low
+temperature renders terse claims + witness pointers; high temperature renders full prose.
+
+**The dial has an absolute floor — it does not go to 0 Kelvin.** `Judgment`-class bullets
+render at *every* temperature, because they are the anti-vibe invariants no gate can
+enforce and the model must hold in-context. The dial thins only Mechanical/Reference prose,
+because a gate or a fetch already carries that safety property.
+
+**Consequence for context economy.** AGENTS.md ceases to be a hand-authored monolith;
+`sync_agents_md` renders it from the master model at a chosen temperature; vendor mirrors
+render at per-vendor temperatures (Codex lite for the 258K-window relief named in #519,
+Claude standard). `agents.local.md` and the hardcoded `get_project_context` literals
+dissolve into model rows — **zero hand-authored prose at the rendered location**, which is
+the binding claim of [`docs/governance/agent-control-surface-rendering-substrate.md`](../../../../governance/agent-control-surface-rendering-substrate.md),
+finally load-bearing. Harness/model *detection* that auto-selects the template is a named
+forward-reference, not in this extension's scope.
+
+This extension adds six OBPIs (11–16) to the Checklist below; the Decomposition Scorecard
+Final Target is updated 10 → 16 accordingly. The base ten-OBPI scoring stands for the
+original decision; the six-item extension is the density-dial composition increment.
+
+**Extension OBPIs (1:1 with the new Checklist items):**
+
+- **OBPI-0.0.37-11 — Density-aware master content model.** Reconcile `ConstitutionalInvariant` into `AgentContract`/`Pillar`/`Bullet`; add `classification`, `witness`, `rationale_ref`, `density_min` to `Bullet`; add `order`/`enabled`/`tier` to sections. The master JSON at MAX fidelity.
+- **OBPI-0.0.37-12 — Temperature renderer + lite/medium/heavy templates.** Renderer consumes temperature + section-set, renders each bullet at/above its `density_min`; `Judgment` always renders; deterministic byte-stable output; the three named templates are defined here.
+- **OBPI-0.0.37-13 — Reverse-parse migration to the master model (zero hand-authored prose).** `gz content import` the live AGENTS.md/template into the model; dissolve `agents.local.md` and the `get_project_context` literals into model rows; round-trip fidelity asserted. Supersedes OBPI-09's byte-preserving framing.
+- **OBPI-0.0.37-14 — Wire sync through the renderer; retire the monolith.** Repoint `sync_agents_md` off `render_template("agents")`; `gz validate --invariant-coherence` now diffs the model render against the committed surface.
+- **OBPI-0.0.37-15 — Per-vendor template selection.** Codex mirror renders lite; Claude standard; ends identical 4× mirroring. Harness/model detection remains a forward-reference.
+- **OBPI-0.0.37-16 — Docs-for-agents orientation index.** A routable surface → authoritative-model+doctrine map rendered from the same substrate, so the rendering architecture stops being re-derived from source each session.
+
 ## Comparator Uplift (2026-05-07)
 
 Comparator lessons must not enter gzkit as prose pasted into AGENTS.md. This ADR
@@ -183,13 +237,13 @@ they have a foundation invariant to defend.
 - Lineage: 2
 - Dimension Total: 10
 - Baseline Range: 5+
-- Baseline Selected: 6
+- Baseline Selected: 12
 - Split Single-Narrative: 1
 - Split Surface Boundary: 1
 - Split State Anchor: 1
 - Split Testability Ceiling: 1
 - Split Total: 4
-- Final Target OBPI Count: 10
+- Final Target OBPI Count: 16
 
 ## Checklist
 
@@ -205,6 +259,12 @@ they have a foundation invariant to defend.
 - [ ] OBPI-0.0.37-08 — `gz obpi complete` fail-close gate (refuses Stage 5 completion without fresh reconciliation receipt; `--accept-stale-reconciliation --reason` escape hatch records override)
 - [ ] OBPI-0.0.37-09 — AGENTS.md migration (register existing AGENTS.md content as constitutional invariants; render AGENTS.md from registry; lock the inversion in CI)
 - [ ] OBPI-0.0.37-10 — Doctrine refresh (update ADR-0.0.18 kind-axis distinction; re-route pool stubs `brief-authoring-evidence-checks` and `obpi-pipeline-dispatch-attestation`; update contributing docs)
+- [ ] OBPI-0.0.37-11 — Density-aware master content model (reconcile ConstitutionalInvariant into AgentContract/Pillar/Bullet; classification + witness + rationale_ref + density_min; section order/enabled/tier)
+- [ ] OBPI-0.0.37-12 — Temperature renderer + lite/medium/heavy templates (per-bullet density floor; Judgment always renders; deterministic byte-stable)
+- [ ] OBPI-0.0.37-13 — Reverse-parse migration to master model (gz content import; dissolve agents.local.md + get_project_context literals; zero hand-authored prose; round-trip fidelity; supersedes OBPI-09 byte-preserving framing)
+- [ ] OBPI-0.0.37-14 — Wire sync_agents_md through the renderer; retire monolithic template; --invariant-coherence diffs the model render
+- [ ] OBPI-0.0.37-15 — Per-vendor template selection (Codex lite / Claude standard; ends identical mirroring; harness-detection is a forward-reference)
+- [ ] OBPI-0.0.37-16 — Docs-for-agents orientation index (routable surface→authoritative-model+doctrine map rendered from the same substrate; closes the re-derivation loop)
 
 ## Q&A Transcript
 

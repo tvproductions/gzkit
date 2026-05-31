@@ -19,7 +19,7 @@ diagnosis, but its dated command snapshot is superseded by the baseline below.
 
 ## Current Baseline
 
-Observed on 2026-05-30:
+### Snapshot A — plan authoring (2026-05-30, morning): RED
 
 - `git status --short` is clean.
 - `uv run gz check` fails.
@@ -37,6 +37,23 @@ Observed on 2026-05-30:
   - `preflight`
 
 This is not a collapse. It is a red harness with named failure surfaces.
+
+### Snapshot B — re-measured (2026-05-30, after GHI #570 landed): GREEN
+
+- `git status --short` is clean.
+- `uv run gz check` exits 0 — all 26 gates pass. GHI #570 added Line endings as
+  gate 26 and cleared the unit-test failure. The only remaining output is a
+  non-blocking advisory (spec-test-code drift, 1687 findings, explicitly "does
+  not affect exit code").
+- All six Snapshot-A failure surfaces are now green: Test, `--kind-invariance`,
+  `--insights-shape`, `--tautological-test-audit`, `--task-envelope-coherence`,
+  and `preflight`.
+- Phase 1 (Make the Harness Green) is complete. Remaining recovery work is the
+  context-load surface tracked by emergency GHI #519 (Phase 2 / Phase 4 item 1)
+  and the passive-presenter closeout route tracked by GHI #516 (Phase 3).
+  GHI #517 (the broader 5-alarm structural emergency) is closed.
+
+Snapshot A is preserved for audit; Snapshot B is the live baseline.
 
 ## Definition of Healthy
 
@@ -279,18 +296,68 @@ Provenance: spine ADRs verified extant via `gh`/Glob/Read on 2026-05-30; failure
 classes from observed incidents that session (fabricated GHI map, fabricated
 `gz check` table, overwritten-then-git-restored recovery plan).
 
+## Designated Workstream — Context-Load CMS (density-dial composition; #519 remediation)
+
+Recorded here (Operating Rules 1 and 7) so this turn's diagnosis and decision become
+durable, resumable action rather than re-derived next session. This is the **concrete
+remediation route for emergency GHI #519** — it replaces the earlier tracked-but-parked
+posture. Session handoff:
+`.gzkit/handoffs/20260531T000357Z-adr-0.0.37-density-dial-cms-extension.md`.
+
+**Diagnosis (observed 2026-05-30).** AGENTS.md is meant to be a rendered Layer-3 view, but
+the live path is a hardcoded monolith: `sync_agents_md` → `render_template("agents")` over a
+100%-prose template, with `.gzkit/agents.local.md` spliced in raw and literals hardcoded in
+`get_project_context`. Two half-built render-from-source substrates exist for the same
+surface and neither drives it — ADR-0.0.37's flat invariant registry and ADR-0.0.34's
+`AgentContract` content model. The authoritative target is the substrate doctrine
+[`docs/governance/agent-control-surface-rendering-substrate.md`](agent-control-surface-rendering-substrate.md)
+(binding claim: nothing hand-authored at the rendered location). Codex loads root AGENTS.md
+at ~98% of its 32 KiB `project_doc_max_bytes` cap — the #519 magnitude.
+
+**Decision (operator, 2026-05-30).** Extend ADR-0.0.37 to bear the always-intended CMS
+vision: one master content model at MAX fidelity; a render *temperature* (lite/medium/heavy)
+that dials prose density; section add/withhold; per-vendor templates; eventual
+harness/model detection. Spine = `AgentContract` (ADR-0.0.34); the invariant registry
+becomes its foundation-classified subset. The dial has an absolute floor — *"we don't go to
+0 Kelvin"*: `Judgment`-class bullets render at every temperature; the dial thins only
+Mechanical/Reference prose.
+
+**In-flight state.** ADR-0.0.37 Decision extended (new subsection "Decision Extension
+(2026-05-30): CIC-1 Density-Dial Composition"); checklist items 11–16 added; Decomposition
+Scorecard made coherent (final target 16); six brief stubs created (1:1 sync, 16↔16);
+`gz validate --documents` green. The six briefs are scaffolds pending semantic authoring;
+implementation follows. This is a foundation-ADR scope change made under explicit operator
+direction as #519 emergency relief (Architectural Boundary 1 / Operating Rule 6 waived by
+the operator's explicit call now that `gz check` is green).
+
+**Open loop named.** This session re-derived the rendering architecture from source despite
+the substrate doctrine already documenting it and three prior same-day insights logging the
+lesson — capture without re-injection does not bind. OBPI-0.0.37-16 (docs-for-agents
+orientation index) is the structural fix; the session handoff is the interim re-injection.
+See `.gzkit/insights/agent-insights.jsonl` (2026-05-30 open-loop entry).
+
+**Exit criteria.** OBPIs 11–16 authored and implemented; `sync_agents_md` renders from the
+master model; AGENTS.md and vendor mirrors render at per-vendor temperatures; zero
+hand-authored prose at the rendered location; Codex root-surface load fits its budget with
+headroom; `gz check` green throughout.
+
 ## Recovery Closeout
 
-Fill this section when complete:
+Final closeout is filled only when recovery completes (Definition of Healthy all
+true). Recovery is **not yet closed** — emergency GHI #519 (context load) remains
+open. The progress snapshot below records observed evidence; the `Decision` line
+stays blocked until #519 closes.
+
+### Progress snapshot — 2026-05-30 (post-GHI-#570 re-measurement)
 
 ```text
-Recovery closeout date:
-uv run gz check:
-Emergency GHIs open:
-Context-load issue state:
-Task-envelope coherence:
-Open recovery issues:
-Decision: normal development may resume / may not resume
+Snapshot date:            2026-05-30 (recovery still open)
+uv run gz check:          exit 0 — 26/26 gates pass (advisory-only drift remains)
+Emergency GHIs open:      1 — #519 (codex context surface exhausts 258K window)
+Context-load issue state: #519 OPEN — remediation route now IN-FLIGHT (ADR-0.0.37 density-dial CMS, OBPIs 11-16); see Designated Workstream — Context-Load CMS
+Task-envelope coherence:  PASS — gz check gate green
+Open recovery issues:     #519 (emergency; Phase 2 / Phase 4 item 1), #516 (closeout passive-presenter; Phase 3). #517 closed.
+Decision:                 normal development may NOT resume — blocked on emergency GHI #519
 ```
 
 ## Appendix: The Smooth-vs-Replicable Axis (2026-05-30 dialogue insights)
