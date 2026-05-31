@@ -166,7 +166,7 @@ uv run -m behave features/pool_triage.feature
 test -f docs/user/manpages/pool-triage.md
 grep -q "pool-triage" docs/user/runbook.md
 grep -q "pool-triage" docs/governance/governance_runbook.md
-ls tests/fixtures/pool_triage_e2e/{full_pool,tag_filtered}/ > /dev/null
+ls tests/fixtures/pool_triage_e2e/{full_pool,tag_filtered}/
 ```
 
 ## Demo

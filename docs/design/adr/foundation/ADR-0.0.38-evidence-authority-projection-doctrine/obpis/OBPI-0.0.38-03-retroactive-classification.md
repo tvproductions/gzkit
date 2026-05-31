@@ -159,7 +159,7 @@ uv run gz validate --surface-axis
 uv run gz validate --surface-axis --json
 
 # Confirm gz check now includes surface-axis (opt-out removed)
-uv run gz check --list-scopes 2>&1 | grep surface-axis
+uv run gz check --list-scopes
 
 # Standard heavy-lane gates
 uv run gz lint

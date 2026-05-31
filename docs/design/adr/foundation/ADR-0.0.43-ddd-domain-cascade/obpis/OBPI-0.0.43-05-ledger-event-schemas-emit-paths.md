@@ -152,7 +152,8 @@ from gzkit.ledger.emitters.cascade import (
 print('cascade emitters importable')
 "
 
-ls src/gzkit/ledger/schemas/ | grep -E '^(bounded_context|glossary_term|context_map|domain_model|legacy_mapping|cascade)_' | wc -l
+# expect 6 cascade event schemas: bounded_context_*, glossary_term_*, context_map_*, domain_model_*, legacy_mapping_*, cascade_*
+ls src/gzkit/ledger/schemas/
 ```
 
 ## Demo

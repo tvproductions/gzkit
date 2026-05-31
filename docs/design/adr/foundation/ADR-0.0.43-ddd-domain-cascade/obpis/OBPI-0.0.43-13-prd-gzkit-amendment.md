@@ -137,7 +137,7 @@ uv run gz domain regenerate
 ls docs/design/domain/{glossary,bounded-contexts,context-map}.md
 
 # Verify ledger emissions
-tail -100 .gzkit/ledger.jsonl | grep -E '(bounded_context_created|glossary_term_added|context_map_updated)' | wc -l
+grep -E '(bounded_context_created|glossary_term_added|context_map_updated)' .gzkit/ledger.jsonl
 ```
 
 ## Demo

@@ -131,8 +131,9 @@ test -f docs/user/storybook/_templates/journey.md
 test -f docs/user/storybook/_templates/capability-bundle.md
 test -f docs/user/storybook/_templates/capability-family.md
 test -f src/gzkit/schemas/storybook.json
-ls docs/user/storybook/*.md | wc -l   # expect ≥ 2 (strawman + receipts bundle)
-rg -n "<!-- BEGIN ANCHOR BLOCK -->" docs/user/storybook/*.md
+# expect ≥ 2 storybook .md files (strawman + receipts bundle)
+ls docs/user/storybook/*.md
+rg -n "BEGIN ANCHOR BLOCK" docs/user/storybook/*.md
 rg -n "storybook" docs/user/runbook.md
 ```
 

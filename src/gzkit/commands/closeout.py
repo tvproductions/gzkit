@@ -5,6 +5,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any, cast
 
+from gzkit.commands.ceremony_state import _classify_attestation_verdict
 from gzkit.commands.closeout_ceremony import (
     CeremonyStep,
     ceremony_state_path,
@@ -189,27 +190,6 @@ def _closeout_gate_number(label: str) -> int:
     return 2  # Quality checks (lint, typecheck) default to gate 2
 
 
-def _parse_ceremony_attestation_text(text: str) -> tuple[str, str | None]:
-    """Derive ``(attest_status, reason)`` from a ceremony-recorded attestation string.
-
-    The ceremony's ``--attest "..."`` argument is freeform but conventionally
-    leads with one of the canonical tokens prescribed by Step 6
-    (``Completed`` / ``Completed - Partial: <reason>`` / ``Dropped - <reason>``)
-    or the AGENTS.md § Attestation pattern (``attest <token> - <enrichment>``).
-
-    The ``partial`` and ``dropped`` keywords are matched case-insensitively in
-    the attestation text's leading window. The full text is returned as the
-    reason for non-completed verdicts so the operator's verbatim attestation
-    flows through to the ledger and closeout form unchanged.
-    """
-    head_window = text.strip().lower()[:120]
-    if "dropped" in head_window:
-        return "dropped", text.strip()
-    if "partial" in head_window:
-        return "partial", text.strip()
-    return "completed", None
-
-
 def _consume_ceremony_attestation(
     project_root: Path, adr_id: str
 ) -> tuple[str, str | None, str] | None:
@@ -227,7 +207,7 @@ def _consume_ceremony_attestation(
         return None
     if not state.attestation:
         return None
-    attest_status, reason = _parse_ceremony_attestation_text(state.attestation)
+    attest_status, reason = _classify_attestation_verdict(state.attestation)
     return attest_status, reason, state.attestation
 
 

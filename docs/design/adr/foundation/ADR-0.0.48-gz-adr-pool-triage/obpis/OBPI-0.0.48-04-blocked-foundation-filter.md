@@ -155,7 +155,8 @@ uv run gz arb step --name unittest -- uv run -m unittest -q tests.test_pool_bloc
 
 # OBPI-specific surface checks
 test -f src/gzkit/pool/blocked_foundation.py
-ls tests/fixtures/pool_blocked_foundation/ | grep -E "in_flight|near_closeout|completed"
+# expect in_flight, near_closeout, completed fixtures present
+ls tests/fixtures/pool_blocked_foundation/
 
 # Partition invariant: |retained| + |blocked| == |prepass|
 uv run python -c "

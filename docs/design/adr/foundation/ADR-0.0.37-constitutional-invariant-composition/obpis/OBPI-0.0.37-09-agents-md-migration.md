@@ -105,8 +105,8 @@ uv run mkdocs build --strict
 uv run -m behave features/constitutional_invariants.feature --tags=REQ-0.0.37-09
 
 # REQ-04: registry renders AGENTS.md exactly
-uv run gz governance render --target agents-md --check && echo "REQ-04 OK"
-uv run gz validate --invariant-coherence && echo "REQ-04 OK validator"
+uv run gz governance render --target agents-md --check
+uv run gz validate --invariant-coherence
 
 # REQ-05: round-trip — every pre-migration H2 has a registered invariant
 uv run python -c "

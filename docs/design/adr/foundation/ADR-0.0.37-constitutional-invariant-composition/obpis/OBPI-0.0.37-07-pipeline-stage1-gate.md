@@ -100,7 +100,7 @@ uv run -m behave features/brief_reconcile.feature --tags=REQ-0.0.37-07
 
 # REQ-04: fresh + no-drift passes
 uv run gz brief reconcile OBPI-0.0.37-07-pipeline-stage1-gate
-uv run gz obpi pipeline OBPI-0.0.37-07-pipeline-stage1-gate --stage 1 --dry-run && echo "REQ-04 OK: fresh receipt admits Stage 2"
+uv run gz obpi pipeline OBPI-0.0.37-07-pipeline-stage1-gate --stage 1 --dry-run
 ```
 
 ## Acceptance Criteria

@@ -179,7 +179,7 @@ grep -q "governed_by: ADR-0.0.39" docs/design/adr/pool/ADR-pool.attestation-advi
 grep -q "governed_by: ADR-0.0.39" docs/design/adr/pool/ADR-pool.lightweight-pre-implementation-challenger.md
 
 # Confirm ledger events emitted
-grep judge_surface_classified .gzkit/ledger.jsonl | wc -l
+grep judge_surface_classified .gzkit/ledger.jsonl
 
 # Confirm at least four sampled judge surfaces are in the audit
 grep -E "gz-adr-evaluate --red-team|advisor\(\)|gz-complexity-distill" artifacts/audits/judge-surface-classification-2026-05-06.md

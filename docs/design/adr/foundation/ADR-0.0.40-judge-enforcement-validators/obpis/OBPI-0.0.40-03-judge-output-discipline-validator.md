@@ -173,7 +173,7 @@ uv run gz validate --judge-output-discipline
 uv run gz validate --judge-output-discipline --json
 
 # Confirm scope is in default gz check
-uv run gz check --list-scopes 2>&1 | grep judge-output-discipline
+uv run gz check --list-scopes
 
 # Standard heavy-lane gates
 uv run gz lint

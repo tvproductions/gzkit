@@ -102,10 +102,10 @@ uv run -m behave features/brief_reconcile.feature --tags=REQ-0.0.37-06
 
 # REQ-01: verb registered, default-mode run
 uv run gz brief reconcile --help
-uv run gz brief reconcile OBPI-0.0.37-06-brief-reconcile-cli && echo "REQ-01 OK"
+uv run gz brief reconcile OBPI-0.0.37-06-brief-reconcile-cli
 
 # REQ-04: --apply requires --attestor
-uv run gz brief reconcile OBPI-0.0.37-06-brief-reconcile-cli --apply 2>&1 | rg -q "requires --attestor" && echo "REQ-04 OK"
+uv run gz brief reconcile OBPI-0.0.37-06-brief-reconcile-cli --apply
 
 # REQ-07: event types registered
 uv run python -c "

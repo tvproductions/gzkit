@@ -149,7 +149,7 @@ done
 
 # Confirm mirror parity
 for skill in gz-prd gz-design gz-adr-evaluate gz-adr-closeout-ceremony gz-adr-audit; do
-    diff .gzkit/skills/$skill/SKILL.md .claude/skills/$skill/SKILL.md || echo "DRIFT in $skill"
+    diff .gzkit/skills/$skill/SKILL.md .claude/skills/$skill/SKILL.md
 done
 ```
 

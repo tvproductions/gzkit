@@ -129,7 +129,7 @@ Existing files modified: `src/gzkit/commands/status.py`, `src/gzkit/commands/sta
 uv run gz lint
 uv run gz typecheck
 uv run gz status --table
-uv run gz state --json | head -30
+uv run gz state --json
 uv run -m unittest tests.governance.test_status_stale_column tests.governance.test_state_staleness_flags tests.governance.test_adr_explain_stale tests.governance.test_staleness_tripwire -v
 ```
 

@@ -132,8 +132,8 @@ grep -q "arb-step-root-cause-trace" .gzkit/skills/ghi-author/SKILL.md
 grep -q "arb-step-root-cause-trace" .gzkit/skills/ghi-close/SKILL.md
 grep -q "architectural GHI labeled as foundation-ADR candidate" .gzkit/skills/ghi-author/SKILL.md
 # Confirm skill-version bumped:
-grep "skill-version" .gzkit/skills/ghi-author/SKILL.md | head -1
-grep "skill-version" .gzkit/skills/ghi-close/SKILL.md | head -1
+grep "skill-version" .gzkit/skills/ghi-author/SKILL.md
+grep "skill-version" .gzkit/skills/ghi-close/SKILL.md
 uv run gz agent sync control-surfaces
 diff .gzkit/skills/ghi-author/SKILL.md src/gzkit/skills/ghi-author/SKILL.md
 diff .gzkit/skills/ghi-close/SKILL.md src/gzkit/skills/ghi-close/SKILL.md

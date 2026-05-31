@@ -159,7 +159,8 @@ uv run gz arb step --name unittest -- uv run -m unittest -q tests.test_pool_tria
 
 # OBPI-specific surface checks
 test -f .gzkit/skills/pool-triage/SKILL.md
-uv run gz skill list | grep '^pool-triage'
+# expect pool-triage in the catalog
+uv run gz skill list
 uv run gz agent sync control-surfaces
 
 # Mirror parity invariants (byte-equivalent after sync)

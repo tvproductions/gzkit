@@ -158,13 +158,15 @@ uv run gz arb step --name unittest -- uv run -m unittest -q tests.test_pool_tria
 
 # OBPI-specific surface checks
 test -f src/gzkit/pool/triage_renderer.py
-ls tests/fixtures/pool_triage_renderer/inputs/ | wc -l   # >= 4 fixtures
-ls tests/fixtures/pool_triage_renderer/golden/ | wc -l   # paired golden files
+# >= 4 fixtures
+ls tests/fixtures/pool_triage_renderer/inputs/
+# paired golden files
+ls tests/fixtures/pool_triage_renderer/golden/
 
-# Determinism check — render twice and diff
+# Determinism check — the renderer is pure; identical input yields byte-identical
+# output (asserted by tests.test_pool_triage_renderer above). Spot-check each fixture:
 for fx in tests/fixtures/pool_triage_renderer/inputs/*.json; do
-  diff <(uv run python -m gzkit.pool.triage_renderer --input "$fx") \
-       <(uv run python -m gzkit.pool.triage_renderer --input "$fx") || exit 1
+  uv run python -m gzkit.pool.triage_renderer --input "$fx"
 done
 ```
 

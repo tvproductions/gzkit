@@ -140,10 +140,9 @@ uv run gz plan create test-storybook-scaffold --kind foundation --semver 0.0.99 
 # Expected: ADR created without STORY.md, ledger event emitted
 
 # Backfill verification:
-find docs/design/adr/foundation docs/design/adr/pre-release -name "ADR-*-*" -type d | while read d; do
-  test -f "$d/STORY.md" || echo "missing STORY.md: $d"
-done
-# Expected: empty output (all non-pool ADRs have STORY.md after backfill)
+find docs/design/adr/foundation docs/design/adr/pre-release -name "ADR-*-*" -type d
+# Expected: every listed non-pool ADR dir contains STORY.md after backfill
+#           (uv run gz validate --storybook-fresh below is the mechanical check)
 
 uv run gz validate --storybook-fresh   # passes (validator now in fail-closed mode)
 ```

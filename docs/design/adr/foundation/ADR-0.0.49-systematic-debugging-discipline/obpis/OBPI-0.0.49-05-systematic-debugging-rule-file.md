@@ -138,7 +138,7 @@ Author `.gzkit/rules/systematic-debugging.md` as the scoped rule surface that co
 
 ```bash
 test -f .gzkit/rules/systematic-debugging.md
-grep -q "<!-- rule-version: 0.1.0 -->" .gzkit/rules/systematic-debugging.md
+grep -q "rule-version: 0.1.0" .gzkit/rules/systematic-debugging.md
 grep -q "^paths:" .gzkit/rules/systematic-debugging.md
 grep -q "Phase 4.5 architecture pause" .gzkit/rules/systematic-debugging.md
 grep -q "## Loading posture" .gzkit/rules/systematic-debugging.md

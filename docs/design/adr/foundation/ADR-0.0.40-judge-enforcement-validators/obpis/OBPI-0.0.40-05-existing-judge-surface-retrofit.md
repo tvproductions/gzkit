@@ -171,7 +171,7 @@ uv run gz validate --judge-output-discipline
 
 # End-to-end emit test: one red-team run produces a compliant receipt
 uv run gz adr evaluate ADR-0.0.40 --red-team
-ls artifacts/receipts/arb-step-judge-* | tail -1
+ls artifacts/receipts/arb-step-judge-*
 
 # Confirm pool ADR frontmatter updates
 grep -q "governed_by: ADR-0.0.40" docs/design/adr/pool/ADR-pool.attestation-advisory-agent.md

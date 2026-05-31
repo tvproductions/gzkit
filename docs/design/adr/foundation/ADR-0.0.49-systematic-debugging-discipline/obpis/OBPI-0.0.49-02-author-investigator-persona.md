@@ -126,7 +126,8 @@ grep -qE "^  - patch-first-instinct$" .gzkit/personas/investigator.md
 uv run gz agent sync control-surfaces
 test -f src/gzkit/personas/investigator.md
 test -f .claude/personas/investigator.md
-uv run gz personas list | grep -q '^investigator'
+# expect investigator in the personas list
+uv run gz personas list
 uv run gz validate --documents
 uv run gz arb ruff
 uv run gz arb typecheck

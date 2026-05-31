@@ -130,10 +130,12 @@ grep -q "NO FIX MAY BE PROPOSED UNTIL ROOT-CAUSE EVIDENCE IS CAPTURED AS AN ARB 
 grep -q "3+ failed fix attempts" AGENTS.md
 grep -q "investigator" AGENTS.md
 grep -q "gz-systematic-debug" AGENTS.md
-grep -c "investigator" AGENTS.md  # expect >= 2 (Persona table + Behavior Rule)
-diff <(grep -A 2 "operative claim" AGENTS.md | head -22) \
-     <(grep -A 2 "operative claim" src/gzkit/templates/AGENTS.md | head -22) \
-     || echo "AGENTS.md template drift — fix lockstep"
+# expect >= 2 (Persona table + Behavior Rule)
+grep -c "investigator" AGENTS.md
+# AGENTS.md operative-claim block must match the template lockstep:
+grep -A 2 "operative claim" AGENTS.md
+grep -A 2 "operative claim" src/gzkit/templates/AGENTS.md
+# (the two outputs above must be identical — fix lockstep if they drift)
 uv run gz validate --documents
 uv run gz validate --instructions-files-budget
 uv run gz arb ruff

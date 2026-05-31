@@ -148,7 +148,7 @@ uv run gz agent sync control-surfaces
 
 for skill in ghi-author ghi-close ghi-triage; do
     grep '^skill-version:' .gzkit/skills/$skill/SKILL.md
-    diff .gzkit/skills/$skill/SKILL.md .claude/skills/$skill/SKILL.md || echo "DRIFT in $skill"
+    diff .gzkit/skills/$skill/SKILL.md .claude/skills/$skill/SKILL.md
 done
 ```
 

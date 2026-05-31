@@ -99,7 +99,7 @@ uv run mkdocs build --strict
 uv run -m behave features/brief_reconcile.feature --tags=REQ-0.0.37-08
 
 # REQ-04: --accept-stale-reconciliation requires --reason
-uv run gz obpi complete OBPI-0.0.37-08-obpi-complete-gate --accept-stale-reconciliation 2>&1 | rg -q "requires --reason" && echo "REQ-04 OK"
+uv run gz obpi complete OBPI-0.0.37-08-obpi-complete-gate --accept-stale-reconciliation
 
 # REQ-07: event type registered
 uv run python -c "

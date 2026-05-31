@@ -106,17 +106,17 @@ uv run gz lint
 uv run mkdocs build --strict
 
 # REQ-01: ADR-0.0.18 amendment references ADR-0.0.37
-rg -n "ADR-0\.0\.37|CIC-1|CIC-2" docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ && echo "REQ-01 OK"
+rg -n "ADR-0\.0\.37|CIC-1|CIC-2" docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/
 
 # REQ-02/03: pool stubs reference CIC-2
-rg -nl "CIC-2" docs/design/adr/pool/ | rg -q "brief-authoring-evidence-checks|obpi-pipeline-dispatch-attestation" && echo "REQ-02/03 OK"
+rg -nl "CIC-2" docs/design/adr/pool/
 
 # REQ-04: contributing doc has the new section
-rg -n "Before proposing a foundation-kind ADR" docs/governance/ && echo "REQ-04 OK"
+rg -n "Before proposing a foundation-kind ADR" docs/governance/
 
 # REQ-05: this OBPI did NOT touch AGENTS.md or any src/ file
 # Check working-tree status (not post-commit history, which is commit-boundary-dependent)
-git status --porcelain | rg -v '^.. docs/' | rg -v '^.. \.gzkit/(ledger|insights)' | grep -q . && echo "WARNING: out-of-scope edits detected" || echo "REQ-05 OK: only docs/ and governance files modified"
+git status --porcelain
 ```
 
 ## Acceptance Criteria

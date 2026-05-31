@@ -162,10 +162,11 @@ test -f src/gzkit/pool/cognitive_pass.py
 test -f src/gzkit/schemas/pool_triage_rank_input.json
 test -f docs/governance/pool-triage-cognitive-pass.md
 uv run python -c "from gzkit.pool.cognitive_pass import PoolTriageRankInputEntry; PoolTriageRankInputEntry(id='ADR-pool.x', severity='urgent')"
-uv run python -m json.tool tests/fixtures/pool_cognitive_pass/golden_rank_input.json > /dev/null
+uv run python -m json.tool tests/fixtures/pool_cognitive_pass/golden_rank_input.json
 
 # Verify schema dual matches Pydantic model emission
-uv run python -c "from gzkit.pool.cognitive_pass import PoolTriageRankInputEntry; import json; print(json.dumps(PoolTriageRankInputEntry.model_json_schema(), indent=2))" | diff - src/gzkit/schemas/pool_triage_rank_input.json
+uv run python -c "from gzkit.pool.cognitive_pass import PoolTriageRankInputEntry; import json; print(json.dumps(PoolTriageRankInputEntry.model_json_schema(), indent=2))"
+# Compare emitted schema to src/gzkit/schemas/pool_triage_rank_input.json (must match)
 ```
 
 ## Demo

@@ -167,7 +167,7 @@ uv run gz arb step --name unittest -- uv run -m unittest -q tests.test_pool_tria
 test -f src/gzkit/pool/triage_prepass.py
 test -f src/gzkit/schemas/pool_triage_prepass.json
 uv run python -c "from gzkit.pool.triage_prepass import PoolTriagePrepassRecord; PoolTriagePrepassRecord.model_validate({...})"  # validate fixture
-uv run python -m json.tool tests/fixtures/pool_triage_prepass/expected.json > /dev/null
+uv run python -m json.tool tests/fixtures/pool_triage_prepass/expected.json
 ```
 
 ## Demo

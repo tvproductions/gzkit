@@ -131,10 +131,10 @@ uv run gz storybook list
 uv run gz storybook derive --arc from-init-to-first-attested-release
 uv run gz storybook derive --arc from-init-to-first-attested-release   # second run: no-op, no ledger event
 
-sha256sum docs/user/storybook/from-init-to-first-attested-release.md > /tmp/before.sha
+sha256sum docs/user/storybook/from-init-to-first-attested-release.md
 uv run gz storybook derive --arc from-init-to-first-attested-release
 
-tail -5 .gzkit/ledger.jsonl | grep storybook_derived
+grep storybook_derived .gzkit/ledger.jsonl
 ```
 
 ## Demo
