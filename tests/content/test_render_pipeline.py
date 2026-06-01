@@ -220,6 +220,49 @@ class TestTemperatureRenderer(unittest.TestCase):
             "Section order=1 must precede order=2 in rendered output",
         )
 
+    @covers("REQ-0.0.37-12-03")
+    def test_judgment_bullet_in_withheld_section_is_dropped(self) -> None:
+        """Section-withholding wins over the 0-Kelvin Judgment floor: a Judgment bullet
+        inside a disabled or above-tier pillar is dropped with the whole section.
+
+        REQ-03 ("a section MUST be withheld when enabled=False or tier above temperature")
+        is unconditional — it is the coarse axis above the per-bullet Judgment floor (REQ-01).
+        """
+        contract = AgentContract(
+            name="Withheld Judgment Agent",
+            purpose="Pinning the section-withholding-wins resolution",
+            pillars=[
+                Pillar(
+                    id="disabled-with-judgment",
+                    title="DISABLED_PILLAR_TITLE",
+                    order=1,
+                    enabled=False,
+                    bullets=[Bullet(text="JUDGMENT_IN_DISABLED_MARKER", classification="Judgment")],
+                ),
+                Pillar(
+                    id="high-tier-with-judgment",
+                    title="HIGH_TIER_PILLAR_TITLE",
+                    order=2,
+                    tier="heavy",
+                    bullets=[
+                        Bullet(text="JUDGMENT_IN_HIGH_TIER_MARKER", classification="Judgment")
+                    ],
+                ),
+            ],
+        )
+        output = render(contract, "claude", temperature="lite").decode("utf-8")
+        self.assertNotIn(
+            "JUDGMENT_IN_DISABLED_MARKER",
+            output,
+            "Judgment bullet in a disabled section must be dropped (section-withholding wins)",
+        )
+        self.assertNotIn(
+            "JUDGMENT_IN_HIGH_TIER_MARKER",
+            output,
+            "Judgment bullet in an above-tier section must be dropped at lite "
+            "(section-withholding wins)",
+        )
+
     @covers("REQ-0.0.37-12-05")
     def test_heavy_is_strict_superset_of_lite(self) -> None:
         """render() at temperature='heavy' must produce output >= lite in length
