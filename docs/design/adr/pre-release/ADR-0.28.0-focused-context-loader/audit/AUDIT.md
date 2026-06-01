@@ -125,4 +125,37 @@ ADR-0.28.0 remains **Completed** this ceremony — no `validated` receipt emitte
 to Validated is a separate operator-attested ceremony). GHI #576 closes `fixed` citing the
 remediation commit.
 
-_Attestation withheld — see Audit Outcome. No `validated` receipt emitted._
+_First-pass attestation withheld pending F1 remediation (now applied — see re-audit below)._
+
+---
+
+## Re-Audit (2026-06-01, post-fix dfd09831)
+
+Ceremony re-opened (`gz adr audit-begin ADR-0.28.0`) after the F1 fix. Fresh verification,
+not stale-ledger trust.
+
+**Ledger proof:** `gz adr audit-check ADR-0.28.0` → PASS, 13/13 REQs covered.
+**Fresh tests:** 13/13 `test_context_cmd` GREEN.
+**Value demonstration:** `gz context ADR-0.28.0` governance tail now renders
+`Current gate: Gate 2 (latest cleared per ledger)` — ledger-sourced, confirmed live.
+
+**Independent re-review (both personas, fresh read of post-fix code):**
+
+| Persona | Verdict | F1 status |
+|---|---|---|
+| `spec-reviewer` | **CLEAR** — all 13 REQs hold semantically; REQ-01-06 test would fail on any frontmatter revert (fixture forces frontmatter↔ledger disagreement, pins "Gate 2") | RESOLVED |
+| `quality-reviewer` | **COHERENT** — fix reads Layer-2 truth, signatures clean (no broken callers), empty-ledger path safe, size/SOLID/Lite-lane boundaries intact | RESOLVED |
+
+**New finding — F2-NEW (coupled-surface coherence, rule 1a; non-blocking):** `_ledger_current_gate`
+takes raw `max(gate cleared)` without the lane-aware `n/a` masking that `status.py:190-199`
+applies (gate 3→n/a for lite, gate 4→n/a, gate 5 from `attested`). A lite-lane ADR carrying a
+recorded gate-3/4 `gate_checked: pass` event could therefore show a different gate in
+`gz context` vs `gz status`. **Not observable on ADR-0.28.0** (ledger `{2:'pass'}` → both
+surfaces agree); REQ-01-06 mandates ledger-derivation, not status-parity; both surfaces read
+Layer-2 (no trust violation). Quality-reviewer rated it non-blocking → **tracked as GHI #577**
+for a shared lane-aware projection helper, routed separately. Does not block this ADR's
+Validated transition.
+
+**Re-audit outcome:** ADR-0.28.0's own acceptance criteria are fully satisfied (13/13 CLEAR,
+F1 resolved, value demonstrated). No unresolved shortfall against this ADR's REQs. Pending
+operator verbal attestation (`accept audit` / `verify audit`) to emit the `validated` receipt.
