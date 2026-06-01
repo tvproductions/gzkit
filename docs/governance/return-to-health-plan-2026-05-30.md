@@ -1,10 +1,11 @@
 # Return to Health Plan, 2026-05-30
 
 Status: Active canonical recovery plan.
-Last updated: 2026-06-01 — recorded Snapshot C (harness regressed to RED) and
-added the **Designated Workstream — Session MOTD** capture (continuity ⊕ triaged
-workplan; subsumes handoff). Filename keeps its authored `-2026-05-30` date (stable
-reference); this line is the live mtime.
+Last updated: 2026-06-01 — recorded Snapshot C (harness regressed to RED), added
+the **Designated Workstream — Session MOTD** capture (continuity ⊕ triaged
+workplan; subsumes handoff), and added the Phase-4 **Stdlib unittest/doctest
+maturity route** under GHI #571. Filename keeps its authored `-2026-05-30` date
+(stable reference); this line is the live mtime.
 
 ## Execution Worklist (start here)
 
@@ -26,7 +27,7 @@ reference); this line is the live mtime.
 
 - [ ] **1.1 Phase 2 — context-load emergency #519.** Its structural remediation *is* the Context-Load CMS workstream (Boundary-1-waived); advancing that workstream is how #519 closes. → *Phase 2; Designated Workstream — Context-Load CMS*.
 - [ ] **1.2 Phase 3 — ceremony & validator mechanization** (#516 + the req-kind/covers eval-feedback cluster). 15 issues — see **GHI Register § Phase 3**. → *Phase 3*.
-- [ ] **1.3 Phase 4 — drain remaining recovery issues** — docs/tests/`validate --documents` defects. 10 issues — see **GHI Register § Phase 4**. WIP = 1; close only with observed evidence. → *Phase 4*.
+- [ ] **1.3 Phase 4 — drain remaining recovery issues** — docs/tests/`validate --documents` defects, including the GHI #571 stdlib unittest/doctest maturity route. 10 issues — see **GHI Register § Phase 4**. WIP = 1; close only with observed evidence. → *Phase 4*.
 - [ ] **1.4 Phase 5 — closeout.** Fill Recovery Closeout when #519 closed + no open emergency + `gz check` green. → *Phase 5; Recovery Closeout*.
 
 **Tier 2 — Post-green workstreams** (start only after recovery closes, or under an explicit, item-specific operator Boundary-1 waiver). Each builds in the dependency order it declares.
@@ -82,7 +83,7 @@ reference); this line is the live mtime.
 | #559 | `hexagonal-architecture.md` stale refs to demoted ADRs | **T1** — Phase 4 |
 | #560 | behave `distribution_invariant` byte-equivalence scenario failing | **T1** — Phase 4 |
 | #562 | tautological test (`test_unscoped_rules.py:448` read_text+assertEqual) | **T1** — Phase 4 |
-| #571 | audit unit-test doctrine & recurrence defenses | **T1** — Phase 4 |
+| #571 | stdlib unittest/doctest doctrine & recurrence defenses | **T1** — Phase 4 |
 | #533 | agents-md 5k budget — depends on ADR-0.0.37 completion | **T2** — CMS (2.2) |
 | #574 | handoff resume "advise-not-execute" gate is prose, not mechanized | **T2** — Session MOTD (2.4) |
 | #575 | no governed `gz insights` author verb (hand-append only) | **T2** — ADR-0.0.66 substrate (2.3) |
@@ -341,6 +342,106 @@ Rules:
 - Keep WIP to one recovery issue at a time.
 - Close issues only with observed command evidence.
 - Do not batch unrelated fixes under a recovery umbrella.
+
+### Routed Work — GHI #571 Stdlib unittest/doctest maturity
+
+Status: todo; start only after Tier 0 is green, unless the operator explicitly
+waives green-first for this item. This is a Phase-4 recovery issue, not a pytest
+migration and not a new dependency. The stdlib path is the design constraint:
+`unittest` remains the runner, and `doctest` enters only through the stdlib
+`unittest` integration hooks.
+
+**Observed audit, 2026-06-01.** The project uses `unittest` broadly but shallowly:
+
+- 382 test files, 1,519 `TestCase` classes, and 5,811 test methods.
+- Fixtures are common: 1,472 `TemporaryDirectory` uses, 100 `setUp`, 54
+  `tearDown`, 30 `setUpClass`, and 2 `tearDownClass`.
+- Mocking is heavy: 892 `patch(...)` calls; the sampled AST audit found no
+  `patch` calls with `autospec`, `spec`, or `spec_set`.
+- `Mock`/`MagicMock` constructors are mostly unspecced: 93 constructor calls,
+  3 with a spec and 90 without.
+- `subTest` appears 175 times; useful, but still not the default for table-style
+  semantic cases.
+- Cleanup helpers are underused: 11 `addCleanup` calls and no observed
+  `enterContext` calls.
+- `load_tests` is unused, which means there is no current stdlib bridge for
+  source docstring examples or doctest-backed documentation examples.
+- 108 plain `assert` statements remain in tests, weakening `unittest` failure
+  diagnostics.
+- 54 `subprocess.run` calls live under `tests/`; some are likely intentional
+  integration checks, but they must be classified against the unit-tier contract
+  before anyone treats them as acceptable unit tests.
+
+**Problem statement.** gzkit is stdlib-first in policy, but the test harness has
+not extracted the available value from stdlib `unittest`: specced mocks,
+cleanup stacks, loader hooks, result/runner telemetry, table-scoped `subTest`,
+and doctest-backed executable examples. That leaves two efficiency losses: agents
+learn less from the code because source examples are not executable, and tests
+catch less drift because unspecced mocks accept calls the real object would
+reject.
+
+**Work order.**
+
+1. **Baseline the shape.** Check in or script a repeatable audit for the counts
+   above: unspecced `patch`, unspecced mocks, `load_tests`, doctest prompts,
+   plain asserts, subprocess calls under `tests/`, and cleanup-helper usage.
+   The baseline prevents this route from becoming taste-driven cleanup.
+2. **Pilot the doctest bridge.** Add a `unittest`-discovered bridge such as
+   `tests/test_doctest_examples.py` with `load_tests`. It should scan
+   `src/gzkit/**/*.py` for docstrings containing `>>>`, import only those
+   modules, and add `doctest.DocTestSuite` cases. Default to exact matching;
+   allow local doctest directives only when the example itself justifies them.
+3. **Add one source example.** Pick a stable, low-side-effect function whose
+   docstring can teach an agent real API usage and assert behavior. The example
+   must fail through `unittest` if it drifts. Do not mass-retrofit docstrings.
+4. **Decide proof semantics before rule edits.** If source doctests are meant to
+   satisfy BEHAVIOR REQ proof, update the `@covers`/REQ coverage path to
+   recognize doctest-backed source tests explicitly. If they are examples only,
+   state that in `.gzkit/rules/tests.md` so agents do not over-claim coverage.
+5. **Tighten mock discipline.** Establish that new or touched
+   `unittest.mock.patch` calls use `autospec=True`, `spec`, or `spec_set` unless
+   a local comment names why the real surface cannot be specced. Start with
+   high-risk command and governance-boundary tests; do not sweep 892 calls in
+   one broad rewrite.
+6. **Tighten fixture discipline.** Preserve the strong `TemporaryDirectory`
+   pattern. Prefer `addCleanup` or `enterContext` for manually started resources
+   and class-level fixtures, especially where cleanup currently depends on
+   `tearDown` control flow.
+7. **Classify subprocess tests.** For each real `subprocess.run` under `tests/`,
+   choose one: mock the boundary, move the behavior to `features/`, or document
+   why the test is an output-form fixture rather than a pure unit test.
+8. **Update doctrine after the pilot passes.** Amend `.gzkit/rules/tests.md`
+   and `docs/governance/tests-rationale.md` only after the doctest bridge and
+   first source example pass under the normal `unittest` gate. The rule should
+   encode the observed working path, not an aspiration.
+9. **Promote mechanical recurrence defenses.** Once the pattern is stable, add
+   a validator or audit helper for the high-signal checks: source doctest bridge
+   present, no unspecced patch in new/touched tests without waiver, and no
+   unclassified real subprocess under `tests/`.
+
+**Efficiency guardrails.**
+
+- No pytest migration; no new dependency; no parallel runner.
+- No mass rewrite before the pilot proves value.
+- Fix touched/high-risk tests first; measure the whole suite so progress is
+  visible without forcing churn.
+- Treat doctest as executable API education: examples must teach a real call
+  pattern an agent should imitate, not merely pin a trivial string.
+- Keep the proof claim precise: a doctest is a `unittest` case only when the
+  bridge loads it and the normal gate observes it.
+
+**Exit criteria for GHI #571.**
+
+- `uv run -m unittest -q` discovers and runs the doctest bridge.
+- At least one source docstring example fails when its expected behavior is
+  intentionally broken and passes when restored.
+- The test policy states whether doctest-backed source examples do or do not
+  count as BEHAVIOR REQ proof, and the implementation agrees.
+- New/touched mocks at command/governance boundaries are specced or explicitly
+  waived.
+- Real subprocess tests under `tests/` are classified, moved, or mocked.
+- The recurrence defense is visible in a validator, audit helper, or named
+  checklist item with an observed command.
 
 Exit criteria:
 
