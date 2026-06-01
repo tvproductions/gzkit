@@ -3,7 +3,7 @@ id: OBPI-0.0.37-12-temperature-renderer-templates
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 12
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.37-12-temperature-renderer-templates: Temperature Renderer + lite/medium/heavy Templates
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 - **Checklist Item:** #12 — "OBPI-0.0.37-12 — Temperature renderer + lite/medium/heavy templates (per-bullet density floor; Judgment always renders; deterministic byte-stable)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -180,17 +180,23 @@ Judgment floor is structurally guaranteed.
 
 ### Key Proof
 
-Rendering the same AgentContract at lite vs heavy yields a smaller-but-Judgment-complete
-surface vs the full-fidelity surface, byte-stably.
+
+Same AgentContract (Judgment + lite + medium + heavy bullets; lite-tier "Core" pillar + heavy-tier "Deep Dive" pillar) rendered at each temperature:
+  lite: 131 bytes / medium: 159 bytes / heavy: 231 bytes
+  heavy contains everything lite has: True
+  byte-stable (lite x2): True
+At lite the Judgment and lite-floor bullets render and the "Core" section renders; the medium/heavy bullets and the heavy-tier "Deep Dive" section are withheld — density dials monotonically. Receipts: arb-step-unittest-9093b259d9b34f2b8e4a69a8e623bba2 (5810/5810 pass), arb-step-unittest-0e9fe083a0ba47188b73102dc218fd14 (19/19 scoped), arb-ruff-1a98e4e545bb4540b84aa304fa790db4, arb-step-typecheck-6ef6ec0f39f04a8a8fb3f12e694dd6ec, arb-step-mkdocs-93f27079619b4d2baa3a2b0b4873a0f8.
 
 ### Implementation Summary
 
+
 - Decision item implemented (verbatim): "OBPI-0.0.37-12 — Temperature renderer + lite/medium/heavy templates (per-bullet density floor; Judgment always renders; deterministic byte-stable)."
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- render() gains temperature: str = "heavy"; fail-closed ValueError on unknown temperature before template lookup (REQ-02).
+- _bullet_renders() predicate: Judgment always renders (0-Kelvin floor); density_min=None never thinned; else density_min <= temperature (REQ-01, REQ-05).
+- _project_for_temperature(): withholds disabled/above-tier sections, sorts by order, filters bullets within kept pillars — section-withholding wins over the Judgment floor (REQ-03), pinned by test_judgment_bullet_in_withheld_section_is_dropped.
+- Byte-deterministic via model_copy + stable sort (REQ-04). Template agentcontract/claude.md.j2 now renders pillars.
+- Files modified: src/gzkit/content/render/pipeline.py, src/gzkit/content/templates/agentcontract/claude.md.j2, tests/content/test_render_pipeline.py, tests/content/test_byte_stability.py. 8 tests added.
+- Date completed: 2026-06-01. Behave waived (no CLI surface; deferred to ADR-0.0.37 closeout per OBPI-11 sibling precedent).
 
 ## Tracked Defects
 
@@ -198,12 +204,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.37-12 temperature renderer accepted at Heavy+Foundation Gate 5: render() projects the AgentContract master model at lite/medium/heavy with the Judgment 0-Kelvin floor and section-withholding-wins resolution; 5/5 REQs covered (parity uncovered_reqs=0), full suite 5810 pass (arb-step-unittest-9093b259d9b34f2b8e4a69a8e623bba2), lint/typecheck/mkdocs clean (arb-ruff-1a98e4e545bb4540b84aa304fa790db4, arb-step-typecheck-6ef6ec0f39f04a8a8fb3f12e694dd6ec, arb-step-mkdocs-93f27079619b4d2baa3a2b0b4873a0f8); behave waived (no CLI surface, deferred to ADR-0.0.37 closeout). Brick 1 of 4 in the #519 remediation chain.
+- Date: 2026-06-01
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-01
 
 **Evidence Hash:** -
