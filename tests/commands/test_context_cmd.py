@@ -15,6 +15,7 @@ from pathlib import Path
 
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
+from gzkit.ledger import Ledger, gate_checked_event
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _quick_init
 
@@ -121,8 +122,13 @@ class TestContextCmdCore(unittest.TestCase):
             self.assertIn("OBPI-0.0.99-02-second", result.output)
 
     @covers("REQ-0.28.0-01-05")
-    def test_payload_lists_covers_test_paths(self) -> None:
-        """REQ-05: Payload lists test files carrying @covers(REQ-<semver>-…)."""
+    def test_payload_lists_covers_test_paths_grouped_by_req(self) -> None:
+        """REQ-05: test files are listed AND grouped by the REQ they cover.
+
+        Two tests cover two distinct REQs; the payload must render a per-REQ
+        group header for each (the "grouped by REQ" clause) with the file path
+        nested under its own REQ — not a flat undifferentiated list.
+        """
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -137,25 +143,67 @@ class TestContextCmdCore(unittest.TestCase):
                 "class T(unittest.TestCase):\n"
                 "    @covers('REQ-0.0.99-01-01')\n"
                 "    def test_x(self) -> None:\n"
+                "        self.assertTrue(True)\n\n"
+                "    @covers('REQ-0.0.99-01-02')\n"
+                "    def test_y(self) -> None:\n"
                 "        self.assertTrue(True)\n",
                 encoding="utf-8",
             )
             result = runner.invoke(main, ["context", "ADR-0.0.99"])
             self.assertIn("test_seeded.py", result.output)
+            # Grouped by REQ: each covered REQ gets its own group header.
+            self.assertIn("REQ-0.0.99-01-01", result.output)
+            self.assertIn("REQ-0.0.99-01-02", result.output)
+            # The REQ-01 group header precedes the REQ-02 group header
+            # (sorted grouping), proving per-REQ structure, not a flat list.
+            self.assertLess(
+                result.output.index("REQ-0.0.99-01-01"),
+                result.output.index("REQ-0.0.99-01-02"),
+            )
 
     @covers("REQ-0.28.0-01-06")
-    def test_payload_includes_governance_rules_section(self) -> None:
-        """REQ-06: Payload governance-rules section names lane / lifecycle / gate / next action."""
+    def test_payload_governance_current_gate_derives_from_ledger(self) -> None:
+        """REQ-06: governance-rules section names lane, lifecycle, current gate,
+        and next action — with the current gate sourced from LEDGER state, not
+        the frontmatter ``status:`` field (AGENTS.md Never-rule #7).
+
+        The fixture forces frontmatter and ledger to disagree: frontmatter
+        declares ``status: Completed`` (a status-derived heuristic would map that
+        to Gate 5), while the ledger records only gate 2 cleared. A ledger-sourced
+        renderer must show Gate 2 and must not echo the frontmatter-implied Gate 5.
+        This assertion fails for any implementation that derives the gate from
+        frontmatter — it pins the value and its source, not mere string presence.
+        """
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            adr_file = _seed_adr(_adr_root(), "ADR-0.0.99")
+            body = (
+                "---\nid: ADR-0.0.99\nkind: foundation\nlane: lite\n"
+                "status: Completed\n---\n\n# ADR-0.0.99: seeded\n"
+            )
+            adr_file = _seed_adr(_adr_root(), "ADR-0.0.99", body=body)
             _seed_obpi(adr_file, 1, "seeded-unit")
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            ledger = Ledger(Path(config.paths.ledger))
+            ledger.append(
+                gate_checked_event(
+                    adr_id="ADR-0.0.99",
+                    gate=2,
+                    status="pass",
+                    command="uv run -m unittest",
+                    returncode=0,
+                )
+            )
             result = runner.invoke(main, ["context", "ADR-0.0.99"])
             lower = result.output.lower()
             self.assertIn("governance rules", lower)
             self.assertIn("lane", lower)
             self.assertIn("lifecycle", lower)
+            self.assertIn("next required action", lower)
+            # Gate is ledger-sourced: the highest gate cleared in the ledger (2),
+            # NOT the frontmatter-status mapping (which would render Gate 5).
+            self.assertIn("Gate 2", result.output)
+            self.assertNotIn("Gate 5", result.output)
 
     @covers("REQ-0.28.0-01-07")
     def test_unresolvable_adr_id_exits_nonzero_with_blockers(self) -> None:
@@ -166,6 +214,8 @@ class TestContextCmdCore(unittest.TestCase):
             result = runner.invoke(main, ["context", "ADR-9.9.9-does-not-exist"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("BLOCKERS", result.output)
+            # REQ-07: the message must NAME the missing ADR, not just fail.
+            self.assertIn("ADR-9.9.9-does-not-exist", result.output)
 
     @covers("REQ-0.28.0-01-08")
     def test_payload_is_plain_markdown_no_ansi(self) -> None:
@@ -176,8 +226,11 @@ class TestContextCmdCore(unittest.TestCase):
             adr_file = _seed_adr(_adr_root(), "ADR-0.0.99")
             _seed_obpi(adr_file, 1, "seeded-unit")
             result = runner.invoke(main, ["context", "ADR-0.0.99"])
+            # REQ-08 forbids terminal-control characters. ANSI sequences
+            # all begin with ESC (\x1b); asserting its absence is the REQ
+            # semantic. (A redundant duplicate embedding a raw ESC byte in
+            # source was removed; ``[`` is valid Markdown and is not forbidden.)
             self.assertNotIn("\x1b[", result.output)
-            self.assertNotIn("[", result.output)
 
 
 class TestContextCmdSlim(unittest.TestCase):
@@ -238,22 +291,31 @@ class TestContextCmdSlim(unittest.TestCase):
             _quick_init()
             adr_file = _seed_adr(_adr_root(), "ADR-0.0.99")
             _seed_obpi(adr_file, 1, "seeded-unit")
-            default_result = runner.invoke(main, ["context", "ADR-0.0.99"])
-            slim_result = runner.invoke(main, ["context", "--slim", "ADR-0.0.99"])
-            self.assertEqual(default_result.exit_code, 0)
-            self.assertEqual(slim_result.exit_code, 0)
-            # The slim payload must be a strict prefix/subset of the default payload.
-            # Every line in slim must appear in default (slim is purely subtractive).
-            slim_lines = slim_result.output.splitlines()
-            default_lines = default_result.output.splitlines()
-            for line in slim_lines:
-                self.assertIn(
-                    line,
-                    default_lines,
-                    f"Line present in --slim but not default: {line!r}",
-                )
-            # The default payload must be longer (contains the governance section).
-            self.assertGreater(len(default_result.output), len(slim_result.output))
+            default_output = runner.invoke(main, ["context", "ADR-0.0.99"]).output
+            slim_output = runner.invoke(main, ["context", "--slim", "ADR-0.0.99"]).output
+            # Byte-level subtractive proof: the slim payload is a strict PREFIX
+            # of the default payload (governance is appended last), so the entire
+            # delta is the tail bytes that follow the slim prefix.
+            self.assertTrue(
+                default_output.startswith(slim_output),
+                "slim payload is not a byte-prefix of the default payload",
+            )
+            delta = default_output[len(slim_output) :]
+            self.assertGreater(len(delta), 0, "default and slim are identical")
+            # REQ-04: the delta IS the governance-rules section — nothing else.
+            # It opens with the governance header and carries all four fields.
+            self.assertTrue(
+                delta.lstrip().startswith("---"),
+                f"delta does not open with the governance section: {delta!r}",
+            )
+            self.assertIn("## Governance rules", delta)
+            for field in (
+                "**Lane:**",
+                "**Lifecycle:**",
+                "**Current gate:**",
+                "**Next required action:**",
+            ):
+                self.assertIn(field, delta)
 
     @covers("REQ-0.28.0-02-05")
     def test_obpi01_default_mode_still_includes_governance_section(self) -> None:

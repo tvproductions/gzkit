@@ -23,6 +23,8 @@ from gzkit.commands.common import (
     get_project_root,
     resolve_adr_file,
 )
+from gzkit.config import GzkitConfig
+from gzkit.ledger import Ledger
 from gzkit.traceability import scan_test_tree
 
 _ADR_SEMVER_RE = re.compile(r"^ADR-(\d+\.\d+\.\d+)")
@@ -79,8 +81,31 @@ def _render_covering_tests(adr_stem: str, project_root: Path) -> str:
     return "".join(lines)
 
 
-def _render_governance_rules(adr_file: Path) -> str:
-    """Render the governance-rules section (lane / lifecycle / gate / next action)."""
+def _ledger_current_gate(adr_id: str, project_root: Path, config: GzkitConfig) -> str:
+    """Return the current gate as the highest gate cleared in the ledger.
+
+    REQ-0.28.0-01-06 mandates the gate derive from *ledger* state (Layer-2
+    truth), never the frontmatter ``status:`` field — see AGENTS.md Never-rule
+    #7 and Architectural Boundary 6. ``get_effective_gate_statuses`` honors
+    lifecycle authority for display surfaces (state-doctrine; GHI #392). The
+    current gate is the furthest-cleared gate; when the ledger records none it
+    is Gate 1 (the entry gate).
+    """
+    ledger = Ledger(project_root / config.paths.ledger)
+    statuses = ledger.get_effective_gate_statuses(adr_id)
+    cleared = [gate for gate, status in statuses.items() if status == "pass"]
+    if cleared:
+        return f"Gate {max(cleared)} (latest cleared per ledger)"
+    return "Gate 1 (no gates recorded in ledger)"
+
+
+def _render_governance_rules(adr_file: Path, project_root: Path, config: GzkitConfig) -> str:
+    """Render the governance-rules section (lane / lifecycle / gate / next action).
+
+    Lane and lifecycle come from the ADR frontmatter; the current gate is
+    sourced from the ledger (REQ-0.28.0-01-06) so it cannot drift with a stale
+    frontmatter ``status:`` field.
+    """
     text = adr_file.read_text(encoding="utf-8")
     lane = "lite"
     lifecycle = "Proposed"
@@ -94,7 +119,7 @@ def _render_governance_rules(adr_file: Path) -> str:
                     lane = stripped.split(":", 1)[1].strip() or lane
                 elif stripped.startswith("status:"):
                     lifecycle = stripped.split(":", 1)[1].strip() or lifecycle
-    current_gate = "Gate 1" if lifecycle.lower() in {"proposed", "draft"} else "Gate 5"
+    current_gate = _ledger_current_gate(adr_file.stem, project_root, config)
     next_action = (
         "Run `gz obpi pipeline <OBPI-ID>` to drive the next OBPI through implement -> verify."
         if lifecycle.lower() in {"proposed", "draft", "accepted"}
@@ -111,6 +136,7 @@ def _render_governance_rules(adr_file: Path) -> str:
 def build_context_payload(
     adr_file: Path,
     project_root: Path,
+    config: GzkitConfig,
     *,
     slim: bool = False,
 ) -> str:
@@ -136,7 +162,7 @@ def build_context_payload(
 
     if not slim:
         parts.append("\n---\n\n## Governance rules\n\n")
-        parts.append(_render_governance_rules(adr_file))
+        parts.append(_render_governance_rules(adr_file, project_root, config))
 
     return "".join(parts)
 
@@ -155,6 +181,6 @@ def context_cmd(adr: str, *, slim: bool = False) -> int:
     except GzCliError as exc:
         sys.stderr.write(f"BLOCKERS: gz context: error: {exc}\n")
         raise SystemExit(1) from exc
-    payload = build_context_payload(adr_file, project_root, slim=slim)
+    payload = build_context_payload(adr_file, project_root, config, slim=slim)
     sys.stdout.write(payload)
     return 0
