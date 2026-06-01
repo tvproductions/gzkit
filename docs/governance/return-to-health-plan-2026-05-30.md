@@ -697,6 +697,31 @@ deferred vision, designed now, built last.
 **Immediate (this session):** re-home ADR-0.0.66 → pool (unbuilt design; its substance folds
 into this canon thread).
 
+### 14. Session 2026-06-01 — handoff/triage advisory model (folds into this thread)
+
+> Deepens §13.8 (triage trio + `gz-next`) with the handoff↔triage relationship and the
+> plan-vs-fact distinction. Formalize with the canon ADR.
+
+**The model (operator, verbatim):**
+
+- Triage surveys the whole landscape and recommends the best next course of action.
+- Operator agrees or doesn't.
+- On agreement, the handoff chain adjusts — the forward plan is rewritten.
+- Both triage and handoff are advisory. Neither authorizes anything. You do what you want.
+
+Refinements: triage recommends a *reasoned set* of next-moves, not one — **the reasons are the
+value, not the ranking** — spanning any route (direct fix, OBPI ceremony, design dialogue, defer,
+or fan-out). Generalizes the resume contract ("a handoff ADVISES; it does not authorize") to
+triage; operator is sole authority (§5).
+
+**Load-bearing distinction — handoff ≠ ledger.** Handoff = *plan/intent* (a session's prospective
+plan of work; mutable while the session is live, immutable once chained). Ledger = *observed
+occurrence/fact* (Layer-2 truth). This is **Never #7 generalized**: a handoff is evidence of what
+was *planned*, never of what *happened*. So triage reads done-ness **from the ledger, never from
+handoff prose**, validates the plan-chain against ledger facts, then recommends the forward
+rewrite. Handoff and triage are two views over the one work-graph (§7, §8.13) — not a point
+coupling.
+
 ## Recovery Closeout
 
 Final closeout is filled only when recovery completes (Definition of Healthy all
