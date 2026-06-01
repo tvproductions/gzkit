@@ -1304,5 +1304,64 @@ class TestDriftAdvisoryResult(unittest.TestCase):
         self.assertEqual(d["unjustified_code_changes"], ["src/gzkit/foo.py"])
 
 
+class TestDriftAdvisoryRenderForm(unittest.TestCase):
+    """Output-form fixture for the `gz check` drift advisory render.
+
+    @covers REQ-0.20.0-05-01
+
+    Locks the summary-not-dump semantics: the advisory render emits per-category
+    counts + total + a `gz drift` pointer, and never the full per-finding list
+    (which routinely exceeds 1,000 lines and buries the gate results).
+    """
+
+    @covers("REQ-0.20.0-05-01")
+    def test_render_collapses_to_counts_not_per_finding_dump(self) -> None:
+        from gzkit.commands.common import console
+        from gzkit.commands.quality import _render_drift_advisory
+        from gzkit.quality import DriftAdvisoryResult
+
+        drift = DriftAdvisoryResult(
+            has_drift=True,
+            unlinked_specs=["REQ-9.1.0-01-01", "REQ-9.1.0-01-02", "REQ-9.1.0-01-03"],
+            orphan_tests=["REQ-9.2.0-01-01"],
+            unjustified_code_changes=["src/gzkit/zzz_marker.py"],
+            total_drift_count=5,
+            scan_timestamp="2026-06-01T00:00:00Z",
+        )
+
+        with console.capture() as cap:
+            _render_drift_advisory(drift)
+        output = cap.get()
+
+        # Per-category counts are present (the advisory warning still appears).
+        self.assertIn("Unlinked specs (REQs with no test): 3", output)
+        self.assertIn("Orphan tests (covering absent REQs): 1", output)
+        self.assertIn("Unjustified code changes: 1", output)
+        self.assertIn("Total: 5 finding(s)", output)
+        # The full per-finding list is NOT dumped — that is the whole point.
+        self.assertNotIn("REQ-9.1.0-01-01", output)
+        self.assertNotIn("src/gzkit/zzz_marker.py", output)
+        # Operator is routed to the detail command.
+        self.assertIn("gz drift", output)
+
+    @covers("REQ-0.20.0-05-03")
+    def test_render_emits_nothing_when_no_drift(self) -> None:
+        from gzkit.commands.common import console
+        from gzkit.commands.quality import _render_drift_advisory
+        from gzkit.quality import DriftAdvisoryResult
+
+        clean = DriftAdvisoryResult(
+            has_drift=False,
+            unlinked_specs=[],
+            orphan_tests=[],
+            unjustified_code_changes=[],
+            total_drift_count=0,
+            scan_timestamp="2026-06-01T00:00:00Z",
+        )
+        with console.capture() as cap:
+            _render_drift_advisory(clean)
+        self.assertEqual(cap.get().strip(), "")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -11,6 +11,22 @@ continues_from:
 
 <!-- Handoff document for {adr_id} — created by {agent} at {timestamp} -->
 
+## ⚠️ This handoff ADVISES next moves — it is NOT authorization to execute them
+
+**Read this before anything else.** A handoff records a *proposed* plan and its
+context. It is **NOT** a clearance to unilaterally execute that plan. On resume —
+at **every** freshness level, Fresh included — you MUST:
+
+1. Present the advised next steps and current state to the operator.
+2. **Obtain explicit operator authorization before executing any of them** — no
+   file mutation, no `gz` ceremony, no migration until the operator says go.
+3. Treat the human-as-final-witness doctrine as binding from the first step: you
+   advise; the operator rules; you note variance and stop.
+
+Barreling into execution from this document is the exact failure this handoff
+exists to prevent. The plan is the destination; operator authorization is the
+ignition.
+
 ## Current State Summary
 
 <!-- Describe the current state of work: what has been done, what phase the work is in,
@@ -35,8 +51,13 @@ continues_from:
 
 ## Immediate Next Steps
 
-<!-- Ordered list of the next 3-5 concrete actions the resuming agent should take.
-     Each step should be specific enough to execute without further research.
+<!-- ADVISORY ONLY — these are proposed moves for operator review, NOT a license to
+     execute (see the ⚠️ banner above). Present them and wait for operator
+     authorization before acting on any of them.
+
+     Ordered list of the next 3-5 concrete actions the resuming agent should
+     propose. Each step should be specific enough to execute without further
+     research once the operator authorizes.
 
      1. [First action — include file path and specific change]
      2. [Second action]

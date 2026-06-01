@@ -406,31 +406,33 @@ def check(as_json: bool = False) -> None:
 
 
 def _render_drift_advisory(drift: DriftAdvisoryResult) -> None:
-    """Render advisory drift findings after blocking checks."""
+    """Render an advisory drift *summary* after blocking checks.
+
+    Emits per-category counts only — never the full per-finding list, which
+    routinely exceeds 1,000 lines and buries the exit-code-relevant gate
+    results under advisory bulk (the recovery-plan triage principle: blockers
+    before advisory bulk). The full per-finding listing is available via
+    ``gz drift`` (and ``gz drift --json`` / ``--plain``).
+    """
     if not drift.has_drift:
         return
 
     console.print("\n[yellow]⚠ Advisory: spec-test-code drift detected[/yellow]")
 
-    if drift.unlinked_specs:
-        console.print("  Unlinked specs (REQs with no test):")
-        for req_id in drift.unlinked_specs:
-            console.print(f"    [yellow]advisory[/yellow]  {req_id}")
-
-    if drift.orphan_tests:
-        console.print("  Orphan tests (covering absent REQs):")
-        for req_id in drift.orphan_tests:
-            console.print(f"    [yellow]advisory[/yellow]  {req_id}")
-
-    if drift.unjustified_code_changes:
-        console.print("  Unjustified code changes:")
-        for code_id in drift.unjustified_code_changes:
-            console.print(f"    [yellow]advisory[/yellow]  {code_id}")
+    categories = (
+        ("Unlinked specs (REQs with no test)", len(drift.unlinked_specs)),
+        ("Orphan tests (covering absent REQs)", len(drift.orphan_tests)),
+        ("Unjustified code changes", len(drift.unjustified_code_changes)),
+    )
+    for label, count in categories:
+        if count:
+            console.print(f"  [yellow]advisory[/yellow]  {label}: {count}")
 
     console.print(
         f"  Total: {drift.total_drift_count} finding(s) "
         f"[dim](advisory — does not affect exit code)[/dim]"
     )
+    console.print("  [dim]Run `gz drift` for the full per-finding list.[/dim]")
 
 
 def _render_flag_health(health: object | None) -> None:

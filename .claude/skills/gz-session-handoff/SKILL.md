@@ -5,18 +5,18 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.4.0"
+  skill-version: "6.5.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-30
+last_reviewed: 2026-06-01
 model: sonnet
 ---
 
-# gz-session-handoff (v6.0.0)
+# gz-session-handoff (v6.5.0)
 
 ## Purpose
 
@@ -51,7 +51,7 @@ Create and resume session handoff documents that preserve agent context across e
 
 - Handoff markdown file at `.gzkit/handoffs/{timestamp}-{slug}.md`
 - Validation result (pass/fail with error details)
-- First next action from "Immediate Next Steps" section (for quick resumption)
+- First next action from "Immediate Next Steps" section, surfaced as an **advisory** for operator review on resume (not a license to execute — see the RESUME Resume contract)
 
 ## Assets
 
@@ -161,17 +161,32 @@ injection can disable the hook in their local settings.
 
 The RESUME workflow discovers, loads, validates, and reports on existing handoff documents so a resuming agent can continue work.
 
+> **Resume contract — a handoff ADVISES; it does not authorize.** A handoff
+> records a *proposed* plan and its context. It is **NOT** a clearance to execute
+> that plan. On resume — at **every** freshness level, including Fresh — you MUST:
+> (1) present the advised next steps and current state to the operator;
+> (2) obtain explicit operator authorization before executing any of them — no
+> file mutation, no `gz` ceremony, no migration until the operator says go;
+> (3) treat the human-as-final-witness doctrine as binding from the first step —
+> **you advise; the operator rules; you note variance and stop.**
+> Barreling into execution from a handoff is the exact failure this contract
+> exists to prevent. The plan is the destination; operator authorization is the
+> ignition. Staleness escalates *verification depth* (below); it never relaxes the
+> authorization requirement, and freshness never waives it.
+
 ### Steps
 
 1. **List available handoffs** for the ADR using `list_handoffs(adr_id)`. This scans `.gzkit/handoffs/` for `.md` files whose `adr_id:` frontmatter matches, parses each frontmatter, and returns them sorted newest-first.
 
 2. **Select a handoff** — either the newest (default) or a specific file if `handoff_path` is provided.
 
-3. **Classify staleness** using `classify_staleness(timestamp)`:
-   - **Fresh** (< 24h): Resume directly
-   - **Slightly Stale** (24-72h): Resume with caution, verify key assumptions
-   - **Stale** (72h-7d): Human verification required before resume
-   - **Very Stale** (> 7d): Human verification required; consider re-creating
+3. **Classify staleness** using `classify_staleness(timestamp)`. Staleness sets
+   how much you re-verify before presenting — it does **not** decide whether you
+   need operator authorization (you always do, per the Resume contract above):
+   - **Fresh** (< 24h): present advised steps + state; verify branch and evidence paths; await operator authorization
+   - **Slightly Stale** (24-72h): also re-verify key assumptions before presenting
+   - **Stale** (72h-7d): deep re-verification required; `requires_human_verification` flag set
+   - **Very Stale** (> 7d): deep re-verification required; `requires_human_verification` set; consider re-creating the handoff
 
 4. **Load the handoff content** — read the file and parse frontmatter.
 
@@ -183,16 +198,27 @@ The RESUME workflow discovers, loads, validates, and reports on existing handoff
 
 7. **Extract first next step** from the "Immediate Next Steps" section using `extract_first_next_step(content)` — returns the text of the first numbered or bulleted item for quick resumption.
 
-8. **Report** the result:
+8. **Report** the result, then **stop and await operator authorization** (do not begin executing):
    - File path of the resumed handoff
-   - Staleness classification and human verification requirement
-   - First next step for immediate action
+   - Staleness classification and re-verification depth applied
+   - First next step, presented **for operator review and authorization** (not for immediate action)
    - Validation errors and context warnings
    - Chain of predecessor handoffs
 
-### Human Verification Gate
+### Operator Authorization Gate (universal)
 
-When staleness is **Stale** or **Very Stale**, the `requires_human_verification` flag is set to `True`. The agent MUST present the handoff summary to the human operator and wait for explicit approval before proceeding with the next steps.
+**Every resume requires explicit operator authorization before any execution, at
+every freshness level — Fresh included.** The agent presents the advised next
+steps and current state, then waits for the operator to rule. This is the
+human-as-final-witness doctrine applied to session resumption: the agent advises,
+the operator rules, the agent notes variance and stops.
+
+Staleness escalates *re-verification depth*, not the authorization requirement:
+when staleness is **Stale** or **Very Stale**, the `requires_human_verification`
+flag is additionally set to `True`, signaling that the agent must deeply
+re-verify the handoff's assumptions (branch, evidence paths, world-state drift)
+*before* presenting — but a **Fresh** handoff still does not authorize execution.
+Freshness shortens the verification; it never converts an advisory into a license.
 
 ### Programmatic API (DESIGN TARGET — NOT YET IMPLEMENTED)
 
@@ -262,6 +288,7 @@ These thoughts mean STOP — you are about to lose context across the session bo
 
 | Thought | Reality |
 |---------|---------|
+| "The handoff is Fresh, so I can just start on its next steps" | Freshness shortens re-verification; it never authorizes execution. The Operator Authorization Gate is universal. Present the advised steps, then wait for the operator to rule. |
 | "The handoff is slightly stale but I remember the work" | Stale handoffs trigger the human verification gate for a reason. Memory is not a substitute for explicit verification. Present to the human and wait. |
 | "Branch mismatch is fine, I know what I'm doing" | The branch field exists because branch state is part of session context. Mismatch means the world changed under the handoff. Verify with the human. |
 | "I'll fill the placeholders in later — let me write the scaffold first" | The validation gate rejects placeholders. "Later" means the next agent inherits TBD/TODO markers. Populate every section now. |
@@ -273,6 +300,7 @@ These thoughts mean STOP — you are about to lose context across the session bo
 ## Red Flags
 
 - Writing a handoff with HTML-comment placeholders still present in any section
+- Executing a handoff's next steps without explicit operator authorization — at any freshness level (the Operator Authorization Gate is universal)
 - Resuming a Stale or Very Stale handoff without presenting it to the human first
 - Resuming with a branch mismatch and "I'll fix it as I go"
 - Creating a handoff that references files via prose instead of backtick-quoted paths

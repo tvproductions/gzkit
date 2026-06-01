@@ -332,7 +332,12 @@ def render(state: dict, now: datetime) -> str:
         lines.append(f"- Path: `{handoff.get('path', '?')}`")
         lines.append(f"- Freshness: {handoff.get('freshness', '?')}")
         if handoff.get("first_action"):
-            lines.append(f"- Resume action: {handoff['first_action']}")
+            lines.append(f"- Advised next step: {handoff['first_action']}")
+        lines.append(
+            "- A handoff ADVISES; it does not authorize. Present its advised steps and "
+            "obtain explicit operator authorization before executing any of them "
+            "(gz-session-handoff RESUME contract). You advise; the operator rules."
+        )
     else:
         lines.append("- (no handoff documents found)")
     lines.append("")

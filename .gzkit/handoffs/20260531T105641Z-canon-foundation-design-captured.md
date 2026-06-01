@@ -46,9 +46,11 @@ Done this session (all committed, tree clean at `c3d8759`):
   substrate. 22 tests, full suite 5790 green. Operator attestation "attest
   completed" (g0). Behave coverage waived (schema-only; BDD deferred to
   ADR closeout per sibling precedent); REQ-05 accepted-uncovered (SUPPORT-kind).
-- **Canon foundation design captured** →
-  `docs/governance/canon-foundation-design-2026-05-31.md` (the primary artifact;
-  read it in full on resume). Full blast radius, all nuance preserved.
+- **Canon foundation design captured** → folded (2026-06-01) into
+  `docs/governance/return-to-health-plan-2026-05-30.md` § "Designated Workstream —
+  Canon Foundation" (the primary artifact; read that section in full on resume).
+  Full blast radius, all nuance preserved. The standalone
+  `canon-foundation-design-2026-05-31.md` was deleted in the same pass.
 - **GHI root-cause audit** (2 independent passes, 30 open + 44/458 closed): the
   narrow "ADR-0.0.9 docs-as-canon definition caused most failures" hypothesis is
   **refuted (~9–10% L1-ROOT)**; the broad thesis (latent-prose governance /
@@ -64,10 +66,12 @@ Done this session (all committed, tree clean at `c3d8759`):
   *from* canon; canon is the substrate that workstream assumes. Recovery stays
   open (emergency #519 open); this thread advances its route. Keep the plan and
   this handoff in sync.
-- **`docs/governance/canon-foundation-design-2026-05-31.md`** — the full design
-  capture (five-role ontology, two modes, two reconciliation loops, human-as-
-  final-witness, law-vs-rhetoric, Foundry north-star, the audit verdict, the
-  full blast radius incl. formerly-deferred items, open questions, sequencing).
+- **`docs/governance/return-to-health-plan-2026-05-30.md` § "Designated Workstream
+  — Canon Foundation"** — the full design capture (five-role ontology, two modes,
+  two reconciliation loops, human-as-final-witness, law-vs-rhetoric, Foundry
+  north-star, the audit verdict, the full blast radius incl. formerly-deferred
+  items, open questions, sequencing). Folded in 2026-06-01 from the now-deleted
+  standalone `canon-foundation-design-2026-05-31.md`.
 - **`docs/governance/agent-control-surface-rendering-substrate.md`** — the binding
   rendering doctrine the CMS half depends on.
 
@@ -131,7 +135,8 @@ reviews the *law* (canon); the gates transitively guarantee the code.
 
 ## Verification Checklist (on resume)
 
-- [ ] Read `docs/governance/canon-foundation-design-2026-05-31.md` in full FIRST.
+- [ ] Read `docs/governance/return-to-health-plan-2026-05-30.md` § "Designated
+      Workstream — Canon Foundation" in full FIRST (the folded canon capture).
 - [ ] `git status` clean; `git branch --show-current` = `main`; HEAD at or beyond `c3d8759`.
 - [ ] `uv run gz adr status ADR-0.0.37` shows OBPI-11 `attested_completed`.
 - [ ] **Operator authorization obtained before any execution** (the ⚠️ banner).
