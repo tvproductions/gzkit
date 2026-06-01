@@ -23,6 +23,7 @@ from gzkit.content.models import (
     Scenario,
     Skill,
 )
+from gzkit.content.models.agent_contract import Pillar
 from gzkit.content.render import render
 from gzkit.traceability import covers
 
@@ -160,11 +161,37 @@ class TestByteStability(unittest.TestCase):
     @covers("REQ-0.0.37-12-04")
     def test_render_with_temperature_byte_stable(self) -> None:
         """render(AgentContract, vendor, temperature=T) must produce byte-identical output
-        on repeated calls for every valid temperature value (lite, medium, heavy)."""
+        on repeated calls for every valid temperature value (lite, medium, heavy).
+
+        Uses a contract with varied-density bullets and pillars so the density-projection
+        and section-filtering paths are exercised — an empty contract would exercise none
+        of the projection logic that REQ-04's determinism guarantee is about.
+        """
+        contract = AgentContract(
+            name="Determinism Test Agent",
+            purpose="Exercising the projection path for byte-stability",
+            rules=[
+                Bullet(text="heavy rule", density_min="heavy"),
+                Bullet(text="medium rule", density_min="medium"),
+                Bullet(text="lite rule"),
+                Bullet(text="judgment rule", classification="Judgment"),
+            ],
+            pillars=[
+                Pillar(
+                    id="alpha",
+                    title="Alpha Section",
+                    order=1,
+                    bullets=[
+                        Bullet(text="alpha bullet", density_min="medium"),
+                    ],
+                ),
+                Pillar(id="beta", title="Beta Section", order=2, tier="heavy"),
+            ],
+        )
         for temp in ("lite", "medium", "heavy"):
             with self.subTest(temperature=temp):
-                first = render(_STUB_AGENT_CONTRACT, "claude", temperature=temp)
-                second = render(_STUB_AGENT_CONTRACT, "claude", temperature=temp)
+                first = render(contract, "claude", temperature=temp)
+                second = render(contract, "claude", temperature=temp)
                 self.assertIsInstance(first, bytes)
                 self.assertEqual(
                     first,

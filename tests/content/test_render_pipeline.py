@@ -100,6 +100,36 @@ class TestTemperatureRenderer(unittest.TestCase):
             "Judgment-classified bullet must render at every temperature (0-Kelvin floor)",
         )
 
+    @covers("REQ-0.0.37-12-01")
+    def test_medium_temperature_includes_medium_bullets(self) -> None:
+        """render() at temperature='medium' must include medium-density bullets but omit
+        heavy-density bullets — exercising the medium tier boundary."""
+        contract = AgentContract(
+            name="Medium Density Test Agent",
+            purpose="Testing medium tier boundary",
+            rules=[
+                Bullet(text="HEAVY_DENSITY_BULLET", density_min="heavy"),
+                Bullet(text="MEDIUM_DENSITY_BULLET", density_min="medium"),
+                Bullet(text="ALWAYS_PRESENT_BULLET"),
+            ],
+        )
+        output = render(contract, "claude", temperature="medium").decode("utf-8")
+        self.assertIn(
+            "MEDIUM_DENSITY_BULLET",
+            output,
+            "Medium-density bullet must render at medium temperature",
+        )
+        self.assertNotIn(
+            "HEAVY_DENSITY_BULLET",
+            output,
+            "Heavy-density bullet must be omitted at medium temperature",
+        )
+        self.assertIn(
+            "ALWAYS_PRESENT_BULLET",
+            output,
+            "Bullet with density_min=None must render at every temperature",
+        )
+
     @covers("REQ-0.0.37-12-02")
     def test_unknown_temperature_raises_before_lookup(self) -> None:
         """render() with an unknown temperature must raise ValueError before template
@@ -142,12 +172,18 @@ class TestTemperatureRenderer(unittest.TestCase):
 
     @covers("REQ-0.0.37-12-03")
     def test_high_tier_section_withheld_at_lite(self) -> None:
-        """A Pillar with tier='heavy' must be absent from output at temperature='lite'."""
+        """A Pillar with tier='heavy' must be absent at lite; a tier='lite' pillar must remain.
+
+        Positive control: lite-tier section IS present at lite temperature.
+        Negative control: heavy-tier section is NOT present at lite temperature.
+        This distinguishes a correct implementation from one that over-withholds all sections.
+        """
         contract = AgentContract(
             name="Tier Test Agent",
             purpose="Testing tier-based section withholding",
             pillars=[
                 Pillar(id="heavy-section", title="HEAVY_TIER_SECTION_TITLE", order=1, tier="heavy"),
+                Pillar(id="lite-section", title="LITE_TIER_SECTION_TITLE", order=2, tier="lite"),
             ],
         )
         output = render(contract, "claude", temperature="lite").decode("utf-8")
@@ -155,6 +191,11 @@ class TestTemperatureRenderer(unittest.TestCase):
             "HEAVY_TIER_SECTION_TITLE",
             output,
             "Section with tier='heavy' must be withheld at lite temperature",
+        )
+        self.assertIn(
+            "LITE_TIER_SECTION_TITLE",
+            output,
+            "Section with tier='lite' must be present at lite temperature (positive control)",
         )
 
     @covers("REQ-0.0.37-12-03")
@@ -182,7 +223,8 @@ class TestTemperatureRenderer(unittest.TestCase):
     @covers("REQ-0.0.37-12-05")
     def test_heavy_is_strict_superset_of_lite(self) -> None:
         """render() at temperature='heavy' must produce output >= lite in length
-        (monotonic density): every line in lite output is also present in heavy output."""
+        (monotonic density): every line in lite output is also present in heavy output,
+        AND heavy contains content that lite does not (strictly larger, not equal)."""
         contract = AgentContract(
             name="Superset Test Agent",
             purpose="Testing monotonic density across temperatures",
@@ -207,4 +249,17 @@ class TestTemperatureRenderer(unittest.TestCase):
             missing,
             set(),
             f"These lines in lite output are missing from heavy output: {missing!r}",
+        )
+        # Strictness check: heavy must contain content that lite does not.
+        # An implementation that always renders all bullets (ignoring temperature)
+        # would have lite_out == heavy_out — this assertion proves it does not.
+        self.assertIn(
+            "HEAVY_ONLY_BULLET",
+            heavy_out.decode("utf-8"),
+            "Heavy-density bullet must appear in heavy temperature output",
+        )
+        self.assertNotIn(
+            "HEAVY_ONLY_BULLET",
+            lite_out.decode("utf-8"),
+            "Heavy-density bullet must NOT appear in lite output (strict superset proof)",
         )
