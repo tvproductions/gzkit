@@ -1,6 +1,47 @@
 # Return to Health Plan, 2026-05-30
 
 Status: Active canonical recovery plan.
+Last updated: 2026-06-01 — recorded Snapshot C (harness regressed to RED) and
+added the **Designated Workstream — Session MOTD** capture (continuity ⊕ triaged
+workplan; subsumes handoff). Filename keeps its authored `-2026-05-30` date (stable
+reference); this line is the live mtime.
+
+## Execution Worklist (start here)
+
+> **The linear path through this plan.** A fresh session works top-down: take the **topmost
+> unchecked item whose gate is met**, do it, check it off **with observed command evidence**
+> (Phase 4 rule), and update its status line. **Never start a tier while the prior tier's exit
+> gate is unmet** (green-first, Operating Rule 2). This checklist is the *hand-rolled precursor*
+> to the triaged MOTD workplan designed below (§ Session MOTD) — until that ships, **this is the
+> workplan; update it every session.** Status keys: `[ ]` todo · `[x]` done · `[~]` in progress ·
+> `[!]` blocked.
+
+**Tier 0 — Restore green (do now; everything else is gated on this).** Exit gate: `uv run gz check` exits 0.
+
+- [ ] **0.1 Clear the OBPI-0.0.37-12 orphan lock + plan-audit receipt** → `uv run gz preflight --apply` (verify it honors the token-block reaping-handoff discipline first). Fixes the `preflight` gate. → *Current Baseline § Snapshot C*.
+- [ ] **0.2 Resolve `--task-envelope-coherence`** — 0.0.37-12: ledger `:8460` event missing `task_id`; `seq=01`-only TASKs. Route to **GHI #563** (existing class tracker — a new *instance*, not a new defect); remediate via validator rule / migration, never a ledger hand-edit (Never #2). Fixes the `task-envelope` gate. → *Snapshot C; Phase 3*.
+- [ ] **0.3 Re-measure & record Snapshot D** — `uv run gz check` green; reaffirm Phase 1 complete. → *Current Baseline*.
+
+**Tier 1 — Recovery to Definition of Healthy.** Exit gate: Definition of Healthy all-true.
+
+- [ ] **1.1 Phase 2 — context-load emergency #519.** Its structural remediation *is* the Context-Load CMS workstream (Boundary-1-waived); advancing that workstream is how #519 closes. → *Phase 2; Designated Workstream — Context-Load CMS*.
+- [ ] **1.2 Phase 3 — passive-presenter ceremony gaps: #516.** → *Phase 3*.
+- [ ] **1.3 Phase 4 — drain remaining recovery issues** (WIP = 1; close only with observed evidence). → *Phase 4*.
+- [ ] **1.4 Phase 5 — closeout.** Fill Recovery Closeout when #519 closed + no open emergency + `gz check` green. → *Phase 5; Recovery Closeout*.
+
+**Tier 2 — Post-green workstreams** (start only after recovery closes, or under an explicit, item-specific operator Boundary-1 waiver). Each builds in the dependency order it declares.
+
+- [ ] **2.0 Housekeeping: re-home ADR-0.0.66 → pool** (§13 immediate, *not executed*) — frontmatter disposition → `uv run gz register-adrs`. → *§13; Snapshot C note*.
+- [ ] **2.1 Canon Foundation** — the substrate the others assume; build per its §12 sequence. → *Designated Workstream — Canon Foundation*.
+- [ ] **2.2 Context-Load CMS** — ADR-0.0.37 remaining OBPIs (06–10, 13–16); #519 structural relief; renders from canon. *(Pulled into Tier 1 as the #519 route — see 1.1.)* → *Designated Workstream — Context-Load CMS*.
+- [ ] **2.3 Harness Hardening + ADR-0.0.66** — the enforcement spine + `gz next`/triage read-substrate. → *Designated Workstream — Harness Hardening*.
+- [ ] **2.4 Session MOTD** — consumes the absorbed ADR-0.0.65, ADR-0.0.66, and canon; build per its §7. → *Designated Workstream — Session MOTD*.
+
+> **One ordering decision flagged for the operator (not resolved here):** #519 closure (1.1) routes
+> through the CMS workstream (2.2), whose *proper* substrate is Canon (2.1) — yet CMS OBPIs 11–12
+> already shipped on the current `AgentContract` model without full canon. So: relieve #519 via CMS
+> on the *current* substrate now (faster close), or block CMS on Canon first (cleaner, slower)?
+> That choice sets whether 2.1 precedes 2.2 or they interleave. Operator call.
 
 This plan replaces the prior emergency framing documents, which were removed on
 2026-05-30 so they no longer compete for authority:
@@ -53,7 +94,39 @@ This is not a collapse. It is a red harness with named failure surfaces.
   and the passive-presenter closeout route tracked by GHI #516 (Phase 3).
   GHI #517 (the broader 5-alarm structural emergency) is closed.
 
-Snapshot A is preserved for audit; Snapshot B is the live baseline.
+### Snapshot C — re-measured (2026-06-01): RED (regressed from B)
+
+- `git status --short` is clean.
+- `uv run gz check` exits non-zero — **24 of 26 gates pass; two regressed
+  since Snapshot B**: `Task envelope coherence` and `Preflight`. (Advisory
+  spec-test-code drift now reports 1,738 findings — still non-blocking, does
+  not affect exit code.)
+- **Single root cause, two symptoms: OBPI-0.0.37-12's closeout was irregular**
+  (the lock was never released and ceremony steps were skipped). The fail-closed
+  blockers, drilldown-first per Merged Findings:
+  - `--task-envelope-coherence` (highest-risk gate): (a) `audit_receipt_emitted`
+    at `.gzkit/ledger.jsonl:8460` emitted under active TASK with no `task_id`;
+    (b) OBPI-0.0.37-12 closed with only `seq=01` TASKs across all five REQs and
+    no `req_atomic:` exemption. **Drilldown:** `uv run gz validate
+    --task-envelope-coherence`.
+  - `preflight`: orphan plan-audit receipt + expired `OBPI-0.0.37-12.lock.json`
+    (405m). **Drilldown:** `uv run gz preflight`.
+- **Routing (Definition of Healthy: "fixed OR routed with a named next command"):**
+  - Task-envelope → **GHI #563** (existing class tracker: "OBPI-0.0.64-03/04
+    closed with seq=01-only TASKs and worklog events missing task_id"). The
+    0.0.37-12 failure is a new *instance* of that tracked class, not a new defect
+    — append it to #563 rather than filing a duplicate (Operating Rule 4). The
+    `:8460` historical ledger event cannot be hand-edited (Never #2); accommodate
+    via validator rule or migration command with tests (Phase 3 rule).
+  - Preflight → `uv run gz preflight --apply` (the runtime-supported cleanup path
+    named in Phase 1). Verify the expired-lock cleanup honors the token-block
+    reaping-handoff discipline before applying.
+- **Phase 1 (Make the Harness Green) is reopened.** Snapshot B's "Phase 1 is
+  complete" held at 2026-05-30; the 0.0.37-12 closeout regressed it. The
+  Definition of Healthy ("`gz check` exits 0 on `main`") is again unmet — this
+  is the green-first blocker (Operating Rule 2) on every frozen workstream below.
+
+Snapshots A and B are preserved for audit; **Snapshot C is the live baseline.**
 
 ## Definition of Healthy
 
@@ -324,18 +397,19 @@ becomes its foundation-classified subset. The dial has an absolute floor — *"w
 0 Kelvin"*: `Judgment`-class bullets render at every temperature; the dial thins only
 Mechanical/Reference prose.
 
-**In-flight state (updated 2026-05-30, post-authoring).** ADR-0.0.37 Decision extended
-(new subsection "Decision Extension (2026-05-30): CIC-1 Density-Dial Composition");
-checklist items 11–16 added; Decomposition Scorecard made coherent (final target 16); six
-briefs created (1:1 sync, 16↔16). The briefs are no longer scaffolds: OBPIs 11–16 are
-**semantically authored and committed** (commit `4014b85b`, GHI #519) — each passes
-`uv run gz obpi validate --authored` (six-for-six, verified this session). They remain
-`status: Draft` in lifecycle: authoring-completeness and lifecycle are orthogonal axes, and
-**no implementation pipeline has run** — `gz obpi pipeline OBPI-0.0.37-11` is the next
-action. Full `uv run gz check` exits 0 after the amendment (not just `gz validate
---documents`). This is a foundation-ADR scope change made under explicit operator direction
-as #519 emergency relief (Architectural Boundary 1 / Operating Rule 6 waived by the
-operator's explicit call now that `gz check` is green).
+**In-flight state (updated 2026-06-01, post-implementation of OBPI-11/12).** ADR-0.0.37
+Decision extended (new subsection "Decision Extension (2026-05-30): CIC-1 Density-Dial
+Composition"); checklist items 11–16 added; Decomposition Scorecard made coherent (final
+target 16); six briefs created (1:1 sync, 16↔16), all **semantically authored and committed**
+(commit `4014b85b`, GHI #519). Implementation has since begun: **OBPI-0.0.37-11
+(density-aware master model) and OBPI-0.0.37-12 (temperature renderer + templates) are
+`attested_completed`** — verified via `uv run gz adr status ADR-0.0.37` (7/16 OBPIs done:
+01–05, 11, 12). OBPIs 06–10 and 13–16 remain `pending`/`draft`; 13/14 are re-sequenced
+behind the canon ADR (§10). **Regression note:** the 0.0.37-12 closeout was irregular and
+regressed `gz check` (Snapshot C — `--task-envelope-coherence` + `preflight`); the green
+that held after the 2026-05-30 amendment no longer holds. This is a foundation-ADR scope
+change made under explicit operator direction as #519 emergency relief (Architectural
+Boundary 1 / Operating Rule 6 waived by the operator's explicit call).
 
 **Open loop named.** This session re-derived the rendering architecture from source despite
 the substrate doctrine already documenting it and three prior same-day insights logging the
@@ -678,8 +752,12 @@ deferred vision, designed now, built last.
    Gate 5 (ADR-0.0.36) holds — **never self-close**, even AFK.
 6. **Per-OBPI worktree + PR + receipts + attestation** is gzkit's structural fix for AFK's
    review-burden (Pocock's admitted, unfixed weakness).
-7. **Drop the OBPI lock system** — branches give the isolation locks faked on trunk; PRs +
-   `git branch -a` give visibility. (Pipeline change, post-recovery.)
+7. **Drop the OBPI lock system** — operator, 2026-06-01: *"a contrivance to avoid what are
+   industry-standard affordances."* The lock system reinvented isolation/visibility badly on
+   trunk; **branches** give the isolation the locks faked, **PRs + `git branch -a`** give the
+   visibility. Replacing locks with branches + PRs also retires the lock-release→handoff coupling
+   (continuity records no longer gate a lock surrender; see the Session MOTD workstream §7.4).
+   (Pipeline change, post-recovery.)
 8. **Triage trio + router:** `ghi-triage` (corrective) · `gz-build-triage` (formerly
    `gz-foundation-triage`; what to build from pool) · `design-triage` (what to *make* → pool);
    chores self-surface (cadence: after each ADR ships). Unified by **`gz-next`** — the whole-
@@ -695,7 +773,11 @@ deferred vision, designed now, built last.
   this erode the spine?", deliberate, never wholesale. Baseline: GHI #567.
 
 **Immediate (this session):** re-home ADR-0.0.66 → pool (unbuilt design; its substance folds
-into this canon thread).
+into this canon thread). **Status (2026-06-01): NOT executed** — ADR-0.0.66 remains under
+`docs/design/adr/foundation/` (verified on disk). The re-home is a governance action
+(frontmatter disposition → `gz register-adrs` reconcile, never a manual move), operator-gated
+and green-first like every other workstream action; it stays pending behind the Snapshot-C
+regression.
 
 ### 14. Session 2026-06-01 — handoff/triage advisory model (folds into this thread)
 
@@ -722,6 +804,139 @@ handoff prose**, validates the plan-chain against ledger facts, then recommends 
 rewrite. Handoff and triage are two views over the one work-graph (§7, §8.13) — not a point
 coupling.
 
+## Designated Workstream — Session MOTD (continuity ⊕ triaged workplan; subsumes handoff)
+
+Captured from the 2026-06-01 operator+agent design dialogue (Operating Rules 1 and 7) so the
+model is durable, not re-derived next session. The recursion is the point: *this is the design
+of the system whose whole job is to stop design from being re-derived — so capture it before
+logout.* **Status:** pre-build design capture (a "window" per the Canon ontology, §2 of the
+Canon Foundation workstream). This workstream does **not** start while `uv run gz check` is red
+(Operating Rule 2); promotion is an explicit operator Boundary-1 waiver (Operating Rule 6),
+leaf-first.
+
+**MOTD is the one system; handoff is subsumed into it, not scrapped.** Handoff's *design* is
+retained (continuity content, the `continues_from` chain, the validator discipline, and the
+ADVISES-not-authorize doctrine); handoff as a *standalone system* — its own skill, store-identity,
+and lock coupling — dissolves. MOTD has **two pillars that combine like peanut butter and jelly**:
+**continuity** (the subsumed handoff — "where we were") and the **triaged workplan** (triage —
+"what to do next"). Different gears, different cadences; two logs in two locations rotating
+independently; together they are the briefing.
+
+**Anti-fork:** this materializes the one work-graph that **ADR-0.0.65** (handoff consolidation —
+now *absorbed* here rather than landing standalone), **ADR-0.0.66** (`gz next` / triage), and
+Canon Foundation **§8.13** already imply. It folds into them; it does not spawn a fourth structure.
+
+### 1. The generative metaphor — the session is a `*nix` MOTD
+
+On login, `*nix` runs `update-motd.d/` scripts that scan live system state and print a briefing
+ending in *what you should do* ("3 updates available, reboot required, disk 80%, last login
+Tuesday"); on logout, continuity is recorded for next time. gzkit's session lifecycle **is**
+that MOTD. The metaphor is load-bearing — borrowing a system that already solved "brief someone
+on state at session start, record continuity at session end" produced a coherent whole instead
+of a pile of features.
+
+| `*nix`                       | gzkit                          | Role |
+|------------------------------|--------------------------------|------|
+| login (or `/clear` re-login) | session start                  | trigger |
+| `update-motd.d/` scan        | **triage**                     | scans worktree/ledger/git → health, errors, next moves |
+| `last login: …`              | **continuity** (subsumed handoff) | "where we were" — written at logout, read at login |
+| the MOTD printed             | **orientation**                | the briefing surface shown |
+| the saved action list        | **workplan** (`.gzkit/work/`)  | triage's output, persisted past the screen-clear |
+| logout                       | session end                    | write the handoff |
+
+### 2. The two pillars (peanut butter & jelly)
+
+MOTD is not four peer roles — it is **one briefing assembled from two pillars**, plus the view
+that serves it:
+
+- **Continuity** (the *peanut butter* — subsumed handoff): the "last login" thread — what we were
+  doing, decisions made, open loops. Written at **logout**; logs to its own location
+  (`.gzkit/handoffs/`, reframed as the MOTD continuity log). Retains all of handoff's design.
+- **Triaged workplan** (the *jelly* — triage output): the "what to do" priority brief — health,
+  errors, next-best moves, open questions, design openings. Written at **login**; logs to
+  `.gzkit/work/`.
+- **Orientation** (the *bread* — the served sandwich): the view that combines both pillars into
+  the briefing printed at session start. Today this is `scripts/session_orientation.py`, the
+  proto-MOTD (it already lists last handoff, open GHIs, ledger counts, blockers).
+
+Two logs, two locations, two concepts, **logrotating independently** (§4) — different gears for
+different purposes. They combine to make the MOTD; neither is the other.
+
+### 3. Two-tier intelligence (cheap pass + directed finalize) — symmetric across both processes
+
+Each process is **a cheap mechanical pass finalized by a high-intelligence agent** — never one
+without the other:
+
+- **Triage:** **auto-triage** (lightweight, runs at every login — the MOTD accounting) **backed
+  by directed higher-intelligence triage** (an agent finalizes the brief with real reasoning).
+  The directed tier is **ALSO available on demand** — the same engine, callable any time, not
+  only at login.
+- **Continuity:** a Stop/`clear` **hook drafts** the record from ledger + git-diff; an **agent
+  finalizes** the narrative before it chains.
+
+The cheap pass guarantees *something* always renders (reliability); the agent finalize
+guarantees it is *worth reading* (intelligence). Auto-running high strategy is a real cost — the
+lightweight tier is what runs unattended; the directed tier is invoked (to finalize the login
+brief, and on demand).
+
+### 4. Retention — log + logrotate
+
+The two logs — `.gzkit/work/` (workplans) and the continuity log — accrete like `*nix` logs and
+are **logrotated independently** (different gears, different cadences: continuity at logout,
+workplan at login): recent entries stay hot, older ones age out (archive / compress / prune) on a
+bounded policy so neither grows without limit. Daily briefs **journal** (one per session/day,
+Obsidian-daily-note style); **campaigns** supersede in place (this plan → its successor). The
+rotation policy (window, archive target) is a build-time parameter, not yet fixed.
+
+### 5. Workplan shape — two layers
+
+- **Campaign** — durable, named, goal-state + phases (e.g. this very plan). The long arc.
+  Supersedes; does not journal.
+- **Daily brief** — the rolling **priority brief**: the next best 3–5 moves + open questions +
+  observations / design openings, each declaring which campaign(s) it advances. Journals under
+  logrotation. This is the actionable body of the MOTD.
+
+### 6. Governing doctrine — the whole MOTD ADVISES; it does not authorize
+
+Retained from handoff and *elevated* to govern both pillars: the MOTD presents continuity and the
+next-best moves; the **operator rules; the agent notes variance and stops.** This is the
+human-as-final-witness doctrine (Canon Foundation §5) applied to the whole session surface — at
+**every** freshness level, MOTD never converts an advisory into a license. Both pillars also read
+done-ness from the **ledger, never from prose** (Never #7, §14); the rendered MOTD is a Layer-3
+view (regenerable, never source-of-truth — state-doctrine).
+
+### 7. Build plan (gated — green-first + operator Boundary-1 waiver)
+
+Leaf-first; each increment consumes an existing surface rather than forking it.
+
+1. **`.gzkit/work/` store + workplan schema** — campaign and daily-brief shapes; sibling to the
+   continuity log; reconciled against Canon's planned `.gzkit/design/` store (§8.7).
+2. **Evolve `session_orientation.py` → lightweight auto-triage** — the MOTD: scan + assemble +
+   write the daily brief at `SessionStart` / `PreCompact` / `clear`.
+3. **Directed triage skill** — high-intelligence agent finalize; backs the login brief *and*
+   runs on demand. The concrete UX of ADR-0.0.66 `gz next`.
+4. **Continuity hybrid (subsumes handoff)** — supplies handoff's missing CREATE trigger: a
+   `Stop`/`clear` hook **drafts** the continuity record from ledger + git-diff, an **agent
+   finalizes** it. **Absorbs ADR-0.0.65** (handoff-system-consolidation) and retires
+   `gz-session-handoff` as a standalone skill. The lock-release→handoff coupling is **dropped**
+   with the lock system itself (§13.7: locks → branches + PRs).
+5. **Independent logrotation** — bounded, separate retention for the two logs (`.gzkit/work/` and
+   the continuity log), on their own cadences.
+6. **Verb surface** — fold into ADR-0.0.66 (`gz next` → triage); add no new top-level verb family.
+
+### 8. Exit criteria
+
+- Session start prints a MOTD assembled from the last continuity record + a worktree/ledger scan,
+  ending in 3–5 priority moves; the brief persists to `.gzkit/work/`.
+- The directed triage skill produces the same artifact on demand.
+- Session end / `/clear` yields a finalized continuity record (hook-drafted, agent-finalized),
+  chained into the continuity log.
+- The two logs logrotate independently; neither grows unbounded.
+- The whole MOTD advises only; execution waits on explicit operator authorization (§6).
+- No fork: triage = `gz next` (ADR-0.0.66); continuity = the absorbed ADR-0.0.65; locks dropped
+  (§13.7); `.gzkit/work/` reconciles with the Canon `.gzkit/design/` store.
+- `uv run gz check` green throughout (this workstream is built post-green).
+
 ## Recovery Closeout
 
 Final closeout is filled only when recovery completes (Definition of Healthy all
@@ -739,6 +954,20 @@ Context-load issue state: #519 OPEN — remediation route IN-FLIGHT and advanced
 Task-envelope coherence:  PASS — gz check gate green
 Open recovery issues:     #519 (emergency; Phase 2 / Phase 4 item 1), #516 (closeout passive-presenter; Phase 3). #517 closed.
 Decision:                 normal development may NOT resume — blocked on emergency GHI #519 (authoring advanced the route; it did not land)
+```
+
+### Progress snapshot — 2026-06-01 (re-measurement; supersedes 2026-05-30 above)
+
+```text
+Snapshot date:            2026-06-01 (recovery still open)
+uv run gz check:          exit non-zero — 24/26 gates pass; REGRESSED from 26/26 (advisory drift 1738 findings, non-blocking)
+Failing gates:            --task-envelope-coherence, preflight — both trace to one irregular OBPI-0.0.37-12 closeout (Snapshot C)
+Emergency GHIs open:      1 — #519 (codex context surface exhausts 258K window)
+Context-load issue state: #519 OPEN — remediation route ADVANCED: ADR-0.0.37 density-dial CMS OBPIs 11+12 now attested_completed (7/16 done); 06-10,13-16 pending; see Designated Workstream — Context-Load CMS
+Task-envelope coherence:  FAIL — routed to existing class tracker GHI #563 (0.0.37-12 is a new instance, not a new defect)
+Preflight:                FAIL — orphan receipt + expired OBPI-0.0.37-12 lock; clean via `uv run gz preflight --apply` (verify reaping-handoff discipline first)
+Open recovery issues:     #519 (emergency; Phase 2 / Phase 4 item 1), #516 (closeout passive-presenter; Phase 3), #563 (task-envelope class). #517 closed.
+Decision:                 normal development may NOT resume — Phase 1 reopened (gz check red) AND emergency GHI #519 still open
 ```
 
 ## Appendix: The Smooth-vs-Replicable Axis (2026-05-30 dialogue insights)
