@@ -113,5 +113,49 @@ class TestReconcileInvariant(unittest.TestCase):
         self.assertEqual(bullet, rebuilt)
 
 
+class TestReverseParseRoundTrip(unittest.TestCase):
+    """OBPI-0.0.37-13 REQ-04: model<->JSON is lossless; the prose render is a lossy human
+    view that structurally round-trips (sections/bullets/text/order), NOT classification."""
+
+    def _import_agents_md(self) -> AgentContract:
+        from pathlib import Path  # noqa: PLC0415
+
+        agents = Path(__file__).resolve().parents[2] / "AGENTS.md"
+        return parse(agents.read_text(encoding="utf-8"), "AgentContract", file_path=str(agents))
+
+    @covers("REQ-0.0.37-13-04")
+    def test_model_json_round_trip_is_lossless(self) -> None:
+        """The lossless source-of-truth round-trip is model <-> canonical JSON — every field,
+        classification included, survives exactly."""
+        model = self._import_agents_md()
+        rebuilt = AgentContract.model_validate_json(model.model_dump_json())
+        self.assertEqual(rebuilt, model)
+
+    @covers("REQ-0.0.37-13-04")
+    def test_prose_render_recovers_structure_not_classification(self) -> None:
+        """parse(render(model)) recovers sections/bullets/text/order. The prose render is an
+        explicitly lossy human view, so classification metadata is NOT asserted to survive it,
+        and blank-line normalization is permitted."""
+        model = self._import_agents_md()
+        reparsed = parse(render(model, "claude").decode("utf-8"), "AgentContract")
+        # Sections and order recovered.
+        self.assertEqual(
+            [p.title for p in reparsed.pillars], [p.title for p in model.pillars]
+        )
+        # Bullet text recovered, in order.
+        self.assertEqual(
+            [[b.text for b in p.bullets] for p in reparsed.pillars],
+            [[b.text for b in p.bullets] for p in model.pillars],
+        )
+        # Section content (non-blank body lines) recovered, in order.
+        def nonblank(pillar: object) -> list[str]:
+            return [line for line in pillar.lines if line.strip()]
+
+        self.assertEqual(
+            [nonblank(p) for p in reparsed.pillars],
+            [nonblank(p) for p in model.pillars],
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

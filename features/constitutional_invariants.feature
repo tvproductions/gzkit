@@ -104,3 +104,36 @@ Feature: Constitutional invariant composition renderer (ADR-0.0.37, OBPI-0.0.37-
     When I call parse_brief on it
     Then the result is a BriefStructure instance
     And no DeprecationWarning is emitted
+
+  # OBPI-0.0.37-13 — Reverse-parse migration to the master model
+
+  @REQ-0.0.37-13-01
+  Scenario: Import AGENTS.md populates pillars for every ## section
+    Given the AGENTS.md file in the project root
+    When I parse the file as AgentContract
+    Then the model has more than 5 pillars
+    And a pillar with title "Behavior Rules" exists with non-empty bullets
+
+  @REQ-0.0.37-13-02
+  Scenario: Bullet classification is joined from the advisory scorecard
+    Given the AGENTS.md file in the project root
+    When I parse the file as AgentContract
+    Then a bullet containing "Never prefix" and "uv run gz" has classification "Mechanical"
+
+  @REQ-0.0.37-13-03
+  Scenario: agents.local.md content is captured as model rows via the AGENTS.md splice
+    Given the AGENTS.md file in the project root
+    When I parse the file as AgentContract
+    Then a pillar line containing "Operator PII" is present in the model
+
+  @REQ-0.0.37-13-04
+  Scenario: Model to JSON and back is lossless
+    Given the AGENTS.md file in the project root
+    When I parse the file as AgentContract
+    Then the model round-trips losslessly through JSON serialization
+
+  @REQ-0.0.37-13-05
+  Scenario: Unmatched bullets default to Ambiguous classification
+    Given a minimal markdown document with an unmatchable rule
+    When I parse it as AgentContract via the content API
+    Then the custom-section bullet classification is "Ambiguous"

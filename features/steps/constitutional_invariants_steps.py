@@ -1,4 +1,4 @@
-"""Behave step definitions for constitutional invariant composition (OBPI-0.0.37-02/03/04).
+"""Behave step definitions for constitutional invariant composition (OBPI-0.0.37-02/03/04/13).
 
 @covers REQ-0.0.37-02-01
 @covers REQ-0.0.37-02-02
@@ -8,6 +8,11 @@
 @covers REQ-0.0.37-04-03
 @covers REQ-0.0.37-04-04
 @covers REQ-0.0.37-04-05
+@covers REQ-0.0.37-13-01
+@covers REQ-0.0.37-13-02
+@covers REQ-0.0.37-13-03
+@covers REQ-0.0.37-13-04
+@covers REQ-0.0.37-13-05
 """
 
 from __future__ import annotations
@@ -359,3 +364,88 @@ def step_result_is_brief_structure(context) -> None:  # type: ignore[no-untyped-
 def step_no_deprecation_warning(context) -> None:  # type: ignore[no-untyped-def]
     deprecations = [w for w in context.warnings if issubclass(w.category, DeprecationWarning)]
     assert not deprecations, f"unexpected DeprecationWarning(s): {deprecations}"
+
+
+# -- OBPI-0.0.37-13 — Reverse-parse migration steps --
+
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+_AGENTS_MD_PATH = _PROJECT_ROOT / "AGENTS.md"
+
+
+@given("the AGENTS.md file in the project root")
+def step_agents_md_from_project_root(context) -> None:  # type: ignore[no-untyped-def]
+    context.parse_source_path = str(_AGENTS_MD_PATH)
+    context.parse_source_text = _AGENTS_MD_PATH.read_text(encoding="utf-8")
+
+
+@when("I parse the file as AgentContract")
+def step_parse_file_as_agent_contract(context) -> None:  # type: ignore[no-untyped-def]
+    from gzkit.content.parse import parse  # noqa: PLC0415
+
+    context.agent_contract = parse(
+        context.parse_source_text, "AgentContract", file_path=context.parse_source_path
+    )
+
+
+@then("the model has more than 5 pillars")
+def step_model_has_more_than_5_pillars(context) -> None:  # type: ignore[no-untyped-def]
+    count = len(context.agent_contract.pillars)
+    assert count > 5, f"expected > 5 pillars, got {count}"
+
+
+@then('a pillar with title "Behavior Rules" exists with non-empty bullets')
+def step_behavior_rules_pillar_has_bullets(context) -> None:  # type: ignore[no-untyped-def]
+    titles = {p.title for p in context.agent_contract.pillars}
+    assert "Behavior Rules" in titles, f"Behavior Rules pillar missing; found: {sorted(titles)}"
+    behavior = next(p for p in context.agent_contract.pillars if p.title == "Behavior Rules")
+    assert behavior.bullets, "Behavior Rules pillar has no bullets"
+
+
+@then('a bullet containing "{text1}" and "{text2}" has classification "{classification}"')
+def step_bullet_has_classification(context, text1, text2, classification) -> None:  # type: ignore[no-untyped-def]
+    bullets = [b for p in context.agent_contract.pillars for b in p.bullets]
+    match = next((b for b in bullets if text1 in b.text and text2 in b.text), None)
+    assert match is not None, f"no bullet containing both {text1!r} and {text2!r}"
+    assert match.classification == classification, (
+        f"expected {classification!r}, got {match.classification!r}"
+    )
+
+
+@then('a pillar line containing "{text}" is present in the model')
+def step_pillar_line_present(context, text) -> None:  # type: ignore[no-untyped-def]
+    rows = "\n".join(line for p in context.agent_contract.pillars for line in p.lines)
+    assert text in rows, f"no pillar line containing {text!r} in the imported model"
+
+
+@then("the model round-trips losslessly through JSON serialization")
+def step_model_json_round_trip_lossless(context) -> None:  # type: ignore[no-untyped-def]
+    from gzkit.content.models.agent_contract import AgentContract  # noqa: PLC0415
+
+    model = context.agent_contract
+    rebuilt = AgentContract.model_validate_json(model.model_dump_json())
+    assert rebuilt == model, "model↔JSON round-trip is not lossless"
+
+
+@given("a minimal markdown document with an unmatchable rule")
+def step_minimal_doc_with_unmatchable_rule(context) -> None:  # type: ignore[no-untyped-def]
+    context.parse_source_text = (
+        "# Contract\n\nPurpose line.\n\n## Custom Section\n\n- zzz unmatchable qpwoeiruty rule\n"
+    )
+    context.parse_source_path = None
+
+
+@when("I parse it as AgentContract via the content API")
+def step_parse_minimal_as_agent_contract(context) -> None:  # type: ignore[no-untyped-def]
+    from gzkit.content.parse import parse  # noqa: PLC0415
+
+    context.agent_contract = parse(context.parse_source_text, "AgentContract")
+
+
+@then('the custom-section bullet classification is "{classification}"')
+def step_custom_section_bullet_classification(context, classification) -> None:  # type: ignore[no-untyped-def]
+    custom = next((p for p in context.agent_contract.pillars if p.title == "Custom Section"), None)
+    assert custom is not None, "Custom Section pillar not found"
+    assert len(custom.bullets) == 1, f"expected 1 bullet, got {len(custom.bullets)}"
+    assert custom.bullets[0].classification == classification, (
+        f"expected {classification!r}, got {custom.bullets[0].classification!r}"
+    )

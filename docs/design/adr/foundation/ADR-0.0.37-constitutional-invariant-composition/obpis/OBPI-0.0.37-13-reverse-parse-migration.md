@@ -3,7 +3,7 @@ id: OBPI-0.0.37-13-reverse-parse-migration
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 13
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.37-13-reverse-parse-migration: Reverse-Parse Migration to the Master Model
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 - **Checklist Item:** #13 — "OBPI-0.0.37-13 — Reverse-parse migration to master model (gz content import; dissolve agents.local.md + get_project_context literals; zero hand-authored prose; round-trip fidelity; supersedes OBPI-09 byte-preserving framing)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -23,8 +23,10 @@ markdown parser to read the current AGENTS.md (and the raw `.gzkit/agents.local.
 structurally-faithful `AgentContract` — every section as a `Pillar`, every binding rule as a
 classified `Bullet` — **joining per-bullet classification from the advisory scorecard**
 (`docs/governance/advisory-rules-audit.md`, the existing Mechanical/Promotable/Judgment/Ambiguous
-source) rather than reverse-engineering it from prose. This dissolves the `agents.local.md` raw
-splice into model rows. The `get_project_context` literals and the final sync wiring are OBPI-14.
+source) rather than reverse-engineering it from prose. This captures the `agents.local.md`
+content into model rows — the live AGENTS.md already contains it spliced, so importing AGENTS.md
+reverse-parses that content into pillars. Physical removal of the raw-splice source file and the
+sync rewire are OBPI-14 (the `get_project_context` literals and the final sync wiring).
 
 **Scope correction (return-to-health, 2026-06-01).** The original brief required a *lossless
 prose round-trip* (`parse(render(model)) == model`). That is unsatisfiable and was the root of
@@ -35,6 +37,24 @@ round-trip is **model ↔ its canonical JSON** (Pydantic `model_validate_json(mo
 free); the prose render is an explicitly *lossy human view*. This supersedes OBPI-09's
 byte-preserving framing and corrects the OBPI-11/12/13 decomposition bug (mutual Denied-Paths split
 an irreducible model+template+parser unit).
+
+**Scope correction (build session, 2026-06-01) — agents.local.md removal deferred to OBPI-14
+(operator decision, Option A).** Implementation surfaced a brief-internal contradiction: REQ-03/06
+as first written demanded *physical removal* of `.gzkit/agents.local.md`, but its only consumer —
+`get_project_context` / `load_local_content` in `src/gzkit/sync_surfaces.py` — and the rendered
+`AGENTS.md` + monolith template `src/gzkit/templates/agents.md` are all **Denied Paths** assigned
+to OBPI-14. Code trace: `gz validate --invariant-coherence` diffs committed AGENTS.md against
+`render_agents_md(...)` (`src/gzkit/governance/compose.py:80`), which splices the file via the
+`{local_content}` placeholder; deleting the file makes `load_local_content` return `""`, the render
+drops the Local-Agent-Rules section, committed≠rendered, and the gate fails closed (exit 3). So the
+physical-removal half of REQ-03/06 is unsatisfiable inside OBPI-13's allowed paths. **Resolution:**
+OBPI-13 *captures* the agents.local.md content into model rows (it is already spliced into AGENTS.md,
+so the AGENTS.md import reverse-parses it); **physical file removal + the sync rewire that makes the
+removal coherent move to OBPI-14.** *OBPI-14 hand-off:* OBPI-14 MUST own (a) deleting
+`.gzkit/agents.local.md`, (b) rewiring `render_agents_md`/`get_project_context` to source the
+local-rule rows from the model instead of `{local_content}`, and (c) emitting the
+`artifact_edited`-for-removed-`agents.local.md` proof. This is the concrete form of the ADR
+Checklist-#13 "dissolve agents.local.md + get_project_context literals" split the plan-audit flagged.
 
 ## Lane
 
@@ -66,7 +86,7 @@ Foundation + heavy → Gate 5 human attestation (`assets/HEAVY_LANE_PLAN_TEMPLAT
 
 1. REQUIREMENT: `gz content import AGENTS.md --as AgentContract` MUST populate a structurally-faithful `AgentContract` — every `##` section as a `Pillar`, every binding rule as a `Bullet` — covering the whole contract, not the name+purpose stub the current parser yields (verified: today it loses 99.84% of a 32 KB input). Structural faithfulness, not byte-preservation.
 2. REQUIREMENT: per-bullet `classification` MUST be joined from the advisory scorecard (`docs/governance/advisory-rules-audit.md`), the existing classification source — NOT inferred from prose. A bullet absent from the scorecard is `Ambiguous` (REQ-04).
-3. REQUIREMENT: the content of `.gzkit/agents.local.md` MUST be reverse-parsed into model rows and the raw-splice source removed — NEVER left as a parallel hand-authored surface.
+3. REQUIREMENT: the content of `.gzkit/agents.local.md` MUST be reverse-parsed into model rows — captured via the AGENTS.md import, which already contains the spliced local content. (Scope correction, Option A: *physical* removal of the raw-splice source file is DEFERRED to OBPI-14, which rewires the sync render off the `{local_content}` splice; removing it here fails `gz validate --invariant-coherence`. OBPI-13 proves the content is captured, not that the file is gone.)
 4. REQUIREMENT: the lossless round-trip contract is **model ↔ canonical JSON**: `AgentContract.model_validate_json(model.model_dump_json()) == model`. The prose render (`render(model, vendor, temperature=...)`) is an explicitly **lossy human view** — it is asserted to be *structurally* recoverable (sections/bullets/text/order), NOT to round-trip classification metadata. The old "lossless `parse(render(model))`" contract is retired as unsatisfiable on clean prose.
 5. REQUIREMENT: classification defaults conservatively — unknown enforcement ⇒ `Ambiguous`, never silently `Mechanical` (which would let the dial thin an unenforced rule).
 6. NEVER: swap the production sync path (`sync_agents_md` → render) or retire the monolith template in this OBPI — that is OBPI-14. This brief makes the model *populated and renderable*; OBPI-14 makes it the production source.
@@ -142,10 +162,10 @@ uv run python -c "print('import AGENTS.md to a master AgentContract, render it b
 
 - [ ] REQ-0.0.37-13-01 [BEHAVIOR]: `gz content import AGENTS.md --as AgentContract` produces an `AgentContract` whose `pillars` cover every `##` section and whose bullets cover the binding rules — structurally faithful, not the name+purpose stub (regression floor: the current parser yields a 161-byte model from a 32 KB input). Proof: `@covers(REQ-0.0.37-13-01)` test in `tests/content/test_migration_layer.py`.
 - [ ] REQ-0.0.37-13-02 [BEHAVIOR]: each imported bullet's `classification` is joined from the advisory scorecard, not inferred from prose; a scorecard entry's class appears on the matching model bullet. Proof: `@covers(REQ-0.0.37-13-02)` test.
-- [ ] REQ-0.0.37-13-03 [BEHAVIOR]: the `.gzkit/agents.local.md` content appears as model rows in the imported model; the raw-splice source is gone. Proof: `@covers(REQ-0.0.37-13-03)` test.
+- [ ] REQ-0.0.37-13-03 [BEHAVIOR]: the `.gzkit/agents.local.md` content appears as model rows in the imported AgentContract (captured through the AGENTS.md import, which contains the spliced local content). Physical removal of the source file is OBPI-14 (scope correction, Option A). Proof: `@covers(REQ-0.0.37-13-03)` test asserting a known local-rule line is present as a model row.
 - [ ] REQ-0.0.37-13-04 [BEHAVIOR]: the lossless round-trip is model↔JSON — `AgentContract.model_validate_json(m.model_dump_json()) == m`; and `parse(render(m))` recovers the structural model (sections/bullets/text/order), explicitly NOT classification metadata. Proof: `@covers(REQ-0.0.37-13-04)` test in `tests/content/test_round_trip_agent_contract.py`.
 - [ ] REQ-0.0.37-13-05 [BEHAVIOR]: a bullet with no scorecard entry / no determinable witness is classified `Ambiguous`, never silently `Mechanical`. Proof: `@covers(REQ-0.0.37-13-05)` test.
-- [ ] REQ-0.0.37-13-06 [SUPPORT]: the migration is recorded — `uv run gz validate --documents` passes after the dissolve and an `artifact_edited` ledger event is emitted for the removed `.gzkit/agents.local.md`.
+- [ ] REQ-0.0.37-13-06 [SUPPORT]: the migration is recorded — `uv run gz validate --documents` passes after the model+parser+template changes (no regression), and `artifact_edited` ledger events are emitted for the edited OBPI-13 surfaces (parser, model, template). The `artifact_edited`-for-removed-`.gzkit/agents.local.md` proof moves to OBPI-14 with the physical removal (scope correction, Option A).
 
 ## Completion Checklist
 
@@ -196,17 +216,21 @@ with round-trip fidelity, so the model is the single source.
 
 ### Key Proof
 
-`gz content import` of the current contract reconstructs byte-equivalently through the
-renderer, and `agents.local.md` content is present as classified model rows.
+
+parse(AGENTS.md) reconstructs a structurally-faithful AgentContract — >5 pillars, >5000-byte serialized model (vs. the prior 161-byte stub) — with model_validate_json(model_dump_json()) == model lossless (receipt arb-step-unittestscoped-6fdbc0b0f8ee4b90ba70298cd7414335, 24/24 tests). Per-bullet classification joins the advisory scorecard ("Never prefix `uv run gz`" -> Mechanical). Full suite green: 5819/5819 (arb-step-unittest-e691d97763b1482d9bb97d499c9b9c6e); Gate-4 BDD 5/5 (arb-step-behave-2e18dc0791b24bcf9ee595e0ddf48727); docs arb-step-mkdocs-7305aa3544464476a88ebc6032033c2d.
 
 ### Implementation Summary
 
+
 - Decision item implemented (verbatim): "OBPI-0.0.37-13 — Reverse-parse migration to master model (gz content import; dissolve agents.local.md + get_project_context literals; zero hand-authored prose; round-trip fidelity; supersedes OBPI-09 byte-preserving framing)."
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Parser: extended _parse_agent_contract (src/gzkit/content/parse/markdown_parser.py) to walk every ## section via _sections(), build one Pillar per section with verbatim body lines + classified bullets; classification joined from the advisory scorecard via _load_scorecard_index/_classify, defaulting to Ambiguous (never silently Mechanical).
+- Model: added Pillar.lines: list[str] (src/gzkit/content/models/agent_contract.py) for full-fidelity body capture + structural round-trip; no speculative fields.
+- Template: extended claude.md.j2 to emit pillar.lines verbatim when populated, bullets otherwise.
+- Tests added: TestReverseParseFullContract (REQ-01/02/03/05) in test_migration_layer.py; TestReverseParseRoundTrip (REQ-04) in test_round_trip_agent_contract.py; 5 Gate-4 BDD scenarios tagged @REQ-0.0.37-13-01..05 in features/constitutional_invariants.feature.
+- REQ-06 (SUPPORT): waived from behave coverage with rationale (proof channel is ledger + gz validate --documents, not behave).
+- Date completed: 2026-06-01
+- Attestation status: operator-attested ("attest completed")
+- Defects noted: none in scope.
 
 ## Tracked Defects
 
@@ -214,12 +238,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — Heavy/foundation OBPI-0.0.37-13 reverse-parse migration verified green: full suite 5819/5819 (receipt arb-step-unittest-e691d97763b1482d9bb97d499c9b9c6e), OBPI-scoped 24/24 (arb-step-unittestscoped-6fdbc0b0f8ee4b90ba70298cd7414335), lint/typecheck clean (arb-ruff-d6363a008fb64968bb6cc80ee2ff3cd9, arb-step-typecheck-ec6db6537b874282871abf36f843bbd7), docs strict (arb-step-mkdocs-7305aa3544464476a88ebc6032033c2d), Gate-4 BDD 5/5 (arb-step-behave-2e18dc0791b24bcf9ee595e0ddf48727). All 5 BEHAVIOR REQs @covers-tagged; REQ-06 SUPPORT waived to ledger+validator.
+- Date: 2026-06-01
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-01
 
 **Evidence Hash:** -

@@ -23,6 +23,14 @@ class Pillar(BaseContentModel):
         "lite", description="Lowest temperature at which this section renders."
     )
     bullets: list[Bullet] = Field(default_factory=list, description="Bullets in this section.")
+    lines: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Verbatim section-body lines for full-fidelity capture and structural "
+            "round-trip (ADR-0.0.37-13). When populated, the renderer emits these "
+            "verbatim; otherwise it falls back to rendering `bullets`."
+        ),
+    )
 
 
 class AgentContract(BaseContentModel):

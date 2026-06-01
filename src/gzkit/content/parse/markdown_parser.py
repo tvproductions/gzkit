@@ -2,16 +2,23 @@
 
 Each _parse_<type> function accepts pre-split lines and returns a model instance.
 The public parse() function dispatches to the correct _parse_<type> by as_type key.
+
+ADR-0.0.37-13 extends _parse_agent_contract from the name+purpose stub to a
+full-contract reverse parse: every ``##`` section becomes a Pillar carrying its
+verbatim body lines (full fidelity) plus the rule-bearing lines extracted as
+classified Bullets, with classification joined from the advisory scorecard.
 """
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
-from typing import TYPE_CHECKING
+from pathlib import Path
+from typing import TYPE_CHECKING, Literal
 
 from gzkit.content.migration.registry import apply_migrations
 from gzkit.content.models import CONTENT_MODELS
-from gzkit.content.models.agent_contract import AgentContract
+from gzkit.content.models.agent_contract import AgentContract, Pillar
 from gzkit.content.models.base import BaseContentModel
 from gzkit.content.models.bullet import Bullet
 from gzkit.content.models.chore import Chore
@@ -146,35 +153,189 @@ def _paragraph_after(lines: list[str], after_prefix: str, file_path: str | None)
 
 
 # ---------------------------------------------------------------------------
+# AgentContract full-contract reverse parse (ADR-0.0.37-13)
+# ---------------------------------------------------------------------------
+
+# Sections that have dedicated AgentContract fields — never promoted to pillars
+# (promoting them would double-represent and break parse(render(model)) for the
+# OBPI-0.0.34 round-trip fixtures that use these fields).
+_LEGACY_PILLAR_SECTIONS = frozenset({"Tech Stack", "Rules"})
+
+_Classification = Literal["Mechanical", "Promotable", "Judgment", "Ambiguous"]
+_SCORECARD_REL = ("docs", "governance", "advisory-rules-audit.md")
+_LIST_MARKER_RE = re.compile(r"(?:[-*]|\d+[.)])\s+(.*)")
+_MIN_MATCH_WORDS = 4
+
+
+def _as_classification(value: str) -> _Classification | None:
+    """Narrow a raw scorecard score string to the classification Literal (None if not a member)."""
+    if value == "Mechanical":
+        return "Mechanical"
+    if value == "Promotable":
+        return "Promotable"
+    if value == "Judgment":
+        return "Judgment"
+    if value == "Ambiguous":
+        return "Ambiguous"
+    return None
+
+
+def _kebab(title: str) -> str:
+    """Lowercase kebab-case id derived from a section title."""
+    slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+    return slug or "section"
+
+
+def _strip_trailing_blanks(lines: list[str]) -> list[str]:
+    """Drop trailing blank lines so inter-section whitespace is not captured.
+
+    Applied at both import-capture and round-trip reparse so pillar bodies
+    compare equal across render -> parse (ADR-0.0.37-13 REQ-04).
+    """
+    end = len(lines)
+    while end > 0 and not lines[end - 1].strip():
+        end -= 1
+    return lines[:end]
+
+
+def _normalize_rule(text: str) -> str:
+    """Normalize a rule line for scorecard matching.
+
+    Drops list markers, markdown emphasis and backticks, non-alphanumerics;
+    collapses whitespace; lowercases. The result is a paraphrase-tolerant key
+    for high-precision containment matching against the scorecard.
+    """
+    lowered = re.sub(r"^\s*(?:[-*]|\d+[.)])\s+", "", text.lower())
+    lowered = lowered.replace("`", "").replace("*", "")
+    lowered = re.sub(r"[^a-z0-9 ]+", " ", lowered)
+    return re.sub(r"\s+", " ", lowered).strip()
+
+
+def _find_scorecard(file_path: str | None) -> Path | None:
+    """Locate docs/governance/advisory-rules-audit.md walking up from file_path."""
+    if not file_path:
+        return None
+    here = Path(file_path).resolve().parent
+    for root in (here, *here.parents):
+        candidate = root.joinpath(*_SCORECARD_REL)
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def _load_scorecard_index(file_path: str | None) -> dict[str, _Classification]:
+    """Map normalized rule text -> classification from the advisory scorecard.
+
+    Best-effort: returns {} when the scorecard cannot be located or read, so
+    fixture parses (no scorecard) gracefully fall back to Ambiguous (REQ-05).
+    """
+    path = _find_scorecard(file_path)
+    if path is None:
+        return {}
+    index: dict[str, _Classification] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.startswith("|"):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) < 3:
+            continue
+        classification = _as_classification(cells[2].strip("* "))
+        if classification is None:
+            continue
+        norm = _normalize_rule(cells[1])
+        if len(norm.split()) >= _MIN_MATCH_WORDS:
+            index.setdefault(norm, classification)
+    return index
+
+
+def _classify(text: str, index: dict[str, _Classification]) -> _Classification:
+    """Join classification from the scorecard; default Ambiguous (REQ-05).
+
+    Conservative high-precision match: a scorecard rule classifies a bullet only
+    when its whole normalized text is contained in (or contains) the bullet's
+    normalized text. No match defaults to Ambiguous — never silently Mechanical.
+    """
+    norm = _normalize_rule(text)
+    if len(norm.split()) < _MIN_MATCH_WORDS:
+        return "Ambiguous"
+    for rule_norm, score in index.items():
+        if rule_norm in norm or norm in rule_norm:
+            return score
+    return "Ambiguous"
+
+
+def _extract_pillar_bullets(lines: list[str], index: dict[str, _Classification]) -> list[Bullet]:
+    """Extract rule-bearing lines (- bullets and N. numbered items) as Bullets.
+
+    Each bullet's classification is joined from the scorecard (REQ-02), defaulting
+    to Ambiguous when unmatched (REQ-05).
+    """
+    bullets: list[Bullet] = []
+    for line in lines:
+        stripped = line.lstrip()
+        match = _LIST_MARKER_RE.fullmatch(stripped)
+        if match is None:
+            continue
+        text = match.group(1).strip()
+        if not text:
+            continue
+        indent = (len(line) - len(stripped)) // 2
+        bullets.append(Bullet(text=text, indent=indent, classification=_classify(text, index)))
+    return bullets
+
+
+def _build_pillars(secs: dict[str, list[str]], index: dict[str, _Classification]) -> list[Pillar]:
+    """Build one Pillar per ## section (in document order), excluding legacy fields."""
+    pillars: list[Pillar] = []
+    order = 0
+    for title, body_lines in secs.items():
+        if title == "" or title in _LEGACY_PILLAR_SECTIONS:
+            continue
+        order += 1
+        body = _strip_trailing_blanks(body_lines)
+        pillars.append(
+            Pillar(
+                id=_kebab(title),
+                title=title,
+                order=order,
+                lines=body,
+                bullets=_extract_pillar_bullets(body, index),
+            )
+        )
+    return pillars
+
+
+# ---------------------------------------------------------------------------
 # Per-type parsers
 # ---------------------------------------------------------------------------
 
 
 def _parse_agent_contract(lines: list[str], file_path: str | None) -> AgentContract:
-    """Parse AgentContract from pre-split lines."""
+    """Parse AgentContract from pre-split lines (full-contract reverse parse)."""
     name = _first_h1(lines, "", file_path)
     secs = _sections(lines)
 
     # purpose: first non-blank, non-H1 line before first ## heading
-    preamble = secs.get("", [])
     purpose = ""
-    for line in preamble:
+    for line in secs.get("", []):
         stripped = line.strip()
         if stripped and not stripped.startswith("# "):
             purpose = stripped
             break
 
-    tech_stack_lines = secs.get("Tech Stack", [])
     tech_stack = [
         line.lstrip("- ").strip()
-        for line in tech_stack_lines
+        for line in secs.get("Tech Stack", [])
         if line.strip() and line.strip().startswith("- ")
     ]
+    rules = _parse_bullets(secs.get("Rules", []))
 
-    rules_lines = secs.get("Rules", [])
-    rules = _parse_bullets(rules_lines)
+    index = _load_scorecard_index(file_path)
+    pillars = _build_pillars(secs, index)
 
-    return AgentContract(name=name, purpose=purpose, tech_stack=tech_stack, rules=rules)
+    return AgentContract(
+        name=name, purpose=purpose, tech_stack=tech_stack, rules=rules, pillars=pillars
+    )
 
 
 def _parse_rule(lines: list[str], file_path: str | None) -> Rule:
@@ -348,7 +509,9 @@ def parse(text: str, as_type: str, *, file_path: str | None = None) -> BaseConte
         text: Canonical markdown as produced by render().
         as_type: Content type name (key in CONTENT_MODELS, e.g. "Rule", "AgentContract").
         file_path: Optional source path for error messages (included in ValueError text
-            when provided).
+            when provided). For AgentContract, also anchors advisory-scorecard discovery
+            for per-bullet classification (ADR-0.0.37-13); when omitted, bullets default
+            to Ambiguous.
 
     Returns:
         A validated Pydantic model instance of the requested type.

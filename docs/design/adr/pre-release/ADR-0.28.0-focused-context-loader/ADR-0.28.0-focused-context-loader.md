@@ -1,6 +1,6 @@
 ---
 id: ADR-0.28.0-focused-context-loader
-status: Completed
+status: Validated
 kind: feature
 semver: 0.28.0
 lane: lite

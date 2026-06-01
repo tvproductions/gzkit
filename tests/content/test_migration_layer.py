@@ -154,5 +154,63 @@ class TestMigrationPurity(unittest.TestCase):
         self.assertEqual(model.schema_version, 1)
 
 
+class TestReverseParseFullContract(unittest.TestCase):
+    """OBPI-0.0.37-13: full-contract reverse parse of AGENTS.md into the master model."""
+
+    def _import_agents_md(self):
+        from pathlib import Path  # noqa: PLC0415
+
+        agents = Path(__file__).resolve().parents[2] / "AGENTS.md"
+        return parse(agents.read_text(encoding="utf-8"), "AgentContract", file_path=str(agents))
+
+    @covers("REQ-0.0.37-13-01")
+    def test_import_populates_a_pillar_for_every_section(self) -> None:
+        """Every ## section becomes a Pillar whose body is captured verbatim — not the
+        name+purpose stub (regression floor: the old parser yielded a 161-byte model)."""
+        model = self._import_agents_md()
+        self.assertGreater(len(model.pillars), 5, "pillars must cover the ## sections")
+        titles = {p.title for p in model.pillars}
+        self.assertIn("Behavior Rules", titles)
+        behavior = next(p for p in model.pillars if p.title == "Behavior Rules")
+        self.assertIn("AGENTS.md", "\n".join(behavior.lines))
+        self.assertTrue(behavior.bullets, "Behavior Rules must yield rule bullets")
+
+    @covers("REQ-0.0.37-13-01")
+    def test_import_beats_the_stub_size(self) -> None:
+        """Structural faithfulness: the serialized model is orders larger than the 161-byte stub."""
+        model = self._import_agents_md()
+        self.assertGreater(len(model.model_dump_json()), 5000)
+
+    @covers("REQ-0.0.37-13-02")
+    def test_classification_joined_from_advisory_scorecard(self) -> None:
+        """Per-bullet classification is joined from the advisory scorecard, not inferred from
+        prose: the scorecard scores 'Never prefix `uv run gz` ...' Mechanical."""
+        model = self._import_agents_md()
+        bullets = [b for p in model.pillars for b in p.bullets]
+        match = next(b for b in bullets if "Never prefix" in b.text and "uv run gz" in b.text)
+        self.assertEqual(match.classification, "Mechanical")
+
+    @covers("REQ-0.0.37-13-03")
+    def test_agents_local_content_present_as_model_rows(self) -> None:
+        """The .gzkit/agents.local.md content (spliced into AGENTS.md) is captured as model
+        rows. Physical removal of the source file is OBPI-14 (scope correction, Option A)."""
+        model = self._import_agents_md()
+        rows = "\n".join(line for p in model.pillars for line in p.lines)
+        self.assertIn("Operator PII", rows)  # a rule authored in .gzkit/agents.local.md
+
+    @covers("REQ-0.0.37-13-05")
+    def test_unmatched_bullet_defaults_to_ambiguous(self) -> None:
+        """A bullet with no scorecard match classifies Ambiguous — never silently Mechanical,
+        which would let the density dial thin an unenforced rule."""
+        text = (
+            "# Contract\n\nPurpose line.\n\n"
+            "## Custom Section\n\n- zzz unmatchable qpwoeiruty rule\n"
+        )
+        model = parse(text, "AgentContract")
+        custom = next(p for p in model.pillars if p.title == "Custom Section")
+        self.assertEqual(len(custom.bullets), 1)
+        self.assertEqual(custom.bullets[0].classification, "Ambiguous")
+
+
 if __name__ == "__main__":
     unittest.main()

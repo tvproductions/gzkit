@@ -31,9 +31,11 @@ _SKILL = _REPO_ROOT / ".gzkit" / "skills" / "gz-session-handoff" / "SKILL.md"
 # duplicate of an already-canonical file and was removed as a dedup rather than
 # migrated, so the distinct migrated total was 34 (operator decision 2026-05-30); bumped
 # to 35 for the 2026-05-31 ADR-0.0.37 density-dial session handoff, then 36 for the
-# 2026-05-31 canon-foundation-design-captured session handoff. Brittle exact-count
-# assertion, slated for replacement.
-_EXPECTED_CANONICAL_COUNT = 36
+# 2026-05-31 canon-foundation-design-captured session handoff, then 37 for the
+# 2026-06-01 519-substrate-obpi13-rescoped session handoff. Exact-count assertion is an
+# intentional fail-closed tripwire: every change to the handoff store must be witnessed
+# by a deliberate bump here, not absorbed silently.
+_EXPECTED_CANONICAL_COUNT = 37
 
 
 def _canonical_handoffs() -> list[Path]:
