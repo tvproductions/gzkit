@@ -17,7 +17,35 @@ from pathlib import Path
 import jinja2
 
 from gzkit.content import vendors
+from gzkit.content.models.agent_contract import AgentContract, Pillar
 from gzkit.content.models.base import BaseContentModel
+
+_TEMP_RANK = {"lite": 0, "medium": 1, "heavy": 2}
+
+
+def _bullet_renders(bullet: object, temperature: str) -> bool:
+    """Return True if *bullet* should appear at the given temperature."""
+    classification = getattr(bullet, "classification", None)
+    if classification == "Judgment":
+        return True
+    density_min = getattr(bullet, "density_min", None)
+    if density_min is None:
+        return True
+    return _TEMP_RANK[density_min] <= _TEMP_RANK[temperature]
+
+
+def _project_for_temperature(model: AgentContract, temperature: str) -> AgentContract:
+    """Return a copy of *model* with bullets and pillars filtered for *temperature*."""
+    filtered_rules = [b for b in model.rules if _bullet_renders(b, temperature)]
+    kept_pillars: list[Pillar] = [
+        p for p in model.pillars if p.enabled and _TEMP_RANK[p.tier] <= _TEMP_RANK[temperature]
+    ]
+    kept_pillars.sort(key=lambda p: p.order)
+    projected_pillars = [
+        p.model_copy(update={"bullets": [b for b in p.bullets if _bullet_renders(b, temperature)]})
+        for p in kept_pillars
+    ]
+    return model.model_copy(update={"rules": filtered_rules, "pillars": projected_pillars})
 
 
 def _build_env() -> jinja2.Environment:
@@ -74,23 +102,25 @@ class TemplateNotFound(Exception):
         )
 
 
-def render(model: BaseContentModel, vendor: str, *, project_root: Path | None = None) -> bytes:
-    """Render *model* to deterministic UTF-8 bytes using the vendor's Jinja2 template.
+def render(
+    model: BaseContentModel,
+    vendor: str,
+    *,
+    temperature: str = "heavy",
+    project_root: Path | None = None,
+) -> bytes:
+    """Render *model* to deterministic UTF-8 bytes via the vendor's Jinja2 template.
 
-    Args:
-        model: A validated Pydantic model instance from gzkit.content.models.
-        vendor: The vendor identifier (e.g. "claude").
-        project_root: Optional project root path. When provided, the ADR-0.0.33
-            fidelity validator suite is invoked before returning. Raises
-            FidelityHookError on any violation (fail-closed).
-
-    Returns:
-        UTF-8 encoded bytes of the rendered template output.
-
-    Raises:
-        TemplateNotFound: If the (model class name, vendor) pair is not in the
-            routing table, or if the corresponding template file does not exist.
+    Raises ValueError on unknown temperature (fail-closed, before template lookup).
+    Raises TemplateNotFound when the (content_type, vendor) pair has no template.
+    When project_root is supplied, the ADR-0.0.33 fidelity hook fires before return.
     """
+    if temperature not in _TEMP_RANK:
+        raise ValueError(
+            f"unknown temperature: {temperature!r}; expected one of {sorted(_TEMP_RANK)}"
+        )
+    if isinstance(model, AgentContract):
+        model = _project_for_temperature(model, temperature)
     content_type = model.__class__.__name__
 
     # Routing guard — fail-closed before any template lookup. Routes resolve

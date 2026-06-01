@@ -13,3 +13,11 @@
 {{ '  ' * rule.indent }}- {{ rule.text }}
 {% endfor %}
 {% endif %}
+{% if pillars %}
+{% for pillar in pillars %}
+## {{ pillar.title }}
+{% for bullet in pillar.bullets %}
+{{ '  ' * bullet.indent }}- {{ bullet.text }}
+{% endfor %}
+{% endfor %}
+{% endif %}
