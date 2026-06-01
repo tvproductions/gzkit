@@ -213,6 +213,57 @@ class TestAstScanner(unittest.TestCase):
         self.assertEqual(ops, [])
 
     @covers("REQ-0.0.59-04-01")
+    def test_scanner_exempts_production_code_calls(self) -> None:
+        """A filesystem+assert test that calls gzkit production code is behavioral,
+        not a tautological echo — it verifies the project's computation — so the
+        scanner must not flag it (the discriminator that stops crying wolf)."""
+        from gzkit.tautological_tests import scan_test_tree
+
+        content = textwrap.dedent(
+            """\
+            import unittest
+            from pathlib import Path
+            from gzkit.rules import load_rules
+
+            class TestFoo(unittest.TestCase):
+                def test_loads_and_checks(self):
+                    rules = load_rules(Path(".gzkit/rules"))
+                    body = Path(".gzkit/rules/x.md").read_text()
+                    self.assertIn("foo", body)
+            """
+        )
+        with tempfile.TemporaryDirectory() as tmp_str:
+            tmp = pathlib.Path(tmp_str)
+            self._make_test_file(tmp, content)
+            ops = scan_test_tree(tmp / "tests")
+
+        self.assertEqual(ops, [], "a test calling gzkit production code must be exempt")
+
+    @covers("REQ-0.0.59-04-01")
+    def test_scanner_flags_pure_static_grep(self) -> None:
+        """A filesystem+assert test that calls zero production code IS tautological."""
+        from gzkit.tautological_tests import scan_test_tree
+
+        content = textwrap.dedent(
+            """\
+            import unittest
+            from pathlib import Path
+
+            class TestFoo(unittest.TestCase):
+                def test_doc_mentions_heading(self):
+                    body = Path("AGENTS.md").read_text()
+                    self.assertIn("## Persona", body)
+            """
+        )
+        with tempfile.TemporaryDirectory() as tmp_str:
+            tmp = pathlib.Path(tmp_str)
+            self._make_test_file(tmp, content)
+            ops = scan_test_tree(tmp / "tests")
+
+        self.assertGreater(len(ops), 0, "pure static content-grep must be flagged")
+        self.assertEqual(ops[0].function_name, "test_doc_mentions_heading")
+
+    @covers("REQ-0.0.59-04-01")
     def test_scanner_correct_function_name(self) -> None:
         from gzkit.tautological_tests import scan_test_tree
 

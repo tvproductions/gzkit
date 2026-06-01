@@ -80,6 +80,98 @@ def _has_assertion(node: ast.FunctionDef | ast.AsyncFunctionDef) -> tuple[bool, 
     return False, ""
 
 
+_CLI_INVOKE_ATTR = "invoke"
+_SUBPROCESS_LAUNCH_ATTRS: frozenset[str] = frozenset({"run", "check_output", "check_call", "Popen"})
+_CLI_ENTRY_TOKENS: frozenset[str] = frozenset({"gz", "uv"})
+
+
+def _gzkit_imported_names(tree: ast.Module) -> frozenset[str]:
+    """Collect the local names bound to gzkit production imports in a module."""
+    names: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and (node.module or "").startswith("gzkit"):
+            names.update(alias.asname or alias.name for alias in node.names)
+        elif isinstance(node, ast.Import):
+            names.update(
+                (alias.asname or alias.name).split(".")[0]
+                for alias in node.names
+                if alias.name.startswith("gzkit")
+            )
+    return frozenset(names)
+
+
+def _attr_root_name(node: ast.expr) -> str | None:
+    """Return the root ``Name`` id of an attribute chain (``a.b.c`` -> ``a``)."""
+    while isinstance(node, ast.Attribute):
+        node = node.value
+    return node.id if isinstance(node, ast.Name) else None
+
+
+def _calls_production_code(
+    node: ast.FunctionDef | ast.AsyncFunctionDef, gzkit_names: frozenset[str]
+) -> bool:
+    """Return True if the function exercises project computation.
+
+    A test that calls a gzkit production symbol or invokes the CLI (CliRunner
+    ``.invoke`` / ``subprocess`` on ``gz``/``uv``) runs project code: its
+    assertion can fail when behavior changes, so it is a behavioral/contract
+    test, not a tautological content echo. A unit test exists to verify the
+    project's computation; one that exercises none is the superfluous case this
+    audit targets. This discriminator stops the scan from flagging the ~88% of
+    filesystem-touching tests that are in fact behavioral.
+    """
+    for child in ast.walk(node):
+        if not isinstance(child, ast.Call):
+            continue
+        func = child.func
+        if isinstance(func, ast.Name) and func.id in gzkit_names:
+            return True
+        if isinstance(func, ast.Attribute):
+            if func.attr == _CLI_INVOKE_ATTR:
+                return True
+            if _attr_root_name(func) in gzkit_names:
+                return True
+            if func.attr in _SUBPROCESS_LAUNCH_ATTRS and any(
+                isinstance(arg, ast.List)
+                and any(
+                    isinstance(el, ast.Constant) and el.value in _CLI_ENTRY_TOKENS
+                    for el in arg.elts
+                )
+                for arg in child.args
+            ):
+                return True
+    return False
+
+
+def _class_setup_map(
+    tree: ast.Module,
+) -> dict[int, ast.FunctionDef | ast.AsyncFunctionDef]:
+    """Map each class-method node id to its class's setUp/setUpClass node.
+
+    A test whose production-code call lives in the class fixture (not the method
+    body) is still behavioral, so the exemption must see the setUp too.
+    """
+    out: dict[int, ast.FunctionDef | ast.AsyncFunctionDef] = {}
+    for cls in ast.walk(tree):
+        if not isinstance(cls, ast.ClassDef):
+            continue
+        setup = next(
+            (
+                b
+                for b in cls.body
+                if isinstance(b, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and b.name in ("setUp", "setUpClass")
+            ),
+            None,
+        )
+        if setup is None:
+            continue
+        for b in cls.body:
+            if isinstance(b, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                out[id(b)] = setup
+    return out
+
+
 def scan_test_tree(tests_path: Path) -> list[TautologicalTestOperation]:
     """Scan all .py files under tests_path for tautological test operations.
 
@@ -109,6 +201,9 @@ def scan_test_tree(tests_path: Path) -> list[TautologicalTestOperation]:
         except (SyntaxError, OSError):
             continue
 
+        gzkit_names = _gzkit_imported_names(tree)
+        setup_map = _class_setup_map(tree)
+
         for node in ast.walk(tree):
             if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
@@ -117,6 +212,13 @@ def scan_test_tree(tests_path: Path) -> list[TautologicalTestOperation]:
                 continue
             has_assert, assert_kind = _has_assertion(node)
             if not has_assert:
+                continue
+            # A test that exercises project computation (calls gzkit code or the
+            # CLI) is behavioral/contract, not a tautological echo — exempt it.
+            setup = setup_map.get(id(node))
+            if _calls_production_code(node, gzkit_names) or (
+                setup is not None and _calls_production_code(setup, gzkit_names)
+            ):
                 continue
             context = _extract_context_hint(node)
             results.append(
