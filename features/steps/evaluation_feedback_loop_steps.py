@@ -591,4 +591,6 @@ def step_gh_issue_labels(context, number: int, label: str) -> None:  # type: ign
     labels_map.setdefault(str(number), []).append(label)
     setattr(context, _GH_LABELS_KEY, labels_map)
     fake_run = _make_gh_run_dispatcher(context)
-    _register_patcher(context, mock.patch("gzkit.commands.validate_cmd.subprocess.run", fake_run))
+    _register_patcher(
+        context, mock.patch("gzkit.commands.validate_commit_trailers.subprocess.run", fake_run)
+    )

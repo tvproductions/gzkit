@@ -18,7 +18,7 @@ from unittest import mock
 
 import yaml
 
-from gzkit.commands import validate_cmd
+from gzkit.commands import validate_task_envelope
 from gzkit.commands.validate_cmd import _validate_task_envelope_coherence
 from gzkit.traceability import covers
 
@@ -517,7 +517,7 @@ class TestSignatureCCommitTrailerChannel(unittest.TestCase):
             # Commit trailer declares a DIFFERENT TASK for the same OBPI.
             git_log = "fix(x): change\n\nTask: TASK-0.0.64-04-01-02\n--EOC--\n"
             fake = mock.Mock(returncode=0, stdout=git_log)
-            with mock.patch.object(validate_cmd.subprocess, "run", return_value=fake):
+            with mock.patch.object(validate_task_envelope.subprocess, "run", return_value=fake):
                 errors = [
                     e
                     for e in _validate_task_envelope_coherence(root)
@@ -534,7 +534,7 @@ class TestSignatureCCommitTrailerChannel(unittest.TestCase):
             _write_brief(root, fm)
             git_log = "fix(x): change\n\nTask: TASK-0.0.64-04-01-01\n--EOC--\n"
             fake = mock.Mock(returncode=0, stdout=git_log)
-            with mock.patch.object(validate_cmd.subprocess, "run", return_value=fake):
+            with mock.patch.object(validate_task_envelope.subprocess, "run", return_value=fake):
                 errors = [
                     e
                     for e in _validate_task_envelope_coherence(root)
@@ -560,8 +560,10 @@ class TestSignatureCPerformance(unittest.TestCase):
             for obpi_id in ("OBPI-0.0.64-91", "OBPI-0.0.64-92", "OBPI-0.0.64-93"):
                 _write_brief_with_id(root, obpi_id)
             fake = mock.Mock(returncode=0, stdout="")
-            with mock.patch.object(validate_cmd.subprocess, "run", return_value=fake) as run_mock:
-                validate_cmd._sig_c_layer_drift(root)
+            with mock.patch.object(
+                validate_task_envelope.subprocess, "run", return_value=fake
+            ) as run_mock:
+                validate_task_envelope._sig_c_layer_drift(root)
             self.assertEqual(
                 run_mock.call_count,
                 1,
@@ -576,7 +578,7 @@ class TestObpiIdForTask(unittest.TestCase):
     @covers("REQ-0.0.64-04-03")
     def test_grouping_key_agrees_with_task_matches_obpi(self) -> None:
         """``_obpi_id_for_task`` returns the one OBPI a TASK matches (or None)."""
-        from gzkit.commands.validate_cmd import _obpi_id_for_task, _task_matches_obpi
+        from gzkit.commands.validate_task_envelope import _obpi_id_for_task, _task_matches_obpi
 
         cases = [
             "TASK-0.0.64-04-01-01",

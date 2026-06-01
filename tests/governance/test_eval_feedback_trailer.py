@@ -77,11 +77,11 @@ class TestEvalFeedbackTrailerValidation(unittest.TestCase):
             _quick_init()
             with (
                 patch(
-                    "gzkit.commands.validate_cmd._head_commit_message_and_files",
+                    "gzkit.commands.validate_commit_trailers._head_commit_message_and_files",
                     return_value=fake_head,
                 ),
                 patch(
-                    "gzkit.commands.validate_cmd.subprocess.run",
+                    "gzkit.commands.validate_commit_trailers.subprocess.run",
                     side_effect=lambda args, **kw: _make_completed_process(
                         eval_feedback_response if args[0] == "gh" else "abc1234"
                     ),
@@ -109,11 +109,11 @@ class TestEvalFeedbackTrailerValidation(unittest.TestCase):
             _quick_init()
             with (
                 patch(
-                    "gzkit.commands.validate_cmd._head_commit_message_and_files",
+                    "gzkit.commands.validate_commit_trailers._head_commit_message_and_files",
                     return_value=fake_head,
                 ),
                 patch(
-                    "gzkit.commands.validate_cmd.subprocess.run",
+                    "gzkit.commands.validate_commit_trailers.subprocess.run",
                     side_effect=lambda args, **kw: _make_completed_process(
                         eval_feedback_response if args[0] == "gh" else "abc1234"
                     ),
