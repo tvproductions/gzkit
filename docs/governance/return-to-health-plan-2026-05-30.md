@@ -29,7 +29,7 @@ unittest/doctest maturity route** under GHI #571. Filename keeps its authored
 **Tier 1 — Recovery to Definition of Healthy.** Exit gate: Definition of Healthy all-true.
 
 - [ ] **1.1 Phase 2 — context-load emergency #519.** Its structural remediation *is* the Context-Load CMS workstream (Boundary-1-waived); advancing that workstream is how #519 closes. → *Phase 2; Designated Workstream — Context-Load CMS*.
-- [ ] **1.2 Phase 3 — ceremony & validator mechanization** (#516 + the req-kind/covers eval-feedback cluster). 15 issues — see **GHI Register § Phase 3**. → *Phase 3*.
+- [ ] **1.2 Phase 3 — ceremony & validator mechanization** (#516 + the req-kind/covers eval-feedback cluster; now also #563/#564 closeout-pipeline class fixes + #578 preflight lock-coupling). 18 issues — see **GHI Register § Phase 3**. → *Phase 3*.
 - [ ] **1.3 Phase 4 — drain remaining recovery issues** — docs/tests/`validate --documents` defects, including the GHI #571 stdlib unittest/doctest maturity route. 10 issues — see **GHI Register § Phase 4**. WIP = 1; close only with observed evidence. → *Phase 4*.
 - [ ] **1.4 Phase 5 — closeout.** Fill Recovery Closeout when #519 closed + no open emergency + `gz check` green. → *Phase 5; Recovery Closeout*.
 
@@ -59,8 +59,8 @@ unittest/doctest maturity route** under GHI #571. Filename keeps its authored
 
 | GHI | Summary | Home |
 |-----|---------|------|
-| #563 | task-envelope gate failure — `seq=01`-only TASKs, missing `task_id` | **T0** — the gate (worklist 0.2) |
-| #564 | preflight orphan plan-audit receipt (OBPI-0.0.64-04) | **T0** — preflight (worklist 0.1) |
+| #563 | task-envelope gate failure — `seq=01`-only TASKs, missing `task_id` | **T1** — Phase 3 (gate cleared @ Snapshot D; class fix: closeout `task_id` population remains) |
+| #564 | preflight orphan plan-audit receipt (OBPI-0.0.64-04) | **T1** — Phase 3 (gate cleared @ Snapshot D; class fix: closeout leaves no orphan remains) |
 | #519 | context surface exhausts 258K window (**emergency**) | **T1** — Phase 2 → CMS |
 | #516 | closeout passive-presenter lacks REQ-evidence check | **T1** — Phase 3 |
 | #536 | `gz adr promote` Target-Scope `path:line` → invalid OBPI paths | **T1** — Phase 3 |
@@ -77,6 +77,7 @@ unittest/doctest maturity route** under GHI #571. Filename keeps its authored
 | #569 | verify-stage extractor doesn't reuse `extract_fenced_commands` joiner | **T1** — Phase 3 |
 | #573 | closeout BI-2 DRY classifier fork needs governed TDD redo | **T1** — Phase 3 |
 | #577 | `gz context` vs `gz status` divergent gate projection | **T1** — Phase 3 |
+| #578 | `preflight --apply` reaps expired locks without token-block register entry | **T1** — Phase 3 |
 | #480 | `validate --documents`: 3536 errors from schema-convention additions | **T1** — Phase 4 |
 | #524 | ADR-0.2.0 fails `validate --documents` (status enum + sections) | **T1** — Phase 4 |
 | #525 | CLAUDE.md→AGENTS.md redirect *(verify: appears already landed)* | **T1** — Phase 4 |
@@ -94,7 +95,7 @@ unittest/doctest maturity route** under GHI #571. Filename keeps its authored
 | #549 | are attested briefs textually correctable without re-attestation? | **T2** — ceremony doctrine |
 | #567 | Pocock fenced prototype-spike + 2 filters (parity) | **Parked** — §13 Open-needs-discussion |
 
-**Tier counts:** T0 = 2 · T1 = 26 (Phase 2: 1 · Phase 3: 15 · Phase 4: 10) · T2 = 5 · Parked = 1. The
+**Tier counts (updated @ Snapshot D, 2026-06-01):** T0 = 0 (both Snapshot-C gate-blockers #563/#564 cleared; harness green) · T1 = 29 (Phase 2: 1 · Phase 3: 18 · Phase 4: 10) · T2 = 5 · Parked = 1 · 35 open total (#578 added this session). The
 two **eval-feedback** clusters (req-kind #537/#538/#543/#544/#545/#546/#547; covers/coverage) are
 the *"advisory-rule-never-mechanized"* family the §1 audit named as the dominant failure mode —
 they concentrate in Phase 3, which is the right place to retire the class, not the instances.
