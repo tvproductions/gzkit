@@ -18,15 +18,15 @@ reference); this line is the live mtime.
 
 **Tier 0 — Restore green (do now; everything else is gated on this).** Exit gate: `uv run gz check` exits 0.
 
-- [ ] **0.1 Clear the OBPI-0.0.37-12 orphan lock + plan-audit receipt** → `uv run gz preflight --apply` (verify it honors the token-block reaping-handoff discipline first). Fixes the `preflight` gate. → *Current Baseline § Snapshot C*.
+- [ ] **0.1 Clear the OBPI-0.0.37-12 orphan lock + plan-audit receipt** (also clears **#564**'s OBPI-0.0.64-04 orphan) → `uv run gz preflight --apply` (verify it honors the token-block reaping-handoff discipline first). Fixes the `preflight` gate. → *Current Baseline § Snapshot C*.
 - [ ] **0.2 Resolve `--task-envelope-coherence`** — 0.0.37-12: ledger `:8460` event missing `task_id`; `seq=01`-only TASKs. Route to **GHI #563** (existing class tracker — a new *instance*, not a new defect); remediate via validator rule / migration, never a ledger hand-edit (Never #2). Fixes the `task-envelope` gate. → *Snapshot C; Phase 3*.
 - [ ] **0.3 Re-measure & record Snapshot D** — `uv run gz check` green; reaffirm Phase 1 complete. → *Current Baseline*.
 
 **Tier 1 — Recovery to Definition of Healthy.** Exit gate: Definition of Healthy all-true.
 
 - [ ] **1.1 Phase 2 — context-load emergency #519.** Its structural remediation *is* the Context-Load CMS workstream (Boundary-1-waived); advancing that workstream is how #519 closes. → *Phase 2; Designated Workstream — Context-Load CMS*.
-- [ ] **1.2 Phase 3 — passive-presenter ceremony gaps: #516.** → *Phase 3*.
-- [ ] **1.3 Phase 4 — drain remaining recovery issues** (WIP = 1; close only with observed evidence). → *Phase 4*.
+- [ ] **1.2 Phase 3 — ceremony & validator mechanization** (#516 + the req-kind/covers eval-feedback cluster). 15 issues — see **GHI Register § Phase 3**. → *Phase 3*.
+- [ ] **1.3 Phase 4 — drain remaining recovery issues** — docs/tests/`validate --documents` defects. 10 issues — see **GHI Register § Phase 4**. WIP = 1; close only with observed evidence. → *Phase 4*.
 - [ ] **1.4 Phase 5 — closeout.** Fill Recovery Closeout when #519 closed + no open emergency + `gz check` green. → *Phase 5; Recovery Closeout*.
 
 **Tier 2 — Post-green workstreams** (start only after recovery closes, or under an explicit, item-specific operator Boundary-1 waiver). Each builds in the dependency order it declares.
@@ -42,6 +42,58 @@ reference); this line is the live mtime.
 > already shipped on the current `AgentContract` model without full canon. So: relieve #519 via CMS
 > on the *current* substrate now (faster close), or block CMS on Canon first (cleaner, slower)?
 > That choice sets whether 2.1 precedes 2.2 or they interleave. Operator call.
+
+### GHI Register — all 34 open issues, homed
+
+> First-pass triage (via `ghi-triage`, 2026-06-01): the script's mechanical route is *evidence*;
+> the **Home** column is the agent's body-read tier assignment — re-home freely. **Every open GHI
+> appears exactly once.** Tier 0 = blocks `gz check` green (only the two gate families do); Tier 1
+> = blocks Definition-of-Healthy (mapped to a Phase); Tier 2 = post-green / workstream-bound;
+> Parked = design-discussion, re-survey later. When a GHI closes, strike its row; when the queue
+> is re-surveyed, regenerate this table. This is the manual stand-in for `ghi-triage` → workplan
+> until the MOTD ships.
+
+| GHI | Summary | Home |
+|-----|---------|------|
+| #563 | task-envelope gate failure — `seq=01`-only TASKs, missing `task_id` | **T0** — the gate (worklist 0.2) |
+| #564 | preflight orphan plan-audit receipt (OBPI-0.0.64-04) | **T0** — preflight (worklist 0.1) |
+| #519 | context surface exhausts 258K window (**emergency**) | **T1** — Phase 2 → CMS |
+| #516 | closeout passive-presenter lacks REQ-evidence check | **T1** — Phase 3 |
+| #536 | `gz adr promote` Target-Scope `path:line` → invalid OBPI paths | **T1** — Phase 3 |
+| #537 | BEHAVIOR-kind cannot-uncovered-accept not mechanically enforced | **T1** — Phase 3 |
+| #538 | STRUCTURAL-FENCE parent-ADR `## Boundary Invariants` shape unchecked | **T1** — Phase 3 |
+| #543 | req-kind SUPPORT proof channel regex-only; no ledger query runs | **T1** — Phase 3 |
+| #544 | `covers` grandfathering cache loaded as raw dict, no schema | **T1** — Phase 3 |
+| #545 | `ReqCoverageRecord` declared/tested but never instantiated | **T1** — Phase 3 |
+| #546 | `--req-kind-discipline` no bypass-once flag (parity w/ `gz covers`) | **T1** — Phase 3 |
+| #553 | ADR-0.22.0 task-envelope intent landed as OBPI-boundary stamps | **T1** — Phase 3 |
+| #558 | `gz adr demote` keep-pool leaves stale `promoted_to`/Superseded | **T1** — Phase 3 |
+| #561 | OBPI-0.0.64-05 SUPPORT REQ missing `gz validate --<scope>` citation | **T1** — Phase 3 |
+| #565 | 40 active briefs' compound Verification cmds violate shell-less contract | **T1** — Phase 3 |
+| #569 | verify-stage extractor doesn't reuse `extract_fenced_commands` joiner | **T1** — Phase 3 |
+| #573 | closeout BI-2 DRY classifier fork needs governed TDD redo | **T1** — Phase 3 |
+| #577 | `gz context` vs `gz status` divergent gate projection | **T1** — Phase 3 |
+| #480 | `validate --documents`: 3536 errors from schema-convention additions | **T1** — Phase 4 |
+| #524 | ADR-0.2.0 fails `validate --documents` (status enum + sections) | **T1** — Phase 4 |
+| #525 | CLAUDE.md→AGENTS.md redirect *(verify: appears already landed)* | **T1** — Phase 4 |
+| #527 | ADR-0.0.9 fails `validate --documents` (status enum + sections) | **T1** — Phase 4 |
+| #532 | 4 briefs reference wrong manpage path (`gz-validate.md`) | **T1** — Phase 4 |
+| #551 | REQ-coverage foundation-trigger undocumented in AGENTS.md | **T1** — Phase 4 |
+| #559 | `hexagonal-architecture.md` stale refs to demoted ADRs | **T1** — Phase 4 |
+| #560 | behave `distribution_invariant` byte-equivalence scenario failing | **T1** — Phase 4 |
+| #562 | tautological test (`test_unscoped_rules.py:448` read_text+assertEqual) | **T1** — Phase 4 |
+| #571 | audit unit-test doctrine & recurrence defenses | **T1** — Phase 4 |
+| #533 | agents-md 5k budget — depends on ADR-0.0.37 completion | **T2** — CMS (2.2) |
+| #574 | handoff resume "advise-not-execute" gate is prose, not mechanized | **T2** — Session MOTD (2.4) |
+| #575 | no governed `gz insights` author verb (hand-append only) | **T2** — ADR-0.0.66 substrate (2.3) |
+| #547 | req-kind suite-level post-conditions doctrine unspecified | **T2** — req-kind doctrine |
+| #549 | are attested briefs textually correctable without re-attestation? | **T2** — ceremony doctrine |
+| #567 | Pocock fenced prototype-spike + 2 filters (parity) | **Parked** — §13 Open-needs-discussion |
+
+**Tier counts:** T0 = 2 · T1 = 26 (Phase 2: 1 · Phase 3: 15 · Phase 4: 10) · T2 = 5 · Parked = 1. The
+two **eval-feedback** clusters (req-kind #537/#538/#543/#544/#545/#546/#547; covers/coverage) are
+the *"advisory-rule-never-mechanized"* family the §1 audit named as the dominant failure mode —
+they concentrate in Phase 3, which is the right place to retire the class, not the instances.
 
 This plan replaces the prior emergency framing documents, which were removed on
 2026-05-30 so they no longer compete for authority:
