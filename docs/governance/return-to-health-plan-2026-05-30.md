@@ -1,11 +1,14 @@
 # Return to Health Plan, 2026-05-30
 
 Status: Active canonical recovery plan.
-Last updated: 2026-06-01 — recorded Snapshot C (harness regressed to RED), added
-the **Designated Workstream — Session MOTD** capture (continuity ⊕ triaged
-workplan; subsumes handoff), and added the Phase-4 **Stdlib unittest/doctest
-maturity route** under GHI #571. Filename keeps its authored `-2026-05-30` date
-(stable reference); this line is the live mtime.
+Last updated: 2026-06-01 — recorded **Snapshot D (harness restored to GREEN)**:
+Tier 0 cleared (0.1 preflight `--apply`; 0.2 task-envelope via narrow
+`meta-receipt-bind` ceremony-exclusion + `req_atomic:` brief exemption, both
+operator-ratified TDD). Earlier on 2026-06-01 recorded Snapshot C (regressed to
+RED), added the **Designated Workstream — Session MOTD** capture (continuity ⊕
+triaged workplan; subsumes handoff), and added the Phase-4 **Stdlib
+unittest/doctest maturity route** under GHI #571. Filename keeps its authored
+`-2026-05-30` date (stable reference); this line is the live mtime.
 
 ## Execution Worklist (start here)
 
@@ -19,9 +22,9 @@ maturity route** under GHI #571. Filename keeps its authored `-2026-05-30` date
 
 **Tier 0 — Restore green (do now; everything else is gated on this).** Exit gate: `uv run gz check` exits 0.
 
-- [ ] **0.1 Clear the OBPI-0.0.37-12 orphan lock + plan-audit receipt** (also clears **#564**'s OBPI-0.0.64-04 orphan) → `uv run gz preflight --apply` (verify it honors the token-block reaping-handoff discipline first). Fixes the `preflight` gate. → *Current Baseline § Snapshot C*.
-- [ ] **0.2 Resolve `--task-envelope-coherence`** — 0.0.37-12: ledger `:8460` event missing `task_id`; `seq=01`-only TASKs. Route to **GHI #563** (existing class tracker — a new *instance*, not a new defect); remediate via validator rule / migration, never a ledger hand-edit (Never #2). Fixes the `task-envelope` gate. → *Snapshot C; Phase 3*.
-- [ ] **0.3 Re-measure & record Snapshot D** — `uv run gz check` green; reaffirm Phase 1 complete. → *Current Baseline*.
+- [x] **0.1 Clear the OBPI-0.0.37-12 orphan lock + plan-audit receipt** → `uv run gz preflight --apply` cleared the orphan receipt + expired lock (576m); `uv run gz preflight` → "clean" (EXIT=0). Fixes the `preflight` gate. *Verification finding:* preflight `--apply` does **not** honor the token-block reaping-handoff discipline (it `unlink`s the lock without the `abandoned_by_reaper` register entry / `lock_manager.release_lock`) — substantively moot here (work attested-complete) but a real coherence gap → filed via `/ghi-author` (preflight reaping-handoff GHI; `Related: #564`). The #564 OBPI-0.0.64-04 orphan was already absent (not present in the scan). → *Current Baseline § Snapshot C/D*.
+- [x] **0.2 Resolve `--task-envelope-coherence`** — 0.0.37-12: ledger `:8460` (`meta-receipt-bind` ceremony event, post-epoch) missing `task_id`; `seq=01`-only TASKs. Remediated (operator-ratified, TDD): **sig (a)** validator excludes closeout `receipt_event == "meta-receipt-bind"` `audit_receipt_emitted` events from the labor signature — narrow carve-out (bare `audit_receipt_emitted` still fails), no ledger hand-edit (Never #2); **sig (b)** `req_atomic:` with inline per-REQ rationale on the OBPI-0.0.37-12 brief. New instance appended to **GHI #563**. `uv run gz validate --task-envelope-coherence` → All validations passed (EXIT=0). → *Snapshot C/D*.
+- [x] **0.3 Re-measure & record Snapshot D** — `uv run gz check` → "✓ All checks passed" (`GZ_CHECK_EXIT=0`, true exit captured without pipe-masking); 26/26 gates green. Phase 1 reaffirmed complete. → *Current Baseline § Snapshot D*.
 
 **Tier 1 — Recovery to Definition of Healthy.** Exit gate: Definition of Healthy all-true.
 
@@ -179,7 +182,36 @@ This is not a collapse. It is a red harness with named failure surfaces.
   Definition of Healthy ("`gz check` exits 0 on `main`") is again unmet — this
   is the green-first blocker (Operating Rule 2) on every frozen workstream below.
 
-Snapshots A and B are preserved for audit; **Snapshot C is the live baseline.**
+### Snapshot D — re-measured (2026-06-01, after Tier-0 remediation): GREEN
+
+- `git status --short` clean at measure time except the Tier-0 change set
+  (validator + test + brief + this plan + two preflight-cleaned deletions),
+  staged for commit.
+- `uv run gz check` → **"✓ All checks passed"**; `GZ_CHECK_EXIT=0` (true exit
+  captured via file redirect, not a `| tail` pipe — the Snapshot-C "exit 0"
+  reading had been `tail`'s status, masking the real failure). **26/26 gates
+  pass.** The advisory spec-test-code drift now reports 1,739 findings (still
+  non-blocking; does not affect exit code).
+- Both Snapshot-C regressions are cleared:
+  - **`Task envelope coherence`** — root cause was OBPI-0.0.37-12's irregular
+    closeout. Sig (a): the `:8460` event is a `meta-receipt-bind` Gate-5 ceremony
+    receipt-binding event (carries an `attestor`), not TASK labor; the validator
+    now excludes that `receipt_event` from the labor signature (`src/gzkit/
+    commands/validate_task_envelope.py`), a narrow carve-out pinned by two TDD
+    tests (`tests/governance/test_task_envelope_coherence.py::TestSignatureA`) —
+    a bare `audit_receipt_emitted` still fails. No ledger hand-edit (Never #2).
+    Sig (b): `req_atomic:` exemption with inline per-REQ rationale on the
+    OBPI-0.0.37-12 brief (the five REQs are each one indivisible behavioral
+    contract on `render()`). New instance appended to **GHI #563**.
+  - **`Preflight`** — cleared by `gz preflight --apply`. The reaping-handoff
+    coherence gap surfaced during this fix is tracked via `/ghi-author`
+    (`Related: #564`).
+- **Phase 1 (Make the Harness Green) is complete again.** The green that held at
+  Snapshot B, regressed at Snapshot C, is restored. Remaining recovery work is
+  Tier 1 (context-load emergency #519 → Phase 2/CMS; ceremony & validator
+  mechanization → Phase 3; recovery-issue drain → Phase 4).
+
+Snapshots A, B, and C are preserved for audit; **Snapshot D is the live baseline.**
 
 ## Definition of Healthy
 

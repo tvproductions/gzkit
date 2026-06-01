@@ -223,6 +223,94 @@ class TestSignatureA(unittest.TestCase):
             ]
             self.assertEqual(len(errors), 0)
 
+    @covers("REQ-0.0.64-04-01")
+    def test_meta_receipt_bind_ceremony_event_excluded_from_signature_a(self) -> None:
+        """Closeout ``meta-receipt-bind`` is ceremony, not labor → no signature (a).
+
+        A ``meta-receipt-bind`` ``audit_receipt_emitted`` is a Gate-5 ceremony
+        receipt-binding event: it carries an ``attestor`` and binds
+        already-emitted attestation receipts at closeout. It is not a TASK labor
+        unit, so it MUST NOT trip signature (a) even when emitted under an active
+        TASK with no top-level ``task_id``. Regression pin for the OBPI-0.0.37-12
+        return-to-health instance (GHI #563): ledger ``:8460`` was a post-epoch
+        meta-receipt-bind the labor signature wrongly flagged.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.37-12-01-01",
+                            "obpi_id": "OBPI-0.0.37-12-temperature-renderer-templates",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-01T11:00:00Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "audit_receipt_emitted",
+                            "receipt_event": "meta-receipt-bind",
+                            "attestor": "g0",
+                            "id": "ADR-0.0.37-constitutional-invariant-composition",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-01T11:09:46Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (a)" in e.message
+            ]
+            self.assertEqual(
+                len(errors), 0, "meta-receipt-bind ceremony event must not trip signature (a)"
+            )
+
+    @covers("REQ-0.0.64-04-01")
+    def test_non_ceremony_audit_receipt_under_active_task_still_fails(self) -> None:
+        """The ceremony carve-out is narrow: only ``meta-receipt-bind`` is excused.
+
+        A bare ``audit_receipt_emitted`` (no ``receipt_event``) under an active
+        TASK with no ``task_id`` still represents labor-time receipt emission and
+        MUST trip signature (a). Guards against the meta-receipt-bind exclusion
+        widening into a blanket ``audit_receipt_emitted`` bypass that would blind
+        the gate to genuine labor drift.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.64-04-01-01",
+                            "obpi_id": "OBPI-0.0.64-04",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-05-30T15:00:00Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "audit_receipt_emitted",
+                            "id": "evt-2",
+                            "schema_": "1.0",
+                            "timestamp": "2026-05-30T15:01:00Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (a)" in e.message
+            ]
+            self.assertGreater(
+                len(errors), 0, "non-ceremony audit receipt without task_id must still fail"
+            )
+
 
 class TestSignatureB(unittest.TestCase):
     """Signature (b): OBPI with all-seq=01 TASKs and no req_atomic exemption."""

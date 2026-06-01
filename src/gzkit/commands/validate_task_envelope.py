@@ -98,6 +98,15 @@ def _sig_a_attribution_drift(project_root: Path) -> list[ValidationError]:
                 active_tasks_by_obpi[obpi_id].discard(task_id)
             continue
 
+        # Closeout ``meta-receipt-bind`` is a Gate-5 ceremony receipt-binding
+        # event (it binds already-emitted attestation receipts and carries an
+        # ``attestor``), not a TASK labor unit — exclude it from attribution
+        # drift exactly as ``obpi_lock_*`` governance events are. The carve-out
+        # is narrow: only this ``receipt_event`` is excused; bare or other
+        # ``audit_receipt_emitted`` rows remain labor and still fail (GHI #563).
+        if ev_type == "audit_receipt_emitted" and ev.get("receipt_event") == "meta-receipt-bind":
+            continue
+
         if ev_type not in _TASK_WORKLOG_TYPES:
             continue
 

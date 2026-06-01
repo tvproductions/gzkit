@@ -4,6 +4,15 @@ parent: ADR-0.0.37-constitutional-invariant-composition
 item: 12
 lane: Heavy
 status: Completed
+# req_atomic exemption (GHI #563, return-to-health 2026-06-01): each REQ is one
+# indivisible behavioral contract on render() — no labor subdivision was needed
+# or performed, so a single seq=01 TASK per REQ is honest, not a coarse bucket.
+req_atomic:
+  - REQ-0.0.37-12-01  # temperature accept/reject: one fail-closed validation guard
+  - REQ-0.0.37-12-02  # per-bullet density floor + Judgment-always: one projection rule
+  - REQ-0.0.37-12-03  # section withhold-by-tier/enabled + ordering: one projection rule
+  - REQ-0.0.37-12-04  # byte-determinism across calls/processes: one invariant
+  - REQ-0.0.37-12-05  # three tiers as one parameterized template set: one structural constraint
 ---
 
 # OBPI-0.0.37-12-temperature-renderer-templates: Temperature Renderer + lite/medium/heavy Templates
