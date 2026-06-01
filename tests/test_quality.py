@@ -493,5 +493,41 @@ class TestDecisionDocProof(unittest.TestCase):
         self.assertFalse(_check_decision_doc_proof(brief_text))
 
 
+class TestLintScopeMatchesPreCommit(unittest.TestCase):
+    """The lint gate must lint the whole repo, not just ``src tests``.
+
+    Regression guard for the gate-divergence defect (2026-06-01): ``gz check``
+    linted only ``src tests`` while the pre-commit ruff-check hook lints the
+    whole tree (minus ``site/``). Python under ``scripts/`` or ``features/``
+    therefore passed ``gz check`` but was blocked at commit time — "green in
+    check, red at commit". The lint gate must be a superset of the pre-commit
+    hook so a green ``gz check`` implies a clean commit. ruff honors its own
+    excludes + ``.gitignore``, so widening to ``.`` does not pull in vendored
+    or generated trees.
+    """
+
+    def test_run_lint_targets_whole_repo_not_src_tests(self) -> None:
+        ok = QualityResult(success=True, command="ruff", stdout="", stderr="", returncode=0)
+        with (
+            patch.object(quality, "run_command", return_value=ok) as run_cmd,
+            patch.object(quality, "run_adr_path_contract_lint", return_value=ok),
+            patch.object(quality, "run_parents_pattern_lint", return_value=ok),
+        ):
+            quality.run_lint(Path("/repo"))
+
+        invoked = [call.args[0] for call in run_cmd.call_args_list]
+        self.assertIn("uv run ruff check .", invoked)
+        self.assertNotIn("uv run ruff check src tests", invoked)
+
+    def test_run_format_autofix_targets_whole_repo(self) -> None:
+        ok = QualityResult(success=True, command="ruff", stdout="", stderr="", returncode=0)
+        with patch.object(quality, "run_command", return_value=ok) as run_cmd:
+            quality.run_format(Path("/repo"))
+
+        invoked = [call.args[0] for call in run_cmd.call_args_list]
+        self.assertIn("uv run ruff check --fix .", invoked)
+        self.assertNotIn("uv run ruff check --fix src tests", invoked)
+
+
 if __name__ == "__main__":
     unittest.main()

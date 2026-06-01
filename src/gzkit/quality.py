@@ -187,7 +187,12 @@ def run_lint(project_root: Path) -> QualityResult:
         QualityResult from linting.
 
     """
-    ruff_result = run_command("uv run ruff check src tests", cwd=project_root)
+    # Lint the whole repository (matching ``ruff format .`` and the pre-commit
+    # ruff-check hook), not just ``src tests`` — a narrower scope let lint pass
+    # in ``gz check`` while the pre-commit hook blocked the same file at commit
+    # time (the "green here, red at commit" gate divergence). ruff honors its
+    # own excludes + .gitignore, so generated/vendored trees are skipped.
+    ruff_result = run_command("uv run ruff check .", cwd=project_root)
     path_contract_result = run_adr_path_contract_lint(project_root)
     parents_result = run_parents_pattern_lint(project_root)
 
@@ -199,7 +204,7 @@ def run_lint(project_root: Path) -> QualityResult:
 
     return QualityResult(
         success=success,
-        command="uv run ruff check src tests + ADR path contract lint + parents-pattern lint",
+        command="uv run ruff check . + ADR path contract lint + parents-pattern lint",
         stdout=stdout,
         stderr=stderr,
         returncode=returncode,
@@ -305,13 +310,15 @@ def run_format(project_root: Path) -> QualityResult:
     if not format_result.success:
         return format_result
 
-    # Then run ruff check --fix
-    fix_result = run_command("uv run ruff check --fix src tests", cwd=project_root)
+    # Then run ruff check --fix over the whole repo (same scope as run_lint and
+    # the pre-commit ruff-check hook), so the auto-fixer covers everything the
+    # lint gate checks.
+    fix_result = run_command("uv run ruff check --fix .", cwd=project_root)
 
     # Combine results
     return QualityResult(
         success=fix_result.success,
-        command="uv run ruff format . && uv run ruff check --fix src tests",
+        command="uv run ruff format . && uv run ruff check --fix .",
         stdout=format_result.stdout + "\n" + fix_result.stdout,
         stderr=format_result.stderr + "\n" + fix_result.stderr,
         returncode=fix_result.returncode,
