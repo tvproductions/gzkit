@@ -156,3 +156,18 @@ class TestByteStability(unittest.TestCase):
             result = render(stub, vendor)
             self.assertIsInstance(result, bytes)
             self.assertGreater(len(result), 0)
+
+    @covers("REQ-0.0.37-12-04")
+    def test_render_with_temperature_byte_stable(self) -> None:
+        """render(AgentContract, vendor, temperature=T) must produce byte-identical output
+        on repeated calls for every valid temperature value (lite, medium, heavy)."""
+        for temp in ("lite", "medium", "heavy"):
+            with self.subTest(temperature=temp):
+                first = render(_STUB_AGENT_CONTRACT, "claude", temperature=temp)
+                second = render(_STUB_AGENT_CONTRACT, "claude", temperature=temp)
+                self.assertIsInstance(first, bytes)
+                self.assertEqual(
+                    first,
+                    second,
+                    f"render() not byte-stable for temperature={temp!r}",
+                )
