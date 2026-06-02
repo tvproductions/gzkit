@@ -4,6 +4,20 @@ parent: ADR-0.0.37-constitutional-invariant-composition
 item: 14
 lane: Heavy
 status: Completed
+# req_atomic — each REQ was a single atomic labor unit, not coarse-bucketed
+# subdivisible work. REQ-01 (repoint sync_agents_md onto the model renderer),
+# REQ-02 (dissolve the get_project_context literals into model rows), REQ-03
+# (repoint --invariant-coherence to diff the model render), and REQ-04
+# (default-temperature render equivalence) each landed as one coherent edit to a
+# single surface; REQ-05 (SUPPORT — runbook edit path) is one doc edit. None was
+# subdivided into seq=02+, so the pipeline-minted seq=01-per-REQ buckets are the
+# true labor shape, not a coarse default bucket papering over subdivision.
+req_atomic:
+  - REQ-0.0.37-14-01
+  - REQ-0.0.37-14-02
+  - REQ-0.0.37-14-03
+  - REQ-0.0.37-14-04
+  - REQ-0.0.37-14-05
 ---
 
 # OBPI-0.0.37-14-wire-sync-retire-monolith: Wire Sync Through the Renderer, Retire the Monolith

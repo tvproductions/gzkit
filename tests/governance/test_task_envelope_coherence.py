@@ -312,6 +312,53 @@ class TestSignatureA(unittest.TestCase):
             )
 
     @covers("REQ-0.0.64-04-01")
+    def test_composition_rendered_telemetry_excluded_from_signature_a(self) -> None:
+        """``composition_rendered`` is validator-emitted render telemetry, not labor.
+
+        ``gz validate --invariant-coherence`` emits one ``composition_rendered``
+        event on every run (``invariant_coherence.py``), and that validator is in
+        the default ``gz check`` scope. Any ``gz check`` run during an active OBPI
+        pipeline therefore emits an unattributed ``composition_rendered`` while
+        TASKs are live — a whole-AGENTS.md render that belongs to no single REQ and
+        cannot be honestly attributed to one. It MUST NOT trip signature (a).
+        Regression pin for the OBPI-0.0.37-14 instance (ledger ``:8521``-``:8523``).
+        """
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.37-14-01-01",
+                            "obpi_id": "OBPI-0.0.37-14-wire-sync-retire-monolith",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-02T07:56:24Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "composition_rendered",
+                            "id": "composition-rendered-2026-06-02T08:15:21Z",
+                            "invariant_count": 4,
+                            "target": "AGENTS.md",
+                            "byte_count": 33048,
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-02T08:15:21Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (a)" in e.message
+            ]
+            self.assertEqual(
+                len(errors), 0, "composition_rendered telemetry must not trip signature (a)"
+            )
+
+    @covers("REQ-0.0.64-04-01")
     def test_obpi_brief_reflection_edit_under_active_task_is_clean(self) -> None:
         """Editing the active OBPI brief itself is closeout reflection, not TASK labor."""
         with tempfile.TemporaryDirectory() as td:
