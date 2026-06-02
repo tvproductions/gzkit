@@ -303,5 +303,43 @@ class TestAdrCloseoutSucceedsAllGapsWaived(_AdrCloseoutFixture):
         self.assertIsNone(code)
 
 
+# ---------------------------------------------------------------------------
+# REQ-0.0.25-02-04 (regression) — package-dir selection must be FS-order-
+# independent. The closeout glob matches both the ADR package directory and the
+# ADR markdown file inside it; picking the first raw glob hit silently skipped
+# every brief on Linux/ext4 (hash-order), passing the gate. (Direct-fix.)
+# ---------------------------------------------------------------------------
+
+
+class TestAdrPackageDirSelection(unittest.TestCase):
+    """``_select_adr_package_dir`` returns the directory regardless of order."""
+
+    @covers("REQ-0.0.25-02-04")
+    def test_selects_directory_not_adr_file_regardless_of_order(self) -> None:
+        from gzkit.commands.adr_audit import _select_adr_package_dir
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            adr_dir = root / "ADR-9.9.9-fixture"
+            adr_dir.mkdir()
+            adr_file = adr_dir / "ADR-9.9.9-fixture.md"
+            adr_file.write_text("x", encoding="utf-8")
+
+            # Both glob orders the filesystem can yield must select the directory,
+            # never the markdown file. ext4 (Linux CI) yields file-first; APFS
+            # (macOS) yields dir-first. Both must resolve identically.
+            self.assertEqual(_select_adr_package_dir([adr_file, adr_dir]), adr_dir)
+            self.assertEqual(_select_adr_package_dir([adr_dir, adr_file]), adr_dir)
+
+    @covers("REQ-0.0.25-02-04")
+    def test_returns_none_when_no_directory_matches(self) -> None:
+        from gzkit.commands.adr_audit import _select_adr_package_dir
+
+        with tempfile.TemporaryDirectory() as tmp:
+            stray = Path(tmp) / "ADR-9.9.9-fixture.md"
+            stray.write_text("x", encoding="utf-8")
+            self.assertIsNone(_select_adr_package_dir([stray]))
+
+
 if __name__ == "__main__":
     unittest.main()

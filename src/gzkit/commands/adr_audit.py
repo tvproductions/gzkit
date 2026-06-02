@@ -908,6 +908,20 @@ def _validate_obpi_completion_evidence(
     return enriched_evidence, completion_term, anchor
 
 
+def _select_adr_package_dir(matches: list[Path]) -> Path | None:
+    """Select the ADR package *directory* from a glob match set, deterministically.
+
+    The closeout glob ``docs/design/adr/**/<adr-id>*`` matches both the package
+    directory and the ADR markdown file inside it (``<adr-id>.md``). Picking the
+    first raw glob hit is filesystem-order-dependent: macOS/APFS happens to yield
+    the directory first, but Linux/ext4 yields hash-arbitrary order and can yield
+    the file — silently skipping every OBPI brief and passing the coverage gate.
+    Filter to directories and sort so selection is order-independent.
+    """
+    dirs = sorted(d for d in matches if d.is_dir())
+    return dirs[0] if dirs else None
+
+
 def _check_adr_obpi_coverage_gaps(
     adr_id: str,
     project_root: Path,
@@ -924,10 +938,9 @@ def _check_adr_obpi_coverage_gaps(
 
     from gzkit.governance.req_coverage import discover_covers, parse_brief_reqs
 
-    adr_dirs = list(project_root.glob(f"docs/design/adr/**/{adr_id}*"))
-    if not adr_dirs:
+    adr_dir = _select_adr_package_dir(list(project_root.glob(f"docs/design/adr/**/{adr_id}*")))
+    if adr_dir is None:
         return []
-    adr_dir = adr_dirs[0]
 
     brief_paths = sorted(adr_dir.rglob("OBPI-*.md"))
     if not brief_paths:
