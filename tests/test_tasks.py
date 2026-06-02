@@ -697,10 +697,21 @@ class TestHasTaskTrailer(unittest.TestCase):
         msg = "fix: x\n\nTask: TASK-DoctrineFix-#552\n"
         self.assertFalse(has_task_trailer(msg))
 
-    def test_slug_form_requires_ghi_suffix(self) -> None:
-        """Slug form requires ``-#<digits>`` suffix to anchor to a GHI."""
-        msg = "fix: x\n\nTask: TASK-no-ghi-suffix\n"
-        self.assertFalse(has_task_trailer(msg))
+    def test_slug_form_ghi_suffix_optional(self) -> None:
+        """Slug form's ``-#<ghi>`` suffix is OPTIONAL (operator mandate 2026-06-01).
+
+        Requiring a GHI number to commit any direct fix was the friction that made
+        the direct-fix path a tarpit and, paired with the producer never stamping a
+        trailer, left the OBPI pipeline emitting commit-trailer-failing commits. The
+        moratorium on gzkit-native ceremony makes a GHI-less descriptive slug a valid
+        direct-fix attribution; the ``#<ghi>`` anchor remains accepted when present.
+        """
+        self.assertTrue(has_task_trailer("fix: x\n\nTask: TASK-no-ghi-suffix\n"))
+        self.assertTrue(has_task_trailer("fix: x\n\nTask: TASK-task-spine-restoration-#552\n"))
+
+    def test_named_git_sync_ceremony_slug_returns_true(self) -> None:
+        """The git-sync ceremony stamps ``Task: TASK-gz-git-sync`` (tighten-the-pipeline)."""
+        self.assertTrue(has_task_trailer("chore: update mirrors\n\nTask: TASK-gz-git-sync\n"))
 
 
 class TestParseCeremonyTrailers(unittest.TestCase):

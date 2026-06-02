@@ -148,7 +148,14 @@ def _run_sync_prechecks(
         # For explicit pre-sync BDD coverage, run `gz test --bdd` beforehand.
 
 
-_SYNC_CEREMONY_TRAILER = "Ceremony: gz-git-sync"
+# One contiguous trailer block so git (and has_task_trailer) parse both lines
+# as trailers. The Task: line is the named git-sync ceremony attribution — it
+# satisfies `gz validate --commit-trailers` post-GHI-#552, which removed the
+# `Ceremony:` substitution for src/tests scope. Reconciling this producer to
+# that rule is what stops the OBPI pipeline's git-sync from emitting
+# commit-trailer-failing commits (operator mandate "tighten the pipeline",
+# 2026-06-01).
+_SYNC_COMMIT_TRAILERS = "Task: TASK-gz-git-sync\nCeremony: gz-git-sync"
 
 
 def _extract_governance_anchors(diff_text: str) -> list[str]:
@@ -273,12 +280,14 @@ def _build_sync_commit_message(
 ) -> str:
     """Build a descriptive commit message from staged files + governance context.
 
-    Every sync commit carries a ``Ceremony: gz-git-sync`` trailer so
-    ``gz validate --commit-trailers`` accepts the commit as
-    governance-intent-bound (GHI #201). Sync commits bundle work already
-    authored under other governance anchors (OBPIs, ADRs, defect fixes);
-    the ceremony trailer names this class explicitly rather than forcing
-    a synthetic Task id.
+    Every sync commit carries a ``Task: TASK-gz-git-sync`` trailer plus
+    ``Ceremony: gz-git-sync`` so ``gz validate --commit-trailers`` accepts the
+    commit (GHI #201, GHI #552). The ``Task:`` line is mandatory post-GHI-#552,
+    which removed the ``Ceremony:`` substitution for src/tests scope: a sync
+    commit that touches ``src/`` or ``tests/`` (e.g. the wheel-shipping
+    ``src/gzkit/<surface>/`` mirrors) would otherwise fail the validator. The
+    named git-sync ceremony slug attributes the commit to the sync ceremony
+    rather than forcing a synthetic per-REQ Task id.
 
     When ``anchors`` or ``ledger_events`` are supplied (GHI #439), the body
     additionally surfaces the OBPI/ADR/GHI IDs touched in the staged diff
@@ -297,7 +306,7 @@ def _build_sync_commit_message(
         sections.append(_format_anchors_section(anchors))
     if ledger_events:
         sections.append(_format_ledger_events_section(ledger_events))
-    sections.append(_SYNC_CEREMONY_TRAILER)
+    sections.append(_SYNC_COMMIT_TRAILERS)
     return "\n\n".join(sections)
 
 

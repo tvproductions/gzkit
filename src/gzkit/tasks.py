@@ -205,12 +205,18 @@ def create_task_from_plan_step(
 _TRAILER_LINE_RE = re.compile(r"^Task:\s+(TASK-\d+\.\d+\.\d+-\d+-\d+-\d+)\s*$")
 
 # Accepts the formal four-tier TASK ID `TASK-X.Y.Z-NN-MM-PP` (under an OBPI/REQ)
-# OR the slug-form `TASK-<kebab-slug>-#<ghi>` (direct-fix work outside OBPI scope,
-# per the convention established by GHI #160 Phase 7 backfill). The latter cannot
-# be parsed by `TaskId.parse`, so this regex is used only for trailer-presence
+# OR the kebab slug-form `TASK-<kebab-slug>` with an OPTIONAL `-#<ghi>` anchor.
+# The `#<ghi>` was made optional by operator mandate (2026-06-01): requiring a
+# GHI number to commit any direct fix was the friction that turned the
+# direct-fix path into a tarpit, and — paired with the producer never stamping
+# a trailer — left the OBPI pipeline's git-sync emitting commit-trailer-failing
+# commits. A GHI-less descriptive slug (e.g. `TASK-gz-git-sync`, the named
+# git-sync ceremony attribution) is now a valid src/tests attribution; the
+# `-#<ghi>` anchor remains accepted when present. The slug form cannot be
+# parsed by `TaskId.parse`, so this regex is used only for trailer-presence
 # detection (`has_task_trailer`); `parse_task_trailers` keeps the strict form.
 _ANY_TASK_TRAILER_RE = re.compile(
-    r"^Task:\s+TASK-(?:\d+\.\d+\.\d+-\d+-\d+-\d+|[a-z][a-z0-9-]*-#\d+)\s*$"
+    r"^Task:\s+TASK-(?:\d+\.\d+\.\d+-\d+-\d+-\d+|[a-z][a-z0-9-]*(?:-#\d+)?)\s*$"
 )
 
 

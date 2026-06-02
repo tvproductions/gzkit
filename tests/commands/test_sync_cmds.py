@@ -428,7 +428,7 @@ class TestSyncCommand(unittest.TestCase):
 
 
 class TestBuildSyncCommitMessage(unittest.TestCase):
-    """_build_sync_commit_message carries a Ceremony trailer (GHI #201)."""
+    """_build_sync_commit_message carries Task + Ceremony trailers (GHI #201, GHI #552)."""
 
     def test_empty_sync_carries_ceremony_trailer(self) -> None:
         from gzkit.commands.sync import _build_sync_commit_message  # noqa: PLC0415
@@ -436,14 +436,27 @@ class TestBuildSyncCommitMessage(unittest.TestCase):
         msg = _build_sync_commit_message([])
         self.assertIn("Ceremony: gz-git-sync", msg)
 
-    def test_src_touching_sync_carries_ceremony_trailer(self) -> None:
+    def test_src_touching_sync_satisfies_commit_trailer_validator(self) -> None:
+        """The producer MUST satisfy gz validate --commit-trailers post-GHI-#552.
+
+        A src/tests-touching sync commit must carry a Task: trailer the validator
+        accepts; Ceremony: alone no longer substitutes (GHI #552). The producer
+        never being reconciled to that rule is the regression that left the OBPI
+        pipeline's Stage-5 git-sync emitting commit-trailer-failing commits.
+        """
+        from gzkit.commands.sync import _build_sync_commit_message  # noqa: PLC0415
+        from gzkit.tasks import has_task_trailer  # noqa: PLC0415
+
+        msg = _build_sync_commit_message(["src/gzkit/commands/foo.py", "tests/test_foo.py"])
+        self.assertTrue(has_task_trailer(msg), msg)
+
+    def test_src_touching_sync_carries_both_trailers_as_one_block(self) -> None:
         from gzkit.commands.sync import _build_sync_commit_message  # noqa: PLC0415
 
         msg = _build_sync_commit_message(["src/gzkit/commands/foo.py", "tests/test_foo.py"])
-        self.assertIn("Ceremony: gz-git-sync", msg)
-        # Trailer must be separated from the subject by a blank line so
-        # git parses it as a trailer.
-        self.assertIn("\n\nCeremony: gz-git-sync", msg)
+        # Both trailers live in one contiguous final paragraph so git (and
+        # has_task_trailer) parse them as one trailer block.
+        self.assertIn("\n\nTask: TASK-gz-git-sync\nCeremony: gz-git-sync", msg)
 
     def test_ceremony_trailer_satisfies_parse_ceremony_trailers(self) -> None:
         """End-to-end: the emitted message parses as a valid ceremony trailer."""
