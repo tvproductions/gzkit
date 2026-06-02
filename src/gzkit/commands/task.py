@@ -568,7 +568,7 @@ def _build_fanout_rows(ledger: Ledger, req_id: str) -> list[dict[str, object]]:
                 "attribution_check": "pass",
             }
         )
-    rows.sort(key=lambda r: r["seq"])  # type: ignore
+    rows.sort(key=lambda r: r["seq"])
     return rows
 
 

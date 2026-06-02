@@ -32,8 +32,8 @@ dependencies = [
     # these deps are corpus-measurement-only and consumed exclusively by
     # src/gzkit/complexity/measurement.py.
     "radon>=6.0,<7.0",
-    "lizard>=1.17,<2.0",
-    "cohesion>=1.0,<2.0",
+    "lizard>=1.23,<2.0",
+    "cohesion>=1.2,<2.0",
 ]
 
 [project.optional-dependencies]
@@ -110,10 +110,10 @@ dev = [
     "bandit>=1.9.4",
     "behave>=1.3.3",
     "cohesion>=1.2.0",
-    "coverage>=7.13.5",
+    "coverage>=7.14.1",
     "detect-secrets>=1.5.0",
     "interrogate>=1.7.0",
-    "lizard>=1.22.1",
+    "lizard>=1.23.0",
     "mkdocs==1.6.1",
     "mkdocs-material==9.7.6",
     "pygount>=3.2.0",

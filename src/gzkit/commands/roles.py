@@ -61,10 +61,10 @@ def _show_role_registry(project_root: object, *, as_json: bool) -> None:
     table.add_column("Write?")
     for r in roles_data:
         table.add_row(
-            r["role"],
-            r["description"],
-            r["stages"],
-            r["agent_file"],
+            str(r["role"]),
+            str(r["description"]),
+            str(r["stages"]),
+            str(r["agent_file"]),
             "yes" if r["can_write"] else "no",
         )
     console.print(table)
