@@ -7,7 +7,6 @@ legible. Follows the existing pattern from
 manual ledger seeding + direct frontmatter scaffold.
 """
 
-import time
 import unittest
 from pathlib import Path
 
@@ -139,39 +138,22 @@ class TestGate1FrontmatterIntegration(unittest.TestCase):
             self.assertIn("Zxcv-BogusTerm", result.output)
 
     @covers("REQ-0.0.16-02-06")
-    def test_gate1_latency_within_validator_budget(self) -> None:
-        """Gate 1 latency stays within the OBPI-01 validator's measured budget."""
+    def test_gate1_runs_to_completion(self) -> None:
+        """`gz gates --gate 1` runs to completion (exit 0) over a coherent ADR.
+
+        Formerly measured gate-dispatch overhead over the standalone validator
+        baseline and asserted ``delta < 0.5s``. That wall-clock delta between two
+        back-to-back invocations measured scheduler jitter, not dispatch cost,
+        and belongs to the flaky timing class abandoned per operator directive
+        (2026-06-02; GHI #535). The durable invariant is that Gate 1 succeeds.
+        """
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
             _coherent_adr(Path.cwd(), "ADR-0.1.0")
 
-            # Baseline: validator standalone on the same fixture.
-            from gzkit.commands.validate_frontmatter import (
-                validate_frontmatter_coherence,
-            )
-
-            validator_start = time.perf_counter()
-            validate_frontmatter_coherence(Path.cwd(), adr_scope="ADR-0.1.0")
-            validator_cost = time.perf_counter() - validator_start
-
-            # Gate 1 cost on the same fixture.
-            gate_start = time.perf_counter()
             result = runner.invoke(main, ["gates", "--gate", "1", "--adr", "ADR-0.1.0"])
-            gate_cost = time.perf_counter() - gate_start
-
             self.assertEqual(result.exit_code, 0, msg=result.output)
-            # Gate 1 must not exceed the validator's cost by more than a small,
-            # bounded overhead for argparse dispatch, ledger opens, and rendering.
-            delta = gate_cost - validator_cost
-            self.assertLess(
-                delta,
-                0.5,
-                msg=(
-                    f"Gate 1 added {delta * 1000:.1f}ms over validator baseline "
-                    f"({validator_cost * 1000:.1f}ms); expected <500ms overhead"
-                ),
-            )
 
 
 if __name__ == "__main__":

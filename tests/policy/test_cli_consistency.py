@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import argparse
 import subprocess
-import time
 import unittest
 from pathlib import Path
 
@@ -241,16 +240,19 @@ class TestCLIConsistency(unittest.TestCase):
         )
 
     # -----------------------------------------------------------------------
-    # REQ: Help renders fast
+    # Help renders successfully
     # -----------------------------------------------------------------------
 
-    def test_help_renders_fast(self) -> None:
-        """Full --help rendering must complete in under 1 second.
+    def test_help_renders(self) -> None:
+        """`gz --help` renders successfully — exit 0 with usage text.
 
-        Measures wall-clock time for `gz --help` via subprocess. A slow startup
-        indicates an expensive import at module level in a CLI command module.
+        Formerly asserted wall-clock ``< 3.0s`` (widened from 1.0s under GHI
+        #443) as a proxy for "no expensive top-level CLI import". That ceiling
+        measured ``uv run`` subprocess + cold-import + host load, not import cost,
+        and flaked under concurrent suite load. The timing assertion is abandoned
+        per operator directive (2026-06-02; GHI #535); the durable invariant is
+        that help exits 0 and prints usage.
         """
-        start = time.monotonic()
         result = subprocess.run(
             ["uv", "run", "gz", "--help"],
             capture_output=True,
@@ -258,25 +260,13 @@ class TestCLIConsistency(unittest.TestCase):
             encoding="utf-8",
             cwd=str(Path(__file__).parent.parent.parent),
         )
-        elapsed = time.monotonic() - start
 
-        # The command should exit 0 (help is successful)
         self.assertEqual(
             result.returncode,
             0,
             f"gz --help exited with code {result.returncode}.\nstderr: {result.stderr}",
         )
-
-        # GHI #443 follow-up: budget widened from 1.0s to 3.0s. `uv run gz`
-        # subprocess startup on Windows under concurrent suite load can hit
-        # ~0.9s for cold-import alone; 3.0s preserves regression sensitivity
-        # (a 3x slowdown still trips it) while surviving load-induced jitter.
-        self.assertLess(
-            elapsed,
-            3.0,
-            f"gz --help took {elapsed:.3f}s (limit: 3.0s). "
-            "Check for expensive top-level imports in CLI command modules.",
-        )
+        self.assertIn("usage", result.stdout.lower())
 
 
 # ---------------------------------------------------------------------------

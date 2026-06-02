@@ -151,7 +151,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.16-02-03: Given a Gate 1 block, when the operator reads the error output, then at least one executable recovery command (`gz chore run frontmatter-ledger-coherence`, `gz adr promote`, or `gz register-adrs`) is named explicitly per drifted field.
 - [ ] REQ-0.0.16-02-04: Given any attempt to pass a `--skip-frontmatter` or equivalent bypass flag to `gz gates`, when argparse processes it, then the flag is rejected (unknown option).
 - [ ] REQ-0.0.16-02-05: Given a drifted `status:` field, when Gate 1 blocks and emits its error message, then the message displays the OBPI-05 canonical term (via `STATUS_VOCAB_MAPPING` import) rather than the raw frontmatter term.
-- [ ] REQ-0.0.16-02-06: Given gate-wiring latency measurement, when `gz gates` runs against the current repo, then the added cost stays within the OBPI-01 validator's measured budget.
+- [ ] REQ-0.0.16-02-06: Given gate-1 wiring, when `gz gates --gate 1` runs against a coherent ADR, then it runs to completion (exit 0). (Wall-clock overhead budget — formerly `gate_cost − validator_cost < 0.5s` — abandoned 2026-06-02, GHI #535: a delta between two back-to-back invocations measured scheduler jitter, not dispatch cost.)
 
 ## Completion Checklist
 

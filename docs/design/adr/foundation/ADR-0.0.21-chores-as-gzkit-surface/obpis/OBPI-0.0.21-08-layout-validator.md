@@ -133,7 +133,7 @@ uv run -m unittest tests.governance.test_trust_audits -v 2>&1 | grep -E "chores_
 - [ ] REQ-0.0.21-08-04: `uv run gz validate --chores-layout` exits 3 on any unwaived violation, exit 0 on clean tree.
 - [ ] REQ-0.0.21-08-05: The waiver file at `data/chores_layout_waivers.json` exempts explicitly-listed paths; waiver drift across ADRs requires an explicit add rather than a silent skip.
 - [ ] REQ-0.0.21-08-06: Dotfile-hidden paths, `.git/`, `__pycache__/`, `.venv/`, `dist/`, `build/`, `node_modules/` are skipped during the walk.
-- [ ] REQ-0.0.21-08-07: The audit completes in <2s on a typical gzkit tree.
+- [ ] REQ-0.0.21-08-07: The audit runs to completion over a typical gzkit tree, returning structured layout findings without raising (measured by a smoke test). (Wall-clock budget abandoned 2026-06-02, GHI #535 — the `<2s`/`<10s` ceiling measured host/suite load, not audit cost, and flaked under load; widened repeatedly under GHI #443/#535 before abandonment.)
 
 ## Completion Checklist
 

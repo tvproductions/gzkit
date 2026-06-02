@@ -6,8 +6,6 @@ derive the REQ → test graph.
 """
 
 import json
-import sys
-import time
 import unittest
 from pathlib import Path
 
@@ -254,14 +252,15 @@ class TestFrontmatterGuard(unittest.TestCase):
             self.assertNotIn("ADR-0.2.0", result.output)
 
     @covers("REQ-0.0.16-01-08")
-    def test_runtime_budget_under_real_repo_load(self) -> None:
-        """Real repo runtime < 2.5s (~80 ADRs / ~200 OBPIs scale).
+    def test_validator_runs_to_completion_under_real_repo_load(self) -> None:
+        """``validate_frontmatter_coherence`` completes over the full real repo.
 
-        GHI #443: budget headroom widened from 1.0s to 2.5s. The 1.0s ceiling
-        was right at the in-isolation runtime (~0.9s), causing flakes under
-        concurrent suite load while still leaving the test useful as a
-        regression signal (the kind of regression this guards against is a
-        2-3x scaling-factor change, not a 10% jitter).
+        Formerly a wall-clock budget (``elapsed < 2.5s``, widened from 1.0s under
+        GHI #443). The ceiling measured suite/host load rather than the
+        validator's own cost and flaked under concurrent load. The timing
+        assertion is abandoned per operator directive (2026-06-02; GHI #535); the
+        durable invariant is that the validator runs to completion over the real
+        corpus and returns its findings.
         """
         from gzkit.commands.common import get_project_root  # noqa: PLC0415
         from gzkit.commands.validate_frontmatter import (
@@ -271,19 +270,9 @@ class TestFrontmatterGuard(unittest.TestCase):
         project_root = get_project_root()
         if not (project_root / ".gzkit" / "ledger.jsonl").is_file():
             self.skipTest("No gzkit ledger present — not inside the gzkit repo")
-        # GHI #256: coverage instrumentation adds ~2-3x overhead, so any
-        # wall-clock budget is not meaningful under coverage.
-        if sys.gettrace() is not None:
-            self.skipTest("trace function active (coverage/debugger) — budget not meaningful")
 
-        start = time.perf_counter()
-        validate_frontmatter_coherence(project_root)
-        elapsed = time.perf_counter() - start
-        self.assertLess(
-            elapsed,
-            2.5,
-            f"Frontmatter guard exceeded 2.5s budget (took {elapsed:.2f}s)",
-        )
+        errors = validate_frontmatter_coherence(project_root)
+        self.assertIsInstance(errors, list)
 
 
 class TestPoolAdrSkipParity(unittest.TestCase):

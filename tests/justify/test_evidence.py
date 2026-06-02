@@ -5,11 +5,10 @@ from __future__ import annotations
 import io
 import json
 import tempfile
-import time
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from gzkit.justify.evidence import TAXONOMY_REFERENCE_PATH, gather_evidence
 from gzkit.justify.models import AnchorRef
@@ -256,42 +255,68 @@ class TestGatherEvidenceLibraryPurity(unittest.TestCase):
         self.assertEqual(stderr_buf.getvalue(), "")
 
     @covers("REQ-0.0.19-01-10")
-    def test_gather_evidence_under_3_seconds_with_representative_fixture(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            # Scaled representative fixture: ~20 ADRs, ~50 OBPIs, a handful of rules.
-            for i in range(20):
-                adr_dir = root / "docs" / "design" / "adr" / "foundation" / f"ADR-0.0.{i}-x"
-                obpi_dir = adr_dir / "obpis"
-                obpi_dir.mkdir(parents=True, exist_ok=True)
-                for j in range(3):
-                    obpi = obpi_dir / f"OBPI-0.0.{i}-0{j}-sample.md"
-                    obpi.write_text("# o\n## Allowed Paths\n- `src/**`\n", encoding="utf-8")
-            for rid in ("cli", "pythonic", "tests", "models", "cross-platform"):
-                _write_rule(root, rid, ["src/**", "**/*.py"])
+    def test_gather_evidence_subprocess_fanout_bounded_by_inputs_not_corpus(self) -> None:
+        """REQ-0.0.19-01-10: subprocess fan-out is bounded by inputs, not corpus.
 
-            brief = _write_brief(root, "OBPI-0.0.19-01")
-            anchor = AnchorRef(
-                kind="obpi",
-                identifier="OBPI-0.0.19-01",
-                source_path=str(brief),
-                body=brief.read_text(encoding="utf-8"),
-            )
+        Deterministic replacement for a former wall-clock budget (``elapsed <
+        3.0s``, widened to 6.0s under GHI #443). That timed window was pure
+        in-process work with every subprocess boundary mocked, so the ceiling
+        measured scheduler jitter — warm cost is ~1ms — rather than throughput:
+        it flaked under suite load while a real 2x regression (1ms->2ms) stayed
+        thousands of times below the ceiling and invisible. The honest invariant
+        is structural: the expensive boundary is ``run_exec`` (real subprocess
+        spawns), and gather_evidence must call it a fixed number of times driven
+        by its inputs — one ledger fetch + one git log + one ``gh`` per related
+        anchor — NEVER once per ADR/OBPI on disk. A per-artifact fan-out
+        regression (the actual cost risk) breaks the fixed count; corpus growth
+        must not. Asserting the count is fully deterministic; asserting wall-clock
+        was not.
+        """
+        related = ["GHI-1", "GHI-2", "GHI-3"]
 
-            ledger_payload = json.dumps({"events": []})
-            git_payload = ""
-            fake = _fake_run_exec_factory(ledger_payload=ledger_payload, git_payload=git_payload)
-            start = time.monotonic()
-            with (
-                patch("gzkit.justify.evidence.run_exec", side_effect=fake),
-                patch("gzkit.justify.anchors.run_exec", side_effect=fake),
-            ):
-                gather_evidence(anchor, related=["GHI-1", "GHI-2", "GHI-3"], project_root=root)
-            elapsed = time.monotonic() - start
-        # GHI #443 follow-up: budget widened from 3.0s to 6.0s. Tempfile +
-        # subprocess mocks add jitter under concurrent suite load; 6.0s still
-        # catches a 2x slowdown regression but no longer fires on noise.
-        self.assertLess(elapsed, 6.0, f"gather_evidence too slow: {elapsed:.3f}s")
+        def _run_exec_calls(n_adrs: int) -> int:
+            with tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                for i in range(n_adrs):
+                    obpi_dir = (
+                        root / "docs" / "design" / "adr" / "foundation" / f"ADR-0.0.{i}-x" / "obpis"
+                    )
+                    obpi_dir.mkdir(parents=True, exist_ok=True)
+                    for j in range(3):
+                        obpi = obpi_dir / f"OBPI-0.0.{i}-0{j}-sample.md"
+                        obpi.write_text("# o\n## Allowed Paths\n- `src/**`\n", encoding="utf-8")
+                for rid in ("cli", "pythonic", "tests", "models", "cross-platform"):
+                    _write_rule(root, rid, ["src/**", "**/*.py"])
+                brief = _write_brief(root, "OBPI-0.0.19-01")
+                anchor = AnchorRef(
+                    kind="obpi",
+                    identifier="OBPI-0.0.19-01",
+                    source_path=str(brief),
+                    body=brief.read_text(encoding="utf-8"),
+                )
+                fake = _fake_run_exec_factory(
+                    ledger_payload=json.dumps({"events": []}), git_payload=""
+                )
+                tracker = MagicMock(side_effect=fake)
+                with (
+                    patch("gzkit.justify.evidence.run_exec", tracker),
+                    patch("gzkit.justify.anchors.run_exec", tracker),
+                ):
+                    gather_evidence(anchor, related=related, project_root=root)
+                return tracker.call_count
+
+        small = _run_exec_calls(2)
+        large = _run_exec_calls(80)
+        # A 40x corpus difference must not change the subprocess count.
+        self.assertEqual(
+            small,
+            large,
+            f"run_exec fan-out scaled with corpus ({small} vs {large}) — "
+            "gather_evidence is doing per-artifact subprocess work",
+        )
+        # ...and the count equals the input-derived bound: 1 ledger + 1 git log
+        # + one `gh` per related anchor (REQUIREMENT #4 / #9 in the brief).
+        self.assertEqual(large, 2 + len(related))
 
 
 if __name__ == "__main__":

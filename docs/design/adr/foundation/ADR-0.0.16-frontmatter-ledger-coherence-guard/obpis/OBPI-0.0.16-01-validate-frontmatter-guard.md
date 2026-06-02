@@ -157,7 +157,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.16-01-05: Given `--json` is passed, when the validator runs against a drifted repo, then stdout contains a valid JSON document with a `drift` array whose entries have `path`, `field`, `ledger_value`, `frontmatter_value` keys.
 - [ ] REQ-0.0.16-01-06: Given `--explain ADR-X.Y.Z`, when that ADR has drift, then the explain output contains at least one line naming an executable `gz` recovery command per drifted field.
 - [ ] REQ-0.0.16-01-07: Given `--adr ADR-X.Y.Z`, when the validator runs, then output is scoped to that artifact only; other drifted artifacts are not mentioned.
-- [ ] REQ-0.0.16-01-08: Given the full repo at current scale (~80 ADRs, ~200 OBPIs), when the validator runs, then total wall-clock is under 1.0s (measured by test).
+- [ ] REQ-0.0.16-01-08: Given the full repo at current scale (~80 ADRs, ~200 OBPIs), when the validator runs, then it runs to completion over the corpus and returns its findings without raising (measured by a smoke test). (Wall-clock budget abandoned 2026-06-02, GHI #535 — the `<1.0s`/`<2.5s` ceiling measured suite/host load, not validator cost, and flaked under load; widened under GHI #443 before abandonment.)
 
 ## Completion Checklist
 

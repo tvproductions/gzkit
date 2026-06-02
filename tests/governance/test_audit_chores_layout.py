@@ -140,32 +140,23 @@ class WaiversAndExclusionsTests(unittest.TestCase):
 
 
 class PerformanceBudgetTests(unittest.TestCase):
-    """``audit_chores_layout`` must complete within budget on a typical tree."""
+    """``audit_chores_layout`` runs to completion over the real repo tree."""
 
     @covers("REQ-0.0.21-08-07")
-    def test_audit_completes_under_budget_on_repo_root(self) -> None:
-        """GHI #535 follow-up: budget widened 5.0s → 10.0s.
+    def test_audit_runs_to_completion_on_repo_root(self) -> None:
+        """``audit_chores_layout`` completes over the real repo and returns a list.
 
-        Same root cause as GHI #443's prior 2.0s → 5.0s widening: the ceiling
-        sat too close to the suite-concurrent runtime ceiling (~5.0–5.13s on
-        macOS under `gz git-sync --test`), producing intermittent flakes when
-        the audit competed with concurrent suite IO. 10.0s still catches the
-        kind of regression this guards against (a 2-3x scaling-factor change)
-        without firing on host/load jitter. Structural follow-up tracked in
-        GHI #535 (percentile/median-of-K-runs vs. absolute-seconds ceiling).
+        Formerly a wall-clock budget (``elapsed < 10.0s``, widened 2.0s->5.0s->
+        10.0s under GHI #443/#535). The ceiling measured host/suite load — not
+        the audit's own cost — and flaked under concurrent suite IO while never
+        catching a real regression. The timing assertion is abandoned per
+        operator directive (2026-06-02; GHI #535 resolved in favour of abandon
+        over a median-of-K ceiling). The durable invariant is structural: the
+        audit runs to completion over the real tree and returns its findings.
         """
-        import time
-
         repo_root = Path(__file__).resolve().parents[2]
-        start = time.perf_counter()
         errors = audit_chores_layout(repo_root)
-        elapsed = time.perf_counter() - start
-
-        self.assertLess(
-            elapsed,
-            10.0,
-            msg=f"audit took {elapsed:.3f}s; budget is <10s; errors={len(errors)}",
-        )
+        self.assertIsInstance(errors, list)
 
 
 class CliExitCodeTests(unittest.TestCase):
