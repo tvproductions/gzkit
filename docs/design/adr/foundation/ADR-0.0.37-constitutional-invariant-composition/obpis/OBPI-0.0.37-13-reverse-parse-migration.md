@@ -4,6 +4,16 @@ parent: ADR-0.0.37-constitutional-invariant-composition
 item: 13
 lane: Heavy
 status: Completed
+# req_atomic exemption (return-to-health Snapshot E, 2026-06-02): each REQ is
+# one indivisible import/render/support contract. The implementation did not
+# subdivide labor below a REQ, so one seq=01 TASK per REQ is the honest grain.
+req_atomic:
+  - REQ-0.0.37-13-01  # full-contract reverse parse: one parser contract
+  - REQ-0.0.37-13-02  # scorecard classification join: one lookup contract
+  - REQ-0.0.37-13-03  # local rules captured via AGENTS.md import: one capture contract
+  - REQ-0.0.37-13-04  # model<->JSON round-trip + structural render recovery: one round-trip contract
+  - REQ-0.0.37-13-05  # unknown classification defaults Ambiguous: one conservative-default contract
+  - REQ-0.0.37-13-06  # SUPPORT proof via documents validation + artifact_edited ledger evidence
 ---
 
 # OBPI-0.0.37-13-reverse-parse-migration: Reverse-Parse Migration to the Master Model

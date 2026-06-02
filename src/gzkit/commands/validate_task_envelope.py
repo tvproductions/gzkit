@@ -54,6 +54,54 @@ def _task_envelope_event_before_epoch(ev: dict[str, object]) -> bool:
     return observed <= _TASK_ENVELOPE_ENFORCEMENT_EPOCH
 
 
+def _event_path(ev: dict[str, object]) -> str:
+    raw_path = ev.get("path") or ev.get("id") or ""
+    if not isinstance(raw_path, str):
+        return ""
+    return raw_path.replace("\\", "/")
+
+
+def _is_active_obpi_brief_reflection_event(
+    ev: dict[str, object],
+    active_tasks_by_obpi: dict[str, set[str]],
+) -> bool:
+    """Return True when an ``artifact_edited`` event reflects the active OBPI brief.
+
+    Closeout writes completion evidence back into the brief. Those reflection
+    edits are ceremony/proof bookkeeping on the OBPI itself, not implementation
+    labor for one REQ. Ordinary source/doc artifact edits remain worklog events
+    and still require TASK attribution under signature (a).
+    """
+    if ev.get("event") != "artifact_edited":
+        return False
+    path = _event_path(ev)
+    if "/obpis/" not in path or not path.endswith(".md"):
+        return False
+    brief_id = Path(path).stem
+    return brief_id in active_tasks_by_obpi and bool(active_tasks_by_obpi[brief_id])
+
+
+def _is_req_attributed_uncovered_accept_event(
+    ev: dict[str, object],
+    active_tasks_by_obpi: dict[str, set[str]],
+) -> bool:
+    """Return True when an uncovered-accept event carries REQ-level attribution."""
+    if ev.get("event") != "obpi_completion_uncovered_accept":
+        return False
+    obpi_id = ev.get("obpi_id")
+    req_id = ev.get("req_id")
+    if not isinstance(obpi_id, str) or not isinstance(req_id, str):
+        return False
+    active_tasks = active_tasks_by_obpi.get(obpi_id, set())
+    if not active_tasks:
+        return False
+    m = re.match(r"^REQ-(\d+\.\d+\.\d+)-(\d+)-(\d+)$", req_id)
+    if not m:
+        return False
+    task_prefix = f"TASK-{m.group(1)}-{m.group(2)}-{m.group(3)}-"
+    return any(task.startswith(task_prefix) for task in active_tasks)
+
+
 def _sig_a_attribution_drift(project_root: Path) -> list[ValidationError]:
     """Signature (a) — worklog event emitted under an active TASK with no ``task_id``.
 
@@ -105,6 +153,12 @@ def _sig_a_attribution_drift(project_root: Path) -> list[ValidationError]:
         # is narrow: only this ``receipt_event`` is excused; bare or other
         # ``audit_receipt_emitted`` rows remain labor and still fail (GHI #563).
         if ev_type == "audit_receipt_emitted" and ev.get("receipt_event") == "meta-receipt-bind":
+            continue
+
+        if _is_active_obpi_brief_reflection_event(ev, active_tasks_by_obpi):
+            continue
+
+        if _is_req_attributed_uncovered_accept_event(ev, active_tasks_by_obpi):
             continue
 
         if ev_type not in _TASK_WORKLOG_TYPES:

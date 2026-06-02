@@ -139,14 +139,13 @@ class TestReverseParseRoundTrip(unittest.TestCase):
         model = self._import_agents_md()
         reparsed = parse(render(model, "claude").decode("utf-8"), "AgentContract")
         # Sections and order recovered.
-        self.assertEqual(
-            [p.title for p in reparsed.pillars], [p.title for p in model.pillars]
-        )
+        self.assertEqual([p.title for p in reparsed.pillars], [p.title for p in model.pillars])
         # Bullet text recovered, in order.
         self.assertEqual(
             [[b.text for b in p.bullets] for p in reparsed.pillars],
             [[b.text for b in p.bullets] for p in model.pillars],
         )
+
         # Section content (non-blank body lines) recovered, in order.
         def nonblank(pillar: object) -> list[str]:
             return [line for line in pillar.lines if line.strip()]

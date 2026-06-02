@@ -311,6 +311,82 @@ class TestSignatureA(unittest.TestCase):
                 len(errors), 0, "non-ceremony audit receipt without task_id must still fail"
             )
 
+    @covers("REQ-0.0.64-04-01")
+    def test_obpi_brief_reflection_edit_under_active_task_is_clean(self) -> None:
+        """Editing the active OBPI brief itself is closeout reflection, not TASK labor."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.37-13-01-01",
+                            "obpi_id": "OBPI-0.0.37-13-reverse-parse-migration",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-01T22:33:04Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "artifact_edited",
+                            "path": (
+                                "docs/design/adr/foundation/"
+                                "ADR-0.0.37-constitutional-invariant-composition/obpis/"
+                                "OBPI-0.0.37-13-reverse-parse-migration.md"
+                            ),
+                            "id": "evt-2",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-01T22:55:23Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (a)" in e.message
+            ]
+            self.assertEqual(len(errors), 0)
+
+    @covers("REQ-0.0.64-04-01")
+    def test_uncovered_accept_with_req_id_under_active_task_is_clean(self) -> None:
+        """REQ-level uncovered-accept ceremony carries attribution via ``req_id``."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.37-13-06-01",
+                            "obpi_id": "OBPI-0.0.37-13-reverse-parse-migration",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-01T22:33:04Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "obpi_completion_uncovered_accept",
+                            "id": "OBPI-0.0.37-13-reverse-parse-migration",
+                            "obpi_id": "OBPI-0.0.37-13-reverse-parse-migration",
+                            "req_id": "REQ-0.0.37-13-06",
+                            "operator": "g0",
+                            "rationale": "SUPPORT-kind proof channel.",
+                            "acceptance_type": "agent-relayed-operator-attestation",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-01T23:57:26Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (a)" in e.message
+            ]
+            self.assertEqual(len(errors), 0)
+
 
 class TestSignatureB(unittest.TestCase):
     """Signature (b): OBPI with all-seq=01 TASKs and no req_atomic exemption."""

@@ -1,14 +1,16 @@
 # Return to Health Plan, 2026-05-30
 
 Status: Active canonical recovery plan.
-Last updated: 2026-06-01 — recorded **Snapshot D (harness restored to GREEN)**:
-Tier 0 cleared (0.1 preflight `--apply`; 0.2 task-envelope via narrow
-`meta-receipt-bind` ceremony-exclusion + `req_atomic:` brief exemption, both
-operator-ratified TDD). Earlier on 2026-06-01 recorded Snapshot C (regressed to
-RED), added the **Designated Workstream — Session MOTD** capture (continuity ⊕
-triaged workplan; subsumes handoff), and added the Phase-4 **Stdlib
-unittest/doctest maturity route** under GHI #571. Filename keeps its authored
-`-2026-05-30` date (stable reference); this line is the live mtime.
+Last updated: 2026-06-02 — recorded **Snapshot E (harness restored to GREEN
+after Snapshot-D staleness)**: re-measurement found three red gates
+(`Format`, `ADR status freshness`, `Task envelope coherence`) and cleared them
+via `ruff format`, `gz register-adrs`, and a TDD-pinned task-envelope validator
+repair plus OBPI-0.0.37-13 `req_atomic:` exemption. Earlier on 2026-06-01
+recorded Snapshot D (harness restored to GREEN), Snapshot C (regressed to RED),
+the **Designated Workstream — Session MOTD** capture (continuity ⊕ triaged
+workplan; subsumes handoff), and the Phase-4 **Stdlib unittest/doctest maturity
+route** under GHI #571. Filename keeps its authored `-2026-05-30` date (stable
+reference); this line is the live mtime.
 
 ## Execution Worklist (start here)
 
@@ -25,6 +27,7 @@ unittest/doctest maturity route** under GHI #571. Filename keeps its authored
 - [x] **0.1 Clear the OBPI-0.0.37-12 orphan lock + plan-audit receipt** → `uv run gz preflight --apply` cleared the orphan receipt + expired lock (576m); `uv run gz preflight` → "clean" (EXIT=0). Fixes the `preflight` gate. *Verification finding:* preflight `--apply` does **not** honor the token-block reaping-handoff discipline (it `unlink`s the lock without the `abandoned_by_reaper` register entry / `lock_manager.release_lock`) — substantively moot here (work attested-complete) but a real coherence gap → filed via `/ghi-author` (preflight reaping-handoff GHI; `Related: #564`). The #564 OBPI-0.0.64-04 orphan was already absent (not present in the scan). → *Current Baseline § Snapshot C/D*.
 - [x] **0.2 Resolve `--task-envelope-coherence`** — 0.0.37-12: ledger `:8460` (`meta-receipt-bind` ceremony event, post-epoch) missing `task_id`; `seq=01`-only TASKs. Remediated (operator-ratified, TDD): **sig (a)** validator excludes closeout `receipt_event == "meta-receipt-bind"` `audit_receipt_emitted` events from the labor signature — narrow carve-out (bare `audit_receipt_emitted` still fails), no ledger hand-edit (Never #2); **sig (b)** `req_atomic:` with inline per-REQ rationale on the OBPI-0.0.37-12 brief. New instance appended to **GHI #563**. `uv run gz validate --task-envelope-coherence` → All validations passed (EXIT=0). → *Snapshot C/D*.
 - [x] **0.3 Re-measure & record Snapshot D** — `uv run gz check` → "✓ All checks passed" (`GZ_CHECK_EXIT=0`, true exit captured without pipe-masking); 26/26 gates green. Phase 1 reaffirmed complete. → *Current Baseline § Snapshot D*.
+- [x] **0.4 Reopen Tier 0 and record Snapshot E** — 2026-06-02 re-measurement proved Snapshot D stale: `uv run gz check` failed on `Format`, `ADR status freshness`, and `Task envelope coherence`. Remediated with observed evidence: `uv run ruff format tests\content\test_round_trip_agent_contract.py` → "1 file reformatted"; `uv run gz register-adrs` → "Regenerated adr-status.md (90 ADRs)"; task-envelope TDD RED showed two failures in `tests.governance.test_task_envelope_coherence`, then GREEN after validator repair; `uv run gz validate --task-envelope-coherence` → "✓ All validations passed"; `uv run gz check` → "✓ All checks passed" (26/26 gates; advisory drift 1735 findings, non-blocking). → *Current Baseline § Snapshot E*.
 
 **Tier 1 — Recovery to Definition of Healthy.** Exit gate: Definition of Healthy all-true.
 
@@ -60,7 +63,7 @@ unittest/doctest maturity route** under GHI #571. Filename keeps its authored
 
 | GHI | Summary | Home |
 |-----|---------|------|
-| #563 | task-envelope gate failure — `seq=01`-only TASKs, missing `task_id` | **T1** — Phase 3 (gate cleared @ Snapshot D; class fix: closeout `task_id` population remains) |
+| #563 | task-envelope gate failure — `seq=01`-only TASKs, missing `task_id` | **T1** — Phase 3 (gate cleared @ Snapshot E; class fix: closeout `task_id` population remains) |
 | #564 | preflight orphan plan-audit receipt (OBPI-0.0.64-04) | **T1** — Phase 3 (gate cleared @ Snapshot D; class fix: closeout leaves no orphan remains) |
 | #519 | context surface exhausts 258K window (**emergency**) | **T1** — Phase 2 → CMS |
 | #516 | closeout passive-presenter lacks REQ-evidence check | **T1** — Phase 3 |
@@ -213,7 +216,40 @@ This is not a collapse. It is a red harness with named failure surfaces.
   Tier 1 (context-load emergency #519 → Phase 2/CMS; ceremony & validator
   mechanization → Phase 3; recovery-issue drain → Phase 4).
 
-Snapshots A, B, and C are preserved for audit; **Snapshot D is the live baseline.**
+### Snapshot E — re-measured (2026-06-02, after Snapshot-D staleness): GREEN
+
+- `git status --short` clean at the start of the re-measurement; the working
+  tree now carries this Tier-0 recovery change set.
+- Initial `uv run gz check` exited non-zero. Failing gates: `Format`, `ADR
+  status freshness`, `Task envelope coherence`. Advisory spec-test-code drift
+  reported 1,734 findings and did not affect the exit code.
+- **`Format`** — `uv run ruff format --check .` identified
+  `tests\content\test_round_trip_agent_contract.py`; `uv run ruff format
+  tests\content\test_round_trip_agent_contract.py` reformatted one file; later
+  `uv run ruff format --check .` reported 792 files already formatted.
+- **`ADR status freshness`** — `uv run gz validate --adr-status-fresh` reported
+  `ADR-0.28.0-focused-context-loader` as committed `Completed` but on-disk
+  `Validated`; `uv run gz register-adrs` regenerated `adr-status.md` with 90
+  ADRs; rerun `uv run gz validate --adr-status-fresh` passed.
+- **`Task envelope coherence`** — the failure recurred on
+  `OBPI-0.0.37-13-reverse-parse-migration`: ledger `:8490`-`:8494`
+  `artifact_edited` rows for the active OBPI brief, ledger `:8500`
+  `obpi_completion_uncovered_accept` with REQ-level attribution but no
+  `task_id`, and a seq=01-only closeout with no `req_atomic:` declaration. TDD
+  RED: focused task-envelope tests failed 2/21. Remediation: validator now
+  excludes only active-OBPI brief reflection edits and uncovered-accept events
+  whose `req_id` maps to an active TASK for the same OBPI; OBPI-0.0.37-13 now
+  carries a per-REQ `req_atomic:` rationale. TDD GREEN:
+  `uv run -m unittest tests.governance.test_task_envelope_coherence -q` → 21
+  tests OK; `uv run gz validate --task-envelope-coherence` → all validations
+  passed.
+- Final `uv run gz check` → **"✓ All checks passed"**; 26/26 gates green.
+  Advisory spec-test-code drift reported 1,735 findings, including one
+  unjustified-code-change advisory; advisory output did not affect exit code.
+- **Phase 1 (Make the Harness Green) is complete again.** Recovery remains open
+  because emergency GHI #519 remains open; Tier 1 is still the next work band.
+
+Snapshots A, B, C, and D are preserved for audit; **Snapshot E is the live baseline.**
 
 ## Definition of Healthy
 
@@ -1155,6 +1191,21 @@ Task-envelope coherence:  FAIL — routed to existing class tracker GHI #563 (0.
 Preflight:                FAIL — orphan receipt + expired OBPI-0.0.37-12 lock; clean via `uv run gz preflight --apply` (verify reaping-handoff discipline first)
 Open recovery issues:     #519 (emergency; Phase 2 / Phase 4 item 1), #516 (closeout passive-presenter; Phase 3), #563 (task-envelope class). #517 closed.
 Decision:                 normal development may NOT resume — Phase 1 reopened (gz check red) AND emergency GHI #519 still open
+```
+
+### Progress snapshot — 2026-06-02 (Snapshot E; supersedes 2026-06-01 above)
+
+```text
+Snapshot date:            2026-06-02 (recovery still open)
+uv run gz check:          exit 0 — 26/26 gates pass (advisory drift 1735 findings, non-blocking; includes one unjustified-code-change advisory)
+Failing gates found:      Format, ADR status freshness, Task envelope coherence — all fixed in Tier 0 Snapshot E
+Format:                   PASS — ruff reformatted tests\content\test_round_trip_agent_contract.py; rerun format check passed
+ADR status freshness:     PASS — gz register-adrs regenerated adr-status.md; rerun --adr-status-fresh passed
+Task-envelope coherence:  PASS — OBPI-0.0.37-13 instance fixed by narrow validator carve-outs for OBPI brief reflection + REQ-attributed uncovered-accept, plus req_atomic frontmatter; focused tests 21/21 OK
+Emergency GHIs open:      1 — #519 (codex context surface exhausts 258K window)
+Context-load issue state: #519 OPEN — ADR-0.0.37 CMS route still the active structural remediation path
+Open recovery issues:     #519 (emergency; Phase 2 / CMS), #516 and Phase-3 ceremony/validator cluster, Phase-4 drain items
+Decision:                 normal development may NOT resume — gz check is green again, but emergency GHI #519 still blocks Recovery Closeout
 ```
 
 ## Appendix: The Smooth-vs-Replicable Axis (2026-05-30 dialogue insights)
