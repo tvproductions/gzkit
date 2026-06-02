@@ -1,7 +1,13 @@
 # Return to Health Plan, 2026-05-30
 
 Status: Active canonical recovery plan.
-Last updated: 2026-06-02 — recorded **Snapshot E (harness restored to GREEN
+Last updated: 2026-06-02 — recorded a **post OBPI-13/14 progress snapshot**:
+ADR-0.0.37 CMS advanced to **9/16 OBPIs attested-complete** (OBPI-0.0.37-13
+reverse-parse migration `5e324e1`, OBPI-0.0.37-14 wire-sync/retire-monolith
+`fa4dc83`, both Gate-5 human-attested), and the `fix/task-envelope-and-flaky-timing`
+branch was fast-forward merged to `main` (`c8bbeee2..9178d46f`) and deleted;
+#519 stays open until OBPI-0.0.37-15 (Codex `lite`) lands. Earlier the same day
+recorded **Snapshot E (harness restored to GREEN
 after Snapshot-D staleness)**: re-measurement found three red gates
 (`Format`, `ADR status freshness`, `Task envelope coherence`) and cleared them
 via `ruff format`, `gz register-adrs`, and a TDD-pinned task-envelope validator
@@ -40,7 +46,7 @@ reference); this line is the live mtime.
 
 - [ ] **2.0 Housekeeping: re-home ADR-0.0.66 → pool** (§13 immediate, *not executed*) — frontmatter disposition → `uv run gz register-adrs`. → *§13; Snapshot C note*.
 - [ ] **2.1 Canon Foundation** — the substrate the others assume; build per its §12 sequence. → *Designated Workstream — Canon Foundation*.
-- [ ] **2.2 Context-Load CMS** — ADR-0.0.37 remaining OBPIs (06–10, 13–16); #519 structural relief; renders from canon. *(Pulled into Tier 1 as the #519 route — see 1.1.)* → *Designated Workstream — Context-Load CMS*.
+- [ ] **2.2 Context-Load CMS** — ADR-0.0.37 remaining OBPIs (06–10, 15–16; 13+14 attested-complete 2026-06-02); #519 structural relief; renders from canon. OBPI-0.0.37-15 (Codex `lite`) is the named byte payload. *(Pulled into Tier 1 as the #519 route — see 1.1.)* → *Designated Workstream — Context-Load CMS*.
 - [ ] **2.3 Harness Hardening + ADR-0.0.66** — the enforcement spine + `gz next`/triage read-substrate. → *Designated Workstream — Harness Hardening*.
 - [ ] **2.4 Session MOTD** — consumes the absorbed ADR-0.0.65, ADR-0.0.66, and canon; build per its §7. → *Designated Workstream — Session MOTD*.
 - [ ] **2.5 Config-first store — repo-wide SSOT (its own first-class workstream; design deferred, operator 2026-06-01).** A NEW thing, not a subset of anything: gzkit has no single source of truth for its own operational tuning values, which live as drifting literals repo-wide — instructions budgets, validator thresholds, `_PIPELINE_MARKER_STALE_HOURS` / timeouts / ceilings hardcoded in `src/`, lock TTL, the 40% coverage floor, defect-fix thresholds — scattered across `data/`, code, tests, and prose docs. **Live instance (2026-06-01):** the AGENTS.md char budget exists in 4 places — `data/instructions_files_budget.json` (now 33000), two test literals (`test_agents_md_map_doctrine_obpi01/04`), and the `agents-md-map-doctrine.md` Budget table *still saying 15000* (drifted since OBPI-0.0.54-01). Inventory: `grep -E '^_[A-Z_]+ *= *[0-9]' src/gzkit`. Target: one typed source that code, tests, **and doc-table generation** read from, + a `gz validate --config-ssot` drift fail-close. **Overlaps but exceeds Canon Foundation §8.8** — canon subsumes scattered `data/*.json` *invariant data*; this is broader: repo-wide tuning *scalars*, most hardcoded in `src/`, which canon (invariant rules) does not home. The irony it names: gzkit preaches SSOT for governance state, has none for its own config. **Prior art (operator, 2026-06-01): AirlineOps did this notably better — study its config-SSOT pattern via `/airlineops-parity-scan` before designing.** Reference for a gzkit-native design, not perpetual-parity catch-up (Architectural Boundary 5).
@@ -1212,6 +1218,20 @@ Emergency GHIs open:      1 — #519 (codex context surface exhausts 258K window
 Context-load issue state: #519 OPEN — ADR-0.0.37 CMS route still the active structural remediation path
 Open recovery issues:     #519 (emergency; Phase 2 / CMS), #516 and Phase-3 ceremony/validator cluster, Phase-4 drain items
 Decision:                 normal development may NOT resume — gz check is green again, but emergency GHI #519 still blocks Recovery Closeout
+```
+
+### Progress snapshot — 2026-06-02 (post OBPI-13/14 completion + merge to main; supersedes Snapshot E progress block above)
+
+```text
+Snapshot date:            2026-06-02 (recovery still open)
+Harness state:            last measured GREEN at Snapshot E (26/26 gates); no re-measurement since — this snapshot records OBPI progress + branch merge, not a new gz check run
+ADR-0.0.37 CMS progress:  9/16 OBPIs attested_completed (was 7/16) — OBPI-0.0.37-13 (reverse-parse migration, anchor 5e324e1, ledger obpi_receipt_emitted 2026-06-01T23:57) and OBPI-0.0.37-14 (wire sync_agents_md, retire monolith, --invariant-coherence diffs model render, anchor fa4dc83, ledger obpi_receipt_emitted 2026-06-02T08:33) both human-attested (Gate 5)
+OBPIs remaining:          06-10, 15, 16 — OBPI-0.0.37-15 (per-vendor template → Codex lite) is the named #519 byte payload (brief authored, build not started); 13+14 built the substrate but are not themselves the byte relief
+Branch hygiene:           fix/task-envelope-and-flaky-timing fast-forward merged to main (c8bbeee2..9178d46f) and pushed to origin/main; branch deleted local + remote; commits e1f18d21 (task-envelope telemetry-exclusion + req_atomic for OBPI-0.0.37-14) and 9178d46f (abandon flaky wall-clock timing assertions, GHI #535)
+Emergency GHIs open:      1 — #519 (codex context surface exhausts 258K window)
+Context-load issue state: #519 OPEN — substrate (OBPI-13/14) landed; #519 stays unrelieved until OBPI-0.0.37-15 (Codex lite) lands
+Open recovery issues:     #519 (emergency; Phase 2 / CMS → OBPI-15), #516 and Phase-3 ceremony/validator cluster, Phase-4 drain items
+Decision:                 normal development may NOT resume — emergency GHI #519 still blocks Recovery Closeout; next critical-path step is OBPI-0.0.37-15
 ```
 
 ## Appendix: The Smooth-vs-Replicable Axis (2026-05-30 dialogue insights)
