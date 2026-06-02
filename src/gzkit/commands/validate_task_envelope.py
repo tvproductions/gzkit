@@ -294,6 +294,8 @@ def _commit_trailer_channel_for_obpi(project_root: Path, obpi_id: str) -> set[st
             cwd=project_root,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
             timeout=30,
         )
@@ -382,6 +384,8 @@ def _commit_trailer_channel_map(project_root: Path) -> dict[str, set[str]]:
             cwd=project_root,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
             timeout=30,
         )
