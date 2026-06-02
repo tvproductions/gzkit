@@ -138,14 +138,17 @@ class BudgetTightening(unittest.TestCase):
     def test_budget_json_pins_15k_and_4k(self) -> None:
         # OBPI-0.0.54-03 retargeted AGENTS.md 15000 → 32000 after measuring the
         # post-shape-conformance floor at ~31k chars with the current monolithic
-        # template. The 15000 destination is now tracked under GHI #533 / ADR-0.0.37
-        # (constitutional invariant composition); registry-projected rules unlock
-        # the structural-shell shape that makes <15k achievable. See
-        # data/instructions_files_budget.json _doc field for the full rationale.
+        # template. 2026-06-01: bumped 32000 → 33000 to seat the operator
+        # DIRECT-FIX MORATORIUM directive in Local Agent Rules (~480 chars; AGENTS.md
+        # was already at its ceiling). The 15000 destination — and the principled
+        # reclaim of this bump — is tracked under GHI #533 / ADR-0.0.37 (constitutional
+        # invariant composition); registry-projected rules unlock the structural-shell
+        # shape that makes <15k achievable. See data/instructions_files_budget.json
+        # _doc field for the full rationale.
         payload = json.loads(_BUDGET_PATH.read_text(encoding="utf-8"))
         files = payload["files"]
 
-        self.assertEqual(files["AGENTS.md"], 32000, "AGENTS.md budget MUST be 32000 chars")
+        self.assertEqual(files["AGENTS.md"], 33000, "AGENTS.md budget MUST be 33000 chars")
         self.assertEqual(files["CLAUDE.md"], 4000, "CLAUDE.md budget MUST be 4000 chars")
 
         globs = payload["globs"]

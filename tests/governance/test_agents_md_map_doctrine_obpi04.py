@@ -140,9 +140,16 @@ class BudgetJsonFinalized(unittest.TestCase):
 
     @covers("REQ-0.0.54-04-03")
     def test_agents_md_and_claude_md_budgets_unchanged(self) -> None:
+        # REQ-04-03 fenced that OBPI-0.0.54-04's diet pass left the AGENTS.md /
+        # CLAUDE.md budgets untouched (only the rule-glob tightened). That held for
+        # OBPI-04. 2026-06-01: a later operator DIRECT-FIX MORATORIUM directive bumped
+        # AGENTS.md 32000 → 33000 to seat the new Local Agent Rule; this fence now
+        # pins the current contract value. CLAUDE.md stays at 4000.
         payload = json.loads(_BUDGET_PATH.read_text(encoding="utf-8"))
         files = payload["files"]
-        self.assertEqual(files["AGENTS.md"], 32000, "AGENTS.md budget must stay at 32000")
+        self.assertEqual(
+            files["AGENTS.md"], 33000, "AGENTS.md budget is 33000 (operator bump 2026-06-01)"
+        )
         self.assertEqual(files["CLAUDE.md"], 4000, "CLAUDE.md budget must stay at 4000")
 
 

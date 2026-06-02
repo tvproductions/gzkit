@@ -1,5 +1,6 @@
 # Local Agent Rules
 
+- **DIRECT-FIX MORATORIUM (operator directive, 2026-06-01).** Defects surfaced in flight get DIRECT-FIXED now — smallest honest fix, TDD (RED→GREEN), `Task:` trailer (slug `-#<ghi>` optional; never file a GHI just to satisfy it). Do NOT reflexively file a GHI/ADR/OBPI to *track* what fits one coherent commit; open one only when the fix genuinely can't land in scope (crosses brief boundaries, needs design, exceeds one commit) and name why. Does not relax TDD, read-before-change, coupled-surface coherence, or attestation.
 - Order versioned identifiers semantically, never lexicographically — **scope: feature ADRs only** (non-`0.0.x` semver). Example: `ADR-0.9.0` comes before `ADR-0.10.0`.
 - Apply semantic-version ordering in feature-ADR summaries, comparisons, and any operator-facing status narration over feature ADRs.
 - **Counter-rule (foundation ADRs):** Foundation ADR IDs (`0.0.x`) are nominal integers — unique identifiers, not sequence positions. Do not order, sort, or compare foundation IDs as semver; foundations have no semantic ordering and may form sparse sets (e.g. `0.0.54`, `0.0.56` with `0.0.55` absent is valid). Doctrine: ADR-0.0.57 § Decision item 1; rule-scope shrink: ADR-0.0.57 § Decision item 3.

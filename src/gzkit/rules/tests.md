@@ -5,11 +5,11 @@ paths:
 description: Test policy and coverage requirements
 ---
 
-<!-- rule-version: 0.6.0 -->
+<!-- rule-version: 0.7.0 -->
 
 # Test Policy (canonical)
 
-> **Rule version:** `0.6.0` — GHI #552 strict-mode: src/tests commits MUST carry `Task:` trailer; `Ceremony:` and `Eval-feedback-source:` no longer substitute for src/tests scope. Slug-form `Task: TASK-<slug>-#<ghi>` accepted for direct-fix work outside OBPI scope. Surfaces TASK as the leaf vertebra of the PRD → Constitution → ADR → OBPI → REQ → TASK → Attestation governance spine (per AGENTS.md § Workflow).
+> **Rule version:** `0.7.0` — producer reconciled to GHI #552: `gz git-sync` now stamps `Task: TASK-gz-git-sync` (previously only `Ceremony:`, which #552 stopped accepting on src/tests scope — leaving every sync commit silently non-compliant), and the direct-fix slug's `-#<ghi>` anchor is now OPTIONAL (operator moratorium on reflexive GHI-filing, 2026-06-01). Prior `0.6.0`: GHI #552 strict-mode — src/tests commits MUST carry `Task:`; `Ceremony:`/`Eval-feedback-source:` no longer substitute. Surfaces TASK as the leaf vertebra of the PRD → Constitution → ADR → OBPI → REQ → TASK → Attestation governance spine (per AGENTS.md § Workflow).
 
 ## General Rules (binding)
 
@@ -61,16 +61,17 @@ TASK is the leaf vertebra of the governance spine `PRD → Constitution → ADR 
 
 **src/tests commits MUST carry a `Task:` trailer.** Enforced by `gz validate --commit-trailers`. `Ceremony:` and `Eval-feedback-source:` no longer substitute for `Task:` on src/tests scope — they remain valid for non-src/tests commits (sync artifacts under `.claude/`, roadmap notes, ledger reconciles, rule-edit metadata).
 
-**Task: trailer forms (both accepted):**
+**Task: trailer forms (all accepted):**
 
 | Form | Use when | Example |
 |------|----------|---------|
 | Formal `TASK-X.Y.Z-NN-MM-PP` | OBPI-scoped work; minted via `gz task start` against an active brief + REQ | `Task: TASK-0.22.0-01-01-01` |
-| Slug `TASK-<kebab-slug>-#<ghi>` | Direct-fix work outside OBPI scope (per AGENTS.md § Defect-fix routing); anchors the commit to its closing GHI | `Task: TASK-task-spine-restoration-#552` |
+| Slug `TASK-<kebab-slug>` (optional `-#<ghi>`) | Direct-fix work outside OBPI scope (per AGENTS.md § Defect-fix routing). The `-#<ghi>` anchor is OPTIONAL — append it only when a GHI already exists; filing a GHI *to satisfy the trailer* is a moratorium violation (operator directive 2026-06-01) | `Task: TASK-fix-git-log-encoding` or `Task: TASK-task-spine-restoration-#552` |
+| Ceremony `TASK-gz-git-sync` | Auto-stamped by `gz git-sync` on every sync commit; attributes bundled surface-sync to the git-sync ceremony rather than a synthetic per-REQ id | `Task: TASK-gz-git-sync` |
 
 **OBPI-scoped steps:** `gz covers` → `gz task start TASK-X.Y.Z-NN-MM-PP` → TDD cycle → commit with `Task:` trailer → `gz task complete TASK-X.Y.Z-NN-MM-PP` → `@covers(REQ-...)` decorator.
 
-**Direct-fix steps:** `git log --since='60 days ago' --oneline --grep='^fix('` (precedent check per AGENTS.md § Defect-fix routing) → TDD cycle → commit with `Task: TASK-<slug>-#<ghi>` trailer citing the closing GHI.
+**Direct-fix steps:** `git log --since='60 days ago' --oneline --grep='^fix('` (precedent check per AGENTS.md § Defect-fix routing) → TDD cycle → commit with `Task: TASK-<slug>` trailer (append `-#<ghi>` only when a GHI already exists; do not file one to satisfy the trailer — operator moratorium).
 
 ## Two runners, one test surface
 
