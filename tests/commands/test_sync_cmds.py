@@ -224,23 +224,42 @@ class TestSyncCommand(unittest.TestCase):
                 )
 
     @covers("REQ-0.0.37-14-02")
-    def test_sync_agents_md_purpose_comes_through_model_pipeline(self) -> None:
-        """The rendered AGENTS.md must contain the purpose value from get_project_context
-        routed through the model pipeline — REQ-0.0.37-14-02."""
+    def test_agents_md_prose_is_model_sourced_not_in_code_literal(self) -> None:
+        """REQ-0.0.37-14-02: the rendered AGENTS.md purpose/tech-stack MUST be sourced from
+        the model (the template), NOT from in-code get_project_context literals. The
+        discriminating check: mutating get_project_context's returned project_purpose /
+        tech_stack to a sentinel MUST NOT change the rendered AGENTS.md — if it does, the
+        prose is in-code-sourced and REQ-02 is violated."""
+        import gzkit.sync_surfaces as ss
+
         with _InitFromTemplate():
             from gzkit.config import GzkitConfig
-            from gzkit.sync_surfaces import get_project_context, sync_agents_md
 
             project_root = Path.cwd()
             config = GzkitConfig.load(project_root / ".gzkit.json")
-            ctx = get_project_context(project_root, config)
-            sync_agents_md(project_root, config)
+
+            real_ctx = ss.get_project_context(project_root, config)
+            sentinel_ctx = dict(real_ctx)
+            sentinel_ctx["project_purpose"] = "ZZZ-PURPOSE-SENTINEL-MUST-NOT-APPEAR"
+            sentinel_ctx["tech_stack"] = "ZZZ-TECH-SENTINEL-MUST-NOT-APPEAR"
+
+            with patch.object(ss, "get_project_context", return_value=sentinel_ctx):
+                ss.sync_agents_md(project_root, config)
             rendered = (project_root / "AGENTS.md").read_text(encoding="utf-8")
-            self.assertIn(
-                ctx["project_purpose"],
+
+            self.assertNotIn(
+                "ZZZ-PURPOSE-SENTINEL-MUST-NOT-APPEAR",
                 rendered,
-                "purpose must appear in AGENTS.md via model pipeline",
+                "purpose must be model-sourced (template), not in-code get_project_context literal",
             )
+            self.assertNotIn(
+                "ZZZ-TECH-SENTINEL-MUST-NOT-APPEAR",
+                rendered,
+                "tech_stack must be model-sourced, not in-code literal",
+            )
+            # And the model-sourced prose IS present.
+            self.assertIn("**Purpose**: A gzkit-governed project", rendered)
+            self.assertIn("**Tech Stack**: Python 3.13+ with uv, ruff, ty", rendered)
 
     @covers("REQ-0.0.37-14-03")
     def test_invariant_coherence_catches_hand_edit_to_agents_md(self) -> None:
