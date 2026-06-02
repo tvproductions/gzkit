@@ -45,11 +45,17 @@ reference); this line is the live mtime.
 - [ ] **2.4 Session MOTD** — consumes the absorbed ADR-0.0.65, ADR-0.0.66, and canon; build per its §7. → *Designated Workstream — Session MOTD*.
 - [ ] **2.5 Config-first store — repo-wide SSOT (its own first-class workstream; design deferred, operator 2026-06-01).** A NEW thing, not a subset of anything: gzkit has no single source of truth for its own operational tuning values, which live as drifting literals repo-wide — instructions budgets, validator thresholds, `_PIPELINE_MARKER_STALE_HOURS` / timeouts / ceilings hardcoded in `src/`, lock TTL, the 40% coverage floor, defect-fix thresholds — scattered across `data/`, code, tests, and prose docs. **Live instance (2026-06-01):** the AGENTS.md char budget exists in 4 places — `data/instructions_files_budget.json` (now 33000), two test literals (`test_agents_md_map_doctrine_obpi01/04`), and the `agents-md-map-doctrine.md` Budget table *still saying 15000* (drifted since OBPI-0.0.54-01). Inventory: `grep -E '^_[A-Z_]+ *= *[0-9]' src/gzkit`. Target: one typed source that code, tests, **and doc-table generation** read from, + a `gz validate --config-ssot` drift fail-close. **Overlaps but exceeds Canon Foundation §8.8** — canon subsumes scattered `data/*.json` *invariant data*; this is broader: repo-wide tuning *scalars*, most hardcoded in `src/`, which canon (invariant rules) does not home. The irony it names: gzkit preaches SSOT for governance state, has none for its own config. **Prior art (operator, 2026-06-01): AirlineOps did this notably better — study its config-SSOT pattern via `/airlineops-parity-scan` before designing.** Reference for a gzkit-native design, not perpetual-parity catch-up (Architectural Boundary 5).
 
-> **One ordering decision flagged for the operator (not resolved here):** #519 closure (1.1) routes
-> through the CMS workstream (2.2), whose *proper* substrate is Canon (2.1) — yet CMS OBPIs 11–12
-> already shipped on the current `AgentContract` model without full canon. So: relieve #519 via CMS
-> on the *current* substrate now (faster close), or block CMS on Canon first (cleaner, slower)?
-> That choice sets whether 2.1 precedes 2.2 or they interleave. Operator call.
+> **Ordering decision — RESOLVED (operator-ratified, 2026-06-02):** relieve #519 via the CMS
+> workstream on the **current `AgentContract` substrate now**; do **not** block CMS on Canon
+> (2.1) first. Rationale: #519 is the only open emergency and Tier 1 puts it topmost; Canon is
+> Tier 2 (the largest new governance surface) and the plan's posture forbids expanding governance
+> surfaces until recovery closes; CMS OBPIs 11–13 already shipped on the current substrate
+> (precedent); the canon re-sequencing of 13/14 (§10) named *13's* classification dependency, and
+> 13 already completed without canon. **Accepted cost (named):** bounded rework when Canon lands —
+> the CMS's *data source* repoints from the current model to canon (canon §12 step 5); the
+> sync→model-renderer wiring built by OBPI-14 stays. So 2.1 follows 2.2; they do not interleave on
+> the critical path. Operator call: *"resolve the ordering decision now in favor of relieving #519
+> on the current substrate — do not block CMS on Canon first — then proceed to Phase 2 / #519."*
 
 ### GHI Register — all 34 open issues, homed
 

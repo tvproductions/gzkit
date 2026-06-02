@@ -102,6 +102,45 @@ def _is_req_attributed_uncovered_accept_event(
     return any(task.startswith(task_prefix) for task in active_tasks)
 
 
+def _sig_a_is_not_labor_event(
+    ev: dict,
+    ev_type: str,
+    obpi_id: str,
+    task_id: str | None,
+    active_tasks_by_obpi: dict[str, set[str]],
+) -> bool:
+    """Update per-OBPI active-TASK state for *ev* and report whether it is non-labor.
+
+    Returns ``True`` when *ev* is not an attributable labor unit and the caller
+    should skip it: TASK lifecycle transitions (which mutate the active sets here
+    as a side effect), the ``meta-receipt-bind`` Gate-5 ceremony carve-out, brief
+    reflection / REQ-attributed uncovered-accept events, and any non-worklog type.
+    Returns ``False`` only for worklog events that must be checked for drift.
+    """
+    if ev_type == "task_started" and task_id and obpi_id:
+        active_tasks_by_obpi.setdefault(obpi_id, set()).add(task_id)
+        return True
+    if ev_type in ("task_completed", "task_blocked", "task_escalated"):
+        if task_id and obpi_id and obpi_id in active_tasks_by_obpi:
+            active_tasks_by_obpi[obpi_id].discard(task_id)
+        return True
+
+    # Closeout ``meta-receipt-bind`` is a Gate-5 ceremony receipt-binding
+    # event (it binds already-emitted attestation receipts and carries an
+    # ``attestor``), not a TASK labor unit — exclude it from attribution
+    # drift exactly as ``obpi_lock_*`` governance events are. The carve-out
+    # is narrow: only this ``receipt_event`` is excused; bare or other
+    # ``audit_receipt_emitted`` rows remain labor and still fail (GHI #563).
+    if ev_type == "audit_receipt_emitted" and ev.get("receipt_event") == "meta-receipt-bind":
+        return True
+
+    if _is_active_obpi_brief_reflection_event(ev, active_tasks_by_obpi):
+        return True
+    if _is_req_attributed_uncovered_accept_event(ev, active_tasks_by_obpi):
+        return True
+    return ev_type not in _TASK_WORKLOG_TYPES
+
+
 def _sig_a_attribution_drift(project_root: Path) -> list[ValidationError]:
     """Signature (a) — worklog event emitted under an active TASK with no ``task_id``.
 
@@ -138,30 +177,7 @@ def _sig_a_attribution_drift(project_root: Path) -> list[ValidationError]:
         obpi_id = ev.get("obpi_id") or ""
         task_id = ev.get("task_id")
 
-        if ev_type == "task_started" and task_id and obpi_id:
-            active_tasks_by_obpi.setdefault(obpi_id, set()).add(task_id)
-            continue
-        if ev_type in ("task_completed", "task_blocked", "task_escalated"):
-            if task_id and obpi_id and obpi_id in active_tasks_by_obpi:
-                active_tasks_by_obpi[obpi_id].discard(task_id)
-            continue
-
-        # Closeout ``meta-receipt-bind`` is a Gate-5 ceremony receipt-binding
-        # event (it binds already-emitted attestation receipts and carries an
-        # ``attestor``), not a TASK labor unit — exclude it from attribution
-        # drift exactly as ``obpi_lock_*`` governance events are. The carve-out
-        # is narrow: only this ``receipt_event`` is excused; bare or other
-        # ``audit_receipt_emitted`` rows remain labor and still fail (GHI #563).
-        if ev_type == "audit_receipt_emitted" and ev.get("receipt_event") == "meta-receipt-bind":
-            continue
-
-        if _is_active_obpi_brief_reflection_event(ev, active_tasks_by_obpi):
-            continue
-
-        if _is_req_attributed_uncovered_accept_event(ev, active_tasks_by_obpi):
-            continue
-
-        if ev_type not in _TASK_WORKLOG_TYPES:
+        if _sig_a_is_not_labor_event(ev, ev_type, obpi_id, task_id, active_tasks_by_obpi):
             continue
 
         any_active = any(active_tasks_by_obpi.values())

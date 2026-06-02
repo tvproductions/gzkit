@@ -32,7 +32,7 @@ from gzkit.sync_skills import (
     render_skills_catalog,
     sync_skill_mirrors,
 )
-from gzkit.templates import render_template
+from gzkit.templates import SafeDict, render_template
 
 # ---------------------------------------------------------------------------
 # Helpers shared with sync.py
@@ -350,18 +350,25 @@ def sync_discovery_index(project_root: Path, config: GzkitConfig) -> None:
 
 
 def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
-    """Generate AGENTS.md from template.
+    """Generate AGENTS.md from the master AgentContract via the content model renderer.
 
-    Args:
-        project_root: Project root directory.
-        config: Project configuration.
-
+    Pipeline (OBPI-0.0.37-14): .gzkit/templates/agents.md → str.format_map(context)
+    → parse(AgentContract) → render(model, "claude", temperature="heavy").
+    Falls back to monolith render when the project template is absent (fresh-init).
     """
+    from gzkit.content.parse import parse as _parse_content  # lazy: avoids compose.py cycle
+
     context = get_project_context(project_root, config)
-    content = render_template("agents", **context)
+    template_path = project_root / ".gzkit" / "templates" / "agents.md"
+    if template_path.exists():
+        resolved_text = template_path.read_text(encoding="utf-8").format_map(SafeDict(context))
+        model = _parse_content(resolved_text, "AgentContract")
+        content_bytes = render_content_model(model, "claude", temperature="heavy")
+    else:
+        content_bytes = render_template("agents", **context).encode("utf-8")
 
     agents_path = project_root / config.paths.agents_md
-    agents_path.write_bytes(content.encode("utf-8"))
+    agents_path.write_bytes(content_bytes)
 
 
 def sync_claude_md(project_root: Path, config: GzkitConfig) -> None:

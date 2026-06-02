@@ -1,4 +1,4 @@
-"""Behave step definitions for constitutional invariant composition (OBPI-0.0.37-02/03/04/13).
+"""Behave step definitions for constitutional invariant composition (OBPI-0.0.37-02/03/04/13/14).
 
 @covers REQ-0.0.37-02-01
 @covers REQ-0.0.37-02-02
@@ -13,6 +13,10 @@
 @covers REQ-0.0.37-13-03
 @covers REQ-0.0.37-13-04
 @covers REQ-0.0.37-13-05
+@covers REQ-0.0.37-14-01
+@covers REQ-0.0.37-14-02
+@covers REQ-0.0.37-14-03
+@covers REQ-0.0.37-14-04
 """
 
 from __future__ import annotations
@@ -449,3 +453,71 @@ def step_custom_section_bullet_classification(context, classification) -> None: 
     assert custom.bullets[0].classification == classification, (
         f"expected {classification!r}, got {custom.bullets[0].classification!r}"
     )
+
+
+# OBPI-0.0.37-14 — Wire sync through the renderer; retire the monolith
+
+
+def _sync_agents_md_via_model(root: Path) -> None:
+    """Render AGENTS.md through the model pipeline (sync_agents_md)."""
+    from gzkit.config import GzkitConfig  # noqa: PLC0415
+    from gzkit.sync_surfaces import sync_agents_md  # noqa: PLC0415
+
+    config = GzkitConfig.load(root / ".gzkit.json")
+    sync_agents_md(root, config)
+
+
+@when("I sync AGENTS.md via the model pipeline")
+def step_sync_agents_md_via_model(context) -> None:  # type: ignore[no-untyped-def]
+    _sync_agents_md_via_model(Path.cwd())
+
+
+@given("AGENTS.md has been synced via the model pipeline")
+def step_agents_md_synced_via_model(context) -> None:  # type: ignore[no-untyped-def]
+    _sync_agents_md_via_model(Path.cwd())
+
+
+@then("the committed AGENTS.md matches the model render")
+def step_committed_agents_md_matches_model(context) -> None:  # type: ignore[no-untyped-def]
+    from gzkit.governance.trust_audits.invariant_coherence import (  # noqa: PLC0415
+        validate_invariant_coherence,
+    )
+
+    errors = validate_invariant_coherence(Path.cwd())
+    assert errors == [], f"expected no coherence drift, got: {errors}"
+
+
+@then("the rendered AGENTS.md contains the project purpose value")
+def step_rendered_contains_purpose(context) -> None:  # type: ignore[no-untyped-def]
+    from gzkit.config import GzkitConfig  # noqa: PLC0415
+    from gzkit.sync_surfaces import get_project_context  # noqa: PLC0415
+
+    root = Path.cwd()
+    config = GzkitConfig.load(root / ".gzkit.json")
+    purpose = get_project_context(root, config)["project_purpose"]
+    rendered = (root / "AGENTS.md").read_text(encoding="utf-8")
+    assert purpose in rendered, f"purpose {purpose!r} not found in rendered AGENTS.md"
+
+
+@when("I hand-edit AGENTS.md outside the render path")
+def step_hand_edit_agents_md(context) -> None:  # type: ignore[no-untyped-def]
+    agents_path = Path.cwd() / "AGENTS.md"
+    original = agents_path.read_bytes()
+    agents_path.write_bytes(original + b"\n\nHAND_EDITED_MARKER_SHOULD_NOT_SURVIVE\n")
+
+
+@then('"gz validate --invariant-coherence" reports a coherence error')
+def step_invariant_coherence_reports_error(context) -> None:  # type: ignore[no-untyped-def]
+    from gzkit.governance.trust_audits.invariant_coherence import (  # noqa: PLC0415
+        validate_invariant_coherence,
+    )
+
+    errors = validate_invariant_coherence(Path.cwd())
+    assert len(errors) > 0, "expected a coherence error after hand-edit, got none"
+    assert errors[0].type == "invariant_coherence", f"unexpected error type: {errors[0].type}"
+
+
+@then('the rendered AGENTS.md contains the section "{section}"')
+def step_rendered_contains_section(context, section) -> None:  # type: ignore[no-untyped-def]
+    rendered = (Path.cwd() / "AGENTS.md").read_text(encoding="utf-8")
+    assert section in rendered, f"section {section!r} not found in rendered AGENTS.md"

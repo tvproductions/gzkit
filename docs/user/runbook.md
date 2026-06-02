@@ -907,6 +907,25 @@ uv run gz register-adrs            # Register existing ADR packages into ledger
 
 ---
 
+## AGENTS.md Surface (model-rendered — OBPI-0.0.37-14)
+
+`AGENTS.md` is a **rendered artifact** — do not edit it directly. Direct edits are
+overwritten on the next `gz agent sync control-surfaces` run and are caught by
+`gz validate --invariant-coherence`.
+
+**To change AGENTS.md content:**
+1. Edit `.gzkit/templates/agents.md` (the model construction source).
+2. Run `uv run gz agent sync control-surfaces` to re-render.
+3. Run `uv run gz validate --invariant-coherence` to confirm no drift.
+
+**To verify the committed surface matches the model render:**
+```bash
+uv run gz governance render --target agents-md --check
+uv run gz validate --invariant-coherence
+```
+
+---
+
 ## Rules Surface
 
 Canonical rules live at `.gzkit/rules/<slug>.md` (authored source-of-truth).

@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.cli import main
+from gzkit.traceability import covers
 from tests.commands.common import (
     CliRunner,
     _git_subprocess_patcher,
@@ -200,6 +201,128 @@ class TestSyncCommand(unittest.TestCase):
             )
 
             self.assertEqual(check_result.exit_code, 0, msg=check_result.output)
+
+    @covers("REQ-0.0.37-14-01")
+    def test_sync_agents_md_does_not_call_render_template_agents(self) -> None:
+        """sync_agents_md MUST render from AgentContract model; render_template('agents')
+        must NOT be invoked — REQ-0.0.37-14-01."""
+        with (
+            _InitFromTemplate(),
+            patch("gzkit.sync_surfaces.render_template", return_value="# mocked") as mock_rt,
+        ):
+            from gzkit.config import GzkitConfig
+            from gzkit.sync_surfaces import sync_agents_md
+
+            project_root = Path.cwd()
+            config = GzkitConfig.load(project_root / ".gzkit.json")
+            sync_agents_md(project_root, config)
+            for call in mock_rt.call_args_list:
+                self.assertNotEqual(
+                    call.args[0] if call.args else call.kwargs.get("template"),
+                    "agents",
+                    "render_template('agents') must not be called by sync_agents_md",
+                )
+
+    @covers("REQ-0.0.37-14-02")
+    def test_sync_agents_md_purpose_comes_through_model_pipeline(self) -> None:
+        """The rendered AGENTS.md must contain the purpose value from get_project_context
+        routed through the model pipeline — REQ-0.0.37-14-02."""
+        with _InitFromTemplate():
+            from gzkit.config import GzkitConfig
+            from gzkit.sync_surfaces import get_project_context, sync_agents_md
+
+            project_root = Path.cwd()
+            config = GzkitConfig.load(project_root / ".gzkit.json")
+            ctx = get_project_context(project_root, config)
+            sync_agents_md(project_root, config)
+            rendered = (project_root / "AGENTS.md").read_text(encoding="utf-8")
+            self.assertIn(
+                ctx["project_purpose"],
+                rendered,
+                "purpose must appear in AGENTS.md via model pipeline",
+            )
+
+    @covers("REQ-0.0.37-14-03")
+    def test_invariant_coherence_catches_hand_edit_to_agents_md(self) -> None:
+        """A hand-edit that appends bytes to AGENTS.md must cause validate_invariant_coherence
+        to return a ValidationError — the model render does not reproduce the hand-edit
+        (REQ-0.0.37-14-03)."""
+        runner = CliRunner()
+        with _InitFromTemplate():
+            from gzkit.governance.trust_audits.invariant_coherence import (
+                validate_invariant_coherence,
+            )
+
+            project_root = Path.cwd()
+
+            # First sync to establish canonical render output
+            sync_result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
+            self.assertEqual(sync_result.exit_code, 0, msg=sync_result.output)
+
+            # Coherence must pass immediately after sync
+            errors_before = validate_invariant_coherence(project_root)
+            self.assertEqual(errors_before, [], "coherence must pass immediately after sync")
+
+            # Hand-edit: append a non-canonical marker that the parse→render cycle won't reproduce
+            agents_path = project_root / "AGENTS.md"
+            original = agents_path.read_bytes()
+            agents_path.write_bytes(original + b"\n\nHAND_EDITED_MARKER_SHOULD_NOT_SURVIVE\n")
+
+            # Coherence must fail closed on the hand-edit
+            errors_after = validate_invariant_coherence(project_root)
+            self.assertGreater(
+                len(errors_after),
+                0,
+                "hand-edit to AGENTS.md must produce a coherence validation error",
+            )
+            self.assertEqual(errors_after[0].type, "invariant_coherence")
+
+    @covers("REQ-0.0.37-14-04")
+    def test_model_render_semantically_equivalent_to_pre_migration(self) -> None:
+        """The AgentContract model rendered at default temperature must contain the same
+        key structural sections and content as the pre-migration AGENTS.md — REQ-0.0.37-14-04."""
+        runner = CliRunner()
+        with _InitFromTemplate():
+            project_root = Path.cwd()
+            sync_result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
+            self.assertEqual(sync_result.exit_code, 0, msg=sync_result.output)
+            rendered = (project_root / "AGENTS.md").read_text(encoding="utf-8")
+            # Key structural sections must survive the parse→render cycle
+            self.assertIn("Behavior Rules", rendered)
+            self.assertIn("PRIME DIRECTIVE", rendered)
+            self.assertIn("Gate Covenant", rendered)
+            # Project identity populated
+            self.assertIn("gzkit", rendered)
+            # Substantive content (not a stub)
+            self.assertGreater(
+                len(rendered),
+                10_000,
+                "rendered AGENTS.md must be substantive (≥10k chars)",
+            )
+            # Markdown tables must be structurally intact: every delimiter row
+            # (|---|---|) must immediately follow its header row, with no blank
+            # line between them — a blank gap silently breaks GFM table rendering
+            # (the whitespace-inflation regression the j2 template fix addresses).
+            lines = rendered.splitlines()
+            delimiter_rows = [
+                i
+                for i, ln in enumerate(lines)
+                if "---" in ln
+                and "|" in ln
+                and set(ln.replace("|", "").replace("-", "").replace(":", "").strip()) == set()
+            ]
+            self.assertGreater(
+                len(delimiter_rows),
+                0,
+                "rendered AGENTS.md must contain at least one markdown table",
+            )
+            for idx in delimiter_rows:
+                self.assertGreater(idx, 0, "table delimiter cannot be the first line")
+                self.assertTrue(
+                    lines[idx - 1].lstrip().startswith("|"),
+                    f"table delimiter at line {idx + 1} must immediately follow a header "
+                    f"row, not a blank line — got preceding line {lines[idx - 1]!r}",
+                )
 
     def test_agent_sync_dry_run_reports_complete_write_set(self) -> None:
         """Dry-run output must list every path that sync_all() would touch."""

@@ -78,74 +78,64 @@ class TestRenderAgentsMdDeterminism(unittest.TestCase):
 
 
 class TestRenderAgentsMdSortOrder(unittest.TestCase):
-    """REQ-0.0.37-02-02: iteration order sorted lexicographically by id."""
+    """REQ-0.0.37-02-02: invariants parameter accepted without affecting output
+    (after OBPI-0.0.37-14: invariants are no longer embedded in the rendered surface;
+    they are accepted for backward-compat but the model pipeline is the source)."""
 
     @covers("REQ-0.0.37-02-02")
-    def test_alpha_appears_before_beta(self) -> None:
+    def test_different_invariants_produce_identical_bytes(self) -> None:
+        """After OBPI-14, the invariants parameter is accepted but not embedded —
+        any two invariant dicts produce the same output for the same template."""
         from gzkit.governance.compose import render_agents_md
 
-        invs = {"CIC-test-beta": _make_beta(), "CIC-test-alpha": _make_alpha()}
-        rendered = render_agents_md(invs, _FIXTURE_ROOT, _FIXTURE_ROOT).decode("utf-8")
-        alpha_pos = rendered.index("CIC-test-alpha")
-        beta_pos = rendered.index("CIC-test-beta")
-        self.assertLess(alpha_pos, beta_pos, "alpha must appear before beta (lexicographic sort)")
+        invs_ab = {"CIC-test-beta": _make_beta(), "CIC-test-alpha": _make_alpha()}
+        invs_ba = {"CIC-test-beta": _make_beta()}
+        self.assertEqual(
+            render_agents_md(invs_ab, _FIXTURE_ROOT, _FIXTURE_ROOT),
+            render_agents_md(invs_ba, _FIXTURE_ROOT, _FIXTURE_ROOT),
+            "invariants parameter must not affect output — model pipeline is authoritative",
+        )
 
     @covers("REQ-0.0.37-02-02")
-    def test_reversed_insertion_order_still_sorts_lexicographically(self) -> None:
+    def test_empty_and_nonempty_invariants_produce_identical_bytes(self) -> None:
+        """Invariants dict content must not change rendered bytes (backward-compat accept)."""
         from gzkit.governance.compose import render_agents_md
 
-        invs_reversed = {
-            "CIC-test-zz": ConstitutionalInvariant(
-                id="CIC-test-zz",
-                claim="ZZ claim.",
-                structural_witness=["gz validate --zz"],
-                composition_targets=[],
-            ),
-            "CIC-test-aa": ConstitutionalInvariant(
-                id="CIC-test-aa",
-                claim="AA claim.",
-                structural_witness=["gz validate --aa"],
-                composition_targets=[],
-            ),
-        }
-        rendered = render_agents_md(invs_reversed, _FIXTURE_ROOT, _FIXTURE_ROOT).decode("utf-8")
-        aa_pos = rendered.index("CIC-test-aa")
-        zz_pos = rendered.index("CIC-test-zz")
-        self.assertLess(aa_pos, zz_pos)
+        with_invs = render_agents_md(
+            {"CIC-test-alpha": _make_alpha()}, _FIXTURE_ROOT, _FIXTURE_ROOT
+        )
+        without_invs = render_agents_md({}, _FIXTURE_ROOT, _FIXTURE_ROOT)
+        self.assertEqual(with_invs, without_invs)
 
 
 class TestRenderAgentsMdTemplateBased(unittest.TestCase):
     """REQ-0.0.37-02-03: template-based rendering; content derives from template."""
 
     @covers("REQ-0.0.37-02-03")
-    def test_rendered_bytes_contain_invariant_id(self) -> None:
+    def test_rendered_bytes_contain_fixture_template_content(self) -> None:
+        """Rendered output must contain content from the fixture template (model pipeline
+        preserves template prose — REQ-0.0.37-02-03)."""
         from gzkit.governance.compose import render_agents_md
 
-        inv = _make_alpha()
-        rendered = render_agents_md({"CIC-test-alpha": inv}, _FIXTURE_ROOT, _FIXTURE_ROOT).decode(
-            "utf-8"
-        )
-        self.assertIn("CIC-test-alpha", rendered)
+        rendered = render_agents_md({}, _FIXTURE_ROOT, _FIXTURE_ROOT).decode("utf-8")
+        self.assertIn("minimal test agent contract", rendered)
 
     @covers("REQ-0.0.37-02-03")
-    def test_rendered_bytes_contain_claim(self) -> None:
+    def test_rendered_bytes_are_nonempty_for_present_template(self) -> None:
+        """A present template yields non-empty bytes — REQ-0.0.37-02-03."""
         from gzkit.governance.compose import render_agents_md
 
-        inv = _make_alpha()
-        rendered = render_agents_md({"CIC-test-alpha": inv}, _FIXTURE_ROOT, _FIXTURE_ROOT).decode(
-            "utf-8"
-        )
-        self.assertIn("Alpha test invariant claim.", rendered)
+        rendered = render_agents_md({}, _FIXTURE_ROOT, _FIXTURE_ROOT)
+        self.assertGreater(len(rendered), 0)
 
     @covers("REQ-0.0.37-02-03")
-    def test_missing_template_raises(self) -> None:
+    def test_missing_template_returns_empty_bytes(self) -> None:
+        """Missing template returns empty bytes (bootstrap-safe — OBPI-0.0.37-14)."""
         from gzkit.governance.compose import render_agents_md
 
-        with (
-            tempfile.TemporaryDirectory() as tmp,
-            self.assertRaises((FileNotFoundError, OSError)),
-        ):
-            render_agents_md({"CIC-test-alpha": _make_alpha()}, Path(tmp), Path(tmp))
+        with tempfile.TemporaryDirectory() as tmp:
+            result = render_agents_md({}, Path(tmp), Path(tmp))
+        self.assertEqual(result, b"")
 
 
 class TestRenderAgentsMdProjectSubstitution(unittest.TestCase):

@@ -31,10 +31,11 @@ from gzkit.traceability import covers
 _MINIMAL_TEMPLATE = """\
 # AGENTS.md
 
-Composition output:
+A minimal test agent contract.
 
-{% for inv_id, inv in invariants.items() %}- {{ inv_id }}: {{ inv.claim }}
-{% endfor %}
+## Behavior Rules
+
+- Always read AGENTS.md before starting work.
 """
 
 _TEST_INVARIANT = {

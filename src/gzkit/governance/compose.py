@@ -1,4 +1,4 @@
-"""Composition renderer for constitutional invariant registry (ADR-0.0.37, OBPI-0.0.37-02)."""
+"""Composition renderer for AGENTS.md via the AgentContract content model (ADR-0.0.37-14)."""
 
 from __future__ import annotations
 
@@ -6,6 +6,8 @@ from collections.abc import Mapping
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
+from gzkit.content.parse import parse as _parse_content
+from gzkit.content.render import render as _render_content
 from gzkit.governance.invariants import ConstitutionalInvariant
 from gzkit.sync_surfaces import get_project_context
 from gzkit.templates import SafeDict
@@ -51,32 +53,20 @@ def render_agents_md(
     template_root: Path,
     project_root: Path,
 ) -> bytes:
-    """Render AGENTS.md bytes from the invariant registry and project context.
+    """Render AGENTS.md bytes via the content model pipeline (OBPI-0.0.37-14).
 
-    Byte-deterministic: same inputs produce identical bytes across calls and
-    processes. Iteration order is always lexicographic by id (REQ-0.0.37-02-02).
-    Rendering is two-pass: Jinja2 (or stdlib string.Template) projects the
-    invariant registry, then str.format substitutes the project-context
-    placeholders (``{project_name}``, ``{skills_catalog}``, ``{local_content}``,
-    …). ``{sync_date}`` resolves to the committed AGENTS.md date so re-renders
-    stay byte-stable (GHI #504). Never LLM-driven.
+    Pipeline: template text → str.format_map(context) → parse(AgentContract)
+    → render(model, "claude", temperature="heavy").
+
+    The ``invariants`` parameter is accepted for backward compatibility with
+    existing callers (governance_render_cmd) but is not used in the model
+    pipeline — the template is the independent source. Bootstrap-safe: returns
+    empty bytes when the template file is absent.
     """
-    sorted_invariants: dict[str, ConstitutionalInvariant] = dict(sorted(invariants.items()))
     template_path = template_root / "agents.md"
-    template_text = template_path.read_text(encoding="utf-8")
-
-    try:
-        from jinja2 import BaseLoader, Environment  # type: ignore
-
-        env = Environment(loader=BaseLoader(), keep_trailing_newline=True)
-        tmpl = env.from_string(template_text)
-        rendered = tmpl.render(invariants=sorted_invariants)
-    except ImportError:
-        from string import Template
-
-        tmpl_stdlib = Template(template_text)
-        rendered = tmpl_stdlib.substitute(invariants=sorted_invariants)
-
-    rendered = rendered.format_map(SafeDict(_substitution_context(project_root)))
-
-    return rendered.encode("utf-8")
+    if not template_path.exists():
+        return b""
+    context = _substitution_context(project_root)
+    resolved_text = template_path.read_text(encoding="utf-8").format_map(SafeDict(context))
+    model = _parse_content(resolved_text, "AgentContract")
+    return _render_content(model, "claude", temperature="heavy")

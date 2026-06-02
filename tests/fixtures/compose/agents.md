@@ -1,12 +1,8 @@
-# AGENTS
+# AGENTS.md
 
-## Constitutional Invariants
+A minimal test agent contract for compose.py unit tests.
 
-{% for inv_id, inv in invariants.items() %}
-### {{ inv_id }}
+## Behavior Rules
 
-{{ inv.claim }}
-
-Witness: {% for w in inv.structural_witness %}{{ w }}{% if not loop.last %}, {% endif %}{% endfor %}
-
-{% endfor %}
+- Always read AGENTS.md before starting work.
+- Use `uv run` for Python command execution.

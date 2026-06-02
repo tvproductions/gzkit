@@ -137,3 +137,31 @@ Feature: Constitutional invariant composition renderer (ADR-0.0.37, OBPI-0.0.37-
     Given a minimal markdown document with an unmatchable rule
     When I parse it as AgentContract via the content API
     Then the custom-section bullet classification is "Ambiguous"
+
+  # OBPI-0.0.37-14 — Wire sync through the renderer; retire the monolith
+
+  @REQ-0.0.37-14-01
+  Scenario: sync_agents_md renders AGENTS.md via the content model, not the monolith
+    Given the constitutional invariant registry has at least one entry
+    When I sync AGENTS.md via the model pipeline
+    Then the committed AGENTS.md matches the model render
+
+  @REQ-0.0.37-14-02
+  Scenario: The project purpose is sourced through the model pipeline
+    Given the constitutional invariant registry has at least one entry
+    When I sync AGENTS.md via the model pipeline
+    Then the rendered AGENTS.md contains the project purpose value
+
+  @REQ-0.0.37-14-03
+  Scenario: A hand-edit to AGENTS.md fails the invariant-coherence gate
+    Given the constitutional invariant registry has at least one entry
+    And AGENTS.md has been synced via the model pipeline
+    When I hand-edit AGENTS.md outside the render path
+    Then "gz validate --invariant-coherence" reports a coherence error
+
+  @REQ-0.0.37-14-04
+  Scenario: The model render is semantically equivalent to the pre-migration contract
+    Given the constitutional invariant registry has at least one entry
+    When I sync AGENTS.md via the model pipeline
+    Then the rendered AGENTS.md contains the section "Behavior Rules"
+    And the rendered AGENTS.md contains the section "Gate Covenant"

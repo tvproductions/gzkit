@@ -3,7 +3,7 @@ id: OBPI-0.0.37-14-wire-sync-retire-monolith
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 14
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.37-14-wire-sync-retire-monolith: Wire Sync Through the Renderer, Retire the Monolith
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 - **Checklist Item:** #14 — "OBPI-0.0.37-14 — Wire sync_agents_md through the renderer; retire monolithic template; --invariant-coherence diffs the model render"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -37,7 +37,17 @@ that delivers zero hand-authored prose at the rendered location.
 - `src/gzkit/governance/compose.py` — repoint/retire the registry-only renderer in favor of the model renderer
 - `src/gzkit/governance/trust_audits/invariant_coherence.py` — diff the model render against committed AGENTS.md
 - `src/gzkit/templates/agents.md` — retire the monolithic prose template (becomes a structural shell or is removed)
+- `AGENTS.md` — the rendered output surface; re-rendered from the model pipeline (the OBPI's deliverable)
 - `tests/commands/test_sync_cmds.py` — sync-from-model behavior tests
+- `tests/governance/test_compose.py` — coupled-surface coherence: compose.py renderer semantics changed; tests must reflect new model pipeline
+- `tests/governance/test_invariant_coherence.py` — coupled-surface coherence: _MINIMAL_TEMPLATE uses Jinja2 which conflicts with new format_map pipeline
+- `tests/commands/test_governance_render.py` — coupled-surface coherence: uses compose fixture; updated to reflect new renderer behavior
+- `tests/fixtures/compose/agents.md` — update from Jinja2 to format-string fixture compatible with new model pipeline
+- `src/gzkit/content/templates/agentcontract/claude.md.j2` — coupled-surface coherence (operator-approved 2026-06-02): whitespace-control markers so the now-live model render does not blank-line-inflate and break GFM tables. OBPI-13's artifact, not in OBPI-14's denial block; expansion required because OBPI-14 makes this the live AGENTS.md render path.
+- `features/constitutional_invariants.feature` — Gate 4 (Heavy): @REQ-0.0.37-14-01..04 BDD scenarios
+- `features/steps/constitutional_invariants_steps.py` — Gate 4 step definitions for the new scenarios
+- `data/behave_coverage_waivers.json` — Gate 4: REQ-05 SUPPORT-kind waiver (behave gate is REQ-kind-agnostic)
+- `docs/user/runbook.md` — Gate 3 (Heavy): record new edit path for AGENTS.md (REQ-05)
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-14-wire-sync-retire-monolith.md` — this brief
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md` — parent ADR (read-only)
 
@@ -183,17 +193,23 @@ literals are gone, and the coherence gate means "the committed surface equals th
 
 ### Key Proof
 
-Editing a bullet in the master model and running `gz agent sync` re-renders AGENTS.md; a direct
-hand-edit to AGENTS.md fails `gz validate --invariant-coherence`.
+
+Editing a bullet in .gzkit/templates/agents.md and running `gz agent sync control-surfaces` re-renders AGENTS.md from the model; a direct hand-edit to AGENTS.md fails `gz validate --invariant-coherence`. Verified by test_invariant_coherence_catches_hand_edit_to_agents_md (GREEN) and BDD @REQ-0.0.37-14-03. Receipts: tests arb-step-unittest-98691232e952421a917b071593ce8b4c (5829 pass), lint arb-ruff-079bd09f3b8e462bab8acdb6593c5c87, typecheck arb-step-typecheck-6fce677da56646ffbb3dccfc5c4c9be0.
 
 ### Implementation Summary
 
+
 - Decision item implemented (verbatim): "OBPI-0.0.37-14 — Wire sync_agents_md through the renderer; retire monolithic template; --invariant-coherence diffs the model render."
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- sync_agents_md (src/gzkit/sync_surfaces.py): replaced render_template("agents") with the model pipeline — template → format_map(context) → parse(AgentContract) → render(model, "claude", temperature="heavy"); bootstrap fallback to monolith when template absent.
+- render_agents_md (src/gzkit/governance/compose.py): switched to the same model pipeline; invariants param retained for backward-compat with governance_render_cmd but the template is the authoritative independent source.
+- --invariant-coherence now diffs the model render against committed AGENTS.md, no longer a monolith-re-renders-to-itself check.
+- Post-attestation coupled-surface fix (operator-approved 2026-06-02): the now-live model render blank-line-inflated AGENTS.md (772 lines) and broke every GFM table (blank line between header and |---| delimiter). Root cause: claude.md.j2 (OBPI-13 artifact) lacked whitespace-control markers and the Jinja2 env has no trim_blocks. Fixed with {%- -%} markers + `pillar.lines | join('\n')`, achieving byte-parity with the pre-migration monolith output (375 lines, 0 broken tables; only the Control-Surfaces date differs, which sync resolves). REQ-04 test strengthened to assert table header/delimiter adjacency (the original blind spot — it checked text presence + char count only). Outcome: surface-weight-neutral (no waiver needed) and invariant-coherence holds.
+- Two pre-existing in-flight blockers fixed to land the sync (DO IT RIGHT / direct-fix moratorium): (1) src/gzkit/commands/validate_task_envelope.py `_sig_a_attribution_drift` was xenon rank D (OBPI-0.0.64 code on HEAD via prior bypass) — extracted `_sig_a_is_not_labor_event` helper, behavior-preserving (21 task-envelope tests green), now rank C; (2) cleared a stranded .git/COMMIT_EDITMSG guard from a prior session's incomplete sync.
+- Files modified: src/gzkit/sync_surfaces.py, src/gzkit/governance/compose.py, src/gzkit/content/templates/agentcontract/claude.md.j2 (whitespace/byte-parity fix), src/gzkit/commands/validate_task_envelope.py (complexity direct-fix), tests/commands/test_sync_cmds.py (4 new @covers tests + table-structure assertion), tests/governance/test_compose.py, tests/governance/test_invariant_coherence.py, tests/fixtures/compose/agents.md, features/constitutional_invariants.feature (4 BDD scenarios), features/steps/constitutional_invariants_steps.py, data/behave_coverage_waivers.json (REQ-05 SUPPORT waiver), docs/user/runbook.md (AGENTS.md Surface section), AGENTS.md (re-rendered from model, byte-parity).
+- Tests added: 4 unit (REQ-01..04) + 4 BDD scenarios (@REQ-0.0.37-14-01..04).
+- Date completed: 2026-06-02
+- Attestation status: operator attested "attest completed" at Stage 4; approved fix-forward for the table-render defect surfaced post-attestation.
+- Defects noted: table-render regression (fixed in same OBPI, see above); logged as improvement in .gzkit/insights/agent-insights.jsonl per Behavior Rule 11. Pre-existing xenon-D complexity in validate_task_envelope.py direct-fixed.
 
 ## Tracked Defects
 
@@ -201,12 +217,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.37-14 wired sync_agents_md and compose.render_agents_md through the AgentContract model pipeline (template → format_map → parse → render heavy); --invariant-coherence now diffs the model render against committed AGENTS.md and catches hand-edits. 4 unit @covers tests (REQ-01..04) + 4 BDD scenarios GREEN; REQ-05 SUPPORT waived. Receipts: arb-step-unittest-98691232e952421a917b071593ce8b4c (5829 pass), arb-ruff-079bd09f3b8e462bab8acdb6593c5c87, arb-step-typecheck-6fce677da56646ffbb3dccfc5c4c9be0.
+- Date: 2026-06-02
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-02
 
 **Evidence Hash:** -
