@@ -202,6 +202,41 @@ class TestSyncCommand(unittest.TestCase):
 
             self.assertEqual(check_result.exit_code, 0, msg=check_result.output)
 
+    @covers("REQ-0.0.37-15-01")
+    def test_sync_agents_md_defaults_to_full_density_without_manifest(self) -> None:
+        """REQ-0.0.37-15-01 (no-manifest path): a fresh/consuming project ships no
+        data/vendor-manifest.json, so temperature_for fails closed. sync_agents_md
+        MUST still render — defaulting to full density 'heavy' (render MORE, never
+        silently thin the primary contract). Operator directive 2026-06-03: the only
+        in-code default is this scalar at the call site, not a vendor->temperature
+        table in the resolver."""
+        import gzkit.sync_surfaces as ss
+
+        with _InitFromTemplate():
+            from gzkit.config import GzkitConfig
+
+            project_root = Path.cwd()
+            config = GzkitConfig.load(project_root / ".gzkit.json")
+
+            # Discriminating: force the general-control resolver to fail closed
+            # (the no-manifest condition) and assert the call site renders at heavy.
+            with (
+                patch.object(ss, "render_content_model", return_value=b"# rendered") as mock_render,
+                patch(
+                    "gzkit.content.vendors.temperature_for",
+                    side_effect=ValueError("no manifest declaration"),
+                ),
+            ):
+                ss.sync_agents_md(project_root, config)
+
+            self.assertTrue(mock_render.called, "sync_agents_md must still render AGENTS.md")
+            _, kwargs = mock_render.call_args
+            self.assertEqual(
+                kwargs.get("temperature"),
+                "heavy",
+                "no-manifest path must default to full density, not silently thin",
+            )
+
     @covers("REQ-0.0.37-14-01")
     def test_sync_agents_md_does_not_call_render_template_agents(self) -> None:
         """sync_agents_md MUST render from AgentContract model; render_template('agents')

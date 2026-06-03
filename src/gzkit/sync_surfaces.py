@@ -363,7 +363,17 @@ def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
     if template_path.exists():
         resolved_text = template_path.read_text(encoding="utf-8").format_map(SafeDict(context))
         model = _parse_content(resolved_text, "AgentContract")
-        content_bytes = render_content_model(model, "claude", temperature="heavy")
+        from gzkit.content.vendors import temperature_for as _temperature_for  # lazy
+
+        try:
+            claude_temp = _temperature_for("AgentContract", "claude", project_root=project_root)
+        except ValueError:
+            # Fresh/consuming projects ship no data/vendor-manifest.json, so the
+            # general-control resolver fails closed. AGENTS.md must still render
+            # here, so default to full density — render MORE, never silently
+            # thin the primary contract (operator directive 2026-06-03).
+            claude_temp = "heavy"
+        content_bytes = render_content_model(model, "claude", temperature=claude_temp)
     else:
         content_bytes = render_template("agents", **context).encode("utf-8")
 
@@ -555,6 +565,8 @@ def render_content_surface(
     vendor: str,
     project_root: Path,
     updated: list[str],
+    *,
+    temperature: str = "heavy",
 ) -> None:
     """Write rendered bytes for *model* to *dest_path* using the vendor template.
 
@@ -562,7 +574,7 @@ def render_content_surface(
     Pydantic content model rather than an on-disk canonical file (ADR-0.0.34 §2).
     Idempotent: bytes-identical destinations are left untouched.
     """
-    rendered = render_content_model(model, vendor)
+    rendered = render_content_model(model, vendor, temperature=temperature)
     dest_path.parent.mkdir(parents=True, exist_ok=True)
     if dest_path.exists() and dest_path.read_bytes() == rendered:
         return

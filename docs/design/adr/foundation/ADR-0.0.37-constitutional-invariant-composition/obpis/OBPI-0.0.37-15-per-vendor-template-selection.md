@@ -3,7 +3,7 @@ id: OBPI-0.0.37-15-per-vendor-template-selection
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 15
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.37-15-per-vendor-template-selection: Per-Vendor Template Selection
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 - **Checklist Item:** #15 — "OBPI-0.0.37-15 — Per-vendor template selection (Codex lite / Claude standard; ends identical mirroring; harness-detection is a forward-reference)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -183,17 +183,24 @@ floor preserved everywhere.
 
 ### Key Proof
 
-The Codex `AgentContract` mirror is materially smaller than the Claude one, yet contains every
-Judgment bullet.
+
+The Codex AgentContract CAN render lite — materially smaller than Claude's heavy and Judgment-complete (0-Kelvin floor): render(model, "codex", temperature="lite") drops every density_min="heavy" bullet while retaining every classification="Judgment" bullet, and differs byte-wise from render(model, "claude", temperature="heavy"). Verified by TestPerVendorTemperatureRouting and 4 BDD scenarios. temperature_for fails closed (ValueError) on an undeclared (content_type, vendor) pair — no in-code default. Gates: unittest 5846 pass (arb-step-unittest-8ed8530c57444a97ba7f833944f66a60), ruff (arb-ruff-26b024ffded744479b7b8158099d5448), typecheck (arb-step-typecheck-bdd2067ceaa249ba94f8c58efa2eb89c), mkdocs (arb-step-mkdocs-7705ebde683f4f0980a13a5f9feba10e); gz validate --vendor-manifest / --req-kind-discipline / --documents clean. NOTE: the selection mechanism landed; the production Codex-lite emission (#519's surface reduction) is a named follow-on, NOT realized here.
 
 ### Implementation Summary
 
+
 - Decision item implemented (verbatim): "OBPI-0.0.37-15 — Per-vendor template selection (Codex lite / Claude standard; ends identical mirroring; harness-detection is a forward-reference)."
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Scope landed: the per-vendor temperature SELECTION mechanism (not the Codex-lite emission — see GHI #519).
+- data/vendor-manifest.json: additive content_type_temperatures sibling block ({"AgentContract": {"codex": "lite", "claude": "heavy"}}); codex added to AgentContract routes; content_type_routes shape unchanged.
+- src/gzkit/schemas/vendor_manifest.json: content_type_temperatures property constraining each temperature to enum {lite, medium, heavy}.
+- src/gzkit/content/vendors.py: temperature_for() resolves the declared temperature and fails closed (ValueError) on an undeclared pair — no in-code vendor->temperature table (operator directive 2026-06-03: temperature is a general control, not a vendor-locked rule); _load_temperatures() loader; _FALLBACK_ROUTES gains codex.
+- src/gzkit/content/templates/agentcontract/codex.md.j2: Codex vendor template (projection precedes rendering, so vendor-neutral at this tier).
+- src/gzkit/sync_surfaces.py (render-call sites only): sync_agents_md resolves temperature via temperature_for with a fail-closed call-site default of "heavy" (fresh/consuming projects ship no manifest — render MORE, never silently thin); render_content_surface gains a temperature parameter.
+- Tests: tests/content/test_vendor_manifest.py TestPerVendorTemperatureRouting (10 tests); tests/commands/test_sync_cmds.py no-manifest default test; features/constitutional_invariants.feature + steps (4 BDD scenarios @REQ-0.0.37-15-01..04).
+- Allowlist expansion (disclosed): features/* (sanctioned by brief Gate 4), tests/commands/test_sync_cmds.py (coupled-surface, Rule 1a), data/behave_coverage_waivers.json (SUPPORT-REQ waiver, sibling precedent), .gzkit/insights/agent-insights.jsonl (Behavior Rule 11).
+- Date completed: 2026-06-03
+- Attestation status: operator attested "attest completed" (Stage 4)
+- Defects noted: Codex-lite emission (the #519 byte reduction) unrealized — routed to GHI #519 with concrete next action.
 
 ## Tracked Defects
 
@@ -201,12 +208,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — operator attested at Stage 4 ceremony after a two-round in-flight course-correction: (1) decoupled the in-code vendor->temperature pairing so temperature is a general control resolved from the manifest, failing closed on undeclared pairs; (2) confirmed OBPI-15 delivers the SELECTION mechanism (manifest -> temperature_for -> renderer, proven by TestPerVendorTemperatureRouting + 4 BDD scenarios), with the Codex-lite emission (#519 byte reduction) explicitly deferred and routed to GHI #519. Gates green: unittest 5846 pass (arb-step-unittest-8ed8530c57444a97ba7f833944f66a60), ruff (arb-ruff-26b024ffded744479b7b8158099d5448), typecheck (arb-step-typecheck-bdd2067ceaa249ba94f8c58efa2eb89c), mkdocs (arb-step-mkdocs-7705ebde683f4f0980a13a5f9feba10e); gz validate --vendor-manifest / --req-kind-discipline / --documents clean.
+- Date: 2026-06-03
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-03
 
 **Evidence Hash:** -

@@ -165,3 +165,30 @@ Feature: Constitutional invariant composition renderer (ADR-0.0.37, OBPI-0.0.37-
     When I sync AGENTS.md via the model pipeline
     Then the rendered AGENTS.md contains the section "Behavior Rules"
     And the rendered AGENTS.md contains the section "Gate Covenant"
+
+  # OBPI-0.0.37-15 — Per-vendor template selection
+
+  @REQ-0.0.37-15-01
+  Scenario: temperature_for resolves per-vendor temperature from manifest
+    Given a vendor manifest declaring AgentContract temperatures codex=lite, claude=heavy
+    When I call temperature_for for AgentContract and claude
+    Then the resolved temperature is "heavy"
+
+  @REQ-0.0.37-15-02
+  Scenario: temperature_for fails closed for an undeclared vendor
+    Given a vendor manifest declaring AgentContract temperatures codex=lite, claude=heavy
+    When I call temperature_for for AgentContract and an unknown vendor
+    Then a temperature ValueError is raised
+
+  @REQ-0.0.37-15-03
+  Scenario: Codex lite render preserves all Judgment bullets
+    Given an AgentContract with a Judgment bullet and a heavy-only bullet
+    When I render the contract for codex at lite temperature
+    Then the Judgment bullet is present in the rendered output
+    And the heavy-only bullet is absent from the rendered output
+
+  @REQ-0.0.37-15-04
+  Scenario: Codex and Claude AgentContract renders differ by temperature
+    Given an AgentContract with a Judgment bullet and a heavy-only bullet
+    When I render the contract for codex at lite and claude at heavy
+    Then the two rendered outputs differ

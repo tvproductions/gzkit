@@ -13,6 +13,17 @@
         "items": {"type": "string"},
         "minItems": 1
       }
+    },
+    "content_type_temperatures": {
+      "type": "object",
+      "description": "Per-vendor temperature for each content type. Each key is a content type class name; each value maps vendor name to temperature tier.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string",
+          "enum": ["lite", "medium", "heavy"]
+        }
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "content_type_routes": {
-    "AgentContract": ["claude"],
+    "AgentContract": ["claude", "codex"],
     "Bullet": ["claude"],
     "Chore": ["claude"],
     "Handoff": ["claude"],
@@ -8,5 +8,8 @@
     "Rule": ["claude"],
     "Scenario": ["claude"],
     "Skill": ["claude"]
+  },
+  "content_type_temperatures": {
+    "AgentContract": {"codex": "lite", "claude": "heavy"}
   }
 }

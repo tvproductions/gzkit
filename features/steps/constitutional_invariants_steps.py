@@ -1,4 +1,4 @@
-"""Behave step definitions for constitutional invariant composition (OBPI-0.0.37-02/03/04/13/14).
+"""Behave step definitions for constitutional invariant composition (OBPI-0.0.37-02/03/04/13/14/15).
 
 @covers REQ-0.0.37-02-01
 @covers REQ-0.0.37-02-02
@@ -17,6 +17,10 @@
 @covers REQ-0.0.37-14-02
 @covers REQ-0.0.37-14-03
 @covers REQ-0.0.37-14-04
+@covers REQ-0.0.37-15-01
+@covers REQ-0.0.37-15-02
+@covers REQ-0.0.37-15-03
+@covers REQ-0.0.37-15-04
 """
 
 from __future__ import annotations
@@ -521,3 +525,132 @@ def step_invariant_coherence_reports_error(context) -> None:  # type: ignore[no-
 def step_rendered_contains_section(context, section) -> None:  # type: ignore[no-untyped-def]
     rendered = (Path.cwd() / "AGENTS.md").read_text(encoding="utf-8")
     assert section in rendered, f"section {section!r} not found in rendered AGENTS.md"
+
+
+# ---------------------------------------------------------------------------
+# OBPI-0.0.37-15 — Per-vendor template selection
+# ---------------------------------------------------------------------------
+
+
+@given("a vendor manifest declaring AgentContract temperatures codex=lite, claude=heavy")
+def step_manifest_with_temperatures(context) -> None:  # type: ignore[no-untyped-def]
+    import json
+    import tempfile
+
+    tmp = tempfile.mkdtemp()
+    context.add_cleanup(lambda: __import__("shutil").rmtree(tmp, ignore_errors=True))
+    root = Path(tmp)
+    (root / "data").mkdir()
+    manifest = {
+        "content_type_routes": {"AgentContract": ["claude", "codex"]},
+        "content_type_temperatures": {"AgentContract": {"codex": "lite", "claude": "heavy"}},
+    }
+    (root / "data" / "vendor-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    context.temp_project_root = root
+
+
+@when("I call temperature_for for AgentContract and claude")
+def step_call_temperature_for_claude(context) -> None:  # type: ignore[no-untyped-def]
+    from gzkit.content.vendors import temperature_for
+
+    context.temperature_result = temperature_for(
+        "AgentContract", "claude", project_root=context.temp_project_root
+    )
+    context.temperature_error = None
+
+
+@when("I call temperature_for for AgentContract and an unknown vendor")
+def step_call_temperature_for_unknown(context) -> None:  # type: ignore[no-untyped-def]
+    from gzkit.content.vendors import temperature_for
+
+    context.temperature_result = None
+    try:
+        temperature_for("AgentContract", "__unknown__", project_root=context.temp_project_root)
+        context.temperature_error = None
+    except ValueError as exc:
+        context.temperature_error = exc
+
+
+@then('the resolved temperature is "{temperature}"')
+def step_resolved_temperature(context, temperature) -> None:  # type: ignore[no-untyped-def]
+    assert context.temperature_result == temperature, (
+        f"expected {temperature!r}, got {context.temperature_result!r}"
+    )
+
+
+@then("a temperature ValueError is raised")
+def step_temperature_value_error_raised(context) -> None:  # type: ignore[no-untyped-def]
+    assert context.temperature_error is not None, "expected ValueError but none was raised"
+    assert isinstance(context.temperature_error, ValueError)
+
+
+@given("an AgentContract with a Judgment bullet and a heavy-only bullet")
+def step_agent_contract_with_mixed_bullets(context) -> None:  # type: ignore[no-untyped-def]
+    import json
+    import tempfile
+
+    from gzkit.content.models import AgentContract, Bullet
+
+    context.mixed_contract = AgentContract(
+        name="Test",
+        purpose="Test contract",
+        rules=[
+            Bullet(text="judgment-bullet", classification="Judgment", density_min="lite"),
+            Bullet(text="heavy-only-bullet", density_min="heavy"),
+        ],
+    )
+    tmp = tempfile.mkdtemp()
+    context.add_cleanup(lambda: __import__("shutil").rmtree(tmp, ignore_errors=True))
+    root = Path(tmp)
+    (root / "data").mkdir()
+    manifest = {
+        "content_type_routes": {"AgentContract": ["claude", "codex"]},
+        "content_type_temperatures": {"AgentContract": {"codex": "lite", "claude": "heavy"}},
+    }
+    (root / "data" / "vendor-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    context.temp_project_root = root
+
+
+@when("I render the contract for codex at lite temperature")
+def step_render_codex_lite(context) -> None:  # type: ignore[no-untyped-def]
+    from gzkit.content.render import render
+
+    context.codex_render = render(
+        context.mixed_contract, "codex", temperature="lite", project_root=context.temp_project_root
+    )
+
+
+@then("the Judgment bullet is present in the rendered output")
+def step_judgment_bullet_present(context) -> None:  # type: ignore[no-untyped-def]
+    assert b"judgment-bullet" in context.codex_render, (
+        "Judgment bullet must appear in codex lite render (0-Kelvin floor)"
+    )
+
+
+@then("the heavy-only bullet is absent from the rendered output")
+def step_heavy_bullet_absent(context) -> None:  # type: ignore[no-untyped-def]
+    assert b"heavy-only-bullet" not in context.codex_render, (
+        "Heavy-only bullet must not appear in codex lite render"
+    )
+
+
+@when("I render the contract for codex at lite and claude at heavy")
+def step_render_both_vendors(context) -> None:  # type: ignore[no-untyped-def]
+    from gzkit.content.render import render
+
+    context.codex_render = render(
+        context.mixed_contract, "codex", temperature="lite", project_root=context.temp_project_root
+    )
+    context.claude_render = render(
+        context.mixed_contract,
+        "claude",
+        temperature="heavy",
+        project_root=context.temp_project_root,
+    )
+
+
+@then("the two rendered outputs differ")
+def step_renders_differ(context) -> None:  # type: ignore[no-untyped-def]
+    assert context.codex_render != context.claude_render, (
+        "Codex lite and claude heavy renders must differ (identical mirroring ended)"
+    )
