@@ -6,9 +6,15 @@ Last updated: 2026-06-03 — recorded a **post OBPI-15 progress snapshot
 Gate-5-attested (sync anchor `b8195395`), advancing ADR-0.0.37 CMS to **10/16
 OBPIs attested-complete** (01–05, 11–15; remaining 06–10, 16). **#519 stays open
 — the emergency is unmoved:** OBPI-15 shipped the per-vendor temperature
-*selection mechanism* only; the Codex-`lite` *emission* (the byte reduction that
-actually relieves #519) was operator-scoped as a follow-on and routed back to
-#519. Four post-Snapshot-E direct-fixes also landed (untracked `Task:`-trailer
+*selection mechanism* only. A same-day **Codex-loader investigation (primary
+sources) ruled out per-vendor emission as the #519 route** — Codex reads only
+repo-root `AGENTS.md`, traverses no `.agents/` sink, exposes no project-doc
+redirect, and silently truncates past 32,768 B. **#519 relief is therefore
+re-pointed at OBPI-0.0.37-17** (density-classify the AgentContract corpus so the
+temperature dial thins the *shared* root AGENTS.md under Codex's cap), not a
+Codex-specific emission. OBPI-17 chartered 2026-06-03; plan-audit FAIL is the
+expected pre-planning "no plan yet" signal. See § Context-Load CMS — Codex-loader
+finding. Four post-Snapshot-E direct-fixes also landed (untracked `Task:`-trailer
 fixes, no GHI rows): `fix(adr-audit)` `937da0ac`, `chore(insights)` `a23a2296`,
 `fix(check)` `3b29dfe7`, `fix(sync)` `3911355f`. Re-measured **Snapshot F
 GREEN**: `uv run gz check` → "✓ All checks passed", 26/26 gates, `GZ_CHECK_EXIT=0`
@@ -48,7 +54,7 @@ reference); this line is the live mtime.
 
 **Tier 1 — Recovery to Definition of Healthy.** Exit gate: Definition of Healthy all-true.
 
-- [~] **1.1 Phase 2 — context-load emergency #519.** Its structural remediation *is* the Context-Load CMS workstream (Boundary-1-waived); advancing that workstream is how #519 closes. **In progress, not closed:** ADR-0.0.37 CMS is now 10/16 (OBPI-15 landed 2026-06-03), but #519's actual byte relief has *not* landed — OBPI-15 delivered the per-vendor temperature *selection* mechanism; the Codex-`lite` *emission* (the byte reduction) is the operator-scoped follow-on routed back to #519. The emergency is exactly as far from closed as before OBPI-15. → *Phase 2; Designated Workstream — Context-Load CMS*.
+- [~] **1.1 Phase 2 — context-load emergency #519. Relief vehicle = OBPI-0.0.37-17 (density-classify the AgentContract corpus; render the *shared* root AGENTS.md under Codex's cap).** Its structural remediation *is* the Context-Load CMS workstream (Boundary-1-waived); advancing that workstream is how #519 closes. **In progress, not closed:** ADR-0.0.37 CMS is now 10/16 (OBPI-15 landed 2026-06-03), but #519's byte relief has *not* landed. **Per-vendor emission is RULED OUT as the #519 route (Codex-loader finding, 2026-06-03):** Codex reads only repo-root `AGENTS.md` (+ nested, merged), traverses no `.agents/` sink, exposes no project-doc-path redirect, and silently truncates past 32,768 B — so OBPI-15's per-vendor *selection* mechanism cannot relieve #519 (it keeps value as the general control the operator wanted, just not here). The only lever Codex respects is shrinking the one shared root `AGENTS.md` below the cap with headroom. **The dial built for that (OBPI-11/12) is inert** — every `Bullet.density_min=None`, so heavy/medium/lite render identical bytes (verified 2026-06-03). **OBPI-0.0.37-17** (chartered 2026-06-03) supplies the missing density classification so the dial thins the shared root at `medium` under the cap (0-Kelvin floor preserves Judgment bullets). NOTE: this is the *AgentContract* path, **not** OBPI-09's superseded invariant-registry migration. Current root = 32,651 B = 99.6% of cap. → *Phase 2; Designated Workstream — Context-Load CMS § Codex-loader finding*.
 - [ ] **1.2 Phase 3 — ceremony & validator mechanization** (#516 + the req-kind/covers eval-feedback cluster; now also #563/#564 closeout-pipeline class fixes + #578 preflight lock-coupling). 18 issues — see **GHI Register § Phase 3**. → *Phase 3*.
 - [ ] **1.3 Phase 4 — drain remaining recovery issues** — docs/tests/`validate --documents` defects, including the GHI #571 stdlib unittest/doctest maturity route. 10 issues — see **GHI Register § Phase 4**. WIP = 1; close only with observed evidence. → *Phase 4*.
 - [ ] **1.4 Phase 5 — closeout.** Fill Recovery Closeout when #519 closed + no open emergency + `gz check` green. → *Phase 5; Recovery Closeout*.
@@ -57,7 +63,7 @@ reference); this line is the live mtime.
 
 - [ ] **2.0 Housekeeping: re-home ADR-0.0.66 → pool** (§13 immediate, *not executed*) — frontmatter disposition → `uv run gz register-adrs`. → *§13; Snapshot C note*.
 - [ ] **2.1 Canon Foundation** — the substrate the others assume; build per its §12 sequence. → *Designated Workstream — Canon Foundation*.
-- [ ] **2.2 Context-Load CMS** — ADR-0.0.37 remaining OBPIs (06–10, 16; 01–05/11–15 attested-complete, OBPI-15 on 2026-06-03); #519 structural relief; renders from canon. OBPI-15 landed the per-vendor temperature *selection* mechanism; the Codex-`lite` *emission* (the named byte payload) remains the open #519 follow-on, not yet built. *(Pulled into Tier 1 as the #519 route — see 1.1.)* → *Designated Workstream — Context-Load CMS*.
+- [ ] **2.2 Context-Load CMS** — ADR-0.0.37 remaining OBPIs (06–10, 16; 01–05/11–15 attested-complete, OBPI-15 on 2026-06-03); #519 structural relief; renders from canon. OBPI-15 landed the per-vendor temperature *selection* mechanism — but it is **not** the #519 byte payload (per-vendor emission ruled out by the Codex-loader finding, 2026-06-03). The #519 relief is **OBPI-0.0.37-17** (density-classify the AgentContract corpus so the dial thins the shared root AGENTS.md under Codex's cap; chartered 2026-06-03, not yet built). *(Pulled into Tier 1 as the #519 route — see 1.1.)* → *Designated Workstream — Context-Load CMS § Codex-loader finding*.
 - [ ] **2.3 Harness Hardening + ADR-0.0.66** — the enforcement spine + `gz next`/triage read-substrate. → *Designated Workstream — Harness Hardening*.
 - [ ] **2.4 Session MOTD** — consumes the absorbed ADR-0.0.65, ADR-0.0.66, and canon; build per its §7. → *Designated Workstream — Session MOTD*.
 - [ ] **2.5 Config-first store — repo-wide SSOT (its own first-class workstream; design deferred, operator 2026-06-01).** A NEW thing, not a subset of anything: gzkit has no single source of truth for its own operational tuning values, which live as drifting literals repo-wide — instructions budgets, validator thresholds, `_PIPELINE_MARKER_STALE_HOURS` / timeouts / ceilings hardcoded in `src/`, lock TTL, the 40% coverage floor, defect-fix thresholds — scattered across `data/`, code, tests, and prose docs. **Live instance (2026-06-01):** the AGENTS.md char budget exists in 4 places — `data/instructions_files_budget.json` (now 33000), two test literals (`test_agents_md_map_doctrine_obpi01/04`), and the `agents-md-map-doctrine.md` Budget table *still saying 15000* (drifted since OBPI-0.0.54-01). Inventory: `grep -E '^_[A-Z_]+ *= *[0-9]' src/gzkit`. Target: one typed source that code, tests, **and doc-table generation** read from, + a `gz validate --config-ssot` drift fail-close. **Overlaps but exceeds Canon Foundation §8.8** — canon subsumes scattered `data/*.json` *invariant data*; this is broader: repo-wide tuning *scalars*, most hardcoded in `src/`, which canon (invariant rules) does not home. The irony it names: gzkit preaches SSOT for governance state, has none for its own config. **Prior art (operator, 2026-06-01): AirlineOps did this notably better — study its config-SSOT pattern via `/airlineops-parity-scan` before designing.** Reference for a gzkit-native design, not perpetual-parity catch-up (Architectural Boundary 5).
@@ -88,7 +94,7 @@ reference); this line is the live mtime.
 |-----|---------|------|
 | #563 | task-envelope gate failure — `seq=01`-only TASKs, missing `task_id` | **T1** — Phase 3 (gate cleared @ Snapshot E; class fix: closeout `task_id` population remains) |
 | #564 | preflight orphan plan-audit receipt (OBPI-0.0.64-04) | **T1** — Phase 3 (gate cleared @ Snapshot D; class fix: closeout leaves no orphan remains) |
-| #519 | context surface exhausts 258K window (**emergency**) | **T1** — Phase 2 → CMS (CMS at 10/16 post-OBPI-15; selection landed, Codex-`lite` **emission** follow-on still open — emergency unrelieved) |
+| #519 | context surface exhausts 258K window (**emergency**) | **T1** — Phase 2 → CMS. Relief = **OBPI-0.0.37-17** (density-classify AgentContract corpus; render shared root at `medium` under Codex's cap). Chartered 2026-06-03 (plan-audit FAIL = expected pre-planning signal). Per-vendor emission **ruled out** (Codex-loader finding). Dial currently inert. Emergency unrelieved. |
 | #516 | closeout passive-presenter lacks REQ-evidence check | **T1** — Phase 3 |
 | #536 | `gz adr promote` Target-Scope `path:line` → invalid OBPI paths | **T1** — Phase 3 |
 | #537 | BEHAVIOR-kind cannot-uncovered-accept not mechanically enforced | **T1** — Phase 3 |
@@ -686,14 +692,51 @@ target 16); six briefs created (1:1 sync, 16↔16), all **semantically authored 
 15 (per-vendor template selection, sync anchor `b8195395`, 2026-06-03). OBPIs 06–10 and
 16 remain `pending`. **OBPI-15 scope note (operator-ratified, 2026-06-03):** OBPI-15
 landed the per-vendor temperature *selection* mechanism (manifest `content_type_temperatures`
-→ `vendors.temperature_for()` fail-closed → `render()` honors it), **not** the Codex-`lite`
-*emission*. No production path yet emits a thinned Codex surface; the byte reduction that
-relieves #519 is the named follow-on, routed back to #519. So the CMS is mechanically
-10/16 but **#519 is unrelieved.** **Regression history (resolved):** the 0.0.37-12 closeout
+→ `vendors.temperature_for()` fail-closed → `render()` honors it), **not** any #519 byte
+relief. As the **Codex-loader finding** below establishes, per-vendor emission cannot relieve
+#519 at all; the relief is **OBPI-0.0.37-17** (density-classify the AgentContract corpus so the
+dial thins the shared root AGENTS.md). So the CMS is mechanically 10/16 but **#519 is unrelieved.** **Regression history (resolved):** the 0.0.37-12 closeout
 regressed `gz check` (Snapshot C); cleared at Snapshot D, and OBPI-13/15 completions since
 have not regressed it (Snapshots E and F green). This is a foundation-ADR scope
 change made under explicit operator direction as #519 emergency relief (Architectural
 Boundary 1 / Operating Rule 6 waived by the operator's explicit call).
+
+**Codex-loader finding — per-vendor emission is RULED OUT as the #519 route (2026-06-03,
+primary-source investigation).** The earlier plan framing (and the ADR's "Codex `lite`
+emission" language) assumed gzkit could give Codex a *smaller, vendor-specific* surface than
+root `AGENTS.md`. The OpenAI Codex CLI's documented loader makes that impossible:
+
+- **Codex reads `AGENTS.md` by name only**, walking repo-root → cwd and **concatenating** one
+  file per directory level (it does read *nested* `AGENTS.md` files; it does **not** traverse
+  `.agents/` or any vendor-namespaced sink). `.agents/AGENTS.md` is invisible to it.
+  (Sources: developers.openai.com/codex/guides/agents-md; github.com/openai/codex docs/agents_md.md.)
+- **No config redirects the project doc.** There is no `project_doc_path`. `model_instructions_file`
+  / `experimental_instructions_file` replace the *base system prompt*, not the AGENTS.md surface
+  (and the experimental key 400-errors on GPT-5/Codex models). `project_doc_fallback_filenames`
+  only fires when `AGENTS.md` is *absent*. (Sources: codex/config-reference, config-sample.)
+- **Over-cap = silent truncation.** `project_doc_max_bytes` default `32768`; past it the doc is
+  "silently truncated … so we do not take up too much of the context window" — no warning, no
+  error. (Source: github.com/openai/codex issue #7138, source-quoted.)
+
+**Consequence.** OBPI-15's per-vendor temperature *selection* mechanism keeps value as the
+general control the operator wanted, but it **cannot relieve #519** — the surface Codex reads
+is root `AGENTS.md`, shared with Claude, and Codex will not load a vendor-specific alternative.
+The **only lever Codex respects is shrinking the one shared root `AGENTS.md`** below 32,768 B
+with headroom. Current root = **32,651 B = 99.6% of cap** (≈117 B from truncation). That shrink
+is **OBPI-0.0.37-17** (chartered 2026-06-03): density-classify the AgentContract corpus —
+assign each `Bullet` a `classification`/`density_min` — so the OBPI-11/12 dial (built but
+**inert**: every `density_min=None`, so heavy/medium/lite render identical bytes, verified
+2026-06-03) thins the shared root at `medium` under the cap; the 0-Kelvin floor preserves every
+Judgment bullet. This is the *AgentContract render path* (`gzkit.content.render`, OBPI-13/14
+lineage), **distinct from OBPI-09's superseded invariant-registry migration** (`.gzkit/invariants/`
+→ `gz governance render`). **#519 relief is therefore re-pointed from "Codex-`lite` emission
+follow-on" to OBPI-0.0.37-17.** (Akin to the GHI #533 context-diet intent, realized on the
+density-dial substrate rather than the registry.)
+
+**Coupled calibration defect (flagged).** gzkit's AGENTS.md budget in
+`data/instructions_files_budget.json` is **33,000** — *above* Codex's 32,768-byte cap — so the
+gate meant to guard the #519 surface would green-light a silently-truncated file. Ties to #579
+("anchor budget on imperative-density, not char count") and the config-SSOT item (2.5).
 
 **Open loop named.** This session re-derived the rendering architecture from source despite
 the substrate doctrine already documenting it and three prior same-day insights logging the
@@ -732,9 +775,10 @@ brief prose.
 - **"Dumb 4× mirroring" is imprecise — the mirrors already differ.** No materialized
   `.agents/AGENTS.md` or `.claude/AGENTS.md` sibling exists; `.github/AGENTS.md` is a distinct
   1,384 B thin mirror, not a full copy. OBPI-15's per-vendor temperature targets render-time
-  selection; the Codex `lite` tier is the named #519 relief **payload, but OBPI-15 (landed
-  2026-06-03) shipped only the selection mechanism — emitting that thinned surface on a
-  production path is the open #519 follow-on**.
+  selection. **Superseded by the Codex-loader finding (2026-06-03):** the Codex `lite` tier was
+  *assumed* to be the #519 relief payload, but Codex reads only root `AGENTS.md` and will not
+  load a vendor-specific surface — so a per-vendor emission cannot relieve #519. Relief is the
+  shared-surface shrink (OBPI-0.0.37-17, density classification). See § Codex-loader finding above.
 - **OBPI-13 hardens two safety invariants the Diagnosis did not name.** (a) The round-trip
   contract shifts from byte-preservation (OBPI-09) to *semantic* equality
   `parse(render(model)) == model`, explicitly superseding OBPI-09. (b) A bullet with no
@@ -1299,6 +1343,31 @@ Emergency GHIs open:      1 — #519 (codex context surface exhausts 258K window
 Context-load issue state: #519 OPEN and UNRELIEVED — CMS mechanically 10/16, but the byte payload that closes #519 is the deferred emission follow-on, not OBPI-15's selection mechanism
 Open recovery issues:     #519 (emergency; Phase 2 / CMS -> emission follow-on), #516 and Phase-3 ceremony/validator cluster, Phase-4 drain items
 Decision:                 normal development may NOT resume — emergency GHI #519 still blocks Recovery Closeout; the critical-path step is now the Codex-lite emission follow-on on #519, NOT another ADR-0.0.37 selection OBPI
+```
+
+### Progress snapshot — 2026-06-03 (Codex-loader correction; supersedes the Snapshot F "Decision" line above)
+
+```text
+Snapshot date:            2026-06-03 (recovery still open; same day as Snapshot F)
+What changed:             a primary-source Codex-loader investigation FALSIFIED Snapshot F's "Codex-lite emission follow-on" route for #519
+Finding:                  Codex CLI reads only repo-root AGENTS.md (+ nested, concatenated); it does NOT traverse .agents/ or any vendor sink; no config redirects the project doc (model_instructions_file replaces the BASE prompt, not AGENTS.md); over project_doc_max_bytes=32768 it SILENTLY TRUNCATES. Sources: developers.openai.com/codex/guides/agents-md, github.com/openai/codex issue #7138 (source-quoted), config-reference/config-sample
+Consequence:              per-vendor EMISSION cannot relieve #519 (the surface Codex reads is shared root AGENTS.md). OBPI-15's selection mechanism keeps value as a general control, but is NOT the #519 payload
+#519 relief re-pointed:   from "Codex-lite emission follow-on" → first proposed as OBPI-09 (registry path); the plan-audit then revealed OBPI-09 is the WRONG path — see the charter snapshot below for the corrected vehicle (OBPI-0.0.37-17)
+Calibration defect found: data/instructions_files_budget.json sets AGENTS.md budget = 33,000 > Codex 32,768 cap — gate green-lights a truncated surface. Ties to #579 + config-SSOT (2.5)
+Operator decision:        "Record + plan-audit OBPI-09" (2026-06-03) — executed; the audit redirected to OBPI-17 (next block)
+```
+
+### Progress snapshot — 2026-06-03 (OBPI-17 charter; supersedes the "#519 relief re-pointed" line in the block above)
+
+```text
+Snapshot date:            2026-06-03 (recovery still open; same day as Snapshot F)
+What changed:             plan-audit of OBPI-09 (the proposed #519 vehicle) revealed it is the WRONG path; chartered OBPI-0.0.37-17 instead
+OBPI-09 finding:          superseded + wrong substrate. ADR-0.0.37 line 264: OBPI-13 "supersedes OBPI-09 byte-preserving framing" (OBPI-13 done). And OBPI-09 targets the invariant-registry render path (.gzkit/invariants/ → gz governance render → compose.py), NOT the AgentContract path (gzkit.content.render) where density_min lives. Repurposing would collide, not complete. Left as separate disposition (OBPI-10 / closeout)
+Dial-inert finding:       the OBPI-11/12 temperature dial is built and correct (pipeline.py _bullet_renders) but INERT — every Bullet.density_min=None, so render heavy==medium==lite (template 23,403 B; AGENTS.md 32,651 B at every tier, verified). The machine is connected to nothing
+OBPI-0.0.37-17 chartered: "AGENTS.md density classification" — classify the AgentContract corpus (classification/density_min per Bullet) so the dial thins; render shared root at medium under Codex's 32,768 cap; fix the budget. Operator-directed targets: heavy~32k / medium~16k / lite~8k (calibration), with #519-fits-cap (<=30k) the fail-closed REQ and the lite floor an output of the Judgment core. Parser is net-new (markdown_parser sets no density). Brief passes gz obpi validate --authored; ADR checklist + scorecard synced 16->17
+Plan-audit OBPI-17:       FAIL on the single pre-planning gap ("no plan file") — the expected signal for a freshly-chartered, not-yet-planned OBPI; no allowed-path or alignment gaps. Converts to PASS after the plan phase
+Open recovery issues:     #519 (emergency; Phase 2 / CMS -> OBPI-17), #516 and Phase-3 ceremony/validator cluster, Phase-4 drain items
+Decision:                 normal development may NOT resume — #519 unrelieved; next concrete step is to plan + run the OBPI-0.0.37-17 pipeline (density classification), NOT OBPI-09 and NOT a Codex emission
 ```
 
 ## Appendix: The Smooth-vs-Replicable Axis (2026-05-30 dialogue insights)

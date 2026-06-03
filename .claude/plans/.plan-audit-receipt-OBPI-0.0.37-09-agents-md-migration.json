@@ -1,0 +1,177 @@
+{
+  "obpi_id": "OBPI-0.0.37-09-agents-md-migration",
+  "timestamp": "2026-06-03T09:37:00.801043+00:00",
+  "verdict": "FAIL",
+  "plan_file": null,
+  "gaps_found": 2,
+  "gaps": [
+    "No plan file found for OBPI-0.0.37-09-agents-md-migration in .claude/plans/ or ~/.claude/plans/",
+    "Allowed path does not exist in repository: .gzkit/invariants/MIGRATION-MANIFEST.md"
+  ],
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.14.0",
+      "sibling_obpi": "OBPI-0.14.0-02-native-path-scoped-rules",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md",
+        "src/gzkit/templates/adr.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.14.0",
+      "sibling_obpi": "OBPI-0.14.0-03-root-surface-slimming-and-workflow-relocation",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.14.0",
+      "sibling_obpi": "OBPI-0.14.0-01-canon-shared-instruction-model",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md",
+        "src/gzkit/templates/adr.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.19.0",
+      "sibling_obpi": "OBPI-0.19.0-06-audit-templates-and-evidence-aggregation-from-ledger",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md",
+        "src/gzkit/templates/adr.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.4.0",
+      "sibling_obpi": "OBPI-0.4.0-01-skill-source-centralization",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-02-plan-create-kind",
+      "contested_paths": [
+        "src/gzkit/templates/adr.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-06-rule-file-matrix-scorecard",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md",
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-04-requires-security-review-attestation",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md",
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-15-t0-maintenance-surfaces",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.34",
+      "sibling_obpi": "OBPI-0.0.34-02-rendering-pipeline",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.58",
+      "sibling_obpi": "OBPI-0.0.58-03-artifact-creation-skill-step-zero",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md",
+        "src/gzkit/templates/adr.md",
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.58",
+      "sibling_obpi": "OBPI-0.0.58-01-prior-art-invariant-doctrine",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md",
+        "src/gzkit/templates/adr.md",
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.61",
+      "sibling_obpi": "OBPI-0.0.61-03-gz-harness-install-command",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md",
+        "src/gzkit/templates/adr.md",
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.36",
+      "sibling_obpi": "OBPI-0.0.36-01-agents-md-matrix-collapse",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.12",
+      "sibling_obpi": "OBPI-0.0.12-07-agents-md-persona-reference",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md",
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.7",
+      "sibling_obpi": "OBPI-0.0.7-01-manifest-v2-schema",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.13",
+      "sibling_obpi": "OBPI-0.0.13-03-manifest-schema-persona-sync",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.13",
+      "sibling_obpi": "OBPI-0.0.13-04-vendor-neutral-persona-loading",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md",
+        "src/gzkit/templates/agents.md",
+        "src/gzkit/templates/adr.md",
+        "docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-09-agents-md-migration.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-04-agents-md-persona-section",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md",
+        "src/gzkit/templates/adr.md",
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.35",
+      "sibling_obpi": "OBPI-0.0.35-03-why-foundation-tier-convention",
+      "contested_paths": [
+        "src/gzkit/templates/adr.md"
+      ]
+    }
+  ]
+}

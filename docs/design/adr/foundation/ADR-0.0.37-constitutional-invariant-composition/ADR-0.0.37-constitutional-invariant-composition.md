@@ -243,7 +243,9 @@ they have a foundation invariant to defend.
 - Split State Anchor: 1
 - Split Testability Ceiling: 1
 - Split Total: 4
-- Final Target OBPI Count: 16
+- Final Target OBPI Count: 17
+<!-- 16→17 (operator-directed, 2026-06-03): OBPI-17 added after the Codex-loader finding ruled out per-vendor emission as the #519 relief and the dial was found inert (every Bullet.density_min=None → identical bytes at every temperature). The "locked 16" was a design-dialogue calibration ("calibrated over time from project evidence"); the emergency-relief increment is the evidence. OBPI-17 is the AgentContract-path density classification; distinct from OBPI-09's superseded invariant-registry migration. -->
+
 
 ## Checklist
 
@@ -265,6 +267,7 @@ they have a foundation invariant to defend.
 - [ ] OBPI-0.0.37-14 — Wire sync_agents_md through the renderer; retire monolithic template; --invariant-coherence diffs the model render
 - [ ] OBPI-0.0.37-15 — Per-vendor template selection (Codex lite / Claude standard; ends identical mirroring; harness-detection is a forward-reference)
 - [ ] OBPI-0.0.37-16 — Docs-for-agents orientation index (routable surface→authoritative-model+doctrine map rendered from the same substrate; closes the re-derivation loop)
+- [ ] OBPI-0.0.37-17 — AGENTS.md density classification (classify the AgentContract corpus so the temperature dial — built inert by OBPI-11/12, every `Bullet.density_min=None` — actually thins; render the shared root AGENTS.md at a tier that fits Codex's 32,768-byte cap with headroom; the concrete #519 byte relief on the one surface Codex reads. Operator-directed 2026-06-03 after the Codex-loader finding ruled out per-vendor emission.)
 
 ## Q&A Transcript
 
