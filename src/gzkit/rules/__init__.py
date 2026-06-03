@@ -613,10 +613,24 @@ def render_rule_for_copilot(rule: CanonicalRule) -> str:
     return f'---\napplyTo: "{apply_to}"\n---\n{_RENDER_HEADER}\n{rule.body}\n'
 
 
+def _render_path_str(target: Path, project_root: Path | None) -> str:
+    """Render a written path as a project-relative posix string when possible.
+
+    Mirrors ``plan_sync_all``'s normalization so apply mode and dry-run agree.
+    """
+    if project_root is None:
+        return str(target)
+    try:
+        return target.relative_to(project_root).as_posix()
+    except ValueError:
+        return target.as_posix()
+
+
 def render_rules_to_dir(
     rules: list[CanonicalRule],
     target_dir: Path,
     renderer: str,
+    project_root: Path | None = None,
 ) -> list[str]:
     """Render canonical rules to a target directory.
 
@@ -624,9 +638,16 @@ def render_rules_to_dir(
         rules: Loaded canonical rules.
         target_dir: Output directory (e.g., .claude/rules/ or .github/instructions/).
         renderer: "claude" or "copilot".
+        project_root: When given, returned paths are rendered relative to it
+            (forward-slash posix). ``sync_all`` passes this so every path in its
+            write set has the same project-relative form — apply mode prints the
+            list verbatim while dry-run (``plan_sync_all``) normalizes, so a
+            mixed absolute/relative return made the two diverge for rule files
+            (the macOS-passes / Linux-fails coverage hole this closes).
 
     Returns:
-        List of written file paths (relative strings).
+        List of written file paths — project-relative posix strings when
+        ``project_root`` is given, else absolute strings.
 
     """
     target_dir.mkdir(parents=True, exist_ok=True)
@@ -648,7 +669,7 @@ def render_rules_to_dir(
         output = render_fn(rule)
         target = target_dir / filename
         target.write_text(output, encoding="utf-8")
-        written.append(str(target))
+        written.append(_render_path_str(target, project_root))
 
     for existing in target_dir.iterdir():
         if existing.is_file() and existing.name not in expected_names:

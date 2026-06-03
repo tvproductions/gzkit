@@ -481,6 +481,43 @@ class TestCanonicalRule(unittest.TestCase):
             rule.body = "changed"
 
 
+class TestRenderRulesToDirPathForm(unittest.TestCase):
+    """render_rules_to_dir returns project-relative posix paths (direct-fix).
+
+    sync_all prints its write set verbatim in apply mode while dry-run
+    (plan_sync_all) normalizes to project-relative posix. When this renderer
+    returned absolute strings, apply and dry diverged for rule files —
+    masked on macOS but a hard failure on Linux CI.
+    """
+
+    def test_returns_project_relative_posix_with_root(self) -> None:
+        from gzkit.rules import CanonicalRule, RuleFrontmatter, render_rules_to_dir
+
+        fm = RuleFrontmatter(id="pythonic", paths=["*"], description="d")
+        rule = CanonicalRule(frontmatter=fm, body="# Body", source_path="pythonic.md")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            written = render_rules_to_dir(
+                [rule], root / ".claude" / "rules", "claude", project_root=root
+            )
+            self.assertEqual(written, [".claude/rules/pythonic.md"])
+            for path in written:
+                self.assertFalse(
+                    Path(path).is_absolute(),
+                    f"render_rules_to_dir must return relative paths; got absolute {path}",
+                )
+
+    def test_absolute_without_root_preserves_legacy_contract(self) -> None:
+        from gzkit.rules import CanonicalRule, RuleFrontmatter, render_rules_to_dir
+
+        fm = RuleFrontmatter(id="pythonic", paths=["*"], description="d")
+        rule = CanonicalRule(frontmatter=fm, body="# Body", source_path="pythonic.md")
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / ".claude" / "rules"
+            written = render_rules_to_dir([rule], target, "claude")
+            self.assertTrue(Path(written[0]).is_absolute())
+
+
 class TestLoadRule(unittest.TestCase):
     """load_rule() file parsing and validation.
 

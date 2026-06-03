@@ -828,7 +828,10 @@ def sync_all(
 
         if canonical_rules:
             rendered = render_rules_to_dir(
-                canonical_rules, project_root / config.paths.claude_rules, "claude"
+                canonical_rules,
+                project_root / config.paths.claude_rules,
+                "claude",
+                project_root=project_root,
             )
             updated.extend(rendered)
         else:
@@ -847,6 +850,7 @@ def sync_all(
                 canonical_rules,
                 project_root / ".github" / "instructions",
                 "copilot",
+                project_root=project_root,
             )
             updated.extend(rendered)
 
