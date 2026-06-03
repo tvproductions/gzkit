@@ -31,8 +31,10 @@ Foundation + heavy → Gate 5 human attestation (`assets/HEAVY_LANE_PLAN_TEMPLAT
 ## Allowed Paths
 
 - `src/gzkit/content/vendors.py` — resolve a per-vendor temperature alongside the route
-- `data/vendor-manifest.json` — declare the per-vendor temperature for `AgentContract`
-- `src/gzkit/content/templates/agentcontract/` — vendor template entries for the per-vendor render
+- `data/vendor-manifest.json` — declare the per-vendor temperature for `AgentContract` (additive `content_type_temperatures` sibling block; see REQ-6)
+- `src/gzkit/schemas/vendor_manifest.json` — extend the schema with the additive `content_type_temperatures` sibling block (`temperature` constrained to enum `{lite, medium, heavy}`); the existing `content_type_routes` shape is left unchanged (REQ-6)
+- `src/gzkit/content/templates/agentcontract/` — vendor template entries for the per-vendor render (e.g. add `codex.md.j2`)
+- `src/gzkit/sync_surfaces.py` — **render-call sites only** (`sync_agents_md` and `render_content_surface`): resolve the per-vendor temperature via `vendors.py` and pass it to the OBPI-12 renderer (currently hardcoded `"claude"`/`temperature="heavy"` at `sync_agents_md`, and no temperature at `render_content_surface`). No other edits to this module.
 - `tests/content/test_vendor_manifest.py` — per-vendor temperature routing tests
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-15-per-vendor-template-selection.md` — this brief
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md` — parent ADR (read-only)
@@ -40,18 +42,20 @@ Foundation + heavy → Gate 5 human attestation (`assets/HEAVY_LANE_PLAN_TEMPLAT
 ## Denied Paths
 
 - Paths not listed in Allowed Paths
-- `src/gzkit/content/render/pipeline.py` — the temperature parameter is OBPI-12 (consumed here, not changed)
-- `src/gzkit/content/models/`, `src/gzkit/content/parse/`, `src/gzkit/sync_surfaces.py` — OBPI-11/13/14
+- `src/gzkit/content/render/pipeline.py` — the temperature parameter is OBPI-12 (consumed here, not changed). The additive `content_type_temperatures` sibling block leaves `content_type_routes` (which this module reads as `dict[str, list[str]]`) untouched, so no edit here is required.
+- `src/gzkit/content/models/`, `src/gzkit/content/parse/` — OBPI-11/13
+- `src/gzkit/sync_surfaces.py` **except the two render-call sites named in Allowed Paths** — the rest of this module (OBPI-14 sync wiring) stays out of scope; only `sync_agents_md` and `render_content_surface` change, to resolve+pass the per-vendor temperature OBPI-14 hardcoded to `claude`/`heavy`.
 - Harness/model detection logic — out of scope (forward-reference)
 - New runtime dependencies; CI files; lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: the vendor manifest MUST declare a temperature per (content_type, vendor); `vendors.py` MUST resolve it and pass it to the OBPI-12 renderer.
+1. REQUIREMENT: the vendor manifest MUST declare a temperature per (content_type, vendor) via the additive `content_type_temperatures` sibling block (REQ-6); `vendors.py` MUST resolve it and the render-call sites in `sync_surfaces.py` (`sync_agents_md`, `render_content_surface`) MUST pass it to the OBPI-12 renderer.
 2. REQUIREMENT: the Codex vendor MUST resolve to `lite` and Claude to a higher tier; an unknown or missing per-vendor temperature MUST fail closed (no silent default to heavy that would re-bloat Codex).
 3. REQUIREMENT: per-vendor selection MUST still honor the 0-Kelvin floor — even the Codex lite mirror renders every `Judgment` bullet.
 4. REQUIREMENT: identical-across-vendors mirroring MUST end for `AgentContract` — the Codex and Claude rendered surfaces differ by temperature.
 5. NEVER: implement harness/model auto-detection in this OBPI — manifest-declared per-vendor temperature only.
+6. REQUIREMENT: the temperature declaration MUST be an **additive** `content_type_temperatures` sibling block in `data/vendor-manifest.json` — `content_type_routes` retains its `dict[str, list[str]]` shape unchanged so the `pipeline.py` consumer (Denied Paths) is not disturbed. `src/gzkit/schemas/vendor_manifest.json` MUST encode the sibling block with each per-vendor `temperature` constrained to enum `{lite, medium, heavy}`, so the fail-closed-on-unknown contract (REQ-2) is enforced by `gz validate --vendor-manifest`, not left to a vacuous gate.
 
 > STOP-on-BLOCKERS: requires OBPI-12 (temperature renderer) and OBPI-14 (sync wired to the model). If absent, print BLOCKERS and halt.
 
@@ -128,6 +132,7 @@ uv run python -c "print('render AgentContract for codex (lite) and claude (stand
 - [ ] REQ-0.0.37-15-03 [BEHAVIOR]: the Codex lite mirror still contains every `Judgment` bullet (floor honored across vendors). Proof: `@covers(REQ-0.0.37-15-03)` test.
 - [ ] REQ-0.0.37-15-04 [BEHAVIOR]: the Codex and Claude `AgentContract` renders differ (identical mirroring ended). Proof: `@covers(REQ-0.0.37-15-04)` test.
 - [ ] REQ-0.0.37-15-05 [SUPPORT]: the per-vendor temperatures are declared in `data/vendor-manifest.json` — `uv run gz validate --vendor-manifest` passes and an `artifact_edited` event is emitted for the manifest.
+- [ ] REQ-0.0.37-15-06 [SUPPORT]: the temperature declaration is an additive `content_type_temperatures` sibling block — `content_type_routes` is byte-unchanged — and `src/gzkit/schemas/vendor_manifest.json` constrains each `temperature` to enum `{lite, medium, heavy}`. Proof: `uv run gz validate --vendor-manifest` passes against the extended schema and rejects an out-of-enum temperature; an `artifact_edited` event is emitted for the schema file.
 
 ## Completion Checklist
 
