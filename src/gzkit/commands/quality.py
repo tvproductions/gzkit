@@ -14,6 +14,7 @@ from typing import Any
 from gzkit.commands.common import console, get_project_root
 from gzkit.quality import (
     DriftAdvisoryResult,
+    QualityResult,
     run_behave,
     run_format,
     run_lint,
@@ -353,12 +354,12 @@ def check(as_json: bool = False) -> None:
 
     steps = _build_check_steps()
 
-    results: list[tuple[str, bool]] = []
+    results: list[tuple[str, QualityResult]] = []
     with fmt.progress_context(len(steps), "Running quality checks") as progress:
         for name, runner in steps:
             progress.advance(name)
             result = runner(project_root)
-            results.append((name, result.success))
+            results.append((name, result))
 
     drift: DriftAdvisoryResult = run_drift_advisory(project_root)
 
@@ -375,28 +376,40 @@ def check(as_json: bool = False) -> None:
 
     if as_json:
         payload: dict[str, object] = {
-            "success": all(s for _, s in results),
-            "checks": dict(results),
+            "success": all(r.success for _, r in results),
+            "checks": {name: r.success for name, r in results},
             "drift": drift.to_dict(),
         }
         if flag_health is not None:
             payload["flag_health"] = flag_health.model_dump()
         sys.stdout.write(json.dumps(payload, indent=2) + "\n")
-        if not all(s for _, s in results):
+        if not all(r.success for _, r in results):
             raise SystemExit(1)
         return
 
     def _sym(ok: bool) -> str:
         return "[green]✓[/green]" if ok else "[red]❌[/red]"
 
-    for name, success in results:
-        console.print(f"  {_sym(success)} [bold]{name}[/bold]")
+    for name, result in results:
+        console.print(f"  {_sym(result.success)} [bold]{name}[/bold]")
 
-    all_passed = all(s for _, s in results)
+    all_passed = all(r.success for _, r in results)
     if all_passed:
         console.print("\n[green]✓ All checks passed.[/green]")
     else:
         console.print("\n[red]❌ Some checks failed.[/red]")
+        # Surface each failing step's captured output. Without this the
+        # aggregator swallows *why* a step failed — a gate that hides its own
+        # failure reason is undiagnosable from a CI log (the cause of 28
+        # consecutive unreadable red CI runs).
+        for name, result in results:
+            if result.success:
+                continue
+            console.print(f"\n[red]─── {name} output ───[/red]")
+            if result.stdout:
+                console.print(result.stdout.rstrip("\n"))
+            if result.stderr:
+                console.print(result.stderr.rstrip("\n"))
 
     _render_drift_advisory(drift)
     _render_flag_health(flag_health)
