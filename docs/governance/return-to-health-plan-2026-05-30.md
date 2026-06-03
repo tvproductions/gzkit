@@ -1,12 +1,23 @@
 # Return to Health Plan, 2026-05-30
 
 Status: Active canonical recovery plan.
-Last updated: 2026-06-02 — recorded a **post OBPI-13/14 progress snapshot**:
-ADR-0.0.37 CMS advanced to **9/16 OBPIs attested-complete** (OBPI-0.0.37-13
-reverse-parse migration `5e324e1`, OBPI-0.0.37-14 wire-sync/retire-monolith
-`fa4dc83`, both Gate-5 human-attested), and the `fix/task-envelope-and-flaky-timing`
-branch was fast-forward merged to `main` (`c8bbeee2..9178d46f`) and deleted;
-#519 stays open until OBPI-0.0.37-15 (Codex `lite`) lands. Earlier the same day
+Last updated: 2026-06-03 — recorded a **post OBPI-15 progress snapshot
+(Snapshot F)**: OBPI-0.0.37-15-per-vendor-template-selection landed
+Gate-5-attested (sync anchor `b8195395`), advancing ADR-0.0.37 CMS to **10/16
+OBPIs attested-complete** (01–05, 11–15; remaining 06–10, 16). **#519 stays open
+— the emergency is unmoved:** OBPI-15 shipped the per-vendor temperature
+*selection mechanism* only; the Codex-`lite` *emission* (the byte reduction that
+actually relieves #519) was operator-scoped as a follow-on and routed back to
+#519. Four post-Snapshot-E direct-fixes also landed (untracked `Task:`-trailer
+fixes, no GHI rows): `fix(adr-audit)` `937da0ac`, `chore(insights)` `a23a2296`,
+`fix(check)` `3b29dfe7`, `fix(sync)` `3911355f`. Re-measured **Snapshot F
+GREEN**: `uv run gz check` → "✓ All checks passed", 26/26 gates, `GZ_CHECK_EXIT=0`
+(advisory drift 1725, non-blocking). Earlier on 2026-06-02 recorded a **post
+OBPI-13/14 progress snapshot**: ADR-0.0.37 CMS advanced to 9/16 OBPIs
+attested-complete (OBPI-0.0.37-13 reverse-parse migration `5e324e1`,
+OBPI-0.0.37-14 wire-sync/retire-monolith `fa4dc83`, both Gate-5 human-attested),
+and the `fix/task-envelope-and-flaky-timing` branch was fast-forward merged to
+`main` (`c8bbeee2..9178d46f`) and deleted. Earlier the same day
 recorded **Snapshot E (harness restored to GREEN
 after Snapshot-D staleness)**: re-measurement found three red gates
 (`Format`, `ADR status freshness`, `Task envelope coherence`) and cleared them
@@ -37,7 +48,7 @@ reference); this line is the live mtime.
 
 **Tier 1 — Recovery to Definition of Healthy.** Exit gate: Definition of Healthy all-true.
 
-- [ ] **1.1 Phase 2 — context-load emergency #519.** Its structural remediation *is* the Context-Load CMS workstream (Boundary-1-waived); advancing that workstream is how #519 closes. → *Phase 2; Designated Workstream — Context-Load CMS*.
+- [~] **1.1 Phase 2 — context-load emergency #519.** Its structural remediation *is* the Context-Load CMS workstream (Boundary-1-waived); advancing that workstream is how #519 closes. **In progress, not closed:** ADR-0.0.37 CMS is now 10/16 (OBPI-15 landed 2026-06-03), but #519's actual byte relief has *not* landed — OBPI-15 delivered the per-vendor temperature *selection* mechanism; the Codex-`lite` *emission* (the byte reduction) is the operator-scoped follow-on routed back to #519. The emergency is exactly as far from closed as before OBPI-15. → *Phase 2; Designated Workstream — Context-Load CMS*.
 - [ ] **1.2 Phase 3 — ceremony & validator mechanization** (#516 + the req-kind/covers eval-feedback cluster; now also #563/#564 closeout-pipeline class fixes + #578 preflight lock-coupling). 18 issues — see **GHI Register § Phase 3**. → *Phase 3*.
 - [ ] **1.3 Phase 4 — drain remaining recovery issues** — docs/tests/`validate --documents` defects, including the GHI #571 stdlib unittest/doctest maturity route. 10 issues — see **GHI Register § Phase 4**. WIP = 1; close only with observed evidence. → *Phase 4*.
 - [ ] **1.4 Phase 5 — closeout.** Fill Recovery Closeout when #519 closed + no open emergency + `gz check` green. → *Phase 5; Recovery Closeout*.
@@ -46,7 +57,7 @@ reference); this line is the live mtime.
 
 - [ ] **2.0 Housekeeping: re-home ADR-0.0.66 → pool** (§13 immediate, *not executed*) — frontmatter disposition → `uv run gz register-adrs`. → *§13; Snapshot C note*.
 - [ ] **2.1 Canon Foundation** — the substrate the others assume; build per its §12 sequence. → *Designated Workstream — Canon Foundation*.
-- [ ] **2.2 Context-Load CMS** — ADR-0.0.37 remaining OBPIs (06–10, 15–16; 13+14 attested-complete 2026-06-02); #519 structural relief; renders from canon. OBPI-0.0.37-15 (Codex `lite`) is the named byte payload. *(Pulled into Tier 1 as the #519 route — see 1.1.)* → *Designated Workstream — Context-Load CMS*.
+- [ ] **2.2 Context-Load CMS** — ADR-0.0.37 remaining OBPIs (06–10, 16; 01–05/11–15 attested-complete, OBPI-15 on 2026-06-03); #519 structural relief; renders from canon. OBPI-15 landed the per-vendor temperature *selection* mechanism; the Codex-`lite` *emission* (the named byte payload) remains the open #519 follow-on, not yet built. *(Pulled into Tier 1 as the #519 route — see 1.1.)* → *Designated Workstream — Context-Load CMS*.
 - [ ] **2.3 Harness Hardening + ADR-0.0.66** — the enforcement spine + `gz next`/triage read-substrate. → *Designated Workstream — Harness Hardening*.
 - [ ] **2.4 Session MOTD** — consumes the absorbed ADR-0.0.65, ADR-0.0.66, and canon; build per its §7. → *Designated Workstream — Session MOTD*.
 - [ ] **2.5 Config-first store — repo-wide SSOT (its own first-class workstream; design deferred, operator 2026-06-01).** A NEW thing, not a subset of anything: gzkit has no single source of truth for its own operational tuning values, which live as drifting literals repo-wide — instructions budgets, validator thresholds, `_PIPELINE_MARKER_STALE_HOURS` / timeouts / ceilings hardcoded in `src/`, lock TTL, the 40% coverage floor, defect-fix thresholds — scattered across `data/`, code, tests, and prose docs. **Live instance (2026-06-01):** the AGENTS.md char budget exists in 4 places — `data/instructions_files_budget.json` (now 33000), two test literals (`test_agents_md_map_doctrine_obpi01/04`), and the `agents-md-map-doctrine.md` Budget table *still saying 15000* (drifted since OBPI-0.0.54-01). Inventory: `grep -E '^_[A-Z_]+ *= *[0-9]' src/gzkit`. Target: one typed source that code, tests, **and doc-table generation** read from, + a `gz validate --config-ssot` drift fail-close. **Overlaps but exceeds Canon Foundation §8.8** — canon subsumes scattered `data/*.json` *invariant data*; this is broader: repo-wide tuning *scalars*, most hardcoded in `src/`, which canon (invariant rules) does not home. The irony it names: gzkit preaches SSOT for governance state, has none for its own config. **Prior art (operator, 2026-06-01): AirlineOps did this notably better — study its config-SSOT pattern via `/airlineops-parity-scan` before designing.** Reference for a gzkit-native design, not perpetual-parity catch-up (Architectural Boundary 5).
@@ -77,7 +88,7 @@ reference); this line is the live mtime.
 |-----|---------|------|
 | #563 | task-envelope gate failure — `seq=01`-only TASKs, missing `task_id` | **T1** — Phase 3 (gate cleared @ Snapshot E; class fix: closeout `task_id` population remains) |
 | #564 | preflight orphan plan-audit receipt (OBPI-0.0.64-04) | **T1** — Phase 3 (gate cleared @ Snapshot D; class fix: closeout leaves no orphan remains) |
-| #519 | context surface exhausts 258K window (**emergency**) | **T1** — Phase 2 → CMS |
+| #519 | context surface exhausts 258K window (**emergency**) | **T1** — Phase 2 → CMS (CMS at 10/16 post-OBPI-15; selection landed, Codex-`lite` **emission** follow-on still open — emergency unrelieved) |
 | #516 | closeout passive-presenter lacks REQ-evidence check | **T1** — Phase 3 |
 | #536 | `gz adr promote` Target-Scope `path:line` → invalid OBPI paths | **T1** — Phase 3 |
 | #537 | BEHAVIOR-kind cannot-uncovered-accept not mechanically enforced | **T1** — Phase 3 |
@@ -261,7 +272,37 @@ This is not a collapse. It is a red harness with named failure surfaces.
 - **Phase 1 (Make the Harness Green) is complete again.** Recovery remains open
   because emergency GHI #519 remains open; Tier 1 is still the next work band.
 
-Snapshots A, B, C, and D are preserved for audit; **Snapshot E is the live baseline.**
+### Snapshot F — re-measured (2026-06-03, after OBPI-15 + four post-E direct-fixes): GREEN
+
+- `git status --short` clean at measure time (the OBPI-15 change set was already
+  committed and pushed at sync anchor `b8195395`; tree synced to `origin/main`,
+  ahead=0 behind=0).
+- `uv run gz check` → **"✓ All checks passed"**; `GZ_CHECK_EXIT=0` (true exit
+  captured via file redirect, not a `| tail` pipe). **26/26 gates pass.** The
+  advisory spec-test-code drift reported 1,725 findings (still non-blocking;
+  does not affect exit code).
+- **Why re-measure:** Snapshot E was at risk of going stale the same way D did —
+  OBPI-0.0.37-15's Gate-5 completion is exactly the ADR-completion event that
+  regressed `ADR status freshness` at the D→E boundary. This time the completion
+  ran `gz register-adrs` in-ceremony, so `--adr-status-fresh` stayed green; no
+  remediation was needed. The green held; it was not assumed.
+- **What changed since E (no gate regressions):**
+  - **OBPI-0.0.37-15-per-vendor-template-selection** attested-complete →
+    ADR-0.0.37 CMS **9/16 → 10/16** (01–05, 11–15 done; 06–10, 16 pending).
+    Scope landed = the temperature *selection* mechanism (manifest →
+    `temperature_for` → renderer); the Codex-`lite` *emission* was operator-scoped
+    out and routed to #519. **#519 is therefore still OPEN and unrelieved.**
+  - Four untracked direct-fixes (each a `Task:`-trailer commit, no GHI row):
+    `fix(adr-audit)` `937da0ac` (deterministic ADR package-dir in the closeout
+    coverage gate), `chore(insights)` `a23a2296` (same-class FS-order first-match
+    defect tracking), `fix(check)` `3b29dfe7` (surface failing-step output for
+    diagnosability), `fix(sync)` `3911355f` (`render_rules_to_dir` project-relative
+    paths so apply==dry).
+- **Phase 1 (Make the Harness Green) remains complete.** Recovery remains open
+  because emergency GHI #519 remains open; Tier 1 is still the next work band, and
+  item 1.1 (#519) is now `[~]` in progress — advanced one OBPI but not closed.
+
+Snapshots A–E are preserved for audit; **Snapshot F is the live baseline.**
 
 ## Definition of Healthy
 
@@ -632,17 +673,22 @@ becomes its foundation-classified subset. The dial has an absolute floor — *"w
 0 Kelvin"*: `Judgment`-class bullets render at every temperature; the dial thins only
 Mechanical/Reference prose.
 
-**In-flight state (updated 2026-06-01, post-implementation of OBPI-11/12).** ADR-0.0.37
+**In-flight state (updated 2026-06-03, post-OBPI-15).** ADR-0.0.37
 Decision extended (new subsection "Decision Extension (2026-05-30): CIC-1 Density-Dial
 Composition"); checklist items 11–16 added; Decomposition Scorecard made coherent (final
 target 16); six briefs created (1:1 sync, 16↔16), all **semantically authored and committed**
-(commit `4014b85b`, GHI #519). Implementation has since begun: **OBPI-0.0.37-11
-(density-aware master model) and OBPI-0.0.37-12 (temperature renderer + templates) are
-`attested_completed`** — verified via `uv run gz adr status ADR-0.0.37` (7/16 OBPIs done:
-01–05, 11, 12). OBPIs 06–10 and 13–16 remain `pending`/`draft`; 13/14 are re-sequenced
-behind the canon ADR (§10). **Regression note:** the 0.0.37-12 closeout was irregular and
-regressed `gz check` (Snapshot C — `--task-envelope-coherence` + `preflight`); the green
-that held after the 2026-05-30 amendment no longer holds. This is a foundation-ADR scope
+(commit `4014b85b`, GHI #519). Implementation has advanced to **10/16 OBPIs
+`attested_completed`** — verified via `uv run gz adr status ADR-0.0.37`: 01–05, 11, 12,
+13 (reverse-parse migration `5e324e1`), 14 (wire-sync/retire-monolith `fa4dc83`), and
+15 (per-vendor template selection, sync anchor `b8195395`, 2026-06-03). OBPIs 06–10 and
+16 remain `pending`. **OBPI-15 scope note (operator-ratified, 2026-06-03):** OBPI-15
+landed the per-vendor temperature *selection* mechanism (manifest `content_type_temperatures`
+→ `vendors.temperature_for()` fail-closed → `render()` honors it), **not** the Codex-`lite`
+*emission*. No production path yet emits a thinned Codex surface; the byte reduction that
+relieves #519 is the named follow-on, routed back to #519. So the CMS is mechanically
+10/16 but **#519 is unrelieved.** **Regression history (resolved):** the 0.0.37-12 closeout
+regressed `gz check` (Snapshot C); cleared at Snapshot D, and OBPI-13/15 completions since
+have not regressed it (Snapshots E and F green). This is a foundation-ADR scope
 change made under explicit operator direction as #519 emergency relief (Architectural
 Boundary 1 / Operating Rule 6 waived by the operator's explicit call).
 
@@ -683,7 +729,9 @@ brief prose.
 - **"Dumb 4× mirroring" is imprecise — the mirrors already differ.** No materialized
   `.agents/AGENTS.md` or `.claude/AGENTS.md` sibling exists; `.github/AGENTS.md` is a distinct
   1,384 B thin mirror, not a full copy. OBPI-15's per-vendor temperature targets render-time
-  selection; the Codex `lite` tier is the named #519 relief.
+  selection; the Codex `lite` tier is the named #519 relief **payload, but OBPI-15 (landed
+  2026-06-03) shipped only the selection mechanism — emitting that thinned surface on a
+  production path is the open #519 follow-on**.
 - **OBPI-13 hardens two safety invariants the Diagnosis did not name.** (a) The round-trip
   contract shifts from byte-preservation (OBPI-09) to *semantic* equality
   `parse(render(model)) == model`, explicitly superseding OBPI-09. (b) A bullet with no
@@ -1232,6 +1280,22 @@ Emergency GHIs open:      1 — #519 (codex context surface exhausts 258K window
 Context-load issue state: #519 OPEN — substrate (OBPI-13/14) landed; #519 stays unrelieved until OBPI-0.0.37-15 (Codex lite) lands
 Open recovery issues:     #519 (emergency; Phase 2 / CMS → OBPI-15), #516 and Phase-3 ceremony/validator cluster, Phase-4 drain items
 Decision:                 normal development may NOT resume — emergency GHI #519 still blocks Recovery Closeout; next critical-path step is OBPI-0.0.37-15
+```
+
+### Progress snapshot — 2026-06-03 (Snapshot F; post OBPI-15 completion; supersedes post-13/14 block above)
+
+```text
+Snapshot date:            2026-06-03 (recovery still open)
+uv run gz check:          exit 0 — 26/26 gates pass, GZ_CHECK_EXIT=0 (measured, not assumed; advisory drift 1725 findings, non-blocking)
+Harness state:            GREEN re-measured. OBPI-15's Gate-5 completion is the ADR-completion event class that regressed ADR-status-freshness at D->E; this completion ran gz register-adrs in-ceremony, so --adr-status-fresh stayed green with no remediation
+ADR-0.0.37 CMS progress:  10/16 OBPIs attested_completed (was 9/16) — OBPI-0.0.37-15 (per-vendor template selection, sync anchor b8195395, Gate-5 human-attested) added; done set 01-05,11-15
+OBPIs remaining:          06-10, 16
+#519 relief status:       NOT landed — OBPI-15 shipped the per-vendor temperature SELECTION mechanism (manifest content_type_temperatures -> vendors.temperature_for() fail-closed -> render() honors it); the Codex-lite EMISSION (the byte reduction) was operator-scoped as a follow-on and routed back to #519. No production path yet emits a thinned Codex surface
+Other work since E:       four untracked direct-fixes (Task: trailers, no GHI rows) — fix(adr-audit) 937da0ac, chore(insights) a23a2296, fix(check) 3b29dfe7, fix(sync) 3911355f
+Emergency GHIs open:      1 — #519 (codex context surface exhausts 258K window)
+Context-load issue state: #519 OPEN and UNRELIEVED — CMS mechanically 10/16, but the byte payload that closes #519 is the deferred emission follow-on, not OBPI-15's selection mechanism
+Open recovery issues:     #519 (emergency; Phase 2 / CMS -> emission follow-on), #516 and Phase-3 ceremony/validator cluster, Phase-4 drain items
+Decision:                 normal development may NOT resume — emergency GHI #519 still blocks Recovery Closeout; the critical-path step is now the Codex-lite emission follow-on on #519, NOT another ADR-0.0.37 selection OBPI
 ```
 
 ## Appendix: The Smooth-vs-Replicable Axis (2026-05-30 dialogue insights)
