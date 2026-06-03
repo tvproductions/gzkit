@@ -171,6 +171,36 @@ original decision; the six-item extension is the density-dial composition increm
 - **OBPI-0.0.37-15 — Per-vendor template selection.** Codex mirror renders lite; Claude standard; ends identical 4× mirroring. Harness/model detection remains a forward-reference.
 - **OBPI-0.0.37-16 — Docs-for-agents orientation index.** A routable surface → authoritative-model+doctrine map rendered from the same substrate, so the rendering architecture stops being re-derived from source each session.
 
+## Decision Re-Alignment (2026-06-03): Corpus → Setpoint-Compression → Invariant Tier
+
+> **Supersession scope.** This re-alignment supersedes the *mechanism* of the 2026-05-30 Density-Dial extension (the per-`Bullet` `density_min` include/exclude switch + three static lite/medium/heavy templates). It does **not** change CIC-1's invariant or CIC-2 (brief↔reality). The 2026-05-30 text is retained above as authored history; the binding composition mechanism is the one defined here. Authored under live operator design dialogue 2026-06-03 (decision record: `.gzkit/insights/agent-insights.jsonl` improvement entry `ts=2026-06-03T11:32:52Z`). ADR remains `Draft`; no extension OBPI (11–17) is `attested`/`obpi_completed` in the ledger, so no ratified deliverable is superseded.
+
+**Why re-aim.** Empirical review proved the 2026-05-30 mechanism inert: the render template `agentcontract/claude.md.j2` emits `pillar.lines | join` verbatim and every parsed `Bullet.density_min=None`, so `render(lite) == render(medium) == render(heavy)` byte-for-byte. The corrective attempt (OBPI-17-as-scoped: thin by dropping whole sections) collides with ADR-0.0.33 `bullet-retention` (in the default `gz check` scope) and floors the committed root at ~29,885 B with no headroom; `# Local Agent Rules` is an H1 the parser glues into the Control-Surfaces pillar. Both mechanisms are the wrong shape. The operator's correction (verbatim): *"temperature levels are to condense and shorten language within sections. Dropping whole sections is not preferred"*; *"we don't write-rewrite AGENTS.md … we write to the growing corpus … like how you, as a harness, store user memories"*; *"the user might want invariants - things that are omnipresent and never condense … PRIME DIRECTIVE, DO IT RIGHT, and NEVER PYTEST"*; *"I set the thermostat and the system works to hit that target."*
+
+**The re-aimed mechanism — four parts + one pipeline:**
+
+1. **Append-only corpus (source of truth).** A schema-bound, append-only store of contract content (paras/bullets). Operator "remember X" moments and agent course-corrections **append** entries; nothing is hand-edited at the rendered location (the substrate doctrine's binding claim, made load-bearing). Each entry is **addressed and provenanced**: `id, surface, section, anchor?, tier (invariant|compressible), classification, witness?, text, origin, ts`. **Sections are defined by the surface's Jinja2 template, not a separate registry; the `AgentContract`/`Pillar` Pydantic models enforce conformance** — an entry's `section` MUST resolve to a real template section, invariant-tier sections MUST be present, setpoint/section coherence validates. Append fires a `corpus_entry_appended` ledger event; the committed rendition carries a provenance map (rendered section → contributing entry ids) for bidirectional audit (rendered surface → rendition → corpus entry → origin GHI/session).
+
+2. **Temperature = compression setpoint (thermostat).** A declared parsimony target per *(surface × consumer)*, stored in the existing `data/vendor-manifest.json` `content_type_temperatures` map. The setpoint is a *target the composer drives toward*, never a stored-rendition selector. Achieved byte size is an **output** (a function of how much content is invariant-tier), reported as evidence — not a hand-tuned input.
+
+3. **Authoring-time compression composer (LLM, advisor-QC'd, operator-attested).** At authoring time the composer scans the corpus and compresses `compressible`-tier content toward the setpoint using judgment (drop/combine/rewrite), maximizing information retained per byte reduced. Output is graded by an advisor panel (LLM-as-judge — **advisory, never gating**, per ADR-0.0.39), then **operator-attested** (universal Gate 5; no auto-accept), then committed as a durable **rendition artifact**.
+
+4. **Deterministic playback (no LLM in the render path).** `sync_agents_md` renders the committed rendition deterministically to AGENTS.md and vendor mirrors. The non-deterministic step (compression) happens between turns at authoring time; the render path is pure playback. **This is the load-bearing anti-vibing seam** — it is the canon-layer instance of Alternative #11's rejection of LLM-as-rendering.
+
+5. **Invariant tier (0-Kelvin floor).** `tier: invariant` entries (PRIME DIRECTIVE, DO IT RIGHT, NEVER PYTEST, …) emit **verbatim at every setpoint**, never compressed — exact operator intent, analogous to the immutable upstream system prompt the operator cannot edit. The dial thins only `compressible` content.
+
+**The binding pipeline:** `corpus (append-only source) → compress toward setpoint (LLM + advisor-QC + operator attest) → committed rendition (durable artifact) → deterministic playback → rendered surface`.
+
+**Recompose contract (build + on-demand + chore).** Every build (`gz agent sync` / `gz check`) runs only **deterministic playback + a freshness gate**: if the corpus changed since the committed rendition for a surface, the build **fails closed** ("corpus drifted; run `gz content compose <surface>` and attest"), the same shape as `--invariant-coherence` / `register-adrs` freshness. Recompose itself is available **both** on-demand (`gz content compose <surface>`) **and** as a scheduled **chore** that detects drift, runs the compression + advisor-QC legwork, and stages a candidate rendition for operator attestation — never auto-committing (Gate 5 stays human). Cadence is material-change-triggered (setpoint and invariant-tier changes always recompose).
+
+**#519 re-anchors** as "declare a lean `AgentContract.codex` (and tighter root) setpoint and compress to it." Interim relief = an operator-attested hand-compressed rendition landed early as the first committed-rendition artifact; the composer regenerates it once the engine lands. Fixes the `data/instructions_files_budget.json` miscalibration.
+
+**ADR-0.0.33 reconciliation (coupled attested amendment).** `bullet-retention` becomes **tier-scoped**: verbatim presence required at the invariant tier; compressed tiers satisfy retention via the advisor-QC info-retention receipt + operator attestation, not verbatim-bullet substrings. This is a real attested amendment to ADR-0.0.33's Invariant 1 (Validated, heavy), landed in the same commit-window as the tier-aware validator (re-decomposed OBPI below), never a silent validator edit (which would be the doctrine-drift ADR-0.0.33 itself prohibits).
+
+**Refined canonical statement (CIC-1 composition half):** gzkit's agent control surface is composed from an append-only, schema-validated, ledger-witnessed corpus. A declared compression setpoint per *(surface × consumer)* drives an authoring-time, advisor-QC'd, operator-attested compression of compressible-tier content into a committed rendition artifact, played back to the rendered surface deterministically — no LLM in the render path. Invariant-tier content is emitted verbatim at every setpoint. Drift between deterministic playback and the committed surface is fail-closed at `gz validate --invariant-coherence`.
+
+**Re-decomposed extension OBPIs** replace items 11–17 (see the Checklist; Decomposition Scorecard Final Target 17 → 20). Disposition of prior work (ledger-grounded — none attested): **11/13/14 built reusable substrate** (`AgentContract`/`Pillar` model, markdown↔model parser, sync/playback plumbing) → re-homed; the dead surface is narrow (the inert `density_min` filter + three-static-template framing); **15 and 17-as-scoped retire**; **16 (orientation index) is orthogonal — kept**.
+
 ## Comparator Uplift (2026-05-07)
 
 Comparator lessons must not enter gzkit as prose pasted into AGENTS.md. This ADR
@@ -237,14 +267,16 @@ they have a foundation invariant to defend.
 - Lineage: 2
 - Dimension Total: 10
 - Baseline Range: 5+
-- Baseline Selected: 12
+- Baseline Selected: 16
 - Split Single-Narrative: 1
 - Split Surface Boundary: 1
 - Split State Anchor: 1
 - Split Testability Ceiling: 1
 - Split Total: 4
-- Final Target OBPI Count: 17
+- Final Target OBPI Count: 20
+<!-- Baseline Selected 12→16 (2026-06-03 Re-Alignment): split flags are 0/1 booleans (Split Total max 4), so the re-decomposition's added separable units (append-only corpus store, capture tool+skill, setpoint config, compression composer, committed-rendition store + deterministic playback, invariant tier, advisor-QC loop, tier-scoped retention validator, #519 setpoint, migration) raise the baseline from 12 to 16. Baseline 16 + Split 4 = 20. -->
 <!-- 16→17 (operator-directed, 2026-06-03): OBPI-17 added after the Codex-loader finding ruled out per-vendor emission as the #519 relief and the dial was found inert (every Bullet.density_min=None → identical bytes at every temperature). The "locked 16" was a design-dialogue calibration ("calibrated over time from project evidence"); the emergency-relief increment is the evidence. OBPI-17 is the AgentContract-path density classification; distinct from OBPI-09's superseded invariant-registry migration. -->
+<!-- 17→20 (operator-directed, 2026-06-03): the § Decision Re-Alignment supersedes the 2026-05-30 density-dial mechanism (inert per-bullet density_min filter + three static templates) with the corpus → setpoint-compression → committed-rendition → deterministic-playback + invariant-tier model. Extension items 11–17 re-decompose into 11–20 (base 10 + 10). None of the prior 11–17 was attested/obpi_completed in the ledger; 11/13/14 built reusable substrate (re-homed), 15/17-as-scoped retire, 16 (orientation index) folds into item 20. Per SKILLS-FIRST, each new capability is delivered as tool(s) + the skill that wields them. -->
 
 
 ## Checklist
@@ -261,13 +293,17 @@ they have a foundation invariant to defend.
 - [ ] OBPI-0.0.37-08 — `gz obpi complete` fail-close gate (refuses Stage 5 completion without fresh reconciliation receipt; `--accept-stale-reconciliation --reason` escape hatch records override)
 - [ ] OBPI-0.0.37-09 — AGENTS.md migration (register existing AGENTS.md content as constitutional invariants; render AGENTS.md from registry; lock the inversion in CI)
 - [ ] OBPI-0.0.37-10 — Doctrine refresh (update ADR-0.0.18 kind-axis distinction; re-route pool stubs `brief-authoring-evidence-checks` and `obpi-pipeline-dispatch-attestation`; update contributing docs)
-- [ ] OBPI-0.0.37-11 — Density-aware master content model (reconcile ConstitutionalInvariant into AgentContract/Pillar/Bullet; classification + witness + rationale_ref + density_min; section order/enabled/tier)
-- [ ] OBPI-0.0.37-12 — Temperature renderer + lite/medium/heavy templates (per-bullet density floor; Judgment always renders; deterministic byte-stable)
-- [ ] OBPI-0.0.37-13 — Reverse-parse migration to master model (gz content import; dissolve agents.local.md + get_project_context literals; zero hand-authored prose; round-trip fidelity; supersedes OBPI-09 byte-preserving framing)
-- [ ] OBPI-0.0.37-14 — Wire sync_agents_md through the renderer; retire monolithic template; --invariant-coherence diffs the model render
-- [ ] OBPI-0.0.37-15 — Per-vendor template selection (Codex lite / Claude standard; ends identical mirroring; harness-detection is a forward-reference)
-- [ ] OBPI-0.0.37-16 — Docs-for-agents orientation index (routable surface→authoritative-model+doctrine map rendered from the same substrate; closes the re-derivation loop)
-- [ ] OBPI-0.0.37-17 — AGENTS.md density classification (classify the AgentContract corpus so the temperature dial — built inert by OBPI-11/12, every `Bullet.density_min=None` — actually thins; render the shared root AGENTS.md at a tier that fits Codex's 32,768-byte cap with headroom; the concrete #519 byte relief on the one surface Codex reads. Operator-directed 2026-06-03 after the Codex-loader finding ruled out per-vendor emission.)
+<!-- Items 11–20 RE-DECOMPOSED 2026-06-03 per § Decision Re-Alignment. They supersede the 2026-05-30 density-dial items 11–17 (inert per-bullet density_min filter + three static templates). None of the prior 11–17 was attested/obpi_completed in the ledger. Per SKILLS-FIRST each capability ships as tool(s) + the skill that wields them (tool/skill/runbook alignment). Brief files reconciled via gz-obpi-specify. -->
+- [ ] OBPI-0.0.37-11 — Append-only corpus model + addressed-entry schema (reuse AgentContract/Pillar substrate from prior 11/13; entry = id/surface/section/anchor/tier{invariant|compressible}/classification/witness/text/origin/ts; sections are TEMPLATE-defined, Pydantic enforces conformance; append-only contract)
+- [ ] OBPI-0.0.37-12 — Corpus capture tool + skill (`gz content remember <surface> --section <id> [--tier]` tool appends an entry + `corpus_entry_appended` ledger event, never edits a rendered surface; wielding capture skill; replaces prior OBPI-12 renderer)
+- [ ] OBPI-0.0.37-13 — Setpoint declaration + coherence validator (compression target per surface×consumer in `data/vendor-manifest.json` `content_type_temperatures`; `gz validate` scope asserts every (surface×consumer) has a declared setpoint; re-homes prior 13/15 substrate)
+- [ ] OBPI-0.0.37-14 — Authoring-time compression composer tool + skill (LLM compresses compressible-tier corpus toward the setpoint — drop/combine/rewrite; emits candidate rendition + per-tier byte evidence; wielded by a compose skill; NO LLM in the render path)
+- [ ] OBPI-0.0.37-15 — Committed-rendition store + deterministic playback + freshness gate (durable rendition artifact per surface×consumer; `sync_agents_md` plays it back deterministically; build fail-closes on corpus↔rendition drift; `--invariant-coherence` diffs playback vs committed surface; re-homes prior OBPI-14 sync/compose plumbing)
+- [ ] OBPI-0.0.37-16 — Invariant tier (verbatim, never condense) (`tier: invariant` entries emit verbatim at every setpoint; test asserts PRIME DIRECTIVE / DO IT RIGHT / NEVER PYTEST survive at the leanest setpoint; the 0-Kelvin floor made first-class)
+- [ ] OBPI-0.0.37-17 — Advisor-panel info-retention QC loop (per ADR-0.0.39 llm-as-judge: advisory never gating, receipt-emitting; scores information-retained-per-byte of a candidate rendition; verdict cited in operator attestation; tool(s) wielded by an advisor-QC skill)
+- [ ] OBPI-0.0.37-18 — ADR-0.0.33 bullet-retention tier-scoped validator (flip `--bullet-retention` from whole-surface verbatim grep to tier-aware: verbatim on invariant tier; advisor-QC receipt + attestation on compressed tiers; lands in the same commit-window as the coupled ADR-0.0.33 Invariant-1 amendment)
+- [ ] OBPI-0.0.37-19 — #519 Codex-root setpoint application + interim attested relief (declare lean `AgentContract.codex`/tighter-root setpoint; land an operator-attested interim hand-compressed rendition as the first committed-rendition artifact — sequenced FIRST so the emergency is not stranded; fix `data/instructions_files_budget.json` miscalibration; composer regenerates the rendition once 14/15 land)
+- [ ] OBPI-0.0.37-20 — Migration/disposition + doctrine refresh + orientation index (retire the inert density_min filter + three-static-template framing; repoint sync onto the rendition store; fold in the OBPI-16 orientation-index surface→model map; refresh the substrate doc + return-to-health plan)
 
 ## Q&A Transcript
 
@@ -309,6 +345,20 @@ they have a foundation invariant to defend.
 11. **Composition rendering driven by an LLM rather than deterministic templating.** REJECTED — non-determinism at the canon layer is the failure mode this ADR exists to close. Byte-deterministic rendering is the structural witness; LLM rendering would introduce vibing-as-rendering, the canon-layer instance of the cluster's mantra-named failure class.
 
 12. **Reconciliation receipt-freshness defined by wall-clock TTL (e.g. 1 hour) rather than mutation-timestamp comparison.** REJECTED — wall-clock TTL produces false-positive staleness on briefs whose allowlist domain has not mutated, and false-negative freshness on briefs whose allowlist domain mutated 30 seconds after a receipt was emitted. Mutation-timestamp comparison is the semantically-correct freshness test; TTL is the easier-but-wrong proxy.
+
+### Rejected alternatives for the 2026-06-03 Decision Re-Alignment
+
+13. **Keep the built per-bullet `density_min` include/exclude dial (2026-05-30 mechanism).** REJECTED — empirically inert: the render template emits `pillar.lines | join` verbatim and every parsed `Bullet.density_min=None`, so `render(lite)==render(medium)==render(heavy)` byte-for-byte. An include/exclude switch cannot *condense language within a section* — the operator's stated requirement.
+
+14. **Three static authored lite/medium/heavy templates.** REJECTED — recreates the operator-named anti-pattern ("we don't write-rewrite AGENTS.md"); hand-authored renditions drift and triple the hand-authoring surface the substrate doctrine forbids. Replaced by one append-only corpus + setpoint-driven compose.
+
+15. **Section-drop to hit the Codex cap (OBPI-17-as-scoped).** REJECTED — collides with ADR-0.0.33 bullet-retention (in the default `gz check` scope), floors the committed root at ~29,885 B with no headroom, and the `# Local Agent Rules` H1 is glued into the Control-Surfaces pillar so dropping it loses Mechanical bullets. The operator explicitly deprioritized whole-section drops ("each section serves a vital function").
+
+16. **Runtime LLM compression in the render path.** REJECTED — non-determinism at the canon layer is the exact failure Alternative #11 already rejected. The committed-rendition artifact (OBPI-15) is the determinism seam: compression is authoring-time; the render path is pure deterministic playback.
+
+17. **Author a NEW superseding foundation ADR for the re-alignment.** REJECTED — ADR-0.0.37 is `Draft` (no ratified decision to supersede), CIC-1's invariant is unchanged (only its composition mechanism is refined), and no extension OBPI (11–17) is `attested`/`obpi_completed` in the ledger. A new ADR is ceremony with no separability gain (original Rationale #2).
+
+18. **Silently flip the Era-1 bullet-retention validator to tolerate compression.** REJECTED — editing a Validated invariant's enforcement without an attested amendment is the doctrine-drift failure ADR-0.0.33 exists to prevent. The tier-scoping is a real attested ADR-0.0.33 Invariant-1 amendment coupled to OBPI-0.0.37-18, never a silent validator edit.
 
 ## Attestation Block
 

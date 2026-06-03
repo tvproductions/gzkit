@@ -1,12 +1,9 @@
 {
   "obpi_id": "OBPI-0.0.37-17",
-  "timestamp": "2026-06-03T10:02:07.643553+00:00",
-  "verdict": "FAIL",
-  "plan_file": null,
-  "gaps_found": 1,
-  "gaps": [
-    "No plan file found for OBPI-0.0.37-17 in .claude/plans/ or ~/.claude/plans/"
-  ],
+  "timestamp": "2026-06-03T10:33:34.244831+00:00",
+  "verdict": "PASS",
+  "plan_file": "lively-hatching-storm.md",
+  "gaps_found": 0,
   "scope_collisions": [
     {
       "sibling_adr": "ADR-0.14.0",

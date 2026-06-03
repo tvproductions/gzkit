@@ -59,7 +59,7 @@ Four invariants, mechanically validated:
    classified Mechanical or Promotable is present verbatim in the per-turn
    surface (Era 1) or registered as a `Bullet` instance in the canonical
    Pydantic content model (Era 2 onward, per ADR-0.0.34). Validator:
-   `gz validate --bullet-retention`.
+   `gz validate --bullet-retention`. **(Amended 2026-06-03 — tier-scoped; see § Amendment below.)**
 2. **Surface weight regression** — direction-binding (no growth past current
    snapshot 1768 lines) is fail-closed. Provisional warning bands grounded in
    2026 literature: green ≤ 1800, yellow 1801–2200 (waiver required), red
@@ -88,6 +88,40 @@ progressive disclosure Era 3); the invariants don't change.
 The doctrine names the failure pattern (D2 framing); the audit names the
 historical instances. Specific drift findings on ADR-0.14.0 and ADR-0.16.0
 are tracked as separate GHIs, not embedded in this ADR's body.
+
+### Amendment (2026-06-03): Invariant 1 is tier-scoped
+
+Authored under ADR-0.0.37's § Decision Re-Alignment (2026-06-03), which makes the
+agent control surface **composed from an append-only corpus by setpoint-driven,
+authoring-time compression** rather than a fixed full-fidelity render. Under
+compression, a `compressible`-tier bullet may legitimately be combined or reworded
+in a rendered surface, so the Era-1 "present verbatim in the rendered surface"
+test would fail-close on exactly the behavior the corpus model is designed to
+produce.
+
+**Amended Invariant 1 (tier-scoped):**
+
+- **Invariant tier** (`tier: invariant` corpus entries — e.g. PRIME DIRECTIVE,
+  DO IT RIGHT, NEVER PYTEST): the verbatim-presence contract is unchanged and
+  fail-closed. These render verbatim at every setpoint; `--bullet-retention`
+  asserts their exact presence.
+- **Compressible tier**: retention is satisfied by the **advisor-QC
+  information-retention receipt + operator attestation** for the committed
+  rendition (per ADR-0.0.39 and the universal Gate 5), **not** by verbatim-bullet
+  substring presence. The invariant being preserved is *no binding information is
+  lost*, witnessed by the QC receipt + attestation, not *every byte is identical*.
+
+The canonical-source verbatim contract (the corpus / the fat tier) is unchanged:
+nothing is lost from source; compression governs only the *rendered* compressed
+tiers.
+
+**Mechanical coupling.** This amendment is realized by **OBPI-0.0.37-18**, which
+flips `gz validate --bullet-retention` from whole-surface verbatim grep to
+tier-aware enforcement. The amendment and the validator change land in the same
+commit-window (the validator must stay wired into `--surface-fidelity` / `gz check`
+throughout — Anti-Pattern #1). This amendment is **attested at OBPI-0.0.37-18's
+Gate 5** (foundation/heavy); until then Invariant 1 enforces the original Era-1
+contract.
 
 ## Comparator Uplift (2026-05-07)
 

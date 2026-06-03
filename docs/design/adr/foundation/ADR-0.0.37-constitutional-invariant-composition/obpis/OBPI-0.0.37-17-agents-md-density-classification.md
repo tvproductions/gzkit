@@ -44,16 +44,19 @@ OBPI-09 (`agents-md-migration`) targets the **invariant-registry** render path: 
 - `src/gzkit/content/parse/markdown_parser.py` (add density-annotation parsing — mechanism (a))
 - `src/gzkit/templates/agents.md` (annotate bullets with density tiers — mechanism (a)) **OR** the authored classified model store (mechanism (b)); exactly one mechanism is implemented
 - `src/gzkit/content/models/bullet.py` (only if the classification enum or `density_min` validation needs extension — minimal; the 0-Kelvin floor is already coded)
-- `src/gzkit/sync_surfaces.py` (render the shared root at the chosen tier — change the `sync_agents_md` temperature from the OBPI-15 `heavy` call-site default to the chosen #519-relief tier)
+- `src/gzkit/sync_surfaces.py` (render the shared root at the chosen tier — `sync_agents_md` is already manifest-driven via `temperature_for("AgentContract","claude")`; the call-site `heavy` literal is only the no-manifest fallback, so the docstring is updated and the tier flips via `data/vendor-manifest.json`)
+- `data/vendor-manifest.json` (**amended-in 2026-06-03, operator-ratified**) — the single tier source: set `content_type_temperatures.AgentContract.claude` `heavy`→`medium` so the shared root renders at the #519-relief tier
+- `src/gzkit/governance/compose.py` (**amended-in 2026-06-03, operator-ratified**) — render the AgentContract template at `temperature_for("AgentContract","claude")` (heavy fallback) instead of hardcoded `heavy`, so `gz validate --invariant-coherence` and `gz governance render` stay byte-coherent with the medium-rendered committed root. OBPI-14 repurposed compose.py onto the AgentContract path (its `invariants` param is ignored); it is NOT the registry path.
 - `data/instructions_files_budget.json` (correct the AGENTS.md budget to fit Codex's 32,768-byte cap with headroom — closes the gate-miscalibration defect)
 - `tests/content/test_round_trip_agent_contract.py` (add classification + per-tier byte-budget + Judgment-floor tests)
 - `tests/governance/` (add #519-fits-cap regression test)
 - `features/constitutional_invariants.feature` (migration/relief round-trip scenarios tagged `@REQ-0.0.37-17-*`)
+- `features/steps/constitutional_invariants_steps.py` (**amended-in 2026-06-03**) — only if a new step phrasing is unavoidable; reuse OBPI-15 steps first
 
 ## Denied Paths
 
 - Paths not listed in Allowed Paths
-- `.gzkit/invariants/*.yaml`, `src/gzkit/governance/compose.py`, `gz governance render` surface (the OBPI-09 registry path — out of scope; this OBPI is the AgentContract path)
+- `.gzkit/invariants/*.yaml` and the registry→bullet reconciliation (`gzkit.governance.invariants`) — the OBPI-09 registry data path remains out of scope. (Note, amended 2026-06-03: `src/gzkit/governance/compose.py` was moved to Allowed Paths. OBPI-14 already repurposed compose.py to render the **AgentContract template** at hardcoded `heavy` — its `invariants` param is ignored — so it is on the AgentContract render path this OBPI owns, not the registry path. The amendment changes only its temperature *source*, not its content source.)
 - `CLAUDE.md` (operator-facing redirect; not a render target here)
 - `.claude/rules/*.md`, `.gzkit/rules/*.md` (separate canon surface; rule-file budgets are out of scope)
 - The *content semantics* of any rule — classification adds metadata and may thin prose at lower tiers, but the **heavy** render must remain semantically equivalent to today's AGENTS.md (REQ-07). Rewording rules is a separate ADR amendment.
@@ -65,9 +68,9 @@ OBPI-09 (`agents-md-migration`) targets the **invariant-registry** render path: 
 2. REQUIREMENT (0-Kelvin floor): Every `Judgment`-classification bullet renders at **every** temperature. A test asserts the binding core — PRIME DIRECTIVE, DO IT RIGHT, Behavior Rules (Always/Never), the anti-vibing mantra — survives intact at `lite`. No binding/anti-vibe rule is thinned at any tier.
 3. REQUIREMENT (dial no longer inert): On the live AGENTS.md corpus, `render(model, "lite")` and `render(model, "medium")` are each **strictly smaller** than `render(model, "heavy")`. The inertness defect (all-tiers-identical) is closed and a test fails if it regresses.
 4. REQUIREMENT (durable mechanism): Density classifications are carried by exactly one named, durable mechanism — (a) template annotations read by an extended `markdown_parser`, or (b) an authored classified model store — chosen and documented in the Implementation Summary. The parse/authoring path is net-new code with its own tests; classifications are not injected ad hoc at render time.
-5. REQUIREMENT (semantic preservation at heavy): The `heavy` render remains semantically equivalent to the pre-classification `AGENTS.md` — a byte-stability/round-trip test asserts the heavy-tier output matches the committed surface (classification adds metadata; it does not rewrite rule text).
+5. REQUIREMENT (semantic preservation at heavy): The `heavy` render remains semantically equivalent to the **pre-classification** corpus — a test strips the density annotations from the template and asserts the `heavy`-tier render is byte-identical to the render of the stripped template (classification adds metadata; it does not rewrite or drop rule text). *(Amended 2026-06-03: the baseline is the captured pre-classification render, not "the committed surface" — the committed surface becomes the `medium` render once this OBPI lands, which would make the original wording self-falsifying.)*
 6. REQUIREMENT (budget calibration): `data/instructions_files_budget.json` sets the `AGENTS.md` budget to a value that fits Codex's 32,768-byte cap with headroom (≤ 30,000), closing the defect where the gate (33,000) exceeded the cap it guards. Ties GHI #579.
-7. REQUIREMENT (no scope creep into registry path): This OBPI does not modify the `.gzkit/invariants/` registry or `gz governance render`; it operates solely on the AgentContract render path. Cross-path coupling would be a brief-boundary violation.
+7. REQUIREMENT (no scope creep into registry data path): This OBPI does not modify the `.gzkit/invariants/` registry contents or the registry→bullet reconciliation; it operates on the AgentContract render path. The compose.py change aligns its temperature *source* with sync so that `gz governance render` and `gz validate --invariant-coherence` stay byte-coherent with the medium-rendered committed root — it does not change compose.py's content source. Coupling into the registry data path would be a brief-boundary violation.
 8. REQUIREMENT (Gate 5 governance attestation): Operator attests the classification decision set — specifically that no rule classified below `Judgment` is in fact binding — recorded in the brief's Human Attestation with the per-tier byte evidence. Universal Gate 5.
 
 ## Discovery Checklist
@@ -149,9 +152,9 @@ print(f'REQ-06 OK — AGENTS.md budget {b} <= 30000')
 - [ ] REQ-0.0.37-17-02: Every `Judgment` bullet renders at every temperature; the binding core survives at `lite` (test-asserted)
 - [ ] REQ-0.0.37-17-03: `render(lite) < render(medium) < render(heavy)` on the live corpus (inertness defect closed)
 - [ ] REQ-0.0.37-17-04: Density carried by exactly one durable mechanism (template-annotation+parser OR authored classified model), net-new parse/authoring code with tests, documented in Implementation Summary
-- [ ] REQ-0.0.37-17-05: `heavy` render semantically equivalent to pre-classification AGENTS.md (byte-stability/round-trip test)
+- [ ] REQ-0.0.37-17-05: `heavy` render byte-identical to the annotation-stripped template render (pre-classification baseline; classification is metadata-only — no reword/drop)
 - [ ] REQ-0.0.37-17-06: `data/instructions_files_budget.json` AGENTS.md budget ≤ 30,000 (fits Codex cap; ties #579)
-- [ ] REQ-0.0.37-17-07: No modification to `.gzkit/invariants/` registry or `gz governance render` (registry path untouched)
+- [ ] REQ-0.0.37-17-07: No modification to `.gzkit/invariants/` registry contents or the registry→bullet reconciliation; compose.py temperature-source aligned with sync (registry data path untouched)
 - [ ] REQ-0.0.37-17-08: Operator attestation that no sub-`Judgment` classification is actually binding, with per-tier byte evidence
 
 ## Completion Checklist
@@ -176,7 +179,8 @@ print(f'REQ-06 OK — AGENTS.md budget {b} <= 30000')
 
 ### Implementation Summary
 
-- Mechanism chosen (a template-annotation+parser / b authored model):
+- **Brief amendment (operator-ratified, 2026-06-03):** A plan-audit established that REQ-01 (committed root ≤30,000) cannot be satisfied without breaking `gz validate --invariant-coherence`: that validator renders via `compose.py` at hardcoded `temperature="heavy"` (32,651 B) and byte-compares to the committed root, so the moment sync writes `medium` it drifts. The conflict is mathematically forced (a working dial + committed=medium guarantees committed ≠ compose(heavy) unless the dial is inert). Resolution: add `src/gzkit/governance/compose.py` and `data/vendor-manifest.json` to Allowed Paths; reword REQ-05 to a pre-classification baseline; rewrite REQ-07 / denied-path rationale (compose.py is the AgentContract path post-OBPI-14). Operator ratified via plan-mode AskUserQuestion ("Amend brief, one OBPI").
+- Mechanism chosen (a template-annotation+parser / b authored model): **(a)** — durable density annotations in `src/gzkit/templates/agents.md`, read+stripped by an extended `markdown_parser`. Chosen over (b): preserves the template-as-source pipeline and "zero hand-authored prose at the rendered location"; the scorecard `classification` path is too fragile to drive the dial (defaults Ambiguous; 4 classes vs 3).
 - Files created/modified:
 - Tests added:
 - Per-tier byte sizes (lite / medium / heavy) and chosen root tier:

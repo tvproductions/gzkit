@@ -1,6 +1,30 @@
 # Return to Health Plan, 2026-05-30
 
 Status: Active canonical recovery plan.
+
+> **Snapshot G (2026-06-03) — #519 route REDESIGNED; ADR-0.0.37 CMS re-decomposed 17→20.**
+> A design pass with the operator established that the density-dial mechanism (per-`Bullet`
+> `density_min` include/exclude + three static templates) is **inert** (the render template
+> emits `pillar.lines` verbatim; `render(lite)==render(medium)==render(heavy)`), and that
+> **OBPI-0.0.37-17-as-scoped (thin by dropping whole sections) is the wrong shape** — it
+> collides with ADR-0.0.33 `bullet-retention` (in `gz check`) and floors the root at ~29,885 B
+> with no headroom. The operator's corrected, authoritative design is now booked as
+> **ADR-0.0.37 § Decision Re-Alignment (2026-06-03)**: an **append-only corpus** (source of
+> truth; "remember X" appends, never hand-edits the rendered surface — like harness
+> user-memories) → **temperature as a compression setpoint** (per surface×consumer) →
+> **authoring-time agent compression** (drop/combine/rewrite toward target, advisor-QC'd,
+> operator-attested) → **committed rendition** → **deterministic playback** (no LLM in the
+> render path) + an **invariant tier** (PRIME DIRECTIVE / DO IT RIGHT / NEVER PYTEST — verbatim,
+> never condensed). **#519 re-anchors** as "declare a lean Codex-root setpoint and compress to
+> it"; relief is now **OBPI-0.0.37-19** (Codex-root setpoint + interim operator-attested
+> compressed rendition, sequenced FIRST). ADR-0.0.37 Checklist re-decomposed to 11–20 (each =
+> tool(s) + wielding skill, per SKILLS-FIRST); ADR-0.0.33 Invariant 1 amended tier-scoped
+> (coupled to OBPI-0.0.37-19's sibling OBPI-0.0.37-18, attested at its Gate 5). **#519 remains
+> OPEN — design booked, not built.** No prior extension OBPI (11–17) was attested in the
+> ledger; 11/13/14 = reusable substrate (re-homed), 15/17-as-scoped retire, 16 folds into 20.
+> Next: `gz-adr-evaluate ADR-0.0.37` → `gz-obpi-specify` (reconcile brief files to the new
+> checklist) → build OBPI-19 first. Decision record: `.gzkit/insights/agent-insights.jsonl`
+> `ts=2026-06-03T11:32:52Z`. Snapshots A–F below are prior history.
 Last updated: 2026-06-03 — recorded a **post OBPI-15 progress snapshot
 (Snapshot F)**: OBPI-0.0.37-15-per-vendor-template-selection landed
 Gate-5-attested (sync anchor `b8195395`), advancing ADR-0.0.37 CMS to **10/16
