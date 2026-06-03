@@ -74,7 +74,7 @@ reference); this line is the live mtime.
 > the critical path. Operator call: *"resolve the ordering decision now in favor of relieving #519
 > on the current substrate — do not block CMS on Canon first — then proceed to Phase 2 / #519."*
 
-### GHI Register — all 34 open issues, homed
+### GHI Register — all 38 open issues, homed
 
 > First-pass triage (via `ghi-triage`, 2026-06-01): the script's mechanical route is *evidence*;
 > the **Home** column is the agent's body-read tier assignment — re-home freely. **Every open GHI
@@ -115,14 +115,17 @@ reference); this line is the live mtime.
 | #560 | behave `distribution_invariant` byte-equivalence scenario failing | **T1** — Phase 4 |
 | #562 | tautological test (`test_unscoped_rules.py:448` read_text+assertEqual) | **T1** — Phase 4 |
 | #571 | stdlib unittest/doctest doctrine & recurrence defenses | **T1** — Phase 4 |
+| #534 | obpi pipeline: subprocess reader crashes on non-utf8 grandchild stdout | **T1** — Phase 4 *(agent-homed @ Snapshot F; runtime defect, no gz-check gate fails)* |
 | #533 | agents-md 5k budget — depends on ADR-0.0.37 completion | **T2** — CMS (2.2) |
+| #579 | instructions-budget: anchor on imperative-density, not char count | **T2** — CMS (2.2) *(agent-homed @ Snapshot F; density-dial doctrine; enhancement)* |
+| #580 | composition-renderer: order sections by criticality (periphery-aware) | **T2** — CMS (2.2) *(agent-homed @ Snapshot F; enhancement)* |
 | #574 | handoff resume "advise-not-execute" gate is prose, not mechanized | **T2** — Session MOTD (2.4) |
 | #575 | no governed `gz insights` author verb (hand-append only) | **T2** — ADR-0.0.66 substrate (2.3) |
 | #547 | req-kind suite-level post-conditions doctrine unspecified | **T2** — req-kind doctrine |
 | #549 | are attested briefs textually correctable without re-attestation? | **T2** — ceremony doctrine |
 | #567 | Pocock fenced prototype-spike + 2 filters (parity) | **Parked** — §13 Open-needs-discussion |
 
-**Tier counts (updated @ Snapshot D, 2026-06-01):** T0 = 0 (both Snapshot-C gate-blockers #563/#564 cleared; harness green) · T1 = 29 (Phase 2: 1 · Phase 3: 18 · Phase 4: 10) · T2 = 5 · Parked = 1 · 35 open total (#578 added this session). The
+**Tier counts (updated @ Snapshot F, 2026-06-03):** T0 = 0 (harness green) · T1 = 30 (Phase 2: 1 · Phase 3: 18 · Phase 4: 11) · T2 = 7 · Parked = 1 · 38 open total (three were unhomed at the prior survey — #534 missed since 2026-05-26; #579/#580 filed 2026-06-03 — now agent-homed, re-home freely). The
 two **eval-feedback** clusters (req-kind #537/#538/#543/#544/#545/#546/#547; covers/coverage) are
 the *"advisory-rule-never-mechanized"* family the §1 audit named as the dominant failure mode —
 they concentrate in Phase 3, which is the right place to retire the class, not the instances.
