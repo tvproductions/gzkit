@@ -28,12 +28,20 @@ The implementation reuses existing primitives:
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.traceability import scan_feature_tree, scan_test_tree
 from gzkit.triangle import extract_reqs_from_brief
+
+# ADR-0.0.59 inline kind tag: ``REQ-X.Y.Z-NN-MM [BEHAVIOR|SUPPORT|STRUCTURAL-FENCE]:``.
+# The trailing colon scopes the match to the declaration line, not prose references.
+_REQ_KIND_TAG_RE = re.compile(
+    r"(REQ-[\d.]+(?:-\d+)+)\s+\[(BEHAVIOR|SUPPORT|STRUCTURAL-FENCE)\]:",
+    re.IGNORECASE,
+)
 
 
 class TestRef(BaseModel):
@@ -67,6 +75,24 @@ def parse_brief_reqs(brief_path: Path) -> list[str]:
     # parent_obpi is unused by this consumer — we only need the REQ-IDs.
     reqs = extract_reqs_from_brief(content, parent_obpi="")
     return [str(r.id) for r in reqs]
+
+
+def parse_brief_req_kinds(brief_path: Path) -> dict[str, str]:
+    """Map REQ-ID -> declared ADR-0.0.59 ``[kind]`` tag (uppercased) from the brief.
+
+    Only REQs carrying an explicit ``[BEHAVIOR|SUPPORT|STRUCTURAL-FENCE]`` inline
+    tag appear in the map; untagged (legacy) REQs are absent and treated as
+    BEHAVIOR by callers. Used by the ``gz obpi complete`` REQ-coverage gate to
+    exempt SUPPORT / STRUCTURAL-FENCE REQs from the ``@covers`` requirement —
+    those kinds are proven by a ledger event + structural validator and a
+    parent-ADR ``## Boundary Invariants`` entry respectively, not by a test
+    (``.gzkit/rules/tests.md`` § REQ Scope Discipline). Returns ``{}`` when the
+    file is absent.
+    """
+    if not brief_path.is_file():
+        return {}
+    content = brief_path.read_text(encoding="utf-8")
+    return {req_id: kind.upper() for req_id, kind in _REQ_KIND_TAG_RE.findall(content)}
 
 
 def discover_covers(

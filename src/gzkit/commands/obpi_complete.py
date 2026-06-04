@@ -33,7 +33,12 @@ from gzkit.commands.common import (
     resolve_adr_file,
     resolve_obpi_file,
 )
-from gzkit.governance.req_coverage import TestRef, discover_covers, parse_brief_reqs
+from gzkit.governance.req_coverage import (
+    TestRef,
+    discover_covers,
+    parse_brief_req_kinds,
+    parse_brief_reqs,
+)
 from gzkit.governance.trust_audits.attestation_receipts import (
     AttestationReceiptValidationResult,
     validate_attestation_receipts,
@@ -552,11 +557,19 @@ def _enforce_req_coverage_gate(
         return
 
     reqs = parse_brief_reqs(brief_path)
+    # ADR-0.0.59 kind discipline: only BEHAVIOR REQs are proven by @covers. SUPPORT
+    # (ledger event + structural validator) and STRUCTURAL-FENCE (parent-ADR Boundary
+    # Invariants) REQs are exempt from the coverage requirement — requiring a test for
+    # them is the named anti-pattern (.gzkit/rules/tests.md § REQ Scope Discipline).
+    # Untagged (legacy) REQs default to BEHAVIOR, preserving prior behaviour.
+    req_kinds = parse_brief_req_kinds(brief_path)
     tests_root = project_root / "tests"
     features_root = project_root / "features"
     gaps: list[str] = []
     failing: list[str] = []
     for req in reqs:
+        if req_kinds.get(req, "BEHAVIOR") in ("SUPPORT", "STRUCTURAL-FENCE"):
+            continue
         refs = discover_covers(req, tests_root, features_root=features_root)
         if not refs:
             gaps.append(req)
