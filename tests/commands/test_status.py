@@ -331,6 +331,35 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(payload["attestation_requirement"], "optional")
             self.assertEqual(payload["issues"], [])
 
+    def test_obpi_status_renders_withdrawn_obpi_as_withdrawn(self) -> None:
+        """Focused OBPI status must not present withdrawn briefs as pending."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=obpi_path,
+                status="Abandoned",
+                brief_status="Abandoned",
+                implementation_line="",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
+            ledger.append(obpi_withdrawn_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f", "old"))
+
+            json_result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo", "--json"])
+            text_result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo"])
+
+            self.assertEqual(json_result.exit_code, 0)
+            self.assertEqual(json.loads(json_result.output)["runtime_state"], "withdrawn")
+            self.assertEqual(text_result.exit_code, 0)
+            self.assertIn("Runtime State: WITHDRAWN", text_result.output)
+            self.assertIn("Completion: WITHDRAWN", text_result.output)
+            self.assertNotIn("Runtime State: PENDING", text_result.output)
+
     def test_obpi_status_json_reports_missing_file(self) -> None:
         """obpi status reports missing brief files explicitly."""
         runner = CliRunner()

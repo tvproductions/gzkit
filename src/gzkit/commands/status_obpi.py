@@ -433,6 +433,8 @@ def _render_obpi_unit_status(unit_status: str) -> str:
 
 
 def _render_obpi_runtime_state(runtime_state: str, found_file: bool) -> str:
+    if runtime_state == "withdrawn":
+        return "[cyan]WITHDRAWN[/cyan]"
     if runtime_state == "validated":
         return "[green]VALIDATED[/green]"
     if runtime_state == "attested_completed":
@@ -565,10 +567,13 @@ def _render_obpi_status_details(result: dict[str, Any]) -> None:
     console.print(f"  Anchor State: {anchor_state}")
     console.print(f"  Anchor Commit: {anchor_commit}")
     console.print(f"  Current HEAD: {current_head}")
-    console.print(
-        "  Completion: "
-        + ("[green]COMPLETE[/green]" if result.get("completed") else "[yellow]PENDING[/yellow]")
-    )
+    if runtime_state == "withdrawn":
+        completion = "[cyan]WITHDRAWN[/cyan]"
+    elif result.get("completed"):
+        completion = "[green]COMPLETE[/green]"
+    else:
+        completion = "[yellow]PENDING[/yellow]"
+    console.print("  Completion: " + completion)
     console.print("  Issues:")
     if not issues:
         console.print("    - none")
