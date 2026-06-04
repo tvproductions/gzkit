@@ -3,7 +3,7 @@
 Covers the six acceptance criteria in the OBPI brief:
 * REQ-0.0.54-04-01 — CLAUDE.md audit clean (no prohibited shapes)
 * REQ-0.0.54-04-02 — .gzkit/rules/*.md prohibited shapes lifted; See-links present
-* REQ-0.0.54-04-03 — data/instructions_files_budget.json finalized (glob 15000)
+* REQ-0.0.54-04-03 — data/instructions_files_budget.json enforces per-file budgets
 * REQ-0.0.54-04-04 — runbooks updated in same patch set as doctrine application
 * REQ-0.0.54-04-05 — trust-doctrine cross-links agents-md-map-conformance scope
 * REQ-0.0.54-04-06 — gz validate --agents-md-map-conformance green across named scope
@@ -25,6 +25,22 @@ _BUDGET_PATH = _PROJECT_ROOT / "data" / "instructions_files_budget.json"
 _USER_RUNBOOK = _PROJECT_ROOT / "docs" / "user" / "runbook.md"
 _GOV_RUNBOOK = _PROJECT_ROOT / "docs" / "governance" / "governance_runbook.md"
 _TRUST_DOCTRINE = _PROJECT_ROOT / "docs" / "governance" / "trust-doctrine.md"
+_AGENTS_MD = _PROJECT_ROOT / "AGENTS.md"
+_RULES_GLOB_DIR = _PROJECT_ROOT / ".claude" / "rules"
+
+# OpenAI Codex CLI default ``project_doc_max_bytes``: the per-turn surface Codex
+# loads (root AGENTS.md) is silently truncated past this many BYTES
+# (github.com/openai/codex issue #7138). External upstream constant; its proper
+# single-source home is the config store tracked by the return-to-health plan
+# Tier-2 item 2.5 (config-first SSOT).
+_CODEX_PROJECT_DOC_CAP_BYTES = 32768
+
+
+def _budget_within_codex_cap(char_budget: int) -> bool:
+    """A configured per-turn char budget must not exceed Codex's project-doc byte
+    cap; a budget above the cap would green-light a silently-truncated surface."""
+    return char_budget <= _CODEX_PROJECT_DOC_CAP_BYTES
+
 
 _PROHIBITED_TITLES = frozenset(
     {"anti-patterns", "rationale", "worked example", "why this is canon"}
@@ -129,28 +145,66 @@ class BudgetJsonFinalized(unittest.TestCase):
     """REQ-0.0.54-04-03: budget JSON tightened for rule-file glob after diet pass."""
 
     @covers("REQ-0.0.54-04-03")
-    def test_rule_file_glob_tightened_to_15000(self) -> None:
+    def test_rule_files_fit_their_glob_budget(self) -> None:
+        """REQ-04-03 (semantic): every ``.claude/rules/*.md`` file fits the
+        configured per-file glob budget.
+
+        Replaces the prior ``assertEqual(max_chars_per_file, 15000)`` literal pin
+        (config-SSOT / tautological-test anti-pattern; return-to-health plan item
+        2.5) with the invariant the budget exists to enforce: the rule files
+        actually stay within their configured cap. The budget value's single
+        source of truth is the JSON, not a copy pasted into this assertion.
+        """
         payload = json.loads(_BUDGET_PATH.read_text(encoding="utf-8"))
         rule_glob = next(g for g in payload["globs"] if g["pattern"] == ".claude/rules/*.md")
-        self.assertEqual(
-            rule_glob["max_chars_per_file"],
-            15000,
-            "per-rule-file glob MUST be 15000 chars (tightened by OBPI-0.0.54-04 diet pass)",
-        )
+        limit = rule_glob["max_chars_per_file"]
+        self.assertIsInstance(limit, int, "rule-file glob budget must be a configured int")
+
+        rule_files = sorted(_RULES_GLOB_DIR.glob("*.md"))
+        self.assertTrue(rule_files, "expected .claude/rules/*.md files to exist")
+        for path in rule_files:
+            actual = len(path.read_text(encoding="utf-8"))
+            with self.subTest(rule=path.name):
+                self.assertLessEqual(
+                    actual, limit, f"{path.name} is {actual} chars, exceeds glob budget {limit}"
+                )
 
     @covers("REQ-0.0.54-04-03")
-    def test_agents_md_and_claude_md_budgets_unchanged(self) -> None:
-        # REQ-04-03 fenced that OBPI-0.0.54-04's diet pass left the AGENTS.md /
-        # CLAUDE.md budgets untouched (only the rule-glob tightened). That held for
-        # OBPI-04. 2026-06-01: a later operator DIRECT-FIX MORATORIUM directive bumped
-        # AGENTS.md 32000 → 33000 to seat the new Local Agent Rule; this fence now
-        # pins the current contract value. CLAUDE.md stays at 4000.
+    def test_agents_md_and_claude_md_fit_budget_and_codex_cap(self) -> None:
+        """REQ-04-03 (semantic).
+
+        The original REQ fenced that OBPI-0.0.54-04's diet pass left the AGENTS.md /
+        CLAUDE.md budgets *unchanged*. Later operator budget moves
+        (32000→33000→30000) made that "unchanged" claim false, so re-pinning the
+        current literal was the config-SSOT / tautological-test anti-pattern
+        (return-to-health plan item 2.5). The "unchanged" fence is superseded; the
+        durable invariant it existed to protect is that both surfaces stay within
+        their configured budgets and AGENTS.md fits Codex's project-doc byte cap
+        (no silent truncation; GHI #519).
+        """
         payload = json.loads(_BUDGET_PATH.read_text(encoding="utf-8"))
         files = payload["files"]
-        self.assertEqual(
-            files["AGENTS.md"], 33000, "AGENTS.md budget is 33000 (operator bump 2026-06-01)"
+        for name, path in (("AGENTS.md", _AGENTS_MD), ("CLAUDE.md", _CLAUDE_MD)):
+            budget = files.get(name)
+            self.assertIsInstance(budget, int, f"{name} budget must be a configured int")
+            actual = len(path.read_text(encoding="utf-8"))
+            with self.subTest(file=name):
+                self.assertLessEqual(
+                    actual, budget, f"{name} is {actual} chars, exceeds budget {budget}"
+                )
+
+        self.assertTrue(
+            _budget_within_codex_cap(files["AGENTS.md"]),
+            f"AGENTS.md budget {files['AGENTS.md']} exceeds Codex project-doc cap "
+            f"{_CODEX_PROJECT_DOC_CAP_BYTES} B",
         )
-        self.assertEqual(files["CLAUDE.md"], 4000, "CLAUDE.md budget must stay at 4000")
+        agents_bytes = len(_AGENTS_MD.read_text(encoding="utf-8").encode("utf-8"))
+        self.assertLessEqual(
+            agents_bytes,
+            _CODEX_PROJECT_DOC_CAP_BYTES,
+            f"AGENTS.md is {agents_bytes} B, exceeds Codex project-doc cap "
+            f"{_CODEX_PROJECT_DOC_CAP_BYTES} B (silent-truncation risk; GHI #519)",
+        )
 
 
 class RunbooksUpdated(unittest.TestCase):

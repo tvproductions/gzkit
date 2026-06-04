@@ -28,7 +28,7 @@ Refresh the doctrinal surfaces that previously assumed AGENTS.md was the structu
 - `docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md` (modify — append kind-axis amendment with explicit "structural-witness vs prose-assertion" distinction; reference ADR-0.0.37 as the structural anchor)
 - `docs/design/adr/pool/ADR-pool.brief-authoring-evidence-checks*` (modify — add re-routing note naming CIC-2 as prerequisite foundation; clarify the stub becomes a feature-kind defense once CIC-2 lands)
 - `docs/design/adr/pool/ADR-pool.obpi-pipeline-dispatch-attestation*` (modify — add re-routing note naming CIC-2 as prerequisite foundation; same framing as above)
-- `docs/governance/contributing.md` OR equivalent contributing/governance doc (modify — add "Before proposing a foundation-kind ADR" section directing authors at `.gzkit/invariants/`)
+- `docs/governance/governance_runbook.md` (modify — canonical governance doc; add "Before proposing a foundation-kind ADR" section directing authors at `.gzkit/invariants/`)
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md` (parent reference — read-only)
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-10-doctrine-refresh.md` (this brief)
 
@@ -46,7 +46,7 @@ Refresh the doctrinal surfaces that previously assumed AGENTS.md was the structu
 1. REQUIREMENT: ADR-0.0.18 receives an amendment block (separate H2 section, dated, referencing ADR-0.0.37 as the structural anchor) that explicitly states the kind-axis carries the structural-witness vs prose-assertion distinction. Foundation kind = invariant intent with structural witness (schema + validator + ledger event); promoted to ADR only when the invariant is registered in `.gzkit/invariants/`. Prose-asserted-only claims do NOT qualify as foundation kind.
 2. REQUIREMENT: `ADR-pool.brief-authoring-evidence-checks*` gets a "Re-routing note (post-ADR-0.0.37)" block stating: the pool stub's Alternative-C self-rejection rested on AGENTS.md § operative-claim-4 being a trustworthy invariant; ADR-0.0.37 ships CIC-2 as the actual foundation invariant; this stub becomes a feature-kind defense of CIC-2 (not a foundation candidate) once ADR-0.0.37 is Validated.
 3. REQUIREMENT: `ADR-pool.obpi-pipeline-dispatch-attestation*` gets the same shape of re-routing note (CIC-2 prerequisite; promotes to feature-kind once CIC-2 lands).
-4. REQUIREMENT: `docs/governance/contributing.md` (or the canonical contributing doc) gets a new section titled "Before proposing a foundation-kind ADR" containing the algorithm: (1) identify the constitutional invariant the proposed ADR registers; (2) if none exists, propose the invariant first (author a `.gzkit/invariants/<slug>.yaml` draft); (3) only then promote to ADR.
+4. REQUIREMENT: `docs/governance/governance_runbook.md` gets a new section titled "Before proposing a foundation-kind ADR" containing the algorithm: (1) identify the constitutional invariant the proposed ADR registers; (2) if none exists, propose the invariant first (author a `.gzkit/invariants/<slug>.yaml` draft); (3) only then promote to ADR.
 5. REQUIREMENT: This OBPI does NOT edit AGENTS.md, does NOT modify any `src/` file, does NOT introduce any CLI verb or manpage.
 6. REQUIREMENT: All four edits include cross-references to ADR-0.0.37 by full path so they survive ADR renumbering.
 
@@ -63,7 +63,7 @@ Refresh the doctrinal surfaces that previously assumed AGENTS.md was the structu
 - [ ] `docs/design/adr/pool/` — locate the two named pool stubs
 - [ ] `docs/governance/` — find the canonical contributing doc (may be `CONTRIBUTING.md`, `governance_runbook.md`, or similar)
 
-**Context:**
+**Existing Code (understand current state):**
 
 - [ ] ADR-pool stub naming convention (`ADR-pool.<slug>` per `.gzkit/rules/governance-core.md`)
 - [ ] Examples of past ADR amendments (search for "Amendment" or "Update" H2 sections in foundation ADRs)
@@ -130,6 +130,7 @@ git status --porcelain
 ## Completion Checklist
 
 - [ ] Gate 1 / Gate 2 (test-deferral noted) / Gate 3 / Gate 5 satisfied
+<!-- gz-validate-skip: command-shape -->
 - [ ] `gz brief reconcile OBPI-0.0.37-10-doctrine-refresh` reports zero drift
 - [ ] Lane assignment is Lite (the brief's frontmatter already corrected under GHI #495)
 

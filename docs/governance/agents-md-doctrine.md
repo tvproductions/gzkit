@@ -54,6 +54,11 @@ The operator selected "Moderate" (halve current weight; preserve binding-bullet 
 
 Budget is enforced by `gz validate --instructions-files-budget` reading `data/instructions_files_budget.json`.
 
+> The 15,000-char figure above is the doctrine *destination*. During the ADR-0.0.37
+> CMS work the enforced interim budget is higher (GHI #533, ADR-0.0.37). The live
+> enforced value is always whatever `data/instructions_files_budget.json` carries —
+> the single source of truth — never a number duplicated into prose or tests.
+
 ## Per-section targets (OBPI-02 lift guide)
 
 The ADR-0.0.54 § Intent table records operator-reviewed per-section target sizes. These are **Judgment** class (not Mechanical — they require review of surviving text density). The table is the canonical reference; this doc does not duplicate it.

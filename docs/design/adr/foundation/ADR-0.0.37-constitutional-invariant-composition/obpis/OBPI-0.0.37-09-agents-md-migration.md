@@ -28,7 +28,7 @@ Migrate every existing AGENTS.md section into a constitutional invariant registe
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md` (parent reference; read-only)
 - `AGENTS.md` (rewritten from registry output via OBPI-02 renderer)
 - `.gzkit/invariants/*.yaml` (new entries — one per migrated AGENTS.md section)
-- `.gzkit/invariants/MIGRATION-MANIFEST.md` (new) — per-section → invariant-id mapping for traceability
+- `.gzkit/invariants/MIGRATION-MANIFEST.md` **CREATE** (new) — per-section → invariant-id mapping for traceability
 - `src/gzkit/templates/agents.md` (modify) — template body updated to consume rendered invariant slots from OBPI-02
 - `src/gzkit/templates/adr.md` (modify) — adjacent template surface for future composition targets
 - `src/gzkit/sync_surfaces.py` (modify) — AGENTS.md regeneration path must call into OBPI-02 renderer when the registry is present (sync becomes a renderer wrapper)
@@ -74,7 +74,7 @@ Migrate every existing AGENTS.md section into a constitutional invariant registe
 - [ ] `docs/governance/state-doctrine.md` — Layer 1 / 3 distinction this migration enacts
 - [ ] `docs/governance/trust-doctrine.md` — T1/T2/T3 invariants that the migrated invariants must satisfy
 
-**Context (exemplars):**
+**Existing Code (understand current state):**
 
 - [ ] `src/gzkit/templates/agents.md` — current template synthesis (will route through renderer post-migration)
 - [ ] `src/gzkit/sync_surfaces.py` — current AGENTS.md regeneration path
@@ -154,6 +154,7 @@ wc -l .gzkit/invariants/MIGRATION-MANIFEST.md
 ## Completion Checklist
 
 - [ ] All gates satisfied
+<!-- gz-validate-skip: command-shape -->
 - [ ] `gz brief reconcile OBPI-0.0.37-09-agents-md-migration` reports zero drift
 - [ ] Per-section attestation table in MIGRATION-MANIFEST.md is complete
 

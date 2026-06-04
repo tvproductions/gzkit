@@ -2,92 +2,44 @@
 
 Status: Active canonical recovery plan.
 
-> **Snapshot G (2026-06-03; renumbered 2026-06-04) — #519 route REDESIGNED; ADR-0.0.37 CMS active set = 20 (01–10, 18–27).**
-> A design pass with the operator established that the density-dial mechanism (per-`Bullet`
-> `density_min` include/exclude + three static templates) is **inert** (the render template
-> emits `pillar.lines` verbatim; `render(lite)==render(medium)==render(heavy)`), and that
-> **OBPI-0.0.37-17-as-scoped (thin by dropping whole sections) is the wrong shape** — it
-> collides with ADR-0.0.33 `bullet-retention` (in `gz check`) and floors the root at ~29,885 B
-> with no headroom. The operator's corrected, authoritative design is now booked as
-> **ADR-0.0.37 § Decision Re-Alignment (2026-06-03)**: an **append-only corpus** (source of
-> truth; "remember X" appends, never hand-edits the rendered surface — like harness
-> user-memories) → **temperature as a compression setpoint** (per surface×consumer) →
-> **authoring-time agent compression** (drop/combine/rewrite toward target, advisor-QC'd,
-> operator-attested) → **committed rendition** → **deterministic playback** (no LLM in the
-> render path) + an **invariant tier** (PRIME DIRECTIVE / DO IT RIGHT / NEVER PYTEST — verbatim,
-> never condensed). **#519 re-anchors** as "declare a lean Codex-root setpoint and compress to
-> it"; relief is now **OBPI-0.0.37-26** (Codex-root setpoint + interim operator-attested
-> compressed rendition, sequenced FIRST). ADR-0.0.37 Checklist re-decomposed to items 18–27 (each =
-> tool(s) + wielding skill, per SKILLS-FIRST); ADR-0.0.33 Invariant 1 amended tier-scoped
-> (coupled to OBPI-0.0.37-26's sibling OBPI-0.0.37-25, attested at its Gate 5). **#519 remains
-> OPEN — design booked, not built.** **Ledger truth (corrected 2026-06-04):** prior extension
-> OBPIs 11–15 ARE Gate-5 attested-complete (`attested_completed`, attestor g0); 16/17
-> created-only. Their density-dial *mechanism* is superseded — not a ratified ADR decision (the
-> ADR is `Draft`); substrate 11/13/14 re-homed, 15 retires, 16 folds into item 27, 17 retired.
-> Next: `gz-adr-evaluate ADR-0.0.37` → `gz-obpi-specify` (reconcile brief files to the 18–27
-> checklist) → build OBPI-0.0.37-26 first. Decision record: `.gzkit/insights/agent-insights.jsonl`
-> `ts=2026-06-03T11:32:52Z`. **Renumber 2026-06-04:** the re-aligned items were renumbered 11–20 →
-> 18–27 off the attested/minted 11–17; **ADR-0.0.37 § Checklist is authoritative** for item
-> numbering — older OBPI-17/19 references in the historical snapshots below predate this correction.
-> Snapshots A–F below are prior history.
-Last updated: 2026-06-04 — **Tier-0 restore-green on resume (Snapshot G(check)) + status/workplan coherence repair:**
-re-measuring on session resume proved Snapshot F stale (the D→E→F→G staleness
-pattern repeats). `uv run gz check` → exit 1 on three gates introduced by the
-same-day Snapshot-G redesign session: **Test** (handoff-count tripwire 37≠38),
-**Task envelope coherence** (8 `artifact_edited` events on ADR-0.0.37/0.0.33
-decision docs under OBPI-0.0.37-17's dangling TASKs, no `task_id`), and
-**Preflight** (OBPI-09 orphan receipt). Cleared, all operator-ratified: a TDD
-ADR-decision-doc carve-out for sig (a) (ADR docs are SUPPORT-channel ceremony, not
-REQ labor; epoch-move rejected as defect-hiding); **OBPI-0.0.37-17-as-scoped
-retired** (8 TASKs blocked superseded, stale plan removed, both orphan receipts
-cleaned via `gz preflight --apply` — governed path; the 2026-06-04 renumber pass
-then withdrew 11–17 and mirrored them as `Abandoned`); count tripwire bumped 37→38.
-The focused `gz obpi status` renderer now reports withdrawn OBPIs as `WITHDRAWN`
-instead of falling through to `PENDING`. Two latent defects also
-direct-fixed (TDD): **`gz task block/complete/escalate` were broken for full-slug
-OBPIs** (short-vs-full `obpi_id` mismatch — `_resolve_task_context` now resolves
-the slug from the `task_started` ledger event); the carve-out itself. Re-measured
-**GREEN: 26/26 gates, `GZ_CHECK_EXIT=0`**; committed `32cac1d2` (`fix(task)`) +
-`e4b9cc78` (`fix(validate)`) with `Task:` trailers, pushed to `origin/main` via
-`gz git-sync --apply --lint --test` (clean tree, ahead=0). **#519 remains OPEN —
-unmoved.** See § Current Baseline — Snapshot G(check). Latent class note: the
-short-vs-full `obpi_id` mismatch is direct-fixed in `task.py` only; other consumers
-deriving the short form (`validate_task_envelope._obpi_id_for_task`,
-`_task_matches_obpi`) may carry the same divergence against full-slug ledger/brief
-ids — watch when next touching task/OBPI id resolution. Earlier the same day
-recorded a **superseded post-OBPI-15 progress snapshot
-(Snapshot F)**: OBPI-0.0.37-15-per-vendor-template-selection landed
-Gate-5-attested (sync anchor `b8195395`), advancing ADR-0.0.37 CMS to **10/16
-OBPIs attested-complete** (01–05, 11–15; remaining 06–10, 16). **#519 stays open
-— the emergency is unmoved:** OBPI-15 shipped the per-vendor temperature
-*selection mechanism* only. A same-day **Codex-loader investigation (primary
-sources) ruled out per-vendor emission as the #519 route** — Codex reads only
-repo-root `AGENTS.md`, traverses no `.agents/` sink, exposes no project-doc
-redirect, and silently truncates past 32,768 B. **#519 relief is therefore
-re-pointed at OBPI-0.0.37-17** (density-classify the AgentContract corpus so the
-temperature dial thins the *shared* root AGENTS.md under Codex's cap), not a
-Codex-specific emission. That OBPI-17 route was later retired by Snapshot G and
-renumbered to the 18–27 active set; the live route is OBPI-0.0.37-26. See
-§ Context-Load CMS — Codex-loader finding. Four post-Snapshot-E direct-fixes also landed (untracked `Task:`-trailer
-fixes, no GHI rows): `fix(adr-audit)` `937da0ac`, `chore(insights)` `a23a2296`,
-`fix(check)` `3b29dfe7`, `fix(sync)` `3911355f`. Re-measured **Snapshot F
-GREEN**: `uv run gz check` → "✓ All checks passed", 26/26 gates, `GZ_CHECK_EXIT=0`
-(advisory drift 1725, non-blocking). Earlier on 2026-06-02 recorded a **post
-OBPI-13/14 progress snapshot**: ADR-0.0.37 CMS advanced to 9/16 OBPIs
-attested-complete (OBPI-0.0.37-13 reverse-parse migration `5e324e1`,
-OBPI-0.0.37-14 wire-sync/retire-monolith `fa4dc83`, both Gate-5 human-attested),
-and the `fix/task-envelope-and-flaky-timing` branch was fast-forward merged to
-`main` (`c8bbeee2..9178d46f`) and deleted. Earlier the same day
-recorded **Snapshot E (harness restored to GREEN
-after Snapshot-D staleness)**: re-measurement found three red gates
-(`Format`, `ADR status freshness`, `Task envelope coherence`) and cleared them
-via `ruff format`, `gz register-adrs`, and a TDD-pinned task-envelope validator
-repair plus OBPI-0.0.37-13 `req_atomic:` exemption. Earlier on 2026-06-01
-recorded Snapshot D (harness restored to GREEN), Snapshot C (regressed to RED),
-the **Designated Workstream — Session MOTD** capture (continuity ⊕ triaged
-workplan; subsumes handoff), and the Phase-4 **Stdlib unittest/doctest maturity
-route** under GHI #571. Filename keeps its authored `-2026-05-30` date (stable
-reference); this line is the live mtime.
+> **Live baseline: Snapshot H (2026-06-04).** Committed `main` was last measured
+> GREEN at Snapshot G(check) (26/26) and pushed. The working tree now carries the
+> in-flight **OBPI-0.0.37-26** #519-relief work, which **reaches the #519 byte
+> target** (root `AGENTS.md` 32,651 → **28,323 B**, under Codex's 32,768 B cap with
+> ~4.4 KB headroom — the first material byte movement on #519 in seven snapshots)
+> but is **uncommitted and incomplete**. Two failing budget-pin tests were
+> direct-fixed this session (the config-SSOT/tautological anti-pattern — now assert
+> the semantic cap+fit invariant instead of a magic literal), clearing the **Test**
+> gate; the remaining red is **Surface fidelity** — 14 ADR-0.0.33 bullet-retention
+> violations the compression produced, the exact collision the Snapshot-G route
+> redesign predicted. **#519 byte relief is in reach but NOT landed; the OBPI is not
+> complete and not attested.** See § Current Baseline — Snapshot H for the full
+> measurement and the completion path.
+>
+> **Route (unchanged since Snapshot G, 2026-06-03):** append-only corpus → temperature
+> setpoint per surface×consumer → authoring-time agent compression (advisor-QC'd,
+> operator-attested) → committed rendition → deterministic playback + verbatim
+> invariant tier. #519 relief = OBPI-0.0.37-26 (Codex-root setpoint + interim
+> operator-attested compressed rendition), sequenced FIRST; ADR-0.0.37 active set =
+> 01–10, 18–27 (renumbered 2026-06-04 off the attested/minted 11–17; 11–15 retain
+> valid completion receipts, 16/17 retired). **ADR-0.0.37 § Checklist is authoritative**
+> for item numbering. Decision record: `.gzkit/insights/agent-insights.jsonl`
+> `ts=2026-06-03T11:32:52Z`. Snapshots A–G are preserved as a compact table in
+> § Current Baseline; only the live baseline (H) is kept in full.
+>
+> **Filename:** stays `return-to-health-plan-2026-05-30.md` — the authored date is a
+> stable reference, reaffirmed by the operator 2026-06-04 (the name is anchored in
+> ~8 live artifacts plus immutable ledger/insights/handoff records; renaming would
+> churn them every session).
+
+Last updated: 2026-06-04 — **consolidation + Snapshot H.** Collapsed the
+superseded snapshot history (Baseline A–F and the Recovery-Closeout progress
+blocks) into compact tables, keeping only the live baseline in full — the
+Definition-of-Healthy / #519 context-load posture applied to the plan itself.
+Recorded **Snapshot H**: the in-flight OBPI-0.0.37-26 working-tree measurement
+(byte target reached, but uncommitted, red, and unattested). Filename retained
+per operator decision 2026-06-04. This edit changes no code or governance state;
+the in-flight OBPI-0.0.37-26 pile is unrelated mid-pipeline work, left untouched.
 
 ## Execution Worklist (start here)
 
@@ -109,7 +61,7 @@ reference); this line is the live mtime.
 
 **Tier 1 — Recovery to Definition of Healthy.** Exit gate: Definition of Healthy all-true.
 
-- [~] **1.1 Phase 2 — context-load emergency #519. Relief vehicle = OBPI-0.0.37-26 (Codex-root setpoint + interim operator-attested compressed rendition), per the Snapshot-G route redesign (2026-06-03; renumbered 2026-06-04).** Its structural remediation *is* the Context-Load CMS workstream (Boundary-1-waived); advancing that workstream is how #519 closes. **In progress, not closed:** ADR-0.0.37 CMS re-decomposed to items 18–27 (renumbered off the attested/minted 11–17); #519's byte relief has *not* landed. **Route history (do not re-derive):** per-vendor emission RULED OUT (Codex-loader finding, 2026-06-03 — Codex reads only repo-root `AGENTS.md` merged, no `.agents/` sink, no project-doc redirect, silent truncation past 32,768 B); the **OBPI-11/12 density dial is inert** (`render(lite)==render(medium)==render(heavy)`, verified); **OBPI-0.0.37-17-as-scoped retired @ Snapshot G(check)** (the prior proposed vehicle — thinning by dropping whole sections collides with ADR-0.0.33 bullet-retention and floors the root with no headroom). **Corrected design (Snapshot G, authoritative):** append-only corpus → temperature setpoint per surface×consumer → authoring-time agent compression (advisor-QC'd, operator-attested) → committed rendition → deterministic playback + verbatim invariant tier; #519 = "declare a lean Codex-root setpoint and compress to it" = **OBPI-0.0.37-26**, sequenced FIRST. Next: `gz-adr-evaluate ADR-0.0.37` → `gz-obpi-specify` (reconcile briefs to the 18–27 checklist) → build OBPI-0.0.37-26. → *Phase 2; top Snapshot-G banner; Designated Workstream — Context-Load CMS*.
+- [~] **1.1 Phase 2 — context-load emergency #519. Relief vehicle = OBPI-0.0.37-26 (Codex-root setpoint + interim operator-attested compressed rendition).** **In flight as of 2026-06-04 — byte target reached but NOT landed:** the working tree compresses root `AGENTS.md` to **28,323 B** (< Codex's 32,768 B cap, ~4.4 KB headroom) — the first real byte movement on #519 — but the OBPI is **uncommitted, incomplete, and not attested** (lock released mid-flight). The 2 budget-pin Test failures were **direct-fixed this session** (literal pins → semantic cap+fit invariant; Test gate green, 5858 tests OK); the remaining red is **Surface fidelity** — 14 ADR-0.0.33 bullet-retention violations (the predicted collision). **Completion path:** re-home the 14 retained Mechanical bullets → `gz check` green → complete pipeline + Gate-5 attest. **Route history (do not re-derive):** per-vendor emission ruled out (Codex-loader finding); OBPI-11/12 dial inert; OBPI-0.0.37-17-as-scoped retired (collides with ADR-0.0.33 bullet-retention, no headroom). → *Current Baseline § Snapshot H; Designated Workstream — Context-Load CMS*.
 - [ ] **1.2 Phase 3 — ceremony & validator mechanization** (#516 + the req-kind/covers eval-feedback cluster; now also #563/#564 closeout-pipeline class fixes + #578 preflight lock-coupling). 18 issues — see **GHI Register § Phase 3**. → *Phase 3*.
 - [ ] **1.3 Phase 4 — drain remaining recovery issues** — docs/tests/`validate --documents` defects, including the GHI #571 stdlib unittest/doctest maturity route. 10 issues — see **GHI Register § Phase 4**. WIP = 1; close only with observed evidence. → *Phase 4*.
 - [ ] **1.4 Phase 5 — closeout.** Fill Recovery Closeout when #519 closed + no open emergency + `gz check` green. → *Phase 5; Recovery Closeout*.
@@ -149,7 +101,7 @@ reference); this line is the live mtime.
 |-----|---------|------|
 | #563 | task-envelope gate failure — `seq=01`-only TASKs, missing `task_id` | **T1** — Phase 3 (gate cleared @ Snapshot E; new instance @ Snapshot G(check): ADR-decision-doc edits under active TASKs — cleared via SUPPORT-channel carve-out; class fix: closeout `task_id` population still remains) |
 | #564 | preflight orphan plan-audit receipt (OBPI-0.0.64-04) | **T1** — Phase 3 (gate cleared @ Snapshot D; recurred @ Snapshot G(check): OBPI-09+OBPI-17 orphans cleaned via `gz preflight --apply`; class fix: closeout leaves no orphan remains. Adjacent latent: short-vs-full `obpi_id` mismatch direct-fixed in `task.py` @ Snapshot G(check), other consumers may share it) |
-| #519 | context surface exhausts 258K window (**emergency**) | **T1** — Phase 2 → CMS. **Route REDESIGNED (Snapshot G, 2026-06-03):** relief re-anchored on **OBPI-0.0.37-26** (Codex-root setpoint + interim operator-attested compressed rendition), sequenced FIRST; ADR-0.0.37 re-decomposed to items 18–27 (renumbered 2026-06-04 off the attested/minted 11–17). **OBPI-0.0.37-17-as-scoped retired @ Snapshot G(check)** (was the prior proposed vehicle; dial proven inert, collides with ADR-0.0.33 bullet-retention). Per-vendor emission ruled out (Codex-loader finding). Emergency unrelieved — design booked, not built. |
+| #519 | context surface exhausts 258K window (**emergency**) | **T1** — Phase 2 → CMS. **Relief IN FLIGHT (Snapshot H, 2026-06-04):** OBPI-0.0.37-26 working tree reaches the byte target (root AGENTS.md → 28,323 B, under Codex's 32,768 cap) but is **uncommitted, incomplete, and red** (14 ADR-0.0.33 bullet-retention violations + 2 stale budget-pin tests; lock released without completion/attestation). Byte relief in reach, NOT landed. Per-vendor emission ruled out; OBPI-17-as-scoped retired. |
 | #516 | closeout passive-presenter lacks REQ-evidence check | **T1** — Phase 3 |
 | #536 | `gz adr promote` Target-Scope `path:line` → invalid OBPI paths | **T1** — Phase 3 |
 | #537 | BEHAVIOR-kind cannot-uncovered-accept not mechanically enforced | **T1** — Phase 3 |
@@ -208,206 +160,113 @@ diagnosis, but its dated command snapshot is superseded by the baseline below.
 
 ## Current Baseline
 
-### Snapshot A — plan authoring (2026-05-30, morning): RED
+> **Live baseline = Snapshot H (2026-06-04).** Snapshots A–G are preserved as a
+> compact history table below; full prose for A–G is recoverable from this file's
+> git history (pre-2026-06-04). This consolidation is the #519 / Definition-of-
+> Healthy posture applied to the plan itself: one orientable baseline, not a
+> growing snapshot log.
 
-- `git status --short` is clean.
-- `uv run gz check` fails.
-- Passing gates include lint, format, typecheck, behave, skill audit, parity,
-  readiness, CLI audit, unscoped rules, ADR status freshness, interview
-  transcripts, receipt shape, orientation freshness, instruction budget,
-  AGENTS.md map conformance, complexity doctrine links, complexity thresholds,
-  REQ kind discipline, and surface fidelity.
-- Failing gates are concentrated in six surfaces:
-  - unit test failure caused by malformed insight records
-  - `--kind-invariance`
-  - `--insights-shape`
-  - `--tautological-test-audit`
-  - `--task-envelope-coherence`
-  - `preflight`
+### Snapshot H — 2026-06-04 (working tree carries in-flight OBPI-0.0.37-26): RED (uncommitted)
 
-This is not a collapse. It is a red harness with named failure surfaces.
+- **What this measures.** The **uncommitted working tree**, carrying the in-flight
+  OBPI-0.0.37-26 #519-relief changes: `AGENTS.md` + `.gzkit/agents.local.md`
+  recompressed, `data/instructions_files_budget.json` AGENTS.md budget 33000→30000,
+  a new `renditions/agentcontract-codex-root-interim.md` (5,898 B), several
+  ADR-0.0.37 briefs, and 17 uncommitted ledger events. Committed `main` HEAD was
+  last measured **GREEN at Snapshot G(check)** (26/26) and pushed; it was **not**
+  re-measured clean-tree this session. The red below is attributable entirely to the
+  uncommitted mid-flight work — not a regression of `main`.
+- `uv run gz check` measured **exit 1** at session start (`GZ_CHECK_EXIT=1`, true exit
+  via file redirect): **24/26 gates pass; two red.** One was direct-fixed this session;
+  one remains (OBPI-0.0.37-26's work).
+  1. **Test** (2 failures) → **FIXED this session (direct-fix, TDD).**
+     `test_budget_json_pins_15k_and_4k` and `test_agents_md_and_claude_md_budgets_unchanged`
+     both asserted the AGENTS.md budget `== 33000` — a literal pasted from the very JSON
+     they read (config-SSOT + tautological-test anti-pattern; item 2.5). The in-flight
+     work lowered the budget to 30000, breaking them. Rewritten to assert the **semantic
+     invariant** instead of a magic literal: AGENTS.md fits Codex's 32,768 B project-doc
+     cap (no silent truncation) and each surface fits its configured budget, with the
+     value sourced only from the JSON. Full suite **5858 tests OK**; `--tautological-test-audit`,
+     `--instructions-files-budget`, `--documents`, `mkdocs --strict` all green. The new
+     cap assertion has inherent teeth — it would have caught the old 33000 budget (> cap).
+     Coupled: the rewrite asserts ≤ 32,768, so it travels with the budget→30000 change,
+     not committed alone.
+  2. **Surface fidelity** (14 errors) — **STILL RED; OBPI-0.0.37-26's work, not this fix.**
+     "Bullet-retention violation: 'Mechanical' bullet not found verbatim in per-turn
+     surface" against `docs/governance/advisory-rules-audit.md`: the AGENTS.md compression
+     dropped 14 Mechanical bullets that ADR-0.0.33 bullet-retention requires verbatim.
+  - Advisory spec-test-code drift: 1,766 findings (non-blocking; does not affect exit code).
+- **Verification scope (this session, post-fix).** Re-ran and confirmed green:
+  `unittest` (5858 OK), `--task-envelope-coherence`, `preflight`, `--documents`,
+  `--tautological-test-audit`, `--instructions-files-budget`, `ty` typecheck, ruff,
+  `mkdocs --strict`. The ledger gained **zero** events from this doc/test work
+  (raw edits emit none), so task-envelope/preflight stay clean. A full end-to-end
+  `gz check` was **not** re-run because Surface fidelity is known-red (OBPI work) and
+  would exit 1 regardless; every *other* gate was verified individually.
+- **#519 byte target reached — interim, uncommitted, unattested.** Root `AGENTS.md`
+  is now **28,323 B** (was 32,651 B at Snapshot G): **below the lowered 30,000 budget
+  and ~4,445 B under Codex's 32,768 B cap with headroom.** First material byte
+  movement on #519 across seven snapshots. But OBPI-0.0.37-26's ledger shows
+  `pipeline_launched`, 6 `task_started`, `composition_rendered`, `obpi_lock_claimed`,
+  then `obpi_lock_released` — **no `task_completed`, no `obpi_receipt_emitted`, no
+  attestation.** The lock was released *without* completion (paused mid-flight).
+- **The compression hit the exact wall Snapshot G predicted.** The 14 fidelity
+  violations are the **ADR-0.0.33 bullet-retention collision** the route redesign
+  named: shrinking the shared root by dropping prose drops Mechanical bullets the
+  retention gate requires verbatim. The interim rendition reaches the byte target but
+  is **not green and not attestable** until those 14 bullets are re-homed/retained
+  (the corpus-classification + 0-Kelvin-floor design) and the two budget-pin tests
+  are updated to 30000.
+- **Completion path for OBPI-0.0.37-26 (next concrete steps).** (1) Re-home the 14
+  retained Mechanical bullets so they survive verbatim in the per-turn surface
+  (the only remaining red gate); (2) ~~update the budget-pin tests~~ **done this
+  session** — rewritten to assert the semantic cap+fit invariant (no literal),
+  Test gate green; (3) re-measure `gz check` green; (4) complete the pipeline +
+  Gate-5 attest.
+- **Phase 1 stays complete on committed `main`; recovery stays open** (#519 still
+  OPEN — byte relief in reach but not landed).
 
-### Snapshot B — re-measured (2026-05-30, after GHI #570 landed): GREEN
+### Snapshot G(check) — 2026-06-03 (restore-green on resume + OBPI-17 retirement): RED→GREEN
 
-- `git status --short` is clean.
-- `uv run gz check` exits 0 — all 26 gates pass. GHI #570 added Line endings as
-  gate 26 and cleared the unit-test failure. The only remaining output is a
-  non-blocking advisory (spec-test-code drift, 1687 findings, explicitly "does
-  not affect exit code").
-- All six Snapshot-A failure surfaces are now green: Test, `--kind-invariance`,
-  `--insights-shape`, `--tautological-test-audit`, `--task-envelope-coherence`,
-  and `preflight`.
-- Phase 1 (Make the Harness Green) is complete. Remaining recovery work is the
-  context-load surface tracked by emergency GHI #519 (Phase 2 / Phase 4 item 1)
-  and the passive-presenter closeout route tracked by GHI #516 (Phase 3).
-  GHI #517 (the broader 5-alarm structural emergency) is closed.
+- On resume, `uv run gz check` → exit 1 (Snapshot F stale; D→E→F→G pattern): **Test**
+  (handoff-count tripwire 37≠38), **Task envelope coherence** (8 events, ledger
+  `:8574`–`:8581` — ADR-0.0.37/0.0.33 decision-doc edits under dangling OBPI-17 TASKs),
+  **Preflight** (OBPI-09 orphan receipt).
+- **Cleared, operator-ratified:** TDD ADR-decision-doc carve-out for task-envelope
+  sig (a) (ADR docs under `docs/design/adr/**/ADR-<semver>-*.md`, excl. `/obpis/`, are
+  SUPPORT-channel ceremony, not OBPI-REQ labor; epoch-move rejected as defect-hiding);
+  handoff tripwire 37→38; **OBPI-0.0.37-17-as-scoped retired** (8 dangling TASKs
+  blocked, stale plan removed, OBPI-09+OBPI-17 orphan receipts cleaned via
+  `gz preflight --apply`; the 2026-06-04 renumber pass then withdrew 11–17 and
+  mirrored them as `Abandoned`).
+- **Two latent defects direct-fixed (TDD):** `gz task block/complete/escalate` were
+  broken for full-slug OBPIs (`_resolve_task_context` now resolves the slug from the
+  `task_started` ledger event); the carve-out. Committed `32cac1d2` (`fix(task)`) +
+  `e4b9cc78` (`fix(validate)`), pushed to `origin/main` via `gz git-sync --apply
+  --lint --test`. Re-measured **GREEN: 26/26 gates, `GZ_CHECK_EXIT=0`.**
 
-### Snapshot C — re-measured (2026-06-01): RED (regressed from B)
+**Carry-forward watch-items (still live):**
 
-- `git status --short` is clean.
-- `uv run gz check` exits non-zero — **24 of 26 gates pass; two regressed
-  since Snapshot B**: `Task envelope coherence` and `Preflight`. (Advisory
-  spec-test-code drift now reports 1,738 findings — still non-blocking, does
-  not affect exit code.)
-- **Single root cause, two symptoms: OBPI-0.0.37-12's closeout was irregular**
-  (the lock was never released and ceremony steps were skipped). The fail-closed
-  blockers, drilldown-first per Merged Findings:
-  - `--task-envelope-coherence` (highest-risk gate): (a) `audit_receipt_emitted`
-    at `.gzkit/ledger.jsonl:8460` emitted under active TASK with no `task_id`;
-    (b) OBPI-0.0.37-12 closed with only `seq=01` TASKs across all five REQs and
-    no `req_atomic:` exemption. **Drilldown:** `uv run gz validate
-    --task-envelope-coherence`.
-  - `preflight`: orphan plan-audit receipt + expired `OBPI-0.0.37-12.lock.json`
-    (405m). **Drilldown:** `uv run gz preflight`.
-- **Routing (Definition of Healthy: "fixed OR routed with a named next command"):**
-  - Task-envelope → **GHI #563** (existing class tracker: "OBPI-0.0.64-03/04
-    closed with seq=01-only TASKs and worklog events missing task_id"). The
-    0.0.37-12 failure is a new *instance* of that tracked class, not a new defect
-    — append it to #563 rather than filing a duplicate (Operating Rule 4). The
-    `:8460` historical ledger event cannot be hand-edited (Never #2); accommodate
-    via validator rule or migration command with tests (Phase 3 rule).
-  - Preflight → `uv run gz preflight --apply` (the runtime-supported cleanup path
-    named in Phase 1). Verify the expired-lock cleanup honors the token-block
-    reaping-handoff discipline before applying.
-- **Phase 1 (Make the Harness Green) is reopened.** Snapshot B's "Phase 1 is
-  complete" held at 2026-05-30; the 0.0.37-12 closeout regressed it. The
-  Definition of Healthy ("`gz check` exits 0 on `main`") is again unmet — this
-  is the green-first blocker (Operating Rule 2) on every frozen workstream below.
+- **Short-vs-full `obpi_id` divergence** — direct-fixed in `task.py` @ G(check) only;
+  other consumers (`validate_task_envelope._obpi_id_for_task`, `_task_matches_obpi`)
+  may carry the same divergence against full-slug ledger/brief ids. Watch when next
+  touching task/OBPI id resolution.
+- **Budget vs Codex cap** — `data/instructions_files_budget.json` AGENTS.md budget is
+  now 30000 (in-flight), under the 32,768 B Codex cap; the prior 33000 *exceeded* the
+  cap and would have green-lit a silently-truncated file (ties to #579 + config-SSOT 2.5).
 
-### Snapshot D — re-measured (2026-06-01, after Tier-0 remediation): GREEN
+### Snapshots A–F — compact history (preserved for audit)
 
-- `git status --short` clean at measure time except the Tier-0 change set
-  (validator + test + brief + this plan + two preflight-cleaned deletions),
-  staged for commit.
-- `uv run gz check` → **"✓ All checks passed"**; `GZ_CHECK_EXIT=0` (true exit
-  captured via file redirect, not a `| tail` pipe — the Snapshot-C "exit 0"
-  reading had been `tail`'s status, masking the real failure). **26/26 gates
-  pass.** The advisory spec-test-code drift now reports 1,739 findings (still
-  non-blocking; does not affect exit code).
-- Both Snapshot-C regressions are cleared:
-  - **`Task envelope coherence`** — root cause was OBPI-0.0.37-12's irregular
-    closeout. Sig (a): the `:8460` event is a `meta-receipt-bind` Gate-5 ceremony
-    receipt-binding event (carries an `attestor`), not TASK labor; the validator
-    now excludes that `receipt_event` from the labor signature (`src/gzkit/
-    commands/validate_task_envelope.py`), a narrow carve-out pinned by two TDD
-    tests (`tests/governance/test_task_envelope_coherence.py::TestSignatureA`) —
-    a bare `audit_receipt_emitted` still fails. No ledger hand-edit (Never #2).
-    Sig (b): `req_atomic:` exemption with inline per-REQ rationale on the
-    OBPI-0.0.37-12 brief (the five REQs are each one indivisible behavioral
-    contract on `render()`). New instance appended to **GHI #563**.
-  - **`Preflight`** — cleared by `gz preflight --apply`. The reaping-handoff
-    coherence gap surfaced during this fix is tracked via `/ghi-author`
-    (`Related: #564`).
-- **Phase 1 (Make the Harness Green) is complete again.** The green that held at
-  Snapshot B, regressed at Snapshot C, is restored. Remaining recovery work is
-  Tier 1 (context-load emergency #519 → Phase 2/CMS; ceremony & validator
-  mechanization → Phase 3; recovery-issue drain → Phase 4).
+| # | Date | gz check | What it recorded |
+|---|------|----------|------------------|
+| A | 2026-05-30 AM | RED | Plan authoring; six named failure surfaces (unit test, --kind-invariance, --insights-shape, --tautological-test-audit, --task-envelope-coherence, preflight). |
+| B | 2026-05-30 | GREEN 26/26 | GHI #570 added the Line-endings gate + cleared the unit-test failure; all six A-surfaces green. Phase 1 first declared complete. |
+| C | 2026-06-01 | RED 24/26 | Regressed: Task-envelope coherence + Preflight — single root cause = OBPI-0.0.37-12's irregular closeout (lock never released, ceremony skipped). |
+| D | 2026-06-01 | GREEN 26/26 | Tier-0 remediation: task-envelope sig-(a) meta-receipt-bind carve-out + sig-(b) req_atomic on 0.0.37-12; `preflight --apply`. (Snapshot-C "exit 0" had been a `tail`-pipe masking the real failure.) |
+| E | 2026-06-02 | GREEN 26/26 | D proved stale; cleared Format, ADR-status-freshness, Task-envelope coherence (OBPI-0.0.37-13 instance: brief-reflection + uncovered-accept carve-outs + req_atomic). |
+| F | 2026-06-03 | GREEN 26/26 | OBPI-0.0.37-15 (per-vendor temperature *selection*) attested → CMS 10/16; four untracked direct-fixes. #519 still unrelieved (selection ≠ emission; Codex-loader finding ruled out per-vendor emission). |
 
-### Snapshot E — re-measured (2026-06-02, after Snapshot-D staleness): GREEN
-
-- `git status --short` clean at the start of the re-measurement; the working
-  tree now carries this Tier-0 recovery change set.
-- Initial `uv run gz check` exited non-zero. Failing gates: `Format`, `ADR
-  status freshness`, `Task envelope coherence`. Advisory spec-test-code drift
-  reported 1,734 findings and did not affect the exit code.
-- **`Format`** — `uv run ruff format --check .` identified
-  `tests\content\test_round_trip_agent_contract.py`; `uv run ruff format
-  tests\content\test_round_trip_agent_contract.py` reformatted one file; later
-  `uv run ruff format --check .` reported 792 files already formatted.
-- **`ADR status freshness`** — `uv run gz validate --adr-status-fresh` reported
-  `ADR-0.28.0-focused-context-loader` as committed `Completed` but on-disk
-  `Validated`; `uv run gz register-adrs` regenerated `adr-status.md` with 90
-  ADRs; rerun `uv run gz validate --adr-status-fresh` passed.
-- **`Task envelope coherence`** — the failure recurred on
-  `OBPI-0.0.37-13-reverse-parse-migration`: ledger `:8490`-`:8494`
-  `artifact_edited` rows for the active OBPI brief, ledger `:8500`
-  `obpi_completion_uncovered_accept` with REQ-level attribution but no
-  `task_id`, and a seq=01-only closeout with no `req_atomic:` declaration. TDD
-  RED: focused task-envelope tests failed 2/21. Remediation: validator now
-  excludes only active-OBPI brief reflection edits and uncovered-accept events
-  whose `req_id` maps to an active TASK for the same OBPI; OBPI-0.0.37-13 now
-  carries a per-REQ `req_atomic:` rationale. TDD GREEN:
-  `uv run -m unittest tests.governance.test_task_envelope_coherence -q` → 21
-  tests OK; `uv run gz validate --task-envelope-coherence` → all validations
-  passed.
-- Final `uv run gz check` → **"✓ All checks passed"**; 26/26 gates green.
-  Advisory spec-test-code drift reported 1,735 findings, including one
-  unjustified-code-change advisory; advisory output did not affect exit code.
-- **Phase 1 (Make the Harness Green) is complete again.** Recovery remains open
-  because emergency GHI #519 remains open; Tier 1 is still the next work band.
-
-### Snapshot F — re-measured (2026-06-03, after OBPI-15 + four post-E direct-fixes): GREEN
-
-- `git status --short` clean at measure time (the OBPI-15 change set was already
-  committed and pushed at sync anchor `b8195395`; tree synced to `origin/main`,
-  ahead=0 behind=0).
-- `uv run gz check` → **"✓ All checks passed"**; `GZ_CHECK_EXIT=0` (true exit
-  captured via file redirect, not a `| tail` pipe). **26/26 gates pass.** The
-  advisory spec-test-code drift reported 1,725 findings (still non-blocking;
-  does not affect exit code).
-- **Why re-measure:** Snapshot E was at risk of going stale the same way D did —
-  OBPI-0.0.37-15's Gate-5 completion is exactly the ADR-completion event that
-  regressed `ADR status freshness` at the D→E boundary. This time the completion
-  ran `gz register-adrs` in-ceremony, so `--adr-status-fresh` stayed green; no
-  remediation was needed. The green held; it was not assumed.
-- **What changed since E (no gate regressions):**
-  - **OBPI-0.0.37-15-per-vendor-template-selection** attested-complete →
-    ADR-0.0.37 CMS **9/16 → 10/16** (01–05, 11–15 done; 06–10, 16 pending).
-    Scope landed = the temperature *selection* mechanism (manifest →
-    `temperature_for` → renderer); the Codex-`lite` *emission* was operator-scoped
-    out and routed to #519. **#519 is therefore still OPEN and unrelieved.**
-  - Four untracked direct-fixes (each a `Task:`-trailer commit, no GHI row):
-    `fix(adr-audit)` `937da0ac` (deterministic ADR package-dir in the closeout
-    coverage gate), `chore(insights)` `a23a2296` (same-class FS-order first-match
-    defect tracking), `fix(check)` `3b29dfe7` (surface failing-step output for
-    diagnosability), `fix(sync)` `3911355f` (`render_rules_to_dir` project-relative
-    paths so apply==dry).
-- **Phase 1 (Make the Harness Green) remains complete.** Recovery remains open
-  because emergency GHI #519 remains open; Tier 1 is still the next work band, and
-  item 1.1 (#519) is now `[~]` in progress — advanced one OBPI but not closed.
-
-### Snapshot G(check) — re-measured (2026-06-03, on resume after the Snapshot-G design redesign): RED→GREEN
-
-- **Snapshot F proved stale** (the D→E→F pattern repeats): on resuming "restore to
-  health," `uv run gz check` → **exit 1**, three red gates introduced *after* F's
-  measurement by the same-day Snapshot-G redesign session:
-  1. **Test** — `test_canonical_store_holds_expected_count` (37≠38): the new
-     `20260603T120334Z-519-adr0037-corpus-cms-redesign.md` handoff tripped the
-     intentional exact-count tripwire.
-  2. **Task envelope coherence** (8 errors) — ledger `:8574`–`:8581`,
-     `artifact_edited` events on ADR-0.0.37/0.0.33 decision docs emitted during the
-     redesign while OBPI-0.0.37-17's 8 pipeline TASKs dangled active (no `task_id`).
-  3. **Preflight** — orphan plan-audit receipt `…OBPI-0.0.37-09…` (the OBPI-09
-     "wrong path" leftover).
-- **Two latent defects surfaced and direct-fixed (TDD RED→GREEN):**
-  - **`gz task block/complete/escalate` broken for full-slug OBPIs** —
-    `_resolve_task_context` derived the short `OBPI-<semver>-<item>` form while the
-    pipeline records the full slug; `_current_task_status` never matched →
-    "pending → blocked". Fixed by resolving `obpi_id` from the task's
-    `task_started` ledger event (fallback to derived). `src/gzkit/commands/task.py`
-    + `tests/test_tasks.py::TestTaskTransitionFullSlugObpi`.
-  - **Task-envelope sig (a) ADR-decision-doc carve-out** (operator-ratified):
-    edits to `docs/design/adr/**/ADR-<semver>-*.md` (excl. `/obpis/`) while any
-    OBPI TASK is active are SUPPORT-channel governance ceremony, not OBPI-REQ
-    labor — the ADR-layer sibling of the brief-reflection carve-out. Clears the 8
-    historical events without epoch-move (which was rejected as defect-hiding).
-    `src/gzkit/commands/validate_task_envelope.py` +
-    `tests/governance/test_task_envelope_coherence.py`.
-- **OBPI-0.0.37-17-as-scoped retired** (the booked Snapshot-G decision, executed to
-  unblock): 8 dangling TASKs `gz task block`ed as superseded; stale plan
-  (`lively-hatching-storm.md`) removed; both orphan receipts cleaned via
-  `gz preflight --apply` (governed path — no hand-deletion of the receipt, no ledger
-  edit). The 2026-06-04 renumber/withdraw pass later mirrored 11–17 as
-  `Abandoned`; active reconciliation now targets the 18–27 checklist.
-- Handoff-count tripwire bumped 37→38 (provenance comment names the redesign handoff).
-- **Re-measured GREEN:** `uv run gz check` → "✓ All checks passed", **26/26 gates**,
-  `GZ_CHECK_EXIT=0` (true exit via file redirect). Advisory drift 1,735 (non-blocking).
-- **Phase 1 stays complete; recovery stays open** (#519 still OPEN; Tier 1 item 1.1
-  unchanged — OBPI-17-as-scoped retired, #519 relief re-anchored on OBPI-0.0.37-26
-  per Snapshot G). Next: the Snapshot-G chain — `gz-adr-evaluate ADR-0.0.37` →
-  `gz-obpi-specify` (reconcile briefs to the 18–27 checklist) → build OBPI-0.0.37-26.
-
-Snapshots A–F are preserved for audit; **Snapshot G(check) is the live baseline.**
+Snapshots A–F and G(check) are preserved for audit; **Snapshot H is the live baseline.**
 
 ## Definition of Healthy
 
@@ -1374,115 +1233,31 @@ true). Recovery is **not yet closed** — emergency GHI #519 (context load) rema
 open. The progress snapshot below records observed evidence; the `Decision` line
 stays blocked until #519 closes.
 
-### Progress snapshot — 2026-05-30 (post-GHI-#570 re-measurement)
+### Progress snapshot — 2026-06-04 (Snapshot H; in-flight OBPI-0.0.37-26)
 
 ```text
-Snapshot date:            2026-05-30 (recovery still open)
-uv run gz check:          exit 0 — 26/26 gates pass (advisory-only drift remains; 1714 findings this run, up from 1687)
-Emergency GHIs open:      1 — #519 (codex context surface exhausts 258K window)
-Context-load issue state: #519 OPEN — remediation route IN-FLIGHT and advanced one stage: ADR-0.0.37 density-dial CMS OBPIs 11-16 now AUTHORED + committed (4014b85b), all six pass gz obpi validate --authored, Draft lifecycle, implementation NOT started; see Designated Workstream — Context-Load CMS
-Task-envelope coherence:  PASS — gz check gate green
-Open recovery issues:     #519 (emergency; Phase 2 / Phase 4 item 1), #516 (closeout passive-presenter; Phase 3). #517 closed.
-Decision:                 normal development may NOT resume — blocked on emergency GHI #519 (authoring advanced the route; it did not land)
+Snapshot date:            2026-06-04 (recovery still open)
+Committed main:           last measured GREEN at Snapshot G(check) (26/26), pushed; not re-measured clean-tree this session
+Working tree:             uncommitted in-flight OBPI-0.0.37-26 #519-relief work; gz check measured exit 1 (24/26) at start: Test (2 budget-pin tests) + Surface fidelity. Test FIXED this session (budget-pin literals -> semantic cap+fit invariant; 5858 tests OK). Remaining red: Surface fidelity (14 ADR-0.0.33 bullet-retention violations from the AGENTS.md compression) -- OBPI-0.0.37-26's work
+#519 byte target:         REACHED interim/uncommitted/unattested — root AGENTS.md 32,651 -> 28,323 B (< 30,000 budget, ~4,445 B under Codex 32,768 cap). First material byte movement on #519 in seven snapshots
+OBPI-0.0.37-26 state:     IN FLIGHT, not complete — ledger shows pipeline_launched, 6 task_started, composition_rendered, lock claimed then RELEASED WITHOUT COMPLETION; no task_completed, no obpi_receipt_emitted, no attestation
+Predicted wall HIT:       the 14 fidelity violations are the ADR-0.0.33 bullet-retention collision Snapshot G predicted; interim rendition reaches the byte target but is not green/attestable until the 14 retained bullets are re-homed + the two budget-pin tests updated to 30000
+Emergency GHIs open:      1 -- #519 (codex context surface exhausts 258K window)
+Decision:                 normal development may NOT resume -- #519 byte relief IN REACH but NOT landed (OBPI-0.0.37-26 mid-flight, unattested). Test gate green (budget-test direct-fix this session); Surface fidelity still red. Next: re-home the 14 retained bullets -> gz check green -> Gate-5 attest
 ```
 
-### Progress snapshot — 2026-06-01 (re-measurement; supersedes 2026-05-30 above)
+### Earlier progress snapshots — compact history (full blocks in git history pre-2026-06-04)
 
-```text
-Snapshot date:            2026-06-01 (recovery still open)
-uv run gz check:          exit non-zero — 24/26 gates pass; REGRESSED from 26/26 (advisory drift 1738 findings, non-blocking)
-Failing gates:            --task-envelope-coherence, preflight — both trace to one irregular OBPI-0.0.37-12 closeout (Snapshot C)
-Emergency GHIs open:      1 — #519 (codex context surface exhausts 258K window)
-Context-load issue state: #519 OPEN — remediation route ADVANCED: ADR-0.0.37 density-dial CMS OBPIs 11+12 now attested_completed (7/16 done); 06-10,13-16 pending; see Designated Workstream — Context-Load CMS
-Task-envelope coherence:  FAIL — routed to existing class tracker GHI #563 (0.0.37-12 is a new instance, not a new defect)
-Preflight:                FAIL — orphan receipt + expired OBPI-0.0.37-12 lock; clean via `uv run gz preflight --apply` (verify reaping-handoff discipline first)
-Open recovery issues:     #519 (emergency; Phase 2 / Phase 4 item 1), #516 (closeout passive-presenter; Phase 3), #563 (task-envelope class). #517 closed.
-Decision:                 normal development may NOT resume — Phase 1 reopened (gz check red) AND emergency GHI #519 still open
-```
-
-### Progress snapshot — 2026-06-02 (Snapshot E; supersedes 2026-06-01 above)
-
-```text
-Snapshot date:            2026-06-02 (recovery still open)
-uv run gz check:          exit 0 — 26/26 gates pass (advisory drift 1735 findings, non-blocking; includes one unjustified-code-change advisory)
-Failing gates found:      Format, ADR status freshness, Task envelope coherence — all fixed in Tier 0 Snapshot E
-Format:                   PASS — ruff reformatted tests\content\test_round_trip_agent_contract.py; rerun format check passed
-ADR status freshness:     PASS — gz register-adrs regenerated adr-status.md; rerun --adr-status-fresh passed
-Task-envelope coherence:  PASS — OBPI-0.0.37-13 instance fixed by narrow validator carve-outs for OBPI brief reflection + REQ-attributed uncovered-accept, plus req_atomic frontmatter; focused tests 21/21 OK
-Emergency GHIs open:      1 — #519 (codex context surface exhausts 258K window)
-Context-load issue state: #519 OPEN — ADR-0.0.37 CMS route still the active structural remediation path
-Open recovery issues:     #519 (emergency; Phase 2 / CMS), #516 and Phase-3 ceremony/validator cluster, Phase-4 drain items
-Decision:                 normal development may NOT resume — gz check is green again, but emergency GHI #519 still blocks Recovery Closeout
-```
-
-### Progress snapshot — 2026-06-02 (post OBPI-13/14 completion + merge to main; supersedes Snapshot E progress block above)
-
-```text
-Snapshot date:            2026-06-02 (recovery still open)
-Harness state:            last measured GREEN at Snapshot E (26/26 gates); no re-measurement since — this snapshot records OBPI progress + branch merge, not a new gz check run
-ADR-0.0.37 CMS progress:  9/16 OBPIs attested_completed (was 7/16) — OBPI-0.0.37-13 (reverse-parse migration, anchor 5e324e1, ledger obpi_receipt_emitted 2026-06-01T23:57) and OBPI-0.0.37-14 (wire sync_agents_md, retire monolith, --invariant-coherence diffs model render, anchor fa4dc83, ledger obpi_receipt_emitted 2026-06-02T08:33) both human-attested (Gate 5)
-OBPIs remaining:          06-10, 15, 16 — OBPI-0.0.37-15 (per-vendor template → Codex lite) is the named #519 byte payload (brief authored, build not started); 13+14 built the substrate but are not themselves the byte relief
-Branch hygiene:           fix/task-envelope-and-flaky-timing fast-forward merged to main (c8bbeee2..9178d46f) and pushed to origin/main; branch deleted local + remote; commits e1f18d21 (task-envelope telemetry-exclusion + req_atomic for OBPI-0.0.37-14) and 9178d46f (abandon flaky wall-clock timing assertions, GHI #535)
-Emergency GHIs open:      1 — #519 (codex context surface exhausts 258K window)
-Context-load issue state: #519 OPEN — substrate (OBPI-13/14) landed; #519 stays unrelieved until OBPI-0.0.37-15 (Codex lite) lands
-Open recovery issues:     #519 (emergency; Phase 2 / CMS → OBPI-15), #516 and Phase-3 ceremony/validator cluster, Phase-4 drain items
-Decision:                 normal development may NOT resume — emergency GHI #519 still blocks Recovery Closeout; next critical-path step is OBPI-0.0.37-15
-```
-
-### Progress snapshot — 2026-06-03 (Snapshot F; post OBPI-15 completion; supersedes post-13/14 block above)
-
-```text
-Snapshot date:            2026-06-03 (recovery still open)
-uv run gz check:          exit 0 — 26/26 gates pass, GZ_CHECK_EXIT=0 (measured, not assumed; advisory drift 1725 findings, non-blocking)
-Harness state:            GREEN re-measured. OBPI-15's Gate-5 completion is the ADR-completion event class that regressed ADR-status-freshness at D->E; this completion ran gz register-adrs in-ceremony, so --adr-status-fresh stayed green with no remediation
-ADR-0.0.37 CMS progress:  10/16 OBPIs attested_completed (was 9/16) — OBPI-0.0.37-15 (per-vendor template selection, sync anchor b8195395, Gate-5 human-attested) added; done set 01-05,11-15
-OBPIs remaining:          06-10, 16
-#519 relief status:       NOT landed — OBPI-15 shipped the per-vendor temperature SELECTION mechanism (manifest content_type_temperatures -> vendors.temperature_for() fail-closed -> render() honors it); the Codex-lite EMISSION (the byte reduction) was operator-scoped as a follow-on and routed back to #519. No production path yet emits a thinned Codex surface
-Other work since E:       four untracked direct-fixes (Task: trailers, no GHI rows) — fix(adr-audit) 937da0ac, chore(insights) a23a2296, fix(check) 3b29dfe7, fix(sync) 3911355f
-Emergency GHIs open:      1 — #519 (codex context surface exhausts 258K window)
-Context-load issue state: #519 OPEN and UNRELIEVED — CMS mechanically 10/16, but the byte payload that closes #519 is the deferred emission follow-on, not OBPI-15's selection mechanism
-Open recovery issues:     #519 (emergency; Phase 2 / CMS -> emission follow-on), #516 and Phase-3 ceremony/validator cluster, Phase-4 drain items
-Decision:                 normal development may NOT resume — emergency GHI #519 still blocks Recovery Closeout; the critical-path step is now the Codex-lite emission follow-on on #519, NOT another ADR-0.0.37 selection OBPI
-```
-
-### Progress snapshot — 2026-06-03 (Codex-loader correction; supersedes the Snapshot F "Decision" line above)
-
-```text
-Snapshot date:            2026-06-03 (recovery still open; same day as Snapshot F)
-What changed:             a primary-source Codex-loader investigation FALSIFIED Snapshot F's "Codex-lite emission follow-on" route for #519
-Finding:                  Codex CLI reads only repo-root AGENTS.md (+ nested, concatenated); it does NOT traverse .agents/ or any vendor sink; no config redirects the project doc (model_instructions_file replaces the BASE prompt, not AGENTS.md); over project_doc_max_bytes=32768 it SILENTLY TRUNCATES. Sources: developers.openai.com/codex/guides/agents-md, github.com/openai/codex issue #7138 (source-quoted), config-reference/config-sample
-Consequence:              per-vendor EMISSION cannot relieve #519 (the surface Codex reads is shared root AGENTS.md). OBPI-15's selection mechanism keeps value as a general control, but is NOT the #519 payload
-#519 relief re-pointed:   from "Codex-lite emission follow-on" → first proposed as OBPI-09 (registry path); the plan-audit then revealed OBPI-09 is the WRONG path — see the charter snapshot below for the corrected vehicle (OBPI-0.0.37-17)
-Calibration defect found: data/instructions_files_budget.json sets AGENTS.md budget = 33,000 > Codex 32,768 cap — gate green-lights a truncated surface. Ties to #579 + config-SSOT (2.5)
-Operator decision:        "Record + plan-audit OBPI-09" (2026-06-03) — executed; the audit redirected to OBPI-17 (next block)
-```
-
-### Progress snapshot — 2026-06-03 (OBPI-17 charter; supersedes the "#519 relief re-pointed" line in the block above)
-
-```text
-Snapshot date:            2026-06-03 (recovery still open; same day as Snapshot F)
-What changed:             plan-audit of OBPI-09 (the proposed #519 vehicle) revealed it is the WRONG path; chartered OBPI-0.0.37-17 instead
-OBPI-09 finding:          superseded + wrong substrate. ADR-0.0.37 line 264: OBPI-13 "supersedes OBPI-09 byte-preserving framing" (OBPI-13 done). And OBPI-09 targets the invariant-registry render path (.gzkit/invariants/ → gz governance render → compose.py), NOT the AgentContract path (gzkit.content.render) where density_min lives. Repurposing would collide, not complete. Left as separate disposition (OBPI-10 / closeout)
-Dial-inert finding:       the OBPI-11/12 temperature dial is built and correct (pipeline.py _bullet_renders) but INERT — every Bullet.density_min=None, so render heavy==medium==lite (template 23,403 B; AGENTS.md 32,651 B at every tier, verified). The machine is connected to nothing
-OBPI-0.0.37-17 chartered: "AGENTS.md density classification" — classify the AgentContract corpus (classification/density_min per Bullet) so the dial thins; render shared root at medium under Codex's 32,768 cap; fix the budget. Operator-directed targets: heavy~32k / medium~16k / lite~8k (calibration), with #519-fits-cap (<=30k) the fail-closed REQ and the lite floor an output of the Judgment core. Parser is net-new (markdown_parser sets no density). Brief passes gz obpi validate --authored; ADR checklist + scorecard synced 16->17
-Plan-audit OBPI-17:       FAIL on the single pre-planning gap ("no plan file") — the expected signal for a freshly-chartered, not-yet-planned OBPI; no allowed-path or alignment gaps. Converts to PASS after the plan phase
-Open recovery issues:     #519 (emergency; Phase 2 / CMS -> OBPI-17), #516 and Phase-3 ceremony/validator cluster, Phase-4 drain items
-Decision:                 normal development may NOT resume — #519 unrelieved; next concrete step is to plan + run the OBPI-0.0.37-17 pipeline (density classification), NOT OBPI-09 and NOT a Codex emission
-```
-
-### Progress snapshot — 2026-06-03 (Snapshot G(check); restore-green on resume + OBPI-17 retirement; supersedes the OBPI-17 charter block above)
-
-```text
-Snapshot date:            2026-06-03 (recovery still open; resume of "restore to health")
-Harness state:            re-measured RED→GREEN. On resume, gz check → exit 1 (Snapshot F stale, D→E→F→G pattern): Test (handoff tripwire 37≠38), Task envelope coherence (8 events :8574–:8581), Preflight (OBPI-09 orphan). Remediated → gz check "✓ All checks passed", 26/26 gates, GZ_CHECK_EXIT=0 (true exit via file redirect), advisory drift 1735 (non-blocking)
-Carve-out (ratified):     task-envelope sig (a) now excuses ADR-decision-doc edits (docs/design/adr/**/ADR-<semver>-*.md, excl. /obpis/) while any TASK is active — ADR docs are SUPPORT-channel ceremony, not OBPI-REQ labor (sibling of the brief-reflection carve-out). Epoch-move rejected as defect-hiding. TDD: test_adr_decision_doc_edit_under_active_task_is_clean (RED 2≠0→GREEN); src/foo.py negative control still fails (gate core intact)
-OBPI-17 disposition:      OBPI-0.0.37-17-as-scoped RETIRED (executes the Snapshot-G booked decision; it was the wrong shape — drops whole sections, collides with ADR-0.0.33 bullet-retention, no headroom). 8 dangling TASKs gz task block'ed superseded; stale plan lively-hatching-storm.md removed; OBPI-09+OBPI-17 orphan receipts cleaned via gz preflight --apply → "clean". The 2026-06-04 renumber/withdraw pass later mirrored 11–17 as Abandoned.
-Latent defects fixed:     (1) gz task block/complete/escalate broken for full-slug OBPIs — _resolve_task_context derived short OBPI-<semver>-<item>, ledger stores full slug, _current_task_status never matched → "pending → blocked". Fixed: resolve obpi_id from task_started event. TDD TestTaskTransitionFullSlugObpi. (2) the carve-out above. Class note: short-vs-full obpi_id divergence persists in validate_task_envelope._obpi_id_for_task / _task_matches_obpi — watch on next task/OBPI id-resolution touch
-Commits:                  32cac1d2 fix(task), e4b9cc78 fix(validate); pushed to origin/main via gz git-sync --apply --lint --test (clean tree, ahead=0)
-#519 route:               REDESIGNED (Snapshot G; renumbered 2026-06-04) — relief re-anchored on OBPI-0.0.37-26 (Codex-root setpoint + interim operator-attested compressed rendition), sequenced FIRST; ADR-0.0.37 active set is 01–10 and 18–27
-Open recovery issues:     #519 (emergency; Phase 2 / CMS → OBPI-0.0.37-26), #516 and Phase-3 ceremony/validator cluster, Phase-4 drain items
-Decision:                 normal development may NOT resume — #519 unrelieved. Next concrete step: the Snapshot-G chain — gz-adr-evaluate ADR-0.0.37 → gz-obpi-specify (reconcile briefs to the 18–27 checklist) → build OBPI-0.0.37-26, NOT OBPI-17 (retired) and NOT a Codex emission (ruled out)
-```
+| Date | State | Headline |
+|------|-------|----------|
+| 2026-05-30 | open | post-GHI-#570 GREEN 26/26; ADR-0.0.37 CMS OBPIs 11–16 authored+committed (4014b85b), not implemented |
+| 2026-06-01 | open | RED 24/26 (OBPI-0.0.37-12 irregular closeout); CMS 7/16; routed to #563 + preflight |
+| 2026-06-02 (E) | open | GREEN 26/26 after Format / ADR-status / task-envelope clears |
+| 2026-06-02 (13/14) | open | CMS 9/16 (OBPI-13/14 attested); fix/task-envelope branch merged to main |
+| 2026-06-03 (F) | open | GREEN 26/26; CMS 10/16 (OBPI-15 selection mechanism); #519 unrelieved (selection ≠ emission) |
+| 2026-06-03 (Codex-loader) | open | primary-source finding: Codex reads only root AGENTS.md, silent-truncates past 32,768 B → per-vendor emission RULED OUT for #519 |
+| 2026-06-03 (OBPI-17 charter) | open | OBPI-09 ruled wrong path; OBPI-11/12 dial proven INERT; OBPI-17 density-classification chartered |
+| 2026-06-03 (G(check)) | open | RED→GREEN restore on resume; OBPI-17-as-scoped retired; route redesigned → OBPI-0.0.37-26; ADR-0.0.37 renumbered to 01–10, 18–27 |
 
 ## Appendix: The Smooth-vs-Replicable Axis (2026-05-30 dialogue insights)
 

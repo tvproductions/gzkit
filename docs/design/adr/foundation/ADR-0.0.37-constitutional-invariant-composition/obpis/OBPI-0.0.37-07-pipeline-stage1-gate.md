@@ -26,10 +26,11 @@ Extend `gz obpi pipeline` Stage 1 to refuse Stage 2 entry unless the active OBPI
 ## Allowed Paths
 
 - `src/gzkit/pipeline_runtime.py` (modify) — extend Stage 1 entry-check with reconcile-receipt freshness
-- `src/gzkit/governance/reconcile_freshness.py` (new) — pure helper: `is_receipt_fresh(receipt_ts, brief_allowed_paths, project_root) -> bool` (compares receipt timestamp against `os.path.getmtime` of each Allowed Path)
+- `src/gzkit/governance/reconcile_freshness.py` **CREATE** (new) — pure helper: `is_receipt_fresh(receipt_ts, brief_allowed_paths, project_root) -> bool` (compares receipt timestamp against `os.path.getmtime` of each Allowed Path)
 - `tests/test_pipeline_runtime.py` (modify or new test file) — Stage 1 gate tests
-- `tests/governance/test_reconcile_freshness.py` (new) — freshness helper tests
+- `tests/governance/test_reconcile_freshness.py` **CREATE** (new) — freshness helper tests
 - `features/brief_reconcile.feature` (modify) — add Stage 1 gate scenarios tagged `@REQ-0.0.37-07-*`; file created by OBPI-05
+<!-- gz-validate-skip: command-shape -->
 - `docs/user/runbook.md` (modify) — operator runbook entry: "When Stage 1 blocks: run `gz brief reconcile <OBPI-ID>` to refresh the receipt"
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-07-pipeline-stage1-gate.md` (this brief)
 
@@ -44,7 +45,9 @@ Extend `gz obpi pipeline` Stage 1 to refuse Stage 2 entry unless the active OBPI
 ## Requirements (FAIL-CLOSED)
 
 1. REQUIREMENT: `is_receipt_fresh(receipt_ts: datetime, allowed_paths: list[str], project_root: Path) -> bool` returns True when `receipt_ts` is later than `max(getmtime(p)) for p in allowed_paths` (expanding any globs). Missing path returns False (forces re-reconcile). Pure function.
+<!-- gz-validate-skip: command-shape -->
 2. REQUIREMENT: Stage 1 entry in `pipeline_runtime.py` queries the ledger for the most recent `brief_reconciled` event whose `brief_id` matches the active OBPI. If absent, Stage 1 fail-closes with exit code 3 and message: "Stage 2 entry blocked: no `brief_reconciled` receipt for <OBPI-ID>. Run `gz brief reconcile <OBPI-ID>` then retry."
+<!-- gz-validate-skip: command-shape -->
 3. REQUIREMENT: If a `brief_reconciled` receipt exists but `is_receipt_fresh` returns False, Stage 1 fail-closes with exit code 3 and message: "Stage 2 entry blocked: receipt for <OBPI-ID> stale (receipt_ts=<ts>, max_allowed_path_mtime=<mtime>, drifted path=<path>). Run `gz brief reconcile <OBPI-ID>` to refresh."
 4. REQUIREMENT: If receipt exists AND is fresh AND `has_drift` payload is False, Stage 1 passes; Stage 2 entry permitted; existing Stage 1 behavior preserved.
 5. REQUIREMENT: If receipt exists, is fresh, but `has_drift` payload is True, Stage 1 fail-closes with exit code 3 and message naming the drifted dimensions.
@@ -66,7 +69,7 @@ Extend `gz obpi pipeline` Stage 1 to refuse Stage 2 entry unless the active OBPI
 - [ ] `.gzkit/rules/governance-core.md` § Required workflow order — Stage 1 sits between brief validation and implementation start
 - [ ] `.claude/rules/governance-core.md` § ADR status index regeneration — example of "fail-closed in `gz check`" pattern
 
-**Context (exemplars):**
+**Existing Code (understand current state):**
 
 - [ ] `src/gzkit/pipeline_runtime.py` — current Stage 1 implementation; understand the entry-check hook
 - [ ] `src/gzkit/governance/ledger.py` (or wherever ledger queries live) — receipt-query pattern
@@ -88,6 +91,7 @@ Extend `gz obpi pipeline` Stage 1 to refuse Stage 2 entry unless the active OBPI
 
 ## Verification
 
+<!-- gz-validate-skip: command-shape -->
 ```bash
 uv run gz lint
 uv run gz typecheck
@@ -115,6 +119,7 @@ uv run gz obpi pipeline OBPI-0.0.37-07-pipeline-stage1-gate --stage 1 --dry-run
 ## Completion Checklist
 
 - [ ] All gates satisfied
+<!-- gz-validate-skip: command-shape -->
 - [ ] `gz brief reconcile OBPI-0.0.37-07-pipeline-stage1-gate` reports zero drift
 
 ## Evidence

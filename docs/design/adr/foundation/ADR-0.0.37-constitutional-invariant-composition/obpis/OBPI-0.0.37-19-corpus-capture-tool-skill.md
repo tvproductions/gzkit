@@ -11,14 +11,14 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
+<!-- gz-validate-skip: command-shape -->
 - **Checklist Item:** #19 - "OBPI-0.0.37-19 — Corpus capture tool + skill (`gz content remember <surface> --section <id> [--tier]` tool appends an entry + `corpus_entry_appended` ledger event, never edits a rendered surface; wielding capture skill; replaces prior OBPI-12 renderer)"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
+<!-- gz-validate-skip: command-shape -->
 OBPI-0.0.37-19 — Corpus capture tool + skill (`gz content remember <surface> --section <id> [--tier]` tool appends an entry + `corpus_entry_appended` ledger event, never edits a rendered surface; wielding capture skill; replaces prior OBPI-12 renderer).
 
 ## Lane
@@ -49,7 +49,9 @@ OBPI-0.0.37-19 — Corpus capture tool + skill (`gz content remember <surface> -
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: This OBPI MUST deliver: OBPI-0.0.37-19 — Corpus capture tool + skill (`gz content remember <surface> --section <id> [--tier]` tool appends an entry + `corpus_entry_appended` ledger event, never edits a rendered surface; wielding capture skill; replaces prior OBPI-12 renderer).
+1. REQUIREMENT: This OBPI MUST deliver: OBPI-0.0.37-19 — Corpus capture tool + skill.
+<!-- gz-validate-skip: command-shape -->
+   Forward-reference command introduced by this OBPI: `gz content remember <surface> --section <id> [--tier]`; it appends an entry, emits a `corpus_entry_appended` ledger event, never edits a rendered surface, and replaces the prior OBPI-12 renderer path.
 1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
 1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
 1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief

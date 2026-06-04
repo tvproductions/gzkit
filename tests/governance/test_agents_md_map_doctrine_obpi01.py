@@ -27,8 +27,10 @@ Coverage:
         scoping AGENTS.md, CLAUDE.md, .claude/rules/*.md; body declares
         the invariant and the five prohibited shapes.
     REQ-0.0.54-01-02 — doctrine doc exists as the canonical expansion.
-    REQ-0.0.54-01-03 — budget JSON pins AGENTS.md=15000, CLAUDE.md=4000;
-        per-rule-file 16000 unchanged.
+    REQ-0.0.54-01-03 — budget JSON enforces the per-turn surface contract:
+        AGENTS.md fits Codex's project-doc byte cap (no silent truncation) and
+        each surface fits its configured budget; the budget value lives only in
+        the JSON (no literal pinned in the test).
     REQ-0.0.54-01-04 — scorecard entry exists and classifies the rule as
         Mechanical with the Judgment note for per-section size targets.
     REQ-0.0.54-01-05 — zero content moved from AGENTS.md (OBPI-02 lift
@@ -50,6 +52,22 @@ _RULE_PATH = _PROJECT_ROOT / ".gzkit" / "rules" / "agents-md-map-doctrine.md"
 _DOCTRINE_PATH = _PROJECT_ROOT / "docs" / "governance" / "agents-md-doctrine.md"
 _BUDGET_PATH = _PROJECT_ROOT / "data" / "instructions_files_budget.json"
 _SCORECARD_PATH = _PROJECT_ROOT / "docs" / "governance" / "advisory-rules-audit.md"
+_AGENTS_MD = _PROJECT_ROOT / "AGENTS.md"
+_CLAUDE_MD = _PROJECT_ROOT / "CLAUDE.md"
+
+# OpenAI Codex CLI default ``project_doc_max_bytes``: the per-turn surface Codex
+# loads (root AGENTS.md) is silently truncated past this many BYTES
+# (github.com/openai/codex issue #7138). External upstream constant; its proper
+# single-source home is the config store tracked by the return-to-health plan
+# Tier-2 item 2.5 (config-first SSOT).
+_CODEX_PROJECT_DOC_CAP_BYTES = 32768
+
+
+def _budget_within_codex_cap(char_budget: int) -> bool:
+    """A configured per-turn char budget must not exceed Codex's project-doc byte
+    cap; a budget above the cap would green-light a silently-truncated surface."""
+    return char_budget <= _CODEX_PROJECT_DOC_CAP_BYTES
+
 
 _RULE_VERSION = "0.1.0"
 _PATHS_SCOPE = ("AGENTS.md", "CLAUDE.md", ".claude/rules/*.md")
@@ -132,33 +150,63 @@ class DoctrineDocExpansion(unittest.TestCase):
 
 
 class BudgetTightening(unittest.TestCase):
-    """REQ-03: budget JSON pins the new contract values."""
+    """REQ-03: the budget JSON is a real, enforced, sane contract."""
 
     @covers("REQ-0.0.54-01-03")
-    def test_budget_json_pins_15k_and_4k(self) -> None:
-        # OBPI-0.0.54-03 retargeted AGENTS.md 15000 → 32000 after measuring the
-        # post-shape-conformance floor at ~31k chars with the current monolithic
-        # template. 2026-06-01: bumped 32000 → 33000 to seat the operator
-        # DIRECT-FIX MORATORIUM directive in Local Agent Rules (~480 chars; AGENTS.md
-        # was already at its ceiling). The 15000 destination — and the principled
-        # reclaim of this bump — is tracked under GHI #533 / ADR-0.0.37 (constitutional
-        # invariant composition); registry-projected rules unlock the structural-shell
-        # shape that makes <15k achievable. See data/instructions_files_budget.json
-        # _doc field for the full rationale.
+    def test_budget_enforces_codex_cap_and_files_fit(self) -> None:
+        """The budget JSON enforces the per-turn surface contract.
+
+        Replaces the prior literal pin (``assertEqual(files["AGENTS.md"], 33000)``).
+        That assertion read ``data/instructions_files_budget.json`` and then
+        asserted it equalled a copy of its own value pasted into the test, so it
+        could only fail when the budget was *legitimately* changed — never when
+        something was actually wrong (config-SSOT + tautological-test anti-pattern;
+        return-to-health plan Tier-2 item 2.5). The single source of truth for the
+        budget value is the JSON; the test asserts the *semantic invariant* the
+        budget exists to enforce, encoding WHY it matters: AGENTS.md is the surface
+        Codex loads, so it must fit Codex's project-doc byte cap (no silent
+        truncation, GHI #519), the configured budget must itself stay under that
+        cap, and each surface must fit its configured budget.
+        """
         payload = json.loads(_BUDGET_PATH.read_text(encoding="utf-8"))
         files = payload["files"]
 
-        self.assertEqual(files["AGENTS.md"], 33000, "AGENTS.md budget MUST be 33000 chars")
-        self.assertEqual(files["CLAUDE.md"], 4000, "CLAUDE.md budget MUST be 4000 chars")
+        for name in ("AGENTS.md", "CLAUDE.md"):
+            self.assertIsInstance(
+                files.get(name), int, f"{name} budget must be a configured integer"
+            )
 
-        globs = payload["globs"]
-        rule_glob = next(g for g in globs if g["pattern"] == ".claude/rules/*.md")
-        # OBPI-0.0.54-04 tightened the rule-file glob from 16000 to 15000 after the
-        # diet pass measured the post-lift max at 13565 chars (skill-surface-sync.md).
-        self.assertEqual(
-            rule_glob["max_chars_per_file"],
-            15000,
-            "per-rule-file budget MUST be 15000 chars (tightened by OBPI-0.0.54-04)",
+        # The configured AGENTS.md budget must not itself exceed Codex's project-doc
+        # cap — a budget above the cap green-lights a silently-truncated surface
+        # (the calibration defect flagged when the budget was 33000 > 32768).
+        self.assertTrue(
+            _budget_within_codex_cap(files["AGENTS.md"]),
+            f"AGENTS.md budget {files['AGENTS.md']} exceeds Codex project-doc cap "
+            f"{_CODEX_PROJECT_DOC_CAP_BYTES} B — would allow a truncated surface",
+        )
+        # The cap guard has teeth: it accepts the current value and rejects the
+        # pre-2026-06-04 over-cap value, with no mutation of the real config file.
+        self.assertFalse(
+            _budget_within_codex_cap(33000),
+            "33000 exceeded Codex's 32768 B cap and must be rejected",
+        )
+
+        for name, path in (("AGENTS.md", _AGENTS_MD), ("CLAUDE.md", _CLAUDE_MD)):
+            actual = len(path.read_text(encoding="utf-8"))
+            with self.subTest(file=name):
+                self.assertLessEqual(
+                    actual,
+                    files[name],
+                    f"{name} is {actual} chars, exceeds its budget {files[name]}",
+                )
+
+        # The #519 invariant proper: AGENTS.md byte size fits Codex's byte cap.
+        agents_bytes = len(_AGENTS_MD.read_text(encoding="utf-8").encode("utf-8"))
+        self.assertLessEqual(
+            agents_bytes,
+            _CODEX_PROJECT_DOC_CAP_BYTES,
+            f"AGENTS.md is {agents_bytes} B, exceeds Codex project-doc cap "
+            f"{_CODEX_PROJECT_DOC_CAP_BYTES} B (silent-truncation risk; GHI #519)",
         )
 
 

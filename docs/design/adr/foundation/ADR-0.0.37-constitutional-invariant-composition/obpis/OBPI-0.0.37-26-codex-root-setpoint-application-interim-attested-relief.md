@@ -29,8 +29,14 @@ OBPI-0.0.37-26 — #519 Codex-root setpoint application + interim attested relie
 
 ## Allowed Paths
 
+- `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-26-codex-root-setpoint-application-interim-attested-relief.md` — active brief and evidence record
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md` — parent ADR for intent and scope
-- `data/instructions_files_budget.json` — explicitly referenced by the checklist item
+- `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/renditions/**` — interim committed-rendition artifact intentionally created by this OBPI
+- `.gzkit/agents.local.md` — current local-content source spliced into root `AGENTS.md`; the near-term compression source
+- `AGENTS.md` — Codex-loaded rendered root control surface; the #519 relief target
+- `data/vendor-manifest.json` — `AgentContract` setpoint declaration surface
+- `data/instructions_files_budget.json` — Codex-cap budget guard explicitly referenced by the checklist item
+- `data/behave_coverage_waivers.json` — Gate 4 waiver registry for SUPPORT-kind structural REQs with no Gherkin-observable behavior
 
 ## Denied Paths
 
@@ -40,11 +46,15 @@ OBPI-0.0.37-26 — #519 Codex-root setpoint application + interim attested relie
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: This OBPI MUST deliver: OBPI-0.0.37-26 — #519 Codex-root setpoint application + interim attested relief (declare lean `AgentContract.codex`/tighter-root setpoint; land an operator-attested interim hand-compressed rendition as the first committed-rendition artifact — sequenced FIRST so the emergency is not stranded; fix `data/instructions_files_budget.json` miscalibration; composer regenerates the rendition once 21/22 land).
-1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
-1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
-1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
-1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
+1. REQUIREMENT: This OBPI MUST deliver interim #519 relief by shrinking the repo-root `AGENTS.md` surface that Codex actually loads below Codex's 32,768-byte `project_doc_max_bytes` cap with real headroom.
+1. REQUIREMENT: The completed root `AGENTS.md` MUST be no larger than 30,000 bytes, and `data/instructions_files_budget.json` MUST set `files["AGENTS.md"]` to a value no larger than 30,000.
+1. REQUIREMENT: `data/vendor-manifest.json` MUST declare the setpoint used for the `AgentContract` root/Codex relief path; no in-code or prose-only setpoint is acceptable.
+1. REQUIREMENT: This OBPI MUST land an operator-attested interim hand-compressed rendition artifact under `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/renditions/` so OBPI-21/22 can regenerate or migrate it later instead of re-deriving the relief payload.
+1. REQUIREMENT: Root relief MUST remain coherent with the current render path: `.gzkit/agents.local.md` and the interim rendition supply the compressed source, `AGENTS.md` carries the rendered result, and `uv run gz validate --invariant-coherence` passes after implementation.
+1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief.
+1. REQUIREMENT: Verification commands MUST prove the root byte ceiling, budget calibration, vendor-manifest validity, rendition artifact presence, invariant coherence, and document validity before acceptance.
+1. NEVER: Start Stage 2 while this brief's Allowed Paths omit any surface required by the relief payload.
+1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -70,13 +80,20 @@ OBPI-0.0.37-26 — #519 Codex-root setpoint application + interim attested relie
 **Prerequisites (check existence, STOP if missing):**
 
 - [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
+- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/renditions/`
+- [ ] Required path exists or is intentionally created in this OBPI: `.gzkit/agents.local.md`
+- [ ] Required path exists or is intentionally created in this OBPI: `AGENTS.md`
+- [ ] Required path exists or is intentionally created in this OBPI: `data/vendor-manifest.json`
 - [ ] Required path exists or is intentionally created in this OBPI: `data/instructions_files_budget.json`
 - [ ] Parent ADR evidence artifacts referenced by this brief are present
 
 **Existing Code (understand current state):**
 
-- [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
-- [ ] Parent ADR integration points reviewed for local conventions
+- [ ] Root `AGENTS.md` current byte count measured before implementation.
+- [ ] `.gzkit/agents.local.md` current byte count and rendered insertion point reviewed before implementation.
+- [ ] `data/vendor-manifest.json` `content_type_temperatures.AgentContract` reviewed before implementation.
+- [ ] `data/instructions_files_budget.json` current `files["AGENTS.md"]` budget reviewed before implementation.
+- [ ] Parent ADR item #26 and OBPI-22 committed-rendition store intent reviewed for the interim artifact convention.
 
 ## Quality Gates
 
@@ -114,26 +131,34 @@ OBPI-0.0.37-26 — #519 Codex-root setpoint application + interim attested relie
 
 ```bash
 uv run gz validate --documents
-uv run gz lint
-uv run gz typecheck
-uv run gz test
+uv run gz validate --vendor-manifest
+uv run gz validate --instructions-files-budget
+uv run gz validate --invariant-coherence
+uv run gz obpi validate docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-26-codex-root-setpoint-application-interim-attested-relief.md --authored
+uv run gz obpi precomplete OBPI-0.0.37-26-codex-root-setpoint-application-interim-attested-relief
 
 # Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md
-test -f data/instructions_files_budget.json
+uv run python -c "from pathlib import Path; size = Path('AGENTS.md').stat().st_size; assert size <= 30000, size; print(size)"
+uv run python -c "import json; data = json.load(open('data/instructions_files_budget.json', encoding='utf-8')); budget = data['files']['AGENTS.md']; assert budget <= 30000, budget; print(budget)"
+uv run python -c "from pathlib import Path; size = Path('.gzkit/agents.local.md').stat().st_size; assert size <= 6500, size; print(size)"
+test -f docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/renditions/agentcontract-codex-root-interim.md
 ```
 
 ## Demo
 
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+wc -c AGENTS.md
+uv run python -c "import json; print(json.load(open('data/vendor-manifest.json', encoding='utf-8'))['content_type_temperatures']['AgentContract'])"
 ```
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.37-26-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.37-26-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.37-26-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.37-26-01 [SUPPORT]: Given Codex silently truncates root `AGENTS.md` after 32,768 bytes, when this OBPI is complete, then root `AGENTS.md` is no larger than 30,000 bytes. Proof: `uv run gz validate --instructions-files-budget` plus Stage-5 `artifact_edited` accounting for `AGENTS.md`.
+- [ ] REQ-0.0.37-26-02 [SUPPORT]: Given the instructions-file budget guard protects the same surface, when this OBPI is complete, then `data/instructions_files_budget.json` sets the `AGENTS.md` budget to a value no larger than 30,000. Proof: `uv run gz validate --instructions-files-budget` plus Stage-5 `artifact_edited` accounting for `data/instructions_files_budget.json`.
+- [ ] REQ-0.0.37-26-03 [SUPPORT]: Given setpoints are declared data, when this OBPI is complete, then `data/vendor-manifest.json` records the `AgentContract` setpoint used for the root/Codex relief path. Proof: `uv run gz validate --vendor-manifest` plus existing `artifact_edited` accounting for the manifest-declared `AgentContract.codex` setpoint.
+- [ ] REQ-0.0.37-26-04 [SUPPORT]: Given OBPI-21/22 have not yet landed the composer/store, when this OBPI is complete, then `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/renditions/agentcontract-codex-root-interim.md` exists as the operator-attested interim committed-rendition artifact. Proof: `uv run gz validate --documents` plus Stage-5 `artifact_edited` accounting for the rendition artifact.
+- [ ] REQ-0.0.37-26-05 [SUPPORT]: Given `AGENTS.md` is currently rendered from `.gzkit/templates/agents.md` plus `.gzkit/agents.local.md`, when this OBPI is complete, then `uv run gz validate --invariant-coherence` passes. Proof: `uv run gz validate --invariant-coherence` plus the `composition_rendered` ledger event emitted by that validator.
+- [ ] REQ-0.0.37-26-06 [SUPPORT]: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched. Proof: `uv run gz validate --brief-reconcile`, `uv run gz obpi precomplete OBPI-0.0.37-26-codex-root-setpoint-application-interim-attested-relief`, plus Stage-5 `artifact_edited` accounting for the scoped files.
 
 ## Completion Checklist
 
@@ -188,8 +213,9 @@ test -f data/instructions_files_budget.json
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
+- Parent ADR decision item: "OBPI-0.0.37-26 — #519 Codex-root setpoint application + interim attested relief (declare lean `AgentContract.codex`/tighter-root setpoint; land an operator-attested interim hand-compressed rendition as the first committed-rendition artifact — sequenced FIRST so the emergency is not stranded; fix `data/instructions_files_budget.json` miscalibration; composer regenerates the rendition once 21/22 land)"
+- Planned files created/modified: `.gzkit/agents.local.md`; `AGENTS.md`; `data/vendor-manifest.json`; `data/instructions_files_budget.json`; `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/renditions/agentcontract-codex-root-interim.md`
+- Tests added: To be determined by Stage 2; at minimum, verification must prove root byte ceiling, budget calibration, vendor manifest validity, rendition artifact presence, and document validity.
 - Date completed:
 - Attestation status:
 - Defects noted:
