@@ -1123,6 +1123,46 @@ class TestTaskBlock(_TaskCliBase):
         self.assertEqual(data["reason"], "API")
 
 
+class TestTaskTransitionFullSlugObpi(_TaskCliBase):
+    """Direct-fix: transition commands must resolve the OBPI id the ledger
+    recorded (the full slug ``gz obpi pipeline`` writes, e.g.
+    ``OBPI-0.0.37-17-agents-md-density-classification``), not the short
+    ``OBPI-<semver>-<item>`` form derived from the TASK id alone. Without this,
+    ``_current_task_status`` filters on the short form, never matches the
+    ledger's full-slug ``obpi_id``, and misreads a pipeline-started task as
+    ``pending`` — rejecting block/complete/escalate.
+    """
+
+    def _seed_full_slug_started(self, task_id: str, obpi_slug: str) -> None:
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        ledger.append(
+            LedgerEvent(
+                event="task_started",
+                id=task_id,
+                extra={
+                    "task_id": task_id,
+                    "obpi_id": obpi_slug,
+                    "adr_id": "ADR-0.1.0-f",
+                    "agent": "gz-obpi-pipeline",
+                },
+            )
+        )
+
+    def test_block_full_slug_obpi_in_progress(self) -> None:
+        """gz task block succeeds when the ledger obpi_id is the full slug."""
+        self._seed_full_slug_started("TASK-0.1.0-01-01-01", "OBPI-0.1.0-01-full-slug-suffix")
+        code, out = _invoke(["task", "block", "TASK-0.1.0-01-01-01", "--reason", "superseded"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("Blocked", out)
+
+    def test_complete_full_slug_obpi_in_progress(self) -> None:
+        """gz task complete succeeds when the ledger obpi_id is the full slug."""
+        self._seed_full_slug_started("TASK-0.1.0-01-01-01", "OBPI-0.1.0-01-full-slug-suffix")
+        code, out = _invoke(["task", "complete", "TASK-0.1.0-01-01-01"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("Completed", out)
+
+
 class TestTaskEscalate(_TaskCliBase):
     """@covers REQ-0.22.0-04-06."""
 

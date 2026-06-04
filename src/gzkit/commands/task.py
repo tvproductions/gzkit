@@ -51,11 +51,38 @@ def _load_tasks_for_obpi(ledger: Ledger, obpi_id: str) -> dict[str, dict[str, st
     return tasks
 
 
+def _ledger_obpi_for_task(ledger: Ledger, task_id_str: str) -> str:
+    """Return the OBPI id recorded on the task's ``task_started`` event.
+
+    ``gz obpi pipeline`` records the *full* OBPI slug (e.g.
+    ``OBPI-0.0.37-17-agents-md-density-classification``); the short
+    ``OBPI-<semver>-<item>`` form derived from the TASK id alone does not equal
+    it, so status resolution must read the slug the ledger actually carries.
+    Returns ``""`` when no ``task_started`` event names the task.
+    """
+    obpi_id = ""
+    for event in ledger.read_all():
+        extra = event.extra
+        if extra.get("task_id") == task_id_str and event.event == "task_started":
+            recorded = extra.get("obpi_id", "")
+            if recorded:
+                obpi_id = recorded
+    return obpi_id
+
+
 def _resolve_task_context(ledger: Ledger, task_id_str: str) -> tuple[TaskId, str, str]:
-    """Parse a TASK ID and derive parent OBPI and ADR identifiers."""
+    """Parse a TASK ID and derive parent OBPI and ADR identifiers.
+
+    The OBPI id is taken from the task's ``task_started`` ledger event when
+    present (authoritative — the pipeline records the full OBPI slug), falling
+    back to the short ``OBPI-<semver>-<item>`` form derived from the TASK id.
+    Resolving the recorded slug keeps ``_current_task_status`` (which filters on
+    ``obpi_id``) and the emitted transition event consistent with the ledger.
+    """
     task_id = TaskId.parse(task_id_str)
-    obpi_id = f"OBPI-{task_id.semver}-{task_id.obpi_item}"
     adr_id = f"ADR-{task_id.semver}"
+    derived = f"OBPI-{task_id.semver}-{task_id.obpi_item}"
+    obpi_id = _ledger_obpi_for_task(ledger, task_id_str) or derived
     return task_id, obpi_id, adr_id
 
 
