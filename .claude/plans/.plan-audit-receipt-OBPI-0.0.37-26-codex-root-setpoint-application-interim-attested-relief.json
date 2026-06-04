@@ -1,0 +1,18 @@
+{
+  "obpi_id": "OBPI-0.0.37-26-codex-root-setpoint-application-interim-attested-relief",
+  "timestamp": "2026-06-04T11:03:34.149581+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.37-26-codex-root-interim-relief.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-26-codex-root-setpoint-application-interim-attested-relief.md",
+        "docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md",
+        "docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/renditions/**"
+      ]
+    }
+  ]
+}
