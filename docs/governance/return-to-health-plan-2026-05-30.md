@@ -16,15 +16,20 @@ Status: Active canonical recovery plan.
 > operator-attested) → **committed rendition** → **deterministic playback** (no LLM in the
 > render path) + an **invariant tier** (PRIME DIRECTIVE / DO IT RIGHT / NEVER PYTEST — verbatim,
 > never condensed). **#519 re-anchors** as "declare a lean Codex-root setpoint and compress to
-> it"; relief is now **OBPI-0.0.37-19** (Codex-root setpoint + interim operator-attested
-> compressed rendition, sequenced FIRST). ADR-0.0.37 Checklist re-decomposed to 11–20 (each =
+> it"; relief is now **OBPI-0.0.37-26** (Codex-root setpoint + interim operator-attested
+> compressed rendition, sequenced FIRST). ADR-0.0.37 Checklist re-decomposed to items 18–27 (each =
 > tool(s) + wielding skill, per SKILLS-FIRST); ADR-0.0.33 Invariant 1 amended tier-scoped
-> (coupled to OBPI-0.0.37-19's sibling OBPI-0.0.37-18, attested at its Gate 5). **#519 remains
-> OPEN — design booked, not built.** No prior extension OBPI (11–17) was attested in the
-> ledger; 11/13/14 = reusable substrate (re-homed), 15/17-as-scoped retire, 16 folds into 20.
-> Next: `gz-adr-evaluate ADR-0.0.37` → `gz-obpi-specify` (reconcile brief files to the new
-> checklist) → build OBPI-19 first. Decision record: `.gzkit/insights/agent-insights.jsonl`
-> `ts=2026-06-03T11:32:52Z`. Snapshots A–F below are prior history.
+> (coupled to OBPI-0.0.37-26's sibling OBPI-0.0.37-25, attested at its Gate 5). **#519 remains
+> OPEN — design booked, not built.** **Ledger truth (corrected 2026-06-04):** prior extension
+> OBPIs 11–15 ARE Gate-5 attested-complete (`attested_completed`, attestor g0); 16/17
+> created-only. Their density-dial *mechanism* is superseded — not a ratified ADR decision (the
+> ADR is `Draft`); substrate 11/13/14 re-homed, 15 retires, 16 folds into item 27, 17 retired.
+> Next: `gz-adr-evaluate ADR-0.0.37` → `gz-obpi-specify` (reconcile brief files to the 18–27
+> checklist) → build OBPI-0.0.37-26 first. Decision record: `.gzkit/insights/agent-insights.jsonl`
+> `ts=2026-06-03T11:32:52Z`. **Renumber 2026-06-04:** the re-aligned items were renumbered 11–20 →
+> 18–27 off the attested/minted 11–17; **ADR-0.0.37 § Checklist is authoritative** for item
+> numbering — older OBPI-17/19 references in the historical snapshots below predate this correction.
+> Snapshots A–F below are prior history.
 Last updated: 2026-06-03 — **Tier-0 restore-green on resume (Snapshot G(check)):**
 re-measuring on session resume proved Snapshot F stale (the D→E→F→G staleness
 pattern repeats). `uv run gz check` → exit 1 on three gates introduced by the
@@ -102,7 +107,7 @@ reference); this line is the live mtime.
 
 **Tier 1 — Recovery to Definition of Healthy.** Exit gate: Definition of Healthy all-true.
 
-- [~] **1.1 Phase 2 — context-load emergency #519. Relief vehicle = OBPI-0.0.37-19 (Codex-root setpoint + interim operator-attested compressed rendition), per the Snapshot-G route redesign (2026-06-03).** Its structural remediation *is* the Context-Load CMS workstream (Boundary-1-waived); advancing that workstream is how #519 closes. **In progress, not closed:** ADR-0.0.37 CMS re-decomposed 11→20; #519's byte relief has *not* landed. **Route history (do not re-derive):** per-vendor emission RULED OUT (Codex-loader finding, 2026-06-03 — Codex reads only repo-root `AGENTS.md` merged, no `.agents/` sink, no project-doc redirect, silent truncation past 32,768 B); the **OBPI-11/12 density dial is inert** (`render(lite)==render(medium)==render(heavy)`, verified); **OBPI-0.0.37-17-as-scoped retired @ Snapshot G(check)** (the prior proposed vehicle — thinning by dropping whole sections collides with ADR-0.0.33 bullet-retention and floors the root with no headroom). **Corrected design (Snapshot G, authoritative):** append-only corpus → temperature setpoint per surface×consumer → authoring-time agent compression (advisor-QC'd, operator-attested) → committed rendition → deterministic playback + verbatim invariant tier; #519 = "declare a lean Codex-root setpoint and compress to it" = **OBPI-0.0.37-19**, sequenced FIRST. Next: `gz-adr-evaluate ADR-0.0.37` → `gz-obpi-specify` (reconcile briefs to the 11–20 checklist) → build OBPI-19. → *Phase 2; top Snapshot-G banner; Designated Workstream — Context-Load CMS*.
+- [~] **1.1 Phase 2 — context-load emergency #519. Relief vehicle = OBPI-0.0.37-26 (Codex-root setpoint + interim operator-attested compressed rendition), per the Snapshot-G route redesign (2026-06-03; renumbered 2026-06-04).** Its structural remediation *is* the Context-Load CMS workstream (Boundary-1-waived); advancing that workstream is how #519 closes. **In progress, not closed:** ADR-0.0.37 CMS re-decomposed to items 18–27 (renumbered off the attested/minted 11–17); #519's byte relief has *not* landed. **Route history (do not re-derive):** per-vendor emission RULED OUT (Codex-loader finding, 2026-06-03 — Codex reads only repo-root `AGENTS.md` merged, no `.agents/` sink, no project-doc redirect, silent truncation past 32,768 B); the **OBPI-11/12 density dial is inert** (`render(lite)==render(medium)==render(heavy)`, verified); **OBPI-0.0.37-17-as-scoped retired @ Snapshot G(check)** (the prior proposed vehicle — thinning by dropping whole sections collides with ADR-0.0.33 bullet-retention and floors the root with no headroom). **Corrected design (Snapshot G, authoritative):** append-only corpus → temperature setpoint per surface×consumer → authoring-time agent compression (advisor-QC'd, operator-attested) → committed rendition → deterministic playback + verbatim invariant tier; #519 = "declare a lean Codex-root setpoint and compress to it" = **OBPI-0.0.37-26**, sequenced FIRST. Next: `gz-adr-evaluate ADR-0.0.37` → `gz-obpi-specify` (reconcile briefs to the 18–27 checklist) → build OBPI-0.0.37-26. → *Phase 2; top Snapshot-G banner; Designated Workstream — Context-Load CMS*.
 - [ ] **1.2 Phase 3 — ceremony & validator mechanization** (#516 + the req-kind/covers eval-feedback cluster; now also #563/#564 closeout-pipeline class fixes + #578 preflight lock-coupling). 18 issues — see **GHI Register § Phase 3**. → *Phase 3*.
 - [ ] **1.3 Phase 4 — drain remaining recovery issues** — docs/tests/`validate --documents` defects, including the GHI #571 stdlib unittest/doctest maturity route. 10 issues — see **GHI Register § Phase 4**. WIP = 1; close only with observed evidence. → *Phase 4*.
 - [ ] **1.4 Phase 5 — closeout.** Fill Recovery Closeout when #519 closed + no open emergency + `gz check` green. → *Phase 5; Recovery Closeout*.
@@ -142,7 +147,7 @@ reference); this line is the live mtime.
 |-----|---------|------|
 | #563 | task-envelope gate failure — `seq=01`-only TASKs, missing `task_id` | **T1** — Phase 3 (gate cleared @ Snapshot E; new instance @ Snapshot G(check): ADR-decision-doc edits under active TASKs — cleared via SUPPORT-channel carve-out; class fix: closeout `task_id` population still remains) |
 | #564 | preflight orphan plan-audit receipt (OBPI-0.0.64-04) | **T1** — Phase 3 (gate cleared @ Snapshot D; recurred @ Snapshot G(check): OBPI-09+OBPI-17 orphans cleaned via `gz preflight --apply`; class fix: closeout leaves no orphan remains. Adjacent latent: short-vs-full `obpi_id` mismatch direct-fixed in `task.py` @ Snapshot G(check), other consumers may share it) |
-| #519 | context surface exhausts 258K window (**emergency**) | **T1** — Phase 2 → CMS. **Route REDESIGNED (Snapshot G, 2026-06-03):** relief re-anchored on **OBPI-0.0.37-19** (Codex-root setpoint + interim operator-attested compressed rendition), sequenced FIRST; ADR-0.0.37 re-decomposed 17→20. **OBPI-0.0.37-17-as-scoped retired @ Snapshot G(check)** (was the prior proposed vehicle; dial proven inert, collides with ADR-0.0.33 bullet-retention). Per-vendor emission ruled out (Codex-loader finding). Emergency unrelieved — design booked, not built. |
+| #519 | context surface exhausts 258K window (**emergency**) | **T1** — Phase 2 → CMS. **Route REDESIGNED (Snapshot G, 2026-06-03):** relief re-anchored on **OBPI-0.0.37-26** (Codex-root setpoint + interim operator-attested compressed rendition), sequenced FIRST; ADR-0.0.37 re-decomposed to items 18–27 (renumbered 2026-06-04 off the attested/minted 11–17). **OBPI-0.0.37-17-as-scoped retired @ Snapshot G(check)** (was the prior proposed vehicle; dial proven inert, collides with ADR-0.0.33 bullet-retention). Per-vendor emission ruled out (Codex-loader finding). Emergency unrelieved — design booked, not built. |
 | #516 | closeout passive-presenter lacks REQ-evidence check | **T1** — Phase 3 |
 | #536 | `gz adr promote` Target-Scope `path:line` → invalid OBPI paths | **T1** — Phase 3 |
 | #537 | BEHAVIOR-kind cannot-uncovered-accept not mechanically enforced | **T1** — Phase 3 |
@@ -395,9 +400,9 @@ This is not a collapse. It is a red harness with named failure surfaces.
 - **Re-measured GREEN:** `uv run gz check` → "✓ All checks passed", **26/26 gates**,
   `GZ_CHECK_EXIT=0` (true exit via file redirect). Advisory drift 1,735 (non-blocking).
 - **Phase 1 stays complete; recovery stays open** (#519 still OPEN; Tier 1 item 1.1
-  unchanged — OBPI-17-as-scoped retired, #519 relief re-anchored on OBPI-0.0.37-19
+  unchanged — OBPI-17-as-scoped retired, #519 relief re-anchored on OBPI-0.0.37-26
   per Snapshot G). Next: the Snapshot-G chain — `gz-adr-evaluate ADR-0.0.37` →
-  `gz-obpi-specify` (reconcile briefs to the 11–20 checklist) → build OBPI-19.
+  `gz-obpi-specify` (reconcile briefs to the 18–27 checklist) → build OBPI-0.0.37-26.
 
 Snapshots A–F are preserved for audit; **Snapshot G(check) is the live baseline.**
 
