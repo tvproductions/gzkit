@@ -397,6 +397,62 @@ class TestSignatureA(unittest.TestCase):
             self.assertEqual(len(errors), 0)
 
     @covers("REQ-0.0.64-04-01")
+    def test_adr_decision_doc_edit_under_active_task_is_clean(self) -> None:
+        """Editing an ADR decision doc is SUPPORT-channel governance ceremony,
+        not OBPI-REQ TASK labor — excused both for the active OBPI's own parent
+        ADR and for any other ADR amended in the same design session (cross-ADR
+        redesign edits). Sibling of the brief-reflection carve-out, lifted to
+        the ADR-decision-doc layer.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.37-17-01-01",
+                            "obpi_id": "OBPI-0.0.37-17-agents-md-density-classification",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-03T10:41:00Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "artifact_edited",
+                            "path": (
+                                "docs/design/adr/foundation/"
+                                "ADR-0.0.37-constitutional-invariant-composition/"
+                                "ADR-0.0.37-constitutional-invariant-composition.md"
+                            ),
+                            "id": "evt-2",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-03T11:51:10Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "artifact_edited",
+                            "path": (
+                                "docs/design/adr/foundation/"
+                                "ADR-0.0.33-agent-control-surface-fidelity/"
+                                "ADR-0.0.33-agent-control-surface-fidelity.md"
+                            ),
+                            "id": "evt-3",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-03T11:54:12Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (a)" in e.message
+            ]
+            self.assertEqual(len(errors), 0)
+
+    @covers("REQ-0.0.64-04-01")
     def test_uncovered_accept_with_req_id_under_active_task_is_clean(self) -> None:
         """REQ-level uncovered-accept ceremony carries attribution via ``req_id``."""
         with tempfile.TemporaryDirectory() as td:

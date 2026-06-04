@@ -335,7 +335,47 @@ This is not a collapse. It is a red harness with named failure surfaces.
   because emergency GHI #519 remains open; Tier 1 is still the next work band, and
   item 1.1 (#519) is now `[~]` in progress — advanced one OBPI but not closed.
 
-Snapshots A–E are preserved for audit; **Snapshot F is the live baseline.**
+### Snapshot G(check) — re-measured (2026-06-03, on resume after the Snapshot-G design redesign): RED→GREEN
+
+- **Snapshot F proved stale** (the D→E→F pattern repeats): on resuming "restore to
+  health," `uv run gz check` → **exit 1**, three red gates introduced *after* F's
+  measurement by the same-day Snapshot-G redesign session:
+  1. **Test** — `test_canonical_store_holds_expected_count` (37≠38): the new
+     `20260603T120334Z-519-adr0037-corpus-cms-redesign.md` handoff tripped the
+     intentional exact-count tripwire.
+  2. **Task envelope coherence** (8 errors) — ledger `:8574`–`:8581`,
+     `artifact_edited` events on ADR-0.0.37/0.0.33 decision docs emitted during the
+     redesign while OBPI-0.0.37-17's 8 pipeline TASKs dangled active (no `task_id`).
+  3. **Preflight** — orphan plan-audit receipt `…OBPI-0.0.37-09…` (the OBPI-09
+     "wrong path" leftover).
+- **Two latent defects surfaced and direct-fixed (TDD RED→GREEN):**
+  - **`gz task block/complete/escalate` broken for full-slug OBPIs** —
+    `_resolve_task_context` derived the short `OBPI-<semver>-<item>` form while the
+    pipeline records the full slug; `_current_task_status` never matched →
+    "pending → blocked". Fixed by resolving `obpi_id` from the task's
+    `task_started` ledger event (fallback to derived). `src/gzkit/commands/task.py`
+    + `tests/test_tasks.py::TestTaskTransitionFullSlugObpi`.
+  - **Task-envelope sig (a) ADR-decision-doc carve-out** (operator-ratified):
+    edits to `docs/design/adr/**/ADR-<semver>-*.md` (excl. `/obpis/`) while any
+    OBPI TASK is active are SUPPORT-channel governance ceremony, not OBPI-REQ
+    labor — the ADR-layer sibling of the brief-reflection carve-out. Clears the 8
+    historical events without epoch-move (which was rejected as defect-hiding).
+    `src/gzkit/commands/validate_task_envelope.py` +
+    `tests/governance/test_task_envelope_coherence.py`.
+- **OBPI-0.0.37-17-as-scoped retired** (the booked Snapshot-G decision, executed to
+  unblock): 8 dangling TASKs `gz task block`ed as superseded; stale plan
+  (`lively-hatching-storm.md`) removed; both orphan receipts cleaned via
+  `gz preflight --apply` (governed path — no hand-deletion of the receipt, no ledger
+  edit). **Brief kept `Draft`** for the Tier-1 `gz-obpi-specify` reconciliation.
+- Handoff-count tripwire bumped 37→38 (provenance comment names the redesign handoff).
+- **Re-measured GREEN:** `uv run gz check` → "✓ All checks passed", **26/26 gates**,
+  `GZ_CHECK_EXIT=0` (true exit via file redirect). Advisory drift 1,735 (non-blocking).
+- **Phase 1 stays complete; recovery stays open** (#519 still OPEN; Tier 1 item 1.1
+  unchanged — OBPI-17-as-scoped retired, #519 relief re-anchored on OBPI-0.0.37-19
+  per Snapshot G). Next: the Snapshot-G chain — `gz-adr-evaluate ADR-0.0.37` →
+  `gz-obpi-specify` (reconcile briefs to the 11–20 checklist) → build OBPI-19.
+
+Snapshots A–F are preserved for audit; **Snapshot G(check) is the live baseline.**
 
 ## Definition of Healthy
 

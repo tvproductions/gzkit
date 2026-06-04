@@ -81,6 +81,35 @@ def _is_active_obpi_brief_reflection_event(
     return brief_id in active_tasks_by_obpi and bool(active_tasks_by_obpi[brief_id])
 
 
+_ADR_DECISION_DOC_RE = re.compile(r"/adr/.+/ADR-\d+\.\d+\.\d+-[^/]+\.md$")
+
+
+def _is_adr_decision_doc_reflection_event(
+    ev: dict[str, object],
+    active_tasks_by_obpi: dict[str, set[str]],
+) -> bool:
+    """Return True for an ADR-decision-doc edit while any OBPI TASK is active.
+
+    ADR decision documents (``docs/design/adr/**/ADR-<semver>-*.md``, excluding
+    per-OBPI briefs under ``/obpis/``) are SUPPORT-channel governance artifacts:
+    their edits are witnessed by the ``artifact_edited`` ledger event plus the
+    document structural validators, not by per-REQ TASK labor (see the REQ Scope
+    Discipline taxonomy). Editing one while an OBPI pipeline's TASKs are still
+    active — a design/redesign session that amends an ADR, possibly a *different*
+    ADR than the active OBPI's own parent — is governance ceremony, not OBPI-REQ
+    implementation labor. This is the ADR-decision-doc-layer sibling of the
+    OBPI-brief reflection carve-out above.
+    """
+    if ev.get("event") != "artifact_edited":
+        return False
+    if not any(active_tasks_by_obpi.values()):
+        return False
+    path = _event_path(ev)
+    if "/obpis/" in path:
+        return False
+    return bool(_ADR_DECISION_DOC_RE.search(path))
+
+
 def _is_req_attributed_uncovered_accept_event(
     ev: dict[str, object],
     active_tasks_by_obpi: dict[str, set[str]],
@@ -145,6 +174,8 @@ def _sig_a_is_not_labor_event(
         return True
 
     if _is_active_obpi_brief_reflection_event(ev, active_tasks_by_obpi):
+        return True
+    if _is_adr_decision_doc_reflection_event(ev, active_tasks_by_obpi):
         return True
     if _is_req_attributed_uncovered_accept_event(ev, active_tasks_by_obpi):
         return True
