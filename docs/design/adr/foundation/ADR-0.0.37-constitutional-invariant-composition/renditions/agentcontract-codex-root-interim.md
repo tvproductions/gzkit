@@ -1,3 +1,27 @@
+# AgentContract Codex Root Interim Rendition
+
+Parent: `ADR-0.0.37-constitutional-invariant-composition`
+OBPI: `OBPI-0.0.37-26-codex-root-setpoint-application-interim-attested-relief`
+Date: 2026-06-04
+Setpoint: `content_type_temperatures.AgentContract.codex = lite`
+
+This interim artifact preserves the hand-compressed local source used for the
+first #519 root relief pass. The deterministic render path remains
+`.gzkit/agents.local.md` plus `src/gzkit/templates/agents.md` -> `AGENTS.md`;
+this committed rendition gives OBPI-0.0.37-21/22 a durable payload to regenerate
+or migrate when the corpus/composer/store lands.
+
+Observed post-render evidence:
+
+- `AGENTS.md`: 28,342 bytes, under the 30,000-byte OBPI-26 ceiling.
+- `.gzkit/agents.local.md`: 4,997 bytes, under the 6,500-byte local-source ceiling.
+- `data/instructions_files_budget.json` `files["AGENTS.md"]`: 32,768.
+- `gz validate --bullet-retention`: PASS (all 18 splice-only Mechanical/Promotable scorecard phrases retained verbatim under the current whole-surface validator).
+- `gz validate --invariant-coherence`: PASS (rendered root byte-matches committed AGENTS.md).
+
+## Compressed Local Payload
+
+```markdown
 # Local Agent Rules
 
 - **DIRECT-FIX MORATORIUM (operator, 2026-06-01).** Defects surfaced in flight get direct-fixed now — smallest honest fix, TDD (RED→GREEN), `Task:` trailer (GHI slug optional; never file a GHI just to satisfy it). Open a GHI/ADR/OBPI only when the fix genuinely can't land in one coherent commit, and name why. Does not relax TDD, read-before-change, coupled-surface coherence, or attestation.
@@ -37,3 +61,4 @@ Source: Architecture Planning Memo §12 (2026-03-29).
 4. Do not let reconciliation remain a maintenance chore.
 5. Do not let AirlineOps parity become perpetual catch-up.
 6. Do not let derived views silently become source-of-truth — `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger.
+```

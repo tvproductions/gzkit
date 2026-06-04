@@ -3,7 +3,7 @@ id: OBPI-0.0.37-09-agents-md-migration
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 9
 lane: Heavy
-status: Draft
+status: Abandoned
 ---
 
 # OBPI-0.0.37-09-agents-md-migration: AGENTS.md Migration
