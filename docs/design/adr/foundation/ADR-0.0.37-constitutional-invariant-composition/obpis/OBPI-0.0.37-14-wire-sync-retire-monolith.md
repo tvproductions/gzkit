@@ -3,7 +3,7 @@ id: OBPI-0.0.37-14-wire-sync-retire-monolith
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 14
 lane: Heavy
-status: Completed
+status: Abandoned
 # req_atomic — each REQ was a single atomic labor unit, not coarse-bucketed
 # subdivisible work. REQ-01 (repoint sync_agents_md onto the model renderer),
 # REQ-02 (dissolve the get_project_context literals into model rows), REQ-03

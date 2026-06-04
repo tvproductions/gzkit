@@ -21,7 +21,7 @@ def auto_fix_obpi_brief_frontmatter(obpi_file: Path, runtime_state: str) -> bool
     if runtime_state in _COMPLETED_RUNTIME_STATES:
         target = "Completed"
     elif runtime_state == "withdrawn":
-        target = "Withdrawn"
+        target = "Abandoned"
     else:
         return False  # only fix toward terminal states
 

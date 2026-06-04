@@ -35,6 +35,7 @@ _RAW_MAPPING: dict[str, str] = {
     "Pool": "pending",
     "Promoted": "pending",
     "Pending": "pending",
+    "Active": "in_progress",
     "in_progress": "in_progress",
     "In-Progress": "in_progress",
     "In Progress": "in_progress",
@@ -45,11 +46,35 @@ _RAW_MAPPING: dict[str, str] = {
     "attested_completed": "attested_completed",
     "Attested": "attested_completed",
     "Superseded": "abandoned",
+    "Deprecated": "abandoned",
+    "Abandoned": "abandoned",
     "Withdrawn": "abandoned",
     "archived": "abandoned",
+    "drift": "drift",
 }
 
 STATUS_VOCAB_MAPPING: MappingProxyType[str, str] = MappingProxyType(_RAW_MAPPING)
+
+_OBPI_FRONTMATTER_BY_LEDGER_STATE: MappingProxyType[str, str] = MappingProxyType(
+    {
+        "pending": "Draft",
+        "in_progress": "Active",
+        "completed": "Completed",
+        "attested_completed": "Completed",
+        "validated": "Completed",
+        "abandoned": "Abandoned",
+        "drift": "drift",
+    }
+)
+
+_ADR_FRONTMATTER_BY_LEDGER_STATE: MappingProxyType[str, str] = MappingProxyType(
+    {
+        "pending": "Pending",
+        "completed": "Completed",
+        "validated": "Validated",
+        "abandoned": "Abandoned",
+    }
+)
 
 
 def canonicalize_status(term: str) -> str | None:
@@ -68,8 +93,31 @@ def canonicalize_status(term: str) -> str | None:
     return None
 
 
+def canonicalize_ledger_status(term: str) -> str | None:
+    """Return a comparable canonical ledger term for raw runtime/status output."""
+    canon = canonicalize_status(term)
+    if canon is not None:
+        return canon
+    normalized = term.strip().lower()
+    return normalized or None
+
+
+def frontmatter_status_for_ledger(term: str, artifact_type: str) -> str:
+    """Project a raw ledger status to the canonical frontmatter mirror term."""
+    canon = canonicalize_ledger_status(term)
+    if canon is None:
+        return term
+    if artifact_type == "obpi":
+        return _OBPI_FRONTMATTER_BY_LEDGER_STATE.get(canon, term)
+    if artifact_type == "adr":
+        return _ADR_FRONTMATTER_BY_LEDGER_STATE.get(canon, term)
+    return term
+
+
 __all__ = [
     "CANONICAL_LEDGER_TERMS",
     "STATUS_VOCAB_MAPPING",
+    "canonicalize_ledger_status",
     "canonicalize_status",
+    "frontmatter_status_for_ledger",
 ]

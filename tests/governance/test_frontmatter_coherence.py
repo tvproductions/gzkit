@@ -12,7 +12,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
-from gzkit.ledger import Ledger, adr_created_event
+from gzkit.ledger import Ledger, adr_created_event, obpi_created_event, obpi_withdrawn_event
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _quick_init
 
@@ -32,6 +32,16 @@ def _adr_path(root: Path, adr_id: str) -> Path:
 def _scaffold_adr(root: Path, adr_id: str, frontmatter: str) -> Path:
     path = _adr_path(root, adr_id)
     path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(frontmatter, encoding="utf-8")
+    return path
+
+
+def _scaffold_obpi(root: Path, adr_id: str, obpi_id: str, frontmatter: str) -> Path:
+    """Create an OBPI file under an ADR package with the given frontmatter."""
+    config = GzkitConfig.load(root / ".gzkit.json")
+    obpi_dir = root / config.paths.design_root / "adr" / "pre-release" / f"{adr_id}-test" / "obpis"
+    obpi_dir.mkdir(parents=True, exist_ok=True)
+    path = obpi_dir / f"{obpi_id}-test.md"
     path.write_text(frontmatter, encoding="utf-8")
     return path
 
@@ -182,6 +192,41 @@ class ReconciliationLogicTests(unittest.TestCase):
                 [],
                 "idempotent reconciliation must produce empty files_rewritten on second run",
             )
+
+    @covers("REQ-0.0.16-03-02")
+    @covers("REQ-0.0.16-03-04")
+    def test_withdrawn_obpi_rewrites_to_abandoned_and_is_idempotent(self) -> None:
+        """Withdrawn ledger state rewrites to public `Abandoned`, then goes clean."""
+        from gzkit.commands.validate_frontmatter import (  # noqa: PLC0415
+            validate_frontmatter_coherence,
+        )
+        from gzkit.governance.frontmatter_coherence import reconcile_frontmatter  # noqa: PLC0415
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+            ledger.append(adr_created_event("ADR-0.1.0", "PRD-TEST-1.0.0", "lite"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-test", "ADR-0.1.0"))
+            ledger.append(obpi_withdrawn_event("OBPI-0.1.0-01-test", "ADR-0.1.0", "retired"))
+            path = _scaffold_obpi(
+                root,
+                "ADR-0.1.0",
+                "OBPI-0.1.0-01",
+                "---\nid: OBPI-0.1.0-01-test\nparent: ADR-0.1.0\n"
+                "item: 1\nlane: lite\nstatus: Completed\n---\n# OBPI\n",
+            )
+
+            first = reconcile_frontmatter(root, dry_run=False)
+            second = reconcile_frontmatter(root, dry_run=True)
+
+            content = path.read_text(encoding="utf-8")
+            self.assertIn("status: Abandoned", content)
+            self.assertNotIn("status: withdrawn", content)
+            self.assertEqual(first.files_rewritten[0].diffs[0].after, "Abandoned")
+            self.assertEqual(second.files_rewritten, [])
+            self.assertEqual(validate_frontmatter_coherence(root), [])
 
     @covers("REQ-0.0.16-03-05")
     def test_ungoverned_keys_preserved_byte_identical(self) -> None:

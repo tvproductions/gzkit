@@ -18,6 +18,7 @@ from gzkit.ledger import (
     lifecycle_transition_event,
     obpi_created_event,
     obpi_receipt_emitted_event,
+    obpi_withdrawn_event,
 )
 from gzkit.traceability import covers  # noqa: F401
 from tests.commands.common import CliRunner, _init_git_repo, _quick_init, _write_obpi
@@ -253,6 +254,38 @@ class TestStatusCommand(unittest.TestCase):
             self.assertIn("OBPI Unit:       COMPLETED", result.output)
             self.assertIn("OBPI Completion: 1/1 complete", result.output)
             self.assertIn("all linked OBPIs completed with evidence", result.output)
+
+    def test_status_excludes_withdrawn_obpi_files_from_adr_summary(self) -> None:
+        """Withdrawn OBPIs stay on disk but do not count as active ADR work."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            active_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-active.md"
+            withdrawn_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-02-old.md"
+            active_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=active_path,
+                status="Draft",
+                brief_status="Draft",
+                implementation_line="src/module.py",
+            )
+            _write_obpi(
+                path=withdrawn_path,
+                status="Abandoned",
+                brief_status="Abandoned",
+                implementation_line="src/old.py",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-active", "ADR-0.1.0-f"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-02-old", "ADR-0.1.0-f"))
+            ledger.append(obpi_withdrawn_event("OBPI-0.1.0-02-old", "ADR-0.1.0-f", "old"))
+
+            result = runner.invoke(main, ["status"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("OBPI Completion: 0/1 complete", result.output)
+            self.assertNotIn("OBPI-0.1.0-02-old", result.output)
 
     def test_obpi_status_json_includes_runtime_fields(self) -> None:
         """obpi status --json reports the focused OBPI runtime payload."""

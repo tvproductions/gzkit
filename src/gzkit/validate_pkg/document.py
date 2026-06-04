@@ -9,7 +9,7 @@ from gzkit.core.validation_rules import (
     extract_headers,
     parse_frontmatter,
 )
-from gzkit.decomposition import parse_checklist_items, parse_scorecard
+from gzkit.decomposition import active_checklist_items, parse_checklist_items, parse_scorecard
 from gzkit.schemas import load_schema
 
 # ADR lifecycle states that are grandfather-exempted from the
@@ -37,6 +37,16 @@ _ADR_GRANDFATHERED_STATUSES = frozenset({"completed", "validated"})
 # OBPI-0.0.54-03 Stage 3 verify; full pool-shape validation is the pool ADR's
 # eventual destination work.
 _POOL_ADR_STEM_PREFIX = "ADR-pool."
+
+
+def is_pool_adr_path(path: Path) -> bool:
+    """Return True when ``path`` names a pool ADR artifact."""
+    return path.stem.startswith(_POOL_ADR_STEM_PREFIX)
+
+
+def is_adr_shape_grandfathered(frontmatter: dict[str, Any]) -> bool:
+    """Return True when an ADR's lifecycle state freezes authoring-era shape."""
+    return str(frontmatter.get("status", "")).lower() in _ADR_GRANDFATHERED_STATUSES
 
 
 def validate_frontmatter(
@@ -205,15 +215,18 @@ def _validate_adr_decomposition(body: str, artifact_path: str) -> list[Validatio
     if (
         scorecard is not None
         and checklist_items
-        and (len(checklist_items) != scorecard.final_target_obpi_count)
+        and (len(active_checklist_items(checklist_items)) != scorecard.final_target_obpi_count)
     ):
+        live_count = len(active_checklist_items(checklist_items))
         errors.append(
             ValidationError(
                 type="decomposition",
                 artifact=artifact_path,
                 message=(
-                    "Checklist count must match scorecard final target: "
-                    f"checklist={len(checklist_items)} "
+                    "Checklist count must match scorecard final target "
+                    "(does not match): "
+                    f"active={live_count} "
+                    f"total={len(checklist_items)} "
                     f"target={scorecard.final_target_obpi_count}."
                 ),
                 field="Checklist",
@@ -279,7 +292,7 @@ def validate_document(path: Path, schema_name: str) -> list[ValidationError]:
     # Kind-aware pool ADR skip (GHI #480). Pool ADRs are structurally distinct
     # from foundation/feature ADRs and the current adr schema does not encode
     # their shape contract; full disposition is the pool ADR's Alt #5 work.
-    if schema_name == "adr" and path.stem.startswith(_POOL_ADR_STEM_PREFIX):
+    if schema_name == "adr" and is_pool_adr_path(path):
         return []
 
     headers = extract_headers(body)
@@ -290,10 +303,7 @@ def validate_document(path: Path, schema_name: str) -> list[ValidationError]:
     # checks added after their closeout. Pattern/enum/type checks on present
     # fields continue to fire (those are mechanical invariants, not authoring-
     # era shape requirements).
-    is_grandfathered_adr = (
-        schema_name == "adr"
-        and str(frontmatter.get("status", "")).lower() in _ADR_GRANDFATHERED_STATUSES
-    )
+    is_grandfathered_adr = schema_name == "adr" and is_adr_shape_grandfathered(frontmatter)
 
     frontmatter_errors = validate_frontmatter(frontmatter, schema, str(path))
     if is_grandfathered_adr:

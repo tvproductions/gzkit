@@ -10,7 +10,7 @@ gz frontmatter reconcile [--dry-run] [--json]
 
 ## Description
 
-Consumes the OBPI-01 frontmatter validator as its drift source and the OBPI-05 `STATUS_VOCAB_MAPPING` as a pre-flight guard. When drift is detected, the command rewrites the four governed fields in-place; ungoverned keys (`tags:`, `related:`, etc.) are preserved byte-identically. Pool ADRs (identified by `ADR-pool.*` id or path under `docs/design/adr/pool/`) are skipped and listed in the receipt. An existing frontmatter `status:` term not in the canonical vocabulary STOPs the run with a BLOCKER — no files are mutated.
+Consumes the OBPI-01 frontmatter validator as its drift source and the OBPI-05 `STATUS_VOCAB_MAPPING` as a pre-flight guard. When drift is detected, the command rewrites the four governed fields in-place; `status:` is written as the canonical frontmatter mirror term for the ledger state (for example, a ledger-withdrawn OBPI writes `Abandoned`, not raw `withdrawn`). Ungoverned keys (`tags:`, `related:`, etc.) are preserved byte-identically. Pool ADRs (identified by `ADR-pool.*` id or path under `docs/design/adr/pool/`) are skipped and listed in the receipt. An existing frontmatter `status:` term not in the canonical vocabulary STOPs the run with a BLOCKER — no files are mutated.
 
 Ledger state is pinned at run-start (sha256 of `.gzkit/ledger.jsonl`) and the validator sees that snapshot only — a mid-run ledger mutation cannot leak into the receipt.
 

@@ -15,7 +15,9 @@ from gzkit.commands.common import (
 )
 from gzkit.decomposition import (
     WbsRow,
+    active_checklist_items,
     extract_markdown_section,
+    is_withdrawn_checklist_item,
     parse_checklist_items,
     parse_scorecard,
     parse_wbs_table,
@@ -607,6 +609,12 @@ def _validate_parent_adr(
             f"(available: 1-{len(checklist_items)})."
         )
         raise GzCliError(msg)  # noqa: TRY003
+    if is_withdrawn_checklist_item(checklist_items[item - 1]):
+        msg = (
+            f"Checklist item #{item} is withdrawn for {resolved_parent}; "
+            "withdrawn historical rows cannot receive new OBPI briefs."
+        )
+        raise GzCliError(msg)  # noqa: TRY003
 
     scorecard, scorecard_errors = parse_scorecard(adr_content)
     if scorecard_errors:
@@ -614,10 +622,12 @@ def _validate_parent_adr(
         msg = f"Parent ADR decomposition scorecard is invalid for {resolved_parent}: {summary}"
         raise GzCliError(msg)  # noqa: TRY003
     assert scorecard is not None
-    if len(checklist_items) != scorecard.final_target_obpi_count:
+    live_items = active_checklist_items(checklist_items)
+    if len(live_items) != scorecard.final_target_obpi_count:
         msg = (
-            "ADR checklist count does not match scorecard target for "
-            f"{resolved_parent}: checklist={len(checklist_items)} "
+            "ADR active checklist count does not match scorecard target for "
+            f"{resolved_parent}: active={len(live_items)} "
+            f"total={len(checklist_items)} "
             f"target={scorecard.final_target_obpi_count}."
         )
         raise GzCliError(msg)  # noqa: TRY003

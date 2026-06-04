@@ -277,6 +277,17 @@ def parse_checklist_items(content: str) -> list[str]:
     return items
 
 
+def is_withdrawn_checklist_item(item: str) -> bool:
+    """Return True when a checklist row is retained only as withdrawn history."""
+    without_comments = re.sub(r"<!--.*?-->", "", item)
+    return bool(re.search(r"\[\s*withdrawn(?:\s*;|\s*\])", without_comments, flags=re.IGNORECASE))
+
+
+def active_checklist_items(items: list[str]) -> list[str]:
+    """Return checklist rows that still count toward the live OBPI target."""
+    return [item for item in items if not is_withdrawn_checklist_item(item)]
+
+
 def _parse_baseline_range(label: str) -> tuple[int, int | None] | None:
     match = re.fullmatch(r"(\d+)-(\d+)", label.strip())
     if match:

@@ -49,13 +49,13 @@ class TestAutoFixObpiBriefFrontmatter(unittest.TestCase):
             changed = auto_fix_obpi_brief_frontmatter(brief, "attested_completed")
             self.assertFalse(changed)
 
-    def test_withdrawn_state_fixes_to_withdrawn(self):
+    def test_withdrawn_state_fixes_to_abandoned(self):
         with tempfile.TemporaryDirectory() as tmp:
             brief = self._write_brief(Path(tmp), "Draft")
             changed = auto_fix_obpi_brief_frontmatter(brief, "withdrawn")
             self.assertTrue(changed)
             content = brief.read_text(encoding="utf-8")
-            self.assertIn("status: Withdrawn", content)
+            self.assertIn("status: Abandoned", content)
 
     def test_pending_state_does_not_change_draft(self):
         """Only fix toward terminal states — don't downgrade."""

@@ -50,6 +50,37 @@ class TestSpecifyCommand(unittest.TestCase):
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("out of range", result.output)
 
+    def test_specify_ignores_withdrawn_checklist_items_for_live_target(self) -> None:
+        """Withdrawn checklist identities remain addressable history, not live target count."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            adr_path = Path("design/adr/pre-release/ADR-0.1.0-f/ADR-0.1.0-f.md")
+            content = adr_path.read_text(encoding="utf-8")
+            content = content.replace(
+                "- [ ] OBPI-0.1.0-01: Define scope, constraints, and acceptance criteria",
+                "\n".join(
+                    [
+                        "- [ ] OBPI-0.1.0-01: Define scope, constraints, and acceptance criteria",
+                        "- [ ] OBPI-0.1.0-02: Superseded historical slot "
+                        "[withdrawn; replaced by OBPI-0.1.0-03]",
+                    ]
+                ),
+            )
+            adr_path.write_text(content, encoding="utf-8")
+
+            live_result = runner.invoke(
+                main, ["specify", "core-feature", "--parent", "ADR-0.1.0-f", "--item", "1"]
+            )
+            self.assertEqual(live_result.exit_code, 0)
+
+            withdrawn_result = runner.invoke(
+                main, ["specify", "old-feature", "--parent", "ADR-0.1.0-f", "--item", "2"]
+            )
+            self.assertNotEqual(withdrawn_result.exit_code, 0)
+            self.assertIn("withdrawn", withdrawn_result.output)
+
     def test_specify_warns_about_template_defaults(self) -> None:
         """specify reports ADR-derived seeding and avoids scaffold placeholders."""
         runner = CliRunner()

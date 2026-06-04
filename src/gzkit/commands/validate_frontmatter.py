@@ -17,7 +17,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from gzkit.commands.common import console
-from gzkit.governance.status_vocab import canonicalize_status
+from gzkit.governance.status_vocab import (
+    canonicalize_ledger_status,
+    canonicalize_status,
+    frontmatter_status_for_ledger,
+)
 from gzkit.validate import ValidationError
 
 if TYPE_CHECKING:
@@ -39,10 +43,13 @@ def _status_matches(fm_status: str, ledger_status: str) -> bool:
     specific, not contradictory.
     """
     canon = canonicalize_status(fm_status)
+    ledger_canon = canonicalize_ledger_status(ledger_status)
     if canon is None:
         return fm_status.lower() == ledger_status.lower()
+    if ledger_canon is None:
+        return False
     allowed = _STATUS_SUPERSETS.get(canon, frozenset({canon}))
-    return ledger_status.lower() in {s.lower() for s in allowed}
+    return ledger_canon.lower() in {s.lower() for s in allowed}
 
 
 _ADR_ID_PATTERN = re.compile(r"^(ADR-[\d.]+)")
@@ -133,7 +140,11 @@ def _check_one_artifact(
     if fm_status:
         ledger_status = derive_status()
         if ledger_status and not _status_matches(fm_status, ledger_status):
-            errors.append(_field_error(rel_path, "status", ledger_status, fm_status))
+            expected = frontmatter_status_for_ledger(
+                ledger_status,
+                str(info.get("type", "")),
+            )
+            errors.append(_field_error(rel_path, "status", expected, fm_status))
 
     return errors
 

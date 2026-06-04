@@ -11,7 +11,7 @@ from pathlib import Path
 
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
-from gzkit.ledger import Ledger, adr_created_event
+from gzkit.ledger import Ledger, adr_created_event, obpi_created_event, obpi_withdrawn_event
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _quick_init
 
@@ -274,6 +274,29 @@ class TestFrontmatterGuard(unittest.TestCase):
         errors = validate_frontmatter_coherence(project_root)
         self.assertIsInstance(errors, list)
 
+    @covers("REQ-0.0.16-01-02")
+    def test_withdrawn_obpi_accepts_abandoned_frontmatter_status(self) -> None:
+        """Ledger-withdrawn OBPI with public `Abandoned` mirror is coherent."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+            ledger.append(adr_created_event("ADR-0.1.0", "PRD-TEST-1.0.0", "lite"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-test", "ADR-0.1.0"))
+            ledger.append(obpi_withdrawn_event("OBPI-0.1.0-01-test", "ADR-0.1.0", "retired"))
+            _scaffold_obpi(
+                root,
+                "ADR-0.1.0",
+                "OBPI-0.1.0-01",
+                "---\nid: OBPI-0.1.0-01-test\nparent: ADR-0.1.0\n"
+                "item: 1\nlane: lite\nstatus: Abandoned\n---\n# OBPI\n",
+            )
+
+            result = runner.invoke(main, ["validate", "--frontmatter"])
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
 
 class TestPoolAdrSkipParity(unittest.TestCase):
     """GHI #192: validator must skip pool ADRs in parity with the chore library.
@@ -464,6 +487,15 @@ class TestStatusMatchesVocabAware(unittest.TestCase):
 
         self.assertTrue(_status_matches("in_progress", "in_progress"))
         self.assertTrue(_status_matches("In-Progress", "in_progress"))
+        self.assertTrue(_status_matches("Active", "in_progress"))
+
+    @covers("REQ-0.0.16-01-02")
+    def test_abandoned_frontmatter_matches_withdrawn_ledger_state(self) -> None:
+        """Public `Abandoned` frontmatter matches raw ledger `withdrawn` runtime state."""
+        from gzkit.commands.validate_frontmatter import _status_matches  # noqa: PLC0415
+
+        self.assertTrue(_status_matches("Abandoned", "withdrawn"))
+        self.assertTrue(_status_matches("Withdrawn", "withdrawn"))
 
 
 if __name__ == "__main__":

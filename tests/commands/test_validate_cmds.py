@@ -118,6 +118,65 @@ Rules here
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("does not match", result.output)
 
+    def test_validate_decomposition_skips_validated_legacy_adr_shape(self) -> None:
+        """Validated ADRs keep authoring-era decomposition shape under GHI #480."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            adr_dir = Path("docs/design/adr/foundation/ADR-0.0.98-legacy")
+            adr_dir.mkdir(parents=True, exist_ok=True)
+            adr_content = """---
+id: ADR-0.0.98-legacy
+status: Validated
+semver: 0.0.98
+lane: heavy
+kind: foundation
+parent: PRD-TEST-1.0.0
+date: 2026-01-01
+---
+
+# ADR-0.0.98: Legacy
+
+## Feature Checklist
+
+- [x] OBPI-0.0.98-01: Historical item
+"""
+            (adr_dir / "ADR-0.0.98-legacy.md").write_text(adr_content, encoding="utf-8")
+
+            result = runner.invoke(main, ["validate", "--decomposition"])
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+    def test_validate_decomposition_draft_adr_still_requires_scorecard(self) -> None:
+        """Draft ADRs remain fail-closed for missing decomposition scorecards."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            adr_dir = Path("docs/design/adr/foundation/ADR-0.0.98-draft")
+            adr_dir.mkdir(parents=True, exist_ok=True)
+            adr_content = """---
+id: ADR-0.0.98-draft
+status: Draft
+semver: 0.0.98
+lane: heavy
+kind: foundation
+parent: PRD-TEST-1.0.0
+date: 2026-01-01
+---
+
+# ADR-0.0.98: Draft
+
+## Feature Checklist
+
+- [ ] OBPI-0.0.98-01: Planned item
+"""
+            (adr_dir / "ADR-0.0.98-draft.md").write_text(adr_content, encoding="utf-8")
+
+            result = runner.invoke(main, ["validate", "--decomposition"])
+
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Missing required section: 'Decomposition Scorecard'", result.output)
+
     def test_validate_interviews_flag_accepted(self) -> None:
         """--interviews flag is accepted and runs the interviews scope."""
         runner = CliRunner()

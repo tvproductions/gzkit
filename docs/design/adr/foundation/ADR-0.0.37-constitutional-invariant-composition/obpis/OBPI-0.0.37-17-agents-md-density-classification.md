@@ -3,7 +3,7 @@ id: OBPI-0.0.37-17-agents-md-density-classification
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 17
 lane: Heavy
-status: Draft
+status: Abandoned
 ---
 
 # OBPI-0.0.37-17-agents-md-density-classification: AGENTS.md Density Classification (#519 byte relief)

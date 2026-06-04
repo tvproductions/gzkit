@@ -3,7 +3,7 @@ id: OBPI-0.0.37-15-per-vendor-template-selection
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 15
 lane: Heavy
-status: Completed
+status: Abandoned
 ---
 
 # OBPI-0.0.37-15-per-vendor-template-selection: Per-Vendor Template Selection

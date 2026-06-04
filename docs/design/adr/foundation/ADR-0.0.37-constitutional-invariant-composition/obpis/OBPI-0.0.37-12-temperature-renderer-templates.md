@@ -3,7 +3,7 @@ id: OBPI-0.0.37-12-temperature-renderer-templates
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 12
 lane: Heavy
-status: Completed
+status: Abandoned
 # req_atomic exemption (GHI #563, return-to-health 2026-06-01): each REQ is one
 # indivisible behavioral contract on render() — no labor subdivision was needed
 # or performed, so a single seq=01 TASK per REQ is honest, not a coarse bucket.

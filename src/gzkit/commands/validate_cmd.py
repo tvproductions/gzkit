@@ -33,11 +33,13 @@ from gzkit.instruction_audit import audit_instructions
 from gzkit.models.exemplar import ExemplarCorpus
 from gzkit.validate import (
     ValidationError,
+    parse_frontmatter,
     validate_document,
     validate_ledger,
     validate_manifest,
     validate_surfaces,
 )
+from gzkit.validate_pkg.document import is_adr_shape_grandfathered, is_pool_adr_path
 
 
 def _validate_tautological_test_audit(project_root: Path) -> list[ValidationError]:
@@ -55,7 +57,11 @@ def _validate_tautological_test_audit(project_root: Path) -> list[ValidationErro
 
 def _validate_decomposition(project_root: Path) -> list[ValidationError]:
     """Validate ADR decomposition scorecards and checklist-to-brief alignment."""
-    from gzkit.core.scoring import parse_checklist_items, parse_scorecard  # noqa: PLC0415
+    from gzkit.core.scoring import (  # noqa: PLC0415
+        active_checklist_items,
+        parse_checklist_items,
+        parse_scorecard,
+    )
 
     adr_root = project_root / "docs" / "design" / "adr"
     if not adr_root.is_dir():
@@ -63,15 +69,19 @@ def _validate_decomposition(project_root: Path) -> list[ValidationError]:
 
     errors: list[ValidationError] = []
     for adr_md in sorted(adr_root.rglob("ADR-*.md")):
-        if adr_md.name.startswith("ADR-CLOSEOUT") or adr_md.name.startswith("ADR-pool"):
+        if adr_md.name.startswith("ADR-CLOSEOUT") or is_pool_adr_path(adr_md):
             continue
         # Only check ADR intent documents (not briefs/audit files)
         if "obpis" in adr_md.parts or "briefs" in adr_md.parts or "audit" in adr_md.parts:
             continue
 
         content = adr_md.read_text(encoding="utf-8")
-        scorecard, scorecard_errors = parse_scorecard(content)
-        checklist_items = parse_checklist_items(content)
+        frontmatter, body = parse_frontmatter(content)
+        if frontmatter and is_adr_shape_grandfathered(frontmatter):
+            continue
+
+        scorecard, scorecard_errors = parse_scorecard(body)
+        checklist_items = parse_checklist_items(body)
 
         if not checklist_items:
             continue  # ADR has no checklist — skip
@@ -90,14 +100,18 @@ def _validate_decomposition(project_root: Path) -> list[ValidationError]:
         if scorecard is None:
             continue
 
-        if len(checklist_items) != scorecard.final_target_obpi_count:
+        live_items = active_checklist_items(checklist_items)
+        if len(live_items) != scorecard.final_target_obpi_count:
             errors.append(
                 ValidationError(
                     type="decomposition",
                     artifact=adr_md.relative_to(project_root).as_posix(),
                     message=(
-                        f"Checklist count ({len(checklist_items)}) does not match "
-                        f"scorecard target ({scorecard.final_target_obpi_count})."
+                        "Checklist count must match scorecard final target "
+                        "(does not match): "
+                        f"active={len(live_items)} "
+                        f"target={scorecard.final_target_obpi_count}; "
+                        f"total checklist rows including withdrawn history: {len(checklist_items)}."
                     ),
                 )
             )

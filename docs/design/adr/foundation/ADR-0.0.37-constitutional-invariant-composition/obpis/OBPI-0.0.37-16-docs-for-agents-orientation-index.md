@@ -3,7 +3,7 @@ id: OBPI-0.0.37-16-docs-for-agents-orientation-index
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 16
 lane: Lite
-status: Draft
+status: Abandoned
 ---
 
 # OBPI-0.0.37-16-docs-for-agents-orientation-index: Docs-for-Agents Orientation Index

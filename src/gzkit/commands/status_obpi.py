@@ -104,6 +104,8 @@ def _collect_obpi_files_for_adr(
 
     obpi_files: dict[str, Path] = {}
     for obpi_id, canonical_parent, obpi_file in obpi_index:
+        if graph.get(obpi_id, {}).get("withdrawn", False):
+            continue
         if canonical_parent == canonical_adr or obpi_id in expected_obpis:
             obpi_files[obpi_id] = obpi_file
 

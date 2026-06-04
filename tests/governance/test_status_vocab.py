@@ -24,7 +24,11 @@ BRIEF_FIVE_TERMS: frozenset[str] = frozenset(
 EXTRA_OBSERVED_TERMS: frozenset[str] = frozenset(
     {
         "Accepted",
+        "Active",
+        "Abandoned",
         "archived",
+        "Deprecated",
+        "drift",
         "Pending-Attestation",
         "Pool",
         "Promoted",
@@ -63,6 +67,25 @@ class StatusVocabMappingTests(unittest.TestCase):
         self.assertFalse(
             missing,
             f"mapping is missing OBPI-01 drift-evidence terms: {sorted(missing)}",
+        )
+
+    @covers("REQ-0.0.16-05-02")
+    def test_mapping_accepts_all_adr_and_obpi_schema_status_terms(self) -> None:
+        """Every ADR/OBPI schema status term must enter the shared vocab path."""
+        from gzkit.governance.status_vocab import canonicalize_status
+        from gzkit.schemas import load_schema
+
+        schema_terms: set[str] = set()
+        for schema_name in ("adr", "obpi"):
+            schema = load_schema(schema_name)
+            status_schema = schema["properties"]["frontmatter"]["properties"]["status"]
+            schema_terms.update(status_schema["enum"])
+
+        missing = {term for term in schema_terms if canonicalize_status(term) is None}
+        self.assertFalse(
+            missing,
+            "status terms accepted by schemas must be recognized by "
+            f"STATUS_VOCAB_MAPPING: {sorted(missing)}",
         )
 
     @covers("REQ-0.0.16-05-03")

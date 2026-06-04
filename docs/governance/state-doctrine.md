@@ -164,6 +164,7 @@ Frontmatter `status:` terms in circulation across gzkit (as of ADR-0.0.16 author
 | Pool | pending | Backlog item; no lifecycle events |
 | Promoted | pending | Recently promoted from pool; no events yet |
 | Pending | pending | Direct mirror |
+| Active | in_progress | Operator-facing OBPI active-work term |
 | in_progress | in_progress | Canonical ledger term written verbatim in frontmatter |
 | In-Progress | in_progress | Operator-facing hyphenated variant |
 | In Progress | in_progress | Operator-facing space-separated variant |
@@ -174,8 +175,11 @@ Frontmatter `status:` terms in circulation across gzkit (as of ADR-0.0.16 author
 | attested_completed | attested_completed | Canonical ledger term written verbatim in frontmatter post-attestation |
 | Attested | attested_completed | Operator-facing post-attestation term |
 | Superseded | abandoned | Replaced by later decision |
+| Deprecated | abandoned | Retired lifecycle term |
+| Abandoned | abandoned | Public mirror for ledger-withdrawn OBPIs |
 | Withdrawn | abandoned | Operator-pulled before completion |
 | archived | abandoned | Retired; no longer active |
+| drift | drift | Canonical runtime drift term written verbatim when needed |
 
 Canonical targets are drawn from `OBPI_RUNTIME_STATES` (at `src/gzkit/ledger.py`) and ADR lifecycle states (`pending`/`validated`/`completed`/`abandoned`). Lookups are case-insensitive; consumers that encounter a frontmatter term not in this mapping MUST block with a clear error naming the unmapped term — they never silently skip.
 

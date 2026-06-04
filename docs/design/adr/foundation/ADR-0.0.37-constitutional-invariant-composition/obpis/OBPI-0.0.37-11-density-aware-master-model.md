@@ -3,7 +3,7 @@ id: OBPI-0.0.37-11-density-aware-master-model
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 11
 lane: Heavy
-status: Completed
+status: Abandoned
 ---
 
 # OBPI-0.0.37-11-density-aware-master-model: Density-Aware Master Content Model

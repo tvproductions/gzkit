@@ -3,7 +3,7 @@ id: OBPI-0.0.37-13-reverse-parse-migration
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 13
 lane: Heavy
-status: Completed
+status: Abandoned
 # req_atomic exemption (return-to-health Snapshot E, 2026-06-02): each REQ is
 # one indivisible import/render/support contract. The implementation did not
 # subdivide labor below a REQ, so one seq=01 TASK per REQ is the honest grain.
