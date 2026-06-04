@@ -233,7 +233,7 @@ Right-size implementation units per [OBPI Decomposition Matrix](docs/governance/
 
 **REQ-coverage gate (ADR-0.0.25).** Every REQ must have a covering passing test before `gz obpi complete`. Uncovered REQs require `--accept-uncovered <REQ-ID> --accept-uncovered-reason <REASON>`. Failing-cover REQs cannot be waived.
 
-**Pipeline mandate:** After plan approval, agents MUST run `uv run gz obpi pipeline <OBPI-ID>`. The `gz-obpi-pipeline` skill is a thin alias; runtime owns stage sequencing and preserves verify -> ceremony -> guarded git sync -> completion order, with `uv run gz git-sync --apply --lint --test` before final accounting. Freeform implementation without runtime invocation is a process defect.
+**Pipeline mandate (contract-bearing OBPI only):** For OBPI work that adds or changes a CLI/schema/runtime contract, run `uv run gz obpi pipeline <OBPI-ID>` after plan approval — the runtime owns stage sequencing (verify -> ceremony -> guarded git sync -> completion) with `uv run gz git-sync --apply --lint --test` before final accounting; freeform implementation of such an OBPI without the runtime is a process defect. **Routine, recovery, and defect fixes default to the direct-fix path (§ Defect-fix routing), not the pipeline.**
 
 ### Universal OBPI Attestation (ADR-0.0.36, GHI #342)
 
