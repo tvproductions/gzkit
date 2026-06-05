@@ -2,19 +2,22 @@
 
 Status: Active canonical recovery plan.
 
-> **Live baseline: Snapshot H (2026-06-04).** Committed `main` was last measured
-> GREEN at Snapshot G(check) (26/26) and pushed. The working tree now carries the
-> in-flight **OBPI-0.0.37-26** #519-relief work, which **reaches the #519 byte
-> target** (root `AGENTS.md` 32,651 → **28,323 B**, under Codex's 32,768 B cap with
-> ~4.4 KB headroom — the first material byte movement on #519 in seven snapshots)
-> but is **uncommitted and incomplete**. Two failing budget-pin tests were
-> direct-fixed this session (the config-SSOT/tautological anti-pattern — now assert
-> the semantic cap+fit invariant instead of a magic literal), clearing the **Test**
-> gate; the remaining red is **Surface fidelity** — 14 ADR-0.0.33 bullet-retention
-> violations the compression produced, the exact collision the Snapshot-G route
-> redesign predicted. **#519 byte relief is in reach but NOT landed; the OBPI is not
-> complete and not attested.** See § Current Baseline — Snapshot H for the full
-> measurement and the completion path.
+> **Live baseline: Snapshot J (2026-06-05).** Committed `main` (HEAD `f98eb980`)
+> carries the **landed #519 byte relief** (commit `705a2354`, Snapshot I): root
+> `AGENTS.md` is **28,489 B** — under Codex's 32,768 B cap with ~4.3 KB headroom; the
+> diet held on trunk. This session re-evaluated the repo and found `gz check` red on
+> **one** gate — **Preflight**, a single orphan plan-audit receipt left by the
+> already-`attested_completed` OBPI-0.0.37-18 — and cleared it via the
+> Phase-1-sanctioned `uv run gz preflight --apply` path; re-measured `gz check` →
+> **26/26 GREEN** (`GZ_CHECK_EXIT=0`). The orphan-receipt deletion is committed
+> alongside this plan edit so committed HEAD is honestly green. **Surface fidelity is
+> now GREEN** — the 14 ADR-0.0.33 bullet-retention violations Snapshot H predicted
+> never reached trunk; the relief landed by *re-homing* terse Mechanical skeletons
+> into the local splice, not by deleting prose. **Recovery stays OPEN:** #519 is still
+> the sole open `emergency` (interim byte-relief landed, full 258K-window closure
+> unbuilt — GHI #533); ADR-0.0.37 is **6/19** attested-complete, BLOCKED on 13 missing
+> ledger proofs; OBPI-0.0.37-26 stays Draft. See § Current Baseline — Snapshot J for
+> the full measurement; Snapshot H is demoted to the compact history table.
 >
 > **Route (unchanged since Snapshot G, 2026-06-03):** append-only corpus → temperature
 > setpoint per surface×consumer → authoring-time agent compression (advisor-QC'd,
@@ -32,14 +35,16 @@ Status: Active canonical recovery plan.
 > ~8 live artifacts plus immutable ledger/insights/handoff records; renaming would
 > churn them every session).
 
-Last updated: 2026-06-04 — **consolidation + Snapshot H.** Collapsed the
-superseded snapshot history (Baseline A–F and the Recovery-Closeout progress
-blocks) into compact tables, keeping only the live baseline in full — the
-Definition-of-Healthy / #519 context-load posture applied to the plan itself.
-Recorded **Snapshot H**: the in-flight OBPI-0.0.37-26 working-tree measurement
-(byte target reached, but uncommitted, red, and unattested). Filename retained
-per operator decision 2026-06-04. This edit changes no code or governance state;
-the in-flight OBPI-0.0.37-26 pile is unrelated mid-pipeline work, left untouched.
+Last updated: 2026-06-05 — **Snapshot J (repo re-evaluation).** Re-measured the
+committed-`main` baseline after the #519 byte relief landed (Snapshot I, commit
+`705a2354`): `gz check` was red on a single Preflight orphan receipt (the
+already-`attested_completed` OBPI-0.0.37-18), cleared via the sanctioned
+`uv run gz preflight --apply` path → **26/26 GREEN**. Promoted the live baseline from
+the now-stale Snapshot H (RED/uncommitted working tree, superseded by the landed
+relief) to **Snapshot J**, demoting H to the compact history table. Recorded the
+current ADR-0.0.37 posture (6/19 attested, BLOCKED on 13 missing ledger proofs).
+The orphan-receipt deletion is committed alongside this edit; no other code or
+governance state changed.
 
 ## Execution Worklist (start here)
 
@@ -101,7 +106,7 @@ the in-flight OBPI-0.0.37-26 pile is unrelated mid-pipeline work, left untouched
 |-----|---------|------|
 | #563 | task-envelope gate failure — `seq=01`-only TASKs, missing `task_id` | **T1** — Phase 3 (gate cleared @ Snapshot E; new instance @ Snapshot G(check): ADR-decision-doc edits under active TASKs — cleared via SUPPORT-channel carve-out; class fix: closeout `task_id` population still remains) |
 | #564 | preflight orphan plan-audit receipt (OBPI-0.0.64-04) | **T1** — Phase 3 (gate cleared @ Snapshot D; recurred @ Snapshot G(check): OBPI-09+OBPI-17 orphans cleaned via `gz preflight --apply`; class fix: closeout leaves no orphan remains. Adjacent latent: short-vs-full `obpi_id` mismatch direct-fixed in `task.py` @ Snapshot G(check), other consumers may share it) |
-| #519 | context surface exhausts 258K window (**emergency**) | **T1** — Phase 2 → CMS. **Relief IN FLIGHT (Snapshot H, 2026-06-04):** OBPI-0.0.37-26 working tree reaches the byte target (root AGENTS.md → 28,323 B, under Codex's 32,768 cap) but is **uncommitted, incomplete, and red** (14 ADR-0.0.33 bullet-retention violations + 2 stale budget-pin tests; lock released without completion/attestation). Byte relief in reach, NOT landed. Per-vendor emission ruled out; OBPI-17-as-scoped retired. |
+| #519 | context surface exhausts 258K window (**emergency**) | **T1** — Phase 2 → CMS. **Interim relief LANDED on `main` (Snapshot I, commit `705a2354`; held at Snapshot J):** root AGENTS.md = **28,489 B** via the local-splice diet, under Codex's 32,768 B cap with ~4.3 KB headroom; Surface fidelity green (the predicted 14-violation collision avoided by re-homing, not deleting). **Still OPEN:** full 258K-window closure needs the <15k registry-projected surface (GHI #533). Per-vendor emission ruled out; OBPI-17-as-scoped retired; OBPI-0.0.37-26 stays Draft (reconcile or withdraw). |
 | #516 | closeout passive-presenter lacks REQ-evidence check | **T1** — Phase 3 |
 | #536 | `gz adr promote` Target-Scope `path:line` → invalid OBPI paths | **T1** — Phase 3 |
 | #537 | BEHAVIOR-kind cannot-uncovered-accept not mechanically enforced | **T1** — Phase 3 |
@@ -160,71 +165,49 @@ diagnosis, but its dated command snapshot is superseded by the baseline below.
 
 ## Current Baseline
 
-> **Live baseline = Snapshot H (2026-06-04).** Snapshots A–G are preserved as a
-> compact history table below; full prose for A–G is recoverable from this file's
-> git history (pre-2026-06-04). This consolidation is the #519 / Definition-of-
+> **Live baseline = Snapshot J (2026-06-05).** Snapshots A–H are preserved as a
+> compact history table below; full prose for A–F and H is recoverable from this
+> file's git history (pre-2026-06-05). This consolidation is the #519 / Definition-of-
 > Healthy posture applied to the plan itself: one orientable baseline, not a
 > growing snapshot log.
 
-### Snapshot H — 2026-06-04 (working tree carries in-flight OBPI-0.0.37-26): RED (uncommitted)
+### Snapshot J — 2026-06-05 (repo re-evaluation; committed-main relief held + preflight orphan cleared): GREEN
 
-- **What this measures.** The **uncommitted working tree**, carrying the in-flight
-  OBPI-0.0.37-26 #519-relief changes: `AGENTS.md` + `.gzkit/agents.local.md`
-  recompressed, `data/instructions_files_budget.json` AGENTS.md budget 33000→30000,
-  a new `renditions/agentcontract-codex-root-interim.md` (5,898 B), several
-  ADR-0.0.37 briefs, and 17 uncommitted ledger events. Committed `main` HEAD was
-  last measured **GREEN at Snapshot G(check)** (26/26) and pushed; it was **not**
-  re-measured clean-tree this session. The red below is attributable entirely to the
-  uncommitted mid-flight work — not a regression of `main`.
-- `uv run gz check` measured **exit 1** at session start (`GZ_CHECK_EXIT=1`, true exit
-  via file redirect): **24/26 gates pass; two red.** One was direct-fixed this session;
-  one remains (OBPI-0.0.37-26's work).
-  1. **Test** (2 failures) → **FIXED this session (direct-fix, TDD).**
-     `test_budget_json_pins_15k_and_4k` and `test_agents_md_and_claude_md_budgets_unchanged`
-     both asserted the AGENTS.md budget `== 33000` — a literal pasted from the very JSON
-     they read (config-SSOT + tautological-test anti-pattern; item 2.5). The in-flight
-     work lowered the budget to 30000, breaking them. Rewritten to assert the **semantic
-     invariant** instead of a magic literal: AGENTS.md fits Codex's 32,768 B project-doc
-     cap (no silent truncation) and each surface fits its configured budget, with the
-     value sourced only from the JSON. Full suite **5858 tests OK**; `--tautological-test-audit`,
-     `--instructions-files-budget`, `--documents`, `mkdocs --strict` all green. The new
-     cap assertion has inherent teeth — it would have caught the old 33000 budget (> cap).
-     Coupled: the rewrite asserts ≤ 32,768, so it travels with the budget→30000 change,
-     not committed alone.
-  2. **Surface fidelity** (14 errors) — **STILL RED; OBPI-0.0.37-26's work, not this fix.**
-     "Bullet-retention violation: 'Mechanical' bullet not found verbatim in per-turn
-     surface" against `docs/governance/advisory-rules-audit.md`: the AGENTS.md compression
-     dropped 14 Mechanical bullets that ADR-0.0.33 bullet-retention requires verbatim.
-  - Advisory spec-test-code drift: 1,766 findings (non-blocking; does not affect exit code).
-- **Verification scope (this session, post-fix).** Re-ran and confirmed green:
-  `unittest` (5858 OK), `--task-envelope-coherence`, `preflight`, `--documents`,
-  `--tautological-test-audit`, `--instructions-files-budget`, `ty` typecheck, ruff,
-  `mkdocs --strict`. The ledger gained **zero** events from this doc/test work
-  (raw edits emit none), so task-envelope/preflight stay clean. A full end-to-end
-  `gz check` was **not** re-run because Surface fidelity is known-red (OBPI work) and
-  would exit 1 regardless; every *other* gate was verified individually.
-- **#519 byte target reached — interim, uncommitted, unattested.** Root `AGENTS.md`
-  is now **28,323 B** (was 32,651 B at Snapshot G): **below the lowered 30,000 budget
-  and ~4,445 B under Codex's 32,768 B cap with headroom.** First material byte
-  movement on #519 across seven snapshots. But OBPI-0.0.37-26's ledger shows
-  `pipeline_launched`, 6 `task_started`, `composition_rendered`, `obpi_lock_claimed`,
-  then `obpi_lock_released` — **no `task_completed`, no `obpi_receipt_emitted`, no
-  attestation.** The lock was released *without* completion (paused mid-flight).
-- **The compression hit the exact wall Snapshot G predicted.** The 14 fidelity
-  violations are the **ADR-0.0.33 bullet-retention collision** the route redesign
-  named: shrinking the shared root by dropping prose drops Mechanical bullets the
-  retention gate requires verbatim. The interim rendition reaches the byte target but
-  is **not green and not attestable** until those 14 bullets are re-homed/retained
-  (the corpus-classification + 0-Kelvin-floor design) and the two budget-pin tests
-  are updated to 30000.
-- **Completion path for OBPI-0.0.37-26 (next concrete steps).** (1) Re-home the 14
-  retained Mechanical bullets so they survive verbatim in the per-turn surface
-  (the only remaining red gate); (2) ~~update the budget-pin tests~~ **done this
-  session** — rewritten to assert the semantic cap+fit invariant (no literal),
-  Test gate green; (3) re-measure `gz check` green; (4) complete the pipeline +
-  Gate-5 attest.
-- **Phase 1 stays complete on committed `main`; recovery stays open** (#519 still
-  OPEN — byte relief in reach but not landed).
+- **What this measures.** Committed `main` (HEAD `f98eb980`) after the #519 byte
+  relief landed at Snapshot I (commit `705a2354`, pushed), re-evaluated this session
+  plus one sanctioned working-tree cleanup. The prior Snapshot H — an uncommitted,
+  RED working tree carrying mid-flight OBPI-0.0.37-26 work — is **superseded**: that
+  pile either landed (the byte relief, via the local-splice diet) or was withdrawn,
+  and the predicted 14-violation collision never reached trunk.
+- `uv run gz check` at session start measured **exit 1** (`GZ_CHECK_EXIT=1`, true exit
+  via file redirect): **25/26 gates pass; one red.**
+  1. **Preflight** (1 orphan) — a single orphan plan-audit receipt
+     (`.plan-audit-receipt-OBPI-0.0.37-18-append-only-corpus-model.json`) left by the
+     already-`attested_completed` OBPI-0.0.37-18. Cleared via the Phase-1-sanctioned
+     runtime path — `uv run gz preflight --apply` → "Cleanup applied"; re-scan →
+     "Preflight scan: clean" (`PREFLIGHT_EXIT=0`). The receipt was a tracked file; its
+     deletion is committed alongside this plan edit so committed HEAD is honestly green.
+  - **Surface fidelity is GREEN** (it was the lone *predicted* red at Snapshot H). The
+    14 ADR-0.0.33 bullet-retention violations Snapshot H forecast did **not**
+    materialize: the #519 relief landed by *re-homing* terse Mechanical skeletons into
+    the local splice (`.gzkit/agents.local.md`), not by deleting the prose the retention
+    gate requires verbatim. Confirmed `✓ Surface fidelity` this session.
+  - Advisory spec-test-code drift: 1,763 findings (non-blocking; does not affect exit).
+- **Post-cleanup re-measure: `uv run gz check` → "✓ All checks passed" (26/26,
+  `GZ_CHECK_EXIT=0`).** The working tree carries only the orphan-receipt deletion +
+  this plan edit, committed together as one recovery commit — **not pushed** (the
+  Snapshot I two-agent-on-main hazard stands; push is the operator's call).
+- **#519 byte relief holds on `main`.** Root `AGENTS.md` = **28,489 B** — under
+  Codex's 32,768 B cap with ~4.3 KB headroom; `.gzkit/agents.local.md` = 4,997 B;
+  budget = 30,000. This is the landed Snapshot I diet measured on committed trunk, not
+  a working-tree projection.
+- **Recovery stays OPEN.** #519 is the **sole** open `emergency` (38 open issues
+  total) — interim byte-relief landed, full 258K-window closure unbuilt (the <15k
+  registry-projected surface, GHI #533). ADR-0.0.37 is **6/19** attested-complete
+  (01–05, 18), **BLOCKED** on 13 OBPIs with missing ledger proofs of completion;
+  OBPI-0.0.37-26 stays `Draft` (payload landed directly at Snapshot I; reconcile or
+  withdraw). Phase 1 stays complete on committed `main`; Definition-of-Healthy is
+  **not** all-true (open emergency remains).
 
 ### Snapshot G(check) — 2026-06-03 (restore-green on resume + OBPI-17 retirement): RED→GREEN
 
@@ -265,8 +248,9 @@ diagnosis, but its dated command snapshot is superseded by the baseline below.
 | D | 2026-06-01 | GREEN 26/26 | Tier-0 remediation: task-envelope sig-(a) meta-receipt-bind carve-out + sig-(b) req_atomic on 0.0.37-12; `preflight --apply`. (Snapshot-C "exit 0" had been a `tail`-pipe masking the real failure.) |
 | E | 2026-06-02 | GREEN 26/26 | D proved stale; cleared Format, ADR-status-freshness, Task-envelope coherence (OBPI-0.0.37-13 instance: brief-reflection + uncovered-accept carve-outs + req_atomic). |
 | F | 2026-06-03 | GREEN 26/26 | OBPI-0.0.37-15 (per-vendor temperature *selection*) attested → CMS 10/16; four untracked direct-fixes. #519 still unrelieved (selection ≠ emission; Codex-loader finding ruled out per-vendor emission). |
+| H | 2026-06-04 | RED (uncommitted) | In-flight OBPI-0.0.37-26 working tree: byte target reached (28,323 B) but uncommitted/unattested (lock released mid-flight); 2 budget-pin tests direct-fixed; 14 ADR-0.0.33 bullet-retention violations predicted. Superseded by the landed relief (Snapshot I) + Snapshot J. |
 
-Snapshots A–F and G(check) are preserved for audit; **Snapshot H is the live baseline.**
+Snapshots A–F, G(check), and H are preserved for audit; **Snapshot J is the live baseline.**
 
 ## Definition of Healthy
 
@@ -1260,6 +1244,7 @@ Decision:                 #519 materially relieved but NOT closed. Loosening que
 | 2026-06-03 (OBPI-17 charter) | open | OBPI-09 ruled wrong path; OBPI-11/12 dial proven INERT; OBPI-17 density-classification chartered |
 | 2026-06-03 (G(check)) | open | RED→GREEN restore on resume; OBPI-17-as-scoped retired; route redesigned → OBPI-0.0.37-26; ADR-0.0.37 renumbered to 01–10, 18–27 |
 | 2026-06-04 (H) | open | OBPI-0.0.37-26 in-flight; byte target reached (28,323 B) but uncommitted/unattested (lock released mid-flight); 14 ADR-0.0.33 bullet-retention collision predicted |
+| 2026-06-05 (J) | open | Repo re-eval: committed `main` relief held (AGENTS.md 28,489 B, Surface fidelity green — collision never materialized); single Preflight orphan (OBPI-0.0.37-18) cleared via sanctioned `preflight --apply` → 26/26 GREEN; baseline promoted H→J; ADR-0.0.37 6/19 BLOCKED on 13 missing ledger proofs |
 
 ## Appendix: The Smooth-vs-Replicable Axis (2026-05-30 dialogue insights)
 
