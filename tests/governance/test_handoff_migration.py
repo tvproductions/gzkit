@@ -33,10 +33,11 @@ _SKILL = _REPO_ROOT / ".gzkit" / "skills" / "gz-session-handoff" / "SKILL.md"
 # to 35 for the 2026-05-31 ADR-0.0.37 density-dial session handoff, then 36 for the
 # 2026-05-31 canon-foundation-design-captured session handoff, then 37 for the
 # 2026-06-01 519-substrate-obpi13-rescoped session handoff, then 38 for the
-# 2026-06-03 519-adr0037-corpus-cms-redesign session handoff. Exact-count assertion is an
-# intentional fail-closed tripwire: every change to the handoff store must be witnessed
-# by a deliberate bump here, not absorbed silently.
-_EXPECTED_CANONICAL_COUNT = 38
+# 2026-06-03 519-adr0037-corpus-cms-redesign session handoff, then 39 for the
+# 2026-06-04 519-byte-relief-landed-loosening-pass session handoff. Exact-count assertion
+# is an intentional fail-closed tripwire: every change to the handoff store must be
+# witnessed by a deliberate bump here, not absorbed silently.
+_EXPECTED_CANONICAL_COUNT = 39
 
 
 def _canonical_handoffs() -> list[Path]:

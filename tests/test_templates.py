@@ -142,7 +142,10 @@ class TestAgentsTemplateSemantic(unittest.TestCase):
         """Rendered AGENTS template names the CLI runtime as canonical."""
         self.assertIn("uv run gz obpi pipeline <OBPI-ID>", self.content)
         self.assertIn("gz-obpi-pipeline", self.content)
-        self.assertIn("thin alias", self.content)
+        # The 2026-06-04 doctrine reword (8dc04a9a) scoped the pipeline mandate to
+        # contract-bearing OBPIs and dropped the "thin alias" phrasing; the runtime is
+        # still named canonical via "the runtime owns stage sequencing".
+        self.assertIn("the runtime owns stage sequencing", self.content)
 
 
 class TestAdapterTemplatesReferenceCanon(unittest.TestCase):
