@@ -669,6 +669,55 @@ class TestValidateLedger(unittest.TestCase):
             errors = validate_ledger(Path(f.name))
             self.assertEqual(errors, [])
 
+    def test_chore_decommission_compound_dispositions_accepted(self) -> None:
+        """Compound/extended dispositions recorded by the OBPI-0.0.59-05 sweep validate clean.
+
+        The ledger-schema disposition enum is the *historical-record acceptance* surface —
+        distinct from ProposedDisposition (the forward proposal menu locked at four by
+        REQ-0.0.59-04-02). The sweep authored combined dispositions through the free-str
+        event field, so the ledger must accept them as valid recorded states.
+        """
+        recorded_dispositions = [
+            "fold-to-validator+keep-as-fixture",
+            "fold-to-validator-whole-file-delete",
+            "no-op-already-clean",
+        ]
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+            for i, disposition in enumerate(recorded_dispositions):
+                entry = {
+                    "schema": "gzkit.ledger.v1",
+                    "event": "chore_decommission_processed",
+                    "id": f"tests/governance/test_example_{i}.py",
+                    "ts": "2026-05-27T06:30:00+00:00",
+                    "file_path": f"tests/governance/test_example_{i}.py",
+                    "disposition": disposition,
+                    "obpi_id": "OBPI-0.0.59-05-first-sweep-wave-top-5-offenders",
+                }
+                f.write(json.dumps(entry) + "\n")
+            f.flush()
+            errors = validate_ledger(Path(f.name))
+        self.assertEqual(errors, [], f"compound dispositions rejected: {errors}")
+
+    def test_chore_decommission_unknown_disposition_rejected(self) -> None:
+        """An unrecognized disposition is still rejected — widening did not remove the enum."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+            entry = {
+                "schema": "gzkit.ledger.v1",
+                "event": "chore_decommission_processed",
+                "id": "tests/governance/test_bogus.py",
+                "ts": "2026-05-27T06:30:00+00:00",
+                "file_path": "tests/governance/test_bogus.py",
+                "disposition": "totally-made-up-disposition",
+                "obpi_id": "OBPI-0.0.59-05-first-sweep-wave-top-5-offenders",
+            }
+            f.write(json.dumps(entry) + "\n")
+            f.flush()
+            errors = validate_ledger(Path(f.name))
+        self.assertTrue(
+            any("disposition" in error.message for error in errors),
+            "unknown disposition should be rejected by the enum",
+        )
+
     def test_invalid_obpi_req_proof_inputs_rejected(self) -> None:
         """Malformed nested req_proof_inputs fail ledger validation."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:

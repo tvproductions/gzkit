@@ -1060,7 +1060,10 @@
             "convert",
             "replace-with-ledger",
             "fold-to-validator",
-            "keep-as-fixture"
+            "keep-as-fixture",
+            "fold-to-validator+keep-as-fixture",
+            "fold-to-validator-whole-file-delete",
+            "no-op-already-clean"
           ]
         },
         "obpi_id": {
