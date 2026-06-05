@@ -40,16 +40,18 @@ Status: Active canonical recovery plan.
 > ~8 live artifacts plus immutable ledger/insights/handoff records; renaming would
 > churn them every session).
 
-Last updated: 2026-06-05 (PM) — **Phase-4 drain pass: 5 GHIs closed, 1 class-GHI filed; `gz check` green throughout.**
+Last updated: 2026-06-05 (PM) — **Phase-4 drain pass: 6 GHIs closed, 1 class-GHI filed; `gz check` green throughout.**
 Drained Phase-4 recovery debt one at a time (green-first, observed-evidence closes): closed
 **#525 / #560 / #562** as verify-only already-resolved (CLAUDE.md redirect doctrine landed;
 distribution byte-equivalence scenario green after `cda0d78e`; tautological audit converted to
 `_file_digest`), and direct-fixed **#559** (`abba7e9b` — `hexagonal-architecture.md` demoted-ADR
 adapter examples → live feature adapters 0.13.0/0.18.0/0.12.0; mkdocs --strict green) and **#534**
 (`44ceedd8` — TDD RED→GREEN; `gz obpi complete` covering-test subprocesses now decode with
-`errors="replace"`). Filed **#582** for the broader class (~41 text-mode subprocess reads in
+`errors="replace"`) and **#569** (`3a6908e1` — TDD; verify-stage extractor reuses
+`extract_fenced_commands` so multi-line Verification commands join per BI-1, not split).
+Filed **#582** for the broader class (~41 text-mode subprocess reads in
 `src/gzkit/` lacking `errors=` + a recurrence-defense validator — ceremony-sized). Open issues
-**38 → 34**. The remaining Phase-4 set is largely operator-gated (schema-enum class #480/#524/#527;
+**38 → 33**. The remaining Phase-4 set is largely operator-gated (schema-enum class #480/#524/#527;
 attested-brief sprawl #532/#549; budget-touching #551; large routed #571). **#519 stays the sole
 open emergency** — its durable cure (registry-projection to <15k, GHI #533) needs the ADR-0.0.37
 build-out + Gate 5, which require the operator. Earlier 2026-06-05 entry retained below.
@@ -140,7 +142,7 @@ the committed-main baseline; this edit records only the OBPI-26 disposition chan
 | #558 | `gz adr demote` keep-pool leaves stale `promoted_to`/Superseded | **T1** — Phase 3 |
 | #561 | OBPI-0.0.64-05 SUPPORT REQ missing `gz validate --<scope>` citation | **T1** — Phase 3 |
 | #565 | 40 active briefs' compound Verification cmds violate shell-less contract | **T1** — Phase 3 |
-| #569 | verify-stage extractor doesn't reuse `extract_fenced_commands` joiner | **T1** — Phase 3 |
+| ~~#569~~ | verify-stage extractor doesn't reuse `extract_fenced_commands` joiner | **CLOSED 2026-06-05** — `3a6908e1` (TDD); BI-1 joiner shared with demo path |
 | #573 | closeout BI-2 DRY classifier fork needs governed TDD redo | **T1** — Phase 3 |
 | #577 | `gz context` vs `gz status` divergent gate projection | **T1** — Phase 3 |
 | #578 | `preflight --apply` reaps expired locks without token-block register entry | **T1** — Phase 3 |
@@ -165,7 +167,7 @@ the committed-main baseline; this edit records only the OBPI-26 disposition chan
 | #549 | are attested briefs textually correctable without re-attestation? | **T2** — ceremony doctrine |
 | #567 | Pocock fenced prototype-spike + 2 filters (parity) | **Parked** — §13 Open-needs-discussion |
 
-**Tier counts (updated 2026-06-05, post Phase-4 drain):** T0 = 0 (harness green) · T1 = 26 (Phase 2: 1 · Phase 3: 18 · Phase 4: 7) · T2 = 7 · Parked = 1 · **34 open total.** This session closed **5** Phase-4 issues (#525, #560, #562 verify-only already-resolved; #559, #534 direct-fixed) and filed **1** (#582, the #534 class). Remaining Phase-4 quick-drain is largely exhausted: #480/#524/#527 are one schema-enum-class decision (`Validated` is gzkit's real ADR lifecycle status but absent from the `--documents` validator enum — a schema/runtime-contract call for the operator, not per-file status edits); #532 sprawls across attested briefs (entangled w/ #549); #551 overlaps the landed loosening + touches budget-constrained AGENTS.md; #571 is the large routed unittest/doctest work. The
+**Tier counts (updated 2026-06-05, post Phase-4 drain):** T0 = 0 (harness green) · T1 = 25 (Phase 2: 1 · Phase 3: 17 · Phase 4: 7) · T2 = 7 · Parked = 1 · **33 open total.** This session closed **6** issues (#525, #560, #562 verify-only already-resolved; #559, #534, #569 direct-fixed) and filed **1** (#582, the #534 class). Remaining Phase-4 quick-drain is largely exhausted: #480/#524/#527 are one schema-enum-class decision (`Validated` is gzkit's real ADR lifecycle status but absent from the `--documents` validator enum — a schema/runtime-contract call for the operator, not per-file status edits); #532 sprawls across attested briefs (entangled w/ #549); #551 overlaps the landed loosening + touches budget-constrained AGENTS.md; #571 is the large routed unittest/doctest work. The
 two **eval-feedback** clusters (req-kind #537/#538/#543/#544/#545/#546/#547; covers/coverage) are
 the *"advisory-rule-never-mechanized"* family the §1 audit named as the dominant failure mode —
 they concentrate in Phase 3, which is the right place to retire the class, not the instances.

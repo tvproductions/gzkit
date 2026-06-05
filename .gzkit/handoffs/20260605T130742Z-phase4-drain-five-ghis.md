@@ -25,20 +25,20 @@ Return-to-health **Phase-4 drain** session (the goal is
 **OPEN** (#519 is still the sole open `emergency`).
 
 **🚨 FIRST ORIENTATION FACT / BLOCKER — unpushed commits vs. closed remote GHIs.**
-Three commits are **local-only on `main`; they are NOT on `origin`**:
-
-- `abba7e9b` — `fix(hexagonal-architecture)` (GHI #559)
-- `44ceedd8` — `fix(obpi-complete)` decode with errors=replace (GHI #534)
-- `7e44c731` — `docs(recovery)` Phase-4 drain plan update
-
-A direct `git push origin main` was **blocked by the Claude Code auto-mode
-classifier** ("no explicit user authorization for a direct main push"). I did
-**not** work around it (Never #6). Meanwhile GHIs **#525, #534, #559, #560,
-#562 are CLOSED on GitHub** with comments citing these SHAs. So `origin` lacks
-the commits the closed issues reference — a fresh session reading `origin` sees
-neither the fixes nor the plan update and could redo #559/#534. **Operator must
-push to reconcile** (see Immediate Next Steps #1). `origin/main` was `dcea388b`
-at session start and is unchanged; no concurrent agent was detected.
+Several commits are **local-only on `main`; they are NOT on `origin`**. As of
+this handoff's last edit they include (newest first): the #569 fix `3a6908e1`,
+this handoff `8bda55df`, the recovery-plan update `7e44c731`, the #534 fix
+`44ceedd8`, the #559 fix `abba7e9b` — i.e. **everything ahead of `origin/main`
+(`dcea388b`)**. A direct `git push origin main` was **blocked by the Claude Code
+auto-mode classifier** ("no explicit user authorization for a direct main
+push"). I did **not** work around it (Never #6). Meanwhile GHIs **#525, #534,
+#559, #560, #562, #569 are CLOSED on GitHub** with comments citing these SHAs.
+So `origin` lacks the commits the closed issues reference — a fresh session
+reading `origin` sees neither the fixes nor the plan update and could redo the
+fixes. **Operator must `git push origin main` to reconcile** — that single push
+covers *all* commits ahead of `dcea388b`, not only the ones enumerated here
+(see Immediate Next Steps #1). `origin/main` was `dcea388b` at session start and
+is unchanged; no concurrent agent was detected.
 
 ## Important Context
 
@@ -107,10 +107,13 @@ at session start and is unchanged; no concurrent agent was detected.
    another reconciliation) as a schema/runtime-contract call; #532 awaits the
    #549 attested-brief-correctability doctrine; #551 overlaps landed loosening
    `ac0816ff`.
-4. **Optional clean solo Phase-3 candidates (NOT sized this session):** #569
-   (DRY the verify-stage extractor onto `extract_fenced_commands`), #544 (add a
-   Pydantic schema to the `covers` grandfathering cache load). Plausibly clean
-   one-pass direct-fixes; size against thresholds before committing.
+4. **Remaining optional clean solo Phase-3 candidate:** #544 (add a Pydantic
+   schema to the `covers` grandfathering cache load) — deferred this session
+   because the proposed `entries:` model shape may not match the on-disk
+   flat-`dict[str,str]` format and it couples to `compute_three_channel_coverage`'s
+   param type; size that coupling before committing. (#569 — the sibling
+   "DRY the verify-stage extractor" candidate — was sized and **fixed** this
+   session, `3a6908e1`.)
 5. **#582** (subprocess decode robustness, ~41 sites + validator) is
    ceremony-sized — route deliberately, not as a quick sweep.
 
@@ -151,6 +154,11 @@ at session start and is unchanged; no concurrent agent was detected.
   decode-robustness test (non-UTF-8 `0xa7` tolerance + non-zero-exit preservation).
 - `docs/governance/hexagonal-architecture.md` — `#559` fix: demoted-ADR adapter
   examples replaced with live feature adapters 0.13.0/0.18.0/0.12.0 (`abba7e9b`).
+- `src/gzkit/commands/obpi_stages.py` — `#569` fix: `_pipeline_verification_commands`
+  reuses `extract_fenced_commands` (shared BI-1 joiner), removed unused `import re`
+  (`3a6908e1`).
+- `tests/commands/test_pipeline_verification_multiline.py` — `#569` RED→GREEN test
+  (multi-line `python -c` Verification command joined, not split).
 
 ## Environment State
 
