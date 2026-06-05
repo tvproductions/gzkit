@@ -40,7 +40,21 @@ Status: Active canonical recovery plan.
 > ~8 live artifacts plus immutable ledger/insights/handoff records; renaming would
 > churn them every session).
 
-Last updated: 2026-06-05 — **OBPI-0.0.37-26 attested-complete (pipeline closeout).**
+Last updated: 2026-06-05 (PM) — **Phase-4 drain pass: 5 GHIs closed, 1 class-GHI filed; `gz check` green throughout.**
+Drained Phase-4 recovery debt one at a time (green-first, observed-evidence closes): closed
+**#525 / #560 / #562** as verify-only already-resolved (CLAUDE.md redirect doctrine landed;
+distribution byte-equivalence scenario green after `cda0d78e`; tautological audit converted to
+`_file_digest`), and direct-fixed **#559** (`abba7e9b` — `hexagonal-architecture.md` demoted-ADR
+adapter examples → live feature adapters 0.13.0/0.18.0/0.12.0; mkdocs --strict green) and **#534**
+(`44ceedd8` — TDD RED→GREEN; `gz obpi complete` covering-test subprocesses now decode with
+`errors="replace"`). Filed **#582** for the broader class (~41 text-mode subprocess reads in
+`src/gzkit/` lacking `errors=` + a recurrence-defense validator — ceremony-sized). Open issues
+**38 → 34**. The remaining Phase-4 set is largely operator-gated (schema-enum class #480/#524/#527;
+attested-brief sprawl #532/#549; budget-touching #551; large routed #571). **#519 stays the sole
+open emergency** — its durable cure (registry-projection to <15k, GHI #533) needs the ADR-0.0.37
+build-out + Gate 5, which require the operator. Earlier 2026-06-05 entry retained below.
+
+Prior 2026-06-05 entry — **OBPI-0.0.37-26 attested-complete (pipeline closeout).**
 Ran the `gz-obpi-pipeline` from `--from=verify` over OBPI-0.0.37-26 (the #519 Codex-root
 interim relief, payload already landed at Snapshot I): Stage 3 verify green (ruff,
 typecheck, 5879 unittests, mkdocs `--strict`, `--vendor-manifest`,
@@ -132,15 +146,16 @@ the committed-main baseline; this edit records only the OBPI-26 disposition chan
 | #578 | `preflight --apply` reaps expired locks without token-block register entry | **T1** — Phase 3 |
 | #480 | `validate --documents`: 3536 errors from schema-convention additions | **T1** — Phase 4 |
 | #524 | ADR-0.2.0 fails `validate --documents` (status enum + sections) | **T1** — Phase 4 |
-| #525 | CLAUDE.md→AGENTS.md redirect *(verify: appears already landed)* | **T1** — Phase 4 |
-| #527 | ADR-0.0.9 fails `validate --documents` (status enum + sections) | **T1** — Phase 4 |
-| #532 | 4 briefs reference wrong manpage path (`gz-validate.md`) | **T1** — Phase 4 |
-| #551 | REQ-coverage foundation-trigger undocumented in AGENTS.md | **T1** — Phase 4 |
-| #559 | `hexagonal-architecture.md` stale refs to demoted ADRs | **T1** — Phase 4 |
-| #560 | behave `distribution_invariant` byte-equivalence scenario failing | **T1** — Phase 4 |
-| #562 | tautological test (`test_unscoped_rules.py:448` read_text+assertEqual) | **T1** — Phase 4 |
+| ~~#525~~ | CLAUDE.md→AGENTS.md redirect | **CLOSED 2026-06-05** — already landed; doctrine line in all 3 CLAUDE.md surfaces (verify-only) |
+| #527 | ADR-0.0.9 fails `validate --documents` (status enum + sections) | **T1** — Phase 4 *(schema-enum class w/ #480/#524 — `Validated` is real lifecycle; needs schema decision, not per-file edit; defer to operator)* |
+| #532 | 4 briefs reference wrong manpage path (`gz-validate.md`) | **T1** — Phase 4 *(actually sprawls to dozens of attested briefs; entangled w/ #549 — not a clean direct-fix)* |
+| #551 | REQ-coverage foundation-trigger undocumented in AGENTS.md | **T1** — Phase 4 *(premise overlaps landed loosening `ac0816ff`; touches budget-constrained AGENTS.md — defer)* |
+| ~~#559~~ | `hexagonal-architecture.md` stale refs to demoted ADRs | **CLOSED 2026-06-05** — `abba7e9b`; substituted live feature adapters (0.13.0/0.18.0/0.12.0), mkdocs --strict green |
+| ~~#560~~ | behave `distribution_invariant` byte-equivalence scenario failing | **CLOSED 2026-06-05** — `cda0d78e` registered missing rule in baseline; scenario green (verify-only) |
+| ~~#562~~ | tautological test (`test_unscoped_rules.py` read_text+assertEqual) | **CLOSED 2026-06-05** — converted to `_file_digest`; audit exit 0 (verify-only) |
 | #571 | stdlib unittest/doctest doctrine & recurrence defenses | **T1** — Phase 4 |
-| #534 | obpi pipeline: subprocess reader crashes on non-utf8 grandchild stdout | **T1** — Phase 4 *(agent-homed @ Snapshot F; runtime defect, no gz-check gate fails)* |
+| ~~#534~~ | obpi pipeline: subprocess reader crashes on non-utf8 grandchild stdout | **CLOSED 2026-06-05** — `44ceedd8` (errors=replace, TDD); class routed to #582 |
+| #582 | subprocess: ~41 text-mode reads lack `errors=`, crash on non-UTF-8 (class of #534) | **T1** — Phase 4 *(filed 2026-06-05; ~39 sites + recurrence-defense validator → ceremony-sized)* |
 | #533 | agents-md 5k budget — depends on ADR-0.0.37 completion | **T2** — CMS (2.2) |
 | #579 | instructions-budget: anchor on imperative-density, not char count | **T2** — CMS (2.2) *(agent-homed @ Snapshot F; density-dial doctrine; enhancement)* |
 | #580 | composition-renderer: order sections by criticality (periphery-aware) | **T2** — CMS (2.2) *(agent-homed @ Snapshot F; enhancement)* |
@@ -150,7 +165,7 @@ the committed-main baseline; this edit records only the OBPI-26 disposition chan
 | #549 | are attested briefs textually correctable without re-attestation? | **T2** — ceremony doctrine |
 | #567 | Pocock fenced prototype-spike + 2 filters (parity) | **Parked** — §13 Open-needs-discussion |
 
-**Tier counts (updated @ Snapshot F, 2026-06-03):** T0 = 0 (harness green) · T1 = 30 (Phase 2: 1 · Phase 3: 18 · Phase 4: 11) · T2 = 7 · Parked = 1 · 38 open total (three were unhomed at the prior survey — #534 missed since 2026-05-26; #579/#580 filed 2026-06-03 — now agent-homed, re-home freely). The
+**Tier counts (updated 2026-06-05, post Phase-4 drain):** T0 = 0 (harness green) · T1 = 26 (Phase 2: 1 · Phase 3: 18 · Phase 4: 7) · T2 = 7 · Parked = 1 · **34 open total.** This session closed **5** Phase-4 issues (#525, #560, #562 verify-only already-resolved; #559, #534 direct-fixed) and filed **1** (#582, the #534 class). Remaining Phase-4 quick-drain is largely exhausted: #480/#524/#527 are one schema-enum-class decision (`Validated` is gzkit's real ADR lifecycle status but absent from the `--documents` validator enum — a schema/runtime-contract call for the operator, not per-file status edits); #532 sprawls across attested briefs (entangled w/ #549); #551 overlaps the landed loosening + touches budget-constrained AGENTS.md; #571 is the large routed unittest/doctest work. The
 two **eval-feedback** clusters (req-kind #537/#538/#543/#544/#545/#546/#547; covers/coverage) are
 the *"advisory-rule-never-mechanized"* family the §1 audit named as the dominant failure mode —
 they concentrate in Phase 3, which is the right place to retire the class, not the instances.
