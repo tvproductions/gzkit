@@ -1,8 +1,0 @@
-{
-  "obpi_id": "OBPI-0.0.37-19-corpus-capture-tool-skill",
-  "timestamp": "2026-06-05T08:29:20Z",
-  "verdict": "PASS",
-  "plan_file": "spicy-greeting-pizza.md",
-  "gaps_found": 0,
-  "notes": "Refreshed post-approval. The approved plan (~/.claude/plans/spicy-greeting-pizza.md) resolves the two allowlist gaps the earlier FAIL receipt recorded: (A) src/gzkit/ledger_events.py added for the corpus_entry_appended write-path factory; (B) docs/user/manpages/gz-content.md CREATE corrected to content.md EDIT. Operator approval of the plan ratifies both Allowed-Paths amendments (gz brief reconcile --apply is OBPI-06, unlanded). All 7 REQs map to plan steps + tests. ADR↔OBPI and Plan↔OBPI alignment PASS. CLI structural 'missing CREATE targets' are expected pre-implementation, not alignment gaps."
-}

@@ -1,8 +1,0 @@
-{
-  "obpi_id": "OBPI-0.0.37-19-corpus-capture-tool-skill",
-  "timestamp": "2026-06-05T08:30:00Z",
-  "verdict": "PASS",
-  "plan_file": "spicy-greeting-pizza.md",
-  "gaps_found": 0,
-  "notes": "Agent semantic verdict (gz-plan-audit Step 7), authoritative over the structural CLI check. The CLI's 7 'allowed path does not exist' flags are all CREATE targets this OBPI authors (remember.py, corpus_store.py, the skill, two tests, the feature, and the manpage) — expected greenfield pre-implementation state, not alignment gaps. The two real allowlist defects the earlier FAIL recorded are now corrected in the brief (ledger_events.py added; gz-content.md CREATE -> content.md EDIT) and ratified by operator plan approval. ADR<->OBPI and Plan<->OBPI alignment PASS; all 7 REQs map to plan steps + tests."
-}
