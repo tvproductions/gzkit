@@ -4,6 +4,19 @@ parent: ADR-0.0.37-constitutional-invariant-composition
 item: 26
 lane: Heavy
 status: Completed
+# req_atomic rationale (ADR-0.0.64 escape valve): this OBPI delivered ONE coherent
+# #519 emergency-relief payload — a single root-surface compression with its budget
+# calibration, vendor-manifest setpoint declaration, and interim rendition artifact.
+# Each REQ is one indivisible acceptance check against that single payload; none
+# decomposes into independent labor units, so seq=01-per-REQ is correct granularity,
+# not under-subdivision.
+req_atomic:
+  - REQ-0.0.37-26-01
+  - REQ-0.0.37-26-02
+  - REQ-0.0.37-26-03
+  - REQ-0.0.37-26-04
+  - REQ-0.0.37-26-05
+  - REQ-0.0.37-26-06
 ---
 
 # OBPI-0.0.37-26-codex-root-setpoint-application-interim-attested-relief: Codex Root Setpoint Application Interim Attested Relief
