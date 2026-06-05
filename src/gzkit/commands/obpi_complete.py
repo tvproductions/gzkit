@@ -410,16 +410,32 @@ def _qualified_to_unittest_target(ref: TestRef, project_root: Path) -> str | Non
     return f"{module}.{ref.qualified_name}"
 
 
+def _run_captured(cmd: list[str], *, cwd: str) -> subprocess.CompletedProcess[str]:
+    """Run ``cmd`` capturing text output, tolerant of non-UTF-8 sub-process bytes.
+
+    Decodes with ``errors="replace"`` so a covering-test sub-process that emits
+    bytes outside UTF-8 (observed on Windows — GHI #534, ``invalid start byte
+    0xa7``) cannot raise ``UnicodeDecodeError`` out of the reader path and abort
+    completion. ``UnicodeDecodeError`` is a ``ValueError``, so the callers'
+    ``(OSError, SubprocessError)`` guards would not otherwise catch it.
+    """
+    return subprocess.run(
+        cmd,
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+
+
 def _behave_ref_passes(ref: TestRef, project_root: Path, req_id: str) -> bool:
     """Run the behave scenario tagged ``req_id`` and return True iff exit code is 0."""
     try:
-        completed = subprocess.run(
+        completed = _run_captured(
             ["uv", "run", "-m", "behave", ref.file_path, "--tags", f"@{req_id}", "--no-summary"],
             cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            check=False,
         )
     except (OSError, subprocess.SubprocessError):
         return False
@@ -442,13 +458,9 @@ def _any_covering_test_passes(refs: list[TestRef], project_root: Path, *, req_id
         if target is None:
             continue
         try:
-            completed = subprocess.run(
+            completed = _run_captured(
                 ["uv", "run", "-m", "unittest", target],
                 cwd=str(project_root),
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                check=False,
             )
         except (OSError, subprocess.SubprocessError):
             continue
