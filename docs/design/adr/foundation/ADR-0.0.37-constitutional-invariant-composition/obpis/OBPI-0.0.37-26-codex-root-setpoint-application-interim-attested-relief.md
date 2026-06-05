@@ -3,7 +3,7 @@ id: OBPI-0.0.37-26-codex-root-setpoint-application-interim-attested-relief
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 26
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.37-26-codex-root-setpoint-application-interim-attested-relief: Codex Root Setpoint Application Interim Attested Relief
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 - **Checklist Item:** #26 - "OBPI-0.0.37-26 — #519 Codex-root setpoint application + interim attested relief (declare lean `AgentContract.codex`/tighter-root setpoint; land an operator-attested interim hand-compressed rendition as the first committed-rendition artifact — sequenced FIRST so the emergency is not stranded; fix `data/instructions_files_budget.json` miscalibration; composer regenerates the rendition once 21/22 land)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -209,16 +209,36 @@ uv run python -c "import json; print(json.load(open('data/vendor-manifest.json',
 
 ### Value Narrative
 
+Problem before: root `AGENTS.md` sat at 32,651 B = 99.6% of Codex's 32,768 B
+`project_doc_max_bytes` cap (~117 B from silent truncation) — the #519 emergency.
+Codex loads the shared root surface by name and silently truncates past the cap
+with no warning, so the agent contract was one edit from losing its tail unseen.
+
+Capability now: the shared root surface is 28,489 B with ~4.3 KB headroom under
+the cap, achieved by re-homing terse Mechanical skeletons into the local splice
+(`.gzkit/agents.local.md`) rather than deleting prose the ADR-0.0.33 retention gate
+requires verbatim — so surface-fidelity stays green. The interim compressed
+rendition is committed so the composer (OBPI-21/22) regenerates it rather than
+re-deriving the relief payload.
+
 ### Key Proof
+
+
+`wc -c AGENTS.md` → `28489` (under the 32,768 B Codex cap, ~4.3 KB headroom).
+`uv run gz check` → "✓ All checks passed" (26/26), including `--invariant-coherence`,
+`--instructions-files-budget`, and surface-fidelity.
 
 ### Implementation Summary
 
+
 - Parent ADR decision item: "OBPI-0.0.37-26 — #519 Codex-root setpoint application + interim attested relief (declare lean `AgentContract.codex`/tighter-root setpoint; land an operator-attested interim hand-compressed rendition as the first committed-rendition artifact — sequenced FIRST so the emergency is not stranded; fix `data/instructions_files_budget.json` miscalibration; composer regenerates the rendition once 21/22 land)"
-- Planned files created/modified: `.gzkit/agents.local.md`; `AGENTS.md`; `data/vendor-manifest.json`; `data/instructions_files_budget.json`; `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/renditions/agentcontract-codex-root-interim.md`
-- Tests added: To be determined by Stage 2; at minimum, verification must prove root byte ceiling, budget calibration, vendor manifest validity, rendition artifact presence, and document validity.
-- Date completed:
-- Attestation status:
-- Defects noted:
+- #519 interim relief landed via direct commit `705a2354` (sanctioned recovery direct-fix path; loosening pass `8dc04a9a` routes recovery/emergency fixes to direct-fix, not the pipeline): root `AGENTS.md` compressed 32,651 → 28,489 B via the local-splice diet (`.gzkit/agents.local.md` → 4,997 B), under Codex's 32,768 B `project_doc_max_bytes` cap with ~4.3 KB headroom (REQ-01).
+- `data/instructions_files_budget.json` `files["AGENTS.md"]` recalibrated to 30,000 — the prior 33,000 exceeded the Codex cap and would have green-lit a silently-truncated file (REQ-02).
+- `data/vendor-manifest.json` `content_type_temperatures.AgentContract` declares the relief-path setpoint as `{codex: lite, claude: heavy}` (REQ-03).
+- Interim committed-rendition artifact present at `renditions/agentcontract-codex-root-interim.md` for OBPI-21/22 to regenerate or migrate (REQ-04).
+- Render-path coherence holds: `.gzkit/agents.local.md` + the rendition supply the compressed source, `AGENTS.md` carries the rendered result, `uv run gz validate --invariant-coherence` passes (REQ-05). Scope stayed inside Allowed Paths (REQ-06).
+- Tests/validation: `uv run gz check` 26/26 green incl. `--invariant-coherence`, `--instructions-files-budget`, surface-fidelity; behave REQ coverage waived per the interim-relief rationale (all six REQs are SUPPORT-kind, no Gherkin-observable behavior).
+- Defects noted: none.
 
 ## Tracked Defects
 
@@ -226,12 +246,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — operator Gate-5 attestation for OBPI-0.0.37-26 (Heavy/foundation). Verified at Stage 4: root AGENTS.md 28,489 B (≤30,000 cap, ~4.3 KB Codex headroom); budget recalibrated to 30,000; vendor-manifest AgentContract setpoint declared; rendition artifact present; invariant-coherence green (10 scopes). Receipts: arb-ruff-0f99170233774f7b99912b6f711fe4d8, arb-step-typecheck-659e3deb06124647a8cb74d6d2088967, arb-step-unittest-1967d22de9ef4e63bdf94a17537cc2dd (5879 tests), arb-step-mkdocs-454b1a5b8d724a5391a40bc5188b75f5. All 6 REQs SUPPORT-kind, LEDGER_PLUS_VALIDATOR channel.
+- Date: 2026-06-05
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-05
 
 **Evidence Hash:** -
