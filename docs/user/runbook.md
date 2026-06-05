@@ -924,6 +924,23 @@ uv run gz governance render --target agents-md --check
 uv run gz validate --invariant-coherence
 ```
 
+**To capture new content (corpus write path — OBPI-0.0.37-19):**
+Never hand-edit the rendered surface. Append to the append-only corpus instead — the
+source of truth the composer compresses and playback renders from:
+```bash
+# Append an addressed entry to AGENTS.md's corpus (AGENTS.md stays byte-unchanged)
+uv run gz content remember AGENTS.md --section "Behavior Rules" \
+  --text "Prefer stdlib JSONL for append-only stores." --tier compressible
+
+# Invariant-tier entries are emitted verbatim at every compression setpoint
+uv run gz content remember AGENTS.md --section prime-directive \
+  --text "YOU OWN THE WORK COMPLETELY." --tier invariant
+```
+The entry lands in `.gzkit/corpus/AGENTS.md.jsonl` and emits a `corpus_entry_appended`
+ledger event; `remember` fails closed if the surface is unknown or `--section` resolves to
+no template-defined section. See the `gz-content-remember` skill and
+[`gz content`](manpages/content.md) § remember.
+
 ---
 
 ## Rules Surface

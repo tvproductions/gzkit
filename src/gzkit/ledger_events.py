@@ -506,6 +506,31 @@ def composition_drift_detected_event(
     )
 
 
+def corpus_entry_appended_event(
+    surface: str,
+    section: str,
+    entry_id: str,
+    tier: str,
+) -> LedgerEvent:
+    """Create a corpus_entry_appended event (ADR-0.0.37 § Re-Alignment, OBPI-19).
+
+    Layer-2 witness for a ``gz content remember`` append to the per-surface corpus
+    store. Mirrors ``composition_rendered_event``'s shape.
+    """
+    timestamp = datetime.now(UTC).isoformat()
+    return LedgerEvent(
+        event="corpus_entry_appended",
+        id=f"corpus-entry-appended-{timestamp}",
+        ts=timestamp,
+        extra={
+            "surface": surface,
+            "section": section,
+            "entry_id": entry_id,
+            "tier": tier,
+        },
+    )
+
+
 def chore_decommission_processed_event(
     file_path: str,
     disposition: str,

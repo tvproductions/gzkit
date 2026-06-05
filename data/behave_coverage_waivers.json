@@ -2267,6 +2267,15 @@
         "REQ-0.0.37-26-05",
         "REQ-0.0.37-26-06"
       ]
+    },
+    "OBPI-0.0.37-19-corpus-capture-tool-skill": {
+      "rationale": "obpi-0.0.37-19-req05-07-support-kind-ledger-and-validator-proof",
+      "status_at_landing": "in-progress",
+      "waived_reqs": [
+        "REQ-0.0.37-19-05",
+        "REQ-0.0.37-19-06",
+        "REQ-0.0.37-19-07"
+      ]
     }
   }
 }

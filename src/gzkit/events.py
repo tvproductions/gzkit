@@ -424,6 +424,21 @@ class ChoreDecommissionProcessedEvent(_EventBase):
     obpi_id: str
 
 
+class CorpusEntryAppendedEvent(_EventBase):
+    """corpus_entry_appended event — append-only corpus capture (ADR-0.0.37, OBPI-19).
+
+    Layer-2 witness that a ``CorpusEntry`` was appended to the per-surface corpus
+    store by ``gz content remember``. Carries the addressing tuple needed for
+    bidirectional audit; never written for a rendered-surface edit.
+    """
+
+    event: Literal["corpus_entry_appended"]
+    surface: str
+    section: str
+    entry_id: str
+    tier: str
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -458,7 +473,8 @@ TypedLedgerEvent = Annotated[
     | DistributionBaselineRegeneratedEvent
     | CompositionRenderedEvent
     | CompositionDriftDetectedEvent
-    | ChoreDecommissionProcessedEvent,
+    | ChoreDecommissionProcessedEvent
+    | CorpusEntryAppendedEvent,
     Field(discriminator="event"),
 ]
 

@@ -962,6 +962,32 @@
         }
       }
     },
+    "corpus_entry_appended": {
+      "required": [
+        "surface",
+        "section",
+        "entry_id",
+        "tier"
+      ],
+      "properties": {
+        "surface": {
+          "type": "string",
+          "min_length": 1
+        },
+        "section": {
+          "type": "string",
+          "min_length": 1
+        },
+        "entry_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "tier": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
     "intrinsic-complexity-attestation": {
       "required": [
         "file_path",

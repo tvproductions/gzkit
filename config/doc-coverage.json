@@ -52,6 +52,16 @@
       },
       "governance_relevant": false
     },
+    "content remember": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": false
+      },
+      "governance_relevant": false
+    },
     "complexity advise": {
       "surfaces": {
         "manpage": true,

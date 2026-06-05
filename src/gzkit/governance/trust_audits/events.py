@@ -97,6 +97,11 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "Layer-2 witness for each file processed by the decommission-tautological-tests chore; "
         "consumed by chore audit tooling, not the artifact graph."
     ),
+    "corpus_entry_appended": (
+        "Append-only corpus capture record (ADR-0.0.37, OBPI-0.0.37-19). "
+        "Layer-2 witness for a `gz content remember` append to the per-surface corpus store; "
+        "consumed by corpus/compose tooling for provenance audit, not the artifact graph."
+    ),
 }
 
 _VALIDATOR_FIELD_WAIVERS: dict[str, str] = {}

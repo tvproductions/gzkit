@@ -253,9 +253,14 @@ class TestCommandSurfaceUnchanged(unittest.TestCase):
 
     @covers("REQ-0.0.34-05-05")
     def test_no_new_subcommands_added(self) -> None:
-        """No new subcommand is added to `gz content`; allowed subcommands unchanged."""
-        # Expected subcommands for `gz content`
-        expected_subcommands = {"import", "list", "show", "render", "edit"}
+        """No new subcommand is added to `gz content`; allowed subcommands unchanged.
+
+        REQ-0.0.34-05-05 fenced the OBPI-0.0.34-05 TUI surface against unplanned
+        subcommand growth. `remember` was added intentionally by OBPI-0.0.37-19
+        (corpus capture write path); the fence is updated to admit it, not relaxed.
+        """
+        # Expected subcommands for `gz content` (remember added by OBPI-0.0.37-19)
+        expected_subcommands = {"import", "list", "show", "render", "edit", "remember"}
 
         # Run `gz content --help` via uv run (gzkit has no __main__.py)
         result = subprocess.run(

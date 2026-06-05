@@ -27,6 +27,20 @@
         }
       },
       "required_fields": ["target", "diff_first_50_lines", "render_ts"]
+    },
+    {
+      "id": "corpus_entry_appended",
+      "name": "corpus_entry_appended",
+      "schema": {
+        "required": ["surface", "section", "entry_id", "tier"],
+        "properties": {
+          "surface": {"type": "string"},
+          "section": {"type": "string"},
+          "entry_id": {"type": "string"},
+          "tier": {"type": "string"}
+        }
+      },
+      "required_fields": ["surface", "section", "entry_id", "tier"]
     }
   ]
 }

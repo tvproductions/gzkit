@@ -34,6 +34,11 @@ _INSIGHTS_SHAPE_WAIVERS: dict[str, str] = {
     "729446b01ff3a1fb": "Pre-lock: nested-object `evidence` (ADR-0.4.0 retry).",
     "d824f55ea9de18c7": "Pre-lock: plural `adr_ids` (ADR-0.1.0/ADR-0.2.0 reconciliation).",
     "537315562819f427": "Pre-lock: plural `adr_ids` (ADR-0.1.0/ADR-0.2.0 resolution).",
+    "c2fc83bbadb06ba8": (
+        "Pre-existing date-only `ts` on a prior session's ADR-0.0.37 misattribution-triage "
+        "improvement record (committed at HEAD 95723486); waived per T2 rather than rewriting "
+        "closed-evidence history (surfaced during OBPI-0.0.37-19)."
+    ),
 }
 
 

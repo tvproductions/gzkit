@@ -25,6 +25,7 @@ from gzkit.events import (
     CompositionDriftDetectedEvent,
     CompositionRenderedEvent,
     ConstitutionCreatedEvent,
+    CorpusEntryAppendedEvent,
     DistributionBaselineRegeneratedEvent,
     GateCheckedEvent,
     IntrinsicComplexityAttestationEvent,
@@ -263,6 +264,7 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "composition_rendered": CompositionRenderedEvent,
     "composition_drift_detected": CompositionDriftDetectedEvent,
     "chore_decommission_processed": ChoreDecommissionProcessedEvent,
+    "corpus_entry_appended": CorpusEntryAppendedEvent,
 }
 
 # Base fields present on _EventBase -- not event-specific

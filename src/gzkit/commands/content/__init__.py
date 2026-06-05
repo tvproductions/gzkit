@@ -50,6 +50,7 @@ def register_content_parsers(commands: argparse._SubParsersAction) -> None:
     _register_show(content_commands)
     _register_render(content_commands)
     _register_edit(content_commands)
+    _register_remember(content_commands)
 
 
 def _register_import(content_commands: argparse._SubParsersAction) -> None:
@@ -249,5 +250,62 @@ def _register_edit(content_commands: argparse._SubParsersAction) -> None:
             file=a.file,
             as_type=a.as_type,
             vendor=a.vendor,
+        )
+    )
+
+
+def _register_remember(content_commands: argparse._SubParsersAction) -> None:
+    p = content_commands.add_parser(
+        "remember",
+        help="Append an addressed entry to a surface's append-only corpus store",
+        description=(
+            "Append one addressed, provenanced entry to the append-only corpus store at "
+            ".gzkit/corpus/<surface>.jsonl and emit a corpus_entry_appended ledger event. "
+            "NEVER edits a rendered surface (AGENTS.md, CLAUDE.md, mirrors) — capture writes "
+            "the source of truth; deterministic playback is the sole writer of rendered "
+            "surfaces. Fails closed when the surface is unknown or --section resolves to no "
+            "template-defined section of that surface."
+        ),
+        epilog=_build_epilog(
+            [
+                'gz content remember AGENTS.md --section "Behavior Rules" '
+                '--text "Prefer stdlib JSONL for append-only stores."',
+                "gz content remember AGENTS.md --section prime-directive "
+                '--text "YOU OWN THE WORK COMPLETELY." --tier invariant',
+            ]
+        ),
+    )
+    p.add_argument("surface", help="Control surface to capture against (e.g. AGENTS.md).")
+    p.add_argument(
+        "--section",
+        required=True,
+        help="Target section id or title; normalized to the surface's kebab-case Pillar id.",
+    )
+    p.add_argument("--text", required=True, help="The entry prose to remember.")
+    p.add_argument(
+        "--tier",
+        choices=["invariant", "compressible"],
+        default="compressible",
+        help="invariant = verbatim at every setpoint; compressible = condensable (default).",
+    )
+    p.add_argument(
+        "--classification",
+        choices=["Mechanical", "Promotable", "Judgment", "Ambiguous"],
+        default="Ambiguous",
+        help="Advisory-scorecard class for the entry (default: Ambiguous).",
+    )
+    p.add_argument(
+        "--origin",
+        default="cli:content-remember",
+        help="Provenance of the capture, e.g. a GHI or session id.",
+    )
+    p.set_defaults(
+        func=lambda a: _content("remember", "content_remember_cmd")(
+            surface=a.surface,
+            section=a.section,
+            text=a.text,
+            tier=a.tier,
+            classification=a.classification,
+            origin=a.origin,
         )
     )

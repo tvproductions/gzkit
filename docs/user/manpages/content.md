@@ -100,6 +100,30 @@ The atomic-replace contract means a failed validation (or a non-zero editor
 exit) leaves the original file byte-identical to its pre-edit state. There
 is no partial-write state.
 
+### remember
+
+Append one addressed, provenanced entry to a surface's **append-only corpus**
+store at `.gzkit/corpus/<surface>.jsonl` and emit a `corpus_entry_appended`
+ledger event. This is the write path of the ADR-0.0.37 corpus pipeline
+(`corpus → compress → rendition → playback`): capture grows the source of
+truth; deterministic playback remains the sole writer of rendered surfaces.
+**`remember` NEVER edits a rendered surface** (`AGENTS.md`, `CLAUDE.md`, or
+any mirror) — that is its load-bearing invariant.
+
+```bash
+gz content remember <surface> --section <id> --text <text> \
+  [--tier invariant|compressible] \
+  [--classification Mechanical|Promotable|Judgment|Ambiguous] \
+  [--origin <provenance>]
+```
+
+The `--section` value is normalized to the surface's kebab-case section id
+(so `"Behavior Rules"` resolves to `behavior-rules`). The command **fails
+closed** (non-zero exit, no entry written) when the surface is unknown or the
+section resolves to no template-defined section of that surface — an
+unaddressable entry is never stored. `--tier invariant` marks entries emitted
+verbatim at every compression setpoint; `--tier` defaults to `compressible`.
+
 ## Options
 
 | Flag | Applies To | Description |
@@ -109,6 +133,11 @@ is no partial-write state.
 | `--json` | list, show | Emit JSON to stdout instead of human-readable prose |
 | `--write <path>` | import | Write re-rendered canonical form to this path |
 | `--vendor <vendor>` | render, edit | Target vendor template for re-rendering (default: `claude`) |
+| `--section <id>` | remember | Target section id or title; normalized to the surface's kebab-case Pillar id (required) |
+| `--text <text>` | remember | The entry prose to remember (required) |
+| `--tier <tier>` | remember | `invariant` (verbatim at every setpoint) or `compressible` (default) |
+| `--classification <c>` | remember | Advisory-scorecard class: `Mechanical`/`Promotable`/`Judgment`/`Ambiguous` (default `Ambiguous`) |
+| `--origin <provenance>` | remember | Provenance of the capture, e.g. a GHI or session id (default `cli:content-remember`) |
 | `--quiet`, `-q` | global | Suppress non-error output |
 | `--verbose`, `-v` | global | Enable verbose output |
 | `--debug` | global | Enable debug mode with full tracebacks |
@@ -152,6 +181,14 @@ EDITOR=vim uv run gz content edit .gzkit/rules/tests.md --as Rule
 
 # Reverse-parse a hand-authored file and write canonical output (OBPI-0.0.34-03)
 uv run gz content import AGENTS.md --as AgentContract --write /tmp/agents-canonical.md
+
+# Capture a compressible note into the AGENTS.md corpus (never touches AGENTS.md itself)
+uv run gz content remember AGENTS.md --section "Behavior Rules" \
+  --text "Prefer stdlib JSONL for append-only stores." --tier compressible
+
+# The append landed in the corpus store, not the rendered surface:
+#   .gzkit/corpus/AGENTS.md.jsonl  ← new entry
+#   AGENTS.md                       ← byte-unchanged
 ```
 
 ## Files
@@ -163,6 +200,8 @@ uv run gz content import AGENTS.md --as AgentContract --write /tmp/agents-canoni
 | `src/gzkit/content/render.py` | Render pipeline (OBPI-0.0.34-02) |
 | `src/gzkit/content/parse.py` | Reverse-parse pipeline (OBPI-0.0.34-03) |
 | `src/gzkit/commands/content/` | Operator CLI surface (this OBPI-0.0.34-04) |
+| `src/gzkit/content/corpus_store.py` | Append-only per-surface corpus persistence (`remember`, OBPI-0.0.37-19) |
+| `.gzkit/corpus/<surface>.jsonl` | Append-only corpus store written by `gz content remember` |
 
 ## Related
 
@@ -174,3 +213,5 @@ uv run gz content import AGENTS.md --as AgentContract --write /tmp/agents-canoni
 - OBPI-0.0.34-04 — Authoring CLI (this manpage)
 - OBPI-0.0.34-05 — Light TUI affordances (forthcoming)
 - OBPI-0.0.34-06 — Validation hooks (forthcoming)
+- ADR-0.0.37 — Constitutional Invariant Composition; the `remember` corpus-capture write path (OBPI-0.0.37-19)
+- `.gzkit/skills/gz-content-remember/SKILL.md` — the capture skill that wields `gz content remember`
