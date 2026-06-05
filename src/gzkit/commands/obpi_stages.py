@@ -8,14 +8,13 @@ stage runners (verify, ceremony, sync).
 from __future__ import annotations
 
 import json
-import re
 import shlex
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
-from gzkit.brief_commands import is_shell_less_executable
+from gzkit.brief_commands import extract_fenced_commands, is_shell_less_executable
 from gzkit.commands.common import GzCliError, _cli_main, console
 from gzkit.decomposition import extract_markdown_section
 from gzkit.pipeline_runtime import (
@@ -139,20 +138,20 @@ def _pipeline_verification_commands(
     """
     commands: list[str] = list(BASELINE_VERIFICATION)
     section = extract_markdown_section(obpi_content, "Verification") or ""
-    matches = re.findall(r"```bash\n(.*?)```", section, flags=re.DOTALL)
-    for block in matches:
-        for raw_line in block.splitlines():
-            line = raw_line.strip()
-            if not line or line.startswith("#") or line == "command --to --verify":
-                continue
-            if not is_shell_less_executable(line):
-                console.print(
-                    f"[red]BLOCKED[/red] Non-shell-less Verification command: {line!r}. "
-                    "Rewrite as separate single-program lines "
-                    "(no &&, ||, |, ;, $(...), or redirects)."
-                )
-                raise SystemExit(1)
-            commands.append(line)
+    # Reuse the shared BI-1 joiner so multi-line constructs (python -c "…"
+    # spanning lines) are one logical command, not split per physical line —
+    # the same extractor the demo path uses, not a fork (ADR-0.0.63 BI-1, #569).
+    for line in extract_fenced_commands(section):
+        if not line or line.startswith("#") or line == "command --to --verify":
+            continue
+        if not is_shell_less_executable(line):
+            console.print(
+                f"[red]BLOCKED[/red] Non-shell-less Verification command: {line!r}. "
+                "Rewrite as separate single-program lines "
+                "(no &&, ||, |, ;, $(...), or redirects)."
+            )
+            raise SystemExit(1)
+        commands.append(line)
     if lane == "heavy":
         commands.append("uv run gz arb step --name mkdocs -- uv run mkdocs build --strict")
         behave_cmd = _pipeline_behave_command(behave_tags)
