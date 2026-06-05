@@ -397,6 +397,54 @@ class TestSignatureA(unittest.TestCase):
             self.assertEqual(len(errors), 0)
 
     @covers("REQ-0.0.64-04-01")
+    def test_brief_authoring_edit_before_own_pipeline_is_clean(self) -> None:
+        """Authoring a brief (gz-obpi-specify) emits artifact_edited on
+        /obpis/<X>.md BEFORE the pipeline starts X's own TASKs. While a
+        *different* OBPI's TASKs are active, that ceremony edit must not be
+        flagged as TASK-labor drift: brief edits (authoring OR closeout
+        reflection) are OBPI ceremony, not REQ labor. The earlier carve-out
+        required the brief's own OBPI to already have active TASKs, which missed
+        pre-pipeline authoring (GHI #563; mirrors the ADR-decision-doc carve-out).
+        """
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.37-26-01-01",
+                            "obpi_id": (
+                                "OBPI-0.0.37-26-codex-root-setpoint-"
+                                "application-interim-attested-relief"
+                            ),
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-01T22:33:04Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "artifact_edited",
+                            "path": (
+                                "docs/design/adr/foundation/"
+                                "ADR-0.0.37-constitutional-invariant-composition/obpis/"
+                                "OBPI-0.0.37-18-append-only-corpus-model.md"
+                            ),
+                            "id": "evt-2",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-05T00:28:11Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (a)" in e.message
+            ]
+            self.assertEqual(len(errors), 0)
+
+    @covers("REQ-0.0.64-04-01")
     def test_adr_decision_doc_edit_under_active_task_is_clean(self) -> None:
         """Editing an ADR decision doc is SUPPORT-channel governance ceremony,
         not OBPI-REQ TASK labor — excused both for the active OBPI's own parent

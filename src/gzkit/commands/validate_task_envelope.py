@@ -65,20 +65,24 @@ def _is_active_obpi_brief_reflection_event(
     ev: dict[str, object],
     active_tasks_by_obpi: dict[str, set[str]],
 ) -> bool:
-    """Return True when an ``artifact_edited`` event reflects the active OBPI brief.
+    """Return True when an ``artifact_edited`` event is an OBPI-brief ceremony edit.
 
-    Closeout writes completion evidence back into the brief. Those reflection
-    edits are ceremony/proof bookkeeping on the OBPI itself, not implementation
-    labor for one REQ. Ordinary source/doc artifact edits remain worklog events
-    and still require TASK attribution under signature (a).
+    Both brief *authoring* (``gz-obpi-specify`` edits ``/obpis/<X>.md`` before the
+    pipeline starts X's own TASKs) and closeout *reflection* (writing completion
+    evidence back into the brief) are ceremony/proof bookkeeping on the OBPI itself,
+    not implementation labor for one REQ. The earlier form additionally required the
+    brief's own OBPI to already have active TASKs, which flagged pre-pipeline
+    authoring emitted while a *different* OBPI's TASKs were active (GHI #563). This
+    now mirrors the ADR-decision-doc carve-out: a brief edit is excused whenever any
+    TASK is active (signature (a) only fires then anyway). Ordinary source/doc
+    artifact edits remain worklog events and still require TASK attribution.
     """
     if ev.get("event") != "artifact_edited":
         return False
-    path = _event_path(ev)
-    if "/obpis/" not in path or not path.endswith(".md"):
+    if not any(active_tasks_by_obpi.values()):
         return False
-    brief_id = Path(path).stem
-    return brief_id in active_tasks_by_obpi and bool(active_tasks_by_obpi[brief_id])
+    path = _event_path(ev)
+    return "/obpis/" in path and path.endswith(".md")
 
 
 _ADR_DECISION_DOC_RE = re.compile(r"/adr/.+/ADR-\d+\.\d+\.\d+-[^/]+\.md$")
