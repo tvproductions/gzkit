@@ -192,3 +192,30 @@ Feature: Constitutional invariant composition renderer (ADR-0.0.37, OBPI-0.0.37-
     Given an AgentContract with a Judgment bullet and a heavy-only bullet
     When I render the contract for codex at lite and claude at heavy
     Then the two rendered outputs differ
+
+  # OBPI-0.0.37-18 — Append-only corpus model
+
+  @REQ-0.0.37-18-01
+  Scenario: A corpus entry carries exactly the ten addressed fields
+    Given a corpus entry with all ten addressed fields populated
+    Then the corpus entry model has exactly the ten addressed fields
+    And constructing a corpus entry with an unknown field fails closed
+
+  @REQ-0.0.37-18-02
+  Scenario: The corpus is append-only and round-trips through JSONL
+    Given an empty corpus
+    When two corpus entries are appended
+    Then the corpus holds two entries and the original empty corpus is unchanged
+    And the corpus round-trips losslessly through JSONL
+
+  @REQ-0.0.37-18-03
+  Scenario: A corpus entry section must resolve to a contract Pillar
+    Given an agent contract whose only section is "prime-directive"
+    Then a corpus entry in section "prime-directive" validates against the contract
+    And a corpus entry in section "no-such-section" fails validation
+
+  @REQ-0.0.37-18-04
+  Scenario: The corpus_entry JSON Schema mirrors the model
+    Given the corpus_entry JSON Schema
+    Then the schema accepts a conformant corpus entry
+    And the schema rejects a corpus entry with an out-of-enum tier

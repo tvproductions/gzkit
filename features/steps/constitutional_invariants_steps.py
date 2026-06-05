@@ -654,3 +654,147 @@ def step_renders_differ(context) -> None:  # type: ignore[no-untyped-def]
     assert context.codex_render != context.claude_render, (
         "Codex lite and claude heavy renders must differ (identical mirroring ended)"
     )
+
+
+# ---------------------------------------------------------------------------
+# OBPI-0.0.37-18 — append-only corpus model (Gate 4 BDD)
+# @covers REQ-0.0.37-18-01
+# @covers REQ-0.0.37-18-02
+# @covers REQ-0.0.37-18-03
+# @covers REQ-0.0.37-18-04
+# ---------------------------------------------------------------------------
+
+_CORPUS_SCHEMA_PATH = (
+    Path(__file__).resolve().parents[2] / "src" / "gzkit" / "schemas" / "corpus_entry.json"
+)
+
+
+def _corpus_entry(**overrides):  # type: ignore[no-untyped-def]
+    """Build a conformant CorpusEntry for the corpus scenarios."""
+    from gzkit.content.models import CorpusEntry  # noqa: PLC0415
+
+    base = {
+        "id": "c1",
+        "surface": "AGENTS.md",
+        "section": "prime-directive",
+        "tier": "invariant",
+        "classification": "Mechanical",
+        "text": "YOU OWN THE WORK COMPLETELY.",
+        "origin": "GHI#519",
+        "ts": "2026-06-05T00:00:00Z",
+    }
+    base.update(overrides)
+    return CorpusEntry(**base)
+
+
+@given("a corpus entry with all ten addressed fields populated")
+def step_corpus_entry_full(context) -> None:  # type: ignore[no-untyped-def]
+    context.corpus_entry = _corpus_entry(anchor="a1", witness="gz validate --foo")
+
+
+@then("the corpus entry model has exactly the ten addressed fields")
+def step_corpus_entry_ten_fields(context) -> None:  # type: ignore[no-untyped-def]
+    from gzkit.content.models import CorpusEntry  # noqa: PLC0415
+
+    assert set(CorpusEntry.model_fields) == {
+        "id",
+        "surface",
+        "section",
+        "anchor",
+        "tier",
+        "classification",
+        "witness",
+        "text",
+        "origin",
+        "ts",
+    }
+
+
+@then("constructing a corpus entry with an unknown field fails closed")
+def step_corpus_entry_extra_forbidden(context) -> None:  # type: ignore[no-untyped-def]
+    try:
+        _corpus_entry(unexpected="x")
+    except ValidationError:
+        return
+    raise AssertionError("expected ValidationError for an unknown corpus-entry field")
+
+
+@given("an empty corpus")
+def step_empty_corpus(context) -> None:  # type: ignore[no-untyped-def]
+    from gzkit.content.models import Corpus  # noqa: PLC0415
+
+    context.corpus = Corpus()
+
+
+@when("two corpus entries are appended")
+def step_corpus_append_two(context) -> None:  # type: ignore[no-untyped-def]
+    context.corpus_appended = context.corpus.append(_corpus_entry(id="a")).append(
+        _corpus_entry(id="b")
+    )
+
+
+@then("the corpus holds two entries and the original empty corpus is unchanged")
+def step_corpus_append_immutability(context) -> None:  # type: ignore[no-untyped-def]
+    assert len(context.corpus_appended.entries) == 2
+    assert len(context.corpus.entries) == 0
+
+
+@then("the corpus round-trips losslessly through JSONL")
+def step_corpus_round_trip(context) -> None:  # type: ignore[no-untyped-def]
+    from gzkit.content.models import Corpus  # noqa: PLC0415
+
+    assert Corpus.loads(context.corpus_appended.dumps()) == context.corpus_appended
+
+
+@given('an agent contract whose only section is "prime-directive"')
+def step_corpus_contract(context) -> None:  # type: ignore[no-untyped-def]
+    from gzkit.content.models import AgentContract, Pillar  # noqa: PLC0415
+
+    context.corpus_contract = AgentContract(
+        name="Test",
+        purpose="corpus conformance fixture",
+        pillars=[Pillar(id="prime-directive", title="Prime Directive", order=1)],
+    )
+
+
+@then('a corpus entry in section "prime-directive" validates against the contract')
+def step_corpus_conformant(context) -> None:  # type: ignore[no-untyped-def]
+    from gzkit.content.models import Corpus  # noqa: PLC0415
+
+    Corpus().append(_corpus_entry(section="prime-directive")).validate_against(
+        context.corpus_contract
+    )
+
+
+@then('a corpus entry in section "no-such-section" fails validation')
+def step_corpus_nonconformant(context) -> None:  # type: ignore[no-untyped-def]
+    from gzkit.content.models import Corpus  # noqa: PLC0415
+
+    try:
+        Corpus().append(_corpus_entry(section="no-such-section")).validate_against(
+            context.corpus_contract
+        )
+    except ValueError:
+        return
+    raise AssertionError("expected ValueError for a section resolving to no Pillar")
+
+
+@given("the corpus_entry JSON Schema")
+def step_corpus_schema(context) -> None:  # type: ignore[no-untyped-def]
+    context.corpus_schema = json.loads(_CORPUS_SCHEMA_PATH.read_text(encoding="utf-8"))
+
+
+@then("the schema accepts a conformant corpus entry")
+def step_corpus_schema_accepts(context) -> None:  # type: ignore[no-untyped-def]
+    jsonschema.validate(_corpus_entry().model_dump(), context.corpus_schema)
+
+
+@then("the schema rejects a corpus entry with an out-of-enum tier")
+def step_corpus_schema_rejects(context) -> None:  # type: ignore[no-untyped-def]
+    bad = _corpus_entry().model_dump()
+    bad["tier"] = "ephemeral"
+    try:
+        jsonschema.validate(bad, context.corpus_schema)
+    except jsonschema.ValidationError:
+        return
+    raise AssertionError("expected schema rejection for an out-of-enum tier")
