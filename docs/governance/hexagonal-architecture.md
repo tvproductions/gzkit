@@ -30,7 +30,7 @@ gzkit's ADR-kind taxonomy maps directly onto Cockburn's pattern:
 | Cockburn term | gzkit ADR kind | Semver | Examples |
 |---|---|---|---|
 | **Port** | `foundation` | `0.0.x` | ADR-0.0.50 (validation pipeline port + redteam-terminal doctrine), ADR-0.0.51 (milestone-maintenance port + `/goal`-first-class doctrine) |
-| **Adapter** | `feature` | `0.y.z` | ADR-0.48.0 (plan pipeline — adapter conforming to ADR-0.0.50's port), ADR-0.49.0 (OBPI pipeline retrofit — adapter), ADR-0.50.0 (gz-architecture-review skill — adapter into ADR-0.0.51's sweep manifest port) |
+| **Adapter** | `feature` | `0.y.z` | ADR-0.13.0 (OBPI pipeline runtime surface — adapter implementing ADR-0.0.14's deterministic-OBPI-command port), ADR-0.18.0 (subagent-driven pipeline execution — one execution-strategy adapter), ADR-0.12.0 (OBPI pipeline enforcement parity — one enforcement implementation) |
 | **Pool** (gzkit-specific) | `pool` | none | Backlog: not yet classified as port or adapter |
 
 Foundation ADRs (ports) define what every implementation MUST honor; feature
@@ -70,15 +70,18 @@ feature)?"*
 
 ### Adapters (feature)
 
-- **ADR-0.48.0 — `gz-adr-plan-pipeline`.** One specific implementation of
-  ADR-0.0.50's port for the design phase. The port is the orchestrator
-  contract; this adapter is the specific design-phase orchestrator.
-- **ADR-0.49.0 — `gz-obpi-pipeline` retrofit.** Retrofits an existing adapter
-  to conform to ADR-0.0.50's redteam-terminal doctrine. Still an adapter; the
-  port (the redteam-terminal contract) is what it conforms to.
-- **ADR-0.50.0 — `gz-architecture-review` skill.** Adapter into ADR-0.0.51's
-  sweep manifest port. One specific review skill among many that the port
-  allows.
+- **ADR-0.13.0 — `gz obpi pipeline` runtime surface.** One specific runtime
+  implementation of ADR-0.0.14's deterministic-OBPI-command port: it elevates
+  the `gz-obpi-pipeline` workflow into a first-class command contract (launch,
+  stage progression, resume, abort, sync). The port is the command contract;
+  this adapter is the specific runtime surface behind it.
+- **ADR-0.18.0 — subagent-driven pipeline execution.** One execution strategy
+  for the pipeline runtime — subagent dispatch — behind the same OBPI-pipeline
+  contract. Its `--no-subagents` fallback preserves inline execution, which is
+  the adapter tell: it is *one way* of executing, not the invariant.
+- **ADR-0.12.0 — OBPI pipeline enforcement parity.** One specific
+  AirlineOps-style enforcement implementation behind the pipeline contract.
+  Still an adapter; the enforcement invariants are what it conforms to.
 
 ### Pool ADRs are pre-classification
 
