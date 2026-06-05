@@ -15,9 +15,14 @@ Status: Active canonical recovery plan.
 > never reached trunk; the relief landed by *re-homing* terse Mechanical skeletons
 > into the local splice, not by deleting prose. **Recovery stays OPEN:** #519 is still
 > the sole open `emergency` (interim byte-relief landed, full 258K-window closure
-> unbuilt — GHI #533); ADR-0.0.37 is **6/19** attested-complete, BLOCKED on 13 missing
-> ledger proofs; OBPI-0.0.37-26 stays Draft. See § Current Baseline — Snapshot J for
-> the full measurement; Snapshot H is demoted to the compact history table.
+> unbuilt — GHI #533); ADR-0.0.37 is **7/19** attested-complete, BLOCKED on 12 missing
+> ledger proofs. **OBPI-0.0.37-26 is now attested-complete** (2026-06-05, this session)
+> via the operator-verbatim conversational Gate-5 path (ADR-0.0.36; completion receipt
+> `attestation_type: operator-verbatim-conversational`) — disproving the prior note that
+> the Claude Code auto-mode classifier blocks AI-relayed attestation: the operator's
+> verbatim "attest completed" IS the Gate-5 attestation, relayed (not signed) by the
+> agent. See § Current Baseline — Snapshot J for the full measurement; Snapshot H is
+> demoted to the compact history table.
 >
 > **Route (unchanged since Snapshot G, 2026-06-03):** append-only corpus → temperature
 > setpoint per surface×consumer → authoring-time agent compression (advisor-QC'd,
@@ -35,16 +40,18 @@ Status: Active canonical recovery plan.
 > ~8 live artifacts plus immutable ledger/insights/handoff records; renaming would
 > churn them every session).
 
-Last updated: 2026-06-05 — **Snapshot J (repo re-evaluation).** Re-measured the
-committed-`main` baseline after the #519 byte relief landed (Snapshot I, commit
-`705a2354`): `gz check` was red on a single Preflight orphan receipt (the
-already-`attested_completed` OBPI-0.0.37-18), cleared via the sanctioned
-`uv run gz preflight --apply` path → **26/26 GREEN**. Promoted the live baseline from
-the now-stale Snapshot H (RED/uncommitted working tree, superseded by the landed
-relief) to **Snapshot J**, demoting H to the compact history table. Recorded the
-current ADR-0.0.37 posture (6/19 attested, BLOCKED on 13 missing ledger proofs).
-The orphan-receipt deletion is committed alongside this edit; no other code or
-governance state changed.
+Last updated: 2026-06-05 — **OBPI-0.0.37-26 attested-complete (pipeline closeout).**
+Ran the `gz-obpi-pipeline` from `--from=verify` over OBPI-0.0.37-26 (the #519 Codex-root
+interim relief, payload already landed at Snapshot I): Stage 3 verify green (ruff,
+typecheck, 5879 unittests, mkdocs `--strict`, `--vendor-manifest`,
+`--instructions-files-budget`, `--invariant-coherence` 10 scopes, `--documents` — all
+pass; 6/6 REQs SUPPORT-kind so behave N/A), Stage 4 operator attestation ("attest
+completed"), Stage 5 `gz obpi complete` → `attested_completed` (receipt
+`attestation_type: operator-verbatim-conversational`), lock released, two git-sync cycles,
+reconcile PASS. ADR-0.0.37 posture moves **6/19 → 7/19 attested**, missing-proof OBPIs
+**13 → 12** (per `gz adr audit-check`). The earlier Snapshot J re-measurement
+(`gz check` 26/26 GREEN after clearing the OBPI-0.0.37-18 Preflight orphan) still holds as
+the committed-main baseline; this edit records only the OBPI-26 disposition change.
 
 ## Execution Worklist (start here)
 
@@ -66,7 +73,7 @@ governance state changed.
 
 **Tier 1 — Recovery to Definition of Healthy.** Exit gate: Definition of Healthy all-true.
 
-- [~] **1.1 Phase 2 — context-load emergency #519. Byte relief LANDED 2026-06-04 (commit `705a2354`, pushed).** Root `AGENTS.md` genuinely compressed **32,651 → 28,342 B** (~4.4 KB under Codex's 32,768 B cap) via the local-splice diet (`.gzkit/agents.local.md` 9,306 → 4,997 B), keeping all 18 splice-only Mechanical/Promotable scorecard phrases verbatim — so `bullet-retention` stayed green under the *current* whole-surface validator (the predicted 14-violation collision was avoided by re-homing terse skeletons, not deleting). Supersedes the budget-at-cap stopgap (`b402c7cf`). Landed as a **direct commit**, not OBPI-0.0.37-26 ceremony — the Gate-5 sign+push is blocked by the Claude Code auto-mode classifier (an AI may not sign the operator's attestation). OBPI-0.0.37-26 remains `Draft` (payload landed directly + captured at `renditions/agentcontract-codex-root-interim.md`; reconcile or withdraw). **Still open:** the durable 258K-window cure needs the <15k registry-projected surface (GHI #533) — #519 not yet closed. **Loosening pass (operator-directed, this session):** `ac0816ff` (REQ-coverage gate is ADR-0.0.59 kind-aware — SUPPORT/STRUCTURAL-FENCE REQs no longer snare completion) and `8dc04a9a` (pipeline mandate scoped to contract-bearing OBPIs — routine/recovery/defect fixes default to direct-fix). → *Recovery Closeout § Snapshot I*.
+- [~] **1.1 Phase 2 — context-load emergency #519. Byte relief LANDED 2026-06-04 (commit `705a2354`, pushed).** Root `AGENTS.md` genuinely compressed **32,651 → 28,342 B** (~4.4 KB under Codex's 32,768 B cap) via the local-splice diet (`.gzkit/agents.local.md` 9,306 → 4,997 B), keeping all 18 splice-only Mechanical/Promotable scorecard phrases verbatim — so `bullet-retention` stayed green under the *current* whole-surface validator (the predicted 14-violation collision was avoided by re-homing terse skeletons, not deleting). Supersedes the budget-at-cap stopgap (`b402c7cf`). The relief *payload* landed as a **direct commit**; the **OBPI-0.0.37-26 ceremony is now closed (2026-06-05, this session)** via `gz-obpi-pipeline --from=verify` — Stage 5 `gz obpi complete` → `attested_completed` on the operator-verbatim conversational Gate-5 path (ADR-0.0.36). This disproves the prior note that the Claude Code auto-mode classifier blocks the sign+push: the agent *relays* the operator's verbatim "attest completed" (it does not sign), and `--attestation-type operator-verbatim-conversational` is the canonical completion path. The interim rendition is captured at `renditions/agentcontract-codex-root-interim.md` for OBPI-21/22 to regenerate. **Still open:** the durable 258K-window cure needs the <15k registry-projected surface (GHI #533) — #519 not yet closed. **Loosening pass (operator-directed, this session):** `ac0816ff` (REQ-coverage gate is ADR-0.0.59 kind-aware — SUPPORT/STRUCTURAL-FENCE REQs no longer snare completion) and `8dc04a9a` (pipeline mandate scoped to contract-bearing OBPIs — routine/recovery/defect fixes default to direct-fix). → *Recovery Closeout § Snapshot I*.
 - [ ] **1.2 Phase 3 — ceremony & validator mechanization** (#516 + the req-kind/covers eval-feedback cluster; now also #563/#564 closeout-pipeline class fixes + #578 preflight lock-coupling). 18 issues — see **GHI Register § Phase 3**. → *Phase 3*.
 - [ ] **1.3 Phase 4 — drain remaining recovery issues** — docs/tests/`validate --documents` defects, including the GHI #571 stdlib unittest/doctest maturity route. 10 issues — see **GHI Register § Phase 4**. WIP = 1; close only with observed evidence. → *Phase 4*.
 - [ ] **1.4 Phase 5 — closeout.** Fill Recovery Closeout when #519 closed + no open emergency + `gz check` green. → *Phase 5; Recovery Closeout*.
@@ -106,7 +113,7 @@ governance state changed.
 |-----|---------|------|
 | #563 | task-envelope gate failure — `seq=01`-only TASKs, missing `task_id` | **T1** — Phase 3 (gate cleared @ Snapshot E; new instance @ Snapshot G(check): ADR-decision-doc edits under active TASKs — cleared via SUPPORT-channel carve-out; class fix: closeout `task_id` population still remains) |
 | #564 | preflight orphan plan-audit receipt (OBPI-0.0.64-04) | **T1** — Phase 3 (gate cleared @ Snapshot D; recurred @ Snapshot G(check): OBPI-09+OBPI-17 orphans cleaned via `gz preflight --apply`; class fix: closeout leaves no orphan remains. Adjacent latent: short-vs-full `obpi_id` mismatch direct-fixed in `task.py` @ Snapshot G(check), other consumers may share it) |
-| #519 | context surface exhausts 258K window (**emergency**) | **T1** — Phase 2 → CMS. **Interim relief LANDED on `main` (Snapshot I, commit `705a2354`; held at Snapshot J):** root AGENTS.md = **28,489 B** via the local-splice diet, under Codex's 32,768 B cap with ~4.3 KB headroom; Surface fidelity green (the predicted 14-violation collision avoided by re-homing, not deleting). **Still OPEN:** full 258K-window closure needs the <15k registry-projected surface (GHI #533). Per-vendor emission ruled out; OBPI-17-as-scoped retired; OBPI-0.0.37-26 stays Draft (reconcile or withdraw). |
+| #519 | context surface exhausts 258K window (**emergency**) | **T1** — Phase 2 → CMS. **Interim relief LANDED on `main` (Snapshot I, commit `705a2354`; held at Snapshot J):** root AGENTS.md = **28,489 B** via the local-splice diet, under Codex's 32,768 B cap with ~4.3 KB headroom; Surface fidelity green (the predicted 14-violation collision avoided by re-homing, not deleting). **OBPI-0.0.37-26 attested-complete 2026-06-05** (pipeline closeout, operator-verbatim conversational Gate-5 path). **Still OPEN:** full 258K-window closure needs the <15k registry-projected surface (GHI #533). Per-vendor emission ruled out; OBPI-17-as-scoped retired. |
 | #516 | closeout passive-presenter lacks REQ-evidence check | **T1** — Phase 3 |
 | #536 | `gz adr promote` Target-Scope `path:line` → invalid OBPI paths | **T1** — Phase 3 |
 | #537 | BEHAVIOR-kind cannot-uncovered-accept not mechanically enforced | **T1** — Phase 3 |
@@ -203,11 +210,11 @@ diagnosis, but its dated command snapshot is superseded by the baseline below.
   a working-tree projection.
 - **Recovery stays OPEN.** #519 is the **sole** open `emergency` (38 open issues
   total) — interim byte-relief landed, full 258K-window closure unbuilt (the <15k
-  registry-projected surface, GHI #533). ADR-0.0.37 is **6/19** attested-complete
-  (01–05, 18), **BLOCKED** on 13 OBPIs with missing ledger proofs of completion;
-  OBPI-0.0.37-26 stays `Draft` (payload landed directly at Snapshot I; reconcile or
-  withdraw). Phase 1 stays complete on committed `main`; Definition-of-Healthy is
-  **not** all-true (open emergency remains).
+  registry-projected surface, GHI #533). ADR-0.0.37 is **7/19** attested-complete
+  (01–05, 18, 26 — OBPI-26 closed 2026-06-05 via pipeline closeout on the
+  operator-verbatim conversational Gate-5 path), **BLOCKED** on 12 OBPIs with missing
+  ledger proofs of completion. Phase 1 stays complete on committed `main`;
+  Definition-of-Healthy is **not** all-true (open emergency remains).
 
 ### Snapshot G(check) — 2026-06-03 (restore-green on resume + OBPI-17 retirement): RED→GREEN
 
@@ -597,9 +604,12 @@ classes from observed incidents that session (fabricated GHI map, fabricated
 
 ## Designated Workstream — Context-Load CMS (density-dial composition; #519 remediation)
 
-> **Status note (2026-06-04):** this section preserves the post-OBPI-15 diagnosis history.
+> **Status note (2026-06-05):** this section preserves the post-OBPI-15 diagnosis history.
 > The live directive is the Execution Worklist item 1.1 route: reconcile ADR-0.0.37 briefs
-> to the 18–27 checklist and build **OBPI-0.0.37-26** first. OBPI-0.0.37-17 is retired.
+> to the 18–27 checklist. **OBPI-0.0.37-26 (the sequenced-first interim relief) is now
+> attested-complete** (2026-06-05, pipeline closeout); the next live OBPIs are the
+> composer/store route (21/22) that regenerates the interim rendition and the <15k
+> registry-projected surface (GHI #533) that closes #519. OBPI-0.0.37-17 is retired.
 
 Recorded here (Operating Rules 1 and 7) so this turn's diagnosis and decision become
 durable, resumable history rather than re-derived next session. At capture time this was
