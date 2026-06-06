@@ -22,9 +22,7 @@ def _write_manifest(root: Path, payload: dict) -> None:
     """Write a vendor-manifest fixture under ``root/data`` and chdir to root."""
     data_dir = root / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
-    (data_dir / "vendor-manifest.json").write_text(
-        json.dumps(payload, indent=2), encoding="utf-8"
-    )
+    (data_dir / "vendor-manifest.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
     os.chdir(root)
 
 
@@ -35,9 +33,7 @@ def step_manifest_coherent(context) -> None:  # type: ignore[no-untyped-def]
         context._tmpdir,
         {
             "content_type_routes": {"AgentContract": ["claude", "codex"]},
-            "content_type_temperatures": {
-                "AgentContract": {"claude": "heavy", "codex": "lite"}
-            },
+            "content_type_temperatures": {"AgentContract": {"claude": "heavy", "codex": "lite"}},
         },
     )
 

@@ -122,7 +122,6 @@ class TestAllowlistDimension(unittest.TestCase):
         )
         self.assertTrue(result.has_drift)
 
-
     @covers("REQ-0.0.37-05-02")
     def test_creates_declared_path_exempt_from_missing_on_disk(self):
         """A net-new path declared under '## Creates These Files' is exempt from

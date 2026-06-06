@@ -4,6 +4,16 @@ parent: ADR-0.0.37-constitutional-invariant-composition
 item: 20
 lane: Heavy
 status: Completed
+# req_atomic: each REQ is a single indivisible labor unit — REQ-01/02/03 are the
+# three exit-code facets of one validator scope (uncovered-pair, illegal-token,
+# coherent-pass), REQ-04 the accessor fail-closed contract, REQ-05 the manpage
+# SUPPORT doc; none decomposes into parallel seq=02+ sub-tasks (ADR-0.0.64 task-envelope exemption).
+req_atomic:
+  - REQ-0.0.37-20-01
+  - REQ-0.0.37-20-02
+  - REQ-0.0.37-20-03
+  - REQ-0.0.37-20-04
+  - REQ-0.0.37-20-05
 ---
 
 # OBPI-0.0.37-20-setpoint-declaration-coherence-validator: Setpoint Declaration Coherence Validator

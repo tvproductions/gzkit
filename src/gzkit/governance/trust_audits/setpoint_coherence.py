@@ -67,8 +67,7 @@ def validate_setpoint_coherence(project_root: Path) -> list[ValidationError]:
                 type="setpoint_coherence",
                 artifact=artifact,
                 message=(
-                    f"data/vendor-manifest.json is not valid JSON: {exc.msg} "
-                    f"(line {exc.lineno})."
+                    f"data/vendor-manifest.json is not valid JSON: {exc.msg} (line {exc.lineno})."
                 ),
             )
         )

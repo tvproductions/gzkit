@@ -2,8 +2,8 @@
 
 Status: Active canonical recovery plan.
 
-> **Live baseline: Snapshot K (2026-06-06) — `main` is 26/26 GREEN, synced.** Full
-> measurement in § Current Baseline. Tier 0 has reopened 5× (C→E→G→J→K): main is not
+> **Live baseline: Snapshot L (2026-06-06) — `main` is 26/26 GREEN, synced.** Full
+> measurement in § Current Baseline. Tier 0 has reopened 6× (C→E→G→J→K→L): main is not
 > *durably* green across machines/sessions — that recurrence, not any single gate, is
 > the headline problem. #519 is the sole open `emergency`; recovery stays OPEN.
 >
@@ -13,7 +13,9 @@ Status: Active canonical recovery plan.
 > 01–10, 18–27 (§ Checklist is authoritative). **Filename** stays
 > `return-to-health-plan-2026-05-30.md` (operator-anchored 2026-06-04).
 
-Last updated: 2026-06-06 — **Tier 0 reopened on a fresh Windows clone (`gz check` red on Typecheck + Behave) and re-closed; 2 fixes pushed; main 26/26 green. See § Current Baseline — Snapshot K.**
+Last updated: 2026-06-06 — **Tier 0 reopened again (6th time; Snapshot L) on session resume (handoff + restore-health): `gz check` red on Format + Task-envelope-coherence, both OBPI-0.0.37-20 completion residue. Re-closed via `ruff format` (5 files) + a `req_atomic:` frontmatter exemption (each REQ one indivisible labor unit; Snapshot D/E/G precedent); main 26/26 green. Both offenders are the plan's named subtraction candidates — recurrence is the headline. See § Current Baseline — Snapshot L.**
+
+Earlier 2026-06-06 entry — **Tier 0 reopened on a fresh Windows clone (`gz check` red on Typecheck + Behave) and re-closed; 2 fixes pushed; main 26/26 green (Snapshot K).**
 Drained Phase-4 recovery debt one at a time (green-first, observed-evidence closes): closed
 **#525 / #560 / #562** as verify-only already-resolved (CLAUDE.md redirect doctrine landed;
 distribution byte-equivalence scenario green after `cda0d78e`; tautological audit converted to
@@ -162,37 +164,36 @@ diagnosis, but its dated command snapshot is superseded by the baseline below.
 
 ## Current Baseline
 
-> **Live baseline = Snapshot J (2026-06-05).** Snapshots A–H are preserved as a
+> **Live baseline = Snapshot L (2026-06-06).** Snapshots A–H are preserved as a
 > compact history table below; full prose for A–F and H is recoverable from this
 > file's git history (pre-2026-06-05). This consolidation is the #519 / Definition-of-
 > Healthy posture applied to the plan itself: one orientable baseline, not a
 > growing snapshot log.
 
-### Snapshot K — 2026-06-06 (fresh Windows clone; Tier 0 reopened + re-closed): RED→GREEN
+### Snapshot L — 2026-06-06 (session resume: handoff + restore-health; Tier 0 reopened + re-closed): RED→GREEN
 
-- A Windows clone, 61 commits behind after cross-machine (macOS) work, re-measured
-  `gz check` at session start: **RED**, two gates.
-  1. **Typecheck** — `src/gzkit/complexity/advisor/timeout.py` uses POSIX-only
-     `signal.SIGALRM`/`setitimer`/`ITIMER_REAL`. The runtime is already guarded
-     (`os.name == "nt"` → `threading.Timer`), but `ty` analyses the POSIX branch
-     unconditionally on the host platform → `unresolved-attribute` on Windows,
-     green on macOS. Fixed `14dec36c` (four `# ty: ignore[unresolved-attribute]`;
-     no behaviour change).
-  2. **Behave** — OBPI-0.0.37-08's Stage-5 `_enforce_reconcile_receipt_gate` fires
-     before the coverage/receipt-binding behaviour 8 BDD scenarios test; the gate
-     landed without updating its fixtures (coupled-surface incoherence, DO IT RIGHT
-     1a). Fixed `f7428b2b` (fixtures seed a real `brief_reconciled` receipt via the
-     production factory; the gate's own fail-closed path stays unit-covered by
-     `tests/commands/test_obpi_complete_reconcile_gate.py`).
-- **Re-measure: `uv run gz check` → 26/26 GREEN (`GZ_CHECK_EXIT=0`); pushed to
-  `origin/main`; tree clean, synced 0/0.**
-- **The pattern is the point.** Tier 0 has now reopened at C, E, G, J, and K — main
-  is not *durably* green across machines/sessions. Per the `every-move-breaks`
-  diagnosis the cure is subtraction + holding green-first, not another gate.
+- A session resume re-measured `gz check`: **RED**, two gates, both
+  **OBPI-0.0.37-20 completion residue** (not real defects):
+  1. **Format** — 5 OBPI-20 / deadlock-fix files landed un-`ruff format`'d
+     (`brief_reconcile.py`, `setpoint_coherence.py` + their tests,
+     `setpoint_coherence_steps.py`). Fixed: `uv run ruff format` (5 reformatted).
+     *Coupled gap:* `gz git-sync --lint` runs `ruff check`, not `ruff format`, so
+     formatting can drift past the guarded sync.
+  2. **Task-envelope-coherence** — OBPI-20 closed with `seq=01`-only TASKs across
+     REQ-01…05 and no `req_atomic:` exemption. Fixed: `req_atomic:` frontmatter with
+     inline per-REQ rationale (each REQ one indivisible labor unit; Snapshot D/E/G
+     precedent).
+- **Re-measure: `uv run gz check` → 26/26 GREEN (`GZ_CHECK_EXIT=0`); committed +
+  pushed; tree clean, synced 0/0.**
+- **6th Tier-0 reopening (C→E→G→J→K→L).** Both offenders are the plan's named
+  **subtraction candidates** — they fire on residue left by *completions*. The operator
+  chose the precedented direct-fix this pass; the durable class-fix (closeout auto-mints
+  `req_atomic` + runs `ruff format`; gate fix-or-retire with operator witness) remains
+  the standing recommendation. Recurrence — not any single gate — is the headline.
 - **Recovery stays OPEN.** #519 still the sole `emergency`; Definition-of-Healthy
   not all-true.
 
-### Snapshots A–J — compact history (preserved for audit)
+### Snapshots A–K — compact history (preserved for audit)
 
 | # | Date | gz check | What it recorded |
 |---|------|----------|------------------|
@@ -206,6 +207,7 @@ diagnosis, but its dated command snapshot is superseded by the baseline below.
 | H | 2026-06-04 | RED (uncommitted) | In-flight OBPI-0.0.37-26 tree: byte target reached but uncommitted/unattested. Superseded by I + J. |
 | I | 2026-06-04 | GREEN | #519 byte relief landed on `main` (`705a2354`): root AGENTS.md 28,489 B, under Codex's 32,768 B cap. |
 | J | 2026-06-05 | RED→GREEN | Committed-main re-eval: 1 orphan plan-audit receipt (OBPI-18) on Preflight; cleared via `preflight --apply`. OBPI-0.0.37-26 attested-complete (operator-verbatim Gate-5); 7/19 ADR-0.0.37 attested. |
+| K | 2026-06-06 | RED→GREEN | Fresh Windows clone (61 commits behind): red on Typecheck (POSIX `signal` analysed on Windows; `# ty: ignore`) + Behave (OBPI-08 reconcile-gate broke stale completion fixtures). Fixed `14dec36c`/`f7428b2b`. |
 
 **Carry-forward watch-items (still live):**
 
@@ -216,11 +218,12 @@ diagnosis, but its dated command snapshot is superseded by the baseline below.
   under the 32,768 B Codex cap (ties to #579 + config-SSOT 2.5).
 
 **Recurring Tier-0 offenders (subtraction candidates):** Preflight (orphan plan-audit
-receipts: C, G, J) and Task-envelope-coherence (ceremony artifacts: C, E, G) reopen Tier 0
-most often — both fire on residue left by *completions*, not real defects. Fix-or-retire
-per Operating-Rule subtraction; gate retirement needs operator witness.
+receipts: C, G, J), Task-envelope-coherence (ceremony artifacts: C, E, G, L), and Format
+(un-`ruff format`'d completion files: E, L) reopen Tier 0 most often — all fire on residue
+left by *completions*, not real defects. Fix-or-retire per Operating-Rule subtraction;
+gate retirement needs operator witness.
 
-Snapshots A–J are preserved above for audit; **Snapshot K is the live baseline.**
+Snapshots A–K are preserved above for audit; **Snapshot L is the live baseline.**
 
 ## Definition of Healthy
 

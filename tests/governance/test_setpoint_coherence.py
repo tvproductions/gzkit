@@ -20,9 +20,7 @@ def _write_manifest(root: Path, payload: dict) -> None:
     """Write a vendor-manifest fixture under ``root/data``."""
     data_dir = root / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
-    (data_dir / "vendor-manifest.json").write_text(
-        json.dumps(payload), encoding="utf-8"
-    )
+    (data_dir / "vendor-manifest.json").write_text(json.dumps(payload), encoding="utf-8")
 
 
 class TestSetpointCoherence(unittest.TestCase):
