@@ -5,20 +5,22 @@ paths:
 description: Non-negotiable governance workflow rules
 ---
 
-<!-- rule-version: 0.2.0 -->
+<!-- rule-version: 0.3.0 -->
 
 # Governance Core (gzkit)
 
-> **Rule version:** `0.2.0` — bumped under GHI #322 to canonize
-> `gz register-adrs` as the regenerator for `docs/governance/GovZero/adr-status.md`
-> and `gz validate --adr-status-fresh` as the drift fail-close. Prior
-> unversioned content treated as `0.1.0`.
+> **Rule version:** `0.3.0` — enshrined the canon-owner human-attestation
+> directive (operator verbatim, 2026-06-06): human attestation is sacrosanct;
+> the operator's verbatim `--attestation-text` IS Gate 5; no TTY/PTY/transport
+> mechanism may ever be cited as a blocker to recording it. Prior `0.2.0`
+> canonized `gz register-adrs` + `gz validate --adr-status-fresh`.
 
 ## Non-negotiable rules
 
 - Read `AGENTS.md` before implementation work.
 - Use `uv run` for Python command execution.
 - Do not bypass Gate 5 when lane requirements require human attestation.
+- **Human attestation is sacrosanct and gold (canon-owner directive, verbatim).** "Never, ever again give me that TTY or PTY bullshit." When the operator says "attest completed," it IS complete; the operator's verbatim attestation relayed via `--attestation-text` IS Gate 5 for every lane/kind/sensitivity. No TTY, PTY, interactive-terminal, or transport mechanism may EVER be cited as a reason an agent "cannot" record human attestation — the mechanism serves the attestation, never gates it.
 - Do not edit `.gzkit/ledger.jsonl` manually.
 - Every defect must be fixed now or tracked (`gh issue create --label defect` or `.gzkit/insights/agent-insights.jsonl`).
 
