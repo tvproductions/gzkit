@@ -3,7 +3,7 @@ id: OBPI-0.0.37-07-pipeline-stage1-gate
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 7
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.37-07-pipeline-stage1-gate: Pipeline Stage 1 Gate
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 - **Checklist Item:** #7 — "OBPI-0.0.37-07 — Pipeline Stage 1 fail-close gate (refuses Stage 2 entry without fresh reconciliation receipt)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -134,15 +134,18 @@ uv run gz obpi pipeline OBPI-0.0.37-07-pipeline-stage1-gate --stage 1 --dry-run
 
 ### Key Proof
 
-<!-- Demonstrate: edit a file in the brief's Allowed Paths after the receipt timestamp, run `gz obpi pipeline --stage 1`, observe fail-close with named drifted path. -->
+
+Stage 1 now fail-closes (exit 3) without a fresh brief_reconciled receipt. check_reconcile_receipt_gate returns "Stage 2 entry blocked: no `brief_reconciled` receipt" when the ledger has no matching event; "stale (receipt_ts=..., drifted path=...)" when the receipt predates an allowed-path mtime; "has_drift=True (drifted dimensions: ...)" when fresh-but-drifted; and [] when fresh + drift-free. is_receipt_fresh is a pure function (6 unit tests, glob expansion + missing-path-False semantics). Receipts: arb-step-unittest-6f12fe3b0e0f427781ef6e3969222a59 (5915 pass), arb-ruff-25ac5b932ae4443889d4b5bec1dd32b4, arb-step-typecheck-6e601915d32849b0ac8482f9d802e17e, arb-step-mkdocs-16daebea47a24d2691537da0e245933b. gz covers OBPI-0.0.37-07 uncovered_reqs=0.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/governance/reconcile_freshness.py (pure is_receipt_fresh helper), tests/governance/test_reconcile_freshness.py (6 unit tests)
+- Files modified: src/gzkit/pipeline_runtime.py (check_reconcile_receipt_gate + _extract_brief_allowlist + _find_drifted_path + __all__ export), src/gzkit/commands/obpi_cmd.py (Stage 1 gate wiring, exit 3 on block), tests/test_pipeline_runtime.py (TestCheckReconcileReceiptGate, 4 tests), tests/commands/test_obpi_pipeline.py (brief_reconciled event seeded in _seed_runtime + @covers REQ-0.0.37-07-06), features/brief_reconcile.feature (4 @REQ-0.0.37-07-02/03/04/05 scenarios), docs/user/runbook.md (Stage 1 block recovery entry), data/behave_coverage_waivers.json (REQ-01/06 unit-tier waiver)
+- Tests added: 10 (6 freshness helper + 4 gate); full suite 5915 pass
+- Date completed: 2026-06-06
+- Attestation status: operator-attested "attest completed" (Stage 4 evidence gate)
+- Defects noted: brief allowlist omitted obpi_cmd.py (required coupled surface, wired per AGENTS.md 1a); fixed pre-existing malformed insights record at agent-insights.jsonl:168 (evidence string->list)
 
 ## Tracked Defects
 
@@ -150,14 +153,14 @@ uv run gz obpi pipeline OBPI-0.0.37-07-pipeline-stage1-gate --stage 1 --dry-run
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: substantive text grounded in stale-receipt fail-close demonstration
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.37-07 Pipeline Stage 1 fail-close gate verified against the Stage 4 evidence packet: check_reconcile_receipt_gate refuses Stage 2 entry (exit 3) on absent/stale/drifted brief_reconciled receipt and passes only when fresh+drift-free. Receipts arb-step-unittest-6f12fe3b0e0f427781ef6e3969222a59 (5915 tests pass), arb-ruff-25ac5b932ae4443889d4b5bec1dd32b4, arb-step-typecheck-6e601915d32849b0ac8482f9d802e17e, arb-step-mkdocs-16daebea47a24d2691537da0e245933b; gz covers uncovered_reqs=0.
+- Date: 2026-06-06
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-06-06
 
 **Evidence Hash:** -

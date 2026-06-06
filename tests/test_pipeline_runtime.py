@@ -935,5 +935,187 @@ class TestPersonaPipelineIntegration(unittest.TestCase):
                 )
 
 
+class TestCheckReconcileReceiptGate(unittest.TestCase):
+    """Tests for check_reconcile_receipt_gate (OBPI-0.0.37-07).
+
+    @covers REQ-0.0.37-07-02
+    @covers REQ-0.0.37-07-03
+    @covers REQ-0.0.37-07-04
+    @covers REQ-0.0.37-07-05
+    """
+
+    def _write_ledger(
+        self,
+        root: Path,
+        events: list[dict[str, Any]],
+    ) -> Path:
+        """Write events to .gzkit/ledger.jsonl and return the path."""
+        ledger = root / ".gzkit" / "ledger.jsonl"
+        ledger.parent.mkdir(parents=True, exist_ok=True)
+        with ledger.open("w", encoding="utf-8") as fh:
+            for ev in events:
+                fh.write(json.dumps(ev) + "\n")
+        return ledger
+
+    def _write_legacy_brief(
+        self,
+        root: Path,
+        obpi_id: str,
+        allowed_paths: list[str],
+    ) -> Path:
+        """Write a minimal legacy-format OBPI brief and return its path."""
+        brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.37" / "obpis"
+        brief_dir.mkdir(parents=True, exist_ok=True)
+        brief = brief_dir / f"{obpi_id}.md"
+        lines = [
+            "---",
+            f"id: {obpi_id}",
+            "parent: ADR-0.0.37-test",
+            "lane: Heavy",
+            "status: Draft",
+            "---",
+            "",
+            "# Test Brief",
+            "",
+            "## Allowed Paths",
+            "",
+        ]
+        for p in allowed_paths:
+            lines.append(f"- `{p}`")
+        brief.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        return brief
+
+    @covers("REQ-0.0.37-07-02")
+    def test_gate_blocks_when_no_receipt(self) -> None:
+        """No brief_reconciled event → blocking message returned."""
+        from gzkit.pipeline_runtime import check_reconcile_receipt_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_ledger(root, [])
+            brief = self._write_legacy_brief(root, "OBPI-0.0.37-07-test", [])
+
+            blockers = check_reconcile_receipt_gate("OBPI-0.0.37-07-test", brief, root)
+            self.assertEqual(len(blockers), 1)
+            self.assertIn("no `brief_reconciled` receipt", blockers[0])
+            self.assertIn("OBPI-0.0.37-07-test", blockers[0])
+
+    @covers("REQ-0.0.37-07-03")
+    def test_gate_blocks_when_receipt_stale(self) -> None:
+        """Receipt timestamp older than allowed-path mtime → blocking message with path."""
+        import os
+        import time
+
+        from gzkit.pipeline_runtime import check_reconcile_receipt_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / "src" / "foo.py"
+            src.parent.mkdir(parents=True)
+            src.write_text("x", encoding="utf-8")
+            future_mtime = time.time() + 100
+            os.utime(src, (future_mtime, future_mtime))
+
+            stale_ts = datetime.fromtimestamp(time.time() - 200, tz=UTC)
+            events = [
+                {
+                    "event": "brief_reconciled",
+                    "id": "OBPI-0.0.37-07-test",
+                    "brief_id": "OBPI-0.0.37-07-test",
+                    "ts": stale_ts.isoformat(),
+                    "has_drift": False,
+                    "allowlist_delta_count": 0,
+                    "discovery_delta_count": 0,
+                    "verification_delta_count": 0,
+                    "req_count_delta": 0,
+                    "citation_delta_count": 0,
+                }
+            ]
+            self._write_ledger(root, events)
+            brief = self._write_legacy_brief(root, "OBPI-0.0.37-07-test", ["src/foo.py"])
+
+            blockers = check_reconcile_receipt_gate("OBPI-0.0.37-07-test", brief, root)
+            self.assertEqual(len(blockers), 1)
+            self.assertIn("stale", blockers[0])
+            self.assertIn("drifted path", blockers[0])
+
+    @covers("REQ-0.0.37-07-04")
+    def test_gate_blocks_when_receipt_fresh_but_drifted(self) -> None:
+        """Fresh receipt with has_drift=True → blocking message naming drifted dimensions."""
+        import time
+
+        from gzkit.pipeline_runtime import check_reconcile_receipt_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / "src" / "foo.py"
+            src.parent.mkdir(parents=True)
+            src.write_text("x", encoding="utf-8")
+            old_mtime = time.time() - 200
+            import os
+
+            os.utime(src, (old_mtime, old_mtime))
+
+            fresh_ts = datetime.fromtimestamp(time.time(), tz=UTC)
+            events = [
+                {
+                    "event": "brief_reconciled",
+                    "id": "OBPI-0.0.37-07-test",
+                    "brief_id": "OBPI-0.0.37-07-test",
+                    "ts": fresh_ts.isoformat(),
+                    "has_drift": True,
+                    "allowlist_delta_count": 1,
+                    "discovery_delta_count": 0,
+                    "verification_delta_count": 0,
+                    "req_count_delta": 0,
+                    "citation_delta_count": 0,
+                }
+            ]
+            self._write_ledger(root, events)
+            brief = self._write_legacy_brief(root, "OBPI-0.0.37-07-test", ["src/foo.py"])
+
+            blockers = check_reconcile_receipt_gate("OBPI-0.0.37-07-test", brief, root)
+            self.assertEqual(len(blockers), 1)
+            self.assertIn("has_drift=True", blockers[0])
+            self.assertIn("allowlist", blockers[0])
+
+    @covers("REQ-0.0.37-07-05")
+    def test_gate_passes_when_receipt_fresh_and_clean(self) -> None:
+        """Fresh receipt with has_drift=False → empty list (gate passes)."""
+        import os
+        import time
+
+        from gzkit.pipeline_runtime import check_reconcile_receipt_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / "src" / "foo.py"
+            src.parent.mkdir(parents=True)
+            src.write_text("x", encoding="utf-8")
+            old_mtime = time.time() - 200
+            os.utime(src, (old_mtime, old_mtime))
+
+            fresh_ts = datetime.fromtimestamp(time.time(), tz=UTC)
+            events = [
+                {
+                    "event": "brief_reconciled",
+                    "id": "OBPI-0.0.37-07-test",
+                    "brief_id": "OBPI-0.0.37-07-test",
+                    "ts": fresh_ts.isoformat(),
+                    "has_drift": False,
+                    "allowlist_delta_count": 0,
+                    "discovery_delta_count": 0,
+                    "verification_delta_count": 0,
+                    "req_count_delta": 0,
+                    "citation_delta_count": 0,
+                }
+            ]
+            self._write_ledger(root, events)
+            brief = self._write_legacy_brief(root, "OBPI-0.0.37-07-test", ["src/foo.py"])
+
+            blockers = check_reconcile_receipt_gate("OBPI-0.0.37-07-test", brief, root)
+            self.assertEqual(blockers, [])
+
+
 if __name__ == "__main__":
     unittest.main()

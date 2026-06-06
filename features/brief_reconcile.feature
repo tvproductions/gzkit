@@ -211,3 +211,41 @@ Feature: OBPI Brief Reconciliation Engine (CIC-2)
   Scenario: the brief reconcile manpage exists with required sections
     Given the manpage "docs/user/manpages/brief-reconcile.md"
     Then it contains NAME, SYNOPSIS, DESCRIPTION, OPTIONS, and EXAMPLES sections
+
+  # ---------------------------------------------------------------------------
+  # OBPI-0.0.37-07 — Pipeline Stage 1 fail-close gate
+  # ---------------------------------------------------------------------------
+
+  @wip
+  @REQ-0.0.37-07-02
+  Scenario: Stage 1 blocks when no brief_reconciled receipt exists
+    Given an OBPI with no brief_reconciled ledger event
+    When I launch "gz obpi pipeline <OBPI-ID>"
+    Then the command exits 3
+    And the output contains "Stage 2 entry blocked: no `brief_reconciled` receipt"
+
+  @wip
+  @REQ-0.0.37-07-03
+  Scenario: Stage 1 blocks when brief_reconciled receipt is stale
+    Given an OBPI with a brief_reconciled receipt older than its allowed-path mtimes
+    When I launch "gz obpi pipeline <OBPI-ID>"
+    Then the command exits 3
+    And the output contains "Stage 2 entry blocked"
+    And the output contains "stale"
+    And the output contains "drifted path"
+
+  @wip
+  @REQ-0.0.37-07-04
+  Scenario: Stage 1 blocks when receipt has_drift is True
+    Given an OBPI with a fresh brief_reconciled receipt whose has_drift is True
+    When I launch "gz obpi pipeline <OBPI-ID>"
+    Then the command exits 3
+    And the output contains "Stage 2 entry blocked"
+    And the output contains "has_drift=True"
+
+  @wip
+  @REQ-0.0.37-07-05
+  Scenario: Stage 1 passes when receipt is fresh and drift-free
+    Given an OBPI with a fresh brief_reconciled receipt whose has_drift is False
+    When I launch "gz obpi pipeline <OBPI-ID>"
+    Then Stage 1 passes and Stage 2 is permitted

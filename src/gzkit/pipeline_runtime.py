@@ -367,6 +367,145 @@ def load_dispatch_summary(plans_dir: Path, obpi_id: str) -> dict[str, Any] | Non
     return cast(dict[str, Any], json.loads(summary_path.read_text(encoding="utf-8")))
 
 
+def _extract_brief_allowlist(brief_path: Path) -> list[str]:
+    """Extract allowed paths from a brief (handles BriefStructure and legacy shapes)."""
+    import re  # noqa: PLC0415
+
+    from gzkit.governance.brief_structure import BriefStructure, parse_brief  # noqa: PLC0415
+
+    parsed = parse_brief(brief_path)
+    if isinstance(parsed, BriefStructure):
+        return list(parsed.allowlist)
+
+    _ALLOWED_HEADING_RE = re.compile(r"^##\s+ALLOWED\s+PATHS\s*$", re.IGNORECASE)
+    _BACKTICK_PATH_RE = re.compile(r"`([^`]+)`")
+    _SECTION_HEADING_RE = re.compile(r"^##\s+")
+    _PATH_PREFIXES = ("src/", "tests/", "docs/", ".gzkit/", "features/")
+
+    body: str = parsed.raw_body  # ty: ignore[unresolved-attribute]
+    paths: list[str] = []
+    collecting = False
+    for line in body.splitlines():
+        if _ALLOWED_HEADING_RE.match(line):
+            collecting = True
+            continue
+        if collecting and _SECTION_HEADING_RE.match(line):
+            break
+        if collecting:
+            for token in _BACKTICK_PATH_RE.findall(line):
+                if token.startswith(_PATH_PREFIXES) or ("/" in token and "." in token):
+                    paths.append(token)
+    return paths
+
+
+def _find_drifted_path(
+    receipt_ts: datetime,
+    allowed_paths: list[str],
+    project_root: Path,
+) -> str:
+    """Return the first allowed path newer than receipt_ts, or '(missing)' if absent."""
+    from gzkit.governance.reconcile_freshness import is_receipt_fresh  # noqa: PLC0415
+
+    for pattern in allowed_paths:
+        direct = project_root / pattern
+        if direct.exists():
+            import os  # noqa: PLC0415
+
+            mtime = datetime.fromtimestamp(os.path.getmtime(direct), tz=UTC)
+            if mtime > receipt_ts:
+                return pattern
+        else:
+            matches = list(project_root.glob(pattern))
+            if not matches:
+                return pattern
+    _ = is_receipt_fresh  # imported for clarity; not called here
+    return "(missing)"
+
+
+def check_reconcile_receipt_gate(
+    obpi_id: str,
+    brief_path: Path,
+    project_root: Path,
+) -> list[str]:
+    """Check that a fresh, drift-free brief_reconciled receipt exists for Stage 1 entry.
+
+    Reads ``.gzkit/ledger.jsonl`` directly to find the most recent
+    ``brief_reconciled`` event whose ``brief_id`` matches ``obpi_id``.
+
+    Returns an empty list when the gate passes.  Returns a list with one
+    blocking message when the gate fails (absent, stale, or drifted receipt).
+
+    Exit-code contract: callers should raise ``SystemExit(3)`` on a non-empty
+    return — this is a Policy Breach per the CLI exit-code map.
+    """
+    from gzkit.governance.reconcile_freshness import is_receipt_fresh  # noqa: PLC0415
+
+    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+    if not ledger_path.is_file():
+        return []
+
+    latest_ts: datetime | None = None
+    has_drift = False
+    drifted_dims: list[str] = []
+
+    for raw in ledger_path.read_text(encoding="utf-8").splitlines():
+        if not raw.strip():
+            continue
+        try:
+            event = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if event.get("event") != "brief_reconciled":
+            continue
+        if event.get("brief_id") != obpi_id:
+            continue
+        ts_str = event.get("ts", "")
+        try:
+            ts = datetime.fromisoformat(str(ts_str).replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if latest_ts is None or ts > latest_ts:
+            latest_ts = ts
+            has_drift = bool(event.get("has_drift", False))
+            dims: list[str] = []
+            if event.get("allowlist_delta_count", 0):
+                dims.append("allowlist")
+            if event.get("discovery_delta_count", 0):
+                dims.append("discovery")
+            if event.get("verification_delta_count", 0):
+                dims.append("verification")
+            if event.get("req_count_delta", 0):
+                dims.append("req_count")
+            if event.get("citation_delta_count", 0):
+                dims.append("citation")
+            drifted_dims = dims
+
+    if latest_ts is None:
+        return [
+            f"Stage 2 entry blocked: no `brief_reconciled` receipt for {obpi_id}. "
+            f"Run `gz brief reconcile {obpi_id}` then retry."
+        ]
+
+    allowed_paths = _extract_brief_allowlist(brief_path)
+    if allowed_paths and not is_receipt_fresh(latest_ts, allowed_paths, project_root):
+        drifted_path = _find_drifted_path(latest_ts, allowed_paths, project_root)
+        return [
+            f"Stage 2 entry blocked: receipt for {obpi_id} stale "
+            f"(receipt_ts={latest_ts.isoformat()}, drifted path={drifted_path!r}). "
+            f"Run `gz brief reconcile {obpi_id}` to refresh."
+        ]
+
+    if has_drift:
+        dims_str = ", ".join(drifted_dims) if drifted_dims else "unknown"
+        return [
+            f"Stage 2 entry blocked: receipt for {obpi_id} has_drift=True "
+            f"(drifted dimensions: {dims_str}). "
+            f"Run `gz brief reconcile {obpi_id}` to refresh."
+        ]
+
+    return []
+
+
 def validate_agent_files(project_root: Path) -> list[str]:
     """Validate that all pipeline agent files exist with required frontmatter.
 
@@ -491,8 +630,9 @@ __all__ = [
     "partition_independent_groups",
     "prepare_stage3_verification",
     "should_fallback_to_sequential",
-    # local (subagent orchestration)
+    # local (subagent orchestration + Stage 1 gate)
     "AGENT_FILE_MAP",
+    "check_reconcile_receipt_gate",
     "DISPATCH_SUMMARY_PREFIX",
     "DispatchAggregation",
     "ModelRoutingConfig",

@@ -43,6 +43,7 @@ from gzkit.ledger import (
     resolve_adr_lane,
 )
 from gzkit.pipeline_runtime import (
+    check_reconcile_receipt_gate,
     clear_stale_pipeline_markers,
     load_plan_audit_receipt,
     pipeline_concurrency_blockers,
@@ -429,6 +430,11 @@ def obpi_pipeline_cmd(
     if blockers:
         _print_pipeline_blockers(obpi_id, blockers)
         raise SystemExit(1)
+
+    reconcile_blockers = check_reconcile_receipt_gate(obpi_id, obpi_file, project_root)
+    if reconcile_blockers:
+        _print_pipeline_blockers(obpi_id, reconcile_blockers)
+        raise SystemExit(3)
 
     lane = resolve_adr_lane(graph.get(resolved_parent, {}), config.mode)
     requires_human_attestation = _requires_human_obpi_attestation(resolved_parent, lane)

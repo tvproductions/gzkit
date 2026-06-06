@@ -12,6 +12,7 @@ from gzkit.ledger import (
     obpi_created_event,
     obpi_receipt_emitted_event,
 )
+from gzkit.ledger_events import brief_reconciled_event
 from gzkit.quality import QualityResult
 from gzkit.traceability import covers  # noqa: F401
 from tests.commands.common import CliRunner, _quick_init
@@ -128,6 +129,17 @@ class TestObpiPipelineCommand(unittest.TestCase):
         ledger = Ledger(Path(".gzkit/ledger.jsonl"))
         ledger.append(adr_created_event(parent_adr, "PRD-GZKIT-1.0.0", config_mode))
         ledger.append(obpi_created_event(obpi_id, parent_adr))
+        ledger.append(
+            brief_reconciled_event(
+                obpi_id,
+                has_drift=False,
+                allowlist_delta_count=0,
+                discovery_delta_count=0,
+                verification_delta_count=0,
+                req_count_delta=0,
+                citation_delta_count=0,
+            )
+        )
 
     def test_full_launch_accepts_short_id_and_creates_markers(self) -> None:
         runner = CliRunner()
@@ -163,6 +175,8 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertIn("updated_at", payload)
             self.assertEqual(payload, self._load_json(legacy_path))
 
+    # audit-exempt: regression-invariant-overlay plan-receipt check fires alongside reconcile gate
+    @covers("REQ-0.0.37-07-06")
     def test_blocks_when_matching_receipt_verdict_is_fail(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():

@@ -430,6 +430,28 @@ uv run gz brief reconcile OBPI-<X.Y.Z-NN> --apply --attestor "<name>" --dry-run
 uv run gz brief reconcile OBPI-<X.Y.Z-NN> --apply --attestor "<name>"
 ```
 
+**When Stage 1 blocks: no or stale brief_reconciled receipt (OBPI-0.0.37-07)**
+
+`gz obpi pipeline` Stage 1 now requires a fresh `brief_reconciled` receipt before
+permitting Stage 2 entry. If Stage 1 exits 3 with "Stage 2 entry blocked", refresh
+the receipt:
+
+```bash
+# Refresh the reconcile receipt (reports per-dimension drift)
+uv run gz brief reconcile OBPI-<X.Y.Z-NN>
+
+# Then re-launch the pipeline
+uv run gz obpi pipeline OBPI-<X.Y.Z-NN>
+```
+
+If the brief has drift (`has_drift=True`), fix the drifted dimensions first:
+
+```bash
+# Preview amendments, then apply
+uv run gz brief reconcile OBPI-<X.Y.Z-NN> --apply --attestor "<name>" --dry-run
+uv run gz brief reconcile OBPI-<X.Y.Z-NN> --apply --attestor "<name>"
+```
+
 If `gz adr audit-check` reports missing or placeholder implementation evidence:
 
 1. Fix the OBPI brief `### Implementation Summary` with inline `- key: value` entries.
