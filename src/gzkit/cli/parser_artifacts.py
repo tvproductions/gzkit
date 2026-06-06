@@ -61,6 +61,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "complexity_guide_cmd": "gzkit.commands.complexity_guide",
     "governance_render_cmd": "gzkit.commands.governance_render",
     "context_cmd": "gzkit.commands.context_cmd",
+    "brief_reconcile_cmd": "gzkit.commands.brief_reconcile",
 }
 
 _HANDLER_CACHE: dict[str, Callable[..., Any]] = {}
@@ -92,12 +93,78 @@ def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
     """Register adr, obpi, task, justify, issue, complexity, governance, and context groups."""
     _register_adr_parsers(commands)
     _register_obpi_parsers(commands)
+    _register_brief_parsers(commands)
     _register_task_parsers(commands)
     _register_justify_parser(commands)
     _register_issue_parsers(commands)
     _register_complexity_parsers(commands)
     _register_governance_parsers(commands)
     _register_context_parser(commands)
+
+
+def _register_brief_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register the ``gz brief`` sub-command group (ADR-0.0.37, OBPI-06).
+
+    Exposes ``gz brief reconcile <OBPI-ID>``: the operator-runnable surface that
+    wraps the OBPI-05 reconciliation engine. Distinct from ``gz obpi reconcile``
+    (runtime-state vs. ledger) — this reconciles brief *content* against the
+    project tree across the five drift dimensions.
+    """
+    p_brief = commands.add_parser(
+        "brief",
+        help="OBPI brief reconciliation commands",
+        description="Reconcile OBPI brief content against current project shape.",
+        epilog=build_epilog(
+            [
+                "gz brief reconcile OBPI-0.1.0-01",
+                "gz brief reconcile OBPI-0.1.0-01 --apply --dry-run",
+                'gz brief reconcile OBPI-0.1.0-01 --apply --attestor "Jane Doe"',
+            ]
+        ),
+    )
+    brief_commands = p_brief.add_subparsers(dest="brief_command")
+    brief_commands.required = True
+
+    p_reconcile = brief_commands.add_parser(
+        "reconcile",
+        help="Reconcile an OBPI brief against project state (five drift dimensions)",
+        description=(
+            "Run the brief reconciliation engine across allowlist, discovery "
+            "checklist, verification verbs, REQ count, and citation tuples. "
+            "Emits a brief_reconciled ledger event on every run (and "
+            "brief_reconcile_drift_detected on drift); exits 0 when clean, 3 on "
+            "drift. Use --apply --attestor to write operator-attested amendments."
+        ),
+        epilog=build_epilog(
+            [
+                "gz brief reconcile OBPI-0.1.0-01",
+                "gz brief reconcile OBPI-0.1.0-01 --apply --dry-run",
+                'gz brief reconcile OBPI-0.1.0-01 --apply --attestor "Jane Doe"',
+            ]
+        ),
+    )
+    p_reconcile.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.1.0-01)")
+    p_reconcile.add_argument(
+        "--apply",
+        action="store_true",
+        help="Write operator-attested amendments back into the brief (requires --attestor)",
+    )
+    p_reconcile.add_argument(
+        "--attestor",
+        default=None,
+        help="Full name of the attesting human (required with --apply)",
+    )
+    add_dry_run_flag(p_reconcile)
+    add_json_flag(p_reconcile)
+    p_reconcile.set_defaults(
+        func=lambda a: _lazy("brief_reconcile_cmd")(
+            obpi_id=a.obpi,
+            dry_run=a.dry_run,
+            apply=a.apply,
+            attestor=a.attestor,
+            as_json=a.as_json,
+        )
+    )
 
 
 def _register_context_parser(commands: argparse._SubParsersAction) -> None:

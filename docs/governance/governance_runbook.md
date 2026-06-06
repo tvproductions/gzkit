@@ -43,6 +43,7 @@ uv run gz specify                     # Create implementation brief (OBPI)
 uv run gz obpi pipeline OBPI-<X.Y.Z-NN>  # Execute OBPI pipeline
 uv run gz obpi audit OBPI-<X.Y.Z-NN> # Gather evidence and record in audit ledger
 uv run gz obpi reconcile OBPI-<X.Y.Z-NN> # Fail-closed reconciliation
+uv run gz brief reconcile OBPI-<X.Y.Z-NN> # Reconcile brief content vs project (5 drift dimensions)
 uv run gz obpi withdraw OBPI-<X.Y.Z-NN> --reason "..." # Withdraw OBPI from counts
 uv run gz obpi lock claim OBPI-<X.Y.Z-NN>  # Claim OBPI work lock
 uv run gz obpi lock release OBPI-<X.Y.Z-NN> # Release OBPI work lock

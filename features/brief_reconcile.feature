@@ -147,3 +147,67 @@ Feature: OBPI Brief Reconciliation Engine (CIC-2)
     And an OBPI brief file at "tests/fixtures/brief_reconcile/passing.md"
     When I run reconcile_brief against the project root
     Then the ledger event count is unchanged
+
+  # ---------------------------------------------------------------------------
+  # OBPI-0.0.37-06: gz brief reconcile CLI verb. CLI-level scenarios are @wip
+  # (steps deferred, matching the OBPI-05 convention in this file); the verb's
+  # REQ behavior is proven by tests/commands/test_brief_reconcile.py @covers.
+  # ---------------------------------------------------------------------------
+
+  @wip
+  @REQ-0.0.37-06-01
+  Scenario: gz brief reconcile reports a clean brief and exits zero
+    Given a clean OBPI brief resolvable by id
+    When I run "gz brief reconcile <OBPI-ID>"
+    Then the command exits 0
+    And a brief_reconciled ledger event is emitted with has_drift false
+
+  @wip
+  @REQ-0.0.37-06-02
+  Scenario: gz brief reconcile reports drift and exits three
+    Given an OBPI brief whose allowlist names a non-existent path
+    When I run "gz brief reconcile <OBPI-ID>"
+    Then the command exits 3
+    And a brief_reconcile_drift_detected ledger event is emitted with the per-dimension payload
+
+  @wip
+  @REQ-0.0.37-06-03
+  Scenario: gz brief reconcile --apply requires --attestor
+    Given an OBPI brief resolvable by id
+    When I run "gz brief reconcile <OBPI-ID> --apply"
+    Then the command exits non-zero
+    And the error names "--apply requires --attestor"
+
+  @wip
+  @REQ-0.0.37-06-04
+  Scenario: gz brief reconcile --apply --attestor writes attested amendments
+    Given a drifting OBPI brief resolvable by id
+    When I run "gz brief reconcile <OBPI-ID> --apply --attestor \"Jane Doe\""
+    Then the brief gains the reconciliation amendments
+    And a brief_reconciled ledger event is emitted with applied true and the attestor name
+
+  @wip
+  @REQ-0.0.37-06-05
+  Scenario: gz brief reconcile --apply --dry-run previews without writing
+    Given a drifting OBPI brief resolvable by id
+    When I run "gz brief reconcile <OBPI-ID> --apply --attestor \"Jane Doe\" --dry-run"
+    Then the brief file is unchanged
+    And no applied brief_reconciled ledger event is emitted
+
+  @wip
+  @REQ-0.0.37-06-06
+  Scenario: the brief reconcile verb is registered
+    When I run "gz brief reconcile --help"
+    Then the command exits 0
+
+  @wip
+  @REQ-0.0.37-06-07
+  Scenario: both reconciliation event types are schema-registered
+    Given the ledger event schema
+    Then it declares "brief_reconciled" and "brief_reconcile_drift_detected"
+
+  @wip
+  @REQ-0.0.37-06-08
+  Scenario: the brief reconcile manpage exists with required sections
+    Given the manpage "docs/user/manpages/brief-reconcile.md"
+    Then it contains NAME, SYNOPSIS, DESCRIPTION, OPTIONS, and EXAMPLES sections

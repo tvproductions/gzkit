@@ -72,6 +72,7 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/gz-obpi-lock`](gz-obpi-lock.md) | Claim or release OBPI-level work locks for multi-agent coordination |
 | [`/gz-obpi-pipeline`](gz-obpi-pipeline.md) | Post-plan OBPI execution pipeline — implement, verify, present, sync |
 | [`/gz-obpi-reconcile`](gz-obpi-reconcile.md) | Audit briefs against evidence, fix stale metadata, write ledger proof |
+| [`/gz-brief-reconcile`](gz-brief-reconcile.md) | Reconcile an OBPI brief against project state across five drift dimensions |
 | [`/gz-obpi-simplify`](gz-obpi-simplify.md) | OBPI-scoped code review for reuse, quality, and efficiency |
 | [`/gz-obpi-specify`](gz-obpi-specify.md) | Create and author OBPI briefs linked to parent ADR items |
 | [`/gz-obpi-sync`](gz-obpi-sync.md) | Sync OBPI status in ADR table from brief source files |

@@ -416,6 +416,20 @@ uv run gz status --table
 uv run gz adr audit-check ADR-<X.Y.Z>
 ```
 
+When a brief itself has drifted from project reality (allowlist, discovery
+checklist, verification verbs, REQ count, citation tuples), reconcile it
+directly. `gz brief reconcile` reports per-dimension deltas and exits 3 on
+drift; `--apply --attestor "<name>"` writes operator-attested amendments:
+
+```bash
+# Report drift across the five dimensions (exit 3 on drift)
+uv run gz brief reconcile OBPI-<X.Y.Z-NN>
+
+# Preview, then apply operator-attested amendments after review
+uv run gz brief reconcile OBPI-<X.Y.Z-NN> --apply --attestor "<name>" --dry-run
+uv run gz brief reconcile OBPI-<X.Y.Z-NN> --apply --attestor "<name>"
+```
+
 If `gz adr audit-check` reports missing or placeholder implementation evidence:
 
 1. Fix the OBPI brief `### Implementation Summary` with inline `- key: value` entries.

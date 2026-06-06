@@ -41,6 +41,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz obpi pipeline`](obpi-pipeline.md) | Launch the OBPI pipeline runtime surface |
 | [`gz obpi validate`](obpi-validate.md) | Validate OBPI brief(s) for authored, scaffold, and completion readiness |
 | [`gz obpi reconcile`](obpi-reconcile.md) | Fail-closed reconciliation for one OBPI |
+| [`gz brief reconcile`](brief-reconcile.md) | Reconcile an OBPI brief against project state across five drift dimensions |
 | [`gz obpi emit-receipt`](obpi-emit-receipt.md) | Emit completed/validated receipt for one OBPI |
 | [`gz obpi withdraw`](obpi-withdraw.md) | Record an OBPI withdrawal event |
 | [`gz obpi lock claim`](obpi-lock-claim.md) | Claim an OBPI work lock |

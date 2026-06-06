@@ -439,6 +439,41 @@ class CorpusEntryAppendedEvent(_EventBase):
     tier: str
 
 
+class BriefReconciledEvent(_EventBase):
+    """brief_reconciled event — OBPI brief reconciliation run (ADR-0.0.37, OBPI-06).
+
+    Summary record emitted on every ``gz brief reconcile`` run. ``applied`` and
+    ``attestor`` are populated only when ``--apply --attestor`` wrote amendments.
+    """
+
+    event: Literal["brief_reconciled"]
+    brief_id: str
+    has_drift: bool
+    allowlist_delta_count: int
+    discovery_delta_count: int
+    verification_delta_count: int
+    req_count_delta: int
+    citation_delta_count: int
+    applied: bool = False
+    attestor: str | None = None
+    task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
+
+
+class BriefReconcileDriftDetectedEvent(_EventBase):
+    """brief_reconcile_drift_detected event — full per-dimension drift payload (OBPI-06)."""
+
+    event: Literal["brief_reconcile_drift_detected"]
+    brief_id: str
+    allowlist_missing_in_brief: list[str]
+    allowlist_missing_on_disk: list[str]
+    discovery_unresolved_paths: list[str]
+    verification_unresolved_verbs: list[str]
+    declared_reqs: int
+    acceptance_criteria_count: int
+    req_count_delta: int
+    citation_stale: list[str]
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -474,7 +509,9 @@ TypedLedgerEvent = Annotated[
     | CompositionRenderedEvent
     | CompositionDriftDetectedEvent
     | ChoreDecommissionProcessedEvent
-    | CorpusEntryAppendedEvent,
+    | CorpusEntryAppendedEvent
+    | BriefReconciledEvent
+    | BriefReconcileDriftDetectedEvent,
     Field(discriminator="event"),
 ]
 

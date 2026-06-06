@@ -1043,6 +1043,108 @@
         }
       }
     },
+    "brief_reconciled": {
+      "required": [
+        "brief_id",
+        "has_drift",
+        "allowlist_delta_count",
+        "discovery_delta_count",
+        "verification_delta_count",
+        "req_count_delta",
+        "citation_delta_count"
+      ],
+      "properties": {
+        "brief_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "has_drift": {
+          "type": "boolean"
+        },
+        "allowlist_delta_count": {
+          "type": "integer"
+        },
+        "discovery_delta_count": {
+          "type": "integer"
+        },
+        "verification_delta_count": {
+          "type": "integer"
+        },
+        "req_count_delta": {
+          "type": "integer"
+        },
+        "citation_delta_count": {
+          "type": "integer"
+        },
+        "applied": {
+          "type": "boolean"
+        },
+        "attestor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "brief_reconcile_drift_detected": {
+      "required": [
+        "brief_id",
+        "allowlist_missing_in_brief",
+        "allowlist_missing_on_disk",
+        "discovery_unresolved_paths",
+        "verification_unresolved_verbs",
+        "declared_reqs",
+        "acceptance_criteria_count",
+        "req_count_delta",
+        "citation_stale"
+      ],
+      "properties": {
+        "brief_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "allowlist_missing_in_brief": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowlist_missing_on_disk": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "discovery_unresolved_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "verification_unresolved_verbs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "declared_reqs": {
+          "type": "integer"
+        },
+        "acceptance_criteria_count": {
+          "type": "integer"
+        },
+        "req_count_delta": {
+          "type": "integer"
+        },
+        "citation_stale": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "chore_decommission_processed": {
       "required": [
         "file_path",

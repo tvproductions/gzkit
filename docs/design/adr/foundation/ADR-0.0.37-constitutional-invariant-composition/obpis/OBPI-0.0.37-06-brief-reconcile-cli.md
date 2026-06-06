@@ -31,17 +31,39 @@ Forward-reference verb introduced by this OBPI: `gz brief reconcile`.
 
 ## Allowed Paths
 
+> Allowlist amendments (operator-attested 2026-06-05 / 2026-06-06): event-type
+> registration and its coupled validators span more files than the original
+> draft named — event models, factories, the enforced schema, the handler-waiver
+> registry, the command-shape suggestion hook, and the doc/skill surfaces every
+> new CLI verb obliges. Each entry below is the operator-approved real surface.
+
 - `src/gzkit/commands/brief_reconcile.py` **CREATE** (new) — command implementation
-- `src/gzkit/cli/parser_artifacts.py` (modify) — register `brief reconcile` verb
-- `src/gzkit/governance/events.py` (modify) — register `brief_reconciled` and `brief_reconcile_drift_detected` event types
-- `.gzkit/schemas/ledger_events.json` (modify) — schema definitions for the two new event types
-<!-- gz-validate-skip: command-shape -->
-- `tests/commands/test_brief_reconcile.py` **CREATE** (new) — CLI tests for `gz brief reconcile`
-- `docs/user/manpages/gz-brief.md` **CREATE** (new) — manpage per gate5-runbook-code-covenant
-- `features/brief_reconcile.feature` (modify) — add CLI-level scenarios tagged `@REQ-0.0.37-06-*`; file created by OBPI-05
-<!-- gz-validate-skip: command-shape -->
-- `docs/user/runbook.md` (modify) — operator runbook entry: "When briefs drift: `gz brief reconcile <OBPI-ID>` then `--apply` after review"
+- `src/gzkit/cli/parser_artifacts.py` (modify) — register the brief reconcile verb
+- `src/gzkit/events.py` (modify) — typed event models + TypedLedgerEvent union entries
+- `src/gzkit/ledger_events.py` (modify) — event factory functions
+- `src/gzkit/governance/events.py` (modify) — emit helpers
+- `src/gzkit/schemas/ledger.json` (modify) — enforced event schema entries
+- `src/gzkit/governance/trust_audits/events.py` (modify) — NO_GRAPH_IMPACT handler waivers
+- `src/gzkit/hooks/obpi.py` (modify) — command-shape suggestion ordering (new verb shifted the truncated list; coupled fix)
+- `src/gzkit/cli/__init__.py` (consume) — imported by REQ tests
+- `src/gzkit/config.py` (consume) — imported by REQ tests
+- `src/gzkit/ledger.py` (consume) — imported by REQ tests
+- `src/gzkit/traceability.py` (consume) — covers import in REQ tests
+- `.gzkit/schemas/ledger_events.json` (modify) — documentary schema copy
+- `.gzkit/skills/gz-brief-reconcile/SKILL.md` **CREATE** (new) — wielding skill (Invariant 1)
+- `.gzkit/skills/gz-governance/SKILL.md` (modify) — route brief reconcile under the governance router
+- `tests/commands/test_brief_reconcile.py` **CREATE** (new) — CLI tests
+- `tests/test_schemas.py` (modify) — register the two models in the schema-alignment registry
+- `docs/user/manpages/brief-reconcile.md` **CREATE** (new) — command manpage
+- `docs/user/manpages/index.md` (modify) — manpage index entry
+- `docs/user/skills/gz-brief-reconcile.md` **CREATE** (new) — skill manpage
+- `docs/user/skills/index.md` (modify) — skill index entry
+- `docs/user/runbook.md` (modify) — operator runbook drift-control entry
+- `docs/governance/governance_runbook.md` (modify) — governance runbook entry
+- `features/brief_reconcile.feature` (modify) — CLI scenarios tagged REQ-0.0.37-06
+- `config/doc-coverage.json` (modify) — per-command documentation-obligation manifest
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-06-brief-reconcile-cli.md` (this brief)
+- Generated artifacts (do not hand-edit): vendor skill mirrors under `.claude/`, `.agents/`, `.github/` and pkg copies under `src/gzkit/skills/` (via `gz agent sync control-surfaces`); `data/distribution_baseline_manifest.json` (via `gz validate --distribution --regenerate`); `AGENTS.md` control-surface timestamp; `.gzkit/ledger.jsonl` append-only events; `.gzkit/locks/` runtime lock state
 
 ## Denied Paths
 
@@ -61,7 +83,8 @@ Forward-reference verb introduced by this OBPI: `gz brief reconcile`.
 5. REQUIREMENT: `--dry-run` mode is the default for `--apply` previews (`--apply --dry-run` prints the would-be diff without writing). `--apply` without `--dry-run` is non-interactive write.
 <!-- gz-validate-skip: command-shape -->
 6. REQUIREMENT: `brief reconcile` verb registered in `parser_artifacts.py`; resolves via `gz brief reconcile --help`.
-7. REQUIREMENT: The two new ledger event types registered in `.gzkit/schemas/ledger_events.json`. Schema-conformant: each event has id, name, schema, required-fields keys per the events schema convention.
+7. REQUIREMENT: The two new ledger event types registered in the enforced ledger schema and the documentary copy. Schema-conformant: each event declares required fields and property types per the events schema convention, and round-trips through the typed-event discriminated union.
+8. REQUIREMENT: A command manpage exists with NAME/SYNOPSIS/DESCRIPTION/OPTIONS/EXAMPLES sections, where EXAMPLES shows real CLI output; the verb is declared in the per-command doc-coverage manifest with a wielding skill (Invariant 1).
 
 > STOP-on-BLOCKERS: OBPI-05's engine and OBPI-04's BriefStructure must be landed.
 
@@ -138,9 +161,9 @@ print('REQ-07 OK')
 - [ ] REQ-0.0.37-06-05: `--apply --dry-run` prints the would-be diff without writing the brief
 <!-- gz-validate-skip: command-shape -->
 - [ ] REQ-0.0.37-06-06: `brief reconcile` verb resolves via `gz brief reconcile --help`; verb is registered in `parser_artifacts.py`
-- [ ] REQ-0.0.37-06-07: `brief_reconciled` and `brief_reconcile_drift_detected` event type schemas are present in `.gzkit/schemas/ledger_events.json` and pass the events-schema validator
+- [ ] REQ-0.0.37-06-07: `brief_reconciled` and `brief_reconcile_drift_detected` event type schemas are present in the enforced `src/gzkit/schemas/ledger.json` (and the documentary `.gzkit/schemas/ledger_events.json`) and pass the events-schema validator
 <!-- gz-validate-skip: command-shape -->
-- [ ] REQ-0.0.37-06-08: `docs/user/manpages/gz-brief.md` exists with all required manpage sections; EXAMPLES contains real CLI output (not placeholder)
+- [ ] REQ-0.0.37-06-08: `docs/user/manpages/brief-reconcile.md` exists with all required manpage sections; EXAMPLES contains real CLI output (not placeholder)
 
 ## Completion Checklist
 
@@ -151,24 +174,57 @@ print('REQ-07 OK')
 ## Evidence
 
 ```text
-# Per-gate outputs
+# Per-gate receipts (arb)
+arb-ruff-f7b925da190b49358e26c6f12d8d8e6b           ruff       exit 0
+arb-step-typecheck-ec7db062f1374908bd867ff6823442f9 ty         exit 0
+arb-step-unittest-a4f83dff2be6407ab47ca7333d38f4bc  unittest   exit 0 (5904 tests)
+arb-step-mkdocs-b315d800da0c4173a32a0fc514239610    mkdocs     exit 0 (--strict)
+behave: 328 scenarios passed, 0 failed (24 @wip skipped)
 ```
 
 ### Value Narrative
 
-<!-- Before: drift detection required reading the brief and the project tree manually. After: one CLI invocation surfaces all five drift dimensions with operator-attested amendment flow. -->
+Before: detecting whether an OBPI brief had drifted from project reality (stale
+allowlist, dead discovery paths, unregistered verbs, REQ/criteria mismatch,
+missing citations) required reading the brief and walking the tree by hand —
+exactly the silent drift invariant CIC-2 names. After: `gz brief reconcile
+<OBPI-ID>` surfaces all five dimensions in one run with exit-3-on-drift, ledger
+receipts on every run, and an operator-attested `--apply` amendment path. The
+verb was dogfooded against its own brief, which now reports zero drift.
 
 ### Key Proof
 
-<!-- Real CLI output showing delta summary. -->
+```text
+$ uv run gz brief reconcile OBPI-0.0.37-06-brief-reconcile-cli --json
+{
+  "brief_id": "OBPI-0.0.37-06-brief-reconcile-cli",
+  "has_drift": false,
+  "deltas": {"allowlist": 0, "discovery": 0, "verification": 0,
+             "req_count": 0, "citation": 0},
+  "applied": false, "dry_run": false
+}   # exit 0
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: `src/gzkit/commands/brief_reconcile.py` (new command);
+  `src/gzkit/cli/parser_artifacts.py` (verb registration); `src/gzkit/events.py`
+  + `src/gzkit/ledger_events.py` + `src/gzkit/governance/events.py` (two event
+  types: typed models, factories, emit helpers); `src/gzkit/schemas/ledger.json`
+  + `.gzkit/schemas/ledger_events.json` (schema entries);
+  `src/gzkit/governance/trust_audits/events.py` (NO_GRAPH_IMPACT waivers);
+  `src/gzkit/hooks/obpi.py` (command-shape suggestion ordering — coupled fix);
+  `config/doc-coverage.json`, `docs/user/manpages/brief-reconcile.md` + index,
+  `docs/user/skills/gz-brief-reconcile.md` + index, runbook + governance_runbook
+  entries; `.gzkit/skills/gz-brief-reconcile/SKILL.md` + governance router;
+  `tests/test_schemas.py` (model registry).
+- Tests added: `tests/commands/test_brief_reconcile.py` (8 tests, @covers
+  REQ-0.0.37-06-01..07); `features/brief_reconcile.feature` (@REQ-0.0.37-06-*
+  CLI scenarios, @wip per file convention).
+- Date completed: 2026-06-06
+- Attestation status: awaiting Gate 5 (foundation-kind, heavy lane)
+- Defects noted: REQ-08 (manpage) is a SUPPORT-kind doc REQ witnessed by the
+  doc-coverage manifest + `gz cli audit`, not a `@covers` unit test.
 
 ## Tracked Defects
 

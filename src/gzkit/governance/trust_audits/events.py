@@ -19,6 +19,15 @@ from pathlib import Path
 from gzkit.validate import ValidationError
 
 _NO_GRAPH_IMPACT: dict[str, str] = {
+    "brief_reconciled": (
+        "Brief reconciliation summary record (ADR-0.0.37, OBPI-06). Consumed by "
+        "`gz brief reconcile` operators and reconciliation audits; does not add or "
+        "modify artifact graph nodes."
+    ),
+    "brief_reconcile_drift_detected": (
+        "Per-dimension brief drift payload (ADR-0.0.37, OBPI-06). Diagnostic record "
+        "for `gz brief reconcile`; informs amendment decisions, not the artifact graph."
+    ),
     "project_init": "Bootstrap sentinel; no artifact nodes emit from it.",
     "artifact_edited": "Session activity log; consumed by anchor analysis, not graph.",
     "obpi_lock_claimed": "L3 ephemeral lock file; consumed by gz obpi lock, not graph.",

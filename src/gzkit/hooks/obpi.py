@@ -151,7 +151,12 @@ def verify_gz_chain(verbs: list[str]) -> tuple[bool, str]:
             return True, f"resolved 'gz {' '.join(walked)}'"
         if verb not in sub_action.choices:
             available = sorted(sub_action.choices.keys())
-            sample = ", ".join(available[:8])
+            # Surface near-matches first so the likely-intended verb (e.g. the
+            # plural `chores` for a `chore` typo) always appears even when the
+            # full choice list is truncated. Prefix overlap in either direction.
+            near = [v for v in available if v.startswith(verb[:3]) or verb.startswith(v[:3])]
+            ordered = near + [v for v in available if v not in near]
+            sample = ", ".join(ordered[:8])
             suffix = "..." if len(available) > 8 else ""
             prefix = f"'gz {' '.join(walked)}'" if walked else "'gz'"
             return False, (

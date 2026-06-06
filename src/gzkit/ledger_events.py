@@ -531,6 +531,73 @@ def corpus_entry_appended_event(
     )
 
 
+def brief_reconciled_event(
+    brief_id: str,
+    has_drift: bool,
+    allowlist_delta_count: int,
+    discovery_delta_count: int,
+    verification_delta_count: int,
+    req_count_delta: int,
+    citation_delta_count: int,
+    *,
+    applied: bool = False,
+    attestor: str | None = None,
+) -> LedgerEvent:
+    """Create a brief_reconciled event (ADR-0.0.37, OBPI-06).
+
+    Summary record for one ``gz brief reconcile`` run. ``applied`` / ``attestor``
+    are set only when ``--apply --attestor`` wrote amendments back to the brief.
+    """
+    timestamp = datetime.now(UTC).isoformat()
+    return LedgerEvent(
+        event="brief_reconciled",
+        id=f"brief-reconciled-{timestamp}",
+        ts=timestamp,
+        extra={
+            "brief_id": brief_id,
+            "has_drift": has_drift,
+            "allowlist_delta_count": allowlist_delta_count,
+            "discovery_delta_count": discovery_delta_count,
+            "verification_delta_count": verification_delta_count,
+            "req_count_delta": req_count_delta,
+            "citation_delta_count": citation_delta_count,
+            "applied": applied,
+            "attestor": attestor,
+        },
+    )
+
+
+def brief_reconcile_drift_detected_event(
+    brief_id: str,
+    allowlist_missing_in_brief: list[str],
+    allowlist_missing_on_disk: list[str],
+    discovery_unresolved_paths: list[str],
+    verification_unresolved_verbs: list[str],
+    declared_reqs: int,
+    acceptance_criteria_count: int,
+    req_count_delta: int,
+    citation_stale: list[str],
+) -> LedgerEvent:
+    """Create a brief_reconcile_drift_detected event with the full delta payload (OBPI-06)."""
+    timestamp = datetime.now(UTC).isoformat()
+    return LedgerEvent(
+        event="brief_reconcile_drift_detected",
+        id=f"brief-reconcile-drift-{timestamp}",
+        ts=timestamp,
+        extra={
+            "brief_id": brief_id,
+            "allowlist_missing_in_brief": allowlist_missing_in_brief,
+            "allowlist_missing_on_disk": allowlist_missing_on_disk,
+            "discovery_unresolved_paths": discovery_unresolved_paths,
+            "verification_unresolved_verbs": verification_unresolved_verbs,
+            "declared_reqs": declared_reqs,
+            "acceptance_criteria_count": acceptance_criteria_count,
+            "req_count_delta": req_count_delta,
+            "citation_stale": citation_stale,
+        },
+    )
+
+
 def chore_decommission_processed_event(
     file_path: str,
     disposition: str,
