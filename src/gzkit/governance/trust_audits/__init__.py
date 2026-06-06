@@ -116,6 +116,7 @@ from gzkit.governance.trust_audits.sensitivity import (
     audit_sensitivity_binding,
     explain_sensitivity_for_paths,
 )
+from gzkit.governance.trust_audits.setpoint_coherence import validate_setpoint_coherence
 from gzkit.governance.trust_audits.surface_weight import validate_surface_weight
 from gzkit.governance.trust_audits.taxonomy import (
     audit_adr_status_fresh,
@@ -195,6 +196,7 @@ __all__ = [
     "validate_intrinsic_attestation",
     "validate_pointer_integrity",
     "validate_scenario_reachability",
+    "validate_setpoint_coherence",
     "validate_surface_fidelity",
     "validate_surface_weight",
     "validate_vendor_manifest",

@@ -13,7 +13,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--scenario-reachability] [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
-            [--advisor-proof-binding] [--vendor-manifest]
+            [--advisor-proof-binding] [--vendor-manifest] [--setpoint-coherence]
             [--invariant-coherence] [--brief-reconcile] [--router-tables]
             [--kind-invariance] [--req-kind-discipline] [--brief-command-shape] [--tautological-test-audit]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
@@ -518,6 +518,50 @@ $ uv run gz validate --vendor-manifest
 |------|---------|----------|
 | 0 | Manifest validates clean | — |
 | 3 | Schema violation or missing content-type route | Add the missing entry to `data/vendor-manifest.json` |
+
+### `--setpoint-coherence`
+
+Validates that every `(content_type, vendor)` pair declared in
+`data/vendor-manifest.json` `content_type_routes` carries a legal declared
+compression setpoint in `content_type_temperatures`. Legal tokens are `lite`,
+`medium`, and `heavy`. Exits 3 when a routed pair has no declared setpoint, when
+a declared token is illegal, or when the manifest is missing or malformed
+(OBPI-0.0.37-20).
+
+The setpoint is the compression target the authoring-time composer drives toward
+(ADR-0.0.37 § Decision Re-Alignment, re-aimed mechanism part 2); this gate
+asserts the declaration surface is coherent before the composer that consumes it
+is built. Achieved byte size is an output, never a hand-tuned input.
+
+**When to use:** After editing `content_type_routes` or
+`content_type_temperatures` in `data/vendor-manifest.json`, or after adding a new
+content type or vendor route.
+
+```bash
+uv run gz validate --setpoint-coherence
+```
+
+**Examples:**
+
+```text
+$ uv run gz validate --setpoint-coherence
+Validated: setpoint_coherence
+```
+
+```text
+$ uv run gz validate --setpoint-coherence
+❌ Validation failed with 1 error(s):
+
+   → data/vendor-manifest.json
+    (Bullet, claude) is routed in content_type_routes but has no declared setpoint in content_type_temperatures; declare a compression target (['heavy', 'lite', 'medium']) for the pair (OBPI-0.0.37-20).
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every routed pair has a legal declared setpoint | — |
+| 3 | A routed pair lacks a setpoint, an illegal token, or the manifest is missing/malformed | Declare a legal setpoint (`lite`/`medium`/`heavy`) for the pair in `content_type_temperatures` |
 
 ### `--kind-invariance`
 

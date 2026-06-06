@@ -29,6 +29,14 @@ _FALLBACK_ROUTES: dict[str, list[str]] = {
 
 _MANIFEST_REL = Path("data") / "vendor-manifest.json"
 
+# Legal compression-setpoint tokens. Mirrors the enum in
+# src/gzkit/schemas/vendor_manifest.json
+# (content_type_temperatures.additionalProperties.additionalProperties.enum);
+# kept here as the in-code source the setpoint-coherence validator reads
+# (OBPI-0.0.37-20). Schema validation owns shape; this owns the runtime token
+# legality check used by gz validate --setpoint-coherence.
+SETPOINT_TOKENS: frozenset[str] = frozenset({"lite", "medium", "heavy"})
+
 # NB: temperature has no in-code fallback table by design (operator directive
 # 2026-06-03). Unlike vendor routes, temperature is a general control whose
 # values are configuration, never an in-code vendor-identity rule — so a

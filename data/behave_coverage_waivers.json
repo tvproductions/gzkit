@@ -1,5 +1,6 @@
 {
   "default_rationale": {
+    "obpi-0.0.37-20-req04-accessor-unittest-req05-support": "OBPI-0.0.37-20 setpoint declaration + coherence validator. REQ-01/02/03 are BEHAVIOR-kind CLI gate semantics behave-tagged in features/setpoint_coherence.feature (@REQ-0.0.37-20-01/02/03; step defs features/steps/setpoint_coherence_steps.py). REQ-04 is the pure declared-setpoint accessor temperature_for(content_type, vendor, *, project_root) -> str with NO operator-runnable CLI surface; its correct proof channel per .gzkit/rules/tests.md Two-runners doctrine is unittest at tests/governance/test_setpoint_coherence.py::TestTemperatureAccessorFailClosed (asserts ValueError on an undeclared pair per Invariant 6f). REQ-05 is SUPPORT-kind; per .gzkit/rules/tests.md REQ Scope Discipline its proof channel is the ledger artifact_edited event for docs/user/manpages/validate.md plus the gz validate --cli-alignment structural validator, never a behave scenario. This OBPI-level waiver exists solely because the behave_req_coverage gate is REQ-kind-agnostic and cannot express that a SUPPORT REQ or a no-CLI-surface accessor needs no scenario. gz covers reports behavior_uncovered_reqs=0.",
     "obpi-0.0.37-07-pure-function-and-preservation-invariant-unittest": "OBPI-0.0.37-07 Pipeline Stage 1 fail-close gate. REQ-02/03/04/05 are BEHAVIOR-kind CLI gate semantics and are behave-tagged in features/brief_reconcile.feature (@REQ-0.0.37-07-02/03/04/05). REQ-01 is the pure helper function is_receipt_fresh(ts, allowed_paths, project_root) -> bool with NO operator-runnable CLI surface; its correct proof channel per .gzkit/rules/tests.md Two-runners doctrine is unittest under tests/governance/test_reconcile_freshness.py (6 tests pass; semantics asserted per Invariant 6f). REQ-06 is the additive-preservation invariant (existing Stage 1 behaviors — plan-receipt check, brief validation — preserved alongside the new gate); it is a regression-invariant overlay covered by tests/commands/test_obpi_pipeline.py::test_blocks_when_matching_receipt_verdict_is_fail (the plan-receipt FAIL block still fires after the gate is wired). Authoring a behave scenario for a pure function or a preservation meta-assertion would test internal Python semantics via an inappropriate runner — the categorical anti-pattern ADR-0.0.59 names. Same shape as obpi-0.0.37-11/12 sibling waivers (BEHAVIOR-kind pure-Python semantics proven at the unit tier). gz covers reports uncovered_reqs=0.",
     "obpi-0.0.37-14-req05-support-kind-runbook-documents-validator": "OBPI-0.0.37-14 wire sync through the renderer; retire the monolith. REQ-01..04 are BEHAVIOR-kind and are behave-tagged in features/constitutional_invariants.feature (@REQ-0.0.37-14-01/02/03/04; step defs in features/steps/constitutional_invariants_steps.py). REQ-05 is SUPPORT-kind; per .gzkit/rules/tests.md REQ Scope Discipline its proof channel is the ledger artifact_edited event for docs/user/runbook.md plus the gz validate --documents structural validator, never a behave scenario. This OBPI-level waiver exists solely because the behave_req_coverage gate is REQ-kind-agnostic and cannot express that a SUPPORT REQ needs no scenario.",
     "obpi-0.0.37-13-req06-support-kind-ledger-validator": "OBPI-0.0.37-13 reverse-parse migration to the master model. REQ-01..05 are BEHAVIOR-kind and are behave-tagged in features/constitutional_invariants.feature (@REQ-0.0.37-13-01/02/03/04/05; step defs in features/steps/constitutional_invariants_steps.py). REQ-06 is SUPPORT-kind; per .gzkit/rules/tests.md REQ Scope Discipline its proof channel is the ledger artifact_edited event plus the gz validate --documents structural validator, never a behave scenario. This OBPI-level waiver exists solely because the behave_req_coverage gate is REQ-kind-agnostic and cannot express that a SUPPORT REQ needs no scenario.",
@@ -76,6 +77,14 @@
   },
   "schema_version": 1,
   "waivers": {
+    "OBPI-0.0.37-20-setpoint-declaration-coherence-validator": {
+      "rationale": "obpi-0.0.37-20-req04-accessor-unittest-req05-support",
+      "status_at_landing": "in-progress",
+      "waived_reqs": [
+        "REQ-0.0.37-20-04",
+        "REQ-0.0.37-20-05"
+      ]
+    },
     "OBPI-0.0.37-14-wire-sync-retire-monolith": {
       "rationale": "obpi-0.0.37-14-req05-support-kind-runbook-documents-validator",
       "status_at_landing": "in-progress",

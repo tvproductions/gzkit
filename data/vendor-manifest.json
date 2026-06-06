@@ -10,6 +10,13 @@
     "Skill": ["claude"]
   },
   "content_type_temperatures": {
-    "AgentContract": {"codex": "lite", "claude": "heavy"}
+    "AgentContract": {"codex": "lite", "claude": "heavy"},
+    "Bullet": {"claude": "heavy"},
+    "Chore": {"claude": "heavy"},
+    "Handoff": {"claude": "heavy"},
+    "Persona": {"claude": "heavy"},
+    "Rule": {"claude": "heavy"},
+    "Scenario": {"claude": "heavy"},
+    "Skill": {"claude": "heavy"}
   }
 }

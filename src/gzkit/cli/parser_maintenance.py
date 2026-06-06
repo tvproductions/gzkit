@@ -660,6 +660,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Validate vendor manifest schema and content-type route drift (ADR-0.0.34).",
     )
     p_validate.add_argument(
+        "--setpoint-coherence",
+        dest="check_setpoint_coherence",
+        action="store_true",
+        help="Every content_type_routes pair has a legal declared setpoint (OBPI-0.0.37-20).",
+    )
+    p_validate.add_argument(
         "--kind-invariance",
         dest="check_kind_invariance",
         action="store_true",
@@ -795,6 +801,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_scenario_reachability=a.check_scenario_reachability,
             check_surface_fidelity=a.check_surface_fidelity,
             check_vendor_manifest=a.check_vendor_manifest,
+            check_setpoint_coherence=a.check_setpoint_coherence,
             check_kind_invariance=a.check_kind_invariance,
             check_receipt_shape=a.check_receipt_shape,
             attestation_receipts=a.attestation_receipts,
