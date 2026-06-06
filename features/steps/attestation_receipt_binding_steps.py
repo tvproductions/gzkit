@@ -219,6 +219,47 @@ def _seed_adr_and_brief(adr_id: str, obpi_id: str, *, kind: str, lane: str) -> N
     ledger = Ledger(Path(".gzkit") / "ledger.jsonl")
     ledger.append(adr_created_event(adr_id, "", lane))
     ledger.append(obpi_created_event(obpi_id, adr_id))
+    _seed_reconcile_receipt(obpi_id, obpis_dir / f"{obpi_id}.md")
+
+
+# 2020-01-01T00:00:00Z: a fixed past mtime so the seeded reconcile receipt
+# (stamped "now") is strictly newer than the allowlist domain (mode-2 freshness).
+_RECONCILED_ALLOWLIST_MTIME = 1577836800.0
+
+
+def _seed_reconcile_receipt(obpi_id: str, brief_path: Path) -> None:
+    """Seed a fresh, drift-free ``brief_reconciled`` receipt for the fixture.
+
+    OBPI-0.0.37-08 added a Stage-5 reconcile-receipt fail-close gate to
+    ``gz obpi complete`` that fires *before* the receipt-binding behaviour these
+    scenarios exercise. A ready-to-complete fixture brief is therefore one that
+    has been reconciled: its allowed-path files exist on disk (backdated so the
+    receipt is strictly newer) and a clean, no-drift receipt sits on the ledger.
+    The gate's own fail-closed behaviour is covered by
+    ``tests/commands/test_obpi_complete_reconcile_gate.py``, not here.
+    """
+    from gzkit.ledger_events import brief_reconciled_event  # noqa: PLC0415
+    from gzkit.pipeline_runtime import _extract_brief_allowlist  # noqa: PLC0415
+
+    for rel in _extract_brief_allowlist(brief_path):
+        if any(ch in rel for ch in "*?["):  # glob pattern — leave unmaterialised
+            continue
+        target = Path.cwd() / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if not target.exists():
+            target.write_text("", encoding="utf-8")
+        os.utime(target, (_RECONCILED_ALLOWLIST_MTIME, _RECONCILED_ALLOWLIST_MTIME))
+    Ledger(Path(".gzkit") / "ledger.jsonl").append(
+        brief_reconciled_event(
+            obpi_id,
+            has_drift=False,
+            allowlist_delta_count=0,
+            discovery_delta_count=0,
+            verification_delta_count=0,
+            req_count_delta=0,
+            citation_delta_count=0,
+        )
+    )
 
 
 def _seed_adr_only(adr_id: str, *, kind: str, lane: str) -> None:
