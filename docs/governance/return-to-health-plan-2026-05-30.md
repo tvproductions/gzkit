@@ -2,6 +2,17 @@
 
 Status: Active canonical recovery plan.
 
+> **Live baseline: Snapshot K (2026-06-06).** Supersedes J. A fresh **Windows**
+> clone (61 commits behind after cross-machine macOS work) measured `gz check`
+> **RED** at session start, two gates: **Typecheck** (`timeout.py` POSIX-only
+> `signal` members — `ty` false-red on Windows, green on macOS) and **Behave**
+> (OBPI-0.0.37-08's new Stage-5 reconcile-receipt gate broke 8 stale completion
+> BDD fixtures). Both direct-fixed, green, pushed (`14dec36c`, `f7428b2b`);
+> `gz check` → **26/26 GREEN** (`GZ_CHECK_EXIT=0`). **This is Tier 0 reopening
+> AGAIN** (C→E→G→J→K) — "main is never *durably* green across machines/sessions"
+> is the headline problem, not any single gate. #519 remains the sole open
+> `emergency`; recovery stays OPEN. The J callout below is retained as history.
+>
 > **Live baseline: Snapshot J (2026-06-05).** Committed `main` (HEAD `f98eb980`)
 > carries the **landed #519 byte relief** (commit `705a2354`, Snapshot I): root
 > `AGENTS.md` is **28,489 B** — under Codex's 32,768 B cap with ~4.3 KB headroom; the
@@ -40,7 +51,7 @@ Status: Active canonical recovery plan.
 > ~8 live artifacts plus immutable ledger/insights/handoff records; renaming would
 > churn them every session).
 
-Last updated: 2026-06-05 (PM) — **Phase-4 drain pass: 6 GHIs closed, 1 class-GHI filed; `gz check` green throughout.**
+Last updated: 2026-06-06 — **Tier 0 reopened on a fresh Windows clone (`gz check` red on Typecheck + Behave) and re-closed; 2 fixes pushed; main 26/26 green. See § Current Baseline — Snapshot K.**
 Drained Phase-4 recovery debt one at a time (green-first, observed-evidence closes): closed
 **#525 / #560 / #562** as verify-only already-resolved (CLAUDE.md redirect doctrine landed;
 distribution byte-equivalence scenario green after `cda0d78e`; tautological audit converted to
@@ -194,6 +205,30 @@ diagnosis, but its dated command snapshot is superseded by the baseline below.
 > file's git history (pre-2026-06-05). This consolidation is the #519 / Definition-of-
 > Healthy posture applied to the plan itself: one orientable baseline, not a
 > growing snapshot log.
+
+### Snapshot K — 2026-06-06 (fresh Windows clone; Tier 0 reopened + re-closed): RED→GREEN
+
+- A Windows clone, 61 commits behind after cross-machine (macOS) work, re-measured
+  `gz check` at session start: **RED**, two gates.
+  1. **Typecheck** — `src/gzkit/complexity/advisor/timeout.py` uses POSIX-only
+     `signal.SIGALRM`/`setitimer`/`ITIMER_REAL`. The runtime is already guarded
+     (`os.name == "nt"` → `threading.Timer`), but `ty` analyses the POSIX branch
+     unconditionally on the host platform → `unresolved-attribute` on Windows,
+     green on macOS. Fixed `14dec36c` (four `# ty: ignore[unresolved-attribute]`;
+     no behaviour change).
+  2. **Behave** — OBPI-0.0.37-08's Stage-5 `_enforce_reconcile_receipt_gate` fires
+     before the coverage/receipt-binding behaviour 8 BDD scenarios test; the gate
+     landed without updating its fixtures (coupled-surface incoherence, DO IT RIGHT
+     1a). Fixed `f7428b2b` (fixtures seed a real `brief_reconciled` receipt via the
+     production factory; the gate's own fail-closed path stays unit-covered by
+     `tests/commands/test_obpi_complete_reconcile_gate.py`).
+- **Re-measure: `uv run gz check` → 26/26 GREEN (`GZ_CHECK_EXIT=0`); pushed to
+  `origin/main`; tree clean, synced 0/0.**
+- **The pattern is the point.** Tier 0 has now reopened at C, E, G, J, and K — main
+  is not *durably* green across machines/sessions. Per the `every-move-breaks`
+  diagnosis the cure is subtraction + holding green-first, not another gate.
+- **Recovery stays OPEN.** #519 still the sole `emergency`; Definition-of-Healthy
+  not all-true.
 
 ### Snapshot J — 2026-06-05 (repo re-evaluation; committed-main relief held + preflight orphan cleared): GREEN
 
