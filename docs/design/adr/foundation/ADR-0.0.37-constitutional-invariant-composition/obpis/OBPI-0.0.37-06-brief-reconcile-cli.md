@@ -3,7 +3,7 @@ id: OBPI-0.0.37-06-brief-reconcile-cli
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 6
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 <!-- gz-validate-skip: brief-demo-section -->
@@ -16,7 +16,7 @@ status: Draft
 <!-- gz-validate-skip: command-shape -->
 - **Checklist Item:** #6 — "OBPI-0.0.37-06 — `gz brief reconcile <OBPI-ID> [--apply]` CLI verb (operator-runnable; `brief_reconciled` ledger event; `--apply` writes operator-attested amendments)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -194,18 +194,11 @@ verb was dogfooded against its own brief, which now reports zero drift.
 
 ### Key Proof
 
-```text
-$ uv run gz brief reconcile OBPI-0.0.37-06-brief-reconcile-cli --json
-{
-  "brief_id": "OBPI-0.0.37-06-brief-reconcile-cli",
-  "has_drift": false,
-  "deltas": {"allowlist": 0, "discovery": 0, "verification": 0,
-             "req_count": 0, "citation": 0},
-  "applied": false, "dry_run": false
-}   # exit 0
-```
+
+uv run gz brief reconcile OBPI-0.0.37-06-brief-reconcile-cli --json -> has_drift:false, exit 0
 
 ### Implementation Summary
+
 
 - Files created/modified: `src/gzkit/commands/brief_reconcile.py` (new command);
   `src/gzkit/cli/parser_artifacts.py` (verb registration); `src/gzkit/events.py`
@@ -232,14 +225,14 @@ $ uv run gz brief reconcile OBPI-0.0.37-06-brief-reconcile-cli --json
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: per ADR-0.0.36 universal Gate 5; substantive text grounded in `--apply` write demonstration
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed -- gz brief reconcile lands the CIC-2 operator surface; zero drift on its own brief (dogfooded), cli-audit 107/107, behave 0-failed. Receipts: arb-ruff-26a2f6c11bae4542a6ebfe6501c2f183, arb-step-typecheck-26de2b9dbaf14e29a0a054849af208e9, arb-step-unittest-492af29593284047a0d60fa28ae5a8ac.
+- Date: 2026-06-06
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-06-06
 
 **Evidence Hash:** -

@@ -250,6 +250,16 @@ class TestBriefReconcileCommand(unittest.TestCase):
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("not found", result.output.lower())
 
+    @covers("REQ-0.0.37-06-08")
+    def test_manpage_has_required_sections(self) -> None:
+        """REQ-08: the command manpage exists with the contract sections."""
+        project_root = Path(__file__).resolve().parent.parent.parent
+        manpage = project_root / "docs" / "user" / "manpages" / "brief-reconcile.md"
+        self.assertTrue(manpage.is_file(), f"missing manpage: {manpage}")
+        text = manpage.read_text(encoding="utf-8")
+        for section in ("NAME", "SYNOPSIS", "DESCRIPTION", "OPTIONS", "EXAMPLES"):
+            self.assertIn(f"## {section}", text, f"manpage missing required section: {section}")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1032,8 +1032,10 @@ def _print_dry_run(
         console.print(f"  Completion: {completion_term}")
         if requires_human:
             console.print(
-                "  [yellow]Gate (GHI #290):[/yellow] live run would require "
-                "interactive TTY + 'ATTEST' confirmation."
+                "  [green]Gate 5:[/green] live run accepts the operator-verbatim "
+                "attestation passed via --attestation-text as the human "
+                "attestation (canon-owner declaration; AGENTS.md Attestation "
+                "Matrix). No interactive TTY is required."
             )
 
 
