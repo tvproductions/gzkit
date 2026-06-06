@@ -177,15 +177,14 @@ diagnosis, but its dated command snapshot is superseded by the baseline below.
   1. **Format** — 5 OBPI-20 / deadlock-fix files landed un-`ruff format`'d
      (`brief_reconcile.py`, `setpoint_coherence.py` + their tests,
      `setpoint_coherence_steps.py`). Fixed: `uv run ruff format` (5 reformatted).
-     *Root cause (verified):* this working repo has **no git hooks installed at all**
-     (`.git/hooks/` holds only `*.sample` files; `pre-commit install` has not been run
-     here), so every `ruff-format`/`ruff-check`/`ty`/`xenon`/surface-fidelity guard in
-     `.pre-commit-config.yaml` fires on **no** commit — the OBPI-20 and deadlock-fix
-     commits landed un-formatted because nothing checked them. `gz check` is the only
-     guard actually running. (Scope beyond this checkout, and whether it began as a
-     clone, are unverified — the earlier "fresh Windows clone" framing was unsupported
-     and is dropped.) This silently-inert pre-commit spine is a durability finding
-     (ties to the Harness-Hardening workstream).
+     *Root cause:* the OBPI-20 and deadlock-fix commits reached `main` without a format
+     pass. Per-commit hooks are **deliberately not installed** (operator-confirmed
+     2026-06-06; `.git/hooks/` holds only `*.sample` files) — gzkit gates at `gz check` /
+     `gz git-sync --lint --test` time, not per-commit, consistent with the
+     Harness-Hardening north star that *"friction-always is the disease."* So the design
+     gate is run-before-push discipline, and on the path that introduced these files it
+     was not applied. Fix: `ruff format` + re-run `gz check`. The hook absence is **not**
+     a defect.
   2. **Task-envelope-coherence** — OBPI-20 closed with `seq=01`-only TASKs across
      REQ-01…05 and no `req_atomic:` exemption. Fixed: `req_atomic:` frontmatter with
      inline per-REQ rationale (each REQ one indivisible labor unit; Snapshot D/E/G
@@ -223,12 +222,10 @@ diagnosis, but its dated command snapshot is superseded by the baseline below.
   it. Watch when next touching task/OBPI id resolution.
 - **Budget vs Codex cap** — `data/instructions_files_budget.json` AGENTS.md budget = 30000,
   under the 32,768 B Codex cap (ties to #579 + config-SSOT 2.5).
-- **Pre-commit hooks not installed in this working repo (verified Snapshot L)** —
-  `.git/hooks/` holds only `*.sample` files, so every `.pre-commit-config.yaml` guard
-  (ruff check/format, ty, xenon, interrogate, surface-fidelity) fires on **no** commit
-  until `pre-commit install` is run. `gz check` is the sole working guard. Scope beyond
-  this checkout is unverified; the durable fix is installing the hook at bootstrap
-  (`gz init` / documented setup), not a "fresh-clone" assumption.
+- **Format/check gate is run-before-push by design, not per-commit** — per-commit hooks are
+  deliberately off (operator-confirmed); the gate is `gz check` / `gz git-sync --lint
+  --test`, run before push. The Snapshot-L drift was that gate not being applied to the
+  introducing commits, **not** a missing hook. No hook-install / bootstrap action implied.
 
 **Recurring Tier-0 offenders (subtraction candidates):** Preflight (orphan plan-audit
 receipts: C, G, J), Task-envelope-coherence (ceremony artifacts: C, E, G, L), and Format
