@@ -474,6 +474,18 @@ class BriefReconcileDriftDetectedEvent(_EventBase):
     citation_stale: list[str]
 
 
+class BriefReconcileDriftOverriddenEvent(_EventBase):
+    """brief_reconcile_drift_overridden event — escape-hatch override receipt (OBPI-0.0.37-08)."""
+
+    event: Literal["brief_reconcile_drift_overridden"]
+    brief_id: str
+    override_ts: str
+    attestor: str
+    reason: str
+    original_receipt_id: str | None = None
+    original_drift_dimensions: list[str] = Field(default_factory=list)
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -511,7 +523,8 @@ TypedLedgerEvent = Annotated[
     | ChoreDecommissionProcessedEvent
     | CorpusEntryAppendedEvent
     | BriefReconciledEvent
-    | BriefReconcileDriftDetectedEvent,
+    | BriefReconcileDriftDetectedEvent
+    | BriefReconcileDriftOverriddenEvent,
     Field(discriminator="event"),
 ]
 

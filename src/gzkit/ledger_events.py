@@ -289,6 +289,30 @@ def obpi_completion_uncovered_accept_event(
     )
 
 
+def brief_reconcile_drift_overridden_event(
+    *,
+    brief_id: str,
+    attestor: str,
+    reason: str,
+    original_receipt_id: str | None = None,
+    original_drift_dimensions: list[str] | None = None,
+) -> "LedgerEvent":
+    """Create an event recording an accepted stale/drifted reconciliation (OBPI-0.0.37-08)."""
+    return LedgerEvent(
+        event="brief_reconcile_drift_overridden",
+        id=brief_id,
+        parent=brief_id,
+        extra={
+            "brief_id": brief_id,
+            "override_ts": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "attestor": attestor,
+            "reason": reason,
+            "original_receipt_id": original_receipt_id,
+            "original_drift_dimensions": original_drift_dimensions or [],
+        },
+    )
+
+
 def lifecycle_transition_event(
     artifact_id: str,
     content_type: str,

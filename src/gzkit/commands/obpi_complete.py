@@ -50,6 +50,7 @@ from gzkit.ledger import Ledger, parse_frontmatter_value, resolve_adr_lane
 # section_body is used in _has_human_attestation_content for H2 section extraction
 from gzkit.ledger_events import (
     audit_receipt_emitted_event,
+    brief_reconcile_drift_overridden_event,
     obpi_completion_uncovered_accept_event,
     obpi_receipt_emitted_event,
 )
@@ -632,6 +633,158 @@ def _enforce_req_coverage_gate(
     )
 
 
+# ---------------------------------------------------------------------------
+# OBPI-0.0.37-08 — Stage 5 reconcile-receipt fail-close gate
+# ---------------------------------------------------------------------------
+
+_RECONCILE_DRIFT_DIMENSIONS = (
+    ("allowlist_delta_count", "allowlist"),
+    ("discovery_delta_count", "discovery"),
+    ("verification_delta_count", "verification"),
+    ("req_count_delta", "req_count"),
+    ("citation_delta_count", "citation"),
+)
+
+
+def _reconcile_drift_dimensions(event: dict[str, Any]) -> list[str]:
+    """Return the names of drifted dimensions carried by a ``brief_reconciled`` event."""
+    return [name for key, name in _RECONCILE_DRIFT_DIMENSIONS if event.get(key, 0)]
+
+
+def _latest_reconcile_receipt(
+    obpi_id: str, project_root: Path
+) -> tuple[datetime | None, bool, list[str], str | None]:
+    """Scan the ledger for the most recent ``brief_reconciled`` event for ``obpi_id``.
+
+    Returns ``(latest_ts, has_drift, drifted_dims, receipt_id)``; ``latest_ts`` is
+    ``None`` when no matching event exists.
+    """
+    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+    latest_ts: datetime | None = None
+    has_drift = False
+    drifted_dims: list[str] = []
+    receipt_id: str | None = None
+    if not ledger_path.is_file():
+        return latest_ts, has_drift, drifted_dims, receipt_id
+
+    for raw in ledger_path.read_text(encoding="utf-8").splitlines():
+        if not raw.strip():
+            continue
+        try:
+            event = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if event.get("event") != "brief_reconciled" or event.get("brief_id") != obpi_id:
+            continue
+        try:
+            ts = datetime.fromisoformat(str(event.get("ts", "")).replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if latest_ts is None or ts > latest_ts:
+            latest_ts = ts
+            has_drift = bool(event.get("has_drift", False))
+            drifted_dims = _reconcile_drift_dimensions(event)
+            receipt_id = event.get("id") or event.get("run_id")
+    return latest_ts, has_drift, drifted_dims, receipt_id
+
+
+def _enforce_reconcile_receipt_gate(
+    *,
+    obpi_id: str,
+    brief_path: Path,
+    project_root: Path,
+    ledger: Ledger,
+    attestor: str,
+    as_json: bool,
+    accept_stale_reconciliation: bool = False,
+    accept_stale_reconciliation_reason: str | None = None,
+) -> None:
+    """Refuse Stage 5 completion when the reconciliation receipt is absent, stale, or drifted.
+
+    Three failure modes (REQ-0.0.37-08-01/02/03):
+    1. No ``brief_reconciled`` event for this OBPI → exit 3.
+    2. Most recent receipt predates a mutation in the brief's allowed-path domain → exit 3.
+    3. Receipt is fresh but ``has_drift`` payload is True → exit 3.
+
+    Escape hatch (REQ-0.0.37-08-04/05): when ``accept_stale_reconciliation`` is True
+    and ``accept_stale_reconciliation_reason`` is at least 10 characters, emit a
+    ``brief_reconcile_drift_overridden`` ledger event and return (bypass the gate).
+    """
+    # Consume OBPI-07's canonical allowlist + drift helpers (read-only) so the
+    # Stage 5 gate computes the SAME allowlist domain as the Stage 1 gate in
+    # pipeline_runtime — one source, no silent Stage-1/Stage-5 divergence
+    # (AGENTS.md § DO IT RIGHT 1a). Importing is a consume, not a modify, so it
+    # respects the brief's Denied Paths boundary on pipeline_runtime.py.
+    from gzkit.governance.reconcile_freshness import is_receipt_fresh  # noqa: PLC0415
+    from gzkit.pipeline_runtime import (  # noqa: PLC0415
+        _extract_brief_allowlist,
+        _find_drifted_path,
+    )
+
+    # Pairing check: --accept-stale-reconciliation requires --reason (≥10 chars)
+    if accept_stale_reconciliation and len((accept_stale_reconciliation_reason or "").strip()) < 10:
+        _fail(
+            "--accept-stale-reconciliation requires --reason '<text>' (minimum 10 characters).",
+            exit_code=1,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
+
+    latest_ts, has_drift, drifted_dims, latest_receipt_id = _latest_reconcile_receipt(
+        obpi_id, project_root
+    )
+
+    # Apply escape hatch (overrides all three failure modes below)
+    if accept_stale_reconciliation and accept_stale_reconciliation_reason:
+        ledger.append(
+            brief_reconcile_drift_overridden_event(
+                brief_id=obpi_id,
+                attestor=attestor,
+                reason=accept_stale_reconciliation_reason,
+                original_receipt_id=latest_receipt_id,
+                original_drift_dimensions=drifted_dims,
+            )
+        )
+        return
+
+    # REQ-0.0.37-08-01: no receipt
+    if latest_ts is None:
+        _fail(
+            f"Completion blocked: no `brief_reconciled` receipt for {obpi_id}. "
+            f"Run `gz brief reconcile {obpi_id}` then retry.",
+            exit_code=3,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
+        return  # unreachable; _fail raises SystemExit
+
+    # REQ-0.0.37-08-02: stale receipt
+    allowed_paths = _extract_brief_allowlist(brief_path)
+    if allowed_paths and not is_receipt_fresh(latest_ts, allowed_paths, project_root):
+        drifted_path = _find_drifted_path(latest_ts, allowed_paths, project_root)
+        _fail(
+            f"Completion blocked: reconciliation receipt for {obpi_id} is stale "
+            f"(receipt_ts={latest_ts.isoformat()}, drifted path={drifted_path!r}). "
+            f"Run `gz brief reconcile {obpi_id}` to refresh.",
+            exit_code=3,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
+        return
+
+    # REQ-0.0.37-08-03: fresh but drifted
+    if has_drift:
+        dims_str = ", ".join(drifted_dims) if drifted_dims else "unknown"
+        _fail(
+            f"Completion blocked: reconciliation receipt for {obpi_id} has_drift=True "
+            f"(drifted dimensions: {dims_str}). "
+            f"Run `gz brief reconcile {obpi_id}` to refresh.",
+            exit_code=3,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
+
+
 def _resolve_and_validate(
     project_root: Path,
     config: Any,
@@ -760,6 +913,8 @@ def obpi_complete_cmd(
     accept_uncovered: list[str] | None = None,
     accept_uncovered_reason: list[str] | None = None,
     accept_security_floor: str | None = None,
+    accept_stale_reconciliation: bool = False,
+    accept_stale_reconciliation_reason: str | None = None,
 ) -> None:
     """Atomically complete an OBPI: validate, write evidence, flip status, emit receipt."""
     config = ensure_initialized()
@@ -776,6 +931,21 @@ def obpi_complete_cmd(
         requires_human,
         effective_sensitivity,
     ) = _resolve_and_validate(project_root, config, ledger, obpi, as_json)
+
+    # 1a. OBPI-0.0.37-08 Stage 5 reconcile-receipt gate: fail-closed on absent,
+    # stale, or drifted brief_reconciled receipt. Skipped for --dry-run so
+    # plans can be previewed headlessly.
+    if not dry_run:
+        _enforce_reconcile_receipt_gate(
+            obpi_id=obpi_id,
+            brief_path=obpi_file,
+            project_root=project_root,
+            ledger=ledger,
+            attestor=attestor,
+            as_json=as_json,
+            accept_stale_reconciliation=accept_stale_reconciliation,
+            accept_stale_reconciliation_reason=accept_stale_reconciliation_reason,
+        )
 
     # 2. Resolve evidence
     effective_summary, effective_proof = _resolve_evidence(

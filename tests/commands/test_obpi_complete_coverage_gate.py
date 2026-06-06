@@ -201,6 +201,10 @@ class _CoverageGateWireFixture(unittest.TestCase):
                     "gzkit.commands.obpi_complete._enforce_attestation_receipt_gate",
                     MagicMock(return_value=None),
                 ),
+                patch(
+                    "gzkit.commands.obpi_complete._enforce_reconcile_receipt_gate",
+                    MagicMock(return_value=None),
+                ),
                 # Hook the scoped-run outcome predicate.
                 patch(
                     "gzkit.commands.obpi_complete._any_covering_test_passes",
@@ -581,6 +585,10 @@ class _OverrideGateWireFixture(_CoverageGateWireFixture):
                 ),
                 patch(
                     "gzkit.commands.obpi_complete._enforce_attestation_receipt_gate",
+                    MagicMock(return_value=None),
+                ),
+                patch(
+                    "gzkit.commands.obpi_complete._enforce_reconcile_receipt_gate",
                     MagicMock(return_value=None),
                 ),
                 patch(

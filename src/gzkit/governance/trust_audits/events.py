@@ -28,6 +28,10 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "Per-dimension brief drift payload (ADR-0.0.37, OBPI-06). Diagnostic record "
         "for `gz brief reconcile`; informs amendment decisions, not the artifact graph."
     ),
+    "brief_reconcile_drift_overridden": (
+        "Override receipt for --accept-stale-reconciliation (OBPI-0.0.37-08). "
+        "Audit-trail event recording the operator's reason; not an artifact graph node."
+    ),
     "project_init": "Bootstrap sentinel; no artifact nodes emit from it.",
     "artifact_edited": "Session activity log; consumed by anchor analysis, not graph.",
     "obpi_lock_claimed": "L3 ephemeral lock file; consumed by gz obpi lock, not graph.",

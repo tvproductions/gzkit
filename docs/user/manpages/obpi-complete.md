@@ -24,6 +24,8 @@ gz obpi complete OBPI-X.Y.Z-NN --attestor NAME --attestation-text TEXT
 | `--accept-uncovered REQ_ID` | Explicitly waive an uncovered REQ (repeatable; requires `--accept-uncovered-reason`) |
 | `--accept-uncovered-reason REASON` | Rationale for the corresponding `--accept-uncovered` entry (repeatable, 1:1 pairing) |
 | `--accept-security-floor REASON` | Override the security-scan canonical-slot fail-closed gate when the auto-detect classified the brief security-sensitive on surface-overlap but the change is structurally defensive/additive (GHI #462). The override is recorded in console output for audit trail. |
+| `--accept-stale-reconciliation` | Override a missing, stale, or drifted reconciliation receipt (OBPI-0.0.37-08). Requires `--reason TEXT` (min 10 chars). Emits `brief_reconcile_drift_overridden` to the ledger before the completion receipt. |
+| `--reason TEXT` | Rationale for `--accept-stale-reconciliation` (min 10 chars). |
 | `--json` | Machine-readable JSON output |
 | `--dry-run` | Show plan without writing files |
 
@@ -49,7 +51,7 @@ If any step fails, all changes are rolled back (no partial writes).
 | 0 | OBPI completed successfully |
 | 1 | Validation failure (missing brief, already completed, insufficient evidence, or `--accept-uncovered` without `--accept-uncovered-reason`) |
 | 2 | I/O error |
-| 3 | REQ-coverage gate: one or more REQs in `## Acceptance Criteria` lack a passing `@covers`-decorated unit test or `@REQ-*` BDD scenario tag (heavy-lane or foundation-kind briefs); or `--accept-uncovered` override refused (no active pipeline marker / headless invocation) |
+| 3 | REQ-coverage gate: one or more REQs in `## Acceptance Criteria` lack a passing `@covers`-decorated unit test or `@REQ-*` BDD scenario tag (heavy-lane or foundation-kind briefs); or `--accept-uncovered` override refused (no active pipeline marker / headless invocation); or reconciliation-receipt gate: no fresh `brief_reconciled` receipt for the OBPI (use `gz brief reconcile <OBPI-ID>` or `--accept-stale-reconciliation --reason TEXT` to override) |
 
 ## Examples
 

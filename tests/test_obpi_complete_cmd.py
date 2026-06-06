@@ -692,6 +692,7 @@ class TestObpiCompleteCmdHappyPath(unittest.TestCase):
     the new TestObpiCompleteHeavy* / TestObpiCompleteFoundation* classes.
     """
 
+    @patch("gzkit.commands.obpi_complete._enforce_reconcile_receipt_gate")
     @patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate")
     @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
@@ -716,9 +717,11 @@ class TestObpiCompleteCmdHappyPath(unittest.TestCase):
         mock_anchor,
         mock_receipt_gate,
         mock_coverage_gate,
+        mock_reconcile_gate,
     ):
         del mock_receipt_gate  # ADR-0.0.24-02 receipt-binding gate is patched
         del mock_coverage_gate  # OBPI-0.0.25-01 coverage gate patched to no-op
+        del mock_reconcile_gate  # OBPI-0.0.37-08 reconcile gate patched to no-op
         # to a no-op here; the new contract is exercised in
         # tests/commands/test_obpi_complete.py. The prior TTY 'ATTEST' gate is
         # removed: the operator's verbatim --attestation-text is the Gate-5
@@ -783,6 +786,7 @@ class TestObpiCompleteCmdRollback(unittest.TestCase):
     the new gate is covered in tests/commands/test_obpi_complete.py.
     """
 
+    @patch("gzkit.commands.obpi_complete._enforce_reconcile_receipt_gate")
     @patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate")
     @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
@@ -805,9 +809,11 @@ class TestObpiCompleteCmdRollback(unittest.TestCase):
         mock_anchor,
         mock_receipt_gate,
         mock_coverage_gate,
+        mock_reconcile_gate,
     ):
         del mock_receipt_gate  # see class docstring
         del mock_coverage_gate  # OBPI-0.0.25-01 coverage gate patched no-op
+        del mock_reconcile_gate  # OBPI-0.0.37-08 reconcile gate patched no-op
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             mock_root.return_value = root
@@ -863,6 +869,7 @@ class TestObpiCompleteOperatorVerbatimAttestation(unittest.TestCase):
     attestation behavior is exercised in isolation.
     """
 
+    @patch("gzkit.commands.obpi_complete._enforce_reconcile_receipt_gate")
     @patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate")
     @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
@@ -884,8 +891,10 @@ class TestObpiCompleteOperatorVerbatimAttestation(unittest.TestCase):
         mock_anchor,
         mock_receipt_gate,
         mock_coverage_gate,
+        mock_reconcile_gate,
     ):
         del mock_receipt_gate, mock_coverage_gate  # patched no-op; covered elsewhere
+        del mock_reconcile_gate  # OBPI-0.0.37-08 reconcile gate patched no-op
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             mock_root.return_value = root
@@ -923,6 +932,7 @@ class TestObpiCompleteOperatorVerbatimAttestation(unittest.TestCase):
             parsed = json.loads(audit_file.read_text(encoding="utf-8").strip())
             self.assertEqual(parsed["attestation_type"], "operator-verbatim-conversational")
 
+    @patch("gzkit.commands.obpi_complete._enforce_reconcile_receipt_gate")
     @patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate")
     @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
@@ -944,8 +954,10 @@ class TestObpiCompleteOperatorVerbatimAttestation(unittest.TestCase):
         mock_anchor,
         mock_receipt_gate,
         mock_coverage_gate,
+        mock_reconcile_gate,
     ):
         del mock_receipt_gate, mock_coverage_gate  # patched no-op; covered elsewhere
+        del mock_reconcile_gate  # OBPI-0.0.37-08 reconcile gate patched no-op
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             mock_root.return_value = root
@@ -1445,6 +1457,7 @@ class TestObpiCompleteSecuritySensitivityGate(unittest.TestCase):
     attestation-requirement composition is exercised in isolation.
     """
 
+    @patch("gzkit.commands.obpi_complete._enforce_reconcile_receipt_gate")
     @patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate")
     @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
     @patch("gzkit.commands.obpi_complete._enforce_security_review_gate")
@@ -1467,8 +1480,10 @@ class TestObpiCompleteSecuritySensitivityGate(unittest.TestCase):
         mock_security_gate,
         mock_receipt_gate,
         mock_coverage_gate,
+        mock_reconcile_gate,
     ):
         del mock_security_gate, mock_receipt_gate, mock_coverage_gate  # patched no-op
+        del mock_reconcile_gate  # OBPI-0.0.37-08 reconcile gate patched no-op
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             mock_root.return_value = root
@@ -1507,6 +1522,7 @@ class TestObpiCompleteSecuritySensitivityGate(unittest.TestCase):
             parsed = json.loads(audit_file.read_text(encoding="utf-8").strip())
             self.assertEqual(parsed["attestation_type"], "operator-verbatim-conversational")
 
+    @patch("gzkit.commands.obpi_complete._enforce_reconcile_receipt_gate")
     @patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate")
     @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
     @patch("gzkit.commands.obpi_complete._enforce_security_review_gate")
@@ -1529,8 +1545,10 @@ class TestObpiCompleteSecuritySensitivityGate(unittest.TestCase):
         mock_security_gate,
         mock_receipt_gate,
         mock_coverage_gate,
+        mock_reconcile_gate,
     ):
         del mock_security_gate, mock_receipt_gate, mock_coverage_gate  # patched no-op
+        del mock_reconcile_gate  # OBPI-0.0.37-08 reconcile gate patched no-op
         # Sister proof to REQ-05: the *same* lite + feature parent without
         # the sensitivity field does NOT require human attestation — it
         # self-closes (attestation_type self-close-exception).

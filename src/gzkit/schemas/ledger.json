@@ -1145,6 +1145,38 @@
         }
       }
     },
+    "brief_reconcile_drift_overridden": {
+      "required": [
+        "brief_id",
+        "override_ts",
+        "attestor",
+        "reason"
+      ],
+      "properties": {
+        "brief_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "override_ts": {
+          "type": "string"
+        },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 10
+        },
+        "original_receipt_id": {
+          "type": ["string", "null"]
+        },
+        "original_drift_dimensions": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
     "chore_decommission_processed": {
       "required": [
         "file_path",

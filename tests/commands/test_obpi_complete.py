@@ -291,6 +291,12 @@ class _ObpiCompleteWireFixture(unittest.TestCase):
                     "gzkit.commands.obpi_complete._enforce_req_coverage_gate",
                     MagicMock(return_value=None),
                 ),
+                # Bypass OBPI-0.0.37-08 reconcile-receipt gate so the
+                # receipt-binding gate is exercised in isolation.
+                patch(
+                    "gzkit.commands.obpi_complete._enforce_reconcile_receipt_gate",
+                    MagicMock(return_value=None),
+                ),
                 # Patch receipts_root at the validator's binding site so the
                 # validator's _load_receipt finds our temp-dir fixtures.
                 patch(

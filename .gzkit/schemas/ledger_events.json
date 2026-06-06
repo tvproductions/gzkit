@@ -115,6 +115,22 @@
         "req_count_delta",
         "citation_stale"
       ]
+    },
+    {
+      "id": "brief_reconcile_drift_overridden",
+      "name": "brief_reconcile_drift_overridden",
+      "schema": {
+        "required": ["brief_id", "override_ts", "attestor", "reason"],
+        "properties": {
+          "brief_id": {"type": "string"},
+          "override_ts": {"type": "string", "format": "date-time"},
+          "attestor": {"type": "string"},
+          "reason": {"type": "string"},
+          "original_receipt_id": {"type": ["string", "null"]},
+          "original_drift_dimensions": {"type": "array", "items": {"type": "string"}}
+        }
+      },
+      "required_fields": ["brief_id", "override_ts", "attestor", "reason"]
     }
   ]
 }

@@ -249,3 +249,65 @@ Feature: OBPI Brief Reconciliation Engine (CIC-2)
     Given an OBPI with a fresh brief_reconciled receipt whose has_drift is False
     When I launch "gz obpi pipeline <OBPI-ID>"
     Then Stage 1 passes and Stage 2 is permitted
+
+  @wip
+  @REQ-0.0.37-08-01
+  Scenario: Stage 5 blocks when no brief_reconciled receipt exists
+    Given an OBPI with no brief_reconciled ledger event
+    When I run "gz obpi complete <OBPI-ID> --attestor <attestor> --attestation-text <text>"
+    Then the command exits 3
+    And the output contains "Completion blocked: no `brief_reconciled` receipt"
+    And the output contains "gz brief reconcile"
+
+  @wip
+  @REQ-0.0.37-08-02
+  Scenario: Stage 5 blocks when brief_reconciled receipt is stale
+    Given an OBPI with a brief_reconciled receipt older than its allowed-path mtimes
+    When I run "gz obpi complete <OBPI-ID> --attestor <attestor> --attestation-text <text>"
+    Then the command exits 3
+    And the output contains "Completion blocked"
+    And the output contains "stale"
+
+  @wip
+  @REQ-0.0.37-08-03
+  Scenario: Stage 5 blocks when receipt has_drift is True
+    Given an OBPI with a fresh brief_reconciled receipt whose has_drift is True
+    When I run "gz obpi complete <OBPI-ID> --attestor <attestor> --attestation-text <text>"
+    Then the command exits 3
+    And the output contains "has_drift=True"
+
+  @wip
+  @REQ-0.0.37-08-04
+  Scenario: Stage 5 passes when receipt is fresh and drift-free
+    Given an OBPI with a fresh brief_reconciled receipt whose has_drift is False
+    When I run "gz obpi complete <OBPI-ID> --attestor <attestor> --attestation-text <text>"
+    Then Stage 5 completes successfully
+
+  @wip
+  @REQ-0.0.37-08-04
+  Scenario: --accept-stale-reconciliation without --reason exits with error
+    Given any OBPI
+    When I run "gz obpi complete <OBPI-ID> --accept-stale-reconciliation"
+    Then the command exits with a non-zero code
+    And the output contains "--accept-stale-reconciliation"
+    And the output contains "--reason"
+
+  @wip
+  @REQ-0.0.37-08-05
+  Scenario: --accept-stale-reconciliation with valid reason emits override event and completes
+    Given an OBPI with no brief_reconciled receipt
+    When I run "gz obpi complete <OBPI-ID> --accept-stale-reconciliation --reason 'emergency fix approved'"
+    Then the command exits 0
+    And a brief_reconcile_drift_overridden event is emitted to the ledger before the completion receipt
+
+  @wip
+  @REQ-0.0.37-08-06
+  Scenario: Escape hatch works for heavy-lane foundation-kind OBPI
+    Given a heavy-lane foundation-kind OBPI with no brief_reconciled receipt
+    When I run "gz obpi complete <OBPI-ID> --accept-stale-reconciliation --reason 'emergency fix approved'"
+    Then the command exits 0 regardless of lane or kind
+
+  # REQ-0.0.37-08-07 is a SUPPORT-kind REQ (schema-artifact registration),
+  # witnessed by the schema-coverage structural validators
+  # (tests/governance/test_ledger_event_schema_coverage.py,
+  # tests/test_schemas.py) + gz validate --ledger — not a behave scenario.

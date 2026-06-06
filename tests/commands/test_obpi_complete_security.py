@@ -336,6 +336,12 @@ class _ObpiCompleteIntegrationFixture(unittest.TestCase):
                     {"security": canonical_slot},
                     clear=False,
                 ),
+                # Bypass OBPI-0.0.37-08 reconcile-receipt gate; security gate
+                # is exercised in isolation here.
+                patch(
+                    "gzkit.commands.obpi_complete._enforce_reconcile_receipt_gate",
+                    MagicMock(return_value=None),
+                ),
             ]
 
             for p in patches:

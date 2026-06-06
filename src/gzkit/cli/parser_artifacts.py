@@ -1297,6 +1297,20 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         default=None,
         help="Override unfilled security-scan canonical slot with rationale (GHI #462).",
     )
+    p_obpi_complete.add_argument(
+        "--accept-stale-reconciliation",
+        dest="accept_stale_reconciliation",
+        action="store_true",
+        default=False,
+        help="Override stale/drifted reconcile receipt. Requires --reason (min 10 chars).",
+    )
+    p_obpi_complete.add_argument(
+        "--reason",
+        dest="accept_stale_reconciliation_reason",
+        metavar="TEXT",
+        default=None,
+        help="Rationale for --accept-stale-reconciliation (min 10 chars).",
+    )
     add_json_flag(p_obpi_complete)
     add_dry_run_flag(p_obpi_complete)
     p_obpi_complete.set_defaults(
@@ -1310,6 +1324,8 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
             accept_uncovered=a.accept_uncovered,
             accept_uncovered_reason=a.accept_uncovered_reason,
             accept_security_floor=a.accept_security_floor,
+            accept_stale_reconciliation=a.accept_stale_reconciliation,
+            accept_stale_reconciliation_reason=a.accept_stale_reconciliation_reason,
             as_json=a.as_json,
             dry_run=a.dry_run,
         )

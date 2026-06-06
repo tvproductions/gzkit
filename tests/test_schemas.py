@@ -22,6 +22,7 @@ from gzkit.events import (
     AuditReceiptEmittedEvent,
     BriefReconciledEvent,
     BriefReconcileDriftDetectedEvent,
+    BriefReconcileDriftOverriddenEvent,
     ChoreDecommissionProcessedEvent,
     CloseoutInitiatedEvent,
     CompositionDriftDetectedEvent,
@@ -269,6 +270,7 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "corpus_entry_appended": CorpusEntryAppendedEvent,
     "brief_reconciled": BriefReconciledEvent,
     "brief_reconcile_drift_detected": BriefReconcileDriftDetectedEvent,
+    "brief_reconcile_drift_overridden": BriefReconcileDriftOverriddenEvent,
 }
 
 # Base fields present on _EventBase -- not event-specific
