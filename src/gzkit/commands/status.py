@@ -499,6 +499,12 @@ def _build_adr_status_result(adr: str) -> dict[str, Any]:
     obpi_rows = _adr_obpi_status_rows(project_root, config, ledger, adr_id)
     _apply_pool_adr_status_overrides(adr_id, result)
     result["obpis"] = obpi_rows
+    result["withdrawn_obpis"] = sorted(
+        child_id
+        for child_id in info.get("children", [])
+        if graph.get(child_id, {}).get("type") == "obpi"
+        and graph.get(child_id, {}).get("withdrawn", False)
+    )
     obpi_summary = _summarize_obpi_rows(obpi_rows)
     result["obpi_summary"] = obpi_summary
     closeout_readiness = _adr_closeout_readiness(obpi_rows)

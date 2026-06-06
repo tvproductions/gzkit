@@ -1278,6 +1278,48 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             self.assertIn("ADR-0.1.0", status_result.output)
             self.assertIn("ADR Overview", report_result.output)
 
+    def test_adr_status_discloses_withdrawn_obpis_hidden_from_table(self) -> None:
+        """Withdrawn OBPIs are correctly excluded from the active OBPI table, but
+        their existence must be disclosed so the resulting numbering gaps are not
+        read as silently-dropped data (ledger history preserved). Drilldown only.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            active_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-active.md"
+            withdrawn_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-02-old.md"
+            active_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=active_path,
+                status="Draft",
+                brief_status="Draft",
+                implementation_line="src/module.py",
+            )
+            _write_obpi(
+                path=withdrawn_path,
+                status="Abandoned",
+                brief_status="Abandoned",
+                implementation_line="src/old.py",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-active", "ADR-0.1.0-f"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-02-old", "ADR-0.1.0-f"))
+            ledger.append(obpi_withdrawn_event("OBPI-0.1.0-02-old", "ADR-0.1.0-f", "old"))
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f"])
+            self.assertEqual(result.exit_code, 0)
+            # The withdrawn OBPI stays out of the active table...
+            self.assertNotIn("OBPI-0.1.0-02-old", result.output)
+            # ...but its existence is disclosed so the gap is not read as dropped data.
+            self.assertIn("Withdrawn (hidden): 1 OBPI", result.output)
+
+            json_result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
+            self.assertEqual(json_result.exit_code, 0)
+            payload = json.loads(json_result.output)
+            self.assertIn("OBPI-0.1.0-02-old", payload["withdrawn_obpis"])
+
     def test_adr_status_accepts_semver_prefix_for_suffixed_adr(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():

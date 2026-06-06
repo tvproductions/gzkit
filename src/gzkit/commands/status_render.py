@@ -393,6 +393,17 @@ def _render_adr_report(result: dict[str, Any]) -> None:
         )
     console.print(obpi_table)
 
+    # --- Withdrawn disclosure ---
+    # Withdrawn OBPIs are intentionally excluded from the active table above, but
+    # silent omission makes the resulting id gaps read as dropped data. Disclose
+    # their existence (ledger history preserved) and point to the disposition.
+    withdrawn_obpis = cast(list[str], result.get("withdrawn_obpis", []))
+    if withdrawn_obpis:
+        console.print(
+            f"Withdrawn (hidden): {len(withdrawn_obpis)} OBPI(s) excluded above; "
+            "ledger history preserved. See the ADR Checklist for disposition."
+        )
+
     # --- Issues ---
     issues: list[str] = []
     for idx, row in enumerate(obpi_rows, 1):
