@@ -177,8 +177,13 @@ diagnosis, but its dated command snapshot is superseded by the baseline below.
   1. **Format** — 5 OBPI-20 / deadlock-fix files landed un-`ruff format`'d
      (`brief_reconcile.py`, `setpoint_coherence.py` + their tests,
      `setpoint_coherence_steps.py`). Fixed: `uv run ruff format` (5 reformatted).
-     *Coupled gap:* `gz git-sync --lint` runs `ruff check`, not `ruff format`, so
-     formatting can drift past the guarded sync.
+     *Root cause (verified):* this clone has **no pre-commit hook installed**
+     (`.git/hooks/pre-commit` absent; `pre-commit install` never run on the fresh
+     Windows clone), so every `ruff-format`/`ruff-check`/`ty`/`xenon`/surface-fidelity
+     guard in `.pre-commit-config.yaml` fires on **no** commit here — the OBPI-20 and
+     deadlock-fix commits landed un-formatted because nothing checked them. `gz check`
+     is the only guard actually running. This silently-inert pre-commit spine is itself
+     a durability finding (ties to the Harness-Hardening workstream).
   2. **Task-envelope-coherence** — OBPI-20 closed with `seq=01`-only TASKs across
      REQ-01…05 and no `req_atomic:` exemption. Fixed: `req_atomic:` frontmatter with
      inline per-REQ rationale (each REQ one indivisible labor unit; Snapshot D/E/G
@@ -216,6 +221,11 @@ diagnosis, but its dated command snapshot is superseded by the baseline below.
   it. Watch when next touching task/OBPI id resolution.
 - **Budget vs Codex cap** — `data/instructions_files_budget.json` AGENTS.md budget = 30000,
   under the 32,768 B Codex cap (ties to #579 + config-SSOT 2.5).
+- **Pre-commit hooks inert on fresh clones (verified Snapshot L)** — `.git/hooks/pre-commit`
+  is absent in this clone, so every `.pre-commit-config.yaml` guard (ruff check/format, ty,
+  xenon, interrogate, surface-fidelity) fires on **no** commit until `pre-commit install` is
+  run. `gz check` is the sole working guard. A strong contributor to "not durably green
+  across machines/sessions"; candidate for fresh-clone bootstrap (`gz init` / documented setup).
 
 **Recurring Tier-0 offenders (subtraction candidates):** Preflight (orphan plan-audit
 receipts: C, G, J), Task-envelope-coherence (ceremony artifacts: C, E, G, L), and Format
