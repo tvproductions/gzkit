@@ -7,7 +7,7 @@ Status: Active
 
 Source-of-truth: filesystem under `docs/design/adr/{foundation,pre-release}/`; this table is a Layer 3 derived view per `docs/governance/state-doctrine.md`. Regenerate via `gz register-adrs` (which calls `regenerate_adr_status_md` after ledger reconciliation); drift is fail-closed by `gz validate --adr-status-fresh`.
 
-Last regenerated: 2026-06-03 (count: 90 ADRs).
+Last regenerated: 2026-06-06 (count: 91 ADRs).
 
 | ID | Title | Kind | Lane | Status | Date | Path |
 |---|---|---|---|---|---|---|
@@ -101,3 +101,4 @@ Last regenerated: 2026-06-03 (count: 90 ADRs).
 | [ADR-0.26.0-governance-library-module-absorption](../../design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/ADR-0.26.0-governance-library-module-absorption.md) | Governance Library Module Absorption | feature | heavy | Validated | 2026-03-21 | `design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/ADR-0.26.0-governance-library-module-absorption.md` |
 | [ADR-0.27.0-namespace-router-product-surface](../../design/adr/pre-release/ADR-0.27.0-namespace-router-product-surface/ADR-0.27.0-namespace-router-product-surface.md) | Namespace Router Product Surface | feature | lite | Validated | 2026-05-23 | `design/adr/pre-release/ADR-0.27.0-namespace-router-product-surface/ADR-0.27.0-namespace-router-product-surface.md` |
 | [ADR-0.28.0-focused-context-loader](../../design/adr/pre-release/ADR-0.28.0-focused-context-loader/ADR-0.28.0-focused-context-loader.md) | Focused Context Loader | feature | lite | Validated | 2026-05-24 | `design/adr/pre-release/ADR-0.28.0-focused-context-loader/ADR-0.28.0-focused-context-loader.md` |
+| [ADR-0.29.0-precise-auth-boundaries-registration-and-witnessed-floor-override](../../design/adr/pre-release/ADR-0.29.0-precise-auth-boundaries-registration-and-witnessed-floor-override/ADR-0.29.0-precise-auth-boundaries-registration-and-witnessed-floor-override.md) | Precise auth_boundaries registration and witnessed floor override | feature | heavy | Proposed | 2026-06-06 | `design/adr/pre-release/ADR-0.29.0-precise-auth-boundaries-registration-and-witnessed-floor-override/ADR-0.29.0-precise-auth-boundaries-registration-and-witnessed-floor-override.md` |
