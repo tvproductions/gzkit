@@ -15,6 +15,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.governance.brief_path_validity import extract_brief_creates_paths
 from gzkit.governance.brief_structure import (
     BriefStructure,
     parse_brief,
@@ -148,7 +149,8 @@ def reconcile_brief(brief_path: Path, project_root: Path) -> ReconcileResult:
 
     body = _brief_body(brief_path)
 
-    allowlist_delta = _compute_allowlist_delta(allowlist, req_ids, project_root)
+    creates_paths = extract_brief_creates_paths(brief_path)
+    allowlist_delta = _compute_allowlist_delta(allowlist, req_ids, project_root, creates_paths)
     discovery_delta = _compute_discovery_delta(body, project_root)
     verification_delta = _compute_verb_delta(verbs_to_check)
     acceptance_count = _count_acceptance_criteria(body)
@@ -319,10 +321,25 @@ def _compute_missing_in_brief(
 
 
 def _compute_allowlist_delta(
-    allowlist: list[str], req_ids: list[str], project_root: Path
+    allowlist: list[str],
+    req_ids: list[str],
+    project_root: Path,
+    creates_paths: set[str] | None = None,
 ) -> AllowlistDelta:
-    """Report allowlist paths missing on disk and src/ files missing from the allowlist."""
-    missing_on_disk = [path for path in allowlist if not (project_root / path).exists()]
+    """Report allowlist paths missing on disk and src/ files missing from the allowlist.
+
+    Paths the brief declares it will create (``creates_paths``, GHI #419) are
+    exempt from the missing-on-disk check — they exist in contract before they
+    exist on disk. Without this exemption a net-new-file OBPI is falsely flagged
+    as drifted, which deadlocks the Stage-2 reconcile gate.
+    """
+    creates = creates_paths or set()
+    missing_on_disk = [
+        path
+        for path in allowlist
+        if not (project_root / path).exists()
+        and path.removeprefix("./").rstrip("/") not in creates
+    ]
     missing_in_brief = _compute_missing_in_brief(req_ids, allowlist, project_root)
     return AllowlistDelta(missing_in_brief=missing_in_brief, missing_on_disk=missing_on_disk)
 

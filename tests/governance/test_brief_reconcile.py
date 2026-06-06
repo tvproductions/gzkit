@@ -123,6 +123,58 @@ class TestAllowlistDimension(unittest.TestCase):
         self.assertTrue(result.has_drift)
 
 
+    @covers("REQ-0.0.37-05-02")
+    def test_creates_declared_path_exempt_from_missing_on_disk(self):
+        """A net-new path declared under '## Creates These Files' is exempt from
+        missing_on_disk (GHI #419 brief-creates exemption).
+
+        The reconcile engine must honor the same creates-declaration that
+        brief_path_validity already honors, so a net-new-file OBPI is not
+        falsely flagged as drifted at Stage-2 entry (the deadlock this fix
+        resolves).
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief = root / "brief.md"
+            brief.write_text(
+                textwrap.dedent("""\
+                    ---
+                    id: OBPI-0.0.99-02-creates-exempt
+                    parent: ADR-0.0.37-constitutional-invariant-composition
+                    lane: Heavy
+                    status: Draft
+                    allowlist:
+                      - src/gzkit/governance/brand_new_module.py
+                    reqs:
+                      - REQ-0.0.99-02-01
+                    verification:
+                      - uv run gz validate
+                    citations: []
+                    ---
+                    # Test Brief: Creates Exempt
+                    ## Allowed Paths
+                    - `src/gzkit/governance/brand_new_module.py`
+                    ## Creates These Files
+                    - `src/gzkit/governance/brand_new_module.py` — NEW module this OBPI creates
+                    ## Verification
+                    ```bash
+                    uv run gz validate
+                    ```
+                    ## Requirements (FAIL-CLOSED)
+                    REQUIREMENT: Test requirement one
+                    ## Acceptance Criteria
+                    - [ ] REQ-0.0.99-02-01: test
+                    """),
+                encoding="utf-8",
+            )
+            result = reconcile_brief(brief, root)
+            self.assertNotIn(
+                "src/gzkit/governance/brand_new_module.py",
+                result.allowlist_delta.missing_on_disk,
+            )
+            self.assertFalse(result.has_drift)
+
+
 class TestVerificationVerbDimension(unittest.TestCase):
     @covers("REQ-0.0.37-05-03")
     def test_unregistered_verb_reported(self):

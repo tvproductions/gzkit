@@ -402,10 +402,15 @@ def _find_drifted_path(
     receipt_ts: datetime,
     allowed_paths: list[str],
     project_root: Path,
+    creates_paths: set[str] | None = None,
 ) -> str:
-    """Return the first allowed path newer than receipt_ts, or '(missing)' if absent."""
-    from gzkit.governance.reconcile_freshness import is_receipt_fresh  # noqa: PLC0415
+    """Return the first allowed path newer than receipt_ts, or '(missing)' if absent.
 
+    Paths in ``creates_paths`` are net-new declarations exempt from the
+    missing-path check (GHI #419), mirroring ``is_receipt_fresh`` — so the
+    diagnostic never blames a file the brief has merely declared it will create.
+    """
+    creates = creates_paths or set()
     for pattern in allowed_paths:
         direct = project_root / pattern
         if direct.exists():
@@ -414,11 +419,12 @@ def _find_drifted_path(
             mtime = datetime.fromtimestamp(os.path.getmtime(direct), tz=UTC)
             if mtime > receipt_ts:
                 return pattern
+        elif pattern.removeprefix("./").rstrip("/") in creates:
+            continue
         else:
             matches = list(project_root.glob(pattern))
             if not matches:
                 return pattern
-    _ = is_receipt_fresh  # imported for clarity; not called here
     return "(missing)"
 
 
@@ -486,9 +492,14 @@ def check_reconcile_receipt_gate(
             f"Run `gz brief reconcile {obpi_id}` then retry."
         ]
 
+    from gzkit.governance.brief_path_validity import extract_brief_creates_paths  # noqa: PLC0415
+
     allowed_paths = _extract_brief_allowlist(brief_path)
-    if allowed_paths and not is_receipt_fresh(latest_ts, allowed_paths, project_root):
-        drifted_path = _find_drifted_path(latest_ts, allowed_paths, project_root)
+    creates_paths = extract_brief_creates_paths(brief_path)
+    if allowed_paths and not is_receipt_fresh(
+        latest_ts, allowed_paths, project_root, creates_paths
+    ):
+        drifted_path = _find_drifted_path(latest_ts, allowed_paths, project_root, creates_paths)
         return [
             f"Stage 2 entry blocked: receipt for {obpi_id} stale "
             f"(receipt_ts={latest_ts.isoformat()}, drifted path={drifted_path!r}). "

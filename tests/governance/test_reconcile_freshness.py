@@ -64,6 +64,58 @@ class TestIsReceiptFresh(unittest.TestCase):
             self.assertFalse(is_receipt_fresh(fresh_ts, ["src/nonexistent.py"], root))
 
     @covers("REQ-0.0.37-07-01")
+    def test_missing_path_declared_in_creates_is_exempt(self) -> None:
+        """A missing non-glob path declared in ``creates_paths`` does NOT force False.
+
+        Net-new files a brief declares it will create do not exist at Stage-2
+        entry; their absence must not force re-reconcile (GHI #419 brief-creates
+        exemption, mirrored from brief_path_validity). Freshness is then decided
+        by the existing files in the allowlist domain.
+        """
+        from gzkit.governance.reconcile_freshness import is_receipt_fresh
+
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            existing = root / "src" / "foo.py"
+            existing.parent.mkdir(parents=True)
+            existing.write_text("x", encoding="utf-8")
+            old_mtime = time.time() - 100
+            os.utime(existing, (old_mtime, old_mtime))
+
+            fresh_ts = _ts(0)
+            self.assertTrue(
+                is_receipt_fresh(
+                    fresh_ts,
+                    ["src/foo.py", "src/governance/trust_audits/new_mod.py"],
+                    root,
+                    creates_paths={"src/governance/trust_audits/new_mod.py"},
+                )
+            )
+
+    @covers("REQ-0.0.37-07-01")
+    def test_missing_path_not_in_creates_still_returns_false(self) -> None:
+        """A missing path absent from ``creates_paths`` still forces False (regression guard)."""
+        from gzkit.governance.reconcile_freshness import is_receipt_fresh
+
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            existing = root / "src" / "foo.py"
+            existing.parent.mkdir(parents=True)
+            existing.write_text("x", encoding="utf-8")
+            old_mtime = time.time() - 100
+            os.utime(existing, (old_mtime, old_mtime))
+
+            fresh_ts = _ts(0)
+            self.assertFalse(
+                is_receipt_fresh(
+                    fresh_ts,
+                    ["src/foo.py", "src/governance/trust_audits/new_mod.py"],
+                    root,
+                    creates_paths={"src/some/other_declared.py"},
+                )
+            )
+
+    @covers("REQ-0.0.37-07-01")
     def test_empty_allowed_paths_returns_false(self) -> None:
         """No paths → False (no domain to be fresh against)."""
         from gzkit.governance.reconcile_freshness import is_receipt_fresh
