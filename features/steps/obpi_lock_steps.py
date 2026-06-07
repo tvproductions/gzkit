@@ -15,16 +15,22 @@ from gzkit.cli import main
 from gzkit.lock_manager import LockData, write_lock
 
 
-def _invoke(args: list[str]) -> tuple[int, str]:
-    """Invoke the gz CLI and capture output."""
-    output = io.StringIO()
-    with redirect_stdout(output), redirect_stderr(output):
+def _invoke(args: list[str]) -> tuple[int, str, str]:
+    """Invoke the gz CLI, capturing stdout and stderr in separate buffers.
+
+    Streams are kept distinct so that ``--json`` payloads (stdout) can be parsed
+    without the diagnostic/warning lines the token-block release path correctly
+    emits to stderr (REQ-0.0.41-02-07). Merging them — as this helper previously
+    did — made ``json.loads`` choke on the leading warning text.
+    """
+    out, err = io.StringIO(), io.StringIO()
+    with redirect_stdout(out), redirect_stderr(err):
         try:
             code = main(args)
         except SystemExit as exc:
             raw = exc.code
             code = raw if isinstance(raw, int) else 1
-    return 0 if code is None else int(code), output.getvalue()
+    return 0 if code is None else int(code), out.getvalue(), err.getvalue()
 
 
 @given('an OBPI lock exists for "{obpi_id}" held by agent "{agent_name}"')
@@ -65,7 +71,10 @@ def step_run_command(context, command: str) -> None:
     # Remove "gz " prefix if present
     if args and args[0] == "gz":
         args = args[1:]
-    context.exit_code, context.output = _invoke(args)
+    context.exit_code, context.cli_stdout, context.cli_stderr = _invoke(args)
+    # Combined view preserved for "the output contains" assertions (e.g. the
+    # stderr warning in REQ-0.0.41-02-07); JSON-field checks parse stdout only.
+    context.output = context.cli_stdout + context.cli_stderr
 
 
 @then("it exits with code {expected:d}")
@@ -79,10 +88,12 @@ def step_exit_code(context, expected: int) -> None:
 @then('the JSON output field "{field}" is "{expected}"')
 def step_json_field_equals(context, field: str, expected: str) -> None:
     """Parse JSON output and compare a field value."""
+    # JSON is emitted to stdout; warnings/diagnostics go to stderr. Parse stdout
+    # only so a stderr warning cannot corrupt the JSON payload.
     try:
-        payload = json.loads(context.output)
+        payload = json.loads(context.cli_stdout)
     except json.JSONDecodeError as exc:
-        raise AssertionError(f"Failed to parse JSON output: {context.output}") from exc
+        raise AssertionError(f"Failed to parse JSON output: {context.cli_stdout}") from exc
 
     if field not in payload:
         raise AssertionError(
