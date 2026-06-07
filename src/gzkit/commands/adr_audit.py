@@ -690,15 +690,30 @@ def _enforce_uncovered_acceptance_confirmation(
 ) -> str:
     """Gate the --accept-uncovered override for heavy/foundation parents.
 
-    Three-branch mirror of ``_enforce_human_attestation_authenticity``:
+    Three-branch behavior:
 
     1. **TTY path.** stdin AND stdout are attached to a real TTY; operator
        types ``ACCEPT`` to confirm each waiver. Returns
        :data:`ATTESTATION_TYPE_HUMAN`.
     2. **Agent-relayed path.** No TTY but ``attestor_present=True`` AND an
        active pipeline marker exists. Returns
-       :data:`ATTESTATION_TYPE_AGENT_RELAYED`.
-    3. **Fail-closed.** Headless + no marker → raises :class:`GzCliError`.
+       :data:`ATTESTATION_TYPE_AGENT_RELAYED`. ``sensitivity == "security"``
+       refuses this branch per GHI #412/#434 (security scopes require an
+       interactive operator typing the confirmation).
+    3. **Operator-verbatim path (canon-owner directive 2026-05-14, GHI #587).**
+       Headless + no marker → the operator's CLI-passed
+       ``--accept-uncovered-reason`` IS the authorization. Returns
+       :data:`ATTESTATION_TYPE_OPERATOR_VERBATIM`, matching the shape Gate-5
+       already uses for ``--attestation-text``. Per
+       ``.claude/rules/governance-core.md`` v0.3.0: no TTY, PTY, interactive
+       terminal, or transport mechanism may EVER be cited as a reason an
+       agent "cannot" record human attestation — the same rule applies to
+       operator-passed waiver authorizations carried on the CLI.
+
+       Security carve-out: ``sensitivity == "security"`` still refuses the
+       operator-verbatim path. Security scopes' attack-surface dimension
+       requires the interactive ACCEPT ceremony; the canon-owner directive
+       does not lift the GHI #412/#434 security-scope narrowing.
     """
     req_list = ", ".join(req_ids)
     if _is_human_attestation_tty_available():
@@ -762,13 +777,33 @@ def _enforce_uncovered_acceptance_confirmation(
         )
         return ATTESTATION_TYPE_AGENT_RELAYED
 
-    msg = (
-        "--accept-uncovered requires interactive TTY confirmation for heavy/foundation OBPIs. "
-        "stdin/stdout is not a TTY and --attestor-present was not set (or the pipeline marker "
-        f"is missing). Run from an interactive shell or start the pipeline with "
-        f"'uv run gz obpi pipeline {obpi_id}' first (GHI #292)."
+    # Headless, no marker, no TTY. Security scopes still refuse (GHI #412/#434).
+    # Every other scope: the operator's CLI-passed --accept-uncovered-reason IS
+    # the authorization. Return operator-verbatim (canon-owner directive
+    # 2026-05-14, GHI #587). Mirrors the Gate-5 operator-verbatim path that
+    # `obpi_complete.py` already accepts for --attestation-text.
+    if isinstance(sensitivity, str) and sensitivity.lower() == "security":
+        msg = (
+            "--accept-uncovered refused for sensitivity:security scopes "
+            "(GHI #412 + #434). Security scopes require an interactive "
+            "operator typing the ACCEPT confirmation; the canon-owner "
+            "operator-verbatim path does not lift the security narrowing. "
+            "Run this command from an interactive shell."
+        )
+        raise GzCliError(msg)
+    console.print("")
+    console.print(
+        "[bold yellow]=== Operator-Verbatim Uncovered REQ Acceptance (GHI #587) ===[/bold yellow]"
     )
-    raise GzCliError(msg)
+    console.print(f"  OBPI:     {obpi_id}")
+    console.print(f"  ADR:      {parent_adr}")
+    console.print(f"  Attestor: {attestor}")
+    console.print(f"  Waiving:  {req_list}")
+    console.print(
+        "  [dim]Operator-verbatim authorization carried on the CLI via "
+        "--accept-uncovered-reason (canon-owner directive 2026-05-14).[/dim]"
+    )
+    return ATTESTATION_TYPE_OPERATOR_VERBATIM
 
 
 def _validate_obpi_completed_required_fields(evidence: dict[str, Any]) -> None:

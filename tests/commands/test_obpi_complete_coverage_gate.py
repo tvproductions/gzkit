@@ -502,8 +502,12 @@ class _OverrideGateWireFixture(_CoverageGateWireFixture):
 
     ``tty_present`` controls the mock outcome for
     ``_enforce_uncovered_acceptance_confirmation``:
-    - True → returns ``"human"``
-    - False → raises ``GzCliError("headless — no TTY")``
+    - True  → returns ``"human"`` (interactive operator typed ACCEPT)
+    - False → returns ``"operator-verbatim-conversational"`` (canon-owner
+      directive 2026-05-14, GHI #587: headless heavy override accepted when
+      ``--accept-uncovered-reason`` is non-empty — same shape as Gate-5's
+      ``--attestation-text`` operator-verbatim path; the prior fail-closed
+      branch was a transport-mechanism gate the canon-owner directive forbids).
     """
 
     def _run_override(
@@ -521,8 +525,6 @@ class _OverrideGateWireFixture(_CoverageGateWireFixture):
         accept_uncovered_reason: list[str] | None = None,
         tty_present: bool = True,
     ) -> tuple[type[BaseException] | None, int | None, list[str], MagicMock]:
-        from gzkit.commands.common import GzCliError
-
         recorded: list[str] = []
         rec_console = Console(file=StringIO(), record=True)
         original_print = rec_console.print
@@ -536,7 +538,7 @@ class _OverrideGateWireFixture(_CoverageGateWireFixture):
         def _mock_enforce_uncovered(*args, **kwargs):
             if tty_present:
                 return "human"
-            raise GzCliError("headless — no TTY and no pipeline marker")
+            return "operator-verbatim-conversational"
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -677,11 +679,24 @@ class TestObpiCompleteHeavyOverrideSingleReqAccepted(_OverrideGateWireFixture):
 # ---------------------------------------------------------------------------
 
 
-class TestObpiCompleteHeadlessHeavyOverrideRefused(_OverrideGateWireFixture):
-    """REQ-0.0.25-02-02 — headless heavy override refused (no TTY, no marker)."""
+class TestObpiCompleteHeadlessHeavyOverrideAcceptedOperatorVerbatim(_OverrideGateWireFixture):
+    """REQ-0.0.25-02-02 (superseded by canon-owner directive 2026-05-14, GHI #587).
+
+    Prior contract: headless heavy override refused (no TTY, no marker → exit 3).
+    Current contract: headless heavy override accepted as operator-verbatim when
+    --accept-uncovered-reason is non-empty. Per `.claude/rules/governance-core.md`
+    v0.3.0 and AGENTS.md § Never #1: no TTY, PTY, or transport mechanism may EVER
+    be cited as a reason an agent "cannot" record human attestation — the same
+    rule applies to operator-passed waiver authorizations carried on the CLI.
+
+    The `--accept-uncovered-reason` text IS the operator's authorization; the
+    waiver path mirrors the Gate-5 operator-verbatim path that obpi_complete.py
+    already implements (`adr_audit.py:1075` returns
+    ATTESTATION_TYPE_OPERATOR_VERBATIM directly).
+    """
 
     @covers("REQ-0.0.25-02-02")
-    def test_headless_heavy_override_exits_3(self) -> None:
+    def test_headless_heavy_override_accepted_operator_verbatim(self) -> None:
         criteria = "- [ ] REQ-9.9.9-99-01: Uncovered."
         brief = _BRIEF_TEMPLATE.format(
             obpi_id="OBPI-9.9.9-99-fixture",
@@ -689,7 +704,7 @@ class TestObpiCompleteHeadlessHeavyOverrideRefused(_OverrideGateWireFixture):
             lane="Heavy",
             criteria=criteria,
         )
-        exc, code, _output, _ledger = self._run_override(
+        exc, code, _output, ledger = self._run_override(
             brief_text=brief,
             obpi_id="OBPI-9.9.9-99-fixture",
             parent_adr="ADR-9.9.9-fixture",
@@ -702,8 +717,12 @@ class TestObpiCompleteHeadlessHeavyOverrideRefused(_OverrideGateWireFixture):
             accept_uncovered_reason=["a reason"],
             tty_present=False,
         )
-        self.assertIs(exc, SystemExit)
-        self.assertEqual(code, 3)
+        self.assertIsNone(exc)
+        self.assertIsNone(code)
+        call_args = [c.args[0] for c in ledger.append.call_args_list]
+        waiver_events = [e for e in call_args if e.event == "obpi_completion_uncovered_accept"]
+        self.assertEqual(len(waiver_events), 1)
+        self.assertEqual(waiver_events[0].extra["req_id"], "REQ-9.9.9-99-01")
 
 
 # ---------------------------------------------------------------------------
@@ -859,6 +878,41 @@ class TestObpiCompleteMultiReqOverrideAllWaived(_OverrideGateWireFixture):
         waived_reqs = {e.extra["req_id"] for e in waiver_events}
         self.assertIn("REQ-9.9.9-99-01", waived_reqs)
         self.assertIn("REQ-9.9.9-99-02", waived_reqs)
+
+
+class TestEnforceUncoveredAcceptanceConfirmationOperatorVerbatim(unittest.TestCase):
+    """Direct unit test for ``_enforce_uncovered_acceptance_confirmation`` (GHI #587).
+
+    Asserts that the function, when invoked from a headless context with neither
+    ``attestor_present`` nor a TTY, returns ``ATTESTATION_TYPE_OPERATOR_VERBATIM``
+    rather than raising ``GzCliError``. This is the canon-owner directive applied
+    to the waiver path: the operator's CLI-passed ``--accept-uncovered-reason``
+    IS the authorization, no transport mechanism gates it.
+    """
+
+    @covers("REQ-0.0.25-02-02")
+    def test_headless_no_attestor_present_returns_operator_verbatim(self) -> None:
+        from gzkit.commands.adr_audit import (
+            ATTESTATION_TYPE_OPERATOR_VERBATIM,
+            _enforce_uncovered_acceptance_confirmation,
+        )
+
+        with patch(
+            "gzkit.commands.adr_audit._is_human_attestation_tty_available",
+            return_value=False,
+        ):
+            result = _enforce_uncovered_acceptance_confirmation(
+                obpi_id="OBPI-9.9.9-99-fixture",
+                parent_adr="ADR-9.9.9-fixture",
+                req_ids=["REQ-9.9.9-99-01"],
+                attestor="g0",
+                attestor_present=False,
+                project_root=None,
+                sensitivity=None,
+                parent_kind="foundation",
+            )
+
+        self.assertEqual(result, ATTESTATION_TYPE_OPERATOR_VERBATIM)
 
 
 if __name__ == "__main__":

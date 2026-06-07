@@ -177,16 +177,32 @@ class TestSkillSelfCloseDrift(unittest.TestCase):
         REQ-05-03 semantic: every edited skill's frontmatter skill-version has
         been incremented per the version-discipline table in skill-surface-sync.md
         (governance rule/procedure change warrants a minor bump).
+
+        The semantic invariant is `current >= post-OBPI-0.0.36-05 baseline`, NOT
+        equality with the post-OBPI-0.0.36-05 snapshot — legitimate subsequent
+        edits (e.g. GHI #586's SKILL.md fix) bump the version legitimately, and
+        a literal-equality assertion mistakes the snapshot for the invariant
+        (config-SSOT tautological-test anti-pattern; operator directive
+        2026-06-04, agent-insights.jsonl entry on hard-coding ridiculousness).
         """
         import re as _re
 
-        # Skills known to have been edited in this sweep
-        edited_skills = {
+        def _parse_semver(v: str) -> tuple[int, int, int]:
+            parts = v.split(".")
+            try:
+                return (int(parts[0]), int(parts[1]), int(parts[2]))
+            except (IndexError, ValueError) as exc:
+                msg = f"unparseable semver {v!r}"
+                raise AssertionError(msg) from exc
+
+        # Baseline skill-versions written by OBPI-0.0.36-05. Edits AFTER that
+        # OBPI may legitimately bump these; the assertion is `current >= baseline`.
+        post_obpi_05_baseline = {
             ".gzkit/skills/gz-obpi-pipeline/SKILL.md": "6.17.0",
             ".gzkit/skills/gz-adr-closeout-ceremony/SKILL.md": "7.13.1",
             ".gzkit/skills/gz-obpi-lock/SKILL.md": "6.1.0",
         }
-        for rel_path, expected_version in edited_skills.items():
+        for rel_path, baseline_version in post_obpi_05_baseline.items():
             path = REPO_ROOT / rel_path
             if not path.exists():
                 self.fail(f"Expected edited skill not found: {rel_path}")
@@ -202,10 +218,11 @@ class TestSkillSelfCloseDrift(unittest.TestCase):
                 f"skill-version not found in {rel_path}",
             )
             actual = sv_match.group(1).strip().strip('"')  # type: ignore[union-attr]
-            self.assertEqual(
-                actual,
-                expected_version,
-                f"Expected skill-version {expected_version!r} in {rel_path}, got {actual!r}",
+            self.assertGreaterEqual(
+                _parse_semver(actual),
+                _parse_semver(baseline_version),
+                f"skill-version regressed below post-OBPI-0.0.36-05 baseline "
+                f"in {rel_path}: got {actual!r}, baseline {baseline_version!r}",
             )
 
     @covers("REQ-0.0.36-05-04")
