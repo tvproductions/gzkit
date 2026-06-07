@@ -26,6 +26,23 @@ reqs:
   - REQ-0.0.41-02-07
   - REQ-0.0.41-02-08
   - REQ-0.0.41-02-09
+# req_atomic: each REQ is a single indivisible labor unit, not a coarse-default
+# bucket — REQ-01 write_lock exclusive-creation, REQ-02 claim-conflict on
+# FileExistsError, REQ-03 race interlock (one winner), REQ-04 --abandon parse,
+# REQ-05 degenerate-handoff writer + handoff_path, REQ-06 unknown-category
+# rejection, REQ-07 warning-on-no-handoff, REQ-08 ledger handoff_path optional
+# (backward-compat), REQ-09 manpage SUPPORT doc; none decomposes into parallel
+# seq=02+ sub-tasks (ADR-0.0.64 task-envelope exemption; Snapshot D/E/G/L precedent).
+req_atomic:
+  - REQ-0.0.41-02-01
+  - REQ-0.0.41-02-02
+  - REQ-0.0.41-02-03
+  - REQ-0.0.41-02-04
+  - REQ-0.0.41-02-05
+  - REQ-0.0.41-02-06
+  - REQ-0.0.41-02-07
+  - REQ-0.0.41-02-08
+  - REQ-0.0.41-02-09
 verification:
   - uv run gz validate --documents
   - uv run gz lint

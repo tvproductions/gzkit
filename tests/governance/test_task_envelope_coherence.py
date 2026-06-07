@@ -501,6 +501,56 @@ class TestSignatureA(unittest.TestCase):
             self.assertEqual(len(errors), 0)
 
     @covers("REQ-0.0.64-04-01")
+    def test_support_manpage_edit_under_active_task_is_clean(self) -> None:
+        """Editing a ``docs/user/manpages/`` manpage is SUPPORT-channel documentation,
+        not OBPI-REQ TASK labor. SUPPORT-kind REQs (e.g. OBPI-0.0.41-02's REQ-09) are
+        proven by the ``artifact_edited`` ledger event + ``gz validate --documents``
+        per the REQ Scope Discipline taxonomy — the manpage edit IS the proof, not a
+        per-REQ TASK labor record. Sibling of the ADR-decision-doc carve-out, lifted
+        to the manpage layer (ordinary ``src/`` edits still require attribution; see
+        ``test_worklog_without_task_id_under_active_task_fails``).
+        """
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.41-02-01-01",
+                            "obpi_id": "OBPI-0.0.41-02-claim-release-safety-primitives",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-07T10:13:00Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "artifact_edited",
+                            "path": "docs/user/manpages/obpi-lock-release.md",
+                            "id": "evt-2",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-07T10:39:00Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "artifact_edited",
+                            "path": "docs/user/manpages/obpi-lock-claim.md",
+                            "id": "evt-3",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-07T10:39:01Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (a)" in e.message
+            ]
+            self.assertEqual(len(errors), 0)
+
+    @covers("REQ-0.0.64-04-01")
     def test_uncovered_accept_with_req_id_under_active_task_is_clean(self) -> None:
         """REQ-level uncovered-accept ceremony carries attribution via ``req_id``."""
         with tempfile.TemporaryDirectory() as td:

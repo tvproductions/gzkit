@@ -13,6 +13,7 @@ from datetime import datetime
 from pathlib import Path
 
 from gzkit.commands.validate_briefs import _find_obpi_briefs
+from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.validate import ValidationError
 
 # ---------------------------------------------------------------------------
@@ -114,6 +115,29 @@ def _is_adr_decision_doc_reflection_event(
     return bool(_ADR_DECISION_DOC_RE.search(path))
 
 
+def _is_support_manpage_reflection_event(
+    ev: dict[str, object],
+    active_tasks_by_obpi: dict[str, set[str]],
+) -> bool:
+    """Return True for a ``docs/user/manpages/`` edit while any OBPI TASK is active.
+
+    CLI manpages are SUPPORT-channel documentation artifacts: a SUPPORT-kind REQ
+    (e.g. OBPI-0.0.41-02's REQ-09) is witnessed by the ``artifact_edited`` ledger
+    event plus ``gz validate --documents`` admitting the doc's shape — the manpage
+    edit IS the proof, not a per-REQ TASK labor record (see the REQ Scope Discipline
+    taxonomy). Editing one while an OBPI pipeline's TASKs are active is governance
+    documentation ceremony, not OBPI-REQ implementation labor. This is the manpage-
+    layer sibling of the ADR-decision-doc and OBPI-brief reflection carve-outs above;
+    ordinary ``src/`` edits remain worklog events and still require TASK attribution.
+    """
+    if ev.get("event") != "artifact_edited":
+        return False
+    if not any(active_tasks_by_obpi.values()):
+        return False
+    path = _event_path(ev)
+    return f"{MANPAGE_DIR.as_posix()}/" in path and path.endswith(".md")
+
+
 def _is_req_attributed_uncovered_accept_event(
     ev: dict[str, object],
     active_tasks_by_obpi: dict[str, set[str]],
@@ -180,6 +204,8 @@ def _sig_a_is_not_labor_event(
     if _is_active_obpi_brief_reflection_event(ev, active_tasks_by_obpi):
         return True
     if _is_adr_decision_doc_reflection_event(ev, active_tasks_by_obpi):
+        return True
+    if _is_support_manpage_reflection_event(ev, active_tasks_by_obpi):
         return True
     if _is_req_attributed_uncovered_accept_event(ev, active_tasks_by_obpi):
         return True
