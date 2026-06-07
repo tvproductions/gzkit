@@ -135,6 +135,25 @@ governance witness.
   degenerate handoff, which the validator then audits as part of normal
   ledger-replay coverage.
 
+## Boundary Invariants
+
+Cross-OBPI invariants binding multiple OBPIs under this ADR. Each invariant
+is the contract that a STRUCTURAL-FENCE REQ points at; it can only be
+audited at ADR closeout, not within a single OBPI.
+
+1. **Audit-coupling invariant.** Every `obpi_lock_released` event in
+   `.gzkit/ledger.jsonl` emitted on or after the OBPI-02 closeout cutover
+   carries a valid `handoff_path` payload; the referenced handoff exists
+   on disk, postdates its matching `obpi_lock_claimed` event, and
+   satisfies the Sub-Invariant 2 minimum-information rule
+   (`.gzkit/rules/token-block-discipline.md`). This invariant binds
+   OBPI-02 (additive `handoff_path` field), OBPI-03 (mandatory at every
+   emission site; warning flipped to fail-closed; reaping emits
+   `abandoned_by_reaper` handoff before delete), and OBPI-04 (mechanical
+   enforcement via `gz validate --lock-handoff-coupling`, wired into the
+   default `gz check` pipeline) into a single audit-coupling guarantee.
+   Enforced by: `uv run gz validate --lock-handoff-coupling` (OBPI-04).
+
 ## Decomposition Scorecard
 
 <!-- Deterministic OBPI sizing: score each dimension 0/1/2. -->

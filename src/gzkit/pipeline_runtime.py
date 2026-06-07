@@ -382,7 +382,7 @@ def _extract_brief_allowlist(brief_path: Path) -> list[str]:
     _SECTION_HEADING_RE = re.compile(r"^##\s+")
     _PATH_PREFIXES = ("src/", "tests/", "docs/", ".gzkit/", "features/")
 
-    body: str = parsed.raw_body  # ty: ignore[unresolved-attribute]
+    body: str = parsed.raw_body
     paths: list[str] = []
     collecting = False
     for line in body.splitlines():
