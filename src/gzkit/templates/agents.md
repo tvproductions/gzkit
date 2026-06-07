@@ -84,7 +84,7 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 1. **Governance is the steering and accountability surface for agent-driven work, not overhead.** Volume follows steering need; "lighter ceremony" alone is never the tradeoff axis. (Prior framings invoking a literal "5:1 ratio" were rhetorical — read the rule, not the metaphor.)
 2. **Every option is framed by smallest-vibing-surface, never maintenance burden or velocity.**
 3. **Doctrine drift is invariant drift.** Silent rule/threshold changes without a witness are the root failure.
-4. **Stochastic LLM vibing is the named failure class.** Pattern-matching from training memory, narrative-recall claims, "graceful degradation" exits, bundled Gate 5 attestations.
+4. **Stochastic LLM vibing is the named failure class** — operator's mnemonic **V.I.B.E.S.: "Velocity Increased, Bugs Expected Software."** Pattern-matching from training memory, narrative-recall claims, "graceful degradation" exits, bundled Gate 5 attestations.
 
 ## STDLIB-FIRST DOCTRINE (DEPENDENCY POSTURE)
 

@@ -4,9 +4,17 @@ parent: ADR-0.0.37-constitutional-invariant-composition
 item: 23
 lane: Heavy
 status: Draft
+# req_atomic: each REQ is a single indivisible labor unit — one behavior/support
+# surface apiece (policy accessor, verbatim-survival test, composer wiring, doc);
+# none decomposes into parallel seq=02+ sub-tasks (ADR-0.0.64 exemption).
+req_atomic:
+  - REQ-0.0.37-23-01
+  - REQ-0.0.37-23-02
+  - REQ-0.0.37-23-03
+  - REQ-0.0.37-23-04
 ---
 
-# OBPI-0.0.37-23-invariant-tier: Invariant Tier
+# OBPI-0.0.37-23-invariant-tier: Invariant Tier (Verbatim, Never Condense)
 
 ## ADR Item
 
@@ -17,7 +25,9 @@ status: Draft
 
 ## Objective
 
-OBPI-0.0.37-23 — Invariant tier (verbatim, never condense) (`tier: invariant` entries emit verbatim at every setpoint; test asserts PRIME DIRECTIVE / DO IT RIGHT / NEVER PYTEST survive at the leanest setpoint; the 0-Kelvin floor made first-class).
+Make the **invariant tier the 0-Kelvin floor of the compression dial, first-class**. The corpus model (OBPI-18) already carries `tier: Literal["invariant", "compressible"]`, but presence enforcement is explicitly deferred — `Corpus.validate_against` notes *"Invariant-tier presence enforcement is OBPI-0.0.37-23."* This OBPI delivers that enforcement: a single shared `tier_policy` surface that the composer (OBPI-21) consumes so that `tier: invariant` entries are emitted **verbatim at every setpoint and never dropped, combined, or rewritten**, plus the canonical survival test asserting the named invariants (PRIME DIRECTIVE, DO IT RIGHT, NEVER PYTEST) survive verbatim at the **leanest** setpoint (`lite`).
+
+The 0-Kelvin floor is the doctrinal analog of the immutable upstream system prompt the operator cannot edit (parent ADR § Decision Re-Alignment point 5): the dial thins only `compressible` content; invariant content is exact operator intent and is never condensed.
 
 ## Lane
 
@@ -27,24 +37,43 @@ OBPI-0.0.37-23 — Invariant tier (verbatim, never condense) (`tier: invariant` 
 > documentation, and template-only work stays Lite unless it changes one of
 > those external surfaces.
 
+This OBPI changes a runtime-contract behavior: which renditions are *valid* (an invariant-tier omission now fails closed). Foundation-kind brief-level Gate 5 attestation is mandatory (no self-close).
+
 ## Allowed Paths
 
-- `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md` — parent ADR for intent and scope
-- `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/**` — parent ADR package scope
+- `src/gzkit/content/tier_policy.py` **CREATE** — the first-class invariant-tier policy: `invariant_entries(corpus)` (all `tier: invariant` rows) and `assert_invariant_verbatim(corpus, rendered_text)` (fail-closed when any invariant entry's text is absent/altered in the rendered/candidate text); stdlib + Pydantic, NO LLM. This is the single enforcement surface the composer (OBPI-21) consumes — see § Tracked Defects for the cross-OBPI wiring seam
+- `tests/content/test_tier_policy.py` **CREATE** — BEHAVIOR tests for the policy accessor + the canonical named-invariant survival test + a composer-equivalent enforcement test (`@covers`)
+- `docs/governance/agent-control-surface-rendering-substrate.md` — EDIT: document the invariant-tier 0-Kelvin floor as a first-class guarantee (narrow subsection; the broader mechanism refresh is OBPI-27)
+- `data/behave_coverage_waivers.json` — EDIT: OBPI-level behave-coverage waiver for the SUPPORT doc REQ (no Gherkin-observable behavior)
+- `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-23-invariant-tier.md` — active brief and evidence record
+- `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md` — parent ADR (read-only, for intent and the 1:1 checklist sync)
 
 ## Denied Paths
 
 - Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `src/gzkit/content/models/corpus.py` — the `tier` field already exists (OBPI-18); this OBPI enforces presence, it does NOT change the model
+- `src/gzkit/content/vendors.py`, `src/gzkit/content/rendition_store.py`, the playback path — setpoint accessor (OBPI-20) and rendition/playback (OBPI-22) are consumed/coordinated, not modified here
+- `src/gzkit/commands/content/compose.py` — the composer *command* surface is OBPI-21; this OBPI touches only the engine's enforcement seam
+- Any LLM/network call — the policy is deterministic
+- New runtime dependencies; CI files; lockfiles
+
+## Creates These Files
+
+Net-new paths this OBPI creates (exempt from the brief-path existence gate per GHI #419):
+
+- `src/gzkit/content/tier_policy.py`
+- `tests/content/test_tier_policy.py`
+
+All other Allowed Paths reference existing files modified in place.
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: This OBPI MUST deliver: OBPI-0.0.37-23 — Invariant tier (verbatim, never condense) (`tier: invariant` entries emit verbatim at every setpoint; test asserts PRIME DIRECTIVE / DO IT RIGHT / NEVER PYTEST survive at the leanest setpoint; the 0-Kelvin floor made first-class).
-1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
-1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
-1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
-1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
+1. REQUIREMENT [BEHAVIOR]: `tier_policy.invariant_entries(corpus)` MUST return exactly the corpus entries whose `tier == "invariant"`, and `tier_policy.assert_invariant_verbatim(corpus, rendered_text)` MUST raise (fail closed) when any invariant entry's `text` is absent from or altered in `rendered_text`, and return cleanly when all are present verbatim.
+1. REQUIREMENT [BEHAVIOR]: Given a corpus carrying the canonical invariants (PRIME DIRECTIVE, DO IT RIGHT, NEVER PYTEST) as `tier: invariant` entries, when a rendition is produced at the **leanest** setpoint (`lite`), then all three texts survive verbatim — the 0-Kelvin floor holds at the most aggressive compression.
+1. REQUIREMENT [BEHAVIOR]: `tier_policy` MUST be the single, composer-consumable enforcement surface — a test MUST demonstrate that a candidate rendition dropping/combining/rewriting an invariant-tier entry is rejected by the policy exactly as the composer's compression path would call it (centralized enforcement, no duplicated inline check).
+1. REQUIREMENT [SUPPORT]: `docs/governance/agent-control-surface-rendering-substrate.md` MUST document the invariant-tier 0-Kelvin floor as a first-class guarantee — proven by `uv run gz validate --documents` plus the `artifact_edited` event for the doc.
+1. NEVER: weaken, special-case, or bypass the invariant-tier floor; introduce an LLM/network call into the policy; or modify the corpus model.
+1. ALWAYS: reconcile the brief with the parent ADR (`uv run gz validate --brief-reconcile`) before implementation begins.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -52,31 +81,38 @@ OBPI-0.0.37-23 — Invariant tier (verbatim, never condense) (`tier: invariant` 
 
 **Parent ADR (read first; order pinned — GHI #321):**
 
-- [ ] **Parent ADR § Decision item — quote the line this OBPI implements** verbatim into the brief's Implementation Summary. The Decision item is the contract; everything else hangs off it.
-- [ ] Parent ADR § Intent — the why-frame for the Decision read above.
+- [ ] **Parent ADR § Decision item — quote the line this OBPI implements** verbatim into the brief's Implementation Summary. The contract: "Invariant tier (verbatim, never condense) (`tier: invariant` entries emit verbatim at every setpoint; test asserts PRIME DIRECTIVE / DO IT RIGHT / NEVER PYTEST survive at the leanest setpoint; the 0-Kelvin floor made first-class)" (Checklist item #23; § Decision Re-Alignment 2026-06-03, point 5 "Invariant tier (0-Kelvin floor)").
+- [ ] Parent ADR § Decision Re-Alignment point 5 — the verbatim-at-every-setpoint contract and the immutable-upstream-system-prompt analogy.
 - [ ] Parent ADR file: `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 
-> **STOP:** If you cannot quote the parent ADR § Decision item that this OBPI implements, STOP and re-read. Do not proceed to Allowed Paths, Prerequisites, or implementation until the Decision quote is in hand.
+> **STOP:** If you cannot quote the parent ADR § Decision item that this OBPI implements, STOP and re-read. Do not proceed until the Decision quote is in hand.
 
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [ ] `AGENTS.md` § PRIME DIRECTIVE, § DO IT RIGHT, § STDLIB-FIRST (forbid-pytest) — the verbatim invariant texts the survival test anchors against
+- [ ] `.gzkit/rules/tests.md` — the `forbid-pytest` ("NEVER PYTEST") invariant source
+- [ ] `.gzkit/rules/models.md` + `.gzkit/rules/tests.md` § "Tests assert semantics, not strings" — derive the survival assertion from the REQ, not from a render
 
 **Context:**
 
-- [ ] Related OBPIs in same ADR
+- [ ] OBPI-0.0.37-18 (corpus model) — `CorpusEntry.tier` already exists; `Corpus.validate_against` defers invariant presence enforcement to this OBPI
+- [ ] OBPI-0.0.37-21 (composer) — the consumer of `tier_policy`; this OBPI deepens 21's inline floor into the shared policy
+- [ ] OBPI-0.0.37-25 (bullet-retention tier-scoped) — the validator that asserts verbatim presence on the invariant tier; coordinates with this policy
+- [ ] OBPI-0.0.37-22 (playback) — playback also honors the invariant floor; coordinated, not modified here
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
+- [ ] `src/gzkit/content/models/corpus.py` exists with `CorpusEntry.tier` = `Literal["invariant", "compressible"]` (OBPI-18, attested-complete)
+- [ ] `src/gzkit/content/corpus_store.py` exists with `load_corpus` (OBPI-19, attested-complete)
+- [ ] `src/gzkit/content/vendors.py` exists with `SETPOINT_TOKENS` including `lite` (the leanest setpoint) (OBPI-20, attested-complete)
+- [ ] `src/gzkit/content/composer.py` exists (OBPI-21) — its invariant-floor check is the seam this OBPI centralizes
 
 **Existing Code (understand current state):**
 
-- [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
-- [ ] Parent ADR integration points reviewed for local conventions
+- [ ] `src/gzkit/content/models/corpus.py` — the `tier`/`text` fields + `validate_against`'s deferral note
+- [ ] `tests/content/test_corpus_store.py` + `tests/content/test_corpus_model.py` — the unittest + `tempfile` + `@covers` convention for content tests
+- [ ] `src/gzkit/content/composer.py` (OBPI-21, if landed) — the consumer of `tier_policy`; review its invariant-floor seam for the wiring direction (see § Tracked Defects)
+- [ ] `AGENTS.md` PRIME DIRECTIVE (lines ~31-46) + DO IT RIGHT (lines ~48-65) — the verbatim invariant texts the survival test references
 
 ## Quality Gates
 
@@ -100,39 +136,47 @@ OBPI-0.0.37-23 — Invariant tier (verbatim, never condense) (`tier: invariant` 
 ### Gate 3: Docs (Heavy only)
 
 - [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [ ] `docs/governance/agent-control-surface-rendering-substrate.md` documents the invariant-tier floor
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] Acceptance scenarios pass / waived: REQ-01/02/03 are unit-proven engine behavior; REQ-04 is SUPPORT (doc). Behave coverage waived per the OBPI-level waiver (no Gherkin-observable CLI surface — this OBPI ships no new verb).
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [ ] Human attestation recorded (mandatory; foundation/heavy; no self-close)
 
 ## Verification
 
 ```bash
+uv run gz validate --brief-reconcile
 uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
+uv run mkdocs build --strict
 
 # Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md
+test -f src/gzkit/content/tier_policy.py
+uv run -m unittest tests.content.test_tier_policy -v
 ```
 
 ## Demo
 
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+# The named invariants survive verbatim at the leanest setpoint (0-Kelvin floor)
+uv run -m unittest tests.content.test_tier_policy.TestInvariantSurvivesLeanestSetpoint -v
+
+# The policy fails closed when an invariant entry would be dropped/rewritten
+uv run python -c "from gzkit.content import tier_policy; help(tier_policy.assert_invariant_verbatim)"
 ```
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.37-23-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.37-23-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.37-23-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.37-23-01 [BEHAVIOR]: Given a corpus with mixed-tier entries, when `tier_policy.invariant_entries` and `assert_invariant_verbatim` run, then the accessor returns exactly the `tier: invariant` rows and the assertion raises on any absent/altered invariant text and passes when all are verbatim. Proof: `@covers`-decorated test in `tests/content/test_tier_policy.py`.
+- [ ] REQ-0.0.37-23-02 [BEHAVIOR]: Given a corpus carrying PRIME DIRECTIVE / DO IT RIGHT / NEVER PYTEST as `tier: invariant` entries, when a rendition is produced at the leanest setpoint (`lite`), then all three texts survive verbatim. Proof: `@covers`-decorated survival test.
+- [ ] REQ-0.0.37-23-03 [BEHAVIOR]: Given a candidate rendition that drops/combines/rewrites an invariant-tier entry, when the shared `tier_policy` enforcement (the surface the composer consumes) is applied, then the candidate is rejected — proving centralized enforcement, not a duplicated inline check. Proof: `@covers`-decorated composer-equivalent enforcement test in `tests/content/test_tier_policy.py`.
+- [ ] REQ-0.0.37-23-04 [SUPPORT]: Given the substrate doctrine doc, when the OBPI is complete, then `docs/governance/agent-control-surface-rendering-substrate.md` documents the invariant-tier 0-Kelvin floor as first-class — proven by `uv run gz validate --documents` plus the `artifact_edited` event for the doc.
 
 ## Completion Checklist
 
@@ -172,7 +216,7 @@ test -f docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-compositi
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+# Behave waived for this OBPI — see Gate 4 above and data/behave_coverage_waivers.json
 ```
 
 ### Gate 5 (Human)
@@ -182,6 +226,8 @@ test -f docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-compositi
 ```
 
 ### Value Narrative
+
+<!-- What problem existed before this OBPI, and what capability exists now? -->
 
 ### Key Proof
 
@@ -195,7 +241,9 @@ test -f docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-compositi
 
 ## Tracked Defects
 
-_No defects tracked._
+**21 ↔ 23 enforcement-wiring seam (ADR sequencing tension, surfaced not silently owned).** The parent ADR sequences OBPI-21 (composer) before OBPI-23, yet says 21's invariant floor is *"deepened by OBPI-23."* `tier_policy` is the canonical floor; the composer (`src/gzkit/content/composer.py`, OBPI-21's create) must consume it. This brief deliberately does **not** list `composer.py` as an edit path — it does not exist at authoring time, and silently editing a sibling OBPI's create is the boundary-collision pattern Behavior Rule Always #9 forbids. Resolution to ratify at Stage 1 brief-reconcile: either (a) implement OBPI-23's `tier_policy` first so OBPI-21's composer imports it from the start, or (b) if OBPI-21 lands first with an inline check, the brief-reconcile pass when OBPI-23 lands re-points the composer to `tier_policy` as a coupled-surface edit. Either way the wiring is operator-sequenced, not assumed here. **23 ↔ 27 doc coupling:** this OBPI adds a narrow invariant-tier subsection to the substrate doc; OBPI-27 does the broader mechanism refresh of the same file. Both are sequenced edits to different subsections. Confirm both seams at Stage 1 brief-reconcile.
+
+_No further defects tracked._
 
 ## Human Attestation
 
