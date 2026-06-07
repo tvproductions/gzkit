@@ -5,9 +5,9 @@ description: Run a gzkit chore end-to-end (show, plan, advise, execute, validate
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-12
+last_reviewed: 2026-06-07
 metadata:
-  skill-version: "1.1.2"
+  skill-version: "1.2.0"
 model: sonnet
 ---
 
@@ -76,6 +76,13 @@ Execute a repository chore using the canonical `gz chores` workflow.
 
    ```bash
    uv run gz chores run <chore_slug>
+   ```
+
+8. If the chore surfaced a finding that warrants tracking as a GHI, propose
+   one using the chore's eval-feedback output:
+
+   ```bash
+   uv run gz chores propose-ghi <chore_slug>
    ```
 
 8. Audit the logged result:

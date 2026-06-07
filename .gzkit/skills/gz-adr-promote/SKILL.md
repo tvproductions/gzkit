@@ -5,9 +5,9 @@ description: Promote a pool ADR into canonical ADR package structure. Use when m
 category: adr-lifecycle
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-30
+last_reviewed: 2026-06-07
 metadata:
-  skill-version: "1.5.0"
+  skill-version: "1.6.0"
 model: sonnet
 ---
 
@@ -111,6 +111,20 @@ These thoughts mean STOP — you are about to violate the architectural boundary
 - No `artifact_renamed` ledger event recorded
 - Promote run without `--dry-run` first when target version is uncertain
 - Decomposition Protocol skipped or applied superficially
+
+## Demote (inverse lifecycle)
+
+`gz adr demote` reverses a promotion — moves an active pre-release ADR back to
+the pool tier when the design intent needs re-scoping or the version slot must
+be freed. Use when a promote was premature or the ADR needs fundamental rework.
+
+```bash
+# Demote a feature ADR back to pool (requires --ghi to anchor the reason)
+uv run gz adr demote ADR-0.27.0-arb-receipt-system-absorption --ghi 520
+
+# Dry-run first to preview the demotion plan
+uv run gz adr demote ADR-0.27.0-arb-receipt-system-absorption --ghi 520 --dry-run
+```
 
 ## Example
 

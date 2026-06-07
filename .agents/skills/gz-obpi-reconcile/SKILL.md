@@ -5,14 +5,14 @@ description: OBPI brief reconciliation — Audit briefs against evidence, fix st
 category: obpi-pipeline
 compatibility: GovZero v6 framework with OBPI briefs
 metadata:
-  skill-version: "3.0.3"
+  skill-version: "3.1.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   skill-type: "orchestrator"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-03
+last_reviewed: 2026-06-07
 model: sonnet
 ---
 
@@ -121,35 +121,34 @@ These thoughts mean STOP — you are about to skip evidence-backed verification:
 
 **Goal:** Verify brief status reflects actual work completion.
 
-For each `OBPI-{id}-*.md` brief:
+Use `gz obpi audit` as the deterministic evidence step — it locates tests,
+runs them, measures coverage, evaluates criteria, and appends the
+`obpi-audit` ledger entry in one call. The ledger schema it emits matches
+the Ledger Schema v1 documented below (`obpi_audit_cmd._build_entry`).
 
-```text
-Agent action:
-1. READ brief file via Read tool
-   - Read(file_path="<absolute brief path>")
-   - Extract: Status, Lane, Acceptance Criteria, Parent ADR
+```bash
+# Audit a single OBPI
+uv run gz obpi audit OBPI-X.Y.Z-NN
 
-2. SEARCH for evidence via Grep tool (cross-platform)
-   - Grep(pattern="@covers.*ADR-X.Y.Z", path="tests/")
-   - Grep(pattern="OBPI-X.Y.Z-NN", path="tests/")
-   - Identify test files by Grep matches; do NOT shell out to `grep`
+# Audit all OBPIs for an ADR in one pass
+uv run gz obpi audit --adr ADR-X.Y.Z
 
-3. RUN tests (if found) via Bash tool
-   - Bash: uv run -m unittest -v {test_module}
-   - Record: pass/fail, test count
+# JSON output for programmatic consumption
+uv run gz obpi audit OBPI-X.Y.Z-NN --json
+```
 
-4. MEASURE coverage via Bash tool
-   - Bash: uv run coverage run -m unittest {test_module}
-   - Bash: uv run coverage report --include='{module}'
-   - Record: percentage vs 40% threshold
+After the audit, emit the reconcile receipt using:
 
-5. EVALUATE criteria
-   - Map each criterion to evidence
-   - Determine PASS/FAIL for each
+```bash
+uv run gz obpi emit-receipt OBPI-X.Y.Z-NN --event validated
+```
 
-6. WRITE ledger entry via Bash tool (CLI emits the event)
-   - Bash: uv run gz adr emit-receipt ... (or the brief-update path)
-   - Do NOT hand-edit logs/obpi-audit.jsonl
+**Phantom OBPI remediation:** If Phase 1 surfaces an OBPI that exists in
+the ledger graph (via `obpi_created` event) but has no on-disk brief file,
+use `gz obpi withdraw` to clean it from the graph before Phase 2:
+
+```bash
+uv run gz obpi withdraw OBPI-X.Y.Z-NN --reason "phantom entry from promotion"
 ```
 
 **Output:** Each brief verified, ledger populated with proof.

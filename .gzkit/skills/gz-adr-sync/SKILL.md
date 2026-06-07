@@ -4,14 +4,14 @@ description: End-to-end ADR governance sync — discover @covers evidence, recon
 category: adr-operations
 compatibility: GovZero v6 framework
 metadata:
-  skill-version: "7.0.0"
+  skill-version: "7.1.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
 gz_command: register-adrs
 invocation: uv run gz register-adrs
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-07
+last_reviewed: 2026-06-07
 model: haiku
 ---
 
@@ -43,8 +43,8 @@ uv run gz status
 Reconciles a single ADR and its OBPIs. Use when verifying evidence gaps or preparing a specific ADR for closeout.
 
 ```bash
-# Layer 1 — discover coverage for target
-rg -n '@covers\("ADR-<X.Y.Z>"' tests
+# Layer 1 — discover @covers annotations for target ADR
+uv run gz adr covers-check ADR-<X.Y.Z>
 
 # Layer 2 — ledger reconciliation for target
 uv run gz adr status ADR-<X.Y.Z> --json

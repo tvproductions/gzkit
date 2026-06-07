@@ -68,65 +68,20 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "A dedicated gz-governance-render skill is deferred to a subsequent feature ADR "
         "once the full governance command group lands (OBPI-03 through OBPI-10)."
     ),
-    # Multi-word subcommand waivers (GHI #588). These leaves live under groups
-    # that are NOT group-waived (obpi/adr/arb/chores/skill all have wielded
-    # siblings), so each needs an explicit, attested reason for having no
-    # dedicated wielding skill — see `.gzkit/rules/tool-skill-runbook-alignment.md`
-    # Invariant 1. Before GHI #588 these passed by invisibility (the enumerator
-    # walked top-level verbs only); now they are visible and attested.
+    # Multi-word hyphen aliases for deprecated `obpi lock-*` verbs.
+    # Parser registration and doc-cascade deletion is OBPI-0.0.67-03 scope.
     "obpi lock-claim": (
         "Deprecated hyphen alias of `gz obpi lock claim` (space subgroup); the "
-        "canonical space form is wielded by gz-obpi-lock. Alias removal is a "
-        "separate doc-cascade cleanup (manpages/doc-coverage/mkdocs)."
+        "canonical space form is wielded by gz-obpi-lock. Alias removal is "
+        "OBPI-0.0.67-03 (parser + doc cascade)."
     ),
     "obpi lock-release": (
         "Deprecated hyphen alias of `gz obpi lock release`; the canonical space "
-        "form is wielded by gz-obpi-lock."
+        "form is wielded by gz-obpi-lock. Alias removal is OBPI-0.0.67-03."
     ),
     "obpi lock-status": (
         "Deprecated hyphen alias of `gz obpi lock list`/`check`; the canonical "
-        "space subgroup is wielded by gz-obpi-lock."
-    ),
-    "obpi audit": (
-        "OBPI ledger audit; mediated at the lifecycle level by gz-obpi-pipeline "
-        "and gz-obpi-reconcile (which absorbed gz-obpi-audit), not surfaced as a "
-        "per-verb skill."
-    ),
-    "obpi status": (
-        "OBPI state query; surfaced through gz-obpi-reconcile and pipeline status "
-        "reporting rather than a dedicated per-verb skill."
-    ),
-    "obpi emit-receipt": (
-        "OBPI receipt emission; driven by the OBPI pipeline/reconcile flow. The "
-        "gz-adr-emit-receipt sibling covers ADR receipts; there is no separate "
-        "OBPI-receipt skill."
-    ),
-    "obpi withdraw": (
-        "OBPI withdrawal lifecycle op; mediated by gz-obpi-reconcile, not a standalone skill."
-    ),
-    "adr demote": (
-        "Inverse of `gz adr promote`; rare pool-demotion/cleanup op. gz-adr-promote "
-        "covers the forward direction; demotion has no dedicated skill."
-    ),
-    "adr covers-check": (
-        "ADR-scoped @covers coverage inspection; consumed by gz-adr-audit / "
-        "gz-adr-sync workflows and tests (sibling of the waived `covers` verb)."
-    ),
-    "arb ty": (
-        "Short alias of `gz arb typecheck`; the canonical `arb typecheck` form is "
-        "wielded by gz-arb and the attestation canon (CANONICAL_STEP_COMMANDS)."
-    ),
-    "chores propose-ghi": (
-        "Internal chore->GHI proposal sub-step (ADR-0.0.26 eval-feedback loop); "
-        "orchestrated inside the chore runner, not a standalone skill."
-    ),
-    "skill list": (
-        "Skill catalog listing for discovery (referenced in AGENTS.md). "
-        "gz-skill-router routes operators to skills; this is the raw catalog query."
-    ),
-    "skill new": (
-        "Skill scaffolding/authoring developer affordance (parallel to the waived "
-        "`init`); no operator skill mediates skill creation."
+        "space subgroup is wielded by gz-obpi-lock. Alias removal is OBPI-0.0.67-03."
     ),
 }
 

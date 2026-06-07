@@ -5,9 +5,9 @@ description: Route agents to the correct skill for a given task type. Use when s
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-19
+last_reviewed: 2026-06-07
 metadata:
-  skill-version: "6.0.3"
+  skill-version: "6.1.0"
   govzero-framework-version: "v6"
 model: haiku
 ---
@@ -124,6 +124,18 @@ Task arrives
 | parity, airlineops | `airlineops-parity-scan` |
 
 ---
+
+## Skill Catalog Commands
+
+Use these to discover and scaffold skills directly from the CLI:
+
+```bash
+# List all active skills in the catalog
+uv run gz skill list
+
+# Scaffold a new skill stub under .gzkit/skills/
+uv run gz skill new <slug>
+```
 
 ## Staleness Warning
 

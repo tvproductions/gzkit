@@ -5,11 +5,11 @@ description: Wrap QA commands in ARB receipts for attestation evidence. Use when
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-18
+last_reviewed: 2026-06-07
 model: haiku
 gz_command: arb advise
 metadata:
-  skill-version: "1.0.2"
+  skill-version: "1.1.0"
 revived_on: "2026-04-14"
 revived_under: OBPI-0.25.0-33
 revival_note: "ARB surface absorbed from airlineops/opsdev/arb under OBPI-0.25.0-33. The earlier retirement (2026-04-03, 'consolidated into gz-check') was itself drift — gz check never implemented ARB receipt emission, so the rule contract in .gzkit/rules/arb.md was referencing a nonexistent surface. Revival restores parity with the rule."
@@ -45,6 +45,10 @@ Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage)
    - `uv run gz arb step --name <name> -- <command>` — any step not named
      in the canonical table (diagnostic or bespoke QA only; not valid
      attestation provenance)
+   - `uv run gz arb ty` — raw `uvx ty check` passthrough; **not** an alias
+     of `gz arb typecheck` (which wraps `ty check src` with the ARB schema).
+     Use `gz arb ty` when you need the raw `ty` output without ARB receipt
+     emission, or to pass custom `ty` flags directly.
 2. **Validate the emitted receipts** — `uv run gz arb validate --limit 20`
 3. **Summarize recent receipts** — `uv run gz arb advise --limit 20`
 4. **Extract recurring patterns** (optional) — `uv run gz arb patterns`
