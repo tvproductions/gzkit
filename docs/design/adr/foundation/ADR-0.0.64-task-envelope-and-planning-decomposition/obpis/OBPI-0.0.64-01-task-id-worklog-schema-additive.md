@@ -4,6 +4,49 @@ parent: ADR-0.0.64-task-envelope-and-planning-decomposition
 item: 1
 lane: Heavy
 status: Completed
+ln:
+  - req_id: REQ-0.0.64-01-01
+    receipt_ids:
+      - arb-ruff-e14298b991fd41fa8918abfac1b8e98e
+      - arb-step-mkdocs-43316414e55548d9bd562e7089b182de
+      - arb-step-typecheck-465802effa20489196260e273326cc5a
+      - arb-step-unittest-68ca0cb8031847d89df2188b8625cd5c
+      - arb-step-unittest-98e2ca87e3214421b910b90aa4beb112
+  - req_id: REQ-0.0.64-01-02
+    receipt_ids:
+      - arb-ruff-e14298b991fd41fa8918abfac1b8e98e
+      - arb-step-mkdocs-43316414e55548d9bd562e7089b182de
+      - arb-step-typecheck-465802effa20489196260e273326cc5a
+      - arb-step-unittest-68ca0cb8031847d89df2188b8625cd5c
+      - arb-step-unittest-98e2ca87e3214421b910b90aa4beb112
+  - req_id: REQ-0.0.64-01-03
+    receipt_ids:
+      - arb-ruff-e14298b991fd41fa8918abfac1b8e98e
+      - arb-step-mkdocs-43316414e55548d9bd562e7089b182de
+      - arb-step-typecheck-465802effa20489196260e273326cc5a
+      - arb-step-unittest-68ca0cb8031847d89df2188b8625cd5c
+      - arb-step-unittest-98e2ca87e3214421b910b90aa4beb112
+  - req_id: REQ-0.0.64-01-04
+    receipt_ids:
+      - arb-ruff-e14298b991fd41fa8918abfac1b8e98e
+      - arb-step-mkdocs-43316414e55548d9bd562e7089b182de
+      - arb-step-typecheck-465802effa20489196260e273326cc5a
+      - arb-step-unittest-68ca0cb8031847d89df2188b8625cd5c
+      - arb-step-unittest-98e2ca87e3214421b910b90aa4beb112
+  - req_id: REQ-0.0.64-01-05
+    receipt_ids:
+      - arb-ruff-e14298b991fd41fa8918abfac1b8e98e
+      - arb-step-mkdocs-43316414e55548d9bd562e7089b182de
+      - arb-step-typecheck-465802effa20489196260e273326cc5a
+      - arb-step-unittest-68ca0cb8031847d89df2188b8625cd5c
+      - arb-step-unittest-98e2ca87e3214421b910b90aa4beb112
+  - req_id: REQ-0.0.64-01-06
+    receipt_ids:
+      - arb-ruff-e14298b991fd41fa8918abfac1b8e98e
+      - arb-step-mkdocs-43316414e55548d9bd562e7089b182de
+      - arb-step-typecheck-465802effa20489196260e273326cc5a
+      - arb-step-unittest-68ca0cb8031847d89df2188b8625cd5c
+      - arb-step-unittest-98e2ca87e3214421b910b90aa4beb112
 ---
 
 # OBPI-0.0.64-01-task-id-worklog-schema-additive: Task Id Worklog Schema Additive

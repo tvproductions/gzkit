@@ -4,6 +4,43 @@ parent: ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine
 item: 2
 lane: Heavy
 status: Completed
+ln:
+  - req_id: REQ-0.0.54-02-01
+    receipt_ids:
+      - arb-ruff-9babe7e2ea53458db24a1e57d44e706a
+      - arb-step-mkdocs-d1a02fb52e864a08848da15952ead9a7
+      - arb-step-typecheck-58d5977145044484acb284ae11c7bdf8
+      - arb-step-unittest-225804e8940c476ebb36b88dcc016bc4
+  - req_id: REQ-0.0.54-02-02
+    receipt_ids:
+      - arb-ruff-9babe7e2ea53458db24a1e57d44e706a
+      - arb-step-mkdocs-d1a02fb52e864a08848da15952ead9a7
+      - arb-step-typecheck-58d5977145044484acb284ae11c7bdf8
+      - arb-step-unittest-225804e8940c476ebb36b88dcc016bc4
+  - req_id: REQ-0.0.54-02-03
+    receipt_ids:
+      - arb-ruff-9babe7e2ea53458db24a1e57d44e706a
+      - arb-step-mkdocs-d1a02fb52e864a08848da15952ead9a7
+      - arb-step-typecheck-58d5977145044484acb284ae11c7bdf8
+      - arb-step-unittest-225804e8940c476ebb36b88dcc016bc4
+  - req_id: REQ-0.0.54-02-04
+    receipt_ids:
+      - arb-ruff-9babe7e2ea53458db24a1e57d44e706a
+      - arb-step-mkdocs-d1a02fb52e864a08848da15952ead9a7
+      - arb-step-typecheck-58d5977145044484acb284ae11c7bdf8
+      - arb-step-unittest-225804e8940c476ebb36b88dcc016bc4
+  - req_id: REQ-0.0.54-02-05
+    receipt_ids:
+      - arb-ruff-9babe7e2ea53458db24a1e57d44e706a
+      - arb-step-mkdocs-d1a02fb52e864a08848da15952ead9a7
+      - arb-step-typecheck-58d5977145044484acb284ae11c7bdf8
+      - arb-step-unittest-225804e8940c476ebb36b88dcc016bc4
+  - req_id: REQ-0.0.54-02-06
+    receipt_ids:
+      - arb-ruff-9babe7e2ea53458db24a1e57d44e706a
+      - arb-step-mkdocs-d1a02fb52e864a08848da15952ead9a7
+      - arb-step-typecheck-58d5977145044484acb284ae11c7bdf8
+      - arb-step-unittest-225804e8940c476ebb36b88dcc016bc4
 ---
 
 # OBPI-0.0.54-02-lift-agents-md-sections: Lift the Named Sections from AGENTS.md to `docs/governance/`

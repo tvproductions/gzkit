@@ -1,0 +1,47 @@
+{
+  "adr_id": "ADR-0.0.41-token-block-lock-discipline",
+  "current_step": 6,
+  "is_foundation": true,
+  "started_at": "2026-06-07T07:57:13Z",
+  "updated_at": "2026-06-07T09:16:02Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-06-07T07:57:13Z",
+      "acknowledged_at": "2026-06-07T07:57:18Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-06-07T07:57:18Z",
+      "acknowledged_at": "2026-06-07T08:08:36Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-06-07T08:08:36Z",
+      "acknowledged_at": "2026-06-07T08:12:00Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-06-07T08:12:00Z",
+      "acknowledged_at": "2026-06-07T08:53:45Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-06-07T08:53:45Z",
+      "acknowledged_at": "2026-06-07T09:12:21Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-06-07T09:12:21Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz adr status ADR-0.0.41-token-block-lock-discipline --json"
+  ],
+  "walkthrough_index": 0,
+  "attestation": null,
+  "completed_at": null,
+  "attempt": 1,
+  "paused_at": "2026-06-07T09:16:02Z"
+}
