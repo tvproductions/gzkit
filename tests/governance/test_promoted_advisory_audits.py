@@ -297,6 +297,24 @@ class PromotedAdvisoryAudits(unittest.TestCase):
     def test_skill_alignment_invariant_1(self) -> None:
         self._assert_clean(audit_skill_alignment(_PROJECT_ROOT), "skill_alignment")
 
+    def test_skill_alignment_enumerates_multiword_subcommands(self) -> None:
+        """Invariant 1 must cover multi-word subcommands, not just top-level verbs.
+
+        Regression guard for the top-level-only enumeration defect (GHI #588):
+        ``_known_cli_verbs`` walked only the top-level subparser choices, so
+        ``gz obpi complete`` / ``gz adr status`` style verbs were structurally
+        invisible to the orphan check and passed green by invisibility rather
+        than by a wielding skill or an attested waiver. The path enumerator
+        must reach nested subparsers, and every enumerated verb must be either
+        wielded or waived (audit clean on the live tree).
+        """
+        from gzkit.governance.trust_audits.cli import _known_cli_verb_paths
+
+        paths = _known_cli_verb_paths()
+        for verb in ("obpi complete", "adr status", "obpi lock claim"):
+            self.assertIn(verb, paths, f"multi-word verb `gz {verb}` not enumerated")
+        self._assert_clean(audit_skill_alignment(_PROJECT_ROOT), "skill_alignment")
+
     def test_advisory_scorecard_selftest(self) -> None:
         self._assert_clean(audit_advisory_scorecard(_PROJECT_ROOT), "advisory_scorecard")
 

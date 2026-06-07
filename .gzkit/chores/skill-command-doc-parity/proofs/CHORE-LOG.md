@@ -431,3 +431,72 @@ Ran 4671 tests in 93.768s
 
 OK (skipped=2)
 ```
+## 2026-06-07T12:31:50-05:00
+- Status: PASS
+- Chore: skill-command-doc-parity
+- Title: Skill & Command Documentation Parity
+- Lane: heavy
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run gz cli audit` => rc=0 (6.13s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --documents --surfaces` => rc=0 (5.88s) -- exit 0 == 0
+  - [PASS] `uv run -m unittest -q` => rc=0 (257.25s) -- exit 0 == 0
+
+```text
+[uv run gz cli audit] stdout:
+CLI audit passed.
+Cross-coverage: 107/107 commands fully covered.
+[uv run gz validate --documents --surfaces] stdout:
+Validated: surfaces, documents
+
+✓ All validations passed (2 scopes).
+[uv run -m unittest -q] stdout:
+=== Operator-Verbatim Uncovered REQ Acceptance (GHI #587) ===
+  OBPI:     OBPI-9.9.9-99-fixture
+  ADR:      ADR-9.9.9-fixture
+  Attestor: g0
+  Waiving:  REQ-9.9.9-99-01
+  Operator-verbatim authorization carried on the CLI via 
+--accept-uncovered-reason (canon-owner directive 2026-05-14).
+Error: OBPI completion REQ-coverage gate failed (heavy/foundation policy).
+  - uncovered: REQ-9.9.9-01-01
+Recovery: add a `@covers(REQ-X.Y.Z-NN-MM)` test for each gap, or fix the 
+failing covering tests, then re-run completion.
+--bypass-req-kind-discipline-once requires --bypass-reason
+[uv run -m unittest -q] stderr:
+[1/1] Test
+C:\Users\Jeff\source\repos\va\gzkit\src\gzkit\pipeline_runtime.py:376: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+Fidelity validation failed [surface-weight]: Surface weight limit exceeded
+File not written.
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+Exception in thread Thread-567 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\Jeff\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\Jeff\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Jeff\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1615, in _readerthread
+    buffer.append(fh.read())
+                  ~~~~~~~^^
+  File "C:\Users\Jeff\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d in position 29: character maps to <undefined>
+C:\Users\Jeff\source\repos\va\gzkit\tests\governance\test_closeout_proof_binding.py:143: DeprecationWarning: Brief 'OBPI-0.0.99-01-test.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  result = parse_brief(brief)
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+WARNING: releasing OBPI-0.0.14-01 without a register entry and without --abandon. The token-block doctrine requires a register entry on every surrender (see `gz-session-handoff` skill). OBPI-0.0.41-03 will flip this path to fail-closed.
+WARNING: releasing OBPI-0.0.14-01 without a register entry and without --abandon. The token-block doctrine requires a register entry on every surrender (see `gz-session-handoff` skill). OBPI-0.0.41-03 will flip this path to fail-closed.
+WARNING: releasing OBPI-0.0.14-01 without a register entry and without --abandon. The token-block doctrine requires a register entry on every surrender (see `gz-session-handoff` skill). OBPI-0.0.41-03 will flip this path to fail-closed.
+C:\Users\Jeff\source\repos\va\gzkit\src\gzkit\pipeline_runtime.py:376: DeprecationWarning: Brief 'OBPI-0.0.37-07-test.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+----------------------------------------------------------------------
+Ran 5951 tests in 249.202s
+
+OK (skipped=1)
+```

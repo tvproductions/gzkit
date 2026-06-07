@@ -68,6 +68,66 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "A dedicated gz-governance-render skill is deferred to a subsequent feature ADR "
         "once the full governance command group lands (OBPI-03 through OBPI-10)."
     ),
+    # Multi-word subcommand waivers (GHI #588). These leaves live under groups
+    # that are NOT group-waived (obpi/adr/arb/chores/skill all have wielded
+    # siblings), so each needs an explicit, attested reason for having no
+    # dedicated wielding skill — see `.gzkit/rules/tool-skill-runbook-alignment.md`
+    # Invariant 1. Before GHI #588 these passed by invisibility (the enumerator
+    # walked top-level verbs only); now they are visible and attested.
+    "obpi lock-claim": (
+        "Deprecated hyphen alias of `gz obpi lock claim` (space subgroup); the "
+        "canonical space form is wielded by gz-obpi-lock. Alias removal is a "
+        "separate doc-cascade cleanup (manpages/doc-coverage/mkdocs)."
+    ),
+    "obpi lock-release": (
+        "Deprecated hyphen alias of `gz obpi lock release`; the canonical space "
+        "form is wielded by gz-obpi-lock."
+    ),
+    "obpi lock-status": (
+        "Deprecated hyphen alias of `gz obpi lock list`/`check`; the canonical "
+        "space subgroup is wielded by gz-obpi-lock."
+    ),
+    "obpi audit": (
+        "OBPI ledger audit; mediated at the lifecycle level by gz-obpi-pipeline "
+        "and gz-obpi-reconcile (which absorbed gz-obpi-audit), not surfaced as a "
+        "per-verb skill."
+    ),
+    "obpi status": (
+        "OBPI state query; surfaced through gz-obpi-reconcile and pipeline status "
+        "reporting rather than a dedicated per-verb skill."
+    ),
+    "obpi emit-receipt": (
+        "OBPI receipt emission; driven by the OBPI pipeline/reconcile flow. The "
+        "gz-adr-emit-receipt sibling covers ADR receipts; there is no separate "
+        "OBPI-receipt skill."
+    ),
+    "obpi withdraw": (
+        "OBPI withdrawal lifecycle op; mediated by gz-obpi-reconcile, not a standalone skill."
+    ),
+    "adr demote": (
+        "Inverse of `gz adr promote`; rare pool-demotion/cleanup op. gz-adr-promote "
+        "covers the forward direction; demotion has no dedicated skill."
+    ),
+    "adr covers-check": (
+        "ADR-scoped @covers coverage inspection; consumed by gz-adr-audit / "
+        "gz-adr-sync workflows and tests (sibling of the waived `covers` verb)."
+    ),
+    "arb ty": (
+        "Short alias of `gz arb typecheck`; the canonical `arb typecheck` form is "
+        "wielded by gz-arb and the attestation canon (CANONICAL_STEP_COMMANDS)."
+    ),
+    "chores propose-ghi": (
+        "Internal chore->GHI proposal sub-step (ADR-0.0.26 eval-feedback loop); "
+        "orchestrated inside the chore runner, not a standalone skill."
+    ),
+    "skill list": (
+        "Skill catalog listing for discovery (referenced in AGENTS.md). "
+        "gz-skill-router routes operators to skills; this is the raw catalog query."
+    ),
+    "skill new": (
+        "Skill scaffolding/authoring developer affordance (parallel to the waived "
+        "`init`); no operator skill mediates skill creation."
+    ),
 }
 
 
@@ -161,40 +221,87 @@ def _collect_skill_verb_refs(
     return refs
 
 
+def _known_cli_verb_paths() -> frozenset[str]:
+    """Return every registered leaf command path, recursing into nested subparsers.
+
+    Unlike :func:`_known_cli_verbs` (top-level choices only), this walks the
+    full argparse tree and returns space-joined leaf paths — e.g. ``"state"``,
+    ``"adr status"``, ``"obpi lock claim"``. Invariant 1 enforces against this
+    full surface so multi-word subcommands cannot pass the orphan check by
+    invisibility (GHI #588).
+    """
+    import argparse  # noqa: PLC0415
+
+    from gzkit.cli.main import _build_parser  # noqa: PLC0415
+
+    def _subaction(parser):
+        for action in parser._actions:  # noqa: SLF001 — argparse provides no public API
+            if isinstance(action, argparse._SubParsersAction):
+                return action
+        return None
+
+    def _walk(parser, prefix: str) -> set[str]:
+        sub = _subaction(parser)
+        if sub is None:
+            return {prefix} if prefix else set()
+        leaves: set[str] = set()
+        for name, subparser in sub.choices.items():
+            leaves |= _walk(subparser, f"{prefix} {name}".strip())
+        return leaves
+
+    return frozenset(_walk(_build_parser(), ""))
+
+
+def _verb_path_waived(path: str) -> bool:
+    """A verb path is waived by an exact entry or by a top-level group key.
+
+    Group keys (e.g. ``"task"``) cascade to every subcommand beneath them —
+    they declare the whole namespace intentionally skill-less.
+    """
+    return path in _NO_SKILL_VERBS or path.split(" ", 1)[0] in _NO_SKILL_VERBS
+
+
+def _waiver_targets_live_verb(key: str, verb_paths: frozenset[str]) -> bool:
+    """Return ``True`` if a waiver key still names a registered verb or group."""
+    return any(p == key or p.startswith(f"{key} ") for p in verb_paths)
+
+
 def audit_skill_alignment(project_root: Path) -> list[ValidationError]:
-    """Invariant 1: every CLI verb is referenced by at least one skill.
+    """Invariant 1: every registered CLI verb is referenced by at least one skill.
 
     Scans ``.gzkit/skills/**/SKILL.md`` (authored source) frontmatter
-    (``gz_command:``) and body prose for each registered top-level CLI verb.
-    A verb with no wielding skill and no explicit waiver is a defect signal per
+    (``gz_command:``) and body prose for each registered CLI verb path —
+    including multi-word subcommands (``gz obpi complete``, ``gz adr status``),
+    not just top-level verbs (GHI #588). A verb with no wielding skill and no
+    explicit (or group-cascading) waiver is a defect signal per
     ``.gzkit/rules/tool-skill-runbook-alignment.md``.
     """
     skills_root = project_root / ".gzkit" / "skills"
     if not skills_root.is_dir():
         return []
     try:
-        known_verbs = _known_cli_verbs()
+        verb_paths = _known_cli_verb_paths()
     except Exception:
         return []
 
-    verb_refs = _collect_skill_verb_refs(skills_root, known_verbs, project_root)
+    verb_refs = _collect_skill_verb_refs(skills_root, verb_paths, project_root)
 
     errors: list[ValidationError] = []
-    for verb in sorted(known_verbs):
-        if verb in _NO_SKILL_VERBS or verb_refs[verb]:
+    for path in sorted(verb_paths):
+        if _verb_path_waived(path) or verb_refs[path]:
             continue
         errors.append(
             ValidationError(
                 type="skill_alignment",
-                artifact=f"gz {verb}",
+                artifact=f"gz {path}",
                 message=(
-                    f"CLI verb `gz {verb}` has no wielding skill under "
+                    f"CLI verb `gz {path}` has no wielding skill under "
                     ".gzkit/skills/**. Author a skill or add an entry to "
                     "`_NO_SKILL_VERBS` with rationale (tool-skill-runbook Invariant 1)."
                 ),
             )
         )
-    for stale in sorted(_NO_SKILL_VERBS.keys() - known_verbs):
+    for stale in sorted(k for k in _NO_SKILL_VERBS if not _waiver_targets_live_verb(k, verb_paths)):
         errors.append(
             ValidationError(
                 type="skill_alignment",
