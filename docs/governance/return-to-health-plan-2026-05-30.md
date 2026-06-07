@@ -5,10 +5,9 @@ Status: Active canonical recovery plan.
 > **Live baseline: Snapshot M (2026-06-07) — `main` is 26/26 GREEN, synced.** Full
 > measurement in § Current Baseline. Tier 0 has reopened 7× (C→E→G→J→K→L→M): main is not
 > *durably* green across machines/sessions — that recurrence, not any single gate, is
-> the headline problem. **Operator-ratified 2026-06-07: the carve-out treadmill is itself
-> the disease (V.I.B.E.S.); the pinned durable fixes are § Execution Worklist items D1
-> (break the residue pump) and D2 (mechanize the next-action) — NOT another hand carve-out.**
-> #519 is the sole open `emergency`; recovery stays OPEN.
+> the headline problem. The operator named this recurring pattern V.I.B.E.S. (each session
+> re-interprets restore-health, carve-outs the brittle gate, wanders foundations). #519 is
+> the sole open `emergency`; recovery stays OPEN.
 >
 > **Route (since Snapshot G):** append-only corpus → per-surface temperature setpoint →
 > authoring-time agent compression (advisor-QC'd, operator-attested) → committed
@@ -16,7 +15,7 @@ Status: Active canonical recovery plan.
 > 01–10, 18–27 (§ Checklist is authoritative). **Filename** stays
 > `return-to-health-plan-2026-05-30.md` (operator-anchored 2026-06-04).
 
-Last updated: 2026-06-07 — **Tier 0 reopened again (7th time; Snapshot M) on session resume (handoff + restore-health): `gz check` red on Behave + Task-envelope-coherence, all residue from the ADR-0.0.41 token-block commits a prior session landed (foundation work outside the #519 throughline — itself an instance of the wandering the operator named). Re-closed via 2 genuine coupled-surface fixes (behave stdout/stderr split; GHI #587 scenario) + `req_atomic:` + a 4th SUPPORT-doc validator carve-out; main 26/26 green. Operator named the pattern V.I.B.E.S.: each session re-interprets restore-health, carve-outs the brittle gate, wanders foundations. Pinned the durable fixes (§ Execution Worklist D1/D2) as the recorded throughline so the next session inherits a decision, not a re-derivation. See § Current Baseline — Snapshot M.**
+Last updated: 2026-06-07 — **Tier 0 reopened again (7th time; Snapshot M) on session resume (handoff + restore-health): `gz check` red on Behave + Task-envelope-coherence, all residue from the ADR-0.0.41 token-block commits a prior session landed (foundation work outside the #519 throughline — itself an instance of the wandering the operator named). Re-closed via 2 genuine coupled-surface fixes (behave stdout/stderr split; GHI #587 scenario) + `req_atomic:` + a 4th SUPPORT-doc validator carve-out; main 26/26 green. Operator named the pattern V.I.B.E.S.: each session re-interprets restore-health, carve-outs the brittle gate, wanders foundations. See § Current Baseline — Snapshot M.**
 
 Earlier 2026-06-06 entry — **Tier 0 reopened on a fresh Windows clone (`gz check` red on Typecheck + Behave) and re-closed; 2 fixes pushed; main 26/26 green (Snapshot K).**
 Drained Phase-4 recovery debt one at a time (green-first, observed-evidence closes): closed
@@ -64,29 +63,6 @@ the committed-main baseline; this edit records only the OBPI-26 disposition chan
 - [x] **0.3 Re-measure & record Snapshot D** — `uv run gz check` → "✓ All checks passed" (`GZ_CHECK_EXIT=0`, true exit captured without pipe-masking); 26/26 gates green. Phase 1 reaffirmed complete. → *Current Baseline § Snapshot D*.
 - [x] **0.4 Reopen Tier 0 and record Snapshot E** — 2026-06-02 re-measurement proved Snapshot D stale: `uv run gz check` failed on `Format`, `ADR status freshness`, and `Task envelope coherence`. Remediated with observed evidence: `uv run ruff format tests\content\test_round_trip_agent_contract.py` → "1 file reformatted"; `uv run gz register-adrs` → "Regenerated adr-status.md (90 ADRs)"; task-envelope TDD RED showed two failures in `tests.governance.test_task_envelope_coherence`, then GREEN after validator repair; `uv run gz validate --task-envelope-coherence` → "✓ All validations passed"; `uv run gz check` → "✓ All checks passed" (26/26 gates; advisory drift 1735 findings, non-blocking). → *Current Baseline § Snapshot E*.
 - [x] **0.5 Reopen Tier 0 on resume and record Snapshot G(check)** — 2026-06-03 resume re-measurement proved Snapshot F stale (D→E→F→G pattern): `uv run gz check` → exit 1 on `Test` (handoff-count tripwire 37≠38), `Task envelope coherence` (8 events, ledger `:8574`–`:8581`), `Preflight` (OBPI-09 orphan). Remediated, operator-ratified, with observed evidence: handoff tripwire bumped 37→38; **TDD ADR-decision-doc carve-out** for sig (a) (`test_adr_decision_doc_edit_under_active_task_is_clean` RED 2≠0 → GREEN; `src/foo.py` negative control still fails); **OBPI-0.0.37-17-as-scoped retired** (8 TASKs `gz task block`ed, stale plan `lively-hatching-storm.md` removed, OBPI-09+OBPI-17 orphan receipts cleaned via `gz preflight --apply` → "clean"; 2026-06-04 renumber later withdrew 11–17 and mirrored them as `Abandoned`); two latent defects direct-fixed (TDD) — `gz task` transitions for full-slug OBPIs (`TestTaskTransitionFullSlugObpi` RED "pending → blocked" → GREEN) and the carve-out. `uv run gz check` → "✓ All checks passed" (26/26; `GZ_CHECK_EXIT=0`; advisory drift 1735). Committed `32cac1d2`/`e4b9cc78`, synced to `origin/main` via `gz git-sync --apply --lint --test`. → *Current Baseline § Snapshot G(check)*.
-
-**Pinned durable fixes — break the V.I.B.E.S. treadmill (operator-ratified 2026-06-07, Snapshot M).**
-Recurrence — not any single gate — is the headline (7 Tier-0 reopenings). These two items
-are the recorded throughline so the next session inherits a *decision*, not a re-derivation.
-They are the cure for the "Recurring Tier-0 offenders" row in § Current Baseline. Each is its
-own work unit (likely an OBPI under a maintenance ADR) and needs operator witness because it
-changes gate behavior; do NOT start either while `gz check` is red, and do NOT substitute
-another hand carve-out for D1.
-
-- [ ] **D1 — Break the residue pump at the source.** Make closeout stop *generating* the
-  residue that reopens Tier 0: (a) `gz obpi complete`/pipeline auto-mints `req_atomic:` when a
-  brief's REQs are atomic (no `seq=02+`); (b) runs `ruff format` on touched files before the
-  green gate; (c) the task-envelope sig-(a) validator excuses SUPPORT-channel `artifact_edited`
-  **by REQ-kind / proof-channel** — consolidating the four hand path-carve-outs (obpi-brief,
-  ADR-decision-doc, manpage @ Snapshot M, + future) into ONE principled rule keyed on the
-  SUPPORT taxonomy; (d) closeout leaves no orphan plan-audit receipt. Retires the
-  Task-envelope/Format/Preflight/Behave-fixture recurrence (C/E/G/L/M) at the source.
-- [ ] **D2 — Mechanize the next-action (kill re-interpretation drift).** A minimal
-  recovery-scoped `gz` verb (precursor to the full `gz next`/Session MOTD substrate, ADR-0.0.66,
-  which stays frozen) that reads this Execution Worklist + ledger + `gz check` and emits THE
-  single next action deterministically. After this, no session re-derives restore-health from
-  1,267 lines of prose; it reads the machine. Scopes the orientation read only — not the
-  enforcement spine.
 
 **Tier 1 — Recovery to Definition of Healthy.** Exit gate: Definition of Healthy all-true.
 
@@ -220,9 +196,7 @@ diagnosis, but its dated command snapshot is superseded by the baseline below.
   a gate the plan already flags as a subtraction candidate. **Operator named the pattern
   V.I.B.E.S.** — each session re-interprets restore-health, carve-outs the brittle gate,
   wanders foundations, loses the #519 throughline. The carve-out *treadmill* (not any single
-  gate) is the disease. **Durable fixes pinned this session (§ Execution Worklist D1/D2),
-  operator-ratified, as the recorded throughline — so the next session inherits a decision,
-  not a re-derivation.** This is the last hand-written carve-out.
+  gate) is the disease.
 - **Recovery stays OPEN.** #519 still the sole `emergency`; Definition-of-Healthy
   not all-true.
 
@@ -260,7 +234,7 @@ receipts: C, G, J), Task-envelope-coherence (ceremony artifacts: C, E, G, L, M),
 (un-`ruff format`'d completion files: E, L), and Behave (stale fixtures vs landed changes:
 K, M) reopen Tier 0 most often — all fire on residue left by *completions*, not real
 defects. Fix-or-retire per Operating-Rule subtraction; gate retirement needs operator
-witness. **D1 (§ Execution Worklist) is the durable cure for this whole row.**
+witness.
 
 Snapshots A–L are preserved above for audit; **Snapshot M is the live baseline.**
 
