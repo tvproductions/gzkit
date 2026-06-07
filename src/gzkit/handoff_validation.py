@@ -11,7 +11,7 @@ and an empty list means the document is clean.
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
@@ -19,16 +19,22 @@ import yaml
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 
 __all__ = [
+    "ABANDON_CATEGORIES",
+    "AbandonSpec",
     "HANDOFF_SCHEMA_VERSION",
     "REQUIRED_SECTIONS",
     "HandoffFrontmatter",
     "HandoffValidationError",
+    "InvalidAbandonSpec",
+    "find_handoff_for_release",
+    "parse_abandon_spec",
     "parse_frontmatter",
     "validate_handoff_document",
     "validate_no_placeholders",
     "validate_no_secrets",
     "validate_referenced_files",
     "validate_sections_present",
+    "write_degenerate_handoff",
 ]
 
 # ---------------------------------------------------------------------------
@@ -324,3 +330,199 @@ def _strip_frontmatter(content: str) -> str:
         if line.strip() == "---":
             return "\n".join(lines[i + 1 :])
     return content
+
+
+# ---------------------------------------------------------------------------
+# Abandon-category enum and degenerate-handoff writer
+# ---------------------------------------------------------------------------
+#
+# Source of truth: ``.gzkit/rules/token-block-discipline.md`` § Sub-Invariant 1.
+# The base category enum is CLOSED here in code; extending it requires an ADR
+# per the rule's extension protocol. Mirror — not re-author — the enum.
+
+ABANDON_CATEGORIES: tuple[str, ...] = (
+    "network_loss",
+    "external_blocker",
+    "wrong_obpi_claimed",
+    "tool_failure",
+    # reaping is the OBPI-03 surface; OBPI-02 ships base + reaping placeholder
+    # so reap-driven release in OBPI-03 lands cleanly.
+    "reaping",
+)
+
+
+class InvalidAbandonSpec(ValueError):
+    """Raised when --abandon argument cannot be parsed or category is unknown."""
+
+
+class AbandonSpec(BaseModel):
+    """Parsed `--abandon <category>:<reason>` specification."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    category: str
+    reason: str
+
+    @field_validator("category")
+    @classmethod
+    def _validate_category(cls, v: str) -> str:
+        if v not in ABANDON_CATEGORIES:
+            allowed = " | ".join(ABANDON_CATEGORIES)
+            raise ValueError(
+                f"Unknown abandon category {v!r}; closed enum (see "
+                f".gzkit/rules/token-block-discipline.md § Sub-Invariant 1): {allowed}"
+            )
+        return v
+
+
+def parse_abandon_spec(raw: str) -> AbandonSpec:
+    """Parse ``<category>:<reason>``; reject whitespace around category.
+
+    Whitespace around the category is rejected so the audit surface stays
+    canonical — ``" network_loss:reason"`` is the same operator typo class as
+    misspelling the category itself.
+    """
+    if ":" not in raw:
+        raise InvalidAbandonSpec("abandon spec must be '<category>:<reason>' (missing colon)")
+    category, _, reason = raw.partition(":")
+    if category != category.strip():
+        raise InvalidAbandonSpec(
+            f"abandon category must not have leading/trailing whitespace: {category!r}"
+        )
+    if not category:
+        raise InvalidAbandonSpec("abandon category is empty")
+    if not reason:
+        raise InvalidAbandonSpec("abandon reason is empty")
+    try:
+        return AbandonSpec(category=category, reason=reason)
+    except ValidationError as e:  # surface as InvalidAbandonSpec for the CLI
+        raise InvalidAbandonSpec(str(e)) from e
+
+
+def _filesystem_safe_timestamp(iso_ts: str) -> str:
+    """Render an ISO timestamp into a filesystem-safe filename token."""
+    return iso_ts.replace(":", "").replace("-", "").replace(".", "")[:15] + "Z"
+
+
+def write_degenerate_handoff(
+    project_root: Path,
+    *,
+    obpi_id: str,
+    adr_id: str,
+    agent: str,
+    spec: AbandonSpec,
+    last_claim_timestamp: str | None,
+    commit_sha: str,
+    branch: str,
+    decision_context: str | None = None,
+) -> Path:
+    """Write an abandoned-state register entry under ``.gzkit/handoffs/``.
+
+    Returns the on-disk path written. The handoff carries the four
+    minimum-information fields per Sub-Invariant 2 (last lock-event timestamp,
+    last commit SHA, decision context, branch state) plus abandon-specific
+    frontmatter (``abandoned: true``, ``category``, ``reason``).
+    """
+    handoff_dir = project_root / ".gzkit" / "handoffs"
+    handoff_dir.mkdir(parents=True, exist_ok=True)
+
+    now = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    timestamp_token = _filesystem_safe_timestamp(now)
+    filename = f"{timestamp_token}-{obpi_id}-abandoned.md"
+    path = handoff_dir / filename
+
+    frontmatter = {
+        "mode": "CREATE",
+        "adr_id": adr_id,
+        "obpi_id": obpi_id,
+        "branch": branch,
+        "timestamp": now,
+        "agent": agent,
+        "abandoned": True,
+        "category": spec.category,
+        "reason": spec.reason,
+        "last_lock_event_timestamp": last_claim_timestamp,
+        "last_commit_sha": commit_sha,
+    }
+
+    decision = decision_context or (
+        f"Lock for {obpi_id} abandoned by {agent} (category={spec.category}, reason={spec.reason})."
+    )
+
+    body = (
+        "---\n"
+        + yaml.safe_dump(frontmatter, sort_keys=False)
+        + "---\n\n"
+        + f"<!-- Degenerate handoff for {obpi_id} — abandon path -->\n\n"
+        + "## Current State Summary\n\n"
+        + f"Lock surrender via `--abandon {spec.category}:{spec.reason}` "
+        + f"by agent `{agent}`.\n\n"
+        + "## Important Context\n\n"
+        + "Degenerate handoff written as the register-entry pairing for an "
+        + "abandoned lock release (token-block discipline; see "
+        + "`.gzkit/rules/token-block-discipline.md` § Sub-Invariant 1).\n\n"
+        + "## Decisions Made\n\n"
+        + f"- {decision}\n\n"
+        + "## Immediate Next Steps\n\n"
+        + "1. Operator review of the abandonment reason.\n"
+        + "2. If recovery is intended, re-claim the lock via `gz obpi lock claim`.\n\n"
+        + "## Pending Work / Open Loops\n\n"
+        + f"- OBPI {obpi_id} was abandoned mid-traversal; resume work requires "
+        + "re-claim plus a fresh handoff at completion.\n\n"
+        + "## Verification Checklist\n\n"
+        + f"- [ ] `git rev-parse HEAD` returns `{commit_sha}` (or operator "
+        + "explains drift).\n"
+        + f"- [ ] Branch matches `{branch}`.\n\n"
+        + "## Evidence / Artifacts\n\n"
+        + f"- `.gzkit/locks/obpi/{obpi_id}.lock.json` — lock file at abandon "
+        + "(deleted on release).\n"
+    )
+
+    path.write_text(body, encoding="utf-8")
+    return path
+
+
+def find_handoff_for_release(
+    project_root: Path,
+    *,
+    obpi_id: str,
+    after_timestamp: str | None = None,
+) -> Path | None:
+    """Search `.gzkit/handoffs/` for a matching register entry.
+
+    Matches when the handoff frontmatter declares the given `obpi_id` and its
+    timestamp is later than ``after_timestamp`` (the matching
+    ``obpi_lock_claimed`` event time). Returns the newest match, or ``None``.
+
+    In OBPI-02 this is consulted to decide whether the warning-on-no-handoff
+    branch fires; OBPI-03 will promote the check to fail-closed.
+    """
+    handoff_dir = project_root / ".gzkit" / "handoffs"
+    if not handoff_dir.is_dir():
+        return None
+
+    candidates: list[tuple[str, Path]] = []
+    for path in handoff_dir.glob("*.md"):
+        try:
+            text = path.read_text(encoding="utf-8")
+            fm = parse_frontmatter(text)
+        except (OSError, yaml.YAMLError, HandoffValidationError):
+            continue
+        if not isinstance(fm, dict):
+            continue
+        if fm.get("obpi_id") != obpi_id:
+            continue
+        ts = str(fm.get("timestamp", ""))
+        if after_timestamp and ts <= after_timestamp:
+            continue
+        if fm.get("abandoned") is True:
+            # Abandoned handoffs satisfy the pairing only when invoked via the
+            # --abandon code path; they are not the same surface as a
+            # completion-pairing handoff.
+            continue
+        candidates.append((ts, path))
+
+    if not candidates:
+        return None
+    candidates.sort()
+    return candidates[-1][1]

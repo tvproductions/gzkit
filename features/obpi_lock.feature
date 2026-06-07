@@ -67,3 +67,41 @@ Feature: OBPI lock management
     When I run "gz obpi lock-claim OBPI-0.1.0-01 --json"
     Then it exits with code 0
     And the JSON output field "status" is "claimed"
+
+  # OBPI-0.0.41-02 — Claim/Release Safety Primitives (token-block discipline)
+  # Scenarios are tagged with @REQ-X.Y.Z-NN-MM for behave coverage gate.
+
+  @REQ-0.0.41-02-01 @REQ-0.0.41-02-02 @REQ-0.0.41-02-03
+  Scenario: Race-condition interlock — concurrent claim conflicts
+    Given the workspace is initialized
+    And an OBPI lock exists for "OBPI-0.0.41-02" held by agent "agent-a"
+    When I run "gz obpi lock claim OBPI-0.0.41-02 --json --agent agent-b"
+    Then it exits with code 1
+    And the JSON output field "status" is "conflict"
+
+  @REQ-0.0.41-02-04 @REQ-0.0.41-02-05 @REQ-0.0.41-02-08
+  Scenario: Release --abandon happy path writes degenerate handoff
+    Given the workspace is initialized
+    When I run "gz obpi lock claim OBPI-0.0.41-02"
+    And I run "gz obpi lock release OBPI-0.0.41-02 --abandon network_loss:demo --json"
+    Then it exits with code 0
+    And the JSON output field "status" is "released"
+    And the JSON output field "category" is "network_loss"
+
+  @REQ-0.0.41-02-06
+  Scenario: Release --abandon rejects unregistered category
+    Given the workspace is initialized
+    When I run "gz obpi lock claim OBPI-0.0.41-02"
+    And I run "gz obpi lock release OBPI-0.0.41-02 --abandon fabricated:reason --json"
+    Then it exits with code 1
+    And the JSON output field "status" is "invalid_abandon"
+
+  @REQ-0.0.41-02-07
+  Scenario: Release without --abandon and no handoff warns but succeeds
+    Given the workspace is initialized
+    When I run "gz obpi lock claim OBPI-0.0.41-02"
+    And I run "gz obpi lock release OBPI-0.0.41-02"
+    Then it exits with code 0
+    And the output contains "WARNING"
+    And the output contains "register entry"
+    And the output contains "OBPI-0.0.41-03"

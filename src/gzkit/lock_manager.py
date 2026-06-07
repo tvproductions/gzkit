@@ -116,16 +116,21 @@ def read_lock(project_root: Path, obpi_id: str) -> LockData | None:
 
 
 def write_lock(project_root: Path, lock: LockData) -> Path:
-    """Serialize *lock* to disk and return the written path.
+    """Serialize *lock* to disk via exclusive-creation and return the written path.
 
-    Uses ``model_dump()`` to produce a plain dict before JSON serialisation so
-    that computed fields (``is_expired``, ``elapsed_minutes``) are excluded from
-    the stored payload.
+    Uses ``open(path, "x")`` so that the second concurrent attempt raises
+    ``FileExistsError`` instead of silently overwriting an existing lock. This
+    closes the check-then-write race the token-block doctrine
+    (``.gzkit/rules/token-block-discipline.md``) names as the load-bearing
+    exclusion property of the lock primitive.
+
+    Computed fields (``is_expired``, ``elapsed_minutes``) are excluded from the
+    stored payload.
     """
     path = lock_path(project_root, lock.obpi_id)
-    # Exclude computed fields — only persist the raw declared fields.
     payload = lock.model_dump(exclude={"is_expired", "elapsed_minutes"})
-    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    with open(path, "x", encoding="utf-8") as f:
+        f.write(json.dumps(payload, indent=2))
     return path
 
 

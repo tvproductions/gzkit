@@ -20,16 +20,27 @@ gz obpi lock claim OBPI-X.Y.Z-NN [--ttl MINUTES] [--agent NAME]
 
 ## Runtime Behavior
 
-- Creates a lock file in `.gzkit/locks/obpi/` with timestamp and TTL
+- Creates a lock file in `.gzkit/locks/obpi/` with timestamp and TTL,
+  using exclusive-creation (`open(path, "x")`) to atomically reject
+  concurrent claim attempts (ADR-0.0.41 — token-block discipline)
 - Emits `obpi_lock_claimed` event to ledger for audit trail
-- Returns error if lock already held by another agent
+- Returns error if lock already held by another agent OR if a
+  concurrent claimer won the race to write the lock file first
+
+## Race-condition interlock
+
+Two concurrent `gz obpi lock claim` invocations on the same `obpi_id`
+cannot both succeed. The underlying `lock_manager.write_lock` uses
+exclusive-creation; the second writer receives `FileExistsError` which
+the claim command surfaces as `status: conflict` (exit 1) with the
+actual race-winner's identity in the holder payload.
 
 ## Exit Codes
 
 | Code | Meaning |
 |------|---------|
 | 0 | Lock claimed successfully |
-| 1 | Lock conflict (another agent holds it) |
+| 1 | Lock conflict (another agent holds it OR race winner wrote first) |
 | 2 | System error |
 
 ## Examples

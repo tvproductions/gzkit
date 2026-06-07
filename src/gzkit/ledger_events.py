@@ -355,12 +355,22 @@ def obpi_lock_released_event(
     obpi_id: str,
     agent: str,
     force: bool = False,
+    handoff_path: str | None = None,
 ) -> LedgerEvent:
-    """Create an OBPI lock released event."""
+    """Create an OBPI lock released event.
+
+    The ``handoff_path`` field carries the project-relative path of the register
+    entry that authorized the surrender (token-block discipline, ADR-0.0.41).
+    Optional in OBPI-02 (additive, backward-compatible); OBPI-03 will require
+    it at every emission site.
+    """
+    extra: dict[str, object] = {"agent": agent, "force": force}
+    if handoff_path is not None:
+        extra["handoff_path"] = handoff_path
     return LedgerEvent(
         event="obpi_lock_released",
         id=obpi_id,
-        extra={"agent": agent, "force": force},
+        extra=extra,
     )
 
 

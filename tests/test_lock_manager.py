@@ -297,6 +297,32 @@ class TestReadWriteLock(unittest.TestCase):
             bad_path.write_text("{not valid json", encoding="utf-8")
             self.assertIsNone(read_lock(root, "OBPI-0.0.14-01"))
 
+    @covers("REQ-0.0.41-02-01")
+    def test_write_lock_exclusive_creation_raises_on_second_call(self):
+        """`write_lock` uses `open(path, 'x')` exclusive-creation mode.
+
+        Closes the check-then-write race in `obpi_lock_claim_cmd` by making the
+        second concurrent write fail loudly instead of silently overwriting an
+        existing lock. The token-block doctrine names this as the load-bearing
+        exclusion property of the lock primitive.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            lock1 = _make_lock(obpi_id="OBPI-RACE-TEST")
+            lock2 = _make_lock(obpi_id="OBPI-RACE-TEST", agent="other-agent")
+
+            path = write_lock(root, lock1)
+            self.assertTrue(path.is_file())
+
+            with self.assertRaises(FileExistsError):
+                write_lock(root, lock2)
+
+            # The original lock content must remain intact (no partial overwrite).
+            recovered = read_lock(root, "OBPI-RACE-TEST")
+            self.assertIsNotNone(recovered)
+            assert recovered is not None
+            self.assertEqual(recovered.agent, "claude-code")  # lock1's agent, not lock2's
+
 
 # ---------------------------------------------------------------------------
 # delete_lock

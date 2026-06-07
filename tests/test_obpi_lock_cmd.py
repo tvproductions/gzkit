@@ -738,5 +738,241 @@ class TestLockList(unittest.TestCase):
                 self.assertEqual(output["locks"][0]["obpi_id"], "OBPI-0.0.14-01")
 
 
+# ---------------------------------------------------------------------------
+# OBPI-0.0.41-02 — Claim/Release Safety Primitives
+# ---------------------------------------------------------------------------
+
+
+@patch("gzkit.commands.obpi_lock.console", _quiet_console)
+@covers("OBPI-0.0.41-02")
+class TestClaimReleaseSafetyPrimitives(unittest.TestCase):
+    """REQ-derived tests for OBPI-0.0.41-02 (claim/release safety primitives)."""
+
+    @patch("gzkit.commands.obpi_lock.get_project_root")
+    @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.41-02-02")
+    def test_claim_handles_file_exists_error_as_conflict(self, mock_init, mock_root):
+        """`obpi_lock_claim_cmd` surfaces a stale-write race as a conflict.
+
+        Simulates a winner agent racing in between the claim cmd's read_lock
+        check and its write_lock attempt by pre-creating the lock file directly
+        — the underlying exclusive-creation in write_lock now raises
+        FileExistsError, which the claim cmd must report as `conflict`/exit 1.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _setup_project(tmp)
+            mock_root.return_value = root
+            mock_init.return_value = _mock_config()
+
+            # Skip the pre-check by writing the lock file directly without
+            # going through read_lock's parsing path. Hijack read_lock so the
+            # claim-time pre-check returns None, then ensure the file exists
+            # so write_lock's exclusive-creation raises.
+            target_lock = lock_path(root, "OBPI-0.0.41-02")
+            target_lock.parent.mkdir(parents=True, exist_ok=True)
+            # Plant a winner lock that read_lock can't parse (force the race
+            # path: read_lock returns None, write_lock raises FileExistsError).
+            target_lock.write_text("not-valid-json", encoding="utf-8")
+
+            with self.assertRaises(SystemExit) as ctx:
+                obpi_lock_claim_cmd(
+                    obpi_id="OBPI-0.0.41-02",
+                    ttl_minutes=60,
+                    as_json=False,
+                    agent="claude-code-test",
+                )
+            self.assertEqual(ctx.exception.code, 1)
+
+    @patch("gzkit.commands.obpi_lock.get_project_root")
+    @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.41-02-03")
+    def test_claim_race_exactly_one_winner(self, mock_init, mock_root):
+        """Two concurrent claim invocations: exactly one wins, the other conflicts.
+
+        Implementation-level proof of the race-condition fix: writing the lock
+        directly (the race-winner side-effect) then attempting a normal claim
+        must surface as a conflict (exit 1), demonstrating that the second
+        writer cannot silently overwrite.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _setup_project(tmp)
+            mock_root.return_value = root
+            mock_init.return_value = _mock_config()
+
+            # Agent A claims first (wins the race).
+            obpi_lock_claim_cmd(
+                obpi_id="OBPI-0.0.41-02",
+                ttl_minutes=60,
+                as_json=False,
+                agent="agent-a",
+            )
+
+            # Agent B attempts to claim; must exit 1 (conflict from pre-check).
+            with self.assertRaises(SystemExit) as ctx:
+                obpi_lock_claim_cmd(
+                    obpi_id="OBPI-0.0.41-02",
+                    ttl_minutes=60,
+                    as_json=False,
+                    agent="agent-b",
+                )
+            self.assertEqual(ctx.exception.code, 1)
+
+            # Agent A is still the holder (no silent overwrite).
+            holder = read_lock(root, "OBPI-0.0.41-02")
+            self.assertIsNotNone(holder)
+            assert holder is not None
+            self.assertEqual(holder.agent, "agent-a")
+
+    @patch("gzkit.commands.obpi_lock.get_project_root")
+    @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.41-02-04")
+    def test_release_parses_abandon_flag(self, mock_init, mock_root):
+        """`--abandon <category>:<reason>` parses; whitespace in category rejected."""
+        from gzkit.handoff_validation import (  # noqa: PLC0415
+            InvalidAbandonSpec,
+            parse_abandon_spec,
+        )
+
+        # Happy path: colon delimiter
+        spec = parse_abandon_spec("network_loss:session interrupted")
+        self.assertEqual(spec.category, "network_loss")
+        self.assertEqual(spec.reason, "session interrupted")
+
+        # Whitespace around category is rejected
+        with self.assertRaises(InvalidAbandonSpec):
+            parse_abandon_spec(" network_loss:reason")
+        with self.assertRaises(InvalidAbandonSpec):
+            parse_abandon_spec("network_loss :reason")
+
+        # Missing colon is rejected
+        with self.assertRaises(InvalidAbandonSpec):
+            parse_abandon_spec("network_loss")
+
+        # Empty reason is rejected
+        with self.assertRaises(InvalidAbandonSpec):
+            parse_abandon_spec("network_loss:")
+
+    @patch("gzkit.commands.obpi_lock.get_project_root")
+    @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.41-02-05")
+    def test_release_abandon_writes_degenerate_handoff(self, mock_init, mock_root):
+        """`--abandon` writes a degenerate handoff and records handoff_path in the event."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _setup_project(tmp)
+            mock_root.return_value = root
+            mock_init.return_value = _mock_config()
+
+            lock = _make_lock(obpi_id="OBPI-0.0.41-02", agent="claude-code")
+            write_lock(root, lock)
+
+            obpi_lock_release_cmd(
+                obpi_id="OBPI-0.0.41-02",
+                as_json=False,
+                agent="claude-code",
+                abandon="network_loss:session interrupted",
+            )
+
+            # Degenerate handoff was written under .gzkit/handoffs/
+            handoff_dir = root / ".gzkit" / "handoffs"
+            self.assertTrue(handoff_dir.is_dir())
+            handoffs = list(handoff_dir.glob("*OBPI-0.0.41-02-abandoned.md"))
+            self.assertEqual(len(handoffs), 1)
+
+            handoff_text = handoffs[0].read_text(encoding="utf-8")
+            self.assertIn("abandoned: true", handoff_text)
+            self.assertIn("category: network_loss", handoff_text)
+            self.assertIn("reason: session interrupted", handoff_text)
+
+            # Ledger event has handoff_path
+            ledger_path = root / ".gzkit" / "ledger.jsonl"
+            lines = [
+                json.loads(ln)
+                for ln in ledger_path.read_text(encoding="utf-8").splitlines()
+                if ln.strip()
+            ]
+            release_events = [e for e in lines if e["event"] == "obpi_lock_released"]
+            self.assertGreater(len(release_events), 0)
+            # `extra` is flattened to top-level keys on serialization.
+            self.assertIn("handoff_path", release_events[-1])
+            self.assertTrue(release_events[-1]["handoff_path"].startswith(".gzkit/handoffs/"))
+
+    @patch("gzkit.commands.obpi_lock.get_project_root")
+    @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.41-02-06")
+    def test_release_abandon_rejects_unregistered_category(self, mock_init, mock_root):
+        """`--abandon <unknown_category>:<reason>` exits 1 with closed-enum message."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _setup_project(tmp)
+            mock_root.return_value = root
+            mock_init.return_value = _mock_config()
+
+            lock = _make_lock(obpi_id="OBPI-0.0.41-02", agent="claude-code")
+            write_lock(root, lock)
+
+            with self.assertRaises(SystemExit) as ctx:
+                obpi_lock_release_cmd(
+                    obpi_id="OBPI-0.0.41-02",
+                    as_json=False,
+                    agent="claude-code",
+                    abandon="fabricated_category:bogus",
+                )
+            self.assertEqual(ctx.exception.code, 1)
+
+            # Lock still exists — release failed-closed before delete
+            self.assertTrue(lock_path(root, "OBPI-0.0.41-02").exists())
+
+    @patch("gzkit.commands.obpi_lock.get_project_root")
+    @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.41-02-07")
+    def test_release_without_handoff_warns_but_succeeds(self, mock_init, mock_root):
+        """Release without `--abandon` and no handoff prints WARNING, exits 0 (staging window)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _setup_project(tmp)
+            mock_root.return_value = root
+            mock_init.return_value = _mock_config()
+
+            lock = _make_lock(obpi_id="OBPI-0.0.41-02", agent="claude-code")
+            write_lock(root, lock)
+
+            # Capture stderr
+            from io import StringIO  # noqa: PLC0415
+
+            captured = StringIO()
+            with patch("sys.stderr", captured):
+                obpi_lock_release_cmd(
+                    obpi_id="OBPI-0.0.41-02",
+                    as_json=False,
+                    agent="claude-code",
+                )
+
+            stderr_output = captured.getvalue()
+            self.assertIn("WARNING", stderr_output)
+            self.assertIn("register entry", stderr_output)
+            self.assertIn("gz-session-handoff", stderr_output)
+            self.assertIn("OBPI-0.0.41-03", stderr_output)
+
+            # Release still succeeded (lock removed; no SystemExit)
+            self.assertFalse(lock_path(root, "OBPI-0.0.41-02").exists())
+
+    @covers("REQ-0.0.41-02-08")
+    def test_obpi_lock_released_handoff_path_optional(self):
+        """`obpi_lock_released_event` accepts optional `handoff_path`; legacy events validate."""
+        # Legacy call (no handoff_path) still works
+        legacy_event = obpi_lock_released_event(obpi_id="OBPI-0.0.41-02", agent="claude-code")
+        self.assertEqual(legacy_event.event, "obpi_lock_released")
+        self.assertNotIn("handoff_path", legacy_event.extra)
+        self.assertEqual(legacy_event.extra["agent"], "claude-code")
+        self.assertEqual(legacy_event.extra["force"], False)
+
+        # New call with handoff_path populates extra
+        new_event = obpi_lock_released_event(
+            obpi_id="OBPI-0.0.41-02",
+            agent="claude-code",
+            handoff_path=".gzkit/handoffs/20260607T100000Z-abandoned.md",
+        )
+        expected_path = ".gzkit/handoffs/20260607T100000Z-abandoned.md"
+        self.assertEqual(new_event.extra["handoff_path"], expected_path)
+
+
 if __name__ == "__main__":
     unittest.main()

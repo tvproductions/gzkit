@@ -1387,6 +1387,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
                 "gz obpi lock release OBPI-0.1.0-01",
                 "gz obpi lock release OBPI-0.1.0-01 --force",
                 "gz obpi lock release OBPI-0.1.0-01 --json",
+                "gz obpi lock release OBPI-0.1.0-01 --abandon network_loss:reason",
             ]
         ),
     )
@@ -1395,10 +1396,21 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     p_lock_release.add_argument(
         "--agent", dest="agent", default=None, help="Override auto-detected agent identity"
     )
+    p_lock_release.add_argument(
+        "--abandon",
+        dest="abandon",
+        default=None,
+        metavar="CATEGORY:REASON",
+        help=("Record abandonment; writes a degenerate handoff. See manpage for category enum."),
+    )
     add_json_flag(p_lock_release)
     p_lock_release.set_defaults(
         func=lambda a: _lazy("obpi_lock_release_cmd")(
-            obpi_id=a.obpi, as_json=a.as_json, force=a.force, agent=a.agent
+            obpi_id=a.obpi,
+            as_json=a.as_json,
+            force=a.force,
+            agent=a.agent,
+            abandon=a.abandon,
         )
     )
 
