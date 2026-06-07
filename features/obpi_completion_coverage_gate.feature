@@ -80,12 +80,20 @@ Feature: OBPI completion REQ-coverage gate
     And the ledger contains an "obpi_completion_uncovered_accept" event
 
   @REQ-0.0.25-02-02
-  Scenario: Headless override without pipeline marker is refused
+  Scenario: Headless override without pipeline marker proceeds via operator-verbatim path
+    # GHI #587 / canon-owner directive 2026-05-14: a headless --accept-uncovered
+    # with no pipeline marker is authorized by the operator's CLI-passed
+    # --accept-uncovered-reason (operator-verbatim), not refused — no TTY/PTY/
+    # transport mechanism may gate recording human attestation (governance-core.md
+    # v0.3.0). The prior "refused" semantics are superseded; the @covers unit test
+    # TestObpiCompleteHeadlessHeavyOverrideAcceptedOperatorVerbatim asserts the same
+    # flip. Security-sensitivity scopes still refuse (GHI #412/#434 carve-out).
     Given the workspace is initialized in heavy mode
     And a heavy-foundation OBPI "OBPI-FIXTURE-02-02" with REQ "REQ-0.0.98-02-02" exists
     And a valid arb step receipt "arb-step-unittest-00000000000000000000000000000008" exists
     When I complete coverage-gate OBPI "OBPI-FIXTURE-02-02" accepting "REQ-0.0.98-02-02" reason "no-marker" citing "arb-step-unittest-00000000000000000000000000000008" without attestor-present
-    Then the exit code is 3
+    Then the exit code is 0
+    And the ledger contains an "obpi_completion_uncovered_accept" event
 
   @REQ-0.0.25-02-03
   Scenario: Partial accept-uncovered still fails for unwaived REQ
