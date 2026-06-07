@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.17.0"
-last_reviewed: 2026-04-25
+skill-version: "6.18.0"
+last_reviewed: 2026-06-07
 model: sonnet
 ---
 
@@ -156,14 +156,28 @@ Stage 4 = HUMAN GATE (wait for attestation) — universal per ADR-0.0.36
 8. Check for existing handoffs and resume context when present:
    - `docs/design/adr/**/handoffs/*.md`
 9. Claim OBPI lock: `uv run gz obpi lock claim {OBPI-SLUG}` (use the full slug from step 3)
-10. Create pipeline markers:
-    - `.claude/plans/.pipeline-active-{OBPI-ID}.json`
-    - `.claude/plans/.pipeline-active.json` as a legacy compatibility marker
-      for the same OBPI
-    - Marker payload should include `obpi_id`, `parent_adr`, `lane`, `entry`,
-      `execution_mode`, `current_stage`, `started_at`, `updated_at`,
-      `receipt_state`, `blockers`, `required_human_action`, `next_command`, and
-      `resume_point`
+10. Create pipeline markers. **Preferred path: invoke the runtime to author the marker.**
+    The runtime writes the canonical marker shape (including a ledger-witnessed
+    `nonce` the validator binds against) — hand-authored markers are a maintenance
+    surface that drifts (GHI #586).
+
+    - Preferred: `uv run gz obpi pipeline {OBPI-SLUG}` (the runtime writes
+      `.claude/plans/.pipeline-active-{OBPI-SLUG}.json` and the legacy
+      `.pipeline-active.json` with the canonical schema).
+    - Hand-author fallback (only when the runtime cannot be invoked):
+      - `.claude/plans/.pipeline-active-{OBPI-ID}.json`
+      - `.claude/plans/.pipeline-active.json` as a legacy compatibility marker
+        for the same OBPI
+      - Marker payload MUST include `obpi_id`, `parent_adr`, `lane`, `entry`,
+        `execution_mode`, `current_stage`, `started_at`, `updated_at`,
+        `receipt_state`, `blockers`, `required_human_action`, `next_command`,
+        and `resume_point`.
+      - `current_stage` MUST be one of the canonical enum values the validator
+        accepts (`adr_audit.py` `_PIPELINE_MARKER_VALID_STAGES`):
+        `implement` | `verify` | `ceremony` | `sync` | `audit`. Prose stage
+        headings like `"Stage 2: Implement"` are **rejected** by the validator
+        and are not the same string as the enum. Set `current_stage` to the
+        enum value matching the lifecycle step in progress.
     - This unblocks the pipeline-gate PreToolUse hook for src/ and tests/ writes.
 11. Apply the brief allowlist as the working scope contract before any edits.
 
