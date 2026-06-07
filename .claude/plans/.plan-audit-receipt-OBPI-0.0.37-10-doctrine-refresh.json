@@ -1,0 +1,228 @@
+{
+  "obpi_id": "OBPI-0.0.37-10-doctrine-refresh",
+  "timestamp": "2026-06-07T02:11:51.733441+00:00",
+  "verdict": "PASS",
+  "plan_file": "plan-OBPI-0.0.37-10-doctrine-refresh.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.23.0",
+      "sibling_obpi": "OBPI-0.23.0-03-reviewer-agent",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.24.0",
+      "sibling_obpi": "OBPI-0.24.0-04-runbook-skill-entries",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-03-auth-surface-coherence-validator",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-01-three-layer-model-documentation",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-12-documentation-cross-coverage",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.31",
+      "sibling_obpi": "OBPI-0.0.31-03-t0-failure-mode-catalog",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-04-extend-payload-blocking-hooks",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.52",
+      "sibling_obpi": "OBPI-0.0.52-10-docs-and-runbook-updates",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.40",
+      "sibling_obpi": "OBPI-0.0.40-02-judge-leakage-validator",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.40",
+      "sibling_obpi": "OBPI-0.0.40-04-meta-eval-cli",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.40",
+      "sibling_obpi": "OBPI-0.0.40-03-judge-output-discipline-validator",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.38",
+      "sibling_obpi": "OBPI-0.0.38-02-surface-axis-validator",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-04-promote-import-direction-fail-closed",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.19",
+      "sibling_obpi": "OBPI-0.0.19-05-docs-bdd-closeout",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.24",
+      "sibling_obpi": "OBPI-0.0.24-03-doc-updates",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.48",
+      "sibling_obpi": "OBPI-0.0.48-06-docs-validation-fixtures",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.25",
+      "sibling_obpi": "OBPI-0.0.25-03-bdd-and-doc",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-02-runbook-prd-to-adr",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-03-pool-curation-policy",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-04-apply-doctrine-claude-md-rules",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.57",
+      "sibling_obpi": "OBPI-0.0.57-01-nominal-id-doctrine",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.57",
+      "sibling_obpi": "OBPI-0.0.57-05-docs-runbook-fixtures",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.39",
+      "sibling_obpi": "OBPI-0.0.39-01-rule-and-doctrine",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.13",
+      "sibling_obpi": "OBPI-0.0.13-03-manifest-schema-persona-sync",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.13",
+      "sibling_obpi": "OBPI-0.0.13-06-cross-project-validation",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md",
+        "docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md",
+        "docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-10-doctrine-refresh.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-01-persona-research-synthesis",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-02-persona-control-surface-definition",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-05-supersede-pool-persona-context",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-04-agents-md-persona-section",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-03-trait-composition-model",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    }
+  ]
+}

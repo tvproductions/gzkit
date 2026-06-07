@@ -245,6 +245,29 @@ is real and reproduces against the current ledger. Premise is intact;
 
 ## Notes
 
+## Re-routing note (post-ADR-0.0.37)
+
+**Added 2026-06-06 (OBPI-0.0.37-10).**
+
+This pool stub's Alternative-C self-rejection read: *"Foundation kind is reserved for
+app/system invariants per ADR-0.0.18; these are mechanical defenses *of* an invariant
+(ledger-of-truth), not the invariant itself."*
+
+That reasoning was grounded in AGENTS.md § operative-claim-4 as the claimed foundation
+invariant — a prose-asserted claim, not a structurally-witnessed one. ADR-0.0.37 ships
+**CIC-2** (brief↔reality coherence) as the actual foundation invariant: the dispatch
+attestation gap this stub scopes is a feature-shaped defense *of* that foundation
+invariant, not a foundation candidate in its own right.
+
+**Consequence for this stub:** Once ADR-0.0.37 is Validated (CIC-2 landed and attested),
+this pool stub promotes to a **feature-kind ADR** — a mechanical defense *of* CIC-2's
+execution-time dispatch surface. The Alternative-C reasoning is correct in form but was
+pointing at the wrong anchor; CIC-2 is the right one.
+
+**Prerequisite for promotion:** ADR-0.0.37 Validated (OBPI-0.0.37-05/06/07/08 attested-complete).
+
+**Reference:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
+
 Pool ADRs are backlog items — they carry no `semver:` or `kind:` frontmatter.
 Promotion into the active tree (foundation or feature) is performed via
 `gz adr promote`, which rewrites the frontmatter with the chosen taxonomy.

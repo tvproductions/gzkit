@@ -3,7 +3,7 @@ id: OBPI-0.0.37-10-doctrine-refresh
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 10
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.37-10-doctrine-refresh: Doctrine Refresh
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 - **Checklist Item:** #10 — "OBPI-0.0.37-10 — Doctrine refresh (update ADR-0.0.18 kind-axis distinction; re-route pool stubs `brief-authoring-evidence-checks` and `obpi-pipeline-dispatch-attestation`; update contributing docs)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -26,8 +26,8 @@ Refresh the doctrinal surfaces that previously assumed AGENTS.md was the structu
 ## Allowed Paths
 
 - `docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md` (modify — append kind-axis amendment with explicit "structural-witness vs prose-assertion" distinction; reference ADR-0.0.37 as the structural anchor)
-- `docs/design/adr/pool/ADR-pool.brief-authoring-evidence-checks*` (modify — add re-routing note naming CIC-2 as prerequisite foundation; clarify the stub becomes a feature-kind defense once CIC-2 lands)
-- `docs/design/adr/pool/ADR-pool.obpi-pipeline-dispatch-attestation*` (modify — add re-routing note naming CIC-2 as prerequisite foundation; same framing as above)
+- `docs/design/adr/pool/ADR-pool.brief-authoring-evidence-checks.md` (modify — add re-routing note naming CIC-2 as prerequisite foundation; clarify the stub becomes a feature-kind defense once CIC-2 lands)
+- `docs/design/adr/pool/ADR-pool.obpi-pipeline-dispatch-attestation.md` (modify — add re-routing note naming CIC-2 as prerequisite foundation; same framing as above)
 - `docs/governance/governance_runbook.md` (modify — canonical governance doc; add "Before proposing a foundation-kind ADR" section directing authors at `.gzkit/invariants/`)
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md` (parent reference — read-only)
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-10-doctrine-refresh.md` (this brief)
@@ -126,6 +126,7 @@ git status --porcelain
 - [ ] REQ-0.0.37-10-03: `ADR-pool.obpi-pipeline-dispatch-attestation*` contains the same shape of re-routing note
 - [ ] REQ-0.0.37-10-04: The canonical contributing doc contains a "Before proposing a foundation-kind ADR" section with the three-step algorithm (identify invariant; propose invariant first if missing; then promote to ADR)
 - [ ] REQ-0.0.37-10-05: No `src/` files modified by this OBPI; AGENTS.md untouched; verified by `git diff --name-only` post-implementation
+- [ ] REQ-0.0.37-10-06: All four edits include cross-references to ADR-0.0.37 by full path so they survive ADR renumbering
 
 ## Completion Checklist
 
@@ -146,31 +147,36 @@ git status --porcelain
 
 ### Key Proof
 
-<!-- `rg -n "ADR-0.0.37" docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/` returns the amendment lines. -->
+
+rg -n 'ADR-0.0.37|CIC-1|CIC-2|structural.witness' docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ returns 8 hits anchored on the new Amendment 2026-06-06 — ADR-0.0.37 H2 section. rg -nl 'CIC-2' docs/design/adr/pool/ returns both pool stubs. rg -n 'Before proposing a foundation-kind ADR' docs/governance/ returns governance_runbook.md:342. git diff --name-only HEAD shows zero src/ files and AGENTS.md absent — REQ-05 mechanically verified. ARB receipts: arb-ruff-2216b44bd74142f59a95e5df04b3ab1f, arb-step-typecheck-b57f45cd477642afb7e5adb2f18cd808, arb-step-unittest-9e0844bf74f34415b335e84a4f4ec9a5, arb-step-mkdocs-9c5655d926124cb9bfeb7637f8269d2c.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added: n/a (docs-only)
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files modified: docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md (Amendment 2026-06-06 — ADR-0.0.37 section appended); docs/design/adr/pool/ADR-pool.brief-authoring-evidence-checks.md (Re-routing note post-ADR-0.0.37 appended); docs/design/adr/pool/ADR-pool.obpi-pipeline-dispatch-attestation.md (Re-routing note post-ADR-0.0.37 appended); docs/governance/governance_runbook.md (Before proposing a foundation-kind ADR section inserted under Workflow: Create or Promote ADR)
+- Files created: none
+- Tests added: n/a (docs-only OBPI; Gate 2 satisfied per brief — no test deliverable)
+- Date completed: 2026-06-07
+- Attestation status: operator-verbatim attested 'attest completed' (universal Gate 5 per ADR-0.0.36)
+- Defects noted: none
 
 ## Tracked Defects
+
+- REQ-count drift: 6 declared vs 5 acceptance criteria (brief reconcile, attestor g0)
 
 - GHI #495 — ADR-0.0.37 OBPI briefs in unindividualized scaffold state (this brief authored under that GHI; lane corrected from Heavy → Lite under same GHI)
 - GHI #485 — `gz specify` --author root-cause
 
 ## Human Attestation
 
-- Attestor: `<name>` (universal Gate 5 per ADR-0.0.36)
-- Attestation: substantive text grounded in cross-reference grep output
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — operator-verbatim attestation 2026-06-07 confirming the four doctrine-refresh edits land per brief: ADR-0.0.18 Amendment 2026-06-06 — ADR-0.0.37 section (structural-witness vs prose-asserted distinction with .gzkit/invariants/ pointer), Re-routing notes on both pool stubs (CIC-2 as prerequisite foundation), and governance_runbook.md "Before proposing a foundation-kind ADR" three-step section. Quality gates green: arb-ruff-2216b44bd74142f59a95e5df04b3ab1f, arb-step-typecheck-b57f45cd477642afb7e5adb2f18cd808, arb-step-unittest-9e0844bf74f34415b335e84a4f4ec9a5, arb-step-mkdocs-9c5655d926124cb9bfeb7637f8269d2c. REQ-05 verified by git diff --name-only: zero src/ files, AGENTS.md untouched.
+- Date: 2026-06-07
 
 ---
 
 **Brief Status:** Draft
 
-**Date Completed:** -
+**Date Completed:** 2026-06-07
 
 **Evidence Hash:** -

@@ -339,6 +339,31 @@ Skill shortcuts for ADR creation and planning:
 - [`/gz-adr-promote`](../user/skills/gz-adr-promote.md) — promote a pool ADR into canonical package structure
 - [`/gz-adr-evaluate`](../user/skills/gz-adr-evaluate.md) — score ADR quality and run red-team challenges before proceeding
 
+### Before proposing a foundation-kind ADR
+
+Foundation kind requires a structural witness — a registry entry in
+`.gzkit/invariants/` with a non-empty `structural_witness` array. A prose-only claim
+(in AGENTS.md, a pool-ADR body, or ADR prose) does not qualify.
+
+**Three-step algorithm (from ADR-0.0.37 and ADR-0.0.18 Amendment 2026-06-06):**
+
+1. **Identify the constitutional invariant** the proposed ADR registers. What is the
+   invariant intent — the property of the system this ADR is here to guarantee? State it
+   in one sentence.
+
+2. **If no registered invariant exists yet, propose the invariant first.** Author a
+   `.gzkit/invariants/<slug>.yaml` draft (schema:
+   `src/gzkit/schemas/constitutional_invariant.json`) with `structural_witness` named.
+   Do not author the ADR until the invariant is registered and its structural witness
+   is named.
+
+3. **Only then promote to ADR.** With the invariant registered and the structural
+   witness named, the ADR can be authored as a foundation-kind proposal — its Decision
+   section will reference the registry entry, and `gz validate --taxonomy` will accept
+   it.
+
+**Reference:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
+
 1. Inspect active and pending ADR state.
 
 ```bash

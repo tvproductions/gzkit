@@ -127,6 +127,40 @@ ADR-0.0.57 (Foundation ADR Nominal ID Semantics and Priority Triage, 2026-05-22)
 - Feature ADRs (kind: feature, semver 0.y.z and up): retain genuine semver semantics — ordering, comparison, and precedence all apply as before.
 - The existing pool/foundation/feature taxonomy guidance, kind constraints, and semver format rules in this ADR remain fully in force.
 
+## Amendment 2026-06-06 — ADR-0.0.37
+
+ADR-0.0.37 (Constitutional Invariant Composition, 2026-06-06) sharpens the kind-axis
+distinction this ADR establishes. The binding addition:
+
+**Foundation kind carries a structural-witness requirement.**
+
+A "foundation ADR" is not merely an ADR about identity/invariants — it must register its
+invariant in the constitutional invariant registry at
+[`.gzkit/invariants/`](../../../../.gzkit/invariants/) with a non-empty `structural_witness`
+array (schema + validator + ledger event). A claim that appears only in AGENTS.md or in
+ADR prose, without a corresponding registry entry and mechanical witness, does NOT qualify
+as foundation kind — it is a prose-asserted claim that can drift without mechanical detection.
+
+**Structural-witness foundation vs. prose-asserted claim (additive to Decision items 1–4):**
+
+- **Structural-witness foundation:** Invariant intent registered in `.gzkit/invariants/`
+  with `structural_witness: [schema, validator, ledger_event]` ≥ 1 entry. The witness is
+  the thing that guarantees the invariant cannot be silently undermined. ADR-0.0.37's CIC-1
+  and CIC-2 are the canonical examples.
+- **Prose-asserted claim:** An invariant stated only in AGENTS.md operative claims, a
+  pool-ADR Alternatives-Considered rejection, or an ADR body paragraph. Real, documented —
+  but structurally unwitnessed. Pool stubs whose Alternative-C rejection cited AGENTS.md
+  § operative-claim-4 as their anchor were relying on a prose-asserted claim.
+
+**Consequence for future foundation proposals:** Before proposing a foundation-kind ADR,
+identify the constitutional invariant the proposed ADR registers. If none exists yet, propose
+the invariant first (author a `.gzkit/invariants/<slug>.yaml` draft). Only then promote to
+ADR. This algorithm is documented in
+[`docs/governance/governance_runbook.md`](../../../../docs/governance/governance_runbook.md)
+§ "Before proposing a foundation-kind ADR".
+
+**Reference:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
+
 ## Attestation Block
 
 | Term | Status | Attested By | Date | Reason |
