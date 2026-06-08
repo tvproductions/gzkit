@@ -4,6 +4,31 @@ parent: ADR-0.0.67-tool-skill-invariant1-enforcement
 item: 1
 lane: Heavy
 status: Completed
+ln:
+  - req_id: REQ-0.0.67-01-01
+    receipt_ids:
+      - arb-step-unittest-6d1f2c6f463d40d79b274943f8249c86
+      - arb-ruff-32fa35d49d984f6fb0e54e1faaa4be00
+      - arb-step-typecheck-8397155f2c0146f9b9386549c52e81e9
+      - arb-step-mkdocs-79257f294a494caeb93f3165a80ab0ed
+  - req_id: REQ-0.0.67-01-02
+    receipt_ids:
+      - arb-step-unittest-6d1f2c6f463d40d79b274943f8249c86
+      - arb-ruff-32fa35d49d984f6fb0e54e1faaa4be00
+      - arb-step-typecheck-8397155f2c0146f9b9386549c52e81e9
+      - arb-step-mkdocs-79257f294a494caeb93f3165a80ab0ed
+  - req_id: REQ-0.0.67-01-03
+    receipt_ids:
+      - arb-step-unittest-6d1f2c6f463d40d79b274943f8249c86
+      - arb-ruff-32fa35d49d984f6fb0e54e1faaa4be00
+      - arb-step-typecheck-8397155f2c0146f9b9386549c52e81e9
+      - arb-step-mkdocs-79257f294a494caeb93f3165a80ab0ed
+  - req_id: REQ-0.0.67-01-04
+    receipt_ids:
+      - arb-step-unittest-6d1f2c6f463d40d79b274943f8249c86
+      - arb-ruff-32fa35d49d984f6fb0e54e1faaa4be00
+      - arb-step-typecheck-8397155f2c0146f9b9386549c52e81e9
+      - arb-step-mkdocs-79257f294a494caeb93f3165a80ab0ed
 ---
 
 # OBPI-0.0.67-01-recursive-verb-path-enumeration: Recursive Verb Path Enumeration
