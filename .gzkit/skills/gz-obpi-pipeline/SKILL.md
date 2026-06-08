@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.18.0"
-last_reviewed: 2026-06-07
+skill-version: "6.19.0"
+last_reviewed: 2026-06-08
 model: sonnet
 ---
 
@@ -299,6 +299,17 @@ At `>= 90%` confidence, skip the walkthrough and proceed directly to Stage 2. Th
 5. **Persist dispatch state** after each task completes (success or failure), including review results.
 6. **After all tasks complete:** persist dispatch summary for `gz roles --pipeline` queries.
 
+> **Labor-subdivision discipline (GHI #590).** The pipeline mints one
+> `seq=01` TASK per REQ as the coarse default bucket. When a REQ's labor was
+> genuinely multi-step, subdivide it — `uv run gz task start --seq next` mints
+> `seq=02`, `seq=03`, … so the attribution matches the work. When every REQ is
+> genuinely one indivisible unit (no labor below the REQ), declare
+> `req_atomic:` in the brief frontmatter with inline per-REQ rationale. Make
+> this call **here**, where the labor happens — an OBPI that reaches Stage 5
+> `seq=01`-only without a `req_atomic:` exemption is blocked fail-closed by the
+> task-envelope chokepoint gate (Stage 5 Step 0 / `gz obpi complete`), so
+> deferring the decision only stalls completion.
+
 **Abort if:** Any task returns `BLOCKED` after retry or after exhausting review fix cycles. Release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
 
 #### Inline Fallback (`--no-subagents`)
@@ -564,13 +575,22 @@ these governance edits plus lock release and marker cleanup. Git-sync #2 commits
 the reconcile output and ADR status refresh.
 
 0. **Pre-flight checklist (MANDATORY, GHI #196)** — `uv run gz obpi precomplete {OBPI-SLUG}`
-   Mechanical verification of all Stage 5 preconditions: brief authored
-   readiness, frontmatter idempotence (catches GHI #193 drift before it
-   bites), lock ownership, ARB receipts present, plan-audit receipt PASS.
+   Mechanical verification of all Stage 5 preconditions, each with a named
+   remediation: brief authored readiness, reconcile idempotence (catches GHI
+   #193 drift before it bites), lock ownership, ARB receipts present, plan-audit
+   receipt PASS, brief-heading shape, scoped behave REQ coverage, and
+   **task-envelope coherence** (GHI #590 — early warning that the OBPI would
+   close `seq=01`-only without a `req_atomic:` exemption; remediation:
+   subdivide labor via `uv run gz task start --seq next`, or declare
+   `req_atomic:` in the brief frontmatter with inline per-REQ rationale).
    **If exit code is non-zero, do NOT invoke `gz obpi complete` — fix each
    reported precondition first using the named remediation.** Exit 0 here is
    the gate that prevents the reactive-triage class of failure (the original
    OBPI-04 Stage 5 cost ~3 turns to discover the same gaps one at a time).
+   Note: `gz obpi complete` **independently re-enforces** the task-envelope and
+   REQ-coverage gates fail-closed (precomplete is the bypassable pre-flight;
+   the completion command is the chokepoint), so the residue cannot reach `main`
+   even if this step is skipped.
 
 1. **Closure-narrative gate (MANDATORY, GHI #267)** — Before invoking `gz obpi complete`, present the resolved Implementation Summary and Key Proof prose to the operator inline, in the exact form that will be written to the brief. This is the brief-narrative analog of the Stage 4 evidence gate: the brief is Layer 1 canon authorship surface, and a future reader six months from now will read the brief, not the ledger event. Empty or placeholder prose is a defect — `gz obpi complete` fails closed on it (exit 1, no ledger event, no brief mutation), but the skill must catch it before the CLI does.
 

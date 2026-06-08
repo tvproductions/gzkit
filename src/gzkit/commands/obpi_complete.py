@@ -33,6 +33,7 @@ from gzkit.commands.common import (
     resolve_adr_file,
     resolve_obpi_file,
 )
+from gzkit.commands.validate_task_envelope import pending_obpi_sig_b_error
 from gzkit.governance.req_coverage import (
     TestRef,
     discover_covers,
@@ -901,6 +902,24 @@ def _resolve_evidence(
     return effective_summary, effective_proof
 
 
+def _enforce_task_envelope_gate(
+    *, obpi_file: Path, project_root: Path, as_json: bool, obpi_id: str
+) -> None:
+    """Fail-closed task-envelope Signature-(b) chokepoint gate (GHI #590).
+
+    Block completion of an OBPI that would land ``seq=01``-only-without-
+    ``req_atomic`` residue — the generator of the recurring
+    ``task-envelope-coherence`` ``gz check`` reopenings. Enforcing it in the
+    state-mutating completion command (not only the bypassable ``gz obpi
+    precomplete`` pre-flight) means the residue can never reach ``main`` on any
+    agent's path. Same rule as ``gz validate --task-envelope-coherence``
+    Signature (b), scoped to this OBPI.
+    """
+    err = pending_obpi_sig_b_error(project_root, obpi_file)
+    if err is not None:
+        _fail(err.message, exit_code=3, as_json=as_json, obpi_id=obpi_id)
+
+
 def obpi_complete_cmd(
     obpi: str,
     attestor: str,
@@ -1065,6 +1084,17 @@ def obpi_complete_cmd(
         attestor_present=attestor_present,
         ledger=ledger,
         sensitivity=effective_sensitivity,
+    )
+
+    # 4a-quater. Task-envelope Signature-(b) chokepoint gate (GHI #590): mirror
+    # of `gz validate --task-envelope-coherence` Sig (b), scoped to this OBPI and
+    # enforced *before* the brief flips to Completed — so seq=01-only-without-
+    # req_atomic residue can never reach main and reopen Tier 0 next session.
+    _enforce_task_envelope_gate(
+        obpi_file=obpi_file,
+        project_root=project_root,
+        as_json=as_json,
+        obpi_id=obpi_id,
     )
 
     # 4b. Operator-verbatim conversational attestation. Per the canon-owner

@@ -385,6 +385,44 @@ def _sig_b_subdivision_skipped(project_root: Path) -> list[ValidationError]:
     return errors
 
 
+def _read_brief_frontmatter(brief_path: Path) -> dict[str, object]:
+    """Parse a single brief's YAML frontmatter (single-brief mirror of the bulk collector)."""
+    import yaml  # noqa: PLC0415
+
+    text = brief_path.read_text(encoding="utf-8")
+    if not text.startswith("---\n"):
+        return {}
+    end = text.find("\n---\n", 4)
+    if end == -1:
+        return {}
+    try:
+        fm = yaml.safe_load(text[4:end]) or {}
+    except yaml.YAMLError:
+        return {}
+    return fm if isinstance(fm, dict) else {}
+
+
+def pending_obpi_sig_b_error(project_root: Path, brief_path: Path) -> ValidationError | None:
+    """Signature-(b) check for an OBPI *about to be completed* — the chokepoint gate (GHI #590).
+
+    The repo-wide validator only flags OBPIs that already carry a completion
+    event; this scoped variant predicts the same residue one step earlier, so
+    ``gz obpi complete`` can fail closed before it ever reaches ``gz check``.
+    The canonical full-slug id is read from the brief frontmatter so the ledger
+    ``task_started.obpi_id`` scan and the ``req_atomic`` lookup align — guarding
+    the short-vs-full obpi_id divergence (a mismatch would find zero tasks and
+    silently pass). Reuses ``_sig_b_error_for_obpi`` so the rule is identical to
+    ``gz validate --task-envelope-coherence`` Signature (b) — single source of truth.
+    """
+    fm = _read_brief_frontmatter(brief_path)
+    obpi_id = str(fm.get("id") or brief_path.stem)
+    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+    tasks = _ledger_channel_for_obpi(ledger_path, obpi_id)
+    seqs_by_req = _group_tasks_by_req(tasks)
+    req_atomic = fm.get("req_atomic") or []
+    return _sig_b_error_for_obpi(obpi_id, seqs_by_req, req_atomic)
+
+
 def _task_matches_obpi(task_id: str, obpi_id: str) -> bool:
     m = re.match(r"^TASK-(\d+\.\d+\.\d+)-(\d+)-", task_id)
     return bool(m and f"OBPI-{m.group(1)}-{m.group(2)}" == obpi_id)

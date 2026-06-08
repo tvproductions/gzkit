@@ -17,6 +17,7 @@ from gzkit.commands.obpi_precomplete import (
     _check_lock_held,
     _check_plan_audit_receipt,
     _check_reconcile_idempotent,
+    _check_task_envelope_coherence,
     _resolve_brief_path,
 )
 from gzkit.config import GzkitConfig
@@ -320,7 +321,7 @@ class TestPrecompleteCliEndToEnd(unittest.TestCase):
             payload = json.loads(result.output)
             self.assertEqual(payload["obpi_id"], "OBPI-0.1.0-01")
             self.assertIn("ready", payload)
-            self.assertEqual(len(payload["checks"]), 7)
+            self.assertEqual(len(payload["checks"]), 8)
             self.assertEqual(
                 {c["name"] for c in payload["checks"]},
                 {
@@ -331,6 +332,7 @@ class TestPrecompleteCliEndToEnd(unittest.TestCase):
                     "plan_audit_receipt",
                     "brief_headings",
                     "behave_req_coverage",
+                    "task_envelope_coherence",
                 },
             )
 
@@ -437,6 +439,59 @@ class TestPrecompleteBehaveReqCoverageScopedCheck(unittest.TestCase):
             result = _check_behave_req_coverage_scoped(root, path, "OBPI-0.1.0-01")
             self.assertTrue(result.ok, msg=result.message)
             self.assertIn("waived", result.message.lower())
+
+
+class TestPrecompleteTaskEnvelopeCoherence(unittest.TestCase):
+    """Precomplete early-warns on Sig(b) residue before `gz obpi complete` (GHI #590)."""
+
+    @staticmethod
+    def _seed(root: Path, req_atomic: list[str] | None) -> Path:
+        gzkit_dir = root / ".gzkit"
+        gzkit_dir.mkdir(parents=True, exist_ok=True)
+        (gzkit_dir / "ledger.jsonl").write_text(
+            json.dumps(
+                {
+                    "event": "task_started",
+                    "task_id": "TASK-0.0.64-04-01-01",
+                    "obpi_id": "OBPI-0.0.64-04",
+                    "id": "evt-1",
+                    "schema_": "1.0",
+                    "timestamp": "2026-05-30T15:00:00Z",
+                }
+            ),
+            encoding="utf-8",
+        )
+        brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.64-fixture" / "obpis"
+        brief_dir.mkdir(parents=True, exist_ok=True)
+        path = brief_dir / "OBPI-0.0.64-04-fixture.md"
+        atomic_line = f"req_atomic:\n  - {req_atomic[0]}\n" if req_atomic else ""
+        path.write_text(
+            f"---\nid: OBPI-0.0.64-04\nparent: ADR-0.0.64-fixture\nstatus: pending\n"
+            f"lane: Heavy\n{atomic_line}---\n\n# Fixture\n",
+            encoding="utf-8",
+        )
+        return path
+
+    def test_fails_on_seq01_only_without_req_atomic(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            path = self._seed(root, req_atomic=None)
+            result = _check_task_envelope_coherence(root, path)
+            self.assertEqual(result.name, "task_envelope_coherence")
+            self.assertFalse(result.ok, msg=result.message)
+            self.assertIn("Signature (b)", result.message)
+            self.assertIsNotNone(result.remediation)
+
+    def test_passes_when_req_atomic_present(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            path = self._seed(root, req_atomic=["REQ-0.0.64-04-01"])
+            result = _check_task_envelope_coherence(root, path)
+            self.assertTrue(result.ok, msg=result.message)
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -30,6 +30,7 @@ from gzkit.cli.helpers.exit_codes import (
     EXIT_USER_ERROR,
 )
 from gzkit.commands.common import console, get_project_root
+from gzkit.commands.validate_task_envelope import pending_obpi_sig_b_error
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -122,6 +123,7 @@ def _run_all_checks(project_root: Path, brief_path: Path, obpi_id: str) -> Itera
     yield _check_plan_audit_receipt(project_root, obpi_id)
     yield _check_brief_headings_scoped(project_root, brief_path)
     yield _check_behave_req_coverage_scoped(project_root, brief_path, obpi_id)
+    yield _check_task_envelope_coherence(project_root, brief_path)
 
 
 def _check_brief_readiness(project_root: Path, brief_path: Path) -> CheckResult:
@@ -392,6 +394,32 @@ def _check_behave_req_coverage_scoped(
         name="behave_req_coverage",
         ok=True,
         message=f"{len(req_ids)} REQ(s) all tagged in features/**",
+    )
+
+
+def _check_task_envelope_coherence(project_root: Path, brief_path: Path) -> CheckResult:
+    """Early-warn on task-envelope Signature-(b) residue (GHI #590).
+
+    Mirrors the fail-closed gate in ``gz obpi complete``: an OBPI that would close
+    ``seq=01``-only across all REQs with no ``req_atomic:`` exemption leaves residue
+    that reddens ``gz check`` on the next session. Surfacing it here lets the
+    operator subdivide or declare atomicity *before* invoking ``gz obpi complete``.
+    """
+    err = pending_obpi_sig_b_error(project_root, brief_path)
+    if err is not None:
+        return CheckResult(
+            name="task_envelope_coherence",
+            ok=False,
+            message=err.message,
+            remediation=(
+                "Subdivide labor via `uv run gz task start --seq next`, or declare "
+                "`req_atomic:` in the brief frontmatter with inline per-REQ rationale."
+            ),
+        )
+    return CheckResult(
+        name="task_envelope_coherence",
+        ok=True,
+        message="No seq=01-only-without-req_atomic residue; completion will not reopen the gate.",
     )
 
 

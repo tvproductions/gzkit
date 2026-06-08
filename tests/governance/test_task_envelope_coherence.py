@@ -967,5 +967,69 @@ class TestObpiIdForTask(unittest.TestCase):
         self.assertIsNone(_obpi_id_for_task("TASK-task-spine-restoration-#552"))
 
 
+class TestPendingObpiSigB(unittest.TestCase):
+    """Scoped Signature-(b) check for an OBPI about to be completed (GHI #590).
+
+    The chokepoint variant predicts the same residue the repo-wide validator
+    flags, but *before* the completion event exists — so `gz obpi complete` can
+    fail closed before the residue ever reaches `gz check`. Fixtures use
+    full-slug ids matching the real ledger `task_started.obpi_id` shape, which
+    guards the short-vs-full obpi_id divergence (a mismatch would make the check
+    silently find zero tasks and pass — a false negative).
+    """
+
+    @covers("REQ-0.0.64-04-02")
+    def test_residue_flagged_before_completion_event(self) -> None:
+        """seq=01-only + no req_atomic → Sig(b) error, with NO completion event present."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            # Deliberately omit obpi_receipt_emitted/completed: the chokepoint
+            # check must predict residue at completion time, not after.
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.64-04-01-01",
+                            "obpi_id": "OBPI-0.0.64-04",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-05-30T15:00:00Z",
+                        }
+                    )
+                ],
+            )
+            brief_path = _write_brief(root, _BASE_FM)
+            err = validate_task_envelope.pending_obpi_sig_b_error(root, brief_path)
+            self.assertIsNotNone(err, "Expected Sig(b) error for seq=01-only-without-req_atomic")
+            assert err is not None  # narrow for type-checker
+            self.assertIn("Signature (b)", err.message)
+
+    @covers("REQ-0.0.64-04-02")
+    def test_req_atomic_clears_pending_check(self) -> None:
+        """req_atomic covering all REQs → no Sig(b) error at the chokepoint."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.64-04-01-01",
+                            "obpi_id": "OBPI-0.0.64-04",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-05-30T15:00:00Z",
+                        }
+                    )
+                ],
+            )
+            brief_path = _write_brief(root, {**_BASE_FM, "req_atomic": ["REQ-0.0.64-04-01"]})
+            err = validate_task_envelope.pending_obpi_sig_b_error(root, brief_path)
+            self.assertIsNone(err)
+
+
 if __name__ == "__main__":
     unittest.main()
