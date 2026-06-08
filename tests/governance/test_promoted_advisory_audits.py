@@ -15,6 +15,7 @@ import hashlib
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.governance.trust_audits import (
     audit_adr_taxonomy,
@@ -24,6 +25,7 @@ from gzkit.governance.trust_audits import (
     audit_brief_demo_section,
     audit_brief_headings,
     audit_class_size,
+    audit_cli_alignment,
     audit_insights_shape,
     audit_pool_adr_isolation,
     audit_pydantic_models,
@@ -297,6 +299,7 @@ class PromotedAdvisoryAudits(unittest.TestCase):
     def test_skill_alignment_invariant_1(self) -> None:
         self._assert_clean(audit_skill_alignment(_PROJECT_ROOT), "skill_alignment")
 
+    @covers("REQ-0.0.67-01-01")
     def test_skill_alignment_enumerates_multiword_subcommands(self) -> None:
         """Invariant 1 must cover multi-word subcommands, not just top-level verbs.
 
@@ -314,6 +317,83 @@ class PromotedAdvisoryAudits(unittest.TestCase):
         for verb in ("obpi complete", "adr status", "obpi lock claim"):
             self.assertIn(verb, paths, f"multi-word verb `gz {verb}` not enumerated")
         self._assert_clean(audit_skill_alignment(_PROJECT_ROOT), "skill_alignment")
+
+    @covers("REQ-0.0.67-01-02")
+    def test_skill_alignment_non_vacuous(self) -> None:
+        """An unwielded, unwaived multi-word verb produces exactly one skill_alignment error.
+
+        Proves the audit is non-vacuous: removing coverage for a multi-word verb
+        causes the orphan check to fire with the right artifact (GHI #588 keystone).
+        """
+        from gzkit.governance.trust_audits.cli import _known_cli_verb_paths
+
+        real_paths = _known_cli_verb_paths()
+        synthetic = "fake synthetic audit-test-verb"
+        patched_paths = real_paths | frozenset([synthetic])
+
+        with patch(
+            "gzkit.governance.trust_audits.cli._known_cli_verb_paths",
+            return_value=patched_paths,
+        ):
+            errors = audit_skill_alignment(_PROJECT_ROOT)
+
+        flagged = [e for e in errors if e.type == "skill_alignment"]
+        self.assertEqual(
+            len(flagged),
+            1,
+            f"expected exactly 1 skill_alignment error for the synthetic verb; got {flagged}",
+        )
+        self.assertEqual(flagged[0].artifact, f"gz {synthetic}")
+
+    @covers("REQ-0.0.67-01-03")
+    def test_skill_alignment_cascade_and_stale(self) -> None:
+        """Group-cascade waivers cover subcommands; stale waivers are detected.
+
+        Verifies _verb_path_waived accepts an exact key or its top-level group prefix,
+        and _waiver_targets_live_verb flags keys not present in the registered tree.
+        """
+        from gzkit.governance.trust_audits.cli import (
+            _NO_SKILL_VERBS,
+            _known_cli_verb_paths,
+            _verb_path_waived,
+            _waiver_targets_live_verb,
+        )
+
+        # Exact key and group-prefix cascade
+        self.assertTrue(_verb_path_waived("task"), "exact key must be waived")
+        self.assertTrue(_verb_path_waived("task start"), "group cascade must waive subcommand")
+        self.assertFalse(_verb_path_waived("gz-fake-unregistered"), "non-entry must not be waived")
+
+        # Stale waiver detection
+        dummy_paths: frozenset[str] = frozenset(["task start", "task complete"])
+        self.assertTrue(
+            _waiver_targets_live_verb("task", dummy_paths), "live group key must be recognized"
+        )
+        self.assertFalse(
+            _waiver_targets_live_verb("orphan-key", dummy_paths), "stale key must not be recognized"
+        )
+
+        # Live tree carries no stale _NO_SKILL_VERBS entries
+        verb_paths = _known_cli_verb_paths()
+        stale = [k for k in _NO_SKILL_VERBS if not _waiver_targets_live_verb(k, verb_paths)]
+        self.assertFalse(stale, f"stale _NO_SKILL_VERBS entries found: {stale}")
+
+    @covers("REQ-0.0.67-01-04")
+    def test_skill_alignment_cli_verbs_top_level_only(self) -> None:
+        """_known_cli_verbs() returns top-level-only tokens; cli-alignment stays green.
+
+        Coupled-surface coherence guard: OBPI-0.0.67-01 must not alter
+        _known_cli_verbs() semantics, which audit_cli_alignment depends on.
+        """
+        from gzkit.governance.trust_audits.cli import _known_cli_verbs
+
+        top_level = _known_cli_verbs()
+        multi_word = [v for v in top_level if " " in v]
+        self.assertFalse(
+            multi_word,
+            f"_known_cli_verbs() must return top-level-only tokens; got multi-word: {multi_word}",
+        )
+        self._assert_clean(audit_cli_alignment(_PROJECT_ROOT), "cli_alignment")
 
     def test_advisory_scorecard_selftest(self) -> None:
         self._assert_clean(audit_advisory_scorecard(_PROJECT_ROOT), "advisory_scorecard")

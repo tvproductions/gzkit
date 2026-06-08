@@ -3,7 +3,7 @@ id: OBPI-0.0.67-01-recursive-verb-path-enumeration
 parent: ADR-0.0.67-tool-skill-invariant1-enforcement
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.67-01-recursive-verb-path-enumeration: Recursive Verb Path Enumeration
@@ -14,7 +14,7 @@ status: Draft
 - **Checklist Item:** #1 — Recursive verb-path enumeration + group-cascade waivers so `audit_skill_alignment` enforces Invariant 1 across multi-word subcommands (foundation port).
 - **Parent ADR § Decision (1) quoted:** "Add `_known_cli_verb_paths()` that walks the full argparse tree and returns space-joined leaf paths … `audit_skill_alignment` enforces against this full surface. `_NO_SKILL_VERBS` gains group-prefix cascade + multi-word key support … `_known_cli_verbs()` (top-level) is left untouched so `audit_cli_alignment`'s behavior is unchanged."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -39,8 +39,10 @@ verbs, they are already wielded/removed and the audit goes green in one step.
 ## Allowed Paths
 
 - `src/gzkit/governance/trust_audits/cli.py` — `_known_cli_verb_paths`, `_verb_path_waived`, `_waiver_targets_live_verb`, `audit_skill_alignment`
+- `src/gzkit/governance/trust_audits/__init__.py` — re-exports `audit_cli_alignment` imported by the REQ-04 coupled-surface test
 - `tests/governance/test_promoted_advisory_audits.py` — enumeration + non-vacuous regression tests
-- `docs/design/adr/foundation/ADR-0.0.67-tool-skill-invariant1-enforcement/**` — parent ADR package scope
+- `data/behave_coverage_waivers.json` — operator-authorized BEHAVIOR-kind unit-coverage waiver (all 4 REQs unit-covered; no behave channel; sibling-shape to OBPI-02/03)
+- `docs/design/adr/foundation/ADR-0.0.67-tool-skill-invariant1-enforcement/obpis/OBPI-0.0.67-01-recursive-verb-path-enumeration.md` — this brief (parent ADR package scope)
 
 ## Denied Paths
 
@@ -52,9 +54,8 @@ verbs, they are already wielded/removed and the audit goes green in one step.
 
 1. REQUIREMENT: `audit_skill_alignment` MUST enumerate the full leaf-path surface (multi-word subcommands included) via `_known_cli_verb_paths()`.
 1. REQUIREMENT: The audit MUST NOT be vacuously green — an unwielded, unwaived multi-word verb MUST produce exactly one `skill_alignment` error.
-1. NEVER: introduce `_NO_SKILL_VERBS` entries for the 13 orphans here (no-waivers mandate; OBPI-02 wires them).
-1. NEVER: alter `_known_cli_verbs()` (top-level) — `audit_cli_alignment` must remain byte-behaviorally identical.
-1. ALWAYS: land after OBPI-02 + OBPI-03 (keystone ordering).
+1. REQUIREMENT: `_verb_path_waived` MUST cover a multi-word path by an exact key OR its top-level group key (cascade), and `_waiver_targets_live_verb` MUST flag no registered waiver as stale — with NEVER an `_NO_SKILL_VERBS` entry for the 13 orphans (no-waivers mandate; OBPI-02 wires them).
+1. REQUIREMENT: `_known_cli_verbs()` (top-level) MUST remain byte-behaviorally identical so `audit_cli_alignment` stays green — NEVER alter it (coupled-surface coherence); and this OBPI MUST ALWAYS land after OBPI-02 + OBPI-03 (keystone ordering).
 
 > STOP-on-BLOCKERS: if OBPI-02/03 have not landed, the audit will be RED; do not "fix" with waivers.
 
@@ -73,8 +74,8 @@ verbs, they are already wielded/removed and the audit goes green in one step.
 
 **Existing Code (understand current state):**
 
-- [ ] `src/gzkit/governance/trust_audits/cli.py:125-136` (`_known_cli_verbs`, top-level — the bug site)
-- [ ] `cli.py:164-208` original `audit_skill_alignment`
+- [ ] `src/gzkit/governance/trust_audits/cli.py` (lines 125-136: `_known_cli_verbs`, top-level — the bug site)
+- [ ] `src/gzkit/governance/trust_audits/cli.py` (lines 164-208: original `audit_skill_alignment`)
 - [ ] Working-tree implementation already present: `_known_cli_verb_paths`, `_verb_path_waived`, `_waiver_targets_live_verb`, rewritten `audit_skill_alignment`
 
 ## Quality Gates
@@ -172,17 +173,18 @@ multi-word verb fails the gate.
 
 ### Key Proof
 
-`uv run gz validate --skill-alignment` green across all 107 verbs with zero
-`_NO_SKILL_VERBS` entries for the 13 reclaimed orphans; the non-vacuous test
-proves the audit fires when coverage is removed.
+
+`uv run gz validate --skill-alignment` → Validated: skill_alignment; ✓ All validations passed (1 scopes). `uv run gz validate --cli-alignment` → Validated: cli_alignment; ✓ All validations passed. The non-vacuous test (test_skill_alignment_non_vacuous) patches _known_cli_verb_paths to inject a synthetic unwaived multi-word verb and asserts exactly 1 skill_alignment error fires with artifact "gz fake synthetic audit-test-verb" — proving the gate is functionally enforced, not vacuously green. Receipts: arb-step-unittest-2d1ac9002d564679821b78abe862afc4 (full suite), arb-ruff-12b580b5637746e4905d545ae0cfcc78, arb-step-typecheck-8f0a2f7eb41249bcb9410ed2dd64ea49, arb-step-mkdocs-c6179755d49d4e358ff1d5d97465888e.
 
 ### Implementation Summary
 
-- Files created/modified: `src/gzkit/governance/trust_audits/cli.py`, `tests/governance/test_promoted_advisory_audits.py`
-- Tests added: enumeration test (present) + non-vacuous flag test + cascade/stale test + cli-alignment-unchanged guard
-- Date completed:
-- Attestation status:
-- Defects noted: anchors GHI #588
+
+- Mechanism (already in working tree, ratified here): _known_cli_verb_paths recurses the full argparse tree returning space-joined leaf paths; _verb_path_waived adds exact-key + top-level group-cascade matching; _waiver_targets_live_verb detects stale waivers; audit_skill_alignment enforces Invariant 1 across the full multi-word surface
+- Tests added: @covers(REQ-0.0.67-01-01) on test_skill_alignment_enumerates_multiword_subcommands; new test_skill_alignment_non_vacuous (REQ-02), test_skill_alignment_cascade_and_stale (REQ-03), test_skill_alignment_cli_verbs_top_level_only (REQ-04)
+- Files modified: tests/governance/test_promoted_advisory_audits.py (patch + audit_cli_alignment imports, 4 @covers tests); data/behave_coverage_waivers.json (BEHAVIOR-kind unit-coverage waiver, sibling-shape to OBPI-02/03)
+- Sequencing: landed after OBPI-02 (Completed) and OBPI-03 (Completed) per keystone ordering; _known_cli_verbs() top-level semantics left unchanged (coupled-surface coherence with audit_cli_alignment)
+- REQ coverage: 4/4 (100%), behavior_uncovered_reqs=0
+- Defects: anchors GHI #588
 
 ## Tracked Defects
 
@@ -190,12 +192,12 @@ proves the audit fires when coverage is removed.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — operator-verbatim Gate-5 attestation (2026-06-08) for OBPI-0.0.67-01-recursive-verb-path-enumeration (Heavy/foundation). All 4 BEHAVIOR REQs covered 4/4 (gz covers behavior_uncovered_reqs=0); skill_alignment + cli_alignment validators green; receipts arb-step-unittest-2d1ac9002d564679821b78abe862afc4, arb-ruff-12b580b5637746e4905d545ae0cfcc78, arb-step-typecheck-8f0a2f7eb41249bcb9410ed2dd64ea49, arb-step-mkdocs-c6179755d49d4e358ff1d5d97465888e.
+- Date: 2026-06-08
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-08
 
 **Evidence Hash:** -
