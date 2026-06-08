@@ -1031,5 +1031,139 @@ class TestPendingObpiSigB(unittest.TestCase):
             self.assertIsNone(err)
 
 
+class TestPendingObpiAllSignatures(unittest.TestCase):
+    """The chokepoint scopes ALL THREE task-envelope signatures, not just Sig (b) (GHI #590).
+
+    `gz check` fails on Sig (a) (unattributed labor), Sig (b) (seq=01-only), and
+    Sig (c) (layer-drift). The completion chokepoint must predict all three for the
+    pending OBPI, or an OBPI can pass `gz obpi complete` clean and still reopen
+    Tier 0 on the next session.
+    """
+
+    @covers("REQ-0.0.64-04-01")
+    def test_sig_a_unattributed_labor_flagged(self) -> None:
+        """A worklog event under this OBPI's active TASK with no task_id → Sig (a)."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.64-04-01-01",
+                            "obpi_id": "OBPI-0.0.64-04",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-05-30T15:00:00Z",
+                        }
+                    ),
+                    # artifact_edited on a plain src/ path (not a brief / ADR-decision /
+                    # manpage carve-out) with NO task_id, while the TASK is active.
+                    json.dumps(
+                        {
+                            "event": "artifact_edited",
+                            "obpi_id": "OBPI-0.0.64-04",
+                            "path": "src/gzkit/foo.py",
+                            "id": "evt-2",
+                            "schema_": "1.0",
+                            "timestamp": "2026-05-30T15:01:00Z",
+                        }
+                    ),
+                ],
+            )
+            # req_atomic suppresses Sig (b) so Sig (a) is isolated.
+            brief_path = _write_brief(root, {**_BASE_FM, "req_atomic": ["REQ-0.0.64-04-01"]})
+            errs = validate_task_envelope.pending_obpi_task_envelope_errors(root, brief_path)
+            self.assertTrue(
+                any("Signature (a)" in e.message for e in errs), [e.message for e in errs]
+            )
+
+    @covers("REQ-0.0.64-04-01")
+    def test_sig_a_attributed_labor_is_clean(self) -> None:
+        """The same worklog event WITH a task_id raises no Sig (a) error."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.64-04-01-01",
+                            "obpi_id": "OBPI-0.0.64-04",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-05-30T15:00:00Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "artifact_edited",
+                            "obpi_id": "OBPI-0.0.64-04",
+                            "task_id": "TASK-0.0.64-04-01-01",
+                            "path": "src/gzkit/foo.py",
+                            "id": "evt-2",
+                            "schema_": "1.0",
+                            "timestamp": "2026-05-30T15:01:00Z",
+                        }
+                    ),
+                ],
+            )
+            brief_path = _write_brief(root, {**_BASE_FM, "req_atomic": ["REQ-0.0.64-04-01"]})
+            errs = validate_task_envelope.pending_obpi_task_envelope_errors(root, brief_path)
+            self.assertFalse(any("Signature (a)" in e.message for e in errs))
+
+    @covers("REQ-0.0.64-04-03")
+    def test_sig_c_layer_drift_flagged(self) -> None:
+        """Frontmatter tasks: and ledger task_started declare different TASKs → Sig (c)."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.64-04-01-02",
+                            "obpi_id": "OBPI-0.0.64-04",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-05-30T15:00:00Z",
+                        }
+                    )
+                ],
+            )
+            brief_path = _write_brief(root, {**_BASE_FM, "tasks": ["TASK-0.0.64-04-01-01"]})
+            errs = validate_task_envelope.pending_obpi_task_envelope_errors(root, brief_path)
+            self.assertTrue(
+                any("Signature (c)" in e.message for e in errs), [e.message for e in errs]
+            )
+
+    @covers("REQ-0.0.64-04-02")
+    def test_sig_b_flagged_through_combined_entrypoint(self) -> None:
+        """seq=01-only without req_atomic is still caught via the combined entry point."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.64-04-01-01",
+                            "obpi_id": "OBPI-0.0.64-04",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-05-30T15:00:00Z",
+                        }
+                    )
+                ],
+            )
+            brief_path = _write_brief(root, _BASE_FM)
+            errs = validate_task_envelope.pending_obpi_task_envelope_errors(root, brief_path)
+            self.assertTrue(any("Signature (b)" in e.message for e in errs))
+
+
 if __name__ == "__main__":
     unittest.main()

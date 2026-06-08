@@ -212,7 +212,9 @@ def _sig_a_is_not_labor_event(
     return ev_type not in _TASK_WORKLOG_TYPES
 
 
-def _sig_a_attribution_drift(project_root: Path) -> list[ValidationError]:
+def _sig_a_attribution_drift(
+    project_root: Path, *, obpi_filter: str | None = None
+) -> list[ValidationError]:
     """Signature (a) — worklog event emitted under an active TASK with no ``task_id``.
 
     Scans ``.gzkit/ledger.jsonl`` for any worklog event (per ``_TASK_WORKLOG_TYPES``)
@@ -222,6 +224,12 @@ def _sig_a_attribution_drift(project_root: Path) -> list[ValidationError]:
     ``task_escalated``) event for the same OBPI.
 
     Heavy-fail: each missing-``task_id`` worklog event yields one ValidationError.
+
+    ``obpi_filter``: when set (the completion-chokepoint scoping, GHI #590), emit
+    errors only for events whose own ``obpi_id`` matches — i.e. *that* OBPI's own
+    unattributed labor. The active-TASK state walk and every carve-out is
+    identical to the unfiltered (repo-wide ``gz check``) pass; only error emission
+    is narrowed, so the chokepoint cannot flag another OBPI's drift.
     """
     import json as _json  # noqa: PLC0415
 
@@ -252,7 +260,7 @@ def _sig_a_attribution_drift(project_root: Path) -> list[ValidationError]:
             continue
 
         any_active = any(active_tasks_by_obpi.values())
-        if any_active and not task_id:
+        if any_active and not task_id and (obpi_filter is None or obpi_id == obpi_filter):
             errors.append(
                 ValidationError(
                     type="task_envelope_coherence",
@@ -421,6 +429,30 @@ def pending_obpi_sig_b_error(project_root: Path, brief_path: Path) -> Validation
     seqs_by_req = _group_tasks_by_req(tasks)
     req_atomic = fm.get("req_atomic") or []
     return _sig_b_error_for_obpi(obpi_id, seqs_by_req, req_atomic)
+
+
+def pending_obpi_task_envelope_errors(
+    project_root: Path, brief_path: Path
+) -> list[ValidationError]:
+    """All task-envelope-coherence errors (Sig a/b/c) an OBPI would carry at completion (GHI #590).
+
+    The completion chokepoint must predict every signature ``gz check`` enforces —
+    Sig (a) unattributed labor, Sig (b) seq=01-only-without-``req_atomic``, and
+    Sig (c) layer-drift — scoped to the pending OBPI, so the residue can never
+    reach ``main``. Each signature reuses the same rule as the repo-wide
+    validator (single source of truth); only the scoping differs:
+      - Sig (a): ``_sig_a_attribution_drift`` with ``obpi_filter`` (carve-outs intact),
+      - Sig (b): ``pending_obpi_sig_b_error`` (already scoped, full-slug-id-derived),
+      - Sig (c): ``_sig_c_layer_drift`` filtered to this OBPI's ``artifact`` errors.
+    """
+    obpi_id = str(_read_brief_frontmatter(brief_path).get("id") or brief_path.stem)
+    errors: list[ValidationError] = []
+    sig_b = pending_obpi_sig_b_error(project_root, brief_path)
+    if sig_b is not None:
+        errors.append(sig_b)
+    errors.extend(_sig_a_attribution_drift(project_root, obpi_filter=obpi_id))
+    errors.extend(e for e in _sig_c_layer_drift(project_root) if e.artifact == obpi_id)
+    return errors
 
 
 def _task_matches_obpi(task_id: str, obpi_id: str) -> bool:

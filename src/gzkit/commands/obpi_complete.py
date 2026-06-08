@@ -33,7 +33,7 @@ from gzkit.commands.common import (
     resolve_adr_file,
     resolve_obpi_file,
 )
-from gzkit.commands.validate_task_envelope import pending_obpi_sig_b_error
+from gzkit.commands.validate_task_envelope import pending_obpi_task_envelope_errors
 from gzkit.governance.req_coverage import (
     TestRef,
     discover_covers,
@@ -905,19 +905,24 @@ def _resolve_evidence(
 def _enforce_task_envelope_gate(
     *, obpi_file: Path, project_root: Path, as_json: bool, obpi_id: str
 ) -> None:
-    """Fail-closed task-envelope Signature-(b) chokepoint gate (GHI #590).
+    """Fail-closed task-envelope-coherence chokepoint gate (GHI #590).
 
-    Block completion of an OBPI that would land ``seq=01``-only-without-
-    ``req_atomic`` residue — the generator of the recurring
-    ``task-envelope-coherence`` ``gz check`` reopenings. Enforcing it in the
-    state-mutating completion command (not only the bypassable ``gz obpi
-    precomplete`` pre-flight) means the residue can never reach ``main`` on any
-    agent's path. Same rule as ``gz validate --task-envelope-coherence``
-    Signature (b), scoped to this OBPI.
+    Block completion of an OBPI that would land any ``task-envelope-coherence``
+    residue — Sig (a) unattributed labor, Sig (b) seq=01-only-without-
+    ``req_atomic``, or Sig (c) layer-drift — the generator of the recurring
+    ``gz check`` reopenings. Enforcing all three in the state-mutating completion
+    command (not only the bypassable ``gz obpi precomplete`` pre-flight) means the
+    residue can never reach ``main`` on any agent's path. Same rules as
+    ``gz validate --task-envelope-coherence``, scoped to this OBPI.
     """
-    err = pending_obpi_sig_b_error(project_root, obpi_file)
-    if err is not None:
-        _fail(err.message, exit_code=3, as_json=as_json, obpi_id=obpi_id)
+    errors = pending_obpi_task_envelope_errors(project_root, obpi_file)
+    if errors:
+        _fail(
+            " | ".join(e.message for e in errors),
+            exit_code=3,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
 
 
 def obpi_complete_cmd(

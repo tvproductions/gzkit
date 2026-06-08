@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.19.0"
+skill-version: "6.19.1"
 last_reviewed: 2026-06-08
 model: sonnet
 ---
@@ -580,9 +580,13 @@ the reconcile output and ADR status refresh.
    #193 drift before it bites), lock ownership, ARB receipts present, plan-audit
    receipt PASS, brief-heading shape, scoped behave REQ coverage, and
    **task-envelope coherence** (GHI #590 — early warning that the OBPI would
-   close `seq=01`-only without a `req_atomic:` exemption; remediation:
-   subdivide labor via `uv run gz task start --seq next`, or declare
-   `req_atomic:` in the brief frontmatter with inline per-REQ rationale).
+   close with residue on any of the three signatures: Sig (a) a worklog event
+   under an active TASK with no `task_id`, Sig (b) `seq=01`-only without a
+   `req_atomic:` exemption, Sig (c) layer-drift across discovery channels;
+   remediation: subdivide labor via `uv run gz task start --seq next` or declare
+   `req_atomic:` (Sig b), attribute worklog events with a `task_id` (Sig a),
+   reconcile divergent TASK ids across channels (Sig c) —
+   `uv run gz task envelope diagnose {OBPI-SLUG}`).
    **If exit code is non-zero, do NOT invoke `gz obpi complete` — fix each
    reported precondition first using the named remediation.** Exit 0 here is
    the gate that prevents the reactive-triage class of failure (the original

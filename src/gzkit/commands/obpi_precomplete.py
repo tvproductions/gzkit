@@ -30,7 +30,7 @@ from gzkit.cli.helpers.exit_codes import (
     EXIT_USER_ERROR,
 )
 from gzkit.commands.common import console, get_project_root
-from gzkit.commands.validate_task_envelope import pending_obpi_sig_b_error
+from gzkit.commands.validate_task_envelope import pending_obpi_task_envelope_errors
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -401,19 +401,22 @@ def _check_task_envelope_coherence(project_root: Path, brief_path: Path) -> Chec
     """Early-warn on task-envelope Signature-(b) residue (GHI #590).
 
     Mirrors the fail-closed gate in ``gz obpi complete``: an OBPI that would close
-    ``seq=01``-only across all REQs with no ``req_atomic:`` exemption leaves residue
-    that reddens ``gz check`` on the next session. Surfacing it here lets the
-    operator subdivide or declare atomicity *before* invoking ``gz obpi complete``.
+    with any task-envelope residue — Sig (a) unattributed labor, Sig (b)
+    ``seq=01``-only-without-``req_atomic``, or Sig (c) layer-drift — reddens
+    ``gz check`` on the next session. Surfacing it here lets the operator remediate
+    *before* invoking ``gz obpi complete``.
     """
-    err = pending_obpi_sig_b_error(project_root, brief_path)
-    if err is not None:
+    errors = pending_obpi_task_envelope_errors(project_root, brief_path)
+    if errors:
         return CheckResult(
             name="task_envelope_coherence",
             ok=False,
-            message=err.message,
+            message=" | ".join(e.message for e in errors),
             remediation=(
-                "Subdivide labor via `uv run gz task start --seq next`, or declare "
-                "`req_atomic:` in the brief frontmatter with inline per-REQ rationale."
+                "Subdivide labor via `uv run gz task start --seq next`, declare "
+                "`req_atomic:` in the brief frontmatter (Sig b), attribute worklog "
+                "events with a `task_id` (Sig a), or reconcile divergent TASK ids "
+                "across channels (Sig c) — see `gz task envelope diagnose <OBPI>`."
             ),
         )
     return CheckResult(
