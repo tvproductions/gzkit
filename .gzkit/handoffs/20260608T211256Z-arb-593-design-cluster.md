@@ -182,6 +182,7 @@ operator; the design cluster deliberately deferred to a fresh session.
 - [ ] `grep -rl '^ln:' docs/design/adr/foundation/ADR-0.0.67-tool-skill-invariant1-enforcement/obpis/` returns nothing (bindings reverted)
 - [ ] `grep -rl '^ln:' docs/design/adr --include='*.md' | wc -l` is 17 (the rename scope, unchanged elsewhere)
 - [ ] `uv run gz adr status ADR-0.0.67` shows 3/3 `attested_completed`, closeout READY, QC PENDING (human attestation)
+- [ ] `uv run gz validate --documents` is green (ran post-revert this session: "✓ All validations passed (1 scopes)") — confirms removing the `ln:` bindings left the repo in a valid held state
 - [ ] `.gzkit/ceremonies/ADR-0.0.67-tool-skill-invariant1-enforcement.ceremony.json` shows `current_step: 6`, `attestation: null`, `paused_at` set — ceremony genuinely held
 - [ ] `gh issue view 594` is open with the blocker comment; `gh issue view 585` carries the sibling cross-link
 - [ ] Working tree: `obpi-audit.jsonl` (M) and the ceremony JSON (??) are uncommitted ceremony artifacts (expected)
