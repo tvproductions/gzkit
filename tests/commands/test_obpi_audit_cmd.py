@@ -62,7 +62,8 @@ class TestObpiAuditCmd(unittest.TestCase):
             self.assertIn("criteria_evaluated", data, msg=result.output)
             self.assertIsInstance(data["criteria_evaluated"], list)
             self.assertGreater(
-                len(data["criteria_evaluated"]), 0,
+                len(data["criteria_evaluated"]),
+                0,
                 msg="criteria_evaluated must contain at least one criterion",
             )
             # Each criterion entry must have result and evidence fields.
@@ -83,9 +84,7 @@ class TestObpiAuditCmd(unittest.TestCase):
             _quick_init()
             _seed_adr_with_brief()
 
-            result = runner.invoke(
-                main, ["obpi", "audit", "--adr", "ADR-0.0.99", "--json"]
-            )
+            result = runner.invoke(main, ["obpi", "audit", "--adr", "ADR-0.0.99", "--json"])
             # Exit 0 = all pass; exit 1 = some criteria fail (no tests in temp project).
             self.assertIn(result.exit_code, [0, 1], msg=result.output)
 

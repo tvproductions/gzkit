@@ -64,9 +64,7 @@ class TestSkillAlignment10Verbs(unittest.TestCase):
         errors = audit_skill_alignment(_PROJECT_ROOT)
         if errors:
             details = "\n".join(f"  {e.artifact}: {e.message}" for e in errors[:10])
-            self.fail(
-                f"audit_skill_alignment returned {len(errors)} error(s):\n{details}"
-            )
+            self.fail(f"audit_skill_alignment returned {len(errors)} error(s):\n{details}")
 
 
 if __name__ == "__main__":

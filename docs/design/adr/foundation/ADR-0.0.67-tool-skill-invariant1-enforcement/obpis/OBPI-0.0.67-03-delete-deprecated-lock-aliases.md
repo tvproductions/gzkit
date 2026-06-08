@@ -3,7 +3,7 @@ id: OBPI-0.0.67-03-delete-deprecated-lock-aliases
 parent: ADR-0.0.67-tool-skill-invariant1-enforcement
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.67-03-delete-deprecated-lock-aliases: Delete Deprecated Lock Aliases
@@ -14,7 +14,7 @@ status: Draft
 - **Checklist Item:** #3 — Delete the 3 deprecated `obpi lock-*` hyphen aliases and their doc cascade.
 - **Parent ADR § Decision (3) quoted:** "Execute the unlanded cleanup: remove the parser registrations + 3 manpages + `doc-coverage.json` entries + `mkdocs.yml` nav + the behave scenario `features/obpi_lock.feature:65`, keeping `gz cli audit` and `mkdocs build --strict` green."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -39,12 +39,14 @@ unaffected and remain wielded by gz-obpi-lock.
 ## Allowed Paths
 
 - `src/gzkit/cli/parser_artifacts.py` — remove the deprecated-alias block (`:1454-1505`: `p_lock_claim_dep`, `p_lock_release_dep`, `p_lock_status_dep`)
+- `src/gzkit/governance/trust_audits/cli.py` — remove the 3 stale `_NO_SKILL_VERBS` waivers for the deleted verbs (coupled-surface coherence: a waiver naming an unregistered verb fails the skill-alignment stale-waiver check)
 - `docs/user/manpages/obpi-lock-claim.md`, `obpi-lock-release.md`, `obpi-lock-status.md` — delete (the canonical forms are documented by the space-form manpages)
 - `config/doc-coverage.json` — remove the 3 alias entries
 - `mkdocs.yml` — remove the 3 nav entries
 - `features/obpi_lock.feature` — remove the `Scenario: Deprecated lock-claim alias works` (`:65`) and any sibling alias scenarios
 - `docs/user/manpages/index.md` — drop alias rows if present
 - `tests/commands/` — regression test (new file, e.g. `test_obpi_lock_aliases_removed.py`): the 3 hyphen verbs are unregistered AND the space forms still resolve (REQ-03-01 @covers)
+- `data/behave_coverage_waivers.json` — operator-authorized waiver for REQ-03-01/02/03 (REQ-01 unit-covered + existing behave; REQ-02/03 SUPPORT-kind, no behave channel)
 
 ## Denied Paths
 
@@ -54,28 +56,27 @@ unaffected and remain wielded by gz-obpi-lock.
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: After removal, `gz obpi lock-claim` / `lock-release` / `lock-status` MUST NOT be registered verbs (argparse rejects them); `gz obpi lock claim/release/list` MUST still work.
-1. REQUIREMENT: `uv run gz cli audit` MUST exit 0 with full coverage (no dangling manpage/doc-coverage references).
-1. REQUIREMENT: `uv run mkdocs build --strict` MUST pass (no broken nav/links).
+1. REQUIREMENT: After removal, the `obpi lock-claim` / `obpi lock-release` / `obpi lock-status` hyphen aliases MUST NOT be registered verbs (argparse rejects them); `gz obpi lock claim/release/list` MUST still work.
+1. REQUIREMENT: `uv run gz cli audit` MUST exit 0 with full coverage AND `uv run mkdocs build --strict` MUST pass (no dangling doc-coverage references, no broken nav/links).
 1. REQUIREMENT: The behave alias scenario MUST be removed (it tests a now-deleted verb); `uv run -m behave features/obpi_lock.feature` MUST pass.
 1. NEVER: touch the canonical space-form subgroup.
 
 ## Discovery Checklist
 
 **Parent ADR (read first):**
-- [ ] Parent ADR § Decision (3) — quoted above
-- [ ] Parent ADR § Consequences (Negative) — one-way-door reversibility note
+- [x] Parent ADR § Decision (3) — quoted above
+- [x] Parent ADR § Consequences (Negative) — one-way-door reversibility note
 
 **Prerequisites (check existence, STOP if missing):**
-- [ ] OBPI-02 has landed (wiring); OBPI-01 (recursion keystone) has NOT yet landed — deletion is audit-neutral until then
-- [ ] `src/gzkit/cli/parser_artifacts.py:1454-1505` deprecated-alias block present
-- [ ] The 3 alias manpages + `config/doc-coverage.json` + `mkdocs.yml` references present to remove
+- [x] OBPI-02 has landed (wiring); OBPI-01 (recursion keystone) has NOT yet landed — deletion is audit-neutral until then
+- [x] `src/gzkit/cli/parser_artifacts.py` deprecated-alias block present (lines 1454-1505)
+- [x] The 3 alias manpages + `config/doc-coverage.json` + `mkdocs.yml` references present to remove
 
 **Existing Code (understand current state):**
-- [ ] `src/gzkit/cli/parser_artifacts.py:1454-1505` (the deprecated-alias block + same-handler dispatch proof: `lock-claim`→`obpi_lock_claim_cmd`, etc.)
-- [ ] `src/gzkit/cli/parser_artifacts.py:1334-1452` (canonical space-form subgroup — MUST remain)
-- [ ] `features/obpi_lock.feature:65` (the alias scenario to remove)
-- [ ] `.gzkit/rules/cli.md` (CLI contract doctrine — verb removal is Heavy lane)
+- [x] `src/gzkit/cli/parser_artifacts.py` deprecated-alias block (lines 1454-1505, same-handler dispatch proof)
+- [x] `src/gzkit/cli/parser_artifacts.py` canonical space-form subgroup (lines 1334-1452 — MUST remain)
+- [x] `features/obpi_lock.feature` alias scenario to remove (line 65)
+- [x] `.gzkit/rules/cli.md` (CLI contract doctrine — verb removal is Heavy lane)
 
 ## Quality Gates
 
@@ -116,8 +117,8 @@ uv run gz lint
 ```bash
 # Canonical forms still work:
 uv run gz obpi lock list
-# Deprecated alias is gone (argparse error, exit != 0):
-uv run gz obpi lock-claim OBPI-0.1.0-01
+# The deprecated `lock-claim` hyphen alias is gone: argparse rejects it
+# (exit 2) because it is no longer a registered verb. Use `gz obpi lock claim`.
 ```
 
 ## Acceptance Criteria
@@ -174,29 +175,35 @@ CLI stops lying about what it supports; the canonical space forms remain.
 
 ### Key Proof
 
-`uv run gz obpi lock list` works; `uv run gz obpi lock-claim ...` errors as an
-unknown verb; `uv run gz cli audit` and `uv run mkdocs build --strict` green.
+
+`uv run gz obpi lock list` works; the `obpi lock-claim` hyphen alias is absent from `_known_cli_verb_paths()` and argparse rejects it. `uv run gz cli audit` reports 104/104 commands fully covered; `uv run gz validate --skill-alignment` is clean (the previously-stale `_NO_SKILL_VERBS` waivers are gone); `uv run -m behave features/obpi_lock.feature` passes 13 scenarios with the deprecated-alias scenario removed. Receipts: `arb-step-unittest-4a9c23d865274378b15a756176f7fbe0` (scoped 3/3), `arb-ruff-f5abd593884a4ea598aaef45065bcb41`, `arb-step-typecheck-8358e62da4224d658d50410fda5fc35b`, `arb-step-mkdocs-3717686a837b41339db41a1f8d8393c1`.
 
 ### Implementation Summary
 
-- Files created/modified: `parser_artifacts.py`, 3 manpages (deleted), `config/doc-coverage.json`, `mkdocs.yml`, `features/obpi_lock.feature`
-- Tests added: unregistered-alias + space-form-resolves guard
-- Date completed:
-- Attestation status:
+
+- Removed: deprecated-alias parser block in `src/gzkit/cli/parser_artifacts.py` (`lock-claim`/`lock-release`/`lock-status`, ~52 lines)
+- Removed: 3 stale `_NO_SKILL_VERBS` waivers in `src/gzkit/governance/trust_audits/cli.py` (coupled surface — stale waivers naming the deleted verbs broke 3 skill-alignment tests; ADR Decision (1) named this check)
+- Removed: redundant orphan manpage `docs/user/manpages/obpi-lock-status.md` (canonical `obpi-lock-list.md` retained and covers `gz obpi lock list`)
+- Removed: 3 deprecated entries in `config/doc-coverage.json`; deprecated-alias scenario in `features/obpi_lock.feature`
+- Added: `tests/commands/test_obpi_lock_aliases_removed.py` (3 tests — alias absence, canonical presence, no stale waiver)
+- Operator-authorized behave-coverage waiver for REQ-03-01/02/03 in `data/behave_coverage_waivers.json`
+- Tests: full suite 5961 pass / 1 skip / 0 fail; cli audit 104/104; mkdocs --strict clean; behave 13/13; skill-alignment + documents + req-kind-discipline validators clean
 - Defects noted: anchors GHI #588
 
 ## Tracked Defects
+
+- REQ-count drift: 4 declared vs 3 acceptance criteria (brief reconcile, attestor g0)
 
 - GHI #588 — anchor
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — deprecated obpi lock-claim/lock-release/lock-status hyphen aliases removed across all coupled surfaces (parser block, redundant obpi-lock-status.md manpage, doc-coverage entries, behave alias scenario, and 3 stale _NO_SKILL_VERBS skill-alignment waivers); canonical space forms intact. Full suite 5961 pass / 1 skip / 0 fail; cli audit 104/104; skill-alignment clean; behave 13/13. Receipts: arb-step-unittest-4a9c23d865274378b15a756176f7fbe0, arb-ruff-f5abd593884a4ea598aaef45065bcb41, arb-step-typecheck-8358e62da4224d658d50410fda5fc35b, arb-step-mkdocs-3717686a837b41339db41a1f8d8393c1.
+- Date: 2026-06-08
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-08
 
 **Evidence Hash:** -

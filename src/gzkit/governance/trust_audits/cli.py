@@ -68,21 +68,6 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "A dedicated gz-governance-render skill is deferred to a subsequent feature ADR "
         "once the full governance command group lands (OBPI-03 through OBPI-10)."
     ),
-    # Multi-word hyphen aliases for deprecated `obpi lock-*` verbs.
-    # Parser registration and doc-cascade deletion is OBPI-0.0.67-03 scope.
-    "obpi lock-claim": (
-        "Deprecated hyphen alias of `gz obpi lock claim` (space subgroup); the "
-        "canonical space form is wielded by gz-obpi-lock. Alias removal is "
-        "OBPI-0.0.67-03 (parser + doc cascade)."
-    ),
-    "obpi lock-release": (
-        "Deprecated hyphen alias of `gz obpi lock release`; the canonical space "
-        "form is wielded by gz-obpi-lock. Alias removal is OBPI-0.0.67-03."
-    ),
-    "obpi lock-status": (
-        "Deprecated hyphen alias of `gz obpi lock list`/`check`; the canonical "
-        "space subgroup is wielded by gz-obpi-lock. Alias removal is OBPI-0.0.67-03."
-    ),
 }
 
 

@@ -1451,59 +1451,6 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         func=lambda a: _lazy("obpi_lock_list_cmd")(adr_id=a.adr_id, as_json=a.as_json)
     )
 
-    # --- Deprecated flat aliases (OBPI-03 will remove these after skill migration) ---
-    p_lock_claim_dep = obpi_commands.add_parser(
-        "lock-claim",
-        help="[deprecated] Use 'gz obpi lock claim' instead",
-        description="Deprecated alias for 'gz obpi lock claim'. Use the nested form instead.",
-        epilog=build_epilog(["gz obpi lock claim OBPI-0.1.0-01"]),
-    )
-    p_lock_claim_dep.add_argument("obpi", help="OBPI identifier")
-    p_lock_claim_dep.add_argument(
-        "--ttl", dest="ttl_minutes", type=int, default=120, help="Lock TTL in minutes"
-    )
-    p_lock_claim_dep.add_argument(
-        "--agent", dest="agent", default=None, help="Override auto-detected agent identity"
-    )
-    add_json_flag(p_lock_claim_dep)
-    p_lock_claim_dep.set_defaults(
-        func=lambda a: _lazy("obpi_lock_claim_cmd")(
-            obpi_id=a.obpi, ttl_minutes=a.ttl_minutes, as_json=a.as_json, agent=a.agent
-        )
-    )
-
-    p_lock_release_dep = obpi_commands.add_parser(
-        "lock-release",
-        help="[deprecated] Use 'gz obpi lock release' instead",
-        description="Deprecated alias for 'gz obpi lock release'. Use the nested form instead.",
-        epilog=build_epilog(["gz obpi lock release OBPI-0.1.0-01"]),
-    )
-    p_lock_release_dep.add_argument("obpi", help="OBPI identifier")
-    add_force_flag(p_lock_release_dep)
-    p_lock_release_dep.add_argument(
-        "--agent", dest="agent", default=None, help="Override auto-detected agent identity"
-    )
-    add_json_flag(p_lock_release_dep)
-    p_lock_release_dep.set_defaults(
-        func=lambda a: _lazy("obpi_lock_release_cmd")(
-            obpi_id=a.obpi, as_json=a.as_json, force=a.force, agent=a.agent
-        )
-    )
-
-    p_lock_status_dep = obpi_commands.add_parser(
-        "lock-status",
-        help="[deprecated] Use 'gz obpi lock list' instead",
-        description="Deprecated alias for 'gz obpi lock list'. Use the nested form instead.",
-        epilog=build_epilog(["gz obpi lock list"]),
-    )
-    p_lock_status_dep.add_argument(
-        "--adr", dest="adr_id", default=None, help="Filter locks by parent ADR"
-    )
-    add_json_flag(p_lock_status_dep)
-    p_lock_status_dep.set_defaults(
-        func=lambda a: _lazy("obpi_lock_list_cmd")(adr_id=a.adr_id, as_json=a.as_json)
-    )
-
 
 def _register_task_parsers(commands: argparse._SubParsersAction) -> None:
     """Register ``gz task`` sub-command group."""

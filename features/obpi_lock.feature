@@ -62,12 +62,6 @@ Feature: OBPI lock management
     Then it exits with code 0
     And the JSON output field "count" is "0"
 
-  Scenario: Deprecated lock-claim alias works
-    Given the workspace is initialized
-    When I run "gz obpi lock-claim OBPI-0.1.0-01 --json"
-    Then it exits with code 0
-    And the JSON output field "status" is "claimed"
-
   # OBPI-0.0.41-02 — Claim/Release Safety Primitives (token-block discipline)
   # Scenarios are tagged with @REQ-X.Y.Z-NN-MM for behave coverage gate.
 

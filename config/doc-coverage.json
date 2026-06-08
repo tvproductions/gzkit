@@ -452,36 +452,6 @@
       },
       "governance_relevant": true
     },
-    "obpi lock-claim": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "obpi lock-release": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "obpi lock-status": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
     "obpi audit": {
       "surfaces": {
         "manpage": true,
