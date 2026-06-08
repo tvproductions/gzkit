@@ -6,7 +6,11 @@ Status: Active canonical recovery plan.
 > measurement in § Current Baseline. Tier 0 has reopened 8× (C→E→G→J→K→L→M→N): main is not
 > *durably* green across machines/sessions — that recurrence, not any single gate, is
 > the headline problem. The operator named this recurring pattern V.I.B.E.S. (each session
-> re-interprets restore-health, carve-outs the brittle gate, wanders foundations). #519 is
+> re-interprets restore-health, carve-outs the brittle gate, wanders foundations).
+> **2026-06-08 (PM): the most frequent offender is now mechanically gated** — GHI #590 (CLOSED)
+> made `gz obpi complete` fail-closed on `task-envelope-coherence` (Sig a/b/c), so that family's
+> completion-residue can no longer reach `main`. Recurrence is *reduced*, not eliminated:
+> Preflight / Format / Behave completion-residue remain ungated at the chokepoint. #519 is
 > the sole open `emergency`; recovery stays OPEN.
 >
 > **Route (since Snapshot G):** append-only corpus → per-surface temperature setpoint →
@@ -15,7 +19,9 @@ Status: Active canonical recovery plan.
 > 01–10, 18–27 (§ Checklist is authoritative). **Filename** stays
 > `return-to-health-plan-2026-05-30.md` (operator-anchored 2026-06-04).
 
-Last updated: 2026-06-08 — **Tier 0 reopened again (8th time; Snapshot N) on session resume (restore-health status query): `gz check` red on Task-envelope-coherence — OBPI-0.0.67-02 (REQ-01…06) and OBPI-0.0.67-03 (REQ-01…03) closed `seq=01`-only with no `req_atomic:` exemption (sig b), residue from a prior session's ADR-0.0.67 orphan-verb-wiring + lock-alias-deletion completions (foundation work outside the #519 throughline). Re-closed the *honest* way — brief-side `req_atomic:` with per-REQ rationale verified one-indivisible-contract per REQ (the validator's own named mechanism; OBPI-0.0.37-13 precedent), NOT a validator-code carve-out — so this reclose does not extend the carve-out treadmill. Commit `40cc3e57`, pushed; main 26/26 green (`GZ_CHECK_EXIT=0`), synced 0/0. See § Current Baseline — Snapshot N.**
+Last updated: 2026-06-08 (PM) — **Durable cure for the Tier-0 *generator* LANDED (GHI #590, CLOSED): the completion chokepoint now fail-closes on `task-envelope-coherence` (Sig a/b/c) at `gz obpi complete`.** Commits `46f72a02` (Sig b) + `04462322` (Sig a/c, TDD RED→GREEN, +4 tests) wire a scoped task-envelope gate into `obpi_complete.py` right after the REQ-coverage gate, with an early-warning precondition in `obpi_precomplete.py` and subdivide-or-declare-atomic guidance in `gz-obpi-pipeline` SKILL v6.19.1. This is a **third** cure mechanism — the *chokepoint-superset* approach, not the two prior snapshots named (auto-emit `req_atomic` / gate retirement) — and is better than auto-emit because it forces the honest atomic-or-subdivide decision at completion rather than reflexively greening the gate. **Scope (honest):** this mechanizes the cure for the **Task-envelope-coherence family only** — the single most frequent offender (C/E/G/L/M/N) — so a residue of that family can no longer reach `main` from any agent's completion path. The other recurring completion-residue families (**Preflight** orphan receipts, **Format** un-`ruff format`'d files, **Behave** stale fixtures) remain **ungated at the chokepoint**; recurrence is *reduced*, not eliminated. These commits landed between the 8th-reclose handoff (10:30Z) and this session — a fact *verified*, not work done, this session. `gz check` stays 26/26 GREEN, synced 0/0.
+
+Earlier 2026-06-08 (AM) entry — **Tier 0 reopened again (8th time; Snapshot N) on session resume (restore-health status query): `gz check` red on Task-envelope-coherence — OBPI-0.0.67-02 (REQ-01…06) and OBPI-0.0.67-03 (REQ-01…03) closed `seq=01`-only with no `req_atomic:` exemption (sig b), residue from a prior session's ADR-0.0.67 orphan-verb-wiring + lock-alias-deletion completions (foundation work outside the #519 throughline). Re-closed the *honest* way — brief-side `req_atomic:` with per-REQ rationale verified one-indivisible-contract per REQ (the validator's own named mechanism; OBPI-0.0.37-13 precedent), NOT a validator-code carve-out — so this reclose does not extend the carve-out treadmill. Commit `40cc3e57`, pushed; main 26/26 green (`GZ_CHECK_EXIT=0`), synced 0/0. See § Current Baseline — Snapshot N.**
 
 Earlier 2026-06-07 entry — **Tier 0 reopened again (7th time; Snapshot M) on session resume (handoff + restore-health): `gz check` red on Behave + Task-envelope-coherence, all residue from the ADR-0.0.41 token-block commits a prior session landed (foundation work outside the #519 throughline — itself an instance of the wandering the operator named). Re-closed via 2 genuine coupled-surface fixes (behave stdout/stderr split; GHI #587 scenario) + `req_atomic:` + a 4th SUPPORT-doc validator carve-out; main 26/26 green. Operator named the pattern V.I.B.E.S.: each session re-interprets restore-health, carve-outs the brittle gate, wanders foundations. See § Current Baseline — Snapshot M.**
 
@@ -106,7 +112,8 @@ the committed-main baseline; this edit records only the OBPI-26 disposition chan
 
 | GHI | Summary | Home |
 |-----|---------|------|
-| #563 | task-envelope gate failure — `seq=01`-only TASKs, missing `task_id` | **T1** — Phase 3 (gate cleared @ Snapshot E; new instance @ Snapshot G(check): ADR-decision-doc edits under active TASKs — cleared via SUPPORT-channel carve-out; class fix: closeout `task_id` population still remains) |
+| #563 | task-envelope gate failure — `seq=01`-only TASKs, missing `task_id` | **T1** — Phase 3 (records the *instances*; gate cleared @ E, G(check), N). **Generator now fixed (2026-06-08, GHI #590):** the seq=01-only-completion residue is fail-closed at `gz obpi complete`, so this family can no longer redden `gz check` from a completion path. Remaining Phase-3 residue: closeout `task_id` *population* on worklog events (distinct from the chokepoint gate). |
+| ~~#590~~ | obpi complete: task-envelope Sig(a/b/c) ungated, residue reddens gz check (the **generator** of the 8× Tier-0 reopenings) | **CLOSED 2026-06-08** — `46f72a02` (Sig b) + `04462322` (Sig a/c, TDD +4 tests); completion chokepoint now a superset of the OBPI-scoped task-envelope gate. Template for gating the other 3 offender families (Preflight/Format/Behave). |
 | #564 | preflight orphan plan-audit receipt (OBPI-0.0.64-04) | **T1** — Phase 3 (gate cleared @ Snapshot D; recurred @ Snapshot G(check): OBPI-09+OBPI-17 orphans cleaned via `gz preflight --apply`; class fix: closeout leaves no orphan remains. Adjacent latent: short-vs-full `obpi_id` mismatch direct-fixed in `task.py` @ Snapshot G(check), other consumers may share it) |
 | #519 | context surface exhausts 258K window (**emergency**) | **T1** — Phase 2 → CMS. **Interim relief LANDED on `main` (Snapshot I, commit `705a2354`; held at Snapshot J):** root AGENTS.md = **28,489 B** via the local-splice diet, under Codex's 32,768 B cap with ~4.3 KB headroom; Surface fidelity green (the predicted 14-violation collision avoided by re-homing, not deleting). **OBPI-0.0.37-26 attested-complete 2026-06-05** (pipeline closeout, operator-verbatim conversational Gate-5 path). **Still OPEN:** full 258K-window closure needs the <15k registry-projected surface (GHI #533). Per-vendor emission ruled out; OBPI-17-as-scoped retired. |
 | #516 | closeout passive-presenter lacks REQ-evidence check | **T1** — Phase 3 |
@@ -234,6 +241,15 @@ receipts: C, G, J), Task-envelope-coherence (ceremony artifacts: C, E, G, L, M, 
 K, M) reopen Tier 0 most often — all fire on residue left by *completions*, not real
 defects. Fix-or-retire per Operating-Rule subtraction; gate retirement needs operator
 witness.
+
+**Chokepoint-gating status (2026-06-08, GHI #590):** **Task-envelope-coherence** — the most
+frequent offender — is now **fail-closed at the completion chokepoint** (`gz obpi complete`
+runs the scoped Sig a/b/c gate, so this family's residue can no longer reach `main`). The
+remaining three families (**Preflight**, **Format**, **Behave**) are **still ungated at the
+chokepoint** and remain live subtraction/mechanization candidates: extend the
+completion-superset gate to each, or retire the gate with operator witness. The #590 pattern
+(completion chokepoint = superset of every OBPI-scoped `gz check` gate) is the template for
+closing the other three.
 
 Snapshots A–M are preserved above for audit; **Snapshot N is the live baseline.**
 
