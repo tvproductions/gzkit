@@ -250,7 +250,7 @@ class TestExecuteToAttestationGate(unittest.TestCase):
         with patch(_PATCH_TARGET, return_value=[mock_error]) as mock_validate:
             with self.assertRaises(PolicyBreachError):
                 _gate_proof_binding(project_root, state)
-            mock_validate.assert_called_once_with(project_root)
+            mock_validate.assert_called_once_with(project_root, adr_id="ADR-0.0.63-test")
 
     @covers("REQ-0.0.63-06-04")
     def test_gate_succeeds_and_calls_validator_when_no_errors(self) -> None:
@@ -273,7 +273,7 @@ class TestExecuteToAttestationGate(unittest.TestCase):
         with patch(_PATCH_TARGET, return_value=[]) as mock_validate:
             # Must not raise
             _gate_proof_binding(project_root, state)
-            mock_validate.assert_called_once_with(project_root)
+            mock_validate.assert_called_once_with(project_root, adr_id="ADR-0.0.63-test")
 
     @covers("REQ-0.0.63-06-03")
     def test_gate_is_noop_on_non_execute_step(self) -> None:
@@ -305,6 +305,117 @@ class TestExecuteToAttestationGate(unittest.TestCase):
         with patch(_PATCH_TARGET, return_value=[]) as mock_validate:
             _gate_proof_binding(project_root, state)
             mock_validate.assert_not_called()
+
+
+class TestGateScopedToCeremonyAdr(unittest.TestCase):
+    """Regression (GHI #592): the EXECUTE→ATTESTATION gate must scope proof-binding
+    to the ceremony's OWN ADR.
+
+    The defect: _gate_proof_binding called the repo-wide
+    validate_closeout_proof_binding(project_root), which scans EVERY in-closeout
+    ADR. A sibling ADR with a parked ceremony and unbound (or unbindable) REQs
+    therefore blocked an unrelated, fully-bound ADR's attestation. Semantic
+    requirement: closing out ADR-A asks "is ADR-A proof-bound?" — a sibling ADR-B's
+    parked ceremony is irrelevant to A's gate.
+    """
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def _write_ceremony(self, adr_id: str) -> None:
+        import json  # noqa: PLC0415 — local to the regression fixture
+
+        d = self.root / ".gzkit" / "ceremonies"
+        d.mkdir(parents=True, exist_ok=True)
+        (d / f"{adr_id}.ceremony.json").write_text(
+            json.dumps(
+                {
+                    "adr_id": adr_id,
+                    "current_step": 6,
+                    "started_at": "2026-01-01T00:00:00Z",
+                    "completed_at": None,
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    def _write_brief(self, adr_id: str, obpi_id: str, req: str, ln: list[dict] | None) -> None:
+        obpis = self.root / "docs" / "design" / "adr" / adr_id / "obpis"
+        obpis.mkdir(parents=True, exist_ok=True)
+        fm: dict = {"id": obpi_id, "parent": adr_id, "lane": "Heavy", "status": "Draft"}
+        if ln is not None:
+            fm["ln"] = ln
+        body = f"# {obpi_id}\n\n## Acceptance Criteria\n\n- [ ] {req} [BEHAVIOR]: criterion {req}\n"
+        (obpis / f"{obpi_id}.md").write_text(
+            f"---\n{yaml.dump(fm, default_flow_style=False)}---\n\n{body}", encoding="utf-8"
+        )
+
+    def _write_receipt(self, receipt_id: str) -> None:
+        import json  # noqa: PLC0415 — local to the regression fixture
+
+        r = self.root / "artifacts" / "receipts"
+        r.mkdir(parents=True, exist_ok=True)
+        (r / f"{receipt_id}.json").write_text(
+            json.dumps({"id": receipt_id, "status": "pass"}), encoding="utf-8"
+        )
+
+    def test_bound_adr_gate_not_blocked_by_unbound_sibling_ceremony(self) -> None:
+        from gzkit.commands.closeout_ceremony import (
+            CeremonyState,
+            CeremonyStep,
+            _gate_proof_binding,
+        )
+
+        # ADR-A (being closed): fully bound to a real receipt.
+        self._write_ceremony("ADR-0.0.97-alpha")
+        self._write_receipt("arb-step-unittest-real97")
+        self._write_brief(
+            "ADR-0.0.97-alpha",
+            "OBPI-0.0.97-01-alpha",
+            "REQ-0.0.97-01-01",
+            ln=[{"req_id": "REQ-0.0.97-01-01", "receipt_ids": ["arb-step-unittest-real97"]}],
+        )
+        # ADR-B (sibling, parked ceremony): unbound REQ, would never satisfy the gate.
+        self._write_ceremony("ADR-0.0.98-beta")
+        self._write_brief("ADR-0.0.98-beta", "OBPI-0.0.98-01-beta", "REQ-0.0.98-01-01", ln=None)
+
+        state = CeremonyState(
+            adr_id="ADR-0.0.97-alpha",
+            current_step=CeremonyStep.EXECUTE,
+            is_foundation=False,
+            started_at="2026-01-01T00:00:00Z",
+            updated_at="2026-01-01T00:00:00Z",
+        )
+
+        # Must NOT raise: ADR-A is fully bound; ADR-B's parked ceremony is irrelevant.
+        _gate_proof_binding(self.root, state)
+
+    def test_unbound_adr_gate_still_blocks_on_its_own_reqs(self) -> None:
+        """Scoping must not weaken the gate: the ceremony's OWN unbound REQs still block."""
+        from gzkit.commands.closeout_ceremony import (
+            CeremonyState,
+            CeremonyStep,
+            _gate_proof_binding,
+        )
+        from gzkit.core.exceptions import PolicyBreachError
+
+        self._write_ceremony("ADR-0.0.97-alpha")
+        self._write_brief("ADR-0.0.97-alpha", "OBPI-0.0.97-01-alpha", "REQ-0.0.97-01-01", ln=None)
+
+        state = CeremonyState(
+            adr_id="ADR-0.0.97-alpha",
+            current_step=CeremonyStep.EXECUTE,
+            is_foundation=False,
+            started_at="2026-01-01T00:00:00Z",
+            updated_at="2026-01-01T00:00:00Z",
+        )
+
+        with self.assertRaises(PolicyBreachError):
+            _gate_proof_binding(self.root, state)
 
 
 if __name__ == "__main__":

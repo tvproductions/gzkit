@@ -45,20 +45,29 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-def validate_closeout_proof_binding(project_root: Path) -> list[ValidationError]:
+def validate_closeout_proof_binding(
+    project_root: Path, adr_id: str | None = None
+) -> list[ValidationError]:
     """Return ValidationErrors for Acceptance-Criteria REQs lacking a bound receipt.
 
-    Scans ADRs with an in-progress closeout ceremony; for each, loads every OBPI
-    brief, extracts its body ``## Acceptance Criteria`` REQs, and checks each REQ
-    has an ``ln`` entry with at least one receipt-ID that resolves to a real
-    receipt artifact.
+    When *adr_id* is None (the repo-wide ``gz validate --closeout-proof-binding``
+    scope), scans every ADR with an in-progress closeout ceremony. When *adr_id*
+    is given, validates only that ADR's briefs — the closeout transition gate
+    scopes to the ADR being closed out, so a sibling ADR's parked (or otherwise
+    in-progress) ceremony cannot block this ADR's attestation (GHI #592).
 
-    Returns an empty list when no ADR is in closeout or all REQs are bound. Errors
+    For each in-scope ADR, loads every OBPI brief, extracts its body
+    ``## Acceptance Criteria`` REQs, and checks each REQ has an ``ln`` entry with
+    at least one receipt-ID that resolves to a real receipt artifact.
+
+    Returns an empty list when no ADR is in scope or all REQs are bound. Errors
     carry type ``"closeout_proof_binding"`` (policy-breach exit 3).
     """
+    if adr_id is not None:
+        return _check_adr(project_root, adr_id)
     errors: list[ValidationError] = []
-    for adr_id in _iter_in_closeout_adrs(project_root):
-        errors.extend(_check_adr(project_root, adr_id))
+    for in_closeout_adr in _iter_in_closeout_adrs(project_root):
+        errors.extend(_check_adr(project_root, in_closeout_adr))
     return errors
 
 

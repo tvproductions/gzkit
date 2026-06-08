@@ -275,7 +275,7 @@ def _gate_proof_binding(project_root: Path, state: CeremonyState) -> None:
         validate_closeout_proof_binding,
     )
 
-    errors = validate_closeout_proof_binding(project_root)
+    errors = validate_closeout_proof_binding(project_root, adr_id=state.adr_id)
     if not errors:
         return
     from gzkit.core.exceptions import PolicyBreachError
