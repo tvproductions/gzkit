@@ -4,6 +4,14 @@ parent: ADR-0.0.67-tool-skill-invariant1-enforcement
 item: 3
 lane: Heavy
 status: Completed
+# req_atomic exemption (return-to-health, 2026-06-08): each REQ is one
+# indivisible parser/doc/feature contract. The implementation did not subdivide
+# labor below a REQ, so one seq=01 TASK per REQ is the honest grain (no shared
+# coarse-default bucket masking finer labor).
+req_atomic:
+  - REQ-0.0.67-03-01  # hyphen aliases unregistered, space forms retained: one parser contract
+  - REQ-0.0.67-03-02  # alias manpages + doc-coverage + mkdocs nav removed: one doc-cascade contract
+  - REQ-0.0.67-03-03  # deprecated behave scenario removed, feature still green: one feature-trim contract
 ---
 
 # OBPI-0.0.67-03-delete-deprecated-lock-aliases: Delete Deprecated Lock Aliases

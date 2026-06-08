@@ -4,6 +4,17 @@ parent: ADR-0.0.67-tool-skill-invariant1-enforcement
 item: 2
 lane: Heavy
 status: Completed
+# req_atomic exemption (return-to-health, 2026-06-08): each REQ is one
+# indivisible wire/emit/remove/sync contract. The Implementation Summary
+# confirms labor was not subdivided below a REQ, so one seq=01 TASK per REQ is
+# the honest grain (no shared coarse-default bucket masking finer labor).
+req_atomic:
+  - REQ-0.0.67-02-01  # 10-verb audit-clean + none-in-waivers: one audit-clean contract
+  - REQ-0.0.67-02-02  # reconcile Phase 1 wields gz obpi audit: one skill-wiring contract
+  - REQ-0.0.67-02-03  # obpi_audit_cmd well-formed ledger entry: one audit-emit contract
+  - REQ-0.0.67-02-04  # obpi_withdraw_cmd emit + reject re-withdrawal: one withdraw contract
+  - REQ-0.0.67-02-05  # 13 stop-gap waivers removed from cli.py: one waiver-removal contract
+  - REQ-0.0.67-02-06  # skill-version/last_reviewed bumps + mirror regen: one sync contract
 ---
 
 # OBPI-0.0.67-02-wire-orphan-verbs-into-skills: Wire Orphan Verbs Into Skills (MAXX, no waivers)
