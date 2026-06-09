@@ -18,6 +18,17 @@ _RECOVERY = (
 )
 
 
+def _runs_gz_check(entry: str) -> bool:
+    """Return True when *entry* invokes ``gz check`` as a command, not a prefix.
+
+    Token-adjacency match: ``gz`` immediately followed by the bare ``check``
+    token. Rejects check-prefixed sibling verbs (e.g. ``gz check-config-paths``)
+    that an unbounded substring match would false-pass (#600).
+    """
+    tokens = entry.split()
+    return any(tokens[i] == "gz" and tokens[i + 1] == "check" for i in range(len(tokens) - 1))
+
+
 def audit_session_green_gate(project_root: Path) -> list[ValidationError]:
     """Return errors if no stages: [pre-push] hook running gz check is declared.
 
@@ -38,7 +49,7 @@ def audit_session_green_gate(project_root: Path) -> list[ValidationError]:
         ]
     try:
         config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-    except Exception:
+    except (OSError, UnicodeDecodeError, yaml.YAMLError):
         return [
             ValidationError(
                 type="session_green_gate",
@@ -61,7 +72,7 @@ def audit_session_green_gate(project_root: Path) -> list[ValidationError]:
     pre_push_gz_hooks = [
         h
         for h in all_hooks
-        if "pre-push" in (h.get("stages") or []) and "gz check" in h.get("entry", "")
+        if "pre-push" in (h.get("stages") or []) and _runs_gz_check(h.get("entry", ""))
     ]
     if not pre_push_gz_hooks:
         return [

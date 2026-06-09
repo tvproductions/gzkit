@@ -44,6 +44,18 @@ repos:
         stages: [pre-commit]
 """
 
+_HOOK_PRE_PUSH_CHECK_CONFIG_PATHS = """\
+repos:
+  - repo: local
+    hooks:
+      - id: gz-check-config-paths-pre-push
+        name: gz check-config-paths (pre-push)
+        entry: uv run gz check-config-paths
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+"""
+
 _INVALID_YAML = "key: [unclosed"
 
 
@@ -81,6 +93,27 @@ class TestAuditSessionGreenGateRedPath(unittest.TestCase):
             (root / ".pre-commit-config.yaml").write_text(_HOOK_WITHOUT_PRE_PUSH, encoding="utf-8")
             errors = audit_session_green_gate(root)
         self.assertTrue(errors, "Expected at least one ValidationError for missing hook")
+        self.assertEqual(errors[0].type, "session_green_gate")
+
+    @covers("REQ-0.0.68-02-01")
+    def test_returns_error_when_only_hook_is_check_config_paths(self) -> None:
+        # A pre-push hook running `gz check-config-paths` must NOT satisfy the
+        # gate — only `gz check` does. Guards the un-removability guarantee
+        # against a check-prefixed sibling verb false-passing the floor (#600).
+        from gzkit.governance.trust_audits.session_green_gate import (
+            audit_session_green_gate,
+        )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".pre-commit-config.yaml").write_text(
+                _HOOK_PRE_PUSH_CHECK_CONFIG_PATHS, encoding="utf-8"
+            )
+            errors = audit_session_green_gate(root)
+        self.assertTrue(
+            errors,
+            "Expected error: a pre-push 'gz check-config-paths' hook is not a 'gz check' gate",
+        )
         self.assertEqual(errors[0].type, "session_green_gate")
 
     @covers("REQ-0.0.68-02-01")
