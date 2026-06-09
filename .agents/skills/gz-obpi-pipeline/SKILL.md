@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.19.1"
-last_reviewed: 2026-06-08
+skill-version: "6.20.0"
+last_reviewed: 2026-06-09
 model: sonnet
 ---
 
@@ -346,6 +346,17 @@ uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 uv run gz arb step --name behave -- uv run -m behave --tags=@REQ-X.Y.Z-NN-MM,... features/
 uv run gz validate --documents
 ```
+
+**Verification exit-code integrity (binding, GHI #589).** NEVER pipe a
+verification command through `tail`/`head`/`grep`/`Select-Object`. A shell pipe
+reports the *last* process's exit code (the filter's — always 0), masking a
+non-zero unittest/behave/mkdocs exit: a green-looking Stage 3 over a red suite.
+The harness `Background command … (exit code 0)` notification on a piped command
+is the filter's status, not the verifier's — treat it as unverified. The
+ARB receipt records the true `exit_status` (GHI #317): after each `gz arb step`,
+read the emitted `arb-step-*` receipt and confirm `exit_status == 0` before
+advancing to Stage 4. If you must trim console output for readability, redirect
+to a file (`> out.log 2>&1`) and read the receipt — never `| tail`.
 
 **Scope discipline (GHI #160, #185, #420).** At OBPI Stage 3, the
 runtime resolves this OBPI's `@REQ-...` behave tags via

@@ -5,11 +5,11 @@ paths:
 description: Test policy and coverage requirements
 ---
 
-<!-- rule-version: 0.7.0 -->
+<!-- rule-version: 0.8.0 -->
 
 # Test Policy (canonical)
 
-> **Rule version:** `0.7.0` — producer reconciled to GHI #552: `gz git-sync` now stamps `Task: TASK-gz-git-sync` (previously only `Ceremony:`, which #552 stopped accepting on src/tests scope — leaving every sync commit silently non-compliant), and the direct-fix slug's `-#<ghi>` anchor is now OPTIONAL (operator moratorium on reflexive GHI-filing, 2026-06-01). Prior `0.6.0`: GHI #552 strict-mode — src/tests commits MUST carry `Task:`; `Ceremony:`/`Eval-feedback-source:` no longer substitute. Surfaces TASK as the leaf vertebra of the PRD → Constitution → ADR → OBPI → REQ → TASK → Attestation governance spine (per AGENTS.md § Workflow).
+> **Rule version:** `0.8.0` — added § Verification exit-code integrity (GHI #589): never pipe a verifier through `tail`/`head`/`grep`; the shell reports the filter's exit, not the verifier's — read the ARB receipt `exit_status`. Prior `0.7.0` — producer reconciled to GHI #552: `gz git-sync` now stamps `Task: TASK-gz-git-sync` (previously only `Ceremony:`, which #552 stopped accepting on src/tests scope — leaving every sync commit silently non-compliant), and the direct-fix slug's `-#<ghi>` anchor is now OPTIONAL (operator moratorium on reflexive GHI-filing, 2026-06-01). Prior `0.6.0`: GHI #552 strict-mode — src/tests commits MUST carry `Task:`; `Ceremony:`/`Eval-feedback-source:` no longer substitute. Surfaces TASK as the leaf vertebra of the PRD → Constitution → ADR → OBPI → REQ → TASK → Attestation governance spine (per AGENTS.md § Workflow).
 
 ## General Rules (binding)
 
@@ -54,6 +54,8 @@ Gate 2 is named TDD. Red-Green-Refactor is a repeating cycle per behavior increm
 **Per-increment rhythm:** One test → one observed RED → minimum code to GREEN → next increment.
 
 **RED evidence:** Do not author ARB receipts with `exit_status=1` as "RED receipts". Gate 2 TDD claims cite only GREEN-side receipts (`arb-step-unittest-*`).
+
+**Verification exit-code integrity (binding, GHI #589).** A verifier's truth is its own exit code, never a downstream filter's. NEVER pipe `unittest`/`behave`/`mkdocs --strict` (or any ARB-wrapped verifier) through `tail`/`head`/`grep`/`Select-Object`: the shell reports the *last* process's exit (the filter's — always 0), masking a failing suite as a green run. Capture to a file (`> out.log 2>&1`) and read the ARB receipt's `exit_status` (GHI #317). A harness "exit code 0" notification on a piped command attests the filter, not the verifier.
 
 ## TASK-Driven Workflow (binding)
 
