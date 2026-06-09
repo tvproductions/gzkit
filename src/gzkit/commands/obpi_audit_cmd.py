@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from gzkit.commands.common import console
+from gzkit.governance.brief_path_validity import extract_allowed_paths
 
 
 def obpi_audit_cmd(obpi_id: str | None, adr_id: str | None, as_json: bool) -> None:
@@ -88,7 +89,7 @@ def _audit_single(project_root: Path, obpi_id: str) -> dict:
 
     tests_found = _find_tests(project_root, adr_id or "", obpi_id)
     tests_passed, test_count = _run_tests(project_root, tests_found)
-    coverage_pct = _measure_coverage(project_root, tests_found)
+    coverage_pct = _measure_coverage(project_root, tests_found, _brief_src_paths(brief_path))
     covers_tags = _find_covers_tags(project_root, adr_id or "")
 
     criteria = _build_criteria(tests_found, tests_passed, test_count, coverage_pct)
@@ -286,8 +287,43 @@ def _run_tests(project_root: Path, test_files: list[Path]) -> tuple[bool, int]:
         return False, 0
 
 
-def _measure_coverage(project_root: Path, test_files: list[Path]) -> float | None:
-    """Measure coverage for test files."""
+def _brief_src_paths(brief_path: Path | None) -> list[str]:
+    """Return the brief's ``Allowed Paths`` entries under ``src/`` (GHI #591).
+
+    These are the OBPI's code unit-of-work — the denominator for the per-OBPI
+    coverage criterion. A directory entry (trailing ``/``, no ``.py``/glob)
+    becomes a recursive glob so ``coverage report --include`` matches the files
+    beneath it. Non-``src`` entries (tests, docs, data) are excluded: they are
+    the test surface and coupled surfaces, not the measured unit.
+    """
+    if brief_path is None:
+        return []
+    allowed = extract_allowed_paths(brief_path)
+    if not allowed:
+        return []
+    src_paths: list[str] = []
+    for raw in allowed:
+        if not raw.startswith("src/"):
+            continue
+        if "*" in raw or raw.endswith(".py"):
+            src_paths.append(raw)
+        else:
+            src_paths.append(raw.rstrip("/") + "/*")
+    return src_paths
+
+
+def _measure_coverage(
+    project_root: Path, test_files: list[Path], include_paths: list[str]
+) -> float | None:
+    """Measure coverage of the OBPI's unit of work by its own tests.
+
+    ``include_paths`` (the brief's ``src/`` Allowed Paths, per
+    :func:`_brief_src_paths`) scopes the ``coverage report`` denominator, so the
+    percentage means "the OBPI's delivered code is N% exercised by its own
+    tests" rather than "the whole ``src/`` tree is N% exercised" — the latter is
+    structurally unreachable for any well-scoped OBPI (GHI #591). With no scoped
+    paths the measurement falls back to the whole-``src`` denominator.
+    """
     if not test_files:
         return None
     try:
@@ -300,8 +336,11 @@ def _measure_coverage(project_root: Path, test_files: list[Path]) -> float | Non
             cwd=str(project_root),
             timeout=120,
         )
+        report_cmd = ["uv", "run", "coverage", "report", "--format=total"]
+        if include_paths:
+            report_cmd.append("--include=" + ",".join(include_paths))
         result = subprocess.run(
-            ["uv", "run", "coverage", "report", "--format=total"],
+            report_cmd,
             capture_output=True,
             text=True,
             encoding="utf-8",
