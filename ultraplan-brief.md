@@ -17,10 +17,11 @@ operator named this recurring pattern **V.I.B.E.S.** ("Velocity Increased, Bugs
 Expected Software").
 
 That root cause now has a mechanical gate: **ADR-0.0.68
-`green-between-sessions-gate` is Completed + attested (2/2 OBPIs)** —
-(01) a pre-push `gz check` hook, (02) a session-green-gate validator. Remaining
-work is therefore closer to **additive / maintenance** than corrective. This is
-the "done enough" inflection the recovery plan was driving toward.
+`green-between-sessions-gate` is VALIDATED (audit ceremony 2026-06-09, 2/2 OBPIs,
+operator "accept audit" receipt)** — (01) a pre-push `gz check` hook, (02) a
+session-green-gate validator. Remaining work is therefore closer to
+**additive / maintenance** than corrective. This is the "done enough" inflection
+the recovery plan was driving toward.
 
 ---
 
@@ -28,9 +29,9 @@ the "done enough" inflection the recovery plan was driving toward.
 
 | Signal | State |
 |---|---|
-| `main` | Green; synced 0/0 to `origin/main`; HEAD `3c1695eb` |
-| Foundation ADR set | 68 ADRs; ~38 Validated, ADR-0.0.68 now Completed (one step short of Validated) |
-| **Root-cause gate** | ✅ **Landed** — green-between-sessions enforcement exists (ADR-0.0.68) |
+| `main` | Green; synced 0/0 to `origin/main`; HEAD `2682d7f3` (was `3c1695eb` at authoring) |
+| Foundation ADR set | 68 ADRs; ~39 Validated — **ADR-0.0.68 reached Validated 2026-06-09** |
+| **Root-cause gate** | ✅ **Landed + VALIDATED** — green-between-sessions enforcement locked as a validated floor (ADR-0.0.68); the pre-push gate verified itself live on its own validation push |
 | Open emergencies | **#519 only** — codex gzkit context surface exhausts 258K window (untouched) |
 | Open GHIs | 38 (steady-state triage scale, not a restore-health queue) |
 | ADR-0.0.41 | **Pending / pre_closeout / BLOCKED, 2/5 OBPIs** — the `ln`-coupled closeout |
@@ -100,10 +101,15 @@ so the operator should explicitly ratify a direction before 0.0.41 closeout.
   closing #543; fold the fail-open seam fix at `trust_audits/cli.py:222-225` →
   surfaced `ValidationError` + covering test). This ADR unblocks 0.0.41.
 
-### P2 — ADR-0.0.68 → Validated
-- ADR-0.0.68 is Completed + attested; run its audit ceremony
-  (COMPLETED → VALIDATED) to lock the green-between-sessions gate as a permanent
-  validated floor. Low-energy, high-symbolic-value (it's the treadmill exit).
+### P2 — ADR-0.0.68 → Validated ✅ DONE (2026-06-09)
+- Audit ceremony completed: ledger proof PASS (after remediating a
+  covers-backfill validator false positive — blame re-anchor, fix `5b2a71ed`),
+  value demonstrated live, spec-reviewer PASS 6/6 REQs, quality-reviewer
+  COHERENT (covers-shadow finding fixed `423701ea`), operator "accept audit"
+  receipt emitted, lifecycle **Validated** confirmed. AUDIT.md + 7 proofs under
+  the ADR's `audit/`. Three direct fixes landed in-ceremony (`5b2a71ed`,
+  `7c1bc791`, `423701ea`); two out-of-scope defects tracked in agent-insights
+  (typecheck gate `src`-only blindness; triage.py script type errors).
 
 ### P3 — Foundation backlog (additive, felt-need-paced)
 - ~19 Draft + ~8 Proposed foundation ADRs remain short of Validated. With the
@@ -122,7 +128,7 @@ so the operator should explicitly ratify a direction before 0.0.41 closeout.
 §3 ln-decision ──► P1 (0.0.41 closeout)
                      └─(if sunset)─► ln-sunset foundation ADR ──► closes #543
 P0 (#519) ── independent, but operator-gated (Gate 5) ── topmost priority
-P2 (0.0.68 → Validated) ── independent, low-energy
+P2 (0.0.68 → Validated) ── ✅ DONE 2026-06-09
 P3 (foundation backlog) ── gated on "done enough" appetite, not blocking
 P4 (GHI triage) ── continuous
 ```
@@ -138,10 +144,10 @@ P4 (GHI triage) ── continuous
 ## 6. Verification anchors
 
 ```bash
-uv run gz adr report ADR-0.0.68          # Completed, attested, 2/2 OBPIs
+uv run gz adr report ADR-0.0.68          # VALIDATED (audit 2026-06-09), 2/2 OBPIs
 uv run gz adr report ADR-0.0.41          # Pending, pre_closeout, BLOCKED, 2/5
-uv run gz adr report ADR-0.0.67          # Validated (last fully-closed foundation ADR)
-git log -1 --oneline                     # 3c1695eb (GHI #599 ln auto-populate)
+uv run gz adr report ADR-0.0.67          # Validated
+git log -1 --oneline                     # 2682d7f3 (ln-sunset ratification in brief)
 git status -sb                           # clean, synced 0/0
 gh issue list --state open --label emergency   # only #519
 ```
