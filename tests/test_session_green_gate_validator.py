@@ -11,15 +11,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-
-def covers(target: str):  # noqa: D401
-    """Identity decorator linking test to ADR/OBPI target for traceability."""
-
-    def _identity(obj):  # type: ignore
-        return obj
-
-    return _identity
-
+from gzkit.traceability import covers
 
 _HOOK_WITH_PRE_PUSH = """\
 repos:
