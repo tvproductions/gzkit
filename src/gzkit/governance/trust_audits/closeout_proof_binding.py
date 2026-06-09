@@ -3,7 +3,7 @@
 ``gz validate --closeout-proof-binding`` (opt-in scope) checks that every REQ in
 every OBPI brief of an ADR that is **actively in closeout** has at least one
 proof-binding entry in the brief's ``ln:`` frontmatter, and that each cited
-receipt-ID resolves to a real receipt artifact on disk.
+receipt-ID resolves to a receipt bound in the **ledger** (never a file on disk).
 
 **REQ surface:** the brief body ``## Acceptance Criteria`` section (ADR-0.0.63
 Decision item 5: "every REQ in the parent ADR's Acceptance Criteria"), extracted
@@ -16,9 +16,14 @@ whose ``completed_at`` is unset — i.e. a closeout ceremony is in progress.
 Completed ceremonies and pre-closeout ADRs are out of scope, so ``ln`` stays
 optional until an ADR actually enters closeout.
 
-**Proof floor:** ledger-existence — the receipt artifact file must exist at
-``artifacts/receipts/<receipt-id>.json``. String-presence in the brief alone is
-not sufficient; a typo'd ID fails closed.
+**Proof floor:** ledger-existence — the cited receipt-ID must resolve to a
+receipt bound in ``.gzkit/ledger.jsonl`` (an ``evidence.run_id`` or an
+``evidence.resolved_receipt_ids`` entry of a receipt-emission event). The
+binding moment is ``gz obpi complete``, which always precedes the ADR-closeout
+gate, so the durable ledger record is present when this validator fires. The
+flushable ``artifacts/receipts/`` cache is NOT consulted: file presence is
+neither sufficient nor necessary (GHI #593). String-presence in the brief alone
+is not sufficient; a typo'd, fabricated, or unbound ID fails closed.
 
 Exit 3 (policy breach) when any Acceptance-Criteria REQ of an in-closeout ADR is
 unbound or cites a non-existent receipt artifact.
@@ -63,11 +68,12 @@ def validate_closeout_proof_binding(
     Returns an empty list when no ADR is in scope or all REQs are bound. Errors
     carry type ``"closeout_proof_binding"`` (policy-breach exit 3).
     """
+    ledger_receipts = _ledger_resolved_receipt_ids(project_root)
     if adr_id is not None:
-        return _check_adr(project_root, adr_id)
+        return _check_adr(project_root, adr_id, ledger_receipts)
     errors: list[ValidationError] = []
     for in_closeout_adr in _iter_in_closeout_adrs(project_root):
-        errors.extend(_check_adr(project_root, in_closeout_adr))
+        errors.extend(_check_adr(project_root, in_closeout_adr, ledger_receipts))
     return errors
 
 
@@ -140,12 +146,44 @@ def _ln_index(frontmatter: dict[str, object]) -> dict[str, list[str]]:
     return index
 
 
-def _receipt_exists(project_root: Path, receipt_id: str) -> bool:
-    """Return True when *receipt_id* resolves to an existing receipt artifact file."""
-    return (project_root / "artifacts" / "receipts" / f"{receipt_id}.json").exists()
+def _ledger_resolved_receipt_ids(project_root: Path) -> set[str]:
+    """Return the set of receipt-IDs the ledger records as emitted or bound.
+
+    A receipt is ledger-present when it appears as an ``evidence.run_id`` (its
+    own emission) or within an ``evidence.resolved_receipt_ids`` list (bound at
+    ``gz obpi complete``). This is the durable record that survives an
+    ``artifacts/receipts/`` cache flush (GHI #593).
+    """
+    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+    if not ledger_path.exists():
+        return set()
+    receipts: set[str] = set()
+    for line in ledger_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        evidence = event.get("evidence") if isinstance(event, dict) else None
+        if not isinstance(evidence, dict):
+            continue
+        run_id = evidence.get("run_id")
+        if isinstance(run_id, str) and run_id:
+            receipts.add(run_id)
+        resolved = evidence.get("resolved_receipt_ids")
+        if isinstance(resolved, list):
+            receipts.update(r for r in resolved if isinstance(r, str) and r)
+    return receipts
 
 
-def _check_adr(project_root: Path, adr_id: str) -> list[ValidationError]:
+def _receipt_in_ledger(ledger_receipts: set[str], receipt_id: str) -> bool:
+    """Return True when *receipt_id* is bound in the ledger receipt set."""
+    return receipt_id in ledger_receipts
+
+
+def _check_adr(project_root: Path, adr_id: str, ledger_receipts: set[str]) -> list[ValidationError]:
     """Validate all OBPI briefs in *adr_id* for REQ↔receipt-ID proof-binding."""
     errors: list[ValidationError] = []
     adr_dir = _find_adr_dir(project_root, adr_id)
@@ -156,11 +194,13 @@ def _check_adr(project_root: Path, adr_id: str) -> list[ValidationError]:
     if not obpis_dir.is_dir():
         return errors
     for brief_path in sorted(obpis_dir.glob("OBPI-*.md")):
-        errors.extend(_check_brief(project_root, brief_path))
+        errors.extend(_check_brief(project_root, brief_path, ledger_receipts))
     return errors
 
 
-def _check_brief(project_root: Path, brief_path: Path) -> list[ValidationError]:
+def _check_brief(
+    project_root: Path, brief_path: Path, ledger_receipts: set[str]
+) -> list[ValidationError]:
     """Validate one OBPI brief's body Acceptance-Criteria REQs against its ``ln`` field."""
     errors: list[ValidationError] = []
     text = brief_path.read_text(encoding="utf-8")
@@ -204,15 +244,16 @@ def _check_brief(project_root: Path, brief_path: Path) -> list[ValidationError]:
             continue
 
         for receipt_id in receipt_ids:
-            if not _receipt_exists(project_root, receipt_id):
+            if not _receipt_in_ledger(ledger_receipts, receipt_id):
                 errors.append(
                     ValidationError(
                         type="closeout_proof_binding",
                         artifact=rel,
                         message=(
                             f"{rel}: REQ {req_id!r} cites receipt-ID {receipt_id!r} but no "
-                            f"matching artifact exists at artifacts/receipts/{receipt_id}.json "
-                            f"(ledger-existence floor)."
+                            f"ledger event binds it (not found in any evidence.run_id or "
+                            f"evidence.resolved_receipt_ids). Ledger-existence floor — the "
+                            f"flushable artifacts/receipts/ cache is not consulted (GHI #593)."
                         ),
                     )
                 )

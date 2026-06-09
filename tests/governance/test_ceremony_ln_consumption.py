@@ -355,13 +355,24 @@ class TestGateScopedToCeremonyAdr(unittest.TestCase):
         )
 
     def _write_receipt(self, receipt_id: str) -> None:
+        """Bind a receipt in the ledger (resolved_receipt_ids) — the durable record (GHI #593).
+
+        The closeout proof-binding floor resolves against the ledger, not the
+        flushable artifacts/receipts/ cache, so a "real receipt" for the gate is
+        one bound at obpi-complete via evidence.resolved_receipt_ids.
+        """
         import json  # noqa: PLC0415 — local to the regression fixture
 
-        r = self.root / "artifacts" / "receipts"
-        r.mkdir(parents=True, exist_ok=True)
-        (r / f"{receipt_id}.json").write_text(
-            json.dumps({"id": receipt_id, "status": "pass"}), encoding="utf-8"
-        )
+        gz = self.root / ".gzkit"
+        gz.mkdir(parents=True, exist_ok=True)
+        event = {
+            "schema": "gzkit.ledger.v1",
+            "event": "obpi_receipt_emitted",
+            "id": "OBPI-0.0.97-01-alpha",
+            "evidence": {"resolved_receipt_ids": [receipt_id], "exit_status": 0},
+        }
+        with (gz / "ledger.jsonl").open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(event) + "\n")
 
     def test_bound_adr_gate_not_blocked_by_unbound_sibling_ceremony(self) -> None:
         from gzkit.commands.closeout_ceremony import (

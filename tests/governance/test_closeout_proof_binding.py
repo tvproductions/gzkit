@@ -5,8 +5,11 @@ Covers:
     REQ-0.0.63-03-02 — validator fails closed when a body Acceptance-Criteria REQ
         has no ``ln`` entry or an entry with empty ``receipt_ids``. Briefs are
         legacy-shaped (REQs in the body, not frontmatter) — the real corpus shape.
-    REQ-0.0.63-03-03 — ledger-existence floor: a typo'd / fabricated receipt-ID
-        (no matching artifact file) fails closed.
+    REQ-0.0.63-03-03 — ledger-existence floor: a cited receipt-ID resolves to a
+        ledger receipt-binding event (``evidence.resolved_receipt_ids``), never a
+        file on disk. A receipt absent from the ledger fails closed even when an
+        ``artifacts/receipts/`` file is present; a ledger-bound receipt passes even
+        when no file exists (survives the ARB cache flush, GHI #593).
     REQ-0.0.63-03-04 — validator returns no errors when every body REQ has a
         ledger-present receipt-ID, and is out of scope for completed/absent ceremonies.
 
@@ -89,10 +92,31 @@ def _write_legacy_brief(
 
 
 def _write_receipt(project_root: Path, receipt_id: str) -> Path:
+    """Write an ARB receipt artifact FILE (the flushable, non-durable cache)."""
     receipts_dir = project_root / "artifacts" / "receipts"
     receipts_dir.mkdir(parents=True, exist_ok=True)
     path = receipts_dir / f"{receipt_id}.json"
     path.write_text(json.dumps({"id": receipt_id, "status": "pass"}), encoding="utf-8")
+    return path
+
+
+def _write_ledger_receipt(project_root: Path, receipt_ids: list[str]) -> Path:
+    """Bind receipt-IDs into the ledger via ``evidence.resolved_receipt_ids``.
+
+    This is the DURABLE record `gz obpi complete` writes at completion — it
+    survives an ``artifacts/receipts/`` cache flush, unlike the receipt file.
+    """
+    gz_dir = project_root / ".gzkit"
+    gz_dir.mkdir(parents=True, exist_ok=True)
+    path = gz_dir / "ledger.jsonl"
+    event = {
+        "schema": "gzkit.ledger.v1",
+        "event": "obpi_receipt_emitted",
+        "id": "OBPI-0.0.99-01-test",
+        "evidence": {"resolved_receipt_ids": list(receipt_ids), "exit_status": 0},
+    }
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(event) + "\n")
     return path
 
 
@@ -196,7 +220,14 @@ class TestUnboundReqFailsClosed(unittest.TestCase):
 
 
 class TestLedgerExistenceFloor(unittest.TestCase):
-    """REQ-0.0.63-03-03 — a receipt-ID with no matching artifact fails closed."""
+    """REQ-0.0.63-03-03 — the floor is ledger-binding, not file presence (GHI #593).
+
+    The binding moment is ``gz obpi complete`` (which writes
+    ``evidence.resolved_receipt_ids``); that always precedes the ADR-closeout
+    gate, so the gate resolves against the ledger — never the flushable
+    ``artifacts/receipts/`` cache. These two tests pin the discriminating
+    semantics: file presence is neither sufficient nor necessary.
+    """
 
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
@@ -206,18 +237,41 @@ class TestLedgerExistenceFloor(unittest.TestCase):
         self._tmp.cleanup()
 
     @covers("REQ-0.0.63-03-03")
-    def test_typo_receipt_id_fails_closed(self) -> None:
+    def test_receipt_absent_from_ledger_fails_closed_even_with_file(self) -> None:
+        """File presence is NOT sufficient: a receipt unbound in the ledger fails closed."""
         adr_id = "ADR-0.0.99-test-adr"
         _write_ceremony(self.root, adr_id)
         adr_dir = _make_adr_dir(self.root, adr_id)
-        ln = [{"req_id": "REQ-0.0.99-01-01", "receipt_ids": ["arb-typo-missing"], "file_lines": []}]
+        _write_receipt(self.root, "arb-file-only-unbound")  # file exists, but no ledger binding
+        ln = [
+            {
+                "req_id": "REQ-0.0.99-01-01",
+                "receipt_ids": ["arb-file-only-unbound"],
+                "file_lines": [],
+            }
+        ]
         _write_legacy_brief(adr_dir, "OBPI-0.0.99-01-test", ["REQ-0.0.99-01-01"], ln=ln)
-        # No receipt artifact written for "arb-typo-missing".
 
         errors = validate_closeout_proof_binding(self.root)
 
-        self.assertGreater(len(errors), 0, "Expected ≥1 error for non-existent receipt artifact")
-        self.assertIn("arb-typo-missing", " ".join(e.message for e in errors))
+        self.assertGreater(
+            len(errors), 0, "A receipt absent from the ledger must fail closed even with a file"
+        )
+        self.assertIn("arb-file-only-unbound", " ".join(e.message for e in errors))
+
+    @covers("REQ-0.0.63-03-03")
+    def test_receipt_bound_in_ledger_passes_without_file(self) -> None:
+        """File presence is NOT necessary: a ledger-bound receipt passes, no file (flush-safe)."""
+        adr_id = "ADR-0.0.99-test-adr"
+        _write_ceremony(self.root, adr_id)
+        adr_dir = _make_adr_dir(self.root, adr_id)
+        _write_ledger_receipt(self.root, ["arb-ledger-bound"])  # ledger binding, NO file on disk
+        ln = [{"req_id": "REQ-0.0.99-01-01", "receipt_ids": ["arb-ledger-bound"], "file_lines": []}]
+        _write_legacy_brief(adr_dir, "OBPI-0.0.99-01-test", ["REQ-0.0.99-01-01"], ln=ln)
+
+        errors = validate_closeout_proof_binding(self.root)
+
+        self.assertEqual(errors, [], f"Ledger-bound receipt must pass with no file; got: {errors}")
 
 
 # ---------------------------------------------------------------------------
@@ -240,7 +294,7 @@ class TestBoundAndScope(unittest.TestCase):
         adr_id = "ADR-0.0.99-test-adr"
         _write_ceremony(self.root, adr_id)
         adr_dir = _make_adr_dir(self.root, adr_id)
-        _write_receipt(self.root, "arb-ruff-real")
+        _write_ledger_receipt(self.root, ["arb-ruff-real"])
         ln = [
             {"req_id": "REQ-0.0.99-01-01", "receipt_ids": ["arb-ruff-real"], "file_lines": []},
             {"req_id": "REQ-0.0.99-01-02", "receipt_ids": ["arb-ruff-real"], "file_lines": []},
