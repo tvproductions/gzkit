@@ -970,6 +970,259 @@ class TestBlockCreationAndOverlayMarker(unittest.TestCase):
 
 
 # --------------------------------------------------------------------------- #
+# Ambiguous-attribution blame re-anchor (content-identical decorator lines)     #
+# --------------------------------------------------------------------------- #
+
+
+class TestAmbiguousAttributionBlameReanchor(unittest.TestCase):
+    """``git log -L`` vs ``git blame`` cross-pairing on identical decorator lines.
+
+    When a commit inserts a new ``@covers``-decorated test block adjacent to an
+    existing test carrying a content-identical decorator line, ``git log -L``
+    and ``git blame`` can attribute the two physical lines to OPPOSITE commits.
+    The heuristic's ``log -L`` intro then cross-pairs the inserting commit's
+    SHA with the pre-existing test's def line, defeating every legitimacy
+    exemption and producing a false-positive backfill finding (observed on
+    ADR-0.0.68 audit: the GHI #600 fix commit was cross-paired with a test
+    authored in an exempt ``(gz git-sync)`` ceremony commit).
+
+    Remedy under test: when the finding is otherwise about to flag, re-anchor
+    the intro at ``git blame``'s attribution for the decorator line and re-run
+    the same legitimacy ladder (receipt-coupling guard included, preserving the
+    GHI #309 triple). Blame agreement or blame failure changes nothing.
+    """
+
+    @staticmethod
+    def _write_test_file(project_root: Path, rel_path: str, content: str) -> Path:
+        target = project_root / rel_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+        return target
+
+    # Exactly 40 hex chars, as real `git blame --porcelain` emits.
+    _BLAME_CCCCCCC = (
+        0,
+        "ccccccc000000000000000000000000000000000 1 1 1\nfiller header noise\n",
+        "",
+    )
+
+    @covers("REQ-0.0.23-05-01")
+    def test_blame_reanchor_exempts_cross_paired_decorator(self) -> None:
+        """Blame disagrees with log -L; re-anchored SHA is legitimate → no flag."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            self._write_test_file(
+                project_root,
+                "tests/x.py",
+                '@covers("REQ-X")\ndef test_existing(self) -> None:\n    self.assertTrue(True)\n',
+            )
+            # log -L attributed the decorator to fffffff (the inserting fix
+            # commit); blame attributes it to ccccccc, the commit that also
+            # created the file — the file-creation exemption fires on re-anchor.
+            intro = _make_intro(file="tests/x.py", line=1, sha="fffffff", on=date(2026, 4, 1))
+            receipt = _make_receipt(sha="bbbbbbb", on=date(2026, 4, 1))
+            fake = FakeGit(
+                {
+                    ("rev-list", "--count", "fffffff..bbbbbbb"): (0, "0\n", ""),
+                    ("log", "--diff-filter=A", "--format=%H", "--", "tests/x.py"): (
+                        0,
+                        "ccccccc0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    ("log", "--reverse", "--format=%H", "-L2,2:tests/x.py"): (
+                        0,
+                        "ccccccc0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%(trailers:key=Ceremony,valueonly=true)", "fffffff"): (
+                        0,
+                        "",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%s", "fffffff"): (
+                        0,
+                        "fix(session-green-gate): harden token match (GHI #600)\n",
+                        "",
+                    ),
+                    ("blame", "--porcelain", "-L1,1", "--", "tests/x.py"): self._BLAME_CCCCCCC,
+                }
+            )
+            thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+            findings = compute_backfill_findings(
+                [intro],
+                {intro.target: receipt},
+                thresholds,
+                severity="blocking",
+                project_root=project_root,
+                git_runner=fake,
+            )
+            self.assertEqual(findings, ())
+
+    @covers("REQ-0.0.23-05-01")
+    def test_blame_agreement_keeps_finding(self) -> None:
+        """Blame agrees with log -L (unambiguous attribution) → finding stands."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            self._write_test_file(
+                project_root,
+                "tests/x.py",
+                '@covers("REQ-X")\ndef test_existing(self) -> None:\n    self.assertTrue(True)\n',
+            )
+            intro = _make_intro(file="tests/x.py", line=1, sha="fffffff", on=date(2026, 4, 1))
+            receipt = _make_receipt(sha="bbbbbbb", on=date(2026, 4, 1))
+            fake = FakeGit(
+                {
+                    ("rev-list", "--count", "fffffff..bbbbbbb"): (0, "0\n", ""),
+                    ("log", "--diff-filter=A", "--format=%H", "--", "tests/x.py"): (
+                        0,
+                        "ccccccc0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    ("log", "--reverse", "--format=%H", "-L2,2:tests/x.py"): (
+                        0,
+                        "ccccccc0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%(trailers:key=Ceremony,valueonly=true)", "fffffff"): (
+                        0,
+                        "",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%s", "fffffff"): (
+                        0,
+                        "fix: silence audit warning\n",
+                        "",
+                    ),
+                    ("blame", "--porcelain", "-L1,1", "--", "tests/x.py"): (
+                        0,
+                        "fffffff000000000000000000000000000000000 1 1 1\n",
+                        "",
+                    ),
+                }
+            )
+            thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+            findings = compute_backfill_findings(
+                [intro],
+                {intro.target: receipt},
+                thresholds,
+                severity="blocking",
+                project_root=project_root,
+                git_runner=fake,
+            )
+            self.assertEqual(len(findings), 1)
+
+    @covers("REQ-0.0.23-05-01")
+    def test_blame_failure_keeps_finding(self) -> None:
+        """Blame boundary failure degrades to no exemption (fail-soft) → finding stands."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            self._write_test_file(
+                project_root,
+                "tests/x.py",
+                '@covers("REQ-X")\ndef test_existing(self) -> None:\n    self.assertTrue(True)\n',
+            )
+            intro = _make_intro(file="tests/x.py", line=1, sha="fffffff", on=date(2026, 4, 1))
+            receipt = _make_receipt(sha="bbbbbbb", on=date(2026, 4, 1))
+            # No blame fixture: FakeGit dict-mode returns (1, "", "no fixture").
+            fake = FakeGit(
+                {
+                    ("rev-list", "--count", "fffffff..bbbbbbb"): (0, "0\n", ""),
+                    ("log", "--diff-filter=A", "--format=%H", "--", "tests/x.py"): (
+                        0,
+                        "ccccccc0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    ("log", "--reverse", "--format=%H", "-L2,2:tests/x.py"): (
+                        0,
+                        "ccccccc0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%(trailers:key=Ceremony,valueonly=true)", "fffffff"): (
+                        0,
+                        "",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%s", "fffffff"): (
+                        0,
+                        "fix: silence audit warning\n",
+                        "",
+                    ),
+                }
+            )
+            thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+            findings = compute_backfill_findings(
+                [intro],
+                {intro.target: receipt},
+                thresholds,
+                severity="blocking",
+                project_root=project_root,
+                git_runner=fake,
+            )
+            self.assertEqual(len(findings), 1)
+
+    @covers("REQ-0.0.23-05-01")
+    def test_reanchor_to_receipt_commit_still_flagged(self) -> None:
+        """GHI #309 triple survives re-anchor: blame SHA == receipt SHA → flagged."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            self._write_test_file(
+                project_root,
+                "tests/x.py",
+                '@covers("REQ-X")\ndef test_existing(self) -> None:\n    self.assertTrue(True)\n',
+            )
+            intro = _make_intro(file="tests/x.py", line=1, sha="fffffff", on=date(2026, 4, 1))
+            receipt = _make_receipt(sha="ccccccc", on=date(2026, 4, 1))
+            fake = FakeGit(
+                {
+                    ("rev-list", "--count", "fffffff..ccccccc"): (0, "0\n", ""),
+                    ("log", "--diff-filter=A", "--format=%H", "--", "tests/x.py"): (
+                        0,
+                        "ccccccc0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    ("log", "--reverse", "--format=%H", "-L2,2:tests/x.py"): (
+                        0,
+                        "ccccccc0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%(trailers:key=Ceremony,valueonly=true)", "fffffff"): (
+                        0,
+                        "",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%s", "fffffff"): (
+                        0,
+                        "fix: silence audit warning\n",
+                        "",
+                    ),
+                    ("blame", "--porcelain", "-L1,1", "--", "tests/x.py"): self._BLAME_CCCCCCC,
+                    # Re-anchored ladder: file/block exemptions suppressed by the
+                    # receipt-coupling guard; ceremony checks on ccccccc miss too.
+                    ("log", "-1", "--format=%(trailers:key=Ceremony,valueonly=true)", "ccccccc"): (
+                        0,
+                        "",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%s", "ccccccc"): (
+                        0,
+                        "feat: add stuff\n",
+                        "",
+                    ),
+                }
+            )
+            thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+            findings = compute_backfill_findings(
+                [intro],
+                {intro.target: receipt},
+                thresholds,
+                severity="blocking",
+                project_root=project_root,
+                git_runner=fake,
+            )
+            self.assertEqual(len(findings), 1)
+
+
+# --------------------------------------------------------------------------- #
 # format_backfill_finding (REQ-0.0.23-05-01, REQ-0.0.23-05-03 remediation hint) #
 # --------------------------------------------------------------------------- #
 

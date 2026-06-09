@@ -534,6 +534,28 @@ def _line_intro_short_sha(
     return None
 
 
+def _blame_line_short_sha(
+    rel_file: str, line_no: int, project_root: Path, git_runner: GitRunner
+) -> str | None:
+    """Return the 7-char SHA ``git blame`` attributes to ``rel_file:line_no``.
+
+    ``git log -L`` and ``git blame`` can attribute content-identical lines
+    (e.g. two ``@covers("REQ-X")`` decorator lines, one freshly inserted
+    adjacent to the other) to OPPOSITE commits. Blame is the second opinion
+    used by the ambiguity re-anchor in :func:`compute_backfill_findings`.
+    Returns ``None`` on git failure or unparseable output (fail-soft: the
+    caller treats that as "no re-anchor possible" and the finding stands).
+    """
+    rc, stdout, _stderr = git_runner(
+        ["blame", "--porcelain", f"-L{line_no},{line_no}", "--", rel_file],
+        project_root,
+    )
+    if rc != 0 or not stdout.strip():
+        return None
+    first_token = stdout.splitlines()[0].split(maxsplit=1)[0]
+    return first_token[:7] if _BARE_SHA_RE.match(first_token) else None
+
+
 def _is_same_commit_block_creation(
     intro: CoverIntroduction,
     project_root: Path,
@@ -768,6 +790,26 @@ def compute_backfill_findings(
         # git boundary calls are paid only on candidate intros.
         if _is_legitimate_authoring(
             intro, project_root, git_runner, receipt_commit_sha=receipt.commit_sha
+        ):
+            continue
+
+        # Ambiguity re-anchor: `git log -L` can attribute a content-identical
+        # decorator line to the wrong commit when a twin line was inserted
+        # adjacent to it, cross-pairing the inserting SHA with a pre-existing
+        # test block and defeating every exemption above. When blame disagrees
+        # with the log -L attribution, re-run the same legitimacy ladder
+        # (receipt-coupling guard included — the GHI #309 triple still flags)
+        # against blame's SHA before flagging.
+        blame_sha = _blame_line_short_sha(intro.file, intro.line, project_root, git_runner)
+        if (
+            blame_sha is not None
+            and blame_sha != intro.commit_sha
+            and _is_legitimate_authoring(
+                intro.model_copy(update={"commit_sha": blame_sha}),
+                project_root,
+                git_runner,
+                receipt_commit_sha=receipt.commit_sha,
+            )
         ):
             continue
 
