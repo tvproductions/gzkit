@@ -11,6 +11,17 @@ req_atomic:
   # REQ-02: one indivisible unit — a single `uvx pre-commit install` line added
   # to the runbook's git-clone-recovery block; no labor below the REQ.
   - REQ-0.0.68-01-02
+ln:
+  - req_id: REQ-0.0.68-01-01
+    receipt_ids:
+      - arb-step-unittest-41bf3d47313449919a15724df034cfb5
+      - arb-ruff-0202269a5ba845329a6b37717f82cff9
+      - arb-step-mkdocs-69a321fc04504890ab3ed30397a47968
+  - req_id: REQ-0.0.68-01-02
+    receipt_ids:
+      - arb-step-unittest-41bf3d47313449919a15724df034cfb5
+      - arb-ruff-0202269a5ba845329a6b37717f82cff9
+      - arb-step-mkdocs-69a321fc04504890ab3ed30397a47968
 ---
 
 # OBPI-0.0.68-01-pre-push-gz-check-hook: Pre Push Gz Check Hook

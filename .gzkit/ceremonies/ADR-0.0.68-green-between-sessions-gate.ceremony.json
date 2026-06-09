@@ -1,0 +1,65 @@
+{
+  "adr_id": "ADR-0.0.68-green-between-sessions-gate",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-06-09T12:13:31Z",
+  "updated_at": "2026-06-09T13:28:31Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-06-09T12:13:31Z",
+      "acknowledged_at": "2026-06-09T12:13:38Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-06-09T12:13:38Z",
+      "acknowledged_at": "2026-06-09T12:14:52Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-06-09T12:14:52Z",
+      "acknowledged_at": "2026-06-09T12:16:11Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-06-09T12:16:11Z",
+      "acknowledged_at": "2026-06-09T12:16:19Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-06-09T12:16:19Z",
+      "acknowledged_at": "2026-06-09T13:14:05Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-06-09T13:14:05Z",
+      "acknowledged_at": "2026-06-09T13:26:17Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-06-09T13:26:17Z",
+      "acknowledged_at": "2026-06-09T13:28:00Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-06-09T13:28:00Z",
+      "acknowledged_at": "2026-06-09T13:28:31Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-06-09T13:28:31Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run pre-commit run --hook-stage pre-push --all-files",
+    "uv run pre-commit install --hook-type pre-push",
+    "uv run gz validate --session-green-gate",
+    "uv run gz check"
+  ],
+  "walkthrough_index": 3,
+  "attestation": "Completed — green-between-sessions gate verified live: pre-push gz-check hook Passed (exit 0), gz validate --session-green-gate exit 0, gz check 27/27 incl ✓ Session green gate; 6 REQs ledger-bound (arb receipts 0202269a/41bf3d47/69a321fc for OBPI-01, b33f1ba8/a0d3ff4e/0faf68d7/a610c061 for OBPI-02); spec-reviewer PASS, quality-reviewer COHERENT",
+  "completed_at": "2026-06-09T13:28:31Z",
+  "attempt": 1,
+  "paused_at": null
+}
