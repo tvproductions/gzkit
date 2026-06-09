@@ -172,7 +172,7 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-uv run pre-commit run --hook-stage pre-push --all-files
+uvx pre-commit run gz-check-pre-push --hook-stage pre-push --all-files
 ```
 
 ## Demo
@@ -186,9 +186,9 @@ uv run pre-commit run --hook-stage pre-push --all-files
 
 ```bash
 # The pre-push hook fires gz check at the session boundary (push):
-uv run pre-commit run --hook-stage pre-push --all-files
+uvx pre-commit run gz-check-pre-push --hook-stage pre-push --all-files
 # Inspect the version-controlled declaration that makes the gate portable:
-uv run pre-commit install --hook-type pre-push
+uvx pre-commit install --hook-type pre-push
 ```
 
 ## Acceptance Criteria

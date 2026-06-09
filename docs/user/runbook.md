@@ -376,6 +376,13 @@ uv run gz test                           # Verify tests pass
 uvx pre-commit install --hook-type pre-push   # Install the pre-push gz check gate (ADR-0.0.68)
 ```
 
+> **If `pre-commit install` reports "Cowardly refusing to install hooks with
+> `core.hooksPath` set":** your git config points `core.hooksPath` at a managed
+> directory. Run `git config --unset-all core.hooksPath` first, then re-run the
+> install. (When `core.hooksPath` already resolves to the default `.git/hooks`
+> and a pre-commit-managed `pre-push` hook is present there, the gate is already
+> live and the refusal is benign.)
+
 ---
 
 ## State Repair (Recovery Tool)
