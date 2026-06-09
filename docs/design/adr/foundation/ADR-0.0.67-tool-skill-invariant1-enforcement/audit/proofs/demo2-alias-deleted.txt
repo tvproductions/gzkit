@@ -1,0 +1,5 @@
+$ gz obpi lock-claim
+BLOCKERS: gz obpi: error: argument obpi_command: invalid choice: 'lock-claim' (choose from emit-receipt, status, pipeline, reconcile, validate, precomplete, withdraw, audit, complete, lock)
+
+$ gz obpi lock list
+No active locks.

@@ -1,0 +1,22 @@
+ADR audit-check: ADR-0.0.67-tool-skill-invariant1-enforcement
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.67-01-recursive-verb-path-enumeration
+  - OBPI-0.0.67-02-wire-orphan-verbs-into-skills
+  - OBPI-0.0.67-03-delete-deprecated-lock-aliases
+Advisory 5 REQ(s) without @covers traceability (non-blocking):
+  - REQ-0.0.67-02-02
+  - REQ-0.0.67-02-05
+  - REQ-0.0.67-02-06
+  - REQ-0.0.67-03-02
+  - REQ-0.0.67-03-03
+
+Coverage: 8/13 REQs covered (61.5%)
+  OBPI-0.0.67-01: 4/4 (100.0%)
+  OBPI-0.0.67-02: 3/6 (50.0%)
+  OBPI-0.0.67-03: 1/3 (33.3%)
+Uncovered REQs (5):
+  - REQ-0.0.67-02-02
+  - REQ-0.0.67-02-05
+  - REQ-0.0.67-02-06
+  - REQ-0.0.67-03-02
+  - REQ-0.0.67-03-03

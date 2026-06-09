@@ -1,0 +1,7 @@
+top-level verbs: 51
+full leaf paths: 104
+multi-word leaf paths enumerated: 73
+obpi audit in paths: True
+obpi withdraw in paths: True
+obpi lock-claim (deleted alias) in paths: False
+obpi lock claim (canonical) in paths: True

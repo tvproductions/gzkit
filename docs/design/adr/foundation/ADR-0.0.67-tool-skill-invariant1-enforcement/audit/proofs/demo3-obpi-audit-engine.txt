@@ -1,0 +1,26 @@
+                               Prior Audit State
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━┓
+┃ OBPI                               ┃ Last Audit ┃ Result ┃ Coverage ┃ Stale? ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━┩
+│ OBPI-0.0.67-01                     │ 2026-06-09 │  FAIL  │    14.0% │   no   │
+│ OBPI-0.0.67-01-recursive-verb-pat… │ 2026-06-08 │  N/A   │      N/A │  yes   │
+│ OBPI-0.0.67-02                     │ 2026-06-09 │  FAIL  │    12.0% │   no   │
+│ OBPI-0.0.67-02-wire-orphan-verbs-… │ 2026-06-07 │  N/A   │      N/A │  yes   │
+│ OBPI-0.0.67-03                     │ 2026-06-09 │  FAIL  │    12.0% │   no   │
+│ OBPI-0.0.67-03-delete-deprecated-… │ 2026-06-08 │  N/A   │      N/A │  yes   │
+└────────────────────────────────────┴────────────┴────────┴──────────┴────────┘
+
+  OBPI-0.0.67-01: FAIL
+    PASS Test files exist: tests/governance/test_promoted_advisory_audits.py
+    PASS Tests pass: 64 tests
+    FAIL Coverage >= 40%: 14.0%
+
+  OBPI-0.0.67-02: FAIL
+    PASS Test files exist: tests/commands/test_skill_alignment_10verbs.py
+    PASS Tests pass: 2 tests
+    FAIL Coverage >= 40%: 12.0%
+
+  OBPI-0.0.67-03: FAIL
+    PASS Test files exist: tests/commands/test_obpi_lock_aliases_removed.py
+    PASS Tests pass: 3 tests
+    FAIL Coverage >= 40%: 12.0%

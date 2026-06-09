@@ -1,0 +1,17 @@
+                                ADR Overview
+╭────────────┬───────┬───────────┬────────────────┬──────┬──────────┬───────╮
+│ ADR        │ Lane  │ Lifecycle │ Closeout Phase │ OBPI │ Closeout │ QC    │
+├────────────┼───────┼───────────┼────────────────┼──────┼──────────┼───────┤
+│ ADR-0.0.67 │ heavy │ Completed │ attested       │ 3/3  │ READY    │ READY │
+╰────────────┴───────┴───────────┴────────────────┴──────┴──────────┴───────╯
+                                     OBPIs
+╭────┬─────────────────────────────────┬────────────────────┬───────────┬──────╮
+│ #  │ OBPI ID                         │ State              │ Brief     │ Done │
+├────┼─────────────────────────────────┼────────────────────┼───────────┼──────┤
+│ 01 │ OBPI-0.0.67-01-recursive-verb-p │ attested_completed │ completed │ yes  │
+│    │ ath-enumeration                 │                    │           │      │
+│ 02 │ OBPI-0.0.67-02-wire-orphan-verb │ attested_completed │ completed │ yes  │
+│    │ s-into-skills                   │                    │           │      │
+│ 03 │ OBPI-0.0.67-03-delete-deprecate │ attested_completed │ completed │ yes  │
+│    │ d-lock-aliases                  │                    │           │      │
+╰────┴─────────────────────────────────┴────────────────────┴───────────┴──────╯
