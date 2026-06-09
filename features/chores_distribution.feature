@@ -13,7 +13,7 @@ Feature: Chores distribution end-to-end
     When I run "gz chores list" as a subprocess
     Then the subprocess exits with code 0
     And the subprocess output contains "quality-check"
-    And the subprocess output contains "skill-manifest-sync"
+    And the subprocess output contains "pool-triage"
 
   @REQ-0.0.21-07-03
   Scenario: gz init populates project chores and --explain reports project source

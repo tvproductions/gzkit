@@ -35,12 +35,12 @@ Feature: gz init --update — version-aware canonical refresh
     Given a fresh empty project directory
     And the workspace has been initialized via gz init
     And the operator edits ".gzkit/chores/quality-check/CHORE.md" with marker "<!-- gzkit-canonical-version: 0.1.0 -->"
-    And the operator edits ".gzkit/chores/skill-manifest-sync/CHORE.md" with marker "<!-- gzkit-canonical-version: 0.1.0 -->"
+    And the operator edits ".gzkit/chores/pool-triage/CHORE.md" with marker "<!-- gzkit-canonical-version: 0.1.0 -->"
     When I run "gz init --update" as a subprocess
     Then the subprocess exits with code 3
     And the subprocess output contains "Conflicts (EDITED"
     And the subprocess output contains ".gzkit/chores/quality-check/CHORE.md"
-    And the subprocess output contains ".gzkit/chores/skill-manifest-sync/CHORE.md"
+    And the subprocess output contains ".gzkit/chores/pool-triage/CHORE.md"
 
   @REQ-0.0.32-05-04
   @REQ-0.0.32-05-08
