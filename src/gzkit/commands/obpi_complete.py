@@ -55,6 +55,7 @@ from gzkit.ledger_events import (
     obpi_completion_uncovered_accept_event,
     obpi_receipt_emitted_event,
 )
+from gzkit.triangle import extract_reqs_from_brief
 from gzkit.utils import capture_validation_anchor
 
 # ---------------------------------------------------------------------------
@@ -318,8 +319,12 @@ def _enforce_attestation_receipt_gate(
     project_root: Path,
     as_json: bool,
     dry_run: bool,
-) -> None:
+) -> list[str]:
     """Run the receipt-binding gate; emit meta-receipt-bind on success.
+
+    Returns the receipt-IDs resolved into the ledger (empty when none were
+    cited/resolved or on the dry-run / warn-only paths) so the caller can
+    auto-populate the brief's ``ln:`` proof-binding (GHI #599).
 
     Behavior matrix (REQ-0.0.24-02-02..04):
 
@@ -336,7 +341,7 @@ def _enforce_attestation_receipt_gate(
     in the brief, mechanism for REQ-02).
     """
     if dry_run:
-        return
+        return []
     result = validate_attestation_receipts(
         attestation_text,
         lane=parent_lane,
@@ -363,14 +368,14 @@ def _enforce_attestation_receipt_gate(
             "[yellow]Warning:[/yellow] attestation receipt-binding produced unresolved "
             "citations on lite-non-foundation; proceeding (warn-only)."
         )
-        return
+        return []
 
     if result.warn_only:
         console.print(
             "[yellow]Warning:[/yellow] no ARB receipts cited in attestation "
             "(lite-non-foundation policy)."
         )
-        return
+        return []
 
     evidence = _build_meta_receipt_evidence(
         obpi_id=obpi_id,
@@ -386,6 +391,8 @@ def _enforce_attestation_receipt_gate(
         evidence=evidence,
     )
     ledger.append(meta_event)
+    resolved = evidence.get("resolved_receipt_ids", [])
+    return [r for r in resolved if isinstance(r, str)]
 
 
 # ---------------------------------------------------------------------------
@@ -1037,7 +1044,7 @@ def obpi_complete_cmd(
     # circuits human prompting (REQ-0.0.24-02-07, mechanism for REQ-02).
     adr_file_for_kind, _ = resolve_adr_file(project_root, config, resolved_parent)
     parent_kind = _read_adr_kind(adr_file_for_kind)
-    _enforce_attestation_receipt_gate(
+    resolved_receipt_ids = _enforce_attestation_receipt_gate(
         obpi_id=obpi_id,
         parent_adr=resolved_parent,
         parent_lane=parent_lane,
@@ -1129,6 +1136,11 @@ def obpi_complete_cmd(
             "[green]OK[/green] Operator-verbatim conversational attestation "
             "accepted (canon-owner declaration; AGENTS.md Attestation Matrix)."
         )
+
+    # 4d. Auto-populate the brief's ln: proof-binding from the receipts the
+    # attestation gate resolved into the ledger, so the parent ADR's closeout
+    # proof-binding gate has a producer (GHI #599). No-op when nothing resolved.
+    new_content = _inject_ln_block(new_content, original_content, obpi_id, resolved_receipt_ids)
 
     # 5. Build audit ledger entry and receipt event
     adr_dir = obpi_file.parent.parent
@@ -1448,6 +1460,68 @@ def _build_completed_brief(
     )
 
     return result
+
+
+def _render_ln_block(req_ids: list[str], receipt_ids: list[str]) -> str:
+    """Render the ``ln:`` proof-binding frontmatter block as YAML text.
+
+    One entry per REQ, each bound to every resolved receipt-ID — the shape
+    consumed by ``gz validate --closeout-proof-binding``.
+    """
+    lines = ["ln:"]
+    for req_id in req_ids:
+        lines.append(f"  - req_id: {req_id}")
+        lines.append("    receipt_ids:")
+        lines.extend(f"      - {receipt_id}" for receipt_id in receipt_ids)
+    return "\n".join(lines)
+
+
+def _strip_existing_ln(frontmatter: str) -> str:
+    """Drop a pre-existing top-level ``ln:`` block from frontmatter text (idempotency).
+
+    The block is ``ln:`` plus its indented body; a new unindented key (or a
+    blank line) ends it.
+    """
+    out: list[str] = []
+    skipping = False
+    for line in frontmatter.split("\n"):
+        if line.startswith("ln:"):
+            skipping = True
+            continue
+        if skipping:
+            if line and not line[0].isspace():
+                skipping = False
+            else:
+                continue
+        out.append(line)
+    return "\n".join(out)
+
+
+def _inject_ln_block(
+    new_content: str,
+    original_content: str,
+    obpi_id: str | None,
+    receipt_ids: list[str],
+) -> str:
+    """Auto-populate the brief's ``ln:`` proof-binding from resolved receipts.
+
+    Binds every ``## Acceptance Criteria`` REQ to the receipt-IDs the
+    attestation gate resolved into the ledger, giving the parent ADR's closeout
+    proof-binding gate an automated producer (GHI #599). Returns *new_content*
+    unchanged when there is nothing to bind — no resolved receipts, no parseable
+    frontmatter, or no REQs — so it is never a regression.
+    """
+    if not receipt_ids or obpi_id is None or not new_content.startswith("---\n"):
+        return new_content
+    fm_end = new_content.find("\n---\n", 4)
+    if fm_end == -1:
+        return new_content
+    reqs = extract_reqs_from_brief(original_content, obpi_id)
+    if not reqs:
+        return new_content
+    block = _render_ln_block([str(req.id) for req in reqs], receipt_ids)
+    body = _strip_existing_ln(new_content[4:fm_end]).rstrip("\n")
+    return "---\n" + body + "\n" + block + new_content[fm_end:]
 
 
 def _replace_h3_section(content: str, heading: str, new_body: str) -> str:

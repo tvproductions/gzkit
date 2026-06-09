@@ -227,6 +227,7 @@ class _ObpiCompleteWireFixture(unittest.TestCase):
         existing_receipt_paths: list[Path] | None = None,
         receipts_root_dir: Path | None = None,
         ledger_mock: MagicMock | None = None,
+        captured: dict[str, str] | None = None,
     ) -> tuple[type[BaseException] | None, int | None, list[str], MagicMock]:
         """Drive ``obpi_complete_cmd`` end-to-end, returning outcome + ledger mock."""
         recorded: list[str] = []
@@ -332,6 +333,9 @@ class _ObpiCompleteWireFixture(unittest.TestCase):
             finally:
                 for p in patches:
                     p.stop()
+
+            if captured is not None:
+                captured["brief"] = obpi_file.read_text(encoding="utf-8")
 
         return exc_type, code, recorded, ledger_obj
 
@@ -444,6 +448,40 @@ class TestObpiCompleteHeavyValidReceipt(_ObpiCompleteWireFixture):
                 and call.args[0].extra.get("receipt_event") == "meta-receipt-bind"
             ]
             self.assertEqual(len(meta_calls), 1)
+
+
+class TestObpiCompleteWritesLnProofBinding(_ObpiCompleteWireFixture):
+    """GHI #599 — completion auto-populates the brief ln: from resolved receipts."""
+
+    def test_completion_writes_ln_block_bound_to_resolved_receipt(self) -> None:
+        with tempfile.TemporaryDirectory() as receipts_dir:
+            receipts_root = Path(receipts_dir)
+            run_id = _write_step_receipt(
+                receipts_root,
+                suffix="2" * 32,
+                step_name="unittest",
+                command=["uv", "run", "-m", "unittest", "-q"],
+            )
+            attestation = f"Heavy lane attestation citing unittest: receipt {run_id}"
+            captured: dict[str, str] = {}
+            exc_type, _code, _output, _ledger = self._run_complete(
+                brief_text=_heavy_brief(),
+                obpi_id="OBPI-0.0.24-02-wire-into-completion",
+                parent_adr="ADR-0.0.24-attestation-receipt-binding",
+                lane="Heavy",
+                kind="foundation",
+                attestation_text=attestation,
+                receipts_root_dir=receipts_root,
+                captured=captured,
+            )
+            self.assertIsNone(exc_type)
+            brief = captured["brief"]
+            # The written brief now carries an ln: block binding the
+            # Acceptance-Criteria REQ to the receipt the gate resolved — so the
+            # parent ADR's closeout proof-binding gate needs no manual backfill.
+            self.assertIn("ln:", brief, "completion must write an ln: proof-binding block")
+            self.assertIn("- req_id: REQ-0.0.24-02-01", brief)
+            self.assertIn(f"- {run_id}", brief, "the resolved receipt-ID must be bound")
 
 
 class TestObpiCompleteMetaReceiptBindEvent(_ObpiCompleteWireFixture):
