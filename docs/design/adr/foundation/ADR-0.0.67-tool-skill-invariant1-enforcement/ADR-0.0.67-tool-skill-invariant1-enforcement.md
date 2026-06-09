@@ -195,4 +195,4 @@ floor.
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.67 | Pending | | | |
+| 0.0.67 | Completed | Jeffry | 2026-06-09 | Completed |

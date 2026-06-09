@@ -1,0 +1,65 @@
+{
+  "adr_id": "ADR-0.0.67-tool-skill-invariant1-enforcement",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-06-08T16:30:12Z",
+  "updated_at": "2026-06-09T07:21:30Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-06-08T16:30:12Z",
+      "acknowledged_at": "2026-06-08T16:30:21Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-06-08T16:30:21Z",
+      "acknowledged_at": "2026-06-08T16:30:53Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-06-08T16:30:53Z",
+      "acknowledged_at": "2026-06-08T16:37:22Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-06-08T16:37:22Z",
+      "acknowledged_at": "2026-06-08T17:02:35Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-06-08T17:02:35Z",
+      "acknowledged_at": "2026-06-08T18:50:38Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-06-08T18:50:38Z",
+      "acknowledged_at": "2026-06-09T07:05:56Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-06-09T07:05:56Z",
+      "acknowledged_at": "2026-06-09T07:12:11Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-06-09T07:12:11Z",
+      "acknowledged_at": "2026-06-09T07:21:30Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-06-09T07:21:30Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz obpi audit --adr ADR-0.0.67",
+    "uv run gz skill list",
+    "uv run gz validate --skill-alignment",
+    "uv run gz obpi lock list"
+  ],
+  "walkthrough_index": 3,
+  "attestation": "Completed",
+  "completed_at": "2026-06-09T07:21:30Z",
+  "attempt": 1,
+  "paused_at": "2026-06-08T18:53:22Z"
+}
