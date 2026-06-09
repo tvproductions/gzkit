@@ -1,0 +1,5 @@
+missing config                             -> FAIL-CLOSED (Missing .pre-commit-config.yaml — no pre-push gz check hook declared. Recovery: )
+unparseable yaml                           -> FAIL-CLOSED (Unparseable .pre-commit-config.yaml — treated as violation (fail-closed). Recove)
+no pre-push hook                           -> FAIL-CLOSED (No stages: [pre-push] hook running 'gz check' declared. Recovery: declare a 'pre)
+wrong verb (gz check-config-paths)         -> FAIL-CLOSED (No stages: [pre-push] hook running 'gz check' declared. Recovery: declare a 'pre)
+GREEN: pre-push gz check declared          -> pass        (no errors)

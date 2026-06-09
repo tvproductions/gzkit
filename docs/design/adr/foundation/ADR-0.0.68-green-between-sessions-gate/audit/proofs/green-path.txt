@@ -1,0 +1,4 @@
+Validated: session_green_gate
+
+✓ All validations passed (1 scopes).
+exit=0

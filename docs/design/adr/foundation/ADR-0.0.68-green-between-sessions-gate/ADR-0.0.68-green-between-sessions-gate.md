@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.68-green-between-sessions-gate
-status: Draft
+status: Validated
 kind: foundation
 semver: 0.0.68
 lane: heavy

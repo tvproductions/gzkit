@@ -1,0 +1,17 @@
+ADR audit-check: ADR-0.0.68-green-between-sessions-gate
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.68-01-pre-push-gz-check-hook
+  - OBPI-0.0.68-02-session-green-gate-validator
+Advisory 3 REQ(s) without @covers traceability (non-blocking):
+  - REQ-0.0.68-01-02
+  - REQ-0.0.68-02-03
+  - REQ-0.0.68-02-04
+
+Coverage: 3/6 REQs covered (50.0%)
+  OBPI-0.0.68-01: 1/2 (50.0%)
+  OBPI-0.0.68-02: 2/4 (50.0%)
+Uncovered REQs (3):
+  - REQ-0.0.68-01-02
+  - REQ-0.0.68-02-03
+  - REQ-0.0.68-02-04
+exit=0

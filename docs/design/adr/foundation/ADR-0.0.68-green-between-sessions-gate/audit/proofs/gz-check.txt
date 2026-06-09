@@ -1,0 +1,63 @@
+[1/27] Lint
+[2/27] Format
+[3/27] Typecheck
+[4/27] Test
+[5/27] Behave
+[6/27] Skill audit
+[7/27] Parity check
+[8/27] Readiness audit
+[9/27] CLI audit
+[10/27] Unscoped rules
+[11/27] ADR status freshness
+[12/27] Session green gate
+[13/27] Kind invariance
+[14/27] Interview transcripts
+[15/27] Receipt shape
+[16/27] Orientation freshness
+[17/27] Insights shape
+[18/27] Instructions files budget
+[19/27] AGENTS.md map conformance
+[20/27] Complexity-doctrine links
+[21/27] Complexity-thresholds
+[22/27] REQ kind discipline
+[23/27] tautological test audit
+[24/27] Task envelope coherence
+[25/27] Preflight
+[26/27] Surface fidelity
+[27/27] Line endings
+  ✓ Lint
+  ✓ Format
+  ✓ Typecheck
+  ✓ Test
+  ✓ Behave
+  ✓ Skill audit
+  ✓ Parity check
+  ✓ Readiness audit
+  ✓ CLI audit
+  ✓ Unscoped rules
+  ✓ ADR status freshness
+  ✓ Session green gate
+  ✓ Kind invariance
+  ✓ Interview transcripts
+  ✓ Receipt shape
+  ✓ Orientation freshness
+  ✓ Insights shape
+  ✓ Instructions files budget
+  ✓ AGENTS.md map conformance
+  ✓ Complexity-doctrine links
+  ✓ Complexity-thresholds
+  ✓ REQ kind discipline
+  ✓ tautological test audit
+  ✓ Task envelope coherence
+  ✓ Preflight
+  ✓ Surface fidelity
+  ✓ Line endings
+
+✓ All checks passed.
+
+⚠ Advisory: spec-test-code drift detected
+  advisory  Unlinked specs (REQs with no test): 1796
+  advisory  Orphan tests (covering absent REQs): 9
+  Total: 1805 finding(s) (advisory — does not affect exit code)
+  Run `gz drift` for the full per-finding list.
+exit=0

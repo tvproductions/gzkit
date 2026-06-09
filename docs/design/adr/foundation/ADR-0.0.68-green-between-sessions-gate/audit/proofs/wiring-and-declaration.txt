@@ -1,0 +1,15 @@
+steps: 27
+Session green gate present: True
+88:      - id: gz-check-pre-push
+89:        name: gz check (pre-push gate)
+90-        entry: uv run gz check
+91-        language: system
+92-        pass_filenames: false
+93:        stages: [pre-push]
+94-
+95-      # Listed LAST on purpose. With fail_fast: true (top of file), a failure
+96-      # in any cheap gate above — ruff, ty, xenon, interrogate,
+97-      # surface-fidelity, gitleaks — aborts the run before this ~15s parallel
+98-      # suite executes. Do not reorder this hook earlier: a cheap-gate failure
+99-      # downstream of it cannot stop a run it has already started.
+100-      - id: unittest
