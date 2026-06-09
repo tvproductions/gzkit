@@ -1364,6 +1364,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--instructions-files-budget` | opt-in | AGENTS.md / CLAUDE.md / `.claude/rules/*.md` must stay within per-file char budgets defined in `data/instructions_files_budget.json` (GHI #373) |
 | `--agents-md-map-conformance` | opt-in | AGENTS.md template + rendered shape conformance: four criteria (paragraph <=5 lines or binding-bullet marker; no prohibited subsection titles; relative links resolve with anchors; rendered AGENTS.md within budget). Tables and code fences exempt from criterion (a). Hard-rejection exit 3 with `/gz-context-diet` remediation pointer (ADR-0.0.54 / OBPI-0.0.54-03) |
 | `--adr-status-fresh` | yes | `docs/governance/GovZero/adr-status.md` must agree with on-disk ADR canon (GHI #322) |
+| `--session-green-gate` | opt-in | `.pre-commit-config.yaml` must declare a `stages: [pre-push]` hook running `gz check`; exits 3 when absent, unparseable, or missing — fail-closed floor (ADR-0.0.68 / OBPI-0.0.68-02) |
 | `--orientation-freshness` | opt-in | The SessionStart orientation hook + script must remain wired (GHI #341) |
 | `--brief-headings` | opt-in | OBPI brief evidence sections must be H3, not H2 (GHI #238) |
 | `--brief-cross-references` | opt-in | Bare `OBPI-X.Y.Z-NN` / `ADR-X.Y.Z` identifiers in briefs must resolve to on-disk artifacts (GHI #436) |

@@ -116,6 +116,7 @@ from gzkit.governance.trust_audits.sensitivity import (
     audit_sensitivity_binding,
     explain_sensitivity_for_paths,
 )
+from gzkit.governance.trust_audits.session_green_gate import audit_session_green_gate
 from gzkit.governance.trust_audits.setpoint_coherence import validate_setpoint_coherence
 from gzkit.governance.trust_audits.surface_weight import validate_surface_weight
 from gzkit.governance.trust_audits.taxonomy import (
@@ -175,6 +176,7 @@ __all__ = [
     "audit_reconcile_freshness",
     "audit_router_tables",
     "audit_sensitivity_binding",
+    "audit_session_green_gate",
     "audit_line_endings",
     "audit_skill_alignment",
     "audit_test_tiers",

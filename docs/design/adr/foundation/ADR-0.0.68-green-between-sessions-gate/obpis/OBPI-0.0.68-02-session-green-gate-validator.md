@@ -3,7 +3,12 @@ id: OBPI-0.0.68-02-session-green-gate-validator
 parent: ADR-0.0.68-green-between-sessions-gate
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
+req_atomic:
+  - REQ-0.0.68-02-01  # one audit function (audit_session_green_gate) — single indivisible authoring unit
+  - REQ-0.0.68-02-02  # one wiring edit (add step to _build_check_steps) — single indivisible unit
+  - REQ-0.0.68-02-03  # one doc edit (manpage scope entry) — single indivisible unit
+  - REQ-0.0.68-02-04  # structural-fence verified at parent-ADR closeout — no per-OBPI labor
 ---
 
 # OBPI-0.0.68-02-session-green-gate-validator: Session Green Gate Validator
@@ -13,7 +18,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.68-green-between-sessions-gate/ADR-0.0.68-green-between-sessions-gate.md`
 - **Checklist Item:** #2 - "OBPI-0.0.68-02: Implement `gz validate --session-green-gate` as a fail-closed floor — parse `.pre-commit-config.yaml`, exit 3 if no `stages: [pre-push]` hook running `gz check` is declared, wire the scope into the `gz check` default scope, add the manpage/docs and a fail-close regression test (Heavy)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -39,7 +44,9 @@ command/runtime-contract change Heavy lane is reserved for.
 - `src/gzkit/commands/validate_cmd.py` — dispatch the `--session-green-gate` scope
 - `src/gzkit/cli/parser_maintenance.py` — register the `--session-green-gate` flag on the `gz validate` parser
 - `docs/user/manpages/validate.md` — document the new scope and its exit-3 contract
-- `tests/**` — fail-close regression test for the new scope
+- `tests/` — fail-close regression test for the new scope
+- `data/behave_coverage_waivers.json` — behave waiver for the validator-semantics REQs (ADR-0.0.59 anti-pattern: behave would duplicate the unit tier)
+- `docs/design/adr/foundation/ADR-0.0.68-green-between-sessions-gate/ADR-0.0.68-green-between-sessions-gate.md` — parent ADR `## Boundary Invariants` entry for the STRUCTURAL-FENCE REQ-04 (delegation, not hardcoded list)
 - `docs/design/adr/foundation/ADR-0.0.68-green-between-sessions-gate/obpis/OBPI-0.0.68-02-session-green-gate-validator.md` — this brief
 
 > The exact module homes above are the current locations of the validate-scope
@@ -103,7 +110,7 @@ command/runtime-contract change Heavy lane is reserved for.
 
 - [ ] `run_adr_status_fresh_audit` / `run_command` pattern in `src/gzkit/quality.py` — model the new audit on it (precedent: `--adr-status-fresh` is the existing self-referential `gz check` scope)
 - [ ] The `--session-green-gate` flag registration alongside existing scopes in `src/gzkit/cli/parser_maintenance.py`
-- [ ] Existing validator-scope tests under `tests/**` for the fail-close test shape and fixtures
+- [ ] Existing validator-scope tests under `tests/` for the fail-close test shape and fixtures
 
 ## Quality Gates
 
@@ -192,6 +199,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.68-02-01 [behavior]: Given a `.pre-commit-config.yaml` with no `stages: [pre-push]` hook running `gz check`, when `gz validate --session-green-gate` runs, then it exits 3; given one that declares such a hook, then it exits 0. (@covers test driving both fixtures)
 - [ ] REQ-0.0.68-02-02 [behavior]: Given the `gz check` default scope, when it is enumerated, then `--session-green-gate` is included — so deleting the pre-push declaration turns the next `gz check` red. (@covers test asserting the scope is in the default `check()` audit set)
 - [ ] REQ-0.0.68-02-03 [support]: `docs/user/manpages/validate.md` documents the `--session-green-gate` scope and its exit-3 contract. Proof: `artifact_edited` ledger event + `gz validate --documents` (doc-tree structural validator) + `gz cli audit` and `mkdocs build --strict` green.
+- [ ] REQ-0.0.68-02-04 [structural-fence]: The `--session-green-gate` implementation asserts only the declared presence of a `pre-push` `gz check` hook — it MUST NOT contain a hardcoded validator list — so the forthcoming ln-sunset ADR requires zero rewiring of this gate. Verified at ADR-0.0.68 closeout via ADR `## Boundary Invariants`.
 
 ## Completion Checklist
 
@@ -251,15 +259,34 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+Green path proof:
+
+    $ uv run gz validate --session-green-gate
+    Validated: session_green_gate
+    ✓ All validations passed (1 scopes).
+
+Self-referential wiring proof — the scope is part of the gz check default step list:
+
+    >>> from gzkit.commands.quality import _build_check_steps
+    >>> "Session green gate" in [n for n, _ in _build_check_steps()]
+    True
+
+ARB receipts: arb-step-unittest-a0d3ff4e4e5c4095bfa13a3241a8a3dd (5988 pass), arb-ruff-b33f1ba82ab54f038d47a8dc766d3ae3, arb-step-typecheck-0faf68d7a636457d8ffdc85567c98cda, arb-step-mkdocs-a610c06139c04f9b9e5bda39b06b425c. gz covers behavior_uncovered_reqs=0.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Audit module: src/gzkit/governance/trust_audits/session_green_gate.py — audit_session_green_gate parses .pre-commit-config.yaml via yaml.safe_load; fail-closed (returns [ValidationError]) for missing/unparseable/non-dict/no-pre-push-gz-check-hook; returns [] only when a stages:[pre-push] hook running gz check is declared
+- Runtime delegate: src/gzkit/quality.py run_session_green_gate_audit calls uv run gz validate --session-green-gate
+- Self-referential wiring: src/gzkit/commands/quality.py — ("Session green gate", run_session_green_gate_audit) in _build_check_steps() so the scope runs inside default gz check
+- CLI surface: src/gzkit/cli/parser_maintenance.py (--session-green-gate flag) + src/gzkit/commands/validate_cmd.py (5 wiring points) + trust_audits/__init__.py re-export
+- Docs: docs/user/manpages/validate.md scope entry with exit-3 contract
+- Coupled-surface fixes: tests/commands/test_skills.py (stub new step), data/behave_coverage_waivers.json (validator-semantics waiver), parent ADR Boundary Invariants (STRUCTURAL-FENCE REQ-04)
+- Tests added: tests/test_session_green_gate_validator.py — 6 tests (1 green, 4 red, 1 check-scope)
+- Date completed: 2026-06-09
+- Attestation status: operator-attested
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -270,12 +297,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.68-02 session-green-gate validator landed: gz validate --session-green-gate parses .pre-commit-config.yaml and fail-closes (exit 3) when no stages:[pre-push] gz check hook is declared, wired self-referentially into the gz check default scope. 6 new tests GREEN (receipt arb-step-unittest-a0d3ff4e4e5c4095bfa13a3241a8a3dd, full suite 5988 pass), ruff/typecheck/mkdocs clean (arb-ruff-b33f1ba82ab54f038d47a8dc766d3ae3, arb-step-typecheck-0faf68d7a636457d8ffdc85567c98cda, arb-step-mkdocs-a610c06139c04f9b9e5bda39b06b425c). gz covers behavior_uncovered_reqs=0; STRUCTURAL-FENCE REQ-04 fenced in parent ADR Boundary Invariants.
+- Date: 2026-06-09
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-09
 
 **Evidence Hash:** -

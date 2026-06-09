@@ -58,6 +58,21 @@ Establish the green-between-sessions floor as three coupled parts — self-refer
 
 Lane: heavy (new `gz validate` scope = new runtime contract; new manpage; pre-commit config surface). Foundation kind per the invariance test: without a standing green-between-sessions floor the project re-enters the silent-red treadmill — identity-shaping, not a feature. Hexagonal lens: this is a **port** ("a verified-green floor that cannot silently regress" is the abstract contract); the specific pre-push declaration and the yaml-parsing validator are adapters behind it. Reversibility: two-way door (revert = delete the pre-push stage + the validator scope; low cost). Essential core is OBPI-01 (catch-at-push delivers value immediately); OBPI-02 makes the floor un-removable.
 
+## Boundary Invariants
+
+These are the structural fences this ADR establishes. They are audited at ADR closeout
+(STRUCTURAL-FENCE proof channel), not by per-OBPI behavior tests.
+
+1. **The session-green-gate asserts `gz check` DELEGATION, never a hardcoded validator
+   list** (REQ-0.0.68-02-04). The `--session-green-gate` scope checks only the *declaration*
+   of a `stages: [pre-push]` hook running `gz check` in `.pre-commit-config.yaml`; it never
+   enumerates which validator scopes `gz check` runs. This is the fence that keeps the port
+   ("a verified-green floor that cannot silently regress") stable as the adapter set behind
+   `gz check` evolves: the forthcoming ln-sunset ADR (which retires the closeout-proof-binding
+   surface `gz check` runs) requires ZERO rewiring of this gate. A future edit that couples the
+   gate to a frozen scope list — re-introducing parent ADR § Alternatives Considered #4 — is a
+   fail-close drift-back signal verified at this ADR's closeout.
+
 ## Consequences
 
 ### Positive

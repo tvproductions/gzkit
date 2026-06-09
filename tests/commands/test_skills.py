@@ -365,6 +365,7 @@ class TestSkillCommands(unittest.TestCase):
                 "gzkit.quality.run_cli_audit",
                 "gzkit.quality.run_unscoped_rules_audit",
                 "gzkit.quality.run_adr_status_fresh_audit",
+                "gzkit.quality.run_session_green_gate_audit",
                 "gzkit.quality.run_kind_invariance_audit",
                 "gzkit.quality.run_interviews_audit",
                 "gzkit.quality.run_receipt_shape_audit",
