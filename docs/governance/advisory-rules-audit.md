@@ -289,6 +289,24 @@ Counts updated 2026-05-26 after REQ Scope Discipline taxonomy added as Mechanica
 
 ## Recommended promotion order (highest leverage first)
 
+> **FROZEN — 2026-06-08 (governance-subtraction, track 2 / reading A).** This
+> backlog is no longer a burn-down list. The mechanical floor (64%) is judged
+> sufficient; the imbalance to correct now is *too much* mechanism, not too
+> little. Promotion is opt-in-with-justification: a new mechanical check is added
+> only when a *specific, observed* drift instance justifies it. The discipline
+> below still governs *how* to promote — it no longer implies that every
+> Promotable row *should* be promoted. The remaining Promotable rows stay
+> advisory by default.
+>
+> **Subtraction now has equal standing.** A mechanism that misfires, over-fires,
+> gives false assurance, or only guards other mechanism is removed with *named
+> steering-failure evidence* (the same evidence-bearing bar this scorecard set
+> for promotion — write the case, show the failure, then cut). This operates
+> under the existing anti-vibing operative claim *"volume follows steering
+> need"*; it does **not** amend *"never maintenance burden or velocity"* — burden
+> alone is still not a removal rationale; degraded steering is. First subtraction
+> increment landed this date (3 wrapper chores; see CHANGELOG / agent-insights).
+
 Each promotion candidate has a tracking GHI. Close the GHI when the promotion lands per the discipline in § Promotion discipline below.
 
 | # | Rule(s) | GHI | Summary | Landed as |

@@ -115,14 +115,6 @@
             "timeoutSeconds": 120
         },
         {
-            "slug": "schema-and-config-drift-audit",
-            "title": "Schema Drift / Config Drift Audit",
-            "version": "1.0.0",
-            "path": ".gzkit/chores/schema-and-config-drift-audit",
-            "lane": "lite",
-            "timeoutSeconds": 120
-        },
-        {
             "slug": "cli-contract-governance",
             "title": "CLI Contract Governance (Drift & Evolution)",
             "version": "1.0.0",
@@ -145,22 +137,6 @@
             "path": ".gzkit/chores/test-manpage-examples",
             "lane": "heavy",
             "timeoutSeconds": 900
-        },
-        {
-            "slug": "sync-manpage-docstrings",
-            "title": "Sync Manpage Docstrings (One-Liner Alignment)",
-            "version": "1.0.0",
-            "path": ".gzkit/chores/sync-manpage-docstrings",
-            "lane": "lite",
-            "timeoutSeconds": 120
-        },
-        {
-            "slug": "skill-manifest-sync",
-            "title": "Skill Manifest Sync",
-            "version": "1.0.0",
-            "path": ".gzkit/chores/skill-manifest-sync",
-            "lane": "lite",
-            "timeoutSeconds": 120
         },
         {
             "slug": "skill-authoring-quality",
@@ -246,7 +222,7 @@
         },
         {
             "slug": "control-surface-rule-conflicts",
-            "title": "Control Surface Audit \u2014 Rule-Pair Conflict Matrix (Pass A)",
+            "title": "Control Surface Audit — Rule-Pair Conflict Matrix (Pass A)",
             "version": "1.0.0",
             "path": ".gzkit/chores/control-surface-rule-conflicts",
             "lane": "lite",
@@ -254,7 +230,7 @@
         },
         {
             "slug": "control-surface-skill-rule-reachability",
-            "title": "Control Surface Audit \u2014 Skill/Rule Reachability Matrix (Pass B)",
+            "title": "Control Surface Audit — Skill/Rule Reachability Matrix (Pass B)",
             "version": "1.0.0",
             "path": ".gzkit/chores/control-surface-skill-rule-reachability",
             "lane": "lite",
@@ -262,7 +238,7 @@
         },
         {
             "slug": "control-surface-rule-vs-check-drift",
-            "title": "Control Surface Audit \u2014 Rule Prose vs Promoted Check Parity (Pass C)",
+            "title": "Control Surface Audit — Rule Prose vs Promoted Check Parity (Pass C)",
             "version": "1.0.0",
             "path": ".gzkit/chores/control-surface-rule-vs-check-drift",
             "lane": "lite",
