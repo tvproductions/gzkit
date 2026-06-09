@@ -373,6 +373,7 @@ uv sync
 uv run gz agent sync control-surfaces   # Rebuild Tier B mirrors
 uv run gz lint                           # Verify tooling works
 uv run gz test                           # Verify tests pass
+uvx pre-commit install --hook-type pre-push   # Install the pre-push gz check gate (ADR-0.0.68)
 ```
 
 ---

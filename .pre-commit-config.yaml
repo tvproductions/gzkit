@@ -85,6 +85,13 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
+      - id: gz-check-pre-push
+        name: gz check (pre-push gate)
+        entry: uv run gz check
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+
       # Listed LAST on purpose. With fail_fast: true (top of file), a failure
       # in any cheap gate above — ruff, ty, xenon, interrogate,
       # surface-fidelity, gitleaks — aborts the run before this ~15s parallel
