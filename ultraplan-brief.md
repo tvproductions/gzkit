@@ -48,6 +48,14 @@ patch-release cadence. With (b) achieved, the structural red-generator is gone.
 
 ## 3. ⚠️ OPEN DECISION — resolve before sequencing (operator's call)
 
+> **✅ RESOLVED (operator ruling, 2026-06-09):** **Option A — Sunset `ln`.**
+> Ratified during the ADR-0.0.68 audit session; #599's auto-populate direction
+> loses. Next step when P1 is picked up: scope the `ln`-sunset foundation ADR
+> (retire surface → derived view over req-kind + ledger; close #543; fold the
+> `trust_audits/cli.py:222-225` fail-open seam fix). ADR-0.0.68 reached
+> **Validated** the same session, so the gate's zero-rewiring fence
+> (REQ-0.0.68-02-04) is locked before sunset work begins.
+
 There is a **live inconsistency** in the `ln` (closeout-proof-binding) surface
 strategy. The handoff chain records an operator decision to **sunset `ln`** (let
 it wither; don't feed it), on the rationale that `gz validate
