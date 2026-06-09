@@ -72,8 +72,3 @@ gz obpi lock release OBPI-0.1.0-01 --force --json
 gz obpi lock release OBPI-0.1.0-01 --abandon network_loss:"session interrupted"
 gz obpi lock release OBPI-0.1.0-01 --abandon external_blocker:"downstream offline"
 ```
-
-## Deprecated
-
-Use `gz obpi lock release` instead of the legacy `gz obpi
-lock-release` form.

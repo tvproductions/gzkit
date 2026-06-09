@@ -50,8 +50,3 @@ gz obpi lock claim OBPI-0.1.0-01
 gz obpi lock claim OBPI-0.1.0-01 --ttl 240
 gz obpi lock claim OBPI-0.1.0-01 --agent my-agent --json
 ```
-
-## Deprecated
-
-Use `gz obpi lock claim` instead of the legacy `gz obpi lock-claim`
-form.

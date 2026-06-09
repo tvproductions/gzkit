@@ -52,8 +52,3 @@ gz obpi lock list --json
   "count": 1
 }
 ```
-
-## Deprecated
-
-The legacy `gz obpi lock-status` command is a deprecated alias for
-this command. Use `gz obpi lock list` instead.
