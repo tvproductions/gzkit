@@ -121,7 +121,9 @@ class TestReverseParseRoundTrip(unittest.TestCase):
         from pathlib import Path  # noqa: PLC0415
 
         agents = Path(__file__).resolve().parents[2] / "AGENTS.md"
-        return parse(agents.read_text(encoding="utf-8"), "AgentContract", file_path=str(agents))
+        parsed = parse(agents.read_text(encoding="utf-8"), "AgentContract", file_path=str(agents))
+        assert isinstance(parsed, AgentContract), f"parse returned {type(parsed).__name__}"
+        return parsed
 
     @covers("REQ-0.0.37-13-04")
     def test_model_json_round_trip_is_lossless(self) -> None:
