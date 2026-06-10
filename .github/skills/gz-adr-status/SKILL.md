@@ -4,7 +4,7 @@ description: Show the ADR table for summary requests, or show focused lifecycle 
 category: adr-lifecycle
 compatibility: GovZero v6 framework; uses gz CLI status surfaces
 metadata:
-  skill-version: "1.12.0"
+  skill-version: "1.12.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -12,7 +12,7 @@ gz_command: adr status
 invocation: uv run gz adr report | uv run gz adr status ADR-0.3.0
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-03-11
+last_reviewed: 2026-06-10
 model: haiku
 ---
 
