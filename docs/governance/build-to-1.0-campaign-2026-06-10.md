@@ -155,12 +155,20 @@ gzkit is 1.0 when ALL hold:
 
 ### Phase A — In-flight closure
 
-- [ ] A.1 OBPI-0.0.69-02 (structural-fence channel boundary-invariants anchor)
+- [x] A.1 OBPI-0.0.69-02 (structural-fence channel boundary-invariants
+      anchor) — `attested_completed` per `gz adr report ADR-0.0.69`
+      (verified 2026-06-10; ADR at 2/4)
 - [ ] A.2 OBPI-0.0.69-03 (closeout-proof derived view + gate repoint)
 - [ ] A.3 OBPI-0.0.69-04 (retire `ln:` surface; supersedes #599)
 - [ ] A.4 ADR-0.0.69 closeout ceremony → Validated
 - [ ] A.5 ADR-0.0.41 unblocked closeout (2/5 → terminal; or operator-parks
       with named reason, as 0.0.67 precedent allows)
+
+> **ADR-0.0.65 (handoff system, in-flight at 1/4) is deliberately NOT
+> closed here.** Its terminal disposition lands with the MOTD build (C.4),
+> which absorbs it per the ratified MOTD design — completing it standalone
+> in Phase A would fork the very system C.4 consolidates. Do not "fix"
+> this omission.
 
 Exit gate: 0.0.69 and 0.0.41 terminal; main green, synced.
 
@@ -171,8 +179,8 @@ Context-Load CMS) lands end-to-end. This is the system that makes "we don't
 direct edit AGENTS.md" workable: contract changes queue in the corpus and
 only deterministic playback writes the rendered surface.
 
-- [ ] B.1 ADR-0.0.37 build-out (7/19 → terminal) — the campaign's first
-      marquee.
+- [ ] B.1 ADR-0.0.37 build-out (13/19 verified 2026-06-10 via
+      `gz adr report`; → terminal) — the campaign's first marquee.
 - [ ] B.2 Registry-projected <15k surface (GHI #533) — closes **#519** (the
       sole open emergency), fills restore-health's Recovery Closeout.
 - [ ] B.3 Play back queued corpus entries into the rendered AGENTS.md through
@@ -193,7 +201,10 @@ absorbing ADR-0.0.65 and implementing ADR-0.0.66 (`gz next`):
 - [ ] C.2 `session_orientation.py` → lightweight auto-triage (the MOTD)
 - [ ] C.3 Directed triage skill (`gz next` UX)
 - [ ] C.4 Continuity hybrid (subsumes handoff; Stop/clear hook drafts, agent
-      finalizes)
+      finalizes). Includes the terminal disposition of in-flight
+      **ADR-0.0.65** (1/4 at amendment time): its remaining OBPIs complete
+      inside this build or are operator-parked citing the ratified
+      absorption — never left dangling.
 - [ ] C.5 Independent logrotation for the two logs
 - [ ] C.6 Verb surface folded into ADR-0.0.66; no new top-level verb family
 
