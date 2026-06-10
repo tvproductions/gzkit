@@ -10,6 +10,7 @@ import re
 from pathlib import Path
 
 from gzkit.commands.validate_briefs import _find_obpi_briefs
+from gzkit.req_kind import parse_support_citation
 from gzkit.validate import ValidationError
 
 _REQ_KIND_TAG_RE = re.compile(
@@ -74,20 +75,21 @@ def _check_support_req(req_id: str, ac_section: str, artifact: str) -> list[Vali
     )
     m = req_line_re.search(ac_section)
     req_line = m.group(0) if m else ""
+    if parse_support_citation(req_line) is not None:
+        return []
+    # Legacy fallback: keyword-presence citations that predate the strict
+    # parser stay green at authoring time; their proof resolves unproven at
+    # closeout until the citation names a recognized event type.
     has_validator = "gz validate --" in req_line
     has_ledger = any(kw in req_line for kw in _LEDGER_EVENT_KEYWORDS)
     if has_validator and has_ledger:
         return []
-    missing: list[str] = []
-    if not has_validator:
-        missing.append("'gz validate --<scope>'")
-    if not has_ledger:
-        missing.append("ledger event keyword (artifact_edited, etc.)")
     return [
         _req_kind_error(
             artifact,
-            f"SUPPORT REQ {req_id!r}: missing proof citation(s): "
-            f"{', '.join(missing)}. Add these to the REQ text.",
+            f"SUPPORT REQ {req_id!r}: missing or unparseable citation — "
+            "add 'gz validate --<scope>' and a recognized ledger event type "
+            "(e.g. artifact_edited) to the REQ text.",
         )
     ]
 

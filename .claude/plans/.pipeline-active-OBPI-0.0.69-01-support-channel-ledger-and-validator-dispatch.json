@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch",
+  "parent_adr": "ADR-0.0.69-channels-first-closeout-proof",
+  "lane": "heavy",
+  "entry": "sync",
+  "execution_mode": "normal",
+  "current_stage": "sync",
+  "started_at": "2026-06-10T07:10:05Z",
+  "updated_at": "2026-06-10T07:10:05Z",
+  "receipt_state": "pass",
+  "nonce": "9b8b21c16359552385b9dea440fb8ca5",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz git-sync --apply --lint --test",
+  "resume_point": null
+}

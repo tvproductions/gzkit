@@ -1111,8 +1111,29 @@ Rules enforced:
 2. **Per-kind proof-citation gaps fail closed:**
    - `[BEHAVIOR]` REQ without `tests/**` in the brief's `## Allowed Paths` → exit 3.
    - `[SUPPORT]` REQ without both a `gz validate --` scope reference and a ledger event
-     keyword in the REQ text → exit 3.
+     keyword in the REQ text → exit 3. Citations naming a recognized concrete event type
+     (e.g. `artifact_edited`) additionally enable closeout-time proof resolution; generic
+     keyword citations stay green here but resolve unproven at closeout.
    - `[STRUCTURAL-FENCE]` REQ when the parent ADR has no `## Boundary Invariants` → exit 3.
+
+**SUPPORT-channel proof semantics (ADR-0.0.69 / OBPI-0.0.69-01):**
+
+The SUPPORT proof channel (`LEDGER_PLUS_VALIDATOR`) resolves a real per-REQ
+`proof_status` instead of the former always-advisory placeholder. A SUPPORT REQ
+proves only when **both** hold:
+
+1. **Cited ledger event found** — the ledger contains an event of the type the
+   REQ cites (e.g. `artifact_edited`).
+2. **Cited validator exits 0** — the cited `gz validate --<scope>` dispatches
+   in-process and reports no errors.
+
+Either miss fail-closes to `unproven-support`; a cited scope that would re-enter
+req-kind or closeout-proof resolution is not dispatched and resolves to
+`unproven-recursion-fence`. The split is authoring-time vs closeout-time: this
+validator (`--req-kind-discipline`) checks **citation shape** at authoring time
+(a Draft brief whose cited events do not exist yet stays green); the resolved
+proof status is consumed fail-closed at ADR closeout (the derived closeout-proof
+view, OBPI-0.0.69-03).
 
 **Usage:**
 

@@ -11,9 +11,14 @@ binary testable/doc classification used by the traceability layer.
 from __future__ import annotations
 
 import enum
-from typing import TYPE_CHECKING
+import json
+import re
+from pathlib import Path
+from typing import TYPE_CHECKING, get_args
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from gzkit.events import TypedLedgerEvent
 
 if TYPE_CHECKING:
     from gzkit.traceability import CoverageReport
@@ -58,6 +63,146 @@ _SUPPORT_TRIGGERS: tuple[str, ...] = (
     "ledger event",
     "gz validate --",
 )
+
+# ---------------------------------------------------------------------------
+# SUPPORT channel citation parser (ADR-0.0.69-channels-first-closeout-proof)
+# ---------------------------------------------------------------------------
+
+# Regex to extract the scope from "gz validate --<scope>" in REQ text.
+_GZ_VALIDATE_SCOPE_RE: re.Pattern[str] = re.compile(r"gz\s+validate\s+--([a-zA-Z][\w-]*)")
+
+
+def _derive_typed_event_types() -> frozenset[str]:
+    """Derive recognized event type strings by introspecting the TypedLedgerEvent union.
+
+    Walks ``typing.get_args(TypedLedgerEvent)`` to extract the ``Literal`` value
+    from each model's ``event`` field.  This ensures the set grows automatically
+    when new event classes are added to the union — eliminating the hand-maintenance
+    hazard that introduced the ``"obpi_completed"`` ghost.
+    """
+    result: set[str] = set()
+    # TypedLedgerEvent = Annotated[Union[ModelA, ModelB, ...], Field(discriminator="event")]
+    # get_args(Annotated[...]) → (Union[...], Field(...))
+    annotated_args = get_args(TypedLedgerEvent)
+    if not annotated_args:
+        return frozenset()
+    union_type = annotated_args[0]
+    for model_cls in get_args(union_type):
+        event_field = getattr(model_cls, "model_fields", {}).get("event")
+        if event_field is None:
+            continue
+        literal_values = get_args(event_field.annotation)
+        if literal_values:
+            result.add(str(literal_values[0]))
+    return frozenset(result)
+
+
+# Ledger-observed event types not (yet) in the TypedLedgerEvent union.
+# Each entry must carry a comment naming why it exists outside the union.
+# Remove an entry here once the union covers it — the coherence test enforces this.
+_UNTYPED_LEDGER_EVENT_EXTRAS: frozenset[str] = frozenset()
+
+# Recognized ledger event types that may appear in SUPPORT REQ citations.
+# Derived from the TypedLedgerEvent discriminated union at import time — grows
+# automatically as new events are added to the union.
+_KNOWN_LEDGER_EVENT_TYPES: frozenset[str] = (
+    _derive_typed_event_types() | _UNTYPED_LEDGER_EVENT_EXTRAS
+)
+
+# Scopes whose dispatch would re-enter req-kind or closeout-proof resolution.
+_RECURSION_FENCE_SCOPES: frozenset[str] = frozenset({"req_kind_discipline", "closeout_proof"})
+
+
+class SupportCitation(BaseModel):
+    """Parsed SUPPORT-channel citation: validator scope + ledger event types."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    event_types: list[str] = Field(
+        ..., min_length=1, description="Recognized ledger event type names found in REQ text"
+    )
+    scope: str = Field(..., description="Validator scope extracted from 'gz validate --<scope>'")
+
+
+def parse_support_citation(req_text: str) -> SupportCitation | None:
+    """Parse ledger-event type(s) and validator scope from SUPPORT REQ text.
+
+    Returns ``None`` when the citation is missing or unparseable (no recognized
+    ``gz validate --<scope>`` reference or no recognized ledger event type).
+    Both components must be present for the citation to be considered parseable.
+    """
+    scope_match = _GZ_VALIDATE_SCOPE_RE.search(req_text)
+    if scope_match is None:
+        return None
+    scope_raw = scope_match.group(1)
+    scope = scope_raw.replace("-", "_")
+
+    found_types = [et for et in _KNOWN_LEDGER_EVENT_TYPES if et in req_text]
+    if not found_types:
+        return None
+
+    return SupportCitation(event_types=found_types, scope=scope)
+
+
+def _ledger_has_event(event_types: list[str], project_root: Path) -> bool:
+    """Return True if the project ledger contains any event of the given types."""
+    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+    if not ledger_path.exists():
+        return False
+    event_type_set = frozenset(event_types)
+    for line in ledger_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            ev = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if ev.get("event") in event_type_set:
+            return True
+    return False
+
+
+def _dispatch_validator_scope(scope: str, project_root: Path) -> bool:
+    """Dispatch a validator scope in-process.  Returns True when no errors (exit 0)."""
+    from gzkit.commands.validate_cmd import (  # noqa: PLC0415
+        _default_scope_runners,
+        _explicit_scope_runners,
+    )
+
+    default_runners = _default_scope_runners(project_root, frontmatter_adr=None)
+    explicit_runners = _explicit_scope_runners(project_root)
+    runner = default_runners.get(scope) or explicit_runners.get(scope)
+    if runner is None:
+        return False
+    errors = runner()
+    return len(errors) == 0
+
+
+def resolve_support_proof(req_text: str, project_root: Path) -> str:
+    """Resolve SUPPORT proof status via ledger query and in-process validator dispatch.
+
+    Returns one of:
+    - ``"pass"`` — cited event found in ledger AND cited validator scope exits 0.
+    - ``"unproven-support"`` — citation absent/unparseable, event not found,
+      or validator returned errors (fail-close).
+    - ``"unproven-recursion-fence"`` — cited scope would re-enter req-kind or
+      closeout-proof resolution; not dispatched.
+    """
+    citation = parse_support_citation(req_text)
+    if citation is None:
+        return "unproven-support"
+
+    if citation.scope in _RECURSION_FENCE_SCOPES:
+        return "unproven-recursion-fence"
+
+    if not _ledger_has_event(citation.event_types, project_root):
+        return "unproven-support"
+
+    if not _dispatch_validator_scope(citation.scope, project_root):
+        return "unproven-support"
+
+    return "pass"
 
 
 class ReqClassification(BaseModel):
@@ -163,6 +308,7 @@ def compute_three_channel_coverage(
     report: CoverageReport,
     known_reqs: list[DiscoveredReq],
     grandfathering_cache: dict[str, str] | None = None,
+    project_root: Path | None = None,
 ) -> CoverageReport:
     """Enrich a CoverageReport with per-REQ taxonomy kind and proof-channel status.
 
@@ -179,7 +325,9 @@ def compute_three_channel_coverage(
     Proof-status semantics:
     - BEHAVIOR + covered  → ``"pass"``
     - BEHAVIOR + uncovered → ``"fail"`` (fail-closed; counted in ``behavior_uncovered_reqs``)
-    - SUPPORT → ``"advisory-support"`` (always advisory; ledger query deferred)
+    - SUPPORT + ``project_root`` → real ``proof_status`` via ``resolve_support_proof``
+      (``"pass"`` / ``"unproven-support"`` / ``"unproven-recursion-fence"``)
+    - SUPPORT + no ``project_root`` → ``"advisory-support"`` (legacy callers; unchanged)
     - STRUCTURAL-FENCE → ``"grandfathered"`` (audited at ADR closeout, not per-OBPI)
     - Untagged + inferred → ``"inferred-<kind>"`` (advisory; counted in ``grandfathered_reqs``)
     """
@@ -215,7 +363,11 @@ def compute_three_channel_coverage(
         elif resolved_kind == ReqKind.BEHAVIOR:
             proof_status = "pass" if entry.covered else "fail"
         elif resolved_kind == ReqKind.SUPPORT:
-            proof_status = "advisory-support"
+            if project_root is not None:
+                req_text = dreq.entity.description if dreq else ""
+                proof_status = resolve_support_proof(req_text, project_root)
+            else:
+                proof_status = "advisory-support"
         else:  # STRUCTURAL_FENCE
             proof_status = "grandfathered"
 

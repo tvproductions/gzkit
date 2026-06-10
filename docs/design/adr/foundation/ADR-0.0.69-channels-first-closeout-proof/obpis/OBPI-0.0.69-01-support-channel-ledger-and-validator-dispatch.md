@@ -3,7 +3,45 @@ id: OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch
 parent: ADR-0.0.69-channels-first-closeout-proof
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
+req_atomic:
+  - REQ-0.0.69-01-01  # one resolver pass-branch (event found + dispatch 0 → pass) + its tests — single indivisible TDD unit
+  - REQ-0.0.69-01-02  # one fail-close branch (event absent / citation unparseable) + tests — single indivisible TDD unit
+  - REQ-0.0.69-01-03  # one fail-close branch (validator non-zero) + test — single indivisible TDD unit
+  - REQ-0.0.69-01-04  # one manpage section edit — single indivisible doc unit
+ln:
+  - req_id: REQ-0.0.69-01-01
+    receipt_ids:
+      - arb-step-unitscoped-c6a26fbeacb84b0eb4cd8d5ebf42aaca
+      - arb-step-unittest-60ef1652a5c946a5ae8ede9071560d6f
+      - arb-ruff-d027bedd2567474c8a2158308fedbd64
+      - arb-step-typecheck-c6002951f3c24665ba9d838f46fc8921
+      - arb-step-mkdocs-3c7ff0490a7e4bf6b64a84c42fe25672
+      - arb-step-coverage-6426cf06db9749e58c1e9ff844fbbab9
+  - req_id: REQ-0.0.69-01-02
+    receipt_ids:
+      - arb-step-unitscoped-c6a26fbeacb84b0eb4cd8d5ebf42aaca
+      - arb-step-unittest-60ef1652a5c946a5ae8ede9071560d6f
+      - arb-ruff-d027bedd2567474c8a2158308fedbd64
+      - arb-step-typecheck-c6002951f3c24665ba9d838f46fc8921
+      - arb-step-mkdocs-3c7ff0490a7e4bf6b64a84c42fe25672
+      - arb-step-coverage-6426cf06db9749e58c1e9ff844fbbab9
+  - req_id: REQ-0.0.69-01-03
+    receipt_ids:
+      - arb-step-unitscoped-c6a26fbeacb84b0eb4cd8d5ebf42aaca
+      - arb-step-unittest-60ef1652a5c946a5ae8ede9071560d6f
+      - arb-ruff-d027bedd2567474c8a2158308fedbd64
+      - arb-step-typecheck-c6002951f3c24665ba9d838f46fc8921
+      - arb-step-mkdocs-3c7ff0490a7e4bf6b64a84c42fe25672
+      - arb-step-coverage-6426cf06db9749e58c1e9ff844fbbab9
+  - req_id: REQ-0.0.69-01-04
+    receipt_ids:
+      - arb-step-unitscoped-c6a26fbeacb84b0eb4cd8d5ebf42aaca
+      - arb-step-unittest-60ef1652a5c946a5ae8ede9071560d6f
+      - arb-ruff-d027bedd2567474c8a2158308fedbd64
+      - arb-step-typecheck-c6002951f3c24665ba9d838f46fc8921
+      - arb-step-mkdocs-3c7ff0490a7e4bf6b64a84c42fe25672
+      - arb-step-coverage-6426cf06db9749e58c1e9ff844fbbab9
 ---
 
 # OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch: SUPPORT Channel Ledger And Validator Dispatch
@@ -13,7 +51,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.69-channels-first-closeout-proof/ADR-0.0.69-channels-first-closeout-proof.md`
 - **Checklist Item:** #1 - "OBPI-0.0.69-01: SUPPORT channel — real ledger query + validator dispatch in `req_kind.py` SUPPORT branch and `_check_support_req`, propagating real `proof_status` (closes #543) (Heavy)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -33,6 +71,10 @@ ledger-query + validator-dispatch result.
 > those external surfaces.
 
 ## Allowed Paths
+
+- `src/gzkit/traceability.py` (added by brief reconcile, attestor g0)
+- `src/gzkit/triangle.py` (added by brief reconcile, attestor g0)
+- `src/gzkit/events.py` (added by brief reconcile, attestor g0)
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
@@ -59,7 +101,8 @@ ledger-query + validator-dispatch result.
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language. -->
 
 1. REQUIREMENT: The SUPPORT branch MUST resolve `proof_status` from a real ledger query for the cited event AND a real dispatch of the cited validator scope — never the hardcoded `"advisory-support"` constant.
-1. REQUIREMENT: A SUPPORT REQ whose cited ledger event is NOT found, OR whose cited validator exits non-zero, MUST report unproven (fail-close). A missing or unparseable citation is treated as a violation, never a pass.
+1. REQUIREMENT: A SUPPORT REQ whose cited ledger event is NOT found MUST report unproven (fail-close). A missing or unparseable citation is treated as a violation, never a pass.
+1. REQUIREMENT: A SUPPORT REQ whose cited validator scope exits non-zero MUST report unproven (fail-close).
 1. REQUIREMENT: `docs/user/manpages/validate.md` MUST document the SUPPORT-channel proof semantics; `mkdocs build --strict` and `gz validate --documents` MUST stay green.
 1. NEVER: touch the STRUCTURAL-FENCE arm, the derived `--closeout-proof` view, or the `ln:` surface — those are OBPI-02/03/04 scopes.
 1. ALWAYS: reconcile this brief against the parent ADR § Decision item (1) before implementation begins.
@@ -221,15 +264,53 @@ fail-closes when either is missing.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+Live resolver demonstration against this repository's real ledger:
+
+    $ uv run python -c "from pathlib import Path; from gzkit.req_kind import resolve_support_proof; ..."
+    pass case (artifact_edited in real ledger + --documents exit 0)
+      -> proof_status = 'pass'
+    recursion fence (cites --req-kind-discipline)
+      -> proof_status = 'unproven-recursion-fence'
+    unparseable citation (no scope, no event type)
+      -> proof_status = 'unproven-support'
+
+OBPI-scoped tests:
+
+    $ uv run -m unittest tests.test_req_kind_support_channel -v
+    Ran 16 tests in 0.034s
+    OK
+
+Authoring-time compatibility held — the 8 pre-existing SUPPORT briefs stay green:
+
+    $ uv run gz validate --req-kind-discipline
+    ✓ All validations passed (1 scopes).
+
+ARB receipts (canonical invocations per AGENTS.md § Attestation):
+arb-step-unittest-60ef1652a5c946a5ae8ede9071560d6f (6013 pass),
+arb-ruff-d027bedd2567474c8a2158308fedbd64,
+arb-step-typecheck-c6002951f3c24665ba9d838f46fc8921,
+arb-step-mkdocs-3c7ff0490a7e4bf6b64a84c42fe25672,
+arb-step-coverage-6426cf06db9749e58c1e9ff844fbbab9 (6013 pass),
+arb-step-unitscoped-c6a26fbeacb84b0eb4cd8d5ebf42aaca (16 pass, scoped).
+gz covers behavior_uncovered_reqs=0. (A mis-named scoped receipt
+arb-step-unittest-8a594f88d00b4612acf8d05a9ce03ae6 is superseded by the
+unitscoped receipt; flagged non-canonical by `gz arb validate` by design.)
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Parent ADR § Decision item (1), verbatim: "**SUPPORT channel made load-bearing (OBPI-0.0.69-01, Heavy).** The SUPPORT branch in `req_kind.py` (today hardcoding `"advisory-support"` at line 182) and `_check_support_req` actually query the ledger for the cited event AND dispatch the cited validator scope, propagating the real `proof_status`. A SUPPORT REQ whose cited ledger event is not found OR whose cited validator exits non-zero reports unproven (fail-close). Closes #543."
+- Resolver: src/gzkit/req_kind.py — `SupportCitation` (frozen, `min_length=1`), `parse_support_citation`, `_KNOWN_LEDGER_EVENT_TYPES` derived from the `TypedLedgerEvent` union via import-time introspection (plus explicitly-commented, currently-empty `_UNTYPED_LEDGER_EVENT_EXTRAS`), `_ledger_has_event`, `_dispatch_validator_scope` (in-process via validate_cmd scope runners; lazy import is cycle-avoidance), `resolve_support_proof` with recursion fence (`req_kind_discipline`, `closeout_proof` never dispatched)
+- Coverage wiring: `compute_three_channel_coverage` gains optional `project_root` — provided → real SUPPORT proof; omitted → legacy `advisory-support` unchanged for existing callers
+- Authoring-time validator: src/gzkit/commands/validate_req_kind.py `_check_support_req` — strict parse first, legacy keyword fallback so the 8 pre-existing SUPPORT briefs (ADR-0.0.37/0.0.59) stay green; strictness is consumed fail-closed at closeout (OBPI-03's derived view)
+- Docs: docs/user/manpages/validate.md — SUPPORT-channel proof semantics section + sharpened citation bullet
+- Coupled-surface fixes: data/behave_coverage_waivers.json waiver entry; brief `req_atomic` frontmatter; operator-attested allowlist amendment (3 read-only test-import paths)
+- Tests added: tests/test_req_kind_support_channel.py — 16 tests (2 pass-path with mocked dispatch isolation, 6 fail-close, 1 validator-non-zero, 4 derived-registry coherence that ran RED on the ghost first, 1 legacy-citation regression pin, 2 recursion fence)
+- Two-stage review: quality-reviewer FAIL → fix-cycle-1 (derived registry, pass-case isolation, min_length=1) → PASS; spec-reviewer PASS (all 4 REQs traced)
+- Date completed: 2026-06-10
+- Attestation status: pending operator attestation
+- Defects noted: brief-reconcile neighborhood-filter false positive tracked in agent-insights (2026-06-10); mis-named scoped receipt superseded (see Key Proof)
 
 ## Tracked Defects
 
@@ -239,12 +320,12 @@ fail-closes when either is missing.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: ATTEST COMPLETED — operator-verbatim Stage 4 attestation for OBPI-0.0.69-01 SUPPORT-channel ledger-and-validator dispatch (closes #543); operator confirmed the Stage 4 ceremony rendering as correct ('this was correct, this is what worked'). Evidence: 16 OBPI-scoped tests green (arb-step-unitscoped-c6a26fbeacb84b0eb4cd8d5ebf42aaca), full suite 6013 pass (arb-step-unittest-60ef1652a5c946a5ae8ede9071560d6f), ruff clean (arb-ruff-d027bedd2567474c8a2158308fedbd64), typecheck clean (arb-step-typecheck-c6002951f3c24665ba9d838f46fc8921), mkdocs strict clean (arb-step-mkdocs-3c7ff0490a7e4bf6b64a84c42fe25672), coverage 6013 pass (arb-step-coverage-6426cf06db9749e58c1e9ff844fbbab9); gz covers uncovered_reqs=0; precomplete READY 8/8.
+- Date: 2026-06-10
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-10
 
 **Evidence Hash:** -
