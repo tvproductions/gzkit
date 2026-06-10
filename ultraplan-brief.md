@@ -92,7 +92,14 @@ so the operator should explicitly ratify a direction before 0.0.41 closeout.
 - **Gate:** requires the operator for Gate 5; cannot be fully autonomous.
 
 ### P1 — `ln` strategy decision + ADR-0.0.41 closeout
-- **Blocked on:** §3 decision (sunset vs. keep-and-auto-populate).
+- **✅ ln-sunset ADR BOOKED (2026-06-10):** **ADR-0.0.69 channels-first-closeout-proof**
+  (foundation/heavy, 4 OBPIs, 21 REQs) authored via gz-design + gz-adr-create,
+  evaluated **GO 3.60/4.0** (spec-reviewer PASS, quality-reviewer COHERENT,
+  scorecard in the ADR package). Implementation order: 01 SUPPORT (#543) →
+  02 FENCE (#538) → 03 derived `--closeout-proof` view + gate repoint →
+  04 retire `ln:` (supersedes #599; strikes the #593 rename premise).
+  ADR-0.0.41 closeout runs after 03/04.
+- **Blocked on:** ~~§3 decision~~ RESOLVED — Option A sunset, now executing.
 - **Then:** ADR-0.0.41 is Pending/BLOCKED at pre_closeout, 2/5 OBPIs. Drive its
   closeout ceremony — or decide it attests as-is (its cited receipts resolve via
   the ledger), exactly as 0.0.67 did.
