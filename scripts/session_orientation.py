@@ -39,10 +39,13 @@ REMOTE_FETCH_TIMEOUT_SEC = 8
 REMOTE_QUERY_TIMEOUT_SEC = 4
 
 CAMPAIGN_AUTHORITY_NOTE = (
-    "The campaign RULES (operator ruling, 2026-06-10): work the topmost "
-    "unchecked item whose gate is met; update the plan in place as state "
-    "changes (amendments are operator-ratified). Handoffs and triage ADVISE; "
-    "the campaign governs. Reductive moves wait for its post-1.0 phase."
+    "The campaign RULES the sequencing (operator rulings, 2026-06-10): work "
+    "the topmost unchecked item whose gate is met, executing it through its "
+    "governed path — ADR, OBPI, and GHI repair remain the primary propellants; "
+    "the campaign refines and facilitates that machinery, never substitutes "
+    "for it. Handoffs and triage ADVISE; the campaign governs what is pulled "
+    "next. Amendments are operator-ratified; reductive moves wait for the "
+    "post-1.0 phase."
 )
 
 POST_COMPACTION_NOTE = (

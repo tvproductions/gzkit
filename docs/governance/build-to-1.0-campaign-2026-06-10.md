@@ -11,14 +11,27 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > **Elevation (operator verbatim, 2026-06-10):** "Build-to-1.0 Campaign is now
 > Magna Carta, it must rule (and be updated when needed) to get our legs back
 > under us."
+>
+> **Refinement (operator verbatim, 2026-06-10):** "Magna Carta it does not
+> invalidate ADR, OBPI, and GHI repair as primary propellants of the work.
+> Magna Carta should help refine/facilitate gzkit's governance and build
+> facility."
 
 ## Authority and amendment (Magna Carta discipline)
 
-- **It rules.** Every session works this plan's topmost unchecked item whose
-  gate is met. Handoffs, triage briefs, and the MOTD ADVISE; the campaign
-  governs. No work stream runs outside it except `emergency`-labeled
-  interrupts (§ GHI emergence discipline rule 3), which the campaign itself
-  defines.
+- **It steers; the spine propels.** The governance spine
+  (PRD → Constitution → ADR → OBPI → REQ → TASK → Attestation) and GHI repair
+  remain the **primary propellants** of the work. Every campaign item
+  executes through its governed path — OBPI pipeline, closeout ceremonies,
+  defect-fix routing — exactly as before. The campaign refines and
+  facilitates that machinery toward 1.0: it sequences ceremony, it never
+  substitutes for it, bypasses a gate, or competes with it as a parallel
+  work-ordering system.
+- **It rules the sequencing.** Every session works this plan's topmost
+  unchecked item whose gate is met. Handoffs, triage briefs, and the MOTD
+  ADVISE; the campaign governs what is pulled next. No work stream runs
+  outside it except `emergency`-labeled interrupts (§ GHI emergence
+  discipline rule 3), which the campaign itself defines.
 - **It is surfaced mechanically.** `scripts/session_orientation.py` renders
   the campaign as the FIRST section of every SessionStart digest — plan path,
   burn-down count, topmost unchecked items, and the authority note. A session
