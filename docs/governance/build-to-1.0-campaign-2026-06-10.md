@@ -158,7 +158,11 @@ gzkit is 1.0 when ALL hold:
 - [x] A.1 OBPI-0.0.69-02 (structural-fence channel boundary-invariants
       anchor) — `attested_completed` per `gz adr report ADR-0.0.69`
       (verified 2026-06-10; ADR at 2/4)
-- [ ] A.2 OBPI-0.0.69-03 (closeout-proof derived view + gate repoint)
+- [x] A.2 OBPI-0.0.69-03 (closeout-proof derived view + gate repoint) —
+      `attested_completed` per `gz adr report ADR-0.0.69` (verified
+      2026-06-10; ADR at 3/4). Active-ceremony freshness gate (24h) added
+      per operator ruling; ADR-0.0.41 OBPI-02/03 repointed; pool-ADR
+      task-envelope carve-out gap closed
 - [ ] A.3 OBPI-0.0.69-04 (retire `ln:` surface; supersedes #599)
 - [ ] A.4 ADR-0.0.69 closeout ceremony → Validated
 - [ ] A.5 ADR-0.0.41 unblocked closeout (2/5 → terminal; or operator-parks
