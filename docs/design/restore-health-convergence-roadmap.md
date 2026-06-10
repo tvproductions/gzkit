@@ -1,5 +1,10 @@
 # Restore-Health Convergence Roadmap
 
+> **SUPERSEDED 2026-06-10** by
+> [`docs/governance/build-to-1.0-campaign-2026-06-10.md`](../governance/build-to-1.0-campaign-2026-06-10.md)
+> (operator ruling: the campaign subsumes all prior plans). The `ln`-sunset
+> sequencing it describes is now campaign Phase A. Retained for audit.
+
 > **Layer-3 planning view — not canon.** This is a derived planning document, not
 > a governance artifact. The canonical decision record for the ratified `ln`
 > sunset (§2) is the foundation ADR authored under §3; this roadmap only

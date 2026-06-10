@@ -1,5 +1,11 @@
 # Planning Brief — gzkit restore-health convergence
 
+> **SUPERSEDED 2026-06-10** by
+> [`docs/governance/build-to-1.0-campaign-2026-06-10.md`](docs/governance/build-to-1.0-campaign-2026-06-10.md)
+> (operator ruling: the campaign subsumes all prior plans). P0/P1 threads
+> (#519, ADR-0.0.69 → 0.0.41) are homed in the campaign's Phases A and D.
+> Retained for audit.
+
 > **Purpose:** Single planning input for ultraplan. Self-contained — no need to
 > read the handoff chain. Captures (1) restore-health status, (2) one open
 > decision that gates the rest, and (3) the candidate work-list with

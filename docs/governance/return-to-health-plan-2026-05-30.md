@@ -1,6 +1,11 @@
 # Return to Health Plan, 2026-05-30
 
-Status: Active canonical recovery plan.
+Status: **SUPERSEDED 2026-06-10** by
+[`build-to-1.0-campaign-2026-06-10.md`](build-to-1.0-campaign-2026-06-10.md)
+(operator ruling: the campaign subsumes all prior plans). Open threads —
+#519, the Phase 3/4 GHI register, the MOTD and Canon Foundation workstream
+designs — are carried forward in the campaign; this file is retained
+unmodified below for audit. The campaign is the one active plan.
 
 > **Live baseline: Snapshot N (2026-06-08) — `main` is 26/26 GREEN, synced.** Full
 > measurement in § Current Baseline. Tier 0 has reopened 8× (C→E→G→J→K→L→M→N): main is not
