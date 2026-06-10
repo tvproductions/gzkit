@@ -7,6 +7,11 @@ Authority: Canon (sole authority for gate definitions)
 This document is the **sole authority** for GovZero gate definitions and semantics.
 All other documents MUST reference gates by number only and defer here for meaning.
 
+Gate definitions are *procedures* in the Four P's stack. They trace upward to the
+[GovZero command doctrine](command-doctrine.md) (philosophy layer, Article 10):
+the doctrine governs *why* the gates exist; this charter remains the sole
+authority for *what* the gates are.
+
 ---
 
 ## Authority Boundary

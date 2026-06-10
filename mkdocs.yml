@@ -168,6 +168,7 @@ nav:
     - Feature Flags: governance/feature-flags.md
     - Pool Curation Policy: governance/pool-curation.md
     - Parity Intake Rubric: governance/parity-intake-rubric.md
+    - Command Doctrine: governance/GovZero/command-doctrine.md
     - Charter: governance/GovZero/charter.md
     - ADR Lifecycle: governance/GovZero/adr-lifecycle.md
     - OBPI Transaction Contract: governance/GovZero/obpi-transaction-contract.md
