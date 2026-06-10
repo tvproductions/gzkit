@@ -1148,6 +1148,22 @@ gz validate --req-kind-discipline
 | 0 | All tagged REQs pass per-kind checks; or all briefs are all-untagged | — |
 | 3 | Mixed-state brief or proof-citation gap | Add `[kind]` tags and citations per `.gzkit/rules/tests.md` § REQ Scope Discipline |
 
+**STRUCTURAL-FENCE-channel proof semantics (ADR-0.0.69 / OBPI-0.0.69-02):**
+
+The STRUCTURAL-FENCE proof channel (`PARENT_ADR_INVARIANT`) resolves a real per-REQ
+`proof_status` instead of the former always-advisory `"grandfathered"` placeholder.
+A STRUCTURAL-FENCE REQ proves only when the parent ADR carries a
+`## Boundary Invariants` heading:
+
+- **Anchor found** → `"pass"`.
+- **Anchor absent** → `"unproven-fence"` (fail-close — never `"grandfathered"` or
+  advisory). This applies whether or not a `project_root` is available at resolution
+  time; absent anchor = unproven, always.
+
+`"unproven-fence"` is a fail-closed status: it is NOT counted in `grandfathered_reqs`
+(advisory-only REQs). Unlike `"advisory-support"` (legacy SUPPORT callers without
+`project_root`), there is no advisory fallback for STRUCTURAL-FENCE.
+
 **Related:** ADR-0.0.59 / OBPI-0.0.59-02 (req-kind-discipline validator).
 See `docs/governance/req-scope-discipline.md` for the full three-kind taxonomy doctrine.
 

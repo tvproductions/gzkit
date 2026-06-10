@@ -405,17 +405,20 @@ class TestComputeThreeChannelCoverage(unittest.TestCase):
 
     @covers("REQ-0.0.59-03-01")
     @covers("REQ-0.0.59-03-05")
-    def test_structural_fence_req_is_grandfathered(self) -> None:
-        """STRUCTURAL-FENCE REQ gets proof_status='grandfathered'."""
+    def test_structural_fence_req_no_project_root_is_unproven_fence(self) -> None:
+        """STRUCTURAL-FENCE REQ with no project_root gets proof_status='unproven-fence'.
+
+        The arm is fail-close: unproven-fence is NOT advisory, so grandfathered_reqs == 0.
+        """
         from gzkit.req_kind import compute_three_channel_coverage
 
         report = self._make_minimal_report("REQ-0.0.59-03-01", covered=False, covering_tests=[])
         dreq = self._make_discovered_req("REQ-0.0.59-03-01", "STRUCTURAL-FENCE")
         enriched = compute_three_channel_coverage(report, [dreq])
         entry = enriched.entries[0]
-        self.assertEqual(entry.proof_status, "grandfathered")
+        self.assertEqual(entry.proof_status, "unproven-fence")
         self.assertEqual(enriched.summary.behavior_uncovered_reqs, 0)
-        self.assertGreater(enriched.summary.grandfathered_reqs, 0)
+        self.assertEqual(enriched.summary.grandfathered_reqs, 0)
 
     @covers("REQ-0.0.59-03-02")
     def test_legacy_untagged_req_inferred_as_grandfathered(self) -> None:
@@ -438,12 +441,13 @@ class TestComputeThreeChannelCoverage(unittest.TestCase):
 
         report = self._make_minimal_report("REQ-0.0.59-03-01", covered=False, covering_tests=[])
         dreq = self._make_discovered_req("REQ-0.0.59-03-01", None)
-        # Operator overrides the default BEHAVIOR inference to STRUCTURAL-FENCE
+        # Operator overrides the default BEHAVIOR inference to STRUCTURAL-FENCE.
+        # Without project_root, proof_status is unproven-fence (fail-close, not advisory).
         cache = {"REQ-0.0.59-03-01": "STRUCTURAL-FENCE"}
         enriched = compute_three_channel_coverage(report, [dreq], grandfathering_cache=cache)
         entry = enriched.entries[0]
         self.assertEqual(entry.taxonomy_kind, "STRUCTURAL-FENCE")
-        self.assertEqual(entry.proof_status, "grandfathered")
+        self.assertEqual(entry.proof_status, "unproven-fence")
 
 
 class TestBypassFlagLedgerEvent(unittest.TestCase):

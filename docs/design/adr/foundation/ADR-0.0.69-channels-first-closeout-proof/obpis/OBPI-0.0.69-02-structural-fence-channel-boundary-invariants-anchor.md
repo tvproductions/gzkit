@@ -3,7 +3,37 @@ id: OBPI-0.0.69-02-structural-fence-channel-boundary-invariants-anchor
 parent: ADR-0.0.69-channels-first-closeout-proof
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
+req_atomic:
+  - REQ-0.0.69-02-01  # one fail-close branch (anchor absent / no project_root → unproven-fence) + its tests — single indivisible TDD unit
+  - REQ-0.0.69-02-02  # one pass branch (anchor present → pass) + its test — single indivisible TDD unit
+  - REQ-0.0.69-02-03  # one ADR-0.0.59 ## Boundary Invariants section authoring pass + manpage section — single coupled-surface edit
+  - REQ-0.0.69-02-04  # structural-fence declaration anchored by parent-ADR Boundary Invariants entry — no labor below the REQ
+ln:
+  - req_id: REQ-0.0.69-02-01
+    receipt_ids:
+      - arb-step-unittest-fd5d0b300b474c2f8477f06c34a6e082
+      - arb-ruff-1afba5e2df7f4366889fd2f0235642c9
+      - arb-step-typecheck-c6d15e69107a4139bd044f09d3aca7a4
+      - arb-step-mkdocs-ea162f39a5024cb18a36901ebef3289c
+  - req_id: REQ-0.0.69-02-02
+    receipt_ids:
+      - arb-step-unittest-fd5d0b300b474c2f8477f06c34a6e082
+      - arb-ruff-1afba5e2df7f4366889fd2f0235642c9
+      - arb-step-typecheck-c6d15e69107a4139bd044f09d3aca7a4
+      - arb-step-mkdocs-ea162f39a5024cb18a36901ebef3289c
+  - req_id: REQ-0.0.69-02-03
+    receipt_ids:
+      - arb-step-unittest-fd5d0b300b474c2f8477f06c34a6e082
+      - arb-ruff-1afba5e2df7f4366889fd2f0235642c9
+      - arb-step-typecheck-c6d15e69107a4139bd044f09d3aca7a4
+      - arb-step-mkdocs-ea162f39a5024cb18a36901ebef3289c
+  - req_id: REQ-0.0.69-02-04
+    receipt_ids:
+      - arb-step-unittest-fd5d0b300b474c2f8477f06c34a6e082
+      - arb-ruff-1afba5e2df7f4366889fd2f0235642c9
+      - arb-step-typecheck-c6d15e69107a4139bd044f09d3aca7a4
+      - arb-step-mkdocs-ea162f39a5024cb18a36901ebef3289c
 ---
 
 # OBPI-0.0.69-02-structural-fence-channel-boundary-invariants-anchor: STRUCTURAL-FENCE Channel Boundary-Invariants Anchor
@@ -13,7 +43,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.69-channels-first-closeout-proof/ADR-0.0.69-channels-first-closeout-proof.md`
 - **Checklist Item:** #2 - "OBPI-0.0.69-02: STRUCTURAL-FENCE channel — Boundary-Invariants anchor assertion + add the `## Boundary Invariants` heading to ADR-0.0.59 itself (closes #538) (Heavy)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -33,6 +63,9 @@ assertion.
 > those external surfaces.
 
 ## Allowed Paths
+
+- `src/gzkit/traceability.py` (added by brief reconcile, attestor g0)
+- `src/gzkit/triangle.py` (added by brief reconcile, attestor g0)
 
 <!-- What files/directories are IN SCOPE? -->
 
@@ -60,6 +93,7 @@ assertion.
 1. REQUIREMENT: The STRUCTURAL-FENCE arm MUST report proven only when a parent-ADR `## Boundary Invariants` anchor is present for the FENCE REQ; a missing anchor MUST report unproven — never `"grandfathered"` or advisory.
 1. REQUIREMENT: ADR-0.0.59 MUST gain a `## Boundary Invariants` heading anchoring its own STRUCTURAL-FENCE REQs so it stays provable under the new arm.
 1. REQUIREMENT: `docs/user/manpages/validate.md` MUST document the STRUCTURAL-FENCE proof semantics; `mkdocs build --strict` and `gz validate --documents` MUST stay green.
+1. REQUIREMENT: The STRUCTURAL-FENCE proof arm MUST assert a real parent-ADR `## Boundary Invariants` anchor and MUST NOT report `grandfathered`/advisory; verified at ADR-0.0.69 closeout via the parent ADR `## Boundary Invariants` (Invariant 1).
 1. NEVER: touch the SUPPORT branch, the derived view, or the `ln:` surface — those are OBPI-01/03/04 scopes.
 1. ALWAYS: reconcile this brief against the parent ADR § Decision item (2) before implementation begins.
 
@@ -216,28 +250,34 @@ when it is absent, making the FENCE channel load-bearing.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+`uv run -m unittest tests.test_req_kind_fence_channel -v` → 3/3 pass: a STRUCTURAL-FENCE REQ whose parent ADR has NO `## Boundary Invariants` heading resolves `unproven-fence` (fail-close, never `grandfathered`); one whose parent ADR carries the heading resolves `pass`; with `project_root=None` the arm fail-closes to `unproven-fence` with `grandfathered_reqs == 0` (not advisory). Receipts: `arb-step-unittest-fd5d0b300b474c2f8477f06c34a6e082` (full suite green), `arb-ruff-1afba5e2df7f4366889fd2f0235642c9`, `arb-step-typecheck-c6d15e69107a4139bd044f09d3aca7a4`, `arb-step-mkdocs-ea162f39a5024cb18a36901ebef3289c`.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Parent ADR § Decision item (2) verbatim: "STRUCTURAL-FENCE channel made load-bearing (OBPI-0.0.69-02, Heavy). The FENCE arm (today reporting `"grandfathered"`) asserts that a parent-ADR `## Boundary Invariants` anchor is present for the FENCE REQ; a missing anchor reports unproven. ADR-0.0.59 itself gains a `## Boundary Invariants` heading anchoring its own FENCE REQs so it stays provable. Closes #538."
+- Files created: `tests/test_req_kind_fence_channel.py` (3 fail-close regression tests, @covers REQ-0.0.69-02-01 / REQ-0.0.69-02-02)
+- Files modified: `src/gzkit/req_kind.py` (`resolve_fence_proof` + `_find_parent_adr_file` resolver; STRUCTURAL_FENCE arm wired to real anchor check; `"grandfathered"` literal removed from the arm and from the rollup advisory set); `tests/governance/test_req_coverage_record.py` (2 tests re-derived to expect `unproven-fence`); `docs/design/adr/foundation/ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine/ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine.md` (`## Boundary Invariants` section added — coupled-surface fix); `docs/user/manpages/validate.md` (STRUCTURAL-FENCE-channel proof semantics section); `data/behave_coverage_waivers.json` (REQ-kind waiver, same shape as OBPI-01)
+- Tests added: 3 (RED observed first — all three failed on `'grandfathered'` — then GREEN)
+- Date completed: 2026-06-10
+- Attestation status: operator-attested (attest completed, 2026-06-10)
+- Defects noted: none; closes #538
 
 ## Tracked Defects
+
+- REQ-count drift: 3 declared vs 4 acceptance criteria (brief reconcile, attestor g0)
 
 - Closes #538 — STRUCTURAL-FENCE arm reported `grandfathered` instead of asserting a real anchor.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — STRUCTURAL-FENCE proof arm made load-bearing (closes #538): resolve_fence_proof in src/gzkit/req_kind.py asserts a real parent-ADR ## Boundary Invariants anchor (pass when present, unproven-fence fail-close when absent or project_root unavailable — never grandfathered/advisory); grandfathered removed from the rollup advisory set; ADR-0.0.59 gains its own ## Boundary Invariants section (coupled-surface fix so its FENCE REQs stay provable); STRUCTURAL-FENCE proof semantics documented in docs/user/manpages/validate.md. RED observed first (3 failures on 'grandfathered') then GREEN (3/3 in tests/test_req_kind_fence_channel.py; 38/38 across both touched test modules; full suite green). Receipts: arb-step-unittest-fd5d0b300b474c2f8477f06c34a6e082, arb-ruff-1afba5e2df7f4366889fd2f0235642c9, arb-step-typecheck-c6d15e69107a4139bd044f09d3aca7a4, arb-step-mkdocs-ea162f39a5024cb18a36901ebef3289c. gz covers behavior_uncovered_reqs=0; gz validate --documents/--req-kind-discipline PASS; gz cli audit 104/104.
+- Date: 2026-06-10
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-10
 
 **Evidence Hash:** -

@@ -191,6 +191,24 @@ Doctrine-only ADR with mechanism deferred to ADR-0.0.60 (Approach C from gz-desi
 - [ ] Tests: `tests/`
 - [ ] Docs: `docs/`
 
+## Boundary Invariants
+
+These are the structural fences this ADR establishes, audited at ADR closeout
+(STRUCTURAL-FENCE proof channel via `resolve_fence_proof`).
+
+1. **The REQ taxonomy is closed-set: exactly three kinds (BEHAVIOR, SUPPORT,
+   STRUCTURAL-FENCE).** Adding a fourth kind requires a follow-up foundation ADR
+   amendment — the closed-set is a deliberate one-way door (noted in the Reversibility
+   forcing function and the Attestation Block).
+2. **STRUCTURAL-FENCE REQs are audited at ADR closeout layer, not per-OBPI.**
+   The `grandfathered`/advisory path for STRUCTURAL-FENCE REQs was always a
+   transitional placeholder (ADR-0.0.59 OBPI-03 shipped it as "grandfathered,
+   advisory, never gates"); the load-bearing anchor is this `## Boundary Invariants`
+   section, which ADR-0.0.69 OBPI-02 makes the proof arm actually check.
+3. **BEHAVIOR REQs are witnessed exclusively through `@covers`-decorated tests.**
+   Filesystem-grep tests or content-checking tests do not constitute valid BEHAVIOR
+   proofs; such tests belong in the decommissioning chore's scope (OBPI-0.0.59-04/05).
+
 ## Alternatives Considered
 
 Path A (from ADR-pool.obpi-req-taxonomy-scope-fence) — Schema-level REQ kind marker (runtime touch): adds per-REQ structured marker in brief frontmatter or inline; gz adr audit-check honors the marker and exempts scope-boundary REQs from coverage reporting entirely. Strengths: mechanical defense against doctrine drift; audit-check signal cleanliness (0 advisory REQs after migration); matches anti-vibing mantra; composable with .gzkit/rules/adr-audit.md exemptions. Weaknesses: schema migration on every existing OBPI brief is substantive ceremony; marker can drift (operators silencing audit-check); runtime cost non-trivial for 5.8% defect rate at observation time. REJECTED standalone in favor of subsuming under the categorical proof-channel framing; the marker IS preserved in this ADR's [kind] tag syntax but lands in a broader taxonomy rather than as a single scope-fence-only marker.

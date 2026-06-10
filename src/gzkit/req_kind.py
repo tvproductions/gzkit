@@ -65,6 +65,46 @@ _SUPPORT_TRIGGERS: tuple[str, ...] = (
 )
 
 # ---------------------------------------------------------------------------
+# STRUCTURAL-FENCE channel resolver (ADR-0.0.69-channels-first-closeout-proof)
+# ---------------------------------------------------------------------------
+
+# Regex to parse the ADR semver from a REQ id (e.g. "REQ-0.0.69-02-04" → "0.0.69").
+_REQ_SEMVER_RE: re.Pattern[str] = re.compile(r"REQ-(\d+\.\d+\.\d+)-")
+
+# Heading that marks the STRUCTURAL-FENCE proof anchor in a parent ADR.
+_BOUNDARY_INVARIANTS_HEADING: str = "## Boundary Invariants"
+
+
+def _find_parent_adr_file(semver: str, project_root: Path) -> Path | None:
+    """Find the parent ADR file for a given semver under project_root."""
+    adr_root = project_root / "docs" / "design" / "adr"
+    for adr_file in adr_root.rglob(f"ADR-{semver}-*.md"):
+        # The ADR file lives directly inside a package dir named ADR-{semver}-*.
+        if adr_file.parent.name.startswith(f"ADR-{semver}-"):
+            return adr_file
+    return None
+
+
+def resolve_fence_proof(req_id: str, project_root: Path) -> str:
+    """Resolve STRUCTURAL-FENCE proof status via parent-ADR Boundary Invariants anchor.
+
+    Returns one of:
+    - ``"pass"`` — parent ADR has a ``## Boundary Invariants`` heading.
+    - ``"unproven-fence"`` — anchor absent, parent ADR not found, or req_id unparseable.
+    """
+    m = _REQ_SEMVER_RE.match(req_id)
+    if m is None:
+        return "unproven-fence"
+    semver = m.group(1)
+    adr_path = _find_parent_adr_file(semver, project_root)
+    if adr_path is None:
+        return "unproven-fence"
+    if _BOUNDARY_INVARIANTS_HEADING in adr_path.read_text(encoding="utf-8"):
+        return "pass"
+    return "unproven-fence"
+
+
+# ---------------------------------------------------------------------------
 # SUPPORT channel citation parser (ADR-0.0.69-channels-first-closeout-proof)
 # ---------------------------------------------------------------------------
 
@@ -236,8 +276,8 @@ class ReqCoverageRecord(BaseModel):
     proof_channel: str | None = Field(None, description="Proof channel for this kind")
     proof_status: str = Field(
         ...,
-        description="pass/fail/advisory-support/grandfathered/inferred-behavior/"
-        "inferred-support/inferred-structural-fence",
+        description="pass/fail/advisory-support/unproven-fence/unproven-support/"
+        "inferred-behavior/inferred-support/inferred-structural-fence",
     )
     covering_tests: list[str] = Field(default_factory=list, description="@covers test paths")
     ledger_event_ids: list[str] = Field(
@@ -263,7 +303,7 @@ class ReqCoverageSummary(BaseModel):
         ..., description="BEHAVIOR-kind REQs without @covers (fail-close count)"
     )
     grandfathered_reqs: int = Field(
-        ..., description="Advisory-only REQs (SUPPORT + STRUCTURAL-FENCE + inferred)"
+        ..., description="Advisory-only REQs (SUPPORT without project_root + inferred)"
     )
     entries: list[ReqCoverageRecord] = Field(..., description="Per-REQ records")
 
@@ -328,7 +368,9 @@ def compute_three_channel_coverage(
     - SUPPORT + ``project_root`` → real ``proof_status`` via ``resolve_support_proof``
       (``"pass"`` / ``"unproven-support"`` / ``"unproven-recursion-fence"``)
     - SUPPORT + no ``project_root`` → ``"advisory-support"`` (legacy callers; unchanged)
-    - STRUCTURAL-FENCE → ``"grandfathered"`` (audited at ADR closeout, not per-OBPI)
+    - STRUCTURAL-FENCE + ``project_root`` → real anchor check via ``resolve_fence_proof``
+      (``"pass"`` / ``"unproven-fence"``)
+    - STRUCTURAL-FENCE + no ``project_root`` → ``"unproven-fence"`` (fail-close; never advisory)
     - Untagged + inferred → ``"inferred-<kind>"`` (advisory; counted in ``grandfathered_reqs``)
     """
     from gzkit.traceability import CoverageEntry, CoverageRollup
@@ -369,7 +411,10 @@ def compute_three_channel_coverage(
             else:
                 proof_status = "advisory-support"
         else:  # STRUCTURAL_FENCE
-            proof_status = "grandfathered"
+            if project_root is not None:
+                proof_status = resolve_fence_proof(entry.req_id, project_root)
+            else:
+                proof_status = "unproven-fence"
 
         return entry.model_copy(
             update={
@@ -395,7 +440,6 @@ def compute_three_channel_coverage(
             if e.proof_status
             in {
                 "advisory-support",
-                "grandfathered",
                 "inferred-support",
                 "inferred-structural-fence",
                 "inferred-behavior",
