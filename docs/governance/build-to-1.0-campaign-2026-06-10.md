@@ -320,6 +320,12 @@ direction change:
 - **Session**: login → MOTD briefing (until C ships: this checklist, top-down)
   → execute the topmost unblocked item via its governed path → logout
   continuity. Operator rules; the MOTD advises.
+- **Handoffs are authored relative to the campaign**: a session-end handoff
+  is continuity only — its next steps cite campaign item IDs and restate the
+  topmost unchecked items; it carries an explicit subordination note that the
+  campaign, not the handoff, governs what is pulled next. If handoff and
+  campaign disagree, the campaign wins and the variance is reconciled into
+  the campaign.
 - **Release**: weekly drumbeat through the existing patch-release ceremony;
   every wave that lands capability ships in a named, attested release.
 - **Triage**: GHI steady-state via `ghi-triage`; defects route per
