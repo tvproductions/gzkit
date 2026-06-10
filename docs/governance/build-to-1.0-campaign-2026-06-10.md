@@ -16,6 +16,12 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > invalidate ADR, OBPI, and GHI repair as primary propellants of the work.
 > Magna Carta should help refine/facilitate gzkit's governance and build
 > facility."
+>
+> **Amendment (operator verbatim, 2026-06-10):** "we don't direct edit
+> AGENTS.md. the CMS system must be prioritized as a near-top priority."
+> → CMS completion (ADR-0.0.37 corpus → compress → rendition → playback)
+> inserted as Phase B, between in-flight closure and the MOTD build; all
+> subsequent phases renumbered.
 
 ## Authority and amendment (Magna Carta discipline)
 
@@ -52,7 +58,7 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > implementation show that; where it works, let working proof speak."
 >
 > **Completion before reduction.** Every reductive move (cull, retire, merge,
-> optimize, straighten) is deferred to the post-1.0 reduction pass (Phase H).
+> optimize, straighten) is deferred to the post-1.0 reduction pass (Phase I).
 > Mid-campaign course-corrections amend the census; they never change direction.
 > This is the structural cure for the named failure mode: partial corrections
 > leave seams that ensnare later sessions because no model co-owns the whole.
@@ -78,9 +84,10 @@ artifacts of their briefs, not campaign plans; they are untouched.
 
 Restore-health's unfinished threads are carried forward here, not orphaned:
 
-- **#519** (sole open emergency; codex 258K window) → cured inside Phase D by
-  the ADR-0.0.37 build-out (<15k registry-projected surface, GHI #533) +
-  Gate 5. Closing it fills restore-health's Recovery Closeout retroactively.
+- **#519** (sole open emergency; codex 258K window) → cured inside Phase B
+  (CMS completion — near-top by operator amendment, 2026-06-10) by the
+  ADR-0.0.37 build-out (<15k registry-projected surface, GHI #533) + Gate 5.
+  Closing it fills restore-health's Recovery Closeout retroactively.
 - **Phase 3/4 GHI register** (~38 open) → absorbed into the steady-state
   triage cadence (§ Cadence).
 - The green floor (ADR-0.0.68, Validated) remains the standing invariant:
@@ -103,16 +110,16 @@ this campaign** (quoted verbatim per DO IT RIGHT 6h):
 4. AGENTS.md § Architectural Boundaries 2: *"Do not add more pool ADRs to the
    runtime track."* → Same override. The rendered AGENTS.md is amended through
    the governed corpus path (invariant-coherence byte-compares it; no direct
-   edit) — tracked as Phase C.3.
+   edit) — tracked as Phase B.3.
 
 ## Scope decisions (booked 2026-06-10, operator dialogue)
 
 | # | Decision | Ruling |
 |---|---|---|
 | 1 | Pool participation | **Full pool build-out.** All 139 live pool items are processed through the promotion pipeline to a terminal disposition: promoted-and-built, or parked/superseded only when promotion-stage evidence (overlap with a landed surface, absorption shown by implementation) proves it — never by taste. No item left undecided at 1.0. |
-| 2 | Canon Foundation workstream | **Booked into 1.0.** Its ADR(s) are authored early in Phase D; build proceeds in increments per the workstream's §12 ("design covers all; build increments"). |
+| 2 | Canon Foundation workstream | **Booked into 1.0.** Its ADR(s) are authored early in Phase E; build proceeds in increments per the workstream's §12 ("design covers all; build increments"). |
 | 3 | Per-ADR done-bar | **Validated or operator-parked.** Every booked ADR reaches Validated (audit ceremony) OR is consciously parked by operator attestation with a named reason. Parking is a completion decision and prime Phase-H evidence. |
-| 4 | First-wave sequencing | **In-flight first, then MOTD.** ADR-0.0.69 (02–04) and the ADR-0.0.41 closeout land before the MOTD build opens. |
+| 4 | First-wave sequencing | **In-flight first, then MOTD.** ADR-0.0.69 (02–04) and the ADR-0.0.41 closeout land before the MOTD build opens. *Amended same day (operator): CMS completion inserted between in-flight closure and MOTD — "the CMS system must be prioritized as a near-top priority."* |
 
 Identity sequence (booked earlier same dialogue): **research instrument +
 published exemplar → personal toolkit → public product.** 1.0 serves the first
@@ -143,7 +150,7 @@ gzkit is 1.0 when ALL hold:
 ## Phases
 
 > Green-first is inherited: no phase opens while `uv run gz check` is red.
-> Until MOTD ships (Phase B), **this file's checklist is the workplan** —
+> Until MOTD ships (Phase C), **this file's checklist is the workplan** —
 > sessions work top-down, check items off with observed command evidence.
 
 ### Phase A — In-flight closure
@@ -157,82 +164,97 @@ gzkit is 1.0 when ALL hold:
 
 Exit gate: 0.0.69 and 0.0.41 terminal; main green, synced.
 
-### Phase B — MOTD build (the cadence engine)
+### Phase B — CMS completion (near-top by operator amendment, 2026-06-10)
+
+The corpus → compress → rendition → playback pipeline (ADR-0.0.37, the
+Context-Load CMS) lands end-to-end. This is the system that makes "we don't
+direct edit AGENTS.md" workable: contract changes queue in the corpus and
+only deterministic playback writes the rendered surface.
+
+- [ ] B.1 ADR-0.0.37 build-out (7/19 → terminal) — the campaign's first
+      marquee.
+- [ ] B.2 Registry-projected <15k surface (GHI #533) — closes **#519** (the
+      sole open emergency), fills restore-health's Recovery Closeout.
+- [ ] B.3 Play back queued corpus entries into the rendered AGENTS.md through
+      the pipeline (the two Magna Carta behavior-rules entries, rendered as
+      one coherent steering-vs-propulsion rule) and land the
+      § Architectural Boundaries 1–2 amendment (full-pool override) the same
+      governed way; `invariant-coherence` green throughout.
+
+Exit gate: corpus → rendered-surface round-trip works under the validators;
+#519 closed; no open emergency.
+
+### Phase C — MOTD build (the cadence engine)
 
 Per the designed build plan (restore-health § Session MOTD §7), leaf-first,
 absorbing ADR-0.0.65 and implementing ADR-0.0.66 (`gz next`):
 
-- [ ] B.1 `.gzkit/work/` store + workplan schema (campaign + daily-brief)
-- [ ] B.2 `session_orientation.py` → lightweight auto-triage (the MOTD)
-- [ ] B.3 Directed triage skill (`gz next` UX)
-- [ ] B.4 Continuity hybrid (subsumes handoff; Stop/clear hook drafts, agent
+- [ ] C.1 `.gzkit/work/` store + workplan schema (campaign + daily-brief)
+- [ ] C.2 `session_orientation.py` → lightweight auto-triage (the MOTD)
+- [ ] C.3 Directed triage skill (`gz next` UX)
+- [ ] C.4 Continuity hybrid (subsumes handoff; Stop/clear hook drafts, agent
       finalizes)
-- [ ] B.5 Independent logrotation for the two logs
-- [ ] B.6 Verb surface folded into ADR-0.0.66; no new top-level verb family
+- [ ] C.5 Independent logrotation for the two logs
+- [ ] C.6 Verb surface folded into ADR-0.0.66; no new top-level verb family
 
 Exit gate: MOTD §8 criteria all observed live.
 
-### Phase C — The Census
+### Phase D — The Census
 
-- [ ] C.1 Generate the completion census: every booked ADR × lifecycle × OBPI
+- [ ] D.1 Generate the completion census: every booked ADR × lifecycle × OBPI
       × REQ proof channel; every declared surface × wiring state; every live
       pool item × disposition state. Machine-derived from ledger + canon
       (Layer-3 view, regenerable, never hand-maintained); persisted under
       `.gzkit/work/` as the campaign burn-down the MOTD reads at login.
-- [ ] C.2 Operator attests the census as the authoritative 1.0 scope.
+- [ ] D.2 Operator attests the census as the authoritative 1.0 scope.
       Census reconciliation includes the GHI #584 class (233 orphaned
       `obpi_created` ledger events with no on-disk briefs across 24 feature
       ADRs) — every orphan gets a disposition in the census.
-- [ ] C.3 Amend AGENTS.md § Architectural Boundaries 1–2 through the governed
-      corpus path (`gz content remember` / registry; invariant-coherence
-      stays green) to reflect the ratified full-pool override.
 
 Exit gate: census attested; MOTD login brief draws from it.
 
-### Phase D — Booked-canon burn-down (waves)
+### Phase E — Booked-canon burn-down (waves)
 
-Dependency-ordered waves over the ~31 booked ADRs short of Validated
+Dependency-ordered waves over the ~30 booked ADRs short of Validated
 (19 Draft + 10 Proposed + stragglers), via MOTD triage. Standing orders:
 
-- [ ] D.1 **ADR-0.0.37 build-out early** (7/19 → terminal) — closes #519,
-      fills restore-health Recovery Closeout. The campaign's first marquee.
-- [ ] D.2 **Canon Foundation ADRs booked** early in this phase; increments
-      build through D/E.
-- [ ] D.3 Wire the 6 manual-only validator scopes into a governed cadence
+- [ ] E.1 **Canon Foundation ADRs booked** early in this phase; increments
+      build through E/F.
+- [ ] E.2 Wire the 6 manual-only validator scopes into a governed cadence
       (chore or check-tier); book origins for the 3 provenance-gap scopes.
-- [ ] D.4 Burn Draft/Proposed foundation + pre-release ADRs wave by wave;
+- [ ] E.3 Burn Draft/Proposed foundation + pre-release ADRs wave by wave;
       each wave ends in a release (§ Cadence).
 
 Exit gate: all booked ADRs Validated or operator-parked.
 
-### Phase E — Canon Foundation build-out
+### Phase F — Canon Foundation build-out
 
-- [ ] E.1 Complete the Canon Foundation increments to its ADRs' done-bar.
+- [ ] F.1 Complete the Canon Foundation increments to its ADRs' done-bar.
 
 Exit gate: Canon Foundation ADRs terminal.
 
-### Phase F — Pool processing
+### Phase G — Pool processing
 
-- [ ] F.0 Pool-machinery repairs first — the promote/demote/evaluate pipeline
+- [ ] G.0 Pool-machinery repairs first — the promote/demote/evaluate pipeline
       must be sound before 139 items flow through it: GHI #595 (evaluate gate
       errors on pool ADRs), #558 (demote `--on-collision keep-pool` stale
       frontmatter), #536 (promote Target Scope path:line refs).
-- [ ] F.1 Every live pool item (139 at baseline; see Appendix B) enters the
+- [ ] G.1 Every live pool item (139 at baseline; see Appendix B) enters the
       promotion pipeline in MOTD-triaged order (top-signal first).
-- [ ] F.2 Terminal disposition per item: promoted → built → Validated, or
+- [ ] G.2 Terminal disposition per item: promoted → built → Validated, or
       parked/superseded on promotion-stage evidence with operator attestation.
-- [ ] F.3 Pool-hygiene defects from the baseline ranking repaired in flight
+- [ ] G.3 Pool-hygiene defects from the baseline ranking repaired in flight
       (status-drift on `obpi-req-taxonomy-scope-fence`, 11 missing `status:`
       frontmatter, 4 empty Intent sections).
 
 Exit gate: pool index shows zero non-terminal items.
 
-### Phase G — 1.0 declaration
+### Phase H — 1.0 declaration
 
-- [ ] G.1 Census 100% terminal; goal-state checklist all true.
-- [ ] G.2 v1.0.0 release through the patch-release ceremony.
+- [ ] H.1 Census 100% terminal; goal-state checklist all true.
+- [ ] H.2 v1.0.0 release through the patch-release ceremony.
 
-### Phase H — The reduction pass (post-1.0; out of campaign scope)
+### Phase I — The reduction pass (post-1.0; out of campaign scope)
 
 Only now: re-run the validator load-bearing audit and pool/surface redundancy
 analysis against the finished system; diff against the Appendix A/B baselines;
@@ -249,18 +271,17 @@ inputs, never pre-1.0 action lists.
 | Home | GHIs | Theme |
 |---|---|---|
 | A (in-flight) | #538 | STRUCTURAL-FENCE parent-shape validator — the substance of OBPI-0.0.69-02 |
-| B (MOTD) | #585, #574 | Handoff retention → B.5 logrotation; advise-not-execute mechanization → B.4 |
-| C (census) | #584 | 233 orphaned `obpi_created` events reconciled by the census |
-| D.1 (ADR-0.0.37) | #519 (emergency), #533 | Codex 258K window; <15k registry-projected surface |
-| D (composition/budget) | #579, #580 | Imperative-density budget; criticality-ordered renderer |
-| D (ceremony mechanization) | #516, #596, #573 | Passive-presenter REQ-evidence; BLOCKED-ADR advance; BI-2 classifier TDD redo |
-| D (preflight/locks) | #578, #564 | Reaping-handoff coupling; orphan plan-audit receipts |
-| D (task governance) | #563, #553, #561 | Task-envelope completion debt from ADR-0.22.0/0.0.64 |
-| D (req-kind/covers hardening) | #537, #544, #545, #546, #547 | BEHAVIOR enforcement; grandfathering cache schema; ReqCoverageRecord; bypass-once; gray-zone doctrine |
-| D (documents backfill) | #480, #524, #527 | Schema-convention backfill class (3,536 errors) |
-| D (briefs/docs hygiene) | #565, #532, #551 | Shell-less Verification contract; manpage refs; REQ-coverage docs |
-| D (quality/infra) | #571, #567, #575, #577, #581, #594, #582 | Test doctrine; skills spike pattern; `gz insights` verb; status projection; reconcile depth; arb retention; subprocess `errors=` class |
-| F.0 (pool machinery) | #595, #558, #536 | Promote/demote/evaluate repairs gating pool flow |
+| B (CMS) | #519 (emergency), #533, #579, #580 | Codex 258K window; <15k registry-projected surface; imperative-density budget; criticality-ordered renderer |
+| C (MOTD) | #585, #574 | Handoff retention → C.5 logrotation; advise-not-execute mechanization → C.4 |
+| D (census) | #584 | 233 orphaned `obpi_created` events reconciled by the census |
+| E (ceremony mechanization) | #516, #596, #573 | Passive-presenter REQ-evidence; BLOCKED-ADR advance; BI-2 classifier TDD redo |
+| E (preflight/locks) | #578, #564 | Reaping-handoff coupling; orphan plan-audit receipts |
+| E (task governance) | #563, #553, #561 | Task-envelope completion debt from ADR-0.22.0/0.0.64 |
+| E (req-kind/covers hardening) | #537, #544, #545, #546, #547 | BEHAVIOR enforcement; grandfathering cache schema; ReqCoverageRecord; bypass-once; gray-zone doctrine |
+| E (documents backfill) | #480, #524, #527 | Schema-convention backfill class (3,536 errors) |
+| E (briefs/docs hygiene) | #565, #532, #551 | Shell-less Verification contract; manpage refs; REQ-coverage docs |
+| E (quality/infra) | #571, #567, #575, #577, #581, #594, #582 | Test doctrine; skills spike pattern; `gz insights` verb; status projection; reconcile depth; arb retention; subprocess `errors=` class |
+| G.0 (pool machinery) | #595, #558, #536 | Promote/demote/evaluate repairs gating pool flow |
 
 ## GHI emergence discipline (standing rules)
 
@@ -285,7 +306,7 @@ direction change:
 
 ## Cadence (the go-to-market rhythm)
 
-- **Session**: login → MOTD briefing (until B ships: this checklist, top-down)
+- **Session**: login → MOTD briefing (until C ships: this checklist, top-down)
   → execute the topmost unblocked item via its governed path → logout
   continuity. Operator rules; the MOTD advises.
 - **Release**: weekly drumbeat through the existing patch-release ceremony;
@@ -298,7 +319,7 @@ direction change:
 
 ## Appendix A — Validator load-bearing baseline (2026-06-10)
 
-Frozen evidence for Phase H. Method: per-scope mining of git history
+Frozen evidence for Phase I. Method: per-scope mining of git history
 (fix-commit subjects read and classified), ledger, insights, and wiring
 (default set / gz-check / CI / pre-commit / skills / chores).
 
@@ -313,7 +334,7 @@ Frozen evidence for Phase H. Method: per-scope mining of git history
 - **Fences with no recorded intrusions** (wired, zero catches):
   `receipt-shape`, `agents-md-map-conformance`, `pointer-anchors`,
   `tautological-test-audit` (1), `unscoped-rules` (1).
-- **Manual-only, ~zero fires** (now wired per Phase D.3 instead of retired):
+- **Manual-only, ~zero fires** (now wired per Phase E.2 instead of retired):
   `router-tables`, `orphaned-implementation`, `brief-command-shape`,
   `brief-demo-section`, `brief-cross-references`, `scenario-reachability`.
 - **Validator-was-the-defect cases** (maintenance tail): `req-kind-discipline`
@@ -324,7 +345,7 @@ Frozen evidence for Phase H. Method: per-scope mining of git history
 
 ## Appendix B — Pool ranking baseline (2026-06-10)
 
-Frozen evidence for Phases F and H. Method: strict full-ID matching;
+Frozen evidence for Phases G and I. Method: strict full-ID matching;
 insights ×3, git ×3, docs cross-refs ×2, ledger ×1 (registration noise
 excluded).
 
@@ -345,6 +366,6 @@ excluded).
 - **24 zero-signal items** — all 10 airlineops/opsdev absorption ADRs among
   them, batch-demoted in commit `a95bba15` (GHI #520) and untouched since.
   The AirlineOps migrate-vs-absorb question is the largest single strategic
-  block in the pool; Phase F forces its resolution.
+  block in the pool; Phase G forces its resolution.
 - Signal theme: the corpus demands **proof mechanization** (evidence chains,
   trace bundles, TDD receipts), not new ceremony prose.
