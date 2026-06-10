@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Session-start orientation digest (GHI #326, SPEC-uplift CAP-13).
 
-Aggregates seven sections of session-relevant state into a markdown digest
+Aggregates the session-relevant state sections into a markdown digest
 for SessionStart hook context injection. Honors the gz-session-handoff
-freshness windows (Fresh / Slightly-Stale / Stale / Very-Stale).
+freshness windows (Fresh / Slightly-Stale / Stale / Very-Stale). The
+active campaign (Magna Carta — operator ruling, 2026-06-10) is surfaced
+first: it is the one canonical plan and rules every session.
 
 Sources are tolerant: missing inputs degrade into "(no data)" lines so a
 SessionStart hook never fails the boot. Stdlib + git + gh only.
@@ -22,6 +24,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 SECTION_HEADINGS: tuple[str, ...] = (
+    "Active campaign — Magna Carta",
     "Git remote state",
     "Most-recent handoff",
     "Open session-handoff GHIs",
@@ -35,12 +38,48 @@ SECTION_HEADINGS: tuple[str, ...] = (
 REMOTE_FETCH_TIMEOUT_SEC = 8
 REMOTE_QUERY_TIMEOUT_SEC = 4
 
+CAMPAIGN_AUTHORITY_NOTE = (
+    "The campaign RULES (operator ruling, 2026-06-10): work the topmost "
+    "unchecked item whose gate is met; update the plan in place as state "
+    "changes (amendments are operator-ratified). Handoffs and triage ADVISE; "
+    "the campaign governs. Reductive moves wait for its post-1.0 phase."
+)
+
 POST_COMPACTION_NOTE = (
     "Post-compaction trigger: if context budget falls below 50%, re-read "
     "AGENTS.md § Behavior Rules and the active OBPI brief before continuing. "
     "Real-world testing shows skill awareness degrades sharply at this "
     "threshold; orientation re-injection is the mechanical backstop."
 )
+
+
+def collect_campaign(repo_root: Path) -> dict | None:
+    """Locate the ACTIVE campaign plan and extract its burn-down state.
+
+    Scans ``docs/governance/*-campaign-*.md`` for the file whose ``Status:``
+    line declares ACTIVE (supersession flips it, so at most one matches —
+    Operating Rule 1: one active plan). Returns ``None`` when no active
+    campaign resolves; orientation must never crash the boot hook.
+    """
+    gov_dir = repo_root / "docs" / "governance"
+    if not gov_dir.is_dir():
+        return None
+    for path in sorted(gov_dir.glob("*-campaign-*.md")):
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if re.search(r"^Status:\s*\*\*ACTIVE", text, re.MULTILINE) is None:
+            continue
+        unchecked = re.findall(r"^- \[ \] (.+?)$", text, re.MULTILINE)
+        done = len(re.findall(r"^- \[[xX~]\] ", text, re.MULTILINE))
+        return {
+            "path": str(path.relative_to(repo_root)).replace(os.sep, "/"),
+            "done": done,
+            "total": done + len(unchecked),
+            "next_items": [item.strip() for item in unchecked[:3]],
+        }
+    return None
 
 
 def classify_freshness(now: datetime, ts: datetime) -> str:
@@ -291,6 +330,7 @@ def collect_remote_state() -> dict | None:
 def collect_state(repo_root: Path, now: datetime) -> dict:
     """Aggregate authoritative state. Best-effort; never raises."""
     return {
+        "campaign": collect_campaign(repo_root),
         "remote_state": collect_remote_state(),
         "handoff": collect_handoff(repo_root, now),
         "session_handoff_ghis": collect_session_handoff_ghis(),
@@ -306,6 +346,22 @@ def render(state: dict, now: datetime) -> str:
         f"# gzkit session orientation — generated {now.isoformat(timespec='seconds')}",
         "",
     ]
+
+    lines.append("## Active campaign — Magna Carta")
+    campaign = state.get("campaign")
+    if isinstance(campaign, dict):
+        done = campaign.get("done", 0)
+        total = campaign.get("total", 0)
+        lines.append(f"- Plan: `{campaign.get('path', '?')}` — {done}/{total} checklist items done")
+        for item in campaign.get("next_items") or []:
+            lines.append(f"- Next: {item}")
+        lines.append(f"- {CAMPAIGN_AUTHORITY_NOTE}")
+    else:
+        lines.append(
+            "- (no ACTIVE campaign found — flag this to the operator; "
+            "the Magna Carta must always resolve)"
+        )
+    lines.append("")
 
     lines.append("## Git remote state")
     remote = state.get("remote_state")

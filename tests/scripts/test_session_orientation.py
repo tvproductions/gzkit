@@ -39,6 +39,7 @@ def _load_orientation_module():
 
 
 SECTION_HEADINGS = (
+    "## Active campaign — Magna Carta",
     "## Git remote state",
     "## Most-recent handoff",
     "## Open session-handoff GHIs",
@@ -410,6 +411,113 @@ class TestRenderRemoteStateBlock(unittest.TestCase):
         rendered = self.mod.render(self._state(None), self.now)
         self.assertIn("## Git remote state", rendered)
         self.assertIn("(no remote state available)", rendered)
+
+
+CAMPAIGN_FIXTURE = """\
+# Build-to-1.0 Campaign, 2026-06-10
+
+Status: **ACTIVE — the one canonical plan** (operator-ratified 2026-06-10).
+
+## Phases
+
+### Phase A — In-flight closure
+
+- [x] A.1 OBPI-0.0.69-02 (structural-fence channel)
+- [ ] A.2 OBPI-0.0.69-03 (closeout-proof derived view)
+- [ ] A.3 OBPI-0.0.69-04 (retire ln surface)
+
+### Phase B — MOTD build
+
+- [ ] B.1 workplan store + schema
+"""
+
+
+class TestCollectCampaign(unittest.TestCase):
+    """The Magna Carta surfacing contract (operator ruling, 2026-06-10).
+
+    The active campaign is the one canonical plan; orientation MUST surface
+    it at every session start with the topmost unchecked items so no session
+    can begin without the campaign in view.
+    """
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+
+    def _repo_with_campaign(self, tmp: str, text: str | None) -> Path:
+        root = Path(tmp)
+        gov = root / "docs" / "governance"
+        gov.mkdir(parents=True)
+        if text is not None:
+            (gov / "build-to-1.0-campaign-2026-06-10.md").write_text(text, encoding="utf-8")
+        return root
+
+    def test_returns_none_when_no_campaign_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo_with_campaign(tmp, None)
+            self.assertIsNone(self.mod.collect_campaign(root))
+
+    def test_returns_none_when_campaign_not_active(self):
+        superseded = CAMPAIGN_FIXTURE.replace(
+            "Status: **ACTIVE — the one canonical plan**", "Status: **SUPERSEDED 2027-01-01**"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo_with_campaign(tmp, superseded)
+            self.assertIsNone(self.mod.collect_campaign(root))
+
+    def test_extracts_progress_and_topmost_unchecked_items(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo_with_campaign(tmp, CAMPAIGN_FIXTURE)
+            campaign = self.mod.collect_campaign(root)
+        self.assertIsNotNone(campaign)
+        self.assertEqual(campaign["path"], "docs/governance/build-to-1.0-campaign-2026-06-10.md")
+        self.assertEqual(campaign["done"], 1)
+        self.assertEqual(campaign["total"], 4)
+        self.assertEqual(
+            campaign["next_items"],
+            [
+                "A.2 OBPI-0.0.69-03 (closeout-proof derived view)",
+                "A.3 OBPI-0.0.69-04 (retire ln surface)",
+                "B.1 workplan store + schema",
+            ],
+        )
+
+
+class TestRenderCampaignBlock(unittest.TestCase):
+    def setUp(self):
+        self.mod = _load_orientation_module()
+        self.now = datetime(2026, 6, 10, 12, 0, 0, tzinfo=UTC)
+
+    def test_campaign_block_is_first_section_and_names_authority(self):
+        state = {
+            "campaign": {
+                "path": "docs/governance/build-to-1.0-campaign-2026-06-10.md",
+                "done": 1,
+                "total": 4,
+                "next_items": ["A.2 OBPI-0.0.69-03 (closeout-proof derived view)"],
+            },
+            "remote_state": None,
+            "handoff": None,
+            "session_handoff_ghis": [],
+            "obpi_locks": [],
+            "adr_pipeline": [],
+            "recent_events": [],
+            "blockers": [],
+        }
+        rendered = self.mod.render(state, self.now)
+        self.assertIn("## Active campaign — Magna Carta", rendered)
+        self.assertLess(
+            rendered.find("## Active campaign — Magna Carta"),
+            rendered.find("## Git remote state"),
+            "the campaign section must outrank every other section",
+        )
+        self.assertIn("1/4 checklist items done", rendered)
+        self.assertIn("A.2 OBPI-0.0.69-03 (closeout-proof derived view)", rendered)
+        self.assertIn("the campaign governs", rendered)
+
+    def test_missing_campaign_emits_flagged_no_data_line(self):
+        rendered = self.mod.render({"campaign": None}, self.now)
+        self.assertIn("## Active campaign — Magna Carta", rendered)
+        self.assertIn("no ACTIVE campaign found", rendered)
 
 
 def subprocess_completed(stdout: str = "", returncode: int = 0):

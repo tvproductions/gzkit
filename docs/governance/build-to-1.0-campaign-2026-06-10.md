@@ -1,11 +1,37 @@
 # Build-to-1.0 Campaign, 2026-06-10
 
-Status: **ACTIVE — the one canonical plan** (operator-ratified 2026-06-10).
+Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
+2026-06-10; elevated to Magna Carta same day).
 
 > **Ratification (operator verbatim, 2026-06-10):** "let your new Build-to-1.0
 > campaign subsume and supersede all prior plans (emergencies, five-alarm
 > fires, restore-health). Also, any plan must address all GHIs and incorporate
 > the discipline needed to handle the emergence of new GHI moments."
+>
+> **Elevation (operator verbatim, 2026-06-10):** "Build-to-1.0 Campaign is now
+> Magna Carta, it must rule (and be updated when needed) to get our legs back
+> under us."
+
+## Authority and amendment (Magna Carta discipline)
+
+- **It rules.** Every session works this plan's topmost unchecked item whose
+  gate is met. Handoffs, triage briefs, and the MOTD ADVISE; the campaign
+  governs. No work stream runs outside it except `emergency`-labeled
+  interrupts (§ GHI emergence discipline rule 3), which the campaign itself
+  defines.
+- **It is surfaced mechanically.** `scripts/session_orientation.py` renders
+  the campaign as the FIRST section of every SessionStart digest — plan path,
+  burn-down count, topmost unchecked items, and the authority note. A session
+  that starts without the campaign in view is a defect
+  (`collect_campaign` contract, `tests/scripts/test_session_orientation.py`).
+- **It is living.** Checking items off with observed command evidence and
+  regenerating the GHI register are routine session work. **Amendments** —
+  scope changes, phase changes, new overrides — require operator
+  ratification, recorded in place with the operator's verbatim words, exactly
+  as the rulings above are recorded.
+- **It dies only by succession.** Per the MOTD campaign doctrine ("campaigns
+  supersede in place"), only a ratified successor campaign retires this plan
+  — never silence, never drift.
 
 > **Doctrine (operator verbatim, 2026-06-10):** "I want to build out gzkit, as
 > found, as comprehended, and ONLY THEN make reductive decisions. where it is
