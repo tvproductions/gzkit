@@ -445,6 +445,47 @@ class TestSignatureA(unittest.TestCase):
             self.assertEqual(len(errors), 0)
 
     @covers("REQ-0.0.64-04-01")
+    def test_pool_adr_edit_under_active_task_is_clean(self) -> None:
+        """Editing a pool ADR (``ADR-pool.*``) is SUPPORT-channel governance
+        ceremony, not OBPI-REQ TASK labor — the same carve-out reasoning as
+        versioned ADR decision docs, and exactly the cross-workstream case GHI
+        #563 designed this carve-out for: a pool-ADR backlog edit emitted while a
+        *different* OBPI's pipeline TASKs are active must not trip Signature (a).
+        """
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.69-03-01-01",
+                            "obpi_id": "OBPI-0.0.69-03-closeout-proof-derived-view",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-10T10:00:00Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "artifact_edited",
+                            "path": (
+                                "docs/design/adr/pool/ADR-pool.command-doctrine-internalization.md"
+                            ),
+                            "id": "evt-2",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-10T10:52:22Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (a)" in e.message
+            ]
+            self.assertEqual(len(errors), 0)
+
+    @covers("REQ-0.0.64-04-01")
     def test_adr_decision_doc_edit_under_active_task_is_clean(self) -> None:
         """Editing an ADR decision doc is SUPPORT-channel governance ceremony,
         not OBPI-REQ TASK labor — excused both for the active OBPI's own parent

@@ -604,6 +604,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="REQ↔receipt-ID binding gate for ADRs at closeout (ADR-0.0.63).",
     )
     p_validate.add_argument(
+        "--closeout-proof",
+        dest="check_closeout_proof",
+        action="store_true",
+        default=False,
+        help="Derived closeout-proof view (ADR-0.0.69). Exit 0: all proven; 3: unproven.",
+    )
+    p_validate.add_argument(
         "--invariant-coherence",
         dest="check_invariant_coherence",
         action="store_true",
@@ -800,6 +807,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_brief_command_shape=a.check_brief_command_shape,
             check_tautological_test_audit=a.check_tautological_test_audit,
             check_task_envelope_coherence=a.check_task_envelope_coherence,
+            check_closeout_proof=a.check_closeout_proof,
             check_distribution=a.check_distribution,
             check_distribution_regenerate=a.check_distribution_regenerate,
             check_bullet_retention=a.check_bullet_retention,

@@ -233,8 +233,7 @@ class TestExecuteToAttestationGate(unittest.TestCase):
         Semantic requirement: an in-progress closeout whose REQs have no
         receipt bindings must not silently advance to ATTESTATION.
         """
-        # _gate_proof_binding does not exist yet — ImportError is the RED reason.
-        from gzkit.commands.closeout_ceremony import _gate_proof_binding  # type: ignore
+        from gzkit.commands.closeout_ceremony import _gate_closeout_proof
         from gzkit.core.exceptions import PolicyBreachError
         from gzkit.core.validation_rules import ValidationError
 
@@ -244,12 +243,10 @@ class TestExecuteToAttestationGate(unittest.TestCase):
         mock_error = MagicMock(spec=ValidationError)
         mock_error.message = "REQ-0.0.63-06-01 has no proof-binding"
 
-        _PATCH_TARGET = (
-            "gzkit.governance.trust_audits.closeout_proof_binding.validate_closeout_proof_binding"
-        )
+        _PATCH_TARGET = "gzkit.governance.trust_audits.closeout_proof.validate_closeout_proof"
         with patch(_PATCH_TARGET, return_value=[mock_error]) as mock_validate:
             with self.assertRaises(PolicyBreachError):
-                _gate_proof_binding(project_root, state)
+                _gate_closeout_proof(project_root, state)
             mock_validate.assert_called_once_with(project_root, adr_id="ADR-0.0.63-test")
 
     @covers("REQ-0.0.63-06-04")
@@ -261,18 +258,15 @@ class TestExecuteToAttestationGate(unittest.TestCase):
         without any gate blockage; the gate must not be a no-op (validator must
         have been invoked).
         """
-        # _gate_proof_binding does not exist yet — ImportError is the RED reason.
-        from gzkit.commands.closeout_ceremony import _gate_proof_binding  # type: ignore
+        from gzkit.commands.closeout_ceremony import _gate_closeout_proof
 
         state = _make_execute_state()
         project_root = Path(tempfile.mkdtemp())
 
-        _PATCH_TARGET = (
-            "gzkit.governance.trust_audits.closeout_proof_binding.validate_closeout_proof_binding"
-        )
+        _PATCH_TARGET = "gzkit.governance.trust_audits.closeout_proof.validate_closeout_proof"
         with patch(_PATCH_TARGET, return_value=[]) as mock_validate:
             # Must not raise
-            _gate_proof_binding(project_root, state)
+            _gate_closeout_proof(project_root, state)
             mock_validate.assert_called_once_with(project_root, adr_id="ADR-0.0.63-test")
 
     @covers("REQ-0.0.63-06-03")
@@ -283,11 +277,10 @@ class TestExecuteToAttestationGate(unittest.TestCase):
         This mirrors the scope discipline of _gate_attestation_boundary which
         fires only at ATTESTATION step.
         """
-        # _gate_proof_binding does not exist yet — ImportError is the RED reason.
         from gzkit.commands.closeout_ceremony import (
             CeremonyState,
             CeremonyStep,
-            _gate_proof_binding,  # type: ignore
+            _gate_closeout_proof,
         )
 
         state = CeremonyState(
@@ -299,11 +292,9 @@ class TestExecuteToAttestationGate(unittest.TestCase):
         )
         project_root = Path(tempfile.mkdtemp())
 
-        _PATCH_TARGET = (
-            "gzkit.governance.trust_audits.closeout_proof_binding.validate_closeout_proof_binding"
-        )
+        _PATCH_TARGET = "gzkit.governance.trust_audits.closeout_proof.validate_closeout_proof"
         with patch(_PATCH_TARGET, return_value=[]) as mock_validate:
-            _gate_proof_binding(project_root, state)
+            _gate_closeout_proof(project_root, state)
             mock_validate.assert_not_called()
 
 
@@ -378,17 +369,24 @@ class TestGateScopedToCeremonyAdr(unittest.TestCase):
         from gzkit.commands.closeout_ceremony import (
             CeremonyState,
             CeremonyStep,
-            _gate_proof_binding,
+            _gate_closeout_proof,
         )
 
-        # ADR-A (being closed): fully bound to a real receipt.
+        # ADR-A (being closed): BEHAVIOR REQ with a @covers test → proven.
         self._write_ceremony("ADR-0.0.97-alpha")
-        self._write_receipt("arb-step-unittest-real97")
         self._write_brief(
             "ADR-0.0.97-alpha",
             "OBPI-0.0.97-01-alpha",
             "REQ-0.0.97-01-01",
-            ln=[{"req_id": "REQ-0.0.97-01-01", "receipt_ids": ["arb-step-unittest-real97"]}],
+            ln=None,
+        )
+        # Write a @covers test so REQ-0.0.97-01-01 is proven under the new gate.
+        tests_dir = self.root / "tests"
+        tests_dir.mkdir(parents=True, exist_ok=True)
+        (tests_dir / "test_reg_req_0_0_97_01_01.py").write_text(
+            "from gzkit.traceability import covers\n\n"
+            '@covers("REQ-0.0.97-01-01")\ndef test_placeholder(): pass\n',
+            encoding="utf-8",
         )
         # ADR-B (sibling, parked ceremony): unbound REQ, would never satisfy the gate.
         self._write_ceremony("ADR-0.0.98-beta")
@@ -402,19 +400,20 @@ class TestGateScopedToCeremonyAdr(unittest.TestCase):
             updated_at="2026-01-01T00:00:00Z",
         )
 
-        # Must NOT raise: ADR-A is fully bound; ADR-B's parked ceremony is irrelevant.
-        _gate_proof_binding(self.root, state)
+        # Must NOT raise: ADR-A's REQ is proven; ADR-B's parked ceremony is irrelevant.
+        _gate_closeout_proof(self.root, state)
 
     def test_unbound_adr_gate_still_blocks_on_its_own_reqs(self) -> None:
-        """Scoping must not weaken the gate: the ceremony's OWN unbound REQs still block."""
+        """Scoping must not weaken the gate: the ceremony's OWN unproven REQs still block."""
         from gzkit.commands.closeout_ceremony import (
             CeremonyState,
             CeremonyStep,
-            _gate_proof_binding,
+            _gate_closeout_proof,
         )
         from gzkit.core.exceptions import PolicyBreachError
 
         self._write_ceremony("ADR-0.0.97-alpha")
+        # BEHAVIOR REQ with no @covers test → unproven → gate must block.
         self._write_brief("ADR-0.0.97-alpha", "OBPI-0.0.97-01-alpha", "REQ-0.0.97-01-01", ln=None)
 
         state = CeremonyState(
@@ -426,7 +425,7 @@ class TestGateScopedToCeremonyAdr(unittest.TestCase):
         )
 
         with self.assertRaises(PolicyBreachError):
-            _gate_proof_binding(self.root, state)
+            _gate_closeout_proof(self.root, state)
 
 
 if __name__ == "__main__":

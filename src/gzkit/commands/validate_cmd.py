@@ -209,6 +209,7 @@ def _collect_errors(
     check_setpoint_coherence: bool = False,
     check_task_envelope_coherence: bool = False,
     check_line_endings: bool = False,
+    check_closeout_proof: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -284,6 +285,7 @@ def _collect_errors(
         "brief_command_shape": check_brief_command_shape,
         "tautological_test_audit": check_tautological_test_audit,
         "task_envelope_coherence": check_task_envelope_coherence,
+        "closeout_proof": check_closeout_proof,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
@@ -403,6 +405,7 @@ def _explicit_scope_runners(
         "brief_command_shape": lambda: trust_audits.audit_brief_command_shape(project_root),
         "tautological_test_audit": lambda: _validate_tautological_test_audit(project_root),
         "task_envelope_coherence": lambda: _validate_task_envelope_coherence(project_root),
+        "closeout_proof": lambda: trust_audits.validate_closeout_proof(project_root),
     }
 
 
@@ -928,6 +931,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "tautological_test_audit",
         "task_envelope_coherence",
         "closeout_proof_binding",
+        "closeout_proof",
     }
 )
 
@@ -1182,6 +1186,7 @@ def validate(
     check_tautological_test_audit: bool = False,
     check_setpoint_coherence: bool = False,
     check_task_envelope_coherence: bool = False,
+    check_closeout_proof: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1267,6 +1272,7 @@ def validate(
             check_brief_command_shape,
             check_tautological_test_audit,
             check_task_envelope_coherence,
+            check_closeout_proof,
         ]
     )
     if _dispatch_early_return_scopes(
@@ -1355,6 +1361,7 @@ def validate(
         check_brief_command_shape=check_brief_command_shape,
         check_tautological_test_audit=check_tautological_test_audit,
         check_task_envelope_coherence=check_task_envelope_coherence,
+        check_closeout_proof=check_closeout_proof,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -1445,6 +1452,7 @@ def validate(
         "brief_command_shape": check_brief_command_shape,
         "tautological_test_audit": check_tautological_test_audit,
         "task_envelope_coherence": check_task_envelope_coherence,
+        "closeout_proof": check_closeout_proof,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]

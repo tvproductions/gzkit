@@ -591,6 +591,16 @@ def run_session_green_gate_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --session-green-gate", cwd=project_root)
 
 
+def run_closeout_proof_audit(project_root: Path) -> QualityResult:
+    """Run the closeout-proof derived view (ADR-0.0.69 / OBPI-0.0.69-03).
+
+    Fails closed (exit 3) when any in-closeout ADR has unproven REQs.
+    Exit 0: all proven. Exit 3: any unproven. Exit 2: dispatch I/O error.
+    Recovery: ``gz validate --closeout-proof`` to see per-REQ details.
+    """
+    return run_command("uv run gz validate --closeout-proof", cwd=project_root)
+
+
 def run_kind_invariance_audit(project_root: Path) -> QualityResult:
     """Run the kind-invariance audit for foundation-tier ADRs (OBPI-0.0.35-04).
 

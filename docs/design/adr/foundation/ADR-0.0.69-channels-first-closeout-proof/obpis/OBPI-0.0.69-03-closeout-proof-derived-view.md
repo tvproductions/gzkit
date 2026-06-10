@@ -3,7 +3,64 @@ id: OBPI-0.0.69-03-closeout-proof-derived-view
 parent: ADR-0.0.69-channels-first-closeout-proof
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
+# req_atomic: each REQ is a single indivisible labor unit — the derived-view
+# function (01), its re-run-command output (02), the gz-check wiring (03), the
+# fail-open seam fix (04), the ceremony-gate swap + its doc/cross-ref surface as
+# one SUPPORT deliverable (05), the no-persist structural fence (06), and the
+# kind-tag enforcement branch (07). None decomposes into parallel seq=02+ sub-tasks
+# (ADR-0.0.64 task-envelope exemption).
+req_atomic:
+  - REQ-0.0.69-03-01
+  - REQ-0.0.69-03-02
+  - REQ-0.0.69-03-03
+  - REQ-0.0.69-03-04
+  - REQ-0.0.69-03-05
+  - REQ-0.0.69-03-06
+  - REQ-0.0.69-03-07
+ln:
+  - req_id: REQ-0.0.69-03-01
+    receipt_ids:
+      - arb-step-unittest-52a09b6c81694ce4b265cfe4306dc5d6
+      - arb-ruff-d95f254a34e3452c8433826e983da2a0
+      - arb-step-typecheck-b1f37b70e0a149628a3ceec2d9723788
+      - arb-step-mkdocs-8676fc556e1a43eda72c1712e2f8397b
+  - req_id: REQ-0.0.69-03-02
+    receipt_ids:
+      - arb-step-unittest-52a09b6c81694ce4b265cfe4306dc5d6
+      - arb-ruff-d95f254a34e3452c8433826e983da2a0
+      - arb-step-typecheck-b1f37b70e0a149628a3ceec2d9723788
+      - arb-step-mkdocs-8676fc556e1a43eda72c1712e2f8397b
+  - req_id: REQ-0.0.69-03-03
+    receipt_ids:
+      - arb-step-unittest-52a09b6c81694ce4b265cfe4306dc5d6
+      - arb-ruff-d95f254a34e3452c8433826e983da2a0
+      - arb-step-typecheck-b1f37b70e0a149628a3ceec2d9723788
+      - arb-step-mkdocs-8676fc556e1a43eda72c1712e2f8397b
+  - req_id: REQ-0.0.69-03-04
+    receipt_ids:
+      - arb-step-unittest-52a09b6c81694ce4b265cfe4306dc5d6
+      - arb-ruff-d95f254a34e3452c8433826e983da2a0
+      - arb-step-typecheck-b1f37b70e0a149628a3ceec2d9723788
+      - arb-step-mkdocs-8676fc556e1a43eda72c1712e2f8397b
+  - req_id: REQ-0.0.69-03-05
+    receipt_ids:
+      - arb-step-unittest-52a09b6c81694ce4b265cfe4306dc5d6
+      - arb-ruff-d95f254a34e3452c8433826e983da2a0
+      - arb-step-typecheck-b1f37b70e0a149628a3ceec2d9723788
+      - arb-step-mkdocs-8676fc556e1a43eda72c1712e2f8397b
+  - req_id: REQ-0.0.69-03-06
+    receipt_ids:
+      - arb-step-unittest-52a09b6c81694ce4b265cfe4306dc5d6
+      - arb-ruff-d95f254a34e3452c8433826e983da2a0
+      - arb-step-typecheck-b1f37b70e0a149628a3ceec2d9723788
+      - arb-step-mkdocs-8676fc556e1a43eda72c1712e2f8397b
+  - req_id: REQ-0.0.69-03-07
+    receipt_ids:
+      - arb-step-unittest-52a09b6c81694ce4b265cfe4306dc5d6
+      - arb-ruff-d95f254a34e3452c8433826e983da2a0
+      - arb-step-typecheck-b1f37b70e0a149628a3ceec2d9723788
+      - arb-step-mkdocs-8676fc556e1a43eda72c1712e2f8397b
 ---
 
 # OBPI-0.0.69-03-closeout-proof-derived-view: Closeout-Proof Derived View
@@ -13,7 +70,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.69-channels-first-closeout-proof/ADR-0.0.69-channels-first-closeout-proof.md`
 - **Checklist Item:** #3 - "OBPI-0.0.69-03: Derived `gz validate --closeout-proof` view (new `trust_audits/closeout_proof.py`) printing the per-failed-SUPPORT-REQ re-run command (no stderr inlining) + READ-ONLY pre-audit of all 19 `ln`-carrying briefs before the ceremony-gate repoint lands + ceremony-gate repoint + fail-open seam fix + repoint ADR-0.0.41 OBPI-02/03 verification text + manpage (Heavy)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -36,6 +93,8 @@ EXECUTE->ATTESTATION edge.
 > those external surfaces.
 
 ## Allowed Paths
+
+- `src/gzkit/traceability.py` (added by brief reconcile, attestor Jeffry)
 
 <!-- What files/directories are IN SCOPE? -->
 
@@ -108,7 +167,7 @@ EXECUTE->ATTESTATION edge.
 - [ ] `run_adr_status_fresh_audit` / `run_session_green_gate_audit` precedent in `src/gzkit/quality.py` reviewed
 - [ ] `_build_check_steps()` default-scope list in `src/gzkit/commands/quality.py` located
 - [ ] `closeout_ceremony.py` `_gate_proof_binding` (lines ~264-290) and `_commit_advance` (line ~336) located
-- [ ] `trust_audits/cli.py` `audit_skill_alignment` bare-except seam (lines ~222-225) located
+- [ ] `src/gzkit/governance/trust_audits/cli.py` `audit_skill_alignment` bare-except seam (lines ~222-225) located
 - [ ] ADR-0.0.41's package path and OBPI-02/03 verification text located; the 19 `ln`-carrying briefs enumerated
 - [ ] `ReqCoverageRecord` reviewed for reuse in the `CloseoutProofReport`
 
@@ -247,15 +306,29 @@ exact re-run command for any failed SUPPORT REQ.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+$ uv run gz validate --closeout-proof
+✓ All validations passed (10 scopes).   # exit 0 — ADR-0.0.41 parked ceremony excluded by 24h freshness gate
+
+$ uv run gz validate --cli-alignment
+✓ All validations passed (1 scopes).     # exit 0 — ADR-0.0.41 repoint clean
+
+Receipts: arb-step-unittest-52a09b6c81694ce4b265cfe4306dc5d6 (6034 pass), arb-ruff-d95f254a34e3452c8433826e983da2a0 (clean), arb-step-typecheck-b1f37b70e0a149628a3ceec2d9723788 (clean), arb-step-mkdocs-8676fc556e1a43eda72c1712e2f8397b (clean).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Created: src/gzkit/governance/trust_audits/closeout_proof.py — validate_closeout_proof recomputes per-REQ proof for in-closeout ADRs over three channels (BEHAVIOR via @covers, SUPPORT via resolve_support_proof ledger+validator dispatch, STRUCTURAL-FENCE via resolve_fence_proof anchor); exit 0/3/2; never persists (BI-2).
+- Ceremony gate: _gate_proof_binding → _gate_closeout_proof on the same EXECUTE→ATTESTATION edge (closeout_ceremony.py); explicit-adr_id path always enforces, gz-check sweep applies a 24h active-ceremony freshness window (operator ruling 2026-06-10) so parked closeouts (e.g. ADR-0.0.41) do not redden gz check.
+- Fail-open seam fixed: removed bare `except: return []` in audit_skill_alignment (cli.py).
+- Wired --closeout-proof into gz check default scope (quality.py + commands/quality.py); registered the flag (parser_maintenance.py), dispatched the scope (validate_cmd.py, exit 3 via _POLICY_BREACH_ERROR_TYPES); re-exported (__init__.py).
+- Pre-audit (ruling 6.1-A): ran --closeout-proof READ-ONLY across the ln-carrying briefs; tagged ADR-0.0.41 OBPI-01's 6 untagged REQs [SUPPORT] + added citations; repointed ADR-0.0.41 OBPI-02/03 verification text from --closeout-proof-binding to --closeout-proof.
+- Carve-out fix (operator-approved cross-cut): extended _ADR_DECISION_DOC_RE to exempt pool ADRs from task-envelope Sig (a), closing the gap GHI #563's carve-out left for ADR-pool.*.
+- Manpage: docs/user/manpages/validate.md documents --closeout-proof (exit 0/3/2, channels).
+- Tests added: test_closeout_proof_view.py (12), test_audit_skill_alignment_seam.py (1), test_task_envelope_coherence.py pool-ADR carve-out (1); 6034 total pass.
+- Date completed: 2026-06-10
+- Attestation status: operator-attested ("attest completed", Stage 4)
+- Defects noted: fixed fail-open seam (cli.py:222-225); fixed exit-code mapping (1→3); fixed task-envelope pool-ADR carve-out gap.
 
 ## Tracked Defects
 
@@ -263,12 +336,12 @@ exact re-run command for any failed SUPPORT REQ.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.69-03 closeout-proof derived view: gz validate --closeout-proof recomputes per-REQ proof over three live channels (BEHAVIOR @covers, SUPPORT ledger+validator dispatch, STRUCTURAL-FENCE Boundary-Invariants anchor) for in-closeout ADRs, wired into gz check; ceremony gate swapped to _gate_closeout_proof on the EXECUTE→ATTESTATION edge with a 24h active-ceremony freshness window (operator ruling 2026-06-10) so parked closeouts don't redden gz check; fail-open seam in audit_skill_alignment fixed; ADR-0.0.41 OBPI-01 REQs tagged + OBPI-02/03 repointed; pool-ADR task-envelope carve-out gap closed (operator-approved cross-cut). 6034/6034 tests pass. Receipts: arb-step-unittest-52a09b6c81694ce4b265cfe4306dc5d6, arb-ruff-d95f254a34e3452c8433826e983da2a0, arb-step-typecheck-b1f37b70e0a149628a3ceec2d9723788, arb-step-mkdocs-8676fc556e1a43eda72c1712e2f8397b.
+- Date: 2026-06-10
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-10
 
 **Evidence Hash:** -

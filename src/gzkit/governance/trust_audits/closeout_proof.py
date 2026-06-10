@@ -1,0 +1,231 @@
+"""Derived closeout-proof view (ADR-0.0.69 / OBPI-0.0.69-03).
+
+Recomputes per-REQ proof for in-closeout ADRs over the three REQ-kind channels
+on every run. Never reads proof from a stored artifact (Boundary Invariant 2).
+
+Exit contract (communicated via return value to validate_cmd):
+    []          → all proven  → exit 0
+    non-empty   → any unproven → exit 3
+    Raises OSError on dispatch I/O error → exit 2 via caller
+"""
+
+from __future__ import annotations
+
+import json
+import re
+from datetime import UTC, datetime
+from pathlib import Path
+
+from gzkit.core.validation_rules import ValidationError
+
+_REQ_LINE_RE = re.compile(
+    r"^\s*-\s*\[[ xX]\]\s*(REQ-[\d]+\.[\d]+\.[\d]+-[\d]+-[\d]+)",
+    re.IGNORECASE,
+)
+_KIND_TAG_RE = re.compile(r"\[(BEHAVIOR|SUPPORT|STRUCTURAL[_-]FENCE)\]", re.IGNORECASE)
+_RERUN_CMD_RE = re.compile(r"(?:uv\s+run\s+)?(gz\s+validate\s+--\S+)")
+_AC_HEADING_RE = re.compile(r"^##\s+Acceptance\s+Criteria\s*$", re.IGNORECASE | re.MULTILINE)
+_COVERS_RE = re.compile(r'@covers\s*\(\s*["\']([^"\']+)["\']\s*\)', re.IGNORECASE)
+
+# A ceremony swept by the gz-check path must have been touched within this window
+# to count as an *active* closeout. Parked ceremonies (e.g. a step-6 state left
+# untouched for days) are excluded from gz-check failure — the explicit-adr_id
+# ceremony-gate path always enforces regardless of freshness, so the actual
+# EXECUTE->ATTESTATION advance is never weakened (operator ruling 2026-06-10).
+_ACTIVE_CLOSEOUT_WINDOW_HOURS = 24
+
+
+def _parse_reqs_from_brief(body: str) -> list[tuple[str, str | None, str]]:
+    """Return (req_id, kind, full_line) tuples from the Acceptance Criteria section."""
+    m = _AC_HEADING_RE.search(body)
+    if not m:
+        return []
+    section = body[m.end() :]
+    next_h2 = re.search(r"^##\s", section, re.MULTILINE)
+    if next_h2:
+        section = section[: next_h2.start()]
+
+    results = []
+    for line in section.splitlines():
+        req_match = _REQ_LINE_RE.match(line)
+        if not req_match:
+            continue
+        req_id = req_match.group(1)
+        kind_match = _KIND_TAG_RE.search(line)
+        kind = kind_match.group(1).upper().replace("-", "_") if kind_match else None
+        results.append((req_id, kind, line))
+    return results
+
+
+def _find_covers_in_tests(project_root: Path, req_id: str) -> bool:
+    """Return True if any test file under project_root/tests declares @covers(req_id)."""
+    tests_root = project_root / "tests"
+    if not tests_root.is_dir():
+        return False
+    for py_file in tests_root.rglob("*.py"):
+        try:
+            text = py_file.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        for found_id in _COVERS_RE.findall(text):
+            if found_id.strip() == req_id:
+                return True
+    return False
+
+
+def _extract_rerun_command(line: str) -> str | None:
+    """Extract the first `gz validate --<scope>` from a REQ line, normalized to `uv run`."""
+    m = _RERUN_CMD_RE.search(line)
+    if not m:
+        return None
+    cmd = m.group(1)
+    if not cmd.startswith("uv run "):
+        cmd = f"uv run {cmd}"
+    return cmd
+
+
+def _find_obpi_briefs(project_root: Path, adr_id: str) -> list[Path]:
+    """Locate OBPI brief files for the given ADR ID."""
+    pattern = f"docs/design/adr/**/{adr_id}/obpis/*.md"
+    return list(project_root.glob(pattern))
+
+
+def _is_in_closeout(ceremony: dict) -> bool:
+    """Return True when a ceremony state indicates closeout is in progress."""
+    return ceremony.get("completed_at") is None
+
+
+def _parse_ts(value: str | None) -> datetime | None:
+    """Parse an ISO-8601 timestamp (accepting a trailing ``Z``) to aware UTC."""
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed
+
+
+def _is_active_closeout(ceremony: dict, now: datetime) -> bool:
+    """Return True when an in-progress ceremony was touched within the active window.
+
+    Used only by the gz-check sweep (no explicit ``adr_id``): a parked ceremony
+    left untouched longer than ``_ACTIVE_CLOSEOUT_WINDOW_HOURS`` is not treated as
+    an active closeout and is excluded from gz-check failure. The explicit-adr_id
+    ceremony-gate path bypasses this and always enforces.
+    """
+    if not _is_in_closeout(ceremony):
+        return False
+    touched = _parse_ts(ceremony.get("updated_at")) or _parse_ts(ceremony.get("started_at"))
+    if touched is None:
+        # No timestamp to age against — treat as active (fail-safe toward enforcement).
+        return True
+    age_hours = (now - touched).total_seconds() / 3600
+    return age_hours <= _ACTIVE_CLOSEOUT_WINDOW_HOURS
+
+
+def _err(artifact: str, message: str) -> ValidationError:
+    """Build a ``closeout_proof`` ValidationError."""
+    return ValidationError(type="closeout_proof", artifact=artifact, message=message)
+
+
+def _check_req(
+    project_root: Path, artifact: str, req_id: str, kind: str | None, line: str
+) -> ValidationError | None:
+    """Recompute one REQ's proof over its channel; return an error if unproven."""
+    from gzkit.req_kind import resolve_fence_proof, resolve_support_proof
+
+    if kind is None:
+        return _err(
+            artifact,
+            f"{req_id}: no inline [kind] tag — explicit tags required at closeout "
+            f"(ruling 6.2-A). Tag as [BEHAVIOR], [SUPPORT], or [STRUCTURAL-FENCE].",
+        )
+    if kind == "BEHAVIOR":
+        if _find_covers_in_tests(project_root, req_id):
+            return None
+        return _err(
+            artifact,
+            f'{req_id} [BEHAVIOR]: no @covers("{req_id}") found in tests/. '
+            f"Add a @covers decorator to the covering test.",
+        )
+    if kind == "SUPPORT":
+        req_text = line.split(":", 1)[-1].strip() if ":" in line else line
+        proof_status = resolve_support_proof(req_text, project_root)
+        if proof_status == "pass":
+            return None
+        rerun = _extract_rerun_command(line)
+        suffix = f" Re-run: {rerun}" if rerun else ""
+        return _err(artifact, f"{req_id} [SUPPORT]: {proof_status}.{suffix}")
+    if kind == "STRUCTURAL_FENCE":
+        proof_status = resolve_fence_proof(req_id, project_root)
+        if proof_status == "pass":
+            return None
+        return _err(
+            artifact,
+            f"{req_id} [STRUCTURAL-FENCE]: {proof_status}. "
+            f"Add a parent-ADR '## Boundary Invariants' anchor.",
+        )
+    return None
+
+
+def _check_brief(project_root: Path, adr_id: str, brief_path: Path) -> list[ValidationError]:
+    """Recompute proof for every REQ in one OBPI brief."""
+    try:
+        body = brief_path.read_text(encoding="utf-8")
+    except OSError:
+        return []
+    artifact = f"{adr_id}/{brief_path.stem}"
+    results = (
+        _check_req(project_root, artifact, req_id, kind, line)
+        for req_id, kind, line in _parse_reqs_from_brief(body)
+    )
+    return [e for e in results if e is not None]
+
+
+def _resolve_ceremony_files(ceremonies_dir: Path, adr_id: str | None) -> list[Path]:
+    """Resolve the ceremony files to sweep: one for an explicit adr_id, else all."""
+    if adr_id is not None:
+        target = ceremonies_dir / f"{adr_id}.ceremony.json"
+        return [target] if target.exists() else []
+    return list(ceremonies_dir.glob("*.ceremony.json"))
+
+
+def validate_closeout_proof(
+    project_root: Path,
+    *,
+    adr_id: str | None = None,
+) -> list[ValidationError]:
+    """Recompute per-REQ proof for in-closeout ADRs over three channels.
+
+    Returns an empty list when all REQs are proven (exit 0).
+    Returns ValidationError entries when any REQ is unproven (exit 3).
+    Never reads from a stored proof artifact (Boundary Invariant 2).
+    """
+    ceremonies_dir = project_root / ".gzkit" / "ceremonies"
+    if not ceremonies_dir.is_dir():
+        return []
+
+    # Explicit adr_id (ceremony gate) → enforce on that ADR unconditionally.
+    # No adr_id (gz-check sweep) → only enforce on freshly-active ceremonies.
+    scan_all = adr_id is None
+    now = datetime.now(UTC)
+    errors: list[ValidationError] = []
+
+    for ceremony_path in _resolve_ceremony_files(ceremonies_dir, adr_id):
+        try:
+            ceremony = json.loads(ceremony_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+
+        active = _is_active_closeout(ceremony, now) if scan_all else _is_in_closeout(ceremony)
+        if not active:
+            continue
+
+        this_adr_id = ceremony.get("adr_id", ceremony_path.stem.replace(".ceremony", ""))
+        for brief_path in _find_obpi_briefs(project_root, this_adr_id):
+            errors.extend(_check_brief(project_root, this_adr_id, brief_path))
+
+    return errors

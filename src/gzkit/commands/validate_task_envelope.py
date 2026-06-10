@@ -86,7 +86,11 @@ def _is_active_obpi_brief_reflection_event(
     return "/obpis/" in path and path.endswith(".md")
 
 
-_ADR_DECISION_DOC_RE = re.compile(r"/adr/.+/ADR-\d+\.\d+\.\d+-[^/]+\.md$")
+# Matches both versioned ADR decision docs (``ADR-<semver>-*.md``) and pool ADRs
+# (``ADR-pool.*.md``). Pool ADRs are backlog governance artifacts — the same
+# SUPPORT-channel carve-out reasoning applies, and GHI #563 designed this carve-out
+# precisely for a backlog edit emitted while a *different* OBPI's TASKs are active.
+_ADR_DECISION_DOC_RE = re.compile(r"/adr/.+/ADR-(?:\d+\.\d+\.\d+-|pool\.)[^/]+\.md$")
 
 
 def _is_adr_decision_doc_reflection_event(

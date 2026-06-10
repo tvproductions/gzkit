@@ -219,10 +219,7 @@ def audit_skill_alignment(project_root: Path) -> list[ValidationError]:
     skills_root = project_root / ".gzkit" / "skills"
     if not skills_root.is_dir():
         return []
-    try:
-        verb_paths = _known_cli_verb_paths()
-    except Exception:
-        return []
+    verb_paths = _known_cli_verb_paths()
 
     verb_refs = _collect_skill_verb_refs(skills_root, verb_paths, project_root)
 

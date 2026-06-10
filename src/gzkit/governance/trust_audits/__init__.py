@@ -55,6 +55,7 @@ from gzkit.governance.trust_audits.cli import (
     audit_cli_alignment,
     audit_skill_alignment,
 )
+from gzkit.governance.trust_audits.closeout_proof import validate_closeout_proof
 from gzkit.governance.trust_audits.closeout_proof_binding import (
     validate_closeout_proof_binding,
 )
@@ -187,6 +188,7 @@ __all__ = [
     "explain_sensitivity_for_paths",
     "BOOTSTRAP_MODE_NOTICE_PREFIX",
     "validate_advisor_proof_binding",
+    "validate_closeout_proof",
     "validate_closeout_proof_binding",
     "validate_attestation_receipts",
     "validate_brief_reconcile",

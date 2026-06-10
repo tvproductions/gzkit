@@ -202,12 +202,12 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.41-01-01: `.gzkit/rules/token-block-discipline.md` exists, follows rule-file structure (YAML frontmatter, body-level rule-version comment, visible version block quote), and passes `uv run gz validate --documents`.
-- [ ] REQ-0.0.41-01-02: The rule file specifies the `--abandon` reason category enum (base: `network_loss`, `external_blocker`, `wrong_obpi_claimed`, `tool_failure`) with extension protocol documented.
-- [ ] REQ-0.0.41-01-03: The rule file specifies register-entry minimum-information requirements (timestamp, commit SHA, decision context, branch state) in fail-closed language.
-- [ ] REQ-0.0.41-01-04: The rule file specifies TTL canon (default value with rationale, warn-then-reap escalation policy, reaping authorization rule, reaping-attestation requirement).
-- [ ] REQ-0.0.41-01-05: The rule file defines vocabulary section (token, issue, register entry, traversal, abandonment, reaping) aligned with railway antecedent mapping.
-- [ ] REQ-0.0.41-01-06: The rule file cross-links to AGENTS.md § Behavior Rules and `docs/governance/state-doctrine.md` § Layer-2 audit-coupling rule.
+- [ ] REQ-0.0.41-01-01 [SUPPORT]: `.gzkit/rules/token-block-discipline.md` exists, follows rule-file structure (YAML frontmatter, body-level rule-version comment, visible version block quote). artifact_edited ledger event + `uv run gz validate --documents`.
+- [ ] REQ-0.0.41-01-02 [SUPPORT]: The rule file specifies the `--abandon` reason category enum (base: `network_loss`, `external_blocker`, `wrong_obpi_claimed`, `tool_failure`) with extension protocol documented. artifact_edited ledger event + `uv run gz validate --documents`
+- [ ] REQ-0.0.41-01-03 [SUPPORT]: The rule file specifies register-entry minimum-information requirements (timestamp, commit SHA, decision context, branch state) in fail-closed language. artifact_edited ledger event + `uv run gz validate --documents`
+- [ ] REQ-0.0.41-01-04 [SUPPORT]: The rule file specifies TTL canon (default value with rationale, warn-then-reap escalation policy, reaping authorization rule, reaping-attestation requirement). artifact_edited ledger event + `uv run gz validate --documents`
+- [ ] REQ-0.0.41-01-05 [SUPPORT]: The rule file defines vocabulary section (token, issue, register entry, traversal, abandonment, reaping) aligned with railway antecedent mapping. artifact_edited ledger event + `uv run gz validate --documents`
+- [ ] REQ-0.0.41-01-06 [SUPPORT]: The rule file cross-links to AGENTS.md § Behavior Rules and `docs/governance/state-doctrine.md` § Layer-2 audit-coupling rule. artifact_edited ledger event + `uv run gz validate --documents`
 
 ## Completion Checklist
 

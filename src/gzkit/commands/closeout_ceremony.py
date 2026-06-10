@@ -261,32 +261,27 @@ def _has_fresh_attestation_receipt(project_root: Path, state: CeremonyState) -> 
     return any(datetime.fromisoformat(event.ts) >= run_start for event in events)
 
 
-def _gate_proof_binding(project_root: Path, state: CeremonyState) -> None:
-    """Fail-close EXECUTE -> ATTESTATION when proof binding is incomplete (OBPI-0.0.63-06).
+def _gate_closeout_proof(project_root: Path, state: CeremonyState) -> None:
+    """Fail-close EXECUTE -> ATTESTATION via derived closeout-proof view (OBPI-0.0.69-03).
 
-    Only fires at the EXECUTE -> ATTESTATION transition edge: an in-progress
-    closeout whose Acceptance-Criteria REQs have no ledger-present receipt
-    bindings must not advance to the attestation step. No-op for every other
-    step. Mirrors the scope discipline of ``_gate_attestation_boundary``.
+    Only fires at the EXECUTE -> ATTESTATION transition edge. Replaces
+    ``_gate_proof_binding`` (OBPI-0.0.63-06) on the same edge with the same
+    fail-close shape. ADR-0.0.68's session-green gate is left untouched.
     """
     if state.current_step != CeremonyStep.EXECUTE:
         return
-    from gzkit.governance.trust_audits.closeout_proof_binding import (
-        validate_closeout_proof_binding,
-    )
+    from gzkit.governance.trust_audits.closeout_proof import validate_closeout_proof
 
-    errors = validate_closeout_proof_binding(project_root, adr_id=state.adr_id)
+    errors = validate_closeout_proof(project_root, adr_id=state.adr_id)
     if not errors:
         return
     from gzkit.core.exceptions import PolicyBreachError
 
     unbound = [e.message for e in errors[:5]]
     raise PolicyBreachError(
-        "EXECUTE -> ATTESTATION transition blocked: proof binding incomplete.\n"
+        "EXECUTE -> ATTESTATION transition blocked: closeout proof incomplete.\n"
         + "\n".join(f"  {m}" for m in unbound)
         + (f"\n  ... and {len(errors) - 5} more" if len(errors) > 5 else "")
-        + "\nFix the brief's `ln:` field to bind each REQ to a ledger-present "
-        "receipt-ID, then retry."
     )
 
 
@@ -333,7 +328,7 @@ def _commit_advance(
     The EXECUTE -> ATTESTATION edge is additionally proof-binding-gated
     (OBPI-0.0.63-06): an unbound closeout cannot advance to attestation.
     """
-    _gate_proof_binding(project_root, state)
+    _gate_closeout_proof(project_root, state)
     _gate_attestation_boundary(project_root, state)
 
     history = list(state.step_history)

@@ -137,7 +137,7 @@ uv run gz typecheck
 uv run gz test
 uv run gz arb step --name unittest -- uv run -m unittest -q
 uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
-uv run gz validate --closeout-proof-binding
+uv run gz validate --closeout-proof
 ```
 
 ## Demo

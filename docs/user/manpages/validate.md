@@ -16,6 +16,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--advisor-proof-binding] [--vendor-manifest] [--setpoint-coherence]
             [--invariant-coherence] [--brief-reconcile] [--router-tables]
             [--kind-invariance] [--req-kind-discipline] [--brief-command-shape] [--tautological-test-audit]
+            [--closeout-proof]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
 ```
 
@@ -1001,6 +1002,51 @@ gz validate --advisor-proof-binding
 | 0 | All scopes pass (vacuous when fixtures/ledger absent) | — |
 | 1 | One or more diagnoses lack non-empty `proof` | Inspect named fixture/event/schema and restore the binding (or remove the empty-proof artifact) |
 
+### `--closeout-proof`
+
+Derived closeout-proof view (ADR-0.0.69 / OBPI-0.0.69-03). Recomputes per-REQ
+proof for in-closeout ADRs over the three REQ-kind channels every run. Never
+reads proof from a stored artifact — proof is always live-computed.
+
+**In-scope ADRs:** those with an active ceremony state file at
+`.gzkit/ceremonies/<ADR-ID>.ceremony.json` where `completed_at` is null.
+
+**Three proof channels:**
+
+- **BEHAVIOR** — the REQ must have at least one `@covers("REQ-ID")`-decorated
+  test in `tests/`. Missing decorator → unproven.
+- **SUPPORT** — the REQ text must cite both a recognized ledger event type
+  and a `gz validate --<scope>` command. The ledger must contain that event
+  type AND the scope must dispatch clean (exit 0).
+- **STRUCTURAL-FENCE** — the parent ADR's `## Boundary Invariants` section
+  must contain an anchor for the REQ ID. Missing anchor → unproven.
+
+REQs with no inline `[kind]` tag are always unproven — explicit tags are
+required at closeout (ruling 6.2-A).
+
+For failed SUPPORT REQs, the output prints the exact re-run command
+(`uv run gz validate --<scope>`) so the failing channel can be reproduced in
+one paste. Full stderr inlining is out of scope (ruling 6.2-A).
+
+```bash
+# Recompute per-REQ proof for all in-closeout ADRs
+uv run gz validate --closeout-proof
+
+# JSON output for machine consumption
+uv run gz validate --closeout-proof --json
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | All in-closeout ADR REQs are proven across all three channels | — |
+| 2 | Dispatch I/O error (validator scope could not be invoked) | Check `gz validate` availability and retry |
+| 3 | Any REQ is unproven | Add `@covers` decorator, fix SUPPORT citation, or add Boundary Invariants anchor |
+
+This scope is included in the `gz check` default pipeline (memoized per scope
+per run — ruling 6.1-A). The ceremony gate `_gate_closeout_proof` on the
+`EXECUTE→ATTESTATION` edge calls this view directly; an unproven REQ blocks
+the ceremony's advance to attestation.
+
 ### `--closeout-proof-binding`
 
 Opt-in validator for REQ↔receipt-ID proof-binding at closeout time
@@ -1412,6 +1458,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--evaluation-justify-binding` | opt-in | Fail-closed gate: `gz-justify` artifact required when evaluation scores are low (ADR-0.0.26) |
 | `--intrinsic-attestation` | opt-in | Validate `intrinsic-complexity-attestation` ledger events against canonical schema (OBPI-0.0.29-07) |
 | `--advisor-proof-binding` | opt-in | Verdict <-> proof binding audit across fixtures, ledger-cited diagnoses, and JSON Schema (OBPI-0.0.29-08) |
+| `--closeout-proof` | opt-in | Derived closeout-proof view: recomputes per-REQ proof over three live channels (BEHAVIOR/SUPPORT/STRUCTURAL-FENCE) for in-closeout ADRs; exit 3 on any unproven REQ (ADR-0.0.69 / OBPI-0.0.69-03) |
 | `--closeout-proof-binding` | opt-in | REQ↔receipt-ID proof-binding: every REQ in each in-scope ADR brief must have ≥1 ledger-present receipt-ID in its `ln:` field; exit 3 on missing or unresolvable bindings (ADR-0.0.63 / OBPI-0.0.63-03) |
 | `--distribution` | opt-in | T0 static distribution audit: ON\_DISK\_NOT\_INCLUDED / BASELINE\_NOT\_ON\_DISK / ON\_DISK\_NOT\_BASELINE drift classes (ADR-0.0.32-07) |
 | `--receipt-shape` | opt-in | Fail-closed on post-cutoff `obpi_receipt_emitted` events with deprecated shapes (optional attestation, unprefixed completion, agent: attestor); pre-cutoff receipts can be waivered via `data/historical_self_close_waivers.json` (ADR-0.0.36, OBPI-0.0.36-03) |
