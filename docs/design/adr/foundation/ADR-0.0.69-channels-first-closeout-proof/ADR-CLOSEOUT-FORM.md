@@ -1,6 +1,6 @@
 # ADR Closeout Form: ADR-0.0.69-channels-first-closeout-proof
 
-**Status**: Phase 0 — Proposed (not yet in closeout)
+**Status**: Phase 2 — Completed
 
 ---
 
@@ -8,11 +8,11 @@
 
 Closeout evidence verified:
 
-- [ ] All checklist items in ADR are complete
-- [ ] All OBPIs have passing acceptance criteria
-- [ ] Gate 2 (TDD): Tests pass
-- [ ] Gate 3 (Docs): Docs build passes
-- [ ] Gate 4 (BDD): Behave suite passes
+- [x] All checklist items in ADR are complete
+- [x] All OBPIs have passing acceptance criteria
+- [x] Gate 2 (TDD): Tests pass
+- [x] Gate 3 (Docs): Docs build passes
+- [x] Gate 4 (BDD): Behave suite passes
 - [ ] Code reviewed
 
 ## Evidence Paths
@@ -31,30 +31,36 @@ Closeout evidence verified:
 
 | OBPI | Description | Status |
 |------|-------------|--------|
-| [OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch](obpis/OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch.md) | SUPPORT channel — ledger query + validator dispatch | Pending |
-| [OBPI-0.0.69-02-structural-fence-channel-boundary-invariants-anchor](obpis/OBPI-0.0.69-02-structural-fence-channel-boundary-invariants-anchor.md) | STRUCTURAL-FENCE channel — Boundary-Invariants anchor | Pending |
-| [OBPI-0.0.69-03-closeout-proof-derived-view](obpis/OBPI-0.0.69-03-closeout-proof-derived-view.md) | Derived `gz validate --closeout-proof` view + gate repoint | Pending |
-| [OBPI-0.0.69-04-retire-ln-closeout-proof-binding-surface](obpis/OBPI-0.0.69-04-retire-ln-closeout-proof-binding-surface.md) | Retire `ln:` closeout-proof-binding surface | Pending |
+| [OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch](OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch.md) | SUPPORT Channel Ledger And Validator Dispatch | Completed |
+| [OBPI-0.0.69-02-structural-fence-channel-boundary-invariants-anchor](OBPI-0.0.69-02-structural-fence-channel-boundary-invariants-anchor.md) | STRUCTURAL-FENCE Channel Boundary-Invariants Anchor | Completed |
+| [OBPI-0.0.69-03-closeout-proof-derived-view](OBPI-0.0.69-03-closeout-proof-derived-view.md) | each REQ is a single indivisible labor unit — the derived-view | Completed |
+| [OBPI-0.0.69-04-retire-ln-closeout-proof-binding-surface](OBPI-0.0.69-04-retire-ln-closeout-proof-binding-surface.md) | each REQ is a single indivisible deletion unit — removing the | Completed |
 
 ## Defense Brief
 
 ### Closing Arguments
 
-*To be authored at closeout.*
+*No closing arguments found.*
 
 ### Product Proof
 
-*To be harvested from OBPI Demo sections at closeout.*
+| OBPI | Proof Type | Status |
+|------|-----------|--------|
+| OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch | command_doc | FOUND |
+| OBPI-0.0.69-02-structural-fence-channel-boundary-invariants-anchor | command_doc | FOUND |
+| OBPI-0.0.69-03-closeout-proof-derived-view | command_doc | FOUND |
+| OBPI-0.0.69-04-retire-ln-closeout-proof-binding-surface | command_doc | FOUND |
 
 ### Reviewer Assessment
 
-*To be recorded at closeout.*
+*No reviewer assessments found.*
+
 
 ## Human Attestation
 
 ### Verbatim Attestation
 
-*Pending — Gate 5 human attestation required before completion.*
+- `Completed`
 
-**Attested by**: _pending_
-**Timestamp (UTC)**: _pending_
+**Attested by**: g0
+**Timestamp (UTC)**: 2026-06-11T09:22:18Z

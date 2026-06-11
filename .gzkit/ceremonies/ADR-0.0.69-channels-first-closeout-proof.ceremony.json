@@ -1,0 +1,68 @@
+{
+  "adr_id": "ADR-0.0.69-channels-first-closeout-proof",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-06-11T00:40:08Z",
+  "updated_at": "2026-06-11T09:24:37Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-06-11T00:40:08Z",
+      "acknowledged_at": "2026-06-11T00:40:13Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-06-11T00:40:13Z",
+      "acknowledged_at": "2026-06-11T00:42:20Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-06-11T00:42:20Z",
+      "acknowledged_at": "2026-06-11T07:24:02Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-06-11T07:24:02Z",
+      "acknowledged_at": "2026-06-11T07:30:57Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-06-11T07:30:57Z",
+      "acknowledged_at": "2026-06-11T09:15:59Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-06-11T09:15:59Z",
+      "acknowledged_at": "2026-06-11T09:20:44Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-06-11T09:20:44Z",
+      "acknowledged_at": "2026-06-11T09:22:29Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-06-11T09:22:29Z",
+      "acknowledged_at": "2026-06-11T09:24:37Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-06-11T09:24:37Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz validate --req-kind-discipline",
+    "uv run gz validate --closeout-proof",
+    "uv run gz validate --closeout-proof --json",
+    "uv run gz check",
+    "uv run gz validate --closeout-proof-binding",
+    "uv run gz validate --documents",
+    "uv run gz validate --req-kind-discipline"
+  ],
+  "walkthrough_index": 6,
+  "attestation": "Completed",
+  "completed_at": "2026-06-11T09:24:37Z",
+  "attempt": 1,
+  "paused_at": null
+}

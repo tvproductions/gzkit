@@ -347,4 +347,4 @@ supersession note; (e) a 4th-REQ-kind extension point (the `LEDGER_PLUS_VALIDATO
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.69 | Pending | | | |
+| 0.0.69 | Completed | g0 | 2026-06-11 | Completed |
