@@ -14,10 +14,10 @@ Feature: OBPI lock management
     Then it exits with code 1
     And the JSON output field "status" is "conflict"
 
-  Scenario: Release removes lock
+  Scenario: Release removes lock (register entry via --abandon)
     Given the workspace is initialized
     When I run "gz obpi lock claim OBPI-0.1.0-01"
-    And I run "gz obpi lock release OBPI-0.1.0-01 --json"
+    And I run "gz obpi lock release OBPI-0.1.0-01 --abandon tool_failure:demo --json"
     Then it exits with code 0
     And the JSON output field "status" is "released"
 
@@ -28,10 +28,10 @@ Feature: OBPI lock management
     Then it exits with code 1
     And the JSON output field "status" is "ownership_error"
 
-  Scenario: Release with force overrides ownership
+  Scenario: Release with force overrides ownership (register entry via --abandon)
     Given the workspace is initialized
     And an OBPI lock exists for "OBPI-0.1.0-01" held by agent "codex"
-    When I run "gz obpi lock release OBPI-0.1.0-01 --force --json"
+    When I run "gz obpi lock release OBPI-0.1.0-01 --force --abandon wrong_obpi_claimed:demo --json"
     Then it exits with code 0
     And the JSON output field "status" is "released"
 
@@ -90,12 +90,16 @@ Feature: OBPI lock management
     Then it exits with code 1
     And the JSON output field "status" is "invalid_abandon"
 
-  @REQ-0.0.41-02-07
-  Scenario: Release without --abandon and no handoff warns but succeeds
+  # OBPI-0.0.41-03 flipped the OBPI-02 staging warning (was @REQ-0.0.41-02-07,
+  # "warns but succeeds") to fail-closed; this scenario is retagged to the
+  # OBPI-03 fail-closed REQ. The OBPI-02 staging REQ is superseded (waiver:
+  # obpi-0.0.41-02-req07-superseded-by-obpi-03-fail-closed).
+  @REQ-0.0.41-03-01
+  Scenario: Release without --abandon and no register entry fails closed (OBPI-03)
     Given the workspace is initialized
     When I run "gz obpi lock claim OBPI-0.0.41-02"
     And I run "gz obpi lock release OBPI-0.0.41-02"
-    Then it exits with code 0
-    And the output contains "WARNING"
-    And the output contains "register entry"
-    And the output contains "OBPI-0.0.41-03"
+    Then it exits with code 3
+    And the output contains "FAIL-CLOSED"
+    And the output contains "gz-session-handoff"
+    And the output contains "--abandon"
