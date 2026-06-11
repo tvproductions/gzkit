@@ -554,6 +554,16 @@ def _complete_closeout_pipeline(
 
     auto_fix_obpi_rows(project_root, obpi_rows)
 
+    # Reconcile the ADR's own status: frontmatter (Layer 1) to the ledger
+    # lifecycle just written (Layer 2). Without this the ADR is left
+    # Proposed/Draft-vs-Completed drifted: `gz validate --frontmatter` fails
+    # (exit 3) and the Layer-3 index regenerated below is built from stale
+    # frontmatter. `to_state` is the ledger-derived term for both the Completed
+    # and Dropped paths.
+    from gzkit.governance.frontmatter_coherence import rewrite_governed_keys_in_place
+
+    rewrite_governed_keys_in_place(adr_file, {"status": to_state})
+
     # Regenerate ADR status index (Layer 3 derived view, GHI #322)
     from gzkit.governance.adr_status_index import regenerate_adr_status_md
 

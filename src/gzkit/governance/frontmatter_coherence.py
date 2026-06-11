@@ -148,7 +148,7 @@ def _read_fm_status(path: Path) -> str:
     return ""
 
 
-def _rewrite_governed_keys_in_place(path: Path, edits: dict[str, str]) -> None:
+def rewrite_governed_keys_in_place(path: Path, edits: dict[str, str]) -> None:
     """Rewrite only governed keys' scalars; preserve every other byte.
 
     Operates on the raw file text line-by-line. For each line inside the
@@ -306,7 +306,7 @@ def reconcile_frontmatter(project_root: Path, *, dry_run: bool) -> Reconciliatio
                 continue
             if not dry_run:
                 edits: dict[str, str] = {str(diff.field): diff.after for diff in rewrite.diffs}
-                _rewrite_governed_keys_in_place(abs_path, edits)
+                rewrite_governed_keys_in_place(abs_path, edits)
             files_rewritten.append(rewrite)
     finally:
         # REQ-0.0.16-03-10 partial-failure: on any mid-loop exception, still
@@ -413,4 +413,5 @@ __all__ = [
     "SkipNote",
     "UnmappedStatusBlocker",
     "reconcile_frontmatter",
+    "rewrite_governed_keys_in_place",
 ]

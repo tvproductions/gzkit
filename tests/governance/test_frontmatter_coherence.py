@@ -405,7 +405,7 @@ class ReconciliationLogicTests(unittest.TestCase):
             )
 
             # Patch the rewriter to raise after the first file is rewritten.
-            original_rewriter = fc._rewrite_governed_keys_in_place
+            original_rewriter = fc.rewrite_governed_keys_in_place
             call_count = {"n": 0}
 
             def _flaky_rewriter(path: Path, edits: dict) -> None:
@@ -414,12 +414,12 @@ class ReconciliationLogicTests(unittest.TestCase):
                     raise OSError("simulated disk full after first file")
                 original_rewriter(path, edits)
 
-            fc._rewrite_governed_keys_in_place = _flaky_rewriter  # ty: ignore[invalid-assignment]
+            fc.rewrite_governed_keys_in_place = _flaky_rewriter  # ty: ignore[invalid-assignment]
             try:
                 with self.assertRaises(OSError):
                     fc.reconcile_frontmatter(root, dry_run=False)
             finally:
-                fc._rewrite_governed_keys_in_place = original_rewriter
+                fc.rewrite_governed_keys_in_place = original_rewriter
 
             # A receipt file should have been emitted despite the exception.
             receipts_dir = root / "artifacts" / "receipts" / "frontmatter-coherence"

@@ -205,6 +205,42 @@ class TestCloseoutPipelineCompletion(unittest.TestCase):
             self.assertIn("lifecycle_transition", ledger_text)
             self.assertIn("Completed", ledger_text)
 
+    @patch("gzkit.cli.main.run_command")
+    @patch("builtins.input", return_value="1")
+    def test_adr_frontmatter_status_reconciled_to_ledger(self, _mock_input, mock_run):
+        """Closeout reconciles the ADR's own status: frontmatter to the ledger.
+
+        The pipeline writes the lifecycle_transition (Completed) to the ledger
+        (Layer 2) and regenerates the adr-status index (Layer 3). It must also
+        reconcile the ADR's own ``status:`` frontmatter (Layer 1) in the same
+        run — otherwise the ADR is left Proposed-vs-Completed drifted, the next
+        ``gz validate --frontmatter`` fails (exit 3), and the index it just
+        regenerated was built from stale frontmatter. Regression for the
+        closeout-leaves-drift gap surfaced at ADR-0.0.69 closeout.
+        """
+        import re
+
+        mock_run.return_value = _make_qr()
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
+            self.assertEqual(result.exit_code, 0, result.output)
+            matches = [
+                p for p in Path.cwd().rglob("ADR-0.1.0-f.md") if p.parent.name == "ADR-0.1.0-f"
+            ]
+            self.assertTrue(matches, "ADR-0.1.0-f canonical file not found")
+            adr_file = matches[0]
+            fm_status = re.search(r"(?m)^status:\s*(.+)$", adr_file.read_text(encoding="utf-8"))
+            self.assertIsNotNone(fm_status, "ADR frontmatter has no status: field")
+            self.assertEqual(
+                "Completed",
+                fm_status.group(1).strip(),  # type: ignore[union-attr]
+                msg="closeout left ADR frontmatter status drifted from the ledger",
+            )
+
 
 class TestCloseoutDryRun(unittest.TestCase):
     """--dry-run shows pipeline plan without executing (REQ-06)."""
