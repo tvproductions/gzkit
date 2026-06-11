@@ -6,7 +6,9 @@ on every run. Never reads proof from a stored artifact (Boundary Invariant 2).
 Exit contract (communicated via return value to validate_cmd):
     []          → all proven  → exit 0
     non-empty   → any unproven → exit 3
-    Raises OSError on dispatch I/O error → exit 2 via caller
+An I/O error reading a ceremony/brief never propagates: on the gate path
+(explicit ``adr_id``) it is converted to a fail-close ValidationError (exit 3);
+on the ``gz check`` sweep path one unreadable sibling is tolerated (return []).
 """
 
 from __future__ import annotations

@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.69-channels-first-closeout-proof
-status: Completed
+status: Validated
 kind: foundation
 semver: 0.0.69
 lane: heavy
@@ -348,3 +348,34 @@ supersession note; (e) a 4th-REQ-kind extension point (the `LEDGER_PLUS_VALIDATO
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
 | 0.0.69 | Completed | g0 | 2026-06-11 | Completed |
+| 0.0.69 | Validated | g0 | 2026-06-11 | accept audit (Phase-2 audit ceremony; see audit/AUDIT.md) |
+
+## Post-Validation Notes (2026-06-11 audit)
+
+Recorded at the COMPLETED → VALIDATED audit (`audit/AUDIT.md`), where two
+independent reviewers (spec-reviewer, quality-reviewer) cleared the transition.
+These reconcile the ADR's predictive prose with what shipped (coupled-surface
+coherence); none changes behavior:
+
+1. **Realized output shape (refines § Decision item 3).** The view returns
+   `list[ValidationError]` through the generic `gz validate` dispatch (exit 0/3)
+   rather than a standalone frozen `CloseoutProofReport` table with a distinct
+   exit 2. The realized shape carries no on-disk report object, so it is *more*
+   aligned with Boundary Invariant 2 (never persist the view) than the predicted
+   shape was. A docstring in `governance/trust_audits/closeout_proof.py`
+   overstated an unreachable exit-2 path — corrected in this audit's commit
+   (audit F2). The predicted `CloseoutProofReport` table shape did not ship; if
+   a future operator wants it, that is additive over the current return value.
+2. **24h active-closeout sweep window (refines § Intent).** The explicit-`adr_id`
+   ceremony-gate path on the EXECUTE→ATTESTATION edge recomputes proof
+   unconditionally every run, exactly as § Intent states. Separately, the
+   `gz check` *sweep* path (which scans all in-closeout ADRs) enforces only
+   ceremonies touched within 24h, so a parked ceremony (e.g. ADR-0.0.41) cannot
+   redden `main` — operator-ruled 2026-06-10, recorded in the build-to-1.0
+   campaign (A.2). The real closeout gate is not weakened.
+3. **BEHAVIOR-proof dual implementation (audit F1).** The view computes the
+   BEHAVIOR channel via a regex `@covers` scan independent of
+   `--req-kind-discipline`'s AST coverage. BEHAVIOR was never the masked channel
+   this ADR fixed, so there is no proof gap; the seam is a post-1.0 reduction-pass
+   candidate (prove redundancy before culling). Routed to GHI #573 (existing
+   "DRY classifier fork" home) as a new-instance of the same class.

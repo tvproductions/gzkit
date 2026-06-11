@@ -1,0 +1,52 @@
+# ADR-0.0.69 audit — value demonstration proofs (captured 2026-06-11)
+
+## 1. Marquee: derived closeout-proof view (the product)
+$ uv run gz validate --closeout-proof
+Validated: closeout_proof
+
+✓ All validations passed (1 scopes).
+exit=
+
+$ uv run gz validate --closeout-proof --json
+{
+  "valid": true,
+  "errors": []
+}
+
+## 2. ln: surface retired
+$ uv run gz validate --closeout-proof-binding   # flag must be gone
+BLOCKERS: gz: error: unrecognized arguments: --closeout-proof-binding
+ln: blocks remaining in docs/design/adr: 0
+closeout_proof_binding.py present? ls: src/gzkit/governance/trust_audits/closeout_proof_binding.py: No such file or directory
+new view module: src/gzkit/governance/trust_audits/closeout_proof.py
+
+## 3. Ledger proof completeness (Layer-2 trust)
+$ uv run gz adr audit-check ADR-0.0.69
+ADR audit-check: ADR-0.0.69-channels-first-closeout-proof
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch
+  - OBPI-0.0.69-02-structural-fence-channel-boundary-invariants-anchor
+  - OBPI-0.0.69-03-closeout-proof-derived-view
+  - OBPI-0.0.69-04-retire-ln-closeout-proof-binding-surface
+Advisory 7 REQ(s) without @covers traceability (non-blocking):
+  - REQ-0.0.69-01-04
+  - REQ-0.0.69-02-03
+  - REQ-0.0.69-02-04
+  - REQ-0.0.69-03-05
+  - REQ-0.0.69-03-06
+  - REQ-0.0.69-04-05
+  - REQ-0.0.69-04-06
+
+Coverage: 14/21 REQs covered (66.7%)
+  OBPI-0.0.69-01: 3/4 (75.0%)
+  OBPI-0.0.69-02: 2/4 (50.0%)
+  OBPI-0.0.69-03: 5/7 (71.4%)
+  OBPI-0.0.69-04: 4/6 (66.7%)
+Uncovered REQs (7):
+  - REQ-0.0.69-01-04
+  - REQ-0.0.69-02-03
+  - REQ-0.0.69-02-04
+  - REQ-0.0.69-03-05
+  - REQ-0.0.69-03-06
+  - REQ-0.0.69-04-05
+  - REQ-0.0.69-04-06

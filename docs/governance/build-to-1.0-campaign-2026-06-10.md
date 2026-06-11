@@ -163,7 +163,10 @@ gzkit is 1.0 when ALL hold:
       2026-06-10; ADR at 3/4). Active-ceremony freshness gate (24h) added
       per operator ruling; ADR-0.0.41 OBPI-02/03 repointed; pool-ADR
       task-envelope carve-out gap closed
-- [ ] A.3 OBPI-0.0.69-04 (retire `ln:` surface; supersedes #599)
+- [x] A.3 OBPI-0.0.69-04 (retire `ln:` surface; supersedes #599) —
+      `attested_completed` per `gz adr report ADR-0.0.69` (verified
+      2026-06-11; ADR at 4/4); landed in commit `c60c89e4` (retire dead
+      `ln:` consumer chain, GHI #601)
 - [ ] A.4 ADR-0.0.69 closeout ceremony → Validated
 - [ ] A.5 ADR-0.0.41 unblocked closeout (2/5 → terminal; or operator-parks
       with named reason, as 0.0.67 precedent allows)
