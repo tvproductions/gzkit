@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.13.1"
+  skill-version: "7.14.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-29
+last_reviewed: 2026-06-10
 model: opus
 ---
 
@@ -322,10 +322,6 @@ Cite canonical ARB-wrapped invocations with receipt IDs. These prove the codebas
 | `uv run gz arb typecheck` | Pass | `arb-step-typecheck-...` | REQ-X.Y.Z-NN-MM | <summary> |
 | `uv run gz validate --documents` | Pass | n/a | n/a | <summary> |
 | `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict` | Pass | `arb-step-mkdocs-...` | REQ-X.Y.Z-NN-MM | <summary> |
-
-**3c. REQ↔Receipt-ID Binding (structured)**
-
-OBPI briefs that carry a `ln:` frontmatter field (introduced by ADR-0.0.63 / OBPI-0.0.63-03) provide machine-readable proof-binding entries consumed by `gz validate --closeout-proof-binding`. Each entry binds a REQ-ID to one or more ledger-present receipt-IDs and optional file:line references. The REQ Bindings column above is the human-readable counterpart; the structured `ln:` field is the validator's input. Run `uv run gz validate --closeout-proof-binding` to confirm every REQ is mechanically bound before presenting for attestation.
 
 **4. Documentation Alignment**
 

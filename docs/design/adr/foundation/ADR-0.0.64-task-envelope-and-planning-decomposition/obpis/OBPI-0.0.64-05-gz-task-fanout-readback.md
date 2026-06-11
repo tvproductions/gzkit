@@ -4,43 +4,6 @@ parent: ADR-0.0.64-task-envelope-and-planning-decomposition
 item: 5
 lane: Heavy
 status: Completed
-ln:
-  - req_id: REQ-0.0.64-05-01
-    receipt_ids:
-      - arb-ruff-5c28a807d3944a318daee2cf7bd91fb8
-      - arb-step-mkdocs-78771e368a814aa3918f43307cdf46ed
-      - arb-step-typecheck-ec9d60a81a3d449499f31b97713f1f51
-      - arb-step-unittest-f7e5d91a88e14fddb51a9227dd5dee40
-  - req_id: REQ-0.0.64-05-02
-    receipt_ids:
-      - arb-ruff-5c28a807d3944a318daee2cf7bd91fb8
-      - arb-step-mkdocs-78771e368a814aa3918f43307cdf46ed
-      - arb-step-typecheck-ec9d60a81a3d449499f31b97713f1f51
-      - arb-step-unittest-f7e5d91a88e14fddb51a9227dd5dee40
-  - req_id: REQ-0.0.64-05-03
-    receipt_ids:
-      - arb-ruff-5c28a807d3944a318daee2cf7bd91fb8
-      - arb-step-mkdocs-78771e368a814aa3918f43307cdf46ed
-      - arb-step-typecheck-ec9d60a81a3d449499f31b97713f1f51
-      - arb-step-unittest-f7e5d91a88e14fddb51a9227dd5dee40
-  - req_id: REQ-0.0.64-05-04
-    receipt_ids:
-      - arb-ruff-5c28a807d3944a318daee2cf7bd91fb8
-      - arb-step-mkdocs-78771e368a814aa3918f43307cdf46ed
-      - arb-step-typecheck-ec9d60a81a3d449499f31b97713f1f51
-      - arb-step-unittest-f7e5d91a88e14fddb51a9227dd5dee40
-  - req_id: REQ-0.0.64-05-05
-    receipt_ids:
-      - arb-ruff-5c28a807d3944a318daee2cf7bd91fb8
-      - arb-step-mkdocs-78771e368a814aa3918f43307cdf46ed
-      - arb-step-typecheck-ec9d60a81a3d449499f31b97713f1f51
-      - arb-step-unittest-f7e5d91a88e14fddb51a9227dd5dee40
-  - req_id: REQ-0.0.64-05-06
-    receipt_ids:
-      - arb-ruff-5c28a807d3944a318daee2cf7bd91fb8
-      - arb-step-mkdocs-78771e368a814aa3918f43307cdf46ed
-      - arb-step-typecheck-ec9d60a81a3d449499f31b97713f1f51
-      - arb-step-unittest-f7e5d91a88e14fddb51a9227dd5dee40
 ---
 
 # OBPI-0.0.64-05-gz-task-fanout-readback: Gz Task Fanout Readback

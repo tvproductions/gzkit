@@ -4,16 +4,6 @@ parent: ADR-0.0.63-closeout-ceremony-runtime-engine-parity
 item: 4
 lane: Heavy
 status: Completed
-ln:
-  - req_id: REQ-0.0.63-04-01
-    receipt_ids:
-      - arb-step-unittest-0beddc23c9a74287b9e3ef06a029c776
-  - req_id: REQ-0.0.63-04-02
-    receipt_ids:
-      - arb-step-unittest-0beddc23c9a74287b9e3ef06a029c776
-  - req_id: REQ-0.0.63-04-03
-    receipt_ids:
-      - arb-step-unittest-0beddc23c9a74287b9e3ef06a029c776
 ---
 
 # OBPI-0.0.63-04-closeout-skill-reverify-wording-fix: **closeout-skill-reverify-wording-fix** — `.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md:60-65`. Wording fix resolving the "Does NOT re-verify" vs spec-reviewer "Independent re-verification" contradiction (CLI pipeline does not re-execute; spec-reviewer persona-dispatch retains independent re-verification).

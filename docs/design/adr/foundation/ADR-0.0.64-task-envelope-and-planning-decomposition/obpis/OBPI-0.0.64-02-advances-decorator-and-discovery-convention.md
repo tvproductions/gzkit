@@ -4,28 +4,6 @@ parent: ADR-0.0.64-task-envelope-and-planning-decomposition
 item: 2
 lane: Heavy
 status: Completed
-ln:
-  - req_id: REQ-0.0.64-02-01
-    receipt_ids:
-      - arb-ruff-32ecfd6f982d48b0aa9f0cde4559b9a3
-      - arb-step-mkdocs-c100bc658b97486fb36cfbc56161649e
-      - arb-step-typecheck-27782e54de4d456ebe91db5a0e964eac
-      - arb-step-unittest-43b60cb184bd4814ac8478614e85aa4a
-      - arb-step-unittest-4f7e2cf661334e39b06cb333fce6e33e
-  - req_id: REQ-0.0.64-02-02
-    receipt_ids:
-      - arb-ruff-32ecfd6f982d48b0aa9f0cde4559b9a3
-      - arb-step-mkdocs-c100bc658b97486fb36cfbc56161649e
-      - arb-step-typecheck-27782e54de4d456ebe91db5a0e964eac
-      - arb-step-unittest-43b60cb184bd4814ac8478614e85aa4a
-      - arb-step-unittest-4f7e2cf661334e39b06cb333fce6e33e
-  - req_id: REQ-0.0.64-02-03
-    receipt_ids:
-      - arb-ruff-32ecfd6f982d48b0aa9f0cde4559b9a3
-      - arb-step-mkdocs-c100bc658b97486fb36cfbc56161649e
-      - arb-step-typecheck-27782e54de4d456ebe91db5a0e964eac
-      - arb-step-unittest-43b60cb184bd4814ac8478614e85aa4a
-      - arb-step-unittest-4f7e2cf661334e39b06cb333fce6e33e
 ---
 
 # OBPI-0.0.64-02-advances-decorator-and-discovery-convention: Advances Decorator And Discovery Convention

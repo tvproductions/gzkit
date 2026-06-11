@@ -4,22 +4,6 @@ parent: ADR-0.0.63-closeout-ceremony-runtime-engine-parity
 item: 3
 lane: Heavy
 status: Completed
-ln:
-  - req_id: REQ-0.0.63-03-01
-    receipt_ids:
-      - arb-step-unittest-7f034b61890243d6841d197e1b990bfa
-  - req_id: REQ-0.0.63-03-02
-    receipt_ids:
-      - arb-step-unittest-7f034b61890243d6841d197e1b990bfa
-  - req_id: REQ-0.0.63-03-03
-    receipt_ids:
-      - arb-step-unittest-7f034b61890243d6841d197e1b990bfa
-  - req_id: REQ-0.0.63-03-04
-    receipt_ids:
-      - arb-step-unittest-7f034b61890243d6841d197e1b990bfa
-  - req_id: REQ-0.0.63-03-05
-    receipt_ids:
-      - arb-step-unittest-7f034b61890243d6841d197e1b990bfa
 ---
 
 # OBPI-0.0.63-03-evidence-summary-and-proof-binding: **evidence-summary-and-proof-binding** — `.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md:285-339` plus new CLI validator `gz validate --closeout-proof-binding`. Evidence Summary Template gains a REQ column; every receipt row binds `(REQ-ID, receipt-ID, file-line range)` in markdown + structured JSON. Validator exits 3 on missing REQ↔receipt-ID bindings.

@@ -3,7 +3,20 @@ id: OBPI-0.0.69-04-retire-ln-closeout-proof-binding-surface
 parent: ADR-0.0.69-channels-first-closeout-proof
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
+# req_atomic: each REQ is a single indivisible deletion unit — removing the
+# module/model/field (01), the CLI flag + dispatch (02), the #599 producer (03),
+# and the schema property under extra="forbid" (04) are each one coherent surface
+# excision; the 22-brief strip (05) is a single one-pass operation; the docs +
+# GHI supersession (06) is one SUPPORT deliverable. None decomposes into parallel
+# seq=02+ sub-tasks (ADR-0.0.64 task-envelope exemption).
+req_atomic:
+  - REQ-0.0.69-04-01
+  - REQ-0.0.69-04-02
+  - REQ-0.0.69-04-03
+  - REQ-0.0.69-04-04
+  - REQ-0.0.69-04-05
+  - REQ-0.0.69-04-06
 ---
 
 # OBPI-0.0.69-04-retire-ln-closeout-proof-binding-surface: Retire `ln:` Closeout-Proof-Binding Surface
@@ -13,7 +26,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.69-channels-first-closeout-proof/ADR-0.0.69-channels-first-closeout-proof.md`
 - **Checklist Item:** #4 - "OBPI-0.0.69-04: Retire `ln:` surface — model, schema, producer + tests, 19-brief strip, docs (manpage, `gz-adr-closeout-ceremony` SKILL.md, restore-health roadmap, ADR-0.0.63 package), supersede #599, strike #593 premise (Heavy)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -69,8 +82,8 @@ surface) and a schema property — a contract removal.
 1. REQUIREMENT: All `ln`-carrying briefs (enumerate by grep) MUST be stripped of the `ln:` block in one pass (reusing `_strip_existing_ln` before it is deleted); a leftover `ln:` MUST then fail `gz validate --documents` via the schema's `extra="forbid"`.
 1. REQUIREMENT: All docs that reference `ln:`/`--closeout-proof-binding` (manpage, `gz-adr-closeout-ceremony` SKILL.md, restore-health roadmap, ADR-0.0.63 package) MUST be updated; `mkdocs build --strict`, `gz cli audit`, and `gz validate --cli-alignment` MUST stay green.
 1. REQUIREMENT: GHI #599 MUST be marked superseded with a pointer to ADR-0.0.69; the #593 premise MUST be struck (its premise no longer holds once the stored block is gone).
-1. NEVER: touch the derived `--closeout-proof` view, the SUPPORT/FENCE arms, or any ADR-0.0.68 surface.
-1. ALWAYS: reconcile this brief against the parent ADR § Decision item (4) before implementation begins; land this OBPI LAST so the strip can reuse the producer's `_strip_existing_ln`.
+1. REQUIREMENT: The derived `--closeout-proof` view, the SUPPORT/FENCE arms, and all ADR-0.0.68 surfaces MUST NOT be modified (scope boundary).
+1. REQUIREMENT: This OBPI MUST be executed LAST in the ADR-0.0.69 sequence so the strip reuses `_strip_existing_ln` before it is deleted (process prerequisite).
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -228,15 +241,28 @@ surface is gone and closeout proof has exactly one home, the derived `--closeout
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+The retired flag is rejected as unknown, and no brief carries a stale ln: block:
+
+    $ uv run gz validate --closeout-proof-binding
+    -> exit 2: error: unrecognized arguments: --closeout-proof-binding
+
+    $ grep -r "^ln:" docs/design/adr --include="*.md" | wc -l
+    -> 0
+
+Full suite green: 6023/6023 tests (arb-step-unittest-2149c3e4c485462595eb9af7b1245ae0); lint clean (arb-ruff-e5cff6dfbd1148b6842de3c2c78d2a6b); typecheck clean (arb-step-typecheck-c34e64840e874ebca1c2b3f87dee2a3d); mkdocs --strict clean (arb-step-mkdocs-bfa173737b8e49c5a491382795616b37); gz validate --cli-alignment exit 0 (104/104); gz validate --documents exit 0.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files deleted: src/gzkit/governance/trust_audits/closeout_proof_binding.py (270 lines); tests/governance/test_closeout_proof_binding.py (333 lines); tests/test_obpi_complete_ln_producer.py
+- Files modified: brief_structure.py (deleted ReqEvidence + BriefStructure.ln); obpi_brief_structure.json (deleted ln property); parser_maintenance.py + validate_cmd.py (deleted --closeout-proof-binding flag + 7 check refs); obpi_complete.py (deleted 3 producer functions + injection); trust_audits/__init__.py (removed binding import/export); test_obpi_complete.py (removed TestObpiCompleteWritesLnProofBinding); 22 OBPI briefs (stripped ln: frontmatter); docs/user/manpages/validate.md; .gzkit/skills/gz-adr-closeout-ceremony/SKILL.md (v7.13.1->7.14.0); docs/design/restore-health-convergence-roadmap.md
+- Files created: tests/governance/test_retire_ln_surface.py (5 @covers absence tests, REQ-01..04)
+- Tests added: TestRetireLnSurface (5 tests, RED->GREEN confirmed)
+- GHIs: #599 superseded; #593 premise struck
+- Date completed: 2026-06-10
+- Attestation status: operator attested ("attest completed") in Stage 4 ceremony
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -244,12 +270,12 @@ surface is gone and closeout proof has exactly one home, the derived `--closeout
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.69-04 retire-ln-closeout-proof-binding-surface: the ln: surface is gone entirely. Deleted closeout_proof_binding.py (270 lines), ReqEvidence model + BriefStructure.ln field, schema ln property, --closeout-proof-binding flag + dispatch (7 refs across parser_maintenance.py/validate_cmd.py), and the #599 producer (_inject_ln_block/_render_ln_block/_strip_existing_ln) + injection call. Stripped ln: from all 22 carrying briefs in one pass (reusing _strip_existing_ln before deleting it). Docs updated (manpage, gz-adr-closeout-ceremony SKILL.md v7.13.1→7.14.0, restore-health roadmap). #599 superseded, #593 premise struck. 5 @covers absence tests in test_retire_ln_surface.py (RED→GREEN); deleted test_closeout_proof_binding.py (333 lines) + test_obpi_complete_ln_producer.py. Full suite 6023/6023 (arb-step-unittest-2149c3e4c485462595eb9af7b1245ae0); lint clean (arb-ruff-e5cff6dfbd1148b6842de3c2c78d2a6b); typecheck clean (arb-step-typecheck-c34e64840e874ebca1c2b3f87dee2a3d); mkdocs --strict clean (arb-step-mkdocs-bfa173737b8e49c5a491382795616b37); gz validate --cli-alignment 104/104; gz validate --documents exit 0. Closeout proof now has exactly one home: the derived gz validate --closeout-proof view.
+- Date: 2026-06-11
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-11
 
 **Evidence Hash:** -

@@ -4,19 +4,6 @@ parent: ADR-0.0.63-closeout-ceremony-runtime-engine-parity
 item: 5
 lane: Heavy
 status: Completed
-ln:
-  - req_id: REQ-0.0.63-05-01
-    receipt_ids:
-      - arb-step-unittest-11700c9918c44344b82419ec546b65c1
-  - req_id: REQ-0.0.63-05-02
-    receipt_ids:
-      - arb-step-unittest-11700c9918c44344b82419ec546b65c1
-  - req_id: REQ-0.0.63-05-03
-    receipt_ids:
-      - arb-step-unittest-11700c9918c44344b82419ec546b65c1
-  - req_id: REQ-0.0.63-05-04
-    receipt_ids:
-      - arb-step-unittest-11700c9918c44344b82419ec546b65c1
 ---
 
 # OBPI-0.0.63-05-dual-runtime-collapse: **dual-runtime-collapse** — `gz closeout --ceremony --attest` vs Step 7 pipeline emit identical ledger surfaces. The runtime engine is single source; `--attest` becomes an orchestration shortcut.

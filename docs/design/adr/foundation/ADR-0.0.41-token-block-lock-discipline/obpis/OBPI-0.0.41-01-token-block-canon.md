@@ -4,43 +4,6 @@ parent: ADR-0.0.41-token-block-lock-discipline
 item: 1
 lane: Lite
 status: Completed
-ln:
-  - req_id: REQ-0.0.41-01-01
-    receipt_ids:
-      - arb-ruff-790611fd5d1349b59b4888b9b2e50787
-      - arb-step-mkdocs-75182a2ef39a48d4863fa07584a21e26
-      - arb-step-typecheck-18f81962b9874950bffbf7d7a80cb8b1
-      - arb-step-unittest-2d40900ae9d24e829e8ca253cd91e337
-  - req_id: REQ-0.0.41-01-02
-    receipt_ids:
-      - arb-ruff-790611fd5d1349b59b4888b9b2e50787
-      - arb-step-mkdocs-75182a2ef39a48d4863fa07584a21e26
-      - arb-step-typecheck-18f81962b9874950bffbf7d7a80cb8b1
-      - arb-step-unittest-2d40900ae9d24e829e8ca253cd91e337
-  - req_id: REQ-0.0.41-01-03
-    receipt_ids:
-      - arb-ruff-790611fd5d1349b59b4888b9b2e50787
-      - arb-step-mkdocs-75182a2ef39a48d4863fa07584a21e26
-      - arb-step-typecheck-18f81962b9874950bffbf7d7a80cb8b1
-      - arb-step-unittest-2d40900ae9d24e829e8ca253cd91e337
-  - req_id: REQ-0.0.41-01-04
-    receipt_ids:
-      - arb-ruff-790611fd5d1349b59b4888b9b2e50787
-      - arb-step-mkdocs-75182a2ef39a48d4863fa07584a21e26
-      - arb-step-typecheck-18f81962b9874950bffbf7d7a80cb8b1
-      - arb-step-unittest-2d40900ae9d24e829e8ca253cd91e337
-  - req_id: REQ-0.0.41-01-05
-    receipt_ids:
-      - arb-ruff-790611fd5d1349b59b4888b9b2e50787
-      - arb-step-mkdocs-75182a2ef39a48d4863fa07584a21e26
-      - arb-step-typecheck-18f81962b9874950bffbf7d7a80cb8b1
-      - arb-step-unittest-2d40900ae9d24e829e8ca253cd91e337
-  - req_id: REQ-0.0.41-01-06
-    receipt_ids:
-      - arb-ruff-790611fd5d1349b59b4888b9b2e50787
-      - arb-step-mkdocs-75182a2ef39a48d4863fa07584a21e26
-      - arb-step-typecheck-18f81962b9874950bffbf7d7a80cb8b1
-      - arb-step-unittest-2d40900ae9d24e829e8ca253cd91e337
 ---
 
 # OBPI-0.0.41-01-token-block-canon: Token Block Canon

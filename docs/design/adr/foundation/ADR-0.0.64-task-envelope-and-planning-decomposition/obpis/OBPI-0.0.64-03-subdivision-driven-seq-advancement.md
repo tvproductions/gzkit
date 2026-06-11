@@ -4,28 +4,6 @@ parent: ADR-0.0.64-task-envelope-and-planning-decomposition
 item: 3
 lane: Heavy
 status: Completed
-ln:
-  - req_id: REQ-0.0.64-03-01
-    receipt_ids:
-      - arb-ruff-dce7a3e74c8b4647998b9975dc1bce80
-      - arb-step-mkdocs-1c2f26e4661b48cea251a6a4269fc160
-      - arb-step-typecheck-2fe59d8711f24bea961f47a6f8338a56
-      - arb-step-unittest-1748cb0b8e3c43a097f15492b6b7f924
-      - arb-step-unittest-f10841c5a70d417a9c68265c7b54f67c
-  - req_id: REQ-0.0.64-03-02
-    receipt_ids:
-      - arb-ruff-dce7a3e74c8b4647998b9975dc1bce80
-      - arb-step-mkdocs-1c2f26e4661b48cea251a6a4269fc160
-      - arb-step-typecheck-2fe59d8711f24bea961f47a6f8338a56
-      - arb-step-unittest-1748cb0b8e3c43a097f15492b6b7f924
-      - arb-step-unittest-f10841c5a70d417a9c68265c7b54f67c
-  - req_id: REQ-0.0.64-03-03
-    receipt_ids:
-      - arb-ruff-dce7a3e74c8b4647998b9975dc1bce80
-      - arb-step-mkdocs-1c2f26e4661b48cea251a6a4269fc160
-      - arb-step-typecheck-2fe59d8711f24bea961f47a6f8338a56
-      - arb-step-unittest-1748cb0b8e3c43a097f15492b6b7f924
-      - arb-step-unittest-f10841c5a70d417a9c68265c7b54f67c
 ---
 
 # OBPI-0.0.64-03-subdivision-driven-seq-advancement: Subdivision Driven Seq Advancement

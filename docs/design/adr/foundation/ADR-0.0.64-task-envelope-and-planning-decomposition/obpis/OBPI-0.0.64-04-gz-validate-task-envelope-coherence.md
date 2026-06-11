@@ -4,49 +4,6 @@ parent: ADR-0.0.64-task-envelope-and-planning-decomposition
 item: 4
 lane: Heavy
 status: Completed
-ln:
-  - req_id: REQ-0.0.64-04-01
-    receipt_ids:
-      - arb-ruff-57eaf9a3e1784acaa018ec8bd7464a58
-      - arb-step-mkdocs-e376e76096954b4cb658a507b50318f5
-      - arb-step-typecheck-6da0428dc3f3492091e5603eb5fa7a9a
-      - arb-step-unittest-dd3718d4a01146e994c9b7e0ef28d9ac
-  - req_id: REQ-0.0.64-04-02
-    receipt_ids:
-      - arb-ruff-57eaf9a3e1784acaa018ec8bd7464a58
-      - arb-step-mkdocs-e376e76096954b4cb658a507b50318f5
-      - arb-step-typecheck-6da0428dc3f3492091e5603eb5fa7a9a
-      - arb-step-unittest-dd3718d4a01146e994c9b7e0ef28d9ac
-  - req_id: REQ-0.0.64-04-03
-    receipt_ids:
-      - arb-ruff-57eaf9a3e1784acaa018ec8bd7464a58
-      - arb-step-mkdocs-e376e76096954b4cb658a507b50318f5
-      - arb-step-typecheck-6da0428dc3f3492091e5603eb5fa7a9a
-      - arb-step-unittest-dd3718d4a01146e994c9b7e0ef28d9ac
-  - req_id: REQ-0.0.64-04-04
-    receipt_ids:
-      - arb-ruff-57eaf9a3e1784acaa018ec8bd7464a58
-      - arb-step-mkdocs-e376e76096954b4cb658a507b50318f5
-      - arb-step-typecheck-6da0428dc3f3492091e5603eb5fa7a9a
-      - arb-step-unittest-dd3718d4a01146e994c9b7e0ef28d9ac
-  - req_id: REQ-0.0.64-04-05
-    receipt_ids:
-      - arb-ruff-57eaf9a3e1784acaa018ec8bd7464a58
-      - arb-step-mkdocs-e376e76096954b4cb658a507b50318f5
-      - arb-step-typecheck-6da0428dc3f3492091e5603eb5fa7a9a
-      - arb-step-unittest-dd3718d4a01146e994c9b7e0ef28d9ac
-  - req_id: REQ-0.0.64-04-06
-    receipt_ids:
-      - arb-ruff-57eaf9a3e1784acaa018ec8bd7464a58
-      - arb-step-mkdocs-e376e76096954b4cb658a507b50318f5
-      - arb-step-typecheck-6da0428dc3f3492091e5603eb5fa7a9a
-      - arb-step-unittest-dd3718d4a01146e994c9b7e0ef28d9ac
-  - req_id: REQ-0.0.64-04-07
-    receipt_ids:
-      - arb-ruff-57eaf9a3e1784acaa018ec8bd7464a58
-      - arb-step-mkdocs-e376e76096954b4cb658a507b50318f5
-      - arb-step-typecheck-6da0428dc3f3492091e5603eb5fa7a9a
-      - arb-step-unittest-dd3718d4a01146e994c9b7e0ef28d9ac
 ---
 
 # OBPI-0.0.64-04-gz-validate-task-envelope-coherence: Gz Validate Task Envelope Coherence

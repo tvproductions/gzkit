@@ -4,22 +4,6 @@ parent: ADR-0.0.63-closeout-ceremony-runtime-engine-parity
 item: 2
 lane: Heavy
 status: Completed
-ln:
-  - req_id: REQ-0.0.63-02-01
-    receipt_ids:
-      - arb-step-unittest-a9150e2dfc1447b5a50915c549ac0613
-  - req_id: REQ-0.0.63-02-02
-    receipt_ids:
-      - arb-step-unittest-a9150e2dfc1447b5a50915c549ac0613
-  - req_id: REQ-0.0.63-02-03
-    receipt_ids:
-      - arb-step-unittest-a9150e2dfc1447b5a50915c549ac0613
-  - req_id: REQ-0.0.63-02-04
-    receipt_ids:
-      - arb-step-unittest-a9150e2dfc1447b5a50915c549ac0613
-  - req_id: REQ-0.0.63-02-05
-    receipt_ids:
-      - arb-step-unittest-a9150e2dfc1447b5a50915c549ac0613
 ---
 
 # OBPI-0.0.63-02-demo-and-arb-receipt-discipline: demo extraction joins multi-line fenced commands, classifies shell-less executability, and binds demo ARB receipts to observed exit code + stdout SHA

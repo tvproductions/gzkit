@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.69-03-closeout-proof-derived-view",
-  "timestamp": "2026-06-10T08:50:00.000000+00:00",
+  "obpi_id": "OBPI-0.0.69-04-retire-ln-closeout-proof-binding-surface",
+  "timestamp": "2026-06-10T23:04:00.000000+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.69-03-closeout-proof-derived-view.md",
+  "plan_file": "retire-ln-surface-OBPI-0.0.69-04.md",
   "gaps_found": 0,
-  "notes": "One CLI structural gap (closeout_proof.py not on disk) is a new-file creation — expected for a CREATE-scoped OBPI. All semantic alignment checks pass."
+  "notes": "ADR<->OBPI fully aligned. Count discrepancy: brief says 19 ln:-carrying briefs, grep finds 22. Brief explicitly warns to trust grep over its own count; plan uses grep as ground truth. 246 sibling-ADR scope collisions are advisory. No semantic gaps."
 }

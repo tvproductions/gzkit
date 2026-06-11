@@ -4,19 +4,6 @@ parent: ADR-0.0.63-closeout-ceremony-runtime-engine-parity
 item: 6
 lane: Heavy
 status: Completed
-ln:
-  - req_id: REQ-0.0.63-06-01
-    receipt_ids:
-      - arb-step-unittest-c2dd7bc86d8c4aba87fa1a851531d501
-  - req_id: REQ-0.0.63-06-02
-    receipt_ids:
-      - arb-step-unittest-c2dd7bc86d8c4aba87fa1a851531d501
-  - req_id: REQ-0.0.63-06-03
-    receipt_ids:
-      - arb-step-unittest-c2dd7bc86d8c4aba87fa1a851531d501
-  - req_id: REQ-0.0.63-06-04
-    receipt_ids:
-      - arb-step-unittest-c2dd7bc86d8c4aba87fa1a851531d501
 allowlist:
   - src/gzkit/commands/ceremony_data.py
   - src/gzkit/commands/ceremony_steps.py

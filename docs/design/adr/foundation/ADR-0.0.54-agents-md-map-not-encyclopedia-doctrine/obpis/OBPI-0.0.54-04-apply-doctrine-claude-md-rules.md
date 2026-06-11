@@ -4,43 +4,6 @@ parent: ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine
 item: 4
 lane: Heavy
 status: Completed
-ln:
-  - req_id: REQ-0.0.54-04-01
-    receipt_ids:
-      - arb-ruff-b22ae43f20284282bd260e985b9e0215
-      - arb-step-mkdocs-99413b85062b4af6a29f05737282284b
-      - arb-step-typecheck-fa1445287ba4408a99151140f5450201
-      - arb-step-unittest-33ad353e8a024f09a131b5d2e438d85f
-  - req_id: REQ-0.0.54-04-02
-    receipt_ids:
-      - arb-ruff-b22ae43f20284282bd260e985b9e0215
-      - arb-step-mkdocs-99413b85062b4af6a29f05737282284b
-      - arb-step-typecheck-fa1445287ba4408a99151140f5450201
-      - arb-step-unittest-33ad353e8a024f09a131b5d2e438d85f
-  - req_id: REQ-0.0.54-04-03
-    receipt_ids:
-      - arb-ruff-b22ae43f20284282bd260e985b9e0215
-      - arb-step-mkdocs-99413b85062b4af6a29f05737282284b
-      - arb-step-typecheck-fa1445287ba4408a99151140f5450201
-      - arb-step-unittest-33ad353e8a024f09a131b5d2e438d85f
-  - req_id: REQ-0.0.54-04-04
-    receipt_ids:
-      - arb-ruff-b22ae43f20284282bd260e985b9e0215
-      - arb-step-mkdocs-99413b85062b4af6a29f05737282284b
-      - arb-step-typecheck-fa1445287ba4408a99151140f5450201
-      - arb-step-unittest-33ad353e8a024f09a131b5d2e438d85f
-  - req_id: REQ-0.0.54-04-05
-    receipt_ids:
-      - arb-ruff-b22ae43f20284282bd260e985b9e0215
-      - arb-step-mkdocs-99413b85062b4af6a29f05737282284b
-      - arb-step-typecheck-fa1445287ba4408a99151140f5450201
-      - arb-step-unittest-33ad353e8a024f09a131b5d2e438d85f
-  - req_id: REQ-0.0.54-04-06
-    receipt_ids:
-      - arb-ruff-b22ae43f20284282bd260e985b9e0215
-      - arb-step-mkdocs-99413b85062b4af6a29f05737282284b
-      - arb-step-typecheck-fa1445287ba4408a99151140f5450201
-      - arb-step-unittest-33ad353e8a024f09a131b5d2e438d85f
 ---
 
 # OBPI-0.0.54-04-apply-doctrine-claude-md-rules: Apply the Doctrine to CLAUDE.md and `.claude/rules/*.md`

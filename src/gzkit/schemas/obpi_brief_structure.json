@@ -58,31 +58,6 @@
       },
       "description": "Citation tuples (artifact_path, anchor)"
     },
-    "ln": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["req_id", "receipt_ids"],
-        "additionalProperties": false,
-        "properties": {
-          "req_id": {
-            "type": "string",
-            "description": "REQ identifier bound by this entry"
-          },
-          "receipt_ids": {
-            "type": "array",
-            "items": {"type": "string"},
-            "description": "Cited ARB receipt IDs; ≥1 required at closeout time"
-          },
-          "file_lines": {
-            "type": "array",
-            "items": {"type": "string"},
-            "description": "Optional file:line references, e.g. src/x.py:42"
-          }
-        }
-      },
-      "description": "REQ↔receipt-ID proof-binding entries (ADR-0.0.63 / OBPI-0.0.63-03). Optional at authoring; required by gz validate --closeout-proof-binding at closeout."
-    },
     "tasks": {
       "type": "array",
       "items": {"type": "string"},

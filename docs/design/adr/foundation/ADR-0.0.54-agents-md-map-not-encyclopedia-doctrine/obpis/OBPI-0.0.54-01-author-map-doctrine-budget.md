@@ -4,37 +4,6 @@ parent: ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine
 item: 1
 lane: Heavy
 status: Completed
-ln:
-  - req_id: REQ-0.0.54-01-01
-    receipt_ids:
-      - arb-ruff-67c400ad2c6844328a6aaffebf1e74a3
-      - arb-step-mkdocs-d40b4110bacc42598fb19e5074130130
-      - arb-step-typecheck-2980d7808c074c9599f4354dca933f77
-      - arb-step-unittest-6007458fe7174922888ab2d7b93b2367
-  - req_id: REQ-0.0.54-01-02
-    receipt_ids:
-      - arb-ruff-67c400ad2c6844328a6aaffebf1e74a3
-      - arb-step-mkdocs-d40b4110bacc42598fb19e5074130130
-      - arb-step-typecheck-2980d7808c074c9599f4354dca933f77
-      - arb-step-unittest-6007458fe7174922888ab2d7b93b2367
-  - req_id: REQ-0.0.54-01-03
-    receipt_ids:
-      - arb-ruff-67c400ad2c6844328a6aaffebf1e74a3
-      - arb-step-mkdocs-d40b4110bacc42598fb19e5074130130
-      - arb-step-typecheck-2980d7808c074c9599f4354dca933f77
-      - arb-step-unittest-6007458fe7174922888ab2d7b93b2367
-  - req_id: REQ-0.0.54-01-04
-    receipt_ids:
-      - arb-ruff-67c400ad2c6844328a6aaffebf1e74a3
-      - arb-step-mkdocs-d40b4110bacc42598fb19e5074130130
-      - arb-step-typecheck-2980d7808c074c9599f4354dca933f77
-      - arb-step-unittest-6007458fe7174922888ab2d7b93b2367
-  - req_id: REQ-0.0.54-01-05
-    receipt_ids:
-      - arb-ruff-67c400ad2c6844328a6aaffebf1e74a3
-      - arb-step-mkdocs-d40b4110bacc42598fb19e5074130130
-      - arb-step-typecheck-2980d7808c074c9599f4354dca933f77
-      - arb-step-unittest-6007458fe7174922888ab2d7b93b2367
 ---
 
 # OBPI-0.0.54-01-author-map-doctrine-budget: Author the Map-Not-Encyclopedia Doctrine + Budget Tightening Port

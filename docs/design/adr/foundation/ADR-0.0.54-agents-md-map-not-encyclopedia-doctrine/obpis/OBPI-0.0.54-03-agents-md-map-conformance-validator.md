@@ -4,43 +4,6 @@ parent: ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine
 item: 3
 lane: Heavy
 status: Completed
-ln:
-  - req_id: REQ-0.0.54-03-01
-    receipt_ids:
-      - arb-ruff-3806b0bd1f3d46d18dae452e70ab57ca
-      - arb-step-mkdocs-203985ef001c43fbad61ae6ea87fa116
-      - arb-step-typecheck-9b315cacd67c40c09c33562f791cf4eb
-      - arb-step-unittest-c66b4ec49de34e97a1edc9710676a963
-  - req_id: REQ-0.0.54-03-02
-    receipt_ids:
-      - arb-ruff-3806b0bd1f3d46d18dae452e70ab57ca
-      - arb-step-mkdocs-203985ef001c43fbad61ae6ea87fa116
-      - arb-step-typecheck-9b315cacd67c40c09c33562f791cf4eb
-      - arb-step-unittest-c66b4ec49de34e97a1edc9710676a963
-  - req_id: REQ-0.0.54-03-03
-    receipt_ids:
-      - arb-ruff-3806b0bd1f3d46d18dae452e70ab57ca
-      - arb-step-mkdocs-203985ef001c43fbad61ae6ea87fa116
-      - arb-step-typecheck-9b315cacd67c40c09c33562f791cf4eb
-      - arb-step-unittest-c66b4ec49de34e97a1edc9710676a963
-  - req_id: REQ-0.0.54-03-04
-    receipt_ids:
-      - arb-ruff-3806b0bd1f3d46d18dae452e70ab57ca
-      - arb-step-mkdocs-203985ef001c43fbad61ae6ea87fa116
-      - arb-step-typecheck-9b315cacd67c40c09c33562f791cf4eb
-      - arb-step-unittest-c66b4ec49de34e97a1edc9710676a963
-  - req_id: REQ-0.0.54-03-05
-    receipt_ids:
-      - arb-ruff-3806b0bd1f3d46d18dae452e70ab57ca
-      - arb-step-mkdocs-203985ef001c43fbad61ae6ea87fa116
-      - arb-step-typecheck-9b315cacd67c40c09c33562f791cf4eb
-      - arb-step-unittest-c66b4ec49de34e97a1edc9710676a963
-  - req_id: REQ-0.0.54-03-06
-    receipt_ids:
-      - arb-ruff-3806b0bd1f3d46d18dae452e70ab57ca
-      - arb-step-mkdocs-203985ef001c43fbad61ae6ea87fa116
-      - arb-step-typecheck-9b315cacd67c40c09c33562f791cf4eb
-      - arb-step-unittest-c66b4ec49de34e97a1edc9710676a963
 ---
 
 # OBPI-0.0.54-03-agents-md-map-conformance-validator: Ship the `gz validate --agents-md-map-conformance` Validator

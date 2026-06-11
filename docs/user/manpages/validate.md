@@ -1047,31 +1047,6 @@ per run — ruling 6.1-A). The ceremony gate `_gate_closeout_proof` on the
 `EXECUTE→ATTESTATION` edge calls this view directly; an unproven REQ blocks
 the ceremony's advance to attestation.
 
-### `--closeout-proof-binding`
-
-Opt-in validator for REQ↔receipt-ID proof-binding at closeout time
-(ADR-0.0.63 / OBPI-0.0.63-03). Checks that every REQ in every OBPI
-brief of an in-scope ADR has at least one proof-binding entry in the
-brief's `ln:` frontmatter field, and that each cited receipt-ID
-resolves to a real receipt artifact on disk.
-
-**In-scope ADRs:** those with a persisted ceremony state file at
-`.gzkit/ceremonies/<ADR-ID>.ceremony.json`.
-
-**Proof floor:** ledger-existence — the receipt artifact file must exist at
-`artifacts/receipts/<receipt-id>.json`. String-presence alone is not
-sufficient; a typo'd or fabricated ID fails closed.
-
-```bash
-# Run the proof-binding gate for ADRs at closeout
-gz validate --closeout-proof-binding
-```
-
-| Code | Meaning | Recovery |
-|------|---------|----------|
-| 0 | All in-scope ADRs have every REQ bound to ≥1 ledger-present receipt-ID | — |
-| 3 | A REQ is unbound (no `ln` entry, empty `receipt_ids`, or receipt artifact absent) | Add/fix `ln:` entries in the OBPI brief; ensure receipt artifacts exist |
-
 ### `--invariant-coherence`
 
 Validate that the committed `AGENTS.md` matches the rendered constitutional invariant registry output. Fails closed (exit 3) on byte-drift; emits `composition_rendered` event on every run; additionally emits `composition_drift_detected` on drift.
@@ -1459,7 +1434,6 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--intrinsic-attestation` | opt-in | Validate `intrinsic-complexity-attestation` ledger events against canonical schema (OBPI-0.0.29-07) |
 | `--advisor-proof-binding` | opt-in | Verdict <-> proof binding audit across fixtures, ledger-cited diagnoses, and JSON Schema (OBPI-0.0.29-08) |
 | `--closeout-proof` | opt-in | Derived closeout-proof view: recomputes per-REQ proof over three live channels (BEHAVIOR/SUPPORT/STRUCTURAL-FENCE) for in-closeout ADRs; exit 3 on any unproven REQ (ADR-0.0.69 / OBPI-0.0.69-03) |
-| `--closeout-proof-binding` | opt-in | REQ↔receipt-ID proof-binding: every REQ in each in-scope ADR brief must have ≥1 ledger-present receipt-ID in its `ln:` field; exit 3 on missing or unresolvable bindings (ADR-0.0.63 / OBPI-0.0.63-03) |
 | `--distribution` | opt-in | T0 static distribution audit: ON\_DISK\_NOT\_INCLUDED / BASELINE\_NOT\_ON\_DISK / ON\_DISK\_NOT\_BASELINE drift classes (ADR-0.0.32-07) |
 | `--receipt-shape` | opt-in | Fail-closed on post-cutoff `obpi_receipt_emitted` events with deprecated shapes (optional attestation, unprefixed completion, agent: attestor); pre-cutoff receipts can be waivered via `data/historical_self_close_waivers.json` (ADR-0.0.36, OBPI-0.0.36-03) |
 | `--bullet-retention` | opt-in | Assert every Mechanical/Promotable bullet in advisory-rules-audit.md is verbatim in per-turn surface (ADR-0.0.33-01) |
