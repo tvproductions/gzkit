@@ -580,6 +580,15 @@ class TestValidateScopeResolution(unittest.TestCase):
 
         self.assertEqual(["distribution"], _resolve_scopes({"distribution": True}))
 
+    def test_closeout_proof_flag_resolves_to_closeout_proof_only(self) -> None:
+        # ADR-0.0.69: --closeout-proof is an opt-in scope. A closeout-proof-only
+        # run must report exactly that scope in the summary — not silently fall
+        # back to the default run_all set (which would misreport ten scopes that
+        # never ran and never name the one that did).
+        from gzkit.commands.validate_cmd import _resolve_scopes
+
+        self.assertEqual(["closeout_proof"], _resolve_scopes({"closeout_proof": True}))
+
 
 class TestFrontmatterCoherence(unittest.TestCase):
     """Tests for gz validate --frontmatter (GHI-167)."""

@@ -881,6 +881,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "brief_command_shape",
         "tautological_test_audit",
         "task_envelope_coherence",
+        "closeout_proof",
     ]
 
     run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
