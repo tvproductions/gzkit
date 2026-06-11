@@ -68,8 +68,8 @@ The closeout ceremony runtime (`ceremony_data.py`, `ceremony_steps.py`, `closeou
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: `extract_brief_metadata` MUST return an `ln_entries` key containing a list of `{req_id, receipt_ids, file_lines}` dicts parsed from the brief's `ln:` frontmatter; an empty list when `ln:` is absent. [REQ-0.0.63-06-01]
-2. REQUIREMENT: `render_step_6_attestation` MUST accept `ln_entries` (from brief metadata) and render a structured REQ↔receipt binding table in its output when at least one `ln_entries` entry is present; the table replaces the prose instruction "run gz validate --closeout-proof-binding". [REQ-0.0.63-06-02]
+1. ~~REQUIREMENT: `extract_brief_metadata` MUST return an `ln_entries` key containing a list of `{req_id, receipt_ids, file_lines}` dicts parsed from the brief's `ln:` frontmatter; an empty list when `ln:` is absent.~~ [REQ-0.0.63-06-01] — **SUPERSEDED by ADR-0.0.69 + GHI #601:** the `ln:` surface was retired (producer in OBPI-0.0.69-04, consumer in GHI #601). Closeout proof is now computed by the derived `gz validate --closeout-proof` view; `extract_brief_metadata` no longer emits `ln_entries` and its covering test was removed.
+2. ~~REQUIREMENT: `render_step_6_attestation` MUST accept `ln_entries` (from brief metadata) and render a structured REQ↔receipt binding table in its output when at least one `ln_entries` entry is present; the table replaces the prose instruction "run gz validate --closeout-proof-binding".~~ [REQ-0.0.63-06-02] — **SUPERSEDED by ADR-0.0.69 + GHI #601:** the `ln:` render branch was dead (0 briefs carry `ln:`) and is removed; `render_step_6_attestation` no longer accepts `ln_entries`. Its covering test was removed.
 3. REQUIREMENT: The EXECUTE→ATTESTATION step transition MUST call `validate_closeout_proof_binding` and raise `PolicyBreachError` naming the unbound REQs when the validator returns any errors; bare `--next` cannot advance past this gate without a clean proof-binding check. [REQ-0.0.63-06-03]
 4. REQUIREMENT: When `validate_closeout_proof_binding` returns zero errors, the EXECUTE→ATTESTATION transition MUST succeed (the gate passes without blocking). [REQ-0.0.63-06-04]
 5. NEVER: Modify `brief_structure.py`, `closeout_proof_binding.py`, or `validate_cmd.py` — those surfaces belong to OBPI-03.
@@ -170,8 +170,8 @@ print(out[:400])
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.63-06-01 [BEHAVIOR]: Given an OBPI brief with `ln:` frontmatter entries, when `extract_brief_metadata` is called, then the returned dict contains an `ln_entries` key with the structured proof-binding data (`req_id`, `receipt_ids`, `file_lines`)
-- [ ] REQ-0.0.63-06-02 [BEHAVIOR]: Given brief metadata with non-empty `ln_entries`, when `render_step_6_attestation` is called, then the rendered output contains the REQ↔receipt binding table sourced from `ln_entries`
+- [ ] REQ-0.0.63-06-01 [BEHAVIOR]: Given an OBPI brief with `ln:` frontmatter entries, when `extract_brief_metadata` is called, then the returned dict contains an `ln_entries` key with the structured proof-binding data (`req_id`, `receipt_ids`, `file_lines`) — **SUPERSEDED (ADR-0.0.69 / GHI #601):** `ln:` surface retired; `ln_entries` no longer emitted; covering test removed
+- [ ] REQ-0.0.63-06-02 [BEHAVIOR]: Given brief metadata with non-empty `ln_entries`, when `render_step_6_attestation` is called, then the rendered output contains the REQ↔receipt binding table sourced from `ln_entries` — **SUPERSEDED (ADR-0.0.69 / GHI #601):** `ln:` render branch removed; `render_step_6_attestation` no longer accepts `ln_entries`; covering test removed
 - [ ] REQ-0.0.63-06-03 [BEHAVIOR]: Given an ADR in active closeout ceremony where `validate_closeout_proof_binding` returns errors, when `--next` advances from EXECUTE (Step 5) to ATTESTATION (Step 6), then `PolicyBreachError` is raised naming the unbound REQs
 - [ ] REQ-0.0.63-06-04 [BEHAVIOR]: Given an ADR in active closeout ceremony where all REQs have valid `ln` bindings, when `--next` advances from EXECUTE to ATTESTATION, then the transition succeeds without error
 

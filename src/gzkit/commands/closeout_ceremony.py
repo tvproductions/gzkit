@@ -12,7 +12,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from gzkit.commands.ceremony_data import discover_demo_commands, extract_brief_metadata
+from gzkit.commands.ceremony_data import discover_demo_commands
 from gzkit.commands.ceremony_state import (
     CeremonyState,
     CeremonyStep,
@@ -132,10 +132,7 @@ def _present_step(
             state.walkthrough_index,
         )
     if step == CeremonyStep.ATTESTATION:
-        ln_entries: list[dict[str, Any]] = []
-        for f in obpi_files:
-            ln_entries.extend(extract_brief_metadata(f).get("ln_entries", []))
-        return render_step_6_attestation(adr_id, ln_entries=ln_entries)
+        return render_step_6_attestation(adr_id)
     if step == CeremonyStep.CLOSEOUT:
         return render_step_7_closeout(adr_id)
     if step == CeremonyStep.ISSUES:

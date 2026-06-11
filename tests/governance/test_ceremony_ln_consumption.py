@@ -1,21 +1,18 @@
-"""TDD RED phase tests for OBPI-0.0.63-06 REQ evidence schema consumption.
+"""Tests for the OBPI-0.0.63-06 EXECUTE→ATTESTATION proof-binding gate.
 
 Covers:
-    REQ-0.0.63-06-01 — extract_brief_metadata() returns an ``ln_entries`` key
-        with structured proof-binding data; empty list when ``ln:`` is absent.
-    REQ-0.0.63-06-02 — render_step_6_attestation() renders a structured
-        REQ↔receipt binding table when ln_entries is non-empty; empty list
-        produces no table.
-    REQ-0.0.63-06-03 — EXECUTE→ATTESTATION step gate calls
-        validate_closeout_proof_binding and raises PolicyBreachError when
-        the validator returns errors.
-    REQ-0.0.63-06-04 — EXECUTE→ATTESTATION step gate succeeds (no raise)
-        and calls validate_closeout_proof_binding when validator returns no
-        errors.
+    REQ-0.0.63-06-03 — EXECUTE→ATTESTATION step gate calls the closeout-proof
+        validator and raises PolicyBreachError when it returns errors.
+    REQ-0.0.63-06-04 — EXECUTE→ATTESTATION step gate succeeds (no raise) and
+        calls the validator when it returns no errors.
 
-Import discipline: _gate_proof_binding does not exist yet; it is imported
-inside each test method so that REQ-01/02 fail for their own semantic
-reasons and only REQ-03/04 fail with ImportError.
+REQ-0.0.63-06-01/02 (the ``ln:`` extract + render table) were retired with the
+``ln:`` consumer chain under GHI #601 — closeout proof is now rendered by the
+derived ``gz validate --closeout-proof`` view (ADR-0.0.69), so this file no
+longer tests ``ln:`` consumption; the consumer-absence assertions live in
+``tests/governance/test_retire_ln_surface.py``. The gate the surviving tests
+exercise is ``_gate_closeout_proof`` (the ADR-0.0.69 rename of the original
+``_gate_proof_binding``).
 """
 
 from __future__ import annotations
@@ -27,167 +24,7 @@ from unittest.mock import MagicMock, patch
 
 import yaml
 
-from gzkit.commands.ceremony_data import extract_brief_metadata
-from gzkit.commands.ceremony_steps import render_step_6_attestation
 from gzkit.traceability import covers
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-
-def _write_brief_with_ln(path: Path, ln: list[dict] | None = None) -> None:
-    """Write a minimal OBPI brief file; optionally include ln: frontmatter."""
-    fm: dict = {
-        "id": "OBPI-0.0.63-06-01-test",
-        "parent": "ADR-0.0.63-test",
-        "lane": "Heavy",
-        "status": "Draft",
-    }
-    if ln is not None:
-        fm["ln"] = ln
-    fm_text = yaml.dump(fm, default_flow_style=False)
-    body = (
-        "# OBPI-0.0.63-06-01-test\n\n"
-        "## Acceptance Criteria\n\n"
-        "- [ ] REQ-0.0.63-06-01 [BEHAVIOR]: system does X\n"
-    )
-    path.write_text(f"---\n{fm_text}---\n\n{body}", encoding="utf-8")
-
-
-# ---------------------------------------------------------------------------
-# REQ-0.0.63-06-01: extract_brief_metadata returns ln_entries
-# ---------------------------------------------------------------------------
-
-
-class TestExtractBriefMetadataLnEntries(unittest.TestCase):
-    """REQ-0.0.63-06-01 — extract_brief_metadata returns structured ln_entries."""
-
-    @covers("REQ-0.0.63-06-01")
-    def test_brief_without_ln_returns_empty_ln_entries(self) -> None:
-        """When the brief has no ln: frontmatter, ln_entries must be an empty list.
-
-        Semantic requirement: the absence of proof-binding data must be
-        represented as an empty list, not a missing key — callers depend on
-        the key being present for safe downstream iteration.
-        """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".md", encoding="utf-8", delete=False
-        ) as f:
-            tmp = Path(f.name)
-        try:
-            _write_brief_with_ln(tmp, ln=None)
-            meta = extract_brief_metadata(tmp)
-            self.assertIn(
-                "ln_entries",
-                meta,
-                "extract_brief_metadata must return an ln_entries key even when ln: is absent",
-            )
-            self.assertEqual(
-                meta["ln_entries"],
-                [],
-                "ln_entries must be an empty list when brief has no ln: frontmatter",
-            )
-        finally:
-            tmp.unlink(missing_ok=True)
-
-    @covers("REQ-0.0.63-06-01")
-    def test_brief_with_ln_returns_structured_entries(self) -> None:
-        """When the brief has ln: frontmatter, each entry must appear as a dict
-        with req_id, receipt_ids, and file_lines fields in ln_entries.
-
-        Semantic requirement: the caller (render_step_6_attestation) must be
-        able to iterate ln_entries and access each REQ's receipt IDs without
-        further parsing.
-        """
-        ln = [
-            {
-                "req_id": "REQ-0.0.63-06-01",
-                "receipt_ids": ["arb-step-unittest-abc123"],
-                "file_lines": ["tests/governance/test_ceremony_ln_consumption.py:42"],
-            }
-        ]
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".md", encoding="utf-8", delete=False
-        ) as f:
-            tmp = Path(f.name)
-        try:
-            _write_brief_with_ln(tmp, ln=ln)
-            meta = extract_brief_metadata(tmp)
-            self.assertIn("ln_entries", meta)
-            entries = meta["ln_entries"]
-            self.assertEqual(len(entries), 1, "One ln entry must produce one ln_entries item")
-            entry = entries[0]
-            self.assertEqual(
-                entry["req_id"],
-                "REQ-0.0.63-06-01",
-                "req_id must be preserved from ln: frontmatter",
-            )
-            self.assertIn(
-                "arb-step-unittest-abc123",
-                entry["receipt_ids"],
-                "receipt_ids must be preserved from ln: frontmatter",
-            )
-        finally:
-            tmp.unlink(missing_ok=True)
-
-
-# ---------------------------------------------------------------------------
-# REQ-0.0.63-06-02: render_step_6_attestation renders binding table
-# ---------------------------------------------------------------------------
-
-
-class TestRenderStep6AttestationLnEntries(unittest.TestCase):
-    """REQ-0.0.63-06-02 — render_step_6_attestation renders REQ↔receipt table."""
-
-    @covers("REQ-0.0.63-06-02")
-    def test_nonempty_ln_entries_renders_req_receipt_table(self) -> None:
-        """When ln_entries is non-empty, the output must show each REQ id
-        associated with its receipt id(s).
-
-        Semantic requirement: the operator must be able to see which REQs
-        are bound and to which receipts without inspecting raw YAML.
-        """
-        ln_entries = [
-            {
-                "req_id": "REQ-0.0.63-06-01",
-                "receipt_ids": ["arb-step-unittest-abc123"],
-                "file_lines": [],
-            }
-        ]
-        # render_step_6_attestation does not yet accept ln_entries — this
-        # call must fail with TypeError in the RED phase.
-        output = render_step_6_attestation("ADR-0.0.63-test", ln_entries=ln_entries)
-        self.assertIn(
-            "REQ-0.0.63-06-01",
-            output,
-            "REQ id must appear in the attestation output when ln_entries provided",
-        )
-        self.assertIn(
-            "arb-step-unittest-abc123",
-            output,
-            "receipt id must appear in the attestation output alongside its REQ",
-        )
-
-    @covers("REQ-0.0.63-06-02")
-    def test_empty_ln_entries_produces_no_binding_table(self) -> None:
-        """When ln_entries is an empty list, no REQ↔receipt binding rows should
-        appear in the output.
-
-        Semantic requirement: an empty binding list must not confuse the
-        operator with a blank table or spurious row markers.
-        """
-        # Also currently fails with TypeError — render_step_6_attestation
-        # does not accept ln_entries in the RED phase.
-        output = render_step_6_attestation("ADR-0.0.63-test", ln_entries=[])
-        # The function must not crash on empty list, and must not claim any
-        # REQ is bound when none are.
-        self.assertNotIn(
-            "REQ-0.0.63-06",
-            output,
-            "No REQ binding rows should appear when ln_entries is empty",
-        )
-
 
 # ---------------------------------------------------------------------------
 # REQ-0.0.63-06-03/04: EXECUTE→ATTESTATION gate

@@ -322,8 +322,9 @@ def _enforce_attestation_receipt_gate(
     """Run the receipt-binding gate; emit meta-receipt-bind on success.
 
     Returns the receipt-IDs resolved into the ledger (empty when none were
-    cited/resolved or on the dry-run / warn-only paths) so the caller can
-    auto-populate the brief's ``ln:`` proof-binding (GHI #599).
+    cited/resolved or on the dry-run / warn-only paths). The former ``ln:``
+    proof-binding consumer of this list (GHI #599) was retired with the ``ln:``
+    surface (ADR-0.0.69 / GHI #601); the resolved IDs now feed only the ledger.
 
     Behavior matrix (REQ-0.0.24-02-02..04):
 

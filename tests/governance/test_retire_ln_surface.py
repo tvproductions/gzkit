@@ -109,5 +109,62 @@ class TestRetireLnSurface(unittest.TestCase):
             )
 
 
+class TestRetireLnConsumerChain(unittest.TestCase):
+    """Consumer-side retirement of the ln: surface (GHI #601, direct repair).
+
+    ADR-0.0.69-04 retired the ln: producer/schema/flag but left the read+render
+    consumer chain alive as dead code (0 briefs carry ln:, so the render branch
+    never fires). GHI #601 deletes it. These assert the consumer surface is
+    absent — RED before the repair, GREEN after. No @covers: a GHI-tracked
+    direct repair has no parent REQ.
+    """
+
+    def test_parse_ln_entries_helper_absent(self) -> None:
+        """ceremony_data._parse_ln_entries must be deleted."""
+        from gzkit.commands import ceremony_data
+
+        self.assertFalse(
+            hasattr(ceremony_data, "_parse_ln_entries"),
+            "_parse_ln_entries still exists — the ln: parser was not deleted (GHI #601)",
+        )
+
+    def test_extract_brief_metadata_has_no_ln_entries_key(self) -> None:
+        """extract_brief_metadata must no longer emit an ln_entries key."""
+        import tempfile
+        from pathlib import Path
+
+        from gzkit.commands.ceremony_data import extract_brief_metadata
+
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".md", encoding="utf-8", delete=False
+        ) as f:
+            tmp = Path(f.name)
+        try:
+            tmp.write_text(
+                "---\nid: OBPI-0.0.99-01-test\nstatus: Draft\nlane: Lite\n---\n\n"
+                "# OBPI-0.0.99-01-test\n\n## Acceptance Criteria\n\n"
+                "- [ ] REQ-0.0.99-01-01 [behavior]: does X\n",
+                encoding="utf-8",
+            )
+            meta = extract_brief_metadata(tmp)
+            self.assertNotIn(
+                "ln_entries",
+                meta,
+                "extract_brief_metadata still emits ln_entries — consumer not retired (GHI #601)",
+            )
+        finally:
+            tmp.unlink(missing_ok=True)
+
+    def test_render_step_6_rejects_ln_entries_argument(self) -> None:
+        """render_step_6_attestation must no longer accept an ln_entries argument."""
+        from gzkit.commands.ceremony_steps import render_step_6_attestation
+
+        with self.assertRaises(
+            TypeError,
+            msg="render_step_6_attestation still accepts ln_entries — not retired (GHI #601)",
+        ):
+            render_step_6_attestation("ADR-0.0.99-test", ln_entries=[])  # type: ignore[call-arg]
+
+
 if __name__ == "__main__":
     unittest.main()
