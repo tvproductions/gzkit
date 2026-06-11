@@ -589,6 +589,33 @@ class TestValidateScopeResolution(unittest.TestCase):
 
         self.assertEqual(["closeout_proof"], _resolve_scopes({"closeout_proof": True}))
 
+    def test_every_execution_scope_is_reportable(self) -> None:
+        # Class invariant (DO IT RIGHT #1): every scope that has a runner in the
+        # execution path (_default_scope_runners / _explicit_scope_runners) MUST
+        # be nameable by _resolve_scopes (the reporting path). A runner missing
+        # from run_all_scopes/opt_in_scopes makes `gz validate --<scope>`
+        # misreport the default run_all set — the closeout_proof / receipt_shape
+        # / invariant_coherence bug class. This guards the whole class, not the
+        # three known instances.
+        from pathlib import Path
+
+        from gzkit.commands.validate_cmd import (
+            _default_scope_runners,
+            _explicit_scope_runners,
+            _resolve_scopes,
+        )
+
+        default_keys = set(_default_scope_runners(Path("."), None))
+        explicit_keys = set(_explicit_scope_runners(Path(".")))
+
+        # A bare run (no flags) must name exactly the default runners.
+        self.assertEqual(default_keys, set(_resolve_scopes({})))
+
+        # Every scope, default or opt-in, must resolve to itself alone when it
+        # is the only flag set.
+        for key in sorted(default_keys | explicit_keys):
+            self.assertEqual([key], _resolve_scopes({key: True}), msg=f"scope {key!r} misreports")
+
 
 class TestFrontmatterCoherence(unittest.TestCase):
     """Tests for gz validate --frontmatter (GHI-167)."""

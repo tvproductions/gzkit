@@ -824,6 +824,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "frontmatter",
         "version",
         "taxonomy",
+        "invariant_coherence",
     ]
     # "opt-in" scopes only activate when explicitly requested
     opt_in_scopes = [
@@ -866,6 +867,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "evaluation_justify_binding",
         "intrinsic_attestation",
         "kind_invariance",
+        "receipt_shape",
         "advisor_proof_binding",
         "distribution",
         "bullet_retention",
