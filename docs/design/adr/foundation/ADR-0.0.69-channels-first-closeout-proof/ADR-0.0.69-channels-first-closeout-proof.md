@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.69-channels-first-closeout-proof
-status: Proposed
+status: Completed
 kind: foundation
 semver: 0.0.69
 lane: heavy
