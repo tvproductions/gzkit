@@ -167,7 +167,12 @@ gzkit is 1.0 when ALL hold:
       `attested_completed` per `gz adr report ADR-0.0.69` (verified
       2026-06-11; ADR at 4/4); landed in commit `c60c89e4` (retire dead
       `ln:` consumer chain, GHI #601)
-- [ ] A.4 ADR-0.0.69 closeout ceremony → Validated
+- [x] A.4 ADR-0.0.69 closeout ceremony → Validated — `Lifecycle: Validated`
+      per `gz adr report ADR-0.0.69` (Phase-2 audit ceremony 2026-06-11;
+      operator attestation "accept audit"; `validated` receipt in ledger;
+      `audit/AUDIT.md`). Independent spec-reviewer + quality-reviewer both
+      GREEN; 3 non-blocking findings routed (F1→GHI #573, F2/F3→ADR
+      §Post-Validation Notes)
 - [ ] A.5 ADR-0.0.41 unblocked closeout (2/5 → terminal; or operator-parks
       with named reason, as 0.0.67 precedent allows)
 
