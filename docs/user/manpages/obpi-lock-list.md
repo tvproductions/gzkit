@@ -20,6 +20,11 @@ gz obpi lock list [--adr ADR-X.Y.Z] [--json]
 - Automatically reaps expired locks before listing
 - Shows elapsed time and TTL for each active lock
 - Reports reaped locks in JSON output
+- Reaping is auditable (OBPI-0.0.41-03): each reaped lock writes an
+  `abandoned_by_reaper` register entry to `.gzkit/handoffs/` and emits an
+  `obpi_lock_released` ledger event citing that entry's `handoff_path`. A lock
+  whose register-entry write fails is preserved (fail-closed), not silently
+  deleted.
 
 ## Exit Codes
 

@@ -52,11 +52,12 @@ Make the surface layer match the runtime layer landed in OBPI-02/03/04 — rewri
 
 ## Requirements (FAIL-CLOSED)
 
-1. **NEVER** ship the skill rewrite without bumping `metadata.skill-version` — the version bump is the mechanical signal to consumers that the CREATE trigger semantics changed.
-2. **ALWAYS** run `uv run gz agent sync control-surfaces` after editing `.gzkit/skills/gz-session-handoff/SKILL.md` and include the regenerated mirror copies in the same commit — canonical and mirror copies MUST be byte-equivalent (ADR-0.0.33).
-3. **ALWAYS** ground the warn/reap thresholds in `.gzkit/rules/token-block-discipline.md` § Sub-Invariant 4 (50% → warn, 100% → reap); do not hardcode duplicated thresholds in the hook script.
-4. **NEVER** modify lock_manager behavior from within `scripts/session_orientation.py` — the hook invokes `reap_expired_locks` (OBPI-03's surface) but does not reimplement reaping.
-5. **ALWAYS** record the warn-threshold log line via the project ledger (not just stderr) — Sub-Invariant 4 § Escalation Policy names "logs a WARNING to console AND ledger".
+1. REQUIREMENT: `scripts/session_orientation.py` MUST log a WARNING (to both stderr and `.gzkit/ledger.jsonl`) for every active OBPI lock whose elapsed time ≥ 50% of its TTL; thresholds MUST read from `lock_manager.LockData` semantics, never hardcoded in the hook. (REQ-0.0.41-05-01)
+1. REQUIREMENT: `scripts/session_orientation.py` MUST invoke `lock_manager.reap_expired_locks()` at SessionStart for every lock whose elapsed time ≥ 100% TTL; the reap MUST emit the `abandoned_by_reaper` handoff and `obpi_lock_released` event per OBPI-03. The hook invokes — never reimplements — reaping. (REQ-0.0.41-05-02)
+1. REQUIREMENT: `scripts/session_orientation.py` MUST read handoff documents only from `.gzkit/handoffs/`; no read or scan of `{ADR-package}/handoffs/`. (REQ-0.0.41-05-03)
+1. REQUIREMENT: the `gz-session-handoff` SKILL.md CREATE-trigger language MUST match parent ADR § Decision item 4 verbatim (`obpi_lock_release_cmd` invocation); `metadata.skill-version` MUST be bumped to `6.6.0` or higher; canonical and mirror copies MUST be byte-equivalent after `gz agent sync control-surfaces`. (REQ-0.0.41-05-04)
+1. REQUIREMENT: `docs/user/runbook.md` MUST name fail-closed release, the `--abandon` flag, and the `gz-session-handoff` skill as the binding lock workflow; `docs/governance/governance_runbook.md` MUST document `gz validate --lock-handoff-coupling` in its audit-path section. (REQ-0.0.41-05-05)
+1. REQUIREMENT: `AGENTS.md` § "Mechanical scopes that bind here" MUST include a binding-bullet for `.gzkit/rules/token-block-discipline.md` § Sub-Invariants 1–5 with the matching `gz validate --lock-handoff-coupling` check reference. (REQ-0.0.41-05-06)
 
 > STOP-on-BLOCKERS: if OBPI-02/03/04 have not landed, STOP. The skill rewrite references their behaviors (fail-closed release, abandoned_by_reaper handoff, validator), and stale skill text would mis-train agents on the unlanded contract.
 

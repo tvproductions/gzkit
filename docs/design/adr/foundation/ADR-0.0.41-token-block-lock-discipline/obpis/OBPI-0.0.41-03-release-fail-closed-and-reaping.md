@@ -3,7 +3,14 @@ id: OBPI-0.0.41-03-release-fail-closed-and-reaping
 parent: ADR-0.0.41-token-block-lock-discipline
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
+req_atomic:
+  - REQ-0.0.41-03-01  # one edit: flip the release no-handoff branch to exit 3 + its fail-closed test — single indivisible TDD unit
+  - REQ-0.0.41-03-02  # one helper: _write_reaping_handoff frontmatter + its field-assertion test — no labor below the REQ
+  - REQ-0.0.41-03-03  # one emission: obpi_lock_released with handoff_path in reap + its capturing-double test — single unit
+  - REQ-0.0.41-03-04  # one ordering invariant: write→unlink→event try/except + its negative fail-closed test — single unit
+  - REQ-0.0.41-03-05  # one static fence: no ADR-package handoff writes assertion over src/ — single unit
+  - REQ-0.0.41-03-06  # one coupled-surface doc pass: both obpi-lock manpages (exit-3 + reaping) — single unit
 ---
 
 # OBPI-0.0.41-03-release-fail-closed-and-reaping: Release Fail-Closed and Reaping
@@ -13,7 +20,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.41-token-block-lock-discipline/ADR-0.0.41-token-block-lock-discipline.md`
 - **Checklist Item:** #3 — OBPI-0.0.41-03: Flip release precondition to fail-closed. `obpi_lock_release_cmd` rejects release without a register entry (or `--abandon`). Update `lock_manager.py:reap_expired_locks` to emit the OBPI-01-specified `abandoned_by_reaper` degenerate handoff per reaped lock. Storage consolidation: `.gzkit/handoffs/` becomes the canonical write target; ADR-package mirror is regenerated as Layer-3 derived view. Migrate existing register entries.
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -38,6 +45,7 @@ Flip the OBPI-02 release warning to fail-closed (exit 3) and rewrite `reap_expir
 - `tests/test_lock_manager.py` — REQ-derived `@covers`-decorated tests for `reap_expired_locks` rewriting (handoff written, event emitted, handoff_path populated, fail-closed on write error).
 - `tests/test_obpi_lock_cmd.py` — REQ-derived `@covers`-decorated tests for `obpi_lock_release_cmd` fail-closed flip (exit 3 on no handoff; existing happy paths still succeed).
 - `tests/governance/test_token_block_discipline.py` — add Sub-Invariant 3 + Sub-Invariant 5 assertions (release fail-closed; reaping writes register entry before delete).
+- `src/gzkit/handoff_validation.py` — READ-ONLY test dependency, NOT edited here. `tests/governance/test_token_block_discipline.py` imports `find_handoff_for_release` / `write_degenerate_handoff` / `parse_abandon_spec` for its OBPI-01/02 assertions; because OBPI-03 also adds reap tests to that shared module, the brief-reconcile allowlist must list this import. OBPI-02 owns the surface.
 
 ## Denied Paths
 
@@ -51,11 +59,12 @@ Flip the OBPI-02 release warning to fail-closed (exit 3) and rewrite `reap_expir
 
 ## Requirements (FAIL-CLOSED)
 
-1. **ALWAYS** preserve OBPI-02's `--abandon` happy path — `--abandon <category>:<reason>` MUST still write a degenerate handoff and let release proceed. OBPI-03 only flips the no-handoff-no-abandon case from warning to fail-closed.
-2. **ALWAYS** emit the `abandoned_by_reaper` handoff BEFORE deleting the lock file in `reap_expired_locks`. If the handoff write fails, the lock file MUST remain on disk and the ledger event MUST NOT be emitted — preserves Sub-Invariant 3 § Reaping-Attestation Requirement.
-3. **NEVER** allow a code path that emits `obpi_lock_released` without a `handoff_path` payload. After OBPI-03, every release event in `.gzkit/ledger.jsonl` carries `handoff_path` (OBPI-02 made the field optional/additive; OBPI-03 makes it mandatory at every emission site).
-4. **NEVER** write a handoff to `{ADR-package}/handoffs/` from any code path in this OBPI or post-OBPI-03 code.
-5. **ALWAYS** keep the fail-closed message actionable — the stderr text MUST name the `gz-session-handoff` skill AND the `--abandon` flag as the two remediation paths, mirroring the OBPI-02 warning text.
+1. REQUIREMENT: `obpi_lock_release_cmd` MUST exit 3 (policy breach) when no handoff matches the active lock AND `--abandon` is not provided; the stderr message MUST name both the `gz-session-handoff` skill and the `--abandon` flag as remediation. OBPI-02's `--abandon` happy path and the found-handoff path MUST still succeed (exit 0) — OBPI-03 only flips the no-handoff-no-abandon case from warning to fail-closed. (REQ-0.0.41-03-01)
+1. REQUIREMENT: `reap_expired_locks` MUST write an `abandoned_by_reaper` degenerate handoff to `.gzkit/handoffs/` for each reaped lock — frontmatter `abandoned: true`, `category: reaping`, `abandoned_by`, `abandoned_at`, `previous_agent`, plus the Sub-Invariant 2 minimum-information fields. (REQ-0.0.41-03-02)
+1. REQUIREMENT: For each reaped lock, `reap_expired_locks` MUST emit an `obpi_lock_released` ledger event whose `handoff_path` points at the written register entry, replacing the current silent-delete behavior. NO code path may emit `obpi_lock_released` without a `handoff_path` payload (OBPI-02 made the field optional; OBPI-03 makes it mandatory at every emission site). (REQ-0.0.41-03-03)
+1. REQUIREMENT: When the `abandoned_by_reaper` handoff write fails, `reap_expired_locks` MUST NOT delete the lock file and MUST NOT emit the ledger event — the handoff is written BEFORE deletion; failure preserves the lock (fail-closed, Sub-Invariant 3 § Reaping-Attestation Requirement). (REQ-0.0.41-03-04)
+1. REQUIREMENT: After this OBPI lands, NO code path under `src/gzkit/` MUST write a handoff to `{ADR-package}/handoffs/`; all handoff writes MUST target `.gzkit/handoffs/`. (REQ-0.0.41-03-05)
+1. REQUIREMENT: `docs/user/manpages/obpi-lock-release.md` MUST reflect exit 3 in its exit-codes table and document the `abandoned_by_reaper` reaping behavior in a Reaping subsection; `docs/user/manpages/obpi-lock-list.md` MUST note that reaping during `list` now emits ledger events. (REQ-0.0.41-03-06)
 
 > STOP-on-BLOCKERS: if OBPI-02 has not landed and merged, STOP. The `--abandon` flag and degenerate-handoff writer are upstream of this OBPI; flipping fail-closed without them collapses operator workflows.
 
@@ -82,13 +91,13 @@ Flip the OBPI-02 release warning to fail-closed (exit 3) and rewrite `reap_expir
 
 - [ ] OBPI-02 brief is at `attested_completed` state (or at minimum the `--abandon` flag has landed) — `gz adr status ADR-0.0.41-token-block-lock-discipline --json`.
 - [ ] `.gzkit/handoffs/` exists and contains at least one existing register entry (verified: 45 entries on disk).
-- [ ] `src/gzkit/lock_manager.py:reap_expired_locks` exists (verified — line 171).
-- [ ] `src/gzkit/commands/obpi_lock.py:obpi_lock_release_cmd` exists (verified — line 92).
+- [ ] `src/gzkit/lock_manager.py` (`reap_expired_locks`) exists (verified — line 171).
+- [ ] `src/gzkit/commands/obpi_lock.py` (`obpi_lock_release_cmd`) exists (verified — line 92).
 
 **Existing Code (understand current state):**
 
-- [ ] Read `src/gzkit/lock_manager.py:reap_expired_locks` (lines 171-182) — current silent-delete behavior; no ledger event emission, no handoff write.
-- [ ] Read `src/gzkit/commands/obpi_lock.py:obpi_lock_release_cmd` (lines 92-138) — OBPI-02's warning text is the template for the fail-closed message.
+- [ ] Read `src/gzkit/lock_manager.py` (`reap_expired_locks`) (lines 171-182) — current silent-delete behavior; no ledger event emission, no handoff write.
+- [ ] Read `src/gzkit/commands/obpi_lock.py` (`obpi_lock_release_cmd`) (lines 92-138) — OBPI-02's warning text is the template for the fail-closed message.
 - [ ] Read `.gzkit/handoffs/` sample entries — current frontmatter shape; ensure `abandoned_by_reaper` writes follow the convention.
 - [ ] Read `tests/test_lock_manager.py` for existing reap-test patterns.
 
@@ -225,17 +234,18 @@ uv run gz state --json
 
 ### Key Proof
 
-<!-- Transcript: gz obpi lock release without handoff → exit 3 + stderr;
-     ls -t .gzkit/handoffs/ shows the abandoned_by_reaper file with frontmatter;
-     ledger event JSON shows handoff_path populated. -->
+
+$ uv run gz obpi precomplete OBPI-0.0.41-03-release-fail-closed-and-reaping → READY (8/8 preconditions). Full suite: 6033 tests pass (receipt arb-step-unittest-c7c7cd4adb494d6aa1746df098be40b9). Fail-closed ordering proven negatively: tests/governance/test_token_block_discipline.py::test_reap_fails_closed_when_handoff_write_fails patches _write_reaping_handoff to raise OSError → asserts the lock file survives, no obpi_lock_released event captured, reaped == []. gz covers OBPI-0.0.41-03 --json: behavior_uncovered_reqs=0 (5 BEHAVIOR covered; REQ-03-06 SUPPORT grandfathered). ARB lint/typecheck/unittest/mkdocs all exit_status=0.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Release fail-closed: obpi_lock_release_cmd exits 3 without --abandon and no matching register entry; stderr names the gz-session-handoff skill + --abandon; the --abandon and found-handoff paths still exit 0 (REQ-03-01).
+- Reaping symmetry: reap_expired_locks writes an abandoned_by_reaper register entry (abandoned/category:reaping/abandoned_by/abandoned_at/previous_agent + Sub-Invariant-2 min-info) BEFORE deleting, then deletes, then emits obpi_lock_released with handoff_path; OSError on write OR unlink → lock survives, no event, not reaped (REQ-03-02/03/04).
+- Storage fence: all handoff writes target .gzkit/handoffs/ (REQ-03-05). Manpages obpi-lock-release/list updated for exit-3 + reaping (REQ-03-06, SUPPORT).
+- Design: reap's ledger sink typed as a structural _LedgerSink Protocol (LedgerEvent under TYPE_CHECKING) — no layering/circular import; tests use a capturing double.
+- In-flight fixes (disclosed): reviewer F1 (unguarded unlink), a circular import, a YAML-timestamp test-helper bug, and brief-reconcile false-positives — resolved via the Protocol + doubles + req_atomic + reshaping the three 0.0.41 briefs to the REQUIREMENT: convention.
+- Files: src/gzkit/lock_manager.py, src/gzkit/commands/obpi_lock.py, docs/user/manpages/obpi-lock-release.md + obpi-lock-list.md, tests/test_lock_manager.py, tests/test_obpi_lock_cmd.py, tests/governance/test_token_block_discipline.py.
 
 ## Tracked Defects
 
@@ -243,12 +253,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.41-03 release fail-closed + reaping: release exits 3 without --abandon and no matching register entry (stderr names the gz-session-handoff skill AND --abandon); reap_expired_locks writes an abandoned_by_reaper register entry, then deletes the lock, then emits obpi_lock_released with handoff_path — fail-closed on write OR unlink failure (no event for a surrender that did not complete); manpages updated; full suite 6033 green; independent spec-reviewer PASS + quality-reviewer COHERENT with reviewer F1 (unguarded unlink / event-before-delete) fixed. Evidence — lint: receipt arb-ruff-a5dd88ec0657479c88e7583d80292e53; typecheck: receipt arb-step-typecheck-96b6a40f8a86406a81729acd13424e7c; unittest: receipt arb-step-unittest-a4e17c56b7f74843accc342ea8dfb37a; mkdocs: receipt arb-step-mkdocs-70343cb28b5d49b9a6c69b327204cadd
+- Date: 2026-06-11
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-11
 
 **Evidence Hash:** -

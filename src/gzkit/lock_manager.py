@@ -11,8 +11,28 @@ import os
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING, Protocol
 
+import yaml
 from pydantic import BaseModel, ConfigDict, Field, computed_field
+
+if TYPE_CHECKING:
+    from gzkit.ledger import LedgerEvent
+
+
+class _LedgerSink(Protocol):
+    """Structural type for the reap event sink — anything with ``append``.
+
+    The reaper only needs to append release events; it does not need the full
+    ``gzkit.ledger.Ledger`` surface. Typing the parameter structurally keeps the
+    data layer free of a *runtime* layering import on ``gzkit.ledger`` (the
+    ``LedgerEvent`` annotation is resolved under ``TYPE_CHECKING`` only, which
+    sidesteps the ledger/ledger_events load-order cycle) and lets tests pass a
+    lightweight capturing double (dependency inversion). The real
+    ``gzkit.ledger.Ledger`` satisfies this Protocol structurally.
+    """
+
+    def append(self, event: LedgerEvent) -> None: ...
 
 
 class LockData(BaseModel):
@@ -173,15 +193,133 @@ def list_locks(project_root: Path, adr_filter: str | None = None) -> list[LockDa
     return locks
 
 
-def reap_expired_locks(project_root: Path) -> list[LockData]:
-    """Delete all expired locks and return the reaped ``LockData`` objects."""
+def _head_commit_sha() -> str:
+    """Return the current HEAD commit SHA, or ``"unknown"`` on failure."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=5,
+        )
+        return result.stdout.strip() if result.returncode == 0 else "unknown"
+    except (subprocess.SubprocessError, FileNotFoundError):
+        return "unknown"
+
+
+def _write_reaping_handoff(project_root: Path, lock: LockData, reaper_agent: str) -> Path:
+    """Write an ``abandoned_by_reaper`` register entry under ``.gzkit/handoffs/``.
+
+    The register entry pairs a reaped lock surrender with a durable audit
+    artifact (token-block discipline § Sub-Invariant 3). Frontmatter carries the
+    reaping-specific fields (``abandoned: true``, ``category: reaping``,
+    ``abandoned_by``, ``abandoned_at``, ``previous_agent``) plus the
+    Sub-Invariant 2 minimum-information fields (``last_lock_event_timestamp``,
+    ``last_commit_sha``). Returns the on-disk path written.
+    """
+    handoff_dir = project_root / ".gzkit" / "handoffs"
+    handoff_dir.mkdir(parents=True, exist_ok=True)
+
+    now = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    timestamp_token = now.replace(":", "").replace("-", "")
+    filename = f"{timestamp_token}-{lock.obpi_id}-reaped.md"
+    path = handoff_dir / filename
+
+    adr_id = lock.obpi_id.replace("OBPI-", "ADR-").rsplit("-", 1)[0]
+    frontmatter = {
+        "mode": "CREATE",
+        "adr_id": adr_id,
+        "obpi_id": lock.obpi_id,
+        "branch": lock.branch,
+        "timestamp": now,
+        "agent": reaper_agent,
+        "abandoned": True,
+        "category": "reaping",
+        "abandoned_by": reaper_agent,
+        "abandoned_at": now,
+        "previous_agent": lock.agent,
+        "last_lock_event_timestamp": lock.claimed_at,
+        "last_commit_sha": _head_commit_sha(),
+    }
+
+    body = (
+        "---\n"
+        + yaml.safe_dump(frontmatter, sort_keys=False)
+        + "---\n\n"
+        + f"<!-- abandoned_by_reaper register entry for {lock.obpi_id} -->\n\n"
+        + "## Current State Summary\n\n"
+        + f"Lock for {lock.obpi_id} (held by `{lock.agent}`) reaped by "
+        + f"`{reaper_agent}` after TTL ({lock.ttl_minutes}m) expired.\n\n"
+        + "## Decisions Made\n\n"
+        + f"- Forcible surrender: TTL exceeded; last claim at {lock.claimed_at}.\n"
+    )
+
+    path.write_text(body, encoding="utf-8")
+    return path
+
+
+def reap_expired_locks(
+    project_root: Path,
+    *,
+    ledger: _LedgerSink | None = None,
+    reaper_agent: str | None = None,
+) -> list[LockData]:
+    """Reap expired locks, pairing each surrender with a register entry.
+
+    For every expired lock the reaper writes an ``abandoned_by_reaper`` register
+    entry BEFORE deleting the lock (token-block discipline § Sub-Invariant 3),
+    then deletes the lock, then — only after a successful delete — emits the
+    ``obpi_lock_released`` event. The ordering is the load-bearing invariant:
+
+    - handoff write fails → lock NOT deleted, NO event, lock excluded from the
+      returned list (fail-closed; the register entry is the precondition);
+    - lock already gone / unlink fails → NO event for a release that did not
+      happen, lock excluded from the returned list (no duplicate-event-on-retry,
+      no crash on a concurrently-reaped lock).
+
+    When *ledger* is provided, the event cites the written register entry's
+    ``handoff_path``. When *ledger* is ``None`` the register entry is still
+    written and the lock still reaped, but no event is emitted (no sink).
+    """
+    # Lazy import: gzkit.ledger_events ↔ gzkit.ledger form a load-order cycle
+    # (ledger_events imports LedgerEvent from ledger; ledger re-imports the event
+    # constructors from ledger_events). Doing it at call time keeps lock_manager —
+    # the config-free data layer — free of the ledger stack at module load. Load
+    # gzkit.ledger FIRST: it defines LedgerEvent before its own ledger_events
+    # import, so loading it fully resolves the pair and the constructor import
+    # then succeeds even when reap is the first caller to touch the ledger stack
+    # (e.g. an isolated unit test, which is how the REQ-coverage gate runs).
+    import gzkit.ledger  # noqa: F401, PLC0415 — force-load to settle the cycle
+    from gzkit.ledger_events import obpi_lock_released_event  # noqa: PLC0415
+
+    agent = reaper_agent or resolve_agent(None)
     reaped: list[LockData] = []
     for lock in list_locks(project_root):
-        if lock.is_expired:
-            path = lock_path(project_root, lock.obpi_id)
-            try:
-                path.unlink()
-                reaped.append(lock)
-            except OSError:
-                pass
+        if not lock.is_expired:
+            continue
+        try:
+            handoff_path = _write_reaping_handoff(project_root, lock, agent)
+        except OSError:
+            # Fail-closed: no register entry → lock survives, no event emitted.
+            continue
+        try:
+            lock_path(project_root, lock.obpi_id).unlink()
+        except OSError:
+            # Lock vanished (concurrent reaper) or could not be removed: emit no
+            # release event for a surrender that did not complete here, and leave
+            # any still-present lock for the next pass. The register entry we just
+            # wrote is harmless if orphaned.
+            continue
+        if ledger is not None:
+            ledger.append(
+                obpi_lock_released_event(
+                    obpi_id=lock.obpi_id,
+                    agent=agent,
+                    force=True,
+                    handoff_path=handoff_path.relative_to(project_root).as_posix(),
+                )
+            )
+        reaped.append(lock)
     return reaped

@@ -81,6 +81,35 @@ def _expired_iso(minutes_ago: int = 200) -> str:
     return (datetime.now(UTC) - timedelta(minutes=minutes_ago)).isoformat()
 
 
+def _write_release_handoff(
+    root: Path,
+    obpi_id: str,
+    claimed_at: str,
+    agent: str = "claude-code",
+) -> Path:
+    """Write a valid (non-abandoned) register entry that postdates the claim.
+
+    OBPI-0.0.41-03 makes release fail-closed without a register entry, so any
+    normal-release test must seat a matching handoff under ``.gzkit/handoffs/``.
+    """
+    handoff_dir = root / ".gzkit" / "handoffs"
+    handoff_dir.mkdir(parents=True, exist_ok=True)
+    ts = (datetime.fromisoformat(claimed_at) + timedelta(seconds=1)).isoformat()
+    content = (
+        "---\n"
+        "mode: RESUME\n"
+        "adr_id: ADR-0.0.14\n"
+        f"obpi_id: {obpi_id}\n"
+        "branch: main\n"
+        f'timestamp: "{ts}"\n'
+        f"agent: {agent}\n"
+        "---\n\n# Handoff register entry\n"
+    )
+    path = handoff_dir / f"release-{obpi_id}.md"
+    path.write_text(content, encoding="utf-8")
+    return path
+
+
 # ---------------------------------------------------------------------------
 # 1. TestLockDataModel
 # ---------------------------------------------------------------------------
@@ -454,6 +483,7 @@ class TestLockRelease(unittest.TestCase):
 
             lock = _make_lock(obpi_id="OBPI-0.0.14-01", agent="claude-code")
             write_lock(root, lock)
+            _write_release_handoff(root, "OBPI-0.0.14-01", lock.claimed_at)
 
             obpi_lock_release_cmd(obpi_id="OBPI-0.0.14-01", as_json=False, agent="claude-code")
             self.assertFalse(lock_path(root, "OBPI-0.0.14-01").exists())
@@ -469,6 +499,7 @@ class TestLockRelease(unittest.TestCase):
 
             lock = _make_lock(obpi_id="OBPI-0.0.14-01", agent="claude-code")
             write_lock(root, lock)
+            _write_release_handoff(root, "OBPI-0.0.14-01", lock.claimed_at)
 
             obpi_lock_release_cmd(obpi_id="OBPI-0.0.14-01", as_json=False, agent="claude-code")
 
@@ -502,6 +533,7 @@ class TestLockRelease(unittest.TestCase):
 
             lock = _make_lock(obpi_id="OBPI-0.0.14-01", agent="claude-code")
             write_lock(root, lock)
+            _write_release_handoff(root, "OBPI-0.0.14-01", lock.claimed_at)
 
             with patch("builtins.print") as mock_print:
                 obpi_lock_release_cmd(obpi_id="OBPI-0.0.14-01", as_json=True, agent="claude-code")
@@ -538,6 +570,7 @@ class TestLockRelease(unittest.TestCase):
 
             lock = _make_lock(obpi_id="OBPI-0.0.14-01", agent="owner-agent")
             write_lock(root, lock)
+            _write_release_handoff(root, "OBPI-0.0.14-01", lock.claimed_at)
 
             obpi_lock_release_cmd(
                 obpi_id="OBPI-0.0.14-01",
@@ -923,9 +956,15 @@ class TestClaimReleaseSafetyPrimitives(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
-    @covers("REQ-0.0.41-02-07")
-    def test_release_without_handoff_warns_but_succeeds(self, mock_init, mock_root):
-        """Release without `--abandon` and no handoff prints WARNING, exits 0 (staging window)."""
+    @covers("REQ-0.0.41-03-01")
+    def test_release_fail_closed_without_handoff_or_abandon(self, mock_init, mock_root):
+        """Release without `--abandon` and no register entry fails-closed (exit 3).
+
+        OBPI-0.0.41-03 retires the OBPI-02 staging window: the bare-release path
+        no longer warns-and-succeeds. stderr names BOTH the recovery surfaces
+        (the `gz-session-handoff` skill and the `--abandon` flag); the lock is
+        NOT deleted and no release event is emitted.
+        """
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
             mock_root.return_value = root
@@ -934,25 +973,24 @@ class TestClaimReleaseSafetyPrimitives(unittest.TestCase):
             lock = _make_lock(obpi_id="OBPI-0.0.41-02", agent="claude-code")
             write_lock(root, lock)
 
-            # Capture stderr
-            from io import StringIO  # noqa: PLC0415
-
             captured = StringIO()
-            with patch("sys.stderr", captured):
+            with patch("sys.stderr", captured), self.assertRaises(SystemExit) as ctx:
                 obpi_lock_release_cmd(
                     obpi_id="OBPI-0.0.41-02",
                     as_json=False,
                     agent="claude-code",
                 )
 
+            self.assertEqual(ctx.exception.code, 3)
             stderr_output = captured.getvalue()
-            self.assertIn("WARNING", stderr_output)
-            self.assertIn("register entry", stderr_output)
             self.assertIn("gz-session-handoff", stderr_output)
-            self.assertIn("OBPI-0.0.41-03", stderr_output)
+            self.assertIn("--abandon", stderr_output)
 
-            # Release still succeeded (lock removed; no SystemExit)
-            self.assertFalse(lock_path(root, "OBPI-0.0.41-02").exists())
+            # Lock survives — fail-closed before delete.
+            self.assertTrue(lock_path(root, "OBPI-0.0.41-02").exists())
+            # No release event was emitted.
+            ledger_text = (root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
+            self.assertNotIn("obpi_lock_released", ledger_text)
 
     @covers("REQ-0.0.41-02-08")
     def test_obpi_lock_released_handoff_path_optional(self):

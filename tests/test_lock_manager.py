@@ -40,6 +40,24 @@ def covers(target: str):  # noqa: D401
 # ---------------------------------------------------------------------------
 
 
+class _CapturingLedger:
+    """Minimal ledger double: captures appended events for assertion.
+
+    ``reap_expired_locks`` only needs a sink with ``append`` (its parameter is
+    typed as the structural ``lock_manager._LedgerSink`` Protocol). Using a
+    capturing double here — instead of the real ``gzkit.ledger.Ledger`` — keeps
+    this module (which also holds OBPI-0.0.41-02 tests) from importing
+    ``gzkit.ledger`` and dragging ``ledger.py`` into OBPI-0.0.41-02's
+    brief-reconcile neighborhood.
+    """
+
+    def __init__(self) -> None:
+        self.events: list = []
+
+    def append(self, event: object) -> None:
+        self.events.append(event)
+
+
 def _make_lock(
     obpi_id: str = "OBPI-0.0.14-01",
     agent: str = "claude-code",
@@ -455,6 +473,86 @@ class TestReapExpiredLocks(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self.assertEqual(reap_expired_locks(root), [])
+
+
+# ---------------------------------------------------------------------------
+# reap_expired_locks — OBPI-0.0.41-03 register-entry + ledger coupling
+# ---------------------------------------------------------------------------
+
+
+@covers("OBPI-0.0.41-03")
+class TestReapWritesRegisterEntry(unittest.TestCase):
+    """Reaping is as auditable as voluntary release (Sub-Invariant 3)."""
+
+    @covers("REQ-0.0.41-03-02")
+    def test_reap_writes_abandoned_by_reaper_handoff(self):
+        """Each reaped lock yields an abandoned_by_reaper register entry."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            old_time = (datetime.now(UTC) - timedelta(minutes=200)).isoformat()
+            expired = _make_lock(
+                "OBPI-0.0.41-03",
+                agent="agent-a",
+                claimed_at=old_time,
+                ttl_minutes=120,
+            )
+            write_lock(root, expired)
+
+            reaped = reap_expired_locks(root, reaper_agent="reaper-b")
+            self.assertEqual(len(reaped), 1)
+
+            handoffs = list((root / ".gzkit" / "handoffs").glob("*.md"))
+            self.assertEqual(len(handoffs), 1)
+            text = handoffs[0].read_text(encoding="utf-8")
+            # Reaping-specific frontmatter (Sub-Invariant 3 step 2)
+            self.assertIn("abandoned: true", text)
+            self.assertIn("category: reaping", text)
+            self.assertIn("abandoned_by: reaper-b", text)
+            self.assertIn("abandoned_at:", text)
+            self.assertIn("previous_agent: agent-a", text)
+            # Sub-Invariant 2 minimum-information fields
+            self.assertIn("last_lock_event_timestamp:", text)
+            self.assertIn("last_commit_sha:", text)
+
+    @covers("REQ-0.0.41-03-03")
+    def test_reap_emits_ledger_event_with_handoff_path(self):
+        """A reaped lock emits obpi_lock_released with handoff_path at the entry."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            old_time = (datetime.now(UTC) - timedelta(minutes=200)).isoformat()
+            write_lock(
+                root,
+                _make_lock("OBPI-0.0.41-03", claimed_at=old_time, ttl_minutes=120),
+            )
+
+            sink = _CapturingLedger()
+            reaped = reap_expired_locks(root, ledger=sink, reaper_agent="reaper-b")
+            self.assertEqual(len(reaped), 1)
+
+            released = [e for e in sink.events if e.event == "obpi_lock_released"]
+            self.assertEqual(len(released), 1)
+            self.assertIn("handoff_path", released[-1].extra)
+            hp = released[-1].extra["handoff_path"]
+            self.assertTrue(hp.startswith(".gzkit/handoffs/"))
+            # handoff_path resolves to the on-disk register entry, not a fabricated string
+            self.assertTrue((root / hp).is_file())
+
+    @covers("REQ-0.0.41-03-03")
+    def test_reap_without_ledger_still_reaps(self):
+        """Backward-compat: reap_expired_locks(root) with no ledger still reaps."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            old_time = (datetime.now(UTC) - timedelta(minutes=200)).isoformat()
+            write_lock(
+                root,
+                _make_lock("OBPI-0.0.41-03", claimed_at=old_time, ttl_minutes=120),
+            )
+
+            reaped = reap_expired_locks(root)
+            self.assertEqual(len(reaped), 1)
+            self.assertIsNone(read_lock(root, "OBPI-0.0.41-03"))
+            # Register entry still written even without a ledger
+            self.assertEqual(len(list((root / ".gzkit" / "handoffs").glob("*.md"))), 1)
 
 
 if __name__ == "__main__":

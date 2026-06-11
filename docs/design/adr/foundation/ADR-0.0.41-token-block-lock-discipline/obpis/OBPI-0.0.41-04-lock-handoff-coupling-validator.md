@@ -29,8 +29,8 @@ Land the `gz validate --lock-handoff-coupling` validator and wire it into the de
 
 ## Allowed Paths
 
-- `docs/design/adr/foundation/ADR-0.0.41-token-block-lock-discipline/ADR-0.0.41-token-block-lock-discipline.md` — add `## Boundary Invariants` section naming the cross-OBPI invariant this validator enforces (required for STRUCTURAL-FENCE REQ kind per `.gzkit/rules/req-scope-discipline.md`).
-- `src/gzkit/governance/trust_audits/lock_handoff_coupling.py` — NEW scope function `validate_lock_handoff_coupling(project_root) -> list[ValidationError]`; mirrors `advisor_proof_binding.py` and `closeout_proof_binding.py` shapes.
+- `docs/design/adr/foundation/ADR-0.0.41-token-block-lock-discipline/ADR-0.0.41-token-block-lock-discipline.md` — add `## Boundary Invariants` section naming the cross-OBPI invariant this validator enforces (required for STRUCTURAL-FENCE REQ kind per the req-kind discipline — ADR-0.0.59 / AGENTS.md § req-kind-discipline).
+- `src/gzkit/governance/trust_audits/lock_handoff_coupling.py` — NEW scope function `validate_lock_handoff_coupling(project_root) -> list[ValidationError]`; mirrors `advisor_proof_binding.py` and `closeout_proof.py` shapes.
 - `src/gzkit/governance/trust_audits/__init__.py` — export the new scope.
 - `src/gzkit/quality.py` — NEW helper `run_lock_handoff_coupling_audit(project_root) -> CheckResult` wrapping the trust-audit invocation in the standard step shape.
 - `src/gzkit/commands/quality.py` — add `("Lock-handoff coupling", run_lock_handoff_coupling_audit)` to `_build_check_steps()` (around line 314).
@@ -52,11 +52,17 @@ Land the `gz validate --lock-handoff-coupling` validator and wire it into the de
 
 ## Requirements (FAIL-CLOSED)
 
-1. **NEVER** ship `--lock-handoff-coupling` without simultaneously wiring it into `_build_check_steps()` — the parent ADR's checklist line names this binding as the load-bearing requirement: "an enforcement floor agents can skip is no enforcement floor." On-demand-only registration is the failure mode this REQ exists to close.
-2. **ALWAYS** preserve forward-compatibility — the validator MUST tolerate `obpi_lock_released` events from pre-OBPI-02 history (no `handoff_path` field) by reading their `timestamp` and applying the validator only to events emitted on or after the OBPI-02 cutover timestamp. The cutover timestamp is the OBPI-02 closeout date and is grounded in `.gzkit/ledger.jsonl` (read once at validator init; do not hardcode).
-3. **NEVER** read or modify ledger state outside the ledger-replay API — use `gzkit.ledger.Ledger.replay()` (or equivalent existing surface); no direct JSON parsing of `.gzkit/ledger.jsonl` from the validator.
-4. **ALWAYS** report each failing event with all four diagnostic dimensions (event timestamp, OBPI id, agent, missing-field name) so operators can act on the validator output without re-grepping the ledger.
-5. **NEVER** ship parent ADR `## Boundary Invariants` section without the REQ-04-08 invariant text exactly as named in the Acceptance Criteria — the section is the mechanical anchor that legitimizes the STRUCTURAL-FENCE REQ kind.
+1. REQUIREMENT: `gz validate --lock-handoff-coupling` MUST be registered as a CLI flag on `gz validate`; on a clean ledger it exits 0. (REQ-0.0.41-04-01)
+1. REQUIREMENT: An `obpi_lock_released` event (post-OBPI-02 cutover) lacking a `handoff_path` payload MUST cause the validator to exit 3; the failing event's timestamp, OBPI id, and agent MUST be surfaced. (REQ-0.0.41-04-02)
+1. REQUIREMENT: An `obpi_lock_released` event whose `handoff_path` references a path not on disk MUST cause exit 3, naming the missing path. (REQ-0.0.41-04-03)
+1. REQUIREMENT: An `obpi_lock_released` event whose handoff frontmatter timestamp predates the matching `obpi_lock_claimed` event for the same `(obpi_id, agent)` pair MUST cause exit 3. (REQ-0.0.41-04-04)
+1. REQUIREMENT: A handoff missing any of the four Sub-Invariant 2 minimum-information fields MUST cause exit 3, naming the missing field; every failing event MUST report all four diagnostic dimensions (event timestamp, OBPI id, agent, missing-field name) so operators need not re-grep the ledger. (REQ-0.0.41-04-05)
+1. REQUIREMENT: `obpi_lock_released` events emitted BEFORE the OBPI-02 closeout cutover MUST be exempt from `handoff_path` enforcement; the cutover timestamp MUST be derived from `.gzkit/ledger.jsonl` at validator init, never hardcoded. (REQ-0.0.41-04-06)
+1. REQUIREMENT: `_build_check_steps()` in `src/gzkit/commands/quality.py` MUST include the `("Lock-handoff coupling", run_lock_handoff_coupling_audit)` tuple so `gz check` fires the validator without `--lock-handoff-coupling` on the command line — an enforcement floor agents can skip is no enforcement floor. (REQ-0.0.41-04-07)
+1. REQUIREMENT: the parent ADR `## Boundary Invariants` section MUST name the REQ-04-08 cross-OBPI invariant text exactly as written in the Acceptance Criteria, binding OBPI-02 (additive field), OBPI-03 (mandatory at emission), and OBPI-04 (mechanical enforcement) into one audit-coupling guarantee — the mechanical anchor legitimizing the STRUCTURAL-FENCE REQ kind. (REQ-0.0.41-04-08)
+1. REQUIREMENT: `docs/user/manpages/validate.md` MUST document `--lock-handoff-coupling` and `docs/user/manpages/check.md` MUST note the new default step; `gz cli audit` MUST stay clean. (REQ-0.0.41-04-09)
+
+> Implementation constraint (not a separate REQ): the validator MUST read ledger state only through the canonical `gzkit.ledger.Ledger` replay surface — no direct JSON parsing of `.gzkit/ledger.jsonl` from the validator module.
 
 > STOP-on-BLOCKERS: if OBPI-03 has not landed, STOP. The validator's correctness assumes the post-OBPI-03 contract is in effect; running it against a ledger where reaping still silently deletes lock files (pre-OBPI-03 reap behavior) will fail the validator on legitimate-at-the-time events.
 
@@ -71,9 +77,9 @@ Land the `gz validate --lock-handoff-coupling` validator and wire it into the de
 **Governance (read once, cache):**
 
 - [ ] `.gzkit/rules/token-block-discipline.md` § Sub-Invariants 2 and 5 — minimum-info rule and release fail-closed precondition; the validator enforces both.
-- [ ] `.gzkit/rules/req-scope-discipline.md` (ADR-0.0.59) — STRUCTURAL-FENCE REQ requires the parent ADR to have a `## Boundary Invariants` section naming the invariant.
+- [ ] req-kind discipline (ADR-0.0.59 / AGENTS.md § req-kind-discipline) — STRUCTURAL-FENCE REQ requires the parent ADR to have a `## Boundary Invariants` section naming the invariant.
 - [ ] `src/gzkit/governance/trust_audits/advisor_proof_binding.py` — reference implementation for trust-audit shape (validator function signature, error type, runner-wrapping pattern).
-- [ ] `src/gzkit/governance/trust_audits/closeout_proof_binding.py` — second reference for the same shape.
+- [ ] `src/gzkit/governance/trust_audits/closeout_proof.py` — second reference for the same shape.
 
 **Context:**
 
@@ -88,10 +94,10 @@ Land the `gz validate --lock-handoff-coupling` validator and wire it into the de
 **Existing Code (understand current state):**
 
 - [ ] Read `src/gzkit/governance/trust_audits/advisor_proof_binding.py` end-to-end — reference shape.
-- [ ] Read `src/gzkit/governance/trust_audits/closeout_proof_binding.py` — second reference.
-- [ ] Read `src/gzkit/cli/parser_maintenance.py:590-596` — `--advisor-proof-binding` registration pattern.
-- [ ] Read `src/gzkit/commands/validate_cmd.py:191, 267, 1160, 1333, 1422` — wiring sites.
-- [ ] Read `src/gzkit/commands/quality.py:283-341` — default `gz check` step composition.
+- [ ] Read `src/gzkit/governance/trust_audits/closeout_proof.py` — second reference.
+- [ ] Read `src/gzkit/cli/parser_maintenance.py` (the `--advisor-proof-binding` registration pattern) — registration sites.
+- [ ] Read `src/gzkit/commands/validate_cmd.py` — the `advisor_proof_binding` wiring sites (signature, dispatch dict, runner mapping, exit-3 policy list, pass-through, final checks dict).
+- [ ] Read `src/gzkit/commands/quality.py` — `_build_check_steps()` default `gz check` step composition.
 - [ ] Read `src/gzkit/ledger.py` for the canonical replay API.
 
 ## Quality Gates

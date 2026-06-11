@@ -136,9 +136,9 @@ def obpi_lock_release_cmd(
     When provided, a degenerate handoff is written under ``.gzkit/handoffs/``
     and the released event carries ``handoff_path``.
 
-    In the OBPI-02 staging window, releasing without ``--abandon`` AND without a
-    matching handoff EMITS A WARNING but still succeeds (exit 0). OBPI-03 flips
-    this to fail-closed.
+    Releasing without ``--abandon`` AND without a matching register entry is
+    fail-closed (exit 3) per token-block discipline § Sub-Invariant 5: a token
+    cannot be surrendered without a register entry.
     """
     config = ensure_initialized()
     project_root = get_project_root()
@@ -187,9 +187,8 @@ def obpi_lock_release_cmd(
 
     # Resolve handoff_path: either by writing a degenerate handoff (abandon
     # path) or by searching for an existing register entry that postdates the
-    # lock claim (normal-release path). In OBPI-02 the absence is warning-only.
+    # lock claim (normal-release path). Absence of both is fail-closed (exit 3).
     handoff_path_str: str | None = None
-    missing_handoff_warning: str | None = None
     if abandon_spec is not None:
         adr_id = _adr_id_from_obpi(obpi_id)
         handoff_path = write_degenerate_handoff(
@@ -210,16 +209,21 @@ def obpi_lock_release_cmd(
             after_timestamp=existing.claimed_at,
         )
         if handoff_match is None:
-            # OBPI-02 staging window: warning-only, exit 0.
-            missing_handoff_warning = (
-                f"WARNING: releasing {obpi_id} without a register entry and "
-                "without --abandon. The token-block doctrine requires a "
-                "register entry on every surrender (see `gz-session-handoff` "
-                "skill). OBPI-0.0.41-03 will flip this path to fail-closed."
+            # Fail-closed (token-block discipline § Sub-Invariant 5): a token
+            # cannot be surrendered without a register entry. Name BOTH recovery
+            # surfaces — the handoff skill and the explicit --abandon escape.
+            message = (
+                f"FAIL-CLOSED: refusing to release {obpi_id} without a register "
+                "entry. Create a handoff via the `gz-session-handoff` skill, or "
+                "surrender explicitly with `--abandon <category>:<reason>` "
+                "(token-block discipline § Sub-Invariant 5)."
             )
-            print(missing_handoff_warning, file=sys.stderr)
-        else:
-            handoff_path_str = handoff_match.relative_to(project_root).as_posix()
+            if as_json:
+                print(json.dumps({"status": "fail_closed", "obpi_id": obpi_id, "error": message}))
+            else:
+                print(message, file=sys.stderr)
+            sys.exit(3)
+        handoff_path_str = handoff_match.relative_to(project_root).as_posix()
 
     delete_lock(project_root, obpi_id)
 
@@ -284,10 +288,15 @@ def obpi_lock_check_cmd(obpi_id: str, as_json: bool) -> None:
 
 def obpi_lock_list_cmd(adr_id: str | None, as_json: bool) -> None:
     """List active OBPI locks after reaping expired ones."""
-    ensure_initialized()
+    config = ensure_initialized()
     project_root = get_project_root()
 
-    reaped = reap_expired_locks(project_root)
+    ledger = Ledger(project_root / config.paths.ledger)
+    reaped = reap_expired_locks(
+        project_root,
+        ledger=ledger,
+        reaper_agent=resolve_agent(None),
+    )
     locks = list_locks(project_root, adr_filter=adr_id)
     # After reaping, only non-expired locks remain in the directory.
     # Filter out any that are still expired (race or TTL boundary).

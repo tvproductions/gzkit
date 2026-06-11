@@ -49,19 +49,36 @@ categories are rejected at parse time (exit 1).
 | `tool_failure` | Toolchain crash, corruption, or unrecoverable state requiring operator intervention |
 | `reaping` | Forced surrender of an expired token by a different agent (used by `lock_manager.reap_expired_locks`) |
 
-### Staging window (OBPI-02 → OBPI-03)
+### Fail-closed release (OBPI-03, landed)
 
-In OBPI-02 (this release) the no-handoff-and-no-`--abandon` path emits a
-WARNING to stderr but still succeeds (exit 0). OBPI-03 flips this to
-fail-closed (exit 3).
+Releasing a held lock without `--abandon` AND without a matching register
+entry under `.gzkit/handoffs/` is **fail-closed**: the command prints a
+`FAIL-CLOSED` message naming both the `gz-session-handoff` skill and the
+`--abandon` flag as remediation, and exits 3 (policy breach). A token cannot
+be surrendered without a register entry (token-block discipline
+§ Sub-Invariant 5). The lock is left in place. `--force` overrides ownership
+validation but does NOT bypass the register-entry requirement.
+
+### Reaping behavior (OBPI-03)
+
+`lock_manager.reap_expired_locks` (invoked by `gz obpi lock list` and the
+SessionStart hook) makes forcible surrender as auditable as voluntary
+release. For each expired lock the reaper writes an `abandoned_by_reaper`
+register entry to `.gzkit/handoffs/` **before** deleting the lock — frontmatter
+carries `abandoned: true`, `category: reaping`, `abandoned_by`, `abandoned_at`,
+`previous_agent`, plus the Sub-Invariant 2 minimum-information fields — then
+emits an `obpi_lock_released` ledger event whose `handoff_path` cites that
+entry. If the register-entry write fails, the lock is preserved and no event
+is emitted (fail-closed, Sub-Invariant 3 § Reaping-Attestation Requirement).
 
 ## Exit Codes
 
 | Code | Meaning |
 |------|---------|
-| 0 | Lock released or not found |
+| 0 | Lock released (via `--abandon` or a matching register entry) or not found |
 | 1 | Ownership mismatch (use `--force`) or invalid `--abandon` spec |
 | 2 | System error |
+| 3 | Fail-closed: release attempted without `--abandon` and without a matching register entry |
 
 ## Examples
 

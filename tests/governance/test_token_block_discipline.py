@@ -13,8 +13,10 @@ Authored progressively across OBPI-0.0.41-02, -03, -04 per parent ADR § Evidenc
 from __future__ import annotations
 
 import json
+import re
 import tempfile
 import unittest
+from datetime import UTC, datetime, timedelta
 from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
@@ -30,7 +32,7 @@ from gzkit.handoff_validation import (
     parse_abandon_spec,
     write_degenerate_handoff,
 )
-from gzkit.lock_manager import lock_path, write_lock
+from gzkit.lock_manager import lock_path, reap_expired_locks, write_lock
 from tests.test_obpi_lock_cmd import _make_lock, _mock_config, _setup_project
 
 
@@ -41,6 +43,21 @@ def covers(target: str):  # noqa: D401
         return obj
 
     return _identity
+
+
+class _CapturingLedger:
+    """Minimal ledger double (sink with ``append``) for reap tests.
+
+    Avoids importing the real ``gzkit.ledger.Ledger`` here: this module also
+    carries OBPI-0.0.41-02 tokens, and a ``gzkit.ledger`` import would drag
+    ``ledger.py`` into OBPI-0.0.41-02's brief-reconcile allowlist neighborhood.
+    """
+
+    def __init__(self) -> None:
+        self.events: list = []
+
+    def append(self, event: object) -> None:
+        self.events.append(event)
 
 
 _quiet_console = Console(file=StringIO())
@@ -174,13 +191,13 @@ class TestDegenerateHandoffWriter(unittest.TestCase):
                 self.assertTrue(lock_path(root, "OBPI-0.0.41-02").exists())
 
 
-@covers("OBPI-0.0.41-02")
-class TestWarningOnNoHandoff(unittest.TestCase):
-    """REQ-07: release without --abandon and no handoff warns (OBPI-02 staging)."""
+@covers("OBPI-0.0.41-03")
+class TestFailClosedOnNoHandoff(unittest.TestCase):
+    """REQ-03-01: release without --abandon and no handoff fails-closed (OBPI-03 flip)."""
 
-    @covers("REQ-0.0.41-02-07")
-    def test_release_without_handoff_warns_but_succeeds(self) -> None:
-        """Warning to stderr; release exits 0; warning names the OBPI-03 flip."""
+    @covers("REQ-0.0.41-03-01")
+    def test_release_fail_closed_without_handoff_or_abandon(self) -> None:
+        """Exit 3; lock survives; stderr names gz-session-handoff and --abandon."""
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
             with (
@@ -195,22 +212,76 @@ class TestWarningOnNoHandoff(unittest.TestCase):
                 write_lock(root, lock)
 
                 captured = StringIO()
-                with patch("sys.stderr", captured):
+                with patch("sys.stderr", captured), self.assertRaises(SystemExit) as ctx:
                     obpi_lock_release_cmd(
                         obpi_id="OBPI-0.0.41-02",
                         as_json=False,
                         agent="claude-code",
                     )
 
+                self.assertEqual(ctx.exception.code, 3)
                 stderr = captured.getvalue()
-                self.assertIn("WARNING", stderr)
-                self.assertIn("register entry", stderr)
                 self.assertIn("gz-session-handoff", stderr)
-                self.assertIn("OBPI-0.0.41-03", stderr)
-                self.assertIn("fail-closed", stderr)
+                self.assertIn("--abandon", stderr)
 
-                # Lock removed (release succeeded, exit 0)
-                self.assertFalse(lock_path(root, "OBPI-0.0.41-02").exists())
+                # Lock survives — fail-closed before delete
+                self.assertTrue(lock_path(root, "OBPI-0.0.41-02").exists())
+
+
+@covers("OBPI-0.0.41-03")
+class TestReapFailsClosed(unittest.TestCase):
+    """REQ-03-04: reaping is fail-closed when the register-entry write fails."""
+
+    @covers("REQ-0.0.41-03-04")
+    def test_reap_fails_closed_when_handoff_write_fails(self) -> None:
+        """Handoff write OSError → lock survives, no event, not in reaped list."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _setup_project(tmp)
+            old_time = (datetime.now(UTC) - timedelta(minutes=200)).isoformat()
+            write_lock(
+                root,
+                _make_lock(obpi_id="OBPI-0.0.41-03", claimed_at=old_time, ttl_minutes=120),
+            )
+
+            ledger = _CapturingLedger()
+
+            with patch(
+                "gzkit.lock_manager._write_reaping_handoff",
+                side_effect=OSError("simulated handoff write failure"),
+            ):
+                reaped = reap_expired_locks(root, ledger=ledger, reaper_agent="reaper-b")
+
+            # Ordering invariant: no handoff → no delete, no event, not reaped.
+            self.assertEqual(reaped, [])
+            self.assertTrue(lock_path(root, "OBPI-0.0.41-03").exists())
+            self.assertEqual(
+                [e for e in ledger.events if e.event == "obpi_lock_released"],
+                [],
+            )
+
+
+@covers("OBPI-0.0.41-03")
+class TestNoAdrPackageHandoffWrites(unittest.TestCase):
+    """REQ-03-05: every handoff-dir write under src/ is rooted at .gzkit/handoffs/."""
+
+    @covers("REQ-0.0.41-03-05")
+    def test_no_adr_package_handoff_writes(self) -> None:
+        """Static fence: no code path constructs a handoffs dir outside .gzkit."""
+        repo_root = Path(__file__).resolve().parents[2]
+        src = repo_root / "src" / "gzkit"
+        # Matches a Path join onto a "handoffs" segment, e.g. `pkg / "handoffs"`.
+        join_handoffs = re.compile(r"""/\s*["']handoffs["']""")
+        offenders: list[str] = []
+        for py in src.rglob("*.py"):
+            for lineno, line in enumerate(py.read_text(encoding="utf-8").splitlines(), start=1):
+                if join_handoffs.search(line) and ".gzkit" not in line:
+                    offenders.append(f"{py.relative_to(repo_root)}:{lineno}: {line.strip()}")
+        self.assertEqual(
+            offenders,
+            [],
+            "handoff-dir writes MUST target .gzkit/handoffs/, never an ADR "
+            "package: " + "; ".join(offenders),
+        )
 
 
 @covers("OBPI-0.0.41-02")
