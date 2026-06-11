@@ -396,5 +396,68 @@ class TestCloseoutProofKindTagRequired(unittest.TestCase):
         )
 
 
+class TestCloseoutProofFailOpenSeams(unittest.TestCase):
+    """Fail-open seams (GHI #601 follow-up): the explicit-adr_id gate path must
+    fail-CLOSE on an unreadable brief or a corrupt ceremony file; the adr_id=None
+    sweep path (gz check) tolerates one bad file so a stray corruption does not
+    break the whole check.
+    """
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def test_gate_path_corrupt_ceremony_fails_close(self) -> None:
+        """An explicit-adr_id gate against a corrupt ceremony file must error."""
+        adr_id = "ADR-0.0.99-corrupt"
+        ceremonies_dir = self.root / ".gzkit" / "ceremonies"
+        ceremonies_dir.mkdir(parents=True, exist_ok=True)
+        (ceremonies_dir / f"{adr_id}.ceremony.json").write_text("{not valid json", encoding="utf-8")
+
+        errors = validate_closeout_proof(self.root, adr_id=adr_id)
+        self.assertTrue(
+            errors,
+            "gate path must fail-close on a corrupt ceremony file, not silently pass",
+        )
+        self.assertEqual({e.type for e in errors}, {"closeout_proof"})
+
+    def test_gate_path_unreadable_brief_fails_close(self) -> None:
+        """An explicit-adr_id gate must error when a discovered brief is unreadable."""
+        adr_id = "ADR-0.0.99-unreadable"
+        _write_ceremony(self.root, adr_id)
+        adr_dir = _make_adr_dir(self.root, adr_id)
+        # A directory named like a brief satisfies the *.md glob but raises
+        # IsADirectoryError (an OSError) on read_text — a deterministic,
+        # cross-platform stand-in for an unreadable brief.
+        (adr_dir / "obpis").mkdir(parents=True, exist_ok=True)
+        (adr_dir / "obpis" / "OBPI-0.0.99-01-unreadable.md").mkdir()
+
+        errors = validate_closeout_proof(self.root, adr_id=adr_id)
+        self.assertTrue(
+            errors,
+            "gate path must fail-close when a discovered brief cannot be read",
+        )
+        self.assertEqual({e.type for e in errors}, {"closeout_proof"})
+
+    def test_sweep_path_corrupt_ceremony_tolerated(self) -> None:
+        """The adr_id=None sweep path tolerates a corrupt ceremony (no error, no raise)."""
+        ceremonies_dir = self.root / ".gzkit" / "ceremonies"
+        ceremonies_dir.mkdir(parents=True, exist_ok=True)
+        (ceremonies_dir / "ADR-0.0.99-corrupt.ceremony.json").write_text(
+            "{not valid json", encoding="utf-8"
+        )
+
+        # Must not raise; the corrupt sibling is skipped, not promoted to a failure.
+        errors = validate_closeout_proof(self.root)
+        self.assertEqual(
+            [],
+            errors,
+            "sweep path must tolerate a corrupt ceremony rather than fail the whole check",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

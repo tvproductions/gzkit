@@ -171,13 +171,24 @@ def _check_req(
     return None
 
 
-def _check_brief(project_root: Path, adr_id: str, brief_path: Path) -> list[ValidationError]:
-    """Recompute proof for every REQ in one OBPI brief."""
+def _check_brief(
+    project_root: Path, adr_id: str, brief_path: Path, *, fail_close: bool
+) -> list[ValidationError]:
+    """Recompute proof for every REQ in one OBPI brief.
+
+    ``fail_close`` is set on the explicit-adr_id gate path: an unreadable brief
+    there is a fail-close error (a corrupt/missing target must block the gate),
+    never silently treated as proven. On the sweep path (``fail_close=False``)
+    an unreadable sibling brief is tolerated so one bad file does not break the
+    whole ``gz check`` run.
+    """
+    artifact = f"{adr_id}/{brief_path.stem}"
     try:
         body = brief_path.read_text(encoding="utf-8")
-    except OSError:
+    except OSError as exc:
+        if fail_close:
+            return [_err(artifact, f"brief could not be read (fail-close): {exc}")]
         return []
-    artifact = f"{adr_id}/{brief_path.stem}"
     results = (
         _check_req(project_root, artifact, req_id, kind, line)
         for req_id, kind, line in _parse_reqs_from_brief(body)
@@ -217,7 +228,17 @@ def validate_closeout_proof(
     for ceremony_path in _resolve_ceremony_files(ceremonies_dir, adr_id):
         try:
             ceremony = json.loads(ceremony_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+        except (OSError, json.JSONDecodeError) as exc:
+            # Gate path (explicit adr_id) → a corrupt/unreadable ceremony for the
+            # gated ADR must fail-close. Sweep path → tolerate one bad sibling so
+            # a stray corruption does not break the whole gz-check run.
+            if not scan_all:
+                errors.append(
+                    _err(
+                        ceremony_path.stem.replace(".ceremony", ""),
+                        f"ceremony file could not be read (fail-close): {exc}",
+                    )
+                )
             continue
 
         active = _is_active_closeout(ceremony, now) if scan_all else _is_in_closeout(ceremony)
@@ -226,6 +247,8 @@ def validate_closeout_proof(
 
         this_adr_id = ceremony.get("adr_id", ceremony_path.stem.replace(".ceremony", ""))
         for brief_path in _find_obpi_briefs(project_root, this_adr_id):
-            errors.extend(_check_brief(project_root, this_adr_id, brief_path))
+            errors.extend(
+                _check_brief(project_root, this_adr_id, brief_path, fail_close=not scan_all)
+            )
 
     return errors
