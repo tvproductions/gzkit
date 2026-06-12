@@ -459,5 +459,116 @@ class TestCloseoutProofFailOpenSeams(unittest.TestCase):
         )
 
 
+def _write_ledger_withdrawn(project_root: Path, obpi_id: str) -> None:
+    """Append an obpi_withdrawn event for obpi_id to the project ledger."""
+    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+    ledger_path.parent.mkdir(parents=True, exist_ok=True)
+    event = {
+        "schema": "gzkit.ledger.v1",
+        "event": "obpi_withdrawn",
+        "id": obpi_id,
+        "ts": "2026-06-11T00:00:00+00:00",
+        "reason": "superseded by sibling ADR (test fixture)",
+    }
+    with ledger_path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(event) + "\n")
+
+
+def _write_behave_waiver(project_root: Path, obpi_id: str, waived_reqs: list[str]) -> None:
+    """Write a behave_coverage_waivers.json waiving the given REQs for obpi_id."""
+    data_dir = project_root / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "default_rationale": {"test-rationale": "waived for test"},
+        "waivers": {
+            obpi_id: {
+                "rationale": "test-rationale",
+                "waived_reqs": waived_reqs,
+            }
+        },
+    }
+    (data_dir / "behave_coverage_waivers.json").write_text(json.dumps(payload), encoding="utf-8")
+
+
+class TestCloseoutProofExemptions(unittest.TestCase):
+    """closeout_proof honors obpi_withdrawn events and waived REQs.
+
+    Regression context: a foundation ADR closeout went red because the
+    validator demanded @covers for REQs that are legitimately uncovered — a
+    withdrawn OBPI (superseded by a sibling ADR, never built) and a REQ whose
+    covering test was removed by a superseding OBPI (recorded as a coverage
+    waiver). The fix: skip withdrawn OBPIs' briefs and waived REQs. (REQ ids
+    are kept out of this docstring on purpose so the brief-reconcile
+    neighborhood scanner does not associate this test with those briefs.)
+    """
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    @covers("REQ-0.0.69-03-01")
+    def test_withdrawn_obpi_brief_is_skipped(self) -> None:
+        """A withdrawn OBPI's uncovered BEHAVIOR REQ does NOT produce an error."""
+        adr_id = "ADR-0.0.99-withdrawn"
+        _write_ceremony(self.root, adr_id)
+        _write_brief(
+            _make_adr_dir(self.root, adr_id),
+            "OBPI-0.0.99-05-withdrawn-surface",
+            ["REQ-0.0.99-05-01 [BEHAVIOR]: system does X"],
+        )
+        # No @covers test — but the OBPI is withdrawn, so it must be skipped.
+        _write_ledger_withdrawn(self.root, "OBPI-0.0.99-05-withdrawn-surface")
+
+        errors = validate_closeout_proof(self.root)
+
+        self.assertEqual(
+            errors, [], f"Withdrawn OBPI's REQ must be skipped, not flagged; got: {errors}"
+        )
+
+    @covers("REQ-0.0.69-03-01")
+    def test_waived_req_is_skipped(self) -> None:
+        """A REQ in behave_coverage_waivers.json waived_reqs does NOT produce an error."""
+        adr_id = "ADR-0.0.99-waived"
+        _write_ceremony(self.root, adr_id)
+        _write_brief(
+            _make_adr_dir(self.root, adr_id),
+            "OBPI-0.0.99-02-primitives",
+            ["REQ-0.0.99-02-07 [BEHAVIOR]: superseded staging behavior"],
+        )
+        # No @covers test — but the REQ is waived, so it must be skipped.
+        _write_behave_waiver(self.root, "OBPI-0.0.99-02-primitives", ["REQ-0.0.99-02-07"])
+
+        errors = validate_closeout_proof(self.root)
+
+        self.assertEqual(errors, [], f"Waived REQ must be skipped, not flagged; got: {errors}")
+
+    @covers("REQ-0.0.69-03-01")
+    def test_non_exempt_uncovered_req_still_flagged(self) -> None:
+        """Control: an uncovered REQ that is neither withdrawn nor waived still errors.
+
+        Guards against the exemption logic over-suppressing genuine gaps.
+        """
+        adr_id = "ADR-0.0.99-control"
+        _write_ceremony(self.root, adr_id)
+        _write_brief(
+            _make_adr_dir(self.root, adr_id),
+            "OBPI-0.0.99-01-real",
+            ["REQ-0.0.99-01-01 [BEHAVIOR]: system does X"],
+        )
+        # Withdraw a DIFFERENT OBPI and waive a DIFFERENT REQ — neither covers this one.
+        _write_ledger_withdrawn(self.root, "OBPI-0.0.99-99-other")
+        _write_behave_waiver(self.root, "OBPI-0.0.99-88-other", ["REQ-0.0.99-88-01"])
+
+        errors = validate_closeout_proof(self.root)
+
+        self.assertGreater(
+            len(errors), 0, "A genuinely uncovered, non-exempt BEHAVIOR REQ must still flag"
+        )
+        self.assertIn("closeout_proof", {e.type for e in errors})
+
+
 if __name__ == "__main__":
     unittest.main()

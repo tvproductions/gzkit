@@ -133,12 +133,73 @@ def _err(artifact: str, message: str) -> ValidationError:
     return ValidationError(type="closeout_proof", artifact=artifact, message=message)
 
 
+def _withdrawn_obpi_ids(project_root: Path) -> set[str]:
+    """Return OBPI ids carrying an ``obpi_withdrawn`` event in the ledger.
+
+    A withdrawn OBPI (e.g. one superseded by a sibling ADR) was never built;
+    demanding @covers proof for its REQs at the parent ADR's closeout is a
+    false positive. The withdrawn signal is read directly from the event
+    stream so it holds even when the OBPI has no ``obpi_created`` ancestor in
+    the graph (the explicit withdrawal IS the disposition).
+    """
+    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+    if not ledger_path.is_file():
+        return set()
+    withdrawn: set[str] = set()
+    try:
+        for raw in ledger_path.read_text(encoding="utf-8").splitlines():
+            raw = raw.strip()
+            if not raw:
+                continue
+            try:
+                ev = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+            if ev.get("event") == "obpi_withdrawn" and isinstance(ev.get("id"), str):
+                withdrawn.add(ev["id"])
+    except OSError:
+        return set()
+    return withdrawn
+
+
+def _waived_req_ids(project_root: Path) -> set[str]:
+    """Return REQ ids waived in ``data/behave_coverage_waivers.json``.
+
+    The waiver registry is the canonical operator-attested record of REQs that
+    are legitimately uncovered — most importantly REQs whose covering test was
+    *removed* by a superseding OBPI (e.g. a staging behavior replaced by a
+    fail-closed one). Such REQs have no @covers test by design; the closeout
+    proof must honor the waiver rather than re-demand the deleted test.
+    """
+    waiver_path = project_root / "data" / "behave_coverage_waivers.json"
+    if not waiver_path.is_file():
+        return set()
+    try:
+        payload = json.loads(waiver_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return set()
+    waived: set[str] = set()
+    waivers = payload.get("waivers", {})
+    if isinstance(waivers, dict):
+        for entry in waivers.values():
+            if isinstance(entry, dict) and isinstance(entry.get("waived_reqs"), list):
+                waived.update(r for r in entry["waived_reqs"] if isinstance(r, str))
+    return waived
+
+
 def _check_req(
-    project_root: Path, artifact: str, req_id: str, kind: str | None, line: str
+    project_root: Path,
+    artifact: str,
+    req_id: str,
+    kind: str | None,
+    line: str,
+    waived_reqs: set[str],
 ) -> ValidationError | None:
     """Recompute one REQ's proof over its channel; return an error if unproven."""
     from gzkit.req_kind import resolve_fence_proof, resolve_support_proof
 
+    if req_id in waived_reqs:
+        return None
     if kind is None:
         return _err(
             artifact,
@@ -174,7 +235,12 @@ def _check_req(
 
 
 def _check_brief(
-    project_root: Path, adr_id: str, brief_path: Path, *, fail_close: bool
+    project_root: Path,
+    adr_id: str,
+    brief_path: Path,
+    waived_reqs: set[str],
+    *,
+    fail_close: bool,
 ) -> list[ValidationError]:
     """Recompute proof for every REQ in one OBPI brief.
 
@@ -192,7 +258,7 @@ def _check_brief(
             return [_err(artifact, f"brief could not be read (fail-close): {exc}")]
         return []
     results = (
-        _check_req(project_root, artifact, req_id, kind, line)
+        _check_req(project_root, artifact, req_id, kind, line, waived_reqs)
         for req_id, kind, line in _parse_reqs_from_brief(body)
     )
     return [e for e in results if e is not None]
@@ -226,6 +292,8 @@ def validate_closeout_proof(
     scan_all = adr_id is None
     now = datetime.now(UTC)
     errors: list[ValidationError] = []
+    withdrawn_obpis = _withdrawn_obpi_ids(project_root)
+    waived_reqs = _waived_req_ids(project_root)
 
     for ceremony_path in _resolve_ceremony_files(ceremonies_dir, adr_id):
         try:
@@ -249,8 +317,12 @@ def validate_closeout_proof(
 
         this_adr_id = ceremony.get("adr_id", ceremony_path.stem.replace(".ceremony", ""))
         for brief_path in _find_obpi_briefs(project_root, this_adr_id):
+            if brief_path.stem in withdrawn_obpis:
+                continue  # withdrawn OBPI never built — not a coverage gap
             errors.extend(
-                _check_brief(project_root, this_adr_id, brief_path, fail_close=not scan_all)
+                _check_brief(
+                    project_root, this_adr_id, brief_path, waived_reqs, fail_close=not scan_all
+                )
             )
 
     return errors
