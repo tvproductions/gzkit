@@ -1,0 +1,33 @@
+ADR-0.0.41 Value Demonstration — live command output
+(captured during the closeout ceremony walkthrough, 2026-06-12)
+
+$ uv run gz obpi lock list --json
+{"locks": [], "reaped": [], "count": 0}
+# Lock surface clean; reaped[] is the audit-coupled reaping surface (Sub-Inv 3).
+
+$ uv run gz validate --lock-handoff-coupling ; echo exit=$?
+Validated: lock_handoff_coupling
+✓ All validations passed (1 scopes).
+exit=0
+# The ADR's product: every post-cutover obpi_lock_released event in the live
+# ledger carries a valid handoff_path (register entry) satisfying Sub-Inv 2.
+
+$ uv run gz check --json   (summary)
+overall success: True ; failed checks: NONE
+Lock-handoff coupling: True   # validator runs in the DEFAULT gz check pipeline (REQ-04-07)
+Closeout proof: True
+
+$ uv run gz adr audit-check ADR-0.0.41-token-block-lock-discipline ; echo exit=$?
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.41-01-token-block-canon
+  - OBPI-0.0.41-02-claim-release-safety-primitives
+  - OBPI-0.0.41-03-release-fail-closed-and-reaping
+  - OBPI-0.0.41-04-lock-handoff-coupling-validator
+Advisory 17 REQ(s) without @covers traceability (non-blocking):
+  SUPPORT/STRUCTURAL-FENCE REQs (proof = ledger+validator / parent-ADR anchor)
+  + OBPI-05 REQs (withdrawn; superseded by ADR-0.0.65).
+exit=0
+
+Negative proof (fail-closed release; from OBPI-03 unit coverage):
+  gz obpi lock release <obpi>  with no register entry and no --abandon
+  -> exit 3 FAIL-CLOSED (stderr names gz-session-handoff skill + --abandon)
