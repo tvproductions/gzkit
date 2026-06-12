@@ -117,11 +117,11 @@ skill, code, and CLI:
 - Baseline Range: 4
 - Baseline Selected: 4
 - Split Single-Narrative: 0
-- Split Surface Boundary: 0
+- Split Surface Boundary: 1
 - Split State Anchor: 0
 - Split Testability Ceiling: 0
-- Split Total: 0
-- Final Target OBPI Count: 4
+- Split Total: 1
+- Final Target OBPI Count: 5
 
 ## Checklist
 
@@ -131,6 +131,7 @@ skill, code, and CLI:
 - [ ] OBPI-0.0.65-02: **programmatic-api-implementation** — Ship real `create_handoff`, `scaffold_handoff`, `list_handoffs`, `resume_handoff`, `load_handoff_chain` in `src/gzkit/handoff_api.py` (or equivalent runtime module) wrapping `handoff_validation.py`. Replace the `gz-session-handoff/SKILL.md` import references from `tests.governance.test_session_handoff` to the real runtime module. Remove the `NOT IMPLEMENTED` disclaimers.
 - [ ] OBPI-0.0.65-03: **gz-handoff-cli-verb** — Add `gz handoff` CLI verb with `create`, `resume`, `list` subcommands routing authoring through the validation gate. Add manpage under `docs/user/manpages/`. Add behave coverage for create/resume/list flows.
 - [ ] OBPI-0.0.65-04: **orientation-single-location-scan** — Collapse `_candidate_handoff_dirs()` in `scripts/session_orientation.py` to a single-surface scan of `.gzkit/handoffs/`. Delete the GHI #529 dual-scan workaround. Update orientation tests. (Depends on OBPI-01 completion: cannot collapse the scan until the per-ADR sources are empty.)
+- [ ] OBPI-0.0.65-05: **handoff-archive-retention** — Add a governed `gz handoff archive` subcommand that moves handoffs older than a threshold from `.gzkit/handoffs/` to `.gzkit/handoffs/archive/` (move-not-delete; audit trail preserved), honoring three mechanical guards: the migration-floor test (count canonical + archive ≥ floor), `continues_from:` chain integrity (chains may cross into the archive subdir), and lock-handoff coupling (never archive a handoff referenced by an `obpi_lock_released` ledger event). Extend `tests/governance/test_handoff_migration.py` to count the archive subdir. Add manpage + behave coverage. Surface-boundary split from OBPI-03 (distinct retention semantics + guard coupling). Depends on OBPI-03 (the `gz handoff` verb must exist). Closes GHI #585.
 
 ## Target Scope
 
@@ -138,6 +139,7 @@ skill, code, and CLI:
 - **programmatic-api-implementation** — Ship real `create_handoff` / `scaffold_handoff` / `list_handoffs` / `resume_handoff` / `load_handoff_chain` in `src/gzkit/handoff_api.py` wrapping `handoff_validation.py`; remove the `NOT IMPLEMENTED` disclaimers and replace `tests.governance.test_session_handoff` import references with the real module.
 - **gz-handoff-cli-verb** — Add `gz handoff` CLI verb with `create` / `resume` / `list` subcommands routing authoring through the validation gate; add manpage and behave coverage.
 - **orientation-single-location-scan** — Collapse `_candidate_handoff_dirs()` in `scripts/session_orientation.py` to a single-surface scan; delete the GHI #529 dual-scan workaround. Depends on `canonical-location-migration` completing first.
+- **handoff-archive-retention** — Governed `gz handoff archive` move-not-delete verb (`.gzkit/handoffs/` → `.gzkit/handoffs/archive/`) honoring the migration-floor, `continues_from`-chain, and lock-handoff-coupling guards; extends `tests/governance/test_handoff_migration.py` to count the archive subdir; manpage + behave coverage. Depends on `gz-handoff-cli-verb`. Closes GHI #585.
 
 ## Notes
 
