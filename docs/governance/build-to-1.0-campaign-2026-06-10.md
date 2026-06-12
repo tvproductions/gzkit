@@ -173,8 +173,21 @@ gzkit is 1.0 when ALL hold:
       `audit/AUDIT.md`). Independent spec-reviewer + quality-reviewer both
       GREEN; 3 non-blocking findings routed (F1→GHI #573, F2/F3→ADR
       §Post-Validation Notes)
-- [ ] A.5 ADR-0.0.41 unblocked closeout (2/5 → terminal; or operator-parks
-      with named reason, as 0.0.67 precedent allows)
+- [ ] A.5 ADR-0.0.41 unblocked closeout — **4/5** as of 2026-06-11
+      (OBPI-01/02/03/04 `attested_completed` per `gz adr report ADR-0.0.41`;
+      OBPI-05 surface-updates parked `draft` per the A.5-split authorization).
+      OBPI-0.0.41-03 (release fail-closed + auditable reaping) and
+      OBPI-0.0.41-04 (lock-handoff coupling validator → `gz validate
+      --lock-handoff-coupling`, wired into the default `gz check` chain) both
+      attested_completed; OBPI-04 landed in commit `3043819b`, on
+      `origin/main`. **Remaining for terminal:** dispose OBPI-05 (complete or
+      operator-park with named reason) → ADR closeout ceremony to Validated,
+      OR operator-park the ADR (0.0.67 precedent). Closeout currently
+      `BLOCKED` on OBPI-05 ledger proof per `gz adr report`. *(Push that had
+      stalled OBPI-03 since the prior session was unblocked here: the
+      blocker was an orphaned 173-min OBPI-03 lock failing the pre-push
+      `gz check` Preflight; reaped via `gz preflight --apply` — relates to
+      Phase-E #578/#564 lock hygiene.)*
 
 > **ADR-0.0.65 (handoff system, in-flight at 1/4) is deliberately NOT
 > closed here.** Its terminal disposition lands with the MOTD build (C.4),
