@@ -727,6 +727,17 @@ def run_task_envelope_coherence_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --task-envelope-coherence", cwd=project_root)
 
 
+def run_lock_handoff_coupling_audit(project_root: Path) -> QualityResult:
+    """Run the lock-handoff coupling audit (ADR-0.0.41 / OBPI-04).
+
+    Fails closed (exit 3) when any obpi_lock_released event in the ledger
+    (post-OBPI-02 cutover) lacks a valid handoff_path, references a missing
+    file, has a predated frontmatter timestamp, or is missing min-info fields.
+    Recovery: uv run gz validate --lock-handoff-coupling for diagnostics.
+    """
+    return run_command("uv run gz validate --lock-handoff-coupling", cwd=project_root)
+
+
 def run_surface_fidelity_audit(project_root: Path) -> QualityResult:
     """Run the ADR-0.0.33-05 surface-fidelity composite (all four invariants).
 

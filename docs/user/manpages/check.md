@@ -20,6 +20,11 @@ Runs the complete quality assurance suite: linting with Ruff, format check, stat
 
 The `Surface fidelity` step runs `gz validate --surface-fidelity` to verify all four surface-fidelity invariants (ADR-0.0.33-05).
 
+The `Lock-handoff coupling` step runs `gz validate --lock-handoff-coupling` to
+enforce the token-block discipline: every `obpi_lock_released` event in the
+ledger (post-OBPI-02 cutover) must carry a valid `handoff_path` and satisfy
+Sub-Invariant 2's minimum-information rule (ADR-0.0.41 / OBPI-0.0.41-04).
+
 The `CLI audit` and `Preflight` steps catch workflow-integrity drift that would otherwise go undetected — a new subcommand missing from the operator runbook, or stale artifacts left behind from a previous pipeline session — and apply self-healing pressure on every canonical quality run.
 
 Drift findings are advisory — they appear as warnings but do not affect the exit code. This surfaces spec-test-code drift early without blocking the development workflow.

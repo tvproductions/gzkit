@@ -92,6 +92,9 @@ from gzkit.governance.trust_audits.invariant_coherence import (
     validate_invariant_coherence,
 )
 from gzkit.governance.trust_audits.kind_invariance import audit_kind_invariance
+from gzkit.governance.trust_audits.lock_handoff_coupling import (
+    validate_lock_handoff_coupling,
+)
 from gzkit.governance.trust_audits.models import audit_pydantic_models
 from gzkit.governance.trust_audits.orientation import audit_orientation_freshness
 from gzkit.governance.trust_audits.orphaned_implementation import (
@@ -186,6 +189,7 @@ __all__ = [
     "BOOTSTRAP_MODE_NOTICE_PREFIX",
     "validate_advisor_proof_binding",
     "validate_closeout_proof",
+    "validate_lock_handoff_coupling",
     "validate_attestation_receipts",
     "validate_brief_reconcile",
     "validate_bullet_retention",

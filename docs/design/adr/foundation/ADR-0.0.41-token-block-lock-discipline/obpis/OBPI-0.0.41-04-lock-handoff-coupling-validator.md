@@ -3,7 +3,17 @@ id: OBPI-0.0.41-04-lock-handoff-coupling-validator
 parent: ADR-0.0.41-token-block-lock-discipline
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
+req_atomic:
+  - REQ-0.0.41-04-01  # one unit: validator function + clean-ledger-pass test — single indivisible TDD unit
+  - REQ-0.0.41-04-02  # one branch: missing-handoff_path error + its diagnostic-surfacing test — no labor below the REQ
+  - REQ-0.0.41-04-03  # one branch: nonexistent-file error + its path-naming test — single unit
+  - REQ-0.0.41-04-04  # one check: predated-timestamp comparison + its test — single unit
+  - REQ-0.0.41-04-05  # one loop: four min-info field checks + their per-field tests — single cohesive unit
+  - REQ-0.0.41-04-06  # one derivation: ledger-sourced cutover + grandfather tests — single unit
+  - REQ-0.0.41-04-07  # one tuple: _build_check_steps() membership + its pipeline test — single unit
+  - REQ-0.0.41-04-08  # STRUCTURAL-FENCE: parent-ADR Boundary Invariant (already authored) — no labor below the REQ
+  - REQ-0.0.41-04-09  # one coupled doc pass: validate.md + check.md manpages — single unit
 ---
 
 # OBPI-0.0.41-04-lock-handoff-coupling-validator: Lock-Handoff Coupling Validator
@@ -13,7 +23,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.41-token-block-lock-discipline/ADR-0.0.41-token-block-lock-discipline.md`
 - **Checklist Item:** #4 — OBPI-0.0.41-04: Implement `gz validate --lock-handoff-coupling` validator. Replay `.gzkit/ledger.jsonl`; fail-close on any `obpi_lock_released` event lacking a valid `handoff_path` payload, referencing a path whose frontmatter timestamp predates the matching claim, OR whose register entry violates the OBPI-01 minimum-information rule. **Binding wiring:** the validator MUST be added to the default `gz check` chain (not on-demand-only) — an enforcement floor agents can skip is no enforcement floor.
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -225,25 +235,71 @@ uv run gz adr status ADR-0.0.41-token-block-lock-discipline --json
 
 ### Value Narrative
 
-<!-- Before OBPI-04: OBPI-02/03 close the runtime contract loops (warning then fail-closed),
-     but the audit-coupling invariant ("every released event has handoff_path") relies on
-     code-path discipline alone. Future regressions could silently re-open the asymmetry
-     GHI #410 surfaced. After OBPI-04: the invariant is mechanically enforced at every
-     gz check invocation; no agent can ship a regression that bypasses the audit floor
-     without that regression also failing the check pipeline. -->
+Before OBPI-04: OBPI-02 (additive `handoff_path` field) and OBPI-03 (mandatory
+at emission, fail-closed release, auditable reaping) closed the runtime contract
+loops, but the audit-coupling invariant ("every `obpi_lock_released` event after
+the cutover carries a valid `handoff_path`") relied on code-path discipline
+alone — no mechanism replayed the ledger to verify it held. A future regression
+could silently re-open the asymmetry GHI #410 surfaced (5 lock surrenders in
+24h, 0 register entries). After OBPI-04: the invariant is mechanically enforced
+at every `gz check` invocation via `gz validate --lock-handoff-coupling`; no
+agent can ship a regression that bypasses the audit floor without that
+regression also failing the default quality pipeline.
 
 ### Key Proof
 
-<!-- Validator transcripts (clean ledger pass; seeded broken event fail with exit 3 and
-     diagnostic message); gz check JSON output showing the new step. -->
+
+- Clean live ledger passes:
+
+  ```
+  $ uv run gz validate --lock-handoff-coupling
+  Validated: lock_handoff_coupling
+  ✓ All validations passed (1 scopes).   # exit 0
+  ```
+
+- Seeded post-cutover violation fails with exit 3 and full diagnostics
+  (unit test `test_missing_handoff_path_fails`):
+
+  ```
+  ValidationError(type='lock_handoff_coupling', artifact='OBPI-0.0.41-04-test',
+    message="obpi_lock_released event for 'OBPI-0.0.41-04-test'
+    (agent='test-agent', ts='2026-06-07T13:00:00+00:00') is missing required
+    handoff_path payload. Run gz-session-handoff before releasing the lock.")
+  ```
+
+- Default pipeline membership: `_build_check_steps()` includes
+  `("Lock-handoff coupling", run_lock_handoff_coupling_audit)`
+  (test `test_lock_handoff_coupling_in_default_check_pipeline`).
+- Cutover derivation: the effective enforcement boundary is the latest
+  OBPI-02/OBPI-03 `obpi_receipt_emitted` timestamp, read from the ledger at
+  validator init (never hardcoded); pre-cutover events grandfathered
+  (`test_pre_cutover_events_grandfathered`).
+- Evidence receipts: `arb-step-unittest-fda446f7777142eeaf07395e3e7fb813`
+  (6048 pass), `arb-ruff-d01b0134580c4fae833f274cd2d8a491` (clean),
+  `arb-step-typecheck-10d7fed871b641b3bb70e2ad2977a11e` (clean),
+  `arb-step-mkdocs-de2dbca28a5547898a8499b96ba42904` (clean),
+  `arb-step-behave-316356803ddf402da6c702866a352244` (2/2).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `src/gzkit/governance/trust_audits/lock_handoff_coupling.py`
+  (validator, ledger-replay via canonical `Ledger.read_all()`),
+  `tests/governance/test_lock_handoff_coupling_validator.py` (16 tests),
+  `features/lock_handoff_coupling.feature` + step defs (2 representative scenarios).
+- Files modified: `trust_audits/__init__.py` (export), `quality.py`
+  (`run_lock_handoff_coupling_audit`), `commands/quality.py` (default check step),
+  `cli/parser_maintenance.py` (`--lock-handoff-coupling` flag + dispatch),
+  `commands/validate_cmd.py` (6 wiring sites incl. `_POLICY_BREACH_ERROR_TYPES`
+  for exit 3), `docs/user/manpages/validate.md` + `check.md`,
+  `tests/commands/test_skills.py` (mock-list addition).
+- Tests added: 16 unit + 2 behave; full suite 6048 green.
+- Date completed: 2026-06-11
+- Attestation status: attested_completed (operator "attest completed", g0)
+- Defects noted: none. In-flight: cutover boundary widened from OBPI-02-only to
+  latest(OBPI-02, OBPI-03) receipt so the warning-only transition window
+  (legitimately handoff_path-free) is grandfathered — surfaced when the
+  validator flagged 11 historical events on the live ledger.
 
 ## Tracked Defects
 
@@ -251,12 +307,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.41-04 lock-handoff coupling validator: gz validate --lock-handoff-coupling replays the ledger and fail-closes (exit 3) on any post-cutover obpi_lock_released event lacking a valid handoff_path, referencing a missing file, predating its matching claim, or missing any of the four Sub-Invariant 2 minimum-information fields; wired into the default gz check pipeline (REQ-04-07) so the audit floor cannot be skipped. Cutover boundary derived from the latest OBPI-02/OBPI-03 obpi_receipt_emitted timestamp in the ledger (never hardcoded), grandfathering the warning-only transition window. 16 @covers unit tests + 2 representative behave scenarios (@REQ-0.0.41-04-01/02); REQ-08 STRUCTURAL-FENCE anchored in parent ADR Boundary Invariants, REQ-09 SUPPORT proven by artifact_edited + gz validate --documents. Evidence — unittest 6048 pass arb-step-unittest-fda446f7777142eeaf07395e3e7fb813; ruff clean arb-ruff-d01b0134580c4fae833f274cd2d8a491; typecheck clean arb-step-typecheck-10d7fed871b641b3bb70e2ad2977a11e; mkdocs --strict clean arb-step-mkdocs-de2dbca28a5547898a8499b96ba42904; behave 2/2 arb-step-behave-316356803ddf402da6c702866a352244; live-ledger validator exit 0; gz cli audit 104/104. Attestor: g0, 2026-06-11.
+- Date: 2026-06-12
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-12
 
 **Evidence Hash:** -

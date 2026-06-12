@@ -598,6 +598,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Audit advisor verdict <-> proof binding (OBPI-0.0.29-08).",
     )
     p_validate.add_argument(
+        "--lock-handoff-coupling",
+        dest="check_lock_handoff_coupling",
+        action="store_true",
+        default=False,
+        help="Validate obpi_lock_released events carry a valid handoff_path (ADR-0.0.41).",
+    )
+    p_validate.add_argument(
         "--closeout-proof",
         dest="check_closeout_proof",
         action="store_true",
@@ -793,6 +800,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_evaluation_justify_binding=(a.check_evaluation_justify_binding),
             check_intrinsic_attestation=a.check_intrinsic_attestation,
             check_advisor_proof_binding=a.check_advisor_proof_binding,
+            check_lock_handoff_coupling=a.check_lock_handoff_coupling,
             check_invariant_coherence=a.check_invariant_coherence,
             check_brief_reconcile=a.check_brief_reconcile,
             check_router_tables=a.check_router_tables,

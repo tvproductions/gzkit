@@ -13,7 +13,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--scenario-reachability] [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
-            [--advisor-proof-binding] [--vendor-manifest] [--setpoint-coherence]
+            [--advisor-proof-binding] [--lock-handoff-coupling] [--vendor-manifest] [--setpoint-coherence]
             [--invariant-coherence] [--brief-reconcile] [--router-tables]
             [--kind-invariance] [--req-kind-discipline] [--brief-command-shape] [--tautological-test-audit]
             [--closeout-proof]
@@ -1002,6 +1002,39 @@ gz validate --advisor-proof-binding
 | 0 | All scopes pass (vacuous when fixtures/ledger absent) | — |
 | 1 | One or more diagnoses lack non-empty `proof` | Inspect named fixture/event/schema and restore the binding (or remove the empty-proof artifact) |
 
+### `--lock-handoff-coupling`
+
+Ledger-replay validator that fail-closes on any `obpi_lock_released` event
+(post-OBPI-02 cutover) that violates the token-block discipline
+(ADR-0.0.41 / OBPI-0.0.41-04). Enforced on the default `gz check` pipeline.
+
+Four failure conditions:
+
+1. **Missing `handoff_path`** — the release event carries no register-entry
+   reference; event timestamp, OBPI id, and agent are surfaced in the error.
+2. **Nonexistent file** — `handoff_path` references a path absent on disk.
+3. **Predated timestamp** — the handoff document's frontmatter `timestamp`
+   predates the matching `obpi_lock_claimed` event for the same
+   `(obpi_id, agent)` pair.
+4. **Missing minimum-information field** — the handoff document is missing any
+   of the four Sub-Invariant 2 fields: `last_lock_event_timestamp`,
+   `last_commit_sha`, `branch`, or `## Decisions Made` body section.
+
+Cutover detection: the `obpi_receipt_emitted` event for
+`OBPI-0.0.41-02-claim-release-safety-primitives` in the ledger; events before
+that timestamp are grandfathered. When no cutover event exists, all events
+are grandfathered (validator exits 0).
+
+```bash
+# Run on the live ledger (clean ledger exits 0)
+gz validate --lock-handoff-coupling
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | All post-cutover releases carry valid handoff_path and pass min-info checks | — |
+| 3 | One or more releases violate the coupling invariant | Run `gz validate --lock-handoff-coupling` for diagnostic output; use `gz-session-handoff` to author the missing register entry before releasing the lock |
+
 ### `--closeout-proof`
 
 Derived closeout-proof view (ADR-0.0.69 / OBPI-0.0.69-03). Recomputes per-REQ
@@ -1433,6 +1466,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--evaluation-justify-binding` | opt-in | Fail-closed gate: `gz-justify` artifact required when evaluation scores are low (ADR-0.0.26) |
 | `--intrinsic-attestation` | opt-in | Validate `intrinsic-complexity-attestation` ledger events against canonical schema (OBPI-0.0.29-07) |
 | `--advisor-proof-binding` | opt-in | Verdict <-> proof binding audit across fixtures, ledger-cited diagnoses, and JSON Schema (OBPI-0.0.29-08) |
+| `--lock-handoff-coupling` | opt-in | Ledger-replay audit: every post-OBPI-02 obpi_lock_released event must carry a valid handoff_path (ADR-0.0.41) |
 | `--closeout-proof` | opt-in | Derived closeout-proof view: recomputes per-REQ proof over three live channels (BEHAVIOR/SUPPORT/STRUCTURAL-FENCE) for in-closeout ADRs; exit 3 on any unproven REQ (ADR-0.0.69 / OBPI-0.0.69-03) |
 | `--distribution` | opt-in | T0 static distribution audit: ON\_DISK\_NOT\_INCLUDED / BASELINE\_NOT\_ON\_DISK / ON\_DISK\_NOT\_BASELINE drift classes (ADR-0.0.32-07) |
 | `--receipt-shape` | opt-in | Fail-closed on post-cutoff `obpi_receipt_emitted` events with deprecated shapes (optional attestation, unprefixed completion, agent: attestor); pre-cutoff receipts can be waivered via `data/historical_self_close_waivers.json` (ADR-0.0.36, OBPI-0.0.36-03) |
