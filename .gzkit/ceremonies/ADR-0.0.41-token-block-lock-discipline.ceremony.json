@@ -1,47 +1,65 @@
 {
   "adr_id": "ADR-0.0.41-token-block-lock-discipline",
-  "current_step": 6,
+  "current_step": 11,
   "is_foundation": true,
-  "started_at": "2026-06-07T07:57:13Z",
-  "updated_at": "2026-06-07T09:16:02Z",
+  "started_at": "2026-06-12T01:08:12Z",
+  "updated_at": "2026-06-12T01:53:34Z",
   "step_history": [
     {
       "step": 1,
-      "presented_at": "2026-06-07T07:57:13Z",
-      "acknowledged_at": "2026-06-07T07:57:18Z"
+      "presented_at": "2026-06-12T01:08:12Z",
+      "acknowledged_at": "2026-06-12T01:10:55Z"
     },
     {
       "step": 2,
-      "presented_at": "2026-06-07T07:57:18Z",
-      "acknowledged_at": "2026-06-07T08:08:36Z"
+      "presented_at": "2026-06-12T01:10:55Z",
+      "acknowledged_at": "2026-06-12T01:11:15Z"
     },
     {
       "step": 3,
-      "presented_at": "2026-06-07T08:08:36Z",
-      "acknowledged_at": "2026-06-07T08:12:00Z"
+      "presented_at": "2026-06-12T01:11:15Z",
+      "acknowledged_at": "2026-06-12T01:14:18Z"
     },
     {
       "step": 4,
-      "presented_at": "2026-06-07T08:12:00Z",
-      "acknowledged_at": "2026-06-07T08:53:45Z"
+      "presented_at": "2026-06-12T01:14:18Z",
+      "acknowledged_at": "2026-06-12T01:14:45Z"
     },
     {
       "step": 5,
-      "presented_at": "2026-06-07T08:53:45Z",
-      "acknowledged_at": "2026-06-07T09:12:21Z"
+      "presented_at": "2026-06-12T01:14:45Z",
+      "acknowledged_at": "2026-06-12T01:47:17Z"
     },
     {
       "step": 6,
-      "presented_at": "2026-06-07T09:12:21Z",
+      "presented_at": "2026-06-12T01:47:17Z",
+      "acknowledged_at": "2026-06-12T01:49:58Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-06-12T01:49:58Z",
+      "acknowledged_at": "2026-06-12T01:51:55Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-06-12T01:51:55Z",
+      "acknowledged_at": "2026-06-12T01:53:34Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-06-12T01:53:34Z",
       "acknowledged_at": null
     }
   ],
   "walkthrough_commands": [
-    "uv run gz adr status ADR-0.0.41-token-block-lock-discipline --json"
+    "uv run gz obpi lock list --json",
+    "uv run gz state --json",
+    "uv run gz validate --lock-handoff-coupling",
+    "uv run gz check --json"
   ],
-  "walkthrough_index": 0,
-  "attestation": null,
-  "completed_at": null,
-  "attempt": 1,
-  "paused_at": "2026-06-07T09:16:02Z"
+  "walkthrough_index": 3,
+  "attestation": "Completed",
+  "completed_at": "2026-06-12T01:53:34Z",
+  "attempt": 2,
+  "paused_at": "2026-06-12T01:29:42Z"
 }

@@ -7,7 +7,7 @@ Status: Active
 
 Source-of-truth: filesystem under `docs/design/adr/{foundation,pre-release}/`; this table is a Layer 3 derived view per `docs/governance/state-doctrine.md`. Regenerate via `gz register-adrs` (which calls `regenerate_adr_status_md` after ledger reconciliation); drift is fail-closed by `gz validate --adr-status-fresh`.
 
-Last regenerated: 2026-06-11 (count: 94 ADRs).
+Last regenerated: 2026-06-12 (count: 94 ADRs).
 
 | ID | Title | Kind | Lane | Status | Date | Path |
 |---|---|---|---|---|---|---|
@@ -51,7 +51,7 @@ Last regenerated: 2026-06-11 (count: 94 ADRs).
 | [ADR-0.0.38-evidence-authority-projection-doctrine](../../design/adr/foundation/ADR-0.0.38-evidence-authority-projection-doctrine/ADR-0.0.38-evidence-authority-projection-doctrine.md) | Evidence-Authority-Projection Doctrine | foundation | lite | Draft | 2026-05-06 | `design/adr/foundation/ADR-0.0.38-evidence-authority-projection-doctrine/ADR-0.0.38-evidence-authority-projection-doctrine.md` |
 | [ADR-0.0.39-llm-as-judge-doctrine](../../design/adr/foundation/ADR-0.0.39-llm-as-judge-doctrine/ADR-0.0.39-llm-as-judge-doctrine.md) | LLM-as-Judge Doctrine | foundation | lite | Proposed | 2026-05-06 | `design/adr/foundation/ADR-0.0.39-llm-as-judge-doctrine/ADR-0.0.39-llm-as-judge-doctrine.md` |
 | [ADR-0.0.40-judge-enforcement-validators](../../design/adr/foundation/ADR-0.0.40-judge-enforcement-validators/ADR-0.0.40-judge-enforcement-validators.md) | Judge Enforcement Validators | foundation | heavy | Draft | 2026-05-06 | `design/adr/foundation/ADR-0.0.40-judge-enforcement-validators/ADR-0.0.40-judge-enforcement-validators.md` |
-| [ADR-0.0.41-token-block-lock-discipline](../../design/adr/foundation/ADR-0.0.41-token-block-lock-discipline/ADR-0.0.41-token-block-lock-discipline.md) | Token-Block Lock Discipline — Lock-Release Coupled to Handoff Register Entry | foundation | heavy | Draft | 2026-05-07 | `design/adr/foundation/ADR-0.0.41-token-block-lock-discipline/ADR-0.0.41-token-block-lock-discipline.md` |
+| [ADR-0.0.41-token-block-lock-discipline](../../design/adr/foundation/ADR-0.0.41-token-block-lock-discipline/ADR-0.0.41-token-block-lock-discipline.md) | Token-Block Lock Discipline — Lock-Release Coupled to Handoff Register Entry | foundation | heavy | Completed | 2026-05-07 | `design/adr/foundation/ADR-0.0.41-token-block-lock-discipline/ADR-0.0.41-token-block-lock-discipline.md` |
 | [ADR-0.0.42-storybook-doctrine](../../design/adr/foundation/ADR-0.0.42-storybook-doctrine/ADR-0.0.42-storybook-doctrine.md) | Storybook Doctrine | foundation | heavy | Draft | 2026-05-10 | `design/adr/foundation/ADR-0.0.42-storybook-doctrine/ADR-0.0.42-storybook-doctrine.md` |
 | [ADR-0.0.43-ddd-domain-cascade](../../design/adr/foundation/ADR-0.0.43-ddd-domain-cascade/ADR-0.0.43-ddd-domain-cascade.md) | DDD Domain Cascade | foundation | heavy | Draft | 2026-05-11 | `design/adr/foundation/ADR-0.0.43-ddd-domain-cascade/ADR-0.0.43-ddd-domain-cascade.md` |
 | [ADR-0.0.44-ghi-authoring-mechanical-label-enforcement](../../design/adr/foundation/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement.md) | GHI Authoring Mechanical Label Enforcement | foundation | heavy | Proposed | 2026-05-15 | `design/adr/foundation/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement.md` |

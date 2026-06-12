@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.41-token-block-lock-discipline
-status: Draft
+status: Completed
 kind: foundation
 semver: 0.0.41
 lane: heavy
@@ -218,4 +218,4 @@ The doctrine emerged from a session-orientation observation:
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.41 | Pending | | | |
+| 0.0.41 | Completed | g0 | 2026-06-11 | Completed |
