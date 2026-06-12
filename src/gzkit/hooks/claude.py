@@ -14,7 +14,7 @@ from gzkit.hooks.scripts.pipeline import (
     _plan_audit_gate_script,
     _session_staleness_check_script,
 )
-from gzkit.hooks.scripts.quality import _post_edit_ruff_script
+from gzkit.hooks.scripts.quality import _post_edit_ruff_script, _stop_turn_feedback_script
 from gzkit.hooks.scripts.routing import (
     _instruction_router_script,
     _pipeline_gate_script,
@@ -62,6 +62,10 @@ def _claude_hooks_readme() -> str:
             "- `ledger-writer.py`",
             "  PostToolUse (`Write|Edit`) hook that records governance",
             "  artifact edits via `gzkit.hooks.core.record_artifact_edit`.",
+            "- `stop-turn-feedback.py`",
+            "  Stop (`*`) hook that runs `ruff check` over git-dirty Python",
+            "  files at turn end and blocks the stop with agent-actionable",
+            "  prose; fail-open, one block per turn (ADR-0.0.70).",
             "",
             "## Notes",
             "",
@@ -82,6 +86,7 @@ def _claude_hooks_readme() -> str:
             "- `PreToolUse` `Bash`: `pipeline-completion-reminder.py`",
             "- `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,",
             "  then `ledger-writer.py`",
+            "- `Stop` `*`: `stop-turn-feedback.py`",
             "- Historical intake matrix:",
             "  `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/",
             "claude-hooks-intake-matrix.md`",
@@ -218,6 +223,17 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                     ],
                 },
             ],
+            "Stop": [
+                {
+                    "matcher": "*",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": _hook_command(hooks_dir, "stop-turn-feedback.py"),
+                        }
+                    ],
+                },
+            ],
         },
     }
 
@@ -309,7 +325,7 @@ def merge_settings(
     # order so a sync round-trip on an untouched file is byte-stable.
     existing_hooks = existing.get("hooks", {})
     gzkit_hooks = gzkit_settings.get("hooks", {})
-    gzkit_owned_phases = ("PreToolUse", "PostToolUse")
+    gzkit_owned_phases = ("PreToolUse", "PostToolUse", "Stop")
     merged_hooks: dict[str, list] = {}
 
     # Walk existing phases first to lock their order; gzkit-owned phases
@@ -396,6 +412,10 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
     ledger_writer_path = hooks_path / "ledger-writer.py"
     _write_hook_file(ledger_writer_path, _ledger_writer_script(), executable=True)
     created.append(ledger_writer_path.relative_to(project_root).as_posix())
+
+    stop_turn_feedback_path = hooks_path / "stop-turn-feedback.py"
+    _write_hook_file(stop_turn_feedback_path, _stop_turn_feedback_script(), executable=True)
+    created.append(stop_turn_feedback_path.relative_to(project_root).as_posix())
 
     control_surface_sync_path = hooks_path / "control-surface-sync.py"
     _write_hook_file(control_surface_sync_path, _control_surface_sync_script(), executable=True)

@@ -22,6 +22,15 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > → CMS completion (ADR-0.0.37 corpus → compress → rendition → playback)
 > inserted as Phase B, between in-flight closure and the MOTD build; all
 > subsequent phases renumbered.
+>
+> **Amendment (operator verbatim, 2026-06-12):** "do max improvement from
+> Florian Buetow's practices. ensure this becomes aware of this addition:
+> docs/governance/build-to-1.0-campaign-2026-06-10.md" → Buetow adoption
+> booked as **ADR-0.0.70** (turn-end Stop-hook feedback, session-correction
+> mining, guardrail-feedback-prose rule, fourth-source triangulation) and
+> inserted as item **B.0**, executed same-day through the governed
+> gz-adr-create → OBPI path. Operator closing remark, same exchange: "I guess
+> this means that gzkit may end up being worth the effort in the end."
 
 ## Authority and amendment (Magna Carta discipline)
 
@@ -205,6 +214,13 @@ Context-Load CMS) lands end-to-end. This is the system that makes "we don't
 direct edit AGENTS.md" workable: contract changes queue in the corpus and
 only deterministic playback writes the rendered surface.
 
+- [ ] B.0 ADR-0.0.70 Buetow adoption (operator-inserted 2026-06-12; see
+      Amendment above) — turn-end Stop-hook feedback (gzkit-owned `Stop`
+      phase), `session-correction-mining` chore (third sensor feeding the
+      Promotable→Mechanical ladder), `guardrail-feedback-prose` rule,
+      fourth-source triangulation in
+      `docs/governance/harness-engineering-appraisal.md`. Checks off at
+      ADR-0.0.70 terminal (all four OBPIs attested + closeout).
 - [ ] B.1 ADR-0.0.37 build-out (13/19 verified 2026-06-10 via
       `gz adr report`; → terminal) — the campaign's first marquee.
 - [ ] B.2 Registry-projected <15k surface (GHI #533) — closes **#519** (the

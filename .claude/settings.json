@@ -70,6 +70,17 @@
         ]
       }
     ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-turn-feedback.py\""
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "ExitPlanMode",

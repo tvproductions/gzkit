@@ -29,6 +29,10 @@ Current hook surface in gzkit:
 - `ledger-writer.py`
   PostToolUse (`Write|Edit`) hook that records governance
   artifact edits via `gzkit.hooks.core.record_artifact_edit`.
+- `stop-turn-feedback.py`
+  Stop (`*`) hook that runs `ruff check` over git-dirty Python
+  files at turn end and blocks the stop with agent-actionable
+  prose; fail-open, one block per turn (ADR-0.0.70).
 
 ## Notes
 
@@ -49,6 +53,7 @@ Current hook surface in gzkit:
 - `PreToolUse` `Bash`: `pipeline-completion-reminder.py`
 - `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,
   then `ledger-writer.py`
+- `Stop` `*`: `stop-turn-feedback.py`
 - Historical intake matrix:
   `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/
 claude-hooks-intake-matrix.md`

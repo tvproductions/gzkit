@@ -270,6 +270,12 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 |---|------|-------|-------|
 | 60 | Every unit of labor traceable to a TASK MUST surface that attribution through at least one of four discovery channels | **Promotable** | Python `@advances` decorator landed in OBPI-0.0.64-02 with decoration-time fail-close on invalid TASK IDs and unknown parent REQs (mirrors `@covers` machinery). Commit-trailer channel already enforced by `gz validate --commit-trailers`. Ledger `task_id` channel added in OBPI-0.0.64-01. Frontmatter `tasks:` schema enforcement and four-channel coherence validator (`gz validate --task-envelope-coherence`) deferred to OBPI-0.0.64-04. Parent ADR-0.0.64. |
 
+### Guardrail Feedback Prose (`.gzkit/rules/guardrail-feedback-prose.md`)
+
+| # | Rule | Score | Notes |
+|---|------|-------|-------|
+| 61 | Every fail-closed hook and validator emits agent-actionable three-part recovery prose: what failed, why it is forbidden (cited rule/invariant), the governed next step (runnable command or named ceremony) | **Promotable** | Authored under ADR-0.0.70 (Buetow adoption: "the feedback encodes the prompt you would write as a human"). First enforcement consumer is `stop-turn-feedback.py`, whose block prose is asserted against the bar by `tests/hooks/test_stop_turn_feedback.py` (REQ-0.0.70-03-02). Promotion path named in the rule: a `gz validate` scope asserting the three-part shape on hook/validator output fixtures once catch evidence accumulates — deliberately deferred (an inferential prose-grader is weaker than a real enforcement consumer; ADR-0.0.70 § Decision). |
+
 ---
 
 ## Summary

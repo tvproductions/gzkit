@@ -313,14 +313,61 @@ class TestGenerateClaudeSettings(unittest.TestCase):
 
         commands = [
             hook["command"]
-            for phase in ("PreToolUse", "PostToolUse")
+            for phase in ("PreToolUse", "PostToolUse", "Stop")
             for group in settings["hooks"][phase]
             for hook in group["hooks"]
         ]
-        self.assertEqual(len(commands), 10, commands)
+        self.assertEqual(len(commands), 11, commands)
         for command in commands:
             self.assertIn('"$CLAUDE_PROJECT_DIR/', command, command)
             self.assertNotIn("python .claude/hooks/", command, command)
+
+    @covers("REQ-0.0.70-01-09")
+    def test_stop_phase_is_gzkit_owned(self) -> None:
+        """The Stop phase survives generation, merge, and drift detection.
+
+        ADR-0.0.70 origin: the stop-turn-feedback hook was first hand-wired
+        into the repo's settings.json and silently reverted by the settings
+        sync because the merge only treated PreToolUse/PostToolUse as
+        gzkit-owned. Generator ownership is the regression fence.
+        """
+        from gzkit.hooks.claude import merge_settings
+
+        config = GzkitConfig(project_name="gzkit-test")
+        settings = generate_claude_settings(config)
+
+        stop_groups = settings["hooks"]["Stop"]
+        commands = [h["command"] for g in stop_groups for h in g["hooks"]]
+        self.assertEqual(commands, [_expected_hook_command("stop-turn-feedback.py")])
+
+        # Merge round-trip over an existing file that predates the Stop phase
+        # (the exact revert shape) must re-introduce it.
+        with tempfile.TemporaryDirectory() as tmp:
+            stale = {
+                "hooks": {
+                    "PreToolUse": settings["hooks"]["PreToolUse"],
+                    "PostToolUse": settings["hooks"]["PostToolUse"],
+                }
+            }
+            settings_path = Path(tmp) / "settings.json"
+            settings_path.write_text(json.dumps(stale), encoding="utf-8")
+            merged = merge_settings(settings_path, settings, ".claude/hooks")
+            self.assertIn("Stop", merged["hooks"])
+            merged_cmds = [h["command"] for g in merged["hooks"]["Stop"] for h in g["hooks"]]
+            self.assertEqual(merged_cmds, [_expected_hook_command("stop-turn-feedback.py")])
+
+        # Drift detection covers the Stop phase: a tracked file missing it drifts.
+        from gzkit.sync_surfaces import detect_claude_settings_drift
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            settings_path = root / config.paths.claude_settings
+            settings_path.parent.mkdir(parents=True, exist_ok=True)
+            stale_full = dict(settings)
+            stale_full["hooks"] = {p: g for p, g in settings["hooks"].items() if p != "Stop"}
+            settings_path.write_text(json.dumps(stale_full), encoding="utf-8")
+            diffs = detect_claude_settings_drift(root, config)
+            self.assertTrue(any("Stop" in d for d in diffs), diffs)
 
 
 class TestRepoClaudeSettingsAnchorScripts(unittest.TestCase):

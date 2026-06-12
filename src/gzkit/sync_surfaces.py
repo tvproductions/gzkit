@@ -477,7 +477,7 @@ def detect_claude_settings_drift(project_root: Path, config: GzkitConfig) -> lis
         diffs.append(f"Extra top-level key: {key}")
 
     # Hook groups
-    for phase in ("PreToolUse", "PostToolUse"):
+    for phase in ("PreToolUse", "PostToolUse", "Stop"):
         expected_hooks = expected.get("hooks", {}).get(phase, [])
         actual_hooks = actual.get("hooks", {}).get(phase, [])
 

@@ -54,7 +54,7 @@ gzkit IS a harness-engineering project by design. The `MAKE LLM STOCHASTIC VIBES
 
 The article's framing is that **guides anticipate, sensors observe**. gzkit invests massively in both. If you read `AGENTS.md` and the rules together, the outer harness here is *very* thick — among the thickest I've seen. The cost is paid every turn; the payoff is real (the GHI ledger shows defects caught the surface previously missed). But until gzkit can show *which* guides are still load-bearing in the presence of the current validator surface, the contract is heavier than it has to be on at least one axis. That's the highest-leverage place to look — not adding more, but proving (or disproving) that some current guide is now reachable from sensors alone, then deleting it.
 
-The two concrete additions that emerged as highest-priority from this appraisal: **mutation testing as a `gz validate --mutation` scope** (closes the Invariant 6f gap mechanically) and **an in-session sensor sidecar** that streams `gz validate` deltas to the agent during edits. Both are on the [improvement plan](../../.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md) — mutation testing in Wave 1 (already booked as `OBPI-0.31.0-07-mutate`), sidecar in Wave 2 (`ADR-pool.harness-sidecar`).
+The two concrete additions that emerged as highest-priority from this appraisal: **mutation testing as a `gz validate --mutation` scope** (closes the Invariant 6f gap mechanically) and **an in-session sensor sidecar** that streams `gz validate` deltas to the agent during edits. Both are on the [improvement plan](../../.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md) — mutation testing in Wave 1 (already booked as `OBPI-0.31.0-07-mutate`), sidecar in Wave 2 (planned as `ADR-pool.harness-sidecar` but never drafted to disk — reconciled 2026-06-12; the Stop-hook turn-end sensor landed by **ADR-0.0.70** is the cheap down-payment whose block telemetry now funds that decision with evidence).
 
 ## External Validation — Greyling on Claude Code (recursive case)
 
@@ -84,7 +84,7 @@ Claude Code's harness wraps the model; gzkit's meta-harness wraps Claude Code's 
 
 ### What this triangulation does NOT change
 
-Greyling's analysis reinforces the existing Böckeler-derived improvement plan; it does not unlock new mechanical promotion candidates beyond what's already tracked in the advisory scorecard. The honest output of this triangulation is doctrinal clarity (the recursive framing) and external validation (two independent published theses converge), not new validator scopes. The Böckeler-identified concrete additions — mutation testing (Wave 1, `OBPI-0.31.0-07-mutate`) and in-session sensor sidecar (Wave 2, `ADR-pool.harness-sidecar`) — remain the highest-priority structural moves; the Greyling axis adds an external second-opinion that they are correct, not a third item.
+Greyling's analysis reinforces the existing Böckeler-derived improvement plan; it does not unlock new mechanical promotion candidates beyond what's already tracked in the advisory scorecard. The honest output of this triangulation is doctrinal clarity (the recursive framing) and external validation (two independent published theses converge), not new validator scopes. The Böckeler-identified concrete additions — mutation testing (Wave 1, `OBPI-0.31.0-07-mutate`) and in-session sensor sidecar (Wave 2, planned as `ADR-pool.harness-sidecar`, never drafted; see the 2026-06-12 reconciliation under § The Sharpest Tension) — remain the highest-priority structural moves; the Greyling axis adds an external second-opinion that they are correct, not a third item.
 
 ### Third confirming thesis — Every Inc. "Compound Engineering" plugin
 
@@ -116,11 +116,40 @@ gzkit currently ships two review subagents (`quality-reviewer`, `spec-reviewer`)
 
 CE confirms the 80/20 ratio and concretizes the inferential-sensor gap. It does not unlock new mechanical promotion candidates, does not contradict any existing gzkit doctrine, and does not displace the Böckeler-identified Wave 1/2 priorities. The CE compounding-learning mechanism (`/ce-compound` writing browsable markdown to `docs/solutions/<category>/`) is *different in kind* from gzkit's `.gzkit/insights/agent-insights.jsonl` (append-only auditable JSONL) — neither subsumes the other; the question of whether to add a browsable-by-topic surface over the insights stream is a separate operator decision, deferred here.
 
+## Fourth Source — Buetow on the Code-Review Bottleneck (practitioner interview)
+
+> **Source:** Florian Buetow (AI engineer, Xebia), interviewed on the *Beyond Coding Podcast*, "The Best Software Engineers Are Solving the Code Review Bottleneck Right Now," published 2026-06-10. Companion site: <https://cracking-ai-engineering.com>.
+>
+> **Framing:** Practitioner experiment report, not a written thesis — the first of the four sources in this appraisal that is interview-format, so its claims (e.g. "spec-driven failed, TDD-as-feedback worked") are single-practitioner anecdata. Its value here is convergent signal, not independent proof.
+>
+> **Thesis:** Code review is the bottleneck once generation is cheap; the answer is engineering the environment so agents get deterministic feedback without a human in the loop — guardrails wired to the harness's stop hook, architecture unit tests, semantic-grep-class pattern rules, and data-mining session logs for the corrections the operator keeps repeating.
+
+### Triangulation with the prior three sources
+
+Most of the Buetow inventory converges on surfaces gzkit already holds: architecture unit tests (`tests/policy/`, ADR-0.0.3, ADR-0.0.55), risk-tiered review policies (lite/heavy lanes + the security-sensitivity axis, ADR-0.0.36), TDD-as-agent-feedback over pure spec-driven (RED→GREEN discipline, REQ-coverage gate, `@covers`), preloaded-guardrail project templates (`pip install py-gzkit && gz init`, ADR-0.0.31 — literally gzkit's product thesis), and human ownership against cognitive surrender (universal Gate 5). A fourth independent practitioner landing on gzkit's equilibrium extends the Böckeler/Greyling/CE convergence.
+
+### What Buetow adds that the prior three did not
+
+Two cheap mechanisms, both adopted under **ADR-0.0.70-turn-end-feedback-and-correction-mining** (2026-06-12, operator-ratified):
+
+| Buetow mechanism | gzkit adoption | OBPI |
+|---|---|---|
+| Wire guardrails into the harness stop hook so the agent self-corrects without a human in the loop | `stop-turn-feedback.py` — gzkit-owned `Stop` phase, ruff over session-dirty files, sub-2s, fail-open, block telemetry | OBPI-0.0.70-01 |
+| Data-mine session logs for repeated operator corrections; turn each into a static check | `session-correction-mining` chore — stdlib miner over the ground-truth transcripts, recurrence-clustered proposals feeding the advisory-scorecard Promotable→Mechanical ladder | OBPI-0.0.70-02 |
+| "The feedback encodes the prompt you would write as a human" | `.gzkit/rules/guardrail-feedback-prose.md` — three-part bar (what failed / why forbidden / governed next step) on every fail-closed surface | OBPI-0.0.70-03 |
+
+The Stop hook addresses this appraisal's #1 named weakness ("agents work blind between gate transitions") at hook-script cost: it is the **down-payment on the Wave-2 sidecar**, and its block telemetry replaces taste as the input to that pooled decision — funded, not displaced. The mining chore closes the correction-capture blind spot this appraisal could not see from the Böckeler/Greyling/CE material: `agent-insights.jsonl` (Behavior Rule 11) is agent-authored narrative whose blind spot is exactly the unrecognized correction; the transcripts are the un-instrumented ground truth. First real-data run (2026-06-12): 18 operator corrections detected across 17 sessions that the self-reported insights stream had not captured.
+
+### What Buetow does NOT add
+
+No new ratio evidence (the interview carries no measurement), no displacement of the Wave-1 mutation-testing priority, and no position on the guides-vs-sensors balance question that remains this appraisal's sharpest open tension. The "don't standardize on one harness" advice is already gzkit practice (multi-vendor skill mirrors; harness-fitness report ADR-0.0.60). Campaign linkage: Magna Carta item **B.0** ([build-to-1.0 campaign](build-to-1.0-campaign-2026-06-10.md)).
+
 ## Cross-References
 
 - Source: <https://martinfowler.com/articles/harness-engineering.html>
 - Greyling axis source: <https://github.com/cobusgreyling/98-percent-claude-code-not-ai>
 - Compound Engineering source: <https://github.com/EveryInc/compound-engineering-plugin> and <https://every.to/chain-of-thought/compound-engineering-how-every-codes-with-agents>
+- Buetow axis source: Beyond Coding Podcast (2026-06-10) + <https://cracking-ai-engineering.com>; adoption: `docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/`
 - Improvement plan handoff: [`.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md`](../../.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md)
 - Booked work: [`OBPI-0.31.0-07-mutate`](../design/adr/pre-release/ADR-0.31.0-new-cli-command-absorption/obpis/OBPI-0.31.0-07-mutate.md)
 - Doctrine roots cited: `AGENTS.md` §§ MAKE LLM STOCHASTIC VIBES INERT, STDLIB-FIRST DOCTRINE, OPERATOR ECONOMY OF EFFORT, Attestation; `.claude/rules/tests.md` § Invariant 6f; `docs/governance/advisory-rules-audit.md`; `docs/governance/state-doctrine.md`
