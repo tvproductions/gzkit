@@ -1,6 +1,5 @@
 # Local Agent Rules
 
-- **DIRECT-FIX MORATORIUM (operator, 2026-06-01).** Defects surfaced in flight get direct-fixed now — smallest honest fix, TDD (RED→GREEN), `Task:` trailer (GHI slug optional; never file a GHI just to satisfy it). Open a GHI/ADR/OBPI only when the fix genuinely can't land in one coherent commit, and name why. Does not relax TDD, read-before-change, coupled-surface coherence, or attestation.
 - Order versioned identifiers semantically, never lexicographically — scope: feature ADRs only (non-`0.0.x` semver; `ADR-0.9.0` before `ADR-0.10.0`). Counter-rule: foundation IDs (`0.0.x`) are nominal integers, not sequence positions — never sort/compare them as semver; sparse sets (`0.0.54`, `0.0.56`, no `0.0.55`) are valid (ADR-0.0.57).
 - When adding imports in an Edit, include the code that uses them in the same edit — the post-edit ruff hook strips unused imports immediately.
 - Never prefix `uv run gz` or `uv run -m gzkit` commands with `PYTHONUTF8=1` — the CLI entrypoint handles UTF-8 at runtime.
