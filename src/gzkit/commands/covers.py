@@ -221,7 +221,9 @@ def covers_cmd(
         if cache_path.exists():
             with contextlib.suppress(json.JSONDecodeError, OSError):
                 cache = json.loads(cache_path.read_text(encoding="utf-8"))
-        report = compute_three_channel_coverage(report, discovered, grandfathering_cache=cache)
+        report = compute_three_channel_coverage(
+            report, discovered, grandfathering_cache=cache, project_root=project_root
+        )
 
     if bypass_req_kind_discipline_once and bypass_reason:
         _emit_bypass_ledger_event(project_root, bypass_reason)

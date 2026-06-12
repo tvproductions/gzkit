@@ -150,5 +150,54 @@ class TestFenceChannelNoProjectRoot(unittest.TestCase):
         )
 
 
+class TestCoversCmdPassesProjectRoot(unittest.TestCase):
+    """Regression: the `gz covers` CLI MUST pass project_root to the three-channel
+    enricher, or STRUCTURAL-FENCE REQs resolve to unproven-fence at the CLI layer
+    even when the parent ADR carries a ## Boundary Invariants anchor.
+
+    The function-level fence tests above always pass project_root directly, so the
+    CLI-wiring omission slipped past them; this test pins the wiring. (Direct fix
+    surfaced during OBPI-0.0.70-01 Stage 3 parity gate, 2026-06-12.)
+    """
+
+    def test_covers_cmd_forwards_project_root_to_enricher(self) -> None:
+        from unittest.mock import patch
+
+        from gzkit.commands import covers as covers_mod
+
+        captured: dict[str, object] = {}
+
+        def _spy(report, known_reqs, grandfathering_cache=None, project_root=None):
+            captured["project_root"] = project_root
+            return report
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            (project_root / "docs" / "design" / "adr").mkdir(parents=True)
+            (project_root / "tests").mkdir()
+            (project_root / "features").mkdir()
+            (project_root / "data").mkdir()
+
+            # compute_three_channel_coverage is imported lazily inside covers_cmd,
+            # so it must be patched at its source module (gzkit.req_kind).
+            with (
+                patch.object(covers_mod, "get_project_root", return_value=project_root),
+                patch.object(covers_mod, "scan_briefs", return_value=[]),
+                patch.object(covers_mod, "scan_test_tree", return_value=[]),
+                patch.object(covers_mod, "scan_feature_tree", return_value=[]),
+                patch("gzkit.req_kind.compute_three_channel_coverage", _spy),
+            ):
+                covers_mod.covers_cmd(
+                    target="OBPI-0.0.70-01-stop-hook-turn-end-feedback", as_json=True
+                )
+
+        self.assertIn("project_root", captured)
+        self.assertEqual(
+            captured["project_root"],
+            project_root,
+            "covers_cmd MUST forward project_root so STRUCTURAL-FENCE REQs resolve at the CLI",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
