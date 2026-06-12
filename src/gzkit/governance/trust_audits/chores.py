@@ -30,10 +30,12 @@ def audit_chores_layout(project_root: Path) -> list[ValidationError]:
 
     ADR-0.0.21 Decision #9: chores live under exactly two roots —
     ``src/gzkit/chores/`` (canonical, shipped in the wheel) and the
-    project-scoped ``paths.chores`` (default ``.gzkit/chores/``). Any
-    ``CHORE.md`` or ``acceptance.json`` discovered outside both roots is
-    layout drift (the ``ops/chores/`` re-emergence vector this ADR exists to
-    close) and the audit fails closed.
+    project-scoped ``paths.chores`` (default ``.gzkit/chores/``). Two vectors
+    fail closed: (1) any ``CHORE.md`` or ``acceptance.json`` discovered
+    outside both roots is layout drift; (2) ANY file under the forbidden
+    legacy ``ops/chores/`` root is drift regardless of filename — bare proof
+    debris (no ``CHORE.md`` beside it) re-creates the tree the migration
+    erased and slipped past the filename-only check for a month (GHI #605).
 
     Walking semantics mirror the ``audit_utf8_prefix`` pattern: skip
     dotfile-hidden segments, ``__pycache__``/``.venv``/``dist``/``build``/
@@ -51,13 +53,31 @@ def audit_chores_layout(project_root: Path) -> list[ValidationError]:
 
     errors: list[ValidationError] = []
     for path in sorted(project_root.rglob("*")):
-        if not path.is_file() or path.name not in _CHORES_LAYOUT_FILES:
+        if not path.is_file():
             continue
         rel = path.relative_to(project_root)
         if _is_excluded_chore_path(rel.parts):
             continue
         rel_posix = rel.as_posix()
         if rel_posix in waivers or _is_canonical_chore_path(rel_posix, canonical_roots):
+            continue
+        if rel_posix.startswith("ops/chores/"):
+            errors.append(
+                ValidationError(
+                    type="chores_layout",
+                    artifact=rel_posix,
+                    message=(
+                        f"file under forbidden legacy `ops/chores/` root: {rel_posix}. "
+                        "ADR-0.0.21 Decision #9 forbids the `ops/chores/` layout "
+                        "entirely (the migration vector this audit closes), regardless "
+                        "of filename — bare proof debris re-creates the tree (GHI #605). "
+                        "Recovery: delete the file and rewrite the chore's proof-write "
+                        f"path to `{project_chores_root}/<slug>/proofs/`."
+                    ),
+                )
+            )
+            continue
+        if path.name not in _CHORES_LAYOUT_FILES:
             continue
         errors.append(
             ValidationError(

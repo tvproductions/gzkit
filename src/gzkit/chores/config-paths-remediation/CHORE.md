@@ -56,7 +56,7 @@ uv run -m unittest -q
 ## Evidence Commands
 
 ```bash
-uv run gz check-config-paths > ops/chores/config-paths-remediation/proofs/config-paths.txt
+uv run gz check-config-paths > .gzkit/chores/config-paths-remediation/proofs/config-paths.txt
 ```
 
 ---

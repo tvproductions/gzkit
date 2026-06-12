@@ -64,7 +64,7 @@ uv run coverage report --fail-under=40
 ## Evidence Commands
 
 ```bash
-uv run -m unittest -v > ops/chores/cross-platform-test-cleanup/proofs/test-results.txt
+uv run -m unittest -v > .gzkit/chores/cross-platform-test-cleanup/proofs/test-results.txt
 ```
 
 ---

@@ -59,7 +59,7 @@ For skills that don't declare an output format:
 
 ### 4. Regression Tracking
 
-Save results to `ops/chores/skill-trigger-testing/proofs/trigger-report-{date}.md` with:
+Save results to `.gzkit/chores/skill-trigger-testing/proofs/trigger-report-{date}.md` with:
 
 ```markdown
 | Skill | Version | Goals Tested | Alignment | Contract | Regression |
@@ -84,7 +84,7 @@ uv run -m unittest -q
 
 ```bash
 # Report saved during workflow step 4
-ls ops/chores/skill-trigger-testing/proofs/trigger-report-*.md
+ls .gzkit/chores/skill-trigger-testing/proofs/trigger-report-*.md
 ```
 
 ## Relationship to Other Chores

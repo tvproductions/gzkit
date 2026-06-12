@@ -68,8 +68,8 @@ uv run -m unittest -q
 ## Evidence Commands
 
 ```bash
-uv run -m gzkit.doc_coverage.runner > ops/chores/doc-coverage/proofs/gap-report.txt
-uv run -m gzkit.doc_coverage.runner --json > ops/chores/doc-coverage/proofs/gap-report.json
+uv run -m gzkit.doc_coverage.runner > .gzkit/chores/doc-coverage/proofs/gap-report.txt
+uv run -m gzkit.doc_coverage.runner --json > .gzkit/chores/doc-coverage/proofs/gap-report.json
 ```
 
 ---

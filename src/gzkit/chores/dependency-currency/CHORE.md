@@ -69,7 +69,7 @@ gh api repos/behave/behave/releases/latest --jq .tag_name
 ### 3. Build drift report
 
 Markdown table written to
-`ops/chores/dependency-currency/proofs/drift-report-YYYY-MM-DD.md`:
+`.gzkit/chores/dependency-currency/proofs/drift-report-YYYY-MM-DD.md`:
 
 | Surface | Current | Latest | Delta | Notes |
 |---------|---------|--------|-------|-------|
@@ -102,11 +102,11 @@ gzkit-wrapped commands honor configured exclusions).
 ## Evidence Commands
 
 ```bash
-uv self version > ops/chores/dependency-currency/proofs/uv-version.txt
-uv run ruff --version > ops/chores/dependency-currency/proofs/ruff-version.txt
-uvx ty --version > ops/chores/dependency-currency/proofs/ty-version.txt
-gh api repos/astral-sh/uv/releases/latest --jq .tag_name > ops/chores/dependency-currency/proofs/uv-latest.txt
-gh api repos/astral-sh/ruff/releases/latest --jq .tag_name > ops/chores/dependency-currency/proofs/ruff-latest.txt
+uv self version > .gzkit/chores/dependency-currency/proofs/uv-version.txt
+uv run ruff --version > .gzkit/chores/dependency-currency/proofs/ruff-version.txt
+uvx ty --version > .gzkit/chores/dependency-currency/proofs/ty-version.txt
+gh api repos/astral-sh/uv/releases/latest --jq .tag_name > .gzkit/chores/dependency-currency/proofs/uv-latest.txt
+gh api repos/astral-sh/ruff/releases/latest --jq .tag_name > .gzkit/chores/dependency-currency/proofs/ruff-latest.txt
 ```
 
 ## Known Gaps (Baseline 2026-04-24)

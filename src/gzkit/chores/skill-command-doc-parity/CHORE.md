@@ -86,9 +86,9 @@ uv run -m unittest -q
 ## Evidence Commands
 
 ```bash
-uv run gz cli audit > ops/chores/skill-command-doc-parity/proofs/cli-audit.txt
-uv run gz skill audit > ops/chores/skill-command-doc-parity/proofs/skill-audit.txt
-uv run gz validate --documents --surfaces > ops/chores/skill-command-doc-parity/proofs/validate.txt
+uv run gz cli audit > .gzkit/chores/skill-command-doc-parity/proofs/cli-audit.txt
+uv run gz skill audit > .gzkit/chores/skill-command-doc-parity/proofs/skill-audit.txt
+uv run gz validate --documents --surfaces > .gzkit/chores/skill-command-doc-parity/proofs/validate.txt
 ```
 
 ## Known Gaps (Baseline 2026-03-21)

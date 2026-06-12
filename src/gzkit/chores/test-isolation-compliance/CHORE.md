@@ -37,7 +37,7 @@ Run the health profiler to check all thresholds at once:
 uv run python tests/tools/test_health_profiler.py
 ```
 
-This produces a JSON report at `ops/chores/test-isolation-compliance/proofs/health-report.json`.
+This produces a JSON report at `.gzkit/chores/test-isolation-compliance/proofs/health-report.json`.
 
 ### 2. Diagnose
 

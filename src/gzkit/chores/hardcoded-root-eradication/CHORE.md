@@ -40,7 +40,7 @@ _DATA_DIR = _PROJECT_ROOT / "data" / "eval"
 ```python
 # BAD
 SCHEMA_PATH = project_root / "data" / "schemas" / "eval_dataset.schema.json"
-CHORES_DIR = "ops/chores"
+CHORES_DIR = ".gzkit/chores"
 ```
 
 ### 3. Hardcoded thresholds / magic numbers
@@ -81,7 +81,7 @@ grep -rn "Path(__file__).*parents" src/
 grep -rn '"docs/design"' src/
 grep -rn '"data/eval"' src/
 grep -rn '"config/"' src/
-grep -rn '"ops/chores"' src/
+grep -rn '".gzkit/chores"' src/
 grep -rn '"artifacts/"' src/
 
 # Magic numbers that should come from config
@@ -143,9 +143,9 @@ uv run gz check-config-paths
 ## Evidence Commands
 
 ```bash
-grep -rn "Path(__file__).*parents" src/ > ops/chores/hardcoded-root-eradication/proofs/root-derivations.txt
-grep -rn '"docs/design"\|"data/eval"\|"config/"\|"ops/chores"\|"artifacts/"' src/ > ops/chores/hardcoded-root-eradication/proofs/path-literals.txt
-uv run -m unittest -q 2>&1 > ops/chores/hardcoded-root-eradication/proofs/tests.txt
+grep -rn "Path(__file__).*parents" src/ > .gzkit/chores/hardcoded-root-eradication/proofs/root-derivations.txt
+grep -rn '"docs/design"\|"data/eval"\|"config/"\|".gzkit/chores"\|"artifacts/"' src/ > .gzkit/chores/hardcoded-root-eradication/proofs/path-literals.txt
+uv run -m unittest -q 2>&1 > .gzkit/chores/hardcoded-root-eradication/proofs/tests.txt
 ```
 
 ---

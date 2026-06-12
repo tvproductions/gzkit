@@ -49,7 +49,7 @@ uv run -m unittest -q
 ## Evidence Commands
 
 ```bash
-uv run gz validate --documents --surfaces > ops/chores/repository-structure-normalization/proofs/validate-report.txt
+uv run gz validate --documents --surfaces > .gzkit/chores/repository-structure-normalization/proofs/validate-report.txt
 ```
 
 ---

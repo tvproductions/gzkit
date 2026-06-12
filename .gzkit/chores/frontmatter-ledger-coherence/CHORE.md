@@ -96,7 +96,7 @@ resolve, then re-run the dry-run to confirm.
 ## Evidence Commands
 
 ```bash
-uv run gz frontmatter reconcile --dry-run --json > ops/chores/frontmatter-ledger-coherence/proofs/dry-run.json
+uv run gz frontmatter reconcile --dry-run --json > .gzkit/chores/frontmatter-ledger-coherence/proofs/dry-run.json
 ```
 
 ---

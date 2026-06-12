@@ -50,8 +50,8 @@ All ~120 ty rules at default severity, including:
 ### 1. Baseline
 
 ```bash
-uvx ruff check . > ops/chores/pythonic-refactoring/proofs/ruff-baseline.txt
-uvx ty check . --exclude 'features/**' > ops/chores/pythonic-refactoring/proofs/ty-baseline.txt
+uvx ruff check . > .gzkit/chores/pythonic-refactoring/proofs/ruff-baseline.txt
+uvx ty check . --exclude 'features/**' > .gzkit/chores/pythonic-refactoring/proofs/ty-baseline.txt
 ```
 
 ### 2. Plan
@@ -107,8 +107,8 @@ uvx ruff check . --fix
 ## Evidence Commands
 
 ```bash
-uvx ruff check . > ops/chores/pythonic-refactoring/proofs/ruff-report.txt
-uvx ty check . --exclude 'features/**' > ops/chores/pythonic-refactoring/proofs/ty-report.txt
+uvx ruff check . > .gzkit/chores/pythonic-refactoring/proofs/ruff-report.txt
+uvx ty check . --exclude 'features/**' > .gzkit/chores/pythonic-refactoring/proofs/ty-report.txt
 ```
 
 ## Run Log

@@ -47,7 +47,7 @@ uv run -m unittest -q
 ## Evidence Commands
 
 ```bash
-uv run gz cli audit > ops/chores/test-manpage-examples/proofs/cli-audit.txt
+uv run gz cli audit > .gzkit/chores/test-manpage-examples/proofs/cli-audit.txt
 ```
 
 ---

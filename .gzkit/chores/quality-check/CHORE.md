@@ -38,7 +38,7 @@ All gates must pass with exit code 0.
 ## Evidence Commands
 
 ```bash
-uv run gz check > ops/chores/quality-check/proofs/gz-check.txt
+uv run gz check > .gzkit/chores/quality-check/proofs/gz-check.txt
 ```
 
 ---

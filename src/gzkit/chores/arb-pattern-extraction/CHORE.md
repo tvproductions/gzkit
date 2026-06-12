@@ -48,7 +48,7 @@ uv run -m unittest -q
 ## Evidence Commands
 
 ```bash
-uv run -m gzkit arb advise > ops/chores/arb-pattern-extraction/proofs/arb-patterns.txt
+uv run -m gzkit arb advise > .gzkit/chores/arb-pattern-extraction/proofs/arb-patterns.txt
 ```
 
 ---

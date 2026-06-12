@@ -21,7 +21,7 @@ Enforce module size limits using radon. Hard cap: <=1000 SLOC. Soft cap: <=600 S
 ### 1. Baseline
 
 ```bash
-uvx radon raw src/ -s -j > ops/chores/module-sloc-cap-radon/proofs/radon-baseline.json
+uvx radon raw src/ -s -j > .gzkit/chores/module-sloc-cap-radon/proofs/radon-baseline.json
 ```
 
 ### 2. Plan
@@ -55,7 +55,7 @@ uvx radon raw src/ -s -j
 ## Evidence Commands
 
 ```bash
-uvx radon raw src/ -s -j > ops/chores/module-sloc-cap-radon/proofs/radon-report.json
+uvx radon raw src/ -s -j > .gzkit/chores/module-sloc-cap-radon/proofs/radon-report.json
 ```
 
 ---

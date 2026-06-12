@@ -56,8 +56,8 @@ uvx ruff check src/gzkit --select D
 ## Evidence Commands
 
 ```bash
-uvx interrogate -v -c pyproject.toml src/gzkit > ops/chores/pep257-docstring-compliance/proofs/interrogate-report.txt
-uvx ruff check src/gzkit --select D > ops/chores/pep257-docstring-compliance/proofs/ruff-d-report.txt
+uvx interrogate -v -c pyproject.toml src/gzkit > .gzkit/chores/pep257-docstring-compliance/proofs/interrogate-report.txt
+uvx ruff check src/gzkit --select D > .gzkit/chores/pep257-docstring-compliance/proofs/ruff-d-report.txt
 ```
 
 ---

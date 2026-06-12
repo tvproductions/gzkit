@@ -47,16 +47,16 @@ For each "no" row, scan recent GHIs (#141–current) for a defect that matches t
 
 | Type | Command | Expected |
 |------|---------|----------|
-| exitCodeEquals | `test -f ops/chores/control-surface-skill-rule-reachability/proofs/skill-inventory.md` | 0 |
-| exitCodeEquals | `test -f ops/chores/control-surface-skill-rule-reachability/proofs/reachability-matrix.md` | 0 |
-| exitCodeEquals | `test -f ops/chores/control-surface-skill-rule-reachability/proofs/ghi-cross-reference.md` | 0 |
-| exitCodeEquals | `test -f ops/chores/control-surface-skill-rule-reachability/proofs/summary.md` | 0 |
+| exitCodeEquals | `test -f .gzkit/chores/control-surface-skill-rule-reachability/proofs/skill-inventory.md` | 0 |
+| exitCodeEquals | `test -f .gzkit/chores/control-surface-skill-rule-reachability/proofs/reachability-matrix.md` | 0 |
+| exitCodeEquals | `test -f .gzkit/chores/control-surface-skill-rule-reachability/proofs/ghi-cross-reference.md` | 0 |
+| exitCodeEquals | `test -f .gzkit/chores/control-surface-skill-rule-reachability/proofs/summary.md` | 0 |
 
 ## Evidence Commands
 
 ```bash
-ls .gzkit/skills/ > ops/chores/control-surface-skill-rule-reachability/proofs/skill-listing.txt
-ls .gzkit/rules/ > ops/chores/control-surface-skill-rule-reachability/proofs/rule-listing.txt
+ls .gzkit/skills/ > .gzkit/chores/control-surface-skill-rule-reachability/proofs/skill-listing.txt
+ls .gzkit/rules/ > .gzkit/chores/control-surface-skill-rule-reachability/proofs/rule-listing.txt
 ```
 
 ---

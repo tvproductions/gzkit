@@ -122,7 +122,7 @@ uv run -m unittest -q
 ## Evidence Commands
 
 ```bash
-uv run gz validate --surfaces > ops/chores/skill-authoring-quality/proofs/validate-surfaces.txt
+uv run gz validate --surfaces > .gzkit/chores/skill-authoring-quality/proofs/validate-surfaces.txt
 ```
 
 ## Scoring Summary

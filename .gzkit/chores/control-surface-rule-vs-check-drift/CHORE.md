@@ -51,17 +51,17 @@ For each promoted rule, one row in `proofs/parity-diff.md`:
 
 | Type | Command | Expected |
 |------|---------|----------|
-| exitCodeEquals | `test -f ops/chores/control-surface-rule-vs-check-drift/proofs/promoted-inventory.md` | 0 |
-| exitCodeEquals | `test -f ops/chores/control-surface-rule-vs-check-drift/proofs/prose-assertions.md` | 0 |
-| exitCodeEquals | `test -f ops/chores/control-surface-rule-vs-check-drift/proofs/check-behaviors.md` | 0 |
-| exitCodeEquals | `test -f ops/chores/control-surface-rule-vs-check-drift/proofs/parity-diff.md` | 0 |
-| exitCodeEquals | `test -f ops/chores/control-surface-rule-vs-check-drift/proofs/summary.md` | 0 |
+| exitCodeEquals | `test -f .gzkit/chores/control-surface-rule-vs-check-drift/proofs/promoted-inventory.md` | 0 |
+| exitCodeEquals | `test -f .gzkit/chores/control-surface-rule-vs-check-drift/proofs/prose-assertions.md` | 0 |
+| exitCodeEquals | `test -f .gzkit/chores/control-surface-rule-vs-check-drift/proofs/check-behaviors.md` | 0 |
+| exitCodeEquals | `test -f .gzkit/chores/control-surface-rule-vs-check-drift/proofs/parity-diff.md` | 0 |
+| exitCodeEquals | `test -f .gzkit/chores/control-surface-rule-vs-check-drift/proofs/summary.md` | 0 |
 
 ## Evidence Commands
 
 ```bash
-uv run gz validate --help > ops/chores/control-surface-rule-vs-check-drift/proofs/validate-help.txt 2>&1
-uv run gz validate --advisory-scorecard > ops/chores/control-surface-rule-vs-check-drift/proofs/advisory-scorecard.txt 2>&1
+uv run gz validate --help > .gzkit/chores/control-surface-rule-vs-check-drift/proofs/validate-help.txt 2>&1
+uv run gz validate --advisory-scorecard > .gzkit/chores/control-surface-rule-vs-check-drift/proofs/advisory-scorecard.txt 2>&1
 ```
 
 ---

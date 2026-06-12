@@ -56,7 +56,7 @@ uv run -m unittest -q
 ## Evidence Commands
 
 ```bash
-uvx ruff check src/gzkit --select E722 --output-format text > ops/chores/exceptions-and-logging-rationalization/proofs/e722-report.txt
+uvx ruff check src/gzkit --select E722 --output-format text > .gzkit/chores/exceptions-and-logging-rationalization/proofs/e722-report.txt
 ```
 
 ---

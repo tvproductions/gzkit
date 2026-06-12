@@ -128,7 +128,7 @@ def generate_manifest(
             "schemas": "data/schemas",
         },
         "ops": {
-            "chores": "config/chores",
+            "chores": config.paths.chores,
             "receipts": "artifacts/receipts",
             "proofs": "artifacts/proofs",
         },

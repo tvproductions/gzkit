@@ -61,7 +61,7 @@ uv run coverage report --fail-under=40
 
 ```bash
 uv run coverage run -m unittest discover -s tests -t . -q
-uv run coverage report > ops/chores/coverage-40pct/proofs/coverage-report.txt
+uv run coverage report > .gzkit/chores/coverage-40pct/proofs/coverage-report.txt
 ```
 
 ---

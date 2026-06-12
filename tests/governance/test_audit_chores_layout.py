@@ -41,6 +41,39 @@ class StrayLayoutFlaggedTests(unittest.TestCase):
             self.assertIn("ops/chores/bogus/CHORE.md", errors[0].artifact)
 
     @covers("REQ-0.0.21-08-03")
+    def test_bare_proof_file_under_ops_chores_is_flagged(self) -> None:
+        """A proof file under ``ops/chores/`` with no ``CHORE.md`` must flag.
+
+        The legacy ``ops/chores/`` root MUST NOT exist (ADR-0.0.21 Decision
+        #9). Filename-only matching missed bare proof debris (GHI #605): a
+        chore body that wrote proofs to ``ops/chores/<slug>/proofs/``
+        re-created the forbidden tree, and the audit passed because no
+        ``CHORE.md``/``acceptance.json`` sat beside it. The forbidden root
+        is the vector, not the filename.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            stray = (
+                root
+                / "ops"
+                / "chores"
+                / "test-isolation-compliance"
+                / "proofs"
+                / "health-report.json"
+            )
+            stray.parent.mkdir(parents=True, exist_ok=True)
+            stray.write_text("{}\n", encoding="utf-8")
+
+            errors = audit_chores_layout(root)
+
+            self.assertEqual(len(errors), 1, msg=f"got: {errors}")
+            self.assertEqual(errors[0].type, "chores_layout")
+            self.assertIn(
+                "ops/chores/test-isolation-compliance/proofs/health-report.json",
+                errors[0].artifact,
+            )
+
+    @covers("REQ-0.0.21-08-03")
     def test_stray_acceptance_json_is_flagged(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

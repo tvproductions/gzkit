@@ -48,7 +48,7 @@ uv run -m unittest -q
 ## Evidence Commands
 
 ```bash
-uv run gz status --table > ops/chores/evidence-integrity-audit/proofs/status-report.txt
+uv run gz status --table > .gzkit/chores/evidence-integrity-audit/proofs/status-report.txt
 ```
 
 ---
