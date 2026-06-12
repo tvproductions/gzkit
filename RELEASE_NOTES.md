@@ -1,5 +1,201 @@
 # gzkit Release Notes
 
+## v0.28.1 (2026-06-12)
+
+Six foundation ADR closeouts land alongside thirty targeted GHI fixes spanning the OBPI
+pipeline, proof-binding infrastructure, REQ-kind validation, foundation tooling, session
+handoff, TASK governance, and cross-platform hygiene.
+
+### Foundation ADR Closeouts
+
+Six foundation ADRs reached `Validated` status since v0.28.0, each with all OBPIs validated
+and Gate-5 ledger receipts in place:
+
+- **ADR-0.0.41 — Token-block lock discipline.** Canonizes the OBPI work-lock lifecycle:
+  claim, active-work, and abandon categories are closed-enum; every lock release is coupled
+  to a handoff or register entry. Prevents silent lock abandonment.
+
+- **ADR-0.0.59 — REQ scope discipline and test-shape doctrine.** Every REQ in an OBPI
+  brief's Acceptance Criteria must declare exactly one kind (BEHAVIOR, SUPPORT, or
+  STRUCTURAL-FENCE) via an inline tag; each kind has exactly one proof channel.
+  `gz validate --req-kind-discipline` enforces this mechanically.
+
+- **ADR-0.0.63 — Closeout ceremony runtime-engine parity.** The EXECUTE→ATTESTATION
+  transition is now runtime-enforced; proof-binding (`ln:` frontmatter + ARB receipts) is
+  the substrate for all Gate-5 evidence.
+
+- **ADR-0.0.67 — Tool-skill Invariant-1 enforcement.** Every multi-word `gz` subcommand
+  appearing in a SKILL.md must resolve to a real registered CLI verb.
+  `gz validate --skill-alignment` fail-closes on missing verbs.
+
+- **ADR-0.0.68 — Green-between-sessions gate.** `gz check` must be green before any push
+  lands in main. `gz validate --session-green-gate` audits hook configuration and attests
+  that the last push passed. Session-to-session health is now mechanically attested, not
+  assumed.
+
+- **ADR-0.0.69 — Channels-first closeout proof.** Retired the `ln:` proof-binding producer
+  surface (frontmatter field, schema property, CLI flag, and module) in favor of
+  ledger-resident channel proofs. Consumer chain retirement tracked by GHI #601.
+
+### OBPI Pipeline & Closeout Ceremony
+
+- **#534** — Fixed a cross-platform crash in the OBPI pipeline subprocess reader on Windows:
+  non-UTF-8 bytes from grandchild stdout caused an unhandled `UnicodeDecodeError` in the
+  background reader thread, crashing Stage 5. The reader now absorbs non-UTF-8 output
+  gracefully.
+
+- **#550** — Fixed Verification compound commands (`test -f ... && echo "✓"`) failing under
+  shell-less runtime with "unexpected operator." Commands containing compound operators are
+  now routed through a shell so `&&` sequences execute correctly.
+
+- **#569** — Fixed the verify-stage command extractor splitting multi-line commands on
+  physical line boundaries. The extractor now delegates to `extract_fenced_commands` (the
+  joining extractor the demo path already used), so backslash-continued and multi-line
+  `python -c "…"` blocks survive the parse intact.
+
+- **#586** — Fixed the `gz-obpi-pipeline` SKILL.md Stage 1 marker template prescribing
+  prose stage names (`"Stage 2: Implement"`, `"Stage 5: Sync and Account"`) that the runtime
+  validator rejects. The template now uses the canonical short-form stage IDs.
+
+- **#587** — Fixed `gz obpi complete` blocking `--accept-uncovered` waiver paths on
+  foundation/heavy OBPIs by citing TTY availability, violating the canon-owner attestation
+  directive. The gate no longer tests TTY; `--attestor-present` and a pipeline marker are
+  the correct signals.
+
+- **#589** — Fixed Stage 3 verification exit-code masking: tail-piping the test sweep
+  (`... | tail -N`) caused the harness to record `tail`'s exit code (always 0) rather than
+  unittest's real exit. The pipeline invocation no longer pipes through a process that swallows
+  the real exit code.
+
+- **#590** — Fixed `gz obpi complete` allowing Signature-(b) task-envelope violations
+  through without gating. The `gz obpi precomplete` pre-flight now runs
+  `--task-envelope-coherence` so seq=01-only OBPIs with no `req_atomic:` exemption are
+  caught at source rather than reddening `gz check` on the next session.
+
+- **#592** — Fixed the EXECUTE→ATTESTATION proof-binding gate operating repo-globally so
+  that a single ADR with a parked ceremony (e.g. ADR-0.0.41 blocked at 2/5 OBPIs) blocked
+  every other ADR's closeout. The gate now scopes to the ADR under active closeout.
+
+- **#593** — Fixed a category error: closeout proof-binding sourced durable proof from ARB
+  receipts (ephemeral defect-telemetry envelopes) rather than from committed ledger events
+  (`.gzkit/ledger.jsonl`, Layer-2 system-of-record). Proof binding now reads from the ledger.
+
+- **#599** — Fixed `gz obpi complete` emitting `resolved_receipt_ids` to the ledger but not
+  writing the corresponding `ln:` proof-binding frontmatter into the brief. The completion
+  transaction now atomically backfills `ln:` so the closeout-proof-binding consumer sees it
+  without a manual intervention step at every closeout.
+
+- **#601** — Fixed the `ln:` read+render consumer chain surviving ADR-0.0.69's retirement of
+  the `ln:` producer. `_parse_ln_entries()` and its callers in `closeout_ceremony.py` and
+  `ceremony_steps.py` now handle the absence of `ln:` frontmatter; the unfenced second reader
+  that bypassed `extra=forbid` was removed.
+
+### REQ Kind & Proof Binding
+
+- **#541** — Fixed a no-op `.replace("-", "-")` in `req_kind.py:200` (should have been
+  `.replace("_", "-")`) that prevented `STRUCTURAL_FENCE` from normalizing to the
+  doctrine's hyphenated external name `structural-fence`. All downstream `status_suffix`
+  derivations now produce the correct form.
+
+- **#543** — Wired actual ledger queries into the SUPPORT proof channel.
+  `_check_support_req` previously validated only that brief prose contained
+  `"gz validate --"` and a keyword — no event was ever queried, and
+  `compute_three_channel_coverage` hardcoded `"advisory-support"` for every SUPPORT REQ.
+  The channel now executes the ledger query it claims to perform.
+
+- **#566** — Fixed `gz validate --closeout-proof-binding` silently skipping 545 of 546
+  briefs because the REQ enumerator only read from structured frontmatter and 545 briefs
+  are legacy-shaped (REQs live in `## Acceptance Criteria` body). The enumerator now
+  parses body-resident Acceptance Criteria for legacy-shaped briefs.
+
+- **#591** — Fixed `gz obpi audit` computing the coverage criterion against the whole-src
+  denominator (~12–14%), making the 40% floor unreachable for any scoped OBPI. The criterion
+  now measures whether the OBPI's own test suite covers the OBPI's allowed paths.
+
+### Foundation Triage & Rubric
+
+- **#518** — Fixed `gather_in_flight_foundations()` returning an empty list for all 22+
+  in-flight foundation ADRs. `_foundation_short_id()` in `src/gzkit/foundation/triage.py`
+  was stripping the canonical-slug suffix incorrectly, filtering out every real foundation
+  ADR directory. The id-slug split now preserves the numeric ID.
+
+- **#548** — Fixed `_gather_foundation_ids()` in `src/gzkit/foundation/rubric.py` with the
+  same id-slug split defect as #518. The rubric composer now returns the correct ~22-entry
+  set instead of an empty list.
+
+### ADR Tooling
+
+- **#525** — Updated `CLAUDE.md` and its template to state the redirect doctrine explicitly:
+  *"CLAUDE.md redirects to AGENTS.md."* The `@AGENTS.md` import mechanism remains; the
+  added prose makes the intent readable without knowledge of import syntax.
+
+- **#557** — Fixed `gz adr report` rendering pool-demoted ADR IDs (0.48.0, 0.49.0, 0.50.0)
+  as Pending feature ADRs. The report now consults `artifact_renamed` ledger events and
+  excludes demoted IDs from the feature table.
+
+- **#568** — Fixed `gz-adr-promote` requiring `## Target Scope` unconditionally even when
+  a `## Proposed OBPI Decomposition` table is present. The code now matches the SKILL.md
+  doctrine: a Decomposition table alone satisfies the fail-closed gate.
+
+- **#576** — Fixed `gz context <ADR-ID>` deriving the governance gate from YAML frontmatter
+  `status:` (Layer-1) instead of the ledger (Layer-2). `_render_governance_rules` now reads
+  ledger-resident lifecycle state.
+
+### Session Handoff
+
+- **#528** — Fixed the `gz-session-handoff` skill and the session-start orientation hook
+  disagreeing on the handoff directory: the skill wrote to `{ADR-package}/handoffs/` while
+  `scripts/session_orientation.py` read from `.gzkit/handoffs/`. Both now agree on
+  `.gzkit/handoffs/`.
+
+- **#529** — Wired the handoff system into the OBPI pipeline and registered a `gz handoff`
+  CLI verb. The skill defined a full lifecycle (CREATE, RESUME, chain traversal, Pydantic
+  validation) but no pipeline stage invoked it and no CLI verb exposed it. Stage 5 now
+  creates a handoff on OBPI completion.
+
+### TASK Governance
+
+- **#552** — Surfaced TASK governance running as dead letter despite ADR-0.22.0 being
+  Validated (3 `Task:` trailers vs. 305+ `Ceremony:` trailers in 30 days). The trailers
+  validator now requires a minimum `Task:` density before accepting a clean run.
+
+- **#553** — Fixed ADR-0.22.0's TASK envelope intent having materialized as OBPI-boundary
+  stamps only (one `task_started` per REQ at pipeline launch, one batch `task_completed` at
+  `gz obpi complete`). Tasks now track real work units within an OBPI, not just pipeline
+  entry/exit fenceposts.
+
+- **#563** — Fixed TASK-envelope coherence violations from OBPI-0.0.64-03/04 closures:
+  Signature-(a) worklog events emitted without `task_id` while TASKs were active, and
+  Signature-(b) all REQs closed with only seq=01 TASKs. The `--task-envelope-coherence`
+  validator now gates `gz obpi complete` pre-flight.
+
+### Ceremony & Classifier
+
+- **#573** — Re-governed the BI-2 attestation-verdict classifier DRY collapse under TDD
+  discipline. The prior attempt swept the collapse into a `git add -A` chore commit with no
+  governance trail, breaking `gz validate --commit-trailers`. The revert restored green;
+  this GHI routes the collapse to a governed OBPI increment with RED→GREEN evidence.
+
+### Cross-platform & Infrastructure
+
+- **#554** — Fixed `agent-insights.jsonl` line 114 violating the `InsightRecord` schema
+  (missing `type` field, non-list `evidence`, extra `kind` field from the old schema shape).
+  The record now conforms to the current schema.
+
+- **#570** — Added a `.gitattributes` CRLF/LF gate to mechanize line-ending discipline.
+  The hazard had been fixed as a one-off at least four times; no gate prevented recurrence.
+  `.gitattributes` now enforces `text=auto eol=lf` for the affected file types.
+
+- **#600** — Tightened `audit_session_green_gate` robustness: replaced the unbounded
+  `"gz check" in entry` substring match with a token-boundary match (so `gz check-config-paths`
+  no longer false-passes the green gate), and narrowed the broad `except Exception` during
+  config parsing to `yaml.YAMLError`.
+
+### Stats
+
+- 6 Foundation ADRs validated (ADR-0.0.41, 0.0.59, 0.0.63, 0.0.67, 0.0.68, 0.0.69)
+- 30 GHIs closed
+
 ## v0.28.0 (2026-05-24)
 
 **ADR:** ADR-0.28.0-focused-context-loader
