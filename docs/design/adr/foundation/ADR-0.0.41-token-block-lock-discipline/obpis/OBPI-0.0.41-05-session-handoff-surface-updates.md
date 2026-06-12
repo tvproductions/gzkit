@@ -3,7 +3,7 @@ id: OBPI-0.0.41-05-session-handoff-surface-updates
 parent: ADR-0.0.41-token-block-lock-discipline
 item: 5
 lane: Heavy
-status: Draft
+status: Abandoned
 ---
 
 # OBPI-0.0.41-05-session-handoff-surface-updates: Session-Handoff Surface Updates

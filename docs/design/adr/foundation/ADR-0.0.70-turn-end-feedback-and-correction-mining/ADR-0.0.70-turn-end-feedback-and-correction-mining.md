@@ -106,6 +106,7 @@ Adopt the Buetow practices as four surfaces, decomposed 1:1 into four OBPIs:
    block per turn) and fails open on its own errors and timeouts — the hook's own
    malfunction never traps an agent in a blocked-stop loop, and the documented
    off-switch disables it in one line.
+   (REQ-0.0.70-01-07: STRUCTURAL-FENCE — verified at ADR closeout via this invariant)
 2. **The miner is read-only outside its proofs directory, and no emitted record
    carries operator PII.** Transcript mining writes only to
    `.gzkit/chores/session-correction-mining/proofs/`; emitted proposals quote at

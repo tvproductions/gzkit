@@ -1,0 +1,215 @@
+{
+  "obpi_id": "OBPI-0.0.70-01-stop-hook-turn-end-feedback",
+  "timestamp": "2026-06-12T10:06:07.411334+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.70-01-stop-hook-turn-end-feedback.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.9.0",
+      "sibling_obpi": "OBPI-0.9.0-01-claude-governance-hooks-intake",
+      "contested_paths": [
+        "src/gzkit/hooks/claude.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.14.0",
+      "sibling_obpi": "OBPI-0.14.0-05-local-vs-repo-config-and-sync-determinism",
+      "contested_paths": [
+        "src/gzkit/hooks/claude.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-05-runtime-engine-integration",
+      "contested_paths": [
+        "src/gzkit/hooks/claude.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration",
+      "contested_paths": [
+        "src/gzkit/hooks/scripts/quality.py",
+        "src/gzkit/hooks/claude.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.12.0",
+      "sibling_obpi": "OBPI-0.12.0-03-pipeline-router-and-active-marker-bridge",
+      "contested_paths": [
+        "src/gzkit/hooks/claude.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.12.0",
+      "sibling_obpi": "OBPI-0.12.0-02-plan-exit-audit-gate-parity",
+      "contested_paths": [
+        "src/gzkit/hooks/claude.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.12.0",
+      "sibling_obpi": "OBPI-0.12.0-05-completion-reminder-surface",
+      "contested_paths": [
+        "src/gzkit/hooks/claude.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.12.0",
+      "sibling_obpi": "OBPI-0.12.0-04-write-time-pipeline-gate",
+      "contested_paths": [
+        "src/gzkit/hooks/claude.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.12.0",
+      "sibling_obpi": "OBPI-0.12.0-06-settings-registration-and-operator-verification-alignment",
+      "contested_paths": [
+        "src/gzkit/hooks/claude.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-04-extend-payload-blocking-hooks",
+      "contested_paths": [
+        "src/gzkit/hooks/scripts/quality.py",
+        "src/gzkit/hooks/claude.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-22-committed-rendition-store-deterministic-playback",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-17-agents-md-density-classification",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-15-per-vendor-template-selection",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-14-wire-sync-retire-monolith",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-09-agents-md-migration",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-27-migration-disposition-doctrine-refresh-orientation-index",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-06-rule-file-matrix-scorecard",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-04-requires-security-review-attestation",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-15-t0-maintenance-surfaces",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.34",
+      "sibling_obpi": "OBPI-0.0.34-02-rendering-pipeline",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.58",
+      "sibling_obpi": "OBPI-0.0.58-03-artifact-creation-skill-step-zero",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.58",
+      "sibling_obpi": "OBPI-0.0.58-01-prior-art-invariant-doctrine",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.61",
+      "sibling_obpi": "OBPI-0.0.61-03-gz-harness-install-command",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.12",
+      "sibling_obpi": "OBPI-0.0.12-07-agents-md-persona-reference",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.7",
+      "sibling_obpi": "OBPI-0.0.7-01-manifest-v2-schema",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.13",
+      "sibling_obpi": "OBPI-0.0.13-03-manifest-schema-persona-sync",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.13",
+      "sibling_obpi": "OBPI-0.0.13-04-vendor-neutral-persona-loading",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/ADR-0.0.70-turn-end-feedback-and-correction-mining.md",
+        "docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/obpis/OBPI-0.0.70-01-stop-hook-turn-end-feedback.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-04-agents-md-persona-section",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    }
+  ]
+}

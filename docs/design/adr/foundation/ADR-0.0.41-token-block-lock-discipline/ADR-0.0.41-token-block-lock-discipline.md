@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.41-token-block-lock-discipline
-status: Completed
+status: Validated
 kind: foundation
 semver: 0.0.41
 lane: heavy

@@ -3,7 +3,22 @@ id: OBPI-0.0.70-01-stop-hook-turn-end-feedback
 parent: ADR-0.0.70-turn-end-feedback-and-correction-mining
 item: 1
 lane: Lite
-status: Draft
+status: Completed
+# req_atomic (GHI #590): every REQ is one indivisible acceptance facet of a
+# single cohesive deliverable — one Stop hook script + its generator wiring.
+# The labor was authoring one hook (script + template + settings generation +
+# drift coverage), not nine separable efforts; each REQ maps 1:1 to exactly one
+# test class with no multi-step labor below it. No seq>01 subdivision applies.
+req_atomic:
+  - REQ-0.0.70-01-01  # block prose — TestBlockOnFindings
+  - REQ-0.0.70-01-02  # single-block guard — TestSingleBlockPerTurn
+  - REQ-0.0.70-01-03  # off-switch — TestOffSwitch
+  - REQ-0.0.70-01-04  # fail-open — TestFailOpen
+  - REQ-0.0.70-01-05  # bounded telemetry — TestTelemetry
+  - REQ-0.0.70-01-06  # settings wiring — TestSettingsWiring
+  - REQ-0.0.70-01-07  # structural fence — parent ADR Boundary Invariant 1
+  - REQ-0.0.70-01-08  # demo mode — TestDemoMode
+  - REQ-0.0.70-01-09  # generator ownership — TestGenerateClaudeSettings
 ---
 
 # OBPI-0.0.70-01-stop-hook-turn-end-feedback: Stop Hook Turn End Feedback
@@ -13,7 +28,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/ADR-0.0.70-turn-end-feedback-and-correction-mining.md`
 - **Checklist Item:** #1 - "Stop-hook turn-end deterministic feedback — `.claude/hooks/stop-turn-feedback.py` + `Stop` matcher wiring in `.claude/settings.json`; ruff over session-dirty Python files; sub-2s budget; `stop_hook_active` loop guard; off-switch; block telemetry line; agent-actionable block prose; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -35,14 +50,18 @@ telemetry line per block, and fails open on every internal error or timeout.
 
 ## Allowed Paths
 
+- `src/gzkit/traceability.py` (added by brief reconcile, attestor g0)
+- `src/gzkit/config.py` (added by brief reconcile, attestor g0)
+- `src/gzkit/hooks/core.py` (added by brief reconcile, attestor g0)
+
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
 - `docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/ADR-0.0.70-turn-end-feedback-and-correction-mining.md` — parent ADR for intent and scope
 - `.claude/hooks/stop-turn-feedback.py` **CREATE** — NEW: the hook script
 - `.claude/settings.json` — `Stop` matcher wiring
 - `tests/hooks/test_stop_turn_feedback.py` **CREATE** — NEW: unit tests (importlib-loading precedent: `tests/hooks/test_ghi_triage_chat_silence.py`)
-- `.gitignore` — exclude the local telemetry log directory `.gzkit/sensors/`
-- `src/gzkit/hooks/scripts/quality.py` — canonical template source for the hook script (reconciled in-flight 2026-06-12: `.claude/hooks/**` and `.claude/settings.json` are GENERATED surfaces owned by `setup_claude_hooks`; the hand-edit path in the original allowlist was drift)
+- `.gitignore` — exclude the gitignored telemetry sensor directory (gzkit/sensors/)
+- `src/gzkit/hooks/scripts/quality.py` — canonical template source for the hook script (reconciled in-flight 2026-06-12: the .claude/hooks/ directory and settings.json are GENERATED surfaces owned by setup_claude_hooks; the hand-edit path in the original allowlist was drift)
 - `src/gzkit/hooks/claude.py` — settings generation, merge ownership, setup writer, hooks README
 - `src/gzkit/sync_surfaces.py` — drift-detection phase coverage for the `Stop` phase
 - `tests/test_hooks.py` — generator test coherence (coupled-surface, DO IT RIGHT 1a)
@@ -67,6 +86,8 @@ telemetry line per block, and fails open on every internal error or timeout.
 1. REQUIREMENT: `GZ_STOP_FEEDBACK=off` MUST disable the hook without editing `.claude/settings.json`.
 1. REQUIREMENT: Each block MUST append exactly one JSON line to `.gzkit/sensors/stop-turn-feedback.jsonl`; the log MUST stay bounded and MUST be gitignored.
 1. REQUIREMENT: The hook script MUST import stdlib only (parent ADR § Boundary Invariants, Invariant 3); ruff runs as a subprocess of the existing toolchain.
+1. REQUIREMENT: The hook MUST support a `--demo` argv flag that runs the real check pipeline against a synthetic lint violation, prints block prose, and exits 0 without reading stdin, blocking the turn, or writing telemetry.
+1. REQUIREMENT: The `Stop` phase MUST be gzkit-owned — present in `generate_claude_settings`, preserved by `merge_settings`, and covered by `detect_claude_settings_drift` in `src/gzkit/sync_surfaces.py`.
 1. ALWAYS: TDD (RED→GREEN); tests assert REQ semantics, not incidental output strings.
 1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
 
@@ -276,38 +297,37 @@ entry was observed being silently reverted by the settings sync before the fix).
 
 ### Key Proof
 
-```
-$ uv run python .claude/hooks/stop-turn-feedback.py --demo
-stop-turn-feedback: BLOCKED — turn-end lint check failed across 1 dirty Python file(s).
-What failed: F401 [*] `os` imported but unused --> demo_violation.py:1:8 ...
-Why this is forbidden: gzkit forbids ending a turn while the cheap deterministic
-tier is red (AGENTS.md Behavior Rules — Never #5; ADR-0.0.70 ...)
-Governed next step: fix the findings above, verify with `uv run ruff check <files>`,
-then end the turn. One block per turn — the next stop proceeds even if findings
-remain (fail-open).
-```
-(observed output, 2026-06-12; exit 0)
+
+Demo (observed output 2026-06-12; exit 0):
+
+    $ uv run python .claude/hooks/stop-turn-feedback.py --demo
+    stop-turn-feedback: BLOCKED — turn-end lint check failed across 1 dirty Python file(s).
+    What failed: F401 [*] `os` imported but unused --> demo_violation.py:1:8 ...
+    Why this is forbidden: gzkit forbids ending a turn while the cheap deterministic tier is red (AGENTS.md Behavior Rules — Never #5; ADR-0.0.70).
+    Governed next step: fix the findings above, verify with `uv run ruff check <files>`, then end the turn. One block per turn — the next stop proceeds even if findings remain (fail-open).
+
+Verification receipts (Stage 3, this session):
+- arb-step-unittest-b1a4415ed07f4afbb8cfe81de92e5e5d — 6075 tests, exit_status=0
+- arb-step-unittestscoped-a19e304cece14b26b2be502eda7040f9 — 11/11 OBPI tests, exit_status=0
+- arb-ruff-b05a757f881d452e849d4fa4af4fbc52 — exit_status=0
+- arb-step-typecheck-ef780ed247e844888da2d00d126f678f — exit_status=0
+- gz covers OBPI-0.0.70-01: behavior_uncovered_reqs=0; REQ-0.0.70-01-07 STRUCTURAL-FENCE proof_status=pass
 
 ### Implementation Summary
 
-- Parent ADR § Decision item (verbatim, per Discovery Checklist): "**1. Stop-hook
-  turn-end deterministic feedback (`.claude/hooks/stop-turn-feedback.py` + `Stop`
-  wiring in `.claude/settings.json`).** At every agent turn end, the hook runs the
-  cheapest deterministic check tier — `ruff check` over session-dirty Python files
-  (git working-tree dirty `.py` paths) — under a hard sub-2-second budget ..."
-- Files created/modified: `.claude/hooks/stop-turn-feedback.py` (generated),
-  `tests/hooks/test_stop_turn_feedback.py`, `src/gzkit/hooks/scripts/quality.py`
-  (canonical template), `src/gzkit/hooks/claude.py` (Stop phase generation/merge/
-  setup/README), `src/gzkit/sync_surfaces.py` (drift coverage), `tests/test_hooks.py`,
-  `.claude/settings.json` (generated), `.gitignore`
-- Tests added: 11 unit tests (importlib-loaded hook module; generator ownership test)
-- Date completed: 2026-06-12 (implementation; Gate 5 pending)
-- Attestation status: AWAITING operator Gate 5 (universal, ADR-0.0.36)
-- Defects noted: generated-surface allowlist drift reconciled in-flight (brief
-  § Allowed Paths note); external-process stash/reset race against in-flight locked
-  OBPIs observed mid-session — insight logged to agent-insights.jsonl
+
+- Parent ADR Decision item (verbatim): "Stop-hook turn-end deterministic feedback (.claude/hooks/stop-turn-feedback.py + Stop wiring in .claude/settings.json). At every agent turn end, the hook runs the cheapest deterministic check tier — ruff check over session-dirty Python files — under a hard sub-2-second budget."
+- Hook delivered: .claude/hooks/stop-turn-feedback.py (generated, 161 lines) — scopes ruff to git-dirty .py files, emits three-part block prose (what failed / why forbidden / governed next step), honors stop_hook_active (one block per turn) and GZ_STOP_FEEDBACK=off, appends bounded telemetry to .gzkit/sensors/stop-turn-feedback.jsonl (1-MiB / 500-line cap), fails open on every internal error and timeout.
+- Generated-surface discovery (reconciled in-flight): .claude/hooks/ and .claude/settings.json are GENERATED surfaces; the hook lives as a canonical template in src/gzkit/hooks/scripts/quality.py and the Stop phase is gzkit-owned in generate_claude_settings / merge_settings / detect_claude_settings_drift. REQ-0.0.70-01-09 fences generator ownership.
+- Files created: .claude/hooks/stop-turn-feedback.py, tests/hooks/test_stop_turn_feedback.py. Files modified: src/gzkit/hooks/scripts/quality.py, src/gzkit/hooks/claude.py, src/gzkit/sync_surfaces.py, tests/test_hooks.py, .claude/settings.json, .gitignore.
+- Tests added: 11 unit tests (importlib-loaded hook module + generator ownership). All 9 REQs proven (8 BEHAVIOR via @covers, 1 STRUCTURAL-FENCE via parent ADR Boundary Invariant 1).
+- req_atomic exemption (GHI #590): all 9 REQs declared atomic — one cohesive hook deliverable, each REQ maps 1:1 to one test class, no labor below the REQ.
+- Coupled in-flight fix (separate commit 5f476d70): gz covers did not forward project_root to compute_three_channel_coverage, so STRUCTURAL-FENCE REQs resolved unproven at the CLI; fixed + regression test, routed as direct-fix.
+- Date completed: 2026-06-12. Attestation: operator Gate 5 received ("attest completed").
 
 ## Tracked Defects
+
+- REQ-count drift: 7 declared vs 9 acceptance criteria (brief reconcile, attestor g0)
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
@@ -316,12 +336,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — Stop-hook turn-end deterministic feedback verified: .claude/hooks/stop-turn-feedback.py runs ruff over git-dirty Python at turn end, blocks with three-part prose, fails open (stop_hook_active + GZ_STOP_FEEDBACK=off + timeout). 11/11 OBPI tests pass (arb-step-unittestscoped-a19e304cece14b26b2be502eda7040f9), full suite 6075 tests green (arb-step-unittest-b1a4415ed07f4afbb8cfe81de92e5e5d), lint clean (arb-ruff-b05a757f881d452e849d4fa4af4fbc52), typecheck clean (arb-step-typecheck-ef780ed247e844888da2d00d126f678f). All 9 REQs proven; behavior_uncovered_reqs=0; REQ-0.0.70-01-07 STRUCTURAL-FENCE proof=pass via parent ADR Boundary Invariant 1. Attestor: g0, 2026-06-12.
+- Date: 2026-06-12
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-12
 
 **Evidence Hash:** -
