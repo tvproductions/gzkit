@@ -1,0 +1,24 @@
+{
+  "obpi_id": "OBPI-0.0.70-02-session-correction-mining",
+  "timestamp": "2026-06-12T11:10:04.087229+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.70-02-session-correction-mining.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-03-migrate-back-edges-drain-baseline",
+      "contested_paths": [
+        "src/gzkit/chores/session-correction-mining/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/ADR-0.0.70-turn-end-feedback-and-correction-mining.md",
+        "docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/obpis/OBPI-0.0.70-02-session-correction-mining.md"
+      ]
+    }
+  ]
+}

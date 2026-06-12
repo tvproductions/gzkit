@@ -70,8 +70,15 @@ def _matched_marker(text: str) -> str | None:
 
 
 def _cluster_key(text: str) -> str:
-    """Normalize a correction into its cluster key (first N words, lowercased)."""
-    words = _WORD_RE.findall(text.lower())
+    """Normalize a correction into its cluster key (first N words, lowercased).
+
+    Emails are scrubbed before tokenizing so no operator-address token (the
+    local-part survives `_WORD_RE` otherwise) leaks into the git-tracked
+    `cluster_key` field or the proposal hash built from it. The operator-PII
+    rule binds every emitted record (ADR-0.0.70 Boundary Invariant 2).
+    """
+    scrubbed = _EMAIL_RE.sub(" ", text.lower())
+    words = _WORD_RE.findall(scrubbed)
     return " ".join(words[:CLUSTER_KEY_WORDS])
 
 
@@ -115,7 +122,10 @@ def _iter_corrections(path: Path) -> list[str]:
     assistant_seen = False
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
-    except OSError:
+    except (OSError, UnicodeDecodeError):
+        # UnicodeDecodeError subclasses ValueError, not OSError; a non-UTF-8
+        # transcript must fail soft (zero corrections), never escape the miner
+        # (REQ-0.0.70-02-03).
         return corrections
     for raw in lines:
         try:

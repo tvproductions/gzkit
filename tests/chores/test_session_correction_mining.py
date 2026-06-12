@@ -22,6 +22,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.insights.correction_mining import (
+    _cluster_key,
     main,
     mine_corrections,
     scrub,
@@ -159,6 +160,19 @@ class TestFailSoft(unittest.TestCase):
             (root / "empty.jsonl").write_text("", encoding="utf-8")
             self.assertEqual(mine_corrections(root), [])
 
+    @covers("REQ-0.0.70-02-03")
+    def test_non_utf8_transcript_fails_soft(self):
+        """A non-UTF-8 transcript MUST yield zero proposals, never raise.
+
+        UnicodeDecodeError subclasses ValueError (not OSError); a fail-soft
+        fence that only catches OSError lets it escape the miner, violating
+        REQ-02-03 ('never an exception escaping the miner').
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "binary.jsonl").write_bytes(b"\xff\xfe not valid utf-8 \x00\x81")
+            self.assertEqual(mine_corrections(root), [])
+
 
 class TestScrubbing(unittest.TestCase):
     """REQ-0.0.70-02-04: operator-PII rule binds every emitted record."""
@@ -179,6 +193,32 @@ class TestScrubbing(unittest.TestCase):
     def test_scrub_caps_quote_to_one_line(self):
         scrubbed = scrub("no, do it right\nand here is a second line")
         self.assertEqual(len(scrubbed.splitlines()), 1)
+
+    @covers("REQ-0.0.70-02-04")
+    def test_cluster_key_scrubs_operator_email(self):
+        """The git-tracked cluster_key field (and the proposal hash built from
+        it) MUST NOT carry an operator email local-part.
+
+        The operator-PII rule binds EVERY emitted record, not just the quote
+        field (ADR-0.0.70 Boundary Invariant 2). _cluster_key tokenizes raw
+        text, so an unscrubbed email leaks its local-part as a word token.
+        """
+        key = _cluster_key("no, email me at 2949663+ahuimanu@users.noreply.github.com about this")
+        self.assertNotIn("ahuimanu", key)
+        self.assertNotIn("gmail", key)
+
+    @covers("REQ-0.0.70-02-04")
+    def test_emitted_record_cluster_key_is_pii_free(self):
+        """End-to-end: a clustered correction carrying an email emits a record
+        whose cluster_key field is free of the operator address."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            correction = "no, stop emailing 2949663+ahuimanu@users.noreply.github.com in commits"
+            for n in range(3):
+                _write_session(root, f"session-{n}", [correction])
+            proposals = mine_corrections(root)
+            self.assertEqual(len(proposals), 1)
+            self.assertNotIn("ahuimanu", proposals[0]["cluster_key"])
 
 
 class TestIdempotency(unittest.TestCase):

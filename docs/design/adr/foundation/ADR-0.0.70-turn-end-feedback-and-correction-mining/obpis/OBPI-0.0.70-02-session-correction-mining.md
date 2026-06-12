@@ -3,7 +3,21 @@ id: OBPI-0.0.70-02-session-correction-mining
 parent: ADR-0.0.70-turn-end-feedback-and-correction-mining
 item: 2
 lane: Lite
-status: Draft
+status: Completed
+# req_atomic (GHI #590): every REQ is one indivisible acceptance facet of a
+# single cohesive deliverable — one read-only stdlib miner module + its chore
+# package. The labor was authoring one miner (clustering, scrub, fail-soft,
+# idempotency, dry-run) + one chore package, not eight separable efforts; each
+# REQ maps to one test class / proof channel with no multi-step labor below it.
+req_atomic:
+  - REQ-0.0.70-02-01  # cluster >=3 -> proposal — TestClustering
+  - REQ-0.0.70-02-02  # below-threshold -> nothing — TestClustering
+  - REQ-0.0.70-02-03  # fail-soft — TestFailSoft
+  - REQ-0.0.70-02-04  # email scrub (quote + cluster_key) — TestScrubbing
+  - REQ-0.0.70-02-05  # idempotency — TestIdempotency
+  - REQ-0.0.70-02-06  # chore package — gz validate --chores-layout (SUPPORT)
+  - REQ-0.0.70-02-07  # read-only/candidates-only — parent ADR Boundary Invariants 2&4
+  - REQ-0.0.70-02-08  # --dry-run writes nothing — TestDryRun
 ---
 
 # OBPI-0.0.70-02-session-correction-mining: Session Correction Mining
@@ -13,7 +27,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/ADR-0.0.70-turn-end-feedback-and-correction-mining.md`
 - **Checklist Item:** #2 - "Session-correction-mining chore — stdlib miner over `~/.claude/projects` transcripts in `src/gzkit/insights/`; corrective-marker heuristics; recurrence >= 3 clustering; PII-scrubbed proposal records to `.gzkit/chores/session-correction-mining/proofs/`; CHORE.md + acceptance criteria + registry entry; `gz validate --chores-layout` green; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -272,35 +286,30 @@ arb-pattern-extraction).
 
 ### Key Proof
 
-First real-data run (2026-06-12, read-only probe): **18 operator corrections
-detected across 17 sessions** that the self-reported insights stream had not
-captured — e.g. "stop skipping the internal skills! you are vibing...",
-"no, i just ran it that way, i invoked the skill. you vibed." Zero clusters at
-threshold 3 is honest output: the corrections are lexically distinct; recurrence
-clustering fires when phrasings repeat.
 
-```
-$ uv run python -m gzkit.insights.correction_mining --dry-run
-session-correction-mining: 0 cluster(s) at threshold 3 from
-/Users/jeff/.claude/projects/-Users-jeff-Documents-Code-gzkit
-```
+Read-only probe (observed 2026-06-12; exit 0):
+
+    $ uv run python -m gzkit.insights.correction_mining --dry-run
+    session-correction-mining: 0 cluster(s) at threshold 3 from /Users/jeff/.claude/projects/-Users-jeff-Documents-Code-gzkit
+
+0 clusters at threshold 3 is honest null output (corrections are lexically distinct; clustering fires when phrasings repeat).
+
+Verification receipts (Stage 3, this session):
+- arb-step-unittest-eb6af3bf81c043dea15cd2250ec30b7a — 6079 tests, exit_status=0
+- arb-step-unittestscoped-edf0bd63a24c4fac87ef0dc8fe0740f0 — 14 OBPI tests, exit_status=0
+- arb-ruff-6e7724621ca146f79e64dcade6fe84a6 — exit_status=0
+- arb-step-typecheck-167a3fd2588d4243a03067afc424c7d2 — exit_status=0
+- gz validate --chores-layout exit 0; gz covers behavior_uncovered_reqs=0
+Defect fixes verified end-to-end: cluster_key PII-free ('ahuimanu' absent); non-UTF-8 transcript fails soft (returns []).
 
 ### Implementation Summary
 
-- Parent ADR § Decision item (verbatim, per Discovery Checklist): "**2.
-  Session-correction-mining chore (`session-correction-mining` under `.gzkit/chores/`,
-  stdlib miner in `src/gzkit/insights/`).** A read-only chore, modeled on
-  eval-feedback-cluster's shape ..."
-- Files created/modified: `src/gzkit/insights/correction_mining.py`,
-  `tests/chores/test_session_correction_mining.py`,
-  `.gzkit/chores/session-correction-mining/` (CHORE.md, acceptance.json, proofs/),
-  `.gzkit/chores/registry.json`, pkg copy via `gz agent sync control-surfaces`
-- Tests added: 11 unit tests (fixture transcripts + real-shape regression class)
-- Date completed: 2026-06-12 (implementation; Gate 5 pending)
-- Attestation status: AWAITING operator Gate 5 (universal, ADR-0.0.36)
-- Defects noted: records are plain dicts per ADR-0.0.70 Boundary Invariant 3
-  (stdlib-only fence overrides the Pydantic default for this module — named
-  tension, documented in module docstring and test docstring)
+
+- Parent ADR Decision item 2 (verbatim): read-only stdlib miner in src/gzkit/insights/ over ~/.claude/projects transcripts; corrective-marker heuristics; recurrence>=3 clustering; PII-scrubbed proposals to chore proofs/; CHORE.md + acceptance + registry; chores-layout green; unit tests.
+- Regularized rogue-committed work (commit 863250d6) through the skipped pipeline ceremony per operator ruling 2026-06-12. Three audit-found defects fixed TDD RED->GREEN: (1) _cluster_key scrubs emails before tokenizing so the git-tracked cluster_key field + proposal hash carry no operator local-part [MAJOR PII fix]; (2) _iter_corrections catches UnicodeDecodeError so non-UTF-8 transcripts fail soft, not raise [REQ-02-03]; (3) authored the missing chore README.md, synced to pkg copy.
+- Files (this pass): src/gzkit/insights/correction_mining.py, tests/chores/test_session_correction_mining.py (+3 tests, now 14), .gzkit/chores/session-correction-mining/README.md (synced to src/gzkit/chores/).
+- req_atomic (GHI #590): all 8 REQs atomic — one cohesive miner module + chore package.
+- Date completed: 2026-06-12. Attestation: operator Gate 5 received ("attest completed").
 
 ## Tracked Defects
 
@@ -311,12 +320,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — session-correction-mining miner regularized through the ceremony that was skipped on the rogue run. Three audit-found defects fixed TDD RED->GREEN: cluster_key PII scrub (operator local-part no longer reaches the git-tracked field or proposal hash), UnicodeDecodeError fail-soft (REQ-02-03), and the missing chore README. 14/14 OBPI tests pass (arb-step-unittestscoped-edf0bd63a24c4fac87ef0dc8fe0740f0), full suite 6079 green (arb-step-unittest-eb6af3bf81c043dea15cd2250ec30b7a), lint+typecheck clean, chores-layout exit 0, behavior_uncovered_reqs=0. Attestor: g0, 2026-06-12.
+- Date: 2026-06-12
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-12
 
 **Evidence Hash:** -

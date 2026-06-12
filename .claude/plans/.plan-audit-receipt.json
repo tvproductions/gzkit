@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.70-01-stop-hook-turn-end-feedback",
-  "timestamp": "2026-06-12T10:05:00.000000+00:00",
+  "obpi_id": "OBPI-0.0.70-02-session-correction-mining",
+  "timestamp": "2026-06-12T10:50:00.000000+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.70-01-stop-hook-turn-end-feedback.md",
+  "plan_file": "OBPI-0.0.70-02-session-correction-mining.md",
   "gaps_found": 0,
-  "notes": "Retrospective plan authored for implementation completed in commit 863250d6. ADR<->OBPI fully aligned. 29 scope collisions advisory (pool-track ADRs sharing infrastructure files). Implementation complete; pipeline resumes at Stage 4 ceremony."
+  "notes": "Ceremony remediation for rogue-committed work (commit 863250d6, ceremony skipped). ADR<->OBPI aligned (brief = verbatim ADR checklist item #2). Plan folds in 3 audit-found defects: cluster_key PII leak, UnicodeDecodeError fail-soft gap, missing README. 2 scope collisions advisory."
 }
