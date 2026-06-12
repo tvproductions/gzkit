@@ -206,13 +206,19 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 2 (TDD — Red-Green-Refactor)
 
 ```text
-# Paste test output here
+Docs-only OBPI (SUPPORT REQs; no @covers tests by design — ADR-0.0.59 proof
+channels). Structural proofs:
+uv run mkdocs build --strict -> 'Documentation built' (exit 0)
+uv run gz validate --documents -> green inside gz check exit 0
+Suite receipt: `arb-step-unittest-721f7a2b9dc34c24a7246422592f7c64` exit_status=0 (full suite)
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+Lint: `arb-ruff-891d4ff9d22045769631d134d5de49f2` exit_status=0
+Typecheck: `arb-step-typecheck-9ad2c564358d443f97119b315b57acc1` exit_status=0
+gz check exit 0 (closeout-proof SUPPORT citations parse)
 ```
 
 ### Gate 3 (Docs)
@@ -235,19 +241,39 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before: the harness-engineering appraisal triangulated three external theses
+(Böckeler, Greyling, CE) and carried a dangling reference to a never-drafted
+`ADR-pool.harness-sidecar`; the Magna Carta had no record of the operator's
+2026-06-12 Buetow ruling. Now: the appraisal carries the fourth-source Buetow
+section per its per-thesis pattern (full citation, convergence inventory,
+adopted-deltas table mapping to OBPI-01/02/03, sidecar funded-not-displaced,
+dangling-reference reconciliation), and the campaign records the operator-verbatim
+amendment with item B.0 inserted ahead of B.1.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```
+$ rg -n "Buetow" docs/governance/harness-engineering-appraisal.md | head -3
+(fourth-source section present)
+$ rg -n "B.0 ADR-0.0.70" docs/governance/build-to-1.0-campaign-2026-06-10.md
+(B.0 row present with operator verbatim amendment above)
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Parent ADR § Decision item (verbatim, per Discovery Checklist): "**4.
+  Fourth-source doctrine triangulation (docs).** Append a Buetow section to
+  `docs/governance/harness-engineering-appraisal.md` following the doc's
+  established per-thesis pattern ..."
+- Files created/modified: `docs/governance/harness-engineering-appraisal.md`
+  (fourth-source section + sidecar reconciliation + cross-ref),
+  `docs/governance/build-to-1.0-campaign-2026-06-10.md` (2026-06-12 amendment
+  verbatim + B.0)
+- Tests added: n/a (SUPPORT proof channels)
+- Date completed: 2026-06-12 (implementation; Gate 5 pending)
+- Attestation status: AWAITING operator Gate 5 (universal, ADR-0.0.36)
+- Defects noted: appraisal's `ADR-pool.harness-sidecar` dangling reference
+  reconciled (planned, never drafted; Stop-hook telemetry now funds the decision)
 
 ## Tracked Defects
 

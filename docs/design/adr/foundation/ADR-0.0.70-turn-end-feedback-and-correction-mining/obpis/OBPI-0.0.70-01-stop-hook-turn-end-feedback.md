@@ -225,13 +225,18 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 2 (TDD — Red-Green-Refactor)
 
 ```text
-# Paste test output here
+RED observed 2026-06-12: uv run -m unittest tests.hooks.test_stop_turn_feedback -q
+  -> FileNotFoundError: .claude/hooks/stop-turn-feedback.py (test authored first)
+GREEN: Ran 11 tests in 0.047s OK (REQs 01-01..06, 01-08, 01-09, 03-02 covered)
+GREEN receipt: `arb-step-unittest-721f7a2b9dc34c24a7246422592f7c64` exit_status=0 (full suite)
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+Lint: `arb-ruff-891d4ff9d22045769631d134d5de49f2` exit_status=0
+Typecheck: `arb-step-typecheck-9ad2c564358d443f97119b315b57acc1` exit_status=0
+gz check exit 0 (full pipeline incl. behave distribution invariant)
 ```
 
 ### Gate 3 (Docs)
@@ -254,19 +259,53 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before: gzkit had no deterministic sensor at the agent turn boundary — Behavior
+Rules Never #5 ('do not summarize and stop') was prose-only, and an agent could end
+a turn with red lint on session-dirty files (the appraisal's #1 named gap: 'agents
+work blind between gate transitions'). Now: a gzkit-owned `Stop` phase runs ruff over
+git-dirty Python files at every turn end and blocks with three-part prose so the
+agent self-corrects in-flight; fail-open by construction (a turn can always end);
+each block leaves a telemetry line so the fence's catch-rate is observable.
+
+Discovered in-flight and reconciled into Allowed Paths: `.claude/hooks/**` and
+`.claude/settings.json` are GENERATED surfaces — the hook therefore lives as a
+canonical template in `src/gzkit/hooks/scripts/quality.py`, the `Stop` phase is
+gzkit-owned in `generate_claude_settings`/`merge_settings`/`detect_claude_settings_drift`,
+and REQ-0.0.70-01-09 pins generator ownership as the regression fence (the hand-wired
+entry was observed being silently reverted by the settings sync before the fix).
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```
+$ uv run python .claude/hooks/stop-turn-feedback.py --demo
+stop-turn-feedback: BLOCKED — turn-end lint check failed across 1 dirty Python file(s).
+What failed: F401 [*] `os` imported but unused --> demo_violation.py:1:8 ...
+Why this is forbidden: gzkit forbids ending a turn while the cheap deterministic
+tier is red (AGENTS.md Behavior Rules — Never #5; ADR-0.0.70 ...)
+Governed next step: fix the findings above, verify with `uv run ruff check <files>`,
+then end the turn. One block per turn — the next stop proceeds even if findings
+remain (fail-open).
+```
+(observed output, 2026-06-12; exit 0)
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Parent ADR § Decision item (verbatim, per Discovery Checklist): "**1. Stop-hook
+  turn-end deterministic feedback (`.claude/hooks/stop-turn-feedback.py` + `Stop`
+  wiring in `.claude/settings.json`).** At every agent turn end, the hook runs the
+  cheapest deterministic check tier — `ruff check` over session-dirty Python files
+  (git working-tree dirty `.py` paths) — under a hard sub-2-second budget ..."
+- Files created/modified: `.claude/hooks/stop-turn-feedback.py` (generated),
+  `tests/hooks/test_stop_turn_feedback.py`, `src/gzkit/hooks/scripts/quality.py`
+  (canonical template), `src/gzkit/hooks/claude.py` (Stop phase generation/merge/
+  setup/README), `src/gzkit/sync_surfaces.py` (drift coverage), `tests/test_hooks.py`,
+  `.claude/settings.json` (generated), `.gitignore`
+- Tests added: 11 unit tests (importlib-loaded hook module; generator ownership test)
+- Date completed: 2026-06-12 (implementation; Gate 5 pending)
+- Attestation status: AWAITING operator Gate 5 (universal, ADR-0.0.36)
+- Defects noted: generated-surface allowlist drift reconciled in-flight (brief
+  § Allowed Paths note); external-process stash/reset race against in-flight locked
+  OBPIs observed mid-session — insight logged to agent-insights.jsonl
 
 ## Tracked Defects
 

@@ -212,13 +212,20 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 2 (TDD — Red-Green-Refactor)
 
 ```text
-# Paste test output here
+Covering test for REQ-0.0.70-03-02 lives in tests/hooks/test_stop_turn_feedback.py
+(stacked @covers on the three-part-prose assertion; SHARED proof surface declared
+in both briefs). GREEN: 11 tests OK.
+GREEN receipt: `arb-step-unittest-721f7a2b9dc34c24a7246422592f7c64` exit_status=0 (full suite)
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+Lint: `arb-ruff-891d4ff9d22045769631d134d5de49f2` exit_status=0
+Typecheck: `arb-step-typecheck-9ad2c564358d443f97119b315b57acc1` exit_status=0
+gz validate --unscoped-rules exit 0 (22 rule files checked)
+gz validate --advisory-scorecard exit 0
+gz agent sync control-surfaces: pkg + vendor mirrors propagated
 ```
 
 ### Gate 3 (Docs)
@@ -241,19 +248,42 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before: 'engineer guardrail output as the prompt a human would have typed' was
+folklore — fail-closed hooks and validators emitted whatever their author chose,
+and a bare exit code forced the consuming agent to reconstruct intent from training
+memory. Now: a versioned binding rule (`.gzkit/rules/guardrail-feedback-prose.md`,
+v0.1.0) names the three-part bar — what failed / why it is forbidden (cited) /
+the governed next step (runnable) — classified Promotable on the advisory scorecard
+(row 61) with a real enforcement consumer shipping in the same ADR.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+The first enforcement consumer exhibits the bar:
+```
+$ uv run python .claude/hooks/stop-turn-feedback.py --demo
+... What failed: F401 ... / Why this is forbidden: ... (AGENTS.md Never #5 ...) /
+Governed next step: fix the findings, verify with `uv run ruff check <files>` ...
+```
+The rule's invariant sentence is retained verbatim as the scorecard row-61 bullet
+(bullet-retention validator green).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Parent ADR § Decision item (verbatim, per Discovery Checklist): "**3.
+  Guardrail-feedback-prose rule (`.gzkit/rules/guardrail-feedback-prose.md`).** A
+  binding rule: every fail-closed hook and validator emits agent-actionable
+  natural-language recovery text ..."
+- Files created/modified: `.gzkit/rules/guardrail-feedback-prose.md` (canonical),
+  `src/gzkit/rules/guardrail-feedback-prose.md` (sync), vendor mirrors (sync),
+  `docs/governance/advisory-rules-audit.md` (row 61),
+  `data/distribution_baseline_manifest.json` (wheel-delivery registration),
+  `data/surface_weight_waivers.json` (60-day bridge waiver),
+  `tests/hooks/test_stop_turn_feedback.py` (stacked @covers REQ-0.0.70-03-02)
+- Tests added: covering assertion via the shared hook test
+- Date completed: 2026-06-12 (implementation; Gate 5 pending)
+- Attestation status: AWAITING operator Gate 5 (universal, ADR-0.0.36)
+- Defects noted: none beyond the named promotion deferral (rule § Mechanical
+  promotion path)
 
 ## Tracked Defects
 

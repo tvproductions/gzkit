@@ -225,13 +225,19 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 2 (TDD — Red-Green-Refactor)
 
 ```text
-# Paste test output here
+RED observed 2026-06-12: uv run -m unittest tests.chores.test_session_correction_mining -q
+  -> ModuleNotFoundError (tests authored first)
+GREEN: Ran 11 tests OK (REQs 02-01..05, 02-08 covered; incl. real-transcript-shape
+  regression tests pinned against observed shapes from 280 real transcripts)
+GREEN receipt: `arb-step-unittest-721f7a2b9dc34c24a7246422592f7c64` exit_status=0 (full suite)
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+Lint: `arb-ruff-891d4ff9d22045769631d134d5de49f2` exit_status=0
+Typecheck: `arb-step-typecheck-9ad2c564358d443f97119b315b57acc1` exit_status=0
+gz validate --chores-layout exit 0
 ```
 
 ### Gate 3 (Docs)
@@ -254,19 +260,47 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before: correction capture was compliance-dependent — Behavior Rule 11 relies on the
+agent recognizing it was corrected and self-reporting to agent-insights.jsonl; the
+corrections an agent vibes past left no record, and no surface read the ground-truth
+transcripts. Now: a read-only stdlib miner walks `~/.claude/projects/` transcripts,
+detects leading-marker operator corrections after assistant activity (meta/sidechain/
+tag-injected messages excluded), clusters recurrence across sessions, and emits
+PII-scrubbed idempotent proposal records — the third sensor feeding the
+advisory-scorecard Promotable→Mechanical ladder (after eval-feedback-cluster and
+arb-pattern-extraction).
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+First real-data run (2026-06-12, read-only probe): **18 operator corrections
+detected across 17 sessions** that the self-reported insights stream had not
+captured — e.g. "stop skipping the internal skills! you are vibing...",
+"no, i just ran it that way, i invoked the skill. you vibed." Zero clusters at
+threshold 3 is honest output: the corrections are lexically distinct; recurrence
+clustering fires when phrasings repeat.
+
+```
+$ uv run python -m gzkit.insights.correction_mining --dry-run
+session-correction-mining: 0 cluster(s) at threshold 3 from
+/Users/jeff/.claude/projects/-Users-jeff-Documents-Code-gzkit
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Parent ADR § Decision item (verbatim, per Discovery Checklist): "**2.
+  Session-correction-mining chore (`session-correction-mining` under `.gzkit/chores/`,
+  stdlib miner in `src/gzkit/insights/`).** A read-only chore, modeled on
+  eval-feedback-cluster's shape ..."
+- Files created/modified: `src/gzkit/insights/correction_mining.py`,
+  `tests/chores/test_session_correction_mining.py`,
+  `.gzkit/chores/session-correction-mining/` (CHORE.md, acceptance.json, proofs/),
+  `.gzkit/chores/registry.json`, pkg copy via `gz agent sync control-surfaces`
+- Tests added: 11 unit tests (fixture transcripts + real-shape regression class)
+- Date completed: 2026-06-12 (implementation; Gate 5 pending)
+- Attestation status: AWAITING operator Gate 5 (universal, ADR-0.0.36)
+- Defects noted: records are plain dicts per ADR-0.0.70 Boundary Invariant 3
+  (stdlib-only fence overrides the Pydantic default for this module — named
+  tension, documented in module docstring and test docstring)
 
 ## Tracked Defects
 
