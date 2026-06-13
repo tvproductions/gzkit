@@ -3,7 +3,22 @@ id: OBPI-0.0.71-02-gz-obpi-repudiate-cli
 parent: ADR-0.0.71-completion-repudiation
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
+# req_atomic: each REQ is a single indivisible labor unit against the one shared
+# `obpi_repudiate_cmd` + its parser registration — the emit-event behavior (01),
+# the empty-attestor fail-close (02), the empty-reason fail-close (03), the
+# dry-run no-write path (04), the closed-enum parser rejection (05), the
+# operator-gated structural fence (06), and the manpage/index/runbook/cli-audit
+# support deliverable (07). None decomposes into parallel seq=02+ sub-tasks; the
+# whole verb is one command function authored test-first (ADR-0.0.64 exemption).
+req_atomic:
+  - REQ-0.0.71-02-01
+  - REQ-0.0.71-02-02
+  - REQ-0.0.71-02-03
+  - REQ-0.0.71-02-04
+  - REQ-0.0.71-02-05
+  - REQ-0.0.71-02-06
+  - REQ-0.0.71-02-07
 ---
 
 # OBPI-0.0.71-02-gz-obpi-repudiate-cli: Gz Obpi Repudiate Cli
@@ -14,7 +29,7 @@ status: Draft
 <!-- gz-validate-skip: command-shape -->
 - **Checklist Item:** #2 - "`gz obpi repudiate` CLI verb (operator-gated, fail-closed on empty attestor/reason, --dry-run) + parser + manpage + `gz cli audit` green + behave smoke test; AGENTS.md withdraw-vs-repudiate disambiguation"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -29,6 +44,8 @@ Deliver the operator-gated `repudiate` verb under `gz obpi`: it emits the OBPI-0
 > those external surfaces.
 
 ## Allowed Paths
+
+- `src/gzkit/cli/main.py` (added by brief reconcile, attestor g0)
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
@@ -255,15 +272,28 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+$ uv run gz obpi repudiate OBPI-0.0.70-02 --cause bad-cause --reason r --attestor Jeff
+# exit 2 (argparse choices enforcement, before any ledger write)
+
+$ uv run gz cli audit
+CLI audit passed.
+Cross-coverage: 105/105 commands fully covered.
+
+Receipts: arb-step-unittest-e56c33fd3c644342b50cbc9dc05dbca5 (full suite, 6097 pass), arb-ruff-1a21c6b3a9d84fdf8cc9f90222d30b60 (clean), arb-step-typecheck-94d8fe8dcd79462b9cde7d9bf047484d (clean), arb-step-mkdocs-d7181a63c84f492f8e01ca2e400fa1e4 (clean). behave_uncovered_reqs=0 via gz covers.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Verb: gz obpi repudiate <OBPI-ID> --cause <enum> --reason "<text>" --attestor "<human>" [--dry-run] — obpi_repudiate_cmd() in src/gzkit/commands/obpi_cmd.py, consuming the OBPI-01 obpi_completion_repudiated_event factory
+- Parser: repudiate subparser under gz obpi in src/gzkit/cli/parser_artifacts.py; --cause constrained via argparse choices to the closed enum (model-induced-fabrication | operator-error | verification-invalid)
+- Fail-closed gates: empty --attestor or --reason exit 1 before any ledger lookup; invalid --cause exits 2 at the parser
+- repudiated_receipt: auto-derived from the most recent obpi_receipt_emitted completion event (deterministic; not a CLI flag)
+- Files created: tests/test_obpi_repudiate_cli.py (5 tests), docs/user/manpages/obpi-repudiate.md, features/obpi_repudiate.feature (5 scenarios)
+- Files modified: obpi_cmd.py, parser_artifacts.py, .gzkit/rules/governance-core.md (v0.4.0 withdraw-vs-repudiate disambiguation), manpage index, operator + governance runbooks, config/doc-coverage.json, trust_audits/cli.py (_NO_SKILL_VERBS), data/behave_coverage_waivers.json
+- Tests added: 5 unit (REQ-01..05) + 5 behave scenarios (REQ-01/02/03/05 tagged); REQ-04/06/07 behave-waived with rationale
+- Date completed: 2026-06-13
+- Attestation status: operator-attested "attest completed" (Stage 4)
 
 ## Tracked Defects
 
@@ -274,12 +304,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — operator attested OBPI-0.0.71-02-gz-obpi-repudiate-cli at Stage 4 after reviewing the evidence packet. gz obpi repudiate verb landed: obpi_repudiate_cmd + repudiate subparser (closed-enum --cause, fail-closed empty --attestor/--reason), per-verb manpage, 5 behave scenarios, 5 unit tests (REQ-01..05 @covers, behavior_uncovered_reqs=0), withdraw-vs-repudiate disambiguation in governance-core.md v0.4.0. Receipts: arb-step-unittest-e56c33fd3c644342b50cbc9dc05dbca5 (6097 pass), arb-ruff-1a21c6b3a9d84fdf8cc9f90222d30b60, arb-step-typecheck-94d8fe8dcd79462b9cde7d9bf047484d, arb-step-mkdocs-d7181a63c84f492f8e01ca2e400fa1e4. gz cli audit 105/105; gz validate --documents clean.
+- Date: 2026-06-13
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-13
 
 **Evidence Hash:** -

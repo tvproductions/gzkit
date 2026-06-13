@@ -37,6 +37,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "obpi_pipeline_cmd": "gzkit.commands.obpi_cmd",
     "obpi_precomplete_cmd": "gzkit.commands.obpi_precomplete",
     "obpi_validate_cmd": "gzkit.commands.obpi_cmd",
+    "obpi_repudiate_cmd": "gzkit.commands.obpi_cmd",
     "obpi_withdraw_cmd": "gzkit.commands.obpi_cmd",
     "obpi_complete_cmd": "gzkit.commands.obpi_complete",
     "obpi_lock_check_cmd": "gzkit.commands.obpi_lock",
@@ -1197,6 +1198,49 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     add_dry_run_flag(p_obpi_withdraw)
     p_obpi_withdraw.set_defaults(
         func=lambda a: _lazy("obpi_withdraw_cmd")(obpi=a.obpi, reason=a.reason, dry_run=a.dry_run)
+    )
+
+    _REPUDIATE_CAUSE_CHOICES = [
+        "model-induced-fabrication",
+        "operator-error",
+        "verification-invalid",
+    ]
+    p_obpi_repudiate = obpi_commands.add_parser(
+        "repudiate",
+        help="Repudiate a fraudulent or erroneous OBPI completion without retiring the OBPI",
+        description=(
+            "Record an obpi_completion_repudiated event. Reverses a completion "
+            "without the permanent retirement semantics of withdraw — the OBPI "
+            "stays live for re-completion. Operator-gated: requires non-empty "
+            "--attestor and --reason. Only a human may repudiate a Gate-5."
+        ),
+        epilog=build_epilog(
+            [
+                "gz obpi repudiate OBPI-0.0.70-02 --cause model-induced-fabrication"
+                ' --reason "agent fabricated attestation" --attestor "g0"',
+                "gz obpi repudiate OBPI-0.0.70-02 --cause operator-error"
+                ' --reason "..." --attestor "g0" --dry-run',
+            ]
+        ),
+    )
+    p_obpi_repudiate.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.0.70-02)")
+    p_obpi_repudiate.add_argument(
+        "--cause",
+        required=True,
+        choices=_REPUDIATE_CAUSE_CHOICES,
+        help="Cause enum (model-induced-fabrication | operator-error | verification-invalid)",
+    )
+    p_obpi_repudiate.add_argument(
+        "--reason", required=True, help="Required repudiation reason text (non-empty)"
+    )
+    p_obpi_repudiate.add_argument(
+        "--attestor", required=True, help="Human attestor name (non-empty; only humans repudiate)"
+    )
+    add_dry_run_flag(p_obpi_repudiate)
+    p_obpi_repudiate.set_defaults(
+        func=lambda a: _lazy("obpi_repudiate_cmd")(
+            obpi=a.obpi, cause=a.cause, reason=a.reason, attestor=a.attestor, dry_run=a.dry_run
+        )
     )
 
     p_obpi_audit = obpi_commands.add_parser(

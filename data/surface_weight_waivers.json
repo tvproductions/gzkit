@@ -1,5 +1,10 @@
 [
   {
+    "expires": "2026-08-12",
+    "delta_lines": 280,
+    "reason": "OBPI-0.0.71-02 (ADR-0.0.71 completion-repudiation) lands the withdraw-vs-repudiate disambiguation mandated by REQ-0.0.71-02-06: .gzkit/rules/governance-core.md gains a ~30-line '## Withdraw vs Repudiate (ADR-0.0.71)' section (rule-version 0.3.0->0.4.0) plus mirrors at .claude/rules/governance-core.md, .github/instructions/governance_core.instructions.md, src/gzkit/rules/governance-core.md, and the rendered AGENTS.md. delta_lines covers the full accumulated yellow-band delta (269 at authoring: prior waived additions under GHIs #470/ADR-0.0.54/ADR-0.0.59/ADR-0.0.64/ADR-0.0.70 plus the ~30-line ADR-0.0.71 disambiguation surface) because the validator requires a single covering waiver, not a waiver sum; supersedes the ADR-0.0.70 250-line covering waiver below which no longer covers the 269 delta. Reduction path: re-floor the surface_weight snapshot at ADR-0.0.71 closeout (emit surface_weight_recalibrated + update data/surface_weight_floor.json) once the disambiguation doctrine stabilizes; the prior ADR-0.0.70/0.0.54/0.0.59 reduction chores (test-decommissioning, AGENTS.md lift) net-decrease the corpus as they land. This waiver is a 60-day bridge."
+  },
+  {
     "expires": "2026-07-15",
     "delta_lines": 15,
     "reason": "Companion bullets added to .gzkit/agents.local.md \u00a7 Governance doctrine surfaces under GHI #470 \u2014 restore T1 contract surface that ADR-pool.obpi-pipeline-dispatch-attestation T5/T6 mechanism will bind to. Each bullet is the verbatim substring required by an advisory-rules-audit Mechanical-class catalog cell (rows 17b, 35, 47, 48, 50, 51, 53, 54, 55, 57). Reduction path: re-floor the surface_weight snapshot once the doctrine has stabilized; this waiver is a 60-day bridge."

@@ -402,6 +402,16 @@
       },
       "governance_relevant": true
     },
+    "obpi repudiate": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
     "obpi withdraw": {
       "surfaces": {
         "manpage": true,

@@ -42,6 +42,7 @@ from gzkit.ledger import (
     pipeline_marker_purged_event,
     resolve_adr_lane,
 )
+from gzkit.ledger_events import obpi_completion_repudiated_event
 from gzkit.pipeline_runtime import (
     check_reconcile_receipt_gate,
     clear_stale_pipeline_markers,
@@ -90,6 +91,72 @@ def obpi_withdraw_cmd(obpi: str, reason: str, dry_run: bool) -> None:
     if parent:
         console.print(f"  Parent ADR: {parent}")
     console.print(f"  Reason: {reason}")
+
+
+def obpi_repudiate_cmd(obpi: str, cause: str, reason: str, attestor: str, dry_run: bool) -> None:
+    """Repudiate a fraudulent or erroneous OBPI completion (ADR-0.0.71)."""
+    if not attestor.strip():
+        console.print("[red]Error:[/red] --attestor must be non-empty (only a human repudiates).")
+        raise SystemExit(1)
+    if not reason.strip():
+        console.print("[red]Error:[/red] --reason must be non-empty.")
+        raise SystemExit(1)
+
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    canonical_id = ledger.canonicalize_id(obpi)
+    graph = ledger.get_artifact_graph()
+    info = graph.get(canonical_id, {})
+
+    if info.get("type") != "obpi":
+        msg = f"OBPI not found in ledger: {canonical_id}"
+        raise GzCliError(msg)  # noqa: TRY003
+
+    if info.get("withdrawn"):
+        msg = f"OBPI is withdrawn and cannot be repudiated: {canonical_id}"
+        raise GzCliError(msg)  # noqa: TRY003
+
+    if not info.get("ledger_completed"):
+        msg = f"OBPI has no completion to repudiate: {canonical_id}"
+        raise GzCliError(msg)  # noqa: TRY003
+
+    # Find the most recent completion receipt to reference
+    receipt_events = ledger.query("obpi_receipt_emitted", canonical_id)
+    completion_receipts = [
+        e
+        for e in receipt_events
+        if e.extra.get("receipt_event") in {"completed", "attested_completed"}
+    ]
+    if not completion_receipts:
+        msg = f"No completion receipt found to repudiate for: {canonical_id}"
+        raise GzCliError(msg)  # noqa: TRY003
+    repudiated_receipt = completion_receipts[-1].ts
+
+    parent = info.get("parent", "")
+    event = obpi_completion_repudiated_event(
+        obpi_id=canonical_id,
+        parent=parent if isinstance(parent, str) else "",
+        repudiated_receipt=repudiated_receipt,
+        cause=cause,
+        attestor=attestor,
+        reason=reason,
+    )
+
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")
+        console.print(json.dumps(event.model_dump(), indent=2))
+        return
+
+    ledger.append(event)
+    console.print("[green]OBPI completion repudiated.[/green]")
+    console.print(f"  OBPI: {canonical_id}")
+    if parent:
+        console.print(f"  Parent ADR: {parent}")
+    console.print(f"  Cause: {cause}")
+    console.print(f"  Repudiated receipt: {repudiated_receipt}")
+    console.print(f"  Attestor: {attestor}")
 
 
 def _gate_completed_receipt_binding(

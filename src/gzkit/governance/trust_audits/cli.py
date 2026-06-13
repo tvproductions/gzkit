@@ -53,6 +53,12 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "the `gz-justify` skill ships in OBPI-0.0.19-04 per the ADR's "
         "decomposition plan (skill definition + upstream integrations OBPI)."
     ),
+    "obpi repudiate": (
+        "Operator-invoked repair verb (ADR-0.0.71-completion-repudiation). "
+        "No standalone skill — the action is one-shot operator-gated correction, "
+        "not a recurring agent workflow. The `gz-obpi-reconcile` skill covers "
+        "post-repudiation verification."
+    ),
     "upgrade": (
         "Surface-only refresh verb (ADR-0.0.32 OBPI-14); the gz-deps-upgrade "
         "skill covers dependency upgrades; a dedicated gz-upgrade skill for "
