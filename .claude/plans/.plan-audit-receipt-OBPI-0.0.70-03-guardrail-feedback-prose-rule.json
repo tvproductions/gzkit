@@ -1,0 +1,292 @@
+{
+  "obpi_id": "OBPI-0.0.70-03-guardrail-feedback-prose-rule",
+  "timestamp": "2026-06-13T16:45:32.167857+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.70-03-guardrail-feedback-prose-rule.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-04-validate-taxonomy",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.20",
+      "sibling_obpi": "OBPI-0.0.20-01-validator-and-allowlist",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-06-rule-file-matrix-scorecard",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.23",
+      "sibling_obpi": "OBPI-0.0.23-02-cross-link-and-scorecard",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-01-selection-methodology",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-07-link-integrity-validator",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.28",
+      "sibling_obpi": "OBPI-0.0.28-01-threshold-rule-file",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.28",
+      "sibling_obpi": "OBPI-0.0.28-03-threshold-validator",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-08-verdict-proof-binding",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.30",
+      "sibling_obpi": "OBPI-0.0.30-04-editor-protocol-contract",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.31",
+      "sibling_obpi": "OBPI-0.0.31-02-register-t0-scorecard",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-03-rules-physical-migration",
+      "contested_paths": [
+        "src/gzkit/rules/__init__.py",
+        "src/gzkit/rules/<slug>.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-04-rules-scaffolder-authoring",
+      "contested_paths": [
+        "src/gzkit/rules/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-07-validate-distribution",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-08-mirror-sync",
+      "contested_paths": [
+        "src/gzkit/rules/<slug>.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-13-chores-normalization",
+      "contested_paths": [
+        "src/gzkit/rules/skill-surface-sync.md",
+        "src/gzkit/rules/AGENTS.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-15-t0-maintenance-surfaces",
+      "contested_paths": [
+        "src/gzkit/rules/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-03-composition-drift-validator",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-05-brief-reconcile-engine",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-06-brief-reconcile-cli",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.38",
+      "sibling_obpi": "OBPI-0.0.38-01-rule-and-schema",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.39",
+      "sibling_obpi": "OBPI-0.0.39-01-rule-and-doctrine",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-03-storybook-validator",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/ADR-0.0.70-turn-end-feedback-and-correction-mining.md",
+        "docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/obpis/OBPI-0.0.70-03-guardrail-feedback-prose-rule.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.44",
+      "sibling_obpi": "OBPI-0.0.44-06-doctrine-surface-update",
+      "contested_paths": [
+        "src/gzkit/rules/gh-cli.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.45",
+      "sibling_obpi": "OBPI-0.0.45-05-cli-mode-density-doctrine",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.49",
+      "sibling_obpi": "OBPI-0.0.49-05-systematic-debugging-rule-file",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-01-validator-remediation-payload-port",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-01-author-map-doctrine-budget",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-01-author-layer-order-manifest",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.56",
+      "sibling_obpi": "OBPI-0.0.56-06-prime-directive-scorecard-reclassification",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-01-author-doctrine-and-supersession",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-03-parity-gate-three-channel-extension",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-02-structural-fence-channel-boundary-invariants-anchor",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-03-closeout-proof-derived-view",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.71",
+      "sibling_obpi": "OBPI-0.0.71-01-completion-repudiation-event",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-01-covers-decorator-and-registration",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-02-coverage-anchor-scanner",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-03-auth-surface-coherence-validator",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    }
+  ]
+}

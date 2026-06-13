@@ -3,7 +3,7 @@ id: OBPI-0.0.70-03-guardrail-feedback-prose-rule
 parent: ADR-0.0.70-turn-end-feedback-and-correction-mining
 item: 3
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.70-03-guardrail-feedback-prose-rule: Guardrail Feedback Prose Rule
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/ADR-0.0.70-turn-end-feedback-and-correction-mining.md`
 - **Checklist Item:** #3 - "Guardrail-feedback-prose rule — `.gzkit/rules/guardrail-feedback-prose.md` with rule-version marker; binding bar (what failed / why forbidden / governed next step) for fail-closed hooks and validators; Stop hook as first enforcement consumer; advisory-rules-audit scorecard entry; `gz agent sync control-surfaces`"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -33,12 +33,16 @@ first enforcement consumer, an advisory-rules-audit scorecard entry classifying 
 
 ## Allowed Paths
 
+- `src/gzkit/traceability.py` (added by brief reconcile, attestor g0)
+
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
 - `docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/ADR-0.0.70-turn-end-feedback-and-correction-mining.md` — parent ADR for intent and scope
 - `.gzkit/rules/guardrail-feedback-prose.md` **CREATE** — NEW: canonical rule (edit-here surface)
 - `tests/hooks/test_stop_turn_feedback.py` **CREATE** — NEW within this ADR package: SHARED proof surface with OBPI-01 (which lands first and creates the file); REQ-0.0.70-03-02's @covers assertion lands here and this brief may extend it
 - `docs/governance/advisory-rules-audit.md` — scorecard entry
+- `data/distribution_baseline_manifest.json` — wheel-distribution registration of the canonical rule (REQ-0.0.70-03-06)
+- `data/surface_weight_waivers.json` — 60-day bridge waiver for the rule's instruction-files char budget
 - `src/gzkit/rules/` and vendor rule mirrors — written ONLY by `gz agent sync control-surfaces`, never edited directly
 - `docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/obpis/OBPI-0.0.70-03-guardrail-feedback-prose-rule.md` — this brief (evidence recording)
 
@@ -186,6 +190,9 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.70-03-01 [support]: The canonical rule file lands with version markers and conformant frontmatter, and sync propagates it to pkg + vendor mirrors. Proof: `gz validate --unscoped-rules` exit 0 + `gz agent sync control-surfaces` run + `artifact_edited` ledger events.
 - [ ] REQ-0.0.70-03-02 [behavior]: Given the Stop hook emits a block, when its prose is inspected, then all three bar parts are present (what failed / why forbidden / governed next step). (@covers test in `tests/hooks/test_stop_turn_feedback.py`)
 - [ ] REQ-0.0.70-03-03 [support]: The advisory-rules-audit scorecard classifies the new rule. Proof: `gz validate --advisory-scorecard` exit 0 + the doc edit's `artifact_edited` ledger event.
+- [ ] REQ-0.0.70-03-04 [support]: The canonical rule defines the bar as exactly three parts — what failed, why it is forbidden (citing the binding rule/invariant), and the governed next step (runnable command or named ceremony) — binding fail-closed hooks and validators. Proof: `artifact_edited` ledger event for `.gzkit/rules/guardrail-feedback-prose.md` + `gz validate --unscoped-rules` exit 0 admitting the rule shape.
+- [ ] REQ-0.0.70-03-05 [support]: `gz agent sync control-surfaces` propagated the canonical rule byte-equivalently to the pkg copy and vendor mirrors; mirrors were never hand-edited. Proof: `artifact_edited` ledger event for `src/gzkit/rules/guardrail-feedback-prose.md` + `gz validate --surfaces` exit 0.
+- [ ] REQ-0.0.70-03-06 [support]: The rule is registered in the wheel-distribution baseline manifest so `pip install py-gzkit && gz init` delivers it byte-equivalently. Proof: `artifact_edited` ledger event for `data/distribution_baseline_manifest.json` + `gz validate --distribution` exit 0.
 
 ## Completion Checklist
 
@@ -258,6 +265,7 @@ the governed next step (runnable) — classified Promotable on the advisory scor
 
 ### Key Proof
 
+
 The first enforcement consumer exhibits the bar:
 ```
 $ uv run python .claude/hooks/stop-turn-feedback.py --demo
@@ -268,6 +276,7 @@ The rule's invariant sentence is retained verbatim as the scorecard row-61 bulle
 (bullet-retention validator green).
 
 ### Implementation Summary
+
 
 - Parent ADR § Decision item (verbatim, per Discovery Checklist): "**3.
   Guardrail-feedback-prose rule (`.gzkit/rules/guardrail-feedback-prose.md`).** A
@@ -294,12 +303,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.70-03 guardrail-feedback-prose rule (v0.1.0) lands the three-part feedback bar (what failed / why forbidden, cited / governed next step, runnable) binding fail-closed hooks and validators, with the ADR-0.0.70-01 Stop hook as first enforcement consumer and advisory-scorecard row 61 (Promotable). Verified green: ruff receipt arb-ruff-feef544205194fc8af1407985329c1b6 (exit 0), typecheck receipt arb-step-typecheck-2baad5419c8a42e28dc6093d5d92b65c (exit 0), full unittest receipt arb-step-unittest-ca9894f0027d4b808852cd979429ad18 (exit 0), 11/11 scoped hook tests pass; reconcile has_drift:false; precomplete READY 8/8; covers behavior_uncovered_reqs:0.
+- Date: 2026-06-13
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-13
 
 **Evidence Hash:** -
