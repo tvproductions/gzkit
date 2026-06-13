@@ -185,8 +185,9 @@ The 10 advisory REQs and their declared (non-@covers) proof channels:
   a healthy run, and — unlike the Stop hook, whose block telemetry is wired to
   `.gzkit/sensors/` — the miner leaves no observable trace when it mines nothing. The
   ADR scoped telemetry to the hook only, so this is a forward enhancement, not a
-  shortfall in delivered scope. **Remedy:** surface to operator; candidate for a
-  future hardening GHI/OBPI (miner run-telemetry), not a Gate-5 blocker.
+  shortfall in delivered scope. **Remedy:** tracked as **GHI #614** (enhancement,
+  runtime) — open with a blocker comment routing it into the `gz insights` /
+  campaign Phase E design conversation (sibling #575); not a Gate-5 blocker.
 - **No blocking issues found.**
 
 ## Attestation
