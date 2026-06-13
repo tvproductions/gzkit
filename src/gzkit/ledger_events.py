@@ -63,6 +63,28 @@ def obpi_withdrawn_event(obpi_id: str, parent: str, reason: str) -> LedgerEvent:
     )
 
 
+def obpi_completion_repudiated_event(
+    obpi_id: str,
+    parent: str,
+    repudiated_receipt: str,
+    cause: str,
+    attestor: str,
+    reason: str,
+) -> LedgerEvent:
+    """Create an obpi_completion_repudiated event (ADR-0.0.71)."""
+    return LedgerEvent(
+        event="obpi_completion_repudiated",
+        id=obpi_id,
+        parent=parent,
+        extra={
+            "repudiated_receipt": repudiated_receipt,
+            "cause": cause,
+            "attestor": attestor,
+            "reason": reason,
+        },
+    )
+
+
 def adr_created_event(adr_id: str, parent: str, lane: str) -> LedgerEvent:
     """Create an ADR created event."""
     return LedgerEvent(

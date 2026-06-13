@@ -266,6 +266,16 @@ class ObpiWithdrawnEvent(_EventBase):
     reason: str
 
 
+class ObpiCompletionRepudiatedEvent(_EventBase):
+    """obpi_completion_repudiated event — governed reversal of fabricated Gate-5 (ADR-0.0.71)."""
+
+    event: Literal["obpi_completion_repudiated"]
+    repudiated_receipt: str
+    cause: Literal["model-induced-fabrication", "operator-error", "verification-invalid"]
+    attestor: str = Field(..., min_length=1)
+    reason: str = Field(..., min_length=1)
+
+
 class ObpiCompletionUncoveredAcceptEvent(_EventBase):
     """obpi_completion_uncovered_accept event — records one REQ-coverage waiver (ADR-0.0.25-02)."""
 
@@ -508,6 +518,7 @@ TypedLedgerEvent = Annotated[
     | ObpiLockClaimedEvent
     | ObpiLockReleasedEvent
     | ObpiWithdrawnEvent
+    | ObpiCompletionRepudiatedEvent
     | ObpiCompletionUncoveredAcceptEvent
     | PatchReleaseEvent
     | PipelineMarkerPurgedEvent

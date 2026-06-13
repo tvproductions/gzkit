@@ -662,6 +662,8 @@ class Ledger:
             graph[canonical_id]["obpi_completion"] = obpi_completion
             if obpi_completion in {"completed", "attested_completed"}:
                 graph[canonical_id]["ledger_completed"] = True
+                graph[canonical_id]["repudiated"] = False
+                graph[canonical_id]["repudiated_reason"] = None
 
         if receipt_event == "validated":
             graph[canonical_id]["validated"] = True
@@ -679,6 +681,20 @@ class Ledger:
         graph[canonical_id]["withdrawn"] = True
         graph[canonical_id]["withdrawn_reason"] = event.extra.get("reason")
 
+    @staticmethod
+    def _apply_obpi_completion_repudiated_metadata(
+        graph: dict[str, dict[str, Any]],
+        canonical_id: str,
+        event: LedgerEvent,
+    ) -> None:
+        if event.event != "obpi_completion_repudiated" or canonical_id not in graph:
+            return
+        if graph[canonical_id].get("type") != "obpi":
+            return
+        graph[canonical_id]["ledger_completed"] = False
+        graph[canonical_id]["repudiated"] = True
+        graph[canonical_id]["repudiated_reason"] = event.extra.get("reason")
+
     @classmethod
     def _apply_graph_event_metadata(
         cls,
@@ -693,6 +709,7 @@ class Ledger:
         cls._apply_audit_receipt_metadata(graph, canonical_id, event)
         cls._apply_obpi_receipt_metadata(graph, canonical_id, event)
         cls._apply_obpi_withdrawn_metadata(graph, canonical_id, event)
+        cls._apply_obpi_completion_repudiated_metadata(graph, canonical_id, event)
 
     @staticmethod
     def _resolve_short_form_parents(graph: dict[str, dict[str, Any]]) -> None:
@@ -822,6 +839,7 @@ from gzkit.ledger_events import (  # noqa: E402, F401
     constitution_created_event,
     gate_checked_event,
     lifecycle_transition_event,
+    obpi_completion_repudiated_event,
     obpi_completion_uncovered_accept_event,
     obpi_created_event,
     obpi_receipt_emitted_event,

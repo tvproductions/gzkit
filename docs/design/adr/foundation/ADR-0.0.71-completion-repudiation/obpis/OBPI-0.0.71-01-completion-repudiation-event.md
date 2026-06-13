@@ -3,7 +3,24 @@ id: OBPI-0.0.71-01-completion-repudiation-event
 parent: ADR-0.0.71-completion-repudiation
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
+# req_atomic — the engine layer landed as one indivisible unit: the
+# ObpiCompletionRepudiatedEvent model (REQ-01 fail-closed fields, REQ-02 cause
+# enum), the obpi_completion_repudiated_event factory, the
+# _apply_obpi_completion_repudiated_metadata state-resolver (REQ-03 flip, REQ-04
+# re-completion clear, REQ-05 visibility), and the ledger.json schema entry
+# (REQ-06 SUPPORT) were authored as one coherent change proven by a single test
+# module. REQ-07 (STRUCTURAL-FENCE, no-new-dependency) is a property of the same
+# change, not separable labor. No REQ was subdivided into seq=02+; the
+# pipeline-minted seq=01-per-REQ buckets are the true labor shape.
+req_atomic:
+  - REQ-0.0.71-01-01
+  - REQ-0.0.71-01-02
+  - REQ-0.0.71-01-03
+  - REQ-0.0.71-01-04
+  - REQ-0.0.71-01-05
+  - REQ-0.0.71-01-06
+  - REQ-0.0.71-01-07
 ---
 
 # OBPI-0.0.71-01-completion-repudiation-event: Completion Repudiation Event
@@ -13,7 +30,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.71-completion-repudiation/ADR-0.0.71-completion-repudiation.md`
 - **Checklist Item:** #1 - "`obpi_completion_repudiated` ledger event model + factory + `ledger.json` schema entry + state-resolution semantics (flip ledger_completed, set repudiated, NOT withdrawn; genuine re-completion clears repudiated); unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -28,6 +45,8 @@ Deliver the `obpi_completion_repudiated` ledger event (Pydantic model + factory 
 > those external surfaces.
 
 ## Allowed Paths
+
+- `src/gzkit/traceability.py` (added by brief reconcile, attestor g0)
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
@@ -93,7 +112,7 @@ Deliver the `obpi_completion_repudiated` ledger event (Pydantic model + factory 
 **Prerequisites (check existence, STOP if missing):**
 
 - [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.71-completion-repudiation/ADR-0.0.71-completion-repudiation.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.71-completion-repudiation/**`
+- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.71-completion-repudiation/obpis/OBPI-0.0.71-02-gz-obpi-repudiate-cli.md`
 - [ ] Parent ADR evidence artifacts referenced by this brief are present
 
 **Existing Code (understand current state):**
@@ -189,6 +208,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.71-01-04 [behavior]: Given a repudiated OBPI node and a subsequent genuine `obpi_receipt_emitted` (attested_completed) for the same id, when the graph is resolved, then `repudiated` is cleared and `ledger_completed` is True. (@covers test)
 - [ ] REQ-0.0.71-01-05 [behavior]: Given a repudiated (not withdrawn) OBPI, when the default `gz state` graph is built, then the OBPI is present (visible), unlike a withdrawn OBPI which is hidden. (@covers test)
 - [ ] REQ-0.0.71-01-06 [support]: The `obpi_completion_repudiated` event schema entry lands in `src/gzkit/schemas/ledger.json` and the model round-trips (serialize → schema-validate → deserialize). Proof: `gz validate --documents` exit 0 + the `artifact_edited` ledger event for `ledger.json`.
+- [ ] REQ-0.0.71-01-07 [structural-fence]: The `ObpiCompletionRepudiatedEvent` module surface MUST import only stdlib and Pydantic — no new third-party dependency. Parent ADR Boundary: "Additive: one event type, one CLI verb, one state-resolution branch, schema entry, tests, docs." Verified by `uv run gz arb typecheck` + `pyproject.toml` dependency review.
 
 ## Completion Checklist
 
@@ -248,15 +268,19 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+uv run gz arb step --name unittest -- uv run -m unittest tests.test_completion_repudiation -v
+-> Ran 13 tests, OK (exit_status=0, receipt arb-step-unittest-177df9f197ed4c2395e1f8734c346f05).
+The repudiation lifecycle is proven by test_genuine_recompletion_clears_repudiated: complete (ledger_completed=True) -> repudiate (repudiated=True, ledger_completed=False, withdrawn unset) -> re-complete (repudiated cleared, ledger_completed=True). Full sweep: arb-step-unittest-947baa50e1da4725b27e3a40f47c66a9 (6092 tests). Lint clean: arb-ruff-5452cf50e87e49c6ac9c4ee92114f337. Typecheck clean: arb-step-typecheck-1f9aea618d9d4c3ba3f19cd393c74630.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Engine layer for ADR-0.0.71 governed completion-repudiation: new ObpiCompletionRepudiatedEvent Pydantic model (events.py), obpi_completion_repudiated_event factory (ledger_events.py), _apply_obpi_completion_repudiated_metadata state-resolver wired into _apply_graph_event_metadata (ledger.py), and obpi_completion_repudiated schema entry (ledger.json).
+- State-resolution semantics: applying the event flips ledger_completed to False and sets repudiated=True + repudiated_reason, NEVER setting the sticky withdrawn retirement (Boundary Invariant 2); a subsequent genuine obpi_receipt_emitted clears repudiated and re-completes (Boundary Invariant 5).
+- Files created: tests/test_completion_repudiation.py (13 tests). Files modified: src/gzkit/events.py, src/gzkit/ledger_events.py, src/gzkit/ledger.py, src/gzkit/schemas/ledger.json, tests/test_schemas.py (_EVENT_MODELS registry), brief frontmatter (req_atomic + REQ-07), data/behave_coverage_waivers.json.
+- Tests added: 13 unit tests covering REQ-01..05 via @covers; REQ-06 (SUPPORT) and REQ-07 (STRUCTURAL-FENCE) proven via ledger+validator and parent-ADR-invariant channels.
+- Date completed: 2026-06-13. Attestation status: operator-attested. Defects noted: none.
 
 ## Tracked Defects
 
@@ -267,12 +291,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — operator-attested 2026-06-13 after Stage 4 evidence review; engine layer for ADR-0.0.71 governed completion-repudiation verified green across 13 scoped unit tests (receipt arb-step-unittest-177df9f197ed4c2395e1f8734c346f05) and full 6092-test sweep (arb-step-unittest-947baa50e1da4725b27e3a40f47c66a9), lint clean (arb-ruff-5452cf50e87e49c6ac9c4ee92114f337), typecheck clean (arb-step-typecheck-1f9aea618d9d4c3ba3f19cd393c74630), docs clean (arb-step-mkdocs-034422ea06c344fb83f46f2225d150d6); behavior_uncovered_reqs=0.
+- Date: 2026-06-13
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-13
 
 **Evidence Hash:** -

@@ -1169,11 +1169,16 @@
           "min_length": 10
         },
         "original_receipt_id": {
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "original_drift_dimensions": {
           "type": "array",
-          "items": {"type": "string"}
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -1201,6 +1206,36 @@
           ]
         },
         "obpi_id": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
+    "obpi_completion_repudiated": {
+      "required": [
+        "repudiated_receipt",
+        "cause",
+        "attestor",
+        "reason"
+      ],
+      "properties": {
+        "repudiated_receipt": {
+          "type": "string",
+          "min_length": 1
+        },
+        "cause": {
+          "type": "string",
+          "enum": [
+            "model-induced-fabrication",
+            "operator-error",
+            "verification-invalid"
+          ]
+        },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
           "type": "string",
           "min_length": 1
         }
