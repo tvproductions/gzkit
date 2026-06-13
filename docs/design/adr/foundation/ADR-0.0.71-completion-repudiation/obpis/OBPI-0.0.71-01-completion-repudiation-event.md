@@ -208,7 +208,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.71-01-04 [behavior]: Given a repudiated OBPI node and a subsequent genuine `obpi_receipt_emitted` (attested_completed) for the same id, when the graph is resolved, then `repudiated` is cleared and `ledger_completed` is True. (@covers test)
 - [ ] REQ-0.0.71-01-05 [behavior]: Given a repudiated (not withdrawn) OBPI, when the default `gz state` graph is built, then the OBPI is present (visible), unlike a withdrawn OBPI which is hidden. (@covers test)
 - [ ] REQ-0.0.71-01-06 [support]: The `obpi_completion_repudiated` event schema entry lands in `src/gzkit/schemas/ledger.json` and the model round-trips (serialize → schema-validate → deserialize). Proof: `gz validate --documents` exit 0 + the `artifact_edited` ledger event for `ledger.json`.
-- [ ] REQ-0.0.71-01-07 [structural-fence]: The `ObpiCompletionRepudiatedEvent` module surface MUST import only stdlib and Pydantic — no new third-party dependency. Parent ADR Boundary: "Additive: one event type, one CLI verb, one state-resolution branch, schema entry, tests, docs." Verified by `uv run gz arb typecheck` + `pyproject.toml` dependency review.
+- [ ] REQ-0.0.71-01-07 [structural-fence]: The `ObpiCompletionRepudiatedEvent` module surface MUST import only stdlib and Pydantic — no new third-party dependency. Parent ADR `## Boundary Invariants` Invariant 6 ("The surface stays additive — stdlib + Pydantic only") anchors this claim. Verified by `uv run gz arb typecheck` + `pyproject.toml` dependency review.
 
 ## Completion Checklist
 

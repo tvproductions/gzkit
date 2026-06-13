@@ -91,6 +91,11 @@ Add a first-class, operator-gated repudiation transition that reverses an errone
 5. **A genuine re-completion is the only clearer.** `repudiated=True` is cleared by
    exactly one path — a subsequent genuine `obpi_receipt_emitted` for the same OBPI;
    no flag, no hand-edit, no other event clears it.
+6. **The surface stays additive — stdlib + Pydantic only.** The repudiation primitive
+   adds one event type, one CLI verb, one state-resolution branch, a schema entry, tests,
+   and docs; it introduces NO new third-party runtime dependency. The module surface
+   imports only stdlib and the sanctioned Pydantic departure.
+   (REQ-0.0.71-01-07 STRUCTURAL-FENCE — verified at ADR closeout via this invariant)
 
 ## Decomposition Scorecard
 

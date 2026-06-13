@@ -9754,3 +9754,4 @@
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.0.71-completion-repudiation","ts":"2026-06-13T10:24:13.645882+00:00","gate":3,"status":"pass","command":"uv run mkdocs build --strict","returncode":0}
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.0.71-completion-repudiation","ts":"2026-06-13T10:24:30.754876+00:00","gate":4,"status":"pass","command":"uv run -m behave features/","returncode":0}
 {"schema":"gzkit.ledger.v1","event":"lifecycle_transition","id":"ADR-0.0.71-completion-repudiation","ts":"2026-06-13T10:24:30.763961+00:00","content_type":"adr","from_state":"Proposed","to_state":"Completed"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/foundation/ADR-0.0.71-completion-repudiation/ADR-0.0.71-completion-repudiation.md","ts":"2026-06-13T10:42:18.494274+00:00","path":"docs/design/adr/foundation/ADR-0.0.71-completion-repudiation/ADR-0.0.71-completion-repudiation.md"}
