@@ -214,21 +214,22 @@ Context-Load CMS) lands end-to-end. This is the system that makes "we don't
 direct edit AGENTS.md" workable: contract changes queue in the corpus and
 only deterministic playback writes the rendered surface.
 
-- [ ] B.0 ADR-0.0.70 Buetow adoption (operator-inserted 2026-06-12; see
+- [x] B.0 ADR-0.0.70 Buetow adoption (operator-inserted 2026-06-12; see
       Amendment above) — turn-end Stop-hook feedback (gzkit-owned `Stop`
       phase), `session-correction-mining` chore (third sensor feeding the
       Promotable→Mechanical ladder), `guardrail-feedback-prose` rule,
       fourth-source triangulation in
       `docs/governance/harness-engineering-appraisal.md`. Checks off at
       ADR-0.0.70 terminal (all four OBPIs attested + closeout).
-      - **Progress 2026-06-13: 3/4 OBPIs `attested_completed`** per
-        `gz adr report ADR-0.0.70` (Lifecycle Pending, closeout BLOCKED):
+      - **Terminal 2026-06-13: ADR-0.0.70 `Validated`** per
+        `gz adr report ADR-0.0.70` — all four OBPIs `attested_completed`,
+        Gate-5 audit ceremony accepted ("accept audit", operator g0):
         OBPI-01 stop-hook-turn-end-feedback, OBPI-02 session-correction-mining,
-        and **OBPI-03 guardrail-feedback-prose-rule** (operator Gate-5
-        "attest completed" 2026-06-13; completion receipt + brief Completed;
-        synced in commit `b83b61ac`). Remaining bar: build + attest
-        **OBPI-0.0.70-04-fourth-source-triangulation** (still Draft — sole
-        closeout blocker), then ADR-0.0.70 closeout ceremony → Validated.
+        OBPI-03 guardrail-feedback-prose-rule, OBPI-04
+        fourth-source-triangulation. Validation receipts (all exit 0):
+        `arb-step-unittest-483ae14c…` (6097 tests), `arb-ruff-ed38ddd7…`,
+        `arb-step-typecheck-d83e7132…`, `arb-step-mkdocs-fbec5b2a…`. Audit
+        evidence: `…/ADR-0.0.70-…/audit/AUDIT.md`.
 - [ ] B.1 ADR-0.0.37 build-out (13/19 verified 2026-06-10 via
       `gz adr report`; → terminal) — the campaign's first marquee.
 - [ ] B.2 Registry-projected <15k surface (GHI #533) — closes **#519** (the

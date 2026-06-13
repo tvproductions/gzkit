@@ -1,0 +1,6 @@
+Validated: unscoped-rules
+
+✓ 22 rule file(s) checked (0 allowlisted).
+Validated: advisory_scorecard
+
+✓ All validations passed (1 scopes).

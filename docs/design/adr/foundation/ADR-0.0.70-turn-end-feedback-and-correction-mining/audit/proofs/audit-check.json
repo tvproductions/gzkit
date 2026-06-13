@@ -1,0 +1,202 @@
+{
+  "adr": "ADR-0.0.70-turn-end-feedback-and-correction-mining",
+  "passed": true,
+  "checked_obpis": [
+    "OBPI-0.0.70-01-stop-hook-turn-end-feedback",
+    "OBPI-0.0.70-02-session-correction-mining",
+    "OBPI-0.0.70-03-guardrail-feedback-prose-rule",
+    "OBPI-0.0.70-04-fourth-source-triangulation"
+  ],
+  "complete_obpis": [
+    "OBPI-0.0.70-01-stop-hook-turn-end-feedback",
+    "OBPI-0.0.70-02-session-correction-mining",
+    "OBPI-0.0.70-03-guardrail-feedback-prose-rule",
+    "OBPI-0.0.70-04-fourth-source-triangulation"
+  ],
+  "findings": [],
+  "coverage": {
+    "total_reqs": 25,
+    "covered_reqs": 15,
+    "uncovered_reqs": 10,
+    "coverage_percent": 60.0,
+    "by_obpi": [
+      {
+        "obpi": "OBPI-0.0.70-01",
+        "total_reqs": 9,
+        "covered_reqs": 8,
+        "uncovered_reqs": 1,
+        "coverage_percent": 88.9
+      },
+      {
+        "obpi": "OBPI-0.0.70-02",
+        "total_reqs": 8,
+        "covered_reqs": 6,
+        "uncovered_reqs": 2,
+        "coverage_percent": 75.0
+      },
+      {
+        "obpi": "OBPI-0.0.70-03",
+        "total_reqs": 6,
+        "covered_reqs": 1,
+        "uncovered_reqs": 5,
+        "coverage_percent": 16.7
+      },
+      {
+        "obpi": "OBPI-0.0.70-04",
+        "total_reqs": 2,
+        "covered_reqs": 0,
+        "uncovered_reqs": 2,
+        "coverage_percent": 0.0
+      }
+    ],
+    "uncovered": [
+      {
+        "req_id": "REQ-0.0.70-01-07",
+        "severity": "advisory"
+      },
+      {
+        "req_id": "REQ-0.0.70-02-06",
+        "severity": "advisory"
+      },
+      {
+        "req_id": "REQ-0.0.70-02-07",
+        "severity": "advisory"
+      },
+      {
+        "req_id": "REQ-0.0.70-03-01",
+        "severity": "advisory"
+      },
+      {
+        "req_id": "REQ-0.0.70-03-03",
+        "severity": "advisory"
+      },
+      {
+        "req_id": "REQ-0.0.70-03-04",
+        "severity": "advisory"
+      },
+      {
+        "req_id": "REQ-0.0.70-03-05",
+        "severity": "advisory"
+      },
+      {
+        "req_id": "REQ-0.0.70-03-06",
+        "severity": "advisory"
+      },
+      {
+        "req_id": "REQ-0.0.70-04-01",
+        "severity": "advisory"
+      },
+      {
+        "req_id": "REQ-0.0.70-04-02",
+        "severity": "advisory"
+      }
+    ]
+  },
+  "coverage_findings": [
+    {
+      "id": "REQ-0.0.70-01-07",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-02-06",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-02-07",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-03-01",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-03-03",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-03-04",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-03-05",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-03-06",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-04-01",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-04-02",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    }
+  ],
+  "coverage_blocking": [],
+  "coverage_advisory": [
+    {
+      "id": "REQ-0.0.70-01-07",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-02-06",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-02-07",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-03-01",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-03-03",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-03-04",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-03-05",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-03-06",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-04-01",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.0.70-04-02",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    }
+  ],
+  "covers_backfill_findings": [],
+  "covers_backfill_unresolvable": []
+}

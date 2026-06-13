@@ -1,0 +1,8 @@
+119:## Fourth Source — Buetow on the Code-Review Bottleneck (practitioner interview)
+121:> **Source:** Florian Buetow (AI engineer, Xebia), interviewed on the *Beyond Coding Podcast*, "The Best Software Engineers Are Solving the Code Review Bottleneck Right Now," published 2026-06-10. Companion site: <https://cracking-ai-engineering.com>.
+129:Most of the Buetow inventory converges on surfaces gzkit already holds: architecture unit tests (`tests/policy/`, ADR-0.0.3, ADR-0.0.55), risk-tiered review policies (lite/heavy lanes + the security-sensitivity axis, ADR-0.0.36), TDD-as-agent-feedback over pure spec-driven (RED→GREEN discipline, REQ-coverage gate, `@covers`), preloaded-guardrail project templates (`pip install py-gzkit && gz init`, ADR-0.0.31 — literally gzkit's product thesis), and human ownership against cognitive surrender (universal Gate 5). A fourth independent practitioner landing on gzkit's equilibrium extends the Böckeler/Greyling/CE convergence.
+131:### What Buetow adds that the prior three did not
+135:| Buetow mechanism | gzkit adoption | OBPI |
+143:### What Buetow does NOT add
+152:- Buetow axis source: Beyond Coding Podcast (2026-06-10) + <https://cracking-ai-engineering.com>; adoption: `docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/`
+217:- [ ] B.0 ADR-0.0.70 Buetow adoption (operator-inserted 2026-06-12; see

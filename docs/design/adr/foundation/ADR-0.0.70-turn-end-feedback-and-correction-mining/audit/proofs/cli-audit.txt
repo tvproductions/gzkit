@@ -1,0 +1,2 @@
+CLI audit passed.
+Cross-coverage: 105/105 commands fully covered.

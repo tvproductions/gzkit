@@ -1,0 +1,17 @@
+stop-turn-feedback: BLOCKED � turn-end lint check failed across 1 dirty Python file(s).
+
+What failed:
+F401 [*] `os` imported but unused
+ --> demo_violation.py:1:8
+  |
+1 | import os
+  |        ^^
+  |
+help: Remove unused import: `os`
+
+Found 1 error.
+[*] 1 fixable with the `--fix` option.
+
+Why this is forbidden: gzkit forbids ending a turn while the cheap deterministic tier is red (AGENTS.md Behavior Rules � Never #5; ADR-0.0.70 turn-end feedback; .gzkit/rules/guardrail-feedback-prose.md).
+
+Governed next step: fix the findings above, verify with `uv run ruff check <files>`, then end the turn. One block per turn � the next stop proceeds even if findings remain (fail-open).
