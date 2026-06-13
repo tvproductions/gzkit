@@ -1,0 +1,27 @@
+{
+  "obpi_id": "OBPI-0.0.37-21-authoring-time-compression-composer-tool-skill",
+  "timestamp": "2026-06-13T23:11:00.000000+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.37-21-compose-plan.md",
+  "gaps_found": 0,
+  "audit_note": "8 CLI-reported gaps are all net-new files listed in brief ## Creates These Files; exempt from the brief-path existence gate per GHI #419. Semantic ADR<->OBPI alignment: all 7 checks pass. Plan<->OBPI alignment: all REQs covered by plan steps. Scope collisions (115): advisory only, all against completed/unrelated OBPIs touching shared shared files (ledger.json, ledger_events.py, runbook.md, events.py); no live lock conflict.",
+  "adr_obpi_alignment": {
+    "objective_match": "PASS",
+    "scope_match": "PASS",
+    "requirements_coverage": "PASS",
+    "lane_consistency": "PASS",
+    "attestation_rule": "PASS",
+    "no_scope_creep": "PASS",
+    "no_scope_gap": "PASS"
+  },
+  "plan_obpi_alignment": {
+    "obpi_reference": "PASS",
+    "requirements_coverage": "PASS",
+    "allowed_paths": "PASS",
+    "denied_paths": "PASS",
+    "verification": "PASS",
+    "no_gold_plating": "PASS",
+    "feasibility": "PASS"
+  },
+  "confidence": 95
+}

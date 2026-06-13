@@ -72,8 +72,6 @@ A new `content compose` subcommand + a new ledger event + a new skill are runtim
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-21-authoring-time-compression-composer-tool-skill.md` — active brief and evidence record
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md` — parent ADR (read-only, for intent and the 1:1 checklist sync)
 
-**Sync-generated mirrors (written by `gz agent sync control-surfaces`, not hand-edited):** `src/gzkit/skills/gz-content-compose/SKILL.md`, `.claude/skills/gz-content-compose/SKILL.md`, `.github/skills/gz-content-compose/SKILL.md`, `.agents/skills/gz-content-compose/SKILL.md` — propagated from the canonical `.gzkit/skills/` source per `.gzkit/rules/skill-surface-sync.md`.
-
 ## Denied Paths
 
 - Paths not listed in Allowed Paths
@@ -100,6 +98,8 @@ Net-new paths this OBPI creates (exempt from the brief-path existence gate per G
 - `.gzkit/renditions/<surface>/<consumer>.candidate.md` (candidate staging artifact, created at first compose run)
 
 All other Allowed Paths reference existing files modified in place.
+
+**Sync-generated mirrors (written by `gz agent sync control-surfaces`, not hand-edited):** `src/gzkit/skills/gz-content-compose/SKILL.md`, `.claude/skills/gz-content-compose/SKILL.md`, `.github/skills/gz-content-compose/SKILL.md`, `.agents/skills/gz-content-compose/SKILL.md` — propagated from the canonical `.gzkit/skills/` source per `.gzkit/rules/skill-surface-sync.md`.
 
 ## Requirements (FAIL-CLOSED)
 
@@ -135,7 +135,7 @@ All other Allowed Paths reference existing files modified in place.
 
 **Context:**
 
-- [ ] OBPI-0.0.37-19 (corpus capture) — the `.gzkit/corpus/<surface>.jsonl` store layout + `corpus_store.load_corpus` API this composer reads
+- [ ] OBPI-0.0.37-19 (corpus capture) — the `.gzkit/corpus/AGENTS.md.jsonl` store layout + `corpus_store.load_corpus` API this composer reads
 - [ ] OBPI-0.0.37-20 (setpoint) — `temperature_for` accessor + `SETPOINT_TOKENS` the composer drives toward
 - [ ] OBPI-0.0.37-22 (committed rendition + playback) — the consumer of this OBPI's candidate; the candidate→committed boundary (§ Tracked Defects)
 - [ ] OBPI-0.0.37-23 (invariant tier) + OBPI-0.0.37-24 (advisor-QC) — the verbatim-floor deepening and the candidate grader
@@ -302,6 +302,10 @@ uv run gz ledger tail --event composition_candidate_emitted
 - Defects noted:
 
 ## Tracked Defects
+
+- REQ-count drift: 0 declared vs 8 acceptance criteria (brief reconcile, attestor g0)
+
+- REQ-count drift: 0 declared vs 8 acceptance criteria (brief reconcile, attestor g0)
 
 **Candidate ↔ committed boundary (21 ↔ 22), flagged for operator confirmation at Gate 5:** This OBPI emits a *candidate* rendition (`<consumer>.candidate.md`) — an authoring artifact the advisor-QC loop (OBPI-24) grades and the operator attests. The *committed* rendition (`<consumer>.md`), the durable store, and deterministic playback are OBPI-22 scope. The promotion candidate→committed happens at operator attestation. If implementation reveals the staging path or model belongs more naturally in OBPI-22, surface it at Stage 1 brief-reconcile rather than silently shifting scope.
 
