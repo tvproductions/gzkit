@@ -1,0 +1,62 @@
+{
+  "adr_id": "ADR-0.0.71-completion-repudiation",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-06-13T10:05:14Z",
+  "updated_at": "2026-06-13T10:27:33Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-06-13T10:05:14Z",
+      "acknowledged_at": "2026-06-13T10:05:18Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-06-13T10:05:18Z",
+      "acknowledged_at": "2026-06-13T10:08:19Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-06-13T10:08:19Z",
+      "acknowledged_at": "2026-06-13T10:08:32Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-06-13T10:08:32Z",
+      "acknowledged_at": "2026-06-13T10:08:51Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-06-13T10:08:51Z",
+      "acknowledged_at": "2026-06-13T10:20:42Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-06-13T10:20:42Z",
+      "acknowledged_at": "2026-06-13T10:22:48Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-06-13T10:22:48Z",
+      "acknowledged_at": "2026-06-13T10:24:36Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-06-13T10:24:36Z",
+      "acknowledged_at": "2026-06-13T10:27:33Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-06-13T10:27:33Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run -m unittest tests.test_completion_repudiation -v"
+  ],
+  "walkthrough_index": 0,
+  "attestation": "Completed",
+  "completed_at": "2026-06-13T10:27:33Z",
+  "attempt": 1,
+  "paused_at": null
+}

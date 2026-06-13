@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.71-completion-repudiation
-status: Draft
+status: Completed
 kind: foundation
 semver: 0.0.71
 lane: heavy
@@ -224,4 +224,4 @@ Foundation tier: the invariance test resolves yes. gzkit IS the harness whose re
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.71 | Pending | | | |
+| 0.0.71 | Completed | g0 | 2026-06-13 | Completed |
