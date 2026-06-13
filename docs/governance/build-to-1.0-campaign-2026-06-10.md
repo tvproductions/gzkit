@@ -221,6 +221,14 @@ only deterministic playback writes the rendered surface.
       fourth-source triangulation in
       `docs/governance/harness-engineering-appraisal.md`. Checks off at
       ADR-0.0.70 terminal (all four OBPIs attested + closeout).
+      - **Progress 2026-06-13: 3/4 OBPIs `attested_completed`** per
+        `gz adr report ADR-0.0.70` (Lifecycle Pending, closeout BLOCKED):
+        OBPI-01 stop-hook-turn-end-feedback, OBPI-02 session-correction-mining,
+        and **OBPI-03 guardrail-feedback-prose-rule** (operator Gate-5
+        "attest completed" 2026-06-13; completion receipt + brief Completed;
+        synced in commit `b83b61ac`). Remaining bar: build + attest
+        **OBPI-0.0.70-04-fourth-source-triangulation** (still Draft — sole
+        closeout blocker), then ADR-0.0.70 closeout ceremony → Validated.
 - [ ] B.1 ADR-0.0.37 build-out (13/19 verified 2026-06-10 via
       `gz adr report`; → terminal) — the campaign's first marquee.
 - [ ] B.2 Registry-projected <15k surface (GHI #533) — closes **#519** (the
