@@ -7,7 +7,7 @@ Status: Active
 
 Source-of-truth: filesystem under `docs/design/adr/{foundation,pre-release}/`; this table is a Layer 3 derived view per `docs/governance/state-doctrine.md`. Regenerate via `gz register-adrs` (which calls `regenerate_adr_status_md` after ledger reconciliation); drift is fail-closed by `gz validate --adr-status-fresh`.
 
-Last regenerated: 2026-06-12 (count: 95 ADRs).
+Last regenerated: 2026-06-13 (count: 96 ADRs).
 
 | ID | Title | Kind | Lane | Status | Date | Path |
 |---|---|---|---|---|---|---|
@@ -81,6 +81,7 @@ Last regenerated: 2026-06-12 (count: 95 ADRs).
 | [ADR-0.0.68-green-between-sessions-gate](../../design/adr/foundation/ADR-0.0.68-green-between-sessions-gate/ADR-0.0.68-green-between-sessions-gate.md) | Green-Between-Sessions Gate | foundation | heavy | Validated | 2026-06-09 | `design/adr/foundation/ADR-0.0.68-green-between-sessions-gate/ADR-0.0.68-green-between-sessions-gate.md` |
 | [ADR-0.0.69-channels-first-closeout-proof](../../design/adr/foundation/ADR-0.0.69-channels-first-closeout-proof/ADR-0.0.69-channels-first-closeout-proof.md) | Channels-First Closeout Proof | foundation | heavy | Validated | 2026-06-09 | `design/adr/foundation/ADR-0.0.69-channels-first-closeout-proof/ADR-0.0.69-channels-first-closeout-proof.md` |
 | [ADR-0.0.70-turn-end-feedback-and-correction-mining](../../design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/ADR-0.0.70-turn-end-feedback-and-correction-mining.md) | Turn-End Feedback and Ground-Truth Correction Mining | foundation | lite | Draft | 2026-06-12 | `design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/ADR-0.0.70-turn-end-feedback-and-correction-mining.md` |
+| [ADR-0.0.71-completion-repudiation](../../design/adr/foundation/ADR-0.0.71-completion-repudiation/ADR-0.0.71-completion-repudiation.md) | Governed Reversal of Erroneous Completion Attestation | foundation | heavy | Draft | 2026-06-12 | `design/adr/foundation/ADR-0.0.71-completion-repudiation/ADR-0.0.71-completion-repudiation.md` |
 | [ADR-0.2.0-gate-verification](../../design/adr/pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md) | Gate Verification + Dry Run | feature | heavy | Validated | 2026-01-29 | `design/adr/pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md` |
 | [ADR-0.3.0-airlineops-canon-reconciliation](../../design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) | AirlineOps Canon Reconciliation | feature | heavy | Validated | 2026-02-13 | `design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md` |
 | [ADR-0.4.0-skill-capability-mirroring](../../design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) | Skill Capability Mirroring | feature | heavy | Validated | 2026-02-17 | `design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md` |
