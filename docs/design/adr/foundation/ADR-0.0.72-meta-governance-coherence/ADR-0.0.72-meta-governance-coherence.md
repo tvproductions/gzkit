@@ -10,6 +10,27 @@ date: 2026-06-13
 
 # ADR-0.0.72-meta-governance-coherence: Meta-Governance Validator Round-Trip Coherence
 
+> **⚠️ COLLAPSED — DO NOT IMPLEMENT (2026-06-13).** This foundation ADR was
+> collapsed as over-construction. It answered *"our validators contradict their
+> own artifacts"* by proposing **another** always-on validator
+> (`gz validate --writer-model-roundtrip`, OBPI-01) — which a pipeline run on
+> 2026-06-13 proved is the disease, not the cure: landing the meta-validator
+> tripped four *more* incoherences it does not address (brief-reconcile,
+> InsightRecord, plan-audit, lock-release coupling). You cannot audit your way
+> out of over-auditing. The real bugs (C1–C4) are re-routed to lightweight GHIs;
+> the architectural remedy goes to the existing SSOT workstream:
+>
+> - **C1/C2/C3** — HandoffFrontmatter rejects fields its own writers emit → **GHI #612** (new)
+> - **C4** — InsightRecord ↔ Behavior Rule 11 field drift → **GHI #575** (evidence added)
+> - **brief-reconcile crudeness** — glob-blindness + `req_count` magic-string heuristic → **GHI #581** (evidence added)
+> - **OBPI-04** — `security_floor_overridden` event → dropped (additive observability, not a bug)
+> - **Architectural remedy** — coherence by *construction* (one declaration →
+>   deterministic projection), never by another validator → return-to-health
+>   Tier-2 §2.5 (Config-first SSOT).
+>
+> Kept as a Draft tombstone (not deleted) so the decision and routing survive.
+> OBPIs 01–04 are not to be implemented. The text below is the original ADR as authored.
+
 ## Persona
 
 `main-session` — craftsperson, governance-aware, whole-file-reasoning, direct.
