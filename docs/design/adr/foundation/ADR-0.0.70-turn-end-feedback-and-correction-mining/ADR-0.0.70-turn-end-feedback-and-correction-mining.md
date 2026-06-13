@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.70-turn-end-feedback-and-correction-mining
-status: Draft
+status: Completed
 kind: foundation
 semver: 0.0.70
 lane: lite
@@ -285,4 +285,4 @@ Operator ratification (2026-06-12, verbatim): 'do max improvement from Florian B
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.70 | Pending | | | |
+| 0.0.70 | Completed | g0 | 2026-06-13 | Completed |
