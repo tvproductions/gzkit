@@ -3,7 +3,14 @@ id: OBPI-0.0.70-04-fourth-source-triangulation
 parent: ADR-0.0.70-turn-end-feedback-and-correction-mining
 item: 4
 lane: Lite
-status: Draft
+status: Completed
+# req_atomic (ADR-0.0.64 exemption): each REQ is a single indivisible docs-edit
+# labor unit — REQ-01 is the one appraisal section (per-thesis block + sidecar
+# reconciliation), REQ-02 is the one campaign B.0 amendment. Neither decomposes
+# into parallel seq=02+ sub-tasks; seq=01-per-REQ is correct granularity.
+req_atomic:
+  - REQ-0.0.70-04-01
+  - REQ-0.0.70-04-02
 ---
 
 # OBPI-0.0.70-04-fourth-source-triangulation: Fourth Source Triangulation
@@ -13,7 +20,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/ADR-0.0.70-turn-end-feedback-and-correction-mining.md`
 - **Checklist Item:** #4 - "Fourth-source doctrine triangulation — Buetow section appended to `docs/governance/harness-engineering-appraisal.md` per the established per-thesis pattern (citation: Beyond Coding Podcast, 2026-06-10); campaign B.0 cross-link; `mkdocs build --strict` green"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -54,11 +61,8 @@ stays green.
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: The appraisal section MUST follow the per-thesis pattern (source block, framing, triangulation, what-it-does/doesn't-unlock) and MUST state that the Buetow axis reinforces — never displaces — the Böckeler Wave-1/2 priorities (sidecar funded-not-displaced).
+1. REQUIREMENT: The appraisal section MUST follow the per-thesis pattern (source block, framing, triangulation, what-it-does/doesn't-unlock), MUST state that the Buetow axis reinforces — never displaces — the Böckeler Wave-1/2 priorities (sidecar funded-not-displaced), and MUST reconcile the dangling `ADR-pool.harness-sidecar` reference (the pool file was planned, never drafted — flagged 2026-06-12); `mkdocs build --strict` MUST exit 0.
 1. REQUIREMENT: The campaign amendment MUST quote the operator's verbatim words (2026-06-12) and insert B.0 referencing ADR-0.0.70, recorded in place per Magna Carta amendment discipline.
-1. REQUIREMENT: The appraisal MUST reconcile the dangling `ADR-pool.harness-sidecar` reference (the pool file was planned, never drafted — flagged 2026-06-12).
-1. REQUIREMENT: `uv run mkdocs build --strict` MUST exit 0 after the edits.
-1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -252,28 +256,26 @@ amendment with item B.0 inserted ahead of B.1.
 
 ### Key Proof
 
-```
+
 $ rg -n "Buetow" docs/governance/harness-engineering-appraisal.md | head -3
-(fourth-source section present)
+119:## Fourth Source — Buetow on the Code-Review Bottleneck (practitioner interview)
+121:> Source: Florian Buetow (AI engineer, Xebia), interviewed on the Beyond Coding Podcast, published 2026-06-10.
+129:Most of the Buetow inventory converges on surfaces gzkit already holds.
+
 $ rg -n "B.0 ADR-0.0.70" docs/governance/build-to-1.0-campaign-2026-06-10.md
-(B.0 row present with operator verbatim amendment above)
-```
+217:- [ ] B.0 ADR-0.0.70 Buetow adoption (operator-inserted 2026-06-12; see ...)
+
+Quality receipts: arb-step-unittest-d5d39358271a4d098a5d02f3cddad80f (6097 tests, exit 0); arb-step-mkdocs-d1748eef6b91492daaf535175b1dc520 (exit 0); arb-ruff-9898dd3f365b495d8917189b7bceb65c (exit 0); arb-step-typecheck-822001fc904642769ec06dc14d1b79f4 (exit 0).
 
 ### Implementation Summary
 
-- Parent ADR § Decision item (verbatim, per Discovery Checklist): "**4.
-  Fourth-source doctrine triangulation (docs).** Append a Buetow section to
-  `docs/governance/harness-engineering-appraisal.md` following the doc's
-  established per-thesis pattern ..."
-- Files created/modified: `docs/governance/harness-engineering-appraisal.md`
-  (fourth-source section + sidecar reconciliation + cross-ref),
-  `docs/governance/build-to-1.0-campaign-2026-06-10.md` (2026-06-12 amendment
-  verbatim + B.0)
-- Tests added: n/a (SUPPORT proof channels)
-- Date completed: 2026-06-12 (implementation; Gate 5 pending)
-- Attestation status: AWAITING operator Gate 5 (universal, ADR-0.0.36)
-- Defects noted: appraisal's `ADR-pool.harness-sidecar` dangling reference
-  reconciled (planned, never drafted; Stop-hook telemetry now funds the decision)
+
+- Parent ADR Decision item #4 (verbatim): "Fourth-source doctrine triangulation (docs). Append a Buetow section to docs/governance/harness-engineering-appraisal.md following the doc's established per-thesis pattern (Böckeler, Greyling, CE)."
+- REQ-0.0.70-04-01: appraisal Buetow section landed per per-thesis pattern (source block + framing + triangulation table + adopted-deltas mapping to OBPI-01/02/03 + what-Buetow-does-NOT-add), sidecar funded-not-displaced stated, ADR-pool.harness-sidecar dangling reference reconciled.
+- REQ-0.0.70-04-02: campaign records operator-verbatim 2026-06-12 amendment + B.0 item referencing ADR-0.0.70 inserted ahead of B.1 (Magna Carta amendment discipline).
+- Files modified: docs/governance/harness-engineering-appraisal.md, docs/governance/build-to-1.0-campaign-2026-06-10.md, this brief (Requirements consolidated to 2 REQ IDs; req_atomic exemption declared per ADR-0.0.64).
+- Tests added: n/a (SUPPORT proof channels — ADR-0.0.59).
+- Date completed: 2026-06-13. Attestation: operator Gate 5 received.
 
 ## Tracked Defects
 
@@ -284,12 +286,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — operator Gate 5 (universal, ADR-0.0.36) for OBPI-0.0.70-04 fourth-source triangulation: Buetow section landed in docs/governance/harness-engineering-appraisal.md per the per-thesis pattern (sidecar funded-not-displaced; ADR-pool.harness-sidecar dangling reference reconciled) and campaign B.0 amendment recorded with operator-verbatim 2026-06-12 words. Evidence: arb-step-unittest-d5d39358271a4d098a5d02f3cddad80f (6097 tests exit 0), arb-step-mkdocs-d1748eef6b91492daaf535175b1dc520 (exit 0), arb-ruff-9898dd3f365b495d8917189b7bceb65c (exit 0), arb-step-typecheck-822001fc904642769ec06dc14d1b79f4 (exit 0).
+- Date: 2026-06-13
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-13
 
 **Evidence Hash:** -

@@ -1,0 +1,17 @@
+{
+  "obpi_id": "OBPI-0.0.70-04-fourth-source-triangulation",
+  "timestamp": "2026-06-13T19:43:41.256051+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.70-04-fourth-source-triangulation.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/ADR-0.0.70-turn-end-feedback-and-correction-mining.md",
+        "docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/obpis/OBPI-0.0.70-04-fourth-source-triangulation.md"
+      ]
+    }
+  ]
+}
