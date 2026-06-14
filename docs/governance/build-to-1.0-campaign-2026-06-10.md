@@ -162,6 +162,33 @@ gzkit is 1.0 when ALL hold:
 > Until MOTD ships (Phase C), **this file's checklist is the workplan** —
 > sessions work top-down, check items off with observed command evidence.
 
+### Phase 0 — EMERGENCY: The Vocabulary Config-First Exorcism (GHI #615)
+
+> **Badge of shame and despair (operator verbatim, 2026-06-13):** "this goes
+> right at the GODDAMNED TOP of the campaign … one GHI only — a badge of shame
+> and despair." gzkit has **no central config** for its governance vocabularies
+> (`status`, `lane`). The values were copied into ~9 Pydantic models, 2
+> mutually-contradictory JSON schemas, 600 brief frontmatters, the ADR corpus,
+> authoring tools, skills, validators, and docs — each copy free to drift.
+> Nobody plays the same song, in the same key, in the same room. This is
+> **V.I.B.E.S. at the canon layer** — the governance surface became the slop it
+> exists to prevent. The cure is the Config-First doctrine airlineops already
+> proves (their GHI-75): one source of truth, everything derives, AST + drift
+> policy tests across every surface.
+>
+> **This phase blocks every other phase. Rome burns until it is fixed.** One
+> GHI carries it — **#615** — the sole badge; no others are filed.
+
+- [ ] 0.1 Ratify the canonical vocabularies — operator gate (§ Open Decisions
+      in the rites). Nothing downstream executes until the vocabularies are set.
+- [ ] 0.2 Perform the exorcism per the prepared rites:
+      [`docs/governance/vocabulary-config-first-exorcism-GHI-615.md`](vocabulary-config-first-exorcism-GHI-615.md)
+      — single source of truth (`governance/vocabulary.py` + config + loader +
+      frozen fallback) → bind every model / schema / corpus / authoring tool /
+      skill / validator / auditor / doc → Config-First AST policy test +
+      schema↔source + corpus-conformance drift-guards, mirroring airlineops
+      GHI-75. Acceptance: § 8 of the rites; `uv run gz check` green end-to-end.
+
 ### Phase A — In-flight closure
 
 - [x] A.1 OBPI-0.0.69-02 (structural-fence channel boundary-invariants
