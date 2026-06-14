@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.20.0"
-last_reviewed: 2026-06-09
+skill-version: "6.21.0"
+last_reviewed: 2026-06-14
 model: sonnet
 ---
 
@@ -667,7 +667,25 @@ the reconcile output and ADR status refresh.
    Write long `--attestation-text` / `--implementation-summary` /
    `--key-proof` payloads to `/tmp/*.txt|md` first to keep the invocation
    tractable.
-3. **Release OBPI lock** — `uv run gz obpi lock release {OBPI-SLUG}`
+3. **Author the completion handoff register entry, THEN release the lock (ADR-0.0.41 coupling).**
+   `gz obpi lock release` fail-closes without a register entry (token-block
+   discipline § Sub-Invariant 5) — even for a *completed* OBPI, which is not
+   abandoned. The Stage-5 ordering is therefore **handoff-before-release**, not
+   the reverse:
+   - Author a completion handoff via `/gz-session-handoff` (this is the step-10
+     session handoff, pulled earlier because the release depends on it).
+   - The handoff frontmatter `obpi_id:` MUST be the **full OBPI slug**
+     (e.g. `OBPI-0.0.37-22-committed-rendition-store-deterministic-playback`),
+     not the short form — `find_handoff_for_release` matches by exact equality
+     against the lock's full-slug `obpi_id`. Known surface friction:
+     `validate_handoff_document`'s `_OBPI_ID_RE` rejects the full slug, so the
+     standalone validator will flag it; the full slug is nonetheless the
+     de-facto working form for release pairing (prior-OBPI precedent). Do NOT
+     "correct" the handoff to short form — that breaks the release match.
+   - The handoff timestamp MUST postdate the lock claim.
+   - Then release: `uv run gz obpi lock release {OBPI-SLUG}` (exit 0). Do NOT
+     use `--abandon` for a completed OBPI — abandonment is the wrong semantics;
+     the handoff is a completion register entry, not a surrender.
 4. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
 5. Remove `.claude/plans/.pipeline-active.json` only when it still points at
    the same OBPI as the per-OBPI marker.
@@ -678,7 +696,11 @@ the reconcile output and ADR status refresh.
    reflects the reconciled OBPI state.
 9. **Git-sync #2** — `uv run gz git-sync --apply`
    Commits the reconcile output (step 7) and ADR status refresh (step 8).
-10. Create a session handoff if more OBPIs remain or follow-up work is deferred.
+10. The completion handoff authored in step 3 already serves as the session
+    handoff — confirm its "Pending Work / Open Loops" captures remaining
+    parent-ADR OBPIs and any deferred follow-up so the next session resumes
+    cleanly. (Authored at step 3 because the lock release depends on it; this
+    step is the content check, not a second handoff.)
 
 **GHI closure discipline (cross-reference):** When a GHI is closed as part of
 pipeline execution or handoff, apply `ghi-close` v2.4.0's dead-letter doctrine:
@@ -689,6 +711,56 @@ later") is a dead-letter and is forbidden. If no destination exists yet, leave t
 GHI open with a blocker comment naming the next concrete operator action. See
 `.gzkit/skills/ghi-close/SKILL.md` § Doctrine — NEVER, EVER, EVER dead-letter a
 GHI for the binding rule.
+
+---
+
+## Gate Friction: Evaluator Escalation (stale brief/OBPI vs. reality)
+
+A pipeline gate (Stage 1 reconcile; Stage 5 `precomplete` / `gz obpi complete`
+reconcile-freshness, lock-handoff coupling, or security floor) can block not
+because the *work* is wrong but because the *brief/OBPI has drifted from current
+repo reality* — a stale allowlist, an under-declared coupled surface, a missing
+`sensitivity:` axis, or a plan authored against an earlier tree. The two wrong
+responses are (a) contorting convention-correct code to satisfy a stale brief,
+and (b) filing a GHI and stalling. **The brief is the artifact that adjusts to
+reality; code that follows established convention is usually right.**
+
+When a gate blocks and you suspect the brief — not the code — is stale, run the
+**implementer → evaluator → human-approval** loop instead of working around it:
+
+1. **Dispatch an evaluator agent** (Agent tool; `general-purpose` or a review
+   persona; read-only) with a `Why` naming the suspected staleness and the
+   decision it drives. Ask it to determine, with cited evidence:
+   - The established convention / prior art — how sibling code and sibling
+     briefs handled the *identical* pattern (file placement, allowlist
+     declaration, sensitivity, override precedent).
+   - Whether the brief/OBPI under-declared or mis-declared the surface the gate
+     is blocking on.
+   - Whether the actual change is what the gate fears (e.g. a genuine security
+     change) or a false positive (additive, no new surface introduced).
+   - One concrete recommended resolution.
+2. **Make a determination** from the evidence. Do not rubber-stamp — confirm the
+   citations resolve (file paths, line numbers, sibling-brief frontmatter).
+3. **Present the recommendation(s) to the operator** — the determination, the
+   evidence, and the proposed brief/OBPI adjustment (allowlist amendment,
+   sensitivity declaration, override flag + reason). One tight decision with a
+   recommendation, not a re-derivation (operator economy of effort).
+4. **On operator approval, adjust the brief/OBPI to fit reality** — amend the
+   allowlist *surgically* (only genuinely-touched coupled surfaces, never the
+   false positives the gate over-flagged), then proceed with the documented
+   override (`--accept-stale-reconciliation --reason '<text>'`,
+   `--accept-security-floor '<reason>'`, etc.). Append an `improvement` insight
+   (Behavior Rule Always #11) capturing the staleness and the adjustment.
+
+This loop keeps the human as final witness (the operator approves the
+adjustment) while letting the system adjust the governance artifact to match
+verified reality — fewer GHIs, less friction, the brief stays honest.
+
+> **Anti-pattern:** silently applying an `--accept-*` override without the
+> evaluator determination + operator approval. The override is the *outcome* of
+> the loop, not a shortcut around it. Equally an anti-pattern: relocating
+> convention-correct code into an awkward home purely to satisfy a stale
+> allowlist — fix the brief, not the code.
 
 ---
 
@@ -704,6 +776,8 @@ GHI for the binding rule.
 | Verification fails | Attempt fix (1 try), then `gz obpi lock release --force` + handoff |
 | Human rejects attestation | Record feedback, return to Stage 2 with corrections |
 | `git sync` fails or repo remains unsynced | Stop before `gz obpi complete` and repair blockers |
+| Gate blocks on stale brief/allowlist (reconcile drift, security floor, under-declared coupled surface) | Run the **Gate Friction: Evaluator Escalation** loop (above) — dispatch evaluator → determination → operator approval → surgical brief amendment + documented override. Do NOT contort code to fit the brief or file a GHI to stall. |
+| Lock release fail-closes ("no register entry") on a *completed* OBPI | Author the completion handoff FIRST (full-slug `obpi_id:`), then release — see Stage 5 step 3. Never `--abandon` a completed OBPI. |
 
 **Lock bracket:** Lock is claimed at Stage 1 and released at Stage 5 AND on any abort/handoff. No orphaned locks.
 
