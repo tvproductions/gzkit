@@ -581,6 +581,16 @@ def run_adr_status_fresh_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --adr-status-fresh", cwd=project_root)
 
 
+def run_rendition_freshness_audit(project_root: Path) -> QualityResult:
+    """Run the rendition-freshness gate (OBPI-0.0.37-22).
+
+    Fails closed (exit 3) when the corpus has mutated after the committed
+    rendition for any (surface, consumer) pair.
+    Recovery: `uv run gz content compose <surface>` and attest.
+    """
+    return run_command("uv run gz validate --rendition-freshness", cwd=project_root)
+
+
 def run_session_green_gate_audit(project_root: Path) -> QualityResult:
     """Run the session-green-gate declaration audit (ADR-0.0.68 / OBPI-0.0.68-02).
 

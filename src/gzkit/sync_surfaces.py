@@ -350,12 +350,26 @@ def sync_discovery_index(project_root: Path, config: GzkitConfig) -> None:
 
 
 def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
-    """Generate AGENTS.md from the master AgentContract via the content model renderer.
+    """Generate AGENTS.md by deterministic playback of the committed rendition (OBPI-0.0.37-22).
 
-    Pipeline (OBPI-0.0.37-14): .gzkit/templates/agents.md → str.format_map(context)
-    → parse(AgentContract) → render(model, "claude", temperature="heavy").
-    Falls back to monolith render when the project template is absent (fresh-init).
+    Playback path (primary): load ``.gzkit/renditions/AGENTS.md/claude.md`` and write
+    its bytes verbatim to AGENTS.md — no LLM, no template substitution, no network.
+    Identical committed rendition → byte-identical surface on every call.
+
+    Bootstrap fallback (no committed rendition yet): render from the AgentContract
+    template via the model pipeline (OBPI-0.0.37-14 plumbing). The
+    ``render_template("agents")`` monolith path is retired; the template-model
+    pipeline is the sole bootstrap path.
     """
+    from gzkit.content.rendition_store import load_rendition, rendition_exists
+
+    agents_path = project_root / config.paths.agents_md
+
+    if rendition_exists(project_root, "AGENTS.md", "claude"):
+        agents_path.write_bytes(load_rendition(project_root, "AGENTS.md", "claude"))
+        return
+
+    # Bootstrap: no committed rendition yet — render from template via model pipeline.
     from gzkit.content.parse import parse as _parse_content  # lazy: avoids compose.py cycle
 
     context = get_project_context(project_root, config)
@@ -369,15 +383,15 @@ def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
             claude_temp = _temperature_for("AgentContract", "claude", project_root=project_root)
         except ValueError:
             # Fresh/consuming projects ship no data/vendor-manifest.json, so the
-            # general-control resolver fails closed. AGENTS.md must still render
-            # here, so default to full density — render MORE, never silently
-            # thin the primary contract (operator directive 2026-06-03).
+            # general-control resolver fails closed. Default to full density — render MORE,
+            # never silently thin the primary contract (operator directive 2026-06-03).
             claude_temp = "heavy"
         content_bytes = render_content_model(model, "claude", temperature=claude_temp)
     else:
+        # Bare bootstrap: no template either. Fall back to monolith render so fresh
+        # projects (gz init without templates) still produce a functional AGENTS.md.
         content_bytes = render_template("agents", **context).encode("utf-8")
 
-    agents_path = project_root / config.paths.agents_md
     agents_path.write_bytes(content_bytes)
 
 

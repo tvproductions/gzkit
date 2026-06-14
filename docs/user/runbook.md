@@ -1009,6 +1009,39 @@ operator attestation (OBPI-22) before promotion to a committed rendition.
 
 See the `gz-content-compose` skill and [`gz content`](manpages/content.md) § compose.
 
+**To commit a rendition and play it back (OBPI-0.0.37-22):**
+After the compose stage produces and the operator attests a candidate rendition, the
+committed rendition artifact is stored at `.gzkit/renditions/<surface>/<consumer>.md`.
+`gz agent sync control-surfaces` then plays it back deterministically — no LLM, no
+network — to the rendered surface:
+
+```bash
+# After attestation, play back the committed rendition to AGENTS.md
+uv run gz agent sync control-surfaces
+
+# Verify the surface matches the committed rendition
+uv run gz validate --invariant-coherence
+```
+
+**If `gz check` or `gz validate --rendition-freshness` exits 3 (corpus drifted):**
+
+```bash
+# Identify the drift
+uv run gz validate --rendition-freshness
+
+# Recompose: run the gz-content-compose skill to produce an operator-attested rendition
+# then sync to play it back
+uv run gz agent sync control-surfaces
+
+# Confirm drift cleared
+uv run gz validate --rendition-freshness
+```
+
+The freshness gate fails closed (`exit 3`) when the corpus for a surface has mutated
+after the committed rendition — indicating that new `gz content remember` entries have
+not been reflected in the committed rendition. Recovery is always recompose + attest,
+never editing a rendered surface directly.
+
 ---
 
 ## Rules Surface

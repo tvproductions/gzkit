@@ -1,15 +1,19 @@
-"""Tests for validate_invariant_coherence covering all 5 brief acceptance REQs.
+"""Tests for validate_invariant_coherence — rendition-playback semantics (OBPI-0.0.37-22).
+
+After re-pointing (OBPI-0.0.37-22), --invariant-coherence diffs deterministic
+playback of the committed rendition against the committed rendered surface.
 
 Covers:
-    REQ-0.0.37-03-01 — exits 0 (empty list) when rendered bytes match AGENTS.md
+    REQ-0.0.37-22-04 — exits 3 when rendition playback differs from committed AGENTS.md
+    REQ-0.0.37-03-01 — exits 0 (empty list) when rendition bytes match AGENTS.md
     REQ-0.0.37-03-02 — exits 3 (one ValidationError) on drift; message includes diff
-    REQ-0.0.37-03-03 — emits composition_rendered always; drift also emits
-                        composition_drift_detected
+    REQ-0.0.37-03-03 — emits composition_rendered always (when rendition exists);
+                        drift also emits composition_drift_detected
     REQ-0.0.37-03-04 — ledger.json schema registers both event definitions
     REQ-0.0.37-03-05 — invariant_coherence is in the default_scopes of validate_cmd
 
-All tests use tempfile.TemporaryDirectory for sandbox isolation; never write
-to the live repo root.
+Bootstrap-safe: when no committed rendition exists, returns [] with no events.
+All tests use tempfile.TemporaryDirectory for sandbox isolation.
 """
 
 from __future__ import annotations
@@ -19,8 +23,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gzkit.governance.compose import render_agents_md
-from gzkit.governance.invariants import load_invariants
+from gzkit.content.rendition_store import save_rendition
 from gzkit.governance.trust_audits.invariant_coherence import validate_invariant_coherence
 from gzkit.traceability import covers
 
@@ -28,39 +31,19 @@ from gzkit.traceability import covers
 # Helpers
 # ---------------------------------------------------------------------------
 
-_MINIMAL_TEMPLATE = """\
-# AGENTS.md
-
-A minimal test agent contract.
-
-## Behavior Rules
-
-- Always read AGENTS.md before starting work.
-"""
-
-_TEST_INVARIANT = {
-    "id": "TEST-1",
-    "claim": "Test invariant claim",
-    "structural_witness": ["test-witness-1"],
-    "composition_targets": ["AGENTS.md"],
-}
+_MINIMAL_RENDITION = (
+    b"# AGENTS.md\n\nA minimal test agent contract.\n\n## Behavior Rules\n\n"
+    b"- Always read AGENTS.md before starting work.\n"
+)
 
 
-def _setup_project(root: Path, *, with_invariant: bool = True) -> None:
+def _setup_project(root: Path, *, with_rendition: bool = True) -> None:
     """Scaffold minimal project structure under root."""
     gzkit_dir = root / ".gzkit"
     gzkit_dir.mkdir(parents=True, exist_ok=True)
 
-    template_dir = root / ".gzkit" / "templates"
-    template_dir.mkdir(parents=True, exist_ok=True)
-    (template_dir / "agents.md").write_text(_MINIMAL_TEMPLATE, encoding="utf-8")
-
-    if with_invariant:
-        inv_dir = root / ".gzkit" / "invariants"
-        inv_dir.mkdir(parents=True, exist_ok=True)
-        (inv_dir / "TEST-1.json").write_text(
-            json.dumps(_TEST_INVARIANT, indent=2), encoding="utf-8"
-        )
+    if with_rendition:
+        save_rendition(root, "AGENTS.md", "claude", _MINIMAL_RENDITION)
 
 
 def _write_agents_md(root: Path, content: bytes) -> None:
@@ -68,10 +51,13 @@ def _write_agents_md(root: Path, content: bytes) -> None:
     (root / "AGENTS.md").write_bytes(content)
 
 
-def _render_expected(root: Path) -> bytes:
-    """Render AGENTS.md bytes using the project's template and invariants."""
-    invariants = load_invariants(root)
-    return render_agents_md(invariants, root / ".gzkit" / "templates", root)
+def _rendition_bytes(root: Path) -> bytes:
+    """Return the committed rendition bytes (what playback produces)."""
+    from gzkit.content.rendition_store import load_rendition, rendition_exists
+
+    if rendition_exists(root, "AGENTS.md", "claude"):
+        return load_rendition(root, "AGENTS.md", "claude")
+    return b""
 
 
 def _read_ledger_events(root: Path) -> list[dict]:
@@ -104,23 +90,33 @@ class _TempProjectMixin(unittest.TestCase):
 
 
 class TestMatchNoDrift(_TempProjectMixin):
-    """AGENTS.md matches rendered bytes: validator returns empty list."""
+    """AGENTS.md matches committed rendition bytes: validator returns empty list."""
 
     @covers("REQ-0.0.37-03-01")
     def test_matching_agents_md_returns_no_errors(self) -> None:
         _setup_project(self.root)
-        expected_bytes = _render_expected(self.root)
-        _write_agents_md(self.root, expected_bytes)
+        _write_agents_md(self.root, _rendition_bytes(self.root))
 
         errors = validate_invariant_coherence(self.root)
 
         self.assertEqual(errors, [], f"Expected no errors, got: {errors}")
 
+    @covers("REQ-0.0.37-03-01")
+    def test_bootstrap_no_rendition_returns_no_errors(self) -> None:
+        """Bootstrap: no committed rendition → validator returns [] without checking."""
+        _setup_project(self.root, with_rendition=False)
+        _write_agents_md(self.root, b"# AGENTS.md\n\nSome content.\n")
+
+        errors = validate_invariant_coherence(self.root)
+
+        self.assertEqual(errors, [], "Bootstrap: no rendition → no coherence check")
+
 
 class TestMismatchDrift(_TempProjectMixin):
-    """AGENTS.md differs from rendered bytes: validator returns one ValidationError."""
+    """AGENTS.md differs from rendition: validator returns one ValidationError."""
 
     @covers("REQ-0.0.37-03-02")
+    @covers("REQ-0.0.37-22-04")
     def test_differing_agents_md_returns_one_error(self) -> None:
         _setup_project(self.root)
         _write_agents_md(self.root, b"# AGENTS.md\n\nThis is wrong content.\n")
@@ -144,7 +140,6 @@ class TestMismatchDrift(_TempProjectMixin):
     @covers("REQ-0.0.37-03-02")
     def test_error_message_contains_diff_hunk_marker(self) -> None:
         _setup_project(self.root)
-        # Provide AGENTS.md that differs so a hunk shows up in the unified diff.
         _write_agents_md(self.root, b"# AGENTS.md\n\nDifferent content.\n")
 
         errors = validate_invariant_coherence(self.root)
@@ -155,13 +150,12 @@ class TestMismatchDrift(_TempProjectMixin):
 
 
 class TestCompositionRenderedEmitted(_TempProjectMixin):
-    """composition_rendered event emitted on matching run."""
+    """composition_rendered event emitted on matching run (when rendition exists)."""
 
     @covers("REQ-0.0.37-03-03")
     def test_composition_rendered_event_present(self) -> None:
         _setup_project(self.root)
-        expected_bytes = _render_expected(self.root)
-        _write_agents_md(self.root, expected_bytes)
+        _write_agents_md(self.root, _rendition_bytes(self.root))
 
         validate_invariant_coherence(self.root)
 
@@ -174,8 +168,7 @@ class TestCompositionRenderedEmitted(_TempProjectMixin):
     @covers("REQ-0.0.37-03-03")
     def test_composition_rendered_event_fields(self) -> None:
         _setup_project(self.root)
-        expected_bytes = _render_expected(self.root)
-        _write_agents_md(self.root, expected_bytes)
+        _write_agents_md(self.root, _rendition_bytes(self.root))
 
         validate_invariant_coherence(self.root)
 
@@ -188,15 +181,15 @@ class TestCompositionRenderedEmitted(_TempProjectMixin):
         self.assertIn("target", ev)
         self.assertIn("byte_count", ev)
         self.assertIn("render_ts", ev)
-        self.assertEqual(ev["invariant_count"], 1)
+        # Rendition playback emits invariant_count=0 (no registry involved)
+        self.assertEqual(ev["invariant_count"], 0)
         self.assertEqual(ev["target"], "AGENTS.md")
         self.assertIsInstance(ev["byte_count"], int)
 
     @covers("REQ-0.0.37-03-03")
     def test_no_drift_event_on_match(self) -> None:
         _setup_project(self.root)
-        expected_bytes = _render_expected(self.root)
-        _write_agents_md(self.root, expected_bytes)
+        _write_agents_md(self.root, _rendition_bytes(self.root))
 
         validate_invariant_coherence(self.root)
 
@@ -205,6 +198,17 @@ class TestCompositionRenderedEmitted(_TempProjectMixin):
         self.assertEqual(
             drift_events, [], f"Expected no drift events on match, got: {drift_events}"
         )
+
+    @covers("REQ-0.0.37-03-03")
+    def test_bootstrap_no_rendition_emits_no_events(self) -> None:
+        """Bootstrap: no committed rendition → validator returns early, emits nothing."""
+        _setup_project(self.root, with_rendition=False)
+        _write_agents_md(self.root, b"# AGENTS.md\n\nBootstrap content.\n")
+
+        validate_invariant_coherence(self.root)
+
+        events = _read_ledger_events(self.root)
+        self.assertEqual(events, [], "Bootstrap: no rendition → no ledger events")
 
 
 class TestCompositionDriftEmitted(_TempProjectMixin):
@@ -240,29 +244,24 @@ class TestCompositionDriftEmitted(_TempProjectMixin):
 
 
 class TestEmptyRegistry(_TempProjectMixin):
-    """No .gzkit/invariants/ directory: load_invariants returns empty dict."""
+    """Bootstrap (no committed rendition): validator is a no-op."""
 
-    def test_no_invariants_dir_returns_validation_result(self) -> None:
-        # Setup template but no invariants dir; AGENTS.md absent.
-        _setup_project(self.root, with_invariant=False)
+    def test_no_rendition_returns_empty_list(self) -> None:
+        """Without a committed rendition, validator skips coherence check (bootstrap-safe)."""
+        _setup_project(self.root, with_rendition=False)
 
-        # Should not raise; returns a list (possibly 1 error due to drift).
         result = validate_invariant_coherence(self.root)
 
-        self.assertIsInstance(result, list)
-        # Each element (if any) must be a ValidationError.
-        for err in result:
-            self.assertEqual(err.type, "invariant_coherence")
+        self.assertEqual(result, [], "Bootstrap: no rendition → empty list")
 
-    def test_no_invariants_dir_emits_composition_rendered(self) -> None:
-        _setup_project(self.root, with_invariant=False)
+    def test_no_rendition_emits_no_ledger_events(self) -> None:
+        """Bootstrap: no committed rendition → no ledger events emitted."""
+        _setup_project(self.root, with_rendition=False)
 
         validate_invariant_coherence(self.root)
 
         events = _read_ledger_events(self.root)
-        rendered_events = [e for e in events if e.get("event") == "composition_rendered"]
-        self.assertEqual(len(rendered_events), 1)
-        self.assertEqual(rendered_events[0]["invariant_count"], 0)
+        self.assertEqual(events, [], "Bootstrap: no rendition → no ledger events")
 
 
 class TestSchemaRegistered(unittest.TestCase):
@@ -342,8 +341,6 @@ class TestGzCheckDefault(unittest.TestCase):
 
     @covers("REQ-0.0.37-03-05")
     def test_invariant_coherence_in_collect_errors_default_scopes(self) -> None:
-        # Verify the default_scopes dict in _collect_errors includes
-        # invariant_coherence (even if its value starts as False).
         import inspect
 
         from gzkit.commands import validate_cmd
@@ -374,7 +371,6 @@ class TestScorecardEntry(unittest.TestCase):
             Path(__file__).resolve().parents[2] / "docs" / "governance" / "advisory-rules-audit.md"
         )
         text = scorecard.read_text(encoding="utf-8")
-        # The scorecard row for --invariant-coherence must cite the validator module.
         invariant_lines = [line for line in text.splitlines() if "invariant-coherence" in line]
         self.assertTrue(
             any(

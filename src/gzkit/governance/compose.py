@@ -6,11 +6,8 @@ from collections.abc import Mapping
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
-from gzkit.content.parse import parse as _parse_content
-from gzkit.content.render import render as _render_content
 from gzkit.governance.invariants import ConstitutionalInvariant
 from gzkit.sync_surfaces import get_project_context
-from gzkit.templates import SafeDict
 
 _SOURCE_PREFIX = "- **Source**:"
 _UPDATED_PREFIX = "- **Updated**:"
@@ -53,20 +50,20 @@ def render_agents_md(
     template_root: Path,
     project_root: Path,
 ) -> bytes:
-    """Render AGENTS.md bytes via the content model pipeline (OBPI-0.0.37-14).
+    """Return AGENTS.md bytes via deterministic playback of the committed rendition (OBPI-22).
 
-    Pipeline: template text → str.format_map(context) → parse(AgentContract)
-    → render(model, "claude", temperature="heavy").
+    Loads the committed rendition from ``.gzkit/renditions/AGENTS.md/claude.md``
+    and returns its bytes verbatim — no LLM, no template substitution, no network.
+    Identical committed rendition → identical bytes on every call.
 
-    The ``invariants`` parameter is accepted for backward compatibility with
-    existing callers (governance_render_cmd) but is not used in the model
-    pipeline — the template is the independent source. Bootstrap-safe: returns
-    empty bytes when the template file is absent.
+    Bootstrap-safe: returns empty bytes when no committed rendition exists (fresh-init).
+
+    The ``invariants`` and ``template_root`` parameters are retained for backward
+    compatibility with existing callers (``governance_render_cmd``) but are unused
+    in the playback path.
     """
-    template_path = template_root / "agents.md"
-    if not template_path.exists():
-        return b""
-    context = _substitution_context(project_root)
-    resolved_text = template_path.read_text(encoding="utf-8").format_map(SafeDict(context))
-    model = _parse_content(resolved_text, "AgentContract")
-    return _render_content(model, "claude", temperature="heavy")
+    from gzkit.content.rendition_store import load_rendition, rendition_exists
+
+    if rendition_exists(project_root, "AGENTS.md", "claude"):
+        return load_rendition(project_root, "AGENTS.md", "claude")
+    return b""

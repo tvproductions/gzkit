@@ -680,6 +680,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Every content_type_routes pair has a legal declared setpoint (OBPI-0.0.37-20).",
     )
     p_validate.add_argument(
+        "--rendition-freshness",
+        dest="check_rendition_freshness",
+        action="store_true",
+        default=False,
+        help="Fail-closed when corpus drifted from committed rendition (OBPI-0.0.37-22).",
+    )
+    p_validate.add_argument(
         "--kind-invariance",
         dest="check_kind_invariance",
         action="store_true",
@@ -818,6 +825,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_surface_fidelity=a.check_surface_fidelity,
             check_vendor_manifest=a.check_vendor_manifest,
             check_setpoint_coherence=a.check_setpoint_coherence,
+            check_rendition_freshness=a.check_rendition_freshness,
             check_kind_invariance=a.check_kind_invariance,
             check_receipt_shape=a.check_receipt_shape,
             attestation_receipts=a.attestation_receipts,

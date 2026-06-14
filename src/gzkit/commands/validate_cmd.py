@@ -207,6 +207,7 @@ def _collect_errors(
     check_brief_command_shape: bool = False,
     check_tautological_test_audit: bool = False,
     check_setpoint_coherence: bool = False,
+    check_rendition_freshness: bool = False,
     check_task_envelope_coherence: bool = False,
     check_line_endings: bool = False,
     check_closeout_proof: bool = False,
@@ -277,6 +278,7 @@ def _collect_errors(
         "surface_fidelity": check_surface_fidelity,
         "vendor_manifest": check_vendor_manifest,
         "setpoint_coherence": check_setpoint_coherence,
+        "rendition_freshness": check_rendition_freshness,
         "kind_invariance": check_kind_invariance,
         "receipt_shape": check_receipt_shape,
         "brief_reconcile": check_brief_reconcile,
@@ -328,6 +330,13 @@ def _invariant_coherence_runner(project_root: Path) -> list[ValidationError]:
     from gzkit.governance import trust_audits  # noqa: PLC0415
 
     return trust_audits.validate_invariant_coherence(project_root)
+
+
+def _rendition_freshness_runner(project_root: Path) -> list[ValidationError]:
+    """Corpus↔rendition drift gate (OBPI-0.0.37-22)."""
+    from gzkit.governance import trust_audits  # noqa: PLC0415
+
+    return trust_audits.validate_rendition_freshness(project_root)
 
 
 def _explicit_scope_runners(
@@ -395,6 +404,7 @@ def _explicit_scope_runners(
         "surface_fidelity": lambda: trust_audits.validate_surface_fidelity(project_root),
         "vendor_manifest": lambda: trust_audits.validate_vendor_manifest(project_root),
         "setpoint_coherence": lambda: trust_audits.validate_setpoint_coherence(project_root),
+        "rendition_freshness": lambda: _rendition_freshness_runner(project_root),
         "kind_invariance": lambda: trust_audits.audit_kind_invariance(project_root),
         "receipt_shape": lambda: trust_audits.audit_receipt_shape(project_root),
         "brief_reconcile": lambda: trust_audits.validate_brief_reconcile(project_root),
@@ -880,6 +890,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "surface_fidelity",
         "vendor_manifest",
         "setpoint_coherence",
+        "rendition_freshness",
         "brief_reconcile",
         "router_tables",
         "req_kind_discipline",
@@ -924,6 +935,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "kind_invariance",
         "receipt_shape",
         "setpoint_coherence",
+        "rendition_freshness",
         "invariant_coherence",
         "brief_reconcile",
         "router_tables",
@@ -1186,6 +1198,7 @@ def validate(
     check_brief_command_shape: bool = False,
     check_tautological_test_audit: bool = False,
     check_setpoint_coherence: bool = False,
+    check_rendition_freshness: bool = False,
     check_task_envelope_coherence: bool = False,
     check_closeout_proof: bool = False,
     attestation_receipts: str | None = None,
@@ -1265,6 +1278,7 @@ def validate(
             check_surface_fidelity,
             check_vendor_manifest,
             check_setpoint_coherence,
+            check_rendition_freshness,
             check_kind_invariance,
             check_receipt_shape,
             check_brief_reconcile,
@@ -1353,6 +1367,7 @@ def validate(
         check_surface_fidelity=check_surface_fidelity,
         check_vendor_manifest=check_vendor_manifest,
         check_setpoint_coherence=check_setpoint_coherence,
+        check_rendition_freshness=check_rendition_freshness,
         check_kind_invariance=check_kind_invariance,
         check_receipt_shape=check_receipt_shape,
         check_invariant_coherence=check_invariant_coherence,
@@ -1444,6 +1459,7 @@ def validate(
         "surface_fidelity": check_surface_fidelity,
         "vendor_manifest": check_vendor_manifest,
         "setpoint_coherence": check_setpoint_coherence,
+        "rendition_freshness": check_rendition_freshness,
         "kind_invariance": check_kind_invariance,
         "receipt_shape": check_receipt_shape,
         "invariant_coherence": check_invariant_coherence,

@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.71-01-completion-repudiation-event",
-  "timestamp": "2026-06-13T06:03:30.000000+00:00",
+  "obpi_id": "OBPI-0.0.37-22-committed-rendition-store-deterministic-playback",
+  "timestamp": "2026-06-14T12:45:00.000000+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.71-01-completion-repudiation-event.md",
+  "plan_file": "woolly-greeting-cascade.md",
   "gaps_found": 0,
-  "notes": "ADR<->OBPI alignment: all 7 checks Aligned. Plan<->OBPI alignment: all 7 checks Aligned. CLI audit reported tests/test_completion_repudiation.py missing — this is a TDD CREATE file, expected pre-state (brief marks it **CREATE**). 45 advisory scope collisions on core ledger surfaces — foundational files, advisory only, not blocking."
+  "notes": "ADR<->OBPI alignment: all 7 checks Aligned. Plan<->OBPI alignment: all 7 checks Aligned (plan covers all 6 REQs within allowlist). CLI audit reported 6 'missing path' gaps — all are CREATE paths declared exempt in brief's ## Creates These Files section per GHI #419 (TDD pre-state). 144 sibling-ADR scope collisions on shared core surfaces — advisory only, non-blocking. Confidence: 95% — proceeding to Stage 2."
 }

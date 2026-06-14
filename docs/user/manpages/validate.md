@@ -13,7 +13,8 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--scenario-reachability] [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
-            [--advisor-proof-binding] [--lock-handoff-coupling] [--vendor-manifest] [--setpoint-coherence]
+            [--advisor-proof-binding] [--lock-handoff-coupling] [--vendor-manifest]
+            [--setpoint-coherence] [--rendition-freshness]
             [--invariant-coherence] [--brief-reconcile] [--router-tables]
             [--kind-invariance] [--req-kind-discipline] [--brief-command-shape] [--tautological-test-audit]
             [--closeout-proof]
@@ -1080,9 +1081,43 @@ per run — ruling 6.1-A). The ceremony gate `_gate_closeout_proof` on the
 `EXECUTE→ATTESTATION` edge calls this view directly; an unproven REQ blocks
 the ceremony's advance to attestation.
 
+### `--rendition-freshness`
+
+Fail-closed when the corpus for a surface has mutated after its committed rendition
+(corpus↔rendition drift). Scans `.gzkit/renditions/<surface>/<consumer>.md` artifacts
+and compares each against the corresponding corpus at `.gzkit/corpus/<surface>.jsonl`
+using file modification timestamps. Emits `composition_drift_detected` on drift.
+
+Runs in the default `gz check` build (OBPI-0.0.37-22).
+
+**Usage:**
+
+```bash
+gz validate --rendition-freshness
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | All renditions are at least as recent as their corpus | — |
+| 3 | Corpus mutated after committed rendition | Run `gz content compose <surface>` and attest |
+
+**When to use:** After `gz content remember` appends a corpus entry, before `gz agent sync
+control-surfaces`, or to diagnose a failing `gz check` Rendition freshness step.
+
+**Related:** ADR-0.0.37 (CMS pipeline), OBPI-0.0.37-22 (this gate), `--invariant-coherence`.
+
 ### `--invariant-coherence`
 
-Validate that the committed `AGENTS.md` matches the rendered constitutional invariant registry output. Fails closed (exit 3) on byte-drift; emits `composition_rendered` event on every run; additionally emits `composition_drift_detected` on drift.
+Diff deterministic playback of the committed rendition against the committed rendered
+surface (`AGENTS.md`). Fails closed (exit 3) on drift; emits `composition_rendered`
+on every run (when a committed rendition exists); additionally emits
+`composition_drift_detected` on drift.
+
+Re-pointed in OBPI-0.0.37-22 from registry-re-render byte-compare to
+rendition-playback-vs-committed-surface diff. Bootstrap-safe: exits 0 when no
+committed rendition exists.
 
 **Usage:**
 
@@ -1094,10 +1129,11 @@ gz validate --invariant-coherence
 
 | Code | Meaning | Recovery |
 |------|---------|----------|
-| 0 | Registry matches committed AGENTS.md | — |
-| 3 | Drift detected (output includes unified diff, first 50 lines) | Run `gz governance render --target agents-md` to regenerate AGENTS.md from the registry |
+| 0 | Committed rendition matches AGENTS.md (or no rendition yet) | — |
+| 3 | Playback of committed rendition differs from committed AGENTS.md | Run `gz content compose AGENTS.md` and attest, or `gz agent sync control-surfaces` to replay |
 
-**Related:** ADR-0.0.37 (constitutional invariant composition), OBPI-0.0.37-03 (this validator).
+**Related:** ADR-0.0.37 (constitutional invariant composition), OBPI-0.0.37-22
+(rendition playback gate), `--rendition-freshness`.
 
 ### `--brief-reconcile`
 

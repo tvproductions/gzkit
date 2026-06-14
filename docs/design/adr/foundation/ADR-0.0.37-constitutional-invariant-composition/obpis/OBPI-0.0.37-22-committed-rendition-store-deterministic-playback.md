@@ -3,7 +3,7 @@ id: OBPI-0.0.37-22-committed-rendition-store-deterministic-playback
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 22
 lane: Heavy
-status: Draft
+status: Completed
 # req_atomic: each REQ is a single indivisible labor unit — one behavior/support
 # surface apiece (store, playback, freshness gate, coherence-diff, build-wiring,
 # docs); none decomposes into parallel seq=02+ sub-tasks (ADR-0.0.64 exemption).
@@ -23,7 +23,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 - **Checklist Item:** #22 - "OBPI-0.0.37-22 — Committed-rendition store + deterministic playback + freshness gate (durable rendition artifact per surface×consumer; `sync_agents_md` plays it back deterministically; build fail-closes on corpus↔rendition drift; `--invariant-coherence` diffs playback vs committed surface; re-homes prior OBPI-14 sync/compose plumbing)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -52,6 +52,7 @@ A new `gz validate --rendition-freshness` scope, a re-pointed `--invariant-coher
 - `src/gzkit/cli/parser_maintenance.py` — EDIT: register the `--rendition-freshness` argparse flag (cf. `--invariant-coherence`, `--setpoint-coherence`)
 - `src/gzkit/commands/validate_cmd.py` — EDIT: wire the `rendition_freshness` runner into the dispatch table + default-scope registry (cf. `_invariant_coherence_runner`)
 - `src/gzkit/commands/quality.py` — EDIT: add the rendition-freshness gate to the `gz check` build steps (`_build_check_steps`)
+- `src/gzkit/quality.py` — EDIT: add the `run_rendition_freshness_audit` runtime delegate that `_build_check_steps` imports from `gzkit.quality` (coupled producer surface; convention per `run_adr_status_fresh_audit` — every `run_*_audit` runner lives here. Allowlist amendment 2026-06-14, evaluator-attested: sibling briefs OBPI-0.0.68-02/0.0.69-03 declared this same path for the identical pattern)
 - `src/gzkit/governance/events.py` — EDIT: add a typed read-path model for the rendition-drift/playback event if a new one is needed (reuse `CompositionDriftDetectedEvent` where the shape fits)
 - `src/gzkit/ledger_events.py` — EDIT: add/extend the factory for the rendition-drift event (reuse `composition_drift_detected_event` where the shape fits)
 - `src/gzkit/schemas/ledger.json` — EDIT: register any new event type with its required-fields schema (the REAL registry `gz validate --ledger` reads)
@@ -285,13 +286,30 @@ uv run gz validate --invariant-coherence
 
 ### Key Proof
 
+
+Freshness gate fails closed on corpus drift; playback is deterministic:
+
+$ uv run gz validate --rendition-freshness   # corpus newer than committed rendition
+-> exit 3: "Corpus for 'AGENTS.md' has mutated after its committed rendition ('claude'). Run `gz content compose AGENTS.md` and attest to recompose."
+
+$ uv run gz agent sync control-surfaces && git diff --stat AGENTS.md
+-> (no diff — AGENTS.md byte-identical to committed rendition; deterministic playback, no LLM)
+
+Receipts: arb-step-unittest-d459a288befe408fa5fa87dcd74d6e10 (6131/6131 pass), arb-ruff-a9d1d983fdd94f119b9c052b82b0ca49, arb-step-typecheck-040f8f8835f742778313409e9681e137, arb-step-mkdocs-35dc676c7f114aa3a39a302d093614d5. 8/8 BDD scenarios pass (@REQ-0.0.37-22-01..04); behavior_uncovered_reqs=0.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Committed-rendition store: src/gzkit/content/rendition_store.py provides rendition_path/load_rendition/save_rendition/rendition_exists over .gzkit/renditions/<surface>/<consumer>.md; deterministic, stdlib-only, fail-closed (FileNotFoundError) on absent artifact.
+- Deterministic playback: sync_agents_md (sync_surfaces.py) and render_agents_md (compose.py) re-pointed to load committed rendition bytes verbatim — no LLM, no network. Template-model pipeline retained only as fresh-init bootstrap fallback.
+- Freshness gate: src/gzkit/governance/trust_audits/rendition_freshness.py compares corpus mtime vs committed-rendition mtime; exits 3 + emits composition_drift_detected on drift; wired into gz check (_build_check_steps) and gz validate --rendition-freshness.
+- --invariant-coherence re-pointed from registry-re-render to rendition-playback-vs-committed-surface diff.
+- Renditions seeded: .gzkit/renditions/AGENTS.md/claude.md (from current AGENTS.md), .gzkit/renditions/AGENTS.md/codex.md (from OBPI-26 interim).
+- Files created: rendition_store.py, rendition_freshness.py, test_rendition_store.py, test_rendition_freshness.py, rendition_playback.feature, rendition_playback_steps.py.
+- Tests added: 20 unit tests (REQ-01, REQ-03) + 8 BDD scenarios (REQ-01..04) + updated test_invariant_coherence/test_sync_cmds/test_compose for playback semantics.
+- Date completed: 2026-06-14
+- Attestation status: operator-attested ("attest completed", g0)
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -301,12 +319,12 @@ _No further defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — operator g0 attests OBPI-0.0.37-22 (committed-rendition store + deterministic playback + freshness gate) complete after Stage 4 evidence review: rendition_store.py + rendition_freshness.py landed, sync_agents_md/render_agents_md/invariant_coherence re-pointed to deterministic rendition playback, --rendition-freshness scope wired into gz check. Receipts: arb-step-unittest-d459a288befe408fa5fa87dcd74d6e10 (6131/6131 pass), arb-ruff-a9d1d983fdd94f119b9c052b82b0ca49, arb-step-typecheck-040f8f8835f742778313409e9681e137, arb-step-mkdocs-35dc676c7f114aa3a39a302d093614d5. 8/8 BDD scenarios pass (@REQ-0.0.37-22-01..04); behavior_uncovered_reqs=0. Open Implementation Decision (A) .gzkit/renditions/<surface>/<consumer>.md and (B) dedicated --rendition-freshness scope both confirmed.
+- Date: 2026-06-14
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-14
 
 **Evidence Hash:** -

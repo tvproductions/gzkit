@@ -190,12 +190,27 @@ class TestSyncCommand(unittest.TestCase):
             self.assertIn("Sync complete", result.output)
 
     def test_agent_sync_agents_md_matches_governance_render(self) -> None:
-        """agent sync must write AGENTS.md bytes accepted by the CMS renderer."""
+        """agent sync must write AGENTS.md bytes that match the committed rendition
+        (governance render --check passes when rendition == AGENTS.md)."""
         runner = CliRunner()
         with _InitFromTemplate():
+            from gzkit.content.rendition_store import save_rendition
+
+            project_root = Path.cwd()
+
+            # Bootstrap sync to produce initial AGENTS.md from template pipeline
             sync_result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
             self.assertEqual(sync_result.exit_code, 0, msg=sync_result.output)
 
+            # Commit the synced AGENTS.md as the rendition (bootstrap seeding)
+            agents_bytes = (project_root / "AGENTS.md").read_bytes()
+            save_rendition(project_root, "AGENTS.md", "claude", agents_bytes)
+
+            # Re-sync: now plays back the rendition → AGENTS.md == rendition bytes
+            sync_result2 = runner.invoke(main, ["agent", "sync", "control-surfaces"])
+            self.assertEqual(sync_result2.exit_code, 0, msg=sync_result2.output)
+
+            # governance render --check: rendition playback vs committed surface → must agree
             check_result = runner.invoke(
                 main, ["governance", "render", "--target", "agents-md", "--check"]
             )
@@ -296,13 +311,15 @@ class TestSyncCommand(unittest.TestCase):
             self.assertIn("**Purpose**: A gzkit-governed project", rendered)
             self.assertIn("**Tech Stack**: Python 3.13+ with uv, ruff, ty", rendered)
 
-    @covers("REQ-0.0.37-14-03")
+    @covers("REQ-0.0.37-22-04")
     def test_invariant_coherence_catches_hand_edit_to_agents_md(self) -> None:
-        """A hand-edit that appends bytes to AGENTS.md must cause validate_invariant_coherence
-        to return a ValidationError — the model render does not reproduce the hand-edit
-        (REQ-0.0.37-14-03)."""
+        """validate_invariant_coherence diffs committed-rendition playback vs committed AGENTS.md
+        and returns a ValidationError when they diverge (REQ-0.0.37-22-04).
+        A hand-edit that appends bytes to AGENTS.md without updating the committed rendition
+        MUST produce a coherence validation error."""
         runner = CliRunner()
         with _InitFromTemplate():
+            from gzkit.content.rendition_store import save_rendition
             from gzkit.governance.trust_audits.invariant_coherence import (
                 validate_invariant_coherence,
             )
@@ -313,16 +330,27 @@ class TestSyncCommand(unittest.TestCase):
             sync_result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
             self.assertEqual(sync_result.exit_code, 0, msg=sync_result.output)
 
-            # Coherence must pass immediately after sync
-            errors_before = validate_invariant_coherence(project_root)
-            self.assertEqual(errors_before, [], "coherence must pass immediately after sync")
+            # Bootstrap: no committed rendition yet — coherence is a no-op (skip)
+            errors_bootstrap = validate_invariant_coherence(project_root)
+            self.assertEqual(errors_bootstrap, [], "bootstrap: coherence skips when no rendition")
 
-            # Hand-edit: append a non-canonical marker that the parse→render cycle won't reproduce
+            # Seed committed rendition with the current AGENTS.md bytes
             agents_path = project_root / "AGENTS.md"
-            original = agents_path.read_bytes()
-            agents_path.write_bytes(original + b"\n\nHAND_EDITED_MARKER_SHOULD_NOT_SURVIVE\n")
+            canonical_bytes = agents_path.read_bytes()
+            save_rendition(project_root, "AGENTS.md", "claude", canonical_bytes)
 
-            # Coherence must fail closed on the hand-edit
+            # Coherence must pass when rendition matches the committed surface
+            errors_before = validate_invariant_coherence(project_root)
+            self.assertEqual(
+                errors_before, [], "coherence must pass when rendition matches surface"
+            )
+
+            # Hand-edit: append a non-canonical marker that the rendition does not reproduce
+            agents_path.write_bytes(
+                canonical_bytes + b"\n\nHAND_EDITED_MARKER_SHOULD_NOT_SURVIVE\n"
+            )
+
+            # Coherence must fail closed on the hand-edit (rendition ≠ committed surface)
             errors_after = validate_invariant_coherence(project_root)
             self.assertGreater(
                 len(errors_after),
@@ -330,6 +358,52 @@ class TestSyncCommand(unittest.TestCase):
                 "hand-edit to AGENTS.md must produce a coherence validation error",
             )
             self.assertEqual(errors_after[0].type, "invariant_coherence")
+
+    @covers("REQ-0.0.37-22-02")
+    def test_sync_agents_md_plays_back_committed_rendition_byte_identically(self) -> None:
+        """sync_agents_md MUST render AGENTS.md by deterministic playback of the committed
+        rendition when one exists — no LLM, no network; identical rendition yields identical
+        rendered surface across calls (REQ-0.0.37-22-02)."""
+        import gzkit.sync_surfaces as ss
+
+        with _InitFromTemplate():
+            from gzkit.config import GzkitConfig
+            from gzkit.content.rendition_store import save_rendition
+
+            project_root = Path.cwd()
+            config = GzkitConfig.load(project_root / ".gzkit.json")
+
+            # Seed a committed rendition with known, distinctive bytes
+            rendition_bytes = (
+                b"# AGENTS.md\n\nDETERMINISTIC RENDITION CONTENT FOR REQ-0.0.37-22-02\n"
+            )
+            save_rendition(project_root, "AGENTS.md", "claude", rendition_bytes)
+
+            # sync_agents_md must NOT call the model pipeline when a rendition exists
+            with patch.object(
+                ss, "render_content_model", return_value=b"# should-not-appear"
+            ) as mock_render:
+                ss.sync_agents_md(project_root, config)
+                self.assertFalse(
+                    mock_render.called,
+                    "render_content_model must not be called when a committed rendition exists",
+                )
+
+            # AGENTS.md must equal the committed rendition bytes exactly
+            agents_path = project_root / "AGENTS.md"
+            self.assertEqual(
+                agents_path.read_bytes(),
+                rendition_bytes,
+                "sync_agents_md must write rendition bytes byte-identically to AGENTS.md",
+            )
+
+            # Second call must produce the same bytes (deterministic playback)
+            ss.sync_agents_md(project_root, config)
+            self.assertEqual(
+                agents_path.read_bytes(),
+                rendition_bytes,
+                "sync_agents_md must be deterministic: same rendition → same surface bytes",
+            )
 
     @covers("REQ-0.0.37-14-04")
     def test_model_render_semantically_equivalent_to_pre_migration(self) -> None:
