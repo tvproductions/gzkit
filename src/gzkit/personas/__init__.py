@@ -374,8 +374,8 @@ def _test_evidence_proxy(
         raw_ev = rec.get("evidence")
         if not isinstance(raw_ev, dict):
             continue
-        test_count = raw_ev.get("test_count")  # ty: ignore[invalid-argument-type]
-        tests_passed = raw_ev.get("tests_passed")  # ty: ignore[invalid-argument-type]
+        test_count = raw_ev.get("test_count")
+        tests_passed = raw_ev.get("tests_passed")
         if isinstance(test_count, int) and test_count > 0 and tests_passed is True:
             return "pass", f"Audit shows {test_count} tests passing"
     if not audits:
@@ -393,7 +393,7 @@ def _evidence_quality_proxy(
         raw_ev = rec.get("evidence")
         if not isinstance(raw_ev, dict):
             continue
-        criteria = raw_ev.get("criteria_evaluated")  # ty: ignore[invalid-argument-type]
+        criteria = raw_ev.get("criteria_evaluated")
         if isinstance(criteria, list):
             passing = [c for c in criteria if isinstance(c, dict) and c.get("result") == "PASS"]
             if passing:

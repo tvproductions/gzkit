@@ -26,3 +26,16 @@ include = ["features/**"]
 
 [overrides.rules]
 call-non-callable = "ignore"
+
+# timeout.py guards POSIX-only signal attributes (SIGALRM, setitimer,
+# ITIMER_REAL) behind an `os.name == "nt"` call-site router and suppresses
+# them with `# ty: ignore[unresolved-attribute]`. Those ignores are
+# load-bearing on win32 (verified: `ty check --python-platform win32` passes
+# only with them) but read as "unused" when the gate analyses against a POSIX
+# host. Silence the host-dependent unused-ignore noise here without dropping
+# the Windows-protective suppressions.
+[[overrides]]
+include = ["src/gzkit/complexity/advisor/timeout.py"]
+
+[overrides.rules]
+unused-ignore-comment = "ignore"
