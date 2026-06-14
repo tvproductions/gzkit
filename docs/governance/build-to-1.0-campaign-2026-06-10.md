@@ -150,6 +150,26 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > direct-fix moratorium is **explicitly lifted for drainage-class GHIs** (operator
 > ruling, above): file at the moment of discovery, homed to E.5.
 
+> **Amendment (operator verbatim, 2026-06-14) — turn-end claim-grounding gate
+> (#620) booked as E.6.** Operator: *"clock it, write it up, GHI it and get the
+> Magna Carta to assimilate and order it. Do the job. make it better. PRIME
+> DIRECTIVE."* → Surfaced in a session reckoning on why agents *"chronically
+> make determinations about state that are usually not true"* and whether
+> *"1000 controls"* can make vibing inert. The diagnosis, grounded in a live
+> in-session vibe (an agent relayed a handoff's "attested-complete" for
+> OBPI-0.0.37-22 before reading the ledger — true only by luck, confirmed after
+> at `.gzkit/ledger.jsonl:9937`): the **conversational-claim surface is ungated**.
+> AGENTS.md § Never #7 ("read the ledger, not frontmatter") is prose-only, and
+> ADR-0.0.70's Stop-hook proves the turn-end seam can hold a fail-closed gate but
+> covers ruff-on-git-dirty-`.py` only, fires after prose is emitted, and fails
+> open. Booked as **GHI #620** (defect+runtime; homes to the Phase E *ceremony
+> mechanization* register row, reconciled on next triage) and as campaign item
+> **E.6** below. Per the governance-friction drainage amendment, the **true
+> root-cause fix shape is discovered before it is booked** — a deterministic
+> claim-checker is non-trivial (an LLM judge policing an LLM claimer relocates
+> the vibe; "turtles"), so E.6's fix shape is a pending operator design
+> conversation, not a symptom patch.
+
 ## Authority and amendment (Magna Carta discipline)
 
 - **It steers; the spine propels.** The governance spine
@@ -472,6 +492,22 @@ Dependency-ordered waves over the ~30 booked ADRs short of Validated
       first**, then routed GHI-direct or ADR/OBPI consistent with campaign aims
       (reductive collapses defer to Phase I). Drainage GHIs file at the moment of
       discovery (moratorium lifted for this class) and home here.
+- [ ] E.6 **Turn-end claim-grounding gate** (additive mechanization; GHI #620).
+      The conversational-claim surface — an agent asserting present-tense
+      governance state ("OBPI-X complete", "lock held", "tests pass") in prose —
+      is ungated: AGENTS.md § Never #7 ("read the ledger, not frontmatter") is
+      prose-only with no mechanical fail-close. ADR-0.0.70's Stop-hook (B.0) is
+      the existence proof that the turn-end seam can hold a fail-closed gate, but
+      its scope is ruff over git-dirty `*.py` only (OBPI-0.0.70-01), it fires
+      after prose is emitted, and it fails open — so it does not reach this
+      surface. Discover the true root-cause fix shape first (candidates, not
+      decisions: (a) structured-claim discipline requiring an inline receipt
+      token whose *presence* a Stop-hook regex verifies deterministically —
+      gating form, not truth; (b) a telemetry-only turn-end sensor feeding the
+      session-correction miner, pairing with #614). Claim-*truth* checking is
+      not deterministically decidable the way ruff is; an LLM judge over an LLM
+      claimer relocates the vibe (turtles), so the fix shape is an operator
+      design conversation before booking. Sibling to E.4/E.5; descendant of B.0.
 
 Exit gate: all booked ADRs Validated or operator-parked.
 
