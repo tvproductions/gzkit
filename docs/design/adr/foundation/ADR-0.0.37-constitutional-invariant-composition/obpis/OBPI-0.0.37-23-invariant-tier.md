@@ -3,7 +3,7 @@ id: OBPI-0.0.37-23-invariant-tier
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 23
 lane: Heavy
-status: Draft
+status: Completed
 # req_atomic: each REQ is a single indivisible labor unit — one behavior/support
 # surface apiece (policy accessor, verbatim-survival test, composer wiring, doc);
 # none decomposes into parallel seq=02+ sub-tasks (ADR-0.0.64 exemption).
@@ -21,7 +21,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 - **Checklist Item:** #23 - "OBPI-0.0.37-23 — Invariant tier (verbatim, never condense) (`tier: invariant` entries emit verbatim at every setpoint; test asserts PRIME DIRECTIVE / DO IT RIGHT / NEVER PYTEST survive at the leanest setpoint; the 0-Kelvin floor made first-class)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -43,6 +43,7 @@ This OBPI changes a runtime-contract behavior: which renditions are *valid* (an 
 
 - `src/gzkit/content/tier_policy.py` **CREATE** — the first-class invariant-tier policy: `invariant_entries(corpus)` (all `tier: invariant` rows) and `assert_invariant_verbatim(corpus, rendered_text)` (fail-closed when any invariant entry's text is absent/altered in the rendered/candidate text); stdlib + Pydantic, NO LLM. This is the single enforcement surface the composer (OBPI-21) consumes — see § Tracked Defects for the cross-OBPI wiring seam
 - `tests/content/test_tier_policy.py` **CREATE** — BEHAVIOR tests for the policy accessor + the canonical named-invariant survival test + a composer-equivalent enforcement test (`@covers`)
+- `src/gzkit/content/composer.py` — EDIT (operator-approved coupled-surface amendment 2026-06-14, § Tracked Defects path (b)): re-point the OBPI-21 composer off its inline invariant-floor check onto `tier_policy.assert_invariant_verbatim` / `tier_policy.invariant_entries` so REQ-03's centralized-enforcement / no-duplicated-inline-check contract holds
 - `docs/governance/agent-control-surface-rendering-substrate.md` — EDIT: document the invariant-tier 0-Kelvin floor as a first-class guarantee (narrow subsection; the broader mechanism refresh is OBPI-27)
 - `data/behave_coverage_waivers.json` — EDIT: OBPI-level behave-coverage waiver for the SUPPORT doc REQ (no Gherkin-observable behavior)
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-23-invariant-tier.md` — active brief and evidence record
@@ -231,28 +232,37 @@ uv run python -c "from gzkit.content import tier_policy; help(tier_policy.assert
 
 ### Key Proof
 
+
+- `uv run -m unittest tests.content.test_tier_policy.TestInvariantSurvivesLeanestSetpoint -v` -> 5/5 pass; PRIME DIRECTIVE / DO IT RIGHT / NEVER PYTEST survive verbatim at the leanest setpoint (lite). The 0-Kelvin floor holds at the most aggressive compression and fails closed when an invariant would be dropped.
+- Composer routing proven: TestComposerRoutesThroughPolicy.test_compose_invokes_shared_tier_policy patches gzkit.content.composer.assert_invariant_verbatim and asserts compose() invokes it (mock-verified centralized enforcement, no duplicated inline check).
+- Full suite: 6149 pass, 1 skipped (receipt arb-step-unittest-a37f8b15eb97439299bd6f94703b08ec); ruff clean (arb-ruff-c581b13e929f45b3bd8c813f74433173); typecheck clean (arb-step-typecheck-834d31669bd74ce1bbe2557aa474b066); mkdocs --strict built (arb-step-mkdocs-2ca375107d814848b9b778490cb2b9c8); validate --documents passed (REQ-04 SUPPORT proof).
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/content/tier_policy.py (single composer-consumable invariant-tier enforcement surface — invariant_entries + assert_invariant_verbatim; stdlib + Pydantic, no LLM); tests/content/test_tier_policy.py (18 @covers tests across 5 classes)
+- Files modified: src/gzkit/content/composer.py (re-pointed onto tier_policy, duplicated inline check removed — operator-approved path b); docs/governance/agent-control-surface-rendering-substrate.md (0-Kelvin floor subsection); data/behave_coverage_waivers.json (OBPI-level waiver); brief (allowlist amendment + Tracked Defects resolution)
+- Tests added: TestInvariantEntries, TestAssertInvariantVerbatim, TestInvariantSurvivesLeanestSetpoint, TestCentralizedEnforcement, TestComposerRoutesThroughPolicy
+- Date completed: 2026-06-14
+- Attestation status: operator-attested "attest completed" (Heavy/foundation Gate 5)
+- Defects noted: 21<->23 wiring seam resolved via path (b) (operator-approved coupled-surface edit); corpus_store fixture-import false-positive eliminated by direct JSONL seeding
 
 ## Tracked Defects
 
-**21 ↔ 23 enforcement-wiring seam (ADR sequencing tension, surfaced not silently owned).** The parent ADR sequences OBPI-21 (composer) before OBPI-23, yet says 21's invariant floor is *"deepened by OBPI-23."* `tier_policy` is the canonical floor; the composer (`src/gzkit/content/composer.py`, OBPI-21's create) must consume it. This brief deliberately does **not** list `composer.py` as an edit path — it does not exist at authoring time, and silently editing a sibling OBPI's create is the boundary-collision pattern Behavior Rule Always #9 forbids. Resolution to ratify at Stage 1 brief-reconcile: either (a) implement OBPI-23's `tier_policy` first so OBPI-21's composer imports it from the start, or (b) if OBPI-21 lands first with an inline check, the brief-reconcile pass when OBPI-23 lands re-points the composer to `tier_policy` as a coupled-surface edit. Either way the wiring is operator-sequenced, not assumed here. **23 ↔ 27 doc coupling:** this OBPI adds a narrow invariant-tier subsection to the substrate doc; OBPI-27 does the broader mechanism refresh of the same file. Both are sequenced edits to different subsections. Confirm both seams at Stage 1 brief-reconcile.
+**21 ↔ 23 enforcement-wiring seam (ADR sequencing tension, surfaced not silently owned).** The parent ADR sequences OBPI-21 (composer) before OBPI-23, yet says 21's invariant floor is *"deepened by OBPI-23."* `tier_policy` is the canonical floor; the composer (`src/gzkit/content/composer.py`, OBPI-21's create) must consume it. This brief deliberately does **not** list `composer.py` as an edit path — it does not exist at authoring time, and silently editing a sibling OBPI's create is the boundary-collision pattern Behavior Rule Always #9 forbids. Resolution to ratify at Stage 1 brief-reconcile: either (a) implement OBPI-23's `tier_policy` first so OBPI-21's composer imports it from the start, or (b) if OBPI-21 lands first with an inline check, the brief-reconcile pass when OBPI-23 lands re-points the composer to `tier_policy` as a coupled-surface edit. Either way the wiring is operator-sequenced, not assumed here.
+
+**RESOLVED (2026-06-14, operator-approved path (b)).** OBPI-21 had landed first with an inline invariant-floor check at `src/gzkit/content/composer.py:53-62`, leaving two parallel enforcement implementations — a spec-review FAIL on REQ-03 ("no duplicated inline check"). Per the path-(b) resolution above, the operator approved adding `composer.py` to this brief's allowlist as a coupled-surface edit; the composer now imports and calls `tier_policy.assert_invariant_verbatim` / `tier_policy.invariant_entries`, and `tests/content/test_tier_policy.py::TestComposerRoutesThroughPolicy` proves the compression path routes through the shared policy (REQ-03 centralized enforcement). DO IT RIGHT 1a coupled-surface coherence satisfied in-commit. **23 ↔ 27 doc coupling:** this OBPI adds a narrow invariant-tier subsection to the substrate doc; OBPI-27 does the broader mechanism refresh of the same file. Both are sequenced edits to different subsections. Confirm both seams at Stage 1 brief-reconcile.
 
 _No further defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.37-23: tier_policy is the single invariant-tier enforcement surface; the OBPI-21 composer re-pointed onto it (path b, operator-approved) removing the duplicated inline check; 18 @covers tests prove REQ-01/02/03 (incl. PRIME DIRECTIVE / DO IT RIGHT / NEVER PYTEST verbatim survival at the leanest setpoint) + REQ-04 SUPPORT doc; full suite 6149 pass (arb-step-unittest-a37f8b15eb97439299bd6f94703b08ec), ruff clean (arb-ruff-c581b13e929f45b3bd8c813f74433173), typecheck clean (arb-step-typecheck-834d31669bd74ce1bbe2557aa474b066), mkdocs strict (arb-step-mkdocs-2ca375107d814848b9b778490cb2b9c8), validate --documents passed, brief reconcile clean.
+- Date: 2026-06-14
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-14
 
 **Evidence Hash:** -

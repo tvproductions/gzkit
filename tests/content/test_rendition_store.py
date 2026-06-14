@@ -33,9 +33,7 @@ class TestRenditionStorePath(unittest.TestCase):
     def test_rendition_path_is_per_surface_consumer_md_under_gzkit_renditions(self) -> None:
         """The store artifact is .gzkit/renditions/<surface>/<consumer>.md."""
         path = rendition_path(self._root, "AGENTS.md", "claude")
-        self.assertEqual(
-            path, self._root / ".gzkit" / "renditions" / "AGENTS.md" / "claude.md"
-        )
+        self.assertEqual(path, self._root / ".gzkit" / "renditions" / "AGENTS.md" / "claude.md")
 
     @covers("REQ-0.0.37-22-01")
     def test_rendition_path_uses_consumer_as_filename(self) -> None:

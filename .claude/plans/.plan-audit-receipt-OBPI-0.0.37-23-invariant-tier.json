@@ -1,0 +1,17 @@
+{
+  "obpi_id": "OBPI-0.0.37-23-invariant-tier",
+  "timestamp": "2026-06-14T19:03:58.923602+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.37-23-invariant-tier.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-23-invariant-tier.md",
+        "docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md"
+      ]
+    }
+  ]
+}

@@ -10,6 +10,18 @@
 
 This is gzkit's headless-CMS doctrine. It is the long-forecast generalization of ADR-0.0.19's `gz justify` Pydantic+Jinja2 rendering pattern, applied to the entire agent control surface. It supersedes ADR-0.16.0's aspirational naming with an authored substrate doctrine and a deliberate delivery sequence.
 
+## Invariant Tier — 0-Kelvin Floor
+
+`tier: invariant` corpus entries are emitted **verbatim at every setpoint** — they are
+never dropped, combined, or rewritten by the compression composer. This is the
+0-Kelvin floor: the dial thins only `compressible` content; invariant content is
+exact operator intent, analogous to the immutable upstream system prompt the
+operator cannot edit.
+
+Enforcement: `gzkit.content.tier_policy.assert_invariant_verbatim(corpus, rendered_text)`
+raises `ValueError` on any violation. The canonical named invariants — PRIME DIRECTIVE,
+DO IT RIGHT, NEVER PYTEST — MUST survive verbatim at the leanest setpoint (`lite`).
+
 ## Prompt assembly and cache stability
 
 Prompt assembly order is part of the substrate contract. gzkit does not control

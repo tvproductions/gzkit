@@ -124,9 +124,7 @@ class TestRenderAgentsMdSortOrder(unittest.TestCase):
         """Invariants dict content must not change rendered bytes (backward-compat accept)."""
         from gzkit.governance.compose import render_agents_md
 
-        with_invs = render_agents_md(
-            {"CIC-test-alpha": _make_alpha()}, _FIXTURE_ROOT, self._root
-        )
+        with_invs = render_agents_md({"CIC-test-alpha": _make_alpha()}, _FIXTURE_ROOT, self._root)
         without_invs = render_agents_md({}, _FIXTURE_ROOT, self._root)
         self.assertEqual(with_invs, without_invs)
 

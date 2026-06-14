@@ -17,6 +17,7 @@ from pathlib import Path
 
 from gzkit.content.corpus_store import corpus_path, load_corpus
 from gzkit.content.rendition import ByteEvidence, CandidateRendition
+from gzkit.content.tier_policy import assert_invariant_verbatim, invariant_entries
 from gzkit.content.vendors import temperature_for
 
 
@@ -50,18 +51,15 @@ def compose(
 
     setpoint = temperature_for(content_type, consumer, project_root=root)
 
-    invariant_entries = [e for e in corpus.entries if e.tier == "invariant"]
+    # Centralized invariant-tier enforcement (OBPI-0.0.37-23): the 0-Kelvin
+    # floor is owned by tier_policy — the single composer-consumable surface.
+    # No duplicated inline check here.
+    assert_invariant_verbatim(corpus, candidate_text)
+
+    inv_entries = invariant_entries(corpus)
     compressible_entries = [e for e in corpus.entries if e.tier == "compressible"]
 
-    for entry in invariant_entries:
-        if entry.text not in candidate_text:
-            raise ValueError(
-                f"Invariant-floor violation: entry {entry.id!r} text not found verbatim "
-                "in candidate. Invariant-tier entries MUST appear unchanged at every "
-                "setpoint (0-Kelvin floor)."
-            )
-
-    invariant_bytes = sum(len(e.text.encode("utf-8")) for e in invariant_entries)
+    invariant_bytes = sum(len(e.text.encode("utf-8")) for e in inv_entries)
     compressible_bytes_before = sum(len(e.text.encode("utf-8")) for e in compressible_entries)
     total_bytes = len(candidate_text.encode("utf-8"))
     compressible_bytes_after = max(0, total_bytes - invariant_bytes)
