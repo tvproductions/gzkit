@@ -108,6 +108,22 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > *construction* (instantiate the Constitution charter; wire
 > `PRD.parent → Constitution`) follows and builds the artifacts the CMS already
 > knows how to rank. No re-sequence.
+>
+> **Amendment (operator verbatim, 2026-06-14) — dispatch-layer drift-guards
+> (#617, #618).** *"add those, but look again as some changes were made to the
+> document."* → A tracer-bullet diagnosis pass found Phase 0's "one set, N
+> hand-synced copies, free to drift" pattern recurring on two **dispatch**
+> surfaces distinct from the vocabulary layer: CLI handler resolution (**#617**
+> — 92 `_lazy()` refs across 3 byte-identical manifests) and validator dispatch
+> (**#618** — `validate()` enumerates 81 scopes across ~6 parallel lists; #394
+> is a proven self-include instance). Per **completion-before-reduction**, the
+> single-source collapses are **Phase I**; only the **additive drift-guard
+> fences** enter pre-1.0 scope, booked as **E.4**. Appendix A gains a
+> structural-root note tying #618 to the validator-was-the-defect tail. The
+> "decay class" is deliberately **not** elevated to a pillar — Phase 0 already
+> carries the doctrine, and post-diagnosis churn-attribution (34/380 fix-commits
+> ≈ 9% touch these files; most are scope *additions*, not desync fixes) does not
+> support the stronger causal claim first floated.
 
 ## Authority and amendment (Magna Carta discipline)
 
@@ -399,6 +415,15 @@ Dependency-ordered waves over the ~30 booked ADRs short of Validated
       (chore or check-tier); book origins for the 3 provenance-gap scopes.
 - [ ] E.3 Burn Draft/Proposed foundation + pre-release ADRs wave by wave;
       each wave ends in a release (§ Cadence).
+- [ ] E.4 **Additive dispatch drift-guards** (proof mechanization, not
+      reduction). Two structural fences over surfaces today correct only by
+      author discipline: (a) **handler-manifest resolution test** (#617) —
+      asserts all 92 `_lazy()` refs resolve and the 3 manifests agree; (b)
+      **validator-enumeration consistency test** (#618) — asserts every
+      `check_<scope>` appears in the `any([...])` predicate and the
+      `_collect_errors(...)` call and has a `run_*_audit` wrapper. Both would
+      have caught #394. The reductive collapses they protect (manifests → 1;
+      enumerations → `VALIDATOR_REGISTRY`) are deferred to Phase I.
 
 Exit gate: all booked ADRs Validated or operator-parked.
 
@@ -521,6 +546,13 @@ Frozen evidence for Phase I. Method: per-scope mining of git history
 - **Validator-was-the-defect cases** (maintenance tail): `req-kind-discipline`
   (GHI #541), `evaluation-justify-binding` (GHI #394), `kind-invariance`
   (GHI #483), `session-green-gate` (GHI #600).
+- **Structural root of this tail (#618):** `validate()` enumerates its 81
+  scopes across ~6 parallel hand-synced lists — a 78-param signature, the
+  `_other_scopes_active = any([...])` predicate, and the positional
+  `_collect_errors(...)` call. #394 is a proven instance (a scope self-included
+  in `any([...])`, bypassing its solo handler; #473 its sibling). The
+  `VALIDATOR_REGISTRY` single-source collapse is **Phase I reduction**; the
+  additive consistency fence is E.4.
 - **Provenance gaps** (no commit ever names them): `advisor-proof-binding`,
   `intrinsic-attestation`, `pointer-anchors`.
 
