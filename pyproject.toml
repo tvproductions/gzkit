@@ -117,7 +117,7 @@ dev = [
     "mkdocs==1.6.1",
     "mkdocs-material==9.7.6",
     "pygount>=3.2.0",
-    "pyinstaller>=6.20.0",
+    "pyinstaller>=6.21.0",
     "radon>=6.0.1",
     "ruff>=0.15.17",
     "ty>=0.0.49",

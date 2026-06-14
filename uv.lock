@@ -774,7 +774,7 @@ dev = [
     { name = "mkdocs", specifier = "==1.6.1" },
     { name = "mkdocs-material", specifier = "==9.7.6" },
     { name = "pygount", specifier = ">=3.2.0" },
-    { name = "pyinstaller", specifier = ">=6.20.0" },
+    { name = "pyinstaller", specifier = ">=6.21.0" },
     { name = "radon", specifier = ">=6.0.1" },
     { name = "ruff", specifier = ">=0.15.17" },
     { name = "ty", specifier = ">=0.0.49" },
