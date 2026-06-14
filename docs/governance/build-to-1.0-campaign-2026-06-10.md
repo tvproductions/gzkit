@@ -31,6 +31,35 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > inserted as item **B.0**, executed same-day through the governed
 > gz-adr-create → OBPI path. Operator closing remark, same exchange: "I guess
 > this means that gzkit may end up being worth the effort in the end."
+>
+> **Amendment (operator verbatim, 2026-06-14):** *"gzkit is a martial art - a
+> doctrinal WAY of battle - but each project is the battlefield. The firewall is
+> needed to NOT allow the skunkworks to follow the toolset out of the
+> lab/factory. The rigging and jigs do not remain attached to the fuselage once
+> we open the factory hangar doors for final delivery - we haven't been careful
+> about this."* Also: *"some skills go out to the adopter as well (as do other
+> harness things)"* and *"the foundation needs to carry both because the are
+> inseparable, and with the cms for progressive disclosure, both are mechanical."*
+> → A **Firewall foundation ADR** (rooted in GHI #607) is inserted, classifying
+> every delivered surface — rules, **skills**, hooks, agent defs, harness — by
+> destiny (**wheel-borne / authored-into-battlefield / lab-only-jig**) at
+> scaffold-time and validate-time, and carrying **both** a mechanical face
+> (jig-escape made structurally impossible) and a communicative face (a
+> self-explaining scaffold-boundary surface, rendered mechanically through the
+> CMS).
+>
+> **Resequencing (operator ruling "a", 2026-06-14).** Phase 0 (GHI #615) remains
+> the burning emergency, but its *correct* fix — frontmatter-as-projection (see
+> the rites amendment) — was found to be the **tail** of a dependency chain, not
+> a standalone fix. Propulsion order is therefore: **B.1 CMS (ADR-0.0.37) →
+> Firewall foundation ADR → barcode + lifecycle doctrine (the GHI #615 cure) →
+> skills-first enforcement (follow-on, prior-art-gated).** Phase 0 still blocks
+> the *naive* vocabulary edits it forbids; it no longer blocks the CMS work its
+> own cure depends on. The skills-first enforcement follow-on (operator: *"gzkit
+> is doing a terrible job of forcing models/agents to use SKILLS FIRST"*) is
+> filed as a prior-art-gated successor ADR; prior-art research landed 2026-06-14
+> (`docs/governance/prior-art-scaffold-firewall-2026-06-14.md`) and finds the
+> only structural skills-first primitive is a scoped `PreToolUse` deny gate.
 
 ## Authority and amendment (Magna Carta discipline)
 
@@ -188,6 +217,15 @@ gzkit is 1.0 when ALL hold:
       skill / validator / auditor / doc → Config-First AST policy test +
       schema↔source + corpus-conformance drift-guards, mirroring airlineops
       GHI-75. Acceptance: § 8 of the rites; `uv run gz check` green end-to-end.
+
+> **Note (amendment 2026-06-14).** 0.1 partially satisfied: **Q1 ratified**
+> (TitleCase frontmatter / snake_case ledger). The cure is reframed as
+> **frontmatter-as-projection** (barcode + sidecar + lifecycle state machines for
+> all four artifacts) and **resequenced behind the CMS → Firewall chain** (see
+> the 2026-06-14 amendment above and the rites amendment). Q2–Q6 demote to
+> render-target settings. The single-source-of-truth `governance/vocabulary.py`
+> in 0.2 remains the substrate; it now feeds the render path, not strict
+> frontmatter parsing.
 
 ### Phase A — In-flight closure
 

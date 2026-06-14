@@ -9,6 +9,56 @@
 > **Severity:** Foundational. The disease touches every structured-document
 > surface in gzkit.
 
+> **Amendment (operator-ratified, 2026-06-14) — Barcode Projection supersedes Config-First-only.**
+> The remediation target is enlarged from "central vocabulary config so authored
+> frontmatter validates" to **frontmatter-as-projection**: structured-document
+> frontmatter is a Layer-3 *render* of the Layer-2 ledger state machine, never
+> hand-authored. This amendment supersedes the framing of § 4, inverts § 5
+> Phase 8, and resolves § 6.
+>
+> Operator ruling (verbatim, 2026-06-13): *"frontmatter must ONLY be a projection
+> from the ledger and ONLY mechanically rendered. think of frontmatter as being
+> the result of reading a barcode/qrcode. our statemachine should be the only
+> thing that matters. perhaps we need a data (json) sidecar to ensure that these
+> are ONLY projection rendered. it is a FOUL to have model touch the frontmatter
+> ad hoc."*
+>
+> **Ratified architecture (Decision A — barcode-everything + sidecar):**
+> - Each rendered frontmatter field is either **ledger-projected** (`status` —
+>   rendered live from the ledger at render time, never cached) or an
+>   **authorship fact** (`id`, `parent`, `kind`, `lane`, `tasks`) held in a
+>   committed, co-located JSON **sidecar** (`<artifact>.gz.json`).
+> - Render = merge(sidecar authorship + live ledger-projected status). The
+>   markdown **body** stays authored; only the frontmatter fence is rendered.
+> - **One writer.** Frontmatter is emitted only through a skill-gated verb; a
+>   model writing it ad hoc is a foul, blocked fail-closed by `gz validate
+>   --frontmatter-projection` (re-render + byte-compare, the
+>   `--invariant-coherence` technique).
+> - Migration reads existing frontmatter exactly once (ledger wins on conflict),
+>   dry-run + per-file report, idempotent.
+>
+> **Product tree, stateful at every node (F1 = ii).** Operator ruling (verbatim,
+> 2026-06-13): *"each major release would have a PRD, which then suggests a
+> contitution would be the true root of the product 'tree.' … if we need
+> PRD-per-major release (which I favor), then (ii) is closer to true."*
+> Constitution (root) → PRD (per major release) → ADR → OBPI; lifecycle state
+> machines are added for **PRD and Constitution** so all four statuses are ledger
+> projections.
+>
+> **§ 6 Open Decisions — resolution.** Q1 ratified: **TitleCase frontmatter /
+> snake_case ledger**, `status_vocab` mapping between layers, machine-consistency
+> enforced by the § 4.3 lattice plus a new frontmatter↔ledger totality guard.
+> Q2–Q4 demote to *render-target settings* (frontmatter is no longer a writable
+> surface that can drift) and are fixed in the barcode ADR. **§ 4 and § 5 Phase 8
+> invert:** the goal is no longer "parse frontmatter strictly as source" but
+> "stop reading frontmatter as source — render it."
+>
+> **Dependencies (sequencing ruling "a").** This remediation now sits at the tail
+> of a chain — **CMS / progressive disclosure (ADR-0.0.37) → Firewall foundation
+> ADR → barcode + lifecycle doctrine.** Nothing here mutates until the CMS is
+> terminal and the firewall is booked. Tracked across GHI #615 (vocabulary
+> substrate) and GHI #607 (firewall).
+
 ---
 
 ## 0. The one-sentence diagnosis
