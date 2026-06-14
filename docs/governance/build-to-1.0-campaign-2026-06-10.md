@@ -125,6 +125,31 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > ≈ 9% touch these files; most are scope *additions*, not desync fixes) does not
 > support the stronger causal claim first floated.
 
+> **Amendment (operator verbatim, 2026-06-14) — governance-friction drainage
+> empowered to the campaign.** Operator: *"this is GHI + campaign territory - I
+> want to empower the campaign to remove the quagmire - when we discover the true
+> fix, we will do GHI-direct fix or ADR/OBPI in a manner that is consistent with
+> the campaign's aims. The campaign must take us out of the swamp."* Also, on
+> filing in the moment of discovery: *"do not hesitate to make a needed GHI for
+> the Magna Carta to absorb, you are the officer of the watch, you spotted the
+> anomaly, you are making the report - if we defer, the in-context richness will
+> be gone."*
+> → A standing **governance-friction drainage** discipline is booked. Ceremony-gate
+> friction discovered in-session that is a *stale-artifact-vs-reality* mismatch (a
+> stale brief/allowlist, a contradictory validator, a missing register path —
+> **not** a code defect) is **campaign territory**, never a reflexive in-flight
+> patch. The session surfaces it (insight + evaluator determination per
+> `gz-obpi-pipeline` § Gate Friction: Evaluator Escalation) and **files the GHI in
+> the moment of discovery** while the context is rich; the campaign owns
+> sequencing the **true root-cause fix**, which routes as **GHI-direct or ADR/OBPI
+> consistent with campaign aims** — discovered before the fix-shape is booked,
+> never symptom-patched. In-flight `--accept-*` overrides are stopgaps that unblock
+> one completion; each leaves a campaign-homed debt, not a resolution. Per
+> "completion before reduction," additive drainage fences are pre-1.0 (Phase E.5);
+> reductive collapses of the underlying surfaces defer to Phase I. The
+> direct-fix moratorium is **explicitly lifted for drainage-class GHIs** (operator
+> ruling, above): file at the moment of discovery, homed to E.5.
+
 ## Authority and amendment (Magna Carta discipline)
 
 - **It steers; the spine propels.** The governance spine
@@ -424,6 +449,29 @@ Dependency-ordered waves over the ~30 booked ADRs short of Validated
       `_collect_errors(...)` call and has a `run_*_audit` wrapper. Both would
       have caught #394. The reductive collapses they protect (manifests → 1;
       enumerations → `VALIDATOR_REGISTRY`) are deferred to Phase I.
+- [ ] E.5 **Governance-friction drainage** (additive; proof of the quagmire,
+      then the true fix). The class: ceremony-gate validators that fail-close on
+      *stale-artifact-vs-reality* mismatches — the governance surface ensnaring
+      the work it exists to govern (V.I.B.E.S. at the ceremony layer, sibling to
+      Phase 0's vocabulary drift). Inaugural cluster surfaced 2026-06-14 during
+      OBPI-0.0.37-22 completion (captured in `.gzkit/insights/agent-insights.jsonl`):
+      - **#581** — brief-reconcile `_compute_missing_in_brief` neighborhood
+        filter mis-fires in **both** directions (misses cross-directory
+        couplings; flags git-clean test-infra imports as false positives when a
+        brief allowlists a top-level `src/gzkit/*.py`).
+      - **#612** — `HandoffFrontmatter` rejects the full-slug `obpi_id` that
+        `find_handoff_for_release` requires (short-form regex vs exact-match):
+        a release-pairing handoff cannot both validate and match.
+      - **#619** — `obpi lock release` has no first-class **completion** register
+        path; a completed (not abandoned) OBPI must masquerade as a handoff to
+        release. Sibling cut of #612.
+      - **#462** — security-floor fires on additive non-security changes to a
+        registered surface (canonical scan slot unfilled; routes to its existing
+        `pool.agentic-security-review` home, not E.5-owned).
+      Per the 2026-06-14 amendment: each item's **true root cause is discovered
+      first**, then routed GHI-direct or ADR/OBPI consistent with campaign aims
+      (reductive collapses defer to Phase I). Drainage GHIs file at the moment of
+      discovery (moratorium lifted for this class) and home here.
 
 Exit gate: all booked ADRs Validated or operator-parked.
 
