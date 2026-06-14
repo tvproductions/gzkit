@@ -4,98 +4,108 @@ parent: ADR-0.0.65-handoff-system-consolidation
 item: 2
 lane: Heavy
 status: Draft
+req_atomic:
+  - REQ-0.0.65-02-01
+  - REQ-0.0.65-02-02
+  - REQ-0.0.65-02-03
+  - REQ-0.0.65-02-04
+  - REQ-0.0.65-02-05
+  - REQ-0.0.65-02-06
+  - REQ-0.0.65-02-07
 ---
 
-# OBPI-0.0.65-02-programmatic-api-implementation: **programmatic-api-implementation** — Ship real `create_handoff`, `scaffold_handoff`, `list_handoffs`, `resume_handoff`, `load_handoff_chain` in `src/gzkit/handoff_api.py` (or equivalent runtime module) wrapping `handoff_validation.py`. Replace the `gz-session-handoff/SKILL.md` import references from `tests.governance.test_session_handoff` to the real runtime module. Remove the `NOT IMPLEMENTED` disclaimers.
+# OBPI-0.0.65-02-programmatic-api-implementation: Real handoff authoring API (wraps the validation gate; grounded scaffolding)
 
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md`
-- **Checklist Item:** #2 - "OBPI-0.0.65-02: **programmatic-api-implementation** — Ship real `create_handoff`, `scaffold_handoff`, `list_handoffs`, `resume_handoff`, `load_handoff_chain` in `src/gzkit/handoff_api.py` (or equivalent runtime module) wrapping `handoff_validation.py`. Replace the `gz-session-handoff/SKILL.md` import references from `tests.governance.test_session_handoff` to the real runtime module. Remove the `NOT IMPLEMENTED` disclaimers."
+- **Checklist Item:** #2 - "programmatic-api-implementation — Ship real `create_handoff`, `scaffold_handoff`, `list_handoffs`, `resume_handoff`, `load_handoff_chain` in `src/gzkit/handoff_api.py` (or equivalent runtime module) wrapping `handoff_validation.py`. Replace the `gz-session-handoff/SKILL.md` import references from `tests.governance.test_session_handoff` to the real runtime module. Remove the `NOT IMPLEMENTED` disclaimers."
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
+Replace the **vaporware handoff API** (defect #3 in the parent ADR Intent: *"handoffs end up hand-authored, which bypasses the validation gate"*) with a real `src/gzkit/handoff_api.py` runtime module. The module provides `create_handoff`, `scaffold_handoff`, `list_handoffs`, `resume_handoff`, and `load_handoff_chain`, each routing through the existing `gzkit.handoff_validation.validate_handoff_document` gate so handoff authoring is **mechanically validated instead of hand-rolled**.
 
-**programmatic-api-implementation** — Ship real `create_handoff`, `scaffold_handoff`, `list_handoffs`, `resume_handoff`, `load_handoff_chain` in `src/gzkit/handoff_api.py` (or equivalent runtime module) wrapping `handoff_validation.py`. Replace the `gz-session-handoff/SKILL.md` import references from `tests.governance.test_session_handoff` to the real runtime module. Remove the `NOT IMPLEMENTED` disclaimers.
+The anti-vibing sharpening (operator-directed 2026-06-14): `scaffold_handoff` **deterministically pre-fills the factual sections** — Current State Summary, Evidence / Artifacts, Verification Checklist — from *observed state* (ledger events, the OBPI completion/ARB receipts, git diff since lock-claim), with **no LLM call**. Only the judgment sections (Decisions Made, Important Context) remain author-supplied. This shrinks the LLM-vibing surface of a handoff from "the whole document" to "the rationale prose," and routes even that through the fail-closed validator.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** - New runtime API module + a behavior change to `HandoffFrontmatter` validation (a schema-contract surface). Foundation-kind brief-level Gate 5 attestation is mandatory (no self-close).
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md` — parent ADR for intent and scope
-- `src/gzkit/handoff_api.py` — explicitly referenced by the checklist item
-- `handoff_validation.py` — explicitly referenced by the checklist item
-- `gz-session-handoff/SKILL.md` — explicitly referenced by the checklist item
+- `src/gzkit/handoff_api.py` **CREATE** — the real authoring/resume API: `create_handoff`, `scaffold_handoff`, `list_handoffs`, `resume_handoff`, `load_handoff_chain`; wraps `gzkit.handoff_validation`; stdlib + Pydantic, NO LLM/network
+- `tests/governance/test_handoff_api.py` **CREATE** — REQ-derived `@covers` BEHAVIOR tests for every public function + the grounded-scaffold determinism test + the full-slug frontmatter test
+- `src/gzkit/handoff_validation.py` — EDIT: widen `_OBPI_ID_RE` to accept the full OBPI slug form (`OBPI-X.Y.Z-NN[-<slug>]`) in addition to short form, so a release-pairing handoff produced by `create_handoff` both validates AND matches `find_handoff_for_release` (the friction that shipped invalid-frontmatter handoffs this session)
+- `.gzkit/skills/gz-session-handoff/SKILL.md` — EDIT: repoint import references from `tests.governance.test_session_handoff` to `gzkit.handoff_api`; remove the `NOT IMPLEMENTED` / `DESIGN TARGET` disclaimers; bump `skill-version` + `last_reviewed`
+- `data/behave_coverage_waivers.json` — EDIT: OBPI-level behave-coverage waiver (the API is unit-proven; the Gherkin-observable CLI surface is OBPI-0.0.65-03)
+- `docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/obpis/OBPI-0.0.65-02-programmatic-api-implementation.md` — active brief and evidence record
+- `docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md` — parent ADR (read-only, for intent and the 1:1 checklist sync)
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
 - Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `scripts/session_orientation.py` — the orientation reader is OBPI-0.0.65-04 (single-location scan); not modified here
+- `src/gzkit/cli/parser_artifacts.py` and any `gz` parser surface — the `gz handoff` CLI verb is OBPI-0.0.65-03; this OBPI ships the importable API only
+- Any LLM/network call in the API — the scaffold pre-population and render path are deterministic
+- New runtime dependencies; CI files; lockfiles
+- The generated skill mirrors (`src/gzkit/skills/**`, `.claude/skills/**`, `.github/skills/**`, `.agents/skills/**`) are NOT hand-edited — they are regenerated by `gz agent sync control-surfaces` from the canonical edit
+
+## Creates These Files
+
+- `src/gzkit/handoff_api.py` **CREATE**
+- `tests/governance/test_handoff_api.py` **CREATE**
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
-
-1. REQUIREMENT: This OBPI MUST deliver: **programmatic-api-implementation** — Ship real `create_handoff`, `scaffold_handoff`, `list_handoffs`, `resume_handoff`, `load_handoff_chain` in `src/gzkit/handoff_api.py` (or equivalent runtime module) wrapping `handoff_validation.py`. Replace the `gz-session-handoff/SKILL.md` import references from `tests.governance.test_session_handoff` to the real runtime module. Remove the `NOT IMPLEMENTED` disclaimers.
-1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
-1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
-1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
-1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
+1. REQUIREMENT [BEHAVIOR]: `handoff_api.create_handoff(...)` MUST write a handoff to `.gzkit/handoffs/<filesystem-ts>-<slug>.md` and route the produced document through `validate_handoff_document`; when validation returns violations the document MUST NOT be written (fail-closed — raises with the violation list). A clean document is written and its path returned.
+1. REQUIREMENT [BEHAVIOR]: `handoff_api.scaffold_handoff(...)` MUST deterministically pre-fill the Current State Summary, Evidence / Artifacts, and Verification Checklist sections from observed state (ledger events, OBPI completion/ARB receipts, git diff since lock-claim) with NO LLM or network call; identical inputs MUST produce byte-identical pre-filled sections.
+1. REQUIREMENT [BEHAVIOR]: `handoff_api.list_handoffs(...)` MUST return handoffs under `.gzkit/handoffs/`, frontmatter-filtered (only files carrying `adr_id`) and sorted newest-first, optionally scoped by `adr_id`.
+1. REQUIREMENT [BEHAVIOR]: `handoff_api.load_handoff_chain(...)` MUST traverse `continues_from` links oldest-to-newest, depth-limited (≤20) and cycle-safe (a self/loop reference terminates traversal, never infinite-loops).
+1. REQUIREMENT [BEHAVIOR]: `handoff_api.resume_handoff(...)` MUST return a result carrying the staleness classification (Fresh / Slightly-Stale / Stale / Very-Stale), `requires_human_verification=True` for Stale/Very-Stale, and the extracted first next step.
+1. REQUIREMENT [SUPPORT]: `.gzkit/skills/gz-session-handoff/SKILL.md` import references MUST point at `gzkit.handoff_api` (not `tests.governance.test_session_handoff`) and the `NOT IMPLEMENTED` / `DESIGN TARGET` disclaimers MUST be removed — proven by `uv run gz validate --documents --surfaces` plus the `artifact_edited` event for the skill.
+1. REQUIREMENT [BEHAVIOR]: `HandoffFrontmatter` MUST accept the full OBPI slug form (`OBPI-X.Y.Z-NN-<slug>`) in addition to the short form (`OBPI-X.Y.Z-NN`), so a release-pairing handoff produced by `create_handoff` validates AND matches `find_handoff_for_release`.
+1. NEVER: introduce an LLM/network call into the API; write a handoff that fails `validate_handoff_document`; hand-edit a generated skill mirror.
+1. ALWAYS: reconcile the brief with the parent ADR (`uv run gz validate --brief-reconcile`) before implementation begins; run `gz agent sync control-surfaces` after the canonical SKILL.md edit.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first.
-     Order matters: read the structured input (parent ADR § Decision)
-     before the unstructured one (allowed paths, prerequisites). -->
-
 **Parent ADR (read first; order pinned — GHI #321):**
 
-- [ ] **Parent ADR § Decision item — quote the line this OBPI implements** verbatim into the brief's Implementation Summary. The Decision item is the contract; everything else hangs off it.
-- [ ] Parent ADR § Intent — the why-frame for the Decision read above.
+- [ ] **Parent ADR § Decision item — quote the line this OBPI implements** verbatim into the brief's Implementation Summary. The contract: checklist item #2 (programmatic-api-implementation), and § Intent defect #3 ("Vaporware programmatic API … handoffs end up hand-authored, which bypasses the validation gate").
+- [ ] Parent ADR § Intent — the read/write split-brain + vaporware-API + missing-CLI defect frame.
 - [ ] Parent ADR file: `docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md`
 
-> **STOP:** If you cannot quote the parent ADR § Decision item that this OBPI implements, STOP and re-read. Do not proceed to Allowed Paths, Prerequisites, or implementation until the Decision quote is in hand.
+> **STOP:** If you cannot quote the parent ADR § Decision item that this OBPI implements, STOP and re-read.
 
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [ ] `.gzkit/skills/gz-session-handoff/SKILL.md` — the CREATE/RESUME procedures the API must back; the `NOT IMPLEMENTED` blocks to remove
+- [ ] `.claude/rules/tests.md` — unittest + `@covers` + REQ-kind discipline
+- [ ] `.claude/rules/skill-surface-sync.md` — the canonical-edit-then-sync contract for the SKILL.md edit
 
 **Context:**
 
-- [ ] Related OBPIs in same ADR
+- [ ] OBPI-0.0.65-01 (canonical-location-migration, Completed) — `.gzkit/handoffs/` is the single write location the API targets
+- [ ] OBPI-0.0.65-03 (gz-handoff-cli-verb) — the consumer of this API; design the function signatures to be CLI-friendly
+- [ ] OBPI-0.0.65-04 (orientation-single-location-scan) — coordinates with `list_handoffs` discovery semantics
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `src/gzkit/handoff_api.py`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
+- [ ] `src/gzkit/handoff_validation.py` exists with `validate_handoff_document`, `parse_frontmatter`, `find_handoff_for_release`, `HandoffFrontmatter`, `REQUIRED_SECTIONS`
+- [ ] `.gzkit/handoffs/` exists (OBPI-0.0.65-01, attested-complete)
+- [ ] `.gzkit/skills/gz-session-handoff/SKILL.md` exists with the `NOT IMPLEMENTED` disclaimers and the `tests.governance.test_session_handoff` references
 
 **Existing Code (understand current state):**
 
-- [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
-- [ ] Parent ADR integration points reviewed for local conventions
+- [ ] `src/gzkit/handoff_validation.py` — the wrap target; `_OBPI_ID_RE` (line ~61) is the regex to widen
+- [ ] `scripts/session_orientation.py::collect_handoff` / `_candidate_handoff_dirs` — existing handoff-discovery + staleness-bucketing precedent to mirror (do not modify here)
+- [ ] `src/gzkit/handoff_validation.py::find_handoff_for_release` — the full-slug pairing consumer REQ-07 must stay coherent with
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -114,75 +124,53 @@ status: Draft
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
 - [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [ ] `.gzkit/skills/gz-session-handoff/SKILL.md` updated; mirrors synced
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] Behave waived for this OBPI (API is unit-proven; CLI behave is OBPI-0.0.65-03) — waiver in `data/behave_coverage_waivers.json`
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [ ] Human attestation recorded (mandatory; foundation/heavy; no self-close)
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. These are CONSTRUCTION HOUSEKEEPING (lint, type,
-     test, mkdocs) — they prove the codebase is healthy, not what the OBPI
-     yielded. The yielded product belongs in the `## Demo` section below.
-
-     AUTHORING CONTRACT: Every command in this section must be a single-program,
-     shell-less invocation — no &&, ||, |, ;, $(...), or redirects. The
-     OBPI-pipeline verify stage executes commands via shlex.split + shell=False
-     (GHI #415); compound commands are blocked at authoring time by
-     gz validate --brief-command-shape and rejected at the verify stage.
-     Write multi-step verification as separate uv run ... lines. -->
-
 ```bash
-uv run gz validate --documents
+uv run gz validate --brief-reconcile
+uv run gz validate --documents --surfaces
 uv run gz lint
 uv run gz typecheck
 uv run gz test
-
-# Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md
+uv run mkdocs build --strict
 test -f src/gzkit/handoff_api.py
-test -f handoff_validation.py
-test -f gz-session-handoff/SKILL.md
+uv run -m unittest tests.governance.test_handoff_api -v
 ```
 
 ## Demo
 
-<!-- THE YIELDED PRODUCT, not housekeeping. Concrete, runnable invocations
-     that demonstrate the capability this OBPI delivers — e.g. an actual
-     diagnosis run against a real file, the `--json` form, an auto-chain
-     trigger. The closeout ceremony walkthrough harvests this section
-     (parser-validated; unregistered verbs are dropped). Prefer real paths
-     and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
-
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+# Scaffold a handoff with deterministically pre-filled factual sections
+uv run python -c "from gzkit.handoff_api import scaffold_handoff; help(scaffold_handoff)"
+
+# create_handoff routes through the validation gate (fail-closed on invalid)
+uv run python -c "from gzkit.handoff_api import create_handoff; help(create_handoff)"
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.65-02-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.65-02-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.65-02-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.65-02-01 [BEHAVIOR]: `create_handoff` writes to `.gzkit/handoffs/` and fails closed when `validate_handoff_document` reports violations (no invalid write). Proof: `@covers`-decorated test in `tests/governance/test_handoff_api.py`.
+- [ ] REQ-0.0.65-02-02 [BEHAVIOR]: `scaffold_handoff` deterministically pre-fills Current State / Evidence / Verification Checklist from observed state with no LLM call; identical inputs → byte-identical sections. Proof: `@covers`-decorated determinism test.
+- [ ] REQ-0.0.65-02-03 [BEHAVIOR]: `list_handoffs` returns frontmatter-filtered, newest-first handoffs, scopable by `adr_id`. Proof: `@covers`-decorated test.
+- [ ] REQ-0.0.65-02-04 [BEHAVIOR]: `load_handoff_chain` traverses `continues_from` depth-limited (≤20) and cycle-safe. Proof: `@covers`-decorated test incl. a cycle fixture.
+- [ ] REQ-0.0.65-02-05 [BEHAVIOR]: `resume_handoff` returns staleness classification + `requires_human_verification` + first next step. Proof: `@covers`-decorated test across freshness buckets.
+- [ ] REQ-0.0.65-02-06 [SUPPORT]: `gz-session-handoff/SKILL.md` references `gzkit.handoff_api` and the `NOT IMPLEMENTED` disclaimers are gone. Proof: `uv run gz validate --documents --surfaces` + `artifact_edited` event.
+- [ ] REQ-0.0.65-02-07 [BEHAVIOR]: `HandoffFrontmatter` accepts the full OBPI slug; a `create_handoff`-produced release-pairing handoff validates and matches `find_handoff_for_release`. Proof: `@covers`-decorated test with the full-slug `obpi_id`.
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** RGR cycle followed, tests derived from brief, coverage maintained
@@ -194,9 +182,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -217,19 +202,19 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Paste docs-build output here
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+# Behave waived for this OBPI — see Gate 4 above and data/behave_coverage_waivers.json
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text here
 ```
 
 ### Value Narrative
@@ -237,8 +222,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 <!-- What problem existed before this OBPI, and what capability exists now? -->
 
 ### Key Proof
-
-<!-- One concrete usage example, command, or before/after behavior. -->
 
 ### Implementation Summary
 
@@ -250,10 +233,11 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
+**Full-slug frontmatter friction (resolved here, REQ-07).** `_OBPI_ID_RE` rejected the full OBPI slug that `find_handoff_for_release` requires for release pairing — shipping invalid-frontmatter handoffs (parent ADR Alternative #2). REQ-07 widens the regex so the API produces handoffs that both validate and pair.
 
-_No defects tracked._
+**Skill mirror sync (coupled surface).** Editing `.gzkit/skills/gz-session-handoff/SKILL.md` requires `gz agent sync control-surfaces`, which regenerates `src/gzkit/skills/**` + vendor mirrors. Those regenerated paths are sync outputs committed at Stage 5, not hand-edits.
+
+_No further defects tracked._
 
 ## Human Attestation
 

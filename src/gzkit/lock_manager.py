@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
@@ -227,7 +228,12 @@ def _write_reaping_handoff(project_root: Path, lock: LockData, reaper_agent: str
     filename = f"{timestamp_token}-{lock.obpi_id}-reaped.md"
     path = handoff_dir / filename
 
-    adr_id = lock.obpi_id.replace("OBPI-", "ADR-").rsplit("-", 1)[0]
+    # Derive the parent ADR id from the OBPI semver triplet
+    # (OBPI-X.Y.Z-NN[-slug] -> ADR-X.Y.Z). rsplit("-", 1) is wrong for
+    # slug-bearing obpi_ids — it strips only the last slug segment, yielding an
+    # invalid ADR id like ADR-0.0.72-02-handoff-frontmatter (OBPI-0.0.72-02 fix).
+    _semver_match = re.match(r"OBPI-(\d+\.\d+\.\d+)-", lock.obpi_id)
+    adr_id = f"ADR-{_semver_match.group(1)}" if _semver_match else lock.obpi_id
     frontmatter = {
         "mode": "CREATE",
         "adr_id": adr_id,

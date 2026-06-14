@@ -8,12 +8,18 @@ import re
 import shlex
 import subprocess
 from collections.abc import Sequence
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
+from gzkit.handoff_validation import (
+    HandoffValidationError,
+    parse_frontmatter,
+    validate_handoff_document,
+)
 
 
 class QualityResult(BaseModel):
@@ -746,6 +752,108 @@ def run_lock_handoff_coupling_audit(project_root: Path) -> QualityResult:
     Recovery: uv run gz validate --lock-handoff-coupling for diagnostics.
     """
     return run_command("uv run gz validate --lock-handoff-coupling", cwd=project_root)
+
+
+# Handoff-document enforcement cutover (OBPI-0.0.72-02). Register entries
+# authored on or after this instant MUST pass validate_handoff_document; the
+# pre-existing legacy entries under .gzkit/handoffs/ that predate this gate are
+# grandfathered so the wiring lands green over the existing corpus. This mirrors
+# the lock_handoff_coupling cutover posture (grandfather legacy, fail-close
+# go-forward). The boundary sits just past the newest existing entry; legacy
+# cleanup is tracked separately (see OBPI-0.0.72-02 evidence/concerns).
+_HANDOFF_ENFORCEMENT_CUTOVER = "2026-06-15T00:00:00Z"
+
+
+def _handoff_predates_cutover(content: str, cutover: datetime) -> bool:
+    """Return True when a handoff is grandfathered (pre-cutover or undatable).
+
+    Datability keys off the frontmatter ``timestamp`` (which every canonical
+    writer emits). An entry whose frontmatter is unparseable or carries no
+    parseable timestamp is treated as legacy and grandfathered — it cannot have
+    been authored by the reconciled go-forward writers.
+    """
+    try:
+        frontmatter = parse_frontmatter(content)
+    except HandoffValidationError:
+        return True
+    raw = frontmatter.get("timestamp")
+    if not isinstance(raw, str):
+        return True
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError:
+        return True
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed < cutover
+
+
+def run_handoff_document_audit(project_root: Path) -> QualityResult:
+    """Gate-wire validate_handoff_document over the .gzkit/handoffs/ store (OBPI-0.0.72-02).
+
+    Before this gate, validate_handoff_document was a strict consumer with no
+    authoring-time enforcement, so invalid-frontmatter register entries shipped.
+    Each entry authored on or after _HANDOFF_ENFORCEMENT_CUTOVER must validate
+    clean; pre-cutover (and undatable) legacy entries are grandfathered so the
+    gate lands green over the existing corpus.
+    """
+    handoff_dir = project_root / ".gzkit" / "handoffs"
+    if not handoff_dir.is_dir():
+        return QualityResult(
+            success=True,
+            command="handoff-document audit",
+            stdout="No .gzkit/handoffs/ directory; skipping.",
+            stderr="",
+            returncode=0,
+        )
+
+    cutover = datetime.fromisoformat(_HANDOFF_ENFORCEMENT_CUTOVER.replace("Z", "+00:00"))
+    blocking: list[str] = []
+    grandfathered = 0
+    for path in sorted(handoff_dir.glob("*.md")):
+        try:
+            content = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        violations = validate_handoff_document(content, project_root)
+        if not violations:
+            continue
+        if _handoff_predates_cutover(content, cutover):
+            grandfathered += 1
+            continue
+        rel = path.relative_to(project_root).as_posix()
+        blocking.extend(f"{rel}: {violation}" for violation in violations)
+
+    if blocking:
+        return QualityResult(
+            success=False,
+            command="handoff-document audit",
+            stdout=(
+                "Handoff register entries authored on/after the enforcement cutover "
+                f"({_HANDOFF_ENFORCEMENT_CUTOVER}) failed validate_handoff_document:\n"
+                + "\n".join(blocking)
+            ),
+            stderr=(
+                "A register entry is fail-closed on the token-block invariant "
+                "(.gzkit/rules/token-block-discipline.md): its frontmatter must "
+                "satisfy HandoffFrontmatter and it must carry the seven required "
+                "sections. Fix the offending frontmatter/sections and re-run "
+                "uv run gz check."
+            ),
+            returncode=3,
+        )
+
+    summary = "All post-cutover handoff register entries valid."
+    if grandfathered:
+        plural = "entry" if grandfathered == 1 else "entries"
+        summary += f" ({grandfathered} pre-cutover legacy {plural} grandfathered.)"
+    return QualityResult(
+        success=True,
+        command="handoff-document audit",
+        stdout=summary,
+        stderr="",
+        returncode=0,
+    )
 
 
 def run_surface_fidelity_audit(project_root: Path) -> QualityResult:

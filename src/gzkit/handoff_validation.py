@@ -58,7 +58,10 @@ REQUIRED_SECTIONS = (
 # ---------------------------------------------------------------------------
 
 _ADR_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+$")
-_OBPI_ID_RE = re.compile(r"^OBPI-\d+\.\d+\.\d+-\d{2}$")
+# Widened to the canonical obpi.json slug-optional pattern (additive: the
+# short OBPI-X.Y.Z-NN form still matches). The strict NN-only form rejected
+# every slug-bearing id its own writers emit (OBPI-0.0.72-02).
+_OBPI_ID_RE = re.compile(r"^OBPI-\d+\.\d+\.\d+-\d{2}(?:-[a-z0-9-]+)?$")
 
 _PLACEHOLDER_RE = re.compile(
     r"\b(TBD|TODO|FIXME|PLACEHOLDER|XXX|CHANGEME)\b"
@@ -87,6 +90,9 @@ _SECRET_RE = re.compile(
 class HandoffFrontmatter(BaseModel):
     """Pydantic model for handoff document YAML frontmatter."""
 
+    # extra="forbid" is KEPT — typo-defense is preserved by declaring every
+    # real field below as an explicit SUPERSET, so unknown/misspelled keys
+    # still raise (OBPI-0.0.72-02). Dropping the guard is forbidden.
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     mode: Literal["CREATE", "RESUME"]
@@ -97,6 +103,18 @@ class HandoffFrontmatter(BaseModel):
     obpi_id: str | None = None
     session_id: str | None = None
     continues_from: str | None = None
+    # Min-info fields the lock-handoff coupling consumer requires
+    # (_MIN_INFO_FRONTMATTER_FIELDS, alongside the already-declared `branch`).
+    last_lock_event_timestamp: str | None = None
+    last_commit_sha: str | None = None
+    # Degenerate/reaping fields emitted by write_degenerate_handoff and
+    # lock_manager._write_reaping_handoff.
+    abandoned: bool | None = None
+    category: str | None = None
+    abandoned_by: str | None = None
+    abandoned_at: str | None = None
+    previous_agent: str | None = None
+    reason: str | None = None
 
     @field_validator("adr_id")
     @classmethod
@@ -292,9 +310,11 @@ def validate_handoff_document(content: str, base_path: Path) -> list[str]:
     errors: list[str] = []
 
     # 1. Parse and validate frontmatter
+    is_register_entry = False
     try:
         fm_data = parse_frontmatter(content)
         HandoffFrontmatter(**fm_data)
+        is_register_entry = bool(fm_data.get("abandoned"))
     except (HandoffValidationError, ValidationError) as exc:
         errors.append(f"Frontmatter: {exc}")
 
@@ -304,11 +324,21 @@ def validate_handoff_document(content: str, base_path: Path) -> list[str]:
     # 3. No secrets
     errors.extend(validate_no_secrets(content))
 
-    # 4. Required sections
+    # Shape-awareness (OBPI-0.0.72-02): degenerate/reaping register entries
+    # (frontmatter ``abandoned: true``) are a distinct document class — terse
+    # abandon/reaping audit artifacts, not full session handoffs. They carry
+    # frontmatter + abandon fields plus a self-referential pointer to the
+    # now-deleted lock; the seven-section and referenced-file contracts apply
+    # only to CREATE/RESUME session handoffs. Frontmatter, placeholder, and
+    # secret checks above remain universal.
+    if is_register_entry:
+        return errors
+
+    # 4. Required sections (session handoffs only)
     for section in validate_sections_present(content):
         errors.append(f"Missing required section: {section}")
 
-    # 5. Referenced files exist
+    # 5. Referenced files exist (session handoffs only)
     for path in validate_referenced_files(content, base_path):
         errors.append(f"Referenced file not found: {path}")
 

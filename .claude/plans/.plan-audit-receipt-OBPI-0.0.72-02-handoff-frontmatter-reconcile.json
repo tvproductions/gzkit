@@ -1,0 +1,369 @@
+{
+  "obpi_id": "OBPI-0.0.72-02-handoff-frontmatter-reconcile",
+  "timestamp": "2026-06-14T21:01:00.183249+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.72-02-handoff-frontmatter-reconcile.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-06-persona-schema-validation",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.14",
+      "sibling_obpi": "OBPI-0.0.14-01-obpi-lock-command",
+      "contested_paths": [
+        "src/gzkit/lock_manager.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-01-schema-frontmatter-field",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.24",
+      "sibling_obpi": "OBPI-0.0.24-01-validator-scope",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/lock_handoff_coupling.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-07-link-integrity-validator",
+      "contested_paths": [
+        "src/gzkit/quality.py",
+        "src/gzkit/commands/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-22-committed-rendition-store-deterministic-playback",
+      "contested_paths": [
+        "src/gzkit/quality.py",
+        "src/gzkit/commands/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-01-cli-module-restructure",
+      "contested_paths": [
+        "src/gzkit/commands/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.41",
+      "sibling_obpi": "OBPI-0.0.41-02-claim-release-safety-primitives",
+      "contested_paths": [
+        "src/gzkit/handoff_validation.py",
+        "src/gzkit/lock_manager.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.41",
+      "sibling_obpi": "OBPI-0.0.41-03-release-fail-closed-and-reaping",
+      "contested_paths": [
+        "src/gzkit/handoff_validation.py",
+        "src/gzkit/lock_manager.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.41",
+      "sibling_obpi": "OBPI-0.0.41-04-lock-handoff-coupling-validator",
+      "contested_paths": [
+        "src/gzkit/quality.py",
+        "src/gzkit/commands/quality.py",
+        "src/gzkit/governance/trust_audits/lock_handoff_coupling.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-01-doctrine-and-canon",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-03-storybook-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/lock_handoff_coupling.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "src/gzkit/commands/quality.py",
+        "docs/design/adr/foundation/ADR-0.0.72-meta-governance-coherence/ADR-0.0.72-meta-governance-coherence.md",
+        "docs/design/adr/foundation/ADR-0.0.72-meta-governance-coherence/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-04-frontmatter-cascade-keys-validators",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.5",
+      "sibling_obpi": "OBPI-0.0.5-02-add-offline-eval-harnesses-as-first-class-quality-checks",
+      "contested_paths": [
+        "src/gzkit/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.5",
+      "sibling_obpi": "OBPI-0.0.5-03-define-release-gates-based-on-eval-deltas-for-ai-sensitive-surfaces",
+      "contested_paths": [
+        "src/gzkit/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.52",
+      "sibling_obpi": "OBPI-0.0.52-01-obpi-brief-actual-paths-touched-field",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.52",
+      "sibling_obpi": "OBPI-0.0.52-02-pydantic-models-and-schema-deltas",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.52",
+      "sibling_obpi": "OBPI-0.0.52-05-adr-eval-fresh-and-coherence-validators",
+      "contested_paths": [
+        "src/gzkit/commands/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-02-migrate-validators-remediation-meta",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/lock_handoff_coupling.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-03-extend-payload-arb-receipts",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/lock_handoff_coupling.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-04-extend-payload-blocking-hooks",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/lock_handoff_coupling.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-03-agents-md-map-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/commands/quality.py",
+        "src/gzkit/governance/trust_audits/lock_handoff_coupling.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-01-author-layer-order-manifest",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/lock_handoff_coupling.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-02-import-direction-validator-warn-only",
+      "contested_paths": [
+        "src/gzkit/commands/quality.py",
+        "src/gzkit/governance/trust_audits/lock_handoff_coupling.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-03-migrate-back-edges-drain-baseline",
+      "contested_paths": [
+        "src/gzkit/commands/quality.py",
+        "src/gzkit/governance/trust_audits/lock_handoff_coupling.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-04-promote-import-direction-fail-closed",
+      "contested_paths": [
+        "src/gzkit/commands/quality.py",
+        "src/gzkit/governance/trust_audits/lock_handoff_coupling.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.56",
+      "sibling_obpi": "OBPI-0.0.56-02-closeout-defect-accounting-reconcile-scope",
+      "contested_paths": [
+        "src/gzkit/commands/quality.py",
+        "src/gzkit/governance/trust_audits/lock_handoff_coupling.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-02-req-kind-discipline-validator",
+      "contested_paths": [
+        "src/gzkit/quality.py",
+        "src/gzkit/commands/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-04-decommission-tautological-tests-chore",
+      "contested_paths": [
+        "src/gzkit/quality.py",
+        "src/gzkit/commands/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.64",
+      "sibling_obpi": "OBPI-0.0.64-04-gz-validate-task-envelope-coherence",
+      "contested_paths": [
+        "src/gzkit/commands/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.65",
+      "sibling_obpi": "OBPI-0.0.65-02-programmatic-api-implementation",
+      "contested_paths": [
+        "src/gzkit/handoff_validation.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-01-tdd-receipt-stream-hub",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-05-solved-problem-pattern-corpus-read-surface",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.68",
+      "sibling_obpi": "OBPI-0.0.68-02-session-green-gate-validator",
+      "contested_paths": [
+        "src/gzkit/quality.py",
+        "src/gzkit/commands/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-03-closeout-proof-derived-view",
+      "contested_paths": [
+        "src/gzkit/quality.py",
+        "src/gzkit/commands/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.7",
+      "sibling_obpi": "OBPI-0.0.7-05-lint-rule-and-check-expansion",
+      "contested_paths": [
+        "src/gzkit/commands/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-02-ledger-first-status-reads",
+      "contested_paths": [
+        "src/gzkit/commands/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces",
+      "contested_paths": [
+        "src/gzkit/commands/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration",
+      "contested_paths": [
+        "src/gzkit/commands/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.14.0",
+      "sibling_obpi": "OBPI-0.14.0-04-instruction-audit-and-drift-detection",
+      "contested_paths": [
+        "src/gzkit/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.14.0",
+      "sibling_obpi": "OBPI-0.14.0-06-instruction-evals-and-readiness-checks",
+      "contested_paths": [
+        "src/gzkit/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.15.0",
+      "sibling_obpi": "OBPI-0.15.0-04-schema-generation-unification",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.2.0",
+      "sibling_obpi": "OBPI-0.2.0-01-gate-verification",
+      "contested_paths": [
+        "src/gzkit/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-04-adr-audit-integration",
+      "contested_paths": [
+        "src/gzkit/commands/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.22.0",
+      "sibling_obpi": "OBPI-0.22.0-05-status-and-state-integration",
+      "contested_paths": [
+        "src/gzkit/commands/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.23.0",
+      "sibling_obpi": "OBPI-0.23.0-02-product-proof-gate",
+      "contested_paths": [
+        "src/gzkit/quality.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-03-auth-surface-coherence-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/lock_handoff_coupling.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.5.0",
+      "sibling_obpi": "OBPI-0.5.0-02-parity-verification-policy",
+      "contested_paths": [
+        "src/gzkit/quality.py"
+      ]
+    }
+  ]
+}

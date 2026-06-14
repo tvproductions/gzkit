@@ -1,5 +1,6 @@
 {
   "default_rationale": {
+    "obpi-0.0.72-02-handoff-frontmatter-reconcile-no-behave-surface": "No Gherkin-observable CLI surface — this OBPI reconciles the HandoffFrontmatter model, makes validate_handoff_document shape-aware, and fixes the reaping adr_id derivation; it ships no new verb. REQ-01..05 are unit-proven engine/model BEHAVIOR via @covers tests in tests/test_handoff_frontmatter_coherence.py; REQ-06 is SUPPORT (gate wiring) proven by the ledger artifact_edited event + the registered gz check audit. gz covers reports behavior_uncovered_reqs=0.",
     "obpi-0.0.37-23-invariant-tier-no-cli-surface": "No Gherkin-observable CLI surface — this OBPI ships no new verb; REQ-01/02/03 are unit-proven engine behavior; REQ-04 is SUPPORT (doc).",
     "obpi-0.0.71-02-dry-run-ledger-count-unit-only-and-non-behavior-reqs": "OBPI-0.0.71-02-gz-obpi-repudiate-cli ships the operator-gated `gz obpi repudiate` verb. REQ-01/02/03/05 are BEHAVIOR-kind CLI semantics behave-tagged in features/obpi_repudiate.feature (@REQ-0.0.71-02-01 verb registration + dry-run lookup path; @REQ-0.0.71-02-02 empty-attestor fail-closed exit 1; @REQ-0.0.71-02-03 empty-reason fail-closed exit 1; @REQ-0.0.71-02-05 invalid-cause parser rejection exit 2). REQ-04 is BEHAVIOR-kind but its core assertion is 'dry-run writes nothing' — a ledger-line-count delta that requires a fully completed-OBPI ledger fixture the behave workspace fixture does not provide; its correct proof channel per .gzkit/rules/tests.md Unit-tier contract is unittest under tests/test_obpi_repudiate_cli.py::TestObpiRepudiateCmdDryRun.test_dry_run_no_ledger_write (mocks the Ledger and asserts ledger.append is never called). Authoring a behave scenario that asserts no-write requires standing up a completed OBPI in the fixture ledger — the integration belongs at ADR-0.0.71 closeout where the OBPI-01 event model and OBPI-02 CLI are wielded together over a real repudiate-then-recomplete walkthrough. REQ-06 is STRUCTURAL-FENCE; its proof channel is the parent ADR's ## Boundary Invariants entry (Invariant 1, audited at ADR closeout), never a behave scenario. REQ-07 is SUPPORT-kind; per .gzkit/rules/tests.md REQ Scope Discipline its proof channel is the ledger artifact_edited events for the edited manpage/index/runbook/manifest surfaces plus the gz cli audit + gz validate --documents structural validators, never a behave scenario. gz covers reports behavior_uncovered_reqs=0. Operator-authorized waiver registration via Stage 4 attestation (2026-06-13).",
     "obpi-0.0.67-02-skill-content-unit-coverage-no-behave-surface": "OBPI-0.0.67-02-wire-orphan-verbs-into-skills wires 10 orphan CLI verbs into 6 skills (skill-content edits) and adds unit coverage for obpi_audit_cmd / obpi_withdraw_cmd. The brief Gate 4 line is explicit: 'n/a — skill-content + unit coverage; no new behave surface'. REQ-01/03/04 are BEHAVIOR-kind: REQ-01 (audit_skill_alignment clean + none-of-10 in _NO_SKILL_VERBS) is pure-Python validator semantics covered by tests/commands/test_skill_alignment_10verbs.py; REQ-03 (obpi_audit_cmd emits criteria_evaluated) and REQ-04 (obpi_withdraw_cmd emits obpi_withdrawn event + rejects re-withdrawal) are CLI-smoke-tested at the unit tier under tests/commands/ via CliRunner invoking the same main(argv) entrypoint a behave scenario would drive — authoring behave scenarios would duplicate the unit smoke tests through an inappropriate runner (the categorical anti-pattern ADR-0.0.59 names). REQ-02/05/06 are SUPPORT-kind per .gzkit/rules/tests.md REQ Scope Discipline: their proof channel is the ledger artifact_edited event for the edited SKILL.md / cli.py surfaces plus the gz validate --skill-alignment and gz validate --surfaces structural validators, never a behave scenario. gz covers reports behavior_uncovered_reqs=0. This OBPI adds no operator-runnable CLI surface beyond the already-registered obpi audit / obpi withdraw verbs. Operator-authorized waiver registration (2026-06-07). Same shape as obpi-0.0.63-04-skill-wording-fix-support-reqs-no-behave.",
@@ -92,6 +93,18 @@
   },
   "schema_version": 1,
   "waivers": {
+    "OBPI-0.0.72-02-handoff-frontmatter-reconcile": {
+      "rationale": "obpi-0.0.72-02-handoff-frontmatter-reconcile-no-behave-surface",
+      "status_at_landing": "in-progress",
+      "waived_reqs": [
+        "REQ-0.0.72-02-01",
+        "REQ-0.0.72-02-02",
+        "REQ-0.0.72-02-03",
+        "REQ-0.0.72-02-04",
+        "REQ-0.0.72-02-05",
+        "REQ-0.0.72-02-06"
+      ]
+    },
     "OBPI-0.0.37-23-invariant-tier": {
       "rationale": "obpi-0.0.37-23-invariant-tier-no-cli-surface",
       "status_at_landing": "in-progress",
