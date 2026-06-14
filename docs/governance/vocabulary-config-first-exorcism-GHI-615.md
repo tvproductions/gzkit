@@ -59,6 +59,48 @@
 > terminal and the firewall is booked. Tracked across GHI #615 (vocabulary
 > substrate) and GHI #607 (firewall).
 
+> **Amendment (operator-ratified, 2026-06-14) — Constitution/PRD definitions, stability-gradient ordering, charter-projection (iii).**
+>
+> Operator analogy (verbatim): a Constitution *"stands in place longer than the
+> advance of major versions of any given product"* (cf. Anthropic's constitution,
+> <https://www.anthropic.com/constitution>, which governs across model
+> generations). **Endurance is the defining property.**
+>
+> **Definitions.**
+> - **Constitution** — the enduring normative charter (principles + invariants),
+>   amended only deliberately, persisting across major versions; the **root
+>   because it is the slowest-changing layer**. Cadence: *amendment*. The
+>   `gz constitute` schema already encodes its shape
+>   (`Principles / Rules / Exceptions / Amendments`) — built for endurance, never
+>   instantiated.
+> - **PRD** — the per-major-release product requirements; a **child of the
+>   Constitution**, superseded each major release. Cadence: *per major version*
+>   (confirmed by `PRD-GZKIT-1.0.0`'s semver root).
+>
+> **Ordering principle (resolves the backwards spine).** The tree is ordered by
+> **rate of change**: Constitution (amendment) → PRD (release) → ADR (feature) →
+> OBPI (increment) — most-enduring roots, most-volatile leaves. The legacy
+> `PRD → Constitution` (~12 surfaces incl. the `agents.md` template, `tests.md`,
+> `validate_commit_trailers.py`, the campaign) **inverts the gradient and is
+> backwards**; correction is owned by the product-tree/lifecycle ADR (re-render,
+> never hand-edit). This grounds F1=ii: lifecycles differ because *cadences*
+> differ (Constitution: Draft→Review→Ratified→**Amended**→Superseded; PRD:
+> Draft→Review→Approved→Superseded-per-release).
+>
+> **Constitution ↔ invariant-registry = (iii) couple-as-projection.** The
+> Constitution charter is **authored** (human-ratified, amendment-gated); the
+> constitutional-invariant registry (ADR-0.0.37 CMS) + the rendered AGENTS.md are
+> its **mechanical projection** — the barcode doctrine generalized to the root.
+> *Like Anthropic's:* charter authored, behavior projected.
+>
+> **As-built comprehension (2026-06-14, observed).** The tree is operationally
+> **PRD-rooted**: one PRD (`PRD-GZKIT-1.0.0`, Draft), **73 ADRs
+> `parent: PRD-GZKIT-1.0.0`**, **no Constitution artifact instantiated**, no
+> PRD↔Constitution linkage. Making Constitution the root is therefore **net-new
+> construction** — instantiate the charter, wire `PRD.parent → Constitution`,
+> bridge the 73 ADRs, add the lifecycles — owned by the product-tree/lifecycle
+> ADR, not a string edit.
+
 ---
 
 ## 0. The one-sentence diagnosis

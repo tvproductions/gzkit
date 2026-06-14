@@ -60,6 +60,54 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > filed as a prior-art-gated successor ADR; prior-art research landed 2026-06-14
 > (`docs/governance/prior-art-scaffold-firewall-2026-06-14.md`) and finds the
 > only structural skills-first primitive is a scoped `PreToolUse` deny gate.
+>
+> **Amendment (operator verbatim, 2026-06-14) — Constitution as enduring root;
+> product-tree definitions booked.** Operator: *"this seems to stand in place
+> longer than the advance of major versions of any given product"* (cf.
+> [Anthropic's constitution](https://www.anthropic.com/constitution)). Ratified
+> definitions (full text in the rites amendment): **Constitution** = the enduring
+> normative charter, **root by stability gradient** (amendment cadence); **PRD** =
+> per-major-release child (release cadence). The tree is ordered by *rate of
+> change* — Constitution → PRD → ADR → OBPI — so the legacy `PRD → Constitution`
+> spine (~12 surfaces) is backwards. Constitution ↔ invariant-registry is
+> **(iii) couple-as-projection**: the charter is authored, the
+> constitutional-invariant registry (ADR-0.0.37 CMS) + AGENTS.md are its
+> mechanical render — the barcode doctrine at the root, "like Anthropic's."
+>
+> **Chain coordination.** The "barcode + lifecycle doctrine" step of the
+> dependency chain is hereby scoped to carry the **product-tree/lifecycle ADR**,
+> which: instantiates the Constitution charter (the root that observation shows
+> does **not yet exist** — `PRD-GZKIT-1.0.0` roots **73 ADRs** today), wires
+> `PRD.parent → Constitution`, bridges those 73 ADRs, adds PRD + Constitution
+> lifecycle state machines (F1=ii), and re-renders the backwards spine string
+> across all ~12 surfaces. Sequence unchanged: **CMS (ADR-0.0.37) → Firewall →
+> product-tree/lifecycle (the barcode cure) → skills-first**. Per "completion
+> before reduction," this is build-as-found *construction* (the root is net-new),
+> not a reductive string edit.
+>
+> **Amendment (operator verbatim, 2026-06-14) — CMS↔hierarchy coupling;
+> disclosure-tier ∝ inverse-volatility.** Operator: *"progressive disclosure is
+> made possible by the cms and the cms is influenced by the hierarchy we are
+> clarifying here."* The three are one loop:
+> **hierarchy (stability gradient) → CMS tiers → progressive disclosure.**
+> *Disclosure tier is the inverse of volatility*: the enduring root (Constitution
+> / constitutional-invariants) is the **always-disclosed** surface (gzkit's
+> analog of superpowers' single always-injected bootstrap — prior-art § 1a/1d);
+> volatile leaves (a specific OBPI / feature ADR) are **disclosed on demand**.
+> The CMS's own remaining tier work — OBPI-0.0.37-23 (invariant-tier), -25
+> (retention-tier validator), the criticality-ordered renderer — **are** these
+> tiers and MUST map onto the booked stability gradient.
+>
+> **Cycle-resolution (ruling "a" preserved; redline if wrong).** The coupling is a
+> back-edge: the CMS (sequenced first) is influenced by the hierarchy that the
+> product-tree/lifecycle ADR formalizes later. It resolves because this session
+> already booked the hierarchy *definition* (the stability-gradient ranking
+> rule) — the only kernel the CMS needs to tier correctly. Therefore CMS proceeds
+> first (**ruling "a" intact**) under one **conformance constraint** — its tier
+> OBPIs map to the stability gradient — while the product-tree ADR's
+> *construction* (instantiate the Constitution charter; wire
+> `PRD.parent → Constitution`) follows and builds the artifacts the CMS already
+> knows how to rank. No re-sequence.
 
 ## Authority and amendment (Magna Carta discipline)
 
