@@ -5,18 +5,18 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.5.0"
+  skill-version: "6.6.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-01
+last_reviewed: 2026-06-14
 model: sonnet
 ---
 
-# gz-session-handoff (v6.5.0)
+# gz-session-handoff (v6.6.0)
 
 ## Purpose
 
@@ -31,7 +31,8 @@ Create and resume session handoff documents that preserve agent context across e
 - **Reads:** User input, handoff template, canonical handoff directory `.gzkit/handoffs/`
 - **Writes:** Handoff markdown files under `.gzkit/handoffs/` (canonical storage per ADR-0.0.41 / OBPI-0.0.41-03)
 - **Validates:** No placeholders, no secrets, all sections present, referenced files exist
-- **Does NOT touch:** Ledger files, ADR status, OBPI brief status
+- **Reads (RESUME only, read-only):** Ledger and `gz` state surfaces (`gz obpi status`, `gz obpi lock list`, `gz gates`, `gz state`) to verify a handoff's claims against Layer-2 (§ Claim Verification Gate)
+- **Does NOT write:** Ledger files, ADR status, OBPI brief status
 
 ---
 
@@ -196,11 +197,20 @@ The RESUME workflow discovers, loads, validates, and reports on existing handoff
    - Check branch mismatch (handoff branch vs. current branch)
    - Re-validate referenced file paths in Evidence section
 
-7. **Extract first next step** from the "Immediate Next Steps" section using `extract_first_next_step(content)` — returns the text of the first numbered or bulleted item for quick resumption.
+7. **Verify the handoff's claims against Layer-2 (Claim Verification Gate).** Walk
+   the Current State Summary, Decisions Made, and Immediate Next Steps; for every
+   completion / lock / gate / readiness claim, run the matching Layer-2 check from
+   the § Claim Verification Gate table and tag the claim **VERIFIED**, **STALE**,
+   or **UNVERIFIABLE**. Verify the **precondition of each advised step** too — a
+   step whose precondition is STALE is void. Never relay a handoff claim as fact
+   without this check.
 
-8. **Report** the result, then **stop and await operator authorization** (do not begin executing):
+8. **Extract first next step** from the "Immediate Next Steps" section using `extract_first_next_step(content)` — returns the text of the first numbered or bulleted item for quick resumption.
+
+9. **Report** the result, then **stop and await operator authorization** (do not begin executing):
    - File path of the resumed handoff
    - Staleness classification and re-verification depth applied
+   - **Each presented claim tagged VERIFIED / STALE / UNVERIFIABLE** with its Layer-2 receipt; STALE claims and the advised steps they void called out explicitly
    - First next step, presented **for operator review and authorization** (not for immediate action)
    - Validation errors and context warnings
    - Chain of predecessor handoffs
@@ -219,6 +229,40 @@ flag is additionally set to `True`, signaling that the agent must deeply
 re-verify the handoff's assumptions (branch, evidence paths, world-state drift)
 *before* presenting — but a **Fresh** handoff still does not authorize execution.
 Freshness shortens the verification; it never converts an advisory into a license.
+
+### Claim Verification Gate (universal)
+
+**A handoff is Layer-1 narrative authorship. Every assertion it makes about
+completion, lock state, gate status, or "now unblocked / now satisfiable" is
+UNVERIFIED until checked against Layer-2 truth (the ledger and `gz` state).**
+This is AGENTS.md § Behavior Rules — Never #7 applied to resume: *do not read a
+status claim as proof of the status — read the ledger.* The Operator
+Authorization Gate governs whether you may **execute**; this gate governs whether
+you may **believe or relay** what the handoff says. Both fire at every freshness
+level, Fresh included.
+
+Before you present any handoff claim to the operator, and before you suggest any
+advised step, verify the claim — and verify the **precondition of each advised
+step**, because an advised step is only actionable while its precondition still
+holds:
+
+| Handoff claim shape | Layer-2 check | Source of truth |
+|---------------------|---------------|-----------------|
+| "OBPI complete" / "attested-complete" | `uv run gz obpi status <OBPI-ID>` → `Runtime State` / `Completion` | ledger |
+| "lock still held" / advises "release the lock" | `uv run gz obpi lock list` | lock registry |
+| "Gate N passed" / "gates green" | `uv run gz gates --adr <ID>` / `uv run gz status` | ledger |
+| any artifact-state / readiness claim | `uv run gz state` | artifact graph |
+| "tests were green" / coverage claim | re-run the canonical step (see Verification Checklist) | observed output |
+
+**Tag every claim you present** as **VERIFIED**, **STALE**, or **UNVERIFIABLE**.
+A STALE claim voids any advised step that depends on it: surface the variance and
+stop — do not relay the step as actionable. Worked example (2026-06-14): a handoff
+asserted *"OBPI lock still held (release is step 1)"*; `gz obpi lock list`
+returned **no active locks** — the lock had already been released in a later
+session. Relaying "release the lock" as the next action would have acted on a
+claim that was false at read-time. The completion claim in the same handoff
+verified TRUE (`gz obpi status` → `ATTESTED COMPLETED`); claims are verified
+**individually**, never trusted as a block.
 
 ### Programmatic API (DESIGN TARGET — NOT YET IMPLEMENTED)
 
@@ -288,6 +332,9 @@ These thoughts mean STOP — you are about to lose context across the session bo
 
 | Thought | Reality |
 |---------|---------|
+| "The handoff says the OBPI is complete, so it's done" | The handoff is Layer-1 narrative; completion is a Layer-2 fact. Run `gz obpi status <OBPI-ID>` and read `Completion` before you say "done." AGENTS.md § Never #7. |
+| "The handoff says the lock is held — I'll release it (step 1)" | The lock-held claim is unverified until `gz obpi lock list` confirms it. If the lock was already released in a later session, "release the lock" is a void step acting on a stale precondition. Check before relaying. |
+| "I'll just relay the handoff's next steps to the operator as the plan" | Relaying a claim is asserting it. An advised step whose precondition is STALE is not a plan, it's misinformation. Tag each claim VERIFIED / STALE / UNVERIFIABLE first. |
 | "The handoff is Fresh, so I can just start on its next steps" | Freshness shortens re-verification; it never authorizes execution. The Operator Authorization Gate is universal. Present the advised steps, then wait for the operator to rule. |
 | "The handoff is slightly stale but I remember the work" | Stale handoffs trigger the human verification gate for a reason. Memory is not a substitute for explicit verification. Present to the human and wait. |
 | "Branch mismatch is fine, I know what I'm doing" | The branch field exists because branch state is part of session context. Mismatch means the world changed under the handoff. Verify with the human. |
@@ -300,6 +347,8 @@ These thoughts mean STOP — you are about to lose context across the session bo
 ## Red Flags
 
 - Writing a handoff with HTML-comment placeholders still present in any section
+- Relaying a handoff's completion / lock / gate claim as fact without a Layer-2 check (`gz obpi status`, `gz obpi lock list`, `gz gates`, `gz state`)
+- Suggesting an advised step whose precondition you have not re-verified at read-time (the lock-already-released trap)
 - Executing a handoff's next steps without explicit operator authorization — at any freshness level (the Operator Authorization Gate is universal)
 - Resuming a Stale or Very Stale handoff without presenting it to the human first
 - Resuming with a branch mismatch and "I'll fix it as I go"
