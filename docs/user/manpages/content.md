@@ -124,6 +124,32 @@ section resolves to no template-defined section of that surface — an
 unaddressable entry is never stored. `--tier invariant` marks entries emitted
 verbatim at every compression setpoint; `--tier` defaults to `compressible`.
 
+### compose
+
+Validate and stage a **candidate rendition** from the corpus. This is the
+**compress** stage of the ADR-0.0.37 CMS pipeline
+(`corpus → compress → rendition → playback`): the agent wielding the
+`gz-content-compose` skill supplies the candidate text; the tool validates
+invariant-tier verbatim preservation, computes per-tier byte evidence, writes
+the candidate to `.gzkit/renditions/<surface>/<consumer>.candidate.md`, and
+emits a `composition_candidate_emitted` ledger event.
+
+**`compose` is deterministic** — NO LLM call, NO network I/O. The
+drop/combine/rewrite compression judgment is the agent's.
+**`compose` NEVER writes a rendered surface** (`AGENTS.md`, `CLAUDE.md`,
+or any mirror) — only the candidate artifact and ledger change.
+
+```bash
+gz content compose <surface> --consumer <vendor> --candidate <file>
+gz content compose AGENTS.md --consumer codex --candidate /tmp/candidate.md
+cat /tmp/candidate.md | gz content compose AGENTS.md --consumer codex
+```
+
+The command **fails closed** (non-zero exit, no candidate written) when:
+- the corpus store for `<surface>` does not exist,
+- the `(surface, consumer)` setpoint is undeclared in `data/vendor-manifest.json`, or
+- the candidate drops or rewrites any `tier: invariant` corpus entry (0-Kelvin floor).
+
 ## Options
 
 | Flag | Applies To | Description |

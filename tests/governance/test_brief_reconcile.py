@@ -199,6 +199,32 @@ class TestReqCountDimension(unittest.TestCase):
         result = reconcile_brief(FIXTURES / "passing.md", PROJECT_ROOT)
         self.assertEqual(result.req_count_delta.delta, 0)
 
+    @covers("REQ-0.0.37-05-04")
+    def test_delta_zero_on_kind_tag_format(self):
+        # REQUIREMENT [BEHAVIOR]: / REQUIREMENT [SUPPORT]: format (ADR-0.0.59
+        # kind-discipline) must be counted the same as REQUIREMENT:
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = Path(tmp) / "brief.md"
+            brief.write_text(
+                textwrap.dedent("""\
+                    ---
+                    id: OBPI-0.0.99-05-kind-tag
+                    parent: ADR-0.0.37-constitutional-invariant-composition
+                    status: Draft
+                    ---
+                    # Test Brief: Kind Tag REQ Format
+                    ## Requirements (FAIL-CLOSED)
+                    1. REQUIREMENT [BEHAVIOR]: behavior requirement
+                    1. REQUIREMENT [SUPPORT]: support requirement
+                    ## Acceptance Criteria
+                    - [ ] REQ-0.0.99-05-01: criterion one
+                    - [ ] REQ-0.0.99-05-02: criterion two
+                    """),
+                encoding="utf-8",
+            )
+            result = reconcile_brief(brief, PROJECT_ROOT)
+            self.assertEqual(result.req_count_delta.delta, 0)
+
 
 class TestCitationDimension(unittest.TestCase):
     @covers("REQ-0.0.37-05-05")

@@ -562,6 +562,37 @@ def composition_drift_detected_event(
     )
 
 
+def composition_candidate_emitted_event(
+    surface: str,
+    consumer: str,
+    setpoint: str,
+    invariant_bytes: int,
+    compressible_bytes_before: int,
+    compressible_bytes_after: int,
+    total_bytes: int,
+) -> LedgerEvent:
+    """Create a composition_candidate_emitted event (ADR-0.0.37, OBPI-0.0.37-21).
+
+    Layer-2 witness that ``gz content compose`` validated and staged a candidate
+    rendition. Carries per-tier byte evidence for the compose audit trail.
+    """
+    timestamp = datetime.now(UTC).isoformat()
+    return LedgerEvent(
+        event="composition_candidate_emitted",
+        id=f"composition-candidate-emitted-{timestamp}",
+        ts=timestamp,
+        extra={
+            "surface": surface,
+            "consumer": consumer,
+            "setpoint": setpoint,
+            "invariant_bytes": invariant_bytes,
+            "compressible_bytes_before": compressible_bytes_before,
+            "compressible_bytes_after": compressible_bytes_after,
+            "total_bytes": total_bytes,
+        },
+    )
+
+
 def corpus_entry_appended_event(
     surface: str,
     section: str,

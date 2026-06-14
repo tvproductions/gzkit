@@ -449,6 +449,24 @@ class CorpusEntryAppendedEvent(_EventBase):
     tier: str
 
 
+class CompositionCandidateEmittedEvent(_EventBase):
+    """composition_candidate_emitted event — authoring-time candidate (OBPI-0.0.37-21).
+
+    Layer-2 witness that ``gz content compose`` validated and staged a candidate
+    rendition artifact. Carries per-tier byte evidence for the compose audit trail.
+    """
+
+    event: Literal["composition_candidate_emitted"]
+    surface: str
+    consumer: str
+    setpoint: str
+    invariant_bytes: int
+    compressible_bytes_before: int
+    compressible_bytes_after: int
+    total_bytes: int
+    task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
+
+
 class BriefReconciledEvent(_EventBase):
     """brief_reconciled event — OBPI brief reconciliation run (ADR-0.0.37, OBPI-06).
 
@@ -533,6 +551,7 @@ TypedLedgerEvent = Annotated[
     | CompositionDriftDetectedEvent
     | ChoreDecommissionProcessedEvent
     | CorpusEntryAppendedEvent
+    | CompositionCandidateEmittedEvent
     | BriefReconciledEvent
     | BriefReconcileDriftDetectedEvent
     | BriefReconcileDriftOverriddenEvent,

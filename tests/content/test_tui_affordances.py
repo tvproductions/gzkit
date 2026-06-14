@@ -260,7 +260,7 @@ class TestCommandSurfaceUnchanged(unittest.TestCase):
         (corpus capture write path); the fence is updated to admit it, not relaxed.
         """
         # Expected subcommands for `gz content` (remember added by OBPI-0.0.37-19)
-        expected_subcommands = {"import", "list", "show", "render", "edit", "remember"}
+        expected_subcommands = {"import", "list", "show", "render", "edit", "remember", "compose"}
 
         # Run `gz content --help` via uv run (gzkit has no __main__.py)
         result = subprocess.run(

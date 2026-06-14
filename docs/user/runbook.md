@@ -986,6 +986,29 @@ ledger event; `remember` fails closed if the surface is unknown or `--section` r
 no template-defined section. See the `gz-content-remember` skill and
 [`gz content`](manpages/content.md) § remember.
 
+**To compose a candidate rendition (compress stage — OBPI-0.0.37-21):**
+After the corpus is seeded, the agent wielding the `gz-content-compose` skill reads the
+corpus, decides which compressible entries to drop/combine/rewrite toward the declared
+setpoint, then provides the candidate text to the tool for validation:
+
+```bash
+# Write candidate text to a temp file, then compose (AGENTS.md stays byte-unchanged)
+cat /tmp/candidate.md | uv run gz content compose AGENTS.md --consumer codex
+
+# Or pass candidate via --candidate flag
+uv run gz content compose AGENTS.md --consumer codex --candidate /tmp/candidate.md
+```
+
+The compose tool validates invariant-tier verbatim presence (0-Kelvin floor), computes
+per-tier byte evidence, writes the candidate to
+`.gzkit/renditions/AGENTS.md/codex.candidate.md`, and emits a
+`composition_candidate_emitted` ledger event. The tool fails closed if the corpus is
+absent, the `(surface, consumer)` setpoint is undeclared, or the candidate drops an
+invariant-tier entry. The candidate then flows to the advisor-QC loop (OBPI-24) and
+operator attestation (OBPI-22) before promotion to a committed rendition.
+
+See the `gz-content-compose` skill and [`gz content`](manpages/content.md) § compose.
+
 ---
 
 ## Rules Surface

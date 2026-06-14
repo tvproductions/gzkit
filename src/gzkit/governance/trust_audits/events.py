@@ -115,6 +115,11 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "Layer-2 witness for a `gz content remember` append to the per-surface corpus store; "
         "consumed by corpus/compose tooling for provenance audit, not the artifact graph."
     ),
+    "composition_candidate_emitted": (
+        "Authoring-time compression candidate record (ADR-0.0.37, OBPI-0.0.37-21). "
+        "Layer-2 witness that `gz content compose` validated and staged a candidate rendition; "
+        "consumed by compose/advisor tooling for audit, not the artifact graph."
+    ),
 }
 
 _VALIDATOR_FIELD_WAIVERS: dict[str, str] = {}

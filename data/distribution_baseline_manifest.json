@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "gzkit_version": "0.28.0",
+  "gzkit_version": "0.28.1",
   "surfaces": {
     "personas": [
       "implementer.md",
@@ -63,6 +63,7 @@
       "gz-complexity-distill/SKILL.md",
       "gz-complexity-guide/SKILL.md",
       "gz-constitute/SKILL.md",
+      "gz-content-compose/SKILL.md",
       "gz-content-remember/SKILL.md",
       "gz-context/SKILL.md",
       "gz-context-diet/SKILL.md",

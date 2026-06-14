@@ -107,7 +107,7 @@ class ReconcileResult(BaseModel):
 
 _GZ_VERB_RE = re.compile(r"gz\s+([a-z][a-z0-9-]*)")
 _BACKTICK_PATH_RE = re.compile(r"`([^`]+)`")
-_REQ_LINE_RE = re.compile(r"REQUIREMENT:")
+_REQ_LINE_RE = re.compile(r"REQUIREMENT\s*(?:\[\w+\])?\s*:")
 _REQ_ID_RE = re.compile(r"REQ-\d+\.\d+\.\d+-\d+-\d+")
 _CHECKBOX_RE = re.compile(r"^\s*-\s*\[ \]")
 _ALLOWED_HEADING_RE = re.compile(r"^##\s+ALLOWED\s+PATHS\s*$", re.IGNORECASE)

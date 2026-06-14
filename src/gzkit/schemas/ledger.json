@@ -962,6 +962,43 @@
         }
       }
     },
+    "composition_candidate_emitted": {
+      "required": [
+        "surface",
+        "consumer",
+        "setpoint",
+        "invariant_bytes",
+        "compressible_bytes_before",
+        "compressible_bytes_after",
+        "total_bytes"
+      ],
+      "properties": {
+        "surface": {
+          "type": "string",
+          "min_length": 1
+        },
+        "consumer": {
+          "type": "string",
+          "min_length": 1
+        },
+        "setpoint": {
+          "type": "string",
+          "min_length": 1
+        },
+        "invariant_bytes": {
+          "type": "integer"
+        },
+        "compressible_bytes_before": {
+          "type": "integer"
+        },
+        "compressible_bytes_after": {
+          "type": "integer"
+        },
+        "total_bytes": {
+          "type": "integer"
+        }
+      }
+    },
     "corpus_entry_appended": {
       "required": [
         "surface",

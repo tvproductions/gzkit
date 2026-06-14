@@ -51,6 +51,7 @@ def register_content_parsers(commands: argparse._SubParsersAction) -> None:
     _register_render(content_commands)
     _register_edit(content_commands)
     _register_remember(content_commands)
+    _register_compose(content_commands)
 
 
 def _register_import(content_commands: argparse._SubParsersAction) -> None:
@@ -307,5 +308,45 @@ def _register_remember(content_commands: argparse._SubParsersAction) -> None:
             tier=a.tier,
             classification=a.classification,
             origin=a.origin,
+        )
+    )
+
+
+def _register_compose(content_commands: argparse._SubParsersAction) -> None:
+    p = content_commands.add_parser(
+        "compose",
+        help="Validate and stage a candidate rendition from the corpus",
+        description=(
+            "Accept an agent-supplied candidate rendition, validate invariant-tier "
+            "verbatim preservation, compute per-tier byte evidence, write the candidate "
+            "to .gzkit/renditions/<surface>/<consumer>.candidate.md, and emit a "
+            "composition_candidate_emitted ledger event. "
+            "The tool is deterministic: NO LLM call, NO network I/O. "
+            "The compression judgment (drop/combine/rewrite) is the agent's. "
+            "NEVER writes a rendered surface (AGENTS.md, CLAUDE.md, mirrors)."
+        ),
+        epilog=_build_epilog(
+            [
+                "gz content compose AGENTS.md --consumer codex --candidate /tmp/candidate.md",
+                "gz content compose AGENTS.md --consumer claude --candidate /tmp/candidate.md",
+            ]
+        ),
+    )
+    p.add_argument("surface", help="Control surface to compose for (e.g. AGENTS.md).")
+    p.add_argument(
+        "--consumer",
+        required=True,
+        help="Target vendor consumer (e.g. codex, claude).",
+    )
+    p.add_argument(
+        "--candidate",
+        default=None,
+        help="Path to the candidate rendition file (reads from stdin when omitted).",
+    )
+    p.set_defaults(
+        func=lambda a: _content("compose", "content_compose_cmd")(
+            surface=a.surface,
+            consumer=a.consumer,
+            candidate=a.candidate,
         )
     )

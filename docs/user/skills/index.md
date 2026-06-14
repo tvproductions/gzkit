@@ -95,6 +95,7 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/gz-complexity-guide`](gz-complexity-guide.md) | Preview authoring-time complexity hints before committing |
 | [`/gz-complexity-distill`](gz-complexity-distill.md) | Run a complexity distillation pass against the exemplar corpus to refresh distilled-characteristics doctrine |
 | [`/gz-content-remember`](gz-content-remember.md) | Capture an addressed entry into a surface's append-only corpus via `gz content remember`, never editing a rendered surface |
+| [`/gz-content-compose`](gz-content-compose.md) | Validate and stage a candidate rendition via `gz content compose` — validates invariant-floor compliance, computes byte evidence, writes candidate artifact |
 | [`/gz-context-diet`](gz-context-diet.md) | Trim per-turn agent context weight by lifting narrative to docs/governance/ |
 | [`/gz-deps-upgrade`](gz-deps-upgrade.md) | Refresh global uv tools, Python 3.13.x runtime, pyproject.toml pins/floors, and uv.lock to current PyPI latest |
 | [`/gz-pythonic-pattern-detect`](gz-pythonic-pattern-detect.md) | Surface Pythonic-design-pattern refactor candidates after ADR closeout (AST scanner over `src/`) |

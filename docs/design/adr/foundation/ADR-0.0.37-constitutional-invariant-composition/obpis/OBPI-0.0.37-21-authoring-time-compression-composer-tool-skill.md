@@ -3,7 +3,7 @@ id: OBPI-0.0.37-21-authoring-time-compression-composer-tool-skill
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 21
 lane: Heavy
-status: Draft
+status: Completed
 # req_atomic: each REQ is a single indivisible labor unit — one behavior/support
 # surface apiece (emit, determinism, invariant-verbatim, fail-closed, no-rendered-
 # write, ledger event, skill, docs); none decomposes into parallel seq=02+ sub-tasks
@@ -27,7 +27,7 @@ req_atomic:
 <!-- gz-validate-skip: command-shape -->
 - **Checklist Item:** #21 - "OBPI-0.0.37-21 — Authoring-time compression composer tool + skill (LLM compresses compressible-tier corpus toward the setpoint — drop/combine/rewrite; emits candidate rendition + per-tier byte evidence; wielded by a compose skill; NO LLM in the render path)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -293,13 +293,23 @@ uv run gz ledger tail --event composition_candidate_emitted
 
 ### Key Proof
 
+
+uv run gz content compose AGENTS.md --consumer codex --candidate /tmp/candidate.md
+# Candidate: .gzkit/renditions/AGENTS.md/codex.candidate.md
+# Byte evidence: invariant=28B compressible=43B->12B total=40B setpoint=lite
+
+All quality gates green. Receipts: arb-ruff-82e7f018e982449b81abf3e75663eee9, arb-step-typecheck-ad004027fe0a4591bcc80e0fd16cc6c7, arb-step-unittest-9811d24e6ddf41d9a2655d3acd9816e4, arb-step-mkdocs-0aa58dd44e1c443b855ed06042338827. gz check all-green; gz covers behavior_uncovered_reqs=0.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Created: src/gzkit/content/rendition.py (ByteEvidence + CandidateRendition + candidate_path), src/gzkit/content/composer.py (deterministic compose engine, no LLM/network), src/gzkit/commands/content/compose.py (CLI handler), .gzkit/skills/gz-content-compose/SKILL.md, tests/commands/test_content_compose.py, tests/content/test_composer.py, docs/user/skills/gz-content-compose.md, features/content_compose.feature, features/steps/content_compose_steps.py
+- Modified: commands/content/__init__.py (_register_compose), events.py + ledger_events.py + schemas/ledger.json (composition_candidate_emitted), trust_audits/events.py (NO_GRAPH_IMPACT waiver), tests/test_schemas.py, tests/content/test_tui_affordances.py, config/doc-coverage.json, docs/user/manpages/content.md, docs/user/runbook.md, docs/user/skills/index.md, .gzkit/skills/gz-context/SKILL.md (0.3.1), data/distribution_baseline_manifest.json, data/behave_coverage_waivers.json
+- In-flight blocker fix: src/gzkit/governance/brief_reconcile.py _REQ_LINE_RE now matches REQUIREMENT [KIND]: format (Stage-1 handoff blocker) + covering test
+- Tests added: 10 BEHAVIOR (5 command + 5 engine) + 1 reconcile-regex test + 6 BDD scenarios
+- Date completed: 2026-06-14
+- Attestation status: Operator attested "attest completed" at Stage 4
+- Defects noted: None remaining
 
 ## Tracked Defects
 
@@ -313,12 +323,12 @@ _No further defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — gz content compose delivers the deterministic compress stage of the ADR-0.0.37 CMS pipeline; all 5 BEHAVIOR REQs behave-tagged + unit-covered (behavior_uncovered_reqs=0), 3 SUPPORT REQs proven by ledger/surface/document validators; gz check all-green; receipts arb-step-unittest-9811d24e6ddf41d9a2655d3acd9816e4, arb-ruff-82e7f018e982449b81abf3e75663eee9, arb-step-typecheck-ad004027fe0a4591bcc80e0fd16cc6c7, arb-step-mkdocs-0aa58dd44e1c443b855ed06042338827
+- Date: 2026-06-14
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-14
 
 **Evidence Hash:** -
