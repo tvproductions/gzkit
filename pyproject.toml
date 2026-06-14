@@ -25,7 +25,7 @@ dependencies = [
     "pydantic>=2.13.3",
     "pyyaml>=6.0.3",
     "rich>=15.0",
-    "structlog>=25.5",
+    "structlog>=26.1",
     # Stdlib-First named departures (ADR-0.0.27 § Decision; AGENTS.md
     # § STDLIB-FIRST DOCTRINE § "Existing dependencies inherit this rule").
     # Stdlib does not expose cyclomatic complexity, nesting depth, or LCOM4;
@@ -119,8 +119,8 @@ dev = [
     "pygount>=3.2.0",
     "pyinstaller>=6.20.0",
     "radon>=6.0.1",
-    "ruff>=0.15.12",
-    "ty>=0.0.34",
+    "ruff>=0.15.17",
+    "ty>=0.0.49",
     "vulture>=2.16",
     "wily>=1.12.2",
     "xenon>=0.9.3",
