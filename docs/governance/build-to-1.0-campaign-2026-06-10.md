@@ -225,6 +225,39 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > *validated* superseding handoff replaces the off-script 223440Z handoff this
 > session so the next refresh orients to restore-green → B.1, not OBPI-0.0.72-03.
 
+> **Amendment (operator verbatim, 2026-06-15) — Phase 0 reframed to Pydantic
+> schema-enforcement of the data objects; frontmatter stays rendered + hands-off;
+> B.1-terminal → 0 sequencing.** Operator: *"we are attending to schema validation
+> through Pydantic within the Magna Carta, this is to create term uniformity with
+> fillable artifacts like specs, ledgers, and receipts — the model has been vibing
+> this entire time it seems."* And: *"Phase 0 the home that needs its prose
+> reconciled to this Pydantic-enforcement framing … we need to fill it out more."*
+> → The "vocabulary config-first exorcism" prose was a parallel narrative that
+> drifted off the engineering #615 actually names: the governance artifacts are
+> **regex-scraped, not schema-enforced**, so their terms drift. The cure is to make
+> the **Pydantic models the enforced gate on the fillable data objects** — the OBPI
+> **sidecar**, ledger events, receipts — so term uniformity is structural.
+> **Frontmatter is NOT the fillable surface:** per the standing 2026-06-13 barcode
+> ruling it is *rendered* (merge of sidecar authorship + live ledger status) and
+> **hands-off** — a model touching it ad hoc is a FOUL. Operator (2026-06-15): *"If
+> frontmatter is rendered, and the agent is told, 'hands off,' then we are likely
+> to be better off in the long run."* The enforcement skeleton already exists
+> (observed 2026-06-15): `LedgerEvent` enforced; `BriefStructure` enforces only
+> **3 of 600** briefs (`parse_brief` defaults `strict=False`, 597 fall to
+> unvalidated `LegacyBriefShape` — the "597/600" in #615's title); receipts mostly
+> modeled. **Scope (operator ratified 2026-06-15):** Phase 0 = the
+> **CMS-independent enforcement core** — sidecar / ledger / receipt validation +
+> ingesting the 597 briefs' authorship into validated sidecars. The **frontmatter
+> render** (barcode projection + its `--frontmatter-projection` gate +
+> PRD/Constitution lifecycle state machines) is left to the existing
+> **CMS → Firewall → barcode** chain, NOT Phase 0. **Sequencing (operator
+> "do it"):** not parallel (two fronts breed the seams "completion before
+> reduction" forbids) and not an immediate front-swap (B.1 CMS is 18/19, one
+> increment from terminal). **Land B.1 to terminal, then the Phase 0 enforcement
+> core is the immediate next propelled item** — it is genuinely CMS-independent.
+> Q6 (brief enforcement) is resolved below as both-sequenced (A body-parser ingest
+> → B validated-sidecar source).
+
 ## Authority and amendment (Magna Carta discipline)
 
 - **It steers; the spine propels.** The governance spine
@@ -355,41 +388,119 @@ gzkit is 1.0 when ALL hold:
 > Until MOTD ships (Phase C), **this file's checklist is the workplan** —
 > sessions work top-down, check items off with observed command evidence.
 
-### Phase 0 — EMERGENCY: The Vocabulary Config-First Exorcism (GHI #615)
+### Phase 0 — EMERGENCY: Schema-enforce the fillable artifacts (GHI #615)
 
-> **Badge of shame and despair (operator verbatim, 2026-06-13):** "this goes
-> right at the GODDAMNED TOP of the campaign … one GHI only — a badge of shame
-> and despair." gzkit has **no central config** for its governance vocabularies
-> (`status`, `lane`). The values were copied into ~9 Pydantic models, 2
-> mutually-contradictory JSON schemas, 600 brief frontmatters, the ADR corpus,
-> authoring tools, skills, validators, and docs — each copy free to drift.
-> Nobody plays the same song, in the same key, in the same room. This is
-> **V.I.B.E.S. at the canon layer** — the governance surface became the slop it
-> exists to prevent. The cure is the Config-First doctrine airlineops already
-> proves (their GHI-75): one source of truth, everything derives, AST + drift
-> policy tests across every surface.
->
-> **This phase blocks every other phase. Rome burns until it is fixed.** One
+> **Reframed (operator verbatim, 2026-06-15):** *"we are attending to schema
+> validation through Pydantic … to create term uniformity with fillable
+> artifacts like specs, ledgers, and receipts — the model has been vibing this
+> entire time it seems."* The prior "Vocabulary Config-First Exorcism" prose was
+> a parallel narrative that drifted off the engineering. The defect #615 names is
+> exact and measured: the governance **data objects** are **regex-scraped, not
+> schema-enforced**, so their terms drift freely — V.I.B.E.S. at the canon layer,
+> the governance surface become the slop it exists to prevent. The cure is to
+> make the **Pydantic models the enforced gate on each fillable data object** —
+> the OBPI sidecar, ledger events, receipts — so uniform terms are structural.
+> **Frontmatter is rendered, not filled** (2026-06-13 barcode ruling): it is the
+> merge of sidecar authorship + live ledger status, and is **hands-off** to the
+> agent. Operator (2026-06-15): *"If frontmatter is rendered, and the agent is
+> told, 'hands off,' then we are likely to be better off in the long run."* One
 > GHI carries it — **#615** — the sole badge; no others are filed.
 
-- [ ] 0.1 Ratify the canonical vocabularies — operator gate (§ Open Decisions
-      in the rites). Nothing downstream executes until the vocabularies are set.
-- [ ] 0.2 Perform the exorcism per the prepared rites:
-      [`docs/governance/vocabulary-config-first-exorcism-GHI-615.md`](vocabulary-config-first-exorcism-GHI-615.md)
-      — single source of truth (`governance/vocabulary.py` + config + loader +
-      frozen fallback) → bind every model / schema / corpus / authoring tool /
-      skill / validator / auditor / doc → Config-First AST policy test +
-      schema↔source + corpus-conformance drift-guards, mirroring airlineops
-      GHI-75. Acceptance: § 8 of the rites; `uv run gz check` green end-to-end.
+> **The skeleton already exists — we fill it out** (observed 2026-06-15):
+> - **Ledger — enforced.** `LedgerEvent.model_validate()` gates every event
+>   (`src/gzkit/ledger.py:279`). The done side.
+> - **Specs (OBPI briefs) — 3 of 600 enforced.** `BriefStructure` is real
+>   (`src/gzkit/governance/brief_structure.py:33`; Pydantic `extra="forbid"`,
+>   Literal `lane`/`status`), but `parse_brief()` defaults `strict=False`, so
+>   **597 briefs fall to the unvalidated `LegacyBriefShape`** — the literal
+>   "597/600" in #615's title. The cure moves authorship into a validated
+>   **sidecar** (frontmatter then renders from it, in the barcode chain). The
+>   marquee gap.
+> - **Receipts — mostly modeled** (`ObpiReceiptEvidence`,
+>   `AttestationReceiptEntry`, `AuditReceiptEmittedEvent`, …); audit the
+>   unmodeled remainder.
+>
+> Mechanical 10-phase detail lives in the rites
+> [`vocabulary-config-first-exorcism-GHI-615.md`](vocabulary-config-first-exorcism-GHI-615.md);
+> this checklist is the steering layer over it.
 
-> **Note (amendment 2026-06-14).** 0.1 partially satisfied: **Q1 ratified**
-> (TitleCase frontmatter / snake_case ledger). The cure is reframed as
-> **frontmatter-as-projection** (barcode + sidecar + lifecycle state machines for
-> all four artifacts) and **resequenced behind the CMS → Firewall chain** (see
-> the 2026-06-14 amendment above and the rites amendment). Q2–Q6 demote to
-> render-target settings. The single-source-of-truth `governance/vocabulary.py`
-> in 0.2 remains the substrate; it now feeds the render path, not strict
-> frontmatter parsing.
+> **Sequencing & scope (operator ratified 2026-06-15; supersedes the 2026-06-14
+> note).** Phase 0 is the **CMS-independent enforcement core** — Pydantic
+> validation of the sidecar / ledger / receipt data objects + ingesting the 597
+> briefs' authorship into validated sidecars. The **frontmatter render** (barcode
+> projection + `--frontmatter-projection` gate + PRD/Constitution lifecycle state
+> machines) stays in the **CMS → Firewall → barcode** chain, NOT here. So this
+> phase is **not** parallel to B.1 (two fronts breed the seams "completion before
+> reduction" forbids) and **not** an immediate front-swap (B.1 CMS is 18/19, one
+> increment from terminal). **Land B.1 to terminal, then the Phase 0 enforcement
+> core is the immediate next propelled item** — it is genuinely CMS-independent.
+> Q1 of the rites Open Decisions is already ratified (TitleCase frontmatter /
+> snake_case ledger).
+
+- [x] 0.1 Ratify Open Decisions (rites §6) — **complete 2026-06-15.** Q1
+      (TitleCase frontmatter / snake_case ledger) prior; Q2–Q6 ratified this
+      session:
+  - **Q2 OBPI frontmatter status:** `{Draft, Active, Completed, Abandoned, Drift}`
+    (5-term; `attested_completed`/`validated` stay Layer-2 ledger truth, never
+    frontmatter — state-doctrine + § Never #7).
+  - **Q3 ADR status:** airlineops' 8 verbatim `{Pool, Draft, Proposed, Accepted,
+    Completed, Validated, Superseded, Abandoned}`; `Pending`→`Proposed`,
+    `Deprecated`→`Abandoned` remapped during the sidecar ingest.
+  - **Q4 lane casing:** TitleCase `{Lite, Heavy}` in the sidecar + rendered
+    frontmatter (ADR + OBPI); ledger/internal stays lowercase.
+  - **Q5 PRD vs Constitution status:** kept distinct — PRD `Approved`,
+    Constitution `Ratified` (different artifacts; unification deferred to Phase I).
+  - **Q6 brief enforcement:** both-sequenced (see 0.5 + note below).
+- [ ] 0.2 Source + Config-First AST guard (rites P1) — `governance/vocabulary.py`
+      per-artifact frozensets + loader + frozen fallback + AST policy test. The
+      frozensets **feed the models' Literals**; substrate, not a parallel surface.
+- [ ] 0.3 Bind the models (rites P2) — `core/models.py` + `brief_structure.py`
+      validators derive from the source; extend `tests/test_schemas.py` to assert
+      against it, not copies.
+- [ ] 0.4 Bind the schemas (rites P3) — generate JSON `enum`s from the source +
+      schema↔source drift-guard. Kills the `obpi.json` /
+      `obpi_brief_structure.json` lane-casing contradiction.
+- [ ] 0.5 Enforce the specs (rites P4+P8) — **both-sequenced; enforcement core
+      only**: bring every brief's authorship under a validated **sidecar**,
+      A-ingest then B-source, never big-bang. Frontmatter render is the barcode
+      chain's job, not this.
+  - [ ] 0.5a **A — body-parser ingest (bridge).** A robust parser reads each
+        legacy brief's hand-authored frontmatter ONCE → populates the validated
+        `<artifact>.gz.json` sidecar (ledger wins on conflict; dry-run + per-file
+        report). One-time migration, idempotent.
+  - [ ] 0.5b **B — validated sidecar (source).** The sidecar is the fillable,
+        Pydantic-validated authorship surface; the brief validates via the sidecar
+        model — no `LegacyBriefShape` escape in the gate path. Going forward
+        authoring tools write the **sidecar**, never frontmatter.
+  - [ ] 0.5c **Precedence (sub-requirement, fail-closed).** Sidecar + ledger are
+        authoritative. Frontmatter is **render-only and hands-off** — a model
+        touching it ad hoc is a FOUL (2026-06-13 ruling). Phase 0 never reads
+        frontmatter as source.
+  - [ ] 0.5d **Boundary to the barcode chain.** The frontmatter **render** (merge
+        sidecar + live ledger status) and its `gz validate --frontmatter-projection`
+        re-render + byte-compare gate are the barcode / product-tree chain's
+        deliverable (CMS → Firewall → barcode), NOT Phase 0.
+- [ ] 0.6 Enforcement lattice (rites P5) — `gz validate --vocabulary`
+      corpus-conformance scope, fail-closed, wired into `gz check`.
+- [ ] 0.7 Authoring tools + parser-sprawl + skills/docs (rites P6,7,9) —
+      scaffolders emit canonical terms; the ~14 ADR-frontmatter hand-parsers route
+      through the models; inline-list lint.
+- [ ] 0.8 Close GHI #615 (rites P10) — citing landed commits + the enforcement
+      lattice; acceptance = rites §8.
+
+> **Resolved — brief-enforcement model (rites Q6; operator verbatim, 2026-06-15:
+> "why not both?").** Both, sequenced: **A (robust body-parser) ingests legacy
+> briefs → B (validated sidecar) becomes the source**, never simultaneous. The
+> parser is not throwaway — it is the one-time legacy-ingest bridge that moves
+> hand-authored frontmatter into the validated `<artifact>.gz.json` sidecar
+> (ledger wins on conflict); thereafter the **sidecar** is the fillable source and
+> frontmatter **renders** from it. Authorship lives in exactly one place (the
+> sidecar); frontmatter is render-only and **hands-off** — the FOUL guard of the
+> 2026-06-13 ruling, not a dual-source merge. The frontmatter render + its
+> `--frontmatter-projection` byte-compare gate are the **barcode chain's**
+> deliverable, not Phase 0. Whether the body-parser becomes vestigial after full
+> ingest is a Phase I reduction question ("let an implementation show that"), not a
+> now-decision.
 
 ### Phase A — In-flight closure
 

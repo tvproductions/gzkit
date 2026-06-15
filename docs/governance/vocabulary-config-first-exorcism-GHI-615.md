@@ -48,16 +48,29 @@
 > **§ 6 Open Decisions — resolution.** Q1 ratified: **TitleCase frontmatter /
 > snake_case ledger**, `status_vocab` mapping between layers, machine-consistency
 > enforced by the § 4.3 lattice plus a new frontmatter↔ledger totality guard.
-> Q2–Q4 demote to *render-target settings* (frontmatter is no longer a writable
-> surface that can drift) and are fixed in the barcode ADR. **§ 4 and § 5 Phase 8
-> invert:** the goal is no longer "parse frontmatter strictly as source" but
-> "stop reading frontmatter as source — render it."
+> **Q2–Q6 ratified 2026-06-15** (campaign Phase 0). The render-it framing stands:
+> frontmatter is a barcode projection (sidecar authorship + live ledger status),
+> hands-off. These sets are the Literals on the **sidecar / data-object** models
+> — the fillable, Pydantic-validated surface — and the values frontmatter renders:
+> - **Q2 OBPI status:** `{Draft, Active, Completed, Abandoned, Drift}` (5-term;
+>   `attested_completed`/`validated` stay Layer-2 ledger truth).
+> - **Q3 ADR status:** airlineops' 8 verbatim `{Pool, Draft, Proposed, Accepted,
+>   Completed, Validated, Superseded, Abandoned}`; `Pending`→`Proposed`,
+>   `Deprecated`→`Abandoned` remapped during the sidecar ingest.
+> - **Q4 lane casing:** TitleCase `{Lite, Heavy}` (ADR + OBPI); ledger lowercase.
+> - **Q5 PRD vs Constitution:** kept distinct (PRD `Approved`, Constitution
+>   `Ratified`).
+> - **Q6 brief enforcement:** both-sequenced — A robust body-parser ingests legacy
+>   briefs → B the validated `<artifact>.gz.json` sidecar is the source;
+>   frontmatter renders from it.
 >
-> **Dependencies (sequencing ruling "a").** This remediation now sits at the tail
-> of a chain — **CMS / progressive disclosure (ADR-0.0.37) → Firewall foundation
-> ADR → barcode + lifecycle doctrine.** Nothing here mutates until the CMS is
-> terminal and the firewall is booked. Tracked across GHI #615 (vocabulary
-> substrate) and GHI #607 (firewall).
+> **Dependencies (corrected 2026-06-15; refines sequencing ruling "a").** Split the
+> chain: the **enforcement core** — Pydantic validation of the sidecar / ledger /
+> receipt data objects + the 597 sidecar ingest — is **CMS-independent** and is the
+> campaign's Phase 0 (B.1 CMS terminal → Phase 0). The **frontmatter render**
+> (barcode projection, `--frontmatter-projection` gate, PRD/Constitution lifecycle
+> state machines) remains in the **CMS → Firewall → barcode** chain. Tracked across
+> GHI #615 (enforcement substrate) and GHI #607 (firewall).
 
 > **Amendment (operator-ratified, 2026-06-14) — Constitution/PRD definitions, stability-gradient ordering, charter-projection (iii).**
 >
@@ -287,9 +300,12 @@ asserts every mapping value lands in the canonical set).
   canonical terms; add authoring-output tests.
 - **Phase 7 — Parser-sprawl consolidation.** Route the ~14 ADR-frontmatter
   hand-parsers and the OBPI trust-audit regexes through the models.
-- **Phase 8 — Flip `parse_brief` to enforce** + migrate the 597 legacy briefs
-  to structured frontmatter (or adopt a robust single body-parser → validated
-  model; decide in Phase 0).
+- **Phase 8 — Ingest authorship to the sidecar (both-sequenced, Q6 resolved).**
+  A: a robust body-parser reads each legacy brief's hand-authored frontmatter
+  once → populates the validated `<artifact>.gz.json` sidecar (ledger wins on
+  conflict). B: the sidecar is the source; the brief validates via it, no
+  `LegacyBriefShape` escape. Frontmatter then **renders** from sidecar + ledger
+  (barcode chain), hands-off — never authored.
 - **Phase 9 — Skills + docs.** Canonical-vocabulary doc authored; skills/docs
   reference it; inline-list lint enabled.
 - **Phase 10 — Close GHI #615** citing the landed commits + the enforcement
@@ -316,10 +332,11 @@ These are the ONLY judgment calls; everything downstream is mechanical once set.
    ADR lowercase.*
 5. **PRD vs Constitution status** unification (`Approved` vs `Ratified`):
    keep distinct (different artifacts) or unify.
-6. **Brief enforcement model** (Phase 8): migrate 597 briefs to structured
-   frontmatter, OR make `parse_brief` build+validate the model from a single
-   robust body parser (no 597-file frontmatter migration). *Recommendation:
-   the robust-parser path — lower blast radius, same schema guarantee.*
+6. **Brief enforcement model** (Phase 8) — **RESOLVED 2026-06-15: both,
+   sequenced.** A robust body-parser ingests legacy briefs → B the validated
+   `<artifact>.gz.json` sidecar is the source; frontmatter renders from it
+   (barcode chain), hands-off. The parser is the one-time legacy-ingest bridge,
+   not throwaway.
 
 ## 7. Safety / rollback
 
