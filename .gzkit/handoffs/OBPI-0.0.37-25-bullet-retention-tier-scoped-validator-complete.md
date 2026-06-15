@@ -25,7 +25,7 @@ Invariant-tier content keeps the Era-1 verbatim contract; compressible-tier rete
 - Implemented tier resolution from `.gzkit/corpus/*.jsonl` with first-match-wins substring containment; unknown tier → invariant (conservative, preserves Era-1 contract).
 - Compressible witness = latest `rendition_advisor_verdict` event for the surface + receipt `exit_status==0`, with an `arb-step-judge-` prefix guard (added after both independent reviewers flagged the documented-but-unenforced prefix).
 - Corrected the ADR-0.0.33 § Amendment realizer mis-citation (OBPI-18→OBPI-25) and recorded the tier-scoped amendment row in ADR-0.0.33's Attestation Block — this OBPI's Gate 5 IS that amendment's attestation point.
-- Two brief staleness adjustments via the gate-friction loop: discovery-checklist placeholder paths (Stage 1); `trust_audits/__init__.py` declared as a READ-coupled re-export surface in the allowlist (Stage 5).
+- Two brief staleness adjustments via the gate-friction loop: discovery-checklist template-token paths corrected to concrete paths (Stage 1); `trust_audits/__init__.py` declared as a READ-coupled re-export surface in the allowlist (Stage 5).
 
 ## Immediate Next Steps
 
