@@ -258,6 +258,10 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > Q6 (brief enforcement) is resolved below as both-sequenced (A body-parser ingest
 > → B validated-sidecar source).
 
+> **Amendment (operator verbatim, 2026-06-15) — compliance-strength family; moratorium scope.** *"ratify as drafted"* →
+> **(1) Family.** "Max strength of agent compliance" is one family of mechanical-defenses surfaces sharing a single mechanism (snapshot → scorecard → promotion-aging, owned by `ADR-pool.contract-surface-mechanical-defenses`): contract-surface (`AGENTS.md`/`CLAUDE.md`), `ADR-pool.obpi-authoring-mechanical-floor` (`gz specify`), `ADR-pool.skill-behavioral-hardening` (skill prose), and the newly-booked `ADR-pool.skill-surface-mechanical-defenses` (skill structure). Pulled coherently in **Phase G**, reusing the shared mechanism — not four parallel ones. The skill-surface sibling lands **with cadence, not pulled forward**; green-first (#621) and the CMS marquee (B.1) keep their sequence.
+> **(2) Moratorium scope.** The direct-fix moratorium **stands** as default for ad-hoc medium/large fixes; carve-outs are trivial smallest-honest-fixes under a green floor and drainage-class GHIs (homed to E.5). Trivial stale-authoring drift surfaced under a red floor rides a homed artifact as an absorbed finding (precedent: F1/F2/F3 on `ADR-pool.skill-surface-mechanical-defenses`).
+
 ## Authority and amendment (Magna Carta discipline)
 
 - **It steers; the spine propels.** The governance spine
