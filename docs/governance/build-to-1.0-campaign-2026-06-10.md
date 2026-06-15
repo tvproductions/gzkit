@@ -170,6 +170,61 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > the vibe; "turtles"), so E.6's fix shape is a pending operator design
 > conversation, not a symptom patch.
 
+> **Amendment (operator verbatim, 2026-06-14) — pure-A reconciliation of the
+> off-campaign 0.0.65/0.0.72 "FULL SEND" session.** Operator: *"good with pure A,
+> let it rip, update Magna Carta"* — after reviewing a session-end handoff and
+> ruling *"65/72 is important ... let Magna Carta decide ... I caught the agent
+> hand-authoring handoffs and thought it to be INCREDIBLY jank-ridden."* → A
+> prior 2026-06-14 session pulled an **off-campaign** override (*"build BOTH
+> ADR-0.0.65 + ADR-0.0.72, FULL SEND"*) and left handoff
+> `.gzkit/handoffs/20260614T223440Z-ADR-0.0.65-0.0.72-handoff-campaign-session.md`
+> advising 7 more OBPIs across both ADRs. This contradicts the campaign on both:
+> **ADR-0.0.72 is a COLLAPSED tombstone** (2026-06-13, *"you cannot audit your
+> way out of over-auditing"*; OBPIs 01–04 marked DO NOT IMPLEMENT) whose real
+> bugs are already re-homed as Phase E GHIs (#612, #575, #581); **ADR-0.0.65 is
+> deliberately deferred to C.4** (Phase A note: *"do not 'fix' this omission"*).
+> Per § Cadence (*"if handoff and campaign disagree, the campaign wins and the
+> variance is reconciled into the campaign"*) the campaign wins. Reconciliation:
+>
+> 1. **ADR-0.0.72 stays collapsed — no resurrection.** Its one landed, Gate-5
+>    piece, OBPI-0.0.72-02 (HandoffFrontmatter explicit-superset reconcile +
+>    `validate_handoff_document` gate-wiring), IS the C1/C2/C3 fix that **GHI
+>    #612** tracks; credited to #612 and flagged for closure at next triage.
+>    C4→#575 and brief-reconcile→#581 ride Phase E as already homed. The landed
+>    work is kept and credited; the tombstone is honored.
+> 2. **ADR-0.0.65 stays homed to C.4 — NOT pulled forward.** Operator weighed
+>    resequencing (the hand-authoring jank is real and recurring) against
+>    fork-risk and chose pure A: C.4 *redesigns* the handoff system into the
+>    continuity hybrid, so building the standalone
+>    `create_handoff`/`scaffold_handoff` API now would be throwaway. The most
+>    important coherence piece (#612) already landed; the
+>    `validate_handoff_document` / `--lock-handoff-coupling` gates are now live
+>    and green; C.4 owns the remaining API + `gz handoff` verb + scaffold
+>    ergonomics.
+> 3. **OBPI-0.0.37-23 (invariant-tier) was legitimate B.1 progress**, not
+>    off-script — it is CMS tier work per the disclosure-tier amendment above.
+>    B.1 advanced **13/19 → 16/19** (`gz adr report ADR-0.0.37`, 2026-06-14); the
+>    B.1 line below is updated to match.
+> 4. **Green floor (green-first gate).** `uv run gz check` is red **solely on the
+>    Behave stage** (the other 30 gates pass, including the now-live
+>    Lock-handoff-coupling and Handoff-documents gates). Two distinct defects,
+>    now filed: **#621** (constitutional_invariants `--invariant-coherence`
+>    fixture failures — the production validator itself passes; homed **Phase B**)
+>    and the cp1252 behave-pretty-formatter crash that masks it under redirected
+>    stdout (evidence added to the **#582** encoding class, Phase E); plus sibling
+>    **#622** (`lock_manager.list_locks` rsplit mis-parses full-slug `obpi_id`s —
+>    same class as the OBPI-0.0.72-02 `_write_reaping_handoff` fix, Phase E).
+>    Restoring green (fixing **#621**) is the **immediate next work before B.1
+>    opens** under green-first.
+>
+> **The jank is diagnostic, not incidental.** The hand-authored handoff the
+> operator caught IS the disease ADR-0.0.65 exists to cure — its
+> `create_handoff`/`scaffold_handoff` API is vaporware, so handoffs are
+> hand-authored and bypass the validation gate. The cure is C.4; until it lands,
+> handoffs route through `gz-session-handoff` + `validate_handoff_document`. A
+> *validated* superseding handoff replaces the off-script 223440Z handoff this
+> session so the next refresh orients to restore-green → B.1, not OBPI-0.0.72-03.
+
 ## Authority and amendment (Magna Carta discipline)
 
 - **It steers; the spine propels.** The governance spine
@@ -404,7 +459,7 @@ only deterministic playback writes the rendered surface.
         `arb-step-unittest-483ae14c…` (6097 tests), `arb-ruff-ed38ddd7…`,
         `arb-step-typecheck-d83e7132…`, `arb-step-mkdocs-fbec5b2a…`. Audit
         evidence: `…/ADR-0.0.70-…/audit/AUDIT.md`.
-- [ ] B.1 ADR-0.0.37 build-out (13/19 verified 2026-06-10 via
+- [ ] B.1 ADR-0.0.37 build-out (16/19 verified 2026-06-14 via
       `gz adr report`; → terminal) — the campaign's first marquee.
 - [ ] B.2 Registry-projected <15k surface (GHI #533) — closes **#519** (the
       sole open emergency), fills restore-health's Recovery Closeout.
