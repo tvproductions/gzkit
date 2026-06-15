@@ -61,12 +61,15 @@ def load_invariants(root: Path) -> dict[str, ConstitutionalInvariant]:
 def reconcile_invariant(invariant: ConstitutionalInvariant) -> Bullet:
     """Map a ConstitutionalInvariant registry entry into a density-aware Bullet.
 
-    Reconciliation contract (OBPI-0.0.37-11):
+    Reconciliation contract (OBPI-0.0.37-11; density dial retired OBPI-0.0.37-27):
     - claim -> text (the foundational assertion, verbatim)
     - structural_witness[0] -> witness (the first gate command that enforces it)
     - classification = "Mechanical" (constitutional invariants are mechanically enforced)
-    - density_min = "lite" (invariants render at every temperature; no gate carries them)
     - rationale_ref = None (pointers added at composition time by the renderer, OBPI-12)
+
+    The 0-Kelvin floor (invariants render at every temperature) now lives in the
+    corpus ``tier: invariant`` designation (OBPI-0.0.37-23), not the retired
+    per-``Bullet`` ``density_min`` field.
     """
     from gzkit.content.models.bullet import Bullet  # local import — avoids circular dep
 
@@ -74,5 +77,4 @@ def reconcile_invariant(invariant: ConstitutionalInvariant) -> Bullet:
         text=invariant.claim,
         witness=invariant.structural_witness[0],
         classification="Mechanical",
-        density_min="lite",
     )

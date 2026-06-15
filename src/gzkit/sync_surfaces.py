@@ -357,9 +357,9 @@ def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
     Identical committed rendition → byte-identical surface on every call.
 
     Bootstrap fallback (no committed rendition yet): render from the AgentContract
-    template via the model pipeline (OBPI-0.0.37-14 plumbing). The
-    ``render_template("agents")`` monolith path is retired; the template-model
-    pipeline is the sole bootstrap path.
+    template via the model pipeline (OBPI-0.0.37-14 plumbing). The monolith
+    ``render_template`` agents fallback is retired (OBPI-0.0.37-27); the
+    template-model pipeline is the sole bootstrap path.
     """
     from gzkit.content.rendition_store import load_rendition, rendition_exists
 
@@ -369,28 +369,36 @@ def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
         agents_path.write_bytes(load_rendition(project_root, "AGENTS.md", "claude"))
         return
 
-    # Bootstrap: no committed rendition yet — render from template via model pipeline.
+    # Bootstrap: no committed rendition yet — render from template via the model
+    # pipeline. The monolith render_template agents fallback is retired (OBPI-0.0.37-27):
+    # the template-model pipeline is the SOLE bootstrap path. A project-local template
+    # takes precedence; otherwise the packaged `agents` template is routed through the
+    # same parse -> render path (never emitted as monolith text).
     from gzkit.content.parse import parse as _parse_content  # lazy: avoids compose.py cycle
+    from gzkit.templates import load_template as _load_template  # lazy: package template
 
     context = get_project_context(project_root, config)
     template_path = project_root / ".gzkit" / "templates" / "agents.md"
     if template_path.exists():
-        resolved_text = template_path.read_text(encoding="utf-8").format_map(SafeDict(context))
-        model = _parse_content(resolved_text, "AgentContract")
-        from gzkit.content.vendors import temperature_for as _temperature_for  # lazy
-
-        try:
-            claude_temp = _temperature_for("AgentContract", "claude", project_root=project_root)
-        except ValueError:
-            # Fresh/consuming projects ship no data/vendor-manifest.json, so the
-            # general-control resolver fails closed. Default to full density — render MORE,
-            # never silently thin the primary contract (operator directive 2026-06-03).
-            claude_temp = "heavy"
-        content_bytes = render_content_model(model, "claude", temperature=claude_temp)
+        template_text = template_path.read_text(encoding="utf-8")
     else:
-        # Bare bootstrap: no template either. Fall back to monolith render so fresh
-        # projects (gz init without templates) still produce a functional AGENTS.md.
-        content_bytes = render_template("agents", **context).encode("utf-8")
+        # No project-local template — fall back to the packaged `agents` template,
+        # still routed through the model pipeline so fresh `gz init` projects produce a
+        # functional AGENTS.md without resurrecting the retired monolith render path.
+        template_text = _load_template("agents")
+
+    resolved_text = template_text.format_map(SafeDict(context))
+    model = _parse_content(resolved_text, "AgentContract")
+    from gzkit.content.vendors import temperature_for as _temperature_for  # lazy
+
+    try:
+        claude_temp = _temperature_for("AgentContract", "claude", project_root=project_root)
+    except ValueError:
+        # Fresh/consuming projects ship no data/vendor-manifest.json, so the
+        # general-control resolver fails closed. Default to full density — render MORE,
+        # never silently thin the primary contract (operator directive 2026-06-03).
+        claude_temp = "heavy"
+    content_bytes = render_content_model(model, "claude", temperature=claude_temp)
 
     agents_path.write_bytes(content_bytes)
 

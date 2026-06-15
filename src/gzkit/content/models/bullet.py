@@ -2,16 +2,22 @@
 
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field
 
 from .base import BaseContentModel
 
-_Temperature = Literal["lite", "medium", "heavy"]
 _Classification = Literal["Mechanical", "Promotable", "Judgment", "Ambiguous"]
 
 
 class Bullet(BaseContentModel):
-    """A single bullet (used inside Rule.body, Handoff.open_items, etc.)."""
+    """A single bullet (used inside Rule.body, Handoff.open_items, etc.).
+
+    The 0-Kelvin floor (invariants that render at every temperature) now lives
+    in the corpus ``tier: invariant`` designation (OBPI-0.0.37-23), not in a
+    per-``Bullet`` density dial. The retired ``density_min`` field and its
+    ``_enforce_judgment_floor`` validator were proven inert (OBPI-0.0.37-27):
+    ``render(lite) == render(medium) == render(heavy)`` byte-for-byte.
+    """
 
     text: str
     indent: int = 0
@@ -24,18 +30,3 @@ class Bullet(BaseContentModel):
     rationale_ref: str | None = Field(
         None, description="Doc pointer to rationale (never rendered inline)."
     )
-    density_min: _Temperature | None = Field(
-        None, description="Lowest temperature at which this bullet renders."
-    )
-
-    @model_validator(mode="after")
-    def _enforce_judgment_floor(self) -> "Bullet":
-        """Judgment bullets pin to 'lite' — the 0-Kelvin floor (ADR-0.0.37 Decision Extension)."""
-        if self.classification == "Judgment":
-            if self.density_min is None:
-                object.__setattr__(self, "density_min", "lite")
-            elif self.density_min != "lite":
-                raise ValueError(
-                    "Judgment bullets must have density_min='lite' (0-Kelvin floor invariant)"
-                )
-        return self

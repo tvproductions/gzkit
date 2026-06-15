@@ -179,36 +179,17 @@ class TestDensityBulletFields(unittest.TestCase):
         self.assertIsNone(b.classification)
         self.assertIsNone(b.witness)
         self.assertIsNone(b.rationale_ref)
-        self.assertIsNone(b.density_min)
 
-    @covers("REQ-0.0.37-11-03")
-    def test_judgment_bullet_density_min_auto_set_to_lite(self) -> None:
+    @covers("REQ-0.0.37-27-01")
+    def test_density_min_field_removed(self) -> None:
+        """The inert density_min dial is retired (OBPI-0.0.37-27): the field is gone and
+        extra='forbid' rejects the kwarg. The 0-Kelvin floor now lives in the corpus
+        tier:invariant designation (OBPI-0.0.37-23), not per-Bullet density."""
         from gzkit.content.models import Bullet
 
-        b = Bullet(text="x", classification="Judgment")
-        self.assertEqual(b.density_min, "lite")
-
-    @covers("REQ-0.0.37-11-03")
-    def test_judgment_bullet_rejects_density_min_above_lite(self) -> None:
-        from gzkit.content.models import Bullet
-
+        self.assertNotIn("density_min", Bullet.model_fields)
         with self.assertRaises(ValidationError):
-            Bullet(text="x", classification="Judgment", density_min="heavy")
-
-    @covers("REQ-0.0.37-11-01")
-    def test_density_min_accepts_valid_temperatures(self) -> None:
-        from gzkit.content.models import Bullet
-
-        for temp in ("lite", "medium", "heavy"):
-            b = Bullet(text="x", density_min=temp)
-            self.assertEqual(b.density_min, temp)
-
-    @covers("REQ-0.0.37-11-01")
-    def test_density_min_rejects_invalid_temperature(self) -> None:
-        from gzkit.content.models import Bullet
-
-        with self.assertRaises(ValidationError):
-            Bullet(text="x", density_min="ultra")
+            Bullet(text="x", density_min="lite")
 
 
 class TestPillarFields(unittest.TestCase):

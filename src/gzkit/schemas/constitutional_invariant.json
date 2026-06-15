@@ -33,11 +33,6 @@
       "type": "string",
       "enum": ["Mechanical", "Promotable", "Judgment", "Ambiguous"],
       "description": "Optional classification override for reconcile_invariant (default: Mechanical)."
-    },
-    "density_min": {
-      "type": "string",
-      "enum": ["lite", "medium", "heavy"],
-      "description": "Optional density_min override for reconcile_invariant (default: lite)."
     }
   }
 }

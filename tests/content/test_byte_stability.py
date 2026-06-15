@@ -163,16 +163,17 @@ class TestByteStability(unittest.TestCase):
         """render(AgentContract, vendor, temperature=T) must produce byte-identical output
         on repeated calls for every valid temperature value (lite, medium, heavy).
 
-        Uses a contract with varied-density bullets and pillars so the density-projection
-        and section-filtering paths are exercised — an empty contract would exercise none
-        of the projection logic that REQ-04's determinism guarantee is about.
+        Exercises a contract with classification-varied bullets and multiple tier-tagged
+        pillars so the render path is non-trivial. The density-projection filter was retired
+        (OBPI-0.0.37-27); this test now guards repeat-call determinism of the surviving
+        render path, which the per-vendor temperature routing still depends on.
         """
         contract = AgentContract(
             name="Determinism Test Agent",
-            purpose="Exercising the projection path for byte-stability",
+            purpose="Exercising the render path for byte-stability",
             rules=[
-                Bullet(text="heavy rule", density_min="heavy"),
-                Bullet(text="medium rule", density_min="medium"),
+                Bullet(text="heavy rule"),
+                Bullet(text="medium rule"),
                 Bullet(text="lite rule"),
                 Bullet(text="judgment rule", classification="Judgment"),
             ],
@@ -182,7 +183,7 @@ class TestByteStability(unittest.TestCase):
                     title="Alpha Section",
                     order=1,
                     bullets=[
-                        Bullet(text="alpha bullet", density_min="medium"),
+                        Bullet(text="alpha bullet"),
                     ],
                 ),
                 Pillar(id="beta", title="Beta Section", order=2, tier="heavy"),

@@ -89,8 +89,10 @@ class TestReconcileInvariant(unittest.TestCase):
         bullet = reconcile_invariant(inv)
         self.assertEqual(bullet.classification, "Mechanical")
 
-    @covers("REQ-0.0.37-11-04")
-    def test_reconcile_assigns_lite_density_min(self) -> None:
+    @covers("REQ-0.0.37-27-01")
+    def test_reconcile_does_not_set_retired_density_min(self) -> None:
+        """reconcile_invariant no longer carries the retired density_min dial
+        (OBPI-0.0.37-27); the produced Bullet has no such attribute."""
         inv = ConstitutionalInvariant(
             id="CIC-1",
             claim="x",
@@ -98,7 +100,7 @@ class TestReconcileInvariant(unittest.TestCase):
             composition_targets=[],
         )
         bullet = reconcile_invariant(inv)
-        self.assertEqual(bullet.density_min, "lite")
+        self.assertFalse(hasattr(bullet, "density_min"))
 
     @covers("REQ-0.0.37-11-04")
     def test_reconcile_bullet_round_trips_via_model_dump(self) -> None:

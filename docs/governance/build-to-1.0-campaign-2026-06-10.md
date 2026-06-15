@@ -576,6 +576,24 @@ only deterministic playback writes the rendered surface.
         evidence: `…/ADR-0.0.70-…/audit/AUDIT.md`.
 - [ ] B.1 ADR-0.0.37 build-out (16/19 verified 2026-06-14 via
       `gz adr report`; → terminal) — the campaign's first marquee.
+      - **Checklist disposition (finalized; ledger-grounded).** The active
+        ADR-0.0.37 target is items **01–10 + 18–27** (the 2026-06-03
+        corpus → setpoint-compression → committed-rendition → deterministic-playback
+        + invariant-tier re-alignment). **09 is withdrawn** (operator-directed
+        2026-06-04, never built; invariant-registry migration superseded by the
+        corpus-rendition track — items 18/22/27 own AGENTS.md authoring;
+        invariant-coherence lock preserved via OBPI-22 rendition playback).
+        **11–17 are withdrawn** from the active scorecard: 11–15 retain valid
+        Gate-5 completion receipts (their density-dial *mechanism* is superseded,
+        their reusable substrate re-homed into 18–27); 16 was created-only (its
+        orientation-index intent folds into item 27); 17 launched then retired.
+        **OBPI-0.0.37-27 is the capstone disposition** — it retired the inert
+        per-`Bullet` `density_min` filter + three-static-template framing,
+        repointed `sync_agents_md` onto the committed-rendition store, folded
+        OBPI-16's orientation-index intent into the substrate doc, and finalized
+        this disposition. (REQ-06 redirected here 2026-06-15: the original
+        `return-to-health-plan-2026-05-30.md` target was frozen "retained
+        unmodified for audit" on 2026-06-10 and already states 18–27 active.)
 - [ ] B.2 Registry-projected <15k surface (GHI #533) — closes **#519** (the
       sole open emergency), fills restore-health's Recovery Closeout.
 - [ ] B.3 Play back queued corpus entries into the rendered AGENTS.md through

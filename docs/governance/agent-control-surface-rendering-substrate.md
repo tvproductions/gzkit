@@ -22,6 +22,38 @@ Enforcement: `gzkit.content.tier_policy.assert_invariant_verbatim(corpus, render
 raises `ValueError` on any violation. The canonical named invariants — PRIME DIRECTIVE,
 DO IT RIGHT, NEVER PYTEST — MUST survive verbatim at the leanest setpoint (`lite`).
 
+## Mechanism — corpus → setpoint-compression → committed-rendition → deterministic-playback
+
+The binding composition mechanism is a four-stage pipeline:
+
+1. **Corpus** (`gz content remember`) — every control-surface entry is appended to an
+   addressed, append-only corpus. The surface is never hand-edited at the rendered
+   location; the corpus is the source of truth, analogous to how a harness stores user
+   memories rather than rewriting the system prompt in place.
+2. **Setpoint compression** (`gz content compose`) — the operator sets a density setpoint
+   ("the thermostat"); the composer thins only `compressible` corpus entries toward that
+   setpoint by *condensing language within sections*, never dropping whole sections.
+   `tier: invariant` entries are emitted verbatim (the 0-Kelvin floor above).
+3. **Committed rendition** — the composed bytes are committed once to
+   `.gzkit/renditions/<surface>/<consumer>.md`, one durable artifact per
+   *(surface × consumer)* pair.
+4. **Deterministic playback** — sync replays the committed rendition verbatim to the
+   rendered location: no LLM, no template substitution, no network. Identical committed
+   rendition → byte-identical surface on every call.
+
+**Retired framing (do not reintroduce).** The 2026-05-30 *density-dial* mechanism — a
+per-`Bullet` `density_min` include/exclude switch plus three static `lite`/`medium`/`heavy`
+templates — is **retired as empirically inert** (OBPI-0.0.37-27). Every parsed
+`Bullet.density_min` was `None` and the playback template emits `pillar.lines | join`
+verbatim, so `render(lite) == render(medium) == render(heavy)` byte-for-byte: an
+include/exclude switch cannot *condense language within a section*, which is what the
+operator's setpoint actually asks for. The retired surface — the per-`Bullet` `density_min`
+field, its `_enforce_judgment_floor` validator, and the `_project_for_temperature` render
+filter — has been removed from the runtime. Temperature survives only as a per-vendor
+*routing* parameter (`vendors.temperature_for`); it no longer projects the model, and the
+0-Kelvin floor now lives in the corpus `tier: invariant` designation, not per-`Bullet`
+density.
+
 ## Prompt assembly and cache stability
 
 Prompt assembly order is part of the substrate contract. gzkit does not control
@@ -227,6 +259,31 @@ In every era, the agent reads a static document. What changes is *how the docume
 - **Injecting volatile context before the stable prefix.** It weakens prompt-cache behavior and hides drift in the bytes that should be invariant.
 - **Treating ADR-0.16.0's deliverable as the substrate.** ADR-0.16.0 delivered a partial prior — Pydantic content-type registry, vendor-aware sync (file-copy), lifecycle state machine. It did NOT deliver Jinja2-templated rendering for the full surface. The substrate doctrine generalizes ADR-0.16.0's scope to deliver what its prose promised.
 - **Letting "lighter ceremony" become a tradeoff axis.** The substrate adds composition steps the operator may experience as friction. That friction is the product. Per the anti-vibing mantra.
+
+## Agent Orientation Index
+
+> **Do not re-derive the rendering architecture from source each session.** This index is
+> the routable map from each per-turn control surface to its canonical model, governing
+> doctrine, and the command that loads or regenerates it. Load the index; do not
+> reconstruct it by reading `src/gzkit/content/**`. (Folds in the OBPI-0.0.37-16
+> orientation-index intent — a surface → authoritative-model + doctrine map rendered so the
+> rendering architecture stops being re-derived from source each session.)
+
+| Control surface | Canonical model | Governing doctrine | Load / regenerate command |
+|---|---|---|---|
+| `AGENTS.md`, `CLAUDE.md` | `AgentContract` (`src/gzkit/content/models/agent_contract.py`) | this doctrine; ADR-0.0.37 | `gz agent sync control-surfaces` (playback of `.gzkit/renditions/AGENTS.md/<consumer>.md`) |
+| `.claude/rules/**`, `.github/instructions/**` | `Rule` | `.gzkit/rules/skill-surface-sync.md` | `gz agent sync control-surfaces` |
+| `.claude/skills/**/SKILL.md` | `Skill` | `.gzkit/rules/skill-surface-sync.md` | `gz skill list`; `gz agent sync control-surfaces` |
+| persona files | `Persona` | ADR-0.0.11, ADR-0.0.12 | `gz personas list` |
+| chore registry | `Chore` | `.gzkit/rules/skill-surface-sync.md` § class-classifier | `gz agent sync control-surfaces` |
+| handoffs | `Handoff` | `gz-session-handoff` skill | `gz context <ADR-ID>` |
+| BDD scenarios | `Scenario` | `.gzkit/rules/tests.md` | `behave` |
+
+**Authoring vs orientation — two distinct verbs.** To *change* a surface, author the
+corpus entry (`gz content remember`) and recompose (`gz content compose`) — never edit the
+rendered location. To *orient* (understand which model + doctrine + command governs a
+surface), read this index. The index is the single load-bearing map; the rendering
+architecture is not to be re-derived from `src/` each session.
 
 ## Related canon
 

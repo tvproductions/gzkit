@@ -17,35 +17,15 @@ from pathlib import Path
 import jinja2
 
 from gzkit.content import vendors
-from gzkit.content.models.agent_contract import AgentContract, Pillar
 from gzkit.content.models.base import BaseContentModel
 
-_TEMP_RANK = {"lite": 0, "medium": 1, "heavy": 2}
-
-
-def _bullet_renders(bullet: object, temperature: str) -> bool:
-    """Return True if *bullet* should appear at the given temperature."""
-    classification = getattr(bullet, "classification", None)
-    if classification == "Judgment":
-        return True
-    density_min = getattr(bullet, "density_min", None)
-    if density_min is None:
-        return True
-    return _TEMP_RANK[density_min] <= _TEMP_RANK[temperature]
-
-
-def _project_for_temperature(model: AgentContract, temperature: str) -> AgentContract:
-    """Return a copy of *model* with bullets and pillars filtered for *temperature*."""
-    filtered_rules = [b for b in model.rules if _bullet_renders(b, temperature)]
-    kept_pillars: list[Pillar] = [
-        p for p in model.pillars if p.enabled and _TEMP_RANK[p.tier] <= _TEMP_RANK[temperature]
-    ]
-    kept_pillars.sort(key=lambda p: p.order)
-    projected_pillars = [
-        p.model_copy(update={"bullets": [b for b in p.bullets if _bullet_renders(b, temperature)]})
-        for p in kept_pillars
-    ]
-    return model.model_copy(update={"rules": filtered_rules, "pillars": projected_pillars})
+# Accepted temperature values. The per-temperature projection filter was retired
+# (OBPI-0.0.37-27) after empirical proof that render(lite) == render(medium) ==
+# render(heavy) byte-for-byte: the density-dial mechanism was inert. The parameter
+# survives because per-vendor temperature routing (data/vendor-manifest.json →
+# vendors.temperature_for) still resolves a temperature per surface; the value is
+# validated here but no longer projects the model.
+_VALID_TEMPERATURES = frozenset({"lite", "medium", "heavy"})
 
 
 def _build_env() -> jinja2.Environment:
@@ -114,13 +94,15 @@ def render(
     Raises ValueError on unknown temperature (fail-closed, before template lookup).
     Raises TemplateNotFound when the (content_type, vendor) pair has no template.
     When project_root is supplied, the ADR-0.0.33 fidelity hook fires before return.
+
+    The per-temperature model projection was retired (OBPI-0.0.37-27, proven inert);
+    *temperature* is validated for fail-closed routing parity but no longer filters
+    the model. Output is byte-identical across all valid temperatures.
     """
-    if temperature not in _TEMP_RANK:
+    if temperature not in _VALID_TEMPERATURES:
         raise ValueError(
-            f"unknown temperature: {temperature!r}; expected one of {sorted(_TEMP_RANK)}"
+            f"unknown temperature: {temperature!r}; expected one of {sorted(_VALID_TEMPERATURES)}"
         )
-    if isinstance(model, AgentContract):
-        model = _project_for_temperature(model, temperature)
     content_type = model.__class__.__name__
 
     # Routing guard — fail-closed before any template lookup. Routes resolve

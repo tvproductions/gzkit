@@ -273,6 +273,53 @@ class TestSyncCommand(unittest.TestCase):
                     "render_template('agents') must not be called by sync_agents_md",
                 )
 
+    @covers("REQ-0.0.37-27-03")
+    def test_bare_bootstrap_routes_package_template_through_model_pipeline(self) -> None:
+        """REQ-0.0.37-27-03: the residual monolith fallback is retired — even in the
+        BARE-BOOTSTRAP case (no committed rendition AND no project-local template), sync
+        MUST route the packaged ``agents`` template through the model pipeline, never
+        emit it via render_template('agents').
+
+        Discriminating: this is the exact scenario that previously hit the retired
+        ``else`` branch. We remove both the committed rendition and the project template to
+        force it. Before OBPI-0.0.37-27 this called render_template('agents'); after, the
+        package template parses to a model and renders through the pipeline. We assert both
+        the negative (no monolith call) AND the positive (a non-empty AGENTS.md is written
+        with model-sourced prose) so the test cannot pass by simply skipping the render."""
+        import gzkit.sync_surfaces as ss
+
+        with (
+            _InitFromTemplate(),
+            patch("gzkit.sync_surfaces.render_template", return_value="# mocked") as mock_rt,
+        ):
+            from gzkit.config import GzkitConfig
+
+            project_root = Path.cwd()
+            config = GzkitConfig.load(project_root / ".gzkit.json")
+
+            # Force the bare-bootstrap condition: no committed rendition, no project template.
+            renditions = project_root / ".gzkit" / "renditions"
+            if renditions.exists():
+                shutil.rmtree(renditions)
+            project_template = project_root / ".gzkit" / "templates" / "agents.md"
+            if project_template.exists():
+                project_template.unlink()
+
+            ss.sync_agents_md(project_root, config)
+
+            for call in mock_rt.call_args_list:
+                self.assertNotEqual(
+                    call.args[0] if call.args else call.kwargs.get("template"),
+                    "agents",
+                    "bare-bootstrap must not resurrect the render_template('agents') monolith",
+                )
+            rendered = (project_root / "AGENTS.md").read_text(encoding="utf-8")
+            self.assertGreater(len(rendered), 0, "bare-bootstrap must still write AGENTS.md")
+            # Model-sourced prose proves the package template went through the pipeline,
+            # not the mocked monolith ('# mocked' would be the render_template output).
+            self.assertNotIn("# mocked", rendered)
+            self.assertIn("# AGENTS.md", rendered)
+
     @covers("REQ-0.0.37-14-02")
     def test_agents_md_prose_is_model_sourced_not_in_code_literal(self) -> None:
         """REQ-0.0.37-14-02: the rendered AGENTS.md purpose/tech-stack MUST be sourced from

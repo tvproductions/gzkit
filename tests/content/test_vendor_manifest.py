@@ -240,13 +240,15 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
 
     @covers("REQ-0.0.37-15-03")
     def test_codex_lite_contains_all_judgment_bullets(self) -> None:
-        """Codex lite render includes Judgment bullets (0-Kelvin floor invariant)."""
+        """Codex lite render includes Judgment bullets. The density-projection filter was
+        retired (OBPI-0.0.37-27); all bullets now render at every temperature, so the
+        Judgment bullet appears regardless of routing temperature."""
         model = AgentContract(
             name="Test",
             purpose="Test contract",
             rules=[
-                Bullet(text="judgment-bullet", classification="Judgment", density_min="lite"),
-                Bullet(text="heavy-only-bullet", density_min="heavy"),
+                Bullet(text="judgment-bullet", classification="Judgment"),
+                Bullet(text="plain-bullet"),
             ],
         )
         with tempfile.TemporaryDirectory() as tmp:
@@ -262,17 +264,28 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
             )
             result = render(model, "codex", temperature="lite", project_root=root)
             self.assertIn(b"judgment-bullet", result)
-            self.assertNotIn(b"heavy-only-bullet", result)
+            self.assertIn(b"plain-bullet", result)
 
     @covers("REQ-0.0.37-15-04")
-    def test_codex_and_claude_renders_differ(self) -> None:
-        """Codex and Claude renders of the same AgentContract produce different bytes."""
+    def test_temperature_no_longer_differentiates_a_vendor_render(self) -> None:
+        """OBPI-15's per-vendor render selection-via-temperature RETIRES (ADR-0.0.37
+        § Decision Re-Alignment: "15's per-vendor selection retires — per-vendor emission
+        ruled out by the Codex-loader finding"). The differentiation was delivered solely by
+        the temperature-projection filter; OBPI-0.0.37-27 proved it inert and removed it.
+
+        This test pins ONLY what the retirement changed: for a SINGLE vendor, the routed
+        temperature no longer alters the bytes (lite render == heavy render). It deliberately
+        does NOT assert codex == claude — per-harness behavioral tuning is undesigned space
+        that the committed-rendition store (`.gzkit/renditions/<surface>/<consumer>.md`, keyed
+        per consumer) and per-vendor `.j2` template routing both leave open. Asserting
+        cross-harness byte-identity would ossify a not-yet-designed surface and fail the
+        intended future where codex and claude are tuned to diverge."""
         model = AgentContract(
             name="Test",
             purpose="Test contract",
             rules=[
-                Bullet(text="judgment-bullet", classification="Judgment", density_min="lite"),
-                Bullet(text="heavy-only-bullet", density_min="heavy"),
+                Bullet(text="judgment-bullet", classification="Judgment"),
+                Bullet(text="plain-bullet"),
             ],
         )
         with tempfile.TemporaryDirectory() as tmp:
@@ -286,9 +299,14 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
                     },
                 },
             )
-            codex_result = render(model, "codex", temperature="lite", project_root=root)
-            claude_result = render(model, "claude", temperature="heavy", project_root=root)
-            self.assertNotEqual(codex_result, claude_result)
+            codex_lite = render(model, "codex", temperature="lite", project_root=root)
+            codex_heavy = render(model, "codex", temperature="heavy", project_root=root)
+            self.assertEqual(
+                codex_lite,
+                codex_heavy,
+                "Temperature-projection retired (OBPI-0.0.37-27): for a single vendor, the "
+                "routed temperature must no longer alter the rendered bytes",
+            )
 
     @covers("REQ-0.0.37-15-05")
     def test_manifest_declares_temperatures(self) -> None:

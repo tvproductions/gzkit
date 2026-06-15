@@ -3,7 +3,7 @@ id: OBPI-0.0.37-27-migration-disposition-doctrine-refresh-orientation-index
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 27
 lane: Heavy
-status: Draft
+status: Completed
 # req_atomic: each REQ is a single indivisible labor unit — one behavior/support
 # surface apiece (model-retire, pipeline-retire, sync-retire, substrate-refresh,
 # orientation-index, disposition-finalize); none decomposes into parallel seq=02+
@@ -24,7 +24,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 - **Checklist Item:** #27 - "OBPI-0.0.37-27 — Migration/disposition + doctrine refresh + orientation index (retire the inert density_min filter + three-static-template framing; repoint sync onto the rendition store; fold in the OBPI-16 orientation-index surface→model map; refresh the substrate doc + return-to-health plan)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -43,6 +43,8 @@ Removing a Pydantic model field (`Bullet.density_min`) + a render-pipeline contr
 ## Allowed Paths
 
 - `src/gzkit/content/models/bullet.py` — EDIT: remove the inert `density_min` field and the `_enforce_judgment_floor` validator (the 0-Kelvin floor now lives in the corpus `tier: invariant` designation, OBPI-23, not in per-`Bullet` density)
+- `src/gzkit/governance/invariants.py` — EDIT: remove the `density_min="lite"` kwarg in `reconcile_invariant` (coupled surface — `Bullet(extra="forbid")` rejects the kwarg once the field is removed) + refresh the docstring (allowlist amendment, operator-approved 2026-06-15; Gate Friction evaluator loop)
+- `src/gzkit/schemas/constitutional_invariant.json` — EDIT: remove the now-dead `density_min` property (the `ConstitutionalInvariant` Pydantic model already has no such field; the JSON-schema mirror is vestigial — allowlist amendment, operator-approved 2026-06-15; Gate Friction evaluator loop)
 - `src/gzkit/content/render/pipeline.py` — EDIT: remove the inert `_bullet_renders` + `_project_for_temperature` filter (lines ~23-48); render output is unchanged because the filter was proven inert
 - `src/gzkit/sync_surfaces.py` — EDIT: retire the residual monolith `render_template("agents")` fallback so `sync_agents_md` reads only the committed-rendition store (coordinate with OBPI-22's repoint — see § Tracked Defects)
 - `tests/content/models/test_fields.py` — EDIT: drop the `density_min` field assertions
@@ -50,8 +52,10 @@ Removing a Pydantic model field (`Bullet.density_min`) + a render-pipeline contr
 - `tests/content/test_render_pipeline.py` — EDIT: drop the temperature-filter cases; assert the simplified render path
 - `tests/content/test_round_trip_agent_contract.py` — EDIT: drop `density_min` from the round-trip fixtures/assertions
 - `tests/content/test_vendor_manifest.py` — EDIT: drop any `density_min`-coupled assertions
+- `tests/commands/test_sync_cmds.py` — EDIT: add the discriminating REQ-27-03 bare-bootstrap test (package template routes through the model pipeline, no monolith fallback) — coupled surface for REQ-03, allowlist-amended 2026-06-15
+- `.gzkit/insights/agent-insights.jsonl` — APPEND: `improvement` records per Behavior Rule Always #11 (operator course-corrections during this run) — allowlist-amended 2026-06-15
 - `docs/governance/agent-control-surface-rendering-substrate.md` — EDIT: refresh the mechanism (retire density-dial / three-static-template framing; document corpus→compress→rendition→playback + invariant tier) AND add the Agent Orientation Index (OBPI-16 intent)
-- `docs/governance/return-to-health-plan-2026-05-30.md` — EDIT: refresh the worklist + #519 relief route to reflect items 18-27 active
+- `docs/governance/build-to-1.0-campaign-2026-06-10.md` — EDIT: record the items-18-27-active + 09/11-17-withdrawn disposition + #519 relief route on the ACTIVE plan (operator-redirected 2026-06-15; the original `return-to-health-plan-2026-05-30.md` target was frozen "retained unmodified for audit" on 2026-06-10, after this 2026-06-03 brief, and already states 18-27 active — editing it would violate its audit-freeze)
 - `data/behave_coverage_waivers.json` — EDIT: OBPI-level behave-coverage waiver for the SUPPORT doc/disposition REQs
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md` — EDIT: finalize the checklist disposition (confirm 09 + 11-17 withdrawn markers; 18-27 active) and check this item's box at closeout
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-27-migration-disposition-doctrine-refresh-orientation-index.md` — active brief and evidence record
@@ -238,13 +242,27 @@ grep -n "Agent Orientation Index" docs/governance/agent-control-surface-renderin
 
 ### Key Proof
 
+
+The retirement of 3 code symbols + 1 fallback leaves the rendered surface byte-identical:
+
+    uv run python -c "from gzkit.content.models.bullet import Bullet; print('density_min' in Bullet.model_fields)"  # -> False
+    uv run gz agent sync control-surfaces && git diff --stat AGENTS.md   # -> empty (AGENTS.md playback unchanged)
+    grep -RIn 'render_template("agents")' src/gzkit/   # -> no match (monolith fallback retired)
+
+Full sweep green: 6170/6170 unittests pass (receipt arb-step-unittest-df7824927c664f9b834875edb5d9a568); ruff clean (arb-ruff-87c0389a14a647a49747af0eab315e3f); typecheck clean (arb-step-typecheck-354c407751cc4cea80fe455efd85d750); mkdocs --strict clean (arb-step-mkdocs-7c996eccbeb746f78394d9aae2c3b6cb); gz validate --documents / --invariant-coherence / --cli-alignment all pass; gz covers behavior_uncovered_reqs=0.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Retired the inert density-dial: removed `Bullet.density_min` field + `_enforce_judgment_floor` validator (bullet.py), the `_project_for_temperature`/`_bullet_renders`/`_TEMP_RANK` render filter (pipeline.py), and the coupled `density_min="lite"` kwarg (invariants.py) + dead JSON-schema property (constitutional_invariant.json). Byte-parity proven: render WITH vs WITHOUT projection = 28176 B identical.
+- Retired the residual monolith `render_template("agents")` fallback (sync_surfaces.py); `sync_agents_md` now routes every bootstrap path (project-local AND packaged template) through the deterministic model pipeline — no monolith path remains.
+- Refreshed `docs/governance/agent-control-surface-rendering-substrate.md` to the corpus→compress→rendition→playback + invariant-tier mechanism and added the Agent Orientation Index (surface→canonical-model→doctrine→load-command map; "do not re-derive from source").
+- Recorded the items-18-27-active / 09+11-17-withdrawn disposition + #519 relief route on the active `build-to-1.0-campaign-2026-06-10.md` (operator-redirected from the frozen `return-to-health-plan`).
+- Tests: reworked 5 content test modules + added a discriminating bare-bootstrap REQ-27-03 test; 72 OBPI-scoped tests pass, full suite 6170 pass.
+- Files modified: 15 (5 src, 6 tests, 3 docs/data, 1 brief); 0 created.
+- Date completed: 2026-06-15.
+- Attestation status: operator-attested "attest completed" (Gate 5, Heavy/foundation; no self-close).
+- Defects noted: 2 in-flight allowlist amendments (operator-approved, Gate Friction loop); 1 self-introduced malformed insight record fixed (evidence list shape).
 
 ## Tracked Defects
 
@@ -254,12 +272,12 @@ _No further defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.37-27 capstone disposition: retired the proven-inert density-dial (Bullet.density_min field + _enforce_judgment_floor validator + the _project_for_temperature render filter + coupled invariants.py kwarg / schema property) and the residual monolith render_template("agents") sync fallback; refreshed the agent-control-surface substrate doctrine to corpus→compress→rendition→playback + invariant-tier and added the Agent Orientation Index; finalized the items-18-27-active / 09+11-17-withdrawn disposition on the active build-to-1.0-campaign doc. Render byte-identical (28176 B, AGENTS.md playback unchanged); full suite 6170/6170 pass (receipt arb-step-unittest-df7824927c664f9b834875edb5d9a568); ruff clean (arb-ruff-87c0389a14a647a49747af0eab315e3f), typecheck clean (arb-step-typecheck-354c407751cc4cea80fe455efd85d750), mkdocs --strict clean (arb-step-mkdocs-7c996eccbeb746f78394d9aae2c3b6cb); gz covers behavior_uncovered_reqs=0. Heavy/foundation Gate 5, operator-verbatim conversational.
+- Date: 2026-06-15
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-15
 
 **Evidence Hash:** -
