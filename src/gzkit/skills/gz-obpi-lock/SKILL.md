@@ -5,9 +5,9 @@ description: Claim or release OBPI-level work locks for multi-agent coordination
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-03-16
+last_reviewed: 2026-06-14
 metadata:
-  skill-version: "6.1.0"
+  skill-version: "6.1.1"
 model: haiku
 ---
 
