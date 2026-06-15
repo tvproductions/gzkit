@@ -115,13 +115,20 @@ The canonical-source verbatim contract (the corpus / the fat tier) is unchanged:
 nothing is lost from source; compression governs only the *rendered* compressed
 tiers.
 
-**Mechanical coupling.** This amendment is realized by **OBPI-0.0.37-18**, which
+**Mechanical coupling.** This amendment is realized by **OBPI-0.0.37-25**, which
 flips `gz validate --bullet-retention` from whole-surface verbatim grep to
 tier-aware enforcement. The amendment and the validator change land in the same
 commit-window (the validator must stay wired into `--surface-fidelity` / `gz check`
-throughout — Anti-Pattern #1). This amendment is **attested at OBPI-0.0.37-18's
+throughout — Anti-Pattern #1). This amendment is **attested at OBPI-0.0.37-25's
 Gate 5** (foundation/heavy); until then Invariant 1 enforces the original Era-1
 contract.
+
+> **Realizer correction (OBPI-0.0.37-25, 2026-06-15).** This paragraph
+> originally cited OBPI-0.0.37-18 as the realizer and Gate-5 attestation point.
+> That was a mis-citation: OBPI-0.0.37-18 delivered the append-only corpus
+> *model* and did not flip `--bullet-retention` (the validator on disk remained
+> the Era-1 whole-surface grep). The actual realizer is **OBPI-0.0.37-25** per
+> ADR-0.0.37 Checklist item #25; the citation above is corrected accordingly.
 
 ## Comparator Uplift (2026-05-07)
 
@@ -269,3 +276,4 @@ test layer.
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
 | 0.0.33 | Completed | Jeffry | 2026-05-15 | Completed — attest completed — 5/5 OBPIs attested_completed; 27/27 REQs covered by 71 REQ-derived tests (spec-reviewer CLEAN, independent persona dispatch); quality-reviewer verdict COHERENT (composite is thin orchestrator, CLI dispatch uniform, Era-1/Era-2 contract honored); ARB receipts arb-ruff-49f51bb527354bc796e0f4baf769c6fa, arb-step-typecheck-3be8b030fa1c4b4d9029be8ac78c083d, arb-step-unittest-05c79d3dce8942148542f1c7a2da4062 (5087 tests), arb-step-mkdocs-9e42f8eac90c4506b2a0a535e6e48c9d all exit 0; in-flight fixes applied for Blocker A (fold-test BUCKET_3_ROOTS self-perpetuation) and Blocker B / GHI #473 (pointer_anchors + scenario_reachability exit-code drift) with 4 new GREEN tests pinning REQ-vs-runtime contract |
+| Invariant 1 amendment (tier-scoped) | Attested | g0 | 2026-06-15 | Amends Invariant 1 to tier-scoped enforcement (§ Amendment 2026-06-03): invariant tier keeps the verbatim contract; compressible tier satisfies retention by a valid advisor-QC receipt + operator attestation, not verbatim substring. Realized by OBPI-0.0.37-25 (the `--bullet-retention` whole-surface-grep → tier-aware flip), landed in the same commit-window, staying wired into `--surface-fidelity` / `gz check` (Anti-Pattern #1). Attested at OBPI-0.0.37-25's Gate 5 — attestation text + ARB receipt IDs recorded in OBPI-0.0.37-25's completion receipt and Gate-5 evidence. |

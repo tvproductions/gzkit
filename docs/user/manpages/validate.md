@@ -232,21 +232,29 @@ gz validate --chores-layout --json
 
 ### `--bullet-retention`
 
-Enforces ADR-0.0.33 Invariant 1: every bullet in `docs/governance/advisory-rules-audit.md`
-classified **Mechanical** or **Promotable** is present verbatim in the
-per-turn surface corpus (`AGENTS.md`, `CLAUDE.md`, `.claude/rules/**`).
+Enforces ADR-0.0.33 Invariant 1 (**tier-scoped** per the § Amendment 2026-06-03,
+realized by OBPI-0.0.37-25): every bullet in
+`docs/governance/advisory-rules-audit.md` classified **Mechanical** or
+**Promotable** has its retention enforced according to its corpus tier.
 
 The check reads the scorecard's pipe-delimited table, extracts the rule text
 from each row, normalizes whitespace and leading markdown bullet markers, and
-asserts the normalized text is a substring of the normalized corpus.
-**Judgment** and **Ambiguous** bullets are not enforced.
+resolves each enforced bullet's **tier** from the append-only corpus store
+(`.gzkit/corpus/<surface>.jsonl`). A bullet maps to the first corpus entry whose
+text contains it; a bullet that maps to no corpus entry uses the conservative
+**invariant** fallback. **Judgment** and **Ambiguous** bullets are not enforced.
 
-A missing bullet emits `ValidationError(type="bullet_retention")` naming the
-absent text and its source classification. Exit 3 on any violation; exit 0
-when the surface is clean.
+| Tier | Retention contract | Fail-closed when |
+|------|--------------------|------------------|
+| `invariant` (and the unknown-tier fallback) | The Era-1 verbatim contract: the normalized bullet text MUST be a substring of the normalized per-turn surface corpus (`AGENTS.md`, `CLAUDE.md`, `.claude/rules/**`). | The bullet is absent/altered in the rendered surface. |
+| `compressible` | Retention is witnessed, not verbatim: the bullet's surface MUST carry a valid advisor-QC information-retention witness — the latest `rendition_advisor_verdict` ledger event for the surface, whose `arb-step-judge-*` receipt exists with `exit_status == 0` (the receipt the operator cites at Gate 5; ADR-0.0.39, OBPI-0.0.37-24). A reworded/combined compressible bullet that carries the witness does NOT fail. | No verdict event for the surface, the receipt is missing, or `exit_status != 0` — retention is unwitnessed. The compressible tier is not an unconditional escape from retention. |
+
+A violation emits `ValidationError(type="bullet_retention")` naming the bullet,
+its source classification, the tier-specific reason, and the governed recovery
+step. Exit 3 on any violation; exit 0 when the surface is clean.
 
 ```bash
-# Audit the per-turn surface against the advisory scorecard
+# Audit the per-turn surface against the advisory scorecard (tier-scoped)
 uv run gz validate --bullet-retention
 ```
 
@@ -280,8 +288,9 @@ $ echo $?
 
 | Code | Meaning | Recovery |
 |------|---------|----------|
-| 0 | Surface is clean — all enforced bullets present | — |
-| 3 | One or more Mechanical/Promotable bullets absent from per-turn surface | Add the missing bullet text to `AGENTS.md`, `CLAUDE.md`, or a `.claude/rules/*.md` file, then re-run |
+| 0 | Surface is clean — every enforced bullet satisfies its tier-scoped retention contract | — |
+| 3 (invariant tier) | One or more invariant-tier Mechanical/Promotable bullets absent from per-turn surface | Restore the missing bullet text verbatim to `AGENTS.md`, `CLAUDE.md`, or a `.claude/rules/*.md` file, then re-run |
+| 3 (compressible tier) | One or more compressible-tier bullets lack a valid advisor-QC retention witness | Record the verdict with `uv run gz content advise-rendition <surface> --score <0.0-1.0> --explanation "<reasoning>"`, cite the receipt at Gate 5, then re-run |
 
 ### `--surface-weight`
 
@@ -1506,7 +1515,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--closeout-proof` | opt-in | Derived closeout-proof view: recomputes per-REQ proof over three live channels (BEHAVIOR/SUPPORT/STRUCTURAL-FENCE) for in-closeout ADRs; exit 3 on any unproven REQ (ADR-0.0.69 / OBPI-0.0.69-03) |
 | `--distribution` | opt-in | T0 static distribution audit: ON\_DISK\_NOT\_INCLUDED / BASELINE\_NOT\_ON\_DISK / ON\_DISK\_NOT\_BASELINE drift classes (ADR-0.0.32-07) |
 | `--receipt-shape` | opt-in | Fail-closed on post-cutoff `obpi_receipt_emitted` events with deprecated shapes (optional attestation, unprefixed completion, agent: attestor); pre-cutoff receipts can be waivered via `data/historical_self_close_waivers.json` (ADR-0.0.36, OBPI-0.0.36-03) |
-| `--bullet-retention` | opt-in | Assert every Mechanical/Promotable bullet in advisory-rules-audit.md is verbatim in per-turn surface (ADR-0.0.33-01) |
+| `--bullet-retention` | opt-in | Tier-scoped retention for every Mechanical/Promotable bullet in advisory-rules-audit.md: invariant-tier verbatim in per-turn surface; compressible-tier witnessed by a valid advisor-QC receipt + attestation (ADR-0.0.33-01; tier-scoped amendment OBPI-0.0.37-25) |
 | `--scenario-reachability` | opt-in | Assert every Mechanical/Promotable bullet reachable from a declared loading scenario (ADR-0.0.33-04; Era-1 advisory) |
 | `--surface-fidelity` | opt-in | Composite: run all four surface-fidelity invariants in declared order; exit code is worst-of-four (ADR-0.0.33-05) |
 | `--req-kind-discipline` | opt-in | Fail closed (exit 3) on OBPI briefs with mixed-state [kind] tags or per-kind proof-citation gaps (ADR-0.0.59-02) |

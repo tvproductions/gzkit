@@ -3,7 +3,7 @@ id: OBPI-0.0.37-25-bullet-retention-tier-scoped-validator
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 25
 lane: Heavy
-status: Draft
+status: Completed
 # req_atomic: each REQ is a single indivisible labor unit — one behavior/support
 # surface apiece (invariant-verbatim, compressible-receipt, compressible-no-receipt,
 # coupled-ADR-amendment, surface-fidelity-wiring, docs); none decomposes into
@@ -24,7 +24,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 - **Checklist Item:** #25 - "OBPI-0.0.37-25 — ADR-0.0.33 bullet-retention tier-scoped validator (flip `--bullet-retention` from whole-surface verbatim grep to tier-aware: verbatim on invariant tier; advisor-QC receipt + attestation on compressed tiers; lands in the same commit-window as the coupled ADR-0.0.33 Invariant-1 amendment)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -52,6 +52,7 @@ Changing a validator's fail-closed semantics + attesting an amendment to a Valid
 - `tests/governance/test_bullet_retention.py` — EDIT: add tier-scoped BEHAVIOR tests (invariant-verbatim fail-closed; compressible-with-receipt clean; compressible-without-receipt fail-closed) while preserving the existing ADR-0.0.33-01 coverage
 - `docs/user/manpages/validate.md` — EDIT: document the tier-scoped `--bullet-retention` behavior
 - `data/behave_coverage_waivers.json` — EDIT: OBPI-level behave-coverage waiver for the SUPPORT doc/amendment REQs (validator behavior is unit-proven; no new CLI verb)
+- `src/gzkit/governance/trust_audits/__init__.py` — READ-coupled re-export surface: `validate_bullet_retention` is reached through this package re-export and the preserved REQ-0.0.33-01-04 test imports it from here. Unmodified by this OBPI; declared so the brief-reconcile neighborhood filter (GHI #419) sees the genuine coupled surface the test exercises.
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-25-bullet-retention-tier-scoped-validator.md` — active brief and evidence record
 - `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md` — parent ADR (read-only, for intent and the 1:1 checklist sync)
 
@@ -98,7 +99,7 @@ Changing a validator's fail-closed semantics + attesting an amendment to a Valid
 
 - [ ] OBPI-0.0.37-23 (invariant tier) — the tier-policy / verbatim-survival surface the invariant-tier branch coordinates with
 - [ ] OBPI-0.0.37-24 (advisor-QC) — the producer of the advisor-QC receipt the compressible-tier branch reads (sequenced before this OBPI)
-- [ ] OBPI-0.0.37-19 (corpus) — the `.gzkit/corpus/<surface>.jsonl` store the validator reads for tier designations
+- [ ] OBPI-0.0.37-19 (corpus) — the `.gzkit/corpus/` store the validator reads for tier designations (surface-named `.jsonl` files, e.g. `.gzkit/corpus/AGENTS.md.jsonl`)
 
 **Prerequisites (check existence, STOP if missing):**
 
@@ -112,7 +113,7 @@ Changing a validator's fail-closed semantics + attesting an amendment to a Valid
 
 - [ ] `src/gzkit/governance/trust_audits/bullet_retention.py` — the current whole-surface grep (`_parse_scorecard`, `_collect_surface_corpus`, `_normalize`, `_ENFORCED_CLASSES`) — the seam to make tier-aware
 - [ ] `src/gzkit/governance/trust_audits/attestation_receipts.py` — `arb-step-*` receipt lookup/validation the compressible branch reuses for the QC witness
-- [ ] `src/gzkit/content/corpus_store.py` + `models/corpus.py` — how to read tier per corpus entry
+- [ ] `src/gzkit/content/corpus_store.py` + `src/gzkit/content/models/corpus.py` — how to read tier per corpus entry
 - [ ] `tests/governance/test_bullet_retention.py` + `tests/governance/test_setpoint_coherence.py` — the trust_audits test convention (tempdir, `@covers`, REQ-facet-per-class)
 - [ ] `src/gzkit/cli/parser_maintenance.py` (~627-631) + `src/gzkit/commands/validate_cmd.py` (~388) — the existing `--bullet-retention` registration (no flag change needed; behavior change only)
 
@@ -239,13 +240,19 @@ uv run gz validate --surface-fidelity   # --bullet-retention stays wired in thro
 
 ### Key Proof
 
+
+uv run gz validate --bullet-retention exits 0 on live coherent canon (the one compressible corpus entry backs no enforced bullet → all enforced bullets route through the invariant verbatim path; no regression). Behavioral divergence proven by tests: test_compressible_reworded_with_valid_witness_passes (a reworded surface the old grep would fail passes with a valid witness) and test_compressible_without_any_witness_fails_closed (fails closed without one). Full suite 6178/6178 (arb-step-unittest-3c19e2972bda40e39427c559497700e2), lint (arb-ruff-92d5ec92e457494fb938df41d51c76ba), typecheck (arb-step-typecheck-a84e2c556dcf4acfa0e63087102c4ca5), mkdocs --strict (arb-step-mkdocs-46be5634cb064aa8880c773d166884b3) all exit 0; gz covers behavior_uncovered_reqs=0.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Validator: src/gzkit/governance/trust_audits/bullet_retention.py — flipped whole-surface verbatim grep → tier-aware; tier resolved from .gzkit/corpus/*.jsonl (_resolve_tier; unknown→invariant fallback); invariant tier keeps Era-1 verbatim substring contract; compressible tier witnessed by latest rendition_advisor_verdict event + arb-step-judge-* receipt (exit_status==0, prefix-guarded)
+- Tests: tests/governance/test_bullet_retention.py — 10 new tier-scoped tests (3 classes); all 18 ADR-0.0.33-01 tests preserved (28 total)
+- Coupled amendment: ADR-0.0.33 § Amendment realizer cite corrected OBPI-0.0.37-18→OBPI-0.0.37-25 + realizer-correction note + tier-scoped amendment row in Attestation Block
+- Docs: docs/user/manpages/validate.md tier-scoped behavior (per-tier contract table + exit-code matrix); OBPI-level behave waiver in data/behave_coverage_waivers.json
+- Date completed: 2026-06-15
+- Attestation status: operator-attested (attest completed); foundation/heavy; ADR-0.0.33 Invariant-1 amendment Gate-5 point
+- Defects noted: fixed in-flight insights-schema defect (appended improvement record had evidence as string; InsightRecord requires list[str]) — caught by full unittest sweep, fixed, re-verified green
 
 ## Tracked Defects
 
@@ -257,12 +264,12 @@ _No further defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.37-25 tier-scoped bullet-retention validator verified: gz validate --bullet-retention flipped from whole-surface verbatim grep to tier-aware enforcement (invariant tier keeps the Era-1 verbatim contract; compressible tier witnessed by the latest rendition_advisor_verdict event + arb-step-judge-* receipt exit_status==0, prefix-guarded; unknown-tier→invariant conservative fallback), realizing the ADR-0.0.33 § Amendment 2026-06-03 and landed in the same commit-window as the coupled amendment (realizer cite corrected OBPI-18→OBPI-25; tier-scoped amendment row recorded in ADR-0.0.33 Attestation Block — this IS that amendment's Gate-5 attestation, foundation/heavy). Live canon stays green (the one compressible corpus entry backs no enforced bullet). 6178/6178 unittest (arb-step-unittest-3c19e2972bda40e39427c559497700e2), lint (arb-ruff-92d5ec92e457494fb938df41d51c76ba), typecheck (arb-step-typecheck-a84e2c556dcf4acfa0e63087102c4ca5), mkdocs --strict (arb-step-mkdocs-46be5634cb064aa8880c773d166884b3) all exit 0; gz covers behavior_uncovered_reqs=0; spec-reviewer PASS + quality-reviewer COHERENT (both-flagged judge-prefix minor fixed + 2 latest-governs tests added).
+- Date: 2026-06-15
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-15
 
 **Evidence Hash:** -

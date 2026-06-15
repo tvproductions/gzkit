@@ -1,4 +1,4 @@
-"""Tests for bullet retention validator (OBPI-0.0.33-01).
+"""Tests for bullet retention validator (OBPI-0.0.33-01, OBPI-0.0.37-25).
 
 Covers:
     REQ-0.0.33-01-01 — Mechanical/Promotable bullet present in surface → no errors
@@ -6,6 +6,9 @@ Covers:
     REQ-0.0.33-01-03 — Judgment/Ambiguous bullets are NOT enforced
     REQ-0.0.33-01-04 — validate_bullet_retention resolves from trust_audits re-export
     REQ-0.0.33-01-05 — --bullet-retention flag registered in CLI
+    REQ-0.0.37-25-01 — invariant-tier bullet absent/altered → exit-3 (verbatim contract preserved)
+    REQ-0.0.37-25-02 — compressible-tier bullet reworded + valid advisor-QC witness → no error
+    REQ-0.0.37-25-03 — compressible-tier bullet WITHOUT a valid witness → exit-3 (unwitnessed)
 
 All tests use ``tempfile.TemporaryDirectory`` for sandbox isolation; never
 write to the live repo root.
@@ -13,11 +16,18 @@ write to the live repo root.
 
 from __future__ import annotations
 
+import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
+from gzkit.content import advisor_qc
+from gzkit.content.models.corpus import Corpus, CorpusEntry
 from gzkit.governance.trust_audits.bullet_retention import validate_bullet_retention
+from gzkit.ledger import Ledger
+from gzkit.ledger_events import rendition_advisor_verdict_event
 from gzkit.traceability import covers
 
 # ---------------------------------------------------------------------------
@@ -351,6 +361,290 @@ class TestCLIFlagRegistered(unittest.TestCase):
             help_text,
             "gz validate --bullet-retention must be registered in CLI",
         )
+
+
+# ---------------------------------------------------------------------------
+# Tier-scoped enforcement (OBPI-0.0.37-25) — fixtures
+# ---------------------------------------------------------------------------
+
+_TIER_BULLET = "use uv run for commands"
+_TIER_SURFACE = "AGENTS.md"
+
+_SCORECARD_TIER = """\
+| # | Rule | Score | Notes |
+|---|------|-------|-------|
+| 1 | use uv run for commands | **Mechanical** | enforced by hook |
+"""
+
+
+def _seed_corpus(root: Path, *, tier: str, text: str, surface: str = _TIER_SURFACE) -> None:
+    """Write a one-entry per-surface corpus store carrying *tier* for *text*."""
+    entry = CorpusEntry(
+        id=f"corpus-tier-test-{tier}",
+        surface=surface,
+        section="execution-rules",
+        tier=tier,
+        classification="Mechanical",
+        text=text,
+        origin="tier-scoped-test",
+        ts="2026-06-15T00:00:00+00:00",
+    )
+    store = root / ".gzkit" / "corpus" / f"{surface}.jsonl"
+    store.parent.mkdir(parents=True, exist_ok=True)
+    store.write_text(Corpus(entries=(entry,)).dumps() + "\n", encoding="utf-8")
+
+
+def _seed_advisor_witness(
+    root: Path,
+    *,
+    surface: str = _TIER_SURFACE,
+    exit_status: int = 0,
+    run_id: str | None = None,
+) -> str:
+    """Record a real advisor-QC receipt + verdict event for *surface*; return its receipt_id.
+
+    Uses the production ``record_verdict`` engine so the fixture exercises the
+    real receipt envelope the validator reads. ``exit_status`` is patched onto
+    the written receipt to model a non-zero (invalid-witness) case. The returned
+    receipt_id is the exact linkage the validator follows
+    (``rendition_advisor_verdict.receipt_id`` → ``<receipt_id>.json``); the
+    receipts root is env-pinned by the caller via ``GZKIT_ARB_RECEIPTS_ROOT``.
+    """
+    resolved_run_id = run_id if run_id is not None else f"arb-step-judge-{'a' * 32}"
+    receipt_path = advisor_qc.record_verdict(
+        root=root,
+        surface=surface,
+        consumer=None,
+        explanation="All retained; two bullets combined without information loss.",
+        score=0.95,
+        run_id=resolved_run_id,
+        timestamp="2026-06-15T00:00:00Z",
+    )
+    if exit_status != 0:
+        payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+        payload["exit_status"] = exit_status
+        receipt_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    Ledger(root / ".gzkit" / "ledger.jsonl").append(
+        rendition_advisor_verdict_event(
+            surface=surface,
+            consumer=None,
+            receipt_id=receipt_path.stem,
+            score=0.95,
+        )
+    )
+    return receipt_path.stem
+
+
+class TestInvariantTierVerbatimContract(unittest.TestCase):
+    """REQ-0.0.37-25-01 — invariant-tier content keeps the Era-1 verbatim contract."""
+
+    @covers("REQ-0.0.37-25-01")
+    def test_invariant_tier_bullet_absent_fails_closed(self) -> None:
+        """An invariant-tier bullet absent from the rendered surface fails closed."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(
+                tmp,
+                scorecard_content=_SCORECARD_TIER,
+                agents_content="this surface omits the invariant bullet text entirely",
+            )
+            _seed_corpus(root, tier="invariant", text=f"{_TIER_BULLET} when executing Python")
+            errors = validate_bullet_retention(root)
+            self.assertEqual(
+                len(errors),
+                1,
+                "An invariant-tier bullet missing from the surface must fail closed (exit 3)",
+            )
+            self.assertEqual(errors[0].type, "bullet_retention")
+
+    @covers("REQ-0.0.37-25-01")
+    def test_invariant_tier_bullet_present_is_clean(self) -> None:
+        """An invariant-tier bullet present verbatim in the surface produces no error."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(
+                tmp,
+                scorecard_content=_SCORECARD_TIER,
+                agents_content=f"{_TIER_BULLET} when executing Python",
+            )
+            _seed_corpus(root, tier="invariant", text=f"{_TIER_BULLET} when executing Python")
+            errors = validate_bullet_retention(root)
+            self.assertEqual(errors, [], "Invariant-tier bullet present verbatim must be clean")
+
+    @covers("REQ-0.0.37-25-01")
+    def test_unknown_tier_falls_back_to_invariant_verbatim(self) -> None:
+        """A bullet that maps to no corpus entry uses the conservative invariant fallback."""
+        with tempfile.TemporaryDirectory() as tmp:
+            # No corpus store seeded → tier unknown → invariant verbatim contract.
+            root = _make_tree(
+                tmp,
+                scorecard_content=_SCORECARD_TIER,
+                agents_content="this surface does not contain the rule text",
+            )
+            errors = validate_bullet_retention(root)
+            self.assertEqual(
+                len(errors),
+                1,
+                "Unknown-tier bullet must fall back to the verbatim contract and fail closed",
+            )
+
+
+class TestCompressibleTierWitnessedRetention(unittest.TestCase):
+    """REQ-0.0.37-25-02 — compressible-tier retention is satisfied by a valid advisor-QC witness."""
+
+    @covers("REQ-0.0.37-25-02")
+    def test_compressible_reworded_with_valid_witness_passes(self) -> None:
+        """A reworded compressible bullet carrying a valid witness must NOT fail."""
+        with tempfile.TemporaryDirectory() as tmp:
+            receipts = Path(tmp) / "receipts"
+            with mock.patch.dict(os.environ, {"GZKIT_ARB_RECEIPTS_ROOT": str(receipts)}):
+                root = _make_tree(
+                    tmp,
+                    # Surface is reworded — it does NOT contain the bullet verbatim.
+                    scorecard_content=_SCORECARD_TIER,
+                    agents_content="invoke python through the uv runner for every command",
+                )
+                _seed_corpus(root, tier="compressible", text=f"{_TIER_BULLET} in all shells")
+                _seed_advisor_witness(root)
+                errors = validate_bullet_retention(root)
+                self.assertEqual(
+                    errors,
+                    [],
+                    "Compressible bullet with a valid advisor-QC witness must not fail "
+                    "even when reworded (no verbatim requirement at the compressible tier)",
+                )
+
+    @covers("REQ-0.0.37-25-02")
+    def test_compressible_with_witness_does_not_require_verbatim(self) -> None:
+        """The witnessed compressible path is independent of verbatim surface presence."""
+        with tempfile.TemporaryDirectory() as tmp:
+            receipts = Path(tmp) / "receipts"
+            with mock.patch.dict(os.environ, {"GZKIT_ARB_RECEIPTS_ROOT": str(receipts)}):
+                root = _make_tree(
+                    tmp,
+                    scorecard_content=_SCORECARD_TIER,
+                    agents_content="",  # empty surface — verbatim would fail, witness saves it
+                )
+                _seed_corpus(root, tier="compressible", text=f"{_TIER_BULLET} in all shells")
+                _seed_advisor_witness(root)
+                errors = validate_bullet_retention(root)
+                self.assertEqual(
+                    errors,
+                    [],
+                    "A valid witness satisfies compressible retention regardless of the "
+                    "rendered surface's verbatim content",
+                )
+
+
+class TestCompressibleTierUnwitnessedFailsClosed(unittest.TestCase):
+    """REQ-0.0.37-25-03 — compressible-tier without a valid witness fails closed."""
+
+    @covers("REQ-0.0.37-25-03")
+    def test_compressible_without_any_witness_fails_closed(self) -> None:
+        """A compressible bullet with no advisor-QC verdict event fails closed (exit 3)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            receipts = Path(tmp) / "receipts"
+            with mock.patch.dict(os.environ, {"GZKIT_ARB_RECEIPTS_ROOT": str(receipts)}):
+                root = _make_tree(
+                    tmp,
+                    scorecard_content=_SCORECARD_TIER,
+                    agents_content="reworded surface text without the verbatim bullet",
+                )
+                _seed_corpus(root, tier="compressible", text=f"{_TIER_BULLET} in all shells")
+                # No verdict event / receipt seeded → retention is unwitnessed.
+                errors = validate_bullet_retention(root)
+                self.assertEqual(
+                    len(errors),
+                    1,
+                    "Compressible retention without a witness must fail closed — the "
+                    "compressible tier is not an unconditional retention escape",
+                )
+                self.assertEqual(errors[0].type, "bullet_retention")
+
+    @covers("REQ-0.0.37-25-03")
+    def test_compressible_with_nonzero_exit_status_receipt_fails_closed(self) -> None:
+        """A verdict whose receipt carries a non-zero exit_status is not a valid witness."""
+        with tempfile.TemporaryDirectory() as tmp:
+            receipts = Path(tmp) / "receipts"
+            with mock.patch.dict(os.environ, {"GZKIT_ARB_RECEIPTS_ROOT": str(receipts)}):
+                root = _make_tree(
+                    tmp,
+                    scorecard_content=_SCORECARD_TIER,
+                    agents_content="reworded surface text without the verbatim bullet",
+                )
+                _seed_corpus(root, tier="compressible", text=f"{_TIER_BULLET} in all shells")
+                _seed_advisor_witness(root, exit_status=1)
+                errors = validate_bullet_retention(root)
+                self.assertEqual(
+                    len(errors),
+                    1,
+                    "A receipt with exit_status != 0 is not a valid retention witness",
+                )
+
+    @covers("REQ-0.0.37-25-03")
+    def test_compressible_witness_for_other_surface_does_not_satisfy(self) -> None:
+        """A verdict event for a different surface does not witness this surface's retention."""
+        with tempfile.TemporaryDirectory() as tmp:
+            receipts = Path(tmp) / "receipts"
+            with mock.patch.dict(os.environ, {"GZKIT_ARB_RECEIPTS_ROOT": str(receipts)}):
+                root = _make_tree(
+                    tmp,
+                    scorecard_content=_SCORECARD_TIER,
+                    agents_content="reworded surface text without the verbatim bullet",
+                )
+                _seed_corpus(root, tier="compressible", text=f"{_TIER_BULLET} in all shells")
+                # Witness recorded for a DIFFERENT surface than the corpus entry's.
+                _seed_advisor_witness(root, surface="CLAUDE.md")
+                errors = validate_bullet_retention(root)
+                self.assertEqual(
+                    len(errors),
+                    1,
+                    "A witness for another surface must not satisfy this surface's retention",
+                )
+
+    @covers("REQ-0.0.37-25-03")
+    def test_latest_verdict_governs_clean_then_invalid_fails_closed(self) -> None:
+        """When the LATEST verdict is invalid, an earlier valid one does not rescue retention."""
+        with tempfile.TemporaryDirectory() as tmp:
+            receipts = Path(tmp) / "receipts"
+            with mock.patch.dict(os.environ, {"GZKIT_ARB_RECEIPTS_ROOT": str(receipts)}):
+                root = _make_tree(
+                    tmp,
+                    scorecard_content=_SCORECARD_TIER,
+                    agents_content="reworded surface text without the verbatim bullet",
+                )
+                _seed_corpus(root, tier="compressible", text=f"{_TIER_BULLET} in all shells")
+                # Earlier verdict is valid; later (latest) verdict is invalid → latest governs.
+                _seed_advisor_witness(root, run_id=f"arb-step-judge-{'a' * 32}")
+                _seed_advisor_witness(root, exit_status=1, run_id=f"arb-step-judge-{'b' * 32}")
+                errors = validate_bullet_retention(root)
+                self.assertEqual(
+                    len(errors),
+                    1,
+                    "The latest verdict event governs — a superseded valid receipt must not "
+                    "rescue retention once a later invalid verdict lands",
+                )
+
+    @covers("REQ-0.0.37-25-02")
+    def test_latest_verdict_governs_invalid_then_clean_passes(self) -> None:
+        """When the LATEST verdict is valid, an earlier invalid one does not block retention."""
+        with tempfile.TemporaryDirectory() as tmp:
+            receipts = Path(tmp) / "receipts"
+            with mock.patch.dict(os.environ, {"GZKIT_ARB_RECEIPTS_ROOT": str(receipts)}):
+                root = _make_tree(
+                    tmp,
+                    scorecard_content=_SCORECARD_TIER,
+                    agents_content="reworded surface text without the verbatim bullet",
+                )
+                _seed_corpus(root, tier="compressible", text=f"{_TIER_BULLET} in all shells")
+                # Earlier verdict is invalid; later (latest) verdict is valid → latest governs.
+                _seed_advisor_witness(root, exit_status=1, run_id=f"arb-step-judge-{'a' * 32}")
+                _seed_advisor_witness(root, run_id=f"arb-step-judge-{'b' * 32}")
+                errors = validate_bullet_retention(root)
+                self.assertEqual(
+                    errors,
+                    [],
+                    "The latest verdict event governs — a later valid receipt witnesses "
+                    "retention even after an earlier invalid verdict",
+                )
 
 
 if __name__ == "__main__":
