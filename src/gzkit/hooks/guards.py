@@ -25,8 +25,11 @@ SCAN_EXTS = {".py", ".toml", ".ini", ".cfg", ".yaml", ".yml", ".txt"}
 PATTERNS: list[re.Pattern[str]] = [
     re.compile(r"^\s*import\s+pytest\b"),
     re.compile(r"^\s*from\s+pytest\s+import\b"),
-    re.compile(r"\bpytest\."),
-    re.compile(r"@\s*pytest\."),
+    # Require an identifier char after the dot so module-attribute access
+    # (pytest.fixture / pytest.mark) is caught but a prose sentence ending in
+    # "...pytest. " (a quoted policy reference) is not (GHI #621).
+    re.compile(r"\bpytest\.\w"),
+    re.compile(r"@\s*pytest\.\w"),
     re.compile(r"\bpy\.test\b"),
 ]
 

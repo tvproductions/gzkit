@@ -132,6 +132,20 @@ class TestScanFileSourceLevel(unittest.TestCase):
         )
         self.assertEqual(result, [])
 
+    def test_prose_sentence_ending_in_pytest_not_flagged(self) -> None:
+        """A doctrine string ending a sentence with 'pytest.' is prose, not usage (GHI #621).
+
+        The detector targets module-attribute access (pytest.<identifier>); a
+        sentence-ending 'pytest. ' in a quoted policy reference is not a pytest
+        usage and must not trip the guard.
+        """
+        content = '_DOCTRINE = "Testing: unittest over pytest. Enforced by forbid-pytest hook."\n'
+        self.assertEqual(self._scan(content), [])
+
+    def test_pytest_attribute_access_still_flagged(self) -> None:
+        """The class fix must not weaken real detection: pytest.<attr> still flags."""
+        self.assertEqual(len(self._scan("value = pytest.raises(ValueError)\n")), 1)
+
     def test_multiple_violations_report_line_numbers(self) -> None:
         content = "import pytest\n# comment\nuse = pytest.fixture\n"
         result = self._scan(content)
