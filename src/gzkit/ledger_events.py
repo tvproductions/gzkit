@@ -593,6 +593,34 @@ def composition_candidate_emitted_event(
     )
 
 
+def rendition_advisor_verdict_event(
+    surface: str,
+    consumer: str | None,
+    receipt_id: str,
+    score: float,
+) -> LedgerEvent:
+    """Create a rendition_advisor_verdict event (ADR-0.0.37, OBPI-0.0.37-24).
+
+    Layer-2 witness that ``gz content advise-rendition`` recorded an
+    information-retained-per-byte verdict as an ARB receipt. Advisory, never
+    gating — emitted on every successful record regardless of the score value.
+    """
+    timestamp = datetime.now(UTC).isoformat()
+    extra: dict[str, Any] = {
+        "surface": surface,
+        "receipt_id": receipt_id,
+        "score": score,
+    }
+    if consumer is not None:
+        extra["consumer"] = consumer
+    return LedgerEvent(
+        event="rendition_advisor_verdict",
+        id=f"rendition-advisor-verdict-{timestamp}",
+        ts=timestamp,
+        extra=extra,
+    )
+
+
 def corpus_entry_appended_event(
     surface: str,
     section: str,

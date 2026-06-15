@@ -3,7 +3,7 @@ id: OBPI-0.0.37-24-advisor-panel-info-retention-qc-loop
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 24
 lane: Heavy
-status: Draft
+status: Completed
 # req_atomic: each REQ is a single indivisible labor unit — one behavior/support
 # surface apiece (record-advisory, explanation-before-verdict, skill-wielded,
 # event, skill, docs); none decomposes into parallel seq=02+ sub-tasks (ADR-0.0.64).
@@ -23,7 +23,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 - **Checklist Item:** #24 - "OBPI-0.0.37-24 — Advisor-panel info-retention QC loop (per ADR-0.0.39 llm-as-judge: advisory never gating, receipt-emitting; scores information-retained-per-byte of a candidate rendition; verdict cited in operator attestation; tool(s) wielded by an advisor-QC skill)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -92,6 +92,10 @@ Net-new paths this OBPI creates (exempt from the brief-path existence gate per G
 - `tests/content/test_advisor_qc.py`
 - `docs/user/skills/gz-advisor-qc.md`
 - `features/content_advise_rendition.feature`
+- `src/gzkit/skills/gz-advisor-qc/SKILL.md` (sync-generated mirror)
+- `.claude/skills/gz-advisor-qc/SKILL.md` (sync-generated mirror)
+- `.github/skills/gz-advisor-qc/SKILL.md` (sync-generated mirror)
+- `.agents/skills/gz-advisor-qc/SKILL.md` (sync-generated mirror)
 
 All other Allowed Paths reference existing files modified in place.
 
@@ -144,7 +148,7 @@ All other Allowed Paths reference existing files modified in place.
 **Existing Code (understand current state):**
 
 - [ ] `src/gzkit/commands/content/remember.py` — the sibling command pattern (arg parsing, exit codes, fail-closed-before-write, ledger emission)
-- [ ] `src/gzkit/arb/step_reporter.py` + `src/gzkit/arb/paths.py` — how an `arb-step-<name>-<hash>` receipt is assembled and where it is written (`.gzkit/arb/receipts/`)
+- [ ] `src/gzkit/arb/step_reporter.py` + `src/gzkit/arb/paths.py` — how an `arb-step-<name>-<hash>` receipt is assembled and where it is written (`artifacts/receipts/`)
 - [ ] `src/gzkit/governance/trust_audits/attestation_receipts.py` — the receipt-id regex (`arb-(?:ruff|step-[a-z][a-z0-9]*)-[a-f0-9]{32}`) the verdict receipt must match
 - [ ] `src/gzkit/events.py` `CompositionRenderedEvent` — the `_EventBase` + `Literal[...]` pattern for `RenditionAdvisorVerdictEvent`
 - [ ] `.gzkit/skills/gz-content-remember/SKILL.md` — the tool+skill split the advisor-QC skill follows
@@ -279,13 +283,21 @@ uv run gz ledger tail --event rendition_advisor_verdict
 
 ### Key Proof
 
+
+uv run gz content advise-rendition AGENTS.md --consumer codex --score 0.12 --explanation "Two Promotable bullets dropped — measurable info loss, surfaced for the operator." exits 0 (advisory — a low score is recorded, never gated), writes artifacts/receipts/arb-step-judge-<32hex>.json (explanation before verdict, exit_status 0), and emits a rendition_advisor_verdict ledger event carrying surface, consumer, receipt_id, score. Verified: full unittest 6166/6166 (arb-step-unittest-9d00c5c9935f4977baa094a6f97a0242); lint clean (arb-ruff-c717aeef0bb946e39919698f43f36625); typecheck clean (arb-step-typecheck-6ef6688b8c584b518345ac4c1f15ec08); mkdocs --strict (arb-step-mkdocs-5ce3d43c997b426db70e0b230aeabb85); behave 4/4 @REQ-0.0.37-24-01/02/03 (arb-step-behave-f9c4552861b34513854a4a3b2b2a4c8f); gz covers behavior_uncovered_reqs=0.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Engine: src/gzkit/content/advisor_qc.py — deterministic record_verdict() writing a verdict-shaped ARB receipt (arb-step-judge-<32hex>, explanation-before-verdict, exit_status 0); NO in-code LLM/network; fail-closed-before-write on empty explanation
+- Command: src/gzkit/commands/content/advise_rendition.py + advise-rendition subparser — advisory (exit 0 for any score), emits rendition_advisor_verdict ledger event
+- Event: RenditionAdvisorVerdictEvent (events.py + TypedLedgerEvent union), rendition_advisor_verdict_event factory, ledger.json block, _NO_GRAPH_IMPACT waiver, tests/test_schemas.py _EVENT_MODELS entry
+- Skill: .gzkit/skills/gz-advisor-qc/SKILL.md (LLM-as-judge surface) + 4 byte-equal mirrors; manpage docs/user/skills/gz-advisor-qc.md + index link + gz-context router (skill-version 0.3.1->0.4.0); distribution baseline regenerated (104 files)
+- Docs: docs/user/manpages/content.md § advise-rendition, docs/user/runbook.md advisor-QC step, config/doc-coverage.json
+- Tests: 9 OBPI-scoped unit tests (tests/content/test_advisor_qc.py + tests/commands/test_content_advise_rendition.py) + 4 behave scenarios (features/content_advise_rendition.feature @REQ-0.0.37-24-01/02/03); SUPPORT REQs 04/05/06 ride the behave waiver in data/behave_coverage_waivers.json
+- Receipt-schema decision (§ Open Implementation Decision): doctrine-aligned ARB receipt, NOT bound to un-landed judge_invocation.json — operator-confirmed at Gate 5
+- Date completed: 2026-06-15
+- Attestation status: operator-attested (attest completed)
 
 ## Tracked Defects
 
@@ -295,12 +307,12 @@ _No further defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.37-24 advisor-QC loop verified: gz content advise-rendition records an advisory information-retained-per-byte verdict as a doctrine-aligned ARB receipt (arb-step-judge-<32hex>, explanation-before-verdict, exit_status 0), advisory-never-gating; 6166/6166 unittest (arb-step-unittest-9d00c5c9935f4977baa094a6f97a0242), lint (arb-ruff-c717aeef0bb946e39919698f43f36625), typecheck (arb-step-typecheck-6ef6688b8c584b518345ac4c1f15ec08), mkdocs --strict (arb-step-mkdocs-5ce3d43c997b426db70e0b230aeabb85), behave 4/4 @REQ-0.0.37-24-01/02/03 (arb-step-behave-f9c4552861b34513854a4a3b2b2a4c8f), gz covers behavior_uncovered_reqs=0. Open Implementation Decision (receipt schema) confirmed: doctrine-aligned ARB receipt, not bound to un-landed judge_invocation.json.
+- Date: 2026-06-15
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-15
 
 **Evidence Hash:** -

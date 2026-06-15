@@ -50,6 +50,7 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/gz-adr-map`](gz-adr-map.md) | Build ADR-to-artifact traceability using gz state and repository search |
 | [`/gz-adr-sync`](gz-adr-sync.md) | End-to-end ADR governance sync — evidence discovery, ledger reconciliation, and registration (Layers 1-3) |
 | [`/gz-adr-verification`](gz-adr-verification.md) | Verify ADR evidence and linkage using ADR/status checks |
+| [`/gz-advisor-qc`](gz-advisor-qc.md) | Judge the information-retained-per-byte of a candidate rendition and record the verdict via `gz content advise-rendition` — advisory, never gating |
 
 ---
 

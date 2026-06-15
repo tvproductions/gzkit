@@ -467,6 +467,22 @@ class CompositionCandidateEmittedEvent(_EventBase):
     task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
 
 
+class RenditionAdvisorVerdictEvent(_EventBase):
+    """rendition_advisor_verdict event — advisor-QC verdict record (ADR-0.0.37, OBPI-24).
+
+    Layer-2 witness that ``gz content advise-rendition`` recorded an
+    information-retained-per-byte verdict as an ARB receipt. Advisory, never
+    gating: emitted on every successful record regardless of the score value.
+    """
+
+    event: Literal["rendition_advisor_verdict"]
+    surface: str
+    receipt_id: str
+    score: float
+    consumer: str | None = None
+    task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
+
+
 class BriefReconciledEvent(_EventBase):
     """brief_reconciled event — OBPI brief reconciliation run (ADR-0.0.37, OBPI-06).
 
@@ -552,6 +568,7 @@ TypedLedgerEvent = Annotated[
     | ChoreDecommissionProcessedEvent
     | CorpusEntryAppendedEvent
     | CompositionCandidateEmittedEvent
+    | RenditionAdvisorVerdictEvent
     | BriefReconciledEvent
     | BriefReconcileDriftDetectedEvent
     | BriefReconcileDriftOverriddenEvent,

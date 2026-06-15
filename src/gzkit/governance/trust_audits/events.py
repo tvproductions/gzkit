@@ -120,6 +120,12 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "Layer-2 witness that `gz content compose` validated and staged a candidate rendition; "
         "consumed by compose/advisor tooling for audit, not the artifact graph."
     ),
+    "rendition_advisor_verdict": (
+        "Advisor-QC verdict record (ADR-0.0.37, OBPI-0.0.37-24). Layer-2 witness that "
+        "`gz content advise-rendition` recorded an information-retained-per-byte verdict as an "
+        "ARB receipt the operator cites at Gate 5. Advisory, never gating; consumed by the "
+        "advisor-QC audit trail and operator attestation, not the artifact graph."
+    ),
 }
 
 _VALIDATOR_FIELD_WAIVERS: dict[str, str] = {}

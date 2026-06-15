@@ -999,6 +999,38 @@
         }
       }
     },
+    "rendition_advisor_verdict": {
+      "required": [
+        "surface",
+        "receipt_id",
+        "score"
+      ],
+      "properties": {
+        "surface": {
+          "type": "string",
+          "min_length": 1
+        },
+        "consumer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "receipt_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "score": {
+          "type": "number"
+        },
+        "task_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
     "corpus_entry_appended": {
       "required": [
         "surface",

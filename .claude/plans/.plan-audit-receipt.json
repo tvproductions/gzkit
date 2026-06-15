@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.37-22-committed-rendition-store-deterministic-playback",
-  "timestamp": "2026-06-14T12:45:00.000000+00:00",
+  "obpi_id": "OBPI-0.0.37-24-advisor-panel-info-retention-qc-loop",
+  "timestamp": "2026-06-14T02:20:00.000000+00:00",
   "verdict": "PASS",
-  "plan_file": "woolly-greeting-cascade.md",
+  "plan_file": "OBPI-0.0.37-24-advisor-panel-info-retention-qc-loop.md",
   "gaps_found": 0,
-  "notes": "ADR<->OBPI alignment: all 7 checks Aligned. Plan<->OBPI alignment: all 7 checks Aligned (plan covers all 6 REQs within allowlist). CLI audit reported 6 'missing path' gaps — all are CREATE paths declared exempt in brief's ## Creates These Files section per GHI #419 (TDD pre-state). 144 sibling-ADR scope collisions on shared core surfaces — advisory only, non-blocking. Confidence: 95% — proceeding to Stage 2."
+  "notes": "ADR<->OBPI: 7/7 checks Aligned. Plan<->OBPI: 7/7 checks Aligned (plan covers all 6 REQs within allowlist). CLI structural check PASS. Scope collisions advisory-only (115 sibling-ADR overlaps, non-blocking). Booked decisions: doctrine-aligned ARB receipt (not judge_invocation.json); step name 'judge' (not 'advisor-qc' — hyphen violates receipt-id regex). Confidence: 95% — proceeding to Stage 2."
 }

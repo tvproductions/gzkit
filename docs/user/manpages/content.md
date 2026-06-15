@@ -150,6 +150,34 @@ The command **fails closed** (non-zero exit, no candidate written) when:
 - the `(surface, consumer)` setpoint is undeclared in `data/vendor-manifest.json`, or
 - the candidate drops or rewrites any `tier: invariant` corpus entry (0-Kelvin floor).
 
+### advise-rendition
+
+Record an advisory **information-retained-per-byte** verdict for a candidate
+rendition. This is the **advisor-QC** stage of the ADR-0.0.37 CMS pipeline
+(`corpus → compress → advisor-QC → operator attest → committed rendition → playback`):
+the agent wielding the `gz-advisor-qc` skill judges how much information the
+candidate retains per byte, and records that verdict as an ARB receipt the
+operator cites at Gate 5.
+
+**`advise-rendition` is deterministic** — NO LLM call, NO network I/O. The
+LLM-as-judge read is the agent's; the tool validates the verdict shape
+(explanation-before-verdict), writes the `arb-step-judge-<hash>` ARB receipt,
+and emits a `rendition_advisor_verdict` ledger event.
+
+**`advise-rendition` is advisory, never gating** (ADR-0.0.39 Evidentiary
+invariant): ANY score is recorded and the command exits 0 — a low retention
+score is evidence for the operator, never a fail-closed gate.
+
+```bash
+gz content advise-rendition <surface> [--consumer <vendor>] --score <0.0-1.0> --explanation "<reasoning>"
+gz content advise-rendition AGENTS.md --consumer codex --score 0.94 \
+  --explanation "All Mechanical bullets retained; two Promotable bullets combined without information loss."
+```
+
+The command **fails closed** (non-zero exit, no receipt written) only when the
+`--explanation` is empty or whitespace — a structurally malformed verdict. The
+verdict value itself is never the fail-closed trigger.
+
 ## Options
 
 | Flag | Applies To | Description |
@@ -164,6 +192,10 @@ The command **fails closed** (non-zero exit, no candidate written) when:
 | `--tier <tier>` | remember | `invariant` (verbatim at every setpoint) or `compressible` (default) |
 | `--classification <c>` | remember | Advisory-scorecard class: `Mechanical`/`Promotable`/`Judgment`/`Ambiguous` (default `Ambiguous`) |
 | `--origin <provenance>` | remember | Provenance of the capture, e.g. a GHI or session id (default `cli:content-remember`) |
+| `--consumer <vendor>` | compose, advise-rendition | Target vendor consumer (e.g. `codex`, `claude`); optional for advise-rendition (surface-wide when omitted) |
+| `--candidate <file>` | compose | Path to the candidate rendition file (reads from stdin when omitted) |
+| `--score <float>` | advise-rendition | Information-retained-per-byte verdict value; advisory, never gates (required) |
+| `--explanation <text>` | advise-rendition | The advisor's reasoning, recorded before the verdict; empty value fails closed (required) |
 | `--quiet`, `-q` | global | Suppress non-error output |
 | `--verbose`, `-v` | global | Enable verbose output |
 | `--debug` | global | Enable debug mode with full tracebacks |
@@ -215,6 +247,13 @@ uv run gz content remember AGENTS.md --section "Behavior Rules" \
 # The append landed in the corpus store, not the rendered surface:
 #   .gzkit/corpus/AGENTS.md.jsonl  ← new entry
 #   AGENTS.md                       ← byte-unchanged
+
+# Record an advisory info-retained-per-byte verdict for a candidate rendition (advisory, never gating)
+uv run gz content advise-rendition AGENTS.md --consumer codex --score 0.94 \
+  --explanation "All Mechanical bullets retained; two Promotable bullets combined without information loss."
+
+# The verdict is witnessed in the ledger and written as an ARB receipt cited at Gate 5:
+uv run gz ledger tail --event rendition_advisor_verdict
 ```
 
 ## Files
@@ -228,6 +267,8 @@ uv run gz content remember AGENTS.md --section "Behavior Rules" \
 | `src/gzkit/commands/content/` | Operator CLI surface (this OBPI-0.0.34-04) |
 | `src/gzkit/content/corpus_store.py` | Append-only per-surface corpus persistence (`remember`, OBPI-0.0.37-19) |
 | `.gzkit/corpus/<surface>.jsonl` | Append-only corpus store written by `gz content remember` |
+| `src/gzkit/content/advisor_qc.py` | Deterministic advisor-QC verdict-record engine (`advise-rendition`, OBPI-0.0.37-24) |
+| `artifacts/receipts/arb-step-judge-<hash>.json` | Advisor-QC verdict ARB receipt cited at Gate 5 |
 
 ## Related
 

@@ -4,9 +4,9 @@ description: Namespace router → context preservation and orientation skills, p
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-14
+last_reviewed: 2026-06-15
 model: haiku
-skill-version: 0.3.1
+skill-version: 0.4.0
 ---
 
 # gz-context
@@ -21,6 +21,7 @@ skill-version: 0.3.1
 | context diet | `gz-context-diet` |
 | remember | `gz-content-remember` |
 | compose | `gz-content-compose` |
+| advisor qc | `gz-advisor-qc` |
 
 Invoke the matched skill directly. See `gz-skill-router` for the full catalog.
 

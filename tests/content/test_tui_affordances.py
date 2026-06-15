@@ -259,8 +259,18 @@ class TestCommandSurfaceUnchanged(unittest.TestCase):
         subcommand growth. `remember` was added intentionally by OBPI-0.0.37-19
         (corpus capture write path); the fence is updated to admit it, not relaxed.
         """
-        # Expected subcommands for `gz content` (remember added by OBPI-0.0.37-19)
-        expected_subcommands = {"import", "list", "show", "render", "edit", "remember", "compose"}
+        # Expected subcommands for `gz content` (remember added by OBPI-0.0.37-19;
+        # compose by OBPI-0.0.37-21; advise-rendition by OBPI-0.0.37-24)
+        expected_subcommands = {
+            "import",
+            "list",
+            "show",
+            "render",
+            "edit",
+            "remember",
+            "compose",
+            "advise-rendition",
+        }
 
         # Run `gz content --help` via uv run (gzkit has no __main__.py)
         result = subprocess.run(

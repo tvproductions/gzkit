@@ -52,6 +52,7 @@ def register_content_parsers(commands: argparse._SubParsersAction) -> None:
     _register_edit(content_commands)
     _register_remember(content_commands)
     _register_compose(content_commands)
+    _register_advise_rendition(content_commands)
 
 
 def _register_import(content_commands: argparse._SubParsersAction) -> None:
@@ -348,5 +349,54 @@ def _register_compose(content_commands: argparse._SubParsersAction) -> None:
             surface=a.surface,
             consumer=a.consumer,
             candidate=a.candidate,
+        )
+    )
+
+
+def _register_advise_rendition(content_commands: argparse._SubParsersAction) -> None:
+    p = content_commands.add_parser(
+        "advise-rendition",
+        help="Record an advisory info-retained-per-byte verdict for a candidate rendition",
+        description=(
+            "Record an agent-supplied advisor-QC verdict (information-retained-per-byte) "
+            "for a candidate rendition as an ARB receipt the operator cites at Gate 5. "
+            "The tool is deterministic: NO LLM call, NO network I/O — the judgment is the "
+            "wielding gz-advisor-qc skill's (the agent's). It is ADVISORY, NEVER gating: any "
+            "score is recorded and the command exits 0 (ADR-0.0.39 Evidentiary invariant). "
+            "The only non-zero exit is a malformed verdict (empty --explanation), which "
+            "writes no receipt — explanation-before-verdict is the receipt-shape contract."
+        ),
+        epilog=_build_epilog(
+            [
+                "gz content advise-rendition AGENTS.md --consumer codex --score 0.94 "
+                '--explanation "All Mechanical bullets retained; two Promotable combined."',
+                "gz content advise-rendition CLAUDE.md --score 0.6 "
+                '--explanation "One Judgment bullet compressed with measurable loss."',
+            ]
+        ),
+    )
+    p.add_argument("surface", help="Control surface scored (e.g. AGENTS.md).")
+    p.add_argument(
+        "--consumer",
+        default=None,
+        help="Target vendor consumer (e.g. codex, claude). Omit for surface-wide scoring.",
+    )
+    p.add_argument(
+        "--score",
+        required=True,
+        type=float,
+        help="Information-retained-per-byte verdict value (advisory; never gates).",
+    )
+    p.add_argument(
+        "--explanation",
+        required=True,
+        help="Advisor reasoning, recorded before the verdict; empty fails closed.",
+    )
+    p.set_defaults(
+        func=lambda a: _content("advise_rendition", "content_advise_rendition_cmd")(
+            surface=a.surface,
+            consumer=a.consumer,
+            explanation=a.explanation,
+            score=a.score,
         )
     )

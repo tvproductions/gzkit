@@ -1009,6 +1009,29 @@ operator attestation (OBPI-22) before promotion to a committed rendition.
 
 See the `gz-content-compose` skill and [`gz content`](manpages/content.md) § compose.
 
+**To advisor-QC a candidate rendition (advisor-QC stage — OBPI-0.0.37-24):**
+After a candidate is staged, the agent wielding the `gz-advisor-qc` skill reads the
+candidate against its source corpus, judges the **information-retained-per-byte**, and
+records the verdict — **advisory, never gating** (ADR-0.0.39):
+
+```bash
+# Record the advisor verdict (any score is recorded; the tool exits 0 regardless)
+uv run gz content advise-rendition AGENTS.md --consumer codex --score 0.94 \
+  --explanation "All Mechanical bullets retained; two Promotable bullets combined without loss."
+
+# The verdict is witnessed in the ledger; inspect it before attesting
+uv run gz ledger tail --event rendition_advisor_verdict
+```
+
+The tool is deterministic (no LLM/network call — the judgment is the agent's). It writes
+the verdict as an `arb-step-judge-<hash>` ARB receipt and emits a `rendition_advisor_verdict`
+ledger event carrying `surface`, `consumer`, `receipt_id`, and `score`. A low retention
+score is evidence for the operator at Gate 5, never a fail-closed gate — the only non-zero
+exit is an empty `--explanation` (malformed verdict shape). The operator cites the receipt
+id in the Gate-5 attestation that promotes the candidate to a committed rendition.
+
+See the `gz-advisor-qc` skill and [`gz content`](manpages/content.md) § advise-rendition.
+
 **To commit a rendition and play it back (OBPI-0.0.37-22):**
 After the compose stage produces and the operator attests a candidate rendition, the
 committed rendition artifact is stored at `.gzkit/renditions/<surface>/<consumer>.md`.
