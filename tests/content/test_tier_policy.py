@@ -52,9 +52,7 @@ def _seed_composer_project(root: Path) -> None:
         origin="test",
         ts="2026-06-14T00:00:00Z",
     )
-    (corpus_dir / "AGENTS.md.jsonl").write_text(
-        entry.model_dump_json() + "\n", encoding="utf-8"
-    )
+    (corpus_dir / "AGENTS.md.jsonl").write_text(entry.model_dump_json() + "\n", encoding="utf-8")
 
 
 def _entry(entry_id: str, text: str, *, tier: str = "compressible") -> CorpusEntry:

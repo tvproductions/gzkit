@@ -86,6 +86,22 @@ def _render_bytes(root: Path) -> bytes:
     return render_agents_md(invariants, template_root, root)
 
 
+# The invariant-coherence validator was repointed (OBPI-0.0.37-22) from
+# registry re-render to deterministic playback of the committed rendition under
+# ``.gzkit/renditions/AGENTS.md/claude.md`` — and it is bootstrap-safe: with no
+# committed rendition it returns [] (exit 0) regardless of AGENTS.md content.
+# These scenarios therefore commit a deterministic rendition as the validator's
+# source of truth before exercising match / drift / event behavior.
+_TEST_RENDITION = b"# Constitutional surface (test rendition)\n\nDeterministic playback bytes.\n"
+
+
+def _commit_rendition(root: Path, content: bytes) -> None:
+    """Commit a deterministic AGENTS.md rendition for the playback validator."""
+    from gzkit.content.rendition_store import save_rendition  # noqa: PLC0415
+
+    save_rendition(root, "AGENTS.md", "claude", content)
+
+
 @given("the constitutional invariant registry has at least one entry")
 def step_seed_registry(context) -> None:  # type: ignore[no-untyped-def]
     _seed_registry(Path.cwd())
@@ -166,15 +182,23 @@ def step_outputs_byte_identical(context) -> None:  # type: ignore[no-untyped-def
 
 @given("AGENTS.md matches the rendered registry output")
 def step_agents_md_matches_registry(context) -> None:  # type: ignore[no-untyped-def]
-    rendered = _render_bytes(Path.cwd())
-    (Path.cwd() / "AGENTS.md").write_bytes(rendered)
+    root = Path.cwd()
+    _commit_rendition(root, _TEST_RENDITION)
+    (root / "AGENTS.md").write_bytes(_TEST_RENDITION)
 
 
 @given("AGENTS.md differs from the rendered registry output")
 def step_agents_md_differs_registry(context) -> None:  # type: ignore[no-untyped-def]
-    (Path.cwd() / "AGENTS.md").write_text(
-        "drifted content — does not match rendered output", encoding="utf-8"
+    root = Path.cwd()
+    _commit_rendition(root, _TEST_RENDITION)
+    (root / "AGENTS.md").write_text(
+        "drifted content — does not match the committed rendition", encoding="utf-8"
     )
+
+
+@given("a committed AGENTS.md rendition exists")
+def step_committed_rendition_exists(context) -> None:  # type: ignore[no-untyped-def]
+    _commit_rendition(Path.cwd(), _TEST_RENDITION)
 
 
 @when('I run "gz validate --invariant-coherence"')
@@ -478,7 +502,12 @@ def step_sync_agents_md_via_model(context) -> None:  # type: ignore[no-untyped-d
 
 @given("AGENTS.md has been synced via the model pipeline")
 def step_agents_md_synced_via_model(context) -> None:  # type: ignore[no-untyped-def]
-    _sync_agents_md_via_model(Path.cwd())
+    root = Path.cwd()
+    _sync_agents_md_via_model(root)
+    # The repointed validator (OBPI-0.0.37-22) diffs the committed rendition,
+    # not the model-pipeline output — commit the synced bytes as the rendition
+    # so a subsequent hand-edit diverges AGENTS.md from its source of truth.
+    _commit_rendition(root, (root / "AGENTS.md").read_bytes())
 
 
 @then("the committed AGENTS.md matches the model render")

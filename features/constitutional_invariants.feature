@@ -65,6 +65,7 @@ Feature: Constitutional invariant composition renderer (ADR-0.0.37, OBPI-0.0.37-
   @REQ-0.0.37-03-03
   Scenario: gz validate --invariant-coherence emits composition_rendered event
     Given the constitutional invariant registry has at least one entry
+    And a committed AGENTS.md rendition exists
     When I run "gz validate --invariant-coherence"
     Then a "composition_rendered" event is appended to the ledger
 
