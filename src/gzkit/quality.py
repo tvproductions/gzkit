@@ -597,6 +597,18 @@ def run_rendition_freshness_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --rendition-freshness", cwd=project_root)
 
 
+def run_rendition_floor_coherence_audit(project_root: Path) -> QualityResult:
+    """Run the canon→rendition invariant-floor gate (GHI #623, corrective to ADR-0.0.37).
+
+    Fails closed (exit 3) when a committed rendition omits an invariant-tier
+    corpus entry — the content witness `--rendition-freshness` (a timestamp
+    comparison) does not perform.
+    Recovery: `uv run gz content compose <surface>` with a candidate carrying
+    every invariant entry verbatim, then recommit the rendition.
+    """
+    return run_command("uv run gz validate --rendition-floor-coherence", cwd=project_root)
+
+
 def run_session_green_gate_audit(project_root: Path) -> QualityResult:
     """Run the session-green-gate declaration audit (ADR-0.0.68 / OBPI-0.0.68-02).
 

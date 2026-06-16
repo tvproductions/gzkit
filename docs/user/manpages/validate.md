@@ -15,6 +15,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
             [--advisor-proof-binding] [--lock-handoff-coupling] [--vendor-manifest]
             [--setpoint-coherence] [--rendition-freshness]
+            [--rendition-floor-coherence]
             [--invariant-coherence] [--brief-reconcile] [--router-tables]
             [--kind-invariance] [--req-kind-discipline] [--brief-command-shape] [--tautological-test-audit]
             [--closeout-proof]
@@ -1116,6 +1117,37 @@ gz validate --rendition-freshness
 control-surfaces`, or to diagnose a failing `gz check` Rendition freshness step.
 
 **Related:** ADR-0.0.37 (CMS pipeline), OBPI-0.0.37-22 (this gate), `--invariant-coherence`.
+
+### `--rendition-floor-coherence`
+
+Fail-closed when a committed rendition omits an invariant-tier corpus entry. For every
+`.gzkit/renditions/<surface>/<consumer>.md` artifact, asserts that each `tier: invariant`
+entry of the surface's corpus (`.gzkit/corpus/<surface>.jsonl`) appears **verbatim** in the
+rendition text. This is the content witness that `--rendition-freshness` (a timestamp
+comparison) does not perform: it proves the committed rendition actually carries canon's
+invariant floor, not merely that it is newer than the corpus. Emits
+`composition_drift_detected` naming the missing entry ids on violation.
+
+Runs in the default `gz check` build (GHI #623, corrective to ADR-0.0.37).
+
+**Usage:**
+
+```bash
+gz validate --rendition-floor-coherence
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every committed rendition carries its corpus invariant floor verbatim | — |
+| 3 | A rendition omits one or more invariant-tier corpus entries | Run `gz content compose <surface>` with a candidate that includes every invariant entry verbatim, attest, and recommit the rendition |
+
+**When to use:** Before attesting an ADR-0.0.37 closeout, or to prove a committed rendition
+genuinely derives canon's invariants rather than passing a timestamp-only freshness check.
+
+**Related:** ADR-0.0.37 (CMS pipeline), GHI #623 (corrective gate), `--rendition-freshness`,
+`--invariant-coherence`.
 
 ### `--invariant-coherence`
 

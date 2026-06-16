@@ -394,6 +394,41 @@ gzkit is 1.0 when ALL hold:
 
 ### Phase 0 — EMERGENCY: Schema-enforce the fillable artifacts (GHI #615)
 
+> **New entry in the Phase 0 hot-store (operator verbatim, 2026-06-16) — the
+> ADR-0.0.37 verification-theater facade + QC-binding meta-audit.** Phase 0's
+> model is already correct — a standing hot store for emergencies; this is a new
+> one dropped in, not a re-purpose. A closeout-skepticism pass exposed
+> ADR-0.0.37's CMS pipeline as *"a bullshit facade"* (*"the current kludge is
+> embarrassing"*): the implementation hollowed every stage the ADR faithfully
+> specified (corpus never enriched; composer *validates* instead of *compressing
+> from the corpus*; rendition hand-authored and disconnected; the temperature dial
+> projects nothing). Four OBPIs repudiated (02/03/21/22,
+> `model-induced-fabrication`). **Root finding:** the QC machinery never caught it
+> — `gz adr audit` / `gz obpi audit` verify receipt-presence + REQ-coverage, *never
+> truth* (a `fixture == fixture` tautology satisfies coverage); the audit trust
+> model literally *"does NOT re-verify."* Operator: *"if it doesn't catch this sort
+> of thing, then it is bullshit … we clearly need a meta skill that ensures that
+> these qc steps exist and support the pipeline."* **The cure — a QC-binding
+> meta-audit — is Phase 0's natural sibling to #615:** #615 binds the **data
+> objects** (specs/ledgers/receipts via Pydantic); the meta-audit binds the **QC
+> steps** (gates/audits/validators/closeout) so each is bound + fail-closed + wired
+> (not prose, fixture-only, mtime-only, empty-input, copy-vs-self, or parked in an
+> unpromoted pool ADR), and every ADR Decision ships **executable fidelity
+> assertions** the audit runs against the real system. It is the **alignment**
+> gate. **Sequencing:** the meta-audit lands before the **real** ADR-0.0.37 corpus
+> rebuild (B.1, now REPUDIATED/PAUSED), which re-opens behind it — without it any
+> rebuild rots back into facade. The meta-audit must pass **its own** check.
+>
+> **Status (2026-06-16):** design complete + operator-approved; **BOOKED** as
+> **ADR-0.0.73** (foundation, heavy, `verification-layer-binding-audit`, 6 OBPIs) —
+> Pending, 0/6 OBPIs, awaiting implementation. Refinement baked in from the
+> pre-mortem: detection is **behavioral, not declarative** — each QC step ships a
+> negative-control fixture it MUST fail on, run by `--qc-binding` (self-registration
+> + static heuristics alone are gameable). Essential cure = OBPIs 03+04 (`##
+> Fidelity Assertions` + `gz adr fidelity` run by closeout/audit), which alone
+> would have caught the ADR-0.0.37 facade. Full locked design + booking steps in
+> handoff `.gzkit/handoffs/20260616T091837Z-adr-0.0.37-facade-qc-binding-meta-audit.md`.
+
 > **Reframed (operator verbatim, 2026-06-15):** *"we are attending to schema
 > validation through Pydantic … to create term uniformity with fillable
 > artifacts like specs, ledgers, and receipts — the model has been vibing this
@@ -574,8 +609,22 @@ only deterministic playback writes the rendered surface.
         `arb-step-unittest-483ae14c…` (6097 tests), `arb-ruff-ed38ddd7…`,
         `arb-step-typecheck-d83e7132…`, `arb-step-mkdocs-fbec5b2a…`. Audit
         evidence: `…/ADR-0.0.70-…/audit/AUDIT.md`.
-- [ ] B.1 ADR-0.0.37 build-out (16/19 verified 2026-06-14 via
-      `gz adr report`; → terminal) — the campaign's first marquee.
+- [ ] B.1 ADR-0.0.37 build-out — **REPUDIATED-IN-PART / PAUSED (2026-06-16).**
+      The prior "16/19 verified 2026-06-14 via `gz adr report`" was **theater
+      verification** — `gz adr report` reads attested-completed receipts that
+      were written against facade gates (mtime-only `--rendition-freshness`,
+      empty-registry `--invariant-coherence`, fixture-only and tautological
+      tests). A skepticism audit (2026-06-16) repudiated OBPIs 02/03/21/22
+      (`model-induced-fabrication`); the CMS pipeline does not render from the
+      corpus. **This marquee re-opens behind the Phase 0 QC-binding meta-audit**
+      (see Phase 0 amendment 2026-06-16): real rebuild = enrich corpus →
+      compress-from-corpus toward each surface's setpoint (quantization;
+      invariants verbatim; temperature = favoring/eviction under monotonic
+      corpus growth) → committed rendition → deterministic playback. Interim
+      durable progress landed: a real `--rendition-floor-coherence` gate (the
+      evergreen-verbatim witness) + an operator-attested recompose seating the 7
+      missing operator doctrines into AGENTS.md (GHI #623, branch
+      `fix/adr-0.0.37-real-coherence-gate`, commit `8f754c45`).
       - **Checklist disposition (finalized; ledger-grounded).** The active
         ADR-0.0.37 target is items **01–10 + 18–27** (the 2026-06-03
         corpus → setpoint-compression → committed-rendition → deterministic-playback

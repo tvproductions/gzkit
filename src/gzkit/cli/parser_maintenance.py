@@ -687,6 +687,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Fail-closed when corpus drifted from committed rendition (OBPI-0.0.37-22).",
     )
     p_validate.add_argument(
+        "--rendition-floor-coherence",
+        dest="check_rendition_floor_coherence",
+        action="store_true",
+        default=False,
+        help="Rendition omits a corpus invariant-tier entry; fail-closed (GHI #623).",
+    )
+    p_validate.add_argument(
         "--kind-invariance",
         dest="check_kind_invariance",
         action="store_true",
@@ -826,6 +833,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_vendor_manifest=a.check_vendor_manifest,
             check_setpoint_coherence=a.check_setpoint_coherence,
             check_rendition_freshness=a.check_rendition_freshness,
+            check_rendition_floor_coherence=a.check_rendition_floor_coherence,
             check_kind_invariance=a.check_kind_invariance,
             check_receipt_shape=a.check_receipt_shape,
             attestation_receipts=a.attestation_receipts,

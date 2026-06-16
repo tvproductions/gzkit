@@ -63,3 +63,6 @@ site/
 
 # gzkit local sensor telemetry (ADR-0.0.70 — runtime-state, never committed)
 .gzkit/sensors/
+
+# Composer candidate intermediates (regenerable; committed rendition is the artifact)
+.gzkit/renditions/**/*.candidate.md

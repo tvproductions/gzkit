@@ -109,6 +109,9 @@ from gzkit.governance.trust_audits.release import (
     audit_advisory_scorecard,
     audit_version_release,
 )
+from gzkit.governance.trust_audits.rendition_floor_coherence import (
+    validate_rendition_floor_coherence,
+)
 from gzkit.governance.trust_audits.rendition_freshness import validate_rendition_freshness
 from gzkit.governance.trust_audits.router_tables import audit_router_tables
 from gzkit.governance.trust_audits.scenario_reachability import (
@@ -201,6 +204,7 @@ __all__ = [
     "validate_intrinsic_attestation",
     "validate_pointer_integrity",
     "validate_scenario_reachability",
+    "validate_rendition_floor_coherence",
     "validate_rendition_freshness",
     "validate_rendition_freshness",
     "validate_setpoint_coherence",
