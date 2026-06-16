@@ -182,17 +182,17 @@ Feature: Constitutional invariant composition renderer (ADR-0.0.37, OBPI-0.0.37-
     Then a temperature ValueError is raised
 
   @REQ-0.0.37-15-03
-  Scenario: Codex lite render preserves all Judgment bullets
-    Given an AgentContract with a Judgment bullet and a heavy-only bullet
+  Scenario: Codex lite render includes all bullets (density projection retired)
+    Given an AgentContract with a Judgment bullet and a plain bullet
     When I render the contract for codex at lite temperature
     Then the Judgment bullet is present in the rendered output
-    And the heavy-only bullet is absent from the rendered output
+    And the plain bullet is also present in the rendered output
 
   @REQ-0.0.37-15-04
-  Scenario: Codex and Claude AgentContract renders differ by temperature
-    Given an AgentContract with a Judgment bullet and a heavy-only bullet
-    When I render the contract for codex at lite and claude at heavy
-    Then the two rendered outputs differ
+  Scenario: Temperature no longer differentiates a vendor render (selection retired)
+    Given an AgentContract with a Judgment bullet and a plain bullet
+    When I render the contract for codex at lite and codex at heavy
+    Then the two rendered outputs are identical
 
   # OBPI-0.0.37-18 — Append-only corpus model
 

@@ -613,19 +613,21 @@ def step_temperature_value_error_raised(context) -> None:  # type: ignore[no-unt
     assert isinstance(context.temperature_error, ValueError)
 
 
-@given("an AgentContract with a Judgment bullet and a heavy-only bullet")
+@given("an AgentContract with a Judgment bullet and a plain bullet")
 def step_agent_contract_with_mixed_bullets(context) -> None:  # type: ignore[no-untyped-def]
     import json
     import tempfile
 
     from gzkit.content.models import AgentContract, Bullet
 
+    # The density_min dial was retired (OBPI-0.0.37-27, proven inert); all bullets
+    # now render at every temperature, so the fixture carries no per-bullet density.
     context.mixed_contract = AgentContract(
         name="Test",
         purpose="Test contract",
         rules=[
-            Bullet(text="judgment-bullet", classification="Judgment", density_min="lite"),
-            Bullet(text="heavy-only-bullet", density_min="heavy"),
+            Bullet(text="judgment-bullet", classification="Judgment"),
+            Bullet(text="plain-bullet"),
         ],
     )
     tmp = tempfile.mkdtemp()
@@ -656,32 +658,39 @@ def step_judgment_bullet_present(context) -> None:  # type: ignore[no-untyped-de
     )
 
 
-@then("the heavy-only bullet is absent from the rendered output")
-def step_heavy_bullet_absent(context) -> None:  # type: ignore[no-untyped-def]
-    assert b"heavy-only-bullet" not in context.codex_render, (
-        "Heavy-only bullet must not appear in codex lite render"
+@then("the plain bullet is also present in the rendered output")
+def step_plain_bullet_present(context) -> None:  # type: ignore[no-untyped-def]
+    assert b"plain-bullet" in context.codex_render, (
+        "Plain bullet must also appear in codex lite render — the density-projection "
+        "filter was retired (OBPI-0.0.37-27), so all bullets render at every temperature"
     )
 
 
-@when("I render the contract for codex at lite and claude at heavy")
+@when("I render the contract for codex at lite and codex at heavy")
 def step_render_both_vendors(context) -> None:  # type: ignore[no-untyped-def]
     from gzkit.content.render import render
 
+    # Per-vendor render selection-via-temperature retired (OBPI-0.0.37-27): render the
+    # SAME vendor at two temperatures to prove temperature no longer projects the model.
     context.codex_render = render(
         context.mixed_contract, "codex", temperature="lite", project_root=context.temp_project_root
     )
-    context.claude_render = render(
+    context.codex_render_heavy = render(
         context.mixed_contract,
-        "claude",
+        "codex",
         temperature="heavy",
         project_root=context.temp_project_root,
     )
 
 
-@then("the two rendered outputs differ")
-def step_renders_differ(context) -> None:  # type: ignore[no-untyped-def]
-    assert context.codex_render != context.claude_render, (
-        "Codex lite and claude heavy renders must differ (identical mirroring ended)"
+@then("the two rendered outputs are identical")
+def step_renders_identical(context) -> None:  # type: ignore[no-untyped-def]
+    # Pins only temperature-inertness PER VENDOR — deliberately NOT cross-harness
+    # byte-identity. Per-harness behavioral tuning is undesigned space the
+    # committed-rendition store leaves open (operator ruling, 2026-06-15).
+    assert context.codex_render == context.codex_render_heavy, (
+        "Temperature-projection retired (OBPI-0.0.37-27): for a single vendor, the routed "
+        "temperature must no longer alter the rendered bytes"
     )
 
 
