@@ -50,6 +50,7 @@ Removal was guarded by a byte-parity proof: `render()` WITH vs WITHOUT the proje
 ## Evidence / Artifacts
 
 - Code: `src/gzkit/content/models/bullet.py`, `src/gzkit/content/render/pipeline.py`, `src/gzkit/governance/invariants.py`, `src/gzkit/schemas/constitutional_invariant.json`, `src/gzkit/sync_surfaces.py`
-- Tests: `tests/content/{models/test_fields,test_render_pipeline,test_round_trip_agent_contract,test_byte_stability,test_vendor_manifest}.py`, `tests/commands/test_sync_cmds.py`
+- Tests: `tests/content/models/test_fields.py`, `tests/content/test_render_pipeline.py`, `tests/content/test_round_trip_agent_contract.py`, `tests/content/test_byte_stability.py`, `tests/content/test_vendor_manifest.py`, `tests/commands/test_sync_cmds.py`
+- Behave (coupled-surface coherence fix): `features/constitutional_invariants.feature`, `features/steps/constitutional_invariants_steps.py` (@REQ-0.0.37-15-03/04 reworked off the retired density dial)
 - Docs/data: `docs/governance/agent-control-surface-rendering-substrate.md` (mechanism refresh + Agent Orientation Index), `docs/governance/build-to-1.0-campaign-2026-06-10.md` (disposition), `data/behave_coverage_waivers.json`
 - Completion receipt + ADR-level audit ledger entry for OBPI-0.0.37-27 (attested_completed)
