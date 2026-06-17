@@ -76,11 +76,18 @@ def collect_campaign(repo_root: Path) -> dict | None:
             continue
         unchecked = re.findall(r"^- \[ \] (.+?)$", text, re.MULTILINE)
         done = len(re.findall(r"^- \[[xX~]\] ", text, re.MULTILINE))
+        # The ratified pull-order lives in a machine-readable marker, not in
+        # document order: prose amendments reorder the spine (e.g. B.1 reopens
+        # behind ADR-0.0.73), so the first unchecked checkbox is NOT what is
+        # pulled next. When the marker is present it is authoritative; absent,
+        # the renderer falls back to document order with an honest caveat.
+        topmost = re.search(r"^>?\s*\*\*Topmost \(sequenced\):\*\*\s*(.+?)\s*$", text, re.MULTILINE)
         return {
             "path": str(path.relative_to(repo_root)).replace(os.sep, "/"),
             "done": done,
             "total": done + len(unchecked),
             "next_items": [item.strip() for item in unchecked[:3]],
+            "topmost": topmost.group(1).strip() if topmost else None,
         }
     return None
 
@@ -356,8 +363,18 @@ def render(state: dict, now: datetime) -> str:
         done = campaign.get("done", 0)
         total = campaign.get("total", 0)
         lines.append(f"- Plan: `{campaign.get('path', '?')}` — {done}/{total} checklist items done")
-        for item in campaign.get("next_items") or []:
-            lines.append(f"- Next: {item}")
+        next_items = campaign.get("next_items") or []
+        topmost = campaign.get("topmost")
+        if topmost:
+            lines.append(f"- Topmost (sequenced): {topmost}")
+            if next_items:
+                lines.append(
+                    "- Open checkboxes (document order, NOT the pull order): "
+                    + "; ".join(next_items)
+                )
+        else:
+            for item in next_items:
+                lines.append(f"- Next (document order; prose sequencing governs): {item}")
         lines.append(f"- {CAMPAIGN_AUTHORITY_NOTE}")
     else:
         lines.append(

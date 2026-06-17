@@ -432,6 +432,16 @@ Status: **ACTIVE — the one canonical plan** (operator-ratified 2026-06-10).
 """
 
 
+# Same shape as CAMPAIGN_FIXTURE but carrying the machine-readable topmost
+# marker — the ratified pull-order that overrides naive document-order.
+CAMPAIGN_FIXTURE_WITH_TOPMOST = CAMPAIGN_FIXTURE.replace(
+    "## Phases\n",
+    "## Phases\n\n> **Topmost (sequenced):** confirm green floor (#621) -> "
+    "ADR-0.0.73 meta-audit (0/7) -> B.1 rebuild -> Phase 0 core (0.2-0.8).\n",
+    1,
+)
+
+
 class TestCollectCampaign(unittest.TestCase):
     """The Magna Carta surfacing contract (operator ruling, 2026-06-10).
 
@@ -481,6 +491,30 @@ class TestCollectCampaign(unittest.TestCase):
             ],
         )
 
+    def test_topmost_marker_absent_yields_none(self):
+        # No marker in the base fixture: topmost is None, document-order
+        # next_items is unchanged — the honest fallback.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo_with_campaign(tmp, CAMPAIGN_FIXTURE)
+            campaign = self.mod.collect_campaign(root)
+        self.assertIsNone(campaign["topmost"])
+
+    def test_topmost_marker_is_extracted_as_pull_order(self):
+        # The ratified sequencing marker is parsed verbatim and overrides the
+        # naive document-order surfacing (the Finding-1 defect).
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo_with_campaign(tmp, CAMPAIGN_FIXTURE_WITH_TOPMOST)
+            campaign = self.mod.collect_campaign(root)
+        self.assertEqual(
+            campaign["topmost"],
+            "confirm green floor (#621) -> ADR-0.0.73 meta-audit (0/7) -> "
+            "B.1 rebuild -> Phase 0 core (0.2-0.8).",
+        )
+        # document-order items remain available as subordinate context
+        self.assertEqual(
+            campaign["next_items"][0], "A.2 OBPI-0.0.69-03 (closeout-proof derived view)"
+        )
+
 
 class TestRenderCampaignBlock(unittest.TestCase):
     def setUp(self):
@@ -518,6 +552,58 @@ class TestRenderCampaignBlock(unittest.TestCase):
         rendered = self.mod.render({"campaign": None}, self.now)
         self.assertIn("## Active campaign — Magna Carta", rendered)
         self.assertIn("no ACTIVE campaign found", rendered)
+
+    def test_topmost_marker_renders_as_authoritative_pull_order(self):
+        # When the ratified marker is present it is surfaced as the pull order,
+        # and the document-order checkboxes are demoted to subordinate context.
+        state = {
+            "campaign": {
+                "path": "docs/governance/build-to-1.0-campaign-2026-06-10.md",
+                "done": 7,
+                "total": 39,
+                "next_items": ["0.2 Source + Config-First AST guard"],
+                "topmost": "ADR-0.0.73 meta-audit (0/7) -> B.1 rebuild",
+            },
+            "remote_state": None,
+            "handoff": None,
+            "session_handoff_ghis": [],
+            "obpi_locks": [],
+            "adr_pipeline": [],
+            "recent_events": [],
+            "blockers": [],
+        }
+        rendered = self.mod.render(state, self.now)
+        self.assertIn("Topmost (sequenced): ADR-0.0.73 meta-audit (0/7) -> B.1 rebuild", rendered)
+        # the misleading document-order item is present but explicitly NOT the pull order
+        self.assertIn("document order", rendered)
+        self.assertLess(
+            rendered.find("Topmost (sequenced)"),
+            rendered.find("document order"),
+            "the ratified pull order must outrank the document-order context line",
+        )
+
+    def test_no_topmost_marker_falls_back_with_sequencing_caveat(self):
+        # Without a marker the digest must NOT assert bare "Next:" precision it
+        # cannot back — it flags that prose sequencing governs.
+        state = {
+            "campaign": {
+                "path": "docs/governance/build-to-1.0-campaign-2026-06-10.md",
+                "done": 7,
+                "total": 39,
+                "next_items": ["0.2 Source + Config-First AST guard"],
+                "topmost": None,
+            },
+            "remote_state": None,
+            "handoff": None,
+            "session_handoff_ghis": [],
+            "obpi_locks": [],
+            "adr_pipeline": [],
+            "recent_events": [],
+            "blockers": [],
+        }
+        rendered = self.mod.render(state, self.now)
+        self.assertIn("0.2 Source + Config-First AST guard", rendered)
+        self.assertIn("document order", rendered)
 
 
 def subprocess_completed(stdout: str = "", returncode: int = 0):

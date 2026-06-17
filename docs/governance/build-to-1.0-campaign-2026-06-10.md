@@ -451,6 +451,13 @@ gzkit is 1.0 when ALL hold:
 > Until MOTD ships (Phase C), **this file's checklist is the workplan** —
 > sessions work top-down, check items off with observed command evidence.
 
+> **Topmost (sequenced):** confirm green floor (#621 fix landed) → ADR-0.0.73 QC-binding meta-audit (0/7, the alignment gate; OBPIs 03+04 are the essential cure) → B.1 ADR-0.0.37 real corpus rebuild (reopens behind 0.0.73) → Phase 0 enforcement core (0.2–0.8).
+> This marker is the ratified pull-order — it overrides naive top-down because
+> the prose amendments reorder the spine (B.1 reopens *behind* ADR-0.0.73). The
+> Phase-0 checkboxes print first in document order but are **not** what is pulled
+> next; the SessionStart digest (`collect_campaign`) surfaces this line as
+> "Topmost (sequenced)". Update it in the same breath as any resequencing amendment.
+
 ### Phase 0 — EMERGENCY: Schema-enforce the fillable artifacts (GHI #615)
 
 > **New entry in the Phase 0 hot-store (operator verbatim, 2026-06-16) — the
