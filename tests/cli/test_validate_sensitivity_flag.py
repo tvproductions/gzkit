@@ -151,8 +151,11 @@ class TestSensitivityJson(unittest.TestCase):
                     check_sensitivity=True,
                     as_json=True,
                 )
-            # Floor fires (info-class) -> exit 0; no escape.
-            self.assertEqual(ctx.exception.code, 0)
+            # Undeclared overlap fails closed (GHI #625): the fixture brief
+            # intersects a registered surface (src/gzkit/ledger.py) with no
+            # declaration and is not grandfathered -> sensitivity-floor-violation,
+            # exit 3. Records are still emitted on a violation.
+            self.assertEqual(ctx.exception.code, 3)
             payload = json.loads(buf.getvalue())
             self.assertIn("records", payload)
             records = payload["records"]

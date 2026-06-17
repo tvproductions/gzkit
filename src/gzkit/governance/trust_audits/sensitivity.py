@@ -22,12 +22,33 @@ if TYPE_CHECKING:
     from gzkit.models.security_surfaces import SecuritySurfaceEntry
 
 _SENSITIVITY_REGISTRY_REL = Path("data") / "security_surfaces.json"
+_FLOOR_GRANDFATHER_REL = Path("data") / "sensitivity_floor_grandfather.json"
 
 _SENSITIVITY_ALLOWED_PATHS_RE = re.compile(
     r"^##\s+ALLOWED\s+PATHS\s*$", re.MULTILINE | re.IGNORECASE
 )
 _SENSITIVITY_BRIEF_SECTION_RE = re.compile(r"^## ", re.MULTILINE)
 _SENSITIVITY_BULLET_PATH_RE = re.compile(r"-\s+`([^`]+)`")
+
+
+def _load_floor_grandfather(project_root: Path) -> frozenset[str]:
+    """Return the set of grandfathered brief rel-paths (GHI #625 cutover).
+
+    These briefs predate the tightening of the auto-detect floor to fail closed
+    on an omitted declaration over a registered security overlap. A missing or
+    malformed file means *nothing* is grandfathered (empty set) — absence must
+    not silently widen the waiver, but it is not itself fail-closed (the floor
+    enforcement does not depend on the grandfather file existing).
+    """
+    gf_path = project_root / _FLOOR_GRANDFATHER_REL
+    if not gf_path.is_file():
+        return frozenset()
+    try:
+        payload = json.loads(gf_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return frozenset()
+    briefs = payload.get("grandfathered_briefs", []) if isinstance(payload, dict) else []
+    return frozenset(p for p in briefs if isinstance(p, str))
 
 
 def _load_sensitivity_registry(
@@ -116,6 +137,7 @@ def _classify_brief_sensitivity(
     brief_text: str,
     project_root: Path,
     registry: tuple[SecuritySurfaceEntry, ...],
+    grandfather: frozenset[str] = frozenset(),
 ) -> ValidationError | None:
     """Return the single finding (if any) implied by one brief's sensitivity binding."""
     from gzkit.models.security_surfaces import match_globs
@@ -153,13 +175,34 @@ def _classify_brief_sensitivity(
         )
 
     if declared_norm is None:
+        # Omission over a registered security overlap is fail-closed
+        # (.gzkit/rules/security-sensitivity.md §§ 1-2, GHI #625). Briefs in the
+        # grandfather cutover set predate the enforcement and remain at the
+        # informational floor; everything else fails closed.
+        if rel in grandfather:
+            return ValidationError(
+                type="sensitivity-floor-info",
+                artifact=rel,
+                message=(
+                    f"Auto-detect floor active (grandfathered, GHI #625): "
+                    f"detected_sensitivity=security, declared_sensitivity=None, "
+                    f"intersecting_paths={allowed_paths}, "
+                    f"registry_categories={list(matching_categories)}."
+                ),
+            )
         return ValidationError(
-            type="sensitivity-floor-info",
+            type="sensitivity-floor-violation",
             artifact=rel,
             message=(
-                f"Auto-detect floor active: detected_sensitivity=security, "
-                f"declared_sensitivity=None, intersecting_paths={allowed_paths}, "
-                f"registry_categories={list(matching_categories)}."
+                f"Brief omits sensitivity: while allowed paths intersect "
+                f"registered security surfaces (detected=security, "
+                f"categories={list(matching_categories)}, "
+                f"intersecting_paths={allowed_paths}). "
+                f".gzkit/rules/security-sensitivity.md §§ 1-2 (escalate-not-escape): "
+                f"omission over a security overlap is fail-closed. Declare "
+                f"'sensitivity: security'; or if the overlap is an incidental "
+                f"false positive, narrow the Allowed Paths or discharge at "
+                f"completion via 'gz obpi complete --accept-security-floor'."
             ),
         )
     return None
@@ -183,13 +226,16 @@ def audit_sensitivity_binding(project_root: Path) -> list[ValidationError]:
         return [registry_error]
     assert registry is not None  # noqa: S101 — narrowed for ty
 
+    grandfather = _load_floor_grandfather(project_root)
     errors: list[ValidationError] = []
     for brief_path in briefs:
         try:
             brief_text = brief_path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):
             continue
-        finding = _classify_brief_sensitivity(brief_path, brief_text, project_root, registry)
+        finding = _classify_brief_sensitivity(
+            brief_path, brief_text, project_root, registry, grandfather
+        )
         if finding is not None:
             errors.append(finding)
     return errors

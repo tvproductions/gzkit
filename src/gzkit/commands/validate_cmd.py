@@ -593,6 +593,7 @@ def _sensitivity_records(
         _SENSITIVITY_REGISTRY_REL,
         _extract_sensitivity_allowed_paths,
         _iter_sensitivity_briefs,
+        _load_floor_grandfather,
         _load_sensitivity_registry,
     )
     from gzkit.governance.trust_audits.taxonomy import (  # noqa: PLC0415
@@ -608,6 +609,8 @@ def _sensitivity_records(
         findings.append(registry_error)
         return records, findings
     assert registry is not None  # noqa: S101
+
+    grandfather = _load_floor_grandfather(project_root)
 
     for brief_path in _iter_sensitivity_briefs(project_root):
         try:
@@ -654,6 +657,26 @@ def _sensitivity_records(
                         f"declared={declared_norm!r} but detected=security; "
                         f"categories={list(matching_categories)}; "
                         f"intersecting_paths={allowed_paths}"
+                    ),
+                )
+            )
+        elif detected == "security" and declared_norm is None and rel not in grandfather:
+            # Omission over a security overlap is fail-closed (GHI #625);
+            # grandfathered briefs (pre-cutover) stay at the informational floor.
+            findings.append(
+                ValidationError(
+                    type="sensitivity-floor-violation",
+                    artifact=rel,
+                    message=(
+                        f"Brief omits sensitivity: while allowed paths intersect "
+                        f"registered security surfaces (detected=security, "
+                        f"categories={list(matching_categories)}, "
+                        f"intersecting_paths={allowed_paths}). "
+                        f".gzkit/rules/security-sensitivity.md §§ 1-2: omission over a "
+                        f"security overlap is fail-closed. Declare 'sensitivity: security'; "
+                        f"or if the overlap is an incidental false positive, narrow the "
+                        f"Allowed Paths or discharge at completion via "
+                        f"'gz obpi complete --accept-security-floor'."
                     ),
                 )
             )
@@ -952,6 +975,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "instructions_files_budget",
         "agents_md_map_conformance",
         "sensitivity-escape-attempt",
+        "sensitivity-floor-violation",
         "sensitivity-registry-missing",
         "sensitivity-registry-malformed",
         "sensitivity-malformed-allowlist",
