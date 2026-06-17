@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.73-02-qc-binding-validate-scope",
-  "timestamp": "2026-06-17T08:20:00.000000+00:00",
+  "obpi_id": "OBPI-0.0.73-03-fidelity-assertions-and-gate",
+  "timestamp": "2026-06-17T10:00:00.000000+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.73-02-qc-binding-validate-scope.md",
+  "plan_file": "OBPI-0.0.73-03-fidelity-assertions-and-gate.md",
   "gaps_found": 0,
-  "notes": "ADR<->OBPI: 7/7 checks Aligned. Plan<->OBPI: 7/7 checks Aligned. Brief amended: 3 coupled surfaces added to Allowed Paths (parser_maintenance.py, commands/quality.py, qc_binding.py) — conventional validate-scope pattern. CREATE paths not-yet-existing are expected pre-implementation. 76 scope-collisions advisory only. Confidence: 95% — proceeding to Stage 2."
+  "notes": "ADR<->OBPI: 7/7 checks Aligned. No plan existed; plan authored as part of audit. CREATE paths not-yet-existing are expected pre-implementation. 120 scope-collisions advisory only. Confidence: 95% — proceeding to Stage 2."
 }

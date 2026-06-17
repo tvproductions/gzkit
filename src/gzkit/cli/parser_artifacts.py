@@ -29,6 +29,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "adr_audit_end_cmd": "gzkit.commands.adr_audit",
     "adr_covers_check": "gzkit.commands.adr_audit",
     "adr_emit_receipt_cmd": "gzkit.commands.adr_audit",
+    "adr_fidelity_cmd": "gzkit.commands.adr_fidelity",
     "adr_demote_cmd": "gzkit.commands.adr_demote",
     "adr_eval_cmd": "gzkit.commands.adr_promote",
     "adr_promote_cmd": "gzkit.commands.adr_promote",
@@ -964,6 +965,32 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
             attestor_present=a.attestor_present,
             dry_run=a.dry_run,
         )
+    )
+
+    p_adr_fidelity = adr_commands.add_parser(
+        "fidelity",
+        help="Run an ADR's Fidelity Assertions against the running system",
+        description=(
+            "Parse the '## Fidelity Assertions' block from an ADR Decision, "
+            "run each command, and compare observed-vs-expected exit code. "
+            "Exits 0 when all assertions pass, 1 when any fail. "
+            "Use --check to verify the block is parseable without running commands."
+        ),
+        epilog=build_epilog(
+            [
+                "gz adr fidelity ADR-0.0.73-verification-layer-binding-audit",
+                "gz adr fidelity ADR-0.0.73-verification-layer-binding-audit --check",
+            ]
+        ),
+    )
+    p_adr_fidelity.add_argument("adr", help="ADR identifier (e.g. ADR-0.0.73-...)")
+    p_adr_fidelity.add_argument(
+        "--check",
+        action="store_true",
+        help="Parse-only: verify the Fidelity Assertions block is parseable (no commands run)",
+    )
+    p_adr_fidelity.set_defaults(
+        func=lambda a: _lazy("adr_fidelity_cmd")(adr=a.adr, check_only=a.check)
     )
 
 

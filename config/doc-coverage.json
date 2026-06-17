@@ -342,6 +342,16 @@
       },
       "governance_relevant": true
     },
+    "adr fidelity": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
     "adr covers-check": {
       "surfaces": {
         "manpage": true,

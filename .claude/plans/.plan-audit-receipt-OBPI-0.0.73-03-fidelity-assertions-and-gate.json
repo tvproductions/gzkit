@@ -1,0 +1,899 @@
+{
+  "obpi_id": "OBPI-0.0.73-03-fidelity-assertions-and-gate",
+  "timestamp": "2026-06-17T10:00:00.000000+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.73-03-fidelity-assertions-and-gate.md",
+  "gaps_found": 0,
+  "gaps": [
+    "No plan file found for OBPI-0.0.73-03-fidelity-assertions-and-gate in .claude/plans/ or ~/.claude/plans/",
+    "Allowed path does not exist in repository: src/gzkit/fidelity.py",
+    "Allowed path does not exist in repository: src/gzkit/commands/adr_fidelity.py",
+    "Allowed path does not exist in repository: tests/governance/test_adr_fidelity.py",
+    "Allowed path does not exist in repository: docs/user/manpages/adr-fidelity.md"
+  ],
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.3.0",
+      "sibling_obpi": "OBPI-0.3.0-03-govzero-canonical-doc-surface",
+      "contested_paths": [
+        "docs/user/reference/charter.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.22.0",
+      "sibling_obpi": "OBPI-0.22.0-05-status-and-state-integration",
+      "contested_paths": [
+        "src/gzkit/commands/adr_fidelity.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-03-router-tables-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-04-adr-audit-integration",
+      "contested_paths": [
+        "src/gzkit/commands/adr_fidelity.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-01-context-core",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.28.0",
+      "sibling_obpi": "OBPI-0.28.0-02-context-slim",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration",
+      "contested_paths": [
+        "src/gzkit/commands/adr_fidelity.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces",
+      "contested_paths": [
+        "src/gzkit/commands/adr_fidelity.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-03-auth-surface-coherence-validator",
+      "contested_paths": [
+        "src/gzkit/cli/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-04-validate-taxonomy",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-02-plan-create-kind",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-03-adr-promote-kind",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-02-ledger-first-status-reads",
+      "contested_paths": [
+        "src/gzkit/commands/adr_fidelity.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.26",
+      "sibling_obpi": "OBPI-0.0.26-02-justify-binding-gate",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-03-closeout-proof-derived-view",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-04-retire-ln-closeout-proof-binding-surface",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-06-domain-cascade-validators-check-pipeline",
+      "contested_paths": [
+        "src/gzkit/cli/validate.py",
+        "src/gzkit/cli/check.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-03-gz-domain-cli-subcommand-group",
+      "contested_paths": [
+        "src/gzkit/cli/domain.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-07-legacy-mapping-classification-ratification",
+      "contested_paths": [
+        "src/gzkit/cli/legacy.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-01-prd-section-schema-scaffolder",
+      "contested_paths": [
+        "src/gzkit/cli/prd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-04-frontmatter-cascade-keys-validators",
+      "contested_paths": [
+        "src/gzkit/cli/plan.py",
+        "src/gzkit/cli/adr.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.30",
+      "sibling_obpi": "OBPI-0.0.30-04-editor-protocol-contract",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.30",
+      "sibling_obpi": "OBPI-0.0.30-01-complexity-guide-cli",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.68",
+      "sibling_obpi": "OBPI-0.0.68-02-session-green-gate-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.56",
+      "sibling_obpi": "OBPI-0.0.56-02-closeout-defect-accounting-reconcile-scope",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.62",
+      "sibling_obpi": "OBPI-0.0.62-02-gz-routine-exec-with-enforcement",
+      "contested_paths": [
+        "src/gzkit/cli/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.64",
+      "sibling_obpi": "OBPI-0.0.64-05-gz-task-fanout-readback",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-03-extend-payload-arb-receipts",
+      "contested_paths": [
+        "docs/user/manpages/adr-fidelity.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-02-migrate-validators-remediation-meta",
+      "contested_paths": [
+        "src/gzkit/cli/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.23",
+      "sibling_obpi": "OBPI-0.0.23-05-audit-check-covers-backfill-heuristic",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.23",
+      "sibling_obpi": "OBPI-0.0.23-04-cross-repo-defect-filing",
+      "contested_paths": [
+        "src/gzkit/cli/parser_*.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-22-committed-rendition-store-deterministic-playback",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-02-composition-renderer",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-03-composition-drift-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-06-brief-reconcile-cli",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py",
+        "src/gzkit/cli/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-20-setpoint-declaration-coherence-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-03-validate-sensitivity-scope",
+      "contested_paths": [
+        "src/gzkit/cli/parser_validate.py",
+        "src/gzkit/cli/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-03-parity-gate-three-channel-extension",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-02-req-kind-discipline-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-04-decommission-tautological-tests-chore",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.52",
+      "sibling_obpi": "OBPI-0.0.52-06-adr-clear-stale-resolution-verb",
+      "contested_paths": [
+        "src/gzkit/cli/adr_subcommands.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.52",
+      "sibling_obpi": "OBPI-0.0.52-08-status-surfacing-and-tripwire-receipt",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.40",
+      "sibling_obpi": "OBPI-0.0.40-02-judge-leakage-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_validate.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.40",
+      "sibling_obpi": "OBPI-0.0.40-04-meta-eval-cli",
+      "contested_paths": [
+        "src/gzkit/cli/parser_judge.py",
+        "src/gzkit/cli/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.40",
+      "sibling_obpi": "OBPI-0.0.40-03-judge-output-discipline-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_validate.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.14",
+      "sibling_obpi": "OBPI-0.0.14-01-obpi-lock-command",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.14",
+      "sibling_obpi": "OBPI-0.0.14-02-obpi-complete-command",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.38",
+      "sibling_obpi": "OBPI-0.0.38-02-surface-axis-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_validate.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.38",
+      "sibling_obpi": "OBPI-0.0.38-03-retroactive-classification",
+      "contested_paths": [
+        "src/gzkit/cli/parser_*.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-04-promote-import-direction-fail-closed",
+      "contested_paths": [
+        "src/gzkit/commands/adr_fidelity.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-03-migrate-back-edges-drain-baseline",
+      "contested_paths": [
+        "src/gzkit/commands/adr_fidelity.py",
+        "src/gzkit/cli/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-02-import-direction-validator-warn-only",
+      "contested_paths": [
+        "src/gzkit/commands/adr_fidelity.py",
+        "src/gzkit/cli/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-05-init-update-flag",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-08-mirror-sync",
+      "contested_paths": [
+        "src/gzkit/cli/parser_*.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-07-validate-distribution",
+      "contested_paths": [
+        "src/gzkit/cli/parser_validate.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-14-gz-upgrade-subcommand",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.34",
+      "sibling_obpi": "OBPI-0.0.34-08-vendor-manifest-expansion",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.65",
+      "sibling_obpi": "OBPI-0.0.65-05-handoff-archive-retention",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.65",
+      "sibling_obpi": "OBPI-0.0.65-03-gz-handoff-cli-verb",
+      "contested_paths": [
+        "docs/user/manpages/adr-fidelity.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.71",
+      "sibling_obpi": "OBPI-0.0.71-02-gz-obpi-repudiate-cli",
+      "contested_paths": [
+        "src/gzkit/cli/main.py",
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.63",
+      "sibling_obpi": "OBPI-0.0.63-07-verify-stage-command-shape-gate",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.63",
+      "sibling_obpi": "OBPI-0.0.63-03-evidence-summary-and-proof-binding",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.44",
+      "sibling_obpi": "OBPI-0.0.44-01-local-repo-routing",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-03-complexity-advise-cli",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-08-verdict-proof-binding",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.15",
+      "sibling_obpi": "OBPI-0.0.15-01-cli-command-scaffold",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.2",
+      "sibling_obpi": "OBPI-0.0.2-02-argparse-dispatcher-migration",
+      "contested_paths": [
+        "src/gzkit/cli/main.py",
+        "src/gzkit/cli/parser.py",
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.2",
+      "sibling_obpi": "OBPI-0.0.2-03-canonical-sync-grammar",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.2",
+      "sibling_obpi": "OBPI-0.0.2-01-cli-command-surface-inventory",
+      "contested_paths": [
+        "src/gzkit/cli/main.py",
+        "src/gzkit/cli/parser.py",
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.2",
+      "sibling_obpi": "OBPI-0.0.2-04-runtime-test-click-removal",
+      "contested_paths": [
+        "src/gzkit/cli/main.py",
+        "src/gzkit/cli/parser.py",
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.19",
+      "sibling_obpi": "OBPI-0.0.19-02-scaffold-rendering",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.19",
+      "sibling_obpi": "OBPI-0.0.19-03-validate-subcommand",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.28",
+      "sibling_obpi": "OBPI-0.0.28-03-threshold-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.20",
+      "sibling_obpi": "OBPI-0.0.20-03-fold-attestation-enrichment",
+      "contested_paths": [
+        "src/gzkit/cli/parser_arb.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.20",
+      "sibling_obpi": "OBPI-0.0.20-01-validator-and-allowlist",
+      "contested_paths": [
+        "src/gzkit/cli/parser_validate.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.3",
+      "sibling_obpi": "OBPI-0.0.3-08-progress-indication",
+      "contested_paths": [
+        "src/gzkit/cli/progress.py",
+        "src/gzkit/cli/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.3",
+      "sibling_obpi": "OBPI-0.0.3-07-structured-logging-structlog",
+      "contested_paths": [
+        "src/gzkit/cli/logging.py",
+        "src/gzkit/cli/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.3",
+      "sibling_obpi": "OBPI-0.0.3-06-output-formatter",
+      "contested_paths": [
+        "src/gzkit/cli/__init__.py",
+        "src/gzkit/cli/formatters.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.24",
+      "sibling_obpi": "OBPI-0.0.24-01-validator-scope",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-03-common-flags-option-factories",
+      "contested_paths": [
+        "src/gzkit/cli/helpers/common_flags.py",
+        "src/gzkit/cli/helpers/standard_options.py",
+        "src/gzkit/cli/commands/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-01-cli-module-restructure",
+      "contested_paths": [
+        "src/gzkit/commands/adr_fidelity.py",
+        "src/gzkit/cli/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-07-exception-hierarchy-exit-codes",
+      "contested_paths": [
+        "src/gzkit/cli/helpers/exit_codes.py",
+        "src/gzkit/cli/commands/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-02-parser-infrastructure",
+      "contested_paths": [
+        "src/gzkit/cli/parser.py",
+        "src/gzkit/cli/helpers/exit_codes.py",
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-06-output-formatter",
+      "contested_paths": [
+        "src/gzkit/cli/formatters.py",
+        "src/gzkit/cli/commands/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-09-progress-indication",
+      "contested_paths": [
+        "src/gzkit/cli/formatters.py",
+        "src/gzkit/cli/commands/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-05-epilog-templates",
+      "contested_paths": [
+        "src/gzkit/cli/helpers/epilog.py",
+        "src/gzkit/cli/commands/",
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-08-runtime-presentation",
+      "contested_paths": [
+        "src/gzkit/cli/commands/",
+        "src/gzkit/cli/formatters.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-04-help-text-completeness",
+      "contested_paths": [
+        "src/gzkit/cli/commands/",
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.36",
+      "sibling_obpi": "OBPI-0.0.36-03-validate-receipt-shape-scope",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-07-link-integrity-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.41",
+      "sibling_obpi": "OBPI-0.0.41-02-claim-release-safety-primitives",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.41",
+      "sibling_obpi": "OBPI-0.0.41-04-lock-handoff-coupling-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.67",
+      "sibling_obpi": "OBPI-0.0.67-03-delete-deprecated-lock-aliases",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.72",
+      "sibling_obpi": "OBPI-0.0.72-01-writer-model-roundtrip-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.21",
+      "sibling_obpi": "OBPI-0.0.21-09-chores-doctor-command",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.21",
+      "sibling_obpi": "OBPI-0.0.21-08-layout-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-01-bullet-retention-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-02-surface-weight-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-05-surface-fidelity-composite",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-04-scenario-reachability-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-03-pointer-integrity-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.25",
+      "sibling_obpi": "OBPI-0.0.25-02-override-and-mirror",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-04-epic-grouping",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-03-agents-md-map-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/commands/adr_fidelity.py",
+        "src/gzkit/cli/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.45",
+      "sibling_obpi": "OBPI-0.0.45-04-cli-mode-density-doctrine",
+      "contested_paths": [
+        "src/gzkit/cli/parser_validate.py",
+        "src/gzkit/cli/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.45",
+      "sibling_obpi": "OBPI-0.0.45-02-cli-mode-density-doctrine",
+      "contested_paths": [
+        "src/gzkit/cli/parser_*.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-01-tdd-receipt-stream-hub",
+      "contested_paths": [
+        "src/gzkit/cli/",
+        "docs/user/manpages/adr-fidelity.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-06-subsume-pool-management-into-gz-next",
+      "contested_paths": [
+        "src/gzkit/cli/",
+        "docs/user/manpages/adr-fidelity.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-05-solved-problem-pattern-corpus-read-surface",
+      "contested_paths": [
+        "src/gzkit/cli/",
+        "docs/user/manpages/adr-fidelity.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-03-gz-metrics-read-view",
+      "contested_paths": [
+        "src/gzkit/cli/",
+        "docs/user/manpages/adr-fidelity.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-04-queryability-search-and-insights-query",
+      "contested_paths": [
+        "src/gzkit/cli/",
+        "docs/user/manpages/adr-fidelity.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-02-gz-next-cap22-and-cap08-mode",
+      "contested_paths": [
+        "src/gzkit/cli/",
+        "docs/user/manpages/adr-fidelity.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.13",
+      "sibling_obpi": "OBPI-0.0.13-05-persona-drift-monitoring",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md",
+        "src/gzkit/commands/adr_fidelity.py",
+        "src/gzkit/cli/",
+        "docs/user/manpages/adr-fidelity.md",
+        "docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/obpis/OBPI-0.0.73-03-fidelity-assertions-and-gate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-02-storybook-cli",
+      "contested_paths": [
+        "src/gzkit/cli/",
+        "docs/user/manpages/adr-fidelity.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-03-storybook-validator",
+      "contested_paths": [
+        "src/gzkit/cli/",
+        "docs/user/manpages/adr-fidelity.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-02-persona-control-surface-definition",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.35",
+      "sibling_obpi": "OBPI-0.0.35-04-kind-invariance-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_maintenance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.16",
+      "sibling_obpi": "OBPI-0.0.16-01-validate-frontmatter-guard",
+      "contested_paths": [
+        "src/gzkit/cli/parser_artifacts.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.16",
+      "sibling_obpi": "OBPI-0.0.16-03-chore-registration",
+      "contested_paths": [
+        "src/gzkit/cli/parser_*.py"
+      ]
+    }
+  ]
+}

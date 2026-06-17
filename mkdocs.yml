@@ -126,6 +126,7 @@ nav:
     - gz adr status: user/manpages/adr-status.md
     - gz adr promote: user/manpages/adr-promote.md
     - gz adr audit-check: user/manpages/adr-audit-check.md
+    - gz adr fidelity: user/manpages/adr-fidelity.md
     - gz adr covers-check: user/manpages/adr-covers-check.md
     - gz adr emit-receipt: user/manpages/adr-emit-receipt.md
     - gz covers: user/manpages/covers.md

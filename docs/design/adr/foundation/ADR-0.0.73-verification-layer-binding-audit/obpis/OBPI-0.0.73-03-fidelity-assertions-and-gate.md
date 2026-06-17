@@ -3,7 +3,21 @@ id: OBPI-0.0.73-03-fidelity-assertions-and-gate
 parent: ADR-0.0.73-verification-layer-binding-audit
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
+# req_atomic: each REQ is a single indivisible labor unit — the FidelityAssertion
+# frozen model (01), the ## Fidelity Assertions parser (02), the gate runner's
+# pass/fail result-setting (03), and the gate's failure-report + non-zero exit (04)
+# are each one coherent surface authored in a single TDD increment; the manpage +
+# index + runbook docs (05, SUPPORT) is one doc deliverable; the boundary-invariant
+# fence (06, STRUCTURAL-FENCE) is a parent-ADR property. None decomposes into
+# parallel seq=02+ sub-tasks (ADR-0.0.64 task-envelope exemption).
+req_atomic:
+  - REQ-0.0.73-03-01
+  - REQ-0.0.73-03-02
+  - REQ-0.0.73-03-03
+  - REQ-0.0.73-03-04
+  - REQ-0.0.73-03-05
+  - REQ-0.0.73-03-06
 ---
 
 # OBPI-0.0.73-03-fidelity-assertions-and-gate: Fidelity Assertions And Gate
@@ -13,7 +27,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md`
 - **Checklist Item:** #3 - "`## Fidelity Assertions` schema + gz adr fidelity gate — `FidelityAssertion` Pydantic frozen model `{adr_id, claim, command, expected_exit, observed, result}`; `## Fidelity Assertions` block parsed from the ADR Decision; gz adr fidelity &lt;ADR&gt; RUNS the commands and compares observed-vs-expected exit; one standalone gate; manpage + `gz cli audit` green; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -61,8 +75,9 @@ result — a single standalone gate that both ceremonies (OBPI-04) invoke.
 1. REQUIREMENT: This OBPI MUST deliver: `## Fidelity Assertions` schema + gz adr fidelity gate — `FidelityAssertion` Pydantic frozen model `{adr_id, claim, command, expected_exit, observed, result}`; `## Fidelity Assertions` block parsed from the ADR Decision; gz adr fidelity &lt;ADR&gt; RUNS the commands and compares observed-vs-expected exit; one standalone gate; manpage + `gz cli audit` green; unit tests.
 1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
 1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
-1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
-1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
+1. REQUIREMENT: NEVER mark the OBPI accepted while scaffold defaults remain in the brief
+1. REQUIREMENT: ALWAYS reconcile the brief with the parent ADR before implementation begins
+1. REQUIREMENT: The `FidelityAssertion` Pydantic model MUST be frozen (`frozen=True, extra="forbid"`) with exactly six fields (`adr_id, claim, command, expected_exit, observed, result`) (REQ-0.0.73-03-01)
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -92,7 +107,7 @@ result — a single standalone gate that both ceremonies (OBPI-04) invoke.
 **Prerequisites (check existence, STOP if missing):**
 
 - [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/**`
+- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/obpis/`
 - [ ] Parent ADR evidence artifacts referenced by this brief are present
 
 **Existing Code (understand current state):**
@@ -246,15 +261,18 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+uv run gz adr fidelity ADR-0.0.73-verification-layer-binding-audit --check exits 0 with output "Fidelity block parseable: 6 assertion(s) in ADR-0.0.73-verification-layer-binding-audit.md". The gz adr fidelity <ADR> verb parses the ## Fidelity Assertions block from an ADR Decision, runs each command via shlex-split shell-less subprocess, and compares observed-vs-expected exit (result=pass/fail). Quality gates green — receipts arb-ruff-938771760656469d9e0a598ade9403db (lint), arb-step-typecheck-e28f513250cc447686e9946f6fc16c40 (typecheck), arb-step-unittest-82f489d8289b4d69848ae1e4067c6e30 (16/16 scoped + full suite), arb-step-mkdocs-66cfa1e4b29d48a884f66e07cdb4d910 (docs).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/fidelity.py (FidelityAssertion frozen Pydantic model + parse_fidelity_assertions() + run_fidelity_gate()); src/gzkit/commands/adr_fidelity.py (gz adr fidelity command); tests/governance/test_adr_fidelity.py (16 unit tests); docs/user/manpages/adr-fidelity.md (manpage)
+- Files modified: src/gzkit/cli/parser_artifacts.py (verb registration + lazy dispatch); src/gzkit/governance/trust_audits/cli.py (_NO_SKILL_VERBS waiver, OBPI-04 wires into skills); config/doc-coverage.json; docs/user/manpages/index.md; mkdocs.yml; docs/user/runbook.md; docs/governance/governance_runbook.md; data/behave_coverage_waivers.json (operator-approved BDD waiver)
+- Tests added: 16 (3 classes — TestFidelityAssertionModel/Parser/GateRunner; REQ-03-01 through 03-04)
+- Date completed: 2026-06-17
+- Attestation status: operator-attested "attest completed" (Gate 5, Heavy lane)
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -265,12 +283,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — operator-attested Gate 5 for OBPI-0.0.73-03-fidelity-assertions-and-gate (Heavy lane, foundation kind). FidelityAssertion frozen model + ## Fidelity Assertions parser + gz adr fidelity gate landed; 16/16 unit tests green; receipts arb-ruff-938771760656469d9e0a598ade9403db, arb-step-typecheck-e28f513250cc447686e9946f6fc16c40, arb-step-unittest-82f489d8289b4d69848ae1e4067c6e30, arb-step-mkdocs-66cfa1e4b29d48a884f66e07cdb4d910; gz validate --cli-alignment exit 0; behavior_uncovered_reqs=0.
+- Date: 2026-06-17
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-17
 
 **Evidence Hash:** -

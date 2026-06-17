@@ -53,6 +53,11 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "the `gz-justify` skill ships in OBPI-0.0.19-04 per the ADR's "
         "decomposition plan (skill definition + upstream integrations OBPI)."
     ),
+    "adr fidelity": (
+        "ADR-0.0.73 OBPI-03 delivers the `gz adr fidelity` gate. "
+        "OBPI-04 (Closeout/audit repoint) wires it into the `gz-adr-closeout-ceremony` "
+        "and `gz-adr-audit` skills; no separate wielding skill is needed before OBPI-04 lands."
+    ),
     "obpi repudiate": (
         "Operator-invoked repair verb (ADR-0.0.71-completion-repudiation). "
         "No standalone skill — the action is one-shot operator-gated correction, "

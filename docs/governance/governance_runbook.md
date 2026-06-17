@@ -22,6 +22,7 @@ uv run gz adr status ADR-<X.Y.Z> --json
 uv run gz adr report
 uv run gz state --json
 uv run gz adr audit-check ADR-<X.Y.Z>
+uv run gz adr fidelity ADR-<X.Y.Z>
 uv run gz adr covers-check ADR-<X.Y.Z>
 uv run gz gates --adr ADR-<X.Y.Z>
 uv run gz obpi status OBPI-<X.Y.Z-NN>

@@ -559,6 +559,9 @@ Skill shortcuts for the closeout ceremony:
 # 1) Reconcile ADR <-> OBPI completeness
 uv run gz adr audit-check ADR-<X.Y.Z>
 
+# 1b) Run ADR Fidelity Assertions against the running system
+uv run gz adr fidelity ADR-<X.Y.Z>
+
 # 2) Closeout presentation (paths/commands only)
 uv run gz closeout ADR-<X.Y.Z>
 

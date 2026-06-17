@@ -29,6 +29,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz adr demote`](adr-demote.md) | Demote a feature/foundation ADR back to pool (inverse of promote) |
 | [`gz adr evaluate`](adr-evaluate.md) | Evaluate ADR/OBPI quality (deterministic scoring with verdict) |
 | [`gz adr audit-check`](adr-audit-check.md) | Verify OBPI completeness/evidence for one ADR |
+| [`gz adr fidelity`](adr-fidelity.md) | Run ADR Fidelity Assertions against the running system |
 | [`gz adr covers-check`](adr-covers-check.md) | Verify ADR/OBPI @covers traceability in tests |
 | [`gz flags`](flags.md) | Display all registered feature flags with current values |
 | [`gz flag explain`](flag-explain.md) | Inspect one flag: metadata, resolved value, staleness, linked ADR |
