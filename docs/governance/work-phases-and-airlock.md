@@ -2,7 +2,7 @@
 
 # Work Phases and the Airlock — a North Star Model
 
-**Status:** Draft North Star. Captured from the operator design dialogue of 2026-06-16, **apparatus-scanned the same day** (5-pass skill scan; findings in §7), and **ratified into the Build-to-1.0 campaign (Magna Carta) as item E.7**. Still *a thing to align the apparatus to, revised as the apparatus tells* — the adopting foundation ADR is sequenced behind the campaign's current topmost work (no queue-jump). Alignment, tuning, and the entry-airlock build are the constructive follow-on; renaming defers to Phase I (completion-before-reduction).
+**Status:** Draft North Star. Captured from the operator design dialogue of 2026-06-16, **apparatus-scanned the same day** (5-pass skill scan; findings in §7), and **ratified into the Build-to-1.0 campaign (Magna Carta) as item E.7**. Still *a thing to align the apparatus to, revised as the apparatus tells* — the adopting foundation ADR is sequenced behind the campaign's current topmost work (no queue-jump). Alignment, tuning, and the entry-airlock build are the constructive follow-on; renaming defers to Phase I (completion-before-reduction). The *theory of the four phases* now lives in its sibling doc [`four-phases-of-work.md`](four-phases-of-work.md); §4 here references it. Per operator ruling 2026-06-17, Magna Carta is **not complete** until these theories are realized, substantiated, and made lawful — a 1.0 goal-state gate.
 
 **Naming:** "airlock", "seam", "two-graph", "push/pull" are working names. Final terminology is the operator's to set — the operator has flagged that the five-gate vocabulary "came from one session ten or eleven months ago and stuck" and wants less cryptic terms.
 
@@ -83,6 +83,8 @@ Intent-edges are *authored* (parent links, invariants, validators) — prescript
 ---
 
 ## 4. The four phases — operations on the two-graph
+
+> **Canonical theory:** the full theory of the four phases — the proof-obligation per phase, the (intent × behavior) signature, the forbidden fifth cell (V.I.B.E.S.), and *"a phase is the proof you can produce, not the intention you declare"* — lives in [`four-phases-of-work.md`](four-phases-of-work.md). What follows is the airlock-specific view: how each phase runs through the airlock as an operation on the two-graph.
 
 Each phase is the same airlock run over a different sub-graph, with a different definition of drift:
 

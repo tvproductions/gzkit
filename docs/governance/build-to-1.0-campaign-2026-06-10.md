@@ -294,6 +294,26 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > reductive-class → Phase I**, operator-pre-ratified as "in order" so it is
 > a committed reduction item, not deferred-indefinitely.
 
+> **Amendment (operator verbatim, 2026-06-17) — four-phase theory split to
+> its own doc; theories elevated to a 1.0 completion gate.** Operator: *"have
+> magna carta reference them, make it clear that we will never be complete
+> with magna carta until those theories are realized/substantiated/make
+> lawful."* → The theory of the four phases (design/build/fix/refactor) is
+> lifted to its own canonical doc
+> [`four-phases-of-work.md`](four-phases-of-work.md) — proof-obligation per
+> phase, the (intent × behavior) signature, the forbidden fifth cell
+> (V.I.B.E.S.), and *"a phase is the proof you can produce, not the intention
+> you declare."* The airlock doc's §4 now **references** it (no duplication —
+> the coupled-surface drift this whole theory exists to forbid).
+> **Goal-state amended:** a new 1.0 bar is added — the work-phase theories
+> (four-phase + airlock/two-graph) must be **realized** (built),
+> **substantiated** (apparatus-proven), and **made lawful** (the binding
+> mechanism — adopting ADR and/or fail-close validators — is resolved within
+> E.7, not pre-pinned). **E.7 is therefore a 1.0 completion gate, not an
+> optional Phase-E item** — Magna Carta cannot reach 1.0 until these theories
+> are law. This does **not** re-sequence the spine: Phase 0 / B.1 remain
+> topmost; the gate binds *completion*, not *order*.
+
 ## Authority and amendment (Magna Carta discipline)
 
 - **It steers; the spine propels.** The governance spine
@@ -416,6 +436,13 @@ gzkit is 1.0 when ALL hold:
   surface.
 - **#519 closed**; no open emergency; restore-health Recovery Closeout filled.
 - **Green floor holding**; GHI backlog at steady-state triage scale.
+- **Work-phase theories are lawful** — the four-phase theory
+  ([`four-phases-of-work.md`](four-phases-of-work.md)) and the airlock +
+  two-graph ([`work-phases-and-airlock.md`](work-phases-and-airlock.md)) are
+  **realized** (built — entry-airlock + apparatus alignment),
+  **substantiated** (apparatus-proven), and **made lawful** (the binding
+  mechanism is resolved within E.7, not pre-pinned here). Per operator ruling
+  2026-06-17, Magna Carta is **not complete** until E.7's theories are law.
 - **v1.0.0 released** through the patch-release ceremony.
 
 ## Phases
@@ -792,8 +819,15 @@ Dependency-ordered waves over the ~30 booked ADRs short of Validated
       compounding exit-discovered drift. **`gz-obpi-pipeline` is the proven
       reference implementation** (operator: "the process that had MOST
       earned its keep"); the entry-airlock and generalization extend FROM it.
-  - [x] E.7a Capture + apparatus scan — North Star doc + 5-pass skill scan,
-        findings folded into the doc (complete 2026-06-16).
+      The **four-phase theory** has its own canonical doc
+      ([`four-phases-of-work.md`](four-phases-of-work.md)); the airlock doc §4
+      references it. **E.7 is a 1.0 completion gate** (goal-state, operator
+      ruling 2026-06-17): Magna Carta is not complete until these theories are
+      **realized** (E.7c + E.7f), **substantiated** (E.7a + ongoing apparatus
+      proof), and **made lawful** (E.7b — the binding mechanism, adopting ADR
+      and/or fail-close validators, is itself an open question, not pre-pinned).
+  - [x] E.7a Capture + apparatus scan — North Star doc + four-phase theory
+        doc + 5-pass skill scan, findings folded in (complete 2026-06-17).
   - [ ] E.7b Adopting **foundation ADR** for the airlock model, authored
         when its gate is met — no queue-jump (Phase 0 / B.1 keep their
         sequence); gz-obpi-pipeline is the exemplar to generalize.
