@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.14.0"
+  skill-version: "7.15.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-10
+last_reviewed: 2026-06-17
 model: opus
 ---
 
@@ -172,6 +172,8 @@ When the CLI presents walkthrough commands (CLI Steps 4-5), run them one at a ti
 **Auto-mode override.** Auto mode's "prefer action over planning, minimize interruptions" framing does NOT apply inside the walkthrough. Step 5 is an operator-paced observation surface — do not batch demo commands into parallel tool calls to save turns. Rule #5 in § Ceremony Rules below overrides the auto-mode batching default.
 
 **Evidence-gathering ARB checks are separate from the demos.** The Evidence Summary Template (§ below) lists the canonical ARB-wrapped invocations (`uv run gz arb ruff`, `uv run gz arb step --name unittest -- uv run -m unittest -q`, `uv run gz arb typecheck`, `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict`) as evidence-template population — these are not discovered demo commands and must NOT be interleaved with the per-demo `--next` loop. Run them when gathering evidence for the Step 6 attestation prompt (either right before the prompt or during pre-ceremony preparation), never mixed into the Step 5 one-at-a-time sequence. Heavy-lane ceremony fail-closes on missing receipt IDs per `AGENTS.md` § Attestation § Lane behavior, so bare (non-ARB) invocations do not satisfy the evidence requirement.
+
+**Bound fidelity gate at the EXECUTE→ATTESTATION edge (ADR-0.0.73, OBPI-0.0.73-04).** When the final demo is acknowledged and `--next` advances from Step 5 EXECUTE to Step 6 ATTESTATION, the CLI automatically runs the **bound fidelity gate** — the SAME standalone gate the audit ceremony invokes (one gate, two consumers — `assert_fidelity_for_ceremony`). It parses the ADR Decision's `## Fidelity Assertions` block and RUNS each assertion against the running system. This is the bound replacement for the old prose 'Demonstrate Value' step — you do not narrate value; the gate exercises the ADR's thesis. A failed assertion **blocks the transition** (PolicyBreachError). An ADR with no `## Fidelity Assertions` block is **flagged with a warning** but does not hard-block in-flight (graceful migration, OBPI-0.0.73-04); author a block before closeout, since presence is enforced at ADR closeout per ADR-0.0.73 Boundary Invariant #4.
 
 **If a walkthrough command fails:** See Error Recovery. Do not skip it. Do not advance past it. Fix it or escalate.
 

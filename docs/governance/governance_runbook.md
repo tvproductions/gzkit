@@ -22,7 +22,7 @@ uv run gz adr status ADR-<X.Y.Z> --json
 uv run gz adr report
 uv run gz state --json
 uv run gz adr audit-check ADR-<X.Y.Z>
-uv run gz adr fidelity ADR-<X.Y.Z>
+uv run gz adr fidelity ADR-<X.Y.Z>   # bound gate; closeout + audit invoke it (ADR-0.0.73)
 uv run gz adr covers-check ADR-<X.Y.Z>
 uv run gz gates --adr ADR-<X.Y.Z>
 uv run gz obpi status OBPI-<X.Y.Z-NN>
@@ -649,6 +649,7 @@ Rules:
 - Do not run `gz audit` before attestation.
 - Do not treat passing checks as implied attestation.
 - Record attestation terms explicitly (`Completed`, `Completed — Partial: <reason>`, `Dropped — <reason>`).
+- Both the closeout ceremony (EXECUTE→ATTESTATION edge) and `gz audit` invoke the **same bound fidelity gate** (`gz adr fidelity`), which RUNS the ADR Decision's `## Fidelity Assertions` against the running system — the bound replacement for the prose 'Demonstrate Value' step (ADR-0.0.73). A failed assertion blocks the ceremony; a missing block is flagged with a warning (presence is hard-enforced at ADR closeout, Boundary Invariant #4). Do not substitute agent prose for the gate.
 - **REQ-coverage gate (ADR-0.0.25):** `gz obpi complete` exits 3 when any REQ in the closing brief's `## Acceptance Criteria` lacks a passing `@covers`-decorated test. Use `uv run gz covers OBPI-<X.Y.Z-NN>` to check coverage before invoking completion. The same gate mirrors to `gz adr emit-receipt --event closed`: an ADR cannot close while any OBPI has an unwaived REQ gap. Override: `--accept-uncovered REQ-ID --accept-uncovered-reason REASON` (requires `--attestor-present`; records `obpi_completion_uncovered_accept` ledger event).
 
 ---

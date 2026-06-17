@@ -3,7 +3,19 @@ id: OBPI-0.0.73-04-closeout-audit-fidelity-repoint
 parent: ADR-0.0.73-verification-layer-binding-audit
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
+# req_atomic: each REQ is one indivisible unit of labor — wiring the shared gate
+# into closeout (01) and into audit (02) are each a single coherent edit+test;
+# graceful-absence handling (03) is folded into the one shared helper, not a
+# separate sub-task; the runbook update (04) and the skill repoint+sync (05) are
+# each one SUPPORT deliverable. None decomposes into parallel seq=02+ sub-tasks
+# (ADR-0.0.64 task-envelope exemption).
+req_atomic:
+  - REQ-0.0.73-04-01
+  - REQ-0.0.73-04-02
+  - REQ-0.0.73-04-03
+  - REQ-0.0.73-04-04
+  - REQ-0.0.73-04-05
 ---
 
 # OBPI-0.0.73-04-closeout-audit-fidelity-repoint: Closeout Audit Fidelity Repoint
@@ -13,7 +25,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md`
 - **Checklist Item:** #4 - "Closeout/audit repoint onto the fidelity gate — both the closeout ceremony and the audit ceremony invoke gz adr fidelity, replacing the prose 'Demonstrate Value' step; runbook + governance_runbook updated; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -36,12 +48,19 @@ Closeout/audit repoint onto the fidelity gate — both the closeout ceremony and
 
 ## Allowed Paths
 
+- `src/gzkit/traceability.py` (added by brief reconcile, attestor g0)
+- `src/gzkit/__init__.py` (added by brief reconcile, attestor g0)
+
+- `src/gzkit/commands/__init__.py` (added by brief reconcile, attestor g0)
+- `src/gzkit/commands/ceremony_state.py` (added by brief reconcile, attestor g0)
+- `src/gzkit/commands/common.py` (added by brief reconcile, attestor g0)
+
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
 - `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md` — parent ADR for intent and scope
+- `src/gzkit/fidelity.py` — the shared bound gate (`assert_fidelity_for_ceremony`) both ceremonies invoke
 - `src/gzkit/commands/closeout_ceremony.py` — invoke the fidelity gate in the closeout ceremony
 - `src/gzkit/commands/audit_cmd.py` — invoke the fidelity gate in the audit ceremony
-- `src/gzkit/commands/adr_audit.py` — audit logic that drops the prose 'Demonstrate Value' step
 - `.gzkit/skills/gz-adr-audit/SKILL.md` — replace the prose Value-Demonstration step with the bound gate (canonical; sync after)
 - `.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md` — repoint the ceremony onto the gate (canonical; sync after)
 - `docs/user/runbook.md` — operator runbook reflects the bound fidelity gate
@@ -62,11 +81,11 @@ Closeout/audit repoint onto the fidelity gate — both the closeout ceremony and
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: This OBPI MUST deliver: Closeout/audit repoint onto the fidelity gate — both the closeout ceremony and the audit ceremony invoke gz adr fidelity, replacing the prose 'Demonstrate Value' step; runbook + governance_runbook updated; unit tests.
-1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
-1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
-1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
-1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
+1. REQUIREMENT: The closeout ceremony MUST invoke the OBPI-03 fidelity gate at the EXECUTE→ATTESTATION boundary and fail closed when any fidelity assertion fails — never advance to attestation over a red gate (REQ-0.0.73-04-01).
+1. REQUIREMENT: The audit ceremony MUST invoke the same standalone fidelity gate — one gate, two consumers — never a second prose copy of the check (REQ-0.0.73-04-02).
+1. REQUIREMENT: When an ADR Decision carries no `## Fidelity Assertions` block, both ceremonies MUST flag the absence and fail rather than accept agent prose; the prose 'Demonstrate Value' step is removed, not retained as a fallback (REQ-0.0.73-04-03).
+1. REQUIREMENT: The operator runbook and governance runbook MUST describe the bound fidelity gate replacing the prose step, and `gz validate --documents` MUST stay green (REQ-0.0.73-04-04).
+1. REQUIREMENT: The gz-adr-audit and gz-adr-closeout-ceremony skills MUST be repointed onto the gate and synced to all mirrors via `gz agent sync control-surfaces`, with `gz validate --surfaces` green (REQ-0.0.73-04-05).
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -246,15 +265,34 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+$ uv run gz covers OBPI-0.0.73-04-closeout-audit-fidelity-repoint --json
+REQ-0.0.73-04-01 | BEHAVIOR | TEST_COVERS           | pass
+REQ-0.0.73-04-02 | BEHAVIOR | TEST_COVERS           | pass
+REQ-0.0.73-04-03 | BEHAVIOR | TEST_COVERS           | pass
+REQ-0.0.73-04-04 | SUPPORT  | LEDGER_PLUS_VALIDATOR | pass
+REQ-0.0.73-04-05 | SUPPORT  | LEDGER_PLUS_VALIDATOR | pass
+  behavior_uncovered_reqs: 0
+
+The gate is genuinely bound: a failing assertion raises PolicyBreachError
+(test_failing_assertion_raises_policy_breach), and both ceremonies resolve to
+the SAME function object (test_both_ceremonies_import_the_same_gate). Full-suite
+receipt: arb-step-unittest-4d41eba9c7a24700b71a4f1e506a81d3 (exit_status=0).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Shared gate: src/gzkit/fidelity.py assert_fidelity_for_ceremony — one bound gate both ceremonies invoke (one gate, two consumers)
+- Closeout wiring: src/gzkit/commands/closeout_ceremony.py _gate_closeout_proof runs the gate at the EXECUTE->ATTESTATION edge
+- Audit wiring: src/gzkit/commands/audit_cmd.py runs the gate before any validation receipt is written
+- trust_model fix: .gzkit/skills/gz-adr-audit/SKILL.md no longer documents "does NOT re-verify evidence" (the facade-enabler the ADR named)
+- Absence policy: missing ## Fidelity Assertions block warns (stderr), does not hard-block in-flight; presence enforced at ADR closeout (Boundary Invariant #4) — operator-ratified
+- SUPPORT: docs/user/runbook.md + docs/governance/governance_runbook.md (REQ-04); gz-adr-audit + gz-adr-closeout-ceremony skills repointed + synced (REQ-05)
+- Tests added: 7 in tests/governance/test_closeout_audit_fidelity.py (@covers REQ-01/02/03)
+- Fixture migration: tests/test_audit_pipeline.py ADR fixture carries a ## Fidelity Assertions block
+- Date completed: 2026-06-17
+- Attestation: operator "attest completed" (Gate 5)
+- Defects: none in scope; the first-impl deadlock gate bug was fixed under GHI #626 (commit d66a6168)
 
 ## Tracked Defects
 
@@ -265,12 +303,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — closeout + audit repointed onto the bound fidelity gate (one gate, two consumers via assert_fidelity_for_ceremony); the prose 'Demonstrate Value' step is removed. 3 BEHAVIOR REQs unit-proven (behavior_uncovered_reqs=0 via tests/governance/test_closeout_audit_fidelity.py), 2 SUPPORT REQs via gz validate --documents/--surfaces. Full suite green arb-step-unittest-4d41eba9c7a24700b71a4f1e506a81d3, lint arb-ruff-b9548735f27b45ccaef3a7ee3306b13a, typecheck arb-step-typecheck-526c474a66074b38a45512980f177d11, mkdocs arb-step-mkdocs-0b78a421012d4d948176f19196fc64b2. Graceful-absence policy operator-ratified 2026-06-17.
+- Date: 2026-06-17
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-17
 
 **Evidence Hash:** -

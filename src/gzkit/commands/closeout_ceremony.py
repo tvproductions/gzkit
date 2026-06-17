@@ -270,16 +270,31 @@ def _gate_closeout_proof(project_root: Path, state: CeremonyState) -> None:
     from gzkit.governance.trust_audits.closeout_proof import validate_closeout_proof
 
     errors = validate_closeout_proof(project_root, adr_id=state.adr_id)
-    if not errors:
-        return
-    from gzkit.core.exceptions import PolicyBreachError
+    if errors:
+        from gzkit.core.exceptions import PolicyBreachError
 
-    unbound = [e.message for e in errors[:5]]
-    raise PolicyBreachError(
-        "EXECUTE -> ATTESTATION transition blocked: closeout proof incomplete.\n"
-        + "\n".join(f"  {m}" for m in unbound)
-        + (f"\n  ... and {len(errors) - 5} more" if len(errors) > 5 else "")
-    )
+        unbound = [e.message for e in errors[:5]]
+        raise PolicyBreachError(
+            "EXECUTE -> ATTESTATION transition blocked: closeout proof incomplete.\n"
+            + "\n".join(f"  {m}" for m in unbound)
+            + (f"\n  ... and {len(errors) - 5} more" if len(errors) > 5 else "")
+        )
+
+    # Fidelity gate (ADR-0.0.73, OBPI-0.0.73-04): the bound replacement for the
+    # prose 'Demonstrate Value' step. Run the ADR's ## Fidelity Assertions block
+    # against the running system before advancing to attestation; a failed
+    # assertion blocks the transition (raises PolicyBreachError), a missing block
+    # warns gracefully (operator-ratified absence policy, OBPI-04). If the ADR
+    # file cannot be resolved there is nothing to gate, so the gate is skipped.
+    from gzkit.commands.common import GzCliError, resolve_adr_file
+    from gzkit.fidelity import assert_fidelity_for_ceremony
+
+    config = ensure_initialized()
+    try:
+        adr_file, _ = resolve_adr_file(project_root, config, state.adr_id)
+    except (GzCliError, FileNotFoundError):
+        return
+    assert_fidelity_for_ceremony(adr_file, state.adr_id)
 
 
 def _gate_attestation_boundary(project_root: Path, state: CeremonyState) -> None:

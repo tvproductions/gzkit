@@ -71,6 +71,19 @@ def setUpModule() -> None:
     os.chdir(_ATTESTED_TEMPLATE)
     try:
         CliRunner().invoke(main, ["plan", "create", "f", "--kind", "feature"])
+        # Post-ADR-0.0.73, an audited ADR carries a ## Fidelity Assertions block
+        # (the bound replacement for the prose 'Demonstrate Value' step). Add a
+        # trivial passing assertion so the audit fidelity gate runs green instead
+        # of warning on absence (OBPI-0.0.73-04).
+        adr_md = next(Path("design/adr").rglob("ADR-0.1.0-f*.md"))
+        adr_md.write_text(
+            adr_md.read_text(encoding="utf-8")
+            + "\n## Fidelity Assertions\n\n"
+            + "| Claim | Command | Expected exit |\n"
+            + "|-------|---------|---------------|\n"
+            + "| Fixture gate runs green | true | 0 |\n",
+            encoding="utf-8",
+        )
         ledger = Ledger(Path(".gzkit/ledger.jsonl"))
         ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
         ledger.append(attested_event("ADR-0.1.0-f", "completed", "Test User"))

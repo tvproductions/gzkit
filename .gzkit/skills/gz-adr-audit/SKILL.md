@@ -5,18 +5,18 @@ description: Gate-5 audit templates and procedure for ADR verification. GovZero 
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.10.0"
+  skill-version: "6.11.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
   govzero-gates-covered: "Gate 5 (Human Attestation)"
   govzero_layer: "Layer 2 - Ledger Consumption"
-  trust_model: "Trusts Layer 1 ledger proof; does NOT re-verify evidence"
+  trust_model: "Trusts Layer 1 ledger proof for mechanical checks; re-verifies the ADR thesis via the bound fidelity gate (ADR-0.0.73) — gz adr fidelity RUNS the Decision's assertions against the running system"
 gz_command: audit
 invocation: uv run gz audit <adr-id>
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-24
+last_reviewed: 2026-06-17
 model: opus
 ---
 
@@ -36,7 +36,7 @@ The audit is read-only judgment work — a single driver scoring its own finding
 |---|---|---|
 | `spec-reviewer` | Independent requirement-tracing against ledger proof; verifies each OBPI's claimed REQ coverage holds against a fresh read of brief and tests | Steps 1–2 (Verify Ledger Proof, Reproduce Key Evidence) |
 | `quality-reviewer` | Independent assessment of the ADR package's structural coherence: do the OBPIs cohere into the ADR's claimed capability, or is the integration brittle? | After Step 2, before Step 3 |
-| `narrator` | Composes the Step 3 Value Demonstration — frames the working feature in operator-value terms, not implementer-detail terms | Step 3 (Demonstrate Value) |
+| `narrator` | Frames the Step 4 audit documentation (AUDIT.md) in operator-value terms; the Step 3 fidelity gate is now bound and runs itself — no prose value-demonstration to compose | Step 4 (Document) |
 
 Personas not dispatched: `implementer` (no code written in this ceremony — if audit reveals a defect requiring code, file a GHI via `/ghi-author` and route to a fresh OBPI brief, never spawn an implementer inside the audit).
 
@@ -49,8 +49,8 @@ Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Val
 | Thought | Reality |
 |---------|---------|
 | "All OBPIs passed individually, the ADR is obviously complete" | Individual OBPI completion doesn't prove ADR-level integration. The audit verifies the whole. |
-| "Tests pass and coverage is met, the audit is done" | That's verification, not demonstration. Step 3 (Demonstrate Value) shows the feature working, not just tested. |
-| "The closeout ceremony already covered this" | Audit and closeout are complementary but independent. If only audit is run, Step 3 is mandatory. |
+| "Tests pass and coverage is met, the audit is done" | That's verification, not fidelity. Step 3 (Fidelity Gate) runs the ADR's thesis against the running system, not just its tests. |
+| "The closeout ceremony already covered this" | Audit and closeout invoke the same bound fidelity gate; running one satisfies the other's fidelity step. Mechanical checks (Step 1-2) are still independent. |
 | "Ledger entries exist from a previous audit, I can skip re-verification" | Check staleness. Entries older than 7 days or predating code changes require fresh verification. |
 | "This is a Foundation ADR, the audit can be lighter" | Foundation ADRs still require value demonstration. The feature must be shown working. |
 
@@ -131,7 +131,7 @@ uv run gz adr audit-check <adr-id>
 
 **If ledger is complete (all briefs PASS):**
 
-- Skip to Step 3 (Demonstrate Value) — no re-verification needed
+- Skip to Step 3 (Fidelity Gate) — no re-verification needed
 - Trust Layer 1 proof from obpi-audit
 - Record "Ledger proof verified" in audit notes
 
@@ -172,43 +172,31 @@ uv run gz gates --adr <adr-id> > docs/design/adr/adr-x.y.x/ADR-x.y.z-slug/audit/
 
 Record ✓/✗/⚠ outcomes for each check.
 
-### 3. Demonstrate Value (MANDATORY)
+### 3. Fidelity Gate (MANDATORY — bound, replaces prose Demonstrate Value)
 
-**An audit that only verifies mechanical checks (tests pass, coverage met) without demonstrating what the ADR delivers is incomplete.**
+**An audit that only verifies mechanical checks (tests pass, coverage met) without holding the ADR's thesis against the running system is incomplete.**
 
-This step shows the ADR's achieved capabilities through live commands. It answers: "What can the operator do now that they couldn't before?"
+Before ADR-0.0.73 this step was prose ("Demonstrate Value") — agent-written narrative graded by nothing, the exact theater the verification-layer audit exists to kill. It is now a **bound, runnable gate**: the audit ceremony invokes the SAME standalone fidelity gate the closeout ceremony invokes (one gate, two consumers — `gzkit.fidelity.assert_fidelity_for_ceremony`). `gz audit` runs it automatically; you do not narrate it.
 
-**Procedure:**
+**What the gate does:**
 
-1. **Summarize the ADR's delivered capabilities** — 3-5 bullet points of what the ADR enables
-2. **Run product surface commands** that exercise each capability:
-   - Use `gz` CLI commands, not ad-hoc scripts
-   - Show actual output (not "tests pass" — show the *feature working*)
-   - For foundation/0.0.x ADRs with no CLI surface: show the tool/library in action via its integration point
-3. **Include a "Feature Demonstration" section in `audit/AUDIT.md`** with:
-   - Each capability named
-   - The command run and representative output
-   - A value summary explaining *why this matters*
+```bash
+uv run gz adr fidelity <ADR-ID>
+```
 
-**Examples of good demonstrations:**
+It parses the ADR Decision's `## Fidelity Assertions` block and RUNS each assertion's command against the running system, comparing observed vs expected exit. A failed assertion **blocks the audit** (exit 3) before any validation receipt is written — a red thesis cannot record a false `validated`.
 
-- Reconciliation ADR → run `uv run gz adr status ADR-<x.y.z>`, show the warnings panel
-- Adapter ADR → run the ingest command, show data flowing through
-- Schema ADR → show validation catching bad input
+**Absence policy (graceful migration, OBPI-0.0.73-04):** an ADR that carries no `## Fidelity Assertions` block is **flagged with a warning** (the prose 'Demonstrate Value' step is gone — absence is surfaced, not papered over with agent prose) but does not hard-block the in-flight audit. Hard presence-enforcement lives at ADR closeout (ADR-0.0.73 Boundary Invariant #4) and the new-ADR template. The back-fill of fidelity blocks onto already-VALIDATED ADRs is a separate forced sweep.
 
-**Examples of BAD audits (what this step prevents):**
+**Authoring duty:** if the ADR under audit has no block yet, author a `## Fidelity Assertions` table (claim / command / expected-exit rows that exercise the ADR's thesis) before closeout — do not substitute prose.
 
-- "121 tests pass, coverage 47%, lint clean" — this is verification, not demonstration
-- Alignment check saying "ALIGNED" without showing the feature running
-- Audit that could apply to *any* ADR because it never mentions this ADR's specific capabilities
-
-**Relationship to closeout ceremony:** If a full closeout ceremony (`/gz-adr-closeout-ceremony`) is being run, its Step 4 (Runbook Walkthrough) satisfies this requirement. If the audit is standalone (no ceremony), this step is mandatory and cannot be skipped.
+**Relationship to closeout ceremony:** both ceremonies invoke the identical gate, so running one satisfies the other's fidelity step. There is no separate prose demonstration to write in either path.
 
 ### 4. Document
 
 Populate `audit/AUDIT.md` with:
 
-- **Feature Demonstration** section (from Step 3 — capabilities, commands, output, value)
+- **Fidelity Gate** section (from Step 3 — each assertion's claim, command, expected vs observed exit, pass/fail)
 - Execution log (✓/✗/⚠ per check)
 - Evidence index (links to proof files)
 - Summary table (completeness, integrity, alignment)
@@ -394,7 +382,7 @@ report success to the operator until the report command confirms the change.
 - Audits drift from template structure
 - No proof artifacts captured
 - Shortfalls not remediated before marking VALIDATED
-- Audit skips Step 3 (Demonstrate Value) and jumps straight to documentation
+- Audit skips Step 3 (Fidelity Gate) and jumps straight to documentation
 
 ---
 
@@ -404,11 +392,9 @@ report success to the operator until the report command confirms the change.
 
 | Concern | gz-adr-audit | gz-adr-closeout-ceremony |
 |---------|-------------|--------------------------|
-| **Focus** | Evidence verification + value demonstration | Human-witnessed runbook walkthrough |
+| **Focus** | Evidence verification + bound fidelity gate | Human-witnessed runbook walkthrough + bound fidelity gate |
 | **Mode** | Agent-driven with human attestation | Human-driven with agent presenting |
 | **Outputs** | AUDIT.md + proofs/ + ledger entries | Closeout form + attestation record |
-| **Value demo** | Step 3 (agent demonstrates) | Step 4 (human walks through runbook) |
+| **Fidelity gate** | Step 3 (`gz adr fidelity`, bound) | EXECUTE→ATTESTATION edge (same gate, bound) |
 
-**If both are run:** The closeout ceremony's Step 4 (Runbook Walkthrough) satisfies the audit's Step 3 (Demonstrate Value). No duplication needed.
-
-**If only audit is run:** Step 3 is mandatory. The agent must demonstrate value, not just verify mechanics.
+**Both invoke the same bound gate** (`assert_fidelity_for_ceremony`) — one gate, two consumers. Running either ceremony exercises the ADR's `## Fidelity Assertions` against the running system; there is no separate prose value-demonstration to write or duplicate.

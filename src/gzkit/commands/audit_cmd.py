@@ -20,6 +20,7 @@ from gzkit.commands.common import (
     resolve_adr_file,
     resolve_adr_ledger_id,
 )
+from gzkit.fidelity import assert_fidelity_for_ceremony
 from gzkit.ledger import Ledger, audit_generated_event, audit_receipt_emitted_event
 from gzkit.lifecycle import InvalidTransitionError, LifecycleStateMachine
 from gzkit.templates import render_template
@@ -283,6 +284,15 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
 
     proofs_dir.mkdir(parents=True, exist_ok=True)
     result_rows, failures = _run_audit_verifications(commands, proofs_dir, project_root)
+
+    # Fidelity gate (ADR-0.0.73, OBPI-0.0.73-04): the SAME bound gate the closeout
+    # ceremony invokes — one gate, two consumers — replacing the prose
+    # 'Demonstrate Value' step. Run the ADR's ## Fidelity Assertions against the
+    # running system before any validation receipt is written, so a missing block
+    # or a failed assertion cannot record a false 'validated' (raises
+    # PolicyBreachError → exit 3).
+    assert_fidelity_for_ceremony(adr_file, adr_id)
+
     plan_file, audit_file, enrichment = _write_audit_artifacts(
         adr_id,
         adr_file,

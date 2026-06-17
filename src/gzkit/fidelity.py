@@ -158,3 +158,66 @@ def run_fidelity_gate(
         result = "pass" if observed == assertion.expected_exit else "fail"
         results.append(assertion.model_copy(update={"observed": observed, "result": result}))
     return results
+
+
+# ---------------------------------------------------------------------------
+# Ceremony gate — the single bound gate both closeout and audit consume
+# ---------------------------------------------------------------------------
+
+
+def assert_fidelity_for_ceremony(adr_path: Path, adr_id: str) -> list[FidelityAssertion]:
+    """Run the ADR's Fidelity Assertions as a ceremony gate (ADR-0.0.73, OBPI-04).
+
+    This is the one bound gate that BOTH the closeout ceremony and the audit
+    ceremony invoke, replacing the prose 'Demonstrate Value' step. Parses the
+    ADR's ``## Fidelity Assertions`` block and runs each assertion against the
+    running system.
+
+    Absence policy (graceful migration, operator-ratified 2026-06-17): the ADR
+    scopes out back-filling fidelity assertions onto already-VALIDATED ADRs (that
+    is the forced follow-up sweep). So when an ADR carries NO block, the gate
+    emits a loud warning (the absence is flagged, not silently accepted — the
+    prose step is still gone) but does NOT block. Hard presence-enforcement stays
+    at ADR closeout (Boundary Invariant #4) and the new-ADR template. When a
+    block IS present, the gate hard-runs and a failed assertion blocks.
+
+    Raises
+    ------
+    PolicyBreachError
+        when a present block has any failing assertion (observed != expected).
+
+    Returns the run assertions (all passing) when the gate is green, or an empty
+    list when the block is absent (warning emitted).
+    """
+    from gzkit.core.exceptions import PolicyBreachError  # noqa: PLC0415
+
+    try:
+        assertions = parse_fidelity_assertions(adr_path)
+    except ValueError:
+        # Warning is a log, not a result — route to stderr so `--json` stdout
+        # stays valid JSON (CLI output contract; `.claude/rules/cli.md`).
+        from rich.console import Console  # noqa: PLC0415
+
+        Console(stderr=True).print(
+            f"[yellow]Fidelity gate (warning):[/yellow] {adr_id} has no "
+            "'## Fidelity Assertions' block. The prose 'Demonstrate Value' step "
+            "is removed (ADR-0.0.73, OBPI-0.0.73-04); presence is enforced at ADR "
+            "closeout (Boundary Invariant #4). Author a block before closeout."
+        )
+        return []
+
+    results = run_fidelity_gate(assertions, adr_id=adr_id)
+    failed = [r for r in results if r.result == "fail"]
+    if failed:
+        lines = "\n".join(
+            f"  FAIL  {r.claim} (command={r.command!r}, "
+            f"expected={r.expected_exit}, observed={r.observed})"
+            for r in failed
+        )
+        raise PolicyBreachError(
+            f"Fidelity gate: {len(failed)} assertion(s) failed for {adr_id}:\n"
+            f"{lines}\n"
+            f"Fix the ADR's thesis against the running system, then re-run "
+            f"`gz adr fidelity {adr_id}`."
+        )
+    return results

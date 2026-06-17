@@ -559,16 +559,24 @@ Skill shortcuts for the closeout ceremony:
 # 1) Reconcile ADR <-> OBPI completeness
 uv run gz adr audit-check ADR-<X.Y.Z>
 
-# 1b) Run ADR Fidelity Assertions against the running system
+# 1b) Run ADR Fidelity Assertions against the running system.
+#      Both the closeout ceremony (EXECUTE->ATTESTATION edge) and the audit
+#      ceremony invoke this SAME bound gate — it replaces the old prose
+#      'Demonstrate Value' step (ADR-0.0.73). A failed assertion blocks the
+#      ceremony; an ADR with no `## Fidelity Assertions` block is flagged with
+#      a warning (presence is enforced at ADR closeout). You can run it
+#      standalone here, but you do not have to — the ceremonies run it for you.
 uv run gz adr fidelity ADR-<X.Y.Z>
 
-# 2) Closeout presentation (paths/commands only)
+# 2) Closeout presentation (paths/commands only). The walkthrough's
+#    EXECUTE->ATTESTATION transition runs the bound fidelity gate automatically.
 uv run gz closeout ADR-<X.Y.Z>
 
 # 3) Human attestation (prerequisites enforced by default)
 uv run gz attest ADR-<X.Y.Z> --status completed
 
-# 4) Post-attestation audit (strict)
+# 4) Post-attestation audit (strict). Invokes the same bound fidelity gate
+#    before writing the validation receipt.
 uv run gz audit ADR-<X.Y.Z>
 
 # 5) Receipt/accounting at ADR scope
