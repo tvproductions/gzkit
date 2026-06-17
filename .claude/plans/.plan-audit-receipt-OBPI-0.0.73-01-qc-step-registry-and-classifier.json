@@ -1,0 +1,17 @@
+{
+  "obpi_id": "OBPI-0.0.73-01-qc-step-registry-and-classifier",
+  "timestamp": "2026-06-17T06:42:10.349255+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.73-01-qc-step-registry-and-classifier.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md",
+        "docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/obpis/OBPI-0.0.73-01-qc-step-registry-and-classifier.md"
+      ]
+    }
+  ]
+}

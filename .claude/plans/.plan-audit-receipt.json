@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.37-27-migration-disposition-doctrine-refresh-orientation-index",
-  "timestamp": "2026-06-15T23:00:00.000000+00:00",
+  "obpi_id": "OBPI-0.0.73-01-qc-step-registry-and-classifier",
+  "timestamp": "2026-06-17T06:40:00.000000+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.37-27-migration-disposition-doctrine-refresh-orientation-index.md",
+  "plan_file": "OBPI-0.0.73-01-qc-step-registry-and-classifier.md",
   "gaps_found": 0,
-  "notes": "ADR<->OBPI: 7/7 checks Aligned. Plan<->OBPI: 7/7 checks Aligned (plan covers all 6 REQs within allowlist). CLI structural check PASS (18 sibling-ADR scope collisions, advisory-only). Key risk: _project_for_temperature pillar-filter may not be inert; Step-1 byte-parity guardrail books narrow-removal contingency. Confidence: 95% — proceeding to Stage 2."
+  "notes": "ADR<->OBPI: 7/7 checks Aligned. Plan<->OBPI: 7/7 checks Aligned. Registry derives from _build_check_steps(); KeyError sentinel enforces REQ-0.0.73-01-05 STRUCTURAL-FENCE. Advisory scope-collision with ADR-0.0.42 over doc files only. Confidence: 95% — proceeding to Stage 2."
 }

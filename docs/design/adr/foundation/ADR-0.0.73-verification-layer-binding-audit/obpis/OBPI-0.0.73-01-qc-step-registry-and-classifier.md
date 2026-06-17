@@ -3,7 +3,17 @@ id: OBPI-0.0.73-01-qc-step-registry-and-classifier
 parent: ADR-0.0.73-verification-layer-binding-audit
 item: 1
 lane: Lite
-status: Draft
+status: Completed
+req_atomic:
+  # The QCStep model + derived registry is one indivisible authoring unit:
+  # the model, its derivation, and its classification ship as a single
+  # src/gzkit/qc_binding.py write with one covering test module. No REQ
+  # below decomposes into independently-attributable labor steps.
+  - REQ-0.0.73-01-01  # model contract (frozen/extra-forbid/7-field) — written with the model
+  - REQ-0.0.73-01-02  # registry derivation from _build_check_steps() — same module, same write
+  - REQ-0.0.73-01-03  # binding classification — same module's _STEP_CLASSIFICATION dict
+  - REQ-0.0.73-01-04  # SUPPORT: module-lands proof — satisfied by the same single module write
+  - REQ-0.0.73-01-05  # STRUCTURAL-FENCE: derived-not-hand-maintained — a property of the same derivation
 ---
 
 # OBPI-0.0.73-01-qc-step-registry-and-classifier: Qc Step Registry And Classifier
@@ -13,7 +23,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md`
 - **Checklist Item:** #1 - "Registry + classifier model — `QCStep` Pydantic frozen model `{id, name, kind, subject, binding, wired_into[], theater_flags[], enforcement_locus}`; registry DERIVED from what `gz check` actually runs (never hand-maintained); unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -41,6 +51,7 @@ Registry + classifier model — `QCStep` Pydantic frozen model `{id, name, kind,
 - `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md` — parent ADR for intent and scope
 - `src/gzkit/qc_binding.py` **CREATE** — `QCStep` frozen Pydantic model + registry derived from the `gz check` step set
 - `tests/governance/test_qc_binding.py` **CREATE** — unit tests for the model contract and the derivation
+- `src/gzkit/traceability.py` — `@covers` decorator import (read-only test infrastructure, not modified)
 - `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/obpis/OBPI-0.0.73-01-qc-step-registry-and-classifier.md` — this brief (evidence recording)
 
 ## Denied Paths
@@ -59,8 +70,8 @@ Registry + classifier model — `QCStep` Pydantic frozen model `{id, name, kind,
 1. REQUIREMENT: This OBPI MUST deliver: Registry + classifier model — `QCStep` Pydantic frozen model `{id, name, kind, subject, binding, wired_into[], theater_flags[], enforcement_locus}`; registry DERIVED from what `gz check` actually runs (never hand-maintained); unit tests.
 1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
 1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
-1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
-1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
+1. REQUIREMENT: NEVER mark the OBPI accepted while scaffold defaults remain in the brief
+1. REQUIREMENT: ALWAYS reconcile the brief with the parent ADR before implementation begins
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -90,7 +101,6 @@ Registry + classifier model — `QCStep` Pydantic frozen model `{id, name, kind,
 **Prerequisites (check existence, STOP if missing):**
 
 - [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/**`
 - [ ] Parent ADR evidence artifacts referenced by this brief are present
 
 **Existing Code (understand current state):**
@@ -240,15 +250,21 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+Command: uv run python -c "from gzkit.qc_binding import build_qc_registry; [print(s.id, s.binding) for s in build_qc_registry()]"
+Output: enumerates 32 steps (lint, format, typecheck, test, behave, skill-audit ... line-endings), each classified `bound` — exactly the gz check step set, derived live from _build_check_steps() rather than hand-listed.
+Receipts: arb-step-unittest-74751e64f0f146b691024b4a7d8bfeea (exit_status 0), arb-ruff-a5a16b6faae74193a2820f4dc7947608 (exit_status 0), arb-step-typecheck-4d0f3f14acc44dfdb1ecf2a59377bd6e (exit_status 0).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/qc_binding.py (QCStep frozen Pydantic model + _STEP_CLASSIFICATION dict with 32 entries + build_qc_registry() derivation function), tests/governance/test_qc_binding.py (11 unit tests across 3 classes)
+- Mechanism: build_qc_registry() derives registry membership from _build_check_steps() in gzkit.commands.quality — never hand-maintained; a KeyError sentinel fires when an unclassified step is added to gz check, keeping the derivation honest
+- Model: QCStep is frozen=True, extra="forbid", with 7 fields (id, name, kind, subject, binding, wired_into, theater_flags, enforcement_locus)
+- Tests added: 11 (TestQCStepModelContract x5, TestQCRegistryDerivation x3, TestQCStepBindingClassification x3)
+- Date completed: 2026-06-17
+- Attestation status: operator-attested "attest completed"
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -259,12 +275,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.73-01 delivers src/gzkit/qc_binding.py: a frozen QCStep Pydantic model (frozen=True, extra="forbid", 7 fields) and build_qc_registry() that derives the registry from _build_check_steps() (32 steps, all classified bound), never hand-maintained. 11 unit tests pass (receipt arb-step-unittest-74751e64f0f146b691024b4a7d8bfeea exit 0); lint clean (arb-ruff-a5a16b6faae74193a2820f4dc7947608); typecheck clean (arb-step-typecheck-4d0f3f14acc44dfdb1ecf2a59377bd6e). All 3 BEHAVIOR REQs covered; SUPPORT + STRUCTURAL-FENCE REQs proof_status=pass.
+- Date: 2026-06-17
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-17
 
 **Evidence Hash:** -
