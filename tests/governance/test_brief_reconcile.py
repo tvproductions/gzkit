@@ -111,6 +111,21 @@ class TestReconcileBriefResult(unittest.TestCase):
         )
         self.assertTrue(result.has_drift)
 
+    @covers("REQ-0.0.37-05-01")
+    def test_discovery_glob_path_not_existence_checked(self):
+        # GHI #626 Component 2 — a glob prerequisite (`.../**`) is a pattern, not a
+        # literal path. `(project_root / "dir/**").exists()` is always False, so a
+        # glob in the discovery checklist must NOT be reported as unresolved drift.
+        from gzkit.governance.brief_reconcile import _compute_discovery_delta
+
+        body = textwrap.dedent("""\
+            ## Discovery Checklist
+
+            - [ ] Required path exists or is created: `docs/design/adr/foundation/**`
+            """)
+        delta = _compute_discovery_delta(body, PROJECT_ROOT)
+        self.assertEqual(delta.unresolved_paths, [])
+
 
 class TestAllowlistDimension(unittest.TestCase):
     @covers("REQ-0.0.37-05-02")

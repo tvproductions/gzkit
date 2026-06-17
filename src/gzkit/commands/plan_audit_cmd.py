@@ -17,6 +17,9 @@ from gzkit.governance.brief_path_validity import (
     extract_allowed_paths as _extract_allowed_paths,
 )
 from gzkit.governance.brief_path_validity import (
+    extract_brief_creates_paths as _extract_brief_creates_paths,
+)
+from gzkit.governance.brief_path_validity import (
     extract_plan_creates_paths as _extract_plan_creates_paths,
 )
 from gzkit.governance.brief_path_validity import (
@@ -392,7 +395,15 @@ def _gather_brief_path_gaps(
     re-parsing the brief.
     """
     target_allowed = _extract_allowed_paths(brief_path)
-    creates_paths = _extract_plan_creates_paths(plan_file) if plan_file else set()
+    # The brief's own **CREATE** markers are authoritative (GHI #419 built
+    # extract_brief_creates_paths for exactly this); union them with any
+    # plan-level creates (GHI #403). A net-new path declared by the brief is
+    # exempt from the non-existence gap even when the plan does not re-declare
+    # it — otherwise every first-implementation OBPI false-positives on its own
+    # CREATE files (GHI #626).
+    creates_paths = _extract_brief_creates_paths(brief_path)
+    if plan_file is not None:
+        creates_paths = creates_paths | _extract_plan_creates_paths(plan_file)
     gaps: list[str] = []
     if target_allowed is not None and plan_file is not None:
         for p in _extract_plan_paths(plan_file):

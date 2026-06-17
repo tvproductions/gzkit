@@ -15,7 +15,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.governance.brief_path_validity import extract_brief_creates_paths
+from gzkit.governance.brief_path_validity import extract_brief_creates_paths, has_glob_chars
 from gzkit.governance.brief_structure import (
     BriefStructure,
     parse_brief,
@@ -344,9 +344,17 @@ def _compute_allowlist_delta(
 
 
 def _compute_discovery_delta(body: str, project_root: Path) -> DiscoveryDelta:
-    """Report discovery-checklist paths that do not exist on disk."""
+    """Report discovery-checklist paths that do not exist on disk.
+
+    Glob prerequisites (``.../**``) are patterns, not literal paths:
+    ``(project_root / "dir/**").exists()`` is always False, so existence-checking
+    them as literals false-positives on every brief that carries one (GHI #626).
+    A path containing a glob metacharacter is skipped.
+    """
     paths = _extract_section_paths(body, _DISCOVERY_HEADING_RE)
-    unresolved = [path for path in paths if not (project_root / path).exists()]
+    unresolved = [
+        path for path in paths if not has_glob_chars(path) and not (project_root / path).exists()
+    ]
     return DiscoveryDelta(unresolved_paths=unresolved)
 
 

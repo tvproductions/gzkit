@@ -959,6 +959,45 @@ class TestPlanCreatesPathsSuppression(unittest.TestCase):
                 f"expected non-existence gap citing stale path, got {receipt['gaps']}",
             )
 
+    def test_suppresses_existence_gap_for_brief_declared_create_path(self) -> None:
+        """GHI #626 Component 1 — a path the BRIEF marks **CREATE** is exempt even
+        when the plan does not re-declare it. GHI #419 built
+        ``extract_brief_creates_paths`` for exactly this; ``gz plan audit`` must
+        honor the brief-level marker, not only the plan-level one (GHI #403)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            adr_dir = root / "docs/design/adr/foundation/ADR-0.1.0-feature"
+            obpis_dir = adr_dir / "obpis"
+            obpis_dir.mkdir(parents=True)
+            brief = obpis_dir / "OBPI-0.1.0-01-feature.md"
+            brief.write_text(
+                "# Brief\n## Allowed Paths\n"
+                "- `tests/foo/test_new.py` **CREATE** — REQ-derived tests.\n",
+                encoding="utf-8",
+            )
+
+            plans_dir = root / ".claude" / "plans"
+            plans_dir.mkdir(parents=True)
+            # Plan references the OBPI but makes NO creates declaration of its own.
+            (plans_dir / "plan.md").write_text(
+                "# Plan for OBPI-0.1.0-01\n## Steps\nWrite the new tests.\n",
+                encoding="utf-8",
+            )
+            (root / ".gzkit.json").write_text("{}", encoding="utf-8")
+
+            quiet_console = Console(file=StringIO(), quiet=True)
+            with (
+                patch("gzkit.commands.plan_audit_cmd.console", quiet_console),
+                patch("gzkit.commands.common.get_project_root", return_value=root),
+                patch("gzkit.commands.common.ensure_initialized"),
+            ):
+                plan_audit_cmd(obpi_id="OBPI-0.1.0-01", as_json=False)
+
+            receipt = json.loads(
+                (plans_dir / ".plan-audit-receipt-OBPI-0.1.0-01.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(receipt["verdict"], "PASS", receipt.get("gaps"))
+
 
 if __name__ == "__main__":
     unittest.main()
