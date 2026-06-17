@@ -262,6 +262,38 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > **(1) Family.** "Max strength of agent compliance" is one family of mechanical-defenses surfaces sharing a single mechanism (snapshot → scorecard → promotion-aging, owned by `ADR-pool.contract-surface-mechanical-defenses`): contract-surface (`AGENTS.md`/`CLAUDE.md`), `ADR-pool.obpi-authoring-mechanical-floor` (`gz specify`), `ADR-pool.skill-behavioral-hardening` (skill prose), and the newly-booked `ADR-pool.skill-surface-mechanical-defenses` (skill structure). Pulled coherently in **Phase G**, reusing the shared mechanism — not four parallel ones. The skill-surface sibling lands **with cadence, not pulled forward**; green-first (#621) and the CMS marquee (B.1) keep their sequence.
 > **(2) Moratorium scope.** The direct-fix moratorium **stands** as default for ad-hoc medium/large fixes; carve-outs are trivial smallest-honest-fixes under a green floor and drainage-class GHIs (homed to E.5). Trivial stale-authoring drift surfaced under a red floor rides a homed artifact as an absorbed finding (precedent: F1/F2/F3 on `ADR-pool.skill-surface-mechanical-defenses`).
 
+> **Amendment (operator verbatim, 2026-06-16) — the Airlock North Star
+> assimilated; alignment/tuning/renaming booked as E.7.** Operator: *"all
+> goes to magna carta, commit. some alignment, tuning and renaming are in
+> order. the process that had MOST earned its keep in gzkit is
+> gz-obpi-pipeline."* → A 2026-06-16 design dialogue produced a North Star
+> for the **act of working**: the **airlock** (pack-in/pack-out —
+> pre-flight seam-map → go/no-go on the way in; drift-diff →
+> block/surface/resolve on the way out) over a **two-graph** of intent
+> (LAW/pull, "what must I satisfy") and fact (OBSERVED/push, "what did I
+> break"), traversed in four phases (design/build/fix/refactor). Captured
+> at [`work-phases-and-airlock.md`](work-phases-and-airlock.md) (committed
+> `d544a306`) and validated by a 5-pass apparatus scan of ~60 skills.
+> **Scan verdict:** the model holds for the act-of-working; **AIRLOCK-OUT +
+> captain's-GO are already built** (brief-reconcile / obpi-reconcile /
+> validate = drift-diff; closeout/audit + operator-verbatim attestation +
+> ledger = "authority decides, flight recorder") — empirical proof of "I
+> have everything, it's just ungoverned." The structural gap is the
+> **unbuilt AIRLOCK-IN** (no seam-map → go/no-go *before* work), the cure
+> for the compounding, exit-discovered drift the GHI backlog records. The
+> airlock also **generalizes beyond four phases** (sibling modes: intake,
+> meta-governance, continuity, surface/repo-coherence) and the two-graph is
+> **edge-only** (node-internal quality — the complexity cluster — is
+> off-graph). **`gz-obpi-pipeline` is the proven reference implementation**
+> ("MOST earned its keep"); the entry-airlock and the generalization extend
+> FROM it, never reinvent. **Booked as E.7** (additive; the generalization
+> of E.4/E.5/E.6). Per completion-before-reduction: capture/scan landed
+> (E.7a); the adopting foundation ADR, alignment, tuning, and entry-airlock
+> build are constructive pre-1.0 items sequenced behind the current topmost
+> work (Phase 0 / B.1 keep their order — no queue-jump); **renaming is
+> reductive-class → Phase I**, operator-pre-ratified as "in order" so it is
+> a committed reduction item, not deferred-indefinitely.
+
 ## Authority and amendment (Magna Carta discipline)
 
 - **It steers; the spine propels.** The governance spine
@@ -745,6 +777,41 @@ Dependency-ordered waves over the ~30 booked ADRs short of Validated
       not deterministically decidable the way ruff is; an LLM judge over an LLM
       claimer relocates the vibe (turtles), so the fix shape is an operator
       design conversation before booking. Sibling to E.4/E.5; descendant of B.0.
+- [ ] E.7 **Airlock North Star — alignment, tuning, entry-airlock**
+      (additive; the generalization of E.4/E.5/E.6). The 2026-06-16 design
+      dialogue produced a North Star for the *act of working*: the
+      **airlock** (pack-in/pack-out — pre-flight seam-map → go/no-go in;
+      drift-diff → block/surface/resolve out) over a **two-graph** of intent
+      (LAW/pull) and fact (OBSERVED/push), in four phases
+      (design/build/fix/refactor). Captured at
+      [`work-phases-and-airlock.md`](work-phases-and-airlock.md) and
+      validated by a 5-pass apparatus scan: AIRLOCK-OUT + captain's-GO are
+      already built (brief-reconcile / obpi-reconcile / validate / closeout /
+      attestation / ledger); the structural gap is the **unbuilt
+      AIRLOCK-IN** (no seam-map → go/no-go before work) — the cure for
+      compounding exit-discovered drift. **`gz-obpi-pipeline` is the proven
+      reference implementation** (operator: "the process that had MOST
+      earned its keep"); the entry-airlock and generalization extend FROM it.
+  - [x] E.7a Capture + apparatus scan — North Star doc + 5-pass skill scan,
+        findings folded into the doc (complete 2026-06-16).
+  - [ ] E.7b Adopting **foundation ADR** for the airlock model, authored
+        when its gate is met — no queue-jump (Phase 0 / B.1 keep their
+        sequence); gz-obpi-pipeline is the exemplar to generalize.
+  - [ ] E.7c **Alignment** — map every skill/tool onto {phase, airlock-fn,
+        graph}; close the scan's misfit gaps (sibling modes: intake,
+        meta-governance, continuity, surface/repo-coherence) and the
+        edge-only **node-health** gap.
+  - [ ] E.7d **Tuning** — the drift = diff "tuning loop" refinements
+        (zero-*unaccounted*-drift, not zero drift).
+  - [ ] E.7e **Renaming** — less-cryptic terminology (the five-gate
+        vocabulary that "stuck"; airlock/seam/etc.). **Reductive-class →
+        Phase I** per completion-before-reduction; operator pre-ratified
+        ("in order"), so it is a committed reduction item, not
+        deferred-indefinitely.
+  - [ ] E.7f **Entry-airlock build** — the seam-map → go/no-go pre-flight,
+        generalized from gz-obpi-pipeline; mechanical form gated behind the
+        graph-engine / state-doctrine boundary (judgment-grade now,
+        mechanical later).
 
 Exit gate: all booked ADRs Validated or operator-parked.
 

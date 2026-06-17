@@ -2,7 +2,7 @@
 
 # Work Phases and the Airlock — a North Star Model
 
-**Status:** Draft North Star. Captured from the operator design dialogue of 2026-06-16. This is *a thing to align the apparatus to, revised as the apparatus tells* — not a ratified claim. There is no adopting ADR yet; capturing it here is campaign-neutral (a doctrine reference, not active foundation work).
+**Status:** Draft North Star. Captured from the operator design dialogue of 2026-06-16, **apparatus-scanned the same day** (5-pass skill scan; findings in §7), and **ratified into the Build-to-1.0 campaign (Magna Carta) as item E.7**. Still *a thing to align the apparatus to, revised as the apparatus tells* — the adopting foundation ADR is sequenced behind the campaign's current topmost work (no queue-jump). Alignment, tuning, and the entry-airlock build are the constructive follow-on; renaming defers to Phase I (completion-before-reduction).
 
 **Naming:** "airlock", "seam", "two-graph", "push/pull" are working names. Final terminology is the operator's to set — the operator has flagged that the five-gate vocabulary "came from one session ten or eleven months ago and stuck" and wants less cryptic terms.
 
@@ -120,6 +120,29 @@ Hypotheses to test by scanning the apparatus — not yet claims:
 - **Adopting ADR + alignment campaign.** Re-filing gates, lanes, and routing under this model is foundation work that touches the Build-to-1.0 campaign and needs operator ratification (Magna Carta). Deferred until the apparatus scan shows its shape.
 - **Final terminology** (airlock, seam, push/pull) — the operator's to set.
 - **The "either" review axis** — membranes vs blast-radius extremes.
+
+---
+
+## 7. Apparatus scan findings (2026-06-16)
+
+A 5-pass scan mapped ~60 gzkit skills onto `{phase, airlock-function, which graph}`. "The apparatus told us":
+
+**Validated.** The four phases are real and populated. `gz-obpi-pipeline` is the full-airlock reference implementation (operator: *"the process that had MOST earned its keep"*) — Stage 1 = pre-flight, Stage 4 = captain's GO, Stage 5 = exit + ledger. `gz-pythonic-pattern-apply` is the refactor exemplar (semantics-pin = "intent invariant"; xenon/radon non-regression = "any behavior change is drift"). `gz-obpi-simplify` is refactoring housed *inside* the build pipeline — confirming the model's claim that wrecking is unaccounted refactor smuggled into build.
+
+**AIRLOCK-OUT is already built; AIRLOCK-IN is not.** The exit membrane is mature: `gz-brief-reconcile` (exit-3 = block, report = surface, `--apply` = resolve), `gz-obpi-reconcile` (withdraws phantoms = intent-edge-with-no-fact), `gz-validate` (the drift-diff engine); plus the captain's-GO membrane (closeout/audit ceremonies, operator-verbatim attestation = "authority decides", ledger = flight recorder). The **entry** membrane has only seam-query *precursors* — `gz-state`, `gz-adr-map`, `gz-context` — no skill computes a seam-map → go/no-go *before* work. That asymmetry is the disease: drift is found on the way out (mature) because there is no pre-flight on the way in. **Building the entry-airlock is the cure**, and `gz-obpi-pipeline` is the pattern to generalize from.
+
+**The airlock is the primitive; the four phases are its code/artifact application.** The unmappable skills cluster into sibling modes that share the airlock's pack-in/pack-out + drift-diff geometry but are not design/build/fix/refactor:
+
+| sibling mode | evidence | what it is |
+|---|---|---|
+| Intake / horizon-scan | foundation-triage, ghi-triage, competitor-radar | choosing/seeding the target *before* the airlock |
+| Meta-governance | content-compose, content-remember, context-diet | reshaping the LAW-surface (the contract) itself |
+| Continuity airlock | session-handoff | a per-*session* in/out membrane with a claim-vs-ledger drift gate |
+| Surface/repo coherence | agent-sync, parity-scan, tidy, cli-audit | airlock shape over canon→derived / repo→repo drift (a second drift species) |
+
+**Node-internal quality is off-graph.** The two-graph is *edge-only*; the complexity cluster (advisor/guide/distill) measures a property *inside* a node, which neither push nor pull expresses. The model needs a node-health axis or an explicit delegation to a parallel apparatus. Smaller gaps: external/upstream law (deps-upgrade), cross-repo seams (issue-file), phase-polymorphism (chore-runner), concurrency (obpi-lock). Routers (~7) are correctly out of scope — plumbing, not work.
+
+**Disposition.** Ratified into Magna Carta as **E.7**. Alignment (close the sibling-mode + node-health gaps), tuning, and the entry-airlock build are constructive follow-on; renaming defers to Phase I.
 
 ---
 
