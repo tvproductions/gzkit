@@ -103,6 +103,7 @@ from gzkit.governance.trust_audits.orphaned_implementation import (
 from gzkit.governance.trust_audits.pointer_integrity import (
     validate_pointer_integrity,
 )
+from gzkit.governance.trust_audits.qc_binding import audit_qc_binding
 from gzkit.governance.trust_audits.receipt_shape import audit_receipt_shape
 from gzkit.governance.trust_audits.reconcile import audit_reconcile_freshness
 from gzkit.governance.trust_audits.release import (
@@ -174,6 +175,7 @@ __all__ = [
     "audit_kind_invariance",
     "audit_instructions_files_budget",
     "audit_orientation_freshness",
+    "audit_qc_binding",
     "audit_orphaned_implementation",
     "audit_pool_adr_isolation",
     "audit_pydantic_models",

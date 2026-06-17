@@ -92,6 +92,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "tautological test audit": ("audit", "tests/", "bound", "python_function"),
     "Task envelope coherence": ("audit", "docs/", "bound", "python_function"),
     "Lock-handoff coupling": ("audit", ".gzkit/", "bound", "python_function"),
+    "QC binding": ("audit", "src/", "bound", "python_function"),
     "Handoff documents": ("audit", "docs/", "bound", "python_function"),
     "Preflight": ("audit", ".gzkit/", "bound", "python_function"),
     "Surface fidelity": ("audit", "docs/", "bound", "python_function"),

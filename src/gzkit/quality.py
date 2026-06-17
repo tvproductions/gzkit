@@ -766,6 +766,16 @@ def run_lock_handoff_coupling_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --lock-handoff-coupling", cwd=project_root)
 
 
+def run_qc_binding_audit(project_root: Path) -> QualityResult:
+    """Run the QC-binding behavioral audit (ADR-0.0.73 / OBPI-0.0.73-02).
+
+    Fails closed (exit 3) when any bound QC step exhibits a theater signature
+    or passes its own negative-control fixture.
+    Recovery: uv run gz validate --qc-binding to see per-step details.
+    """
+    return run_command("uv run gz validate --qc-binding", cwd=project_root)
+
+
 # Handoff-document enforcement cutover (OBPI-0.0.72-02). Register entries
 # authored on or after this instant MUST pass validate_handoff_document; the
 # pre-existing legacy entries under .gzkit/handoffs/ that predate this gate are

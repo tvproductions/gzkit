@@ -13,7 +13,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--scenario-reachability] [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
-            [--advisor-proof-binding] [--lock-handoff-coupling] [--vendor-manifest]
+            [--advisor-proof-binding] [--lock-handoff-coupling] [--qc-binding] [--vendor-manifest]
             [--setpoint-coherence] [--rendition-freshness]
             [--rendition-floor-coherence]
             [--invariant-coherence] [--brief-reconcile] [--router-tables]
@@ -1045,6 +1045,38 @@ gz validate --lock-handoff-coupling
 |------|---------|----------|
 | 0 | All post-cutover releases carry valid handoff_path and pass min-info checks | — |
 | 3 | One or more releases violate the coupling invariant | Run `gz validate --lock-handoff-coupling` for diagnostic output; use `gz-session-handoff` to author the missing register entry before releasing the lock |
+
+### `--qc-binding`
+
+Behavioral QC-step binding audit (ADR-0.0.73 / OBPI-0.0.73-02). Flags any
+bound QC step that passes its own negative-control fixture (a hollow step) or
+exhibits one of the six ADR-0.0.37 theater signatures.
+
+Detection is **behavioral**, not declarative: each `bound` step must fail its
+registered negative control; a step that passes is theater regardless of its
+docstring. Theater-signature detection is static, via the step's `theater_flags`
+field; negative-control execution runs the step against a declared fixture.
+
+The six theater signatures (calibrated on the ADR-0.0.37 facade):
+
+1. **mtime-where-name-says-content** — checks file mtime instead of content
+2. **empty-input-passes** — always passes on empty or absent input
+3. **copy-vs-self** — tautological fixture (fixture == expected)
+4. **fixture-only** — runs only against its own fixture, never the real project
+5. **skip-if-PASS** — short-circuits when a prior artifact is already PASS
+6. **prose-graded-by-nothing** — emits prose never machine-verified
+
+Wired into the default `gz check` pipeline (fail-closed; exit 3 on findings).
+
+```bash
+uv run gz validate --qc-binding
+uv run gz validate --qc-binding --json
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | No theater detected | — |
+| 3 | Theater found — one or more bound steps exhibit a signature or pass their NC | Inspect findings; implement a genuine check that fails for the right reason; register an honest negative-control via `register_negative_control` (OBPI-06 fills in all existing steps) |
 
 ### `--closeout-proof`
 

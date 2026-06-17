@@ -499,6 +499,25 @@ def _run_evaluation_justify_binding_solo(
     raise SystemExit(3)
 
 
+def _run_qc_binding_scope(project_root: Path, *, as_json: bool) -> None:
+    """Dedicated handler for `gz validate --qc-binding` (exit 0/3)."""
+    from gzkit.governance.trust_audits.qc_binding import audit_qc_binding  # noqa: PLC0415
+
+    errors = audit_qc_binding(project_root)
+    if as_json:
+        print(json.dumps([e.model_dump(exclude_none=True) for e in errors], indent=2))  # noqa: T201
+        raise SystemExit(3 if errors else 0)
+    if not errors:
+        console.print("[bold]Validated:[/bold] qc-binding\n")
+        console.print("[green]✓ No QC theater detected.[/green]")
+        raise SystemExit(0)
+    console.print("[bold]Validated:[/bold] qc-binding\n")
+    console.print(f"[red]❌ {len(errors)} theater finding(s):[/red]\n")
+    for e in errors:
+        console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
+    raise SystemExit(3)
+
+
 def _run_unscoped_rules_scope(project_root: Path, *, as_json: bool, allowlist_only: bool) -> None:
     """Dedicated handler for `gz validate --unscoped-rules` (exit 0/2/3)."""
     from gzkit.validators.unscoped_rules import (  # noqa: PLC0415
@@ -1084,6 +1103,7 @@ def _dispatch_early_return_scopes(
     unscoped_rules_allowlist_only: bool,
     check_sensitivity: bool,
     sensitivity_explain: str | None,
+    check_qc_binding: bool,
     as_json: bool,
 ) -> bool:
     """Handle scopes that own their full 0/2/3 lifecycle and return immediately.
@@ -1137,6 +1157,9 @@ def _dispatch_early_return_scopes(
     if unscoped_rules_allowlist_only:
         # --allowlist-only without --unscoped-rules still prints the listing.
         _run_unscoped_rules_scope(project_root, as_json=as_json, allowlist_only=True)
+        return True
+    if check_qc_binding and not other_scopes_active:
+        _run_qc_binding_scope(project_root, as_json=as_json)
         return True
     return False
 
@@ -1214,6 +1237,7 @@ def validate(
     check_rendition_floor_coherence: bool = False,
     check_task_envelope_coherence: bool = False,
     check_closeout_proof: bool = False,
+    check_qc_binding: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1317,6 +1341,7 @@ def validate(
         unscoped_rules_allowlist_only=unscoped_rules_allowlist_only,
         check_sensitivity=check_sensitivity,
         sensitivity_explain=sensitivity_explain,
+        check_qc_binding=check_qc_binding,
         as_json=as_json,
     ):
         return

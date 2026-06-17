@@ -3,7 +3,24 @@ id: OBPI-0.0.73-02-qc-binding-validate-scope
 parent: ADR-0.0.73-verification-layer-binding-audit
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
+# req_atomic: each REQ is a single indivisible labor unit of the one --qc-binding
+# scope — NC-hollow detection (01), no-false-positive on genuine NC (02), the six
+# theater-signature detectors (03), the exit-0/exit-3 contract (04), the gz-check
+# wiring as one SUPPORT deliverable (05), the fail-closed structural fence (06),
+# the behavioral-detection structural fence (07), and the manpage + cli-audit
+# SUPPORT surface (08). None decomposes into parallel seq=02+ sub-tasks; the
+# audit module, its dispatch, and its tests are authored as one unit per REQ
+# (ADR-0.0.64 task-envelope exemption).
+req_atomic:
+  - REQ-0.0.73-02-01
+  - REQ-0.0.73-02-02
+  - REQ-0.0.73-02-03
+  - REQ-0.0.73-02-04
+  - REQ-0.0.73-02-05
+  - REQ-0.0.73-02-06
+  - REQ-0.0.73-02-07
+  - REQ-0.0.73-02-08
 ---
 
 # OBPI-0.0.73-02-qc-binding-validate-scope: Qc Binding Validate Scope
@@ -13,7 +30,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md`
 - **Checklist Item:** #2 - "`gz validate --qc-binding` scope — behavioral negative-control (each step ships a fixture it must fail on; the scope runs it) + theater-signature detection (the six ADR-0.0.37 facade signatures); wired into `gz check`; fail-closed exit 3; manpage + `gz cli audit` green; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -37,14 +54,20 @@ runs as part of `gz check`.
 
 ## Allowed Paths
 
+- `src/gzkit/traceability.py` (added by brief reconcile, attestor g0)
+
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
 - `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md` — parent ADR for intent and scope
 - `src/gzkit/governance/trust_audits/qc_binding.py` **CREATE** — the `--qc-binding` audit (behavioral negative-control runner + theater-signature detection)
 - `src/gzkit/governance/trust_audits/__init__.py` — register `audit_qc_binding`
-- `src/gzkit/commands/validate_cmd.py` — add the `--qc-binding` flag and dispatch
-- `src/gzkit/quality.py` — wire `--qc-binding` into the `gz check` default pipeline
+- `src/gzkit/commands/validate_cmd.py` — add `check_qc_binding` parameter, `_run_qc_binding_scope`, dispatch in `_dispatch_early_return_scopes`
+- `src/gzkit/cli/parser_maintenance.py` — add `--qc-binding` CLI argument and dispatch kwarg (coupled surface — conventional validate scope pattern)
+- `src/gzkit/quality.py` — add `run_qc_binding_audit()` runner
+- `src/gzkit/commands/quality.py` — add `("QC binding", run_qc_binding_audit)` to `_build_check_steps()` (coupled surface — wires the step into `gz check`)
+- `src/gzkit/qc_binding.py` — add `"QC binding"` to `_STEP_CLASSIFICATION` (coupled surface — OBPI-01 KeyError sentinel requires classification before wiring)
 - `tests/governance/test_qc_binding_scope.py` **CREATE** — unit tests incl. per-signature calibration fixtures and a behavioral negative-control case
+- `tests/commands/test_skills.py` — add `run_qc_binding_audit` stub to the all-steps-stubbed test (coupled surface — test stubs every gz check step explicitly)
 - `docs/user/manpages/validate.md` — document the `--qc-binding` scope (Heavy-lane docs gate)
 - `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/obpis/OBPI-0.0.73-02-qc-binding-validate-scope.md` — this brief (evidence recording)
 
@@ -64,8 +87,11 @@ runs as part of `gz check`.
 1. REQUIREMENT: This OBPI MUST deliver: `gz validate --qc-binding` scope — behavioral negative-control (each step ships a fixture it must fail on; the scope runs it) + theater-signature detection (the six ADR-0.0.37 facade signatures); wired into `gz check`; fail-closed exit 3; manpage + `gz cli audit` green; unit tests.
 1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
 1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
-1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
-1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
+1. REQUIREMENT: NEVER mark the OBPI accepted while scaffold defaults remain in the brief
+1. REQUIREMENT: ALWAYS reconcile the brief with the parent ADR before implementation begins
+1. REQUIREMENT: A hollow step (passes its negative-control fixture) MUST be flagged as theater (REQ-0.0.73-02-01)
+1. REQUIREMENT: A genuinely bound step (fails its negative-control fixture) MUST NOT be flagged (REQ-0.0.73-02-02)
+1. REQUIREMENT: Each of the six ADR-0.0.37 theater signatures MUST be detectable (REQ-0.0.73-02-03)
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -95,7 +121,7 @@ runs as part of `gz check`.
 **Prerequisites (check existence, STOP if missing):**
 
 - [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/**`
+- [ ] Required prerequisite OBPI-01 brief exists: `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/obpis/OBPI-0.0.73-01-qc-step-registry-and-classifier.md`
 - [ ] Parent ADR evidence artifacts referenced by this brief are present
 
 **Existing Code (understand current state):**
@@ -249,17 +275,29 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+$ uv run gz validate --qc-binding
+Validated: qc-binding
+✓ No QC theater detected.   (exit 0)
+
+The scope runs against the live registry (including the QC binding step itself) and finds no theater. Verified green: lint (arb-ruff-125f576072b1426ca2d3de99f428a6a7), typecheck (arb-step-typecheck-1ee16fa5bad34839a9f05b77f7fbc7f9), unittest 6235 pass (arb-step-unittest-35385ec5087d46a495a27ee19325293e), mkdocs --strict (arb-step-mkdocs-8f20c796c40649af97dbcc135d5aca4e), cli-alignment exit 0.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Delivered: `gz validate --qc-binding` — a fail-closed (exit 3) validator scope wired into the `gz check` default pipeline as the "QC binding" bound step
+- Detection (two channels): static theater-signature detection against the six ADR-0.0.37 facade signatures (mtime-where-name-says-content, empty-input-passes, copy-vs-self, fixture-only, skip-if-PASS, prose-graded-by-nothing) via QCStep.theater_flags; behavioral negative-control execution via a callable NC registry — a step whose NC returns exit 0 is hollow/theater
+- Files created: src/gzkit/governance/trust_audits/qc_binding.py (audit_qc_binding, register_negative_control, _check_theater_signatures, _check_negative_control); tests/governance/test_qc_binding_scope.py (22 tests)
+- Files modified: trust_audits/__init__.py (re-export), validate_cmd.py (dispatch), parser_maintenance.py (--qc-binding arg), quality.py (runner), commands/quality.py (gz check wiring), qc_binding.py (classification), test_skills.py (stub), validate.md (manpage)
+- NC registry ships empty; OBPI-06 registers concrete negative controls for every existing step. OBPI-02 ships the infrastructure
+- Tests added: 22 unit tests, all 8 REQs covered (gz covers: 8/8, 100%)
+- Date completed: 2026-06-17
+- Attestation status: operator-attested "attest completed"
+- Defects noted: none
 
 ## Tracked Defects
+
+- REQ-count drift: 3 declared vs 8 acceptance criteria (brief reconcile, attestor g0)
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
@@ -268,12 +306,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — operator-attested at Stage 4 after reviewing the evidence packet: gz validate --qc-binding lands as a fail-closed (exit 3) scope wired into gz check, with behavioral negative-control + six-signature theater detection; 22 unit tests, 8/8 REQ coverage, all quality gates green (arb-ruff-125f576072b1426ca2d3de99f428a6a7, arb-step-typecheck-1ee16fa5bad34839a9f05b77f7fbc7f9, arb-step-unittest-35385ec5087d46a495a27ee19325293e, arb-step-mkdocs-8f20c796c40649af97dbcc135d5aca4e).
+- Date: 2026-06-17
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-17
 
 **Evidence Hash:** -

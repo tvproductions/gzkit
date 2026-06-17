@@ -605,6 +605,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Validate obpi_lock_released events carry a valid handoff_path (ADR-0.0.41).",
     )
     p_validate.add_argument(
+        "--qc-binding",
+        dest="check_qc_binding",
+        action="store_true",
+        default=False,
+        help="Behavioral QC-step binding audit (ADR-0.0.73). Exit 0: clean; 3: theater found.",
+    )
+    p_validate.add_argument(
         "--closeout-proof",
         dest="check_closeout_proof",
         action="store_true",
@@ -815,6 +822,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_intrinsic_attestation=a.check_intrinsic_attestation,
             check_advisor_proof_binding=a.check_advisor_proof_binding,
             check_lock_handoff_coupling=a.check_lock_handoff_coupling,
+            check_qc_binding=a.check_qc_binding,
             check_invariant_coherence=a.check_invariant_coherence,
             check_brief_reconcile=a.check_brief_reconcile,
             check_router_tables=a.check_router_tables,
