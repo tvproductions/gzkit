@@ -4,6 +4,15 @@ parent: ADR-0.0.73-verification-layer-binding-audit
 item: 2
 lane: Heavy
 status: Completed
+# sensitivity: security — declared post-completion (operator directive 2026-06-17).
+# The allowlist overlaps the subprocess_user_input registered surface
+# (src/gzkit/quality.py); the overlap rule (.gzkit/rules/security-sensitivity.md
+# § escalate-not-escape) requires the declaration. The actual change is additive
+# (a hardcoded-constant run_command audit wrapper, no new injection surface —
+# spec-reviewer false-positive-override-justified), discharged at completion via
+# --accept-security-floor; this declaration makes the brief's classification
+# coherent with the overlap regardless.
+sensitivity: security
 # req_atomic: each REQ is a single indivisible labor unit of the one --qc-binding
 # scope — NC-hollow detection (01), no-false-positive on genuine NC (02), the six
 # theater-signature detectors (03), the exit-0/exit-3 contract (04), the gz-check
