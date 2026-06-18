@@ -171,7 +171,7 @@ uv run gz validate --fidelity-presence
 - [ ] REQ-0.0.73-08-01 [BEHAVIOR]: Given a non-pool ADR Decision with no parseable `## Fidelity Assertions` block, when `gz validate --fidelity-presence` runs, then it exits 3 and names the offending ADR. (@covers test in `tests/governance/test_fidelity_presence.py`)
 - [ ] REQ-0.0.73-08-02 [BEHAVIOR]: Given a corpus where every non-pool non-grandfathered ADR has a parseable block, when `gz validate --fidelity-presence` runs (and when `gz check` runs), then it exits 0. (@covers test in `tests/governance/test_fidelity_presence.py`)
 - [ ] REQ-0.0.73-08-03 [BEHAVIOR]: Given `data/fidelity_presence_grandfather.json` listing pre-existing block-less ADRs, when the scope runs, then those ADRs pass but a NEW block-less ADR (absent from the file) fails closed. (@covers test in `tests/governance/test_fidelity_presence.py`)
-- [ ] REQ-0.0.73-08-04 [SUPPORT]: The ADR template seeds a `## Fidelity Assertions` stub, the new gz-check step carries a genuine negative control, and the manpage documents the scope. Proof: `gz cli audit` exit 0 + `artifact_edited` ledger events for `.gzkit/templates/adr.md` and `docs/user/manpages/validate.md`.
+- [ ] REQ-0.0.73-08-04 [SUPPORT]: The ADR template seeds a `## Fidelity Assertions` stub, the new gz-check step carries a genuine negative control, and the manpage documents the scope. Proof: `gz validate --documents` exit 0 + `gz cli audit` exit 0 + `artifact_edited` ledger events for `.gzkit/templates/adr.md` and `docs/user/manpages/validate.md`.
 - [ ] REQ-0.0.73-08-05 [STRUCTURAL-FENCE]: No block-less ADR can reach VALIDATED unchecked — `## Fidelity Assertions` presence is mechanically enforced (parent ADR § Boundary Invariants #7).
 
 ## Completion Checklist
