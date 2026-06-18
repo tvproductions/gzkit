@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.73-04-closeout-audit-fidelity-repoint",
-  "timestamp": "2026-06-17T11:00:00.000000+00:00",
+  "obpi_id": "OBPI-0.0.73-05-absorb-dispatch-attestation-pool",
+  "timestamp": "2026-06-17T12:00:00.000000+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.73-04-closeout-audit-fidelity-repoint.md",
+  "plan_file": "OBPI-0.0.73-05-absorb-dispatch-attestation-pool.md",
   "gaps_found": 0,
-  "notes": "ADR<->OBPI: 7/7 checks Aligned. Plan<->OBPI: 7/7 checks Aligned. CREATE path (tests/governance/test_closeout_audit_fidelity.py) not-yet-existing is expected pre-implementation. 103 scope-collisions advisory only. run_fidelity_gate + parse_fidelity_assertions already exist from OBPI-03. Confidence: 95% — proceeding to Stage 2."
+  "notes": "ADR<->OBPI: 7/7 checks Aligned after brief amendment (added quality.py to Allowed Paths — coupled consumer of _STEP_CLASSIFICATION). Plan<->OBPI: 7/7 checks Aligned. 18 scope-collisions advisory only (all Completed/Validated OBPIs touching quality.py). Confidence: 95% — proceeding to Stage 2."
 }

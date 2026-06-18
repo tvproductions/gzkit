@@ -3,7 +3,17 @@ id: OBPI-0.0.73-05-absorb-dispatch-attestation-pool
 parent: ADR-0.0.73-verification-layer-binding-audit
 item: 5
 lane: Lite
-status: Draft
+status: Completed
+# req_atomic: each REQ is a single indivisible unit. Registering one bound QC
+# step (01) — the function, its _build_check_steps() wiring, its
+# _STEP_CLASSIFICATION entry, and its test — is one atomic registration. Adding
+# the absorption marker to one pool ADR (02) and changing that ADR's status to
+# Superseded (03) are single frontmatter edits in the same file. None decomposes
+# into parallel seq=02+ sub-tasks (ADR-0.0.64 task-envelope exemption).
+req_atomic:
+  - REQ-0.0.73-05-01
+  - REQ-0.0.73-05-02
+  - REQ-0.0.73-05-03
 ---
 
 # OBPI-0.0.73-05-absorb-dispatch-attestation-pool: Absorb Dispatch Attestation Pool
@@ -13,7 +23,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md`
 - **Checklist Item:** #5 - "Absorb ADR-pool.obpi-pipeline-dispatch-attestation — fold the dispatch-attestation concern into this ADR's bound-checker mechanism; retire/annotate the pool ADR; ledger event; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -41,6 +51,9 @@ Absorb ADR-pool.obpi-pipeline-dispatch-attestation — fold the dispatch-attesta
 - `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md` — parent ADR for intent and scope
 - `docs/design/adr/pool/ADR-pool.obpi-pipeline-dispatch-attestation.md` — annotate as absorbed-into ADR-0.0.73 (retire the free pool item)
 - `src/gzkit/qc_binding.py` **CREATE** — SHARED surface created by OBPI-01 (which lands first); extended here to register the dispatch-attestation enforcement as a bound QC step
+- `src/gzkit/quality.py` — add `run_dispatch_attestation_audit` function (the bound enforcement step body)
+- `src/gzkit/commands/quality.py` — wire `run_dispatch_attestation_audit` into `_build_check_steps()`; coupled consumer (a new `gz check` step cannot be registered without both the function in `quality.py` and the wiring here)
+- `tests/commands/test_skills.py` — add `run_dispatch_attestation_audit` to the `gz check` step mock list; coupled-consumer fix (the step-list mock fails closed when a new step is unmocked)
 - `tests/governance/test_dispatch_attestation_absorption.py` **CREATE** — unit tests for the bound dispatch-attestation step
 - `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/obpis/OBPI-0.0.73-05-absorb-dispatch-attestation-pool.md` — this brief (evidence recording)
 
@@ -238,15 +251,23 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+$ python -c "from gzkit.qc_binding import build_qc_registry; print([s.id for s in build_qc_registry() if 'dispatch' in s.id])"
+['dispatch-attestation']
+
+The dispatch-attestation concern is now a bound, classified QC step in the registry (kind=audit, binding=bound), enforced by run_dispatch_attestation_audit on every gz check run. ARB receipts: arb-step-unittest-ed0d4d6302d048ba94882b502aeb6d96 (6249+ pass, exit 0), arb-ruff-35d3188b29ce469f8a20df1338be50aa (clean), arb-step-typecheck-fcca3f21c3a048a090d4a3bbe6f2ff4b (clean), arb-step-mkdocs-8f76902c22fe4c4da098d0109ce7dcfd (clean).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Decision item: Absorb ADR-pool.obpi-pipeline-dispatch-attestation — fold the dispatch-attestation concern into ADR-0.0.73's bound-checker mechanism; retire/annotate the pool ADR; ledger event; unit tests.
+- Pool ADR docs/design/adr/pool/ADR-pool.obpi-pipeline-dispatch-attestation.md: status Pool -> Superseded; absorbed_into: ADR-0.0.73 frontmatter marker added; ## Absorption Note section added to body.
+- src/gzkit/quality.py: added run_dispatch_attestation_audit — reads the pool ADR, fails closed (exit 3) when the absorbed_into marker is absent.
+- src/gzkit/commands/quality.py: wired ("Dispatch attestation", run_dispatch_attestation_audit) into _build_check_steps().
+- src/gzkit/qc_binding.py: classified "Dispatch attestation" as ("audit", "docs/", "bound", "python_function") in _STEP_CLASSIFICATION.
+- tests/governance/test_dispatch_attestation_absorption.py: 7 unit tests (registry membership, absorption marker, status, negative controls).
+- tests/commands/test_skills.py: added run_dispatch_attestation_audit to the gz check mock step list (coupled-consumer fix).
+- Tests added: 7. Date completed: 2026-06-18. Attestation status: operator-verbatim. Defects noted: none.
 
 ## Tracked Defects
 
@@ -257,12 +278,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — operator Gate-5 verbatim attestation for OBPI-0.0.73-05-absorb-dispatch-attestation-pool. Dispatch-attestation concern folded into ADR-0.0.73 bound-checker registry; pool ADR annotated Superseded with absorbed_into: ADR-0.0.73. Receipts: arb-step-unittest-ed0d4d6302d048ba94882b502aeb6d96 (6249+ pass), arb-ruff-35d3188b29ce469f8a20df1338be50aa, arb-step-typecheck-fcca3f21c3a048a090d4a3bbe6f2ff4b, arb-step-mkdocs-8f76902c22fe4c4da098d0109ce7dcfd (all exit 0). REQ parity uncovered_reqs=0.
+- Date: 2026-06-18
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-18
 
 **Evidence Hash:** -

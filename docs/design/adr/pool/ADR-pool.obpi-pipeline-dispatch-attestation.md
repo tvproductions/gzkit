@@ -1,6 +1,7 @@
 ---
 id: ADR-pool.obpi-pipeline-dispatch-attestation
-status: Pool
+status: Superseded
+absorbed_into: ADR-0.0.73
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
@@ -271,3 +272,22 @@ pointing at the wrong anchor; CIC-2 is the right one.
 Pool ADRs are backlog items — they carry no `semver:` or `kind:` frontmatter.
 Promotion into the active tree (foundation or feature) is performed via
 `gz adr promote`, which rewrites the frontmatter with the chosen taxonomy.
+
+## Absorption Note
+
+**Status: Absorbed into ADR-0.0.73 (OBPI-0.0.73-05)**
+
+This pool item was absorbed into ADR-0.0.73-verification-layer-binding-audit
+as part of OBPI-0.0.73-05 (2026-06-17). The dispatch-attestation concern is
+the same "checker not bound" class that ADR-0.0.73 addresses. The concern is
+now registered as the `dispatch-attestation` bound QC step in
+`src/gzkit/qc_binding.py`, classified under `_STEP_CLASSIFICATION`, and
+enforced via `run_dispatch_attestation_audit` in `src/gzkit/quality.py`.
+
+The full machinery scoped by the Target Scopes above (ledger events,
+bail-to-inline gates, validator scopes) remains as a future feature-kind ADR
+work surface. This absorption closes the "floating unpromoted item" defect;
+the mechanism scope is tracked in the ADR-0.0.73 Feature Checklist item #5.
+
+`absorbed_into: ADR-0.0.73` is the machine-readable marker consumed by
+`run_dispatch_attestation_audit` in `gz check`.

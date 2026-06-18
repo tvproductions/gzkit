@@ -897,6 +897,54 @@ def run_line_endings_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --line-endings", cwd=project_root)
 
 
+_POOL_ADR_DISPATCH = "docs/design/adr/pool/ADR-pool.obpi-pipeline-dispatch-attestation.md"
+_DISPATCH_ABSORPTION_MARKER = "absorbed_into: ADR-0.0.73"
+
+
+def run_dispatch_attestation_audit(project_root: Path) -> QualityResult:
+    """Verify the dispatch-attestation pool ADR is annotated as absorbed (OBPI-0.0.73-05).
+
+    Fails closed (exit 3) when the pool ADR lacks the absorption marker —
+    enforcing that the "checker not bound" concern is permanently tracked in
+    the QC registry once absorbed, and can never silently drift back to an
+    unannotated state.
+    Recovery: ensure ADR-pool.obpi-pipeline-dispatch-attestation.md contains
+    `absorbed_into: ADR-0.0.73` in its frontmatter.
+    """
+    pool_adr = project_root / _POOL_ADR_DISPATCH
+    if not pool_adr.exists():
+        return QualityResult(
+            success=False,
+            command="dispatch-attestation audit",
+            stdout="",
+            stderr=(
+                f"Pool ADR not found: {_POOL_ADR_DISPATCH}. "
+                "Expected as the absorption target of ADR-0.0.73 OBPI-05."
+            ),
+            returncode=3,
+        )
+    content = pool_adr.read_text(encoding="utf-8")
+    if _DISPATCH_ABSORPTION_MARKER not in content:
+        return QualityResult(
+            success=False,
+            command="dispatch-attestation audit",
+            stdout="",
+            stderr=(
+                f"{_POOL_ADR_DISPATCH} is missing the absorption marker "
+                f"`{_DISPATCH_ABSORPTION_MARKER}`. "
+                "Add it to the frontmatter to confirm the pool ADR is absorbed into ADR-0.0.73."
+            ),
+            returncode=3,
+        )
+    return QualityResult(
+        success=True,
+        command="dispatch-attestation audit",
+        stdout=f"Pool ADR annotated as absorbed into ADR-0.0.73 ({_DISPATCH_ABSORPTION_MARKER}).",
+        stderr="",
+        returncode=0,
+    )
+
+
 def run_interviews_audit(project_root: Path) -> QualityResult:
     """Run the interview-transcript audit (GHI #511 retarget / GHI #515).
 
