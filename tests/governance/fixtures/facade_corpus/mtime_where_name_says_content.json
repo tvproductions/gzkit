@@ -1,0 +1,10 @@
+{
+  "id": "hollow-mtime-check",
+  "name": "Hollow Mtime Check",
+  "kind": "audit",
+  "subject": "docs/",
+  "binding": "bound",
+  "wired_into": ["gz check"],
+  "theater_flags": ["mtime-where-name-says-content"],
+  "enforcement_locus": "python_function"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "hollow-copy-vs-self-check",
+  "name": "Hollow Copy Vs Self Check",
+  "kind": "audit",
+  "subject": "src/",
+  "binding": "bound",
+  "wired_into": ["gz check"],
+  "theater_flags": ["copy-vs-self"],
+  "enforcement_locus": "python_function"
+}

@@ -1,0 +1,8 @@
+{
+  "obpi_id": "OBPI-0.0.73-06-self-check-facade-regression-corpus",
+  "timestamp": "2026-06-18T06:22:00.000000+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.73-06-self-check-facade-regression-corpus.md",
+  "gaps_found": 0,
+  "notes": "ADR<->OBPI: 7/7 checks Aligned. Plan<->OBPI: 7/7 checks Aligned. Root causes discovered: (1) backtick-wrapped commands in Fidelity Assertions table cause subprocess -1; fix: remove backticks from ADR command cells (in scope). (2) Row 3 is circular self-reference; fix: change to --check form, merge with row 4. Scope collision with OBPI-0.0.42-04 advisory only (Completed OBPI). Confidence: 95%."
+}

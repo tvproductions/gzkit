@@ -66,8 +66,57 @@ _THEATER_SIGNATURE_DESCRIPTIONS: dict[str, str] = {
 # Module-level NC registry: step_id → callable returning int (exit code).
 # A callable returning 0 means the step PASSED its NC → hollow → theater.
 # A callable returning non-zero means the step FAILED its NC → bound → genuine.
-# Populated by register_negative_control(); OBPI-06 fills in the real entries.
+# Populated by register_negative_control(); the qc-binding step (the step this
+# ADR owns) is wired at the bottom of this module.
 _NEGATIVE_CONTROLS: dict[str, Callable[[], int]] = {}
+
+# Acknowledged negative-control coverage debt (ADR-0.0.73, OBPI-06).
+# These bound steps have no negative control yet. OBPI-0.0.73-02's checklist
+# promised "each step ships a fixture it must fail on"; its code deferred that
+# wiring, leaving the behavioral channel inert. Rather than let the audit pass
+# green-by-emptiness (an unwired bound step verifies nothing — the very
+# 'empty-input-passes' theater signature), every unwired bound step is listed
+# here EXPLICITLY so the gap is visible and tracked. The audit FAILS on any
+# bound step that is neither wired nor in this set, so a NEW bound step cannot
+# slip in green-by-emptiness, and a step cannot leave this set without being
+# wired. Authoring honest NCs for these is tracked OBPI-02 correction work.
+_NEGATIVE_CONTROL_DEBT: frozenset[str] = frozenset(
+    {
+        "lint",
+        "format",
+        "typecheck",
+        "test",
+        "behave",
+        "skill-audit",
+        "parity-check",
+        "readiness-audit",
+        "cli-audit",
+        "unscoped-rules",
+        "adr-status-freshness",
+        "rendition-freshness",
+        "rendition-floor-coherence",
+        "session-green-gate",
+        "closeout-proof",
+        "kind-invariance",
+        "interview-transcripts",
+        "receipt-shape",
+        "orientation-freshness",
+        "insights-shape",
+        "instructions-files-budget",
+        "agents-md-map-conformance",
+        "complexity-doctrine-links",
+        "complexity-thresholds",
+        "req-kind-discipline",
+        "tautological-test-audit",
+        "task-envelope-coherence",
+        "lock-handoff-coupling",
+        "handoff-documents",
+        "preflight",
+        "surface-fidelity",
+        "line-endings",
+        "dispatch-attestation",
+    }
+)
 
 
 def register_negative_control(step_id: str, nc: Callable[[], int]) -> None:
@@ -182,9 +231,58 @@ def audit_qc_binding(
             )
         ]
 
+    active_nc = nc_registry if nc_registry is not None else _NEGATIVE_CONTROLS
+    active_nc = nc_registry if nc_registry is not None else _NEGATIVE_CONTROLS
     errors: list[ValidationError] = []
     for step in registry:
         errors.extend(_check_theater_signatures(step))
         if step.binding == "bound":
-            errors.extend(_check_negative_control(step, nc_registry))
+            if step.id in active_nc:
+                errors.extend(_check_negative_control(step, active_nc))
+            elif step.id not in _NEGATIVE_CONTROL_DEBT:
+                errors.append(
+                    _err(
+                        step.name,
+                        f"Green-by-emptiness: bound step '{step.id}' has no registered "
+                        "negative control and is not in the acknowledged "
+                        "_NEGATIVE_CONTROL_DEBT set. ADR-0.0.73 forbids a bound QC step "
+                        "that cannot fail its own negative control — it verifies nothing "
+                        "(the 'empty-input-passes' theater signature). Register one via "
+                        f"register_negative_control('{step.id}', ...), or if its NC "
+                        "authoring is tracked correction work, add it to "
+                        "_NEGATIVE_CONTROL_DEBT.",
+                    )
+                )
     return errors
+
+
+# ---------------------------------------------------------------------------
+# Negative control for the qc-binding step itself (the step this ADR owns)
+# ---------------------------------------------------------------------------
+
+
+def _qc_binding_negative_control() -> int:
+    """Genuine negative control for the ``qc-binding`` step.
+
+    Feeds the theater detector a step that IS theater (it carries a canonical
+    signature) and reports whether the detector fired, as an exit-style int:
+    ``0`` means the detector MISSED the planted theater (hollow → the step would
+    be flagged), non-zero means it caught it (genuinely bound). If
+    ``_check_theater_signatures`` were ever gutted so it stopped flagging known
+    signatures, this control returns 0 and the ``qc-binding`` step is itself
+    flagged hollow — a check that cannot fail for the right reason fails here.
+    """
+    planted = QCStep(
+        id="nc-planted-theater",
+        name="NC Planted Theater",
+        kind="audit",
+        subject="src/",
+        binding="bound",
+        wired_into=["gz check"],
+        theater_flags=["copy-vs-self"],
+        enforcement_locus="python_function",
+    )
+    return 1 if _check_theater_signatures(planted) else 0
+
+
+register_negative_control("qc-binding", _qc_binding_negative_control)

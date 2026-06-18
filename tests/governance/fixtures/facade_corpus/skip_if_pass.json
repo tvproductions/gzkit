@@ -1,0 +1,10 @@
+{
+  "id": "hollow-skip-if-pass-check",
+  "name": "Hollow Skip If Pass Check",
+  "kind": "audit",
+  "subject": "all",
+  "binding": "bound",
+  "wired_into": ["gz check"],
+  "theater_flags": ["skip-if-PASS"],
+  "enforcement_locus": "python_function"
+}

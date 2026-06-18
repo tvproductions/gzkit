@@ -152,15 +152,32 @@ class TestExitCodeBehavior(unittest.TestCase):
             [sys.executable, "-m", "gzkit", "validate", "--qc-binding"],
             capture_output=True,
         )
-        # With an empty NC registry and no theater_flags on any step, exit 0.
+        # Production wiring: qc-binding is genuinely wired, the rest are
+        # acknowledged _NEGATIVE_CONTROL_DEBT, no theater_flags on any step → exit 0.
         self.assertEqual(result.returncode, 0, result.stderr.decode())
 
     @covers("REQ-0.0.73-02-04")
-    def test_audit_qc_binding_returns_empty_on_clean_registry(self) -> None:
+    def test_audit_qc_binding_clean_under_production_wiring(self) -> None:
+        # Production wiring (nc_registry=None → module registry): the qc-binding
+        # step is genuinely wired and the remaining bound steps are acknowledged
+        # _NEGATIVE_CONTROL_DEBT, so a clean result means wired-or-acknowledged,
+        # NOT green-by-emptiness (ADR-0.0.73, OBPI-06 strengthening).
+        from pathlib import Path
+
+        errors = audit_qc_binding(Path("."))
+        self.assertEqual(errors, [], [e.message for e in errors])
+
+    @covers("REQ-0.0.73-02-04")
+    def test_audit_qc_binding_flags_green_by_emptiness_on_empty_registry(self) -> None:
+        # With no NCs active, the qc-binding step (not in debt) is unwired and
+        # must be flagged — the audit no longer passes on zero coverage.
         from pathlib import Path
 
         errors = audit_qc_binding(Path("."), nc_registry={})
-        self.assertEqual(errors, [])
+        self.assertTrue(
+            any("green-by-emptiness" in e.message.lower() for e in errors),
+            [e.message for e in errors],
+        )
 
     @covers("REQ-0.0.73-02-06")
     def test_fail_closed_exit_3_on_theater(self) -> None:
@@ -169,17 +186,29 @@ class TestExitCodeBehavior(unittest.TestCase):
         # function directly and verify exit-code-3 semantics in the data path.
         from pathlib import Path
 
+        from gzkit.governance.trust_audits.qc_binding import _NEGATIVE_CONTROLS
+
         # Build a synthetic NC registry where one real step passes its NC.
         from gzkit.qc_binding import build_qc_registry
 
         registry = build_qc_registry()
-        bound_step = next((s for s in registry if s.binding == "bound"), None)
+        # Pick a bound step that is NOT the owned (already-wired) qc-binding step.
+        bound_step = next(
+            (s for s in registry if s.binding == "bound" and s.id != "qc-binding"), None
+        )
         if bound_step is None:
-            self.skipTest("No bound steps in registry")
-        hollow_nc: dict[str, object] = {bound_step.id: lambda: 0}
+            self.skipTest("No non-owned bound steps in registry")
+        # Merge the production registry so the owned step stays wired-and-genuine;
+        # only the injected step is hollow. The lone finding is then the hollow
+        # step, not green-by-emptiness noise (ADR-0.0.73, OBPI-06 strengthening).
+        hollow_nc: dict[str, object] = {**_NEGATIVE_CONTROLS, bound_step.id: lambda: 0}
         errors = audit_qc_binding(Path("."), nc_registry=hollow_nc)  # type: ignore
         self.assertGreater(len(errors), 0)
         self.assertTrue(any("hollow" in e.message.lower() for e in errors))
+        self.assertFalse(
+            any("green-by-emptiness" in e.message.lower() for e in errors),
+            [e.message for e in errors],
+        )
 
 
 class TestGzCheckWiring(unittest.TestCase):

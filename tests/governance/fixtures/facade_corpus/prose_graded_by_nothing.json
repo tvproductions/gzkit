@@ -1,0 +1,10 @@
+{
+  "id": "hollow-prose-graded-check",
+  "name": "Hollow Prose Graded Check",
+  "kind": "audit",
+  "subject": "all",
+  "binding": "bound",
+  "wired_into": ["gz check"],
+  "theater_flags": ["prose-graded-by-nothing"],
+  "enforcement_locus": "python_function"
+}

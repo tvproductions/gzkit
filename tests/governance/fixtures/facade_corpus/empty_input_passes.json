@@ -1,0 +1,10 @@
+{
+  "id": "hollow-empty-input-check",
+  "name": "Hollow Empty Input Check",
+  "kind": "audit",
+  "subject": "src/",
+  "binding": "bound",
+  "wired_into": ["gz check"],
+  "theater_flags": ["empty-input-passes"],
+  "enforcement_locus": "python_function"
+}

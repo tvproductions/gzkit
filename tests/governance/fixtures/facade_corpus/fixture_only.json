@@ -1,0 +1,10 @@
+{
+  "id": "hollow-fixture-only-check",
+  "name": "Hollow Fixture Only Check",
+  "kind": "audit",
+  "subject": "tests/",
+  "binding": "bound",
+  "wired_into": ["gz check"],
+  "theater_flags": ["fixture-only"],
+  "enforcement_locus": "python_function"
+}

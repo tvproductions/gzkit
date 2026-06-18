@@ -85,12 +85,11 @@ One mechanism, four parts, decomposed 1:1 into seven OBPIs (the seventh, OBPI-07
 
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
-| The QC-binding scope exists and is wired into `gz check`, fail-closed. | `uv run gz validate --qc-binding` | 0 |
-| This ADR passes its own QC-binding check (self-check, OBPI-06). | `uv run gz validate --qc-binding` | 0 |
-| The fidelity gate exists and runs this ADR's assertions against the running system. | `uv run gz adr fidelity ADR-0.0.73-verification-layer-binding-audit` | 0 |
-| The `## Fidelity Assertions` block on this ADR Decision is parseable by the gate. | `uv run gz adr fidelity ADR-0.0.73-verification-layer-binding-audit --check` | 0 |
-| The dispatch-attestation pool concern is no longer a free-floating unpromoted item. | `uv run gz state` | 0 |
-| The ADR evaluator is a registered QC step bound to substance — `--qc-binding` finds no shape-graded-as-authoritative mismatch (OBPI-07, GHI #624). | `uv run gz validate --qc-binding` | 0 |
+| The QC-binding scope exists and is wired into `gz check`, fail-closed. | uv run gz validate --qc-binding | 0 |
+| This ADR passes its own QC-binding check (self-check, OBPI-06). | uv run gz validate --qc-binding | 0 |
+| The fidelity gate exists and the Fidelity Assertions block is parseable by the gate. | uv run gz adr fidelity ADR-0.0.73-verification-layer-binding-audit --check | 0 |
+| The dispatch-attestation pool concern is no longer a free-floating unpromoted item. | uv run gz state | 0 |
+| The ADR evaluator is a registered QC step bound to substance — `--qc-binding` finds no shape-graded-as-authoritative mismatch (OBPI-07, GHI #624). | uv run gz validate --qc-binding | 0 |
 
 > Each assertion is a `FidelityAssertion{adr_id, claim, command, expected_exit, observed, result}`.
 > Until OBPI-02/03 land the `--qc-binding` scope and the `gz adr fidelity` verb,
@@ -123,7 +122,7 @@ One mechanism, four parts, decomposed 1:1 into seven OBPIs (the seventh, OBPI-07
 
 4. **Pre-mortem failure (18 months out): detection stayed declarative.** A hollow step self-registers as 'bound' with a docstring claiming enforcement, a static check sees the right shape and passes. Mitigation baked in: detection is behavioral (negative-control-per-step that `--qc-binding` runs), not static-shape matching.
 
-5. **Shakiest WWHTBT condition.** The registry must be derived from what `gz check` actually runs AND negative-controls must be authored honestly per step. A dishonest negative control (one the step trivially fails for the wrong reason) is the residual risk; OBPI-06's self-check + regression corpus is the only guard, and it is itself subject to `--qc-binding`.
+5. **Shakiest WWHTBT condition.** The registry must be derived from what `gz check` actually runs AND negative-controls must be authored honestly per step. A dishonest negative control (one the step trivially fails for the wrong reason) is the residual risk; OBPI-06's self-check + regression corpus is the only guard, and it is itself subject to `--qc-binding`. **Honest status (OBPI-06):** of the 34 `bound` steps, only the `qc-binding` step is wired with a genuine negative control so far; the remaining 33 are enumerated as acknowledged `_NEGATIVE_CONTROL_DEBT` (OBPI-0.0.73-02 promised "each step ships a fixture it must fail on" but deferred the wiring — tracked OBPI-02 correction). A green-by-emptiness guard makes any *unwired, unacknowledged* bound step a fail-closed finding, so coverage cannot regress silently and the backlog stays visible rather than passing as "nothing to check."
 
 6. **False-positive risk.** A legitimately advisory step could be mis-flagged as theater. Mitigation: the `bound`/`advisory`/`unenforced` classification is explicit, and advisory steps are not required to fail a negative control.
 
@@ -156,6 +155,13 @@ One mechanism, four parts, decomposed 1:1 into seven OBPIs (the seventh, OBPI-07
    subject to `gz validate --qc-binding`, so a shape-graded score presented as
    authoritative is a binding-mismatch finding, never a silent pass.
    (REQ-0.0.73-07-06: STRUCTURAL-FENCE — verified at ADR closeout via this invariant)
+7. **`## Fidelity Assertions` presence is mechanically enforced (fail-closed).**
+   `gz validate --fidelity-presence` exits 3 on any non-pool ADR Decision lacking
+   a parseable block and runs inside `gz check`; pre-existing block-less ADRs are
+   explicit grandfathered debt and a NEW ADR cannot reach VALIDATED block-less.
+   Boundary Invariant #4 is no longer prose-only — the block-less bypass that let
+   an ADR reach VALIDATED with its thesis never exercised is closed.
+   (REQ-0.0.73-08-05: STRUCTURAL-FENCE — verified at ADR closeout via this invariant)
 
 ## Decomposition Scorecard
 
@@ -169,20 +175,25 @@ One mechanism, four parts, decomposed 1:1 into seven OBPIs (the seventh, OBPI-07
 - Lineage: 2
 - Dimension Total: 10
 - Baseline Range: 5+
-- Baseline Selected: 6
+- Baseline Selected: 7
 - Split Single-Narrative: 0
 - Split Surface Boundary: 1
 - Split State Anchor: 0
 - Split Testability Ceiling: 0
 - Split Total: 1
-- Final Target OBPI Count: 7
+- Final Target OBPI Count: 8
 
 <!-- Baseline selected 6 (within the 5+ range): OBPI-07 (evaluate-truth-binding)
      was added 2026-06-16 as an operator-directed scope expansion homing GHI #624
      (gz adr evaluate shape-vs-substance). The evaluator (src/gzkit/adr_eval*.py)
      is a distinct unit the verification-layer mechanism governs, so the baseline
-     is selected at 6; with the surface-boundary split (1) the Final Target is
-     6 + 1 = 7. The 1:1 mandate holds: checklist (7) <-> OBPI files (7). -->
+     is selected at 6; with the surface-boundary split (1) the Final Target was
+     6 + 1 = 7. OBPI-08 (fidelity-presence enforcement) was added 2026-06-18 as an
+     operator-directed CORRECTION: the adversarial audit of OBPI-01..05 found that
+     Boundary Invariant #4 (every ADR Decision carries a runnable block) had no
+     mechanical enforcement — a block-less ADR reaches VALIDATED unchecked. OBPI-08
+     mechanizes BI #4 (a distinct validator surface), so the Final Target is 8.
+     The 1:1 mandate holds: checklist (8) <-> OBPI files (8). -->
 
 
 ## Checklist
@@ -196,6 +207,7 @@ One mechanism, four parts, decomposed 1:1 into seven OBPIs (the seventh, OBPI-07
 - [ ] Absorb ADR-pool.obpi-pipeline-dispatch-attestation — fold the dispatch-attestation concern into this ADR's bound-checker mechanism; retire/annotate the pool ADR; ledger event; unit tests
 - [ ] Self-check + facade regression corpus — this ADR passes its OWN `gz validate --qc-binding`; one regression fixture per theater signature (mtime-where-name-says-content, empty-input, copy-vs-self, fixture-only, skip-if-PASS, prose-graded-by-nothing); `gz adr fidelity ADR-0.0.73` green over this ADR's own Fidelity Assertions; unit tests
 - [ ] Evaluator truth-binding — replace the `gz adr evaluate` dim-1/dim-2 format/keyword heuristics in `src/gzkit/adr_eval_scoring.py` with decision-substance checks (no truth-score satisfiable by keyword/format presence alone); register `gz adr evaluate` as a QC step classified `advisory` (subject to `gz validate --qc-binding`); add a seventh `shape-graded-not-substance` theater signature to the facade regression corpus; manpage + `gz cli audit` green; unit tests
+- [ ] Fidelity-presence enforcement (mechanizes Boundary Invariant #4) — `gz validate --fidelity-presence` fails closed (exit 3) on any non-pool ADR Decision lacking a parseable `## Fidelity Assertions` block; wired into `gz check`; pre-existing block-less ADRs grandfathered in an explicit data file (fail-closed on NEW ADRs only, per the sensitivity-floor cutover precedent); ADR template seeds the block stub; the ADR's own `## Fidelity Assertions` gains a row for the new verb; manpage + `gz cli audit` green; unit tests. Closes the block-less-ADR bypass the OBPI-04 adversarial audit surfaced — without it "VALIDATED = thesis exercised" is false for every block-less ADR (operator-directed correction, 2026-06-18).
 
 ## Q&A Transcript
 

@@ -3,7 +3,14 @@ id: OBPI-0.0.73-06-self-check-facade-regression-corpus
 parent: ADR-0.0.73-verification-layer-binding-audit
 item: 6
 lane: Lite
-status: Draft
+status: Completed
+req_atomic:
+  - REQ-0.0.73-06-01  # one self-check test method (audit_qc_binding clean on real project) — indivisible
+  - REQ-0.0.73-06-02  # one cohesive corpus deliverable (6 fixtures + detection tests authored as a single unit)
+  - REQ-0.0.73-06-03  # one fidelity-gate subprocess test method — indivisible
+  - REQ-0.0.73-06-04  # SUPPORT: files land via gz validate --documents; no labor below the REQ
+  - REQ-0.0.73-06-05  # STRUCTURAL-FENCE: parent-ADR Boundary Invariant #5; audited at closeout, no labor
+  - REQ-0.0.73-06-06  # one green-by-emptiness guard + NC wiring change authored as a single unit
 ---
 
 # OBPI-0.0.73-06-self-check-facade-regression-corpus: Self Check Facade Regression Corpus
@@ -13,7 +20,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md`
 - **Checklist Item:** #6 - "Self-check + facade regression corpus — this ADR passes its OWN `gz validate --qc-binding`; one regression fixture per theater signature (mtime-where-name-says-content, empty-input, copy-vs-self, fixture-only, skip-if-PASS, prose-graded-by-nothing); gz adr fidelity ADR-0.0.73 green over this ADR's own Fidelity Assertions; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -40,9 +47,11 @@ Self-check + facade regression corpus — this ADR passes its OWN `gz validate -
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
 - `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md` — parent ADR (self-check subject; carries the `## Fidelity Assertions` block)
-- `tests/governance/test_qc_binding_self_check.py` **CREATE** — asserts this ADR's scopes pass `--qc-binding`
-- `tests/governance/test_facade_regression_corpus.py` **CREATE** — one detected fixture per theater signature
+- `tests/governance/test_qc_binding_self_check.py` **CREATE** — asserts this ADR's scopes pass `--qc-binding`; honest-accounting (no green-by-emptiness)
+- `tests/governance/test_facade_regression_corpus.py` **CREATE** — one detected fixture per theater signature + behavioral-catch proof
 - `tests/governance/fixtures/facade_corpus/` **CREATE** — the six calibration fixtures (one per signature)
+- `src/gzkit/governance/trust_audits/qc_binding.py` — **ALLOWLIST AMENDMENT (operator-attested, 2026-06-18)**: green-by-emptiness guard + acknowledged `_NEGATIVE_CONTROL_DEBT` + genuine negative control for the `qc-binding` step this ADR owns. Coupled OBPI-02 correction surface — its checklist promised "each step ships a fixture it must fail on"; the wiring was unbuilt.
+- `tests/governance/test_qc_binding_scope.py` — **ALLOWLIST AMENDMENT (operator-attested, 2026-06-18)**: coupled-surface coherence (rule 1a) — the OBPI-02 contract test for `audit_qc_binding` encodes the old green-by-emptiness contract and must move to the new one in the same change.
 - `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/obpis/OBPI-0.0.73-06-self-check-facade-regression-corpus.md` — this brief (evidence recording)
 
 ## Denied Paths
@@ -58,9 +67,12 @@ Self-check + facade regression corpus — this ADR passes its OWN `gz validate -
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: This OBPI MUST deliver: Self-check + facade regression corpus — this ADR passes its OWN `gz validate --qc-binding`; one regression fixture per theater signature (mtime-where-name-says-content, empty-input, copy-vs-self, fixture-only, skip-if-PASS, prose-graded-by-nothing); gz adr fidelity ADR-0.0.73 green over this ADR's own Fidelity Assertions; unit tests.
-1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
-1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
+1. REQUIREMENT: This ADR MUST pass its own `gz validate --qc-binding` — exit 0, no theater detected in this ADR's QC scopes (maps to REQ-0.0.73-06-01).
+1. REQUIREMENT: The facade regression corpus MUST contain one fixture per theater signature; the scope MUST detect every signature — none silently passes (maps to REQ-0.0.73-06-02).
+1. REQUIREMENT: `gz adr fidelity ADR-0.0.73-verification-layer-binding-audit` MUST be green — all Fidelity Assertions pass (maps to REQ-0.0.73-06-03).
+1. REQUIREMENT: The facade corpus and self-check artifacts MUST land as committed files — `gz validate --documents` exits 0 (maps to REQ-0.0.73-06-04).
+1. REQUIREMENT: This ADR MUST pass both checks — no facade-of-the-facade — satisfying Boundary Invariant #5 (maps to REQ-0.0.73-06-05).
+1. REQUIREMENT: `gz validate --qc-binding` MUST NOT pass green-by-emptiness — an unwired `bound` step is a finding unless it is in the acknowledged `_NEGATIVE_CONTROL_DEBT` set; the `qc-binding` step MUST be genuinely wired (maps to REQ-0.0.73-06-06).
 1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
 1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
 
@@ -187,6 +199,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.73-06-03 [BEHAVIOR]: Given this ADR's `## Fidelity Assertions` block, when the fidelity gate runs it, then every assertion passes (observed exit equals expected exit). (@covers test in `tests/governance/test_qc_binding_self_check.py`)
 - [ ] REQ-0.0.73-06-04 [SUPPORT]: The facade regression corpus and self-check land. Proof: `gz validate --documents` exit 0 + `artifact_edited` ledger event for `tests/governance/test_facade_regression_corpus.py`.
 - [ ] REQ-0.0.73-06-05 [STRUCTURAL-FENCE]: This ADR passes its own `gz validate --qc-binding` and its own fidelity gate — no facade-of-the-facade (parent ADR § Boundary Invariants #5).
+- [ ] REQ-0.0.73-06-06 [BEHAVIOR]: Given a `bound` QC step with no registered negative control, when `audit_qc_binding` runs and the step is not in the acknowledged `_NEGATIVE_CONTROL_DEBT` set, then it emits a green-by-emptiness finding (no silent skip); and the `qc-binding` step is genuinely wired (its NC fails on planted theater). (@covers test in `tests/governance/test_qc_binding_self_check.py`)
 
 ## Completion Checklist
 
@@ -246,31 +259,34 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+`uv run gz adr fidelity ADR-0.0.73-verification-layer-binding-audit` -> 5 pass, 0 fail. `uv run gz validate --qc-binding` -> exit 0, "No QC theater detected". `uv run gz validate --documents` -> exit 0. Full suite 6265/6265 pass (receipt arb-step-unittest-d7ef711909cd469d8d87e9231356cafc).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Fidelity Assertions table: removed backtick wrapping from all command cells (was causing FileNotFoundError -> observed -1), fixed row 3 circular self-reference to --check form, removed duplicate row 4 — table parses, 5 assertions all PASS
+- Facade corpus: created 6 JSON fixtures in tests/governance/fixtures/facade_corpus/, one per theater signature (mtime-where-name-says-content, empty-input, copy-vs-self, fixture-only, skip-if-PASS, prose-graded-by-nothing)
+- Self-check + corpus tests: created test_facade_regression_corpus.py (8 tests) and test_qc_binding_self_check.py (6 tests)
+- Green-by-emptiness guard: src/gzkit/governance/trust_audits/qc_binding.py gained _NEGATIVE_CONTROL_DEBT (33 acknowledged steps), genuine qc-binding NC, and the guard that fails any unwired/unacknowledged bound step
+- Coupled-surface coherence (rule 1a): migrated test_qc_binding_scope.py contract test to the wired-or-acknowledged contract
+- Scorecard fix: Baseline Selected 6->7 to reconcile the Final Target formula with the operator-directed OBPI-08 addition
 
 ## Tracked Defects
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
 
-_No defects tracked._
+- **OBPI-02 correction — negative-control coverage debt.** OBPI-0.0.73-02's checklist promised "each step ships a fixture it must fail on; the scope runs it", but its implementation shipped the NC infrastructure with an empty registry and deferred real wiring to OBPI-06. This OBPI wires the `qc-binding` step it owns and installs a green-by-emptiness guard so the gate can no longer pass on zero coverage; the remaining 33 `bound` steps are enumerated in the acknowledged `_NEGATIVE_CONTROL_DEBT` constant (`src/gzkit/governance/trust_audits/qc_binding.py`). That constant IS the tracking surface — the self-check fails if a step leaves it without being wired. Authoring honest negative controls for those 33 steps is tracked OBPI-02 correction work (operator-directed routing, 2026-06-18; see `.gzkit/insights/agent-insights.jsonl`).
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.73-06 self-check + facade regression corpus verified: gz adr fidelity ADR-0.0.73 green (5/5 pass), gz validate --qc-binding exit 0 (no theater), gz validate --documents exit 0, 6265/6265 unittests pass (receipt arb-step-unittest-d7ef711909cd469d8d87e9231356cafc); six theater-signature fixtures detected, green-by-emptiness guard wired with genuine qc-binding negative control.
+- Date: 2026-06-18
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-18
 
 **Evidence Hash:** -
