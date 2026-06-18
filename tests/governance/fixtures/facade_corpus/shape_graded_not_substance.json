@@ -1,0 +1,10 @@
+{
+  "id": "shape-graded-evaluate-check",
+  "name": "Shape Graded Evaluate Check",
+  "kind": "audit",
+  "subject": "docs/",
+  "binding": "advisory",
+  "wired_into": ["gz adr evaluate"],
+  "theater_flags": ["shape-graded-not-substance"],
+  "enforcement_locus": "python_function"
+}

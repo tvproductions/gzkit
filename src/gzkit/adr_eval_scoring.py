@@ -13,6 +13,64 @@ from gzkit.adr_eval import (
     _word_count,
 )
 from gzkit.hooks.obpi import TEMPLATE_SCAFFOLD_MARKERS, section_body
+from gzkit.qc_binding import register_advisory_qc_step
+
+# ---------------------------------------------------------------------------
+# Substance signals (ADR-0.0.73 / OBPI-07, GHI #624)
+# ---------------------------------------------------------------------------
+#
+# dim-1 (Problem Clarity) and dim-2 (Decision Justification) grade decision
+# SUBSTANCE, never prose SHAPE or KEYWORD presence. The helpers below detect
+# substance that a rigorous ADR carries regardless of phrasing, and that a
+# keyword-stuffed hollow ADR lacks — so no truth-score is satisfiable by
+# keyword/format presence alone, and rigorous-but-differently-phrased prose is
+# not floored.
+
+# Concrete referents: code spans, file paths, governance IDs. Rigorous prose
+# grounds claims in real artifacts; keyword stuffing adds none of these.
+_CONCRETE_REF_RE = re.compile(
+    r"`[^`]+`|\bsrc/|\btests/|\bdocs/|\bGHI #\d|\bOBPI-|\bADR-|\bPRD-|\bREQ-"
+)
+
+# Explicit-rejection / tradeoff reasoning: justification by weighed contrast,
+# not the literal word "because".
+_REJECTION_RE = re.compile(
+    r"\b(reject|instead|rather than|chosen over|in favor of|trade-?off|discard)",
+    re.IGNORECASE,
+)
+
+# Honest downside language or an explicit ### Negative consequences subsection.
+_NEGATIVE_CONSEQUENCE_RE = re.compile(
+    r"###\s+Negative|\b(downside|trade-?off|cost|risk|limitation|drawback|regress)",
+    re.IGNORECASE,
+)
+
+
+def _references_concrete_artifacts(text: str) -> bool:
+    """Substance signal: prose grounds claims in concrete referents."""
+    return bool(_CONCRETE_REF_RE.search(text))
+
+
+def _substantive_sentence_count(text: str) -> int:
+    """Count sentences carrying real content (> 8 words).
+
+    A clear problem statement articulates more than one substantive claim — the
+    SUBSTANCE of a problem-and-outcome contrast — without depending on literal
+    before/after keywords.
+    """
+    sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+    return sum(1 for sentence in sentences if _word_count(sentence) > 8)
+
+
+def _weighs_rejected_alternatives(alternatives: str) -> bool:
+    """Substance signal: alternatives genuinely weighed and explicitly rejected."""
+    return _word_count(alternatives) > 15 and bool(_REJECTION_RE.search(alternatives))
+
+
+def _acknowledges_negative_consequences(consequences: str) -> bool:
+    """Substance signal: honest consequences name downsides, not only benefits."""
+    return bool(_NEGATIVE_CONSEQUENCE_RE.search(consequences))
+
 
 # ---------------------------------------------------------------------------
 # ADR dimension scoring (deterministic)
@@ -20,6 +78,13 @@ from gzkit.hooks.obpi import TEMPLATE_SCAFFOLD_MARKERS, section_body
 
 
 def _score_problem_clarity(content: str) -> tuple[int, list[str]]:
+    """Grade Problem Clarity on decision SUBSTANCE, not keyword presence (GHI #624).
+
+    The four checks are: the Intent exists, carries substantive depth, grounds
+    its problem in concrete referents, and articulates a multi-part problem-and-
+    outcome contrast. None is satisfiable by stuffing before/after keywords, and
+    a rigorous Intent phrased without them is not floored.
+    """
     findings: list[str] = []
     intent = section_body(content, "Intent")
     checks = 0
@@ -28,22 +93,30 @@ def _score_problem_clarity(content: str) -> tuple[int, list[str]]:
         checks += 1
     else:
         findings.append("Missing ## Intent section")
-    if intent and _word_count(intent) > 100:
+    if intent and _word_count(intent) > 120:
         checks += 1
     else:
-        findings.append("Intent section is thin (<100 words)")
-    if intent and _has_keywords(intent, ["before", "current", "today", "existing"]):
+        findings.append("Intent section lacks substantive depth (<120 words)")
+    if intent and _references_concrete_artifacts(intent):
         checks += 1
     else:
-        findings.append("No before/current-state language in Intent")
-    if intent and _has_keywords(intent, ["after", "target", "will", "should", "outcome"]):
+        findings.append("Intent lacks concrete grounding (no code, path, or issue references)")
+    if intent and _substantive_sentence_count(intent) >= 2:
         checks += 1
     else:
-        findings.append("No after/target-state language in Intent")
+        findings.append("Intent does not articulate a substantive problem-and-outcome contrast")
     return _passes_to_score(checks, total), findings
 
 
 def _score_decision_justification(content: str) -> tuple[int, list[str]]:
+    """Grade Decision Justification on SUBSTANCE, not shape/keywords (GHI #624).
+
+    The four checks are: the Decision exists, carries substantive depth, weighs
+    explicitly-rejected alternatives, and acknowledges honest negative
+    consequences. The former numbered-list regex (format) and "because"-keyword
+    membership are removed — neither graded decision truth, so a hollow ADR that
+    stuffed them scored high while a rigorous one phrased otherwise was floored.
+    """
     findings: list[str] = []
     decision = section_body(content, "Decision")
     checks = 0
@@ -52,19 +125,20 @@ def _score_decision_justification(content: str) -> tuple[int, list[str]]:
         checks += 1
     else:
         findings.append("Missing ## Decision section")
-    if decision and re.search(r"^\d+\.", decision, re.MULTILINE):
+    if decision and _word_count(decision) > 100:
         checks += 1
     else:
-        findings.append("Decision section has no numbered items")
-    if decision and _has_keywords(decision, ["because", "rationale", "reason", "justif"]):
-        checks += 1
-    else:
-        findings.append("No rationale language in Decision")
+        findings.append("Decision section lacks substantive depth (<100 words)")
     alternatives = section_body(content, "Alternatives Considered")
-    if alternatives and _word_count(alternatives) > 20:
+    if alternatives and _weighs_rejected_alternatives(alternatives):
         checks += 1
     else:
-        findings.append("Missing or thin Alternatives Considered section")
+        findings.append("Decision does not weigh explicitly-rejected alternatives")
+    consequences = section_body(content, "Consequences")
+    if consequences and _acknowledges_negative_consequences(consequences):
+        checks += 1
+    else:
+        findings.append("Decision does not acknowledge honest negative consequences")
     return _passes_to_score(checks, total), findings
 
 
@@ -438,3 +512,21 @@ def score_obpis_deterministic(
             )
         )
     return results
+
+
+# ---------------------------------------------------------------------------
+# QC-step self-registration (ADR-0.0.73 / OBPI-07, GHI #624)
+# ---------------------------------------------------------------------------
+#
+# `gz adr evaluate` is itself a QC step the verification-layer mechanism governs.
+# It self-registers as `advisory` — it grades quality, it does not gate `gz
+# check` — so `gz validate --qc-binding` can classify and audit it. The evaluator
+# now grades decision substance (above), so the score it renders is no longer a
+# shape-graded value presented as authoritative truth.
+register_advisory_qc_step(
+    name="ADR Evaluate",
+    kind="audit",
+    subject="docs/",
+    wired_into=["gz adr evaluate"],
+    enforcement_locus="python_function",
+)

@@ -90,8 +90,21 @@ class TestFacadeRegressionCorpus(unittest.TestCase):
             f"Expected prose-graded-by-nothing in errors, got: {[e.message for e in errors]}",
         )
 
+    @covers("REQ-0.0.73-07-04")
+    def test_shape_graded_not_substance_detected(self) -> None:
+        # Seventh signature (OBPI-0.0.73-07, GHI #624): calibrated on the
+        # gz adr evaluate shape-vs-substance defect, distinct from the six
+        # ADR-0.0.37 signatures.
+        step = _load_fixture("shape_graded_not_substance.json")
+        errors = _check_theater_signatures(step)
+        self.assertGreaterEqual(len(errors), 1)
+        self.assertTrue(
+            any("shape-graded-not-substance" in e.message for e in errors),
+            f"Expected shape-graded-not-substance in errors, got: {[e.message for e in errors]}",
+        )
+
     @covers("REQ-0.0.73-06-02")
-    def test_all_six_signatures_have_fixtures(self) -> None:
+    def test_every_signature_has_a_fixture(self) -> None:
         from gzkit.governance.trust_audits.qc_binding import THEATER_SIGNATURES
 
         fixture_files = list(_CORPUS_DIR.glob("*.json"))

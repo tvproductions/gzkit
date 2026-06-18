@@ -107,6 +107,51 @@ def _name_to_id(name: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Advisory self-registration channel (ADR-0.0.73 / OBPI-07)
+# ---------------------------------------------------------------------------
+#
+# Bound steps are DERIVED from ``_build_check_steps()`` and must never be
+# hand-listed.  Advisory steps (e.g. ``gz adr evaluate``) grade quality WITHOUT
+# gating ``gz check``'s exit code, so they are not in ``_build_check_steps()``.
+# They self-register here so ``gz validate --qc-binding`` can still classify and
+# audit them — closing the gap where an advisory checker presents shape-graded
+# scores as authoritative truth with nothing classifying it.
+
+_SELF_REGISTERED_ADVISORY_STEPS: list[QCStep] = []
+
+
+def register_advisory_qc_step(
+    *,
+    name: str,
+    kind: str,
+    subject: str,
+    wired_into: list[str],
+    enforcement_locus: str,
+) -> None:
+    """Register an ``advisory`` QC step that runs outside ``gz check``'s pipeline.
+
+    Idempotent by id: re-registration (e.g. on module re-import) replaces the
+    prior entry rather than duplicating it.  Advisory steps carry no theater
+    flags and are not required to fail a negative control — they report findings
+    without gating the ``gz check`` exit code.
+    """
+    step = QCStep(
+        id=_name_to_id(name),
+        name=name,
+        kind=kind,
+        subject=subject,
+        binding="advisory",
+        wired_into=wired_into,
+        theater_flags=[],
+        enforcement_locus=enforcement_locus,
+    )
+    _SELF_REGISTERED_ADVISORY_STEPS[:] = [
+        existing for existing in _SELF_REGISTERED_ADVISORY_STEPS if existing.id != step.id
+    ]
+    _SELF_REGISTERED_ADVISORY_STEPS.append(step)
+
+
+# ---------------------------------------------------------------------------
 # Registry builder
 # ---------------------------------------------------------------------------
 
@@ -118,7 +163,14 @@ def build_qc_registry() -> list[QCStep]:
     load time.  Raises ``KeyError`` when a step name in ``_build_check_steps()``
     has no entry in ``_STEP_CLASSIFICATION`` — the sentinel that forces authors
     to classify new steps when they add them to ``gz check``.
+
+    Importing ``gzkit.adr_eval`` (the safe entry point for the adr_eval /
+    adr_eval_scoring import cycle) triggers the evaluator's advisory
+    self-registration, so the derived bound steps plus the self-registered
+    advisory steps are both present whenever the registry is built — neither is
+    a hand-maintained list.
     """
+    import gzkit.adr_eval  # noqa: F401, PLC0415 — triggers gz-adr-evaluate self-registration
     from gzkit.commands.quality import _build_check_steps  # noqa: PLC0415
 
     registry: list[QCStep] = []
@@ -143,4 +195,5 @@ def build_qc_registry() -> list[QCStep]:
                 enforcement_locus=enforcement_locus,
             )
         )
+    registry.extend(_SELF_REGISTERED_ADVISORY_STEPS)
     return registry

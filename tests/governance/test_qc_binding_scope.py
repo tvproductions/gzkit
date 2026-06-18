@@ -119,7 +119,10 @@ class TestTheaterSignatureDetection(unittest.TestCase):
         self.assertIn("prose-graded-by-nothing", errors[0].message)
 
     @covers("REQ-0.0.73-02-03")
-    def test_all_six_signatures_in_canonical_registry(self) -> None:
+    def test_all_canonical_signatures_in_registry(self) -> None:
+        # Six ADR-0.0.37 facade signatures plus the seventh
+        # `shape-graded-not-substance` signature added by OBPI-0.0.73-07
+        # (GHI #624) — calibrated on the gz adr evaluate shape-vs-substance defect.
         expected = {
             "mtime-where-name-says-content",
             "empty-input-passes",
@@ -127,6 +130,7 @@ class TestTheaterSignatureDetection(unittest.TestCase):
             "fixture-only",
             "skip-if-PASS",
             "prose-graded-by-nothing",
+            "shape-graded-not-substance",
         }
         self.assertEqual(set(THEATER_SIGNATURES), expected)
 

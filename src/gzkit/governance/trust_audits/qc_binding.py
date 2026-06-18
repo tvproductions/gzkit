@@ -30,6 +30,7 @@ THEATER_SIGNATURES: tuple[str, ...] = (
     "fixture-only",
     "skip-if-PASS",
     "prose-graded-by-nothing",
+    "shape-graded-not-substance",
 )
 
 _THEATER_SIGNATURE_DESCRIPTIONS: dict[str, str] = {
@@ -56,6 +57,11 @@ _THEATER_SIGNATURE_DESCRIPTIONS: dict[str, str] = {
     "prose-graded-by-nothing": (
         "Step outputs prose that is never machine-verified "
         "(agent-written prose without a bound checker is theater)"
+    ),
+    "shape-graded-not-substance": (
+        "Step renders an authoritative truth-score from prose SHAPE or KEYWORD "
+        "presence rather than decision substance (a score satisfiable by keyword "
+        "or format presence alone grades shape, not truth — GHI #624)"
     ),
 }
 
@@ -146,9 +152,10 @@ def _err(step_name: str, message: str) -> ValidationError:
 def _check_theater_signatures(step: QCStep) -> list[ValidationError]:
     """Return one ValidationError per theater signature found in step.theater_flags.
 
-    The six ADR-0.0.37 facade signatures are canonical; any flag from that set
-    found in step.theater_flags produces an error. Unknown flags are noted but
-    not treated as the canonical six.
+    The canonical signatures are the six ADR-0.0.37 facade signatures plus the
+    seventh ``shape-graded-not-substance`` (GHI #624, OBPI-0.0.73-07); any flag
+    from ``THEATER_SIGNATURES`` found in step.theater_flags produces an error.
+    Unknown flags are noted but not treated as canonical.
     """
     errors: list[ValidationError] = []
     for flag in step.theater_flags:

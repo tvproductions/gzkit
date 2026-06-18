@@ -27,6 +27,23 @@ gz adr evaluate <adr_id> [--json] [--no-scorecard]
 | 7 | Evidence Requirements | 10% |
 | 8 | Architectural Alignment | 10% |
 
+#### Substance grading, not shape (dim-1 / dim-2)
+
+Problem Clarity and Decision Justification grade decision **substance**, never prose
+shape or keyword presence (ADR-0.0.73, GHI #624). A score is never satisfiable by
+keyword or format presence alone, and rigorous prose phrased without the conventional
+keywords is not floored:
+
+- **Problem Clarity** rewards an Intent with substantive depth, concrete grounding
+  (code spans, file paths, `GHI #`/`ADR-`/`OBPI-` references), and an articulated
+  problem-and-outcome contrast — not the literal words "before"/"after".
+- **Decision Justification** rewards a Decision with substantive depth, explicitly
+  **weighed-and-rejected** alternatives, and **honest negative consequences** — not a
+  markdown numbered list or the literal word "because".
+
+A facade ADR that stuffs the old keywords no longer scores high; a rigorous ADR phrased
+differently no longer scores 1.
+
 ### OBPI Quality (5 dimensions per brief)
 
 | Dimension | Question |
@@ -105,6 +122,18 @@ Writes `EVALUATION_SCORECARD.md` in the ADR package directory containing:
 When a scorecard exists with a **NO GO** verdict, `gz obpi pipeline` Stage 1 treats it as a blocker and aborts. This makes the evaluation a blocking gate for pipeline execution — run `gz adr evaluate` before starting OBPI work, and address NO GO action items before invoking the pipeline.
 
 GO and CONDITIONAL GO verdicts do not block. Missing scorecards do not block (evaluation is optional until run).
+
+---
+
+## QC-Step Registration
+
+`gz adr evaluate` self-registers as a QC step classified **`advisory`** (ADR-0.0.73,
+GHI #624). It grades quality; it does **not** gate `gz check`'s exit code. Registering
+it means the verification-layer mechanism this project introduces governs the evaluator
+itself: `gz validate --qc-binding` classifies and audits it like any other QC step, so a
+shape-graded score presented as authoritative truth is a binding-mismatch finding, never
+a silent pass. The advisory classification is why the evaluator is not required to fail a
+negative-control fixture — only `bound` steps carry that obligation.
 
 ---
 

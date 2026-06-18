@@ -1050,14 +1050,18 @@ gz validate --lock-handoff-coupling
 
 Behavioral QC-step binding audit (ADR-0.0.73 / OBPI-0.0.73-02). Flags any
 bound QC step that passes its own negative-control fixture (a hollow step) or
-exhibits one of the six ADR-0.0.37 theater signatures.
+exhibits one of the canonical theater signatures. The audit also classifies
+advisory steps that self-register (e.g. `gz adr evaluate`), so a checker that
+presents shape-graded scores as authoritative truth is a binding-mismatch
+finding rather than a silent pass.
 
 Detection is **behavioral**, not declarative: each `bound` step must fail its
 registered negative control; a step that passes is theater regardless of its
 docstring. Theater-signature detection is static, via the step's `theater_flags`
 field; negative-control execution runs the step against a declared fixture.
 
-The six theater signatures (calibrated on the ADR-0.0.37 facade):
+The theater signatures (the first six calibrated on the ADR-0.0.37 facade; the
+seventh on the GHI #624 evaluator defect, OBPI-0.0.73-07):
 
 1. **mtime-where-name-says-content** — checks file mtime instead of content
 2. **empty-input-passes** — always passes on empty or absent input
@@ -1065,6 +1069,8 @@ The six theater signatures (calibrated on the ADR-0.0.37 facade):
 4. **fixture-only** — runs only against its own fixture, never the real project
 5. **skip-if-PASS** — short-circuits when a prior artifact is already PASS
 6. **prose-graded-by-nothing** — emits prose never machine-verified
+7. **shape-graded-not-substance** — renders an authoritative truth-score from
+   prose shape or keyword presence rather than decision substance
 
 Wired into the default `gz check` pipeline (fail-closed; exit 3 on findings).
 
