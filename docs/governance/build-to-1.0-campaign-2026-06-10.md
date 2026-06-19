@@ -864,11 +864,16 @@ Dependency-ordered waves over the ~30 booked ADRs short of Validated
       reduction). Two structural fences over surfaces today correct only by
       author discipline: (a) **handler-manifest resolution test** (#617) —
       asserts all 92 `_lazy()` refs resolve and the 3 manifests agree; (b)
-      **validator-enumeration consistency test** (#618) — asserts every
-      `check_<scope>` appears in the `any([...])` predicate and the
-      `_collect_errors(...)` call and has a `run_*_audit` wrapper. Both would
-      have caught #394. The reductive collapses they protect (manifests → 1;
-      enumerations → `VALIDATOR_REGISTRY`) are deferred to Phase I.
+      **validator-enumeration consistency test** (#618) — **LANDED 2026-06-19**
+      (`tests/cli/test_validate_dispatch_consistency.py`): asserts every
+      `validate()` `check_*` param is dispatched by a runner or the early-return
+      path (and the inverse), and that the parser lambda forwards each — the
+      load-bearing invariant behind the #394 self-include class. This is also
+      **Sanity-Reduction cut #618 step 1**: the parity net the
+      `VALIDATOR_REGISTRY` collapse (now pulled forward per the 2026-06-19
+      Sanity-Reduction amendment) must keep green. The #617 handler-manifest
+      collapse and the remaining `validate()` signature/predicate/`_collect_errors`
+      collapse are the staged cuts that follow, each with its own parity proof.
 - [ ] E.5 **Governance-friction drainage** (additive; proof of the quagmire,
       then the true fix). The class: ceremony-gate validators that fail-close on
       *stale-artifact-vs-reality* mismatches — the governance surface ensnaring
