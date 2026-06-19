@@ -1,13 +1,9 @@
 {
   "obpi_id": "OBPI-0.0.73-02-qc-binding-validate-scope",
-  "timestamp": "2026-06-17T08:20:00.000000+00:00",
+  "timestamp": "2026-06-19T01:11:38.304972+00:00",
   "verdict": "PASS",
   "plan_file": "OBPI-0.0.73-02-qc-binding-validate-scope.md",
   "gaps_found": 0,
-  "gaps": [
-    "Allowed path does not exist in repository: src/gzkit/governance/trust_audits/qc_binding.py",
-    "Allowed path does not exist in repository: tests/governance/test_qc_binding_scope.py"
-  ],
   "scope_collisions": [
     {
       "sibling_adr": "ADR-0.5.0",
@@ -53,6 +49,20 @@
         "src/gzkit/commands/validate_cmd.py",
         "src/gzkit/cli/parser_maintenance.py",
         "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-02-coverage-anchor-scanner",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-01-covers-decorator-and-registration",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
       ]
     },
     {
@@ -124,6 +134,7 @@
       "sibling_adr": "ADR-0.0.69",
       "sibling_obpi": "OBPI-0.0.69-02-structural-fence-channel-boundary-invariants-anchor",
       "contested_paths": [
+        "src/gzkit/traceability.py",
         "docs/user/manpages/validate.md"
       ]
     },
@@ -131,6 +142,7 @@
       "sibling_adr": "ADR-0.0.69",
       "sibling_obpi": "OBPI-0.0.69-03-closeout-proof-derived-view",
       "contested_paths": [
+        "src/gzkit/traceability.py",
         "src/gzkit/governance/trust_audits/__init__.py",
         "src/gzkit/commands/validate_cmd.py",
         "src/gzkit/cli/parser_maintenance.py",
@@ -152,7 +164,22 @@
       "sibling_adr": "ADR-0.0.69",
       "sibling_obpi": "OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch",
       "contested_paths": [
+        "src/gzkit/traceability.py",
         "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.70",
+      "sibling_obpi": "OBPI-0.0.70-01-stop-hook-turn-end-feedback",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.70",
+      "sibling_obpi": "OBPI-0.0.70-03-guardrail-feedback-prose-rule",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
       ]
     },
     {
@@ -260,6 +287,13 @@
     },
     {
       "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-06-brief-reconcile-cli",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
       "sibling_obpi": "OBPI-0.0.37-20-setpoint-declaration-coherence-validator",
       "contested_paths": [
         "src/gzkit/governance/trust_audits/__init__.py",
@@ -272,6 +306,7 @@
       "sibling_adr": "ADR-0.0.59",
       "sibling_obpi": "OBPI-0.0.59-03-parity-gate-three-channel-extension",
       "contested_paths": [
+        "src/gzkit/traceability.py",
         "src/gzkit/cli/parser_maintenance.py"
       ]
     },
@@ -387,6 +422,13 @@
       ]
     },
     {
+      "sibling_adr": "ADR-0.0.71",
+      "sibling_obpi": "OBPI-0.0.71-01-completion-repudiation-event",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
       "sibling_adr": "ADR-0.0.63",
       "sibling_obpi": "OBPI-0.0.63-07-verify-stage-command-shape-gate",
       "contested_paths": [
@@ -473,6 +515,7 @@
       "sibling_adr": "ADR-0.0.72",
       "sibling_obpi": "OBPI-0.0.72-02-handoff-frontmatter-reconcile",
       "contested_paths": [
+        "src/gzkit/traceability.py",
         "src/gzkit/quality.py",
         "src/gzkit/commands/quality.py"
       ]

@@ -20,7 +20,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md`
 - **Checklist Item:** #6 - "Self-check + facade regression corpus — this ADR passes its OWN `gz validate --qc-binding`; one regression fixture per theater signature (mtime-where-name-says-content, empty-input, copy-vs-self, fixture-only, skip-if-PASS, prose-graded-by-nothing); gz adr fidelity ADR-0.0.73 green over this ADR's own Fidelity Assertions; unit tests"
 
-**Status:** Completed
+**Status:** Accepted (repudiated 2026-06-19 — recovery freeze; self-check is intentionally red until OBPI-02 debt is repaired)
 
 ## Objective
 
@@ -31,6 +31,12 @@ the fidelity gate is green over this ADR's own `## Fidelity Assertions`, and the
 regression corpus has exactly one detected fixture for each of the six signatures
 (mtime-where-name-says-content, empty-input, copy-vs-self, fixture-only,
 skip-if-PASS, prose-graded-by-nothing).
+
+**Recovery status (2026-06-19):** this "Done" state is no longer true. The ADR
+self-check is intentionally red until OBPI-02's 33 acknowledged negative control
+debt entries are replaced with genuine controls and OBPI-08/09 land. The prior
+completion is repudiated for the same facade-of-the-facade class this ADR exists
+to close.
 
 Self-check + facade regression corpus — this ADR passes its OWN `gz validate --qc-binding`; one regression fixture per theater signature (mtime-where-name-says-content, empty-input, copy-vs-self, fixture-only, skip-if-PASS, prose-graded-by-nothing); the fidelity gate green over this ADR's own Fidelity Assertions; unit tests.
 
@@ -262,6 +268,11 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 `uv run gz adr fidelity ADR-0.0.73-verification-layer-binding-audit` -> 5 pass, 0 fail. `uv run gz validate --qc-binding` -> exit 0, "No QC theater detected". `uv run gz validate --documents` -> exit 0. Full suite 6265/6265 pass (receipt arb-step-unittest-d7ef711909cd469d8d87e9231356cafc).
 
+**SUPERSEDED 2026-06-19:** this evidence packet is no longer completion proof.
+`uv run gz validate --qc-binding` now exits 3 with 33 named negative-control
+debt findings, and `uv run gz adr fidelity ADR-0.0.73-verification-layer-binding-audit`
+fails while the recovery rows remain red.
+
 ### Implementation Summary
 
 
@@ -284,6 +295,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - Attestor: `g0`
 - Attestation: attest completed — OBPI-0.0.73-06 self-check + facade regression corpus verified: gz adr fidelity ADR-0.0.73 green (5/5 pass), gz validate --qc-binding exit 0 (no theater), gz validate --documents exit 0, 6265/6265 unittests pass (receipt arb-step-unittest-d7ef711909cd469d8d87e9231356cafc); six theater-signature fixtures detected, green-by-emptiness guard wired with genuine qc-binding negative control.
 - Date: 2026-06-18
+- **REPUDIATED:** 2026-06-19 (attestor: g0; cause: recovery-freeze) — self-check completion was invalid because it accepted acknowledged `_NEGATIVE_CONTROL_DEBT` as green. The runtime now fails closed on that debt; this OBPI requires re-work after OBPI-02 repairs the missing controls.
 
 ---
 

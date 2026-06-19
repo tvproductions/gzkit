@@ -48,11 +48,11 @@ Before this ADR (current state): an ADR reaches VALIDATED on receipt-presence an
 
 This ADR is foundation by the invariance test: without a bound verification layer, nothing gzkit attests can be trusted; gzkit's premise (make vibing structurally inert) rests on the verification layer being real. In ports/adapters terms this IS the verification port — it points to invariance, not to a feature adapter.
 
-Operator ratification (2026-06-16): design and interview answers approved verbatim; kind ruled foundation at interview. The Tier-2 forcing functions (pre-mortem, WWHTBT, constraint archaeology, assumption surfacing, 2am operator, reversibility, scope minimization) were agent-drafted against the GHI #623 facade evidence and operator-audited per AGENTS.md § Operator Economy claim 4; their content is folded into intent, decision, and consequences below. Constraint archaeology: 'audits verify receipts, not truth' was inherited convenience, never re-tested until the facade — tested now, it fails, and is removed. Assumption surfacing: the implicit assumption being killed is 'an ADR marked VALIDATED has been verified against the running system' — it has not; flip the core assumption (receipts cannot be trusted by default) and the whole design follows. Scope minimization: the smallest valuable version is parts 3+4 alone (the fidelity gate would have caught the ADR-0.0.37 facade); operator called FULL — all six OBPIs ship. (Scope expansion 2026-06-16: a seventh OBPI, OBPI-07, homes GHI #624 — the `gz adr evaluate` shape-vs-substance defect — into this ADR; operator-directed, recorded in the Decision and Decomposition Scorecard below.)
+Operator ratification (2026-06-16): design and interview answers approved verbatim; kind ruled foundation at interview. The Tier-2 forcing functions (pre-mortem, WWHTBT, constraint archaeology, assumption surfacing, 2am operator, reversibility, scope minimization) were agent-drafted against the GHI #623 facade evidence and operator-audited per AGENTS.md § Operator Economy claim 4; their content is folded into intent, decision, and consequences below. Constraint archaeology: 'audits verify receipts, not truth' was inherited convenience, never re-tested until the facade — tested now, it fails, and is removed. Assumption surfacing: the implicit assumption being killed is 'an ADR marked VALIDATED has been verified against the running system' — it has not; flip the core assumption (receipts cannot be trusted by default) and the whole design follows. Scope minimization: the smallest valuable version is parts 3+4 alone (the fidelity gate would have caught the ADR-0.0.37 facade); operator called FULL for the initial six OBPIs. Subsequent operator-directed corrections expanded the package to nine OBPIs: OBPI-07 homes GHI #624, OBPI-08 mechanizes fidelity-presence enforcement, and OBPI-09 addresses waiver-ratchet honesty.
 
 ## Decision
 
-One mechanism, four parts, decomposed 1:1 into seven OBPIs (the seventh, OBPI-07, homes GHI #624 — the `gz adr evaluate` shape-vs-substance defect — into this ADR as the first caught instance of the binding-mismatch class; operator-directed scope expansion 2026-06-16):
+One mechanism, four parts, currently decomposed 1:1 into nine OBPIs. The original six-OBPI plan was expanded by operator-directed corrections: OBPI-07 homes GHI #624 (`gz adr evaluate` shape-vs-substance), OBPI-08 mechanizes fidelity-presence enforcement, and OBPI-09 addresses waiver-ratchet honesty. As of the 2026-06-19 recovery evaluation, implementation of OBPI-08 and OBPI-09 is frozen until OBPI-02's repudiated behavioral-binding work is repaired and this ADR receives a fresh GO scorecard.
 
 1. **QC-step registry + classifier** (`QCStep` model, in `src/gzkit/qc_binding.py`). Every QC step self-registers into a registry, classified `bound` / `advisory` / `unenforced`, because a checker is trustworthy only once its enforcement claim is recorded and classified. The registry is DERIVED from what `gz check` actually runs — never a hand-maintained list (a hand-maintained list would itself be theater). `QCStep` is a frozen Pydantic model: `{id, name, kind, subject, binding, wired_into[], theater_flags[], enforcement_locus}`.
 
@@ -65,6 +65,12 @@ One mechanism, four parts, decomposed 1:1 into seven OBPIs (the seventh, OBPI-07
 **Absorption.** This ADR absorbs ADR-pool.obpi-pipeline-dispatch-attestation (its dispatch-attestation concern is the same 'checker not bound' class) and MUST pass its OWN check (`gz validate --qc-binding` over the new scopes; `gz adr fidelity ADR-0.0.73` over this ADR's own Fidelity Assertions).
 
 **Evaluator truth-binding (OBPI-07, homing GHI #624).** `gz adr evaluate` is itself a QC step the mechanism above already governs, surfaced as the first caught instance of the very failure class this ADR exists to kill. It self-registers into the part-1 registry classified `advisory` — it grades quality, it does not gate — and part-2 `gz validate --qc-binding` flags the binding-mismatch it currently exhibits: it renders authoritative dimension scores feeding a GO/NO-GO verdict while its dim-1 (Problem Clarity) and dim-2 (Decision Justification) checks grade only prose SHAPE and KEYWORDS (`_has_keywords` substring membership + a numbered-list regex in `src/gzkit/adr_eval_scoring.py`), not decision truth — so a facade ADR that stuffs the keywords scores high and a rigorous ADR phrased without them is floored to 1 (GHI #624). OBPI-07 is the concrete remediation: the dim-1/dim-2 (and any sibling) heuristics are replaced with checks that grade decision SUBSTANCE (structural presence of weighed alternatives, honest consequences, rationale linkage) such that no truth-score is satisfiable by keyword presence alone and rigorous-but-differently-phrased prose is not floored; and a seventh `shape-graded-not-substance` theater signature — calibrated on GHI #624, distinct from the six ADR-0.0.37 signatures — is added to OBPI-06's facade regression corpus so the evaluator's own former failure mode stays caught.
+
+**Fidelity-presence enforcement (OBPI-08).** Boundary Invariant #4 cannot remain prose-only: `gz validate --fidelity-presence` must fail closed on any new non-pool ADR Decision lacking a parseable `## Fidelity Assertions` block, run inside `gz check`, and keep pre-existing block-less ADRs visible as explicit grandfathered debt rather than silently laundering the bypass.
+
+**Waiver-ratchet honesty (OBPI-09).** Waiver, grandfather, and baseline surfaces that gate `gz check` must carry a closed-set lock, ledger-derived dated cutover, or monotonic shrink-ratchet. `gz validate --waiver-ratchet` is the meta-validator that keeps waiver lists from turning "not built yet" into "attested green."
+
+**Recovery freeze (2026-06-19).** OBPI-02 is repudiated in its own brief because the central behavioral mechanism shipped green-by-construction. Until OBPI-02 is repaired and all Fidelity Assertions below pass, this ADR is a NO GO planning artifact; OBPI-08 and OBPI-09 stay Draft and must not proceed to implementation.
 
 **Data model (Pydantic frozen).** `QCStep{id, name, kind, subject, binding, wired_into[], theater_flags[], enforcement_locus}`; `FidelityAssertion{adr_id, claim, command, expected_exit, observed, result}`.
 
@@ -90,11 +96,15 @@ One mechanism, four parts, decomposed 1:1 into seven OBPIs (the seventh, OBPI-07
 | The fidelity gate exists and the Fidelity Assertions block is parseable by the gate. | uv run gz adr fidelity ADR-0.0.73-verification-layer-binding-audit --check | 0 |
 | The dispatch-attestation pool concern is no longer a free-floating unpromoted item. | uv run gz state | 0 |
 | The ADR evaluator is a registered QC step bound to substance — `--qc-binding` finds no shape-graded-as-authoritative mismatch (OBPI-07, GHI #624). | uv run gz validate --qc-binding | 0 |
+| Every bound QC step has a genuine negative control; acknowledged `_NEGATIVE_CONTROL_DEBT` is empty. | uv run python -c "from gzkit.governance.trust_audits.qc_binding import _NEGATIVE_CONTROL_DEBT; raise SystemExit(0 if len(_NEGATIVE_CONTROL_DEBT) == 0 else 3)" | 0 |
+| Fidelity-presence enforcement exists and is green over the current corpus (OBPI-08). | uv run gz validate --fidelity-presence | 0 |
+| Waiver-ratchet honesty enforcement exists and is green over registered waiver surfaces (OBPI-09). | uv run gz validate --waiver-ratchet | 0 |
 
 > Each assertion is a `FidelityAssertion{adr_id, claim, command, expected_exit, observed, result}`.
-> Until OBPI-02/03 land the `--qc-binding` scope and the `gz adr fidelity` verb,
-> the corresponding commands are unregistered; OBPI-06's self-check is the gate
-> that flips every row green and proves this ADR is not itself a facade.
+> The recovery rows above are intentionally red until OBPI-02 is repaired and
+> OBPI-08/09 land. A passing parse-only check is not sufficient evidence for
+> this ADR; `gz adr fidelity ADR-0.0.73-verification-layer-binding-audit` must
+> run the table and pass every row before closeout resumes.
 
 ## Consequences
 
@@ -162,6 +172,17 @@ One mechanism, four parts, decomposed 1:1 into seven OBPIs (the seventh, OBPI-07
    Boundary Invariant #4 is no longer prose-only — the block-less bypass that let
    an ADR reach VALIDATED with its thesis never exercised is closed.
    (REQ-0.0.73-08-05: STRUCTURAL-FENCE — verified at ADR closeout via this invariant)
+8. **Every waiver/grandfather/baseline surface is honest-ratcheted (fail-closed).**
+   Each registered waiver, grandfather, or baseline list that gates a `gz check`
+   step MUST carry exactly one of: a closed-set lock (`added_under`, as in
+   `historical_self_close_waivers`), a ledger-derived dated cutover (as in
+   `lock_handoff_coupling`), or a monotonic shrink-ratchet (a committed baseline
+   the list can only decrease against). `gz validate --waiver-ratchet` exits 3 on
+   any waiver surface lacking one of the three and runs inside `gz check`. An
+   unratcheted waiver launders "not built" into "attested green" — the same facade
+   class this ADR exists to close, one layer up. The verb self-registers as a QC
+   step subject to `--qc-binding` (no facade-of-the-facade).
+   (REQ-0.0.73-09-06: STRUCTURAL-FENCE — verified at ADR closeout via this invariant)
 
 ## Decomposition Scorecard
 
@@ -175,13 +196,13 @@ One mechanism, four parts, decomposed 1:1 into seven OBPIs (the seventh, OBPI-07
 - Lineage: 2
 - Dimension Total: 10
 - Baseline Range: 5+
-- Baseline Selected: 7
+- Baseline Selected: 8
 - Split Single-Narrative: 0
 - Split Surface Boundary: 1
 - Split State Anchor: 0
 - Split Testability Ceiling: 0
 - Split Total: 1
-- Final Target OBPI Count: 8
+- Final Target OBPI Count: 9
 
 <!-- Baseline selected 6 (within the 5+ range): OBPI-07 (evaluate-truth-binding)
      was added 2026-06-16 as an operator-directed scope expansion homing GHI #624
@@ -193,7 +214,14 @@ One mechanism, four parts, decomposed 1:1 into seven OBPIs (the seventh, OBPI-07
      Boundary Invariant #4 (every ADR Decision carries a runnable block) had no
      mechanical enforcement — a block-less ADR reaches VALIDATED unchecked. OBPI-08
      mechanizes BI #4 (a distinct validator surface), so the Final Target is 8.
-     The 1:1 mandate holds: checklist (8) <-> OBPI files (8). -->
+     OBPI-09 (waiver-ratchet honesty contract) was added 2026-06-18 as an
+     operator-directed CORRECTION: a blast-radius determination of the
+     unratcheted-self-waiver defect proven for _NEGATIVE_CONTROL_DEBT (OBPI-02)
+     found the same no-shrink-force pattern recurs across ~9 of 13 waiver/
+     grandfather/baseline surfaces (worst: behave_coverage_waivers, 521 unlocked
+     self-exemptions from the BDD gate). The waiver-ratchet meta-validator is a
+     distinct surface the verification-layer mechanism governs, so the Final
+     Target is 9. The 1:1 mandate holds: checklist (9) <-> OBPI files (9). -->
 
 
 ## Checklist
@@ -208,10 +236,16 @@ One mechanism, four parts, decomposed 1:1 into seven OBPIs (the seventh, OBPI-07
 - [ ] Self-check + facade regression corpus — this ADR passes its OWN `gz validate --qc-binding`; one regression fixture per theater signature (mtime-where-name-says-content, empty-input, copy-vs-self, fixture-only, skip-if-PASS, prose-graded-by-nothing); `gz adr fidelity ADR-0.0.73` green over this ADR's own Fidelity Assertions; unit tests
 - [ ] Evaluator truth-binding — replace the `gz adr evaluate` dim-1/dim-2 format/keyword heuristics in `src/gzkit/adr_eval_scoring.py` with decision-substance checks (no truth-score satisfiable by keyword/format presence alone); register `gz adr evaluate` as a QC step classified `advisory` (subject to `gz validate --qc-binding`); add a seventh `shape-graded-not-substance` theater signature to the facade regression corpus; manpage + `gz cli audit` green; unit tests
 - [ ] Fidelity-presence enforcement (mechanizes Boundary Invariant #4) — `gz validate --fidelity-presence` fails closed (exit 3) on any non-pool ADR Decision lacking a parseable `## Fidelity Assertions` block; wired into `gz check`; pre-existing block-less ADRs grandfathered in an explicit data file (fail-closed on NEW ADRs only, per the sensitivity-floor cutover precedent); ADR template seeds the block stub; the ADR's own `## Fidelity Assertions` gains a row for the new verb; manpage + `gz cli audit` green; unit tests. Closes the block-less-ADR bypass the OBPI-04 adversarial audit surfaced — without it "VALIDATED = thesis exercised" is false for every block-less ADR (operator-directed correction, 2026-06-18).
+- [ ] Waiver-ratchet honesty contract + meta-validator (mechanizes Boundary Invariant #8) — `gz validate --waiver-ratchet` fails closed (exit 3) on any registered waiver/grandfather/baseline surface that gates a `gz check` step and lacks one of {closed-set lock `added_under`, ledger-derived dated cutover, monotonic shrink-ratchet against a committed baseline}; templatized from the proven `historical_self_close_waivers` and `lock_handoff_coupling` patterns; retrofit the unratcheted surfaces surfaced by the 2026-06-18 blast-radius determination (`behave_coverage_waivers` [worst — 521 entries, no lock], `tautological_test_waivers` [self-exempt], `_NEGATIVE_CONTROL_DEBT`, `sensitivity_floor_grandfather`, `tautological_test_baseline`, `interview_transcript_waivers`, complexity thresholds, `chores_layout_waivers`, `req_kind_grandfathering`); the verb self-registers as a QC step subject to `--qc-binding`; wired into `gz check`; manpage + `gz cli audit` green; unit tests. An unratcheted waiver launders "not built" into "attested green" — the facade class this ADR closes, one layer up (operator-directed correction, 2026-06-18).
 
 ## Q&A Transcript
 
 <!-- Interview transcript preserved for context -->
+
+> Supersession note (2026-06-19): the transcript below records the original
+> six-OBPI interview state. It is historical context, not the current contract.
+> The authoritative current decomposition is nine OBPIs, as recorded in
+> Decision, Decomposition Scorecard, Checklist, and EVALUATION_SCORECARD.md.
 
 *Interview conducted: 2026-06-16T05:48:29.175741*
 

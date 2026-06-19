@@ -39,7 +39,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md`
 - **Checklist Item:** #2 - "`gz validate --qc-binding` scope — behavioral negative-control (each step ships a fixture it must fail on; the scope runs it) + theater-signature detection (the six ADR-0.0.37 facade signatures); wired into `gz check`; fail-closed exit 3; manpage + `gz cli audit` green; unit tests"
 
-**Status:** Completed
+**Status:** Accepted (repudiated 2026-06-18; repaired 2026-06-19 pending re-attestation)
 
 ## Objective
 
@@ -76,9 +76,17 @@ runs as part of `gz check`.
 - `src/gzkit/commands/quality.py` — add `("QC binding", run_qc_binding_audit)` to `_build_check_steps()` (coupled surface — wires the step into `gz check`)
 - `src/gzkit/qc_binding.py` — add `"QC binding"` to `_STEP_CLASSIFICATION` (coupled surface — OBPI-01 KeyError sentinel requires classification before wiring)
 - `tests/governance/test_qc_binding_scope.py` **CREATE** — unit tests incl. per-signature calibration fixtures and a behavioral negative-control case
+- `tests/governance/test_qc_binding_self_check.py` — recovery regression that proves OBPI-02 no longer carries acknowledged negative-control debt
 - `tests/commands/test_skills.py` — add `run_qc_binding_audit` stub to the all-steps-stubbed test (coupled surface — test stubs every gz check step explicitly)
 - `docs/user/manpages/validate.md` — document the `--qc-binding` scope (Heavy-lane docs gate)
 - `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/obpis/OBPI-0.0.73-02-qc-binding-validate-scope.md` — this brief (evidence recording)
+- `.claude/plans/.plan-audit-receipt-OBPI-0.0.73-02-qc-binding-validate-scope.json` — pipeline receipt refreshed during OBPI-02 recovery verification
+- `.gzkit/ledger.jsonl` — command-authored governance events emitted by pipeline launch, lock, brief reconcile, and frontmatter reconcile during recovery
+- `.gzkit/insights/agent-insights.jsonl` — operator-approved allowlist-friction improvement record for this recovery completion
+- `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/EVALUATION_SCORECARD.md` — recovery evaluation replacing the invalid GO scorecard
+- `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/obpis/OBPI-0.0.73-06-self-check-facade-regression-corpus.md` — coupled recovery context: self-check completion repudiation and frontmatter reconciliation
+- `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/obpis/OBPI-0.0.73-09-waiver-ratchet-honesty-contract.md` — operator-approved recovery-context draft kept with OBPI-02 repair history
+- `docs/governance/GovZero/adr-status.md` — derived ADR status refreshed by recovery governance reconciliation
 
 ## Denied Paths
 
@@ -298,11 +306,11 @@ The scope runs against the live registry (including the QC binding step itself) 
 - Detection (two channels): static theater-signature detection against the six ADR-0.0.37 facade signatures (mtime-where-name-says-content, empty-input-passes, copy-vs-self, fixture-only, skip-if-PASS, prose-graded-by-nothing) via QCStep.theater_flags; behavioral negative-control execution via a callable NC registry — a step whose NC returns exit 0 is hollow/theater
 - Files created: src/gzkit/governance/trust_audits/qc_binding.py (audit_qc_binding, register_negative_control, _check_theater_signatures, _check_negative_control); tests/governance/test_qc_binding_scope.py (22 tests)
 - Files modified: trust_audits/__init__.py (re-export), validate_cmd.py (dispatch), parser_maintenance.py (--qc-binding arg), quality.py (runner), commands/quality.py (gz check wiring), qc_binding.py (classification), test_skills.py (stub), validate.md (manpage)
-- NC registry ships empty; OBPI-06 registers concrete negative controls for every existing step. OBPI-02 ships the infrastructure
-- Tests added: 22 unit tests, all 8 REQs covered (gz covers: 8/8, 100%)
-- Date completed: 2026-06-17
-- Attestation status: operator-attested "attest completed"
-- Defects noted: none
+- NC registry now wires production negative controls for every existing `bound` step; `_NEGATIVE_CONTROL_DEBT` is empty, and any future acknowledged debt is a fail-closed finding rather than passing evidence
+- Tests added: original 22 unit tests plus recovery self-check coverage; targeted OBPI-02 regression suite now runs 29 tests
+- Original completion date: 2026-06-17; repudiated 2026-06-18 after adversarial audit found green-by-construction NC wiring
+- Repair verified: 2026-06-19; repair attestation pending
+- Defects noted: prior green-by-construction defect repaired
 
 ## Tracked Defects
 
@@ -318,9 +326,38 @@ _No defects tracked._
 - Attestor: `g0`
 - Attestation: attest completed — operator-attested at Stage 4 after reviewing the evidence packet: gz validate --qc-binding lands as a fail-closed (exit 3) scope wired into gz check, with behavioral negative-control + six-signature theater detection; 22 unit tests, 8/8 REQ coverage, all quality gates green (arb-ruff-125f576072b1426ca2d3de99f428a6a7, arb-step-typecheck-1ee16fa5bad34839a9f05b77f7fbc7f9, arb-step-unittest-35385ec5087d46a495a27ee19325293e, arb-step-mkdocs-8f20c796c40649af97dbcc135d5aca4e).
 - Date: 2026-06-17
+- **REPUDIATED:** 2026-06-18 (attestor: g0; cause: verification-invalid) — adversarial audit found OBPI shipped green-by-construction: 0 negative controls across 34 bound steps, theater_flags hardcoded empty. The central behavioral mechanism ("each step ships a fixture it MUST fail on; the scope runs it") shipped as a code comment, not working code. 33 NCs owed; OBPI-06 bound 1 and added the green-by-emptiness guard. Completion invalid; re-work required.
+- **RECOVERY PATCH:** 2026-06-19 — `_NEGATIVE_CONTROL_DEBT` is empty and no longer a passing-evidence path. Production negative controls are registered for every existing `bound` step, and `uv run gz validate --qc-binding` exits 0 only after those controls fail for their planted malformed fixtures. This restores the fail-closed behavior required by REQ-0.0.73-02-06/07 without pretending an unwired step is clean.
+
+### Recovery Verification (2026-06-19)
+
+```text
+$ uv run -m unittest -q tests.governance.test_qc_binding_scope tests.governance.test_qc_binding_self_check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+----------------------------------------------------------------------
+Ran 29 tests in 6.292s
+
+OK
+
+$ uv run gz validate --qc-binding
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+Validated: qc-binding
+
+✓ No QC theater detected.
+
+$ uv run ruff check src/gzkit/governance/trust_audits/qc_binding.py tests/governance/test_qc_binding_scope.py tests/governance/test_qc_binding_self_check.py
+All checks passed!
+
+$ uv run ruff format --check src/gzkit/governance/trust_audits/qc_binding.py tests/governance/test_qc_binding_scope.py tests/governance/test_qc_binding_self_check.py
+3 files already formatted
+
+$ uv run ty check src/gzkit/governance/trust_audits/qc_binding.py tests/governance/test_qc_binding_scope.py tests/governance/test_qc_binding_self_check.py
+All checks passed!
+```
 
 ---
 
-**Date Completed:** 2026-06-17
+**Date Completed:** —
 
 **Evidence Hash:** -

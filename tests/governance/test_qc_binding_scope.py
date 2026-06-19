@@ -151,24 +151,26 @@ class TestExitCodeBehavior(unittest.TestCase):
     """Exit 3 on theater findings, exit 0 on clean (REQ-0.0.73-02-04)."""
 
     @covers("REQ-0.0.73-02-04")
-    def test_exit_0_on_no_theater(self) -> None:
+    def test_exit_0_when_all_bound_steps_have_negative_controls(self) -> None:
         result = subprocess.run(
             [sys.executable, "-m", "gzkit", "validate", "--qc-binding"],
             capture_output=True,
         )
-        # Production wiring: qc-binding is genuinely wired, the rest are
-        # acknowledged _NEGATIVE_CONTROL_DEBT, no theater_flags on any step → exit 0.
-        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        output = result.stdout.decode() + result.stderr.decode()
+        self.assertEqual(result.returncode, 0, output)
+        self.assertIn("No QC theater detected", output)
 
     @covers("REQ-0.0.73-02-04")
-    def test_audit_qc_binding_clean_under_production_wiring(self) -> None:
-        # Production wiring (nc_registry=None → module registry): the qc-binding
-        # step is genuinely wired and the remaining bound steps are acknowledged
-        # _NEGATIVE_CONTROL_DEBT, so a clean result means wired-or-acknowledged,
-        # NOT green-by-emptiness (ADR-0.0.73, OBPI-06 strengthening).
+    def test_audit_qc_binding_clean_when_all_bound_steps_wired(self) -> None:
+        # A truly clean step set has one genuine NC per bound step. Acknowledged
+        # debt is not clean; this synthetic registry proves the pass path without
+        # pretending the current project is fully wired.
         from pathlib import Path
 
-        errors = audit_qc_binding(Path("."))
+        from gzkit.qc_binding import build_qc_registry
+
+        genuine_nc = {s.id: (lambda: 1) for s in build_qc_registry() if s.binding == "bound"}
+        errors = audit_qc_binding(Path("."), nc_registry=genuine_nc)
         self.assertEqual(errors, [], [e.message for e in errors])
 
     @covers("REQ-0.0.73-02-04")
