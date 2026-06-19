@@ -413,20 +413,34 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 >
 > **Progress (2026-06-19, session boundary — context cleared after this).**
 > - **#618 step 1 LANDED** — the dispatch consistency fence
->   (`tests/cli/test_validate_dispatch_consistency.py`, commit `7da9d680`;
->   campaign E.4(b) marked landed). It is the parity net the
->   `VALIDATOR_REGISTRY` collapse must keep green.
-> - **#632 FILED (E.5 drainage)** — the tautological-test-audit's brittle
->   baseline over-flags fixtures, count/position-keys so any added file-reading
->   test trips it, and misreports the culprit (discovered building the fence;
->   sibling of closed #562, related #571). Homed E.5; baseline/waiver surfaces
->   also feed the Phase-I waiver-stack reduction.
-> - **NEXT CUT (resume here):** #618 step 2 — fold the 78-param `validate()`
->   signature + the `any([...])` predicate + `_collect_errors` + the parser
->   forwarding lambda into one `VALIDATOR_REGISTRY`, verified green against the
->   step-1 fence with its own per-cut parity proof. Then #617 (CLI
->   handler-manifest), then #631 (eval-scorer lexicon), then the waiver-stack.
-> - Floor green at boundary (`uv run gz check` ✓, `main` synced at `7da9d680`).
+>   (`tests/cli/test_validate_dispatch_consistency.py`, commit `7da9d680`). The
+>   parity net the `VALIDATOR_REGISTRY` collapse must keep green.
+> - **#618 step 2 LANDED** — the six dispatch enumerations folded into one
+>   `VALIDATOR_REGISTRY` (commit `ae82f9ac`; parity proof
+>   `tests/cli/test_validate_registry_parity.py` green). RESIDUAL: the 78-param
+>   `validate()` signature, the parser forwarding lambda, and the ~80
+>   `add_argument` parser flags + `_build_check_steps` are NOT yet registry-derived
+>   — **GHI #618 stays OPEN** with that remainder (its own ADR/OBPI per the GHI
+>   scope hint).
+> - **#617 LANDED + CLOSED** — the 3 byte-identical `_lazy` resolvers collapsed to
+>   one shared `src/gzkit/cli/parser_handler_manifest.py` (93 entries, zero
+>   collisions), guard-test-first (`tests/cli/test_handler_manifest_resolves.py`,
+>   commit `664417ca`). Operator waived the Phase-I deferral to land the reductive
+>   collapse together with the additive guard.
+> - **#631 LANDED + CLOSED** — `_score_architectural_alignment` widened to the
+>   foundation-ADR shape (commit `756786a6` fix + `dec9497d` cleanup: re-scored 4
+>   ADRs, retired 4 justify band-aids). Scope correction: the 8 false-RED band-aids
+>   had THREE root causes; the lexicon fix cleared 4 (0.0.26 / 0.0.51 / 0.0.56 +
+>   stale 0.0.64). Routed remainder: ADR-0.0.73 Feature Checklist → ADR-0.0.73
+>   item 7; ADR-0.47.0 / 0.49.0 / 0.50.0 phantom packages → orphaned-eval triage.
+> - **#632 OPEN (E.5 drainage)** — tautological-test-audit brittleness, unchanged.
+> - **NEXT CUT (resume here):** Sanity-Reduction cut (d), the
+>   **waiver/grandfather/baseline stack** review — collapse what proves redundant,
+>   keep what each mechanism uniquely earns (feeds Phase-I). Two surfaced-but-
+>   unrouted items also await: the phantom-ADR orphaned evals, and pre-existing
+>   control-surface drift (`gz validate --surfaces` flags it; the pre-commit hook
+>   does not gate it) — investigate cause before any `gz agent sync`.
+> - Floor green at boundary (`uv run gz check` ✓, `main` synced at `dec9497d`).
 
 ## Authority and amendment (Magna Carta discipline)
 
