@@ -1,0 +1,48 @@
+ADR audit-check: ADR-0.0.73-verification-layer-binding-audit
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.73-01-qc-step-registry-and-classifier
+  - OBPI-0.0.73-02-qc-binding-validate-scope
+  - OBPI-0.0.73-03-fidelity-assertions-and-gate
+  - OBPI-0.0.73-04-closeout-audit-fidelity-repoint
+  - OBPI-0.0.73-05-absorb-dispatch-attestation-pool
+  - OBPI-0.0.73-06-self-check-facade-regression-corpus
+  - OBPI-0.0.73-07-evaluate-truth-binding
+  - OBPI-0.0.73-08-fidelity-presence-enforcement
+  - OBPI-0.0.73-09-waiver-ratchet-honesty-contract
+Advisory 12 REQ(s) without @covers traceability (non-blocking):
+  - REQ-0.0.73-01-04
+  - REQ-0.0.73-01-05
+  - REQ-0.0.73-03-05
+  - REQ-0.0.73-03-06
+  - REQ-0.0.73-04-04
+  - REQ-0.0.73-04-05
+  - REQ-0.0.73-06-04
+  - REQ-0.0.73-06-05
+  - REQ-0.0.73-07-05
+  - REQ-0.0.73-07-07
+  - REQ-0.0.73-08-04
+  - REQ-0.0.73-08-05
+
+Coverage: 39/51 REQs covered (76.5%)
+  OBPI-0.0.73-01: 3/5 (60.0%)
+  OBPI-0.0.73-02: 8/8 (100.0%)
+  OBPI-0.0.73-03: 4/6 (66.7%)
+  OBPI-0.0.73-04: 3/5 (60.0%)
+  OBPI-0.0.73-05: 3/3 (100.0%)
+  OBPI-0.0.73-06: 4/6 (66.7%)
+  OBPI-0.0.73-07: 5/7 (71.4%)
+  OBPI-0.0.73-08: 3/5 (60.0%)
+  OBPI-0.0.73-09: 6/6 (100.0%)
+Uncovered REQs (12):
+  - REQ-0.0.73-01-04
+  - REQ-0.0.73-01-05
+  - REQ-0.0.73-03-05
+  - REQ-0.0.73-03-06
+  - REQ-0.0.73-04-04
+  - REQ-0.0.73-04-05
+  - REQ-0.0.73-06-04
+  - REQ-0.0.73-06-05
+  - REQ-0.0.73-07-05
+  - REQ-0.0.73-07-07
+  - REQ-0.0.73-08-04
+  - REQ-0.0.73-08-05

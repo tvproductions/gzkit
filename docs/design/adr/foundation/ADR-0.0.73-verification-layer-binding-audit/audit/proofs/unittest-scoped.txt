@@ -1,0 +1,7 @@
+....scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+.......scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+..................
+----------------------------------------------------------------------
+Ran 29 tests in 6.384s
+
+OK

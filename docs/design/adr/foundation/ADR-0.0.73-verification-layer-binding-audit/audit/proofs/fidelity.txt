@@ -1,0 +1,46 @@
+gz adr fidelity: ADR-0.0.73
+  Assertions: 8
+
+  PASS  The QC-binding scope exists and is wired into `gz check`, fail-closed.
+        command:  uv run gz validate --qc-binding
+        expected: 0  observed: 0
+
+  PASS  This ADR passes its own QC-binding check (self-check, OBPI-06).
+        command:  uv run gz validate --qc-binding
+        expected: 0  observed: 0
+
+  PASS  The fidelity gate exists and the Fidelity Assertions block is parseable
+by the gate.
+        command:  uv run gz adr fidelity
+ADR-0.0.73-verification-layer-binding-audit --check
+        expected: 0  observed: 0
+
+  PASS  The dispatch-attestation pool concern is no longer a free-floating
+unpromoted item.
+        command:  uv run gz state
+        expected: 0  observed: 0
+
+  PASS  The ADR evaluator is a registered QC step bound to substance —
+`--qc-binding` finds no shape-graded-as-authoritative mismatch (OBPI-07, GHI
+#624).
+        command:  uv run gz validate --qc-binding
+        expected: 0  observed: 0
+
+  PASS  Every bound QC step has a genuine negative control; acknowledged
+`_NEGATIVE_CONTROL_DEBT` is empty.
+        command:  uv run python -c "from
+gzkit.governance.trust_audits.qc_binding import _NEGATIVE_CONTROL_DEBT; raise
+SystemExit(0 if len(_NEGATIVE_CONTROL_DEBT) == 0 else 3)"
+        expected: 0  observed: 0
+
+  PASS  Fidelity-presence enforcement exists and is green over the current
+corpus (OBPI-08).
+        command:  uv run gz validate --fidelity-presence
+        expected: 0  observed: 0
+
+  PASS  Waiver-ratchet honesty enforcement exists and is green over registered
+waiver surfaces (OBPI-09).
+        command:  uv run gz validate --waiver-ratchet
+        expected: 0  observed: 0
+
+  Summary: 8 pass, 0 fail
