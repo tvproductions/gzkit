@@ -168,11 +168,22 @@ def delete_lock(project_root: Path, obpi_id: str) -> bool:
     return True
 
 
+def _adr_id_from_obpi(obpi_id: str) -> str | None:
+    """Derive ``ADR-X.Y.Z`` from an ``OBPI-X.Y.Z-NN[-slug]`` identifier.
+
+    Anchored on the semver triplet — never ``rsplit("-", 1)``, which mis-parses
+    slug-bearing ids by stripping only the final slug segment (GHI #622). Returns
+    ``None`` when *obpi_id* is not a recognizable OBPI id.
+    """
+    match = re.match(r"OBPI-(\d+\.\d+\.\d+)-", obpi_id)
+    return f"ADR-{match.group(1)}" if match else None
+
+
 def list_locks(project_root: Path, adr_filter: str | None = None) -> list[LockData]:
     """Return all parseable locks, optionally filtered by ADR prefix.
 
     *adr_filter* should be an ADR identifier such as ``"ADR-0.0.14"``.
-    Matching converts OBPI-X.Y.Z-NN → ADR-X.Y.Z and compares the prefix.
+    Matching converts OBPI-X.Y.Z-NN[-slug] → ADR-X.Y.Z and compares.
     """
     d = lock_dir(project_root)
     locks: list[LockData] = []
@@ -184,11 +195,8 @@ def list_locks(project_root: Path, adr_filter: str | None = None) -> list[LockDa
         except (json.JSONDecodeError, OSError, TypeError, ValueError):
             continue
 
-        if adr_filter is not None:
-            # OBPI-X.Y.Z-NN → ADR-X.Y.Z
-            parts = lock.obpi_id.replace("OBPI-", "ADR-").rsplit("-", 1)
-            if parts[0] != adr_filter:
-                continue
+        if adr_filter is not None and _adr_id_from_obpi(lock.obpi_id) != adr_filter:
+            continue
 
         locks.append(lock)
     return locks
@@ -228,12 +236,8 @@ def _write_reaping_handoff(project_root: Path, lock: LockData, reaper_agent: str
     filename = f"{timestamp_token}-{lock.obpi_id}-reaped.md"
     path = handoff_dir / filename
 
-    # Derive the parent ADR id from the OBPI semver triplet
-    # (OBPI-X.Y.Z-NN[-slug] -> ADR-X.Y.Z). rsplit("-", 1) is wrong for
-    # slug-bearing obpi_ids — it strips only the last slug segment, yielding an
-    # invalid ADR id like ADR-0.0.72-02-handoff-frontmatter (OBPI-0.0.72-02 fix).
-    _semver_match = re.match(r"OBPI-(\d+\.\d+\.\d+)-", lock.obpi_id)
-    adr_id = f"ADR-{_semver_match.group(1)}" if _semver_match else lock.obpi_id
+    # Derive the parent ADR id from the OBPI semver triplet (GHI #622 helper).
+    adr_id = _adr_id_from_obpi(lock.obpi_id) or lock.obpi_id
     frontmatter = {
         "mode": "CREATE",
         "adr_id": adr_id,

@@ -403,6 +403,19 @@ class TestListLocks(unittest.TestCase):
             self.assertEqual(locks[0].obpi_id, "OBPI-0.0.14-01")
 
     @covers("REQ-0.0.14-01-06")
+    def test_adr_filter_matches_full_slug_obpi(self):
+        # GHI #622: full-slug obpi_ids must resolve to their parent ADR.
+        # rsplit("-", 1) mis-parsed these by stripping only the last slug
+        # segment, so a slug-bearing lock silently failed every ADR filter.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_lock(root, _make_lock("OBPI-0.0.72-02-handoff-frontmatter-reconcile"))
+            write_lock(root, _make_lock("OBPI-0.1.0-01-some-other-slug"))
+            locks = list_locks(root, adr_filter="ADR-0.0.72")
+            self.assertEqual(len(locks), 1)
+            self.assertEqual(locks[0].obpi_id, "OBPI-0.0.72-02-handoff-frontmatter-reconcile")
+
+    @covers("REQ-0.0.14-01-06")
     def test_adr_filter_excludes_all(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
