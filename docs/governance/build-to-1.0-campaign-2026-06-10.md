@@ -410,6 +410,23 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > work as capacity allows — it does not preempt Phase 0 / B.1 / ADR-0.0.73, and
 > it is not itself a 1.0 gate (sanity is the aim, not a new completion bar). Each
 > cut that lands is checked off here with its parity-test + green evidence.
+>
+> **Progress (2026-06-19, session boundary — context cleared after this).**
+> - **#618 step 1 LANDED** — the dispatch consistency fence
+>   (`tests/cli/test_validate_dispatch_consistency.py`, commit `7da9d680`;
+>   campaign E.4(b) marked landed). It is the parity net the
+>   `VALIDATOR_REGISTRY` collapse must keep green.
+> - **#632 FILED (E.5 drainage)** — the tautological-test-audit's brittle
+>   baseline over-flags fixtures, count/position-keys so any added file-reading
+>   test trips it, and misreports the culprit (discovered building the fence;
+>   sibling of closed #562, related #571). Homed E.5; baseline/waiver surfaces
+>   also feed the Phase-I waiver-stack reduction.
+> - **NEXT CUT (resume here):** #618 step 2 — fold the 78-param `validate()`
+>   signature + the `any([...])` predicate + `_collect_errors` + the parser
+>   forwarding lambda into one `VALIDATOR_REGISTRY`, verified green against the
+>   step-1 fence with its own per-cut parity proof. Then #617 (CLI
+>   handler-manifest), then #631 (eval-scorer lexicon), then the waiver-stack.
+> - Floor green at boundary (`uv run gz check` ✓, `main` synced at `7da9d680`).
 
 ## Authority and amendment (Magna Carta discipline)
 
