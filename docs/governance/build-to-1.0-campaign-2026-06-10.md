@@ -383,6 +383,34 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > census/D-phase input). Per the standing doctrine these speak at Phase I with
 > working proof, not by taste today.
 
+> **Amendment (operator verbatim, 2026-06-19) — Sanity Reduction track; Phase I
+> pulled forward for named, parity-proven cuts.** Operator: *"yes, do what it
+> takes to achieve sanity."* (ratifying the pull-forward offered in the heap
+> reckoning above). → **Completion-before-reduction is overridden for a bounded
+> Sanity Reduction track only.** The standing doctrine still governs everything
+> else; this carve-out authorizes specific, named reductive collapses **before
+> 1.0** because the heap is now ratified as bad enough to reduce now. Guardrails
+> (binding — a reduction that violates any is a defect, not progress):
+> 1. **Behavior-preserving + parity-proven.** Each cut ships a parity test that
+>    asserts the surface set is **identical before and after** (no scope, verb,
+>    or check silently dropped). Reduction never removes coverage — it removes
+>    *duplication of the enumeration*, not the enumerated.
+> 2. **Green-gated.** `uv run gz check` green before and after each cut; each
+>    lands in its own coherent commit with the parity evidence.
+> 3. **One cut at a time.** No bundled mega-refactor; each named surface
+>    collapses, verifies, commits, then the next.
+> **Named cuts (the pull-order):** (a) **#618** — `validate()`'s ~90 scopes
+> across ~6 parallel hand-synced lists → a single `VALIDATOR_REGISTRY`
+> (E.4 fence becomes moot once the source is single); (b) **#617** — 92
+> `_lazy()` CLI handler refs across 3 byte-identical manifests → one; (c)
+> **#631** — the eval-scorer false-RED lexicon (drainage, not enumeration, but
+> in-track for sanity); (d) the **waiver/grandfather/baseline stack** review
+> (collapse what proves redundant; keep what each mechanism uniquely earns).
+> **Sequencing:** the Sanity Reduction track runs **alongside** the topmost spine
+> work as capacity allows — it does not preempt Phase 0 / B.1 / ADR-0.0.73, and
+> it is not itself a 1.0 gate (sanity is the aim, not a new completion bar). Each
+> cut that lands is checked off here with its parity-test + green evidence.
+
 ## Authority and amendment (Magna Carta discipline)
 
 - **It steers; the spine propels.** The governance spine
