@@ -999,6 +999,32 @@
         }
       }
     },
+    "rendition_committed": {
+      "required": [
+        "surface",
+        "consumer",
+        "corpus_fingerprint",
+        "attestor"
+      ],
+      "properties": {
+        "surface": {
+          "type": "string",
+          "min_length": 1
+        },
+        "consumer": {
+          "type": "string",
+          "min_length": 1
+        },
+        "corpus_fingerprint": {
+          "type": "string",
+          "min_length": 1
+        },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
     "rendition_advisor_verdict": {
       "required": [
         "surface",

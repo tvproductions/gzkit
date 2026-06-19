@@ -11,7 +11,6 @@ it and registers each at import time. No behavior change from the split.
 from __future__ import annotations
 
 import json
-import time
 from collections.abc import Callable
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -141,10 +140,28 @@ def _rendition_freshness_negative_control() -> int:
 
     with _tmp_root() as tmp:
         root = Path(tmp)
+        _write(
+            root / ".gzkit" / "corpus" / "AGENTS.md.jsonl",
+            json.dumps(
+                {
+                    "id": "entry-1",
+                    "surface": "AGENTS.md",
+                    "section": "attestation",
+                    "text": "some corpus content",
+                    "tier": "compressible",
+                    "classification": "Judgment",
+                    "origin": "negative-control",
+                    "ts": "2026-01-01T00:00:00+00:00",
+                }
+            )
+            + "\n",
+        )
+        # A committed rendition with NO provenance sidecar over a real corpus: the
+        # rendition's derivation from the corpus is unproven, so the fail-closed gate
+        # MUST flag it. A step that passes this fixture is theater. Checked fail-closed
+        # because the live gate is staged in warn mode (OBPI-0.0.41 warn->fail).
         _write(root / ".gzkit" / "renditions" / "AGENTS.md" / "codex.md", "old\n")
-        time.sleep(0.01)
-        _write(root / ".gzkit" / "corpus" / "AGENTS.md.jsonl", "{}\n")
-        return _genuine_when_errors(validate_rendition_freshness(root))
+        return _genuine_when_errors(validate_rendition_freshness(root, fail_closed=True))
 
 
 def _rendition_floor_coherence_negative_control() -> int:

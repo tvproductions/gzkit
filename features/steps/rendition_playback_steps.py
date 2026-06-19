@@ -4,21 +4,43 @@
 @covers REQ-0.0.37-22-02
 @covers REQ-0.0.37-22-03
 @covers REQ-0.0.37-22-04
+@covers REQ-0.0.37-22-07
 """
 
 from __future__ import annotations
 
 import json
-import time
 from pathlib import Path
 from unittest.mock import patch
 
 from behave import given, then, when  # type: ignore[import-untyped]
 
+from gzkit.content.corpus_store import append_entry, load_corpus
+from gzkit.content.models.corpus import Corpus, CorpusEntry
+from gzkit.content.rendition import candidate_path
 from gzkit.content.rendition_store import (
+    RenditionProvenance,
+    corpus_fingerprint,
+    fingerprint_path,
     load_rendition,
+    rendition_path,
+    save_fingerprint,
     save_rendition,
 )
+
+
+def _entry(surface: str, entry_id: str, text: str) -> CorpusEntry:
+    return CorpusEntry(
+        id=entry_id,
+        surface=surface,
+        section="behavior-rules",
+        tier="compressible",
+        classification="Mechanical",
+        text=text,
+        origin="bdd",
+        ts="2026-06-19T00:00:00+00:00",
+    )
+
 
 # ---------------------------------------------------------------------------
 # Given
@@ -40,32 +62,46 @@ def step_given_no_rendition(context, surface, consumer):
     context.rendition_consumer = consumer
 
 
-@given('the corpus for "{surface}" was mutated after the committed rendition')
-def step_given_corpus_mutated_after_rendition(context, surface):
+@given('a corpus for "{surface}" with one entry')
+def step_given_corpus_one_entry(context, surface):
     root = Path(context.root)
-    time.sleep(0.02)
+    corpus = Corpus(entries=(_entry(surface, "e0", "seed entry"),))
     corpus_dir = root / ".gzkit" / "corpus"
-    corpus_dir.mkdir(exist_ok=True)
-    (corpus_dir / f"{surface}.jsonl").write_text(
-        '{"id":"c1","surface":"AGENTS.md","section":"behavior-rules"}\n', encoding="utf-8"
+    corpus_dir.mkdir(parents=True, exist_ok=True)
+    (corpus_dir / f"{surface}.jsonl").write_text(corpus.dumps() + "\n", encoding="utf-8")
+
+
+@given('a committed rendition with provenance for "{surface}" consumer "{consumer}"')
+def step_given_committed_rendition_with_provenance(context, surface, consumer):
+    root = Path(context.root)
+    corpus = load_corpus(root, surface)
+    save_rendition(root, surface, consumer, b"# Rendition\n")
+    save_fingerprint(
+        root,
+        surface,
+        consumer,
+        RenditionProvenance(
+            corpus_fingerprint=corpus_fingerprint(corpus),
+            corpus_entry_count=len(corpus.entries),
+            committed_ts="2026-06-19T00:00:00+00:00",
+            attestor="bdd",
+            attestation_text="done",
+        ),
     )
 
 
-@given('the corpus for "{surface}" exists')
-def step_given_corpus_exists(context, surface):
+@given('the corpus for "{surface}" gains a new entry')
+def step_given_corpus_gains_entry(context, surface):
     root = Path(context.root)
-    corpus_dir = root / ".gzkit" / "corpus"
-    corpus_dir.mkdir(exist_ok=True)
-    (corpus_dir / f"{surface}.jsonl").write_text(
-        '{"id":"c1","surface":"AGENTS.md","section":"behavior-rules"}\n', encoding="utf-8"
-    )
+    append_entry(root, surface, _entry(surface, "e1", "newly captured rule"))
 
 
-@given('a committed rendition for "{surface}" consumer "{consumer}" committed after the corpus')
-def step_given_rendition_after_corpus(context, surface, consumer):
+@given('a staged candidate for "{surface}" consumer "{consumer}" with content "{content}"')
+def step_given_staged_candidate(context, surface, consumer, content):
     root = Path(context.root)
-    time.sleep(0.02)
-    save_rendition(root, surface, consumer, b"# Fresh rendition\n")
+    cand = candidate_path(root, surface, consumer)
+    cand.parent.mkdir(parents=True, exist_ok=True)
+    cand.write_text(content, encoding="utf-8")
 
 
 @given('AGENTS.md contains "{content}"')
@@ -124,8 +160,8 @@ def step_when_sync_agents_md(context):
     context.agents_md_second = (root / "AGENTS.md").read_bytes()
 
 
-# Note: "When I run 'gz validate --...'" is handled by the generic step
-# in features/steps/obpi_lock_steps.py (@when('I run "{command}":'))
+# Note: "When I run the gz command "..."" is handled by the generic step
+# in features/steps/gz_steps.py (which captures stdout+stderr into context.output).
 
 
 # ---------------------------------------------------------------------------
@@ -174,6 +210,20 @@ def step_then_render_not_invoked(context):
     assert not context.render_was_called, (
         "render_content_model was called despite committed rendition"
     )
+
+
+@then('a committed rendition exists for "{surface}" consumer "{consumer}"')
+def step_then_committed_rendition_exists(context, surface, consumer):
+    root = Path(context.root)
+    path = rendition_path(root, surface, consumer)
+    assert path.exists(), f"Expected committed rendition at {path}"
+
+
+@then('a provenance sidecar exists for "{surface}" consumer "{consumer}"')
+def step_then_provenance_sidecar_exists(context, surface, consumer):
+    root = Path(context.root)
+    path = fingerprint_path(root, surface, consumer)
+    assert path.exists(), f"Expected provenance sidecar at {path}"
 
 
 @then('the ledger contains a "{event_type}" event')

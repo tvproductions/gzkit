@@ -11,6 +11,7 @@ from gzkit.ledger_events import (
     brief_reconciled_event,
     composition_drift_detected_event,
     composition_rendered_event,
+    rendition_committed_event,
 )
 
 
@@ -42,6 +43,25 @@ def emit_composition_drift_detected(
         composition_drift_detected_event(
             target=target,
             diff_first_50_lines=diff_first_50_lines,
+        )
+    )
+
+
+def emit_rendition_committed(
+    root: Path,
+    surface: str,
+    consumer: str,
+    corpus_fingerprint: str,
+    attestor: str,
+) -> None:
+    """Append a rendition_committed event to the project ledger."""
+    ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+    ledger.append(
+        rendition_committed_event(
+            surface=surface,
+            consumer=consumer,
+            corpus_fingerprint=corpus_fingerprint,
+            attestor=attestor,
         )
     )
 

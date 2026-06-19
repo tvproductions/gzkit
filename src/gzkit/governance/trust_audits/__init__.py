@@ -208,7 +208,6 @@ __all__ = [
     "validate_scenario_reachability",
     "validate_rendition_floor_coherence",
     "validate_rendition_freshness",
-    "validate_rendition_freshness",
     "validate_setpoint_coherence",
     "validate_surface_fidelity",
     "validate_surface_weight",

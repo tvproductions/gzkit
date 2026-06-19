@@ -2,7 +2,9 @@
 
 Covers the store contract: per-(surface×consumer) artifact at
 ``.gzkit/renditions/<surface>/<consumer>.md``, deterministic load
-(same file → same bytes), and fail-closed absent behavior.
+(same file → same bytes), fail-closed absent behavior, and the corpus
+content-fingerprint provenance sidecar that the freshness gate compares
+against (REQ-0.0.37-22-03 substance — replaces the mtime tautology).
 """
 
 from __future__ import annotations
@@ -11,13 +13,35 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from gzkit.content.models.corpus import Corpus, CorpusEntry
 from gzkit.content.rendition_store import (
+    RenditionProvenance,
+    corpus_fingerprint,
+    fingerprint_path,
+    load_fingerprint,
     load_rendition,
     rendition_exists,
     rendition_path,
+    save_fingerprint,
     save_rendition,
 )
 from gzkit.traceability import covers
+
+
+def _entry(
+    entry_id: str = "e1", text: str = "body text", tier: str = "compressible"
+) -> CorpusEntry:
+    """Build a minimal valid CorpusEntry for fingerprint tests."""
+    return CorpusEntry(
+        id=entry_id,
+        surface="AGENTS.md",
+        section="behavior-rules",
+        tier=tier,  # type: ignore[arg-type]
+        classification="Mechanical",
+        text=text,
+        origin="test",
+        ts="2026-06-19T00:00:00+00:00",
+    )
 
 
 class TestRenditionStorePath(unittest.TestCase):
@@ -121,6 +145,104 @@ class TestRenditionStoreLoadSave(unittest.TestCase):
         save_rendition(self._root, "AGENTS.md", "claude", b"v2 content")
         loaded = load_rendition(self._root, "AGENTS.md", "claude")
         self.assertEqual(loaded, b"v2 content")
+
+
+class TestCorpusFingerprint(unittest.TestCase):
+    """corpus_fingerprint hashes canonical model content — not raw file bytes (REQ-0.0.37-22-03)."""
+
+    @covers("REQ-0.0.37-22-03")
+    def test_fingerprint_is_deterministic_for_same_corpus(self) -> None:
+        """The same corpus content yields the same digest across calls."""
+        corpus = Corpus(entries=(_entry("a"), _entry("b", text="other")))
+        self.assertEqual(corpus_fingerprint(corpus), corpus_fingerprint(corpus))
+
+    @covers("REQ-0.0.37-22-03")
+    def test_fingerprint_changes_when_entry_text_changes(self) -> None:
+        """A content edit to any entry changes the digest (drift is detectable)."""
+        before = Corpus(entries=(_entry("a", text="original"),))
+        after = Corpus(entries=(_entry("a", text="mutated"),))
+        self.assertNotEqual(corpus_fingerprint(before), corpus_fingerprint(after))
+
+    @covers("REQ-0.0.37-22-03")
+    def test_fingerprint_stable_across_crlf_vs_lf_corpus(self) -> None:
+        """Identical entries serialized with CRLF vs LF separators yield equal digests.
+
+        This is the cross-platform invariant: the fingerprint is over the canonical
+        model serialization, never the on-disk file bytes (Windows writes CRLF).
+        """
+        line_a = _entry("a").model_dump_json()
+        line_b = _entry("b", text="second").model_dump_json()
+        lf_corpus = Corpus.loads(line_a + "\n" + line_b)
+        crlf_corpus = Corpus.loads(line_a + "\r\n" + line_b)
+        self.assertEqual(corpus_fingerprint(lf_corpus), corpus_fingerprint(crlf_corpus))
+
+    @covers("REQ-0.0.37-22-03")
+    def test_empty_corpus_has_stable_digest(self) -> None:
+        """An empty corpus has a well-defined, stable fingerprint."""
+        self.assertEqual(corpus_fingerprint(Corpus()), corpus_fingerprint(Corpus()))
+
+
+class TestRenditionProvenanceSidecar(unittest.TestCase):
+    """The provenance sidecar freezes the corpus fingerprint at commit time (REQ-0.0.37-22-03)."""
+
+    def setUp(self) -> None:
+        self._tempdir = tempfile.TemporaryDirectory()
+        self._root = Path(self._tempdir.name)
+        (self._root / ".gzkit").mkdir()
+
+    def tearDown(self) -> None:
+        self._tempdir.cleanup()
+
+    def _provenance(self) -> RenditionProvenance:
+        return RenditionProvenance(
+            corpus_fingerprint="deadbeef",
+            corpus_entry_count=2,
+            committed_ts="2026-06-19T00:00:00+00:00",
+            attestor="g0",
+            attestation_text="attest completed",
+        )
+
+    @covers("REQ-0.0.37-22-03")
+    def test_fingerprint_path_is_corpus_json_sibling_of_rendition(self) -> None:
+        """The sidecar lives beside the rendition as <consumer>.corpus.json."""
+        path = fingerprint_path(self._root, "AGENTS.md", "claude")
+        self.assertEqual(
+            path, self._root / ".gzkit" / "renditions" / "AGENTS.md" / "claude.corpus.json"
+        )
+
+    @covers("REQ-0.0.37-22-03")
+    def test_sidecar_is_invisible_to_md_glob(self) -> None:
+        """The sidecar suffix is .corpus.json so the *.md rendition glob never sees it."""
+        path = fingerprint_path(self._root, "AGENTS.md", "claude")
+        self.assertFalse(path.name.endswith(".md"))
+
+    @covers("REQ-0.0.37-22-03")
+    def test_save_then_load_roundtrips_provenance(self) -> None:
+        """A saved provenance sidecar loads back equal."""
+        prov = self._provenance()
+        save_fingerprint(self._root, "AGENTS.md", "claude", prov)
+        loaded = load_fingerprint(self._root, "AGENTS.md", "claude")
+        self.assertEqual(loaded, prov)
+
+    @covers("REQ-0.0.37-22-03")
+    def test_load_returns_none_when_sidecar_absent(self) -> None:
+        """A missing sidecar loads as None (the freshness gate treats this as drift)."""
+        self.assertIsNone(load_fingerprint(self._root, "AGENTS.md", "claude"))
+
+    @covers("REQ-0.0.37-22-03")
+    def test_provenance_model_rejects_unknown_fields(self) -> None:
+        """RenditionProvenance is frozen + extra='forbid' (typo defense)."""
+        from pydantic import ValidationError
+
+        with self.assertRaises(ValidationError):
+            RenditionProvenance(
+                corpus_fingerprint="x",
+                corpus_entry_count=0,
+                committed_ts="t",
+                attestor="a",
+                attestation_text="b",
+                bogus="nope",  # type: ignore[call-arg]
+            )
 
 
 if __name__ == "__main__":

@@ -260,7 +260,8 @@ class TestCommandSurfaceUnchanged(unittest.TestCase):
         (corpus capture write path); the fence is updated to admit it, not relaxed.
         """
         # Expected subcommands for `gz content` (remember added by OBPI-0.0.37-19;
-        # compose by OBPI-0.0.37-21; advise-rendition by OBPI-0.0.37-24)
+        # compose by OBPI-0.0.37-21; commit by OBPI-0.0.37-22; advise-rendition by
+        # OBPI-0.0.37-24)
         expected_subcommands = {
             "import",
             "list",
@@ -269,6 +270,7 @@ class TestCommandSurfaceUnchanged(unittest.TestCase):
             "edit",
             "remember",
             "compose",
+            "commit",
             "advise-rendition",
         }
 

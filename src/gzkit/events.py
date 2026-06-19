@@ -467,6 +467,22 @@ class CompositionCandidateEmittedEvent(_EventBase):
     task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
 
 
+class RenditionCommittedEvent(_EventBase):
+    """rendition_committed event — operator-attested candidate→committed promotion (OBPI-22).
+
+    Layer-2 witness that ``gz content commit`` promoted a staged candidate to the
+    durable committed rendition under Gate-5 attestation, freezing the corpus
+    content-fingerprint the rendition was attested against.
+    """
+
+    event: Literal["rendition_committed"]
+    surface: str
+    consumer: str
+    corpus_fingerprint: str
+    attestor: str
+    task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
+
+
 class RenditionAdvisorVerdictEvent(_EventBase):
     """rendition_advisor_verdict event — advisor-QC verdict record (ADR-0.0.37, OBPI-24).
 
@@ -568,6 +584,7 @@ TypedLedgerEvent = Annotated[
     | ChoreDecommissionProcessedEvent
     | CorpusEntryAppendedEvent
     | CompositionCandidateEmittedEvent
+    | RenditionCommittedEvent
     | RenditionAdvisorVerdictEvent
     | BriefReconciledEvent
     | BriefReconcileDriftDetectedEvent

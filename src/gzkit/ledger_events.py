@@ -593,6 +593,32 @@ def composition_candidate_emitted_event(
     )
 
 
+def rendition_committed_event(
+    surface: str,
+    consumer: str,
+    corpus_fingerprint: str,
+    attestor: str,
+) -> LedgerEvent:
+    """Create a rendition_committed event (ADR-0.0.37, OBPI-0.0.37-22).
+
+    Layer-2 witness that ``gz content commit`` promoted a staged candidate to the
+    durable committed rendition under operator attestation (Gate 5), freezing the
+    corpus content-fingerprint the rendition was attested against.
+    """
+    timestamp = datetime.now(UTC).isoformat()
+    return LedgerEvent(
+        event="rendition_committed",
+        id=f"rendition-committed-{timestamp}",
+        ts=timestamp,
+        extra={
+            "surface": surface,
+            "consumer": consumer,
+            "corpus_fingerprint": corpus_fingerprint,
+            "attestor": attestor,
+        },
+    )
+
+
 def rendition_advisor_verdict_event(
     surface: str,
     consumer: str | None,

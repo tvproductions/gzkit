@@ -14,6 +14,7 @@ req_atomic:
   - REQ-0.0.37-22-04
   - REQ-0.0.37-22-05
   - REQ-0.0.37-22-06
+  - REQ-0.0.37-22-07
 ---
 
 # OBPI-0.0.37-22-committed-rendition-store-deterministic-playback: Committed-Rendition Store + Deterministic Playback + Freshness Gate
@@ -47,7 +48,7 @@ A new `gz validate --rendition-freshness` scope, a re-pointed `--invariant-coher
 - `src/gzkit/sync_surfaces.py` — EDIT: repoint `sync_agents_md` (lines ~352-381) to play back the committed rendition deterministically; retire the `render_template("agents")` monolith fallback path in favour of rendition playback (re-homes OBPI-14 plumbing)
 - `src/gzkit/governance/compose.py` — EDIT: `render_agents_md` (lines ~51-72) becomes deterministic playback of the committed rendition (no template-substitution compose at the rendered location)
 - `src/gzkit/governance/trust_audits/invariant_coherence.py` — EDIT: diff deterministic playback of the committed rendition against the committed rendered surface (replaces the registry-re-render byte-compare)
-- `src/gzkit/governance/trust_audits/rendition_freshness.py` **CREATE** — the corpus↔rendition drift gate (mutation-timestamp comparison; fail-closed; recompose recovery hint)
+- `src/gzkit/governance/trust_audits/rendition_freshness.py` **CREATE** — the corpus↔rendition drift gate (corpus content-fingerprint comparison — the committed fingerprint vs. the corpus's current fingerprint, not a timestamp; staged warn→fail per OBPI-0.0.41; recompose recovery hint)
 - `src/gzkit/governance/trust_audits/__init__.py` — EDIT: export `validate_rendition_freshness` (re-export convention)
 - `src/gzkit/cli/parser_maintenance.py` — EDIT: register the `--rendition-freshness` argparse flag (cf. `--invariant-coherence`, `--setpoint-coherence`)
 - `src/gzkit/commands/validate_cmd.py` — EDIT: wire the `rendition_freshness` runner into the dispatch table + default-scope registry (cf. `_invariant_coherence_runner`)
@@ -232,6 +233,7 @@ uv run gz validate --invariant-coherence
 - [ ] REQ-0.0.37-22-04 [BEHAVIOR]: Given a committed rendition whose playback differs from the committed rendered surface, when `gz validate --invariant-coherence` runs, then it exits 3 on the playback-vs-surface diff. Proof: `@covers`-decorated test in `tests/governance/test_invariant_coherence.py`.
 - [ ] REQ-0.0.37-22-05 [SUPPORT]: Given the build, when `gz check` runs and the corpus has drifted, then the rendition-freshness gate fires and a `composition_drift_detected` ledger event is emitted — proven by `uv run gz validate --rendition-freshness` plus the `composition_drift_detected` event.
 - [ ] REQ-0.0.37-22-06 [SUPPORT]: Given the operator docs, when the OBPI is complete, then `docs/user/manpages/validate.md` and `docs/user/runbook.md` document the store, playback, and freshness gate and the references resolve — proven by `uv run gz validate --documents` plus the `artifact_edited` event for the docs.
+- [ ] REQ-0.0.37-22-07 [BEHAVIOR]: Given a staged candidate and a corpus, when `gz content commit <surface> --consumer <c> --attestor <n> --attestation-text <t>` runs, then it promotes the candidate to the committed rendition, freezes the corpus content-fingerprint in a provenance sidecar, and emits a `rendition_committed` event; empty attestation fails closed (exit 1) and writes nothing. This is the governed candidate→committed promotion seam — the committed-rendition store's missing caller for `save_rendition`. Proof: `@covers`-decorated test in `tests/commands/test_content_commit.py`.
 
 ## Completion Checklist
 

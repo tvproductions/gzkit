@@ -1199,12 +1199,20 @@ the ceremony's advance to attestation.
 
 ### `--rendition-freshness`
 
-Fail-closed when the corpus for a surface has mutated after its committed rendition
-(corpus↔rendition drift). Scans `.gzkit/renditions/<surface>/<consumer>.md` artifacts
-and compares each against the corresponding corpus at `.gzkit/corpus/<surface>.jsonl`
-using file modification timestamps. Emits `composition_drift_detected` on drift.
+Flag when the corpus for a surface no longer matches the committed rendition it was
+attested against — i.e. the rendition can no longer be proven to derive from the current
+corpus. This is a **content** comparison: the corpus content-fingerprint frozen at commit
+time in the provenance sidecar (`.gzkit/renditions/<surface>/<consumer>.corpus.json`) is
+compared against the corpus's current fingerprint (SHA-256 of the canonical corpus
+serialization). Drift is a mutated corpus **or** a rendition with no provenance sidecar
+(derivation unproven). This replaces the prior file-modification-timestamp comparison
+(repudiated 2026-06-16: a `touch` passed, a content change could pass).
 
-Runs in the default `gz check` build (OBPI-0.0.37-22).
+**Staging (OBPI-0.0.41 warn→fail precedent).** The gate currently runs in **warn mode**:
+drift prints a recompose WARNING to stderr and the gate exits 0, so `gz check` stays green
+while the corpus is enriched and the renditions are re-seeded under attestation. It flips
+fail-closed (exit 3, emitting `composition_drift_detected`) in a later increment. Runs in
+the default `gz check` build (OBPI-0.0.37-22).
 
 **Usage:**
 
@@ -1216,22 +1224,24 @@ gz validate --rendition-freshness
 
 | Code | Meaning | Recovery |
 |------|---------|----------|
-| 0 | All renditions are at least as recent as their corpus | — |
-| 3 | Corpus mutated after committed rendition | Run `gz content compose <surface>` and attest |
+| 0 | Renditions agree with the corpus fingerprint (or drift, while staged in warn mode) | — |
+| 3 | Corpus drifted from the committed fingerprint (after the fail-closed flip) | Recompose: `gz content compose <surface>` then `gz content commit <surface> --consumer <c> --attestor … --attestation-text …` |
 
 **When to use:** After `gz content remember` appends a corpus entry, before `gz agent sync
-control-surfaces`, or to diagnose a failing `gz check` Rendition freshness step.
+control-surfaces`, or to diagnose a `gz check` Rendition freshness warning.
 
-**Related:** ADR-0.0.37 (CMS pipeline), OBPI-0.0.37-22 (this gate), `--invariant-coherence`.
+**Related:** ADR-0.0.37 (CMS pipeline), OBPI-0.0.37-22 (this gate), `gz content commit`
+(freezes the fingerprint this gate checks), `--rendition-floor-coherence`, `--invariant-coherence`.
 
 ### `--rendition-floor-coherence`
 
 Fail-closed when a committed rendition omits an invariant-tier corpus entry. For every
 `.gzkit/renditions/<surface>/<consumer>.md` artifact, asserts that each `tier: invariant`
 entry of the surface's corpus (`.gzkit/corpus/<surface>.jsonl`) appears **verbatim** in the
-rendition text. This is the content witness that `--rendition-freshness` (a timestamp
-comparison) does not perform: it proves the committed rendition actually carries canon's
-invariant floor, not merely that it is newer than the corpus. Emits
+rendition text. This is a complementary content witness to `--rendition-freshness`: floor
+coherence proves the rendition carries canon's invariant floor (presence of every
+invariant-tier entry), while freshness proves the rendition still corresponds to the
+current corpus as a whole (the frozen fingerprint matches). Emits
 `composition_drift_detected` naming the missing entry ids on violation.
 
 Runs in the default `gz check` build (GHI #623, corrective to ADR-0.0.37).

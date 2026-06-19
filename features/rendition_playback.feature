@@ -36,19 +36,21 @@ Feature: Committed-rendition store, deterministic playback, and freshness gate
     Then the model render pipeline was not invoked
 
   @REQ-0.0.37-22-03
-  Scenario: Freshness gate exits 3 when corpus has mutated after committed rendition
-    Given a committed rendition for "AGENTS.md" consumer "claude" with content "# Old rendition\n"
-    And the corpus for "AGENTS.md" was mutated after the committed rendition
-    When I run the gz command "validate --rendition-freshness"
-    Then the command exits with code 3
-    And the ledger contains a "composition_drift_detected" event
-
-  @REQ-0.0.37-22-03
-  Scenario: Freshness gate exits 0 when rendition is up to date
-    Given the corpus for "AGENTS.md" exists
-    And a committed rendition for "AGENTS.md" consumer "claude" committed after the corpus
+  Scenario: Freshness gate is clean when the committed fingerprint matches the corpus
+    Given a corpus for "AGENTS.md" with one entry
+    And a committed rendition with provenance for "AGENTS.md" consumer "claude"
     When I run the gz command "validate --rendition-freshness"
     Then the command exits with code 0
+    And the output does not contain "WARNING [rendition-freshness"
+
+  @REQ-0.0.37-22-03
+  Scenario: Freshness gate warns on corpus content drift while staged in warn mode
+    Given a corpus for "AGENTS.md" with one entry
+    And a committed rendition with provenance for "AGENTS.md" consumer "claude"
+    And the corpus for "AGENTS.md" gains a new entry
+    When I run the gz command "validate --rendition-freshness"
+    Then the command exits with code 0
+    And the output contains "WARNING [rendition-freshness"
 
   @REQ-0.0.37-22-04
   Scenario: --invariant-coherence exits 3 when rendition playback differs from committed AGENTS.md
@@ -63,3 +65,13 @@ Feature: Committed-rendition store, deterministic playback, and freshness gate
     And AGENTS.md contains "# Match\n"
     When I run the gz command "validate --invariant-coherence"
     Then the command exits with code 0
+
+  @REQ-0.0.37-22-07
+  Scenario: gz content commit promotes a candidate and freezes the corpus fingerprint
+    Given a corpus for "AGENTS.md" with one entry
+    And a staged candidate for "AGENTS.md" consumer "codex" with content "# Candidate\n"
+    When I run the gz command "content commit AGENTS.md --consumer codex --attestor Jeffry --attestation-text done"
+    Then the command exits with code 0
+    And a committed rendition exists for "AGENTS.md" consumer "codex"
+    And a provenance sidecar exists for "AGENTS.md" consumer "codex"
+    And the ledger contains a "rendition_committed" event

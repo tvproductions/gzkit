@@ -52,6 +52,7 @@ def register_content_parsers(commands: argparse._SubParsersAction) -> None:
     _register_edit(content_commands)
     _register_remember(content_commands)
     _register_compose(content_commands)
+    _register_commit(content_commands)
     _register_advise_rendition(content_commands)
 
 
@@ -349,6 +350,55 @@ def _register_compose(content_commands: argparse._SubParsersAction) -> None:
             surface=a.surface,
             consumer=a.consumer,
             candidate=a.candidate,
+        )
+    )
+
+
+def _register_commit(content_commands: argparse._SubParsersAction) -> None:
+    p = content_commands.add_parser(
+        "commit",
+        help="Promote a staged candidate to the committed rendition under attestation",
+        description=(
+            "Promote the staged candidate rendition "
+            "(.gzkit/renditions/<surface>/<consumer>.candidate.md) to the durable committed "
+            "rendition (<consumer>.md), freeze the corpus content-fingerprint in a provenance "
+            "sidecar (<consumer>.corpus.json), and emit a rendition_committed ledger event. "
+            "Operator-attested (Gate 5): --attestor and --attestation-text are required and "
+            "fail closed when empty — promotion is explicit, never automatic. The frozen "
+            "fingerprint is what `gz validate --rendition-freshness` checks the corpus against."
+        ),
+        epilog=_build_epilog(
+            [
+                "gz content commit AGENTS.md --consumer codex "
+                '--attestor "g0" --attestation-text "attest completed"',
+                "gz content commit AGENTS.md --consumer claude "
+                '--attestor "g0" --attestation-text "recompose attested"',
+            ]
+        ),
+    )
+    p.add_argument("surface", help="Control surface to commit for (e.g. AGENTS.md).")
+    p.add_argument(
+        "--consumer",
+        required=True,
+        help="Target vendor consumer (e.g. codex, claude).",
+    )
+    p.add_argument(
+        "--attestor",
+        required=True,
+        help="Operator attesting the commit (Gate 5); empty fails closed.",
+    )
+    p.add_argument(
+        "--attestation-text",
+        dest="attestation_text",
+        required=True,
+        help="Operator's verbatim attestation token (Gate 5); empty fails closed.",
+    )
+    p.set_defaults(
+        func=lambda a: _content("commit", "content_commit_cmd")(
+            surface=a.surface,
+            consumer=a.consumer,
+            attestor=a.attestor,
+            attestation_text=a.attestation_text,
         )
     )
 

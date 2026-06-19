@@ -150,6 +150,34 @@ The command **fails closed** (non-zero exit, no candidate written) when:
 - the `(surface, consumer)` setpoint is undeclared in `data/vendor-manifest.json`, or
 - the candidate drops or rewrites any `tier: invariant` corpus entry (0-Kelvin floor).
 
+### commit
+
+Promote a staged **candidate** to the durable **committed rendition** under
+operator attestation. This is the governed candidate→committed seam of the
+ADR-0.0.37 CMS pipeline: `compose` stages `<consumer>.candidate.md`; `commit`
+writes `<consumer>.md` AND freezes the corpus content-fingerprint in a
+provenance sidecar `<consumer>.corpus.json`, then emits a `rendition_committed`
+ledger event.
+
+**`commit` is operator-attested (Gate 5)** — `--attestor` and `--attestation-text`
+are required and **fail closed when empty**; promotion is explicit, never
+automatic. The operator's verbatim `--attestation-text` IS Gate 5 (mirrors
+`gz obpi repudiate`). The frozen fingerprint is exactly what
+`gz validate --rendition-freshness` compares the live corpus against: when the
+corpus drifts from the committed rendition, the freshness gate flags it and the
+recovery is to recompose and re-commit.
+
+```bash
+gz content commit <surface> --consumer <vendor> --attestor "<name>" --attestation-text "<verbatim>"
+gz content commit AGENTS.md --consumer codex \
+  --attestor "g0" --attestation-text "attest completed"
+```
+
+The command **fails closed** (non-zero exit, nothing written) when:
+- `--attestor` or `--attestation-text` is empty or whitespace (Gate 5),
+- no staged candidate exists for `(surface, consumer)`, or
+- no corpus store exists for `<surface>` (nothing to fingerprint).
+
 ### advise-rendition
 
 Record an advisory **information-retained-per-byte** verdict for a candidate
@@ -192,8 +220,10 @@ verdict value itself is never the fail-closed trigger.
 | `--tier <tier>` | remember | `invariant` (verbatim at every setpoint) or `compressible` (default) |
 | `--classification <c>` | remember | Advisory-scorecard class: `Mechanical`/`Promotable`/`Judgment`/`Ambiguous` (default `Ambiguous`) |
 | `--origin <provenance>` | remember | Provenance of the capture, e.g. a GHI or session id (default `cli:content-remember`) |
-| `--consumer <vendor>` | compose, advise-rendition | Target vendor consumer (e.g. `codex`, `claude`); optional for advise-rendition (surface-wide when omitted) |
+| `--consumer <vendor>` | compose, commit, advise-rendition | Target vendor consumer (e.g. `codex`, `claude`); optional for advise-rendition (surface-wide when omitted) |
 | `--candidate <file>` | compose | Path to the candidate rendition file (reads from stdin when omitted) |
+| `--attestor <name>` | commit | Operator attesting the candidate→committed promotion (Gate 5); empty fails closed (required) |
+| `--attestation-text <text>` | commit | Operator's verbatim attestation token (Gate 5); empty fails closed (required) |
 | `--score <float>` | advise-rendition | Information-retained-per-byte verdict value; advisory, never gates (required) |
 | `--explanation <text>` | advise-rendition | The advisor's reasoning, recorded before the verdict; empty value fails closed (required) |
 | `--quiet`, `-q` | global | Suppress non-error output |

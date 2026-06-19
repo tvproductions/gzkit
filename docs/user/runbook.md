@@ -1044,37 +1044,50 @@ id in the Gate-5 attestation that promotes the candidate to a committed renditio
 See the `gz-advisor-qc` skill and [`gz content`](manpages/content.md) § advise-rendition.
 
 **To commit a rendition and play it back (OBPI-0.0.37-22):**
-After the compose stage produces and the operator attests a candidate rendition, the
-committed rendition artifact is stored at `.gzkit/renditions/<surface>/<consumer>.md`.
-`gz agent sync control-surfaces` then plays it back deterministically — no LLM, no
-network — to the rendered surface:
+After compose stages a candidate and the operator attests it, promote the candidate to
+the durable committed rendition with `gz content commit`. The commit verb writes
+`.gzkit/renditions/<surface>/<consumer>.md` **and** freezes the corpus content-fingerprint
+in a provenance sidecar (`<consumer>.corpus.json`), under operator attestation (Gate 5):
 
 ```bash
-# After attestation, play back the committed rendition to AGENTS.md
+# Promote the attested candidate to the committed rendition (Gate 5: fail-closed on empty)
+uv run gz content commit AGENTS.md --consumer codex \
+  --attestor "g0" --attestation-text "attest completed"
+
+# Play the committed rendition back to the rendered surface (deterministic — no LLM/network)
 uv run gz agent sync control-surfaces
 
 # Verify the surface matches the committed rendition
 uv run gz validate --invariant-coherence
 ```
 
-**If `gz check` or `gz validate --rendition-freshness` exits 3 (corpus drifted):**
+`commit` fails closed (exit 1, nothing written) on an empty `--attestor`/`--attestation-text`,
+an absent candidate, or an absent corpus. It emits a `rendition_committed` ledger event.
+
+**If `gz validate --rendition-freshness` reports corpus drift:**
 
 ```bash
-# Identify the drift
+# Identify the drift (the committed fingerprint no longer matches the corpus)
 uv run gz validate --rendition-freshness
 
-# Recompose: run the gz-content-compose skill to produce an operator-attested rendition
-# then sync to play it back
+# Recompose, attest, and re-commit so the committed rendition + fingerprint reflect the corpus
+cat /tmp/new-candidate.md | uv run gz content compose AGENTS.md --consumer codex
+uv run gz content commit AGENTS.md --consumer codex \
+  --attestor "g0" --attestation-text "recompose attested"
+
+# Confirm drift cleared, then play back
+uv run gz validate --rendition-freshness
 uv run gz agent sync control-surfaces
-
-# Confirm drift cleared
-uv run gz validate --rendition-freshness
 ```
 
-The freshness gate fails closed (`exit 3`) when the corpus for a surface has mutated
-after the committed rendition — indicating that new `gz content remember` entries have
-not been reflected in the committed rendition. Recovery is always recompose + attest,
-never editing a rendered surface directly.
+The freshness gate is a **content** comparison: it flags drift when the corpus for a
+surface no longer matches the fingerprint frozen at commit time (a mutated corpus, or a
+rendition with no provenance sidecar) — not a timestamp comparison. It is currently
+**staged in warn mode** (OBPI-0.0.41 warn→fail precedent): drift prints a recompose
+WARNING and the gate still exits 0, so `gz check` stays green while the corpus is enriched
+and the renditions are re-seeded under attestation. It flips fail-closed (`exit 3`) in a
+later increment. Recovery is always recompose + attest + commit, never editing a rendered
+surface directly.
 
 ---
 
