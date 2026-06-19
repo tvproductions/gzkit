@@ -237,6 +237,19 @@ def _obpi_completion_validator_script() -> str:
                 return current
 
 
+            def _obpi_id_matches(entry_obpi: str, obpi_id: str) -> bool:
+                \"\"\"Match a ledger entry's OBPI id against the short id from the brief path.
+
+                The ADR-local audit ledger records full-slug ids
+                (OBPI-0.0.73-06-self-check-facade-regression-corpus), while
+                extract_obpi_id yields the short id (OBPI-0.0.73-06). Match the
+                short id exactly, or as the stem of a full slug (short id + '-' +
+                slug). The trailing '-' boundary keeps OBPI-0.0.73-1 from matching
+                OBPI-0.0.73-10 (GHI #629).
+                \"\"\"
+                return entry_obpi == obpi_id or entry_obpi.startswith(obpi_id + "-")
+
+
             def has_audit_evidence(adr_dir: Path, obpi_id: str) -> bool:
                 \"\"\"Check if audit ledger entry exists for this OBPI in ADR-local ledger.\"\"\"
                 ledger_file = adr_dir / "logs" / "obpi-audit.jsonl"
@@ -254,7 +267,7 @@ def _obpi_completion_validator_script() -> str:
                                 entry = json.loads(line)
                                 entry_type = entry.get("type", "")
                                 entry_obpi = entry.get("obpi_id", "")
-                                if entry_obpi == obpi_id and entry_type in (
+                                if _obpi_id_matches(entry_obpi, obpi_id) and entry_type in (
                                     "obpi-audit",
                                     "obpi-completion",
                                 ):
@@ -283,7 +296,7 @@ def _obpi_completion_validator_script() -> str:
                             try:
                                 entry = json.loads(line)
                                 entry_obpi = entry.get("obpi_id", "")
-                                if entry_obpi == obpi_id:
+                                if _obpi_id_matches(entry_obpi, obpi_id):
                                     evidence = entry.get("evidence", {})
                                     if evidence.get("human_attestation"):
                                         return True

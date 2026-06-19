@@ -1809,6 +1809,87 @@ class TestObpiCompletionValidatorHook(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0)
 
+    def _write_full_slug_audit_log(
+        self, project_root: Path, adr_slug: str, obpi_full_slug: str
+    ) -> None:
+        """Write an ADR-local audit ledger entry keyed by the FULL-SLUG OBPI id.
+
+        The runtime records audit/attestation evidence under the full-slug id
+        (e.g. ``OBPI-0.0.99-01-foo``), while the brief path yields the short id
+        (``OBPI-0.0.99-01``). This fixture reproduces that real shape.
+        """
+        logs_dir = project_root / "docs" / "design" / "adr" / "foundation" / adr_slug / "logs"
+        logs_dir.mkdir(parents=True, exist_ok=True)
+        entry = {
+            "type": "obpi-audit",
+            "obpi_id": obpi_full_slug,
+            "attestation_type": "operator-verbatim-conversational",
+            "evidence": {
+                "human_attestation": True,
+                "attestation_text": "attest completed — verified green",
+                "attestation_date": "2026-06-19",
+            },
+        }
+        (logs_dir / "obpi-audit.jsonl").write_text(json.dumps(entry) + "\n", encoding="utf-8")
+
+    def test_allows_completion_when_audit_evidence_keyed_by_full_slug(self) -> None:
+        """Full-slug audit/attestation evidence satisfies the short-id brief gate.
+
+        Regression for the fail-closed false-positive (GHI #629): the hook
+        extracts the SHORT id from the brief path but the ADR-local ledger
+        stores the FULL-SLUG id, so an ``==`` comparison never matched and a
+        fully-attested foundation/heavy OBPI was over-blocked at closeout.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            self._setup_gzkit(project_root)
+            script_path = self._create_hook(project_root)
+
+            adr_slug = "ADR-0.0.99-test"
+            obpi_full_slug = "OBPI-0.0.99-01-self-check-regression-corpus"
+            adr_dir = project_root / "docs" / "design" / "adr" / "foundation" / adr_slug
+            obpis_dir = adr_dir / "obpis"
+            obpis_dir.mkdir(parents=True, exist_ok=True)
+
+            # Parent ADR file marks the lane Heavy — foundation + Heavy both
+            # require human attestation, exercising step 6 AND step 7.
+            (adr_dir / f"{adr_slug}.md").write_text(
+                "---\nid: ADR-0.0.99-test\nlane: heavy\n---\n# ADR-0.0.99-test\n",
+                encoding="utf-8",
+            )
+
+            brief_path = obpis_dir / f"{obpi_full_slug}.md"
+            brief_path.write_text(
+                "---\n"
+                "id: OBPI-0.0.99-01-self-check-regression-corpus\n"
+                "parent: ADR-0.0.99-test\n"
+                "status: Draft\n"
+                "---\n\n"
+                "# OBPI-0.0.99-01 — self check\n\n"
+                "**Brief Status:** Draft\n\n"
+                "### Implementation Summary\n\n"
+                "- Module added: src/gzkit/foo.py\n\n"
+                "### Key Proof\n\n"
+                "```\n$ uv run -m unittest -q\nOK\n```\n\n"
+                "## Human Attestation\n\n"
+                "- Attestor: `g0`\n"
+                "- Attestation: attest completed — verified green\n"
+                "- Date: 2026-06-19\n",
+                encoding="utf-8",
+            )
+
+            self._write_full_slug_audit_log(project_root, adr_slug, obpi_full_slug)
+
+            result = self._run_hook(
+                script_path,
+                project_root,
+                file_path=str(brief_path),
+                old_string="**Brief Status:** Draft",
+                new_string="**Brief Status:** Completed",
+            )
+
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+
     def test_write_tool_checks_content_directly(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
