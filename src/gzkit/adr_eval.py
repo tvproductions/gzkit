@@ -14,6 +14,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.adr_eval_substance import SubstanceVerdict, substance_channel_for_adr
 from gzkit.config import GzkitConfig
 
 # ---------------------------------------------------------------------------
@@ -67,7 +68,20 @@ class RedTeamChallengeResult(BaseModel):
 
 
 class AdrEvalResult(BaseModel):
-    """Complete ADR evaluation result with dimensions, OBPI scores, and verdict."""
+    """ADR evaluation result.
+
+    Two SEPARATE channels, never composited (ADR-0.0.73 / OBPI-07, GHI #624):
+
+    - **Structural completeness** (``adr_dimensions``, ``obpi_scores``,
+      ``adr_weighted_total``, ``verdict``): deterministic checks of section
+      presence, depth, counts, and references. This channel makes NO claim about
+      decision SUBSTANCE — it is a completeness lint, not a quality judgment.
+    - **Substance** (``substance``): graded ONLY by recorded, disciplined judge
+      verdicts; ``UNGRADED`` absent one. Never derived from shape.
+
+    The ``verdict`` is a structural-completeness summary, NOT an authoritative
+    quality GO. Reading it as a substance verdict is the facade this ADR closes.
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -79,6 +93,7 @@ class AdrEvalResult(BaseModel):
     verdict: EvalVerdict
     action_items: list[str]
     timestamp: str
+    substance: list[SubstanceVerdict] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -264,6 +279,9 @@ def evaluate_adr(
     adr_weighted_total = round(sum(d.weighted for d in adr_dims), 3)
     obpi_scores = score_obpis_deterministic(obpi_paths, obpi_contents)
     verdict, action_items = compute_verdict(adr_weighted_total, obpi_scores, red_team_results)
+    # Substance is a SEPARATE channel: graded only by recorded judge verdicts,
+    # UNGRADED absent one. It is never derived from the deterministic scores above.
+    substance = substance_channel_for_adr(project_root, adr_id)
 
     return AdrEvalResult(
         adr_id=adr_id,
@@ -274,6 +292,7 @@ def evaluate_adr(
         verdict=verdict,
         action_items=action_items,
         timestamp=datetime.now(UTC).isoformat(),
+        substance=substance,
     )
 
 
@@ -285,14 +304,21 @@ def evaluate_adr(
 def render_scorecard_markdown(result: AdrEvalResult) -> str:
     """Render an AdrEvalResult as EVALUATION_SCORECARD.md content."""
     lines = [
-        "ADR EVALUATION SCORECARD",
-        "========================",
+        "ADR STRUCTURAL-COMPLETENESS SCORECARD",
+        "=====================================",
         "",
         f"ADR: {result.adr_id}",
-        "Evaluator: gz adr eval (deterministic)",
+        "Evaluator: gz adr eval (deterministic STRUCTURAL-COMPLETENESS lint)",
         f"Date: {result.timestamp[:10]}",
         "",
-        "--- ADR-Level Scores ---",
+        "NOTE: This scorecard grades STRUCTURAL COMPLETENESS only — section",
+        "presence, depth, counts, and references. It is NOT a judgment of decision",
+        "SUBSTANCE or quality, and its verdict is NOT an authoritative quality GO.",
+        "Substance is graded only by recorded judge verdicts (see the Substance",
+        "channel below) or reported UNGRADED. Do NOT composite these scores with a",
+        "human substance review — they measure different things (GHI #624).",
+        "",
+        "--- Structural Completeness (deterministic) ---",
         "",
         "| # | Dimension | Weight | Score (1-4) | Weighted | Findings |",
         "|---|-----------|--------|-------------|----------|----------|",
@@ -349,16 +375,32 @@ def render_scorecard_markdown(result: AdrEvalResult) -> str:
     lines.extend(
         [
             "",
-            "--- Overall Verdict ---",
+            "--- Substance (judge-graded; never derived from the scores above) ---",
             "",
-            f"[{'x' if result.verdict == EvalVerdict.GO else ' '}] GO",
-            f"[{'x' if result.verdict == EvalVerdict.CONDITIONAL_GO else ' '}] CONDITIONAL GO",
-            f"[{'x' if result.verdict == EvalVerdict.NO_GO else ' '}] NO GO",
+            "| Dimension | Grade | Source |",
+            "|-----------|-------|--------|",
+        ]
+    )
+    if result.substance:
+        for sv in result.substance:
+            source = sv.receipt_id if sv.is_graded else "no judge verdict recorded"
+            lines.append(f"| {sv.dimension} | {sv.grade.value} | {source} |")
+    else:
+        lines.append("| (substance dimensions) | UNGRADED | no judge verdict recorded |")
+
+    lines.extend(
+        [
+            "",
+            "--- Structural-Completeness Summary (NOT a quality/substance verdict) ---",
+            "",
+            f"[{'x' if result.verdict == EvalVerdict.GO else ' '}] STRUCTURALLY COMPLETE",
+            f"[{'x' if result.verdict == EvalVerdict.CONDITIONAL_GO else ' '}] STRUCTURAL GAPS",
+            f"[{'x' if result.verdict == EvalVerdict.NO_GO else ' '}] STRUCTURALLY INCOMPLETE",
             "",
         ]
     )
     if result.action_items:
-        lines.append("ACTION ITEMS:")
+        lines.append("STRUCTURAL ACTION ITEMS:")
         for i, item in enumerate(result.action_items, 1):
             lines.append(f"{i}. {item}")
 

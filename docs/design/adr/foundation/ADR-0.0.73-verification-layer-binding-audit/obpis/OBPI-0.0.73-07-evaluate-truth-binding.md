@@ -25,20 +25,35 @@ req_atomic:
 
 ## Objective
 
-`gz adr evaluate` stops grading prose SHAPE and KEYWORDS and starts grading
-decision SUBSTANCE, and it self-registers as a QC step so the verification-layer
-mechanism this ADR introduces governs the evaluator itself. Today the dim-1
-(Problem Clarity) and dim-2 (Decision Justification) checks score on
-`_has_keywords` substring membership and a numbered-list regex — a facade ADR that
-stuffs the keywords scores high while a rigorous ADR phrased without them is
-floored to 1 (GHI #624). "Done" = no `gz adr evaluate` truth-score is satisfiable
-by keyword/format presence alone, rigorous-but-differently-phrased prose is not
-floored, `gz adr evaluate` self-registers as an `advisory` QC step that
-`gz validate --qc-binding` finds binding-honest, and a seventh
-`shape-graded-not-substance` theater fixture (calibrated on GHI #624, distinct
-from the six ADR-0.0.37 signatures) is detected by the regression corpus.
+`gz adr evaluate` stops PRESENTING prose SHAPE as authoritative SUBSTANCE — the
+defect GHI #624 named and the prior completion of this OBPI faked (repudiated
+2026-06-19: docstrings claimed substance grading while the bodies graded keyword
+regex / word-count). The honest contract, in three composing parts:
 
-Evaluator truth-binding — replace the `gz adr evaluate` dim-1/dim-2 format/keyword heuristics in `src/gzkit/adr_eval_scoring.py` with decision-substance checks (no truth-score satisfiable by keyword/format presence alone); register `gz adr evaluate` as a QC step classified `advisory` (subject to `gz validate --qc-binding`); add a seventh `shape-graded-not-substance` theater signature to the facade regression corpus; manpage + `gz cli audit` green; unit tests.
+- **A — demote-and-decouple.** The deterministic evaluator (dim-1 Problem Clarity,
+  dim-2 Decision Justification, and the rest) grades STRUCTURAL COMPLETENESS only —
+  section presence, depth, references — and is labelled as such. No deterministic
+  score (keyword, word-count, or regex) is presented as a substance/quality verdict;
+  the scorecard and CLI declare structural-completeness scope and carry a
+  do-not-composite disclaimer.
+- **B — genuine substance channel.** Decision substance is graded ONLY by a recorded,
+  disciplined judge verdict (the record-and-validate judge flow,
+  `gzkit.adr_eval_substance`; no live LLM call). Absent a verdict, substance is
+  reported `UNGRADED` — never derived from shape. The two channels carry distinct
+  labels and are never composited.
+- **C — self-binding.** `gz adr evaluate` self-registers as an `advisory` QC step that
+  `gz validate --qc-binding` finds binding-honest; the seventh
+  `shape-graded-not-substance` theater signature is detected (not silently passed); a
+  regression guard pins that the evaluator output never re-asserts shape as
+  authoritative substance.
+
+"Done" = the live evaluator renders structural-completeness + an UNGRADED substance
+channel (no authoritative quality GO from shape), `gz validate --qc-binding` is green,
+and the structural scorers carry no substance claim.
+
+Forced downstream (named, NOT this OBPI): the full judge governance (leakage /
+output-discipline / meta-eval validators, JudgeInvocation model — ADR-0.0.40) needed
+to POPULATE the substance channel; until it lands, substance is honestly UNGRADED.
 
 ## Lane
 
@@ -62,7 +77,15 @@ Evaluator truth-binding — replace the `gz adr evaluate` dim-1/dim-2 format/key
 - `tests/governance/test_adr_eval_truth_binding.py` **CREATE** — unit tests for substance scoring, evaluator registration, and corpus detection
 - `tests/governance/fixtures/facade_corpus/shape_graded_not_substance.json` **CREATE** — the seventh theater-signature fixture (the `facade_corpus/` dir is created by OBPI-06; `.json` matches the six existing fixtures)
 - `tests/governance/test_facade_regression_corpus.py` — extend the corpus regression suite for the seventh signature (the existing `test_all_six_signatures_have_fixtures` count assertion breaks otherwise; allowlist amendment, plan-audit 2026-06-18)
-- `docs/user/manpages/adr-evaluate.md` — document substance-grading and QC-step registration (Heavy-lane docs gate)
+- `docs/user/manpages/adr-evaluate.md` — document the structural-completeness vs substance channels (Heavy-lane docs gate)
+- `src/gzkit/adr_eval_substance.py` **CREATE** — the judge-graded substance read-seam (Part B); UNGRADED default, never derived from shape (post-repudiation amendment 2026-06-19, attestor g0)
+- `src/gzkit/commands/adr_promote.py` — reframe the `gz adr evaluate` CLI output to structural-completeness + substance channel (coupled CLI surface; post-repudiation amendment 2026-06-19, attestor g0)
+- `src/gzkit/eval/scorer.py` — second shape-as-substance surface (`score_adr_eval`); docstring scopes its dims as structural-completeness, not substance (post-repudiation amendment 2026-06-19, attestor g0)
+- `tests/test_adr_eval_substance.py` **CREATE** — substance-channel tests: shape can never produce a substance grade (post-repudiation amendment 2026-06-19, attestor g0)
+- `tests/test_adr_eval.py` — renderer assertion updated to structural-completeness framing (coupled test surface; post-repudiation amendment 2026-06-19, attestor g0)
+- `.gzkit/ledger.jsonl` — command-authored governance events (repudiation, lock, brief reconcile) emitted during the OBPI-07 repair ceremony
+- `.claude/plans/OBPI-0.0.73-07-evaluate-truth-binding.md` — the comprehensive A+B+C plan authored for this repair
+- `.claude/plans/.plan-audit-receipt-OBPI-0.0.73-07-evaluate-truth-binding.json` — the PASS plan-audit receipt for this repair
 - `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/obpis/OBPI-0.0.73-07-evaluate-truth-binding.md` — this brief (evidence recording)
 
 ## Denied Paths
@@ -208,13 +231,13 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.73-07-01 [BEHAVIOR]: Given an ADR whose Decision is rigorous (alternatives weighed, consequences honest, rationale present) but phrased without the hardcoded keywords (no literal "before"/"after"/"because", parts bold-numbered rather than a markdown numbered list), when `gz adr evaluate` scores dim-1 and dim-2, then the scores reflect decision substance and are NOT floored to 1 by keyword/format absence. (@covers test in `tests/governance/test_adr_eval_truth_binding.py`)
-- [ ] REQ-0.0.73-07-02 [BEHAVIOR]: Given an otherwise-hollow ADR that stuffs the dim-1/dim-2 keywords (and a markdown numbered list) into its prose, when `gz adr evaluate` scores it, then keyword/format presence ALONE does not lift the dim-1/dim-2 score — no truth-score is satisfiable by keyword presence alone. (@covers test in `tests/governance/test_adr_eval_truth_binding.py`)
-- [ ] REQ-0.0.73-07-03 [BEHAVIOR]: Given the QC-step registry, when it is derived from what the evaluation surface runs, then `gz adr evaluate` self-registers as a QC step classified `advisory`, and `gz validate --qc-binding` reports no binding-mismatch for it (it no longer presents shape-graded scores as authoritative truth). (@covers test in `tests/governance/test_adr_eval_truth_binding.py`)
-- [ ] REQ-0.0.73-07-04 [BEHAVIOR]: Given the seventh `shape-graded-not-substance` theater-signature fixture added to the facade regression corpus, when `gz validate --qc-binding` runs over the corpus, then the signature is detected (it does not silently pass). (@covers test in `tests/governance/test_adr_eval_truth_binding.py`)
-- [ ] REQ-0.0.73-07-05 [SUPPORT]: The evaluator rescore and QC-step registration land. Proof: `gz validate --documents` exit 0 + `artifact_edited` ledger event for `src/gzkit/adr_eval_scoring.py`.
-- [ ] REQ-0.0.73-07-06 [STRUCTURAL-FENCE]: No `gz adr evaluate` truth-score is satisfiable by keyword/format presence alone, and `gz adr evaluate` is a registered QC step subject to `gz validate --qc-binding` (parent ADR § Boundary Invariants #6).
-- [ ] REQ-0.0.73-07-07 [SUPPORT]: The substance-grading change is documented in the manpage and `gz cli audit` is green. Proof: `gz validate --cli-alignment` exit 0 + `artifact_edited` ledger event for `docs/user/manpages/adr-evaluate.md`.
+- [ ] REQ-0.0.73-07-01 [BEHAVIOR]: Given any ADR (rigorous or hollow), when `gz adr evaluate` runs, then decision SUBSTANCE is reported `UNGRADED` unless a recorded, disciplined judge verdict exists — substance is never derived from the deterministic prose analysis. (@covers test in `tests/test_adr_eval_substance.py`)
+- [ ] REQ-0.0.73-07-02 [BEHAVIOR]: Given a recorded judge substance verdict (explanation-first rationale >= 50 chars + an `arb-step-judge-*` receipt), when `gz adr evaluate` reads it, then it surfaces that graded verdict; given only an undisciplined or absent record, then the dimension stays `UNGRADED` — a grade requires a disciplined judge verdict, never keyword/format presence. (@covers test in `tests/test_adr_eval_substance.py`)
+- [ ] REQ-0.0.73-07-03 [BEHAVIOR]: Given the deterministic dimensions, when `gz adr evaluate` scores them, then they grade STRUCTURAL COMPLETENESS only (section presence/depth) and the rendered scorecard + CLI declare structural-completeness scope with a do-not-composite disclaimer — never an authoritative quality/substance GO. (@covers tests in `tests/governance/test_adr_eval_truth_binding.py` and `tests/test_adr_eval.py`)
+- [ ] REQ-0.0.73-07-04 [BEHAVIOR]: Given the QC-step registry, then `gz adr evaluate` self-registers as `advisory` and `gz validate --qc-binding` reports no binding-mismatch for it; and the seventh `shape-graded-not-substance` theater signature is detected on a flagged step (it does not silently pass). (@covers test in `tests/governance/test_adr_eval_truth_binding.py`)
+- [ ] REQ-0.0.73-07-05 [SUPPORT]: The demote-and-decouple rescore + the substance channel land. Proof: `gz validate --documents` exit 0 + `artifact_edited` ledger event for `src/gzkit/adr_eval_scoring.py` and `src/gzkit/adr_eval_substance.py`.
+- [ ] REQ-0.0.73-07-06 [STRUCTURAL-FENCE]: `gz adr evaluate` never presents shape as authoritative substance — substance is judge-graded or `UNGRADED`, the channels are distinct and never composited, and the evaluator is a registered QC step subject to `gz validate --qc-binding` (parent ADR § Boundary Invariants #6, reworded 2026-06-19).
+- [ ] REQ-0.0.73-07-07 [SUPPORT]: The structural-completeness vs substance-channel contract is documented in the manpage and `gz cli audit` is green. Proof: `gz validate --cli-alignment` exit 0 + `artifact_edited` ledger event for `docs/user/manpages/adr-evaluate.md`.
 
 ## Completion Checklist
 
@@ -275,21 +298,24 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Key Proof
 
 
-uv run gz adr evaluate ADR-0.0.73-verification-layer-binding-audit --json shows Problem Clarity=4 and Decision Justification=4 (verdict GO) for the rigorous keyword-free ADR — the test fixture proves the old keyword scorer floored identical prose to 1; the hollow keyword-stuffed fixture scores <3 on both dims (TestSubstanceNotShape). gz validate --qc-binding exits 0 with the evaluator self-registered advisory. Receipts: arb-step-unittest-c58e18da75d940bea65ce3d478ae1d2f (6275 pass), arb-ruff-e18e7eeff1a74d35b8beb546c43c0146, arb-step-typecheck-5c4aca73c85b4de189091490f7d07b4a, arb-step-mkdocs-0936d789b32b4e258888f702bff263cc.
+
+`uv run gz adr evaluate ADR-0.0.73-verification-layer-binding-audit` now renders "ADR structural completeness: ... STRUCTURALLY COMPLETE / Structural-completeness score: 3.55/4.0 / Substance: 0 graded, 2 UNGRADED (substance is judge-graded, never derived from the above)" — the same 3.55 that was the distrusted false GO, now honestly structural with substance UNGRADED. `uv run gz validate --qc-binding` exits 0 (evaluator binding-honest, no theater). Receipts: arb-step-unittest-e87b1fd709874362ba24ddc4699e52b9 (6297 pass), arb-ruff-b64753ca47064e68b91323e8183389b9, arb-step-typecheck-773838b5d89c487a8742ddce06288222.
 
 ### Implementation Summary
 
 
-- Decision item: Evaluator truth-binding — replaced gz adr evaluate dim-1/dim-2 format/keyword heuristics in src/gzkit/adr_eval_scoring.py with decision-substance checks; registered gz adr evaluate as an advisory QC step; added a seventh shape-graded-not-substance theater signature; manpage + gz cli audit green; unit tests.
-- dim-1 (Problem Clarity): replaced the two _has_keywords(before/after) checks with concrete-grounding (_references_concrete_artifacts) and multi-sentence problem-outcome contrast (_substantive_sentence_count); depth threshold raised to 120 words.
-- dim-2 (Decision Justification): replaced the numbered-list regex and _has_keywords(because) check with weighed-and-rejected-alternatives (_weighs_rejected_alternatives) and honest-negative-consequences (_acknowledges_negative_consequences); depth threshold 100 words.
-- Self-registration: register_advisory_qc_step() + _SELF_REGISTERED_ADVISORY_STEPS in qc_binding.py; build_qc_registry() triggers registration via the safe gzkit.adr_eval import and extends the derived bound registry with the advisory channel.
-- Seventh theater signature shape-graded-not-substance added to THEATER_SIGNATURES + description in governance/trust_audits/qc_binding.py, with corpus fixture shape_graded_not_substance.json.
-- Coupled-surface coherence: refined 4 OBPI-01/02 registry/signature tests (bound-scope preserved); updated validate.md + adr-evaluate.md manpages.
-- Files created: tests/governance/test_adr_eval_truth_binding.py (9 tests), tests/governance/fixtures/facade_corpus/shape_graded_not_substance.json.
-- Tests added: 9 truth-binding tests + 1 corpus test; all 6275 unittests pass.
-- Date completed: 2026-06-18. Attestation: operator-attested.
-- Defects noted: sibling OBPI-05 brief fails gz validate --sensitivity (exit 3) — pre-existing on clean HEAD, out of OBPI-07 scope, recorded in insights.
+
+- Defect eradicated: gz adr evaluate no longer presents keyword/word-count shape as authoritative substance (GHI #624); the false "3.55/GO" is now an honest "3.55 STRUCTURALLY COMPLETE / Substance UNGRADED"
+- Part A (demote-and-decouple): adr_eval_scoring.py dim-1/dim-2 substance-claiming docstrings stripped to honest structural-completeness; adr_eval.py renderer + adr_promote.py CLI reframed with a do-not-composite disclaimer; second scorer eval/scorer.py scoped honest
+- Part B (substance channel): src/gzkit/adr_eval_substance.py CREATE — judge-graded read-seam, UNGRADED default, never derived from shape
+- Part C (self-binding): seventh theater signature + regression guard test pinning the eradication against revert
+- Governance: ADR-0.0.73 Boundary Invariant #6 reworded to the honest contract; OBPI-07 brief Objective/REQs repointed to A+B+C; manpage rewritten
+- Prior cosmetic completion repudiated 2026-06-19 (verification-invalid, attestor g0)
+- Files created: adr_eval_substance.py, tests/test_adr_eval_substance.py; modified: adr_eval.py, adr_eval_scoring.py, adr_promote.py, eval/scorer.py, test_adr_eval_truth_binding.py, test_adr_eval.py, ADR-0.0.73, manpage
+- Tests: 6297 unittests green; 7 substance-channel tests; full repo green (ruff, typecheck, documents, cli-alignment, qc-binding, mkdocs --strict)
+- Date completed: 2026-06-19
+- Attestation status: operator-attested (g0)
+- Forced downstream (named): full judge governance (leakage/output-discipline/meta-eval, JudgeInvocation model — ADR-0.0.40) to POPULATE the substance channel
 
 ## Tracked Defects
 
@@ -303,12 +329,12 @@ uv run gz adr evaluate ADR-0.0.73-verification-layer-binding-audit --json shows 
 ## Human Attestation
 
 - Attestor: `g0`
-- Attestation: attest completed — Heavy-lane foundation OBPI-0.0.73-07 verified: gz adr evaluate dim-1/dim-2 now grade decision substance not keyword/format presence (GHI #624), evaluator self-registers as advisory QC step, seventh shape-graded-not-substance theater signature detected. 6275/6275 unittests pass (receipt arb-step-unittest-c58e18da75d940bea65ce3d478ae1d2f), ruff/typecheck/mkdocs clean, gz validate --qc-binding/--documents/--cli-alignment exit 0, behavior_uncovered_reqs=0.
-- Date: 2026-06-18
+- Attestation: attest completed — OBPI-0.0.73-07 eradicates the shape-as-substance defect in gz adr evaluate (GHI #624). The deterministic evaluator is demoted to an honest structural-completeness lint (no substance-claiming docstrings; scorecard + CLI carry a do-not-composite disclaimer); decision substance is a separate judge-graded channel (src/gzkit/adr_eval_substance.py), UNGRADED absent a disciplined judge verdict and never derived from shape; the two channels are decoupled and never composited; the evaluator self-registers advisory and passes gz validate --qc-binding. Verified green across the full repo: 6297 unittests (arb-step-unittest-e87b1fd709874362ba24ddc4699e52b9), ruff (arb-ruff-b64753ca47064e68b91323e8183389b9), typecheck (arb-step-typecheck-773838b5d89c487a8742ddce06288222), gz validate --documents, --cli-alignment, --qc-binding, mkdocs --strict exit 0. Boundary Invariant #6 reworded to the honest contract; the prior cosmetic completion was repudiated 2026-06-19 (verification-invalid, g0).
+- Date: 2026-06-19
 
 ---
 
-**Date Completed:** 2026-06-18
+**Date Completed:** 2026-06-19
 
 **Evidence Hash:** -
 </content>

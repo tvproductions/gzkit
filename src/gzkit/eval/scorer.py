@@ -129,9 +129,16 @@ def score_instruction_eval(case_input: dict[str, object]) -> list[DimensionResul
 
 
 def score_adr_eval(case_input: dict[str, object]) -> list[DimensionResult]:
-    """Score an adr_eval dataset case.
+    """Score an adr_eval dataset case on STRUCTURAL COMPLETENESS (ADR-0.0.73, GHI #624).
 
-    Dimensions match the 8-dimension ADR rubric.
+    Every dimension here is a structural-presence/count signal (does the section
+    exist, does it carry the expected sub-structure). The dimension keys
+    ``problem_clarity``/``decision_justification`` are dataset-contract names, NOT
+    substance claims: this scorer does not judge whether the problem is clearly
+    understood or the decision well justified — that is a semantic judgment no
+    deterministic check makes (it belongs to the judge channel
+    ``gzkit.adr_eval_substance``). The ``detail`` field states exactly which
+    structural signals were observed, so the score is never mistaken for substance.
     """
     content = str(case_input.get("adr_content", ""))
     results: list[DimensionResult] = []

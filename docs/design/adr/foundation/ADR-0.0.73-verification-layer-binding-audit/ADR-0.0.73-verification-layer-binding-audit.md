@@ -159,11 +159,20 @@ One mechanism, four parts, currently decomposed 1:1 into nine OBPIs. The origina
    `gz adr fidelity ADR-0.0.73-verification-layer-binding-audit` are green over
    this ADR's own scopes and Fidelity Assertions — no facade-of-the-facade.
    (REQ-0.0.73-06-05: STRUCTURAL-FENCE — verified at ADR closeout via this invariant)
-6. **The ADR evaluator grades substance, not shape (registered QC step).** No
-   `gz adr evaluate` truth-score is satisfiable by keyword/format presence alone;
-   `gz adr evaluate` self-registers as a QC step classified `advisory` and is
-   subject to `gz validate --qc-binding`, so a shape-graded score presented as
-   authoritative is a binding-mismatch finding, never a silent pass.
+6. **The ADR evaluator never presents shape as authoritative substance (registered
+   QC step).** `gz adr evaluate` is a STRUCTURAL-COMPLETENESS lint: its deterministic
+   dimensions and verdict grade section presence/depth only and are labelled as such,
+   never as a quality or substance judgment. Decision SUBSTANCE is graded ONLY by a
+   recorded, disciplined judge verdict (the record-and-validate judge channel,
+   `gzkit.adr_eval_substance`), or reported `UNGRADED` — it is never derived from the
+   deterministic scores, and the two channels carry distinct labels and are never
+   composited. `gz adr evaluate` self-registers as a QC step classified `advisory`
+   subject to `gz validate --qc-binding`, so any regression to presenting a
+   shape-derived score as authoritative substance is a binding-mismatch finding, never
+   a silent pass. (Originally "grade substance, not shape"; reworded 2026-06-19 after
+   that letter produced a cosmetic keyword-grading facade — OBPI-07 repudiation. The
+   honest contract is non-pretense + a disciplined judge channel, not the mirage of
+   deterministic substance grading.)
    (REQ-0.0.73-07-06: STRUCTURAL-FENCE — verified at ADR closeout via this invariant)
 7. **`## Fidelity Assertions` presence is mechanically enforced (fail-closed).**
    `gz validate --fidelity-presence` exits 3 on any non-pool ADR Decision lacking

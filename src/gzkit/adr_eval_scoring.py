@@ -16,30 +16,33 @@ from gzkit.hooks.obpi import TEMPLATE_SCAFFOLD_MARKERS, section_body
 from gzkit.qc_binding import register_advisory_qc_step
 
 # ---------------------------------------------------------------------------
-# Substance signals (ADR-0.0.73 / OBPI-07, GHI #624)
+# Structural-completeness signals (ADR-0.0.73 / OBPI-07, GHI #624)
 # ---------------------------------------------------------------------------
 #
-# dim-1 (Problem Clarity) and dim-2 (Decision Justification) grade decision
-# SUBSTANCE, never prose SHAPE or KEYWORD presence. The helpers below detect
-# substance that a rigorous ADR carries regardless of phrasing, and that a
-# keyword-stuffed hollow ADR lacks — so no truth-score is satisfiable by
-# keyword/format presence alone, and rigorous-but-differently-phrased prose is
-# not floored.
+# HONESTY CONTRACT: every helper and dimension scorer in this module grades
+# STRUCTURAL COMPLETENESS only — section presence, depth, the presence of
+# concrete references, the presence of a rejected-alternatives or negative-
+# consequences subsection. NONE of them grades decision SUBSTANCE (whether the
+# problem is genuinely understood or the decision genuinely justified). Substance
+# is a semantic judgment no regex/word-count can make; it lives in the separate
+# judge-graded channel (`gzkit.adr_eval_substance`) and is UNGRADED absent a
+# recorded judge verdict. The prior code CLAIMED these signals graded substance
+# (GHI #624 facade) — that claim is removed. A structural signal is a weak
+# positive presence indicator, never a substance verdict.
 
-# Concrete referents: code spans, file paths, governance IDs. Rigorous prose
-# grounds claims in real artifacts; keyword stuffing adds none of these.
+# Structural presence of concrete referents: code spans, file paths, governance
+# IDs. Presence is a completeness signal, NOT evidence the claims are sound.
 _CONCRETE_REF_RE = re.compile(
     r"`[^`]+`|\bsrc/|\btests/|\bdocs/|\bGHI #\d|\bOBPI-|\bADR-|\bPRD-|\bREQ-"
 )
 
-# Explicit-rejection / tradeoff reasoning: justification by weighed contrast,
-# not the literal word "because".
+# Structural presence of weighed-contrast language in an Alternatives section.
 _REJECTION_RE = re.compile(
     r"\b(reject|instead|rather than|chosen over|in favor of|trade-?off|discard)",
     re.IGNORECASE,
 )
 
-# Honest downside language or an explicit ### Negative consequences subsection.
+# Structural presence of downside language or a ### Negative subsection.
 _NEGATIVE_CONSEQUENCE_RE = re.compile(
     r"###\s+Negative|\b(downside|trade-?off|cost|risk|limitation|drawback|regress)",
     re.IGNORECASE,
@@ -47,28 +50,23 @@ _NEGATIVE_CONSEQUENCE_RE = re.compile(
 
 
 def _references_concrete_artifacts(text: str) -> bool:
-    """Substance signal: prose grounds claims in concrete referents."""
+    """Structural signal: section contains concrete referents (presence only)."""
     return bool(_CONCRETE_REF_RE.search(text))
 
 
 def _substantive_sentence_count(text: str) -> int:
-    """Count sentences carrying real content (> 8 words).
-
-    A clear problem statement articulates more than one substantive claim — the
-    SUBSTANCE of a problem-and-outcome contrast — without depending on literal
-    before/after keywords.
-    """
+    """Count sentences over 8 words — a structural depth signal, not substance."""
     sentences = re.split(r"(?<=[.!?])\s+", text.strip())
     return sum(1 for sentence in sentences if _word_count(sentence) > 8)
 
 
-def _weighs_rejected_alternatives(alternatives: str) -> bool:
-    """Substance signal: alternatives genuinely weighed and explicitly rejected."""
+def _has_rejected_alternatives_subsection(alternatives: str) -> bool:
+    """Structural signal: an Alternatives section of real length names rejections."""
     return _word_count(alternatives) > 15 and bool(_REJECTION_RE.search(alternatives))
 
 
-def _acknowledges_negative_consequences(consequences: str) -> bool:
-    """Substance signal: honest consequences name downsides, not only benefits."""
+def _has_negative_consequences_subsection(consequences: str) -> bool:
+    """Structural signal: a Consequences section names downsides (presence only)."""
     return bool(_NEGATIVE_CONSEQUENCE_RE.search(consequences))
 
 
@@ -78,12 +76,13 @@ def _acknowledges_negative_consequences(consequences: str) -> bool:
 
 
 def _score_problem_clarity(content: str) -> tuple[int, list[str]]:
-    """Grade Problem Clarity on decision SUBSTANCE, not keyword presence (GHI #624).
+    """Score STRUCTURAL COMPLETENESS of the Intent section (NOT substance, GHI #624).
 
-    The four checks are: the Intent exists, carries substantive depth, grounds
-    its problem in concrete referents, and articulates a multi-part problem-and-
-    outcome contrast. None is satisfiable by stuffing before/after keywords, and
-    a rigorous Intent phrased without them is not floored.
+    The four checks are presence signals only: the Intent exists, has depth
+    (word count), contains concrete references, and contains multiple longer
+    sentences. A high score means the Problem section is structurally complete —
+    it does NOT mean the problem is clearly understood. That substance judgment
+    is UNGRADED here and belongs to the judge channel (gzkit.adr_eval_substance).
     """
     findings: list[str] = []
     intent = section_body(content, "Intent")
@@ -96,26 +95,26 @@ def _score_problem_clarity(content: str) -> tuple[int, list[str]]:
     if intent and _word_count(intent) > 120:
         checks += 1
     else:
-        findings.append("Intent section lacks substantive depth (<120 words)")
+        findings.append("Intent section is short (<120 words)")
     if intent and _references_concrete_artifacts(intent):
         checks += 1
     else:
-        findings.append("Intent lacks concrete grounding (no code, path, or issue references)")
+        findings.append("Intent contains no concrete references (code, path, or issue)")
     if intent and _substantive_sentence_count(intent) >= 2:
         checks += 1
     else:
-        findings.append("Intent does not articulate a substantive problem-and-outcome contrast")
+        findings.append("Intent has fewer than two longer (>8-word) sentences")
     return _passes_to_score(checks, total), findings
 
 
 def _score_decision_justification(content: str) -> tuple[int, list[str]]:
-    """Grade Decision Justification on SUBSTANCE, not shape/keywords (GHI #624).
+    """Score STRUCTURAL COMPLETENESS of the Decision section (NOT substance, GHI #624).
 
-    The four checks are: the Decision exists, carries substantive depth, weighs
-    explicitly-rejected alternatives, and acknowledges honest negative
-    consequences. The former numbered-list regex (format) and "because"-keyword
-    membership are removed — neither graded decision truth, so a hollow ADR that
-    stuffed them scored high while a rigorous one phrased otherwise was floored.
+    The four checks are presence signals only: the Decision exists, has depth,
+    an Alternatives section names rejections, and a Consequences section names
+    downsides. A high score means the Decision is structurally complete — it does
+    NOT mean the decision is well justified. That substance judgment is UNGRADED
+    here and belongs to the judge channel (gzkit.adr_eval_substance).
     """
     findings: list[str] = []
     decision = section_body(content, "Decision")
@@ -128,17 +127,17 @@ def _score_decision_justification(content: str) -> tuple[int, list[str]]:
     if decision and _word_count(decision) > 100:
         checks += 1
     else:
-        findings.append("Decision section lacks substantive depth (<100 words)")
+        findings.append("Decision section is short (<100 words)")
     alternatives = section_body(content, "Alternatives Considered")
-    if alternatives and _weighs_rejected_alternatives(alternatives):
+    if alternatives and _has_rejected_alternatives_subsection(alternatives):
         checks += 1
     else:
-        findings.append("Decision does not weigh explicitly-rejected alternatives")
+        findings.append("No Alternatives section naming explicit rejections")
     consequences = section_body(content, "Consequences")
-    if consequences and _acknowledges_negative_consequences(consequences):
+    if consequences and _has_negative_consequences_subsection(consequences):
         checks += 1
     else:
-        findings.append("Decision does not acknowledge honest negative consequences")
+        findings.append("No Consequences section naming downsides")
     return _passes_to_score(checks, total), findings
 
 

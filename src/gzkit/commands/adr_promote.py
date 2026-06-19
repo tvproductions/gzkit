@@ -444,11 +444,22 @@ def adr_eval_cmd(adr_id: str, as_json: bool, write_scorecard: bool) -> None:
     if as_json:
         print(json.dumps(result.model_dump(), indent=2))  # noqa: T201
     else:
-        console.print(f"ADR Eval: {adr_input} -- {result.verdict.replace('_', ' ')}")
-        console.print(f"  Weighted total: {result.adr_weighted_total:.2f}/4.0")
+        # Structural-completeness lint, NOT a quality/substance verdict (GHI #624).
+        structural_label = {
+            "GO": "STRUCTURALLY COMPLETE",
+            "CONDITIONAL_GO": "STRUCTURAL GAPS",
+            "NO_GO": "STRUCTURALLY INCOMPLETE",
+        }[result.verdict.value]
+        console.print(f"ADR structural completeness: {adr_input} -- {structural_label}")
+        console.print(f"  Structural-completeness score: {result.adr_weighted_total:.2f}/4.0")
         console.print(f"  OBPIs scored: {len(result.obpi_scores)}")
+        ungraded = sum(1 for s in result.substance if not s.is_graded)
+        console.print(
+            f"  Substance: {len(result.substance) - ungraded} graded, "
+            f"{ungraded} UNGRADED (substance is judge-graded, never derived from the above)"
+        )
         if result.action_items:
-            console.print("  Action items:")
+            console.print("  Structural action items:")
             for item in result.action_items[:5]:
                 console.print(f"    - {item}")
 

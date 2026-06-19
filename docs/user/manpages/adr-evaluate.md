@@ -1,6 +1,6 @@
 # gz adr evaluate
 
-Evaluate ADR and OBPI quality using deterministic scoring across 8 ADR dimensions and 5 OBPI dimensions. Produces an `EVALUATION_SCORECARD.md` in the ADR directory with a GO / CONDITIONAL GO / NO GO verdict.
+Lint an ADR/OBPI package for **structural completeness** across 8 ADR dimensions and 5 OBPI dimensions, and surface a separate **substance** channel. Produces an `EVALUATION_SCORECARD.md` in the ADR directory. The deterministic score is a structural-completeness summary, **not** an authoritative quality or substance verdict (ADR-0.0.73, GHI #624).
 
 ---
 
@@ -12,9 +12,25 @@ gz adr evaluate <adr_id> [--json] [--no-scorecard]
 
 ---
 
+## Two channels, never composited
+
+`gz adr evaluate` reports two separate channels with distinct labels. They measure
+different things and must not be composited or compared as if commensurable — doing so
+is the facade ADR-0.0.73 exists to close (GHI #624).
+
+- **Structural completeness (deterministic).** Section presence, depth, counts, and
+  references. A high structural score means the package is *structurally complete* — it
+  does **not** mean the problem is clearly understood or the decision well justified.
+- **Substance (judge-graded).** Whether the decision is genuinely sound is a semantic
+  judgment no regex or word-count can make. Substance is graded **only** by a recorded,
+  disciplined judge verdict (the record-and-validate judge flow — no live LLM call) and
+  is reported **`UNGRADED`** absent one. It is never derived from the structural scores.
+
+---
+
 ## What It Evaluates
 
-### ADR Quality (8 weighted dimensions)
+### Structural completeness — ADR (8 weighted dimensions)
 
 | # | Dimension | Weight |
 |---|-----------|--------|
@@ -27,56 +43,64 @@ gz adr evaluate <adr_id> [--json] [--no-scorecard]
 | 7 | Evidence Requirements | 10% |
 | 8 | Architectural Alignment | 10% |
 
-#### Substance grading, not shape (dim-1 / dim-2)
+Every dimension is a **structural-completeness signal** — section presence, depth,
+references. The dimension names are historical labels; they are NOT substance claims.
+For example, dim-1 "Problem Clarity" rewards an Intent that is present, deep, and
+concretely referenced — it does **not** judge whether the problem is clearly understood.
+That substance judgment lives in the Substance channel below, or is `UNGRADED`.
 
-Problem Clarity and Decision Justification grade decision **substance**, never prose
-shape or keyword presence (ADR-0.0.73, GHI #624). A score is never satisfiable by
-keyword or format presence alone, and rigorous prose phrased without the conventional
-keywords is not floored:
+### Substance — ADR (judge-graded channel)
 
-- **Problem Clarity** rewards an Intent with substantive depth, concrete grounding
-  (code spans, file paths, `GHI #`/`ADR-`/`OBPI-` references), and an articulated
-  problem-and-outcome contrast — not the literal words "before"/"after".
-- **Decision Justification** rewards a Decision with substantive depth, explicitly
-  **weighed-and-rejected** alternatives, and **honest negative consequences** — not a
-  markdown numbered list or the literal word "because".
+| Dimension | Grade source |
+|-----------|--------------|
+| Problem Substance | recorded judge verdict, or `UNGRADED` |
+| Decision Substance | recorded judge verdict, or `UNGRADED` |
 
-A facade ADR that stuffs the old keywords no longer scores high; a rigorous ADR phrased
-differently no longer scores 1.
+A grade exists only when a disciplined judge verdict has been recorded (an
+explanation-first rationale of >= 50 characters plus an `arb-step-judge-*` receipt).
+Absent that, the dimension is `UNGRADED` — the evaluator never fabricates a substance
+grade from the prose.
 
-### OBPI Quality (5 dimensions per brief)
+> **Forced downstream:** the full judge governance (leakage / output-discipline /
+> meta-eval validators — ADR-0.0.40) that *populates* this channel is not yet built;
+> until it lands, the substance channel is honestly `UNGRADED`.
+
+### Structural completeness — OBPI (5 dimensions per brief)
 
 | Dimension | Question |
 |-----------|----------|
-| Independence | Can this OBPI be completed without waiting for others? |
-| Testability | Can completion be verified with commands? |
-| Value | What concrete capability would be lost if removed? |
-| Size | Is this a 1-3 day work unit? |
-| Clarity | Could a different agent implement this without ambiguity? |
+| Independence | Are cross-OBPI dependencies declared (structural signal)? |
+| Testability | Are verification commands present? |
+| Value | Is the Objective non-placeholder and of real length? |
+| Size | Is the allowed-path count in a sane band? |
+| Clarity | Are the required sections present and filled? |
 
 ### Scaffold Detection
 
-Briefs containing template placeholders (`src/module/`, `First constraint`, etc.) are flagged and scored low on the value dimension. This catches auto-generated stubs that were never authored.
+Briefs containing template placeholders (`src/module/`, `First constraint`, etc.) are flagged and scored low. This catches auto-generated stubs that were never authored.
 
 ---
 
-## Verdict Thresholds
+## Structural-Completeness Summary
 
-| ADR Weighted Total | Verdict |
+| ADR Weighted Total | Summary |
 |--------------------|---------|
-| >= 3.0 | **GO** — Ready for proposal/defense review |
-| 2.5 - 3.0 | **CONDITIONAL GO** — Address weaknesses, then re-evaluate |
-| < 2.5 | **NO GO** — Structural revision required |
+| >= 3.0 | **STRUCTURALLY COMPLETE** |
+| 2.5 - 3.0 | **STRUCTURAL GAPS** — address the structural action items |
+| < 2.5 | **STRUCTURALLY INCOMPLETE** |
 
 **OBPI threshold:** Average >= 3.0 per OBPI. Any dimension scoring 1 must be revised.
+
+This summary is about structural completeness only. It is **not** a quality/substance GO,
+and must not be read as one or composited with a human substance review.
 
 ---
 
 ## When to Use
 
-- After drafting a new ADR and its OBPIs — quality gate before proposal
-- Before moving a Draft ADR to Proposed / human defense review
-- When benchmarking the quality of an existing ADR package
+- After drafting a new ADR and its OBPIs — a structural-completeness lint before review
+- Before moving a Draft ADR to Proposed / human defense review (alongside substance judgment)
+- When checking an existing ADR package for structural gaps
 - After populating OBPI briefs — verify scaffold is cleared
 
 ---
@@ -84,10 +108,10 @@ Briefs containing template placeholders (`src/module/`, `First constraint`, etc.
 ## Examples
 
 ```bash
-# Evaluate a specific ADR
+# Lint a specific ADR for structural completeness
 uv run gz adr evaluate ADR-0.3.0
 
-# Machine-readable output
+# Machine-readable output (structural scores + substance channel)
 uv run gz adr evaluate ADR-0.3.0 --json
 
 # Skip writing the scorecard file
@@ -110,30 +134,29 @@ uv run gz adr evaluate ADR-0.3.0 --no-scorecard
 
 Writes `EVALUATION_SCORECARD.md` in the ADR package directory containing:
 
-- All ADR dimension scores with weighted totals
-- All OBPI dimension scores with averages
-- Overall verdict (GO / CONDITIONAL GO / NO GO)
-- Action items for any deficiencies
+- All structural-completeness dimension scores with weighted totals
+- The substance channel (judge-graded grades or `UNGRADED`)
+- All OBPI structural-completeness scores with averages
+- A structural-completeness summary (not a quality verdict)
+- Structural action items for any gaps
 
 ---
 
 ## Pipeline Enforcement
 
-When a scorecard exists with a **NO GO** verdict, `gz obpi pipeline` Stage 1 treats it as a blocker and aborts. This makes the evaluation a blocking gate for pipeline execution — run `gz adr evaluate` before starting OBPI work, and address NO GO action items before invoking the pipeline.
-
-GO and CONDITIONAL GO verdicts do not block. Missing scorecards do not block (evaluation is optional until run).
+When a scorecard exists with a **STRUCTURALLY INCOMPLETE** summary, `gz obpi pipeline` Stage 1 treats it as a blocker and aborts — a structurally incomplete package is not ready for implementation. STRUCTURALLY COMPLETE and STRUCTURAL GAPS do not block. Missing scorecards do not block (the lint is optional until run). The structural summary is a *completeness* gate, never a substitute for the substance judgment a human (or the judge channel) makes.
 
 ---
 
 ## QC-Step Registration
 
 `gz adr evaluate` self-registers as a QC step classified **`advisory`** (ADR-0.0.73,
-GHI #624). It grades quality; it does **not** gate `gz check`'s exit code. Registering
+GHI #624). It lints structure; it does **not** gate `gz check`'s exit code. Registering
 it means the verification-layer mechanism this project introduces governs the evaluator
-itself: `gz validate --qc-binding` classifies and audits it like any other QC step, so a
-shape-graded score presented as authoritative truth is a binding-mismatch finding, never
-a silent pass. The advisory classification is why the evaluator is not required to fail a
-negative-control fixture — only `bound` steps carry that obligation.
+itself: `gz validate --qc-binding` classifies and audits it, so any regression to
+presenting a shape-derived score as authoritative substance is a binding-mismatch
+finding, never a silent pass. The advisory classification is why the evaluator is not
+required to fail a negative-control fixture — only `bound` steps carry that obligation.
 
 ---
 

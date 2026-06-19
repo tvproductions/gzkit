@@ -1,15 +1,64 @@
 {
   "obpi_id": "OBPI-0.0.73-07-evaluate-truth-binding",
-  "timestamp": "2026-06-18T11:40:47.878533+00:00",
+  "timestamp": "2026-06-19T10:06:48.593670+00:00",
   "verdict": "PASS",
   "plan_file": "OBPI-0.0.73-07-evaluate-truth-binding.md",
   "gaps_found": 0,
   "scope_collisions": [
     {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-02-coverage-anchor-scanner",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-01-covers-decorator-and-registration",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
       "sibling_adr": "ADR-0.29.0",
       "sibling_obpi": "OBPI-0.29.0-03-auth-surface-coherence-validator",
       "contested_paths": [
         "src/gzkit/governance/trust_audits/qc_binding.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-02-structural-fence-channel-boundary-invariants-anchor",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-03-closeout-proof-derived-view",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.70",
+      "sibling_obpi": "OBPI-0.0.70-01-stop-hook-turn-end-feedback",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.70",
+      "sibling_obpi": "OBPI-0.0.70-03-guardrail-feedback-prose-rule",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
       ]
     },
     {
@@ -39,6 +88,20 @@
       "sibling_obpi": "OBPI-0.0.53-04-extend-payload-blocking-hooks",
       "contested_paths": [
         "src/gzkit/governance/trust_audits/qc_binding.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-06-brief-reconcile-cli",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-03-parity-gate-three-channel-extension",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
       ]
     },
     {
@@ -77,10 +140,24 @@
       ]
     },
     {
+      "sibling_adr": "ADR-0.0.71",
+      "sibling_obpi": "OBPI-0.0.71-01-completion-repudiation-event",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
+      ]
+    },
+    {
       "sibling_adr": "ADR-0.0.24",
       "sibling_obpi": "OBPI-0.0.24-01-validator-scope",
       "contested_paths": [
         "src/gzkit/governance/trust_audits/qc_binding.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.72",
+      "sibling_obpi": "OBPI-0.0.72-02-handoff-frontmatter-reconcile",
+      "contested_paths": [
+        "src/gzkit/traceability.py"
       ]
     },
     {

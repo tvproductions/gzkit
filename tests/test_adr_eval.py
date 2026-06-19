@@ -375,9 +375,14 @@ class TestScorecardRendering(unittest.TestCase):
             timestamp="2026-03-21T00:00:00+00:00",
         )
         md = render_scorecard_markdown(result)
-        self.assertIn("ADR EVALUATION SCORECARD", md)
+        # The scorecard is a STRUCTURAL-COMPLETENESS lint, not a quality verdict
+        # (ADR-0.0.73 / OBPI-07, GHI #624): it must declare its structural scope,
+        # carry the do-not-composite disclaimer, and render a Substance channel.
+        self.assertIn("ADR STRUCTURAL-COMPLETENESS SCORECARD", md)
+        self.assertIn("NOT a judgment of decision", md)
+        self.assertIn("Substance", md)
         self.assertIn("ADR-0.1.0", md)
-        self.assertIn("[x] GO", md)
+        self.assertIn("[x] STRUCTURALLY COMPLETE", md)
         self.assertIn("3.00/4.0", md)
 
 
