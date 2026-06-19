@@ -20,7 +20,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md`
 - **Checklist Item:** #6 - "Self-check + facade regression corpus — this ADR passes its OWN `gz validate --qc-binding`; one regression fixture per theater signature (mtime-where-name-says-content, empty-input, copy-vs-self, fixture-only, skip-if-PASS, prose-graded-by-nothing); gz adr fidelity ADR-0.0.73 green over this ADR's own Fidelity Assertions; unit tests"
 
-**Status:** Accepted (repudiated 2026-06-19 — recovery freeze; self-check is intentionally red until OBPI-02 debt is repaired)
+**Status:** Completed (the 2026-06-19 recovery freeze is lifted — OBPI-02 debt was repaired and re-attested; the ADR self-check is now green: `gz validate --qc-binding` exits 0 and `gz adr fidelity ADR-0.0.73` passes 8/8)
 
 ## Objective
 
@@ -32,11 +32,12 @@ regression corpus has exactly one detected fixture for each of the six signature
 (mtime-where-name-says-content, empty-input, copy-vs-self, fixture-only,
 skip-if-PASS, prose-graded-by-nothing).
 
-**Recovery status (2026-06-19):** this "Done" state is no longer true. The ADR
-self-check is intentionally red until OBPI-02's 33 acknowledged negative control
-debt entries are replaced with genuine controls and OBPI-08/09 land. The prior
-completion is repudiated for the same facade-of-the-facade class this ADR exists
-to close.
+**Recovery status (2026-06-19, resolved):** the recovery freeze recorded above is
+lifted. OBPI-02's acknowledged negative-control debt was replaced with genuine
+controls (`_NEGATIVE_CONTROL_DEBT` is empty), and OBPI-08/09 landed. The ADR
+self-check is green: `gz validate --qc-binding` exits 0 and `gz adr fidelity
+ADR-0.0.73` passes 8/8. The "Done" state above holds again; this brief is
+Completed and operator-attested (g0, 2026-06-18).
 
 Self-check + facade regression corpus — this ADR passes its OWN `gz validate --qc-binding`; one regression fixture per theater signature (mtime-where-name-says-content, empty-input, copy-vs-self, fixture-only, skip-if-PASS, prose-graded-by-nothing); the fidelity gate green over this ADR's own Fidelity Assertions; unit tests.
 

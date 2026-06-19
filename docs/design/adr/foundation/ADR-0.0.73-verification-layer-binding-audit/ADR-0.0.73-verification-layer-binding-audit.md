@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.73-verification-layer-binding-audit
-status: Draft
+status: Completed
 kind: foundation
 semver: 0.0.73
 lane: heavy
@@ -52,7 +52,7 @@ Operator ratification (2026-06-16): design and interview answers approved verbat
 
 ## Decision
 
-One mechanism, four parts, currently decomposed 1:1 into nine OBPIs. The original six-OBPI plan was expanded by operator-directed corrections: OBPI-07 homes GHI #624 (`gz adr evaluate` shape-vs-substance), OBPI-08 mechanizes fidelity-presence enforcement, and OBPI-09 addresses waiver-ratchet honesty. As of the 2026-06-19 recovery evaluation, implementation of OBPI-08 and OBPI-09 is frozen until OBPI-02's repudiated behavioral-binding work is repaired and this ADR receives a fresh GO scorecard.
+One mechanism, four parts, currently decomposed 1:1 into nine OBPIs. The original six-OBPI plan was expanded by operator-directed corrections: OBPI-07 homes GHI #624 (`gz adr evaluate` shape-vs-substance), OBPI-08 mechanizes fidelity-presence enforcement, and OBPI-09 addresses waiver-ratchet honesty. The 2026-06-19 recovery evaluation froze OBPI-08 and OBPI-09 until OBPI-02's repudiated behavioral-binding work was repaired and this ADR earned a fresh GO; that freeze was lifted later the same day — OBPI-02 (and OBPI-07) were repaired and re-attested (g0), OBPI-08 and OBPI-09 landed, and `gz adr fidelity ADR-0.0.73` passes 8/8, clearing the ADR for closeout.
 
 1. **QC-step registry + classifier** (`QCStep` model, in `src/gzkit/qc_binding.py`). Every QC step self-registers into a registry, classified `bound` / `advisory` / `unenforced`, because a checker is trustworthy only once its enforcement claim is recorded and classified. The registry is DERIVED from what `gz check` actually runs — never a hand-maintained list (a hand-maintained list would itself be theater). `QCStep` is a frozen Pydantic model: `{id, name, kind, subject, binding, wired_into[], theater_flags[], enforcement_locus}`.
 
@@ -70,7 +70,7 @@ One mechanism, four parts, currently decomposed 1:1 into nine OBPIs. The origina
 
 **Waiver-ratchet honesty (OBPI-09).** Waiver, grandfather, and baseline surfaces that gate `gz check` must carry a closed-set lock, ledger-derived dated cutover, or monotonic shrink-ratchet. `gz validate --waiver-ratchet` is the meta-validator that keeps waiver lists from turning "not built yet" into "attested green."
 
-**Recovery freeze (2026-06-19).** OBPI-02 is repudiated in its own brief because the central behavioral mechanism shipped green-by-construction. Until OBPI-02 is repaired and all Fidelity Assertions below pass, this ADR is a NO GO planning artifact; OBPI-08 and OBPI-09 stay Draft and must not proceed to implementation.
+**Recovery freeze (2026-06-19, lifted).** OBPI-02 was repudiated in its own brief because the central behavioral mechanism shipped green-by-construction; while repudiated, this ADR was a NO GO planning artifact and OBPI-08/OBPI-09 were held at Draft. The freeze was lifted 2026-06-19: OBPI-02's behavioral binding was repaired and re-attested (g0; the verification-invalid repudiation cleared), OBPI-07 was likewise repaired and re-attested, OBPI-08 and OBPI-09 landed, and all Fidelity Assertions below pass (`gz adr fidelity ADR-0.0.73` → 8 pass, 0 fail). The ADR now passes its own check (Boundary Invariant #5) and is cleared for closeout.
 
 **Data model (Pydantic frozen).** `QCStep{id, name, kind, subject, binding, wired_into[], theater_flags[], enforcement_locus}`; `FidelityAssertion{adr_id, claim, command, expected_exit, observed, result}`.
 
@@ -379,4 +379,4 @@ Operator ratification (2026-06-16): design and interview answers approved verbat
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.73 | Pending | | | |
+| 0.0.73 | Completed | g0 | 2026-06-19 | Completed |

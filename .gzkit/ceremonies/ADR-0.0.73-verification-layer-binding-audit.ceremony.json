@@ -1,0 +1,65 @@
+{
+  "adr_id": "ADR-0.0.73-verification-layer-binding-audit",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-06-19T11:34:54Z",
+  "updated_at": "2026-06-19T12:38:32Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-06-19T11:34:54Z",
+      "acknowledged_at": "2026-06-19T11:35:00Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-06-19T11:35:00Z",
+      "acknowledged_at": "2026-06-19T12:02:19Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-06-19T12:02:19Z",
+      "acknowledged_at": "2026-06-19T12:02:38Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-06-19T12:02:38Z",
+      "acknowledged_at": "2026-06-19T12:03:14Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-06-19T12:03:14Z",
+      "acknowledged_at": "2026-06-19T12:30:01Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-06-19T12:30:01Z",
+      "acknowledged_at": "2026-06-19T12:36:04Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-06-19T12:36:04Z",
+      "acknowledged_at": "2026-06-19T12:37:56Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-06-19T12:37:56Z",
+      "acknowledged_at": "2026-06-19T12:38:32Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-06-19T12:38:32Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz validate --qc-binding",
+    "uv run python -c \"from gzkit.qc_binding import build_qc_registry; [print(s.id, s.binding) for s in build_qc_registry()]\"",
+    "uv run python -c \"from gzkit.qc_binding import build_qc_registry; print([s.id for s in build_qc_registry() if 'dispatch' in s.id])\"",
+    "uv run gz validate --waiver-ratchet"
+  ],
+  "walkthrough_index": 3,
+  "attestation": "Completed",
+  "completed_at": "2026-06-19T12:38:32Z",
+  "attempt": 1,
+  "paused_at": null
+}
