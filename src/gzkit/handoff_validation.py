@@ -11,6 +11,7 @@ and an empty list means the document is clean.
 from __future__ import annotations
 
 import re
+import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
@@ -292,6 +293,13 @@ def validate_referenced_files(content: str, base_path: Path) -> list[str]:
         if not resolved.exists():
             missing.append(candidate)
 
+    # Ephemeral, gitignored evidence (e.g. ARB receipts under the gitignored
+    # artifacts/ tree) is not committed, so a referenced path is legitimately
+    # absent on any clone that did not author the session — do not report those
+    # as broken references (GHI #633). A genuinely-absent, non-ignored path is
+    # still a broken reference.
+    if missing:
+        missing = [p for p in missing if not _is_git_ignored(base_path, p)]
     return missing
 
 
@@ -348,6 +356,29 @@ def validate_handoff_document(content: str, base_path: Path) -> list[str]:
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
+
+def _is_git_ignored(base_path: Path, rel_path: str) -> bool:
+    """Return True if ``rel_path`` is git-ignored under ``base_path``.
+
+    Exempts ephemeral, uncommitted evidence (e.g. ARB receipts under the
+    gitignored ``artifacts/`` tree) from the Evidence-section existence check: a
+    referenced receipt is legitimately absent on any clone that did not author
+    the session (GHI #633). Returncode-only (no stdout decode) so it cannot trip
+    the non-UTF-8 subprocess-read class (GHI #582). Fails open to "not ignored"
+    on any error, so a genuinely-broken reference is never masked by a git
+    failure or a non-git base path.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "check-ignore", "-q", rel_path],
+            cwd=base_path,
+            capture_output=True,
+            check=False,
+        )
+    except OSError:
+        return False
+    return result.returncode == 0
 
 
 def _strip_frontmatter(content: str) -> str:

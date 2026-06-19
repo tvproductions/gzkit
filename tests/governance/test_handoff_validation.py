@@ -10,6 +10,7 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from pydantic import ValidationError
 
@@ -411,6 +412,27 @@ class TestValidateReferencedFiles(unittest.TestCase):
             )
             missing = validate_referenced_files(doc, tmp_path)
             self.assertEqual(missing, ["absent_c.txt"])
+
+    @covers("REQ-0.25.0-32-03")
+    def test_gitignored_absent_path_tolerated(self) -> None:
+        # GHI #633: an Evidence reference to a gitignored ephemeral artifact
+        # (e.g. an ARB receipt under artifacts/) is legitimately absent on any
+        # clone that did not author the session — it must not be reported as a
+        # broken reference. A genuinely-absent NON-ignored path still must be.
+        with tempfile.TemporaryDirectory() as tmpdir:
+            doc = (
+                "---\nkey: value\n---\n\n"
+                "## Evidence / Artifacts\n\n"
+                "- `artifacts/receipts/arb-ruff-abc.json` — ephemeral receipt (gitignored)\n"
+                "- `docs/real-but-absent.md` — genuinely broken reference\n"
+            )
+
+            def fake_ignore(_base: Path, path: str) -> bool:
+                return path.startswith("artifacts/")
+
+            with patch("gzkit.handoff_validation._is_git_ignored", side_effect=fake_ignore):
+                missing = validate_referenced_files(doc, Path(tmpdir))
+            self.assertEqual(missing, ["docs/real-but-absent.md"])
 
 
 # ---------------------------------------------------------------------------
