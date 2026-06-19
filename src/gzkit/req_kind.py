@@ -21,6 +21,9 @@ from pydantic import BaseModel, ConfigDict, Field
 from gzkit.events import TypedLedgerEvent
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from gzkit.core.validation_rules import ValidationError
     from gzkit.traceability import CoverageReport
     from gzkit.triangle import DiscoveredReq
 
@@ -203,8 +206,46 @@ def _ledger_has_event(event_types: list[str], project_root: Path) -> bool:
     return False
 
 
+def _early_return_scope_audit(
+    scope: str,
+) -> Callable[[Path], list[ValidationError]] | None:
+    """Return the trust-audit fn for an early-return validator scope, or None.
+
+    qc-binding, fidelity-presence, and waiver-ratchet own their full 0/2/3
+    lifecycle in ``validate_cmd._dispatch_early_return_scopes`` and are absent
+    from the aggregate runner maps, so ``_dispatch_validator_scope`` could never
+    dispatch them — every SUPPORT REQ citing one resolved ``unproven-support``
+    regardless of truth. Wire them here explicitly. Imports are function-local
+    to avoid an import cycle (trust_audits -> closeout_proof -> req_kind) (GHI
+    #630).
+    """
+    if scope == "qc_binding":
+        from gzkit.governance.trust_audits.qc_binding import (  # noqa: PLC0415
+            audit_qc_binding,
+        )
+
+        return audit_qc_binding
+    if scope == "fidelity_presence":
+        from gzkit.governance.trust_audits.fidelity_presence import (  # noqa: PLC0415
+            audit_fidelity_presence,
+        )
+
+        return audit_fidelity_presence
+    if scope == "waiver_ratchet":
+        from gzkit.governance.trust_audits.waiver_ratchet import (  # noqa: PLC0415
+            audit_waiver_ratchet,
+        )
+
+        return audit_waiver_ratchet
+    return None
+
+
 def _dispatch_validator_scope(scope: str, project_root: Path) -> bool:
     """Dispatch a validator scope in-process.  Returns True when no errors (exit 0)."""
+    early_audit = _early_return_scope_audit(scope)
+    if early_audit is not None:
+        return len(early_audit(project_root)) == 0
+
     from gzkit.commands.validate_cmd import (  # noqa: PLC0415
         _default_scope_runners,
         _explicit_scope_runners,

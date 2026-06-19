@@ -291,6 +291,53 @@ class TestRecursionFence(unittest.TestCase):
         self.assertNotEqual(result, "advisory-support")
 
 
+class TestEarlyReturnScopeDispatch(unittest.TestCase):
+    """REQ-0.0.69-01-01 extended (GHI #630): SUPPORT proofs citing early-return
+    validator scopes (qc-binding, fidelity-presence, waiver-ratchet) — which own
+    their full lifecycle in validate_cmd and are absent from the aggregate runner
+    maps — must dispatch via their trust-audit fn instead of fail-closing as
+    unproven regardless of truth.
+    """
+
+    _QC_BINDING_REQ = (
+        "the --qc-binding scope is wired as a bound QC step — "
+        "artifact_edited ledger event + gz validate --qc-binding"
+    )
+
+    @covers("REQ-0.0.69-01-01")
+    def test_qc_binding_support_proof_passes_when_scope_clean(self) -> None:
+        """Cited event present + qc-binding audit clean → "pass" (not unproven)."""
+        from gzkit.req_kind import resolve_support_proof
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            _make_ledger(project_root, "artifact_edited")
+            with patch(
+                "gzkit.governance.trust_audits.qc_binding.audit_qc_binding",
+                return_value=[],
+            ):
+                result = resolve_support_proof(self._QC_BINDING_REQ, project_root)
+
+        self.assertEqual(result, "pass")
+
+    @covers("REQ-0.0.69-01-03")
+    def test_qc_binding_support_proof_unproven_when_scope_errors(self) -> None:
+        """The fix can still fail for the right reason: a qc-binding audit that
+        returns errors resolves unproven, never pass (ADR-0.0.73 thesis)."""
+        from gzkit.req_kind import resolve_support_proof
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            _make_ledger(project_root, "artifact_edited")
+            with patch(
+                "gzkit.governance.trust_audits.qc_binding.audit_qc_binding",
+                return_value=[object()],  # one error → scope not clean
+            ):
+                result = resolve_support_proof(self._QC_BINDING_REQ, project_root)
+
+        self.assertNotEqual(result, "pass")
+
+
 class TestKnownLedgerEventTypesCoherence(unittest.TestCase):
     """MF-1: _KNOWN_LEDGER_EVENT_TYPES must be derived from TypedLedgerEvent, not hand-maintained.
 
