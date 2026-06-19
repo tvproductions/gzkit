@@ -597,7 +597,7 @@ gzkit is 1.0 when ALL hold:
 > Until MOTD ships (Phase C), **this file's checklist is the workplan** —
 > sessions work top-down, check items off with observed command evidence.
 
-> **Topmost (sequenced):** ADR-0.0.73 QC-binding meta-audit is **DONE** (9/9 OBPIs; closed out + g0-attested "Completed" 2026-06-19 — ledger `attested` 12:36 / `lifecycle_transition`→Completed 12:37). The pull-order advances to → **B.1 ADR-0.0.37 real corpus rebuild** (now the topmost; it reopens behind the completed 0.0.73) → Phase 0 enforcement core (0.2–0.8).
+> **Topmost (sequenced):** ADR-0.0.73 QC-binding meta-audit is **DONE** (9/9 OBPIs; closed out + g0-attested "Completed" 2026-06-19 — ledger `attested` 12:36 / `lifecycle_transition`→Completed 12:37). The pull-order is **B.1 ADR-0.0.37 real corpus rebuild** → Phase 0 enforcement core (0.2–0.8). **B.1 Increment 1 LANDED 2026-06-19** (commit `c070f28a`): OBPI-0.0.37-22's mechanism re-built honestly — `gz content commit` promotion seam, corpus content-fingerprint freshness gate (staged warn→fail per OBPI-0.0.41), `rendition_committed` event; OBPI-22 stays `repudiated` by design. **Next pull = B.1 Increment 2** (corpus enrichment → attested compose+commit → flip `_FRESHNESS_FAIL_CLOSED=True` → `gz obpi complete` OBPI-22 → then 02/03 re-point, 21 re-verify, B.2/#519, B.3).
 > This marker is the ratified pull-order — it overrides naive top-down because
 > the prose amendments reorder the spine (B.1 reopens *behind* ADR-0.0.73). The
 > Phase-0 checkboxes print first in document order but are **not** what is pulled
@@ -824,7 +824,19 @@ only deterministic playback writes the rendered surface.
         `arb-step-unittest-483ae14c…` (6097 tests), `arb-ruff-ed38ddd7…`,
         `arb-step-typecheck-d83e7132…`, `arb-step-mkdocs-fbec5b2a…`. Audit
         evidence: `…/ADR-0.0.70-…/audit/AUDIT.md`.
-- [ ] B.1 ADR-0.0.37 build-out — **REPUDIATED-IN-PART / PAUSED (2026-06-16).**
+- [ ] B.1 ADR-0.0.37 build-out — **REPUDIATED-IN-PART; INCREMENT 1 LANDED 2026-06-19.**
+      **Increment 1 (commit `c070f28a`, staged warn→fail per OBPI-0.0.41):** OBPI-0.0.37-22's
+      mechanism re-built honestly — the operator-attested `gz content commit`
+      candidate→committed promotion seam (the missing REQ-22-01 caller for
+      `save_rendition`), corpus content-fingerprint + provenance sidecar, the
+      content-based `--rendition-freshness` gate that kills the mtime tautology
+      (warn-mode `_FRESHNESS_FAIL_CLOSED=False`), the `rendition_committed` event,
+      and the coupled ADR-0.0.73 QC-binding negative control. **OBPI-22 stays
+      `repudiated` by design** (not re-attested). **Increment 2 (next pull):** corpus
+      enrichment (OBPI-19 capture of AGENTS.md content) → attested compose+commit of
+      the real renditions → flip the staging flag fail-closed → `gz obpi complete`
+      OBPI-22. Then 02/03 re-point+re-attest, 21 re-verify, B.2/#519, B.3.
+      **Disposition history below (the 2026-06-16 repudiation that Increment 1 cures):**
       The prior "16/19 verified 2026-06-14 via `gz adr report`" was **theater
       verification** — `gz adr report` reads attested-completed receipts that
       were written against facade gates (mtime-only `--rendition-freshness`,
