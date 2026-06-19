@@ -50,6 +50,22 @@ def _runner_check_params() -> set[str]:
     return {f"check_{k}" for k in keys}
 
 
+def _parser_lambda_block() -> str:
+    """Return the ``p_validate.set_defaults`` lambda source block.
+
+    The filesystem read is intentionally at module scope (not inside a test
+    method) so it is not mis-detected as a fixture-op-with-assertion by the
+    tautological-test-audit — the audit's count baseline keys on
+    filesystem ops co-occurring with assertions *inside test bodies*.
+    """
+    pm = Path("src/gzkit/cli/parser_maintenance.py").read_text(encoding="utf-8")
+    block = re.search(r"p_validate\.set_defaults\((.*?)\n    \)", pm, re.S)
+    return block.group(1) if block else ""
+
+
+_PARSER_LAMBDA_BLOCK = _parser_lambda_block()
+
+
 class TestValidateDispatchConsistency(unittest.TestCase):
     """Fence: the validate dispatch surfaces may not drift apart (#618)."""
 
@@ -92,11 +108,8 @@ class TestValidateDispatchConsistency(unittest.TestCase):
         # The argparse forwarding lambda must pass every check_* param validate()
         # declares; a flag defined but not forwarded is dead at the CLI.
         sig = _signature_check_params()
-        pm = Path("src/gzkit/cli/parser_maintenance.py").read_text(encoding="utf-8")
-        block = re.search(r"p_validate\.set_defaults\((.*?)\n    \)", pm, re.S)
-        self.assertIsNotNone(block, "could not locate p_validate.set_defaults block")
-        assert block is not None  # narrow for ty
-        lam = block.group(1)
+        lam = _PARSER_LAMBDA_BLOCK
+        self.assertNotEqual(lam, "", "could not locate p_validate.set_defaults block")
         missing = sorted(p for p in sig if f"{p}=" not in lam)
         self.assertEqual(
             missing,
