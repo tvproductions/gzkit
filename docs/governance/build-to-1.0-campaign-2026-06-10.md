@@ -314,6 +314,75 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 > are law. This does **not** re-sequence the spine: Phase 0 / B.1 remain
 > topmost; the gate binds *completion*, not *order*.
 
+> **Amendment (operator verbatim, 2026-06-19) — the heap reckoning; the GHI
+> #628 fidelity sweep incorporated as drainage + Phase-I census inputs.**
+> Operator: *"don't forget what a garbage heap gzkit has evolved into - its
+> painful to even work with now."* And: *"look at magna carta and look at your
+> analysis here, incorporate. Unfuck."* → An officer-of-the-watch report from
+> the 2026-06-19 session (the GHI #622/#627/#628 sweep + a four-RED-validator
+> repair) is incorporated. The operator's frustration is **corroborated, not
+> deflected**: the anti-vibing machine has accreted the very surface it warns
+> against (~90 validate scopes; waiver-on-waiver-on-waiver — a grandfather
+> gated by a ratchet gated by a baseline; 833-line modules; 1,835 unlinked
+> specs in the advisory drift). Per **completion-before-reduction**, the cure
+> is *build-out → prove → reduce* (Phase I), made **visible and booked here**,
+> never reflexive culling. This amendment does **not** re-sequence the spine
+> (Phase 0 / B.1 / ADR-0.0.73 keep their order); it homes findings and records
+> what landed under a green floor as sanctioned drainage.
+>
+> **Drainage filed (E.5).**
+> - **#631** — `_score_architectural_alignment` (`src/gzkit/adr_eval_scoring.py`
+>   :356 backtick-`src/` regex, :361 4-token precedent matcher) manufactures
+>   false-RED 1.0 scores; `evaluation-justify-binding` then fail-closes on the
+>   manufactured number, forcing agents to author justification documents that
+>   *defend wrong scores* — governance manufacturing its own RED then forcing
+>   theater to clear it. **Validator-was-the-defect**, extends Appendix A's #394
+>   tail. Homed E.5; true root-cause fix (widen the lexicon / accept OBPI-brief
+>   src refs / re-score stale evals) sequenced by the campaign, not patched now.
+>   Interim: 8 grounded `gz justify` artifacts (`fe9c3c78`) hold the gate green.
+> - **Sensitivity validate↔completion incoherence** — `--accept-security-floor`
+>   (the rule's prescribed remedy for incidental overlaps) discharges at
+>   *completion* but does **not** satisfy the *validate* scope, which honors only
+>   declare / grandfather / narrow. Grandfather is correctly forbidden (it would
+>   breach the ratcheted `sensitivity_floor_grandfather.json` baseline 87). This
+>   is a **sibling-cut of the already-homed #462/#583** → `pool.agentic-security-review`;
+>   **no new GHI filed** (prior-art discipline). Immediate RED resolved truthfully
+>   on OBPI-0.0.73-05/-09 (`0c605efd`) since both genuinely wired logic into
+>   subprocess-spawning surfaces; the latent validate-time discharge-channel gap
+>   rides the existing pool home.
+>
+> **Drainage direct-fixes landed (moratorium lifted, green floor).**
+> - **`check-config-paths`** false-positived on a forbidden-pattern *detector*
+>   string (`"ops/chores/"`) and a template *placeholder* (`"config/file.json"`);
+>   added `_EXEMPT_PATH_LITERALS` (`daeddfef`, TDD). Class — a path-literal
+>   scanner with no exemption concept — noted for Phase I.
+> - **`qc_binding.py`** (832 lines, over the 600 limit) split into
+>   `qc_binding.py` (274) + `_qc_negative_controls.py` (576), behavior-preserving
+>   (36 NCs before/after, `--qc-binding` self-test green, `a06cf138`). A
+>   reduction-class instance done early as sanctioned module-size drainage.
+>
+> **#628 — the verification-theater facade class is drained for the pre-OBPI-08
+> corpus.** 101 ADR Decisions were VALIDATED-without-thesis-exercised (the exact
+> facade ADR-0.0.73 exists to close); all 101 now carry runnable `## Fidelity
+> Assertions` — `gz adr fidelity` is **102/102 green** (commit `08320022`); the
+> `fidelity_presence_grandfather.json` population is **0** and the waiver-ratchet
+> baseline ratcheted **101→0** (no new id may ever be added). ~29 rows are
+> honestly **WEAK** (closest-green proxy command) because the ADR's *own*
+> dedicated validator is **unbuilt** — governance-ahead-of-implementation, a
+> sub-finding tying to **E.3** (Draft/Proposed burn-down) and the full-pool
+> build-out: each WEAK row sharpens to its true thesis command **as that ADR
+> lands its enforcer**, not before. **#627** was a no-op (already cured by
+> OBPI-0.0.73-09's own implementation). **#622** direct-fixed (`92e979f4`).
+>
+> **Phase-I census inputs (NOT pre-1.0 action — extend Appendix A).** The heap
+> evidence is logged as reduction-pass inputs, never a pre-1.0 action list:
+> the ~90-scope `validate()` surface (the `VALIDATOR_REGISTRY` collapse already
+> E.4-fenced / Phase-I-owned per #618); the stacked waiver/grandfather/baseline
+> surfaces, each now self-ratcheting (the stacking itself is the reduction
+> target); the 1,835 unlinked-spec advisory drift (spec↔test coherence, a
+> census/D-phase input). Per the standing doctrine these speak at Phase I with
+> working proof, not by taste today.
+
 ## Authority and amendment (Magna Carta discipline)
 
 - **It steers; the spine propels.** The governance spine
