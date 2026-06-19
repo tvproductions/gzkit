@@ -162,6 +162,17 @@ false confidence. Locking canon restores trust by making parity falsifiable.
 
 ---
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Canonical governance surfaces are byte-reproducibly delivered (canon-lock machinery, not narrative parity). | uv run gz validate --distribution | 0 |
+| AGENTS.md re-renders byte-identical from its invariant registry — governance-as-machinery composition drift fails closed. | uv run gz validate --invariant-coherence | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.1-canonical-govzero-parity --check | 0 |
+
 ## Consequences
 
 ### Positive

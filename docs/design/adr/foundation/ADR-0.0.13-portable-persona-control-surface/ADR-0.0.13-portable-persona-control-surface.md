@@ -275,6 +275,17 @@ measure activation space positions, it can observe behavioral proxies:
 This observability surface closes the feedback loop: design persona → deploy
 persona → monitor adherence → refine persona.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Personas are a portable control surface enumerable through the gz CLI. | uv run gz personas list | 0 |
+| All persona files conform to the portable persona schema. | uv run gz validate --personas | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.13-portable-persona-control-surface --check | 0 |
+
 ## Consequences
 
 - `gz init` gains persona scaffolding

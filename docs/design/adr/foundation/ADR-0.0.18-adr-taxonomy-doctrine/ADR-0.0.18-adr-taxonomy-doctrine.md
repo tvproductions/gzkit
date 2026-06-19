@@ -63,6 +63,16 @@ Land operator doctrine as a concept page + runbook expansions + skill-prompt enr
 - Does NOT re-litigate the taxonomy vocabulary (that's locked in ADR-0.0.17).
 - Does NOT extend to non-ADR governance artifacts (PRDs, OBPIs, constitutions) — the taxonomy doctrine scope is ADRs only.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The kind taxonomy this doctrine guides operators to choose validates clean across the ADR tree. | uv run gz validate --taxonomy | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.18-adr-taxonomy-doctrine --check | 0 |
+
 ## Consequences
 
 ### Positive

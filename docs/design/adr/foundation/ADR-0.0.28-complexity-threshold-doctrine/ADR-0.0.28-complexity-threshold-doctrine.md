@@ -99,6 +99,16 @@ A metric MUST have a `block` band (a metric that cannot fail the gate is not a r
 - Does NOT specify the trigger-semantic actions' implementation (xenon invocation, advisor invocation, authoring-guidance integration) — those are downstream ADR concerns.
 - Does NOT vendor or reimplement xenon — xenon-as-gate is the chosen substrate; the table is the data contract xenon consumes.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The canonical threshold table validates: every metric carries a block band with percentile + absolute pairing and an in-enum trigger semantic. | uv run gz validate --complexity-thresholds | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.28-complexity-threshold-doctrine --check | 0 |
+
 ## Consequences
 
 ### Positive

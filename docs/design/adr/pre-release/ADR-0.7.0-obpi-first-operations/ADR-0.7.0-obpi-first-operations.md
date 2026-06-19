@@ -28,6 +28,16 @@ Adopt an OBPI-first runtime lifecycle contract with four implementation tracks:
 
 Execution is decomposed into OBPI briefs under this ADR package.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| OBPI `Completed` transitions are gated by the pre-completion validator lifecycle (completion cannot be represented without the validator). | uv run -m unittest tests.test_obpi_validator | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.7.0-obpi-first-operations --check | 0 |
+
 ## Consequences
 
 ### Positive

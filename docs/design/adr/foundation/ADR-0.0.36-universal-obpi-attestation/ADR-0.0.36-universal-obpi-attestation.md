@@ -86,6 +86,16 @@ or compounding pattern capture, each imported step must still terminate in
 human-witnessed OBPI completion. Universal attestation is the guardrail that
 keeps ergonomic front doors from becoming self-close paths.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| No post-cutoff receipt carries a deprecated self-close shape; the universal-attestation receipt-shape gate holds. | uv run gz validate --receipt-shape | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.36-universal-obpi-attestation --check | 0 |
+
 ## Consequences
 
 ### Positive

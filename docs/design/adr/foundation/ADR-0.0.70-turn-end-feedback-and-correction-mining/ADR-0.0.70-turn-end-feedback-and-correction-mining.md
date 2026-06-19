@@ -66,6 +66,16 @@ Adopt the Buetow practices as four surfaces, decomposed 1:1 into four OBPIs:
 
 **Forced downstream decisions (interview closing question):** which checks graduate into the Stop-hook tier (ty, fast unittest subsets); the sidecar pool decision is settled by Stop-hook telemetry rather than taste; mining proposals eventually surface via the `gz insights` verb (GHI #575, Phase E); vendor hook parity for codex/copilot mirrors. Tier-2 forcing functions (pre-mortem, WWHTBT, constraint archaeology, assumption surfacing, 2am operator, reversibility, scope minimization) were agent-drafted against session evidence and operator-audited 2026-06-12 per AGENTS.md § Operator Economy claim 4 ('Proceed as drafted'); their content is folded into intent/consequences/alternatives.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The turn-end Stop-hook deterministic-feedback sensor behaves per spec (loop guard via stop_hook_active, fail-open on its own errors, documented off-switch). | uv run -m unittest tests.hooks.test_stop_turn_feedback | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.70-turn-end-feedback-and-correction-mining --check | 0 |
+
 ## Consequences
 
 ### Positive

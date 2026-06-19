@@ -130,6 +130,16 @@ not ad-hoc implementation preference.
 
 ---
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Every gz verb referenced in docs and skills resolves to a registered stdlib argparse parser verb (canonical command grammar holds). | uv run gz validate --cli-alignment | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.2-stdlib-cli-and-agent-sync --check | 0 |
+
 ## Consequences
 
 ### Positive

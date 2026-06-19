@@ -88,6 +88,16 @@ Registered as both a default-scope check (runs under `gz validate` with no flags
 3. The `--taxonomy` audit joins the advisory-rules-audit scorecard (`docs/governance/advisory-rules-audit.md`) as a promoted mechanical rule.
 4. Pool ADRs that never got a foundation/feature designation remain in the pool — no promotion is forced by this ADR. Pool curation policy lives in ADR-0.0.18.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| kind/semver/id-prefix taxonomy consistency (foundation⇒0.0.x, feature⇒non-0.0.x, pool⇒id-prefix) is mechanically enforced across every ADR. | uv run gz validate --taxonomy | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.17-adr-taxonomy-mechanical --check | 0 |
+
 ## Consequences
 
 ### Positive

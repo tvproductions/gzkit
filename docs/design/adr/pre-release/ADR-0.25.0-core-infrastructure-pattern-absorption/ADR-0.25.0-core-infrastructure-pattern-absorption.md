@@ -332,6 +332,16 @@ required by the winning modules. Phase 2 can begin independently of Phase 1.
 
 gzkit is becoming a spec-driven development toolkit that will replace most of opsdev in airlineops and serve as the foundation for future projects. This ADR addresses two layers of that transition: Phase 1 harvests from airlineops's `core/` and `common/` packages (1,700+ lines), and Phase 2 (amendment 2026-04-09) harvests from the `opsdev/` package (8,100+ lines of governance tooling). Phase 1 established that most `core/` modules are airline-domain-specific. Phase 2 targets the governance tooling that shares direct functional overlap with gzkit — ADR lifecycle, audit ledgers, reconciliation, traceability, drift detection, and ARB analysis. Full replacement of opsdev also requires governance authority migration (ADR-pool.airlineops-direct-governance-migration, not yet promoted) and additional work beyond this ADR's scope. This ADR ensures the infrastructure foundation is solid by examining every module individually.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Absorbed core-infrastructure patterns introduce no duplicate implementations upstream — the subtraction-test thesis. | uv run gz validate --absorption-duplicates | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.25.0-core-infrastructure-pattern-absorption --check | 0 |
+
 ## Consequences
 
 - gzkit's infrastructure foundation becomes solid enough to begin replacing opsdev in airlineops — this ADR is a necessary predecessor, not the complete replacement

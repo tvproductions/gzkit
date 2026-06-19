@@ -90,6 +90,16 @@ Establish meta-governance self-coherence as a foundation-attested invariant with
 - Does NOT rewrite the lock/handoff state machine — it reconciles the frontmatter model to the existing writers/consumers, additively.
 - Does NOT drop `extra=forbid` wholesale — it replaces it with an explicit superset to preserve typo-defense.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| WEAK: this ADR was collapsed as a Draft tombstone (DO NOT IMPLEMENT); its proposed `gz validate --writer-model-roundtrip` validator was never built, so no genuine thesis command exists. The closest green proxy is the advisory-scorecard machinery whose over-auditing this collapse rationale concerns. | uv run gz validate --advisory-scorecard | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.72-meta-governance-coherence --check | 0 |
+
 ## Consequences
 
 ### Positive

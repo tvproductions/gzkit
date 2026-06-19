@@ -155,6 +155,16 @@ Inbound references across ~40 live files (Bucket 1 from blast-radius analysis) g
 4. Follow-up GHI for allow-list expiry enforcement if drift observed.
 5. Downstream promotion pathway for `ADR-pool.progressive-context-disclosure` unblocked — dynamic L0/L1/L2/L3 now builds on normalized static L0.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| No vendor-surface rules directory carries an unscoped (paths "**" or missing-paths) agent rule. | uv run gz validate --unscoped-rules | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.20-agent-rule-placement-invariant --check | 0 |
+
 ## Consequences
 
 ### Positive

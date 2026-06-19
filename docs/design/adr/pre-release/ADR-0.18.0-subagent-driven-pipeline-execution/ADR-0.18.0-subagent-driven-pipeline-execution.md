@@ -218,6 +218,16 @@ The [superpowers](https://github.com/obra/superpowers) methodology (92k+ stars) 
 
 **Local precedent:** gzkit already uses subagent dispatch in `gz-plan` (Explore subagents for codebase research) and `gz-obpi-lock` (agent identity resolution). This ADR extends the same pattern to pipeline execution — the highest-value dispatch point.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The agent role taxonomy this ADR defines is queryable, and unassigned work is detectable, via the gz roles surface. | uv run gz roles | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.18.0-subagent-driven-pipeline-execution --check | 0 |
+
 ## Consequences
 
 - Pipeline execution model changes from single-session to multi-agent orchestration

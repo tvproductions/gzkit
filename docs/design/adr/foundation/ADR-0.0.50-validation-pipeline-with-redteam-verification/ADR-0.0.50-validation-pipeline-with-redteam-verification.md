@@ -96,6 +96,16 @@ gzkit designs optimally for Claude Code as the primary vendor harness. Codex and
 - **Fallback for Codex / Copilot**: bounded-iteration semantics (no `/goal`), opposite-Claude-model Agent for redteam (no cross-vendor inline call), per-harness branching declared in the skill body's `## Harness Detection` section.
 - **ADR-0.0.31 distribution invariant satisfied**: single canonical SKILL.md per skill, executes one branch based on detected harness. No mirror divergence.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Red-team prompt composition and result parsing pass — the cross-model adversarial-check surface this validation pipeline's redteam-verify terminal stage depends on. | uv run -m unittest tests.test_adr_eval_redteam | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.50-validation-pipeline-with-redteam-verification --check | 0 |
+
 ## Consequences
 
 ### Positive

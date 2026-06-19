@@ -102,6 +102,16 @@ Same posture as ADR-0.0.50 § Stage 5 (Claude Code as primary vendor harness):
 - **Fallback for Codex/Copilot**: bounded-iteration semantics, sequential sub-skill invocation if parallel dispatch is not supported, per-harness branching in the skill body's `## Harness Detection` section.
 - **ADR-0.0.31 distribution invariant satisfied**: single canonical SKILL.md, executes one branch based on detected harness.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The skill catalog and its mirrors are aligned — the review-skill surface this maintenance pipeline's sweep manifest dispatches. | uv run gz validate --skill-alignment | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.51-milestone-maintenance-pipeline-with-goal --check | 0 |
+
 ## Consequences
 
 ### Positive

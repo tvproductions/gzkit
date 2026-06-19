@@ -92,6 +92,16 @@ skill, code, and CLI:
    union scan from `2ab33914` becomes a single-location read once one wins, or
    stays a union if both remain supported).
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| WEAK: the gz handoff verb is unbuilt (Proposed); the lock-handoff coupling guard this ADR's archive-retention OBPI honors validates green. | uv run gz validate --lock-handoff-coupling | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.65-handoff-system-consolidation --check | 0 |
+
 ## Consequences
 
 ### Positive

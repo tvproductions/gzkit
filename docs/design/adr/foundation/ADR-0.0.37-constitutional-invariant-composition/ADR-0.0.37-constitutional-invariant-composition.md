@@ -209,6 +209,16 @@ must become a constitutional invariant with schema, validator, ledger event, and
 rendered projection. Workflow conveniences remain feature or pool work until
 they have a foundation invariant to defend.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Re-rendering the constitutional invariant registry byte-matches the composed AGENTS.md; invariant composition is coherent. | uv run gz validate --invariant-coherence | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.37-constitutional-invariant-composition --check | 0 |
+
 ## Consequences
 
 ### Positive

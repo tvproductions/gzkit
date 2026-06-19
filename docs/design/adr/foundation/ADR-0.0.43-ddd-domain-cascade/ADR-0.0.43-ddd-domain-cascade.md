@@ -119,6 +119,16 @@ Block-after-backfill: legacy ADRs run through hybrid migration (frontmatter for 
 - *Doctrine references* — Layer-1/2/3 separation per [docs/governance/state-doctrine.md](../../../../governance/state-doctrine.md); kind/lane semantics per [docs/governance/GovZero/adr-status.md](../../../../governance/GovZero/adr-status.md); anti-vibing and operator-economy rationale per [docs/governance/agent-contract-rationale.md](../../../../governance/agent-contract-rationale.md); ADR taxonomy semantics per [docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md](../ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md).
 - *New canonical paths this ADR creates* — `docs/design/domain/DM-<bc-slug>.md` (per-BC tactical model, OBPI-02); `docs/design/domain/glossary.md` / `bounded-contexts.md` / `context-map.md` (Layer-3 views, OBPI-06); `docs/design/domain/legacy-adr-bc-mapping.yaml` (OBPI-07); `docs/governance/domain-cascade.md` (doctrine page, OBPI-12); `docs/user/manpages/gz-domain*.md` (OBPI-12).
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| WEAK: the named gz validate --domain-views-fresh validator is unlanded (ADR is Draft); the sibling Layer-3 derived-view freshness gate this ADR explicitly parallels holds green. | uv run gz validate --adr-status-fresh | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.43-ddd-domain-cascade --check | 0 |
+
 ## Consequences
 
 ### Positive

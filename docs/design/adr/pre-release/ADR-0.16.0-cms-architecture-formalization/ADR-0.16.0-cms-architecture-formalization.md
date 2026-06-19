@@ -138,6 +138,16 @@ not just in documentation. The Django parallel is structural: models define trut
 (Pydantic from ADR-0.15.0), the template engine renders views (`gz agent sync`),
 you never edit rendered output (vendor surfaces).
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Vendor control surfaces are rendered from canonical content and stay byte-faithful — never hand-edited (the CMS rendered-frontend thesis). | uv run gz validate --surface-fidelity | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.16.0-cms-architecture-formalization --check | 0 |
+
 ## Consequences
 
 - `.gzkit/rules/` becomes a new canonical directory (alongside `.gzkit/skills/`)

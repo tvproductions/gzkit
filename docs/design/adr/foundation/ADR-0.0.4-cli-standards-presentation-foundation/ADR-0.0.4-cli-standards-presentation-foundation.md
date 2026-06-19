@@ -73,6 +73,17 @@ The target patterns are drawn from:
 - **airlineops** `tests/cli/test_cli_consistency.py` — recursive parser auditor, convention enforcement
 - **v3 CLI Standards** `docs/design/cli-standards-v3.md` — canonical specification
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Every CLI command carries documented help and index/manpage parity (presentation contract honored). | uv run gz cli audit | 0 |
+| CLI presentation conventions hold across all parsers (recursive consistency policy test). | uv run -m unittest tests.policy.test_cli_consistency | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.4-cli-standards-presentation-foundation --check | 0 |
+
 ## Consequences
 
 ### Positive

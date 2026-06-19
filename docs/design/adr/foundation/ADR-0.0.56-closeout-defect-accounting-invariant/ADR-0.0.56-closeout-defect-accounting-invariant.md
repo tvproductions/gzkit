@@ -63,6 +63,16 @@ Establish closeout defect-accounting as a foundation-attested invariant with a s
 
 **Lane: Heavy.** New `gz validate` scope (CLI surface), new `closeout_defect_snapshot` ledger event (runtime contract / event schema), fail-closed completion condition. Foundation-kind brief-level Gate 5 stacks per ADR-0.0.36-universal-obpi-attestation.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| WEAK: this ADR's own --closeout-defect-accounting scope is unbuilt (Draft); the closest extant closeout-family completion gate runs green. | uv run gz validate --closeout-proof | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.56-closeout-defect-accounting-invariant --check | 0 |
+
 ## Consequences
 
 ### Positive

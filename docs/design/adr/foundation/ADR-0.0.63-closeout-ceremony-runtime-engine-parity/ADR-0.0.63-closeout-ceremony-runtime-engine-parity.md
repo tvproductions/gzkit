@@ -53,6 +53,16 @@ Surfaced by cross-analyst diagnosis in GHI #517 (`artifacts/reports/ghi-517-cros
 5. **Implement REQ↔receipt-ID validator with fail-close.** New `gz validate --closeout-proof-binding` checks that every REQ in the parent ADR's Acceptance Criteria has at least one binding receipt-ID cited in the closeout Evidence Summary; missing bindings exit 3.
 6. **Collapse dual-runtime paths.** `gz closeout --ceremony --attest` and the Step 7 pipeline must emit identical ledger surfaces. The runtime engine is the single source; the `--attest` flag is an orchestration shortcut, not a parallel emitter.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Every closeout-bound REQ binds to a ledger-present receipt-ID; the closeout proof-binding gate fails closed on an unbound REQ. | uv run gz validate --closeout-proof | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.63-closeout-ceremony-runtime-engine-parity --check | 0 |
+
 ## Consequences
 
 ### Positive

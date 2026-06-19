@@ -87,6 +87,16 @@ binding decisions:
 4. Keeping the deliverable deterministic preserves the `ghi-triage` hardening
    lesson from GHI #424: rank order is data, not persuasive prose.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Pool ADR isolation holds — the governed pool-state surface this triage skill composes its ranked recommendation over. | uv run gz validate --pool-adr-isolation | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.48-gz-adr-pool-triage --check | 0 |
+
 ## Consequences
 
 ### Positive

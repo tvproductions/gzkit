@@ -30,6 +30,16 @@ Adopt a tranche-based breadth parity execution protocol:
 4. Keep blocking or product-coupled canonical hooks out of the first tranche until
    compatibility adaptation is documented and tested.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| WEAK: the canonical ../airlineops breadth-parity source is absent in this repo; closest green proof — gzkit's canonical `.claude`/`.gzkit` surfaces match authored canon (the breadth-parity floor each tranche must hold). | uv run gz validate --surface-fidelity | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.9.0-airlineops-surface-breadth-parity --check | 0 |
+
 ## Consequences
 
 ### Positive

@@ -199,6 +199,16 @@ Requirement-level test traceability is the missing link between governance specs
 
 The `@covers` pattern — already informally used in gzkit — makes this explicit: each test declares which requirement it proves, and tooling can aggregate, report, and audit this linkage. Combined with ADR-0.20.0's triangle framework, this creates a closed loop: specs define requirements, tests prove them, and drift detection catches gaps.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The gz covers surface scans the test tree and reports test-to-REQ linkage — the Test-to-Spec edge this ADR formalizes. | uv run gz covers | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.21.0-tests-for-spec --check | 0 |
+
 ## Consequences
 
 - `@covers` becomes a first-class governance mechanism in gzkit's test infrastructure

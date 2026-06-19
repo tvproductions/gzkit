@@ -70,6 +70,17 @@ Build a hybrid CLI + skill shape with a tool/agent split: the CLI (Pydantic + Ji
 1. Potential ADR to formalize the "tool + Pydantic + Jinja2 + agent-reasoning" split as a reusable pattern for other skills. This ADR sets the precedent but does not generalize it.
 1. Possible schema versioning ADR for scaffold formats if v2 happens (how to parse multiple versions in one validator).
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The gz justify pre-execution walkthrough command (anchor resolution, scaffold render, validate) is exercised by its test suite. | uv run -m unittest tests.commands.test_justify_cmd | 0 |
+| The gz justify manpage/CLI contract holds. | uv run -m unittest tests.cli.test_justify_manpage | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.19-pre-execution-reasoning-walkthrough --check | 0 |
+
 ## Consequences
 
 ### Positive

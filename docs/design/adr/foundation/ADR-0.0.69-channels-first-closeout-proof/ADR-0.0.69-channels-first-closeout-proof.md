@@ -175,6 +175,16 @@ These are the structural fences this ADR establishes. They are audited at ADR cl
    removing the `--closeout-proof-binding` scope require zero rewiring of it. Verified at
    this ADR's closeout by inspection that no ADR-0.0.68 surface was modified.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Closeout proof is recomputed from the live three-channel REQ-kind evidence surface for every in-closeout ADR, never read from a stored block. | uv run gz validate --closeout-proof | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.69-channels-first-closeout-proof --check | 0 |
+
 ## Consequences
 
 ### Positive

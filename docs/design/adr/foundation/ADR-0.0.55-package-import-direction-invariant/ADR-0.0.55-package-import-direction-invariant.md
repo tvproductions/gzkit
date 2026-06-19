@@ -111,6 +111,16 @@ Author the canonical `src/gzkit/` subpackage layer order, declare it as invarian
 - Does NOT extend to test code or to `tests/**` import direction; test fixtures may import freely. The invariant binds production code only.
 - Does NOT mechanically enforce same-layer imports as either allowed or denied — equal-layer imports are allowed under the canonical order; if a future ADR wants to forbid them, it authors that constraint additively.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The src/gzkit package import-boundary policy holds — the import-direction invariant this ADR enforces across the subpackage graph. | uv run -m unittest tests.policy.test_import_boundaries | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.55-package-import-direction-invariant --check | 0 |
+
 ## Consequences
 
 ### Positive

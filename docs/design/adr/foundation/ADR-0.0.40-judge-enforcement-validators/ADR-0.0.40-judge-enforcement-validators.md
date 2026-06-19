@@ -81,6 +81,16 @@ validator coverage for review receipts that name `spec_compliance`, `quality`,
 integration citation must all validate before the review can influence
 completion.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| WEAK: the named gz validate --judge-leakage and --judge-output-discipline validators are unlanded (ADR is Draft; Decision unfilled); the advisory-rules-audit scorecard that tracks the judge-doctrine promotion this ADR would close holds green. | uv run gz validate --advisory-scorecard | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.40-judge-enforcement-validators --check | 0 |
+
 ## Consequences
 
 ### Positive

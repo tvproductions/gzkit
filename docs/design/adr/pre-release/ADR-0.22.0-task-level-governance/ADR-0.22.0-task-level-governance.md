@@ -217,6 +217,16 @@ gzkit is a governance CMS, not a project management tool. TASK captures what
 happened during execution with enough structure for traceability, not enough to
 become a workflow engine.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| TASK-level governance is mechanically coherent across its four discovery channels — the task-envelope thesis completing the four-tier hierarchy. | uv run gz validate --task-envelope-coherence | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.22.0-task-level-governance --check | 0 |
+
 ## Consequences
 
 - Four-tier hierarchy is complete: ADR → OBPI → REQ → TASK

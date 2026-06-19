@@ -250,6 +250,17 @@ This aligns with the Django parallel (schema-driven CMS): models define structur
 views handle logic, templates orchestrate presentation. Skills are templates;
 commands are views.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| gz obpi lock is a deterministic coordination primitive that lists held locks. | uv run gz obpi lock list | 0 |
+| The all-or-nothing gz obpi complete transaction is exercised by its deterministic unit suite. | uv run -m unittest tests.test_obpi_complete_cmd | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.14-deterministic-obpi-commands --check | 0 |
+
 ## Consequences
 
 - Pipeline skill becomes a pure orchestrator (recipe of `gz` commands)

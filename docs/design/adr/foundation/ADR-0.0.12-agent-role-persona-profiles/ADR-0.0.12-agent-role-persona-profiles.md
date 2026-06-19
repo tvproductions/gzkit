@@ -276,6 +276,17 @@ cluster: "plan-first, whole-file, deeply-compliant."
    a prescriptive rule, not a behavioral identity. The virtue-ethics framing
    requires human authorship.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Every per-role persona frame validates against the persona control-surface schema. | uv run gz validate --personas | 0 |
+| Each agent-role persona is enumerable through the persona control surface. | uv run gz personas list | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.12-agent-role-persona-profiles --check | 0 |
+
 ## Consequences
 
 - Every subagent dispatch includes a persona preamble

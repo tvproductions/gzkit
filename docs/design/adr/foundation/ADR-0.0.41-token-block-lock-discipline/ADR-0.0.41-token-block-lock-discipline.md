@@ -99,6 +99,16 @@ continues, the lock release must prove which intent, artifact set, and
 handoff-register entry survived. A failed compact cannot silently erase the
 governance witness.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Every token-block lock release is coupled to a handoff/register entry; the lock-discipline coupling invariant holds. | uv run gz validate --lock-handoff-coupling | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.41-token-block-lock-discipline --check | 0 |
+
 ## Consequences
 
 ### Positive

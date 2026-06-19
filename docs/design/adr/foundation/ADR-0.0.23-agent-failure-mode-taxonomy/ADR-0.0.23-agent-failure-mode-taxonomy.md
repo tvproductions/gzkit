@@ -67,6 +67,16 @@ The six patterns: `Safeguard circumvention`, `Reckless action`, `Fabrication`,
    inside the heavy envelope already established by item 4 without a
    further lane lift. Closes GHI #309.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The agent-failure-mode taxonomy rule is registered and scored on the advisory-rules scorecard. | uv run gz validate --advisory-scorecard | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.23-agent-failure-mode-taxonomy --check | 0 |
+
 ## Consequences
 
 ### Positive

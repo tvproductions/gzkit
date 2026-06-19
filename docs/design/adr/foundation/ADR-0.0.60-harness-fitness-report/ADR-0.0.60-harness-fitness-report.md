@@ -167,6 +167,16 @@ this surface is Layer 3 in toto. The validator scope `gz validate
 --harness-telemetry` (OBPI-05) is the structural integrity check that catches
 ledger-derivation drift; exit 3 fail-closed.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| WEAK: gz harness report and --harness-telemetry are unbuilt (Proposed); the ledger event substrate lane-latency is computed from validates green. | uv run gz validate --ledger | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.60-harness-fitness-report --check | 0 |
+
 ## Consequences
 
 ### Positive

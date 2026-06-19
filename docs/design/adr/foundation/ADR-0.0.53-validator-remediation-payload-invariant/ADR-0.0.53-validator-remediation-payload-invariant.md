@@ -65,6 +65,16 @@ Canonize the **`RemediationPayload`** invariant: every fail-closed exit from a g
 - Does NOT modify existing skill `SKILL.md` files to use the payload — skills are advisory operator-facing procedure, not blocking surfaces.
 - Does NOT canonize recovery commands as receipts. The `recovery` field is *the command the operator would run* if they had to recover manually; it is not a step-receipt invocation.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Every validator graph-field read has a coupled write path (GHI #193 class) — the validator-output-integrity surface this remediation-payload invariant extends to a three-field contract. | uv run gz validate --validator-fields | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.53-validator-remediation-payload-invariant --check | 0 |
+
 ## Consequences
 
 ### Positive

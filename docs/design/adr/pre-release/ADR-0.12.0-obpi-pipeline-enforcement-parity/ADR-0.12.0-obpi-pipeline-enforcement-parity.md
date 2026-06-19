@@ -75,6 +75,16 @@ This ADR deliberately builds on earlier work instead of replacing it:
   related backlog work, but neither is required to import the proven hook
   chain now.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The imported OBPI pipeline enforcement hooks guard write-time and ledger-sync surfaces as registered (enforcement is mechanical, not memory). | uv run -m unittest tests.test_hooks_guards_ledger_sync | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.12.0-obpi-pipeline-enforcement-parity --check | 0 |
+
 ## Consequences
 
 ### Positive

@@ -33,6 +33,16 @@ Implement the following changes:
    - Document `gz implement` and `gz gates`.
    - Update existing command docs to include `--dry-run`.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Gate status for active governance work is computed and reported by the runtime. | uv run gz status | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.2.0-gate-verification --check | 0 |
+
 ## Consequences
 
 ### Positive

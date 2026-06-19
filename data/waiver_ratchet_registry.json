@@ -28,7 +28,7 @@
       "gates_step": "fidelity presence (gz validate --fidelity-presence)",
       "mechanism": "shrink-ratchet",
       "entries_path": "grandfathered_adrs",
-      "baseline_count": 101
+      "baseline_count": 0
     },
     {
       "data_file": "data/tautological_test_waivers.json",

@@ -101,6 +101,17 @@ tradeoffs, and verification hooks for operator review. Each generated hint must
 carry a source anchor or explicit inference label so "helpful guidance" cannot
 become plausible but unwitnessed planning prose.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The authoring-guidance hint engine projects AdvisorDiagnosis to the lighter AuthoringHint shape as specified. | uv run -m unittest tests.complexity.authoring.test_engine | 0 |
+| The editor/IDE authoring-guide protocol envelope validates against its declared schema. | uv run -m unittest tests.complexity.authoring.test_protocol | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.30-complexity-authoring-guidance --check | 0 |
+
 ## Consequences
 
 ### Positive

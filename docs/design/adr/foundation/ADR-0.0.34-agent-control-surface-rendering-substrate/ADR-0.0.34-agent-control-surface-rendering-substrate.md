@@ -141,6 +141,16 @@ skill surfaces. The rendering substrate remains headless and governed; polish is
 acceptable only when the rendered output remains byte-stable, parseable, and
 validator-bound.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Rendered agent control surfaces stay byte-faithful to their canonical source; the rendering-substrate fidelity invariant holds. | uv run gz validate --surface-fidelity | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.34-agent-control-surface-rendering-substrate --check | 0 |
+
 ## Consequences
 
 ### Positive

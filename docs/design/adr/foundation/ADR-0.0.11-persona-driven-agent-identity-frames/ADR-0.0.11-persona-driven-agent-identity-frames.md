@@ -294,6 +294,17 @@ the behavior, not a mask over something else. This means:
 - Configuring persona is the same class of operation as configuring any other
   control surface
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The persona control surface enumerates defined personas (persona is a first-class control surface). | uv run gz personas list | 0 |
+| Persona files validate against the schema (storage + composition rules honored). | uv run gz validate --personas | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.11-persona-driven-agent-identity-frames --check | 0 |
+
 ## Consequences
 
 - `.gzkit/personas/` becomes a new governed directory alongside `.gzkit/rules/`,

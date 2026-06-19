@@ -142,6 +142,16 @@ This ADR applies to **both** Lite and Heavy lanes, with proportional rigor:
 - **Heavy-lane ADRs:** Full enforcement — closing arguments, product proof (runbook/manpage/docstring), reviewer agent assessment, and human attestation all required and blocking.
 - **Rationale:** Even internal changes deserve operator comprehension. A Lite refactoring that changes public module APIs without updating docstrings is a silent contract break.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Closeout validates product proof for every OBPI before attestation — the burden-of-proof defense this ADR establishes. | uv run gz validate --closeout-proof | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.23.0-agent-burden-of-proof --check | 0 |
+
 ## Consequences
 
 - Closeout takes longer: agents must write substantive closing arguments and pass product proof checks

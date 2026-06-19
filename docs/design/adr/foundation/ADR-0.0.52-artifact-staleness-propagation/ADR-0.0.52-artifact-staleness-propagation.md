@@ -125,6 +125,16 @@ The clearance ceremony's `gz-adr-evaluate` re-run produces a fresh `adr-evaluati
 | → | ADR-pool.adr-layer-coherence | Fast-path's `no_metadata_shift` detection depends on layer-coherence enforcement |
 | ⊥ | ADR-0.0.8 (feature-toggle system) | Explicitly NOT consumed — no pre-emptive escape hatch |
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The artifact relationship graph reconstructs from L1+L2 canon via gz state — the cross-artifact surface staleness flags propagate across. | uv run gz state --json | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.52-artifact-staleness-propagation --check | 0 |
+
 ## Consequences
 
 ### Positive

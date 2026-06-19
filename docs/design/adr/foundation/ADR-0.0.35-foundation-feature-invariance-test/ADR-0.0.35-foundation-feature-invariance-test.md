@@ -77,6 +77,16 @@ competitor lesson that changes what gzkit is must route to foundation with
 structural witness; a lesson that adds a user-invoked workflow routes to feature
 or pool. "Other tools do this" is never a kind argument.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The foundation/feature kind-invariance test holds across the ADR corpus (foundation implies 0.0.x; feature implies non-0.0.x). | uv run gz validate --kind-invariance | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.35-foundation-feature-invariance-test --check | 0 |
+
 ## Consequences
 
 ### Positive

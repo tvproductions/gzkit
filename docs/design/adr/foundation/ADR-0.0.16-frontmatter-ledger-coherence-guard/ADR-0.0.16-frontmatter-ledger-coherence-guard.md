@@ -67,6 +67,17 @@ Build a frontmatter-ledger coherence guard, not per-consumer rewrites. The umbre
 4. Status: vocabulary canonicalization policy as a short addendum to ADR-0.0.9 (state-doctrine), not a full new ADR.
 5. Chore cadence policy — who runs it, how often, where receipts live — folds into the broader chores-cadence ADR if it exists, or a follow-on governance-maintenance ADR.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The frontmatter-ledger coherence guard logic over the four governed fields is exercised by its unit suite. | uv run -m unittest tests.commands.test_validate_frontmatter | 0 |
+| Ledger-wins reconciliation of derived frontmatter is exercised by the coherence-chore suite. | uv run -m unittest tests.governance.test_frontmatter_coherence | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.16-frontmatter-ledger-coherence-guard --check | 0 |
+
 ## Consequences
 
 ### Positive

@@ -25,6 +25,16 @@ Adopt a canonical promotion workflow centered on `uv run gz adr promote`:
 4. Promotion lineage is recorded in ledger as `artifact_renamed` with reason `pool_promotion`.
 5. Promotion behavior is operator-visible in command docs and governance lifecycle documentation.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Promotion keeps pool ADRs isolated from the active runtime track — no pool entry leaks into active work without losing lineage. | uv run gz validate --pool-adr-isolation | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.6.0-pool-promotion-protocol --check | 0 |
+
 ## Consequences
 
 ### Positive

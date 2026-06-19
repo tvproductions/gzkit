@@ -75,6 +75,16 @@ The promotion is bounded by the get-out-of-jail plan's anti-temptation list: no 
 foundation ADR, no new validator scope beyond what Move 2 names, no scope creep into
 the adjacent `prime-context-hooks` or `progressive-context-disclosure` pool ADRs. ---
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| gz context renders a single focused payload for one ADR (body, OBPI briefs, covering tests, in-effect rules) — the focused-context-loader thesis. | uv run gz context ADR-0.28.0 | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.28.0-focused-context-loader --check | 0 |
+
 ## Consequences
 
 ### Positive

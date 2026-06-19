@@ -39,6 +39,16 @@ Target state: the third component of foundation ADR IDs is a nominal integer —
 2. A gz-foundation-triage on-demand skill ranks the in-flight foundation backlog by priority: cross-references agent-insights.jsonl signal count, GHI occurrence count, and declared invariants; flags foundation gaps blocking waiting pool features and port/adapter reclassification candidates; diagnosis only, ephemeral ranked report.
 3. The CLAUDE.md 'order versioned identifiers semantically' rule scope shrinks to feature ADRs only — nominal foundation IDs have no semantic ordering.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Foundation ADR IDs are nominal 0.0.x integers; the taxonomy gate enforces foundation kind implies a 0.0.x semver. | uv run gz validate --taxonomy | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.57-foundation-adr-nominal-id-triage --check | 0 |
+
 ## Consequences
 
 ### Positive

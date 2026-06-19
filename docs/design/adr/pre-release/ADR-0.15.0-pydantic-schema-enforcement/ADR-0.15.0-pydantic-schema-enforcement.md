@@ -131,6 +131,16 @@ reimplemented by hand in validate.py. The migration eliminates ~200 lines of man
 validation code and makes the schema the single source of truth for both runtime
 enforcement and documentation.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Every structured governance data type is a Pydantic BaseModel enforcing validation at runtime — JSON Schema defines shape, Pydantic enforces (no dataclass drift). | uv run gz validate --pydantic-models | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.15.0-pydantic-schema-enforcement --check | 0 |
+
 ## Consequences
 
 - Pydantic v2 added as a runtime dependency

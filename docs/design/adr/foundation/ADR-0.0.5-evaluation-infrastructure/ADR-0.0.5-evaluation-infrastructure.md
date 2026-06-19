@@ -203,6 +203,17 @@ None. The existing quality infrastructure provides all required integration poin
 - The existing `instruction_eval.py` 10-case baseline is the proof of concept.
   This ADR scales that pattern to all AI-sensitive surfaces.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Eval harnesses run as stdlib unittest suites (Decision 2 — evals as tests for non-deterministic behavior). | uv run -m unittest tests.eval.test_harness | 0 |
+| Delta-based regression detection compares scores against stored baselines (Decision 3). | uv run -m unittest tests.eval.test_regression | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.5-evaluation-infrastructure --check | 0 |
+
 ## Attestation Block
 
 | Term | Status | Attested By | Date | Reason |

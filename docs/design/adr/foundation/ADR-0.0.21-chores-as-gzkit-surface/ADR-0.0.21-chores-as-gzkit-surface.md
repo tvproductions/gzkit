@@ -171,6 +171,17 @@ mechanical backstops, not documentation.
     of the wrong distribution model locks the bug in at deeper structural
     depth; the prerequisite prevents that.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| No CHORE.md or acceptance.json lives outside the canonical src/gzkit/chores or project .gzkit/chores surfaces. | uv run gz validate --chores-layout | 0 |
+| The canonical chore set resolves and enumerates through the gz CLI. | uv run gz chores list | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.21-chores-as-gzkit-surface --check | 0 |
+
 ## Consequences
 
 ### Positive

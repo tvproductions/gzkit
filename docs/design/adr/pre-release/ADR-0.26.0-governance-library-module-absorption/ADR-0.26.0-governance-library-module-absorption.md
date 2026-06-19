@@ -249,6 +249,16 @@ verification required by the winning modules.
 
 opsdev's `lib/` package represents ~6,200 lines of domain-agnostic governance primitives. gzkit currently has partial equivalents for some of these (ADR management in cli.py, governance enforcement in ledger.py, validation in validate.py, artifact sync in sync.py) but lacks dedicated modules for cross-references, reconciliation, drift detection, traceability, audit ledger, and documentation generation. The subtraction test demands that all reusable governance patterns flow upstream to gzkit. This ADR ensures nothing is missed by examining every module individually. Critically, opsdev's focused library modules (single-responsibility, well-bounded) likely surpass gzkit's monolithic approach where governance logic is interleaved with CLI command handling.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Absorbed governance-library modules introduce no duplicate implementations upstream — the subtraction-test thesis. | uv run gz validate --absorption-duplicates | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.26.0-governance-library-module-absorption --check | 0 |
+
 ## Consequences
 
 - gzkit's governance library layer becomes comprehensive and self-sufficient

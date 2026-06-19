@@ -54,6 +54,17 @@ Add a first-class, operator-gated repudiation transition that reverses an errone
 
 **Reversibility / scope boundary.** Additive: one event type, one CLI verb, one state-resolution branch, schema entry, tests, docs. Does NOT build the full `ADR-pool.obpi-state-machine` (the ~30-audit rewrite) — repudiation becomes a first-class transition THERE when that ADR is scheduled; this is the narrow shippable primitive needed now, split out for the same reason `ADR-pool.attested-record-edit-doctrine` was. Does NOT auto-clear `repudiated` by any path other than a genuine re-completion. Does NOT touch `withdraw`'s semantics.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Completion repudiation reverses-without-retiring: it flips ledger_completed and sets repudiated without the sticky withdrawn semantics, and a genuine re-completion clears it. | uv run -m unittest tests.test_completion_repudiation | 0 |
+| The `gz obpi repudiate` verb is operator-gated and fails closed on empty attestor/reason, mirroring that only a human may revoke a Gate-5. | uv run -m unittest tests.test_obpi_repudiate_cli | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.71-completion-repudiation --check | 0 |
+
 ## Consequences
 
 ### Positive

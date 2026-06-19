@@ -130,6 +130,16 @@ generated surface, installed skill, and vendor mirror must prove which canonical
 input produced it and which validation command can rebuild or reject it. Ported
 workflow files that lack that proof are distribution drift, not parity.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The T0 distribution invariant holds: every canonical surface is reproducibly shipped by the wheel. | uv run gz validate --distribution | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.31-distribution-invariant-doctrine --check | 0 |
+
 ## Consequences
 
 ### Positive

@@ -168,6 +168,16 @@ surface across the board.
 
 **Sensitivity: absent.** No security surface.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Every `gz <verb>` reference across docs and skills resolves to a registered parser verb — the CLI-surface-discipline this mode-density doctrine governs. | uv run gz validate --cli-alignment | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.45-cli-mode-density-doctrine --check | 0 |
+
 ## Consequences
 
 ### Positive

@@ -32,6 +32,16 @@ execute the following tracked scope:
 - Make skills, hooks, and future agent control surfaces call into the same
   runtime engine instead of re-implementing stage logic in prose
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The OBPI pipeline runtime engine drives stage launch/progression/resume through one canonical command contract instead of prose. | uv run -m unittest tests.test_pipeline_runtime | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.13.0-obpi-pipeline-runtime-surface --check | 0 |
+
 ## Consequences
 
 ### Positive

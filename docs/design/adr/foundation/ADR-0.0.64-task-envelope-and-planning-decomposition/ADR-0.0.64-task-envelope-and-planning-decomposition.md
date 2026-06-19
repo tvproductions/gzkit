@@ -40,6 +40,16 @@ Layer five additive components on top of `d70793c4` (nothing reverted; coarse-de
 
 Lane: heavy (new validator scope; new ledger schema field; new CLI surfaces; new authoring discipline binding on every Python source file touching gzkit's behavior). Foundation-kind brief-level Gate 5 attestation per ADR-0.0.36 (universal). Restoration strictly additive vs. `d70793c4`; reversibility is two-way (schema-additive; decorator deprecation possible; validator downgrade fail->warn possible) at ~2-week reversal cost in 12 months.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| TASK is the per-labor-unit envelope: the task-envelope coherence gate enforces worklog attribution, subdivision discipline, and four-channel coherence. | uv run gz validate --task-envelope-coherence | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.64-task-envelope-and-planning-decomposition --check | 0 |
+
 ## Consequences
 
 ### Positive

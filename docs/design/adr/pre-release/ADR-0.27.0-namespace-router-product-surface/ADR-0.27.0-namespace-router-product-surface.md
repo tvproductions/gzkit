@@ -60,6 +60,16 @@ verification steps. Router byte budget is empirical, not hard-capped — GSD
 reference routers range 696–1131 bytes (avg ~930, ~60 bytes per routed
 skill); the original ≤500-byte aspiration was unbacked.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The namespace-router tables route every declared intent to a directly-invocable concrete skill — the router product-surface thesis. | uv run gz validate --router-tables | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.27.0-namespace-router-product-surface --check | 0 |
+
 ## Consequences
 
 ### Positive

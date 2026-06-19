@@ -186,6 +186,16 @@ Today, these linkages exist but nothing validates them. A brief can declare `REQ
 
 The triangle-sync framework makes drift visible early — during implementation, not during audit. The advisory-first rollout ensures adoption is gradual: agents see drift warnings in `gz check` output but are not blocked by them until the tooling is proven reliable.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The spec-test-code triangle data model and drift engine deterministically extract linkage from existing artifacts. | uv run -m unittest tests.test_triangle | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.20.0-spec-triangle-sync --check | 0 |
+
 ## Consequences
 
 - New `gz drift` CLI command becomes part of the operator surface

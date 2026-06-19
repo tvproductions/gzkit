@@ -34,6 +34,16 @@ Scope constraints:
 - This ADR focuses on extraction parity, not product feature expansion.
 - Go-runtime migration work is blocked until this ADR materially closes parity gaps.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| WEAK: canonical source ../airlineops is absent in this repo; closest green proof — ported canonical surfaces match their authored canon (extraction fidelity, the reconciliation target). | uv run gz validate --surface-fidelity | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.3.0-airlineops-canon-reconciliation --check | 0 |
+
 ## Consequences
 
 ### Positive

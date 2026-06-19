@@ -87,6 +87,17 @@ ARB middleware; this ADR makes the binding fail-closed instead of advisory.
    existing flows. Warn-only on lite preserves the existing covenant while
    tightening heavy/foundation.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The attestation-receipt-binding validator enforces receipt resolution and exit-status matching. | uv run -m unittest tests.governance.test_attestation_receipt_validator | 0 |
+| The ARB receipt-shape contract holds across the receipts surface. | uv run gz validate --receipt-shape | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.24-attestation-receipt-binding --check | 0 |
+
 ## Consequences
 
 ### Positive

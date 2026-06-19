@@ -111,6 +111,16 @@ Canonize AGENTS.md (and by extension, the analogous map-not-encyclopedia shape f
 - Does NOT extend to other instructions files outside the named scope (e.g., per-skill `SKILL.md` files, runbooks, manpages) — those have their own shape contracts via `gz-cli-audit` and the operator-doc-verb-resolution rule.
 - Does NOT introduce a new auto-regeneration pipeline for `docs/governance/skills-catalog.md` beyond reusing the existing `gz agent sync control-surfaces` mechanism — the catalog regenerates from `.gzkit/manifest.json` exactly as the current `.claude/rules/*.md` mirrors do.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| AGENTS.md conforms to the map-not-encyclopedia shape — the exact mechanical invariant this ADR ships via gz validate --agents-md-map-conformance. | uv run gz validate --agents-md-map-conformance | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine --check | 0 |
+
 ## Consequences
 
 ### Positive

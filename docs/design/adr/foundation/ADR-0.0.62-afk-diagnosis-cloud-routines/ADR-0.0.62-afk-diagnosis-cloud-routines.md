@@ -229,6 +229,16 @@ The acceptance is the operator's; the recovery surfaces are gzkit's. This decisi
 
 The routine-results derived view (`gz routine results <name>`, `gz status` integration) is Layer-3 derived per `docs/governance/state-doctrine.md`. The routine's ephemeral cloud workspace is **Layer-0 (transient, never reconcilable)** — the only L0 surface gzkit interacts with. The GHI body is the **Layer-1.5 trust-bridge** (operator-readable canonical form of the L0 claim). Local-ledger-after-reconcile is L2.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| WEAK: the gz routine substrate is unbuilt (Draft); the inaugural R-3 trust-audit-suite's exec scope (--cli-alignment, one of its four steps) runs green headlessly. | uv run gz validate --cli-alignment | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.62-afk-diagnosis-cloud-routines --check | 0 |
+
 ## Consequences
 
 ### Positive

@@ -65,6 +65,16 @@ explicit, ledger-recorded waiver).
    override path records correctly, and the override requires interactive
    confirmation in heavy/foundation contexts.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Every REQ in an OBPI's Acceptance Criteria declares exactly one kind with its single proof channel, the discipline the coverage gate rests on. | uv run gz validate --req-kind-discipline | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.25-obpi-completion-req-coverage-gate --check | 0 |
+
 ## Consequences
 
 ### Positive

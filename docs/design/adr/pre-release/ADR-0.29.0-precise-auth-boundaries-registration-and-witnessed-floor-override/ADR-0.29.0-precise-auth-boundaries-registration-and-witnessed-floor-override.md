@@ -265,6 +265,16 @@ layer.
 - Define a review cadence for `security_floor_overridden` events so witnessing does not
   become theater.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| WEAK: this ADR's enforcement is not yet landed (no obpi_security_gate.py module, no security_floor_overridden event, no --auth-surface-coherence validator; auth_boundaries still globs the pre-ADR modules). The security-surfaces registry this ADR re-points validates against its schema as the closest green proxy. | uv run -m unittest tests.governance.test_security_surfaces_registry | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.29.0-precise-auth-boundaries-registration-and-witnessed-floor-override --check | 0 |
+
 ## Consequences
 
 > The design forcing functions that stress-test these consequences — Pre-Mortem,

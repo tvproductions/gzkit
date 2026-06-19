@@ -97,6 +97,17 @@ Codify a third orthogonal classification axis `sensitivity` and mechanize it acr
 - Does NOT enforce allow-list expiry on the registry — registry edits are governed by the doctrine; no expiry mechanism in v1.
 - Does NOT change the existing `kind` or `lane` axes — sensitivity is purely additive.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The sensitivity auto-detect floor and escalate-not-escape binding is exercised by its audit suite. | uv run -m unittest tests.governance.test_audit_sensitivity_binding | 0 |
+| The sensitivity schema axis accepts security/absent and rejects malformed values. | uv run -m unittest tests.governance.test_schema_sensitivity | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.22-security-sensitivity-doctrine --check | 0 |
+
 ## Consequences
 
 ### Positive

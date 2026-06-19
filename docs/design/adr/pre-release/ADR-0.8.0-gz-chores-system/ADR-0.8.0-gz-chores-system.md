@@ -23,6 +23,16 @@ Implement the Chores System as a config-first subsystem with dedicated lifecycle
 2.  **Runner**: Execution engine with evidence capture (`OBPI-0.8.0-02`).
 3.  **Lifecycle**: Planning, listing, auditing, and logging commands (`OBPI-0.8.0-03`).
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The chore registry/runner/log layout conforms to the config-first chores-system contract. | uv run gz validate --chores-layout | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.8.0-gz-chores-system --check | 0 |
+
 ## Consequences
 
 ### Positive

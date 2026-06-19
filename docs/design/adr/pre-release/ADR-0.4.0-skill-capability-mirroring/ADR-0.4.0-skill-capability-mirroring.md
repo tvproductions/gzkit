@@ -26,6 +26,16 @@ Execution is decomposed into distribution workstreams:
 3. Make sync deterministic and add recovery behavior (`OBPI-0.4.0-03`).
 4. Complete compatibility migration and cleanup (`OBPI-0.4.0-04`).
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Canonical skills in `.gzkit/skills` mirror into the Claude/Codex/Copilot control surfaces with enforced parity. | uv run gz validate --skill-alignment | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.4.0-skill-capability-mirroring --check | 0 |
+
 ## Consequences
 
 ### Positive

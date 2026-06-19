@@ -131,6 +131,16 @@ tests/
 └── fakes/                     # In-memory port implementations
 ```
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Hexagonal layer import boundaries (cli/core/ports/adapters) are enforced by AST policy tests. | uv run -m unittest tests.policy.test_import_boundaries | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.3-hexagonal-architecture-tune-up --check | 0 |
+
 ## Consequences
 
 ### Positive

@@ -225,6 +225,17 @@ Thresholds live inline in the manifest (not in separate config files) to
 maintain a single resolved config — one file to read, one source of truth,
 following the pattern established in AirlineOps.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Manifest-driven path resolution at the call site is exercised by the resolution-helper tests. | uv run -m unittest tests.test_manifest_resolution | 0 |
+| Config model and manifest v2 schema load and validate (the single resolved config layer). | uv run -m unittest tests.test_config | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.7-config-first-resolution-discipline --check | 0 |
+
 ## Consequences
 
 - `manifest.json` becomes the single comprehensive config layer for all

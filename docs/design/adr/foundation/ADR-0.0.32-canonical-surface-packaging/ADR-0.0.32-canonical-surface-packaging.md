@@ -370,6 +370,16 @@ versioned metadata, trust boundary, load budget, and validation result. This ADR
 should make that package shape the default for skills, rules, personas, and
 future context packages so portability never means hand-copied markdown.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Canonical surfaces are byte-equivalently packaged into the wheel, satisfying T0 mechanical enforcement. | uv run gz validate --distribution | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.32-canonical-surface-packaging --check | 0 |
+
 ## Consequences
 
 ### Positive

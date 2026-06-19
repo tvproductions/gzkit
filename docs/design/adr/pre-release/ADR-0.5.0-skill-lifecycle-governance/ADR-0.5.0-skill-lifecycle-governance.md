@@ -26,6 +26,16 @@ Execution is decomposed into five OBPIs:
 4. Ongoing maintenance and deprecation operations (`OBPI-0.5.0-04`).
 5. OBPI acceptance protocol runtime parity (`OBPI-0.5.0-05`).
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Skill lifecycle parity between the canonical source and its mirrors is verified at runtime (capability parity is maintainable and auditable). | uv run gz validate --skill-alignment | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.5.0-skill-lifecycle-governance --check | 0 |
+
 ## Consequences
 
 ### Positive

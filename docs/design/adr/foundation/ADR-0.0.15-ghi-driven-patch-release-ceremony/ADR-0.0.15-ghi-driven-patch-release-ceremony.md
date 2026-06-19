@@ -222,6 +222,16 @@ The cross-validation pattern (label as intent signal, diff as proof) provides
 a principled qualification mechanism that catches both mislabeled GHIs and
 unlabeled runtime changes.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The GHI-driven patch-release ceremony (discovery, label/diff cross-validation, shared version sync) is exercised by its test suite. | uv run -m unittest tests.adr.test_patch_release | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.15-ghi-driven-patch-release-ceremony --check | 0 |
+
 ## Consequences
 
 - `gz patch release` becomes the single path for patch-level version bumps

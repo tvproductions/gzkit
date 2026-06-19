@@ -62,6 +62,16 @@ Promote systematic debugging from an unnamed principle inside PRIME DIRECTIVE / 
 - Does NOT modify the existing defect-fix routing thresholds in AGENTS.md § Defect-fix routing — those thresholds remain authoritative for the direct-fix vs OBPI-ceremony decision; systematic debugging sits upstream as the precondition that produces the evidence the routing decision consumes.
 - Does NOT modify the existing two Iron Laws (`gz-obpi-pipeline`, `gz-patch-release`) — the precondition-form Iron Law sits on a different axis (precondition rather than completion) and is additive.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| The advisory-rules scorecard is internally self-consistent — the doctrine-registration surface this systematic-debugging rule binds its coupling-point doctrine to. | uv run gz validate --advisory-scorecard | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.49-systematic-debugging-discipline --check | 0 |
+
 ## Consequences
 
 ### Positive

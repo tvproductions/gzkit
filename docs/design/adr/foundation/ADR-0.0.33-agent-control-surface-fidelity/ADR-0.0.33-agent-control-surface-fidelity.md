@@ -171,6 +171,16 @@ shortcuts:
    gate cannot be excused as friction. A `--no-verify` against a fidelity
    failure is a doctrine-drift event.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| All four agent-control-surface fidelity invariants pass via the composite scope wired into gz check. | uv run gz validate --surface-fidelity | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.33-agent-control-surface-fidelity --check | 0 |
+
 ## Consequences
 
 ### Positive

@@ -214,6 +214,16 @@ should make clear that judge outputs are advisory until a validator binds their
 input corpus, rubric, output schema, and leakage controls. Review polish is not
 authority; receipt-bound judge discipline is the only acceptable absorption.
 
+## Fidelity Assertions
+
+<!-- Runnable commands that exercise this ADR's thesis against the real system.
+     `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| WEAK: the judge-doctrine enforcement validators are unlanded (ADR is Proposed); the advisory-rules-audit scorecard that tracks this LLM-as-judge doctrine as a classified rule holds green. | uv run gz validate --advisory-scorecard | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.39-llm-as-judge-doctrine --check | 0 |
+
 ## Consequences
 
 ### Positive
