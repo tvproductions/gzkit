@@ -580,6 +580,27 @@ def _dispatch_attestation_negative_control() -> int:
         return 1 if not run_dispatch_attestation_audit(Path(tmp)).success else 0
 
 
+def _fidelity_presence_negative_control() -> int:
+    from gzkit.governance.trust_audits.fidelity_presence import (  # noqa: PLC0415
+        audit_fidelity_presence,
+    )
+
+    with _tmp_root() as tmp:
+        root = Path(tmp)
+        _write(
+            root
+            / "docs"
+            / "design"
+            / "adr"
+            / "foundation"
+            / "ADR-0.0.1-blockless"
+            / "ADR-0.0.1-blockless.md",
+            "---\nid: ADR-0.0.1-blockless\nkind: foundation\nlane: Lite\n---\n"
+            "# ADR-0.0.1-blockless\n\n## Decision\n\nNo Fidelity Assertions block here.\n",
+        )
+        return _genuine_when_errors(audit_fidelity_presence(root, grandfather=frozenset()))
+
+
 # ---------------------------------------------------------------------------
 # Error builder
 # ---------------------------------------------------------------------------
@@ -785,6 +806,7 @@ _PRODUCTION_NEGATIVE_CONTROLS: dict[str, Callable[[], int]] = {
     "surface-fidelity": _surface_fidelity_negative_control,
     "line-endings": _line_endings_negative_control,
     "dispatch-attestation": _dispatch_attestation_negative_control,
+    "fidelity-presence": _fidelity_presence_negative_control,
 }
 
 for _step_id, _negative_control in _PRODUCTION_NEGATIVE_CONTROLS.items():

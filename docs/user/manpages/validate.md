@@ -13,7 +13,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--scenario-reachability] [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
-            [--advisor-proof-binding] [--lock-handoff-coupling] [--qc-binding] [--vendor-manifest]
+            [--advisor-proof-binding] [--lock-handoff-coupling] [--qc-binding] [--fidelity-presence] [--vendor-manifest]
             [--setpoint-coherence] [--rendition-freshness]
             [--rendition-floor-coherence]
             [--invariant-coherence] [--brief-reconcile] [--router-tables]
@@ -1083,6 +1083,38 @@ uv run gz validate --qc-binding --json
 |------|---------|----------|
 | 0 | No theater detected | — |
 | 3 | Theater found — one or more bound steps exhibit a signature or pass their NC | Inspect findings; implement a genuine check that fails for the right reason; register an honest negative-control via `register_negative_control` (OBPI-06 fills in all existing steps) |
+
+### `--fidelity-presence`
+
+Fidelity-presence enforcement (ADR-0.0.73 / OBPI-0.0.73-08), mechanizing
+Boundary Invariant #4: every non-pool ADR Decision must carry a parseable
+`## Fidelity Assertions` block — runnable commands that exercise the ADR's
+thesis against the real system. Without one, "VALIDATED = thesis exercised" is
+false for that ADR (the block-less bypass the OBPI-04 adversarial audit
+surfaced).
+
+The scope walks every non-pool ADR Decision (`docs/design/adr/**/ADR-*.md`
+whose stem matches its package directory; the `pool/` tree and
+`ADR-CLOSEOUT-FORM.md` sidecars are excluded) and fails closed (exit 3) on any
+whose block is absent, empty, or malformed. Pre-existing block-less ADRs are
+enumerated in `data/fidelity_presence_grandfather.json` and pass — the
+`sensitivity_floor_grandfather.json` cutover precedent: visible debt, fail-closed
+on NEW ADRs only. A new block-less ADR (absent from the grandfather file) fails
+closed; do **not** add new entries to silence a fresh violation. The ADR
+template (`.gzkit/templates/adr.md`) seeds the stub so new ADRs carry the block
+by construction.
+
+Wired into the default `gz check` pipeline (fail-closed; exit 3 on findings).
+
+```bash
+uv run gz validate --fidelity-presence
+uv run gz validate --fidelity-presence --json
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every non-pool ADR Decision carries a block (or is grandfathered) | — |
+| 3 | One or more non-pool ADR Decisions lack a parseable `## Fidelity Assertions` block | Add a block with at least one claim/command/expected-exit row (see the stub in `.gzkit/templates/adr.md`); re-run `uv run gz validate --fidelity-presence` |
 
 ### `--closeout-proof`
 

@@ -36,6 +36,19 @@ date: {date}
 
 {negative_consequences}
 
+## Fidelity Assertions
+
+<!-- Every non-pool ADR Decision ships runnable commands that exercise its thesis
+     against the real system. `gz adr fidelity <ADR-ID>` RUNS these and compares
+     observed-vs-expected exit. Replace the example row with assertions for THIS
+     ADR; each becomes green as its owning OBPI lands. A non-pool ADR Decision
+     with no parseable block fails `gz validate --fidelity-presence` (exit 3,
+     ADR-0.0.73 Boundary Invariant #4). Keep at least one claim/command/exit row. -->
+
+| Claim | Command | Expected exit |
+|-------|---------|---------------|
+| Replace with an assertion that exercises this ADR's thesis against the real system. | uv run gz --version | 0 |
+
 ## Decomposition Scorecard
 
 <!-- Deterministic OBPI sizing: score each dimension 0/1/2. -->

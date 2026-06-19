@@ -4,7 +4,13 @@ parent: ADR-0.0.73-verification-layer-binding-audit
 item: 8
 lane: heavy
 sensitivity: security
-status: Draft
+status: Completed
+req_atomic:
+  - REQ-0.0.73-08-01  # one detection behavior (block-less ADR → exit 3 + name) + its tests/behave — single indivisible TDD unit
+  - REQ-0.0.73-08-02  # one clean-path behavior + the coupled gz-check wiring (wrapper+step+classification+registry fail-closed on each other) — single indivisible unit
+  - REQ-0.0.73-08-03  # one grandfather mechanism (load set, skip grandfathered, fail NEW) + data file — single indivisible unit
+  - REQ-0.0.73-08-04  # one SUPPORT bundle (template stub + genuine NC + manpage) delivered with the scope, not separable labor tracked as distinct TASKs
+  - REQ-0.0.73-08-05  # one STRUCTURAL-FENCE assertion (parent-ADR BI #7); no labor below the REQ
 ---
 
 # OBPI-0.0.73-08-fidelity-presence-enforcement: Fidelity-Presence Enforcement
@@ -14,7 +20,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md`
 - **Checklist Item:** #8 — "Fidelity-presence enforcement (mechanizes Boundary Invariant #4) — `gz validate --fidelity-presence` fails closed (exit 3) on any non-pool ADR Decision lacking a parseable `## Fidelity Assertions` block; wired into `gz check`; pre-existing block-less ADRs grandfathered in an explicit data file; ADR template seeds the block stub; the ADR's own `## Fidelity Assertions` gains a row for the new verb; manpage + `gz cli audit` green; unit tests."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -55,16 +61,22 @@ floor flags a false positive at completion, discharge via
 ## Allowed Paths
 
 - `src/gzkit/governance/trust_audits/fidelity_presence.py` **CREATE** — the validator: walk non-pool ADR Decisions, flag any lacking a parseable `## Fidelity Assertions` block, minus grandfathered ids
-- `src/gzkit/commands/validate_cmd.py` — register the `--fidelity-presence` flag + scope dispatch (fail-closed exit 3), mirroring `--qc-binding`
+- `src/gzkit/cli/parser_maintenance.py` — register the `--fidelity-presence` argparse flag + `validate()` pass-through, mirroring `--qc-binding` (the argparse home; the plan mis-located this in validate_cmd.py)
+- `src/gzkit/commands/validate_cmd.py` — `_run_fidelity_presence_scope` handler + dispatch (fail-closed exit 3), mirroring `--qc-binding`
+- `src/gzkit/quality.py` — the `run_fidelity_presence_audit` QualityResult wrapper that shells the scope (the wrapper home; coupled to `_build_check_steps()`)
 - `src/gzkit/commands/quality.py` — wire the scope into `gz check` via `_build_check_steps()`
+- `tests/commands/test_skills.py` — add the new step's runner to the `gz check` mock-list (coupled surface: the aggregate-check test enumerates every step runner; DO IT RIGHT 1a)
 - `src/gzkit/qc_binding.py` — classify the new gz-check step in `_STEP_CLASSIFICATION` (coupled: a new check step is unclassified → `build_qc_registry()` KeyError until added)
 - `src/gzkit/governance/trust_audits/qc_binding.py` — register a genuine negative control for the new bound step (a block-less fixture ADR it MUST flag); it is NOT parked in `_NEGATIVE_CONTROL_DEBT`
 - `data/fidelity_presence_grandfather.json` **CREATE** — enumerates pre-existing block-less non-pool ADR ids (the acknowledged back-fill debt)
 - `.gzkit/templates/adr.md` — seed a `## Fidelity Assertions` stub so new ADRs carry the block
+- `src/gzkit/templates/adr.md` — generated package mirror of the canonical stub (written by `gz agent sync control-surfaces`, not hand-edited)
 - `docs/user/manpages/validate.md` — document the `--fidelity-presence` scope
 - `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md` — add a `## Fidelity Assertions` row for `gz validate --fidelity-presence` (verb + assertion land together so the gate stays green)
 - `tests/governance/test_fidelity_presence.py` **CREATE** — unit tests (fails-on-block-less, passes-on-compliant, grandfather honored, new-ADR fails closed, NC genuine)
+- `src/gzkit/traceability.py` — shared `@covers` decorator imported read-only by the REQ test (added by brief reconcile, attestor g0; matches sibling OBPI-0.0.73-02/04 convention)
 - `features/` **CREATE/EXTEND** — one `@REQ-0.0.73-08-01` behave scenario for the Heavy-lane BDD gate
+- `data/behave_coverage_waivers.json` — waiver entry for the non-`@REQ-08-01` REQs (08-02/03 unit-proven BEHAVIOR; 08-04 SUPPORT; 08-05 STRUCTURAL-FENCE), mirroring sibling OBPI-0.0.73-02/03; required by the `behave-req-tags` completion gate
 - `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/obpis/OBPI-0.0.73-08-fidelity-presence-enforcement.md` — this brief (evidence recording)
 
 ## Denied Paths
@@ -226,15 +238,19 @@ uv run gz validate --fidelity-presence
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+`uv run gz validate --fidelity-presence` exits 0 over the live corpus (101 grandfathered + ADR-0.0.73 compliant). An empty-grandfather run flags all 101 block-less ADRs, proving the gate fails closed; a NEW block-less ADR absent from the grandfather file fails closed (test_new_block_less_adr_not_in_grandfather_fails_closed). `gz adr fidelity ADR-0.0.73-verification-layer-binding-audit` now reports the OBPI-08 row PASS. Receipts: arb-step-unittest-051f37313b744c0ca4d326bba0405deb, arb-ruff-80b0098448304e6e88c698b768a364d5, arb-step-typecheck-91a92b89d83d44de901f845d2a8d71ac, arb-step-mkdocs-441a0d3bd41f47739a97821fbcb84621, arb-step-behave-15f623d63948408fbf0a6f80bffaa57c.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Mechanism: new `gz validate --fidelity-presence` scope walks non-pool ADR Decisions and fails closed (exit 3) on any lacking a parseable `## Fidelity Assertions` block, minus a grandfathered cutover set; wired into `gz check` via `_build_check_steps()`
+- Files created: src/gzkit/governance/trust_audits/fidelity_presence.py (validator); data/fidelity_presence_grandfather.json (101 grandfathered block-less ADRs); tests/governance/test_fidelity_presence.py (13 tests); features/fidelity_presence.feature + features/steps/fidelity_presence_steps.py (3 @REQ-0.0.73-08-01 scenarios)
+- Files modified: src/gzkit/cli/parser_maintenance.py (flag); src/gzkit/commands/validate_cmd.py (scope handler); src/gzkit/quality.py (wrapper); src/gzkit/commands/quality.py (gz-check step); src/gzkit/qc_binding.py (classification); src/gzkit/governance/trust_audits/qc_binding.py (genuine NC); .gzkit/templates/adr.md + src/gzkit/templates/adr.md mirror (stub); docs/user/manpages/validate.md; tests/commands/test_skills.py (coupled mock-list, DO IT RIGHT 1a); data/behave_coverage_waivers.json (waiver for non-@REQ-08-01 REQs)
+- Tests added: 13 unit + 3 behave; all green; coverage non-regressing
+- Date completed: 2026-06-19
+- Attestation status: operator-attested
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -242,12 +258,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — operator-attested at Stage 4 after reviewing the evidence packet: gz validate --fidelity-presence mechanizes ADR-0.0.73 Boundary Invariant #4, failing closed (exit 3) on any non-pool ADR Decision lacking a parseable ## Fidelity Assertions block, wired into gz check; 101 pre-existing block-less ADRs grandfathered (sensitivity-floor cutover precedent), ADR-0.0.73 compliant, new block-less ADRs fail closed; 13 unit tests + 3 @REQ-0.0.73-08-01 behave scenarios, 8/8 REQ coverage (behavior_uncovered_reqs=0), genuine negative control (not in _NEGATIVE_CONTROL_DEBT). Security-sensitivity: additive scope only, no existing security logic modified. All quality gates green (arb-ruff-80b0098448304e6e88c698b768a364d5, arb-step-typecheck-91a92b89d83d44de901f845d2a8d71ac, arb-step-unittest-051f37313b744c0ca4d326bba0405deb, arb-step-mkdocs-441a0d3bd41f47739a97821fbcb84621, arb-step-behave-15f623d63948408fbf0a6f80bffaa57c).
+- Date: 2026-06-19
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-19
 
 **Evidence Hash:** -

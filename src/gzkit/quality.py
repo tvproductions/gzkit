@@ -776,6 +776,18 @@ def run_qc_binding_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --qc-binding", cwd=project_root)
 
 
+def run_fidelity_presence_audit(project_root: Path) -> QualityResult:
+    """Run the fidelity-presence enforcement audit (ADR-0.0.73 / OBPI-0.0.73-08).
+
+    Fails closed (exit 3) when any non-pool ADR Decision lacks a parseable
+    ## Fidelity Assertions block (Boundary Invariant #4), minus the
+    grandfathered pre-existing block-less ADRs in
+    data/fidelity_presence_grandfather.json.
+    Recovery: uv run gz validate --fidelity-presence to see the offending ADRs.
+    """
+    return run_command("uv run gz validate --fidelity-presence", cwd=project_root)
+
+
 # Handoff-document enforcement cutover (OBPI-0.0.72-02). Register entries
 # authored on or after this instant MUST pass validate_handoff_document; the
 # pre-existing legacy entries under .gzkit/handoffs/ that predate this gate are

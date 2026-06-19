@@ -518,6 +518,29 @@ def _run_qc_binding_scope(project_root: Path, *, as_json: bool) -> None:
     raise SystemExit(3)
 
 
+def _run_fidelity_presence_scope(project_root: Path, *, as_json: bool) -> None:
+    """Dedicated handler for `gz validate --fidelity-presence` (exit 0/3)."""
+    from gzkit.governance.trust_audits.fidelity_presence import (  # noqa: PLC0415
+        audit_fidelity_presence,
+    )
+
+    errors = audit_fidelity_presence(project_root)
+    if as_json:
+        print(json.dumps([e.model_dump(exclude_none=True) for e in errors], indent=2))  # noqa: T201
+        raise SystemExit(3 if errors else 0)
+    if not errors:
+        console.print("[bold]Validated:[/bold] fidelity-presence\n")
+        console.print(
+            "[green]✓ Every non-pool ADR Decision carries a Fidelity Assertions block.[/green]"
+        )
+        raise SystemExit(0)
+    console.print("[bold]Validated:[/bold] fidelity-presence\n")
+    console.print(f"[red]❌ {len(errors)} block-less ADR Decision(s):[/red]\n")
+    for e in errors:
+        console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
+    raise SystemExit(3)
+
+
 def _run_unscoped_rules_scope(project_root: Path, *, as_json: bool, allowlist_only: bool) -> None:
     """Dedicated handler for `gz validate --unscoped-rules` (exit 0/2/3)."""
     from gzkit.validators.unscoped_rules import (  # noqa: PLC0415
@@ -1128,6 +1151,7 @@ def _dispatch_early_return_scopes(
     check_sensitivity: bool,
     sensitivity_explain: str | None,
     check_qc_binding: bool,
+    check_fidelity_presence: bool,
     as_json: bool,
 ) -> bool:
     """Handle scopes that own their full 0/2/3 lifecycle and return immediately.
@@ -1184,6 +1208,9 @@ def _dispatch_early_return_scopes(
         return True
     if check_qc_binding and not other_scopes_active:
         _run_qc_binding_scope(project_root, as_json=as_json)
+        return True
+    if check_fidelity_presence and not other_scopes_active:
+        _run_fidelity_presence_scope(project_root, as_json=as_json)
         return True
     return False
 
@@ -1262,6 +1289,7 @@ def validate(
     check_task_envelope_coherence: bool = False,
     check_closeout_proof: bool = False,
     check_qc_binding: bool = False,
+    check_fidelity_presence: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1366,6 +1394,7 @@ def validate(
         check_sensitivity=check_sensitivity,
         sensitivity_explain=sensitivity_explain,
         check_qc_binding=check_qc_binding,
+        check_fidelity_presence=check_fidelity_presence,
         as_json=as_json,
     ):
         return
