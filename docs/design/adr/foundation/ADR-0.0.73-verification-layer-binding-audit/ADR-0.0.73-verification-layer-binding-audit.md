@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.73-verification-layer-binding-audit
-status: Completed
+status: Validated
 kind: foundation
 semver: 0.0.73
 lane: heavy
