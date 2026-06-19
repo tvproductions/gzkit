@@ -13,7 +13,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--scenario-reachability] [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
-            [--advisor-proof-binding] [--lock-handoff-coupling] [--qc-binding] [--fidelity-presence] [--vendor-manifest]
+            [--advisor-proof-binding] [--lock-handoff-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--vendor-manifest]
             [--setpoint-coherence] [--rendition-freshness]
             [--rendition-floor-coherence]
             [--invariant-coherence] [--brief-reconcile] [--router-tables]
@@ -1115,6 +1115,42 @@ uv run gz validate --fidelity-presence --json
 |------|---------|----------|
 | 0 | Every non-pool ADR Decision carries a block (or is grandfathered) | — |
 | 3 | One or more non-pool ADR Decisions lack a parseable `## Fidelity Assertions` block | Add a block with at least one claim/command/expected-exit row (see the stub in `.gzkit/templates/adr.md`); re-run `uv run gz validate --fidelity-presence` |
+
+### `--waiver-ratchet`
+
+Waiver-ratchet honesty contract (ADR-0.0.73 / OBPI-0.0.73-09), mechanizing
+Boundary Invariant #8: every registered waiver/grandfather/baseline surface that
+gates a `gz check` step must carry exactly one honesty mechanism, so a waiver
+list cannot silently launder "not built yet" into "attested green". The three
+mechanisms are:
+
+- **closed-set lock** — every entry carries a non-empty lock field (e.g.
+  `added_under`); the set is frozen, new entries forbidden (proven by
+  `data/historical_self_close_waivers.json`).
+- **dated cutover** — a past ISO `cutover_date` after which the waiver no longer
+  applies (proven by `lock_handoff_coupling`).
+- **monotonic shrink-ratchet** — a committed `baseline_count` the live list may
+  only decrease against (proven by `tautological_test_baseline`).
+
+The scope reads `data/waiver_ratchet_registry.json` and fails closed (exit 3) on
+any registered surface lacking or violating its declared mechanism — including a
+shrink-ratchet list that GREW past its baseline. It also fails closed on an
+on-disk `data/*_waivers.json` / `*_grandfather*.json` file that is **not** in the
+registry (the silent-bypass an unratcheted surface is); register it with a
+mechanism, or list it under `excluded` with a rationale if it is genuinely not a
+gate-bearing waiver. The verb self-registers as a `bound` QC step subject to
+`--qc-binding` (no facade-of-the-facade). Wired into the default `gz check`
+pipeline.
+
+```bash
+uv run gz validate --waiver-ratchet
+uv run gz validate --waiver-ratchet --json
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every registered waiver surface carries a valid honesty mechanism | — |
+| 3 | A waiver surface is unratcheted, violates its mechanism (e.g. a shrink-ratchet list grew), or an on-disk waiver file is unregistered | Add/repair the mechanism in `data/waiver_ratchet_registry.json` (or remove the added waiver entries); re-run `uv run gz validate --waiver-ratchet` |
 
 ### `--closeout-proof`
 

@@ -1,8 +1,12 @@
 """QC-binding self-check for ADR-0.0.73 (OBPI-0.0.73-06).
 
-Verifies the ADR-0.0.73 recovery freeze:
+Verifies the ADR-0.0.73 self-check end state:
 - REQ-0.0.73-02-06/07: qc-binding has no acknowledged NC debt
-- full ADR fidelity still fails during recovery freeze on later OBPI rows
+- with the recovery complete (OBPI-02 repaired; OBPI-07 evaluator-substance,
+  OBPI-08 fidelity-presence, and OBPI-09 waiver-ratchet landed), the full ADR
+  fidelity gate now passes every row — the ADR passes its own check (Boundary
+  Invariant #5). The earlier assertion that the gate stayed red during the
+  freeze was inverted when the final recovery row (waiver-ratchet) went green.
 """
 
 from __future__ import annotations
@@ -25,7 +29,7 @@ _ADR_ID = "ADR-0.0.73-verification-layer-binding-audit"
 
 
 class TestQCBindingSelfCheck(unittest.TestCase):
-    """Self-check: OBPI-02 is repaired; later recovery rows remain red."""
+    """Self-check: OBPI-02 repaired; recovery complete; the ADR passes its own check."""
 
     @covers("REQ-0.0.73-02-07")
     def test_audit_qc_binding_passes_with_no_negative_control_debt(self) -> None:
@@ -33,7 +37,12 @@ class TestQCBindingSelfCheck(unittest.TestCase):
         self.assertEqual(errors, [], [e.message for e in errors])
         self.assertEqual(_NEGATIVE_CONTROL_DEBT, frozenset())
 
-    def test_fidelity_gate_fails_while_recovery_rows_are_red(self) -> None:
+    def test_fidelity_gate_passes_now_recovery_is_complete(self) -> None:
+        # Boundary Invariant #5: with OBPI-07 (evaluator substance), OBPI-08
+        # (fidelity-presence), and OBPI-09 (waiver-ratchet) landed and OBPI-02
+        # repaired, every Fidelity Assertion row is green — the ADR passes its
+        # own check. (Inverted from the recovery-freeze guard when the final red
+        # row, waiver-ratchet, went green.)
         result = subprocess.run(  # noqa: S603
             [sys.executable, "-m", "gzkit", "adr", "fidelity", _ADR_ID],
             capture_output=True,
@@ -41,11 +50,8 @@ class TestQCBindingSelfCheck(unittest.TestCase):
             check=False,
         )
         output = result.stdout.decode() + result.stderr.decode()
-        self.assertNotEqual(result.returncode, 0, output)
-        self.assertIn(
-            "uv run gz validate --fidelity-presence",
-            output,
-        )
+        self.assertEqual(result.returncode, 0, output)
+        self.assertIn("uv run gz validate --waiver-ratchet", output)
 
 
 class TestNegativeControlHonestAccounting(unittest.TestCase):

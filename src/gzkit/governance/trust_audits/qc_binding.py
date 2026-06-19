@@ -601,6 +601,24 @@ def _fidelity_presence_negative_control() -> int:
         return _genuine_when_errors(audit_fidelity_presence(root, grandfather=frozenset()))
 
 
+def _waiver_ratchet_negative_control() -> int:
+    from gzkit.governance.trust_audits.waiver_ratchet import (  # noqa: PLC0415
+        audit_waiver_ratchet,
+    )
+
+    with _tmp_root() as tmp:
+        root = Path(tmp)
+        # A surface grown past its committed shrink-ratchet baseline: the audit
+        # MUST flag it. A step that passes this fixture is theater.
+        _write(
+            root / "data" / "waiver_ratchet_registry.json",
+            '{"surfaces":[{"data_file":"data/bad_waivers.json",'
+            '"mechanism":"shrink-ratchet","entries_path":"waivers","baseline_count":0}]}',
+        )
+        _write(root / "data" / "bad_waivers.json", '{"waivers":["grew","past","baseline"]}')
+        return _genuine_when_errors(audit_waiver_ratchet(root))
+
+
 # ---------------------------------------------------------------------------
 # Error builder
 # ---------------------------------------------------------------------------
@@ -807,6 +825,7 @@ _PRODUCTION_NEGATIVE_CONTROLS: dict[str, Callable[[], int]] = {
     "line-endings": _line_endings_negative_control,
     "dispatch-attestation": _dispatch_attestation_negative_control,
     "fidelity-presence": _fidelity_presence_negative_control,
+    "waiver-ratchet": _waiver_ratchet_negative_control,
 }
 
 for _step_id, _negative_control in _PRODUCTION_NEGATIVE_CONTROLS.items():

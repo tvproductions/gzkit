@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.0.73-09-waiver-ratchet-honesty-contract",
+  "parent_adr": "ADR-0.0.73-verification-layer-binding-audit",
+  "lane": "heavy",
+  "entry": "full",
+  "execution_mode": "normal",
+  "current_stage": "implement",
+  "started_at": "2026-06-19T11:06:44Z",
+  "updated_at": "2026-06-19T11:06:44Z",
+  "receipt_state": "pass",
+  "nonce": "7519ac350d16ede2496a6895528c4288",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz obpi pipeline OBPI-0.0.73-09-waiver-ratchet-honesty-contract --from=verify",
+  "resume_point": "verify"
+}

@@ -541,6 +541,29 @@ def _run_fidelity_presence_scope(project_root: Path, *, as_json: bool) -> None:
     raise SystemExit(3)
 
 
+def _run_waiver_ratchet_scope(project_root: Path, *, as_json: bool) -> None:
+    """Dedicated handler for `gz validate --waiver-ratchet` (exit 0/3)."""
+    from gzkit.governance.trust_audits.waiver_ratchet import (  # noqa: PLC0415
+        audit_waiver_ratchet,
+    )
+
+    errors = audit_waiver_ratchet(project_root)
+    if as_json:
+        print(json.dumps([e.model_dump(exclude_none=True) for e in errors], indent=2))  # noqa: T201
+        raise SystemExit(3 if errors else 0)
+    if not errors:
+        console.print("[bold]Validated:[/bold] waiver-ratchet\n")
+        console.print(
+            "[green]✓ Every registered waiver surface carries an honesty mechanism.[/green]"
+        )
+        raise SystemExit(0)
+    console.print("[bold]Validated:[/bold] waiver-ratchet\n")
+    console.print(f"[red]❌ {len(errors)} unratcheted waiver surface(s):[/red]\n")
+    for e in errors:
+        console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
+    raise SystemExit(3)
+
+
 def _run_unscoped_rules_scope(project_root: Path, *, as_json: bool, allowlist_only: bool) -> None:
     """Dedicated handler for `gz validate --unscoped-rules` (exit 0/2/3)."""
     from gzkit.validators.unscoped_rules import (  # noqa: PLC0415
@@ -1152,6 +1175,7 @@ def _dispatch_early_return_scopes(
     sensitivity_explain: str | None,
     check_qc_binding: bool,
     check_fidelity_presence: bool,
+    check_waiver_ratchet: bool,
     as_json: bool,
 ) -> bool:
     """Handle scopes that own their full 0/2/3 lifecycle and return immediately.
@@ -1211,6 +1235,9 @@ def _dispatch_early_return_scopes(
         return True
     if check_fidelity_presence and not other_scopes_active:
         _run_fidelity_presence_scope(project_root, as_json=as_json)
+        return True
+    if check_waiver_ratchet and not other_scopes_active:
+        _run_waiver_ratchet_scope(project_root, as_json=as_json)
         return True
     return False
 
@@ -1290,6 +1317,7 @@ def validate(
     check_closeout_proof: bool = False,
     check_qc_binding: bool = False,
     check_fidelity_presence: bool = False,
+    check_waiver_ratchet: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1395,6 +1423,7 @@ def validate(
         sensitivity_explain=sensitivity_explain,
         check_qc_binding=check_qc_binding,
         check_fidelity_presence=check_fidelity_presence,
+        check_waiver_ratchet=check_waiver_ratchet,
         as_json=as_json,
     ):
         return

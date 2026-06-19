@@ -384,6 +384,7 @@ class TestSkillCommands(unittest.TestCase):
                 "gzkit.quality.run_lock_handoff_coupling_audit",
                 "gzkit.quality.run_qc_binding_audit",
                 "gzkit.quality.run_fidelity_presence_audit",
+                "gzkit.quality.run_waiver_ratchet_audit",
                 "gzkit.quality.run_preflight",
                 "gzkit.quality.run_surface_fidelity_audit",
                 "gzkit.quality.run_line_endings_audit",

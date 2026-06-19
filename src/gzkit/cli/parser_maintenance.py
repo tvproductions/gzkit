@@ -619,6 +619,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="ADR Fidelity Assertions presence gate (ADR-0.0.73). Exit 0: ok; 3: missing.",
     )
     p_validate.add_argument(
+        "--waiver-ratchet",
+        dest="check_waiver_ratchet",
+        action="store_true",
+        default=False,
+        help="Waiver-ratchet honesty gate (ADR-0.0.73). Exit 0: ratcheted; 3: unratcheted.",
+    )
+    p_validate.add_argument(
         "--closeout-proof",
         dest="check_closeout_proof",
         action="store_true",
@@ -831,6 +838,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_lock_handoff_coupling=a.check_lock_handoff_coupling,
             check_qc_binding=a.check_qc_binding,
             check_fidelity_presence=a.check_fidelity_presence,
+            check_waiver_ratchet=a.check_waiver_ratchet,
             check_invariant_coherence=a.check_invariant_coherence,
             check_brief_reconcile=a.check_brief_reconcile,
             check_router_tables=a.check_router_tables,

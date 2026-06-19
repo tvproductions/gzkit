@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "rationale": "ADR-0.0.73 Boundary Invariant #8: every gate-bearing waiver/grandfather/baseline surface declares exactly one honesty mechanism (closed-set-lock | dated-cutover | shrink-ratchet) so it cannot launder 'not built' into 'attested green'. Shrink-ratchet baselines were committed at the current entry count on 2026-06-19 (OBPI-0.0.73-09); a list may only decrease against its baseline. An on-disk *_waivers/*_grandfather* data file absent from this registry fails closed (silent-bypass).",
+  "surfaces": [
+    {
+      "data_file": "data/behave_coverage_waivers.json",
+      "gates_step": "BDD coverage (gz validate --behave-req-tags)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "waivers",
+      "baseline_count": 522
+    },
+    {
+      "data_file": "data/historical_self_close_waivers.json",
+      "gates_step": "receipt-shape / self-close (gz validate --receipt-shape)",
+      "mechanism": "closed-set-lock",
+      "entries_path": "waivers",
+      "lock_field": "added_under"
+    },
+    {
+      "data_file": "data/sensitivity_floor_grandfather.json",
+      "gates_step": "sensitivity floor (gz validate --sensitivity)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "grandfathered_briefs",
+      "baseline_count": 87
+    },
+    {
+      "data_file": "data/fidelity_presence_grandfather.json",
+      "gates_step": "fidelity presence (gz validate --fidelity-presence)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "grandfathered_adrs",
+      "baseline_count": 101
+    },
+    {
+      "data_file": "data/tautological_test_waivers.json",
+      "gates_step": "tautological-test detection (gz validate --tautological-tests)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "file_waivers",
+      "baseline_count": 2
+    },
+    {
+      "data_file": "data/tautological_test_baseline.json",
+      "gates_step": "tautological-test baseline (gz validate --tautological-tests)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "operations",
+      "baseline_count": 91
+    },
+    {
+      "data_file": "data/interview_transcript_waivers.json",
+      "gates_step": "interview transcript (gz validate --interview-transcript)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "waivers",
+      "baseline_count": 44
+    },
+    {
+      "data_file": "data/surface_weight_waivers.json",
+      "gates_step": "surface weight (gz validate --surface-weight)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "",
+      "baseline_count": 6
+    },
+    {
+      "data_file": "data/req_kind_grandfathering.json",
+      "gates_step": "req-kind discipline (gz validate --req-kind-discipline)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "",
+      "baseline_count": 3
+    },
+    {
+      "data_file": "data/chores_layout_waivers.json",
+      "gates_step": "chores layout (gz validate --chores-layout)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "",
+      "baseline_count": 0
+    }
+  ],
+  "excluded": [
+    "data/distribution_baseline_manifest.json"
+  ]
+}

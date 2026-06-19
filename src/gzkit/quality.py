@@ -788,6 +788,18 @@ def run_fidelity_presence_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --fidelity-presence", cwd=project_root)
 
 
+def run_waiver_ratchet_audit(project_root: Path) -> QualityResult:
+    """Run the waiver-ratchet honesty audit (ADR-0.0.73 / OBPI-0.0.73-09).
+
+    Fails closed (exit 3) when any registered waiver/grandfather/baseline surface
+    lacks or violates its declared honesty mechanism (closed-set lock, dated
+    cutover, or monotonic shrink-ratchet), or when an on-disk waiver data file is
+    not registered (the silent-bypass). Mechanizes Boundary Invariant #8.
+    Recovery: uv run gz validate --waiver-ratchet to see the offending surfaces.
+    """
+    return run_command("uv run gz validate --waiver-ratchet", cwd=project_root)
+
+
 # Handoff-document enforcement cutover (OBPI-0.0.72-02). Register entries
 # authored on or after this instant MUST pass validate_handoff_document; the
 # pre-existing legacy entries under .gzkit/handoffs/ that predate this gate are

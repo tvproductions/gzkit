@@ -318,6 +318,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_task_envelope_coherence_audit,
         run_tautological_test_audit,
         run_unscoped_rules_audit,
+        run_waiver_ratchet_audit,
     )
 
     return [
@@ -351,6 +352,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Lock-handoff coupling", run_lock_handoff_coupling_audit),
         ("QC binding", run_qc_binding_audit),
         ("Fidelity presence", run_fidelity_presence_audit),
+        ("Waiver ratchet", run_waiver_ratchet_audit),
         ("Handoff documents", run_handoff_document_audit),
         ("Preflight", run_preflight),
         ("Surface fidelity", run_surface_fidelity_audit),
