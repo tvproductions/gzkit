@@ -61,16 +61,7 @@ class TestKindInvarianceFlag(unittest.TestCase):
                 return_value=Path("/fake/root"),
             ),
         ):
-            errors = _collect_errors(
-                Path("/fake/root"),
-                check_manifest=False,
-                check_documents=False,
-                check_surfaces=False,
-                check_ledger=False,
-                check_instructions=False,
-                check_briefs=False,
-                check_kind_invariance=True,
-            )
+            errors = _collect_errors(Path("/fake/root"), {"kind_invariance": True})
 
         mock_audit.assert_called_once_with(Path("/fake/root"))
         self.assertIn(sentinel_error, errors)
@@ -122,16 +113,7 @@ class TestReceiptShapeFlag(unittest.TestCase):
                 return_value=Path("/fake/root"),
             ),
         ):
-            errors = _collect_errors(
-                Path("/fake/root"),
-                check_manifest=False,
-                check_documents=False,
-                check_surfaces=False,
-                check_ledger=False,
-                check_instructions=False,
-                check_briefs=False,
-                check_receipt_shape=True,
-            )
+            errors = _collect_errors(Path("/fake/root"), {"receipt_shape": True})
 
         mock_audit.assert_called_once_with(Path("/fake/root"))
         self.assertIn(sentinel_error, errors)

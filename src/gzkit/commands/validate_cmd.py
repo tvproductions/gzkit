@@ -3,7 +3,10 @@
 import json
 import re
 from collections.abc import Callable
+from functools import partial
 from pathlib import Path
+from types import ModuleType
+from typing import NamedTuple
 
 from pydantic import ValidationError as PydanticValidationError
 
@@ -40,6 +43,34 @@ from gzkit.validate import (
     validate_surfaces,
 )
 from gzkit.validate_pkg.document import is_adr_shape_grandfathered, is_pool_adr_path
+
+
+class _ScopeEntry(NamedTuple):
+    """One validator scope's dispatch facts (Sanity-Reduction #618).
+
+    ``VALIDATOR_REGISTRY`` is the single source from which every validate
+    dispatch surface derives — the runner dicts, the tier split in
+    ``_collect_errors``, the ``_resolve_scopes`` lists, and ``validate()``'s
+    ``_other_scopes_active`` predicate. The step-1 fence
+    (``tests/cli/test_validate_dispatch_consistency.py``) pins the signature ↔
+    runner ↔ parser-lambda parity these now answer to.
+    """
+
+    stem: str
+    tier: str  # "default" (no-flag `gz check`) | "explicit" (flag-gated)
+    in_other_scopes: bool  # counts toward validate()'s _other_scopes_active predicate
+    run: Callable[[Path, str | None], list[ValidationError]]
+
+
+def _ta() -> ModuleType:
+    """Lazy ``trust_audits`` accessor.
+
+    Preserves the module-load circular-import guard the dispatch runners have
+    always relied on (``taxonomy``/``closeout_proof`` back-reference this module).
+    """
+    from gzkit.governance import trust_audits  # noqa: PLC0415
+
+    return trust_audits
 
 
 def _validate_tautological_test_audit(project_root: Path) -> list[ValidationError]:
@@ -142,181 +173,251 @@ def _validate_decomposition(project_root: Path) -> list[ValidationError]:
 
 def _collect_errors(
     project_root: Path,
-    check_manifest: bool,
-    check_documents: bool,
-    check_surfaces: bool,
-    check_ledger: bool,
-    check_instructions: bool,
-    check_briefs: bool,
-    check_personas: bool = False,
-    check_interviews: bool = False,
-    check_decomposition: bool = False,
-    check_requirements: bool = False,
-    check_commit_trailers: bool = False,
-    check_frontmatter: bool = False,
-    check_version: bool = False,
-    check_type_ignores: bool = False,
-    check_cli_alignment: bool = False,
-    check_event_handlers: bool = False,
-    check_validator_fields: bool = False,
-    check_utf8_prefix: bool = False,
-    check_test_tiers: bool = False,
-    check_pydantic_models: bool = False,
-    check_class_size: bool = False,
-    check_version_release: bool = False,
-    check_pool_adr_isolation: bool = False,
-    check_behave_req_tags: bool = False,
-    check_skill_alignment: bool = False,
-    check_advisory_scorecard: bool = False,
-    check_complexity_doctrine_links: bool = False,
-    check_complexity_thresholds: bool = False,
-    check_reconcile_freshness: bool = False,
-    check_insights_shape: bool = False,
-    check_instructions_files_budget: bool = False,
-    check_agents_md_map_conformance: bool = False,
-    check_adr_status_fresh: bool = False,
-    check_session_green_gate: bool = False,
-    check_orientation_freshness: bool = False,
-    check_taxonomy: bool = False,
-    check_brief_headings: bool = False,
-    check_brief_cross_references: bool = False,
-    check_brief_demo_section: bool = False,
-    check_chores_layout: bool = False,
-    check_unscoped_rules: bool = False,
-    check_sensitivity: bool = False,
-    check_doc_surface_parity: bool = False,
-    check_absorption_duplicates: bool = False,
-    check_orphaned_implementation: bool = False,
-    check_evaluation_justify_binding: str | None = None,
-    check_intrinsic_attestation: bool = False,
-    check_advisor_proof_binding: bool = False,
-    check_lock_handoff_coupling: bool = False,
-    check_distribution: bool = False,
-    check_bullet_retention: bool = False,
-    check_surface_weight: bool = False,
-    check_pointer_anchors: bool = False,
-    check_scenario_reachability: bool = False,
-    check_surface_fidelity: bool = False,
-    check_vendor_manifest: bool = False,
-    check_kind_invariance: bool = False,
-    check_receipt_shape: bool = False,
-    check_invariant_coherence: bool = False,
-    check_brief_reconcile: bool = False,
-    check_router_tables: bool = False,
-    check_req_kind_discipline: bool = False,
-    check_brief_command_shape: bool = False,
-    check_tautological_test_audit: bool = False,
-    check_setpoint_coherence: bool = False,
-    check_rendition_freshness: bool = False,
-    check_rendition_floor_coherence: bool = False,
-    check_task_envelope_coherence: bool = False,
-    check_line_endings: bool = False,
-    check_closeout_proof: bool = False,
+    checks: dict[str, bool],
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
-    """Collect validation errors across all requested check types."""
-    # Scopes included in "run_all" (no flags = run these)
-    default_scopes: dict[str, bool] = {
-        "manifest": check_manifest,
-        "documents": check_documents,
-        "surfaces": check_surfaces,
-        "ledger": check_ledger,
-        "instructions": check_instructions,
-        "briefs": check_briefs,
-        "personas": check_personas,
-        "frontmatter": check_frontmatter,
-        "version": check_version,
-        "taxonomy": check_taxonomy,
-        "invariant_coherence": check_invariant_coherence,
+    """Collect validation errors for the requested scopes.
+
+    ``checks`` maps scope stem -> requested flag (the param->stem bridge built by
+    ``validate()``). The default/explicit tier split is derived from
+    ``VALIDATOR_REGISTRY`` so the tiers can never drift from the runners.
+    """
+    default_scopes = {
+        e.stem: checks.get(e.stem, False) for e in VALIDATOR_REGISTRY if e.tier == "default"
     }
-    # Scopes that only run when explicitly requested
-    explicit_scopes: dict[str, bool] = {
-        "line_endings": check_line_endings,
-        "interviews": check_interviews,
-        "decomposition": check_decomposition,
-        "requirements": check_requirements,
-        "commit_trailers": check_commit_trailers,
-        "type_ignores": check_type_ignores,
-        "cli_alignment": check_cli_alignment,
-        "event_handlers": check_event_handlers,
-        "validator_fields": check_validator_fields,
-        "utf8_prefix": check_utf8_prefix,
-        "test_tiers": check_test_tiers,
-        "pydantic_models": check_pydantic_models,
-        "class_size": check_class_size,
-        "version_release": check_version_release,
-        "pool_adr_isolation": check_pool_adr_isolation,
-        "behave_req_tags": check_behave_req_tags,
-        "skill_alignment": check_skill_alignment,
-        "advisory_scorecard": check_advisory_scorecard,
-        "complexity_doctrine_links": check_complexity_doctrine_links,
-        "complexity_thresholds": check_complexity_thresholds,
-        "reconcile_freshness": check_reconcile_freshness,
-        "insights_shape": check_insights_shape,
-        "instructions_files_budget": check_instructions_files_budget,
-        "agents_md_map_conformance": check_agents_md_map_conformance,
-        "adr_status_fresh": check_adr_status_fresh,
-        "session_green_gate": check_session_green_gate,
-        "orientation_freshness": check_orientation_freshness,
-        "brief_headings": check_brief_headings,
-        "brief_cross_references": check_brief_cross_references,
-        "brief_demo_section": check_brief_demo_section,
-        "chores_layout": check_chores_layout,
-        "unscoped_rules": check_unscoped_rules,
-        "sensitivity": check_sensitivity,
-        "doc_surface_parity": check_doc_surface_parity,
-        "absorption_duplicates": check_absorption_duplicates,
-        "orphaned_implementation": check_orphaned_implementation,
-        "evaluation_justify_binding": check_evaluation_justify_binding is not None,
-        "intrinsic_attestation": check_intrinsic_attestation,
-        "advisor_proof_binding": check_advisor_proof_binding,
-        "lock_handoff_coupling": check_lock_handoff_coupling,
-        "distribution": check_distribution,
-        "bullet_retention": check_bullet_retention,
-        "surface_weight": check_surface_weight,
-        "pointer_anchors": check_pointer_anchors,
-        "scenario_reachability": check_scenario_reachability,
-        "surface_fidelity": check_surface_fidelity,
-        "vendor_manifest": check_vendor_manifest,
-        "setpoint_coherence": check_setpoint_coherence,
-        "rendition_freshness": check_rendition_freshness,
-        "rendition_floor_coherence": check_rendition_floor_coherence,
-        "kind_invariance": check_kind_invariance,
-        "receipt_shape": check_receipt_shape,
-        "brief_reconcile": check_brief_reconcile,
-        "router_tables": check_router_tables,
-        "req_kind_discipline": check_req_kind_discipline,
-        "brief_command_shape": check_brief_command_shape,
-        "tautological_test_audit": check_tautological_test_audit,
-        "task_envelope_coherence": check_task_envelope_coherence,
-        "closeout_proof": check_closeout_proof,
+    explicit_scopes = {
+        e.stem: checks.get(e.stem, False) for e in VALIDATOR_REGISTRY if e.tier == "explicit"
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
-
     return _run_scope_checks(
         project_root, default_scopes, explicit_scopes, run_all, frontmatter_adr=frontmatter_adr
     )
+
+
+# Single source of validate dispatch (Sanity-Reduction #618). Order is load-bearing:
+# default-tier order is the no-flag error-collection order; the step-1 fence
+# (tests/cli/test_validate_dispatch_consistency.py) pins signature/runner/parser
+# parity against this, and tests/cli/test_validate_registry_parity.py pins the
+# tier split and the _other_scopes_active membership against the pre-collapse truth.
+VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
+    _ScopeEntry(
+        "manifest",
+        "default",
+        True,
+        lambda r, _f: list(validate_manifest(r / ".gzkit" / "manifest.json")),
+    ),
+    _ScopeEntry("surfaces", "default", True, lambda r, _f: list(validate_surfaces(r))),
+    _ScopeEntry(
+        "ledger",
+        "default",
+        True,
+        lambda r, _f: list(validate_ledger(r / ".gzkit" / "ledger.jsonl")),
+    ),
+    _ScopeEntry("instructions", "default", True, lambda r, _f: list(audit_instructions(r))),
+    _ScopeEntry("briefs", "default", True, lambda r, _f: _validate_obpi_briefs(r)),
+    _ScopeEntry("documents", "default", True, lambda r, _f: _validate_manifest_documents(r)),
+    _ScopeEntry("personas", "default", True, lambda r, _f: _validate_personas(r)),
+    _ScopeEntry(
+        "frontmatter",
+        "default",
+        True,
+        lambda r, fa: list(validate_frontmatter_coherence(r, adr_scope=fa)),
+    ),
+    _ScopeEntry("version", "default", True, lambda r, _f: list(validate_version_consistency(r))),
+    _ScopeEntry("taxonomy", "default", True, lambda r, _f: _taxonomy_runner(r)),
+    _ScopeEntry(
+        "invariant_coherence", "default", False, lambda r, _f: _invariant_coherence_runner(r)
+    ),
+    _ScopeEntry("interviews", "explicit", True, lambda r, _f: _validate_interviews(r)),
+    _ScopeEntry("decomposition", "explicit", True, lambda r, _f: _validate_decomposition(r)),
+    _ScopeEntry("requirements", "explicit", True, lambda r, _f: _validate_requirements(r)),
+    _ScopeEntry(
+        "commit_trailers",
+        "explicit",
+        True,
+        lambda r, _f: _validate_commit_trailers(r) + _validate_eval_feedback_trailer(r),
+    ),
+    _ScopeEntry("type_ignores", "explicit", True, lambda r, _f: _ta().audit_type_ignores(r)),
+    _ScopeEntry("cli_alignment", "explicit", True, lambda r, _f: _ta().audit_cli_alignment(r)),
+    _ScopeEntry("event_handlers", "explicit", True, lambda r, _f: _ta().audit_event_handlers(r)),
+    _ScopeEntry(
+        "validator_fields", "explicit", True, lambda r, _f: _ta().audit_validator_fields(r)
+    ),
+    _ScopeEntry("utf8_prefix", "explicit", True, lambda r, _f: _ta().audit_utf8_prefix(r)),
+    _ScopeEntry("line_endings", "explicit", True, lambda r, _f: _ta().audit_line_endings(r)),
+    _ScopeEntry("test_tiers", "explicit", True, lambda r, _f: _ta().audit_test_tiers(r)),
+    _ScopeEntry("pydantic_models", "explicit", True, lambda r, _f: _ta().audit_pydantic_models(r)),
+    _ScopeEntry("class_size", "explicit", True, lambda r, _f: _ta().audit_class_size(r)),
+    _ScopeEntry("version_release", "explicit", True, lambda r, _f: _ta().audit_version_release(r)),
+    _ScopeEntry(
+        "pool_adr_isolation", "explicit", True, lambda r, _f: _ta().audit_pool_adr_isolation(r)
+    ),
+    _ScopeEntry("behave_req_tags", "explicit", True, lambda r, _f: _ta().audit_behave_req_tags(r)),
+    _ScopeEntry("skill_alignment", "explicit", True, lambda r, _f: _ta().audit_skill_alignment(r)),
+    _ScopeEntry(
+        "advisory_scorecard", "explicit", True, lambda r, _f: _ta().audit_advisory_scorecard(r)
+    ),
+    _ScopeEntry(
+        "complexity_doctrine_links",
+        "explicit",
+        True,
+        lambda r, _f: _ta().validate_complexity_doctrine_links(r),
+    ),
+    _ScopeEntry(
+        "complexity_thresholds",
+        "explicit",
+        True,
+        lambda r, _f: _ta().validate_complexity_thresholds(r),
+    ),
+    _ScopeEntry(
+        "reconcile_freshness", "explicit", True, lambda r, _f: _ta().audit_reconcile_freshness(r)
+    ),
+    _ScopeEntry("insights_shape", "explicit", True, lambda r, _f: _ta().audit_insights_shape(r)),
+    _ScopeEntry(
+        "instructions_files_budget",
+        "explicit",
+        True,
+        lambda r, _f: _ta().audit_instructions_files_budget(r),
+    ),
+    _ScopeEntry(
+        "agents_md_map_conformance",
+        "explicit",
+        True,
+        lambda r, _f: _ta().audit_agents_md_map_conformance(r),
+    ),
+    _ScopeEntry(
+        "adr_status_fresh", "explicit", True, lambda r, _f: _ta().audit_adr_status_fresh(r)
+    ),
+    _ScopeEntry(
+        "session_green_gate", "explicit", False, lambda r, _f: _ta().audit_session_green_gate(r)
+    ),
+    _ScopeEntry(
+        "orientation_freshness",
+        "explicit",
+        True,
+        lambda r, _f: _ta().audit_orientation_freshness(r),
+    ),
+    _ScopeEntry("brief_headings", "explicit", True, lambda r, _f: _ta().audit_brief_headings(r)),
+    _ScopeEntry(
+        "brief_cross_references",
+        "explicit",
+        True,
+        lambda r, _f: _ta().audit_brief_cross_references(r),
+    ),
+    _ScopeEntry(
+        "brief_demo_section", "explicit", True, lambda r, _f: _ta().audit_brief_demo_section(r)
+    ),
+    _ScopeEntry("chores_layout", "explicit", True, lambda r, _f: _ta().audit_chores_layout(r)),
+    _ScopeEntry("unscoped_rules", "explicit", False, lambda r, _f: _unscoped_rules_runner(r)),
+    _ScopeEntry("sensitivity", "explicit", False, lambda r, _f: _sensitivity_umbrella_runner(r)),
+    _ScopeEntry(
+        "doc_surface_parity", "explicit", True, lambda r, _f: _ta().audit_doc_surface_parity(r)
+    ),
+    _ScopeEntry(
+        "absorption_duplicates",
+        "explicit",
+        True,
+        lambda r, _f: _ta().audit_absorption_duplicates(r),
+    ),
+    _ScopeEntry(
+        "orphaned_implementation",
+        "explicit",
+        True,
+        lambda r, _f: _ta().audit_orphaned_implementation(r),
+    ),
+    _ScopeEntry(
+        "evaluation_justify_binding",
+        "explicit",
+        False,
+        lambda r, _f: _evaluation_justify_binding_runner(r, None),
+    ),
+    _ScopeEntry(
+        "intrinsic_attestation",
+        "explicit",
+        False,
+        lambda r, _f: _ta().validate_intrinsic_attestation(r),
+    ),
+    _ScopeEntry(
+        "advisor_proof_binding",
+        "explicit",
+        False,
+        lambda r, _f: _ta().validate_advisor_proof_binding(r),
+    ),
+    _ScopeEntry(
+        "lock_handoff_coupling",
+        "explicit",
+        False,
+        lambda r, _f: _ta().validate_lock_handoff_coupling(r),
+    ),
+    _ScopeEntry("distribution", "explicit", True, lambda r, _f: _ta().audit_distribution(r)),
+    _ScopeEntry(
+        "bullet_retention", "explicit", True, lambda r, _f: _ta().validate_bullet_retention(r)
+    ),
+    _ScopeEntry("surface_weight", "explicit", True, lambda r, _f: _ta().validate_surface_weight(r)),
+    _ScopeEntry(
+        "pointer_anchors", "explicit", True, lambda r, _f: _ta().validate_pointer_integrity(r)
+    ),
+    _ScopeEntry(
+        "scenario_reachability",
+        "explicit",
+        True,
+        lambda r, _f: _ta().validate_scenario_reachability(r),
+    ),
+    _ScopeEntry(
+        "surface_fidelity", "explicit", True, lambda r, _f: _ta().validate_surface_fidelity(r)
+    ),
+    _ScopeEntry(
+        "vendor_manifest", "explicit", True, lambda r, _f: _ta().validate_vendor_manifest(r)
+    ),
+    _ScopeEntry(
+        "setpoint_coherence", "explicit", True, lambda r, _f: _ta().validate_setpoint_coherence(r)
+    ),
+    _ScopeEntry(
+        "rendition_freshness", "explicit", True, lambda r, _f: _rendition_freshness_runner(r)
+    ),
+    _ScopeEntry(
+        "rendition_floor_coherence",
+        "explicit",
+        True,
+        lambda r, _f: _rendition_floor_coherence_runner(r),
+    ),
+    _ScopeEntry("kind_invariance", "explicit", True, lambda r, _f: _ta().audit_kind_invariance(r)),
+    _ScopeEntry("receipt_shape", "explicit", True, lambda r, _f: _ta().audit_receipt_shape(r)),
+    _ScopeEntry(
+        "brief_reconcile", "explicit", True, lambda r, _f: _ta().validate_brief_reconcile(r)
+    ),
+    _ScopeEntry("router_tables", "explicit", True, lambda r, _f: _ta().audit_router_tables(r)),
+    _ScopeEntry(
+        "req_kind_discipline", "explicit", True, lambda r, _f: _validate_req_kind_discipline(r)
+    ),
+    _ScopeEntry(
+        "brief_command_shape", "explicit", True, lambda r, _f: _ta().audit_brief_command_shape(r)
+    ),
+    _ScopeEntry(
+        "tautological_test_audit",
+        "explicit",
+        True,
+        lambda r, _f: _validate_tautological_test_audit(r),
+    ),
+    _ScopeEntry(
+        "task_envelope_coherence",
+        "explicit",
+        True,
+        lambda r, _f: _validate_task_envelope_coherence(r),
+    ),
+    _ScopeEntry("closeout_proof", "explicit", True, lambda r, _f: _ta().validate_closeout_proof(r)),
+)
 
 
 def _default_scope_runners(
     project_root: Path,
     frontmatter_adr: str | None,
 ) -> dict[str, Callable[[], list[ValidationError]]]:
-    """Return runners for scopes that activate when no explicit flag is set."""
+    """Runners for scopes that activate when no explicit flag is set (registry-derived)."""
     return {
-        "manifest": lambda: list(validate_manifest(project_root / ".gzkit" / "manifest.json")),
-        "surfaces": lambda: list(validate_surfaces(project_root)),
-        "ledger": lambda: list(validate_ledger(project_root / ".gzkit" / "ledger.jsonl")),
-        "instructions": lambda: list(audit_instructions(project_root)),
-        "briefs": lambda: _validate_obpi_briefs(project_root),
-        "documents": lambda: _validate_manifest_documents(project_root),
-        "personas": lambda: _validate_personas(project_root),
-        "frontmatter": lambda: list(
-            validate_frontmatter_coherence(project_root, adr_scope=frontmatter_adr)
-        ),
-        "version": lambda: list(validate_version_consistency(project_root)),
-        "taxonomy": lambda: _taxonomy_runner(project_root),
-        "invariant_coherence": lambda: _invariant_coherence_runner(project_root),
+        e.stem: partial(e.run, project_root, frontmatter_adr)
+        for e in VALIDATOR_REGISTRY
+        if e.tier == "default"
     }
 
 
@@ -351,79 +452,11 @@ def _rendition_floor_coherence_runner(project_root: Path) -> list[ValidationErro
 def _explicit_scope_runners(
     project_root: Path,
 ) -> dict[str, Callable[[], list[ValidationError]]]:
-    """Return runners for scopes that only activate when explicitly requested."""
-    from gzkit.governance import trust_audits  # noqa: PLC0415
-
+    """Runners for scopes that only activate when explicitly requested (registry-derived)."""
     return {
-        "interviews": lambda: _validate_interviews(project_root),
-        "decomposition": lambda: _validate_decomposition(project_root),
-        "requirements": lambda: _validate_requirements(project_root),
-        "commit_trailers": lambda: (
-            _validate_commit_trailers(project_root) + _validate_eval_feedback_trailer(project_root)
-        ),
-        "type_ignores": lambda: trust_audits.audit_type_ignores(project_root),
-        "cli_alignment": lambda: trust_audits.audit_cli_alignment(project_root),
-        "event_handlers": lambda: trust_audits.audit_event_handlers(project_root),
-        "validator_fields": lambda: trust_audits.audit_validator_fields(project_root),
-        "utf8_prefix": lambda: trust_audits.audit_utf8_prefix(project_root),
-        "line_endings": lambda: trust_audits.audit_line_endings(project_root),
-        "test_tiers": lambda: trust_audits.audit_test_tiers(project_root),
-        "pydantic_models": lambda: trust_audits.audit_pydantic_models(project_root),
-        "class_size": lambda: trust_audits.audit_class_size(project_root),
-        "version_release": lambda: trust_audits.audit_version_release(project_root),
-        "pool_adr_isolation": lambda: trust_audits.audit_pool_adr_isolation(project_root),
-        "behave_req_tags": lambda: trust_audits.audit_behave_req_tags(project_root),
-        "skill_alignment": lambda: trust_audits.audit_skill_alignment(project_root),
-        "advisory_scorecard": lambda: trust_audits.audit_advisory_scorecard(project_root),
-        "complexity_doctrine_links": lambda: trust_audits.validate_complexity_doctrine_links(
-            project_root
-        ),
-        "complexity_thresholds": lambda: trust_audits.validate_complexity_thresholds(project_root),
-        "reconcile_freshness": lambda: trust_audits.audit_reconcile_freshness(project_root),
-        "insights_shape": lambda: trust_audits.audit_insights_shape(project_root),
-        "instructions_files_budget": lambda: trust_audits.audit_instructions_files_budget(
-            project_root
-        ),
-        "agents_md_map_conformance": lambda: trust_audits.audit_agents_md_map_conformance(
-            project_root
-        ),
-        "adr_status_fresh": lambda: trust_audits.audit_adr_status_fresh(project_root),
-        "session_green_gate": lambda: trust_audits.audit_session_green_gate(project_root),
-        "orientation_freshness": lambda: trust_audits.audit_orientation_freshness(project_root),
-        "brief_headings": lambda: trust_audits.audit_brief_headings(project_root),
-        "brief_cross_references": lambda: trust_audits.audit_brief_cross_references(project_root),
-        "brief_demo_section": lambda: trust_audits.audit_brief_demo_section(project_root),
-        "chores_layout": lambda: trust_audits.audit_chores_layout(project_root),
-        "unscoped_rules": lambda: _unscoped_rules_runner(project_root),
-        "sensitivity": lambda: _sensitivity_umbrella_runner(project_root),
-        "doc_surface_parity": lambda: trust_audits.audit_doc_surface_parity(project_root),
-        "absorption_duplicates": lambda: trust_audits.audit_absorption_duplicates(project_root),
-        "orphaned_implementation": lambda: trust_audits.audit_orphaned_implementation(project_root),
-        "evaluation_justify_binding": lambda: _evaluation_justify_binding_runner(
-            project_root, None
-        ),
-        "intrinsic_attestation": lambda: trust_audits.validate_intrinsic_attestation(project_root),
-        "advisor_proof_binding": lambda: trust_audits.validate_advisor_proof_binding(project_root),
-        "lock_handoff_coupling": lambda: trust_audits.validate_lock_handoff_coupling(project_root),
-        "distribution": lambda: trust_audits.audit_distribution(project_root),
-        "bullet_retention": lambda: trust_audits.validate_bullet_retention(project_root),
-        "surface_weight": lambda: trust_audits.validate_surface_weight(project_root),
-        "pointer_anchors": lambda: trust_audits.validate_pointer_integrity(project_root),
-        "scenario_reachability": lambda: trust_audits.validate_scenario_reachability(project_root),
-        "surface_fidelity": lambda: trust_audits.validate_surface_fidelity(project_root),
-        "vendor_manifest": lambda: trust_audits.validate_vendor_manifest(project_root),
-        "setpoint_coherence": lambda: trust_audits.validate_setpoint_coherence(project_root),
-        "rendition_freshness": lambda: _rendition_freshness_runner(project_root),
-        "rendition_floor_coherence": lambda: _rendition_floor_coherence_runner(project_root),
-        "kind_invariance": lambda: trust_audits.audit_kind_invariance(project_root),
-        "receipt_shape": lambda: trust_audits.audit_receipt_shape(project_root),
-        "brief_reconcile": lambda: trust_audits.validate_brief_reconcile(project_root),
-        "router_tables": lambda: trust_audits.audit_router_tables(project_root),
-        "req_kind_discipline": lambda: _validate_req_kind_discipline(project_root),
-        "brief_command_shape": lambda: trust_audits.audit_brief_command_shape(project_root),
-        "tautological_test_audit": lambda: _validate_tautological_test_audit(project_root),
-        "task_envelope_coherence": lambda: _validate_task_envelope_coherence(project_root),
-        "closeout_proof": lambda: trust_audits.validate_closeout_proof(project_root),
+        e.stem: partial(e.run, project_root, None)
+        for e in VALIDATOR_REGISTRY
+        if e.tier == "explicit"
     }
 
 
@@ -922,92 +955,17 @@ def _validate_manifest_documents(project_root: Path) -> list[ValidationError]:
 
 
 def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
-    """Build the list of validated scope names from the check flags."""
-    # "run_all" scopes activate when no explicit flag is set
-    run_all_scopes = [
-        "manifest",
-        "surfaces",
-        "ledger",
-        "instructions",
-        "briefs",
-        "documents",
-        "personas",
-        "frontmatter",
-        "version",
-        "taxonomy",
-        "invariant_coherence",
-    ]
-    # "opt-in" scopes only activate when explicitly requested
-    opt_in_scopes = [
-        "interviews",
-        "decomposition",
-        "requirements",
-        "commit_trailers",
-        "type_ignores",
-        "cli_alignment",
-        "event_handlers",
-        "validator_fields",
-        "utf8_prefix",
-        "line_endings",
-        "test_tiers",
-        "pydantic_models",
-        "class_size",
-        "version_release",
-        "pool_adr_isolation",
-        "behave_req_tags",
-        "skill_alignment",
-        "advisory_scorecard",
-        "complexity_doctrine_links",
-        "complexity_thresholds",
-        "reconcile_freshness",
-        "insights_shape",
-        "instructions_files_budget",
-        "agents_md_map_conformance",
-        "adr_status_fresh",
-        "session_green_gate",
-        "orientation_freshness",
-        "brief_headings",
-        "brief_cross_references",
-        "brief_demo_section",
-        "chores_layout",
-        "unscoped_rules",
-        "sensitivity",
-        "doc_surface_parity",
-        "absorption_duplicates",
-        "orphaned_implementation",
-        "evaluation_justify_binding",
-        "intrinsic_attestation",
-        "kind_invariance",
-        "receipt_shape",
-        "advisor_proof_binding",
-        "distribution",
-        "bullet_retention",
-        "surface_weight",
-        "pointer_anchors",
-        "scenario_reachability",
-        "surface_fidelity",
-        "vendor_manifest",
-        "setpoint_coherence",
-        "rendition_freshness",
-        "rendition_floor_coherence",
-        "brief_reconcile",
-        "router_tables",
-        "req_kind_discipline",
-        "brief_command_shape",
-        "tautological_test_audit",
-        "task_envelope_coherence",
-        "closeout_proof",
-        "lock_handoff_coupling",
-    ]
+    """Build the list of validated scope names from the check flags (registry-derived).
+
+    Default-tier scopes run on the no-flag path; explicit-tier scopes only when
+    their flag is set. Both come from ``VALIDATOR_REGISTRY`` in registry order.
+    """
+    run_all_scopes = [e.stem for e in VALIDATOR_REGISTRY if e.tier == "default"]
+    opt_in_scopes = [e.stem for e in VALIDATOR_REGISTRY if e.tier == "explicit"]
 
     run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
-    scopes: list[str] = []
-    for scope in run_all_scopes:
-        if run_all or checks.get(scope, False):
-            scopes.append(scope)
-    for scope in opt_in_scopes:
-        if checks.get(scope, False):
-            scopes.append(scope)
+    scopes = [s for s in run_all_scopes if run_all or checks.get(s, False)]
+    scopes += [s for s in opt_in_scopes if checks.get(s, False)]
     return scopes
 
 
@@ -1341,187 +1299,6 @@ def validate(
         check_frontmatter = True
         frontmatter_adr = frontmatter_explain
 
-    # Dedicated single-scope paths own their own 0/2/3 exit codes.
-    _other_scopes_active = any(
-        [
-            check_manifest,
-            check_documents,
-            check_surfaces,
-            check_ledger,
-            check_instructions,
-            check_briefs,
-            check_personas,
-            check_interviews,
-            check_decomposition,
-            check_requirements,
-            check_commit_trailers,
-            check_frontmatter,
-            check_version,
-            check_type_ignores,
-            check_cli_alignment,
-            check_event_handlers,
-            check_validator_fields,
-            check_utf8_prefix,
-            check_line_endings,
-            check_test_tiers,
-            check_pydantic_models,
-            check_class_size,
-            check_version_release,
-            check_pool_adr_isolation,
-            check_behave_req_tags,
-            check_skill_alignment,
-            check_advisory_scorecard,
-            check_complexity_doctrine_links,
-            check_complexity_thresholds,
-            check_reconcile_freshness,
-            check_insights_shape,
-            check_instructions_files_budget,
-            check_agents_md_map_conformance,
-            check_adr_status_fresh,
-            check_orientation_freshness,
-            check_taxonomy,
-            check_brief_headings,
-            check_brief_cross_references,
-            check_brief_demo_section,
-            check_chores_layout,
-            check_doc_surface_parity,
-            check_absorption_duplicates,
-            check_orphaned_implementation,
-            check_distribution,
-            check_bullet_retention,
-            check_surface_weight,
-            check_pointer_anchors,
-            check_scenario_reachability,
-            check_surface_fidelity,
-            check_vendor_manifest,
-            check_setpoint_coherence,
-            check_rendition_freshness,
-            check_rendition_floor_coherence,
-            check_kind_invariance,
-            check_receipt_shape,
-            check_brief_reconcile,
-            check_router_tables,
-            check_req_kind_discipline,
-            check_brief_command_shape,
-            check_tautological_test_audit,
-            check_task_envelope_coherence,
-            check_closeout_proof,
-        ]
-    )
-    if _dispatch_early_return_scopes(
-        project_root,
-        other_scopes_active=_other_scopes_active,
-        check_distribution_regenerate=check_distribution_regenerate,
-        check_distribution=check_distribution,
-        attestation_receipts=attestation_receipts,
-        attestation_lane=attestation_lane,
-        attestation_kind=attestation_kind,
-        check_evaluation_justify_binding=check_evaluation_justify_binding,
-        check_unscoped_rules=check_unscoped_rules,
-        unscoped_rules_allowlist_only=unscoped_rules_allowlist_only,
-        check_sensitivity=check_sensitivity,
-        sensitivity_explain=sensitivity_explain,
-        check_qc_binding=check_qc_binding,
-        check_fidelity_presence=check_fidelity_presence,
-        check_waiver_ratchet=check_waiver_ratchet,
-        as_json=as_json,
-    ):
-        return
-
-    errors = _collect_errors(
-        project_root,
-        check_manifest,
-        check_documents,
-        check_surfaces,
-        check_ledger,
-        check_instructions,
-        check_briefs,
-        check_personas,
-        check_interviews,
-        check_decomposition,
-        check_requirements,
-        check_commit_trailers,
-        check_frontmatter,
-        check_version,
-        check_type_ignores=check_type_ignores,
-        check_cli_alignment=check_cli_alignment,
-        check_event_handlers=check_event_handlers,
-        check_validator_fields=check_validator_fields,
-        check_utf8_prefix=check_utf8_prefix,
-        check_line_endings=check_line_endings,
-        check_test_tiers=check_test_tiers,
-        check_pydantic_models=check_pydantic_models,
-        check_class_size=check_class_size,
-        check_version_release=check_version_release,
-        check_pool_adr_isolation=check_pool_adr_isolation,
-        check_behave_req_tags=check_behave_req_tags,
-        check_skill_alignment=check_skill_alignment,
-        check_advisory_scorecard=check_advisory_scorecard,
-        check_complexity_doctrine_links=check_complexity_doctrine_links,
-        check_complexity_thresholds=check_complexity_thresholds,
-        check_reconcile_freshness=check_reconcile_freshness,
-        check_insights_shape=check_insights_shape,
-        check_instructions_files_budget=check_instructions_files_budget,
-        check_agents_md_map_conformance=check_agents_md_map_conformance,
-        check_adr_status_fresh=check_adr_status_fresh,
-        check_session_green_gate=check_session_green_gate,
-        check_orientation_freshness=check_orientation_freshness,
-        check_taxonomy=check_taxonomy,
-        check_brief_headings=check_brief_headings,
-        check_brief_cross_references=check_brief_cross_references,
-        check_brief_demo_section=check_brief_demo_section,
-        check_chores_layout=check_chores_layout,
-        check_unscoped_rules=check_unscoped_rules,
-        check_sensitivity=check_sensitivity,
-        check_doc_surface_parity=check_doc_surface_parity,
-        check_absorption_duplicates=check_absorption_duplicates,
-        check_orphaned_implementation=check_orphaned_implementation,
-        check_evaluation_justify_binding=check_evaluation_justify_binding,
-        check_intrinsic_attestation=check_intrinsic_attestation,
-        check_advisor_proof_binding=check_advisor_proof_binding,
-        check_lock_handoff_coupling=check_lock_handoff_coupling,
-        check_distribution=check_distribution,
-        check_bullet_retention=check_bullet_retention,
-        check_surface_weight=check_surface_weight,
-        check_pointer_anchors=check_pointer_anchors,
-        check_scenario_reachability=check_scenario_reachability,
-        check_surface_fidelity=check_surface_fidelity,
-        check_vendor_manifest=check_vendor_manifest,
-        check_setpoint_coherence=check_setpoint_coherence,
-        check_rendition_freshness=check_rendition_freshness,
-        check_rendition_floor_coherence=check_rendition_floor_coherence,
-        check_kind_invariance=check_kind_invariance,
-        check_receipt_shape=check_receipt_shape,
-        check_invariant_coherence=check_invariant_coherence,
-        check_brief_reconcile=check_brief_reconcile,
-        check_router_tables=check_router_tables,
-        check_req_kind_discipline=check_req_kind_discipline,
-        check_brief_command_shape=check_brief_command_shape,
-        check_tautological_test_audit=check_tautological_test_audit,
-        check_task_envelope_coherence=check_task_envelope_coherence,
-        check_closeout_proof=check_closeout_proof,
-        frontmatter_adr=frontmatter_adr,
-    )
-
-    if as_json:
-        payload: dict[str, object] = {
-            "valid": len(errors) == 0,
-            "errors": [e.model_dump(exclude_none=True) for e in errors],
-        }
-        if check_frontmatter:
-            payload["drift"] = [
-                {
-                    "path": e.artifact,
-                    "field": e.field,
-                    "ledger_value": e.ledger_value,
-                    "frontmatter_value": e.frontmatter_value,
-                }
-                for e in errors
-                if e.type == "frontmatter"
-            ]
-        print(json.dumps(payload, indent=2))  # noqa: T201
-        return
-
     checks = {
         "line_endings": check_line_endings,
         "manifest": check_manifest,
@@ -1594,6 +1371,52 @@ def validate(
         "task_envelope_coherence": check_task_envelope_coherence,
         "closeout_proof": check_closeout_proof,
     }
+    # A solo early-return scope (--sensitivity, --evaluation-justify-binding, ...)
+    # runs solo only when no *other* aggregate scope is active.
+    _other_scopes_active = any(
+        checks.get(e.stem, False) for e in VALIDATOR_REGISTRY if e.in_other_scopes
+    )
+    if _dispatch_early_return_scopes(
+        project_root,
+        other_scopes_active=_other_scopes_active,
+        check_distribution_regenerate=check_distribution_regenerate,
+        check_distribution=check_distribution,
+        attestation_receipts=attestation_receipts,
+        attestation_lane=attestation_lane,
+        attestation_kind=attestation_kind,
+        check_evaluation_justify_binding=check_evaluation_justify_binding,
+        check_unscoped_rules=check_unscoped_rules,
+        unscoped_rules_allowlist_only=unscoped_rules_allowlist_only,
+        check_sensitivity=check_sensitivity,
+        sensitivity_explain=sensitivity_explain,
+        check_qc_binding=check_qc_binding,
+        check_fidelity_presence=check_fidelity_presence,
+        check_waiver_ratchet=check_waiver_ratchet,
+        as_json=as_json,
+    ):
+        return
+
+    errors = _collect_errors(project_root, checks, frontmatter_adr=frontmatter_adr)
+
+    if as_json:
+        payload: dict[str, object] = {
+            "valid": len(errors) == 0,
+            "errors": [e.model_dump(exclude_none=True) for e in errors],
+        }
+        if check_frontmatter:
+            payload["drift"] = [
+                {
+                    "path": e.artifact,
+                    "field": e.field,
+                    "ledger_value": e.ledger_value,
+                    "frontmatter_value": e.frontmatter_value,
+                }
+                for e in errors
+                if e.type == "frontmatter"
+            ]
+        print(json.dumps(payload, indent=2))  # noqa: T201
+        return
+
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]
 

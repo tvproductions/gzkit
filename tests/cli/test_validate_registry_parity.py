@@ -1,0 +1,204 @@
+"""Per-cut parity proof for the ``VALIDATOR_REGISTRY`` collapse (#618, step 2).
+
+Sanity-Reduction cut #618 collapses six hand-synced enumerations
+(``_default_scope_runners`` / ``_explicit_scope_runners`` dicts, the
+``_collect_errors`` tier dicts, the ``_resolve_scopes`` lists, and ``validate()``'s
+``_other_scopes_active`` predicate) into one ``VALIDATOR_REGISTRY``. The campaign
+mandate (build-to-1.0 § E.4) is *dispatch identical before/after*: any collapse
+that silently drops or re-tiers a scope is the #394 self-include failure class
+this track exists to kill.
+
+This proof pins the registry against the dispatch truth measured from the
+pre-collapse code (the "before" snapshot). The golden literals below are that
+snapshot; the assertions prove the post-collapse registry reproduces them
+exactly. It complements the step-1 fence (``test_validate_dispatch_consistency``):
+the fence pins signature ↔ runner ↔ parser-lambda parity; this pins the registry
+as the single source those surfaces now derive from.
+"""
+
+from __future__ import annotations
+
+import inspect
+import unittest
+from pathlib import Path
+
+from gzkit.commands import validate_cmd
+
+# --- Golden "before" snapshot (measured from the pre-collapse dispatch) ---------
+
+# Default-tier scopes run on the no-flag (`gz check`) path. Order is load-bearing:
+# it is the error-collection iteration order of the former `_default_scope_runners`.
+_GOLDEN_DEFAULT_ORDER: tuple[str, ...] = (
+    "manifest",
+    "surfaces",
+    "ledger",
+    "instructions",
+    "briefs",
+    "documents",
+    "personas",
+    "frontmatter",
+    "version",
+    "taxonomy",
+    "invariant_coherence",
+)
+
+# Explicit-tier scopes run only when their flag is set. Set-parity is what the
+# dispatch contract pins; the order is unified onto registry order (no test pins
+# the multi-scope output order, confirmed pre-cut).
+_GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
+    {
+        "interviews",
+        "decomposition",
+        "requirements",
+        "commit_trailers",
+        "type_ignores",
+        "cli_alignment",
+        "event_handlers",
+        "validator_fields",
+        "utf8_prefix",
+        "line_endings",
+        "test_tiers",
+        "pydantic_models",
+        "class_size",
+        "version_release",
+        "pool_adr_isolation",
+        "behave_req_tags",
+        "skill_alignment",
+        "advisory_scorecard",
+        "complexity_doctrine_links",
+        "complexity_thresholds",
+        "reconcile_freshness",
+        "insights_shape",
+        "instructions_files_budget",
+        "agents_md_map_conformance",
+        "adr_status_fresh",
+        "session_green_gate",
+        "orientation_freshness",
+        "brief_headings",
+        "brief_cross_references",
+        "brief_demo_section",
+        "chores_layout",
+        "unscoped_rules",
+        "sensitivity",
+        "doc_surface_parity",
+        "absorption_duplicates",
+        "orphaned_implementation",
+        "evaluation_justify_binding",
+        "intrinsic_attestation",
+        "advisor_proof_binding",
+        "lock_handoff_coupling",
+        "distribution",
+        "bullet_retention",
+        "surface_weight",
+        "pointer_anchors",
+        "scenario_reachability",
+        "surface_fidelity",
+        "vendor_manifest",
+        "setpoint_coherence",
+        "rendition_freshness",
+        "rendition_floor_coherence",
+        "kind_invariance",
+        "receipt_shape",
+        "brief_reconcile",
+        "router_tables",
+        "req_kind_discipline",
+        "brief_command_shape",
+        "tautological_test_audit",
+        "task_envelope_coherence",
+        "closeout_proof",
+    }
+)
+
+# Registry stems DELIBERATELY excluded from the `_other_scopes_active` predicate
+# in the pre-collapse code. `sensitivity`, `evaluation_justify_binding`, and
+# `unscoped_rules` are legitimately excluded — they own a solo early-return
+# lifecycle and must not count as "another scope active". The remaining five
+# (`invariant_coherence`, `session_green_gate`, `intrinsic_attestation`,
+# `advisor_proof_binding`, `lock_handoff_coupling`) are regular aggregate scopes
+# whose exclusion is a PRE-EXISTING anomaly (combining them with a solo scope
+# would drop them). This cut preserves the membership exactly; the anomaly is
+# flagged for separate routing, not healed here.
+_GOLDEN_OTHER_SCOPES_EXCLUDED: frozenset[str] = frozenset(
+    {
+        "invariant_coherence",
+        "session_green_gate",
+        "intrinsic_attestation",
+        "advisor_proof_binding",
+        "lock_handoff_coupling",
+        "sensitivity",
+        "evaluation_justify_binding",
+        "unscoped_rules",
+    }
+)
+
+
+class TestValidatorRegistryParity(unittest.TestCase):
+    """The collapsed registry reproduces the pre-collapse dispatch exactly."""
+
+    def _registry(self) -> tuple:
+        return validate_cmd.VALIDATOR_REGISTRY
+
+    def test_default_tier_order_preserved(self) -> None:
+        order = tuple(e.stem for e in self._registry() if e.tier == "default")
+        self.assertEqual(
+            order,
+            _GOLDEN_DEFAULT_ORDER,
+            "default-tier stems (and their collection order) must match the "
+            "pre-collapse `_default_scope_runners` exactly",
+        )
+
+    def test_explicit_tier_set_preserved(self) -> None:
+        got = frozenset(e.stem for e in self._registry() if e.tier == "explicit")
+        self.assertEqual(
+            got,
+            _GOLDEN_EXPLICIT_SET,
+            "explicit-tier stem set must match the pre-collapse "
+            "`_explicit_scope_runners` exactly (no scope dropped or re-tiered)",
+        )
+
+    def test_no_unknown_tier(self) -> None:
+        bad = sorted({e.stem for e in self._registry() if e.tier not in ("default", "explicit")})
+        self.assertEqual(bad, [], f"every registry entry must declare a known tier: {bad}")
+
+    def test_other_scopes_active_membership_preserved(self) -> None:
+        excluded = frozenset(e.stem for e in self._registry() if not e.in_other_scopes)
+        self.assertEqual(
+            excluded,
+            _GOLDEN_OTHER_SCOPES_EXCLUDED,
+            "the `_other_scopes_active` exclusion set must be preserved byte-for-byte "
+            "— changing it alters whether a solo early-return scope runs solo",
+        )
+
+    def test_derived_runner_dicts_match_registry_tiers(self) -> None:
+        # The fence reads these two functions; they must stay registry-faithful.
+        default_keys = set(validate_cmd._default_scope_runners(Path("."), None))
+        explicit_keys = set(validate_cmd._explicit_scope_runners(Path(".")))
+        self.assertEqual(
+            default_keys,
+            {e.stem for e in self._registry() if e.tier == "default"},
+            "_default_scope_runners must enumerate exactly the default-tier registry stems",
+        )
+        self.assertEqual(
+            explicit_keys,
+            {e.stem for e in self._registry() if e.tier == "explicit"},
+            "_explicit_scope_runners must enumerate exactly the explicit-tier registry stems",
+        )
+
+    def test_every_registry_stem_has_a_check_param(self) -> None:
+        # Closes the loop with the step-1 fence: a registry runner the CLI cannot
+        # reach (no check_* param) is dead. The fence asserts the inverse too.
+        params = {
+            n[len("check_") :]
+            for n in inspect.signature(validate_cmd.validate).parameters
+            if n.startswith("check_")
+        }
+        orphans = sorted(e.stem for e in self._registry() if e.stem not in params)
+        self.assertEqual(
+            orphans,
+            [],
+            f"these registry stems have no check_* param on validate(): {orphans}",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -274,16 +274,7 @@ class TestCliIntegration(_ProjectRootMixin):
         from gzkit.commands.validate_cmd import _collect_errors
 
         path = _write_fixture(self.project_root, "bad.json", _empty_proof_diagnosis())
-        errors = _collect_errors(
-            self.project_root,
-            check_manifest=False,
-            check_documents=False,
-            check_surfaces=False,
-            check_ledger=False,
-            check_instructions=False,
-            check_briefs=False,
-            check_advisor_proof_binding=True,
-        )
+        errors = _collect_errors(self.project_root, {"advisor_proof_binding": True})
         proof_errors = [e for e in errors if e.type == "advisor_proof_binding"]
         self.assertEqual(len(proof_errors), 1)
         rel = path.relative_to(self.project_root).as_posix()

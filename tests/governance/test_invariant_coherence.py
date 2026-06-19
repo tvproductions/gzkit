@@ -340,16 +340,18 @@ class TestGzCheckDefault(unittest.TestCase):
         )
 
     @covers("REQ-0.0.37-03-05")
-    def test_invariant_coherence_in_collect_errors_default_scopes(self) -> None:
-        import inspect
-
+    def test_invariant_coherence_is_default_tier_in_registry(self) -> None:
+        # `_collect_errors` derives its default_scopes from VALIDATOR_REGISTRY
+        # (Sanity-Reduction #618). invariant_coherence must be a default-tier
+        # entry to run on the no-flag `gz check` path — the semantic successor to
+        # the former source-string assertion (asserts behavior, not source text).
         from gzkit.commands import validate_cmd
 
-        source = inspect.getsource(validate_cmd._collect_errors)
+        default_stems = {e.stem for e in validate_cmd.VALIDATOR_REGISTRY if e.tier == "default"}
         self.assertIn(
-            '"invariant_coherence"',
-            source,
-            "invariant_coherence must appear in _collect_errors default_scopes",
+            "invariant_coherence",
+            default_stems,
+            "invariant_coherence must be a default-tier scope (runs in gz check)",
         )
 
 
