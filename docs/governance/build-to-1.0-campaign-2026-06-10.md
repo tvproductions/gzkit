@@ -434,12 +434,29 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 >   stale 0.0.64). Routed remainder: ADR-0.0.73 Feature Checklist → ADR-0.0.73
 >   item 7; ADR-0.47.0 / 0.49.0 / 0.50.0 phantom packages → orphaned-eval triage.
 > - **#632 OPEN (E.5 drainage)** — tautological-test-audit brittleness, unchanged.
-> - **NEXT CUT (resume here):** Sanity-Reduction cut (d), the
->   **waiver/grandfather/baseline stack** review — collapse what proves redundant,
->   keep what each mechanism uniquely earns (feeds Phase-I). Two surfaced-but-
->   unrouted items also await: the phantom-ADR orphaned evals, and pre-existing
->   control-surface drift (`gz validate --surfaces` flags it; the pre-commit hook
->   does not gate it) — investigate cause before any `gz agent sync`.
+> - **Cut (d) REVIEWED — NO COLLAPSE WARRANTED (2026-06-19).** Full inventory of
+>   the 13 `data/*` waiver/grandfather/baseline surfaces (registry read first-hand
+>   + per-file consumer grep across `src/gzkit/`): each surface holds
+>   non-interchangeable data (OBPI/receipt/ADR IDs vs brief paths vs op-records vs
+>   line counts) feeding a distinct gate via a distinct consumer — none dead, none
+>   duplicate. The *stacking* the cut targeted was already collapsed by ADR-0.0.73
+>   BI#8 into the single `waiver_ratchet_registry.json` meta-validator (10 surfaces
+>   + 1 excluded, each declaring one honesty mechanism). Merges rejected: the two
+>   `tautological_*` and two `surface_weight_*` pairs use separate load fns for
+>   separate roles (ceiling vs exemptions; floor vs band-override); the baseline-0
+>   grandfathers are intentional permanent locks. Residue is irreducible — the last
+>   named cut closes as a substantiated negative (Phase-I census input, per the
+>   named-cuts framing). Side-observation logged to `agent-insights.jsonl`:
+>   shrink-ratchet baselines now carry slack (current < baseline) and could be
+>   re-tightened — a baseline-tightening action, not a collapse.
+> - **Still-awaiting (surfaced, unrouted):** phantom-ADR orphaned evals
+>   (0.47.0 / 0.49.0 / 0.50.0) and pre-existing control-surface drift
+>   (`gz validate --surfaces` flags it; the pre-commit hook does not gate it) —
+>   investigate cause before any `gz agent sync`.
+> - **NEXT (resume here):** the Sanity-Reduction named-cut pull-order is exhausted
+>   (a/b/c landed-or-closed; #618 residual routed to its own ADR/OBPI; d reviewed).
+>   The sequenced topmost returns to the spine — **ADR-0.0.73 QC-binding meta-audit
+>   (0/7)**.
 > - Floor green at boundary (`uv run gz check` ✓, `main` synced at `dec9497d`).
 
 ## Authority and amendment (Magna Carta discipline)
