@@ -11,9 +11,6 @@ the resolved callable.
 from __future__ import annotations
 
 import argparse
-from collections.abc import Callable
-from importlib import import_module
-from typing import Any
 
 from gzkit.cli.helpers import (
     add_dry_run_flag,
@@ -21,63 +18,7 @@ from gzkit.cli.helpers import (
     add_json_flag,
     build_epilog,
 )
-
-_LAZY_HANDLERS: dict[str, str] = {
-    "justify_cmd": "gzkit.commands.justify_cmd",
-    "adr_audit_begin_cmd": "gzkit.commands.adr_audit",
-    "adr_audit_check": "gzkit.commands.adr_audit",
-    "adr_audit_end_cmd": "gzkit.commands.adr_audit",
-    "adr_covers_check": "gzkit.commands.adr_audit",
-    "adr_emit_receipt_cmd": "gzkit.commands.adr_audit",
-    "adr_fidelity_cmd": "gzkit.commands.adr_fidelity",
-    "adr_demote_cmd": "gzkit.commands.adr_demote",
-    "adr_eval_cmd": "gzkit.commands.adr_promote",
-    "adr_promote_cmd": "gzkit.commands.adr_promote",
-    "obpi_audit_cmd": "gzkit.commands.obpi_audit_cmd",
-    "obpi_emit_receipt_cmd": "gzkit.commands.obpi_cmd",
-    "obpi_pipeline_cmd": "gzkit.commands.obpi_cmd",
-    "obpi_precomplete_cmd": "gzkit.commands.obpi_precomplete",
-    "obpi_validate_cmd": "gzkit.commands.obpi_cmd",
-    "obpi_repudiate_cmd": "gzkit.commands.obpi_cmd",
-    "obpi_withdraw_cmd": "gzkit.commands.obpi_cmd",
-    "obpi_complete_cmd": "gzkit.commands.obpi_complete",
-    "obpi_lock_check_cmd": "gzkit.commands.obpi_lock",
-    "obpi_lock_claim_cmd": "gzkit.commands.obpi_lock",
-    "obpi_lock_list_cmd": "gzkit.commands.obpi_lock",
-    "obpi_lock_release_cmd": "gzkit.commands.obpi_lock",
-    "adr_report_cmd": "gzkit.commands.status",
-    "adr_status_cmd": "gzkit.commands.status",
-    "obpi_reconcile_cmd": "gzkit.commands.status",
-    "obpi_status_cmd": "gzkit.commands.status",
-    "task_block_cmd": "gzkit.commands.task",
-    "task_complete_cmd": "gzkit.commands.task",
-    "task_escalate_cmd": "gzkit.commands.task",
-    "task_list_cmd": "gzkit.commands.task",
-    "task_start_cmd": "gzkit.commands.task",
-    "task_start_by_req_cmd": "gzkit.commands.task",
-    "task_envelope_diagnose_cmd": "gzkit.commands.task",
-    "task_fanout_cmd": "gzkit.commands.task",
-    "issue_file_cmd": "gzkit.commands.issue_cmd",
-    "complexity_distill_cmd": "gzkit.commands.complexity_distill_cmd",
-    "complexity_advise_cmd": "gzkit.commands.complexity_advise",
-    "complexity_guide_cmd": "gzkit.commands.complexity_guide",
-    "governance_render_cmd": "gzkit.commands.governance_render",
-    "context_cmd": "gzkit.commands.context_cmd",
-    "brief_reconcile_cmd": "gzkit.commands.brief_reconcile",
-}
-
-_HANDLER_CACHE: dict[str, Callable[..., Any]] = {}
-
-
-def _lazy(name: str) -> Callable[..., Any]:
-    cached = _HANDLER_CACHE.get(name)
-    if cached is not None:
-        return cached
-    module_path = _LAZY_HANDLERS[name]
-    impl = getattr(import_module(module_path), name)
-    _HANDLER_CACHE[name] = impl
-    return impl
-
+from gzkit.cli.parser_handler_manifest import _lazy
 
 _ADR_TYPE_NAMES = {"foundation", "feature", "pool"}
 

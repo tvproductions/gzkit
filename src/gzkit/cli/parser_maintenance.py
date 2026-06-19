@@ -13,64 +13,14 @@ the resolved callable.
 from __future__ import annotations
 
 import argparse
-from collections.abc import Callable
-from importlib import import_module
-from typing import Any
 
 from gzkit.cli.helpers import (
     add_dry_run_flag,
     add_json_flag,
     build_epilog,
 )
+from gzkit.cli.parser_handler_manifest import _lazy
 from gzkit.skills import DEFAULT_MAX_REVIEW_AGE_DAYS
-
-_LAZY_HANDLERS: dict[str, str] = {
-    "chores_advise": "gzkit.commands.chores",
-    "chores_audit": "gzkit.commands.chores",
-    "chores_doctor": "gzkit.commands.chores",
-    "chores_list": "gzkit.commands.chores",
-    "chores_plan": "gzkit.commands.chores",
-    "chores_propose_ghi": "gzkit.commands.chores",
-    "chores_run": "gzkit.commands.chores",
-    "chores_show": "gzkit.commands.chores",
-    "cli_audit_cmd": "gzkit.commands.cli_audit",
-    "check_config_paths_cmd": "gzkit.commands.config_paths",
-    "covers_cmd": "gzkit.commands.covers",
-    "drift_cmd": "gzkit.commands.drift",
-    "frontmatter_reconcile_cmd": "gzkit.commands.frontmatter_reconcile",
-    "flag_explain_cmd": "gzkit.commands.flags",
-    "flags_list_cmd": "gzkit.commands.flags",
-    "interview": "gzkit.commands.interview_cmd",
-    "parity_check_cmd": "gzkit.commands.parity",
-    "preflight_cmd": "gzkit.commands.preflight",
-    "check": "gzkit.commands.quality",
-    "format_cmd": "gzkit.commands.quality",
-    "lint": "gzkit.commands.quality",
-    "test": "gzkit.commands.quality",
-    "typecheck": "gzkit.commands.quality",
-    "readiness_audit_cmd": "gzkit.commands.readiness",
-    "readiness_eval_cmd": "gzkit.commands.readiness",
-    "skill_audit_cmd": "gzkit.commands.skills_cmd",
-    "skill_list": "gzkit.commands.skills_cmd",
-    "skill_new": "gzkit.commands.skills_cmd",
-    "git_sync": "gzkit.commands.sync",
-    "sync_control_surfaces": "gzkit.commands.tidy",
-    "tidy": "gzkit.commands.tidy",
-    "validate": "gzkit.commands.validate_cmd",
-}
-
-
-_HANDLER_CACHE: dict[str, Callable[..., Any]] = {}
-
-
-def _lazy(name: str) -> Callable[..., Any]:
-    cached = _HANDLER_CACHE.get(name)
-    if cached is not None:
-        return cached
-    module_path = _LAZY_HANDLERS[name]
-    impl = getattr(import_module(module_path), name)
-    _HANDLER_CACHE[name] = impl
-    return impl
 
 
 def register_maintenance_parsers(commands: argparse._SubParsersAction) -> None:

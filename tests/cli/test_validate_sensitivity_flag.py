@@ -179,10 +179,11 @@ class TestSensitivityAll(unittest.TestCase):
         parser = _build_parser()
         ns = parser.parse_args(["validate", "--audits"])
         # The umbrella surfaces check_sensitivity via its dispatcher kwargs.
-        # Patching the cached validate handler in parser_maintenance is the
-        # only intercept site that doesn't fight the lazy-import cache; we
-        # restore the cached entry on exit so other tests aren't affected.
-        from gzkit.cli import parser_maintenance
+        # Patching the cached validate handler in the shared handler manifest
+        # is the only intercept site that doesn't fight the lazy-import cache;
+        # we restore the cached entry on exit so other tests aren't affected.
+        # (GHI #617 collapsed the per-parser _HANDLER_CACHE into one module.)
+        from gzkit.cli import parser_handler_manifest
         from gzkit.commands import validate_cmd
 
         captured: dict[str, object] = {}
@@ -190,15 +191,15 @@ class TestSensitivityAll(unittest.TestCase):
         def fake_validate(**kwargs: object) -> None:
             captured.update(kwargs)
 
-        prior_cache = parser_maintenance._HANDLER_CACHE.get("validate")
-        parser_maintenance._HANDLER_CACHE["validate"] = fake_validate
+        prior_cache = parser_handler_manifest._HANDLER_CACHE.get("validate")
+        parser_handler_manifest._HANDLER_CACHE["validate"] = fake_validate
         try:
             ns.func(ns)
         finally:
             if prior_cache is None:
-                parser_maintenance._HANDLER_CACHE.pop("validate", None)
+                parser_handler_manifest._HANDLER_CACHE.pop("validate", None)
             else:
-                parser_maintenance._HANDLER_CACHE["validate"] = prior_cache
+                parser_handler_manifest._HANDLER_CACHE["validate"] = prior_cache
 
         # Sanity-check: the cache restoration leaves the live module intact.
         assert callable(validate_cmd.validate)

@@ -12,9 +12,6 @@ the resolved callable.
 from __future__ import annotations
 
 import argparse
-from collections.abc import Callable
-from importlib import import_module
-from typing import Any
 
 from gzkit.cli.helpers import (
     add_adr_option,
@@ -24,41 +21,7 @@ from gzkit.cli.helpers import (
     add_table_flag,
     build_epilog,
 )
-
-_LAZY_HANDLERS: dict[str, str] = {
-    "attest": "gzkit.commands.attest",
-    "audit_cmd": "gzkit.commands.audit_cmd",
-    "closeout_cmd": "gzkit.commands.closeout",
-    "gates_cmd": "gzkit.commands.gates",
-    "implement_cmd": "gzkit.commands.gates",
-    "constitute": "gzkit.commands.init_cmd",
-    "init": "gzkit.commands.init_cmd",
-    "prd": "gzkit.commands.init_cmd",
-    "patch_release_cmd": "gzkit.commands.patch_release",
-    "persona_drift_cmd": "gzkit.commands.personas",
-    "personas_list_cmd": "gzkit.commands.personas",
-    "plan_cmd": "gzkit.commands.plan",
-    "plan_audit_cmd": "gzkit.commands.plan_audit_cmd",
-    "migrate_semver": "gzkit.commands.register",
-    "register_adrs": "gzkit.commands.register",
-    "roles_cmd": "gzkit.commands.roles",
-    "specify": "gzkit.commands.specify_cmd",
-    "state": "gzkit.commands.state",
-    "status": "gzkit.commands.status",
-    "upgrade_cmd": "gzkit.commands.upgrade",
-}
-
-_HANDLER_CACHE: dict[str, Callable[..., Any]] = {}
-
-
-def _lazy(name: str) -> Callable[..., Any]:
-    cached = _HANDLER_CACHE.get(name)
-    if cached is not None:
-        return cached
-    module_path = _LAZY_HANDLERS[name]
-    impl = getattr(import_module(module_path), name)
-    _HANDLER_CACHE[name] = impl
-    return impl
+from gzkit.cli.parser_handler_manifest import _lazy
 
 
 def _state_handler(a: argparse.Namespace) -> None:
