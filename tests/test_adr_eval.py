@@ -254,6 +254,95 @@ class TestAdrDimensionScoring(unittest.TestCase):
         self.assertEqual(len(dims), 8)
 
 
+# GHI #631: architectural-alignment manufactured false-RED 1.0 scores on the
+# canonical foundation-ADR shape — src paths live in OBPI briefs (not the
+# narrative), and precedent is named via synonyms / a substantive Alternatives
+# section rather than the 4 hardcoded keywords. The narrative below deliberately
+# avoids `src/` and the original keywords ("existing pattern"/"exemplar"/
+# "precedent"/"follows") so the pre-fix scorer scored it 1.
+_FOUNDATION_SHAPE_NARRATIVE = """\
+---
+id: ADR-0.0.999-test
+status: Proposed
+lane: heavy
+---
+
+# ADR-0.0.999: Foundation-shaped test ADR
+
+## Intent
+
+The system needs a canonical home for the widget registry so the dispatch
+surface stops drifting across hand-synced copies.
+
+## Decision
+
+Introduce a single registry module the parsers derive from. This mirrors the
+canonical resolver pattern already established elsewhere in the codebase.
+
+## Alternatives Considered
+
+- Per-parser registries: rejected because keeping N hand-synced copies is the
+  exact drift class this decision exists to kill.
+- A generated registry: rejected because the build step adds operational cost
+  without removing the hand-sync surface.
+
+## Consequences
+
+### Negative
+
+- One more module to import; a small indirection cost.
+"""
+
+_FOUNDATION_SHAPE_BRIEF = """\
+---
+id: OBPI-0.0.999-01
+parent: ADR-0.0.999-test
+lane: Heavy
+status: Draft
+---
+
+# OBPI-0.0.999-01: Registry module
+
+## Allowed Paths
+
+- `src/gzkit/registry.py` - the shared registry
+- `tests/test_registry.py` - its guard test
+"""
+
+
+class TestArchitecturalAlignmentFalseRed(unittest.TestCase):
+    """GHI #631: arch-alignment must score the canonical foundation shape honestly."""
+
+    def test_accepts_src_in_briefs_and_structural_precedent(self) -> None:
+        # A foundation ADR whose src paths live in its OBPI briefs and which
+        # weighs alternatives is architecturally grounded — it must NOT score the
+        # false-RED 1 that forces a justify band-aid (gate fires below 3.0).
+        from gzkit.adr_eval_scoring import _score_architectural_alignment
+
+        score, findings = _score_architectural_alignment(
+            _FOUNDATION_SHAPE_NARRATIVE, [_FOUNDATION_SHAPE_BRIEF]
+        )
+        self.assertGreaterEqual(
+            score,
+            3,
+            f"src-in-briefs + a substantive Alternatives section is the canonical "
+            f"foundation-ADR shape; arch alignment must not false-RED it. "
+            f"got {score}, findings={findings}",
+        )
+
+    def test_still_flags_genuinely_unaligned_adr(self) -> None:
+        # The inverse must still hold: an ADR with no concrete references anywhere
+        # and no precedent reasoning genuinely scores low. The fix widens the
+        # signal, it does not blanket-pass everything.
+        from gzkit.adr_eval_scoring import _score_architectural_alignment
+
+        bare = "## Intent\n\nDo stuff.\n\n## Decision\n\nJust ship it.\n"
+        score, _ = _score_architectural_alignment(bare, [])
+        self.assertEqual(
+            score, 1, "an ADR with no concrete refs and no precedent reasoning must score low"
+        )
+
+
 class TestObpiDimensionScoring(unittest.TestCase):
     @covers("REQ-0.0.5-02-04")
     def test_strong_obpi_scores_well(self) -> None:

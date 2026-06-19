@@ -348,20 +348,57 @@ def _score_evidence_requirements(
     return _passes_to_score(checks, check_total), findings
 
 
-def _score_architectural_alignment(content: str) -> tuple[int, list[str]]:
+# Alignment-to-precedent lexicon. Widened beyond the original four tokens
+# (GHI #631): foundation ADRs name precedents via synonyms ("canonical",
+# "mirrors", "aligns with", "reuse", ...) the narrow matcher silently missed,
+# manufacturing false-RED 1.0 scores on the canonical foundation-ADR shape.
+_PRECEDENT_KEYWORDS = [
+    "existing pattern",
+    "exemplar",
+    "precedent",
+    "follows",
+    "prior art",
+    "established",
+    "canonical",
+    "mirrors",
+    "consistent with",
+    "aligns with",
+    "in keeping with",
+    "reuse",
+]
+
+
+def _score_architectural_alignment(content: str, obpi_contents: list[str]) -> tuple[int, list[str]]:
+    """Score STRUCTURAL alignment-to-precedent signals (NOT substance, GHI #624/#631).
+
+    Foundation ADRs keep their src paths in OBPI briefs (the canonical shape) and
+    name precedents via synonyms or a substantive Alternatives section, not the
+    four original keywords. Matching only the narrative false-negatived every such
+    ADR into a 1.0 that fail-closed ``--evaluation-justify-binding`` and forced a
+    justify band-aid defending a wrong number (GHI #631).
+    """
     findings: list[str] = []
     checks = 0
     total = 3
 
-    if re.search(r"`src/[^`]+`", content):
+    # Check 1: concrete source-path references — accept the narrative OR any OBPI
+    # brief, since foundation ADRs legitimately keep src paths in their briefs.
+    src_ref = r"`src/[^`]+`"
+    if re.search(src_ref, content) or any(re.search(src_ref, oc) for oc in obpi_contents):
         checks += 1
     else:
-        findings.append("No source file path references in ADR")
+        findings.append("No source file path references in ADR or its OBPI briefs")
 
-    if _has_keywords(content, ["existing pattern", "exemplar", "precedent", "follows"]):
+    # Check 2: alignment-to-precedent — explicit precedent language (widened
+    # lexicon) OR a substantive Alternatives Considered section, since weighing
+    # alternatives IS engaging with the prior approaches this dimension grades.
+    alternatives = section_body(content, "Alternatives Considered") or ""
+    if _has_keywords(content, _PRECEDENT_KEYWORDS) or _has_rejected_alternatives_subsection(
+        alternatives
+    ):
         checks += 1
     else:
-        findings.append("No exemplar/precedent language")
+        findings.append("No exemplar/precedent language or substantive Alternatives section")
 
     if _has_keywords(content, ["anti-pattern", "do not", "avoid", "prohibited"]):
         checks += 1
@@ -383,7 +420,7 @@ def score_adr_deterministic(
         lambda: _score_lane_assignment(content, obpi_contents),
         lambda: _score_scope_discipline(content),
         lambda: _score_evidence_requirements(obpi_contents),
-        lambda: _score_architectural_alignment(content),
+        lambda: _score_architectural_alignment(content, obpi_contents),
     ]
     results: list[DimensionScore] = []
     for (dim_name, weight), scorer in zip(ADR_WEIGHTS, scorers, strict=True):
