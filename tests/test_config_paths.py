@@ -114,6 +114,26 @@ class TestSourcePathLiteralScan(unittest.TestCase):
             self.assertTrue(len(issues) > 0)
             self.assertIn("unmapped path literal", issues[0]["issue"])
 
+    @covers("REQ-0.0.7-05-02")
+    def test_exempt_literal_not_flagged(self):
+        """Path-shaped literals that are not config paths are exempt.
+
+        A forbidden-pattern detector string (``ops/chores/``) and a template
+        placeholder example (``config/file.json``) are path-shaped but name no
+        real config location; mapping them to the manifest would be wrong, so
+        the audit exempts them rather than demanding a mapping.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / "src" / "gzkit"
+            src.mkdir(parents=True)
+            (src / "detector.py").write_text(
+                'FORBIDDEN = "ops/chores/"\nPLACEHOLDER = "config/file.json"\n',
+                encoding="utf-8",
+            )
+            issues = _collect_source_path_literal_issues(root, SAMPLE_MANIFEST)
+            self.assertEqual(issues, [])
+
     def test_url_not_flagged(self):
         """HTTP URLs are not treated as path literals."""
         with tempfile.TemporaryDirectory() as tmp:

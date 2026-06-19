@@ -207,6 +207,21 @@ _PATH_SEGMENT_RE = (
     r"(?:/[\w.\-]+)+/?$"
 )
 
+# Path-shaped string literals that are NOT config paths and so cannot be
+# "mapped" to the manifest: a forbidden-pattern detector and a template
+# placeholder example. Mapping them would assert they name real config
+# locations, which they do not — exemption is the correct disposition.
+_EXEMPT_PATH_LITERALS: frozenset[str] = frozenset(
+    {
+        # chores-layout audit's forbidden legacy-root detector
+        # (gzkit.governance.trust_audits.chores; ADR-0.0.21 Decision #9)
+        "ops/chores/",
+        # OBPI scaffold placeholder example in TEMPLATE_SCAFFOLD_MARKERS
+        # (gzkit.hooks.obpi) — a Discovery-Checklist stub, not a real file
+        "config/file.json",
+    }
+)
+
 
 def _collect_source_path_literal_issues(
     project_root: Path,
@@ -242,6 +257,8 @@ def _collect_source_path_literal_issues(
                 continue
             value = node.value.strip()
             if "/" not in value:
+                continue
+            if value in _EXEMPT_PATH_LITERALS:
                 continue
             # Skip URLs, format strings, and very long strings
             if value.startswith(("http://", "https://", "//", "git@")):
