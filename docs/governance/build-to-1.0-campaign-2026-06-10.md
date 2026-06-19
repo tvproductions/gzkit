@@ -455,8 +455,9 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 >   investigate cause before any `gz agent sync`.
 > - **NEXT (resume here):** the Sanity-Reduction named-cut pull-order is exhausted
 >   (a/b/c landed-or-closed; #618 residual routed to its own ADR/OBPI; d reviewed).
->   The sequenced topmost returns to the spine — **ADR-0.0.73 QC-binding meta-audit
->   (0/7)**.
+>   The sequenced topmost **ADR-0.0.73 QC-binding meta-audit is DONE** (9/9, closed
+>   out + g0-attested 2026-06-19); the spine advances to **B.1 — ADR-0.0.37 real
+>   corpus rebuild** (reopens behind the completed 0.0.73), then Phase 0 (0.2–0.8).
 > - Floor green at boundary (`uv run gz check` ✓, `main` synced at `dec9497d`).
 
 ## Authority and amendment (Magna Carta discipline)
@@ -596,7 +597,7 @@ gzkit is 1.0 when ALL hold:
 > Until MOTD ships (Phase C), **this file's checklist is the workplan** —
 > sessions work top-down, check items off with observed command evidence.
 
-> **Topmost (sequenced):** confirm green floor (#621 fix landed) → ADR-0.0.73 QC-binding meta-audit (0/7, the alignment gate; OBPIs 03+04 are the essential cure) → B.1 ADR-0.0.37 real corpus rebuild (reopens behind 0.0.73) → Phase 0 enforcement core (0.2–0.8).
+> **Topmost (sequenced):** ADR-0.0.73 QC-binding meta-audit is **DONE** (9/9 OBPIs; closed out + g0-attested "Completed" 2026-06-19 — ledger `attested` 12:36 / `lifecycle_transition`→Completed 12:37). The pull-order advances to → **B.1 ADR-0.0.37 real corpus rebuild** (now the topmost; it reopens behind the completed 0.0.73) → Phase 0 enforcement core (0.2–0.8).
 > This marker is the ratified pull-order — it overrides naive top-down because
 > the prose amendments reorder the spine (B.1 reopens *behind* ADR-0.0.73). The
 > Phase-0 checkboxes print first in document order but are **not** what is pulled
@@ -632,7 +633,10 @@ gzkit is 1.0 when ALL hold:
 >
 > **Status (2026-06-16):** design complete + operator-approved; **BOOKED** as
 > **ADR-0.0.73** (foundation, heavy, `verification-layer-binding-audit`, 6 OBPIs) —
-> Pending, 0/6 OBPIs, awaiting implementation. Refinement baked in from the
+> 0/6 OBPIs at booking; **LANDED + CLOSED OUT 2026-06-19** — 9/9 OBPIs attested,
+> ADR g0-attested "Completed" (ledger `attested` 12:36 / `lifecycle_transition`→
+> Completed 12:37); the ADR self-check is green (`gz validate --qc-binding` exits 0).
+> Refinement baked in from the
 > pre-mortem: detection is **behavioral, not declarative** — each QC step ships a
 > negative-control fixture it MUST fail on, run by `--qc-binding` (self-registration
 > + static heuristics alone are gameable). Essential cure = OBPIs 03+04 (`##
