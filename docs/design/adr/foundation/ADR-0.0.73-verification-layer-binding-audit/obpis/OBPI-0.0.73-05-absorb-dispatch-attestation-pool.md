@@ -4,6 +4,7 @@ parent: ADR-0.0.73-verification-layer-binding-audit
 item: 5
 lane: Lite
 status: Completed
+sensitivity: security
 # req_atomic: each REQ is a single indivisible unit. Registering one bound QC
 # step (01) — the function, its _build_check_steps() wiring, its
 # _STEP_CLASSIFICATION entry, and its test — is one atomic registration. Adding

@@ -4,6 +4,7 @@ parent: ADR-0.0.73-verification-layer-binding-audit
 item: 9
 lane: Heavy
 status: Completed
+sensitivity: security
 req_atomic:
   - REQ-0.0.73-09-01  # one detection behavior (unratcheted/violated surface → flag + exit 3) + its tests — single indivisible unit
   - REQ-0.0.73-09-02  # one no-false-positive behavior (each of the three mechanisms passes when satisfied) — no labor below the REQ
