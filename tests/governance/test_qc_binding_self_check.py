@@ -32,11 +32,13 @@ class TestQCBindingSelfCheck(unittest.TestCase):
     """Self-check: OBPI-02 repaired; recovery complete; the ADR passes its own check."""
 
     @covers("REQ-0.0.73-02-07")
+    @covers("REQ-0.0.73-06-01")
     def test_audit_qc_binding_passes_with_no_negative_control_debt(self) -> None:
         errors = audit_qc_binding(_PROJECT_ROOT)
         self.assertEqual(errors, [], [e.message for e in errors])
         self.assertEqual(_NEGATIVE_CONTROL_DEBT, frozenset())
 
+    @covers("REQ-0.0.73-06-03")
     def test_fidelity_gate_passes_now_recovery_is_complete(self) -> None:
         # Boundary Invariant #5: with OBPI-07 (evaluator substance), OBPI-08
         # (fidelity-presence), and OBPI-09 (waiver-ratchet) landed and OBPI-02
