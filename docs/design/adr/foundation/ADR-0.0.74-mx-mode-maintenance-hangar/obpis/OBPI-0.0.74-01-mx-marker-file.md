@@ -3,14 +3,14 @@ id: OBPI-0.0.74-01-mx-marker-file
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 req_atomic:
-  # The marker module is one indivisible authoring unit: the stdlib-only
-  # read/write, the ledger-event binding validity check, and the
+  # The marker module is one indivisible authoring unit: the pydantic+stdlib
+  # read/write (no gzkit-internal imports), the ledger-event binding check, and the
   # single-MX-truth-source property ship as a single src/gzkit/mx/marker.py
   # write with one covering test module. No REQ below decomposes into
   # independently-attributable labor steps.
-  - REQ-0.0.74-01-01  # stdlib-only read/write; presence means MX==TRUE — written with the module
+  - REQ-0.0.74-01-01  # pydantic+stdlib read/write (no gzkit-internal imports); presence means MX==TRUE — written with the module
   - REQ-0.0.74-01-02  # ledger-event binding validity (hand-created marker is void) — same write
   - REQ-0.0.74-01-03  # STRUCTURAL-FENCE: single MX truth-source — property of the same module
 ---
@@ -20,13 +20,13 @@ req_atomic:
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
-- **Checklist Item:** #1 - "The marker file — dumb stdlib-only filesystem truth-file; presence means MX==TRUE; valid only when bound to a real mx_session_opened ledger event (hand-created marker is void); reads even when gz is broken; unit tests"
+- **Checklist Item:** #1 - "The marker file — dumb filesystem truth-file (pydantic + stdlib only, no gzkit-internal imports); presence means MX==TRUE; valid only when bound to a real mx_session_opened ledger event (hand-created marker is void); reads even when gzkit is broken; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
-A stdlib-only (json + pathlib) marker module lands at `src/gzkit/mx/marker.py`: its presence on disk means MX==TRUE, it reads even when the rest of gz is broken, and a marker is valid only when bound to a real `mx_session_opened` ledger event the tool wrote — a hand-created marker is void; "done" = the module reads/writes the marker with stdlib only and unit tests pin both the presence==TRUE rule and the ledger-binding void rule.
+A pydantic + stdlib (json + pathlib) marker module that imports no gzkit-internal subsystem lands at `src/gzkit/mx/marker.py`: its presence on disk means MX==TRUE, it reads even when the rest of gzkit is the patient, and a marker is valid only when bound to a real `mx_session_opened` ledger event the tool wrote — a hand-created marker is void; "done" = the module reads/writes the marker without importing any gzkit-internal subsystem and unit tests pin both the presence==TRUE rule and the ledger-binding void rule.
 
 ## Lane
 
@@ -39,9 +39,10 @@ A stdlib-only (json + pathlib) marker module lands at `src/gzkit/mx/marker.py`: 
 ## Allowed Paths
 
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md` — parent ADR for intent and scope
-- `src/gzkit/mx/marker.py` **CREATE** — stdlib-only (json + pathlib) marker read/write; presence means MX==TRUE; ledger-event binding validity check (hand-created marker is void)
+- `src/gzkit/mx/marker.py` **CREATE** — pydantic + stdlib (json + pathlib) marker read/write, no gzkit-internal imports; presence means MX==TRUE; ledger-event binding validity check (hand-created marker is void)
 - `src/gzkit/mx/__init__.py` **CREATE** — `gzkit.mx` package init exposing the marker surface
-- `tests/mx/test_marker.py` **CREATE** — unit tests for the presence==TRUE rule, the stdlib-only read, and the ledger-binding void rule
+- `tests/mx/test_marker.py` **CREATE** — unit tests for the presence==TRUE rule, the no-gzkit-internal-imports read, and the ledger-binding void rule
+- `tests/mx/__init__.py` **CREATE** — test-package init so `unittest discover tests` imports `tests.mx.*` (every test-module subdir under `tests/` carries one)
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/obpis/OBPI-0.0.74-01-mx-marker-file.md` — this brief (evidence recording)
 
 ## Creates These Files
@@ -49,6 +50,7 @@ A stdlib-only (json + pathlib) marker module lands at `src/gzkit/mx/marker.py`: 
 - `src/gzkit/mx/marker.py`
 - `src/gzkit/mx/__init__.py`
 - `tests/mx/test_marker.py`
+- `tests/mx/__init__.py`
 
 ## Denied Paths
 
@@ -58,7 +60,7 @@ A stdlib-only (json + pathlib) marker module lands at `src/gzkit/mx/marker.py`: 
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: This OBPI MUST deliver: The marker file — dumb stdlib-only filesystem truth-file; presence means MX==TRUE; valid only when bound to a real mx_session_opened ledger event (hand-created marker is void); reads even when gz is broken; unit tests.
+1. REQUIREMENT: This OBPI MUST deliver: The marker file — dumb filesystem truth-file (pydantic + stdlib only, no gzkit-internal imports); presence means MX==TRUE; valid only when bound to a real mx_session_opened ledger event (hand-created marker is void); reads even when gzkit is broken; unit tests.
 1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
 1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
 1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
@@ -145,13 +147,13 @@ test -f tests/mx/test_marker.py
 ## Demo
 
 ```bash
-# Read the marker with stdlib only — works even when the rest of the toolchain is down.
+# Read the marker (pydantic + stdlib, no gzkit internals) — works even when the rest of gzkit is the patient.
 uv run python -c "from gzkit.mx import marker; print('MX==TRUE' if marker.is_active() else 'MX==FALSE')"
 ```
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.74-01-01 [behavior]: Given the marker module, when the marker file is present on disk, then `marker.is_active()` returns True — read with stdlib only (json + pathlib) — and the read succeeds even when unrelated gz subsystems fail to import (the marker reads when gz is the patient). (@covers test in `tests/mx/test_marker.py`)
+- [ ] REQ-0.0.74-01-01 [behavior]: Given the marker module, when the marker file is present on disk, then `marker.is_active()` returns True — read without importing any gzkit-internal subsystem (pydantic + stdlib only, json + pathlib) — and the read succeeds even when unrelated gzkit subsystems fail to import (the marker reads when gzkit is the patient). (@covers test in `tests/mx/test_marker.py`)
 - [ ] REQ-0.0.74-01-02 [behavior]: Given a marker file with no matching `mx_session_opened` ledger event the tool wrote, when validity is checked, then the marker is treated as void — a hand-created marker cannot stand in for a real opened session. (@covers test in `tests/mx/test_marker.py`)
 - [ ] REQ-0.0.74-01-03 [structural-fence]: The marker is the single MX truth-source every surface (code guards and agents) consults — no surface reads MX state from anywhere else. (parent ADR § Boundary Invariants — single MX truth-source)
 
@@ -206,26 +208,51 @@ uv run python -c "from gzkit.mx import marker; print('MX==TRUE' if marker.is_act
 
 ### Key Proof
 
+
+Anti-contrivance (REQ-01-02) and no-gzkit-imports (REQ-01-01) proven by TDD:
+  $ uv run -m unittest tests.mx.test_marker -v
+  Ran 12 tests ... OK
+    test_handcreated_marker_with_no_event_is_void ... ok  (present, is_valid()==False)
+    test_marker_bound_to_open_session_is_valid ... ok     (matching open => valid)
+    test_closed_session_voids_the_marker ... ok           (later close => void)
+    test_marker_module_imports_no_gzkit_internals ... ok  (reads when gzkit is the patient)
+Full suite receipt arb-step-unittest-8c36eb010f774eadb9944bc84d6ed1de exit_status=0 (6363 tests). Demo: from gzkit.mx import marker; marker.is_active() -> MX==FALSE in the clean repo.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/mx/__init__.py, src/gzkit/mx/marker.py, tests/mx/__init__.py, tests/mx/test_marker.py
+- Files modified: ADR-0.0.74 (Decision 1 + Checklist wording; gz->gzkit prose), OBPI-0.0.74-01 brief (allowlist + tests/mx/__init__.py; REQ-01-01/Objective wording; Tracked Defects), .gzkit/insights/agent-insights.jsonl (improvement insight)
+- Mechanism: gzkit.mx.marker - Marker(BaseModel, frozen, extra=forbid); is_active() presence==MX==TRUE; is_valid() binds marker.session_id to an mx_session_opened ledger event read raw with stdlib (a later mx_session_closed voids it); marker_path() is the single truth-source (.gzkit/mx.json); module imports no gzkit internals (AST-asserted)
+- Tests added: 12 (@covers-decorated: TestMarkerPresence x5 -> REQ-01-01, TestMarkerLedgerBinding x6 -> REQ-01-02; test_marker_path_is_single_truth_source backs REQ-01-03 structural-fence)
+- In-flight correction: stdlib-only premise corrected to pydantic+stdlib, no gzkit-internal imports (operator-caught)
+- Date completed: 2026-06-20
+- Attestation status: operator-attested (g0) 'attest completed'
+- Defects noted: (1) OBPI-07 brief carries pre-correction 'stdlib-only marker read' framing (tracked; route at OBPI-07); (2) behave_req_coverage precomplete gate vs waiver-ratchet deadlock for unit-only OBPIs - GHI to be filed; (3) adr-interview.json left as historical capture
 
 ## Tracked Defects
 
-_No defects tracked._
+- **Sibling-OBPI coherence (surfaced during OBPI-01, route to OBPI-07).**
+  OBPI-0.0.74-07's brief (`OBPI-0.0.74-07-mx-awareness-hook.md:46,75`) carries the
+  pre-correction framing — "stdlib-only marker read" / "The marker read MUST be
+  stdlib-only". The marker read now imports pydantic (a pinned core dependency;
+  the corrected invariant is *no gzkit-internal imports*, ADR Decision #1 as
+  reworded). `awareness.py` reuses this marker, so OBPI-07's REQ must be
+  reconciled to "no gzkit-internal imports" when OBPI-07 is pulled, not literal
+  stdlib-only. Not edited here — sibling brief outside OBPI-01's allowlist.
+- **Historical capture (no action).** `adr-interview.json` preserves the raw
+  interview verbatim ("Read with stdlib only…"); left intact as the immutable
+  interview record. The binding ADR Decision/Checklist surfaces carry the
+  correction.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed - OBPI-0.0.74-01 (MX marker) verified green: 12/12 tests.mx.test_marker pass; full suite green (receipt arb-step-unittest-8c36eb010f774eadb9944bc84d6ed1de, 6363 tests, exit_status=0 read from the ARB receipt - a piped exit had masked two RED runs earlier this session); lint arb-ruff-07db9c0fa81446948e841473fc490777, typecheck arb-step-typecheck-cdc0ca50e8bf474b980cb5b9aaa6a481, docs arb-step-mkdocs-78d00649c4814e8388e08955b708d7e6; @covers REQ-coverage chokepoint green. In-flight correction (operator-caught): the ADR 'stdlib-only' premise was confused - Marker is now a pydantic BaseModel (project standard, passes audit_pydantic_models, no waiver); the real invariant 'no gzkit-internal imports' is enforced by test_marker_module_imports_no_gzkit_internals; ADR Decision 1 + REQ-01-01 reworded.
+- Date: 2026-06-20
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-20
 
 **Evidence Hash:** -

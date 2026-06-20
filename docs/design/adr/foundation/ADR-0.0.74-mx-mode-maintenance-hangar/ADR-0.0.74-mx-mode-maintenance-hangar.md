@@ -36,7 +36,7 @@ Operator = FAA by writ; Gate 5 = the regulator signing airworthiness, never dele
 
 One mechanism — a filesystem marker that means 'in the hangar' — read by both enforcement surfaces (code guards and agents), decomposed 1:1 into 10 OBPIs.
 
-1. The marker file. A dumb filesystem truth-file; its presence means MX==TRUE. Read with stdlib only so it opens even when gz itself is the patient. Valid ONLY when bound to a real mx_session_opened ledger event the tool wrote — a hand-created marker with no matching event is void (anti-contrivance).
+1. The marker file. A dumb filesystem truth-file; its presence means MX==TRUE. Read without importing any gzkit-internal subsystem (pydantic + stdlib only) so it opens even when gz's own subsystems are the patient — pydantic is a pinned core dependency, not part of the breakable gzkit surface. Valid ONLY when bound to a real mx_session_opened ledger event the tool wrote — a hand-created marker with no matching event is void (anti-contrivance).
 
 2. The shared checkpoint. One place code reads the marker and drops guards to advisory — everything except the gate5_invariants. A new guard inherits the checkpoint for free; nobody can forget to wire it, and the never-relax list lives in exactly one place.
 
@@ -140,7 +140,7 @@ Cross-OBPI integration-state properties scoped to this ADR, audited at ADR close
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-- [ ] The marker file — dumb stdlib-only filesystem truth-file; presence means MX==TRUE; valid only when bound to a real mx_session_opened ledger event (hand-created marker is void); reads even when gz is broken; unit tests
+- [ ] The marker file — dumb filesystem truth-file (pydantic + stdlib only, no gzkit-internal imports); presence means MX==TRUE; valid only when bound to a real mx_session_opened ledger event (hand-created marker is void); reads even when gzkit is broken; unit tests
 - [ ] The shared checkpoint — single place code reads the marker and drops guards to advisory except gate5_invariants; funnel inventory + fence test that every fail-closed funnel consults it; unit tests
 - [ ] gate5_invariants — the never-relax guards as a code constant (faked Gate-5 attestation, secrets, operator-PII, ledger integrity); structural proof the checkpoint cannot downgrade a member; unit tests
 - [ ] gz mx enter — operator opens the door (reason + attestor); sets marker, writes mx_session_opened, captures inspection scope; token-rail/lock_manager; manpage + gz cli audit green; unit tests
@@ -191,7 +191,7 @@ Operator = FAA by writ; Gate 5 = the regulator signing airworthiness, never dele
 
 **A:** One mechanism — a filesystem marker that means 'in the hangar' — read by both enforcement surfaces (code guards and agents), decomposed 1:1 into 10 OBPIs.
 
-1. The marker file. A dumb filesystem truth-file; its presence means MX==TRUE. Read with stdlib only so it opens even when gz itself is the patient. Valid ONLY when bound to a real mx_session_opened ledger event the tool wrote — a hand-created marker with no matching event is void (anti-contrivance).
+1. The marker file. A dumb filesystem truth-file; its presence means MX==TRUE. Read without importing any gzkit-internal subsystem (pydantic + stdlib only) so it opens even when gz's own subsystems are the patient — pydantic is a pinned core dependency, not part of the breakable gzkit surface. Valid ONLY when bound to a real mx_session_opened ledger event the tool wrote — a hand-created marker with no matching event is void (anti-contrivance).
 
 2. The shared checkpoint. One place code reads the marker and drops guards to advisory — everything except the gate5_invariants. A new guard inherits the checkpoint for free; nobody can forget to wire it, and the never-relax list lives in exactly one place.
 
@@ -249,7 +249,7 @@ Scope boundary — NOT in this ADR: the full MEL dispatch-with-limitation binder
 
 ### Q: What are the implementation checklist items? Each becomes an OBPI.
 
-**A:** 1. The marker file — dumb stdlib-only filesystem truth-file; presence means MX==TRUE; valid only when bound to a real mx_session_opened ledger event (hand-created marker is void); reads even when gz is broken; unit tests
+**A:** 1. The marker file — dumb filesystem truth-file (pydantic + stdlib only, no gzkit-internal imports); presence means MX==TRUE; valid only when bound to a real mx_session_opened ledger event (hand-created marker is void); reads even when gzkit is broken; unit tests
 2. The shared checkpoint — single place code reads the marker and drops guards to advisory except gate5_invariants; funnel inventory + fence test that every fail-closed funnel consults it; unit tests
 3. gate5_invariants — the never-relax guards as a code constant (faked Gate-5 attestation, secrets, operator-PII, ledger integrity); structural proof the checkpoint cannot downgrade a member; unit tests
 4. gz mx enter — operator opens the door (reason + attestor); sets marker, writes mx_session_opened, captures inspection scope; token-rail/lock_manager; manpage + gz cli audit green; unit tests
