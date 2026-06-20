@@ -7,7 +7,7 @@ Status: Active
 
 Source-of-truth: filesystem under `docs/design/adr/{foundation,pre-release}/`; this table is a Layer 3 derived view per `docs/governance/state-doctrine.md`. Regenerate via `gz register-adrs` (which calls `regenerate_adr_status_md` after ledger reconciliation); drift is fail-closed by `gz validate --adr-status-fresh`.
 
-Last regenerated: 2026-06-19 (count: 98 ADRs).
+Last regenerated: 2026-06-20 (count: 99 ADRs).
 
 | ID | Title | Kind | Lane | Status | Date | Path |
 |---|---|---|---|---|---|---|
@@ -84,6 +84,7 @@ Last regenerated: 2026-06-19 (count: 98 ADRs).
 | [ADR-0.0.71-completion-repudiation](../../design/adr/foundation/ADR-0.0.71-completion-repudiation/ADR-0.0.71-completion-repudiation.md) | Governed Reversal of Erroneous Completion Attestation | foundation | heavy | Completed | 2026-06-12 | `design/adr/foundation/ADR-0.0.71-completion-repudiation/ADR-0.0.71-completion-repudiation.md` |
 | [ADR-0.0.72-meta-governance-coherence](../../design/adr/foundation/ADR-0.0.72-meta-governance-coherence/ADR-0.0.72-meta-governance-coherence.md) | Meta-Governance Validator Round-Trip Coherence | foundation | heavy | Draft | 2026-06-13 | `design/adr/foundation/ADR-0.0.72-meta-governance-coherence/ADR-0.0.72-meta-governance-coherence.md` |
 | [ADR-0.0.73-verification-layer-binding-audit](../../design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md) | Verification Layer Binding Audit | foundation | heavy | Validated | 2026-06-16 | `design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md` |
+| [ADR-0.0.74-mx-mode-maintenance-hangar](../../design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md) | MX Mode — Maintenance Hangar | foundation | heavy | Draft | 2026-06-20 | `design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md` |
 | [ADR-0.2.0-gate-verification](../../design/adr/pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md) | Gate Verification + Dry Run | feature | heavy | Validated | 2026-01-29 | `design/adr/pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md` |
 | [ADR-0.3.0-airlineops-canon-reconciliation](../../design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) | AirlineOps Canon Reconciliation | feature | heavy | Validated | 2026-02-13 | `design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md` |
 | [ADR-0.4.0-skill-capability-mirroring](../../design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) | Skill Capability Mirroring | feature | heavy | Validated | 2026-02-17 | `design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md` |
