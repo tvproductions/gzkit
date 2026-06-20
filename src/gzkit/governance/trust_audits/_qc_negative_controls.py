@@ -187,8 +187,11 @@ def _rendition_floor_coherence_negative_control() -> int:
             )
             + "\n",
         )
+        # A committed rendition that drops an invariant-tier entry MUST be flagged.
+        # Checked fail-closed because the live gate is staged in warn mode
+        # (OBPI-0.0.41 warn->fail), sibling-consistent with rendition_freshness.
         _write(root / ".gzkit" / "renditions" / "AGENTS.md" / "codex.md", "missing\n")
-        return _genuine_when_errors(validate_rendition_floor_coherence(root))
+        return _genuine_when_errors(validate_rendition_floor_coherence(root, fail_closed=True))
 
 
 def _session_green_gate_negative_control() -> int:

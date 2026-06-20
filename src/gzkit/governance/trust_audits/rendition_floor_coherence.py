@@ -6,7 +6,17 @@ The REAL content witness that repudiated OBPI-0.0.37-22 only simulated. The
 committed twin — neither asserts that the committed rendition actually reflects
 canon. This gate closes that seam: every ``tier: invariant`` corpus entry MUST
 appear verbatim in the committed rendition for its surface. A rendition that
-drops an invariant entry fails closed (exit 3).
+drops an invariant entry fails closed (exit 3) once staging completes.
+
+Staging (OBPI-0.0.41 warn→fail precedent; sibling-consistent with
+``rendition_freshness``): ``_FLOOR_FAIL_CLOSED`` is ``False`` while ADR-0.0.37's
+corpus→rendition ceremony is repudiated/un-designed (GHI #623, #635) — floor
+drift is reported as a stderr WARNING and the gate returns no errors, so
+``gz check`` stays green while the corpus is enriched and the real renditions
+are re-seeded under a designed, operator-attested ceremony. The flag flips to
+``True`` (fail-closed ``ValidationError`` + ``composition_drift_detected`` event)
+only when that ceremony exists — never before. Its sibling freshness gate already
+stages this way; the two flip together.
 
 Registered as ``gz validate --rendition-floor-coherence``; also runs in
 ``gz check``.
@@ -14,6 +24,7 @@ Registered as ``gz validate --rendition-floor-coherence``; also runs in
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 from gzkit.content.corpus_store import corpus_path, load_corpus
@@ -21,17 +32,28 @@ from gzkit.content.tier_policy import invariant_entries
 from gzkit.core.validation_rules import ValidationError
 from gzkit.governance.events import emit_composition_drift_detected
 
+# Staging flag (OBPI-0.0.41 warn→fail precedent). Flips to True only when the
+# corpus→rendition ceremony is designed and renditions are re-seeded (GHI #635).
+_FLOOR_FAIL_CLOSED = False
 
-def validate_rendition_floor_coherence(root: Path) -> list[ValidationError]:
+
+def validate_rendition_floor_coherence(
+    root: Path, *, fail_closed: bool | None = None
+) -> list[ValidationError]:
     """Assert every committed rendition carries its surface's invariant floor verbatim.
 
     Scans ``<root>/.gzkit/renditions/<surface>/`` for committed renditions and,
     for each, checks that every ``tier: invariant`` entry of the surface's corpus
     (``<root>/.gzkit/corpus/<surface>.jsonl``) appears verbatim in the rendition
-    text. Returns one ``ValidationError`` per rendition that omits any invariant
-    entry (exit 3); empty list when the floor holds, the corpus is absent, or no
-    invariant entries are declared (bootstrap-safe).
+    text. In fail-closed mode each rendition that omits any invariant entry yields
+    one ``ValidationError`` (exit 3) and emits a ``composition_drift_detected``
+    event; in warn mode (the staged default) each yields a stderr WARNING and is
+    omitted from the returned list (no ledger mutation). Empty list when the floor
+    holds, the corpus is absent, or no invariant entries are declared
+    (bootstrap-safe).
     """
+    closed = _FLOOR_FAIL_CLOSED if fail_closed is None else fail_closed
+
     renditions_dir = root / ".gzkit" / "renditions"
     if not renditions_dir.exists():
         return []
@@ -58,6 +80,19 @@ def validate_rendition_floor_coherence(root: Path) -> list[ValidationError]:
             consumer = rendition_file.stem
             target = f"{surface}/{consumer}"
             missing_ids = ", ".join(entry.id for entry in missing)
+            message = (
+                f"Committed rendition {target!r} omits {len(missing)} invariant-tier "
+                f"corpus entr{'y' if len(missing) == 1 else 'ies'} ({missing_ids}); the "
+                "rendition does not satisfy canon's invariant floor (the canon->rendition "
+                "seam ADR-0.0.37 requires). Recompose with a candidate that includes "
+                f"every invariant-tier entry verbatim: `gz content compose {surface}`, "
+                "attest the candidate, then recommit the rendition."
+            )
+            if not closed:
+                print(
+                    f"WARNING [rendition-floor-coherence, staged warn]: {message}", file=sys.stderr
+                )
+                continue
             emit_composition_drift_detected(
                 root=root,
                 target=target,
@@ -67,14 +102,7 @@ def validate_rendition_floor_coherence(root: Path) -> list[ValidationError]:
                 ValidationError(
                     type="rendition_floor_coherence",
                     artifact=target,
-                    message=(
-                        f"Committed rendition {target!r} omits {len(missing)} invariant-tier "
-                        f"corpus entr{'y' if len(missing) == 1 else 'ies'} ({missing_ids}); the "
-                        "rendition does not satisfy canon's invariant floor (the canon->rendition "
-                        "seam ADR-0.0.37 requires). Recompose with a candidate that includes "
-                        f"every invariant-tier entry verbatim: `gz content compose {surface}`, "
-                        "attest the candidate, then recommit the rendition."
-                    ),
+                    message=message,
                 )
             )
 

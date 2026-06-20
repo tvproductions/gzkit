@@ -53,7 +53,7 @@ class TestFloorViolation(_TempProject):
         append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
         save_rendition(self.root, "AGENTS.md", "claude", b"# AGENTS.md\n\nUnrelated body.\n")
 
-        errors = validate_rendition_floor_coherence(self.root)
+        errors = validate_rendition_floor_coherence(self.root, fail_closed=True)
 
         self.assertEqual(len(errors), 1)
         self.assertEqual(errors[0].type, "rendition_floor_coherence")
@@ -65,11 +65,29 @@ class TestFloorViolation(_TempProject):
         append_entry(self.root, "AGENTS.md", _entry(_INV2, entry_id="corpus-headless"))
         save_rendition(self.root, "AGENTS.md", "claude", b"# AGENTS.md\n\nNeither here.\n")
 
-        errors = validate_rendition_floor_coherence(self.root)
+        errors = validate_rendition_floor_coherence(self.root, fail_closed=True)
 
         self.assertEqual(len(errors), 1)
         self.assertIn("corpus-tty", errors[0].message)
         self.assertIn("corpus-headless", errors[0].message)
+
+
+class TestStagedWarn(_TempProject):
+    """OBPI-0.0.41 warn→fail staging — sibling-consistent with rendition_freshness.
+
+    While ADR-0.0.37's corpus→rendition ceremony is repudiated/un-designed
+    (GHI #623, #635), floor drift is a stderr WARNING that keeps ``gz check``
+    green — never a fail-closed ValidationError — exactly as rendition_freshness
+    stages it. The flag flips to fail-closed only when the ceremony is designed
+    and the renditions are re-seeded under real attestation.
+    """
+
+    def test_warn_stage_missing_invariant_returns_no_errors(self) -> None:
+        """Default (warn) staging: a missing invariant warns, returns no errors."""
+        append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
+        save_rendition(self.root, "AGENTS.md", "claude", b"# AGENTS.md\n\nUnrelated body.\n")
+
+        self.assertEqual(validate_rendition_floor_coherence(self.root), [])
 
 
 class TestFloorSatisfied(_TempProject):
