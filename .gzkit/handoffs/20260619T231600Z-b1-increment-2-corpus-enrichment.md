@@ -11,6 +11,19 @@ continues_from: .gzkit/handoffs/20260619T224207Z-b1-increment-1-rendition-commit
 
 <!-- Handoff document for ADR-0.0.37 — created by claude-code at 2026-06-19T23:16:00Z -->
 
+## 🛑 SUPERSEDED 2026-06-20 — the next pull is NOT B.1
+
+**This handoff's advised next step (B.1 Increment 2 rendition rebuild) is no
+longer the topmost pull.** Per the Magna Carta amendment dated 2026-06-20
+(`docs/governance/build-to-1.0-campaign-2026-06-10.md`, operator-verbatim:
+*"handoff and magna carta are stale, 0.0.74 should be a P0 issue, look"*),
+**ADR-0.0.74-mx-mode-maintenance-hangar (MX Mode) is now the topmost P0 pull**
+and **B.1 (ADR-0.0.37) is PAUSED behind it.** B.1 Increment 2's
+`_FRESHNESS_FAIL_CLOSED=True` flag-flip is the exact staging flag
+OBPI-0.0.74-09 retires; B.1 resumes against the MX marker mechanism only after
+0.0.74 lands. Orient to the campaign's `Topmost (sequenced)` marker — not to the
+"Advised next step" below.
+
 ## ⚠️ This handoff ADVISES next moves — it is NOT authorization to execute them
 
 **Read this before anything else.** A handoff records a *proposed* plan and its

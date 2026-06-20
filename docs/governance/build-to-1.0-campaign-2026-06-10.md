@@ -460,6 +460,26 @@ Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
 >   corpus rebuild** (reopens behind the completed 0.0.73), then Phase 0 (0.2–0.8).
 > - Floor green at boundary (`uv run gz check` ✓, `main` synced at `dec9497d`).
 
+> **Amendment (operator verbatim, 2026-06-20) — ADR-0.0.74 MX Mode seated as the
+> topmost P0; B.1 paused behind it.** Operator: *"handoff and magna carta are
+> stale, 0.0.74 should be a P0 issue, look."* → A status review found both
+> steering surfaces blind to **ADR-0.0.74-mx-mode-maintenance-hangar** (authored
+> 2026-06-20, foundation/heavy, 10 OBPIs, 0/10). It postdates the campaign's last
+> amendment (2026-06-19) and the most-recent handoff
+> (`20260619T231600Z-b1-increment-2-corpus-enrichment.md`), so neither sequences
+> it. The ADR's own Intent declares it a **"Magna Carta L.0 imperative
+> (immediate)"** — P0 by self-ratified text, ahead of B.1. **Ruling (operator,
+> this exchange): pause B.1, land 0.0.74 first.** Rationale (ratified): B.1
+> Increment 2's pending `_FRESHNESS_FAIL_CLOSED=True` flag-flip is the exact
+> hand-set staging flag **OBPI-0.0.74-09 deletes and generalizes** — running B.1
+> first would hand-set the very flag the hangar exists to retire. After 0.0.74
+> lands, the freshness gate resolves its severity through the **one MX marker
+> mechanism**, and **B.1 Increment 2 resumes against that honest path** (its
+> flag-flip step is subsumed, not performed). Per completion-before-reduction this
+> is construction (the hangar is net-new), not a reductive edit. The
+> `Topmost (sequenced)` marker below is updated in the same breath; the stale B.1
+> handoff is superseded so the next SessionStart orients to 0.0.74.
+
 ## Authority and amendment (Magna Carta discipline)
 
 - **It steers; the spine propels.** The governance spine
@@ -597,7 +617,7 @@ gzkit is 1.0 when ALL hold:
 > Until MOTD ships (Phase C), **this file's checklist is the workplan** —
 > sessions work top-down, check items off with observed command evidence.
 
-> **Topmost (sequenced):** ADR-0.0.73 QC-binding meta-audit is **DONE** (9/9 OBPIs; closed out + g0-attested "Completed" 2026-06-19 — ledger `attested` 12:36 / `lifecycle_transition`→Completed 12:37). The pull-order is **B.1 ADR-0.0.37 real corpus rebuild** → Phase 0 enforcement core (0.2–0.8). **B.1 Increment 1 LANDED 2026-06-19** (commit `c070f28a`): OBPI-0.0.37-22's mechanism re-built honestly — `gz content commit` promotion seam, corpus content-fingerprint freshness gate (staged warn→fail per OBPI-0.0.41), `rendition_committed` event; OBPI-22 stays `repudiated` by design. **Next pull = B.1 Increment 2** (corpus enrichment → attested compose+commit → flip `_FRESHNESS_FAIL_CLOSED=True` → `gz obpi complete` OBPI-22 → then 02/03 re-point, 21 re-verify, B.2/#519, B.3).
+> **Topmost (sequenced):** **ADR-0.0.74-mx-mode-maintenance-hangar (MX Mode — Maintenance Hangar)** is the topmost **P0** pull (operator-ratified 2026-06-20 as a "Magna Carta L.0 imperative (immediate)"; foundation/heavy, 10 OBPIs, 0/10). **B.1 (ADR-0.0.37 real corpus rebuild) is PAUSED behind it** — it resumes only after 0.0.74 lands, because B.1 Increment 2's `_FRESHNESS_FAIL_CLOSED=True` flag-flip is the exact staging flag OBPI-0.0.74-09 retires; post-0.0.74 the freshness gate resolves its severity through the MX marker and B.1's flip step is subsumed (not performed). Pull-order: **0.0.74 (OBPI 01→10) → B.1 ADR-0.0.37 corpus rebuild (Increment 2 resumes against the marker mechanism) → Phase 0 enforcement core (0.2–0.8)**. Prior context retained — ADR-0.0.73 QC-binding meta-audit is **DONE** (9/9 OBPIs; closed out + g0-attested "Completed" 2026-06-19 — ledger `attested` 12:36 / `lifecycle_transition`→Completed 12:37); **B.1 Increment 1 LANDED 2026-06-19** (commit `c070f28a`): OBPI-0.0.37-22's mechanism re-built honestly — `gz content commit` promotion seam, corpus content-fingerprint freshness gate (staged warn→fail per OBPI-0.0.41), `rendition_committed` event; OBPI-22 stays `repudiated` by design. **When B.1 resumes:** corpus enrichment → attested compose+commit → marker-resolved freshness → `gz obpi complete` OBPI-22 → then 02/03 re-point, 21 re-verify, B.2/#519, B.3.
 > This marker is the ratified pull-order — it overrides naive top-down because
 > the prose amendments reorder the spine (B.1 reopens *behind* ADR-0.0.73). The
 > Phase-0 checkboxes print first in document order but are **not** what is pulled
