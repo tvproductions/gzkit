@@ -20,9 +20,7 @@ date: 2026-06-20
 
 ## Why foundation tier?
 
-_[Author: Answer the invariance test in one sentence: "Without this ADR, would the project still be the project?" State yes and name the invariance.]_
-
-_[Port-vs-adapter framing: Is this ADR a port (an abstract contract every implementation must honor) or an adapter (one implementation behind an existing port)?]_
+Without a way to maintain its own governance, gzkit cannot stay airworthy and the project stalls. This is the maintenance port—how the system is repaired when it is itself the patient—which points to invariance, not a feature adapter.
 
 ## Intent
 
