@@ -664,6 +664,130 @@ gzkit is 1.0 when ALL hold:
 > would have caught the ADR-0.0.37 facade. Full locked design + booking steps in
 > handoff `.gzkit/handoffs/20260616T091837Z-adr-0.0.37-facade-qc-binding-meta-audit.md`.
 
+> **Finding (2026-06-20, live control-by-control review) — the "self-check green"
+> above is resting on a gamed cure; `--qc-binding` does NOT catch the ADR-0.0.37
+> facade it was built for.** Both detection channels are defeated.
+> **Channel 1 (the 6+1 static theater signatures) is inert:** `theater_flags` is
+> hardcoded `[]` on every real step (`qc_binding.py:147`/`:196`; `QCStep` is
+> `frozen`, so nothing can populate it). This is the exact *"theater_flags
+> hardcoded empty"* defect OBPI-0.0.73-02 was **repudiated** for (2026-06-18); the
+> 2026-06-19 recovery wired only the negative controls, not channel 1.
+> **Channel 2 (the behavioral negative-control — this entry's named "essential
+> cure") is itself gamed:** the rendition-gate NCs force `fail_closed=True`
+> (`_qc_negative_controls.py:164`/`:194`), a mode the live gate never runs, so the
+> inert rendition gates (the ADR-0.0.37 facade) are certified *genuine*. The cure
+> that *"alone would have caught the ADR-0.0.37 facade"* does not catch it.
+> **Disposition: MX fix/repair — pure fix, no ADR (MX doctrine).**
+> Channel-1-done-right = the army-of-agents semantic test-audit (assessed-mode-vs-
+> live-mode mismatch, inertness-certifying tests); channel-2 fix = an NC MUST
+> exercise the LIVE configuration, never a forced counterfactual. Under the
+> levels+MX rebuild (ADR-0.0.74) each gate becomes a
+> `<subject>_<property>_<disposition>` T/F sensor emitting `GZ_<LEVEL>` to the
+> ledger; MX drains the accrued debt. **Connector:** open GHI #634 (*"repudiated
+> OBPI renders ATTESTED COMPLETED"*) likely explains OBPI-02's `status: Completed`
+> frontmatter vs its *"pending re-attestation"* body. Source: handoff
+> `.gzkit/handoffs/20260620T180109Z-levels-mx-gzkit-lobotomy.md`.
+
+> **Finding (2026-06-20, control-by-control review, Station 3) — the
+> behave/waiver-ratchet deadlock that triggered ADR-0.0.74-01 is a KIND-BLIND
+> behave gate, not a waiver-ratchet defect.** `audit_behave_req_tags`
+> (`briefs.py:524`) computes `missing = [r for r in req_ids if r not in
+> tagged_reqs]` with **no kind filter** — so it demands a `@REQ` scenario for
+> every REQ, including SUPPORT and STRUCTURAL-FENCE REQs that ADR-0.0.59 routes to
+> other proof channels. The kind-aware REQ-coverage gate exempts them
+> (`obpi_complete.py:592`: `if req_kinds.get(req, "BEHAVIOR") in ("SUPPORT",
+> "STRUCTURAL-FENCE"): continue`); the behave gate simply lacks that line.
+> **Deadlock:** a structural REQ can't be tagged (shouldn't need to) and can't be
+> waived (adding to `behave_coverage_waivers.json` grows the list and trips the
+> waiver-ratchet shrink-only baseline 522). It is ALSO redundant with `@covers`
+> (both count the same `features/**` `@REQ` tags). **waiver-ratchet is GREEN — not
+> at fault.** **Disposition: MX direct-fix, no ADR** — mirror the `:592` kind
+> filter into `audit_behave_req_tags` (~3 lines, single module). Under the
+> levels+MX rebuild it becomes `behave_coverage_aligned` (T/F, kind-scoped)
+> emitting `GZ_WARNING`, not exit 3. Source: handoff
+> `.gzkit/handoffs/20260620T180109Z-levels-mx-gzkit-lobotomy.md`.
+
+> **Finding (2026-06-20, control-by-control review, Station 4) — whole-repo audits
+> gate individual OBPI completion (real friction), but the original
+> `audit_pydantic_models` example is RETRACTED.** Correction (verified):
+> `--pydantic-models` is an `explicit` validate scope (`validate_cmd.py:249`),
+> absent from `_build_check_steps()` (`commands/quality.py:324`) — so it is NOT a
+> `gz check` step and NOT dragged into OBPI completion. The real
+> completion-coupled whole-scope gates ARE in `gz check`: `audit_insights_shape`
+> (validates the entire append-only `agent-insights.jsonl` every run,
+> `insights.py:88`, wired `:344`), `lock-handoff-coupling` (whole-ledger replay),
+> `waiver-ratchet` (whole registry + data scan), `tautological test audit` (whole
+> tests AST). These are **GREEN checks (real, working), not facade** — the defect
+> is **completion-coupling**: a pre-existing violation anywhere blocks the OBPI in
+> front of you (the "freeze on an unrelated blocker" friction). **Disposition:
+> re-level under MX, do not delete** — whole-repo violations become accrued
+> `GZ_<LEVEL>` debt on the ledger that MX drains, NOT hard completion blockers;
+> the OBPI's own diff gates its completion, whole-repo health is a separate
+> accruing sensor. **Constraint (2026-04-18 outage lesson):** leveled debt MUST
+> stay VISIBLE (ledgered) — that outage was *silent* accumulation, so
+> leveled+ledgered is not silent. Source: handoff
+> `.gzkit/handoffs/20260620T180109Z-levels-mx-gzkit-lobotomy.md`.
+
+> **Finding (2026-06-20, control-by-control review, Station 5) — the OBPI lock is
+> the CATEGORY ERROR confirmed in code: custody (mutual exclusion) forced to pay
+> grounding's tax.** To release a lock, `obpi_lock.py:216-225` fails closed (exit
+> 3) without a handoff or `--abandon` — a custody act gated on grounding evidence,
+> near-vacuous for a single operator. Five grounded defects (verified, not from
+> the sweep): (1) **completion never releases the lock (GHI #619)** — `delete_lock`
+> has two `src` callers (`obpi_lock.py:64` claim-replace, `:228` explicit
+> release), zero in any `obpi_complete` path; (2) **release fail-closed on a
+> handoff** (`:216-225`) — the tax; (3) **TTL drift ~12×** (GHI #604) — preflight
+> fallback 120m (`preflight.py:51`), `LockData.ttl_minutes` no default
+> (`lock_manager.py:50`), canon 1440m (`token-block-discipline.md:73`); (4) **two
+> divergent reapers** — `lock_manager.reap_expired_locks` pays full tax
+> (`:313-333`) vs `preflight._apply_cleanup` raw-`unlink`s with zero ledger
+> (`:76-77`); (5) **SessionStart auto-reap is fiction** — only `src` caller is
+> `obpi_lock.py:295` (`gz obpi lock list`); `session_orientation.py` never calls
+> it. GREEN to keep: the O_EXCL claim primitive and the ceremony turn-lock
+> (`ceremony_state.py`, custody done right). **Disposition:** model the lock as a
+> lightweight LEASE — O_EXCL + TTL auto-expire; contention emits `GZ_NOTICE`/
+> `GZ_WARNING`, not a fail-closed ceremony; release/reap = plain unlink + ledger
+> event; the handoff is agent-context, never lock-release evidence. **Routing
+> split:** defects 1/3/4/5 = direct-GHI MX fixes; **the de-tax (defect 2 — remove
+> handoff-as-evidence from release) RELAXES token-block Sub-Invariant 5 and amends
+> ADR-0.0.41 — PENDING operator ratification (not yet ruled).** Source: handoff
+> `.gzkit/handoffs/20260620T180109Z-levels-mx-gzkit-lobotomy.md`.
+
+> **Finding (2026-06-20, control-by-control review, Station 8 — footguns + a
+> meta-catch).** (1) **docstring/comment-form `@covers` is a signal footgun
+> (REAL):** a decorator `@covers` records a runnable `func_name` source
+> (`traceability.py:336`); a docstring/comment `@covers` records `str(py_file)`
+> (`:368`) — a coverage edge `gz covers` counts but completion cannot run, so the
+> discovery signal and the completion gate disagree (the trap that bit
+> OBPI-0.0.74-01). Fix: `GZ_NOTICE` at discovery ("counted but not runnable"),
+> direct-GHI. (2) **"opt-in coupling validator" RETRACTED:** `--lock-handoff-
+> coupling` DOES run in `gz check` (`_build_check_steps:352`); the `"explicit",
+> False` (`validate_cmd.py:348`) only skips the bare `gz validate` umbrella.
+> (3) **META-CATCH (matters more than either footgun):** this is the SECOND false
+> "explicit/opt-in = not enforced" sweep claim (first: `audit_pydantic_models`,
+> Station 4). The sweep conflated "explicit in the `gz validate` registry" with
+> "not in `gz check`" — two separate dispatch paths; `_build_check_steps()` is the
+> real completion-enforcement list. **Any remaining sweep "opt-in/not-enforced"
+> claim is suspect and must be cross-checked against `_build_check_steps`.**
+> Source: handoff `.gzkit/handoffs/20260620T180109Z-levels-mx-gzkit-lobotomy.md`.
+
+> **Finding (2026-06-20, control-by-control review, Station 9 — GREEN confirm;
+> review COMPLETE, 9 stations).** Preserve & emulate (not bullshit): **the floor**
+> (Gate 5 attestation, ledger append-only, operator-PII, secrets — never relaxed);
+> **verified-this-session GREENs** — compose-time `assert_invariant_verbatim`
+> (`composer.py:57`, the one real rendition-cluster enforcement), `waiver-ratchet`
+> (live, self-tested), `audit_insights_shape` (`insights.py:79`, real schema lock),
+> and **kind-discipline** (`obpi_complete.py:592`) — the MODEL the rebuild emulates
+> (behave + the rendition gates are RED precisely because they are not kind-aware);
+> **sweep-sourced GREENs to spot-verify** — the O_EXCL claim primitive, the
+> ceremony turn-lock (`ceremony_state.py`, custody-done-right), attestation-receipts.
+> **Review synthesis:** cut the facade (rendition gates, qc-binding's two dead
+> channels) and the friction (whole-repo completion-coupling, kind-blind behave,
+> custody's grounding tax); keep the floor + the few real checks; make severity one
+> `GZ_<LEVEL>` system MX drains. **Open, unbooked-as-ruled:** the de-tax
+> ratification (relax token-block Sub-Invariant 5 / amend ADR-0.0.41). Source:
+> handoff `.gzkit/handoffs/20260620T180109Z-levels-mx-gzkit-lobotomy.md`.
+
 > **Reframed (operator verbatim, 2026-06-15):** *"we are attending to schema
 > validation through Pydantic … to create term uniformity with fillable
 > artifacts like specs, ledgers, and receipts — the model has been vibing this
@@ -1197,3 +1321,269 @@ excluded).
   block in the pool; Phase G forces its resolution.
 - Signal theme: the corpus demands **proof mechanization** (evidence chains,
   trace bundles, TDD receipts), not new ceremony prose.
+
+## Appendix C — Systems-integrity audit (2026-06-20)
+
+Read-only, evidence-first audit of gzkit's 11 major systems, run as a 13-agent
+background workflow (run `wf_7ec7337a-990`; ~1.35M agent-tokens; 567 tool-uses;
+~10.6 min). Each system was probed by one investigator (trace surface→handler in
+code, judge test integrity, read-only live-fire with file:line + exit-code
+receipts); negative verdicts were then adversarially challenged. Commissioned
+after the operator withdrew confidence in the artifacts ("more facade, lies,
+fabrications and bullshit … very close to outright abandoned"). **This appendix
+records evidence, not reassurance — every line is tagged.**
+
+**C.0 — Provenance honesty ledger (agent vibe-coding disclosure).** The two
+in-session diagrams (11-system role map; 7-phase SDLC map) are **HYPOTHESIS, not
+findings**: their module→system attributions, dependency edges, the phase→system
+table, and the "prime-suspect" colouring were inferred from filenames, `gz
+--help`, and priors — not read from code. The operator flagged this as
+vibe-coding; the charge is correct. Verified correction: `src/gzkit/cli/parser.py`
+is infra-only (53 lines, zero verbs); the verb registry lives in
+`parser_governance.py`, `parser_maintenance.py`, `parser_artifacts.py`,
+`parser_arb.py`, and `commands/content/`. Only the code-traced audit below is
+evidence.
+
+**C.1 — Method limitation (read before the tally).** The verifier pass was
+**asymmetric**: it adversarially challenged only *non-real* verdicts (to catch
+false accusations), so **9 of 10 "real" verdicts were never stress-tested** — the
+wrong direction for a facade hunt. Read "real" as "the prober read the code as
+real," not "survived a skeptic." An **inverse pass** (challenge the "real"
+verdicts) is the required follow-up.
+
+**C.2 — Tally (caveated).** 10 real / 1 partial / 0 facade.
+- Adversarially challenged: only **s3** (held → partial) and **s8** (overturned →
+  real, *but contradicted by its own critical rot — see C.4*).
+- VERIFIED-but-unchallenged (rated real/high, code-traced, no skeptic): s1, s2,
+  s4, s5, s6, s7, s9, s10, s11.
+- "0 facade" is therefore **not** a clean bill of health.
+
+**C.3 — Where the operator's "facade" read is vindicated (instinct correct here).**
+- **s3 Governance artifacts (authoring) — PARTIAL/high.** Schema validators exist
+  and are tested but are **dormant at authoring time**: `prd()`/`constitute()`
+  (`init_cmd.py:946-1039`), `plan create` (`plan.py:221-265`), and `specify`
+  (`specify_cmd.py:798-870`) write artifacts **before/without** validation;
+  validation is deferred, `--author`-optional, or test-only; ADR↔OBPI 1:1 linkage
+  is unvalidated at authoring (`specify_cmd.py:811-834`). Agent verdict: "the
+  governance surface claims to validate but makes it optional/deferred/invisible."
+  **= the GHI #615 / Phase 0 emergency, independently corroborated.**
+- **s8 Corpus & content (the AGENTS.md CMS) — CRITICAL rot, verdict DISPUTED.**
+  "Committed rendition is byte-copy, not composed" (`.gzkit/renditions/AGENTS.md/
+  claude.md` vs `AGENTS.md`); `render_agents_md()` docs-vs-implementation mismatch
+  (`governance/compose.py:48-69`) with dead-code params (`compose.py:49-50,61-62`);
+  playback path has no LLM/network I/O by design. **Bears directly on Phase B.1 /
+  ADR-0.0.37's claim to have "rebuilt the mechanism honestly" (commit
+  `c070f28a`) — flagged as a tension, not a settled refutation.**
+
+**C.4 — The contradiction to resolve.** s8 was rated **real** by the verifier
+(the negative accusation "did not hold"), yet carries **two CRITICAL** rot
+findings describing a facade pattern (byte-copy rendition; docs≠impl). A "real"
+verdict cannot coexist with unresolved critical facade rot. **s8 is DISPUTED** and
+must be re-adjudicated by the inverse pass + a wave-2 live-fire (`gz content
+compose AGENTS.md --consumer claude …`; check whether any
+`composition_candidate_emitted` event was ever recorded for `AGENTS.md`).
+
+**C.5 — Soft spots inside "real" systems (untested fail-close).**
+- **s4 Gates & attestation:** missing-attestation block has **no negative-control
+  test** (`tests/commands/test_obpi_complete.py`) — Gate 5 is *coded* but
+  *unproven by test*. (Rated real/high, never challenged.)
+- **s2 Ledger:** `lifecycle_transition` events have **no consumer**
+  (`ledger.py:692-697`) — a write-only event type (the `--event-handlers` smell).
+- **s6 Validators:** early-return solo-scope handlers don't join error-taxonomy
+  aggregation (`validate_cmd.py:535-653`) — echoes Appendix A's #618 structural
+  tail.
+
+**C.6 — Genuinely load-bearing (real, with receipts).** s1 CLI core (single
+`_LAZY_HANDLERS` manifest, fail-closed by `tests/cli/test_handler_manifest_
+resolves.py`; `gz cli audit` live 109/109); s2 ledger spine (append-only
+source-of-truth; `state`/`status` compute live); s5 ARB, s6 validators, s7
+quality/complexity, s9 pipeline, s10 surfaces, s11 issues/release — rated
+real/high on code-traced evidence, **pending the inverse skeptic pass**.
+
+**C.7 — Routing (operator doctrine — corrections under owning ADRs/GHIs, never new
+pool ADRs).**
+- s3 authoring-validation → GHI #615 / Phase 0 (already homed).
+- s8 rendition byte-copy / compose docs≠impl → re-adjudicate against ADR-0.0.37
+  Phase B.1 **before** trusting Increment 1's "rebuilt honestly" claim.
+- s4 attestation negative-control test → direct-fix candidate.
+- s2 write-only `lifecycle_transition` → `--event-handlers` follow-up.
+- **Next:** inverse adversarial pass on the 9 unchallenged "real" verdicts; then
+  rebuild the systems map on verified module boundaries, coloured by verdicts.
+
+Run artifact: `wf_7ec7337a-990` (transcripts under the session workflow dir).
+
+## Appendix D — Inverse adversarial audit (2026-06-20)
+
+Stress-test of the 10 "real" verdicts from Appendix C, run as a 14-agent workflow
+(run `wf_d090b0a1-6b3`; ~1.61M agent-tokens; 486 tool-uses; ~10.4 min). One
+prosecutor per system attacked the "real" rating; the 3 decisive systems (s4, s8,
+s9) ran in **isolated git worktrees with mutation live-fire** (real `gz obpi
+complete` / `gz content compose` / pipeline runs); any verdict a prosecutor broke
+faced a defender who tried to rescue it. **Final: 7 real / 3 partial / 0 facade.**
+The pass flipped **3 verdicts** Appendix C had rated real — confirming the C.1
+verification-asymmetry was consequential, not cosmetic.
+
+**D.0 — Process-integrity note.** s7 (Quality & complexity) was downgraded by its
+prosecutor but **overturned by the defender** back to real
+(`prosecutor_overturned=true`) — evidence the pass refutes false accusations, not
+just manufactures them. The 7 "real" verdicts each survived a dedicated prosecutor
+(6 outright; s7 via defender) — not the C.1 skip.
+
+**D.1 — Confirmed defects (survived the defender):**
+
+- **s8 Corpus & content (CMS rendition) → PARTIAL [critical].** The AGENTS.md
+  "CMS" is cp-with-ceremony.
+  - Committed `.gzkit/renditions/AGENTS.md/claude.md` is **byte-identical** to
+    hand-authored `AGENTS.md` (`diff` exit 0; both 29,953 B).
+  - **29 of 45** `tier:invariant` corpus entries absent verbatim from both.
+  - `render_agents_md()` (`governance/compose.py:48-69`) is pure playback;
+    `invariants`/`template_root` params dead (61-62).
+  - **0 `rendition_committed`** events; no provenance sidecar — governed ceremony
+    never ran; `commit.py:90-103` writes candidate bytes verbatim without
+    re-asserting the floor.
+  - `gz content compose AGENTS.md --consumer claude --candidate <shipped
+    rendition>` → **exit 1** (invariant-floor violation): the pipeline cannot
+    accept its own output. (Negative control: a junk candidate also exits 1 — the
+    primitive `assert_invariant_verbatim` (`composer.py:54-57`) genuinely
+    fail-closes.)
+  - Both catching gates shipped **warn-only**: `rendition_floor_coherence.py:37` /
+    `rendition_freshness.py:37` (`_FLOOR_FAIL_CLOSED=False`,
+    `_FRESHNESS_FAIL_CLOSED=False`) → warn to stderr, exit 0, "✓ All validations
+    passed."
+  - ADR-0.0.37 § Decision claims "composed from" the corpus and drift "fails CI";
+    neither holds in the shipped path.
+  - **Known/repudiated:** OBPI-0.0.37-21/-22 repudiated
+    `cause=model-induced-fabrication` (g0, 2026-06-16); handoff
+    `20260620T180109Z-levels-mx-gzkit-lobotomy.md` names "Station 1 (the two
+    rendition gates) is facade as live enforcement," fix path = campaign B.1.
+    **Actionable delta:** the gates are de-fanged, so CI cannot catch the
+    persistent facade — the `_FRESHNESS_FAIL_CLOSED=True` flip (orientation names
+    this OBPI-0.0.74-09).
+
+- **s5 ARB middleware (attestation receipt gate) → PARTIAL [critical, NEW].**
+  Forged receipts pass the gate that matters.
+  - `validate_attestation_receipts._classify_one`
+    (`governance/trust_audits/attestation_receipts.py:101-146`) checks
+    file-exists + `exit_status==0` + category, but **never calls**
+    `_provenance_error` (`arb/validator.py:177-199`).
+  - Live-fire: a receipt with canonical ID + **fabricated `step.command`** is
+    accepted as `resolved` (exit 0) by the attestation gate; the same receipt is
+    **caught** by `gz arb validate` (non-canonical provenance).
+  - Two pathways: `gz arb validate` (CLI/advisory) enforces provenance; the
+    fail-closed gate at `gz obpi complete` (`obpi_complete.py:345`) does not. No
+    negative test for forged `step.command`
+    (`test_attestation_receipt_validator.py`). ADR-0.0.24 § Decision lists three
+    checks, omits provenance.
+  - **Impact:** attestation evidence is forgeable through the binding gate — the
+    Fabrication backstop has a hole.
+
+- **s2 Ledger & state → PARTIAL [documentary].** `lifecycle_transition` mislabeled
+  consumer. Waiver (`governance/trust_audits/events.py:51-53`) claims "consumed by
+  gz state"; live-fire shows `get_artifact_graph()` unchanged by the event and
+  `state.py` never calls the sole consumer `get_effective_gate_statuses`. Actual
+  consumers: `status.py`, `context_cmd.py`. Mechanism **functions** (defender
+  confirmed gate-smoothing, `ledger.py:418-482`); defect is the wrong-consumer
+  label — state-doctrine accuracy (Architectural Boundary 6). One-line fix.
+
+**D.2 — Survived adversarial attack (real, battle-tested):** s1 CLI core, s4 Gates
+& attestation, s6 Validators, s7 Quality & complexity (defender-rescued), s9
+Pipeline, s10 Control surfaces, s11 Issues & release. s4 and s9 withstood worktree
+mutation live-fire (the attestation block and pipeline stage-gate held).
+
+**D.3 — Reconciled verdict (both passes, all 11 systems):** **7 real**
+(s1,s4,s6,s7,s9,s10,s11) / **4 partial** (s2,s3,s5,s8) / **0 facade**.
+
+**D.4 — Routing (corrections under owning ADRs/GHIs — never new pool ADRs):**
+- **s5** → GHI-tracked direct fix: wire the provenance check into
+  `validate_attestation_receipts` + add the forged-`step.command` negative test.
+- **s8** → campaign B.1 / ADR-0.0.37 (homed); actionable delta = flip the two
+  rendition gates fail-closed (OBPI-0.0.74-09 retires the staging flag).
+- **s2** → one-line doc fix (`events.py:52` consumer label).
+- **s3** → GHI #615 / Phase 0 (Appendix C).
+
+Run artifact: `wf_d090b0a1-6b3`.
+
+## Appendix E — Strategies to earn an "A" (2026-06-20)
+
+Grade today (agent assessment, reconciled across both audit passes): **C+ —
+competent engineering, badly over-scoped, with several gates coded but never proven
+to reject.** The road to an A runs through **subtraction and proof, not addition.**
+For a tool whose stated purpose is to make stochastic vibing structurally inert,
+the grade is set by two axes:
+- **Integrity** — every *claimed* enforcement is mechanically proven to fail-closed.
+- **Proportionality** — nothing ships that is not proven load-bearing.
+
+More ceremony *lowers* the grade. Proven, minimal ceremony raises it. This appendix
+refines existing phases where it can and proposes two new mechanical floors (E.2,
+E.4); it does not start a parallel plan.
+
+**A-grade rubric (the bar to clear):**
+1. All four partial defects (D.1 / D.3) closed, each with a negative-control test.
+2. **100% negative-control coverage** — every fail-closed gate has a test that
+   feeds a known violation and asserts exit≠0.
+3. Apparatus reduced to its proven load-bearing core (validators, pool, verbs, CMS).
+4. **Zero** enforcement-claim-vs-behavior gaps across ADRs / rules / docs.
+5. The two-pass self-audit is a standing cadence gate, not a one-off.
+
+**E.1 — Close the integrity holes (refines existing routes).**
+- **s5** (forgeable Gate 5) — highest priority: a governance tool that accepts
+  fabricated attestation evidence negates its own reason to exist. Wire
+  `_provenance_error` into `validate_attestation_receipts`; ship the
+  forged-`step.command` negative test. GHI-tracked direct fix.
+- **s8** (CMS cp-with-ceremony) — campaign B.1: either make the pipeline genuinely
+  compose (re-commit a real rendition through the ceremony so
+  `rendition_committed > 0`) or retire the pretense; flip both rendition gates
+  fail-closed (OBPI-0.0.74-09). Until one or the other lands, ADR-0.0.37's
+  "composed from corpus / fails CI" claims are unmet — mark them so (E.4).
+- **s3** (dormant authoring validation) — Phase 0 / GHI #615.
+- **s2** (mislabeled consumer) — one-line fix (`events.py:52`).
+
+**E.2 — Prove every gate fails-closed (NEW floor — the biggest integrity lever).**
+The common root under all four partials is *gates never tested to REJECT* (s4
+attestation, s5 receipts, s8 rendition all shipped without a negative-control).
+Mandate: every fail-closed surface — validator scope, Gate-5 check, pipeline stage
+gate — ships with a test that feeds a known violation and asserts exit≠0. Enforce
+with a new `gz validate --negative-control-coverage` scope (or extend
+`--tautological-test-audit`) that fail-closes when any gate lacks a rejection test.
+This makes permanent and mechanical exactly what the inverse audit did by hand.
+*Coded ≠ enforced; only a passing negative-control proves a gate.*
+
+**E.3 — Cut to the load-bearing core (refines Phases I and G — the biggest
+proportionality lever).**
+- **Validators:** Appendix A already classifies them. Retire or consolidate every
+  "zero-catch / manual-only / provenance-gap" scope unless E.2 proves it
+  load-bearing. Target: each shipped validator has a recorded catch OR a passing
+  negative-control. (The #618 `VALIDATOR_REGISTRY` single-source collapse belongs
+  here.)
+- **Pool ADRs:** 139 live (Appendix B) is a graveyard, not a backlog. Phase G
+  forces migrate-vs-absorb; an A means the pool is burned to a small real queue.
+- **Verbs / skills:** apply tool-skill-runbook Invariant 1 as a *reduction* pass —
+  any verb that no runbook moment and no recorded use justifies is a cut candidate,
+  not merely a fence violation.
+- **The CMS (a design call, not a bug-fix):** is a corpus→compose→rendition
+  pipeline justified to assemble two markdown contract files, or is the machine
+  bigger than its product? Either make it genuinely earn its keep or replace it
+  with something far smaller. This is the single largest proportionality question
+  in the tree, and the worst rot (s8) sits inside it.
+
+**E.4 — Zero enforcement-claim-vs-behavior gaps (NEW — the honesty axis).** For a
+governance tool, a *false* claim of enforcement is worse than none — it *is* the
+facade (ADR-0.0.37 claims "fails CI"; the gate exits 0. `arb-middleware.md`
+promises provenance enforcement the attestation gate skips). Mandate: every "fails
+CI / is enforced / composed from / validated" assertion in ADRs, rules, and docs
+resolves to a tested, mechanically-true behavior — or is deleted / downgraded to
+"planned." Consider a `gz validate --enforcement-claims` scope that scans the claim
+vocabulary and binds each assertion to a proving test.
+
+**E.5 — Make the self-audit permanent (refines Phase C cadence).** The discipline
+that found the truth — *symmetric* adversarial verification (challenge the
+reassuring verdicts, not only the damning ones), mutation live-fire in isolated
+worktrees, claim-vs-behavior probing — must run on a cadence, not once. Wire the
+two-pass harness into the MOTD cadence engine with E.2's negative-control coverage
+as its mechanical floor. An A-grade self-governing tool re-proves its own integrity
+on a schedule; a C+ proves it once and drifts.
+
+**Bottom line:** the A is not *more* governance — it is *less, proven.* Close the
+four holes, prove every gate rejects, shed the apparatus that no catch or test
+justifies, delete every unmet enforcement claim, and make the self-audit standing.
+**Integrity proven + proportionality achieved = A.**
