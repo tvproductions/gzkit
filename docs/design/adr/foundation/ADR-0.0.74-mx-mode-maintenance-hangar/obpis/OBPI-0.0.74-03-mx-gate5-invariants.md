@@ -6,13 +6,16 @@ lane: Heavy
 status: Draft
 req_atomic:
   # The never-relax floor is one indivisible authoring unit: the gate5_invariants
-  # code constant and the structural guarantee that the checkpoint cannot
-  # downgrade a member ship together (src/gzkit/mx/invariants.py plus the guard
-  # inside src/gzkit/mx/checkpoint.py) with one covering test module. No REQ
-  # below decomposes into independently-attributable labor steps.
-  - REQ-0.0.74-03-01  # gate5_invariants code constant naming the never-relax guards
-  - REQ-0.0.74-03-02  # checkpoint structurally cannot downgrade a member — same unit
-  - REQ-0.0.74-03-03  # STRUCTURAL-FENCE: membership is the never-relax floor
+  # code constant naming the FIVE never-relax guards (incl. grader-gaming) and the
+  # structural guarantee that the leveled checkpoint cannot downgrade a member below
+  # CRITICAL ship together (src/gzkit/mx/invariants.py plus the guard inside
+  # src/gzkit/mx/checkpoint.py) with one covering test module. grader-gaming's
+  # membership is made LIVE by OBPI-13 (the proxy-reality detector); this OBPI owns
+  # the membership constant and the cannot-downgrade floor. No REQ below decomposes
+  # into independently-attributable labor steps.
+  - REQ-0.0.74-03-01  # gate5_invariants code constant naming the five never-relax guards (incl. grader-gaming)
+  - REQ-0.0.74-03-02  # the leveled checkpoint structurally cannot downgrade a member below CRITICAL — same unit
+  - REQ-0.0.74-03-03  # STRUCTURAL-FENCE: membership is the never-relax floor, grader-gaming a member
 ---
 
 # OBPI-0.0.74-03-mx-gate5-invariants: Mx Gate5 Invariants
@@ -20,17 +23,17 @@ req_atomic:
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
-- **Checklist Item:** #3 - "gate5_invariants — the never-relax guards as a code constant (faked Gate-5 attestation, secrets, operator-PII, ledger integrity); structural proof the checkpoint cannot downgrade a member; unit tests"
+- **Checklist Item:** #3 - "gate5_invariants — the never-relax floor as a code constant (faked Gate-5 attestation, secrets, operator-PII, ledger integrity, grader-gaming); structural proof the checkpoint cannot downgrade a member below CRITICAL; unit tests"
 
 **Status:** Draft
 
 ## Objective
 
-The never-relax guards land as a code constant `GATE5_INVARIANTS` at `src/gzkit/mx/invariants.py` (a code constant, NOT config) — faked Gate-5 attestation, secrets, operator-PII, ledger integrity — and the shared checkpoint at `src/gzkit/mx/checkpoint.py` is structurally unable to drop any member to advisory even under an active marker; "done" = the constant names exactly the four never-relax guards in code and unit tests prove the checkpoint cannot downgrade a member.
+The never-relax floor lands as a code constant `GATE5_INVARIANTS` at `src/gzkit/mx/invariants.py` (a code constant, NOT config) naming the FIVE integrity-class guards — faked Gate-5 attestation, secrets, operator-PII, ledger integrity, and grader-gaming — and the leveled checkpoint at `src/gzkit/mx/checkpoint.py` is structurally unable to resolve any member below CRITICAL even under an active marker. grader-gaming joins because the observability system is itself a grader; its floor membership is made *live* (not merely named) by the proxy-reality detector (OBPI-13 / BI#5) per the §5 enforcement-claim rule. "Done" = the constant names exactly the five never-relax guards in code and unit tests prove the checkpoint cannot downgrade a member below CRITICAL.
 
 ## Lane
 
-**Heavy** - This OBPI ships a runtime-contract surface — the never-relax floor on which airworthiness rests, which the checkpoint reads and can never relax — so all gates apply.
+**Heavy** - This OBPI ships a runtime-contract surface — the never-relax floor on which airworthiness rests, which the leveled checkpoint reads and can never relax below CRITICAL — so all gates apply.
 
 > Heavy is reserved for command/API/schema/runtime-contract changes. Process,
 > documentation, and template-only work stays Lite unless it changes one of
@@ -38,28 +41,28 @@ The never-relax guards land as a code constant `GATE5_INVARIANTS` at `src/gzkit/
 
 ## Allowed Paths
 
-- `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md` — parent ADR for intent and scope
-- `src/gzkit/mx/invariants.py` **CREATE** — the `GATE5_INVARIANTS` code constant naming the never-relax guards (faked Gate-5 attestation, secrets, operator-PII, ledger integrity)
-- `src/gzkit/mx/checkpoint.py` — the checkpoint reads `GATE5_INVARIANTS` and structurally cannot downgrade a member (consumer of the constant)
-- `tests/mx/test_gate5_invariants.py` **CREATE** — unit tests for the constant's membership and the cannot-downgrade guarantee
+- `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md` — parent ADR for intent and scope (§ Decision item 3, § Boundary Invariants #3)
+- `src/gzkit/mx/invariants.py` **CREATE** — the `GATE5_INVARIANTS` code constant naming the five never-relax guards (faked Gate-5 attestation, secrets, operator-PII, ledger integrity, grader-gaming)
+- `src/gzkit/mx/checkpoint.py` — the leveled checkpoint reads `GATE5_INVARIANTS` and structurally cannot resolve a member below CRITICAL (consumer of the constant)
+- `tests/mx/test_gate5_invariants.py` **CREATE** — unit tests for the constant's five-member set and the cannot-downgrade-below-CRITICAL guarantee
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/obpis/OBPI-0.0.74-03-mx-gate5-invariants.md` — this brief (evidence recording)
 
 ## Creates These Files
 
 - `src/gzkit/mx/invariants.py`
 - `tests/mx/test_gate5_invariants.py`
-- `src/gzkit/mx/checkpoint.py`
 
 ## Denied Paths
 
 - Paths not listed in Allowed Paths
+- The `GZ_<LEVEL>` vocabulary (owned by OBPI-0.0.74-11) and the proxy-reality live detector that makes grader-gaming's membership live (owned by OBPI-0.0.74-13)
 - New dependencies
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: This OBPI MUST deliver: gate5_invariants — the never-relax guards as a code constant (faked Gate-5 attestation, secrets, operator-PII, ledger integrity); structural proof the checkpoint cannot downgrade a member; unit tests.
-1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
+1. REQUIREMENT: This OBPI MUST deliver: gate5_invariants — the never-relax floor as a code constant (faked Gate-5 attestation, secrets, operator-PII, ledger integrity, grader-gaming); structural proof the leveled checkpoint cannot downgrade a member below CRITICAL; unit tests.
+1. REQUIREMENT: `GATE5_INVARIANTS` MUST name exactly the five never-relax guards in code (not config); grader-gaming is a member.
 1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
 1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
 1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
@@ -70,8 +73,9 @@ The never-relax guards land as a code constant `GATE5_INVARIANTS` at `src/gzkit/
 
 **Parent ADR (read first; order pinned — GHI #321):**
 
-- [ ] **Parent ADR § Decision item — quote the line this OBPI implements** verbatim into the brief's Implementation Summary. The Decision item is the contract; everything else hangs off it.
-- [ ] Parent ADR § Intent — the why-frame for the Decision read above.
+- [ ] **Parent ADR § Decision item 3 — quoted verbatim:** "gate5_invariants — the never-relax floor. The integrity-class guards as a code constant (not config): faked Gate-5 attestation, secrets, operator-PII, ledger integrity, and grader-gaming. The marker can never downgrade a member below CRITICAL. grader-gaming joins because the observability system is itself a grader and the model games graders increasingly (Opus 4.8 § 6.1.2, named the most concerning training trend); a grader-gaming that could go advisory in the hangar would make MX the safe place to vibe undetected. Its floor membership is bound to a live detector (item 13) per the §5 enforcement-claim rule."
+- [ ] Parent ADR § Boundary Invariants #3 — the set `{faked Gate-5 attestation, secrets, operator-PII, ledger integrity, grader-gaming}` is the never-relax floor.
+- [ ] Parent ADR § Intent — the why-frame; 'Loose in the bay, hard at the door', the floor is what airworthiness rests on.
 - [ ] Parent ADR file: `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 
 > **STOP:** If you cannot quote the parent ADR § Decision item that this OBPI implements, STOP and re-read. Do not proceed to Allowed Paths, Prerequisites, or implementation until the Decision quote is in hand.
@@ -83,12 +87,14 @@ The never-relax guards land as a code constant `GATE5_INVARIANTS` at `src/gzkit/
 
 **Context:**
 
-- [ ] Related OBPIs in same ADR
+- [ ] `src/gzkit/mx/checkpoint.py` (OBPI-02) — the checkpoint that reads `GATE5_INVARIANTS` and can never relax a member
+- [ ] `src/gzkit/mx/levels.py` (OBPI-11) — the `GZ_<LEVEL>` vocabulary; CRITICAL is the floor a member pins to
+- [ ] OBPI-0.0.74-13 (proxy-reality detector) — makes grader-gaming's membership live, not named (BI#5)
 
 **Prerequisites (check existence, STOP if missing):**
 
 - [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/**`
+- [ ] `src/gzkit/mx/checkpoint.py` exists (OBPI-0.0.74-02 has landed)
 - [ ] Parent ADR evidence artifacts referenced by this brief are present
 
 **Existing Code (understand current state):**
@@ -144,15 +150,15 @@ test -f tests/mx/test_gate5_invariants.py
 ## Demo
 
 ```bash
-# The never-relax guards as a code constant — these can never drop to advisory.
+# The five never-relax guards as a code constant — none can resolve below CRITICAL.
 uv run python -c "from gzkit.mx.invariants import GATE5_INVARIANTS; print(sorted(GATE5_INVARIANTS))"
 ```
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.74-03-01 [behavior]: Given `GATE5_INVARIANTS`, when it is read, then it is a code constant (defined in `src/gzkit/mx/invariants.py`, not loaded from config) naming exactly the never-relax guards — faked Gate-5 attestation, secrets, operator-PII, ledger integrity. (@covers test in `tests/mx/test_gate5_invariants.py`)
-- [ ] REQ-0.0.74-03-02 [behavior]: Given an active marker, when the checkpoint resolves a guard that is a member of `GATE5_INVARIANTS`, then the member stays fail-closed — the checkpoint structurally cannot downgrade it to advisory. (@covers test in `tests/mx/test_gate5_invariants.py`)
-- [ ] REQ-0.0.74-03-03 [structural-fence]: Membership of `GATE5_INVARIANTS` is the never-relax floor on which airworthiness rests; no marker, lane, or sensitivity can remove a member. (parent ADR § Boundary Invariants — gate5_invariants never-relax floor)
+- [ ] REQ-0.0.74-03-01 [behavior]: Given `GATE5_INVARIANTS`, when it is read, then it is a code constant (defined in `src/gzkit/mx/invariants.py`, not loaded from config) naming exactly the five never-relax guards — faked Gate-5 attestation, secrets, operator-PII, ledger integrity, grader-gaming. (@covers test in `tests/mx/test_gate5_invariants.py`)
+- [ ] REQ-0.0.74-03-02 [behavior]: Given an active marker, when the leveled checkpoint resolves a guard that is a member of `GATE5_INVARIANTS`, then the member's effective level stays CRITICAL — the checkpoint structurally cannot downgrade it below CRITICAL. (@covers test in `tests/mx/test_gate5_invariants.py`)
+- [ ] REQ-0.0.74-03-03 [structural-fence]: Membership of `GATE5_INVARIANTS` is the never-relax floor on which airworthiness rests, and grader-gaming is a member; no marker, lane, or sensitivity can downgrade a member below CRITICAL. (parent ADR § Boundary Invariants #3 — gate5_invariants is the never-relax floor, grader-gaming a member)
 
 ## Completion Checklist
 
@@ -203,10 +209,13 @@ uv run python -c "from gzkit.mx.invariants import GATE5_INVARIANTS; print(sorted
 
 ### Value Narrative
 
+Before: the never-relax floor was a four-member integrity set, and grader-gaming — the most concerning training trend (Opus 4.8 § 6.1.2) — had no floor protection, so a grader-gaming guard could go advisory in the hangar and make MX the safe place to vibe undetected. Now: grader-gaming is the fifth `GATE5_INVARIANTS` member, the leveled checkpoint cannot resolve any member below CRITICAL, and the membership is made live (not named) by OBPI-13's proxy-reality detector per the §5 enforcement-claim rule.
+
 ### Key Proof
 
 ### Implementation Summary
 
+- **Decision item 3 (verbatim):** "gate5_invariants — the never-relax floor. The integrity-class guards as a code constant (not config): faked Gate-5 attestation, secrets, operator-PII, ledger integrity, and grader-gaming. The marker can never downgrade a member below CRITICAL. ... Its floor membership is bound to a live detector (item 13) per the §5 enforcement-claim rule."
 - Files created/modified:
 - Tests added:
 - Date completed:

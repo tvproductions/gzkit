@@ -133,10 +133,12 @@ The two engines detail below; every unit of work is one or the other.
 
 ### 3b. Maintenance engine — levels → MX hangar (self-repair)
 
-- **Gates become T/F sensors** emitting a kernel-style `GZ_<LEVEL>` (0 `EMERG` →
-  7 `DEBUG`) to the ledger. The level — not a hand-set `_FAIL_CLOSED` bool —
-  drives the **disposition**: top-of-scale → **AOG** (immediate hangar trip + GHI
-  + insight); lower → **advisory debt accrued, visibly, on the ledger**.
+- **Gates become T/F sensors** emitting a Python `logging` `GZ_<LEVEL>`
+  (CRITICAL 50 / ERROR 40 / WARNING 30 / NOTICE 25 / INFO 20 / DEBUG 10 — NOTICE
+  the agent-fidelity / V.I.B.E.S. drift band) to the ledger. The level — not a
+  hand-set `_FAIL_CLOSED` bool — drives the **disposition**: CRITICAL → **AOG**
+  (immediate hangar trip + GHI + insight); below the `>= ERROR` grounding
+  threshold → **advisory debt accrued, visibly, on the ledger**.
 - **The hangar (MX):** a filesystem **marker** means "in maintenance." While the
   marker is present: **PRIME DIRECTIVE binds the whole session**, most gates drop
   to advisory **except the never-relax floor (§5)**, and a **hard exit re-runs
@@ -266,3 +268,15 @@ interleaved into the body. The campaign rules sequencing; handoffs and triage
   2026-06-20; retained for audit. Its live threads (the green floor invariant, the
   work-phase theories as a 1.0 gate, the GHI backlog cadence) are carried forward
   above; its accreted resequencing history is **history**, not steering.
+
+### Amendments
+
+- **2026-06-21 (operator-ratified) — §3b severity ladder: kernel/syslog 0–7 →
+  Python `logging` + NOTICE.** §3b originally specified a kernel-style
+  `GZ_<LEVEL>` (0 `EMERG` → 7 `DEBUG`). ADR-0.0.74 D1 supersedes it with the
+  Python `logging` ladder (CRITICAL 50 / ERROR 40 / WARNING 30 / NOTICE 25 /
+  INFO 20 / DEBUG 10), NOTICE=25 the V.I.B.E.S. drift band, grounding threshold
+  effective `>= ERROR`, on **STDLIB-FIRST** grounds — the stdlib constants are
+  reused rather than re-inventing a 0–7 convention whose top rungs (EMERG/ALERT)
+  no governance gate uses (ADR-0.0.74 § Alternatives, rejection (f)). §3b is
+  amended in place to match. Ratified: "ratified" — g0, 2026-06-21.

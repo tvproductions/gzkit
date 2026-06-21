@@ -5,18 +5,20 @@ item: 5
 lane: Heavy
 status: Draft
 # req_atomic: each REQ is one coherent surface authored in a single TDD
-# increment — the full-strength re-run against the enter-time scope (01), the
-# hard-refuse / no-force / no-narrowing fail-close (02), the operator-signs +
-# write-close + clear-marker green path (03), the manpage + cli-audit doc
-# deliverable (04), and the exit-only-clears boundary fence (05). None
-# decomposes into parallel seq=02+ sub-tasks (ADR-0.0.64 task-envelope
-# exemption).
+# increment — the full-strength re-run (re-emit levels) against the enter-time
+# scope (01), the hard-refuse / no-force / no-narrowing fail-close (02), the
+# operator-signs + write-close + clear-marker green path (03), the manpage +
+# cli-audit doc deliverable (04), the exit-only-clears boundary fence (05), and
+# the live exit negative-control proving a known violation is still caught at
+# full strength (06). None decomposes into parallel seq=02+ sub-tasks
+# (ADR-0.0.64 task-envelope exemption).
 req_atomic:
   - REQ-0.0.74-05-01
   - REQ-0.0.74-05-02
   - REQ-0.0.74-05-03
   - REQ-0.0.74-05-04
   - REQ-0.0.74-05-05
+  - REQ-0.0.74-05-06
 ---
 
 # OBPI-0.0.74-05-mx-exit-hard-gate: Mx Exit Hard Gate
@@ -24,14 +26,14 @@ req_atomic:
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
-- **Checklist Item:** #5 - "gz mx exit — hard gate: re-run all guards full strength against the enter-time scope, green-or-grounded, no --force; operator signs; writes mx_session_closed and removes marker; exit is the only clearing path; manpage + gz cli audit green; unit tests"
+- **Checklist Item:** #5 - "gz mx exit — hard gate: re-run all guards full strength (re-emit levels) against the enter-time scope, green-or-grounded, no --force; live exit negative-control proves a known violation is still caught; operator signs; writes mx_session_closed and removes marker; exit is the only clearing path; manpage + gz cli audit green; unit tests"
 
 **Status:** Draft
 
 ## Objective
 
 <!-- gz-validate-skip: command-shape -->
-The `gz mx exit --attestor <name>` hard gate lands: it re-runs every guard at full strength against the enter-time inspection scope, hard-refuses on any red (exit 3, no `--force`, no narrowing your way out), and only on all-green lets the operator sign — writing `mx_session_closed` and removing the marker, the one and only path that clears it.
+The `gz mx exit --attestor <name>` hard gate lands: it re-runs every guard at full strength — each re-emitting its `GZ_<LEVEL>` with no in-hangar advisory demotion — against the enter-time inspection scope, hard-refuses on any red (exit 3, no `--force`, no narrowing your way out), and only on all-green lets the operator sign — writing `mx_session_closed` and removing the marker, the one and only path that clears it. A live exit negative-control proves a known violation planted at exit time is still caught at full strength (the re-run genuinely re-emits red, not a stub).
 
 ## Lane
 
@@ -89,10 +91,14 @@ The `gz mx exit --attestor <name>` hard gate lands: it re-runs every guard at fu
 
 **Context:**
 
-- [ ] Related OBPIs in same ADR
+- [ ] OBPI-0.0.74-04 (gz mx enter) — captures the enter-time inspection scope this exit re-runs against (hard predecessor)
+- [ ] OBPI-0.0.74-01 (marker) + OBPI-0.0.74-02 (checkpoint) — the marker exit clears and the checkpoint guards pass through
+- [ ] OBPI-0.0.74-11 (`GZ_<LEVEL>` vocabulary) + OBPI-0.0.74-12 (gates-as-sensors) — the levels each guard re-emits at full strength
 
 **Prerequisites (check existence, STOP if missing):**
 
+- [ ] OBPI-0.0.74-04 (gz mx enter) has landed — without the enter-time scope it captures, exit has nothing to re-run against
+- [ ] `src/gzkit/mx/marker.py` (OBPI-01), `src/gzkit/mx/checkpoint.py` (OBPI-02), `src/gzkit/mx/levels.py` (OBPI-11) exist — the marker exit clears and the levels guards re-emit through
 - [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/**`
 - [ ] Parent ADR evidence artifacts referenced by this brief are present
@@ -160,12 +166,14 @@ uv run gz mx exit --attestor g0
 ## Acceptance Criteria
 
 <!-- gz-validate-skip: command-shape -->
-- [ ] REQ-0.0.74-05-01 [behavior]: Given an open MX session, when `gz mx exit` runs, then it re-runs every guard at full strength against the inspection scope captured at enter time (not a narrowed subset). (@covers test in `tests/commands/test_mx_exit.py`)
+- [ ] REQ-0.0.74-05-01 [behavior]: Given an open MX session, when `gz mx exit` runs, then it re-runs every guard at full strength — each re-emitting its `GZ_<LEVEL>` with no in-hangar advisory demotion — against the inspection scope captured at enter time (not a narrowed subset). (@covers test in `tests/commands/test_mx_exit.py`)
 - [ ] REQ-0.0.74-05-02 [behavior]: Given any guard reporting red on the re-run, when exit completes, then it hard-refuses with exit 3, leaves the marker in place, and writes no `mx_session_closed` — there is no `--force` flag and no way to narrow the scope out of the check. (@covers test in `tests/commands/test_mx_exit.py`)
 - [ ] REQ-0.0.74-05-03 [behavior]: Given an all-green re-run and an operator `--attestor`, when exit completes, then the operator signs, the tool writes one `mx_session_closed` event, and the marker is removed; an empty `--attestor` fails closed with exit 1 and no clear. (@covers test in `tests/commands/test_mx_exit.py`)
 - [ ] REQ-0.0.74-05-04 [support]: The new `mx exit` verb is documented (manpage + command doc + index). Proof: `gz validate --cli-alignment` exit 0 + `artifact_edited` ledger event for `docs/user/manpages/mx.md`.
 <!-- gz-validate-skip: command-shape -->
 - [ ] REQ-0.0.74-05-05 [structural-fence]: `gz mx exit` writing `mx_session_closed` is the ONLY path that clears the marker; a marker cleared without a matching `mx_session_closed` event is a detected dangling state (parent ADR § Boundary Invariants).
+<!-- gz-validate-skip: command-shape -->
+- [ ] REQ-0.0.74-05-06 [behavior]: Given a known violation planted at exit time, when `gz mx exit` re-runs the guards at full strength, then the live exit negative-control proves the violation is still caught (exit hard-refuses) — the re-run genuinely re-emits red, it is not a stub. (@covers test in `tests/commands/test_mx_exit.py`)
 
 ## Completion Checklist
 
