@@ -3,7 +3,7 @@ id: OBPI-0.0.74-11-mx-gz-level-vocabulary
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 11
 lane: Heavy
-status: Draft
+status: Completed
 req_atomic:
   # The GZ_<LEVEL> vocabulary is one indivisible authoring unit: the Python-logging
   # ladder + NOTICE=25 rung (levels.py), the grounding-threshold predicate, and the
@@ -22,7 +22,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #11 - "The `GZ_<LEVEL>` severity vocabulary — Python `logging` ladder (CRITICAL 50 / ERROR 40 / WARNING 30 / NOTICE 25 / INFO 20 / DEBUG 10) with NOTICE the agent-fidelity/drift band; grounding threshold effective `>= ERROR`; the effective-level resolution the checkpoint reads; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -37,6 +37,8 @@ The `GZ_<LEVEL>` severity vocabulary lands at `src/gzkit/mx/levels.py` (STDLIB-F
 > those external surfaces.
 
 ## Allowed Paths
+
+- `src/gzkit/mx/__init__.py` (added by brief reconcile, attestor g0)
 
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md` — parent ADR for intent and scope (§ Decision item 11)
 - `src/gzkit/mx/levels.py` **CREATE** — the `GZ_<LEVEL>` vocabulary: Python `logging` ladder + `NOTICE = 25`, `GROUNDING_THRESHOLD = ERROR`, and the `grounds(level)` predicate
@@ -212,14 +214,21 @@ Before: the shared checkpoint spoke a binary vocabulary — a guard was either f
 
 ### Key Proof
 
+
+$ uv run python -c "from gzkit.mx import levels; print('NOTICE', levels.NOTICE, '| grounds(ERROR)', levels.grounds(levels.ERROR), '| grounds(NOTICE)', levels.grounds(levels.NOTICE))"
+NOTICE 25 | grounds(ERROR) True | grounds(NOTICE) False
+
+NOTICE sits at 25 (between INFO 20 and WARNING 30 — the rung Python omits); ERROR grounds (blocks), NOTICE is visible-but-non-grounding. Full unittest sweep exit 0 (receipt arb-step-unittest-33b4f7a6); ruff clean (arb-ruff-8955a6c8); typecheck clean (arb-step-typecheck-8ce125c7); mkdocs --strict exit 0 (arb-step-mkdocs-ee309a30).
+
 ### Implementation Summary
 
-- **Decision item 11 (verbatim):** "The `GZ_<LEVEL>` severity vocabulary. Backed by Python `logging` (STDLIB-FIRST): CRITICAL 50 / ERROR 40 / WARNING 30 / NOTICE 25 / INFO 20 / DEBUG 10. NOTICE (25 — the rung Python omits) is the agent-fidelity / drift band, the V.I.B.E.S. rung. Grounding threshold: effective severity `>= ERROR` grounds (blocks); below ERROR is visible-but-non-grounding. The checkpoint (item 2) resolves the effective level against this one vocabulary."
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Decision item 11 (verbatim): "The GZ_<LEVEL> severity vocabulary. Backed by Python logging (STDLIB-FIRST): CRITICAL 50 / ERROR 40 / WARNING 30 / NOTICE 25 / INFO 20 / DEBUG 10. NOTICE (25 — the rung Python omits) is the agent-fidelity / drift band, the V.I.B.E.S. rung. Grounding threshold: effective severity >= ERROR grounds (blocks); below ERROR is visible-but-non-grounding. The checkpoint (item 2) resolves the effective level against this one vocabulary."
+- Files created: src/gzkit/mx/levels.py, tests/mx/test_levels.py
+- Tests added: TestLadderReusesStdlib (2 tests), TestGroundingThreshold (3 tests) — 5 total, 5/5 pass
+- Date completed: 2026-06-21
+- Attestation status: operator-attested (g0, "attest completed")
+- Defects noted: encountered tracked Movement II item 3 stale precomplete behave-coverage check (obpi_precomplete.py not REQ-kind-aware); routed completion via the kind-aware chokepoint obpi_complete.py per skill doctrine
 
 ## Tracked Defects
 
@@ -227,12 +236,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.74-11 GZ_<LEVEL> vocabulary landed STDLIB-FIRST (Python logging ladder + NOTICE=25 drift rung, GROUNDING_THRESHOLD=ERROR, grounds() predicate). 5/5 scoped tests green; full unittest sweep exit 0 (arb-step-unittest-33b4f7a6301d4cbaa1550bba43ac7d34); ruff clean (arb-ruff-8955a6c89b4842d3ba686daaa3fbcd60); typecheck clean (arb-step-typecheck-8ce125c733ab47a49b99672b146cca02); mkdocs --strict exit 0 (arb-step-mkdocs-ee309a30e5364ea5a6374ccdfbaa6cb7). REQ-11-01/02 behavior @covers-proven; REQ-11-03 fence proven via parent ADR Boundary Invariant #2.
+- Date: 2026-06-21
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-21
 
 **Evidence Hash:** -
