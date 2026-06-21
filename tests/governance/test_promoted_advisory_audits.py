@@ -139,6 +139,69 @@ class PromotedAdvisoryAudits(unittest.TestCase):
             )
             self.assertEqual(audit_behave_req_tags(root), [])
 
+    def test_behave_req_tags_kind_aware_exempts_covers_and_fence(self) -> None:
+        """GHI #636: a heavy OBPI whose REQs are all proof-channel-satisfied
+        without behave needs no waiver.
+
+        ADR-0.0.59's three-kind taxonomy assigns each REQ a proof channel:
+        BEHAVIOR → ``@covers`` test, SUPPORT → ledger+validator, STRUCTURAL-
+        FENCE → parent-ADR invariant. None of those channels is a behave
+        scenario. So a BEHAVIOR REQ proven by an ``@covers`` unit test, and a
+        STRUCTURAL-FENCE REQ proven by its parent-ADR anchor, must not demand a
+        behave scenario or a waiver. Reproduces OBPI-0.0.74-01's exact shape
+        (two BEHAVIOR REQs with @covers tests + one STRUCTURAL-FENCE REQ).
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
+            brief_dir.mkdir(parents=True)
+            (brief_dir / "OBPI-9.9.9-01-unit-only.md").write_text(
+                "---\nid: OBPI-9.9.9-01-unit-only\nlane: Heavy\nstatus: Completed\n---\n\n"
+                "## Acceptance Criteria\n\n"
+                "- [ ] REQ-9.9.9-01-01 [behavior]: library presence rule (@covers test)\n"
+                "- [ ] REQ-9.9.9-01-02 [behavior]: library void rule (@covers test)\n"
+                "- [ ] REQ-9.9.9-01-03 [structural-fence]: single truth-source\n",
+                encoding="utf-8",
+            )
+            # @covers unit tests prove the two BEHAVIOR REQs — no behave surface.
+            test_dir = root / "tests" / "mx"
+            test_dir.mkdir(parents=True)
+            (test_dir / "test_marker.py").write_text(
+                '@covers("REQ-9.9.9-01-01")\n'
+                "def test_presence() -> None: ...\n\n"
+                "@covers('REQ-9.9.9-01-02')\n"
+                "def test_void() -> None: ...\n",
+                encoding="utf-8",
+            )
+            (root / "features").mkdir()  # no feature files, no waiver
+            self.assertEqual(
+                audit_behave_req_tags(root),
+                [],
+                "BEHAVIOR-with-@covers and STRUCTURAL-FENCE REQs must be exempt",
+            )
+
+    def test_behave_req_tags_behavior_without_any_proof_still_flags(self) -> None:
+        """GHI #636: the kind-aware exemption keeps the gate's teeth.
+
+        A BEHAVIOR REQ with neither a behave scenario tag NOR an ``@covers``
+        unit test is genuinely uncovered and must still flag — the exemption
+        admits unit-proven and non-behave-channel REQs, never proof-absent ones.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
+            brief_dir.mkdir(parents=True)
+            (brief_dir / "OBPI-9.9.9-02-uncovered.md").write_text(
+                "---\nid: OBPI-9.9.9-02-uncovered\nlane: Heavy\nstatus: Completed\n---\n\n"
+                "## Acceptance Criteria\n\n"
+                "- [ ] REQ-9.9.9-02-01 [behavior]: an uncovered behavior\n",
+                encoding="utf-8",
+            )
+            (root / "features").mkdir()  # no feature files, no @covers, no waiver
+            errors = audit_behave_req_tags(root)
+            self.assertTrue(errors, "proof-absent BEHAVIOR REQ must still flag")
+            self.assertIn("REQ-9.9.9-02-01", errors[0].message)
+
     def test_behave_req_tags_rule_39_pre_implementation_excluded(self) -> None:
         """GHI #323: heavy OBPI briefs in any pre-implementation status
         (Draft / Pending / Proposed / etc.) are pre-implementation; the CLI

@@ -26,6 +26,13 @@ from gzkit.validate import ValidationError
 _REQ_ID_IN_BRIEF = re.compile(r"\bREQ-\d+\.\d+\.\d+-\d+-\d+\b")
 _SCENARIO_REQ_TAG = re.compile(r"^\s*@(REQ-\d+\.\d+\.\d+-\d+-\d+)\b", re.MULTILINE)
 
+# ADR-0.0.59 three-kind taxonomy tag on a REQ line, e.g. `REQ-... [behavior]:`.
+# Absent tag defaults to BEHAVIOR (fail-closed) per the proof-channel matrix.
+_REQ_KIND_TAG = re.compile(r"\[(behavior|support|structural-fence)\]", re.IGNORECASE)
+
+# `@covers("REQ-...")` decorator (single or double quotes) under tests/**.
+_COVERS_REQ_TAG = re.compile(r"""@covers\(\s*["'](REQ-\d+\.\d+\.\d+-\d+-\d+)["']""")
+
 _OBPI_ID_IN_FRONTMATTER = re.compile(
     r"^id:\s*(OBPI-[0-9]+\.[0-9]+\.[0-9]+-[0-9]+[A-Za-z0-9\-.]*)\s*$",
     re.MULTILINE,
@@ -146,8 +153,30 @@ def _load_behave_coverage_waivers(project_root: Path) -> dict[str, str]:
     return out
 
 
-def _extract_one_heavy_brief(brief: Path) -> tuple[Path, str, list[str]] | None:
-    """Return ``(brief, obpi_id, req_ids)`` if the brief is BDD-gated heavy, else None."""
+def _extract_req_kinds(acceptance_text: str) -> dict[str, str]:
+    """Map each REQ-ID in the Acceptance Criteria to its ADR-0.0.59 ``[kind]``.
+
+    Parses line-by-line so a kind tag binds only to the REQ-ID on its own
+    line (no cross-line bleed). A REQ line with no ``[kind]`` tag defaults to
+    ``"behavior"`` — the fail-closed default, since BEHAVIOR is the only kind
+    whose proof channel a missing tag must not silently exempt.
+    """
+    kinds: dict[str, str] = {}
+    for line in acceptance_text.splitlines():
+        id_match = _REQ_ID_IN_BRIEF.search(line)
+        if id_match is None:
+            continue
+        kind_match = _REQ_KIND_TAG.search(line)
+        kinds[id_match.group(0)] = kind_match.group(1).lower() if kind_match else "behavior"
+    return kinds
+
+
+def _extract_one_heavy_brief(brief: Path) -> tuple[Path, str, dict[str, str]] | None:
+    """Return ``(brief, obpi_id, req_kinds)`` if the brief is BDD-gated heavy, else None.
+
+    ``req_kinds`` maps each Acceptance-Criteria REQ-ID to its ADR-0.0.59
+    taxonomy kind (``behavior`` / ``support`` / ``structural-fence``).
+    """
     try:
         text = brief.read_text(encoding="utf-8")
     except (UnicodeDecodeError, OSError):
@@ -165,16 +194,17 @@ def _extract_one_heavy_brief(brief: Path) -> tuple[Path, str, list[str]] | None:
     accept_match = _ACCEPTANCE_SECTION.search(text)
     if not accept_match:
         return None
-    req_ids = sorted(set(_REQ_ID_IN_BRIEF.findall(accept_match.group(1))))
-    if not req_ids:
+    req_kinds = _extract_req_kinds(accept_match.group(1))
+    if not req_kinds:
         return None
-    return brief, id_match.group(1), req_ids
+    return brief, id_match.group(1), req_kinds
 
 
-def _extract_heavy_obpi_briefs(project_root: Path) -> list[tuple[Path, str, list[str]]]:
+def _extract_heavy_obpi_briefs(project_root: Path) -> list[tuple[Path, str, dict[str, str]]]:
     """Enumerate heavy-lane OBPI briefs under ``docs/design/adr/``.
 
-    Returns tuples of ``(brief_path, obpi_id, req_ids)``. Pool-ADR briefs
+    Returns tuples of ``(brief_path, obpi_id, req_kinds)`` where ``req_kinds``
+    maps REQ-ID → ADR-0.0.59 taxonomy kind. Pool-ADR briefs
     (``docs/design/adr/pool/**``) are excluded per the ``--pool-adr-isolation``
     contract. REQ-IDs are extracted from the ``## Acceptance Criteria``
     section only — the REQ Coverage and Requirements sections restate the
@@ -184,7 +214,7 @@ def _extract_heavy_obpi_briefs(project_root: Path) -> list[tuple[Path, str, list
     adr_root = project_root / "docs" / "design" / "adr"
     if not adr_root.is_dir():
         return []
-    briefs: list[tuple[Path, str, list[str]]] = []
+    briefs: list[tuple[Path, str, dict[str, str]]] = []
     for brief in sorted(adr_root.rglob("OBPI-*.md")):
         if "pool" in brief.parts:
             continue
@@ -207,6 +237,27 @@ def _collect_scenario_req_tags(project_root: Path) -> set[str]:
             continue
         tagged.update(m.group(1) for m in _SCENARIO_REQ_TAG.finditer(text))
     return tagged
+
+
+def _collect_covers_req_ids(project_root: Path) -> set[str]:
+    """Return the set of REQ-IDs proven by an ``@covers("REQ-...")`` test under ``tests/**``.
+
+    Parallel to ``_collect_scenario_req_tags`` but scans the unittest tier:
+    a BEHAVIOR REQ's ADR-0.0.59 proof channel is an ``@covers`` test, not a
+    behave scenario, so the ``behave_req_tags`` gate treats a covering test as
+    satisfying the channel (GHI #636).
+    """
+    tests_root = project_root / "tests"
+    if not tests_root.is_dir():
+        return set()
+    covered: set[str] = set()
+    for py in tests_root.rglob("*.py"):
+        try:
+            text = py.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        covered.update(m.group(1) for m in _COVERS_REQ_TAG.finditer(text))
+    return covered
 
 
 _BRIEF_CROSS_REF_SKIP_MARKER = "<!-- gz-validate-skip: brief-cross-references -->"
@@ -499,15 +550,31 @@ def audit_brief_demo_section(project_root: Path) -> list[ValidationError]:
 
 
 def audit_behave_req_tags(project_root: Path) -> list[ValidationError]:
-    """Fail on heavy-lane OBPIs whose REQs lack ``@REQ-*`` scenario tags.
+    """Fail on heavy-lane OBPIs whose BEHAVIOR REQs lack any proof channel.
 
     Rule 39 (``.gzkit/rules/tests.md`` § Behave scenario tagging) and the
-    advisory scorecard row 39 both assert that heavy-lane and foundation-kind
-    OBPIs carry scenario-level ``@REQ-X.Y.Z-NN-MM`` tags for every REQ in
-    their Acceptance Criteria. The enforcement direction is OBPI → feature:
-    enumerate heavy OBPI briefs, assert each REQ is tagged somewhere under
-    ``features/**``. Missing coverage → policy breach (exit 3) unless the
-    OBPI ID is present in ``data/behave_coverage_waivers.json``.
+    advisory scorecard row 39 assert heavy-lane / foundation-kind OBPIs prove
+    every Acceptance-Criteria REQ. The enforcement direction is OBPI → proof:
+    enumerate heavy OBPI briefs, assert each REQ's ADR-0.0.59 proof channel is
+    satisfied.
+
+    REQ-kind-aware exemption (GHI #636): the ADR-0.0.59 three-kind taxonomy
+    pairs each REQ kind with exactly one proof channel, and a behave scenario
+    is not the channel for any of them:
+
+    * **BEHAVIOR** → ``@covers`` test under ``tests/**``. A behave scenario tag
+      OR an ``@covers`` test satisfies it; a BEHAVIOR REQ with neither is
+      genuinely uncovered and fails closed.
+    * **SUPPORT** → ledger event + structural validator. Never needs behave.
+    * **STRUCTURAL-FENCE** → parent-ADR ``## Boundary Invariants`` anchor.
+      Never needs behave.
+
+    This closes the deadlock where the gate demanded a
+    ``behave_coverage_waivers.json`` entry that ADR-0.0.73's shrink-only
+    waiver-ratchet forbids growing (GHI #636): a unit-only OBPI now passes
+    without any waiver. A missing ``[kind]`` tag defaults to BEHAVIOR
+    (fail-closed). Per-OBPI waivers in ``data/behave_coverage_waivers.json``
+    remain respected for genuine deferrals.
 
     Pool-ADR briefs are excluded per the ``--pool-adr-isolation`` contract;
     pool ADRs do not carry gate obligations and cannot fire Gate 4.
@@ -516,12 +583,20 @@ def audit_behave_req_tags(project_root: Path) -> list[ValidationError]:
     if not briefs:
         return []
     tagged_reqs = _collect_scenario_req_tags(project_root)
+    covers_reqs = _collect_covers_req_ids(project_root)
     waivers = _load_behave_coverage_waivers(project_root)
     errors: list[ValidationError] = []
-    for brief_path, obpi_id, req_ids in briefs:
+    for brief_path, obpi_id, req_kinds in briefs:
         if obpi_id in waivers:
             continue
-        missing = [r for r in req_ids if r not in tagged_reqs]
+        # Only BEHAVIOR REQs can require behave; SUPPORT / STRUCTURAL-FENCE
+        # prove via other channels (ADR-0.0.59). A BEHAVIOR REQ is satisfied
+        # by a behave scenario tag OR an @covers unit test.
+        missing = sorted(
+            req_id
+            for req_id, kind in req_kinds.items()
+            if kind == "behavior" and req_id not in tagged_reqs and req_id not in covers_reqs
+        )
         if not missing:
             continue
         rel = brief_path.relative_to(project_root).as_posix()
@@ -530,13 +605,15 @@ def audit_behave_req_tags(project_root: Path) -> list[ValidationError]:
                 type="behave_req_tags",
                 artifact=rel,
                 message=(
-                    f"Heavy-lane OBPI `{obpi_id}` has REQ-IDs without "
-                    "matching scenario-level `@REQ-X.Y.Z-NN-MM` tags under "
-                    "`features/**`. Missing: "
+                    f"Heavy-lane OBPI `{obpi_id}` has BEHAVIOR REQ-IDs proven "
+                    "by neither a scenario-level `@REQ-X.Y.Z-NN-MM` tag under "
+                    "`features/**` nor an `@covers` unit test under `tests/**`. "
+                    "Missing: "
                     + ", ".join(missing[:5])
                     + (f" (+{len(missing) - 5} more)" if len(missing) > 5 else "")
-                    + ". Add scenario tags or waive in "
-                    "`data/behave_coverage_waivers.json` with rationale."
+                    + ". Add a scenario tag, add an `@covers` test, or waive in "
+                    "`data/behave_coverage_waivers.json` with rationale "
+                    "(SUPPORT / STRUCTURAL-FENCE REQs are exempt by kind)."
                 ),
             )
         )
