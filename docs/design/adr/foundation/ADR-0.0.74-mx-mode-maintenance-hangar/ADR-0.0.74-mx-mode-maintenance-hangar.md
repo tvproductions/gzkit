@@ -114,7 +114,14 @@ Cross-OBPI integration-state properties scoped to this ADR, audited at ADR close
 
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
-| Replace with an assertion that exercises this ADR's thesis against the real system. | uv run gz --version | 0 |
+| The MX marker is the single filesystem truth-source: its presence means MX==TRUE, its validity binds to a real `mx_session_opened` ledger event (a hand-created marker is void), and it reads without importing any gzkit-internal subsystem (it reads when gzkit is the patient). | uv run -m unittest tests.mx.test_marker | 0 |
+| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.74-mx-mode-maintenance-hangar --check | 0 |
+
+<!-- One green row per landed OBPI: the marker row above lands with OBPI-01. As
+     OBPI-02..09 land (checkpoint, gate5_invariants, gz mx enter/exit, the MX log,
+     the awareness hook, the gz-mx skill, the staging-flag retirement), each adds
+     its own claim/command/exit row that goes green when that OBPI completes. -->
+
 
 ## Decomposition Scorecard
 
@@ -128,13 +135,20 @@ Cross-OBPI integration-state properties scoped to this ADR, audited at ADR close
 - Lineage: 2
 - Dimension Total: 10
 - Baseline Range: 5+
-- Baseline Selected: 6
+- Baseline Selected: 5
 - Split Single-Narrative: 1
 - Split Surface Boundary: 1
 - Split State Anchor: 1
 - Split Testability Ceiling: 1
 - Split Total: 4
-- Final Target OBPI Count: 10
+- Final Target OBPI Count: 9
+<!-- Baseline Selected 6→5 / Final Target 10→9 (2026-06-21): OBPI-10 (governance
+     doc-type taxonomy) withdrawn as out-of-scope per the Build-to-1.0 campaign
+     (operator-ratified). It was a base capability, so the baseline drops by one
+     (5 base + 4 split = 9 active), mirroring ADR-0.0.37's withdrawn-base-unit
+     reconciliation. The withdrawn row is retained in the Checklist in 1:1 with
+     its brief file; active_checklist_items excludes it, so the live target is 9. -->
+
 
 ## Checklist
 
@@ -149,7 +163,7 @@ Cross-OBPI integration-state properties scoped to this ADR, audited at ADR close
 - [ ] The per-vendor awareness hook — injects the MX banner every turn (load-bearing guarantee); adapts per vendor surface; a liveness check that the hook is wired; tool-output banner as secondary backup; unit tests
 - [ ] The gz-mx skill + AGENTS.md binding rule — operator operates skill, skill invokes tool, never shell out; AGENTS.md rule: honor the marker and PRIME DIRECTIVE binds the whole session; surface sync; unit tests
 - [ ] Retire the two hand-set staging flags — delete _FRESHNESS_FAIL_CLOSED and _FLOOR_FAIL_CLOSED; both gates resolve severity through the marker mechanism; unit tests
-- [ ] The governance doc-type taxonomy — Doctrinal/Lawful/Ordinance/Ops-spec classification + tag the governance docs + a guard that keeps the one term aligned across tool/skill/rule/marker (fail closed on lexical drift); unit tests
+- [ ] The governance doc-type taxonomy — Doctrinal/Lawful/Ordinance/Ops-spec classification + tag the governance docs + a guard that keeps the one term aligned across tool/skill/rule/marker (fail closed on lexical drift); unit tests [withdrawn; never built; out of scope for the MX repair ADR — a separate classification system smuggled into the hangar work. Cut per the Build-to-1.0 campaign (operator-ratified Magna Carta amendment). `obpi_withdrawn` 2026-06-21. Row retained in 1:1 with the brief file (status: withdrawn); excluded from the live scorecard target and `gz specify` active-item count.]
 
 ## Q&A Transcript
 

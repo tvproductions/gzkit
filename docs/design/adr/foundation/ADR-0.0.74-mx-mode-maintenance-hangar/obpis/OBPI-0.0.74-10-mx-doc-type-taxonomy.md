@@ -3,7 +3,7 @@ id: OBPI-0.0.74-10-mx-doc-type-taxonomy
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 10
 lane: Heavy
-status: Draft
+status: withdrawn
 req_atomic:
   - REQ-0.0.74-10-01  # one classification-guard behavior (gz validate --doc-type fail closed exit 3 over the named initial doc set) + tests — single indivisible unit
   - REQ-0.0.74-10-02  # SUPPORT: the four-way classification doctrine doc + the named initial docs tagged — one coupled documentation unit
