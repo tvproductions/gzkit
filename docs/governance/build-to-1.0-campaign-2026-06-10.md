@@ -1,7 +1,13 @@
 # Build-to-1.0 Campaign, 2026-06-10
 
-Status: **ACTIVE — Magna Carta, the one canonical plan** (operator-ratified
-2026-06-10; elevated to Magna Carta same day).
+> ⚠️ **SUPERSEDED IN PLACE 2026-06-20** by
+> [`build-to-1.0-campaign-2026-06-20.md`](build-to-1.0-campaign-2026-06-20.md).
+> This file no longer steers — retained for audit only. Its 77 amendment blocks
+> are *history*, not the plan. Go to the successor for the live spine (two
+> engines, pool-reset, the never-relax floor + enforcement-claim rule).
+
+Status: **SUPERSEDED — was ACTIVE Magna Carta** (operator-ratified 2026-06-10;
+elevated same day; superseded by the 2026-06-20 successor).
 
 > **Ratification (operator verbatim, 2026-06-10):** "let your new Build-to-1.0
 > campaign subsume and supersede all prior plans (emergencies, five-alarm
