@@ -3,7 +3,7 @@ id: OBPI-0.0.74-02-mx-shared-checkpoint
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 req_atomic:
   # The shared checkpoint is one indivisible authoring unit: the marker read,
   # the drop-to-advisory behavior (except gate5_invariants), the
@@ -23,7 +23,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #2 - "The shared checkpoint — single place code reads the marker and drops guards to advisory except gate5_invariants; funnel inventory + fence test that every fail-closed funnel consults it; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -38,6 +38,9 @@ A single shared checkpoint lands at `src/gzkit/mx/checkpoint.py` and is wired in
 > those external surfaces.
 
 ## Allowed Paths
+
+- `src/gzkit/mx/__init__.py` (added by brief reconcile, attestor g0)
+- `src/gzkit/mx/marker.py` (added by brief reconcile, attestor g0)
 
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md` — parent ADR for intent and scope
 - `src/gzkit/mx/checkpoint.py` **CREATE** — the one place that reads the marker and drops fail-closed guards to advisory except the gate5_invariants; strict no-op outside the hangar
@@ -206,13 +209,27 @@ uv run python -c "from gzkit.mx import checkpoint; print('gate3-docs advisory:',
 
 ### Key Proof
 
+
+In-hangar the checkpoint drops an ordinary docs guard to advisory while gate5 stays fail-closed; out-of-hangar it is a strict no-op:
+
+  $ uv run python -c "from pathlib import Path; import tempfile; from gzkit.mx import marker, checkpoint; from gzkit.mx.marker import Marker; ...
+  in-hangar gate3-docs advisory: True
+  in-hangar ledger advisory:     False   # gate5_invariant
+  no-marker gate3-docs advisory: False   # strict no-op
+
+Tests: 7/7 green — receipt arb-step-unittest-3a573733e8474b86abd6c28337c230a4. Lint clean — arb-ruff-3c9a070e408b45dc84f105925b8ff4af. Typecheck clean — arb-step-typecheck-11af0b1d31964c0985765b7bfacc3622.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/mx/checkpoint.py (shared MX checkpoint — GATE5_INVARIANTS frozenset + is_advisory(guard_name, project_root)); tests/mx/test_checkpoint.py (7 tests)
+- Files modified: src/gzkit/commands/validate_cmd.py (_run_scope_checks lazy-imports the checkpoint and consults is_advisory(scope) before extending the error list — the first wired fail-closed funnel)
+- Mechanism: one place reads marker.is_active; in-hangar drops every non-gate5 guard to advisory; out-of-hangar strict no-op; gate5_invariants (ledger, gate5-attestation, operator-pii, secrets) never relaxed
+- Tests added: TestInHangar (3), TestOutsideHangar (3), TestValidateCmdWiring (1) = 7, all green
+- REQ coverage: REQ-0.0.74-02-01/02 @covers pass; REQ-0.0.74-02-03 structural-fence via parent ADR Boundary Invariants #2
+- Date completed: 2026-06-21
+- Attestation status: g0-attested "attest completed"
+- Defects noted: gz obpi precomplete behave_req_coverage check is stale (not REQ-kind-aware, predates GHI #636); kind-aware chokepoint gz obpi complete passed
 
 ## Tracked Defects
 
@@ -220,12 +237,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.74-02 shared MX checkpoint landed: src/gzkit/mx/checkpoint.py (GATE5_INVARIANTS floor + is_advisory predicate) wired into validate_cmd _run_scope_checks as the first fail-closed funnel; 7/7 unit tests green (receipt arb-step-unittest-3a573733e8474b86abd6c28337c230a4), lint clean (arb-ruff-3c9a070e408b45dc84f105925b8ff4af), typecheck clean (arb-step-typecheck-11af0b1d31964c0985765b7bfacc3622); @covers parity REQ-01/02 covered, REQ-03 structural-fence pass via parent ADR Boundary Invariant #2.
+- Date: 2026-06-21
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-21
 
 **Evidence Hash:** -

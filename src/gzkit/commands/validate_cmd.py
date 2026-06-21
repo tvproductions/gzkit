@@ -871,16 +871,22 @@ def _run_scope_checks(
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Dispatch validation checks based on active scopes."""
+    from gzkit.mx import checkpoint  # noqa: PLC0415
+
     errors: list[ValidationError] = []
     default_runners = _default_scope_runners(project_root, frontmatter_adr)
     explicit_runners = _explicit_scope_runners(project_root)
 
     for scope, runner in default_runners.items():
         if run_all and scope in default_scopes or default_scopes.get(scope, False):
-            errors.extend(runner())
+            scope_errors = runner()
+            if not checkpoint.is_advisory(scope, project_root):
+                errors.extend(scope_errors)
     for scope, runner in explicit_runners.items():
         if explicit_scopes.get(scope):
-            errors.extend(runner())
+            scope_errors = runner()
+            if not checkpoint.is_advisory(scope, project_root):
+                errors.extend(scope_errors)
     return errors
 
 
