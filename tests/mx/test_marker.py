@@ -91,9 +91,7 @@ class TestMarkerPresence(unittest.TestCase):
             elif isinstance(node, ast.ImportFrom):
                 if node.level and node.level > 0:
                     gzkit_imports.append(f"<relative level={node.level}>")
-                elif node.module and (
-                    node.module == "gzkit" or node.module.startswith("gzkit.")
-                ):
+                elif node.module and (node.module == "gzkit" or node.module.startswith("gzkit.")):
                     gzkit_imports.append(node.module)
         self.assertEqual(
             gzkit_imports,

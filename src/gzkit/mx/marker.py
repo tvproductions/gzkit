@@ -46,9 +46,7 @@ class Marker(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    session_id: str = Field(
-        ..., description="Binding key to the mx_session_opened ledger event"
-    )
+    session_id: str = Field(..., description="Binding key to the mx_session_opened ledger event")
     opened_at: str = Field(
         "", description="ISO-8601 open timestamp (written by gz mx enter, OBPI-04)"
     )
@@ -119,9 +117,7 @@ def write(marker: Marker, project_root: Path | None = None) -> Path:
     return path
 
 
-def _ledger_path(
-    project_root: Path | None = None, ledger_path: Path | None = None
-) -> Path:
+def _ledger_path(project_root: Path | None = None, ledger_path: Path | None = None) -> Path:
     if ledger_path is not None:
         return ledger_path
     root = project_root if project_root is not None else _find_project_root()
@@ -162,9 +158,7 @@ def _open_session_ids(ledger: Path) -> set[str]:
     return opened - closed
 
 
-def is_valid(
-    project_root: Path | None = None, ledger_path: Path | None = None
-) -> bool:
+def is_valid(project_root: Path | None = None, ledger_path: Path | None = None) -> bool:
     """``True`` only when the marker is present AND bound to a real, still-open
     ``mx_session_opened`` ledger event (anti-contrivance).
 
