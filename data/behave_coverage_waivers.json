@@ -2603,6 +2603,7 @@
         "REQ-0.0.73-08-04",
         "REQ-0.0.73-08-05"
       ]
-    }
+    },
+    "OBPI-0.0.74-01-mx-marker-file": "obpi-0.0.74-01-pure-library-pydantic-stdlib-unittest"
   }
 }
