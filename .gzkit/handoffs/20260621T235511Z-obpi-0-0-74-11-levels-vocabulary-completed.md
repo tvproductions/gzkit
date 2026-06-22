@@ -5,6 +5,8 @@ branch: main
 timestamp: "2026-06-21T23:55:11Z"
 agent: claude-code
 obpi_id: OBPI-0.0.74-11-mx-gz-level-vocabulary
+last_lock_event_timestamp: "2026-06-21T23:07:13.703486+00:00"
+last_commit_sha: 7d3d5898
 session_id:
 continues_from: .gzkit/handoffs/20260621T225721Z-adr-0-0-74-leveled-substrate-bcd-shipped.md
 ---

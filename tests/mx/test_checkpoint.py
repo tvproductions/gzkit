@@ -124,11 +124,7 @@ class TestValidateCmdWiring(unittest.TestCase):
         from pathlib import Path
 
         source = (
-            Path(__file__).parent.parent.parent
-            / "src"
-            / "gzkit"
-            / "commands"
-            / "validate_cmd.py"
+            Path(__file__).parent.parent.parent / "src" / "gzkit" / "commands" / "validate_cmd.py"
         ).read_text(encoding="utf-8")
         tree = ast.parse(source)
         # The checkpoint is imported lazily inside _run_scope_checks; look for
