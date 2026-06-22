@@ -44,6 +44,43 @@ every project-level setting with explicit schema, and the per-surface
 registries become typed views into that config rather than independent
 config-shape definitions.
 
+### Two-tier requirement — tunable config vs invariant registry (refinement, 2026-06-22)
+
+The central-config shape gzkit needs is **not** a straight port of
+AirlineOps'. AirlineOps' config is **mutable by design**: a three-layer
+`defaults → settings → settings.local` deep-merge, and — critically — it
+enforces **no programmatic immutability**. Its "invariant" values (Paths,
+governance enums) are immutable only by *documentation convention*,
+guarded by nothing at runtime.
+
+gzkit's anti-vibing posture demands a second tier AirlineOps lacks. The
+forcing example: OBPI-0.0.74-03 landed `GATE5_INVARIANTS` (the never-relax
+floor) as a five-member frozenset at `src/gzkit/mx/invariants.py`, joining
+`levels.py`, `disposition.py`, 20+ scattered frozensets, and ~30
+`data/*.json` registries — textbook config sprawl that argues *for* central
+config. But ADR-0.0.74 § Decision item 3 made it "a code constant
+(**not** config)" deliberately, and § Risks #5 names why: the marker is a
+skeleton-key surface, so the never-relax floor must be **un-relaxable at
+runtime**. Relocating it into AirlineOps-style mutable config would make it
+*more* tamperable — re-opening the surface ADR-0.0.74 closed.
+
+Therefore gzkit's central config must distinguish two tiers:
+
+- **Tunable config** — operator/project settings safe to override
+  (lane defaults, template selection, thresholds, paths). AirlineOps'
+  layered-merge pattern fits directly.
+- **Invariant registry** — security-critical never-override values
+  (the never-relax floor; integrity-class guards; PII/secrets surfaces).
+  Centralized, schema-validated, and discoverable (the central-config
+  win), but **programmatically tamper-proof, not runtime-tunable** — a
+  layered override of an invariant-tier value must fail closed, not merge.
+  `GATE5_INVARIANTS` is the canonical member of this tier.
+
+This refinement does not change the park-then-promote decision below; it
+constrains the schema the promoted ADR must design. A central config that
+offers only AirlineOps' single mutable tier would be undersized for
+gzkit's invariant surfaces on day one.
+
 ## Decision
 
 Park until ADR-0.0.32 closeout completes (so the canonical-routing
@@ -60,6 +97,12 @@ on day one). At that point, evaluate promotion:
 - If a configuration change crosses three or more of the seven config
   locations to land coherently, promotion is justified by coordination
   cost alone.
+- If a second security-critical invariant-tier constant lands scattered
+  (a new never-override set beyond `GATE5_INVARIANTS`), promotion is
+  justified on safety, not just coordination — the invariant tier is the
+  surface where sprawl is most dangerous, because a value that should be
+  un-relaxable hidden among ordinary constants is a skeleton-key-by-
+  obscurity risk (see § Two-tier requirement).
 
 The cost of premature promotion: any central-config schema designed
 before ADR-0.0.32 closeout would have to enumerate surfaces (skills,
