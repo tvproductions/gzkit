@@ -13,18 +13,7 @@ from pathlib import Path
 from gzkit.mx import disposition as _disposition
 from gzkit.mx import levels as _levels
 from gzkit.mx import marker
-
-# The never-relax set: members stay fail-closed regardless of MX mode.
-# Lives in exactly one place — here — so no per-gate duplication.
-# OBPI-03 will formally author the full canonical set; OBPI-02 seeds it.
-GATE5_INVARIANTS: frozenset[str] = frozenset(
-    {
-        "ledger",  # ledger integrity (validate_cmd scope)
-        "gate5-attestation",  # faked Gate-5 attestation
-        "operator-pii",  # operator-PII protection
-        "secrets",  # secrets leakage guard
-    }
-)
+from gzkit.mx.invariants import GATE5_INVARIANTS
 
 
 def resolve(

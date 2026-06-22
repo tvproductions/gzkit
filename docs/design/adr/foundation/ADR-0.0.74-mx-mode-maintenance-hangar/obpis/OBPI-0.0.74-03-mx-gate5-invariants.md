@@ -3,7 +3,7 @@ id: OBPI-0.0.74-03-mx-gate5-invariants
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 req_atomic:
   # The never-relax floor is one indivisible authoring unit: the gate5_invariants
   # code constant naming the FIVE never-relax guards (incl. grader-gaming) and the
@@ -25,7 +25,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #3 - "gate5_invariants — the never-relax floor as a code constant (faked Gate-5 attestation, secrets, operator-PII, ledger integrity, grader-gaming); structural proof the checkpoint cannot downgrade a member below CRITICAL; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -41,6 +41,8 @@ The never-relax floor lands as a code constant `GATE5_INVARIANTS` at `src/gzkit/
 
 ## Allowed Paths
 
+- `src/gzkit/mx/__init__.py` (added by brief reconcile, attestor g0)
+- `src/gzkit/mx/marker.py` (added by brief reconcile, attestor g0)
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md` — parent ADR for intent and scope (§ Decision item 3, § Boundary Invariants #3)
 - `src/gzkit/mx/invariants.py` **CREATE** — the `GATE5_INVARIANTS` code constant naming the five never-relax guards (faked Gate-5 attestation, secrets, operator-PII, ledger integrity, grader-gaming)
 - `src/gzkit/mx/checkpoint.py` — the leveled checkpoint reads `GATE5_INVARIANTS` and structurally cannot resolve a member below CRITICAL (consumer of the constant)
@@ -213,14 +215,22 @@ Before: the never-relax floor was a four-member integrity set, and grader-gaming
 
 ### Key Proof
 
+
+$ uv run python -c "from gzkit.mx.invariants import GATE5_INVARIANTS; print(sorted(GATE5_INVARIANTS))"
+['gate5-attestation', 'grader-gaming', 'ledger', 'operator-pii', 'secrets']
+
+Structural proof: every member resolves to Route.AOG_MX_HANGAR (CRITICAL) even when WARNING is emitted, in or out of the hangar — verified by TestCheckpointCannotDowngradeInvariant (4 tests). Full suite 6394/6394 pass (receipt arb-step-unittest-bfe6514e169e4802af5f8c0525c7c6b1); lint clean (arb-ruff-95815aa7e71245a08bbb102886b180f6); typecheck clean (arb-step-typecheck-5310eaf4ca3a405a8827727e63be23f8).
+
 ### Implementation Summary
 
-- **Decision item 3 (verbatim):** "gate5_invariants — the never-relax floor. The integrity-class guards as a code constant (not config): faked Gate-5 attestation, secrets, operator-PII, ledger integrity, and grader-gaming. The marker can never downgrade a member below CRITICAL. ... Its floor membership is bound to a live detector (item 13) per the §5 enforcement-claim rule."
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Decision item 3 (verbatim): "gate5_invariants — the never-relax floor. The integrity-class guards as a code constant (not config): faked Gate-5 attestation, secrets, operator-PII, ledger integrity, and grader-gaming. The marker can never downgrade a member below CRITICAL."
+- Created src/gzkit/mx/invariants.py: GATE5_INVARIANTS frozenset naming exactly the five never-relax guards; grader-gaming is the fifth, made live by OBPI-13's proxy-reality detector.
+- Updated src/gzkit/mx/checkpoint.py: removed the local 4-member definition; now imports the canonical constant from invariants.py — the never-relax list lives in exactly one place.
+- Tests added: tests/mx/test_gate5_invariants.py — 8 tests across two classes (constant shape + cannot-downgrade-below-CRITICAL).
+- Date completed: 2026-06-22
+- Attestation status: operator-attested ("attest completed")
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -228,12 +238,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.74-03 lands GATE5_INVARIANTS as a 5-member frozenset code constant at src/gzkit/mx/invariants.py (grader-gaming the fifth), checkpoint.py imports the canonical constant so the never-relax list lives in one place, and 8 unit tests prove the leveled checkpoint resolves every member to AOG_MX_HANGAR (CRITICAL) in or out of the hangar. 6394/6394 tests pass (receipt arb-step-unittest-bfe6514e169e4802af5f8c0525c7c6b1), lint clean (arb-ruff-95815aa7e71245a08bbb102886b180f6), typecheck clean (arb-step-typecheck-5310eaf4ca3a405a8827727e63be23f8), docs clean (arb-step-mkdocs-9757904e3dca481eba2b567f76bb3e29).
+- Date: 2026-06-22
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-22
 
 **Evidence Hash:** -
