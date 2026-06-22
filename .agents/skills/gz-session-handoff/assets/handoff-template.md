@@ -1,13 +1,27 @@
 ---
 mode: CREATE
 adr_id: ADR-X.Y.Z
-branch: feature/branch-name
+branch: main
 timestamp: "2026-01-01T00:00:00Z"
 agent: claude-code
 obpi_id:
+last_lock_event_timestamp:
+last_commit_sha:
 session_id:
 continues_from:
 ---
+
+<!--
+  Sub-Invariant 2 (token-block-discipline.md) minimum-information fields are
+  FRONTMATTER keys, not body prose — gz validate --lock-handoff-coupling reads
+  them from frontmatter only. When this handoff concludes a held OBPI lock, fill:
+    - last_lock_event_timestamp: ts of the matching obpi_lock_claimed event
+      (grep obpi_lock_claimed .gzkit/ledger.jsonl for this OBPI/agent)
+    - last_commit_sha: HEAD at handoff creation (git rev-parse --short HEAD)
+    - branch: current branch (git branch --show-current; main per no-feature-branch directive)
+  Item 3 (decision context) is the ## Decisions Made body section below.
+-->
+
 
 <!-- Handoff document for {adr_id} — created by {agent} at {timestamp} -->
 

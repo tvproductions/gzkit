@@ -5,18 +5,18 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.6.0"
+  skill-version: "6.7.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-14
+last_reviewed: 2026-06-22
 model: sonnet
 ---
 
-# gz-session-handoff (v6.6.0)
+# gz-session-handoff (v6.7.0)
 
 ## Purpose
 
@@ -45,6 +45,8 @@ Create and resume session handoff documents that preserve agent context across e
 | `agent` | Yes | Agent identifier (e.g. `claude-code`, `codex`, `copilot`) |
 | `slug` | Yes | Short descriptor for filename (e.g. `create-workflow`) |
 | `obpi_id` | No | OBPI identifier if handoff is scoped to a specific brief |
+| `last_lock_event_timestamp` | When concluding a held lock | Frontmatter key — ts of the matching `obpi_lock_claimed` event (Sub-Invariant 2; read by `gz validate --lock-handoff-coupling`) |
+| `last_commit_sha` | When concluding a held lock | Frontmatter key — HEAD at handoff creation (`git rev-parse --short HEAD`) |
 | `session_id` | No | Session identifier for tracing |
 | `continues_from` | No | Path to previous handoff document (for chained sessions) |
 
