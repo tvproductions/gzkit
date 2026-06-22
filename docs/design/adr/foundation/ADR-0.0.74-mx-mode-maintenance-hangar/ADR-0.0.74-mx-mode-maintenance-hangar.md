@@ -145,7 +145,9 @@ Cross-OBPI integration-state properties scoped to this ADR, audited at ADR close
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The MX marker is the single filesystem truth-source: its presence means MX==TRUE, its validity binds to a real `mx_session_opened` ledger event (a hand-created marker is void), and it reads without importing any gzkit-internal subsystem (it reads when gzkit is the patient). | uv run -m unittest tests.mx.test_marker | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.74-mx-mode-maintenance-hangar --check | 0 |
+| The shared checkpoint is the single leveled-severity authority: it reads the marker and resolves each guard's effective `GZ_<LEVEL>`, demoting non-floor guards to advisory under an active marker while keeping `gate5_invariants` fail-closed, and is a strict no-op when no marker is present. | uv run -m unittest tests.mx.test_checkpoint | 0 |
+| The `GZ_<LEVEL>` severity vocabulary is the Python-`logging` ladder (CRITICAL 50 / ERROR 40 / WARNING 30 / NOTICE 25 / INFO 20 / DEBUG 10) with NOTICE the agent-fidelity/drift band and the grounding threshold at effective `>= ERROR`. | uv run -m unittest tests.mx.test_levels | 0 |
+| Gates are T/F sensors feeding one disposition handler that maps the (design × build × vibes) diagnosis to a `GZ_<LEVEL>` and routes it (AOG/MX hangar, GHI-fix, refactor/Chores, drift-drain, track) — guards emit a level instead of self-deciding. | uv run -m unittest tests.mx.test_disposition | 0 |
 
 <!-- One green row per landed OBPI: the marker row above lands with OBPI-01. As
      OBPI-02..09 land (checkpoint, gate5_invariants, gz mx enter/exit, the MX log,
