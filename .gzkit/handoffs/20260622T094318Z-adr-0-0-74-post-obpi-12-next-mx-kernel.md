@@ -38,13 +38,16 @@ gz-obpi-pipeline, synced to `main`. The one disposition handler
 are live; the operator's V.I.B.E.S.-management-band refinement of the sub-ERROR
 matrix rows is encoded in both `disposition.py` and the ADR-0.0.74 matrix.
 
-**Magna Carta updated this session:** Movement I item 1 (`GZ_<LEVEL>` substrate +
-gates-as-sensors + one disposition handler) is checked off in
-`docs/governance/build-to-1.0-campaign-2026-06-20.md` — OBPI-0.0.74-11 (levels
-vocabulary) + OBPI-0.0.74-12 (disposition handler + wire) both ATTESTED
-COMPLETED. The check carries an explicit caveat: the *mechanism* (substrate,
-handler, AOG/advisory wire, BI#2) is built, but migrating each live guard to emit
-`GZ_<LEVEL>` through the checkpoint remains (OBPI-0.0.74-09, retire staging flags).
+**Magna Carta updated this session:** Movement I item 1 was **split into two
+checkboxes** (operator ruling — avoid a green facade per §2/§5) in
+`docs/governance/build-to-1.0-campaign-2026-06-20.md`:
+- `[x]` **Mechanism built** — `GZ_<LEVEL>` substrate + the one disposition
+  handler + the level→AOG/advisory wire (OBPI-0.0.74-11 + -12, both ATTESTED
+  COMPLETED 2026-06-22; BI#2's *routing* half).
+- `[ ]` **Gates are sensors** — migrate every live guard onto `checkpoint.resolve`
+  and retire the `_FRESHNESS_FAIL_CLOSED`/`_FLOOR_FAIL_CLOSED` staging flags so
+  BI#2's second half holds. Today `resolve()` has zero production callers; two
+  flags survive — OBPI-0.0.74-09.
 
 No active OBPI lock. Tree is clean except the in-flight campaign edit (this
 handoff's git-sync will commit it). Branch `main`, synced.
@@ -74,14 +77,17 @@ handoff's git-sync will commit it). Branch `main`, synced.
 
 ## Decisions Made
 
-- **Decision:** Check off Movement I item 1 with a precise scope annotation rather
-  than leaving it open or claiming blanket completion.
-  **Rationale:** The item's own parenthetical scopes it to "the level→AOG/advisory
-  wire; BI#2 built for real" — which OBPI-11+12 deliver. The per-guard migration
-  is a distinct thread (OBPI-09), named in the annotation so the check is honest.
-  **Alternatives rejected:** Leaving it unchecked (understates real, attested
-  progress); checking it bare (overstates — would imply every guard is already a
-  sensor, which OBPI-09 has not yet done).
+- **Decision:** Split Movement I item 1 into two checkboxes — `[x]` mechanism
+  built, `[ ]` gates-are-sensors (guards migrated + staging flags retired).
+  **Rationale:** Operator ruling. "Gates-as-T/F-sensors" conflates two claims —
+  the routing mechanism exists (true) vs. gates actually route through it (false;
+  `checkpoint.resolve` has zero production callers, two `_*_FAIL_CLOSED` flags
+  survive). A single `[x]` reads as a green facade — the exact pattern §2/§5 of
+  this campaign exists to kill. The split makes the capability-vs-adoption gap a
+  first-class Queue line.
+  **Alternatives rejected:** `[x]` + caveat (asterisk doing a checkbox's job;
+  still reads "sensors done" at a glance); revert to bare `[ ]` (understates the
+  real attested mechanism work).
 - **Decision:** Treat the campaign checkbox update as the "Living: items check off
   with command evidence" mechanism, not an amendment.
   **Rationale:** § Authority & amendment distinguishes living check-offs (body,
@@ -127,13 +133,14 @@ handoff's git-sync will commit it). Branch `main`, synced.
 - [ ] `uv run gz obpi lock list` shows no active lock
 - [ ] `git branch --show-current` == `main`, tree clean and synced
 - [ ] `uv run gz adr status ADR-0.0.74 --json` shows 01/02/11/12 completed
-- [ ] Campaign Movement I item 1 shows `[x]` in
-      `docs/governance/build-to-1.0-campaign-2026-06-20.md`
+- [ ] Campaign Movement I item 1 is split: `[x]` "Mechanism built" + `[ ]`
+      "Gates are sensors" in `docs/governance/build-to-1.0-campaign-2026-06-20.md`
 
 ## Evidence / Artifacts
 
-- `docs/governance/build-to-1.0-campaign-2026-06-20.md` — Movement I item 1
-  checked off with scope annotation (this session's Magna Carta update)
+- `docs/governance/build-to-1.0-campaign-2026-06-20.md` — Movement I item 1 split
+  into `[x]` mechanism-built + `[ ]` gates-are-sensors (this session's Magna Carta
+  update)
 - `src/gzkit/mx/disposition.py` — the one level→route matrix handler (V.I.B.E.S.
   band encoded)
 - `src/gzkit/mx/checkpoint.py` — `resolve()` level→route/AOG/advisory wire
