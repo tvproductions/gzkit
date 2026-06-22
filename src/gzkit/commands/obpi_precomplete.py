@@ -31,6 +31,7 @@ from gzkit.cli.helpers.exit_codes import (
 )
 from gzkit.commands.common import console, get_project_root
 from gzkit.commands.validate_task_envelope import pending_obpi_task_envelope_errors
+from gzkit.governance.req_coverage import discover_covers, parse_brief_req_kinds
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -336,7 +337,6 @@ def _check_behave_req_coverage_scoped(
         _ACCEPTANCE_SECTION,
         _LANE_IN_FRONTMATTER,
         _REQ_ID_IN_BRIEF,
-        _collect_scenario_req_tags,
         _load_behave_coverage_waivers,
     )
 
@@ -367,33 +367,60 @@ def _check_behave_req_coverage_scoped(
         )
 
     accept_match = _ACCEPTANCE_SECTION.search(text)
-    req_ids = sorted(set(_REQ_ID_IN_BRIEF.findall(accept_match.group(1)))) if accept_match else []
-    if not req_ids:
+    all_req_ids = (
+        sorted(set(_REQ_ID_IN_BRIEF.findall(accept_match.group(1)))) if accept_match else []
+    )
+    if not all_req_ids:
         return CheckResult(
             name="behave_req_coverage",
             ok=True,
             message="no REQ IDs in Acceptance Criteria",
         )
 
-    tagged = _collect_scenario_req_tags(project_root)
-    missing = [r for r in req_ids if r not in tagged]
+    # ADR-0.0.59 kind discipline (mirror `gz obpi complete`, GHI #636): only
+    # BEHAVIOR REQs need a proof channel here. SUPPORT (ledger event + structural
+    # validator) and STRUCTURAL-FENCE (parent-ADR Boundary Invariants) REQs are
+    # exempt — requiring a scenario/test for them is the named anti-pattern
+    # (`.gzkit/rules/tests.md` § REQ Scope Discipline). Untagged (legacy) REQs
+    # default to BEHAVIOR. A BEHAVIOR REQ is satisfied by a `@REQ-*` scenario tag
+    # OR an `@covers` unit test under `tests/**`; `discover_covers` unions both,
+    # matching the kind-aware completion chokepoint so the pre-flight never
+    # false-flags work that `gz obpi complete` accepts.
+    req_kinds = parse_brief_req_kinds(brief_path)
+    exempt_kinds = ("SUPPORT", "STRUCTURAL-FENCE")
+    behavior_reqs = [r for r in all_req_ids if req_kinds.get(r, "BEHAVIOR") not in exempt_kinds]
+    if not behavior_reqs:
+        return CheckResult(
+            name="behave_req_coverage",
+            ok=True,
+            message=f"all {len(all_req_ids)} REQ(s) are SUPPORT/STRUCTURAL-FENCE; exempt by kind",
+        )
+
+    tests_root = project_root / "tests"
+    features_root = project_root / "features"
+    missing = [
+        r for r in behavior_reqs if not discover_covers(r, tests_root, features_root=features_root)
+    ]
     if missing:
         first = ", ".join(missing[:3])
         suffix = f" (+{len(missing) - 3} more)" if len(missing) > 3 else ""
         return CheckResult(
             name="behave_req_coverage",
             ok=False,
-            message=f"{len(missing)} REQ(s) lack scenario tags: {first}{suffix}",
+            message=(
+                f"{len(missing)} BEHAVIOR REQ(s) lack a covering test or scenario: {first}{suffix}"
+            ),
             remediation=(
-                f"Add `@REQ-X.Y.Z-NN-MM` scenario tags under `features/**` for "
-                f"{obpi_id}'s REQs, or add a waiver entry in "
+                f'Add a `@covers("REQ-X.Y.Z-NN-MM")` unit test under `tests/**` or a '
+                f"`@REQ-X.Y.Z-NN-MM` scenario tag under `features/**` for {obpi_id}'s "
+                "BEHAVIOR REQs, or add a waiver entry in "
                 "`data/behave_coverage_waivers.json` with rationale."
             ),
         )
     return CheckResult(
         name="behave_req_coverage",
         ok=True,
-        message=f"{len(req_ids)} REQ(s) all tagged in features/**",
+        message=f"{len(behavior_reqs)} BEHAVIOR REQ(s) all covered (test or scenario)",
     )
 
 

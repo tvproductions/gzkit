@@ -403,7 +403,9 @@ class TestPrecompleteBehaveReqCoverageScopedCheck(unittest.TestCase):
             result = _check_behave_req_coverage_scoped(root, path, "OBPI-0.1.0-01")
             self.assertFalse(result.ok, msg=result.message)
             self.assertIn("REQ-0.1.0-01-01", result.message)
-            self.assertIn("scenario tags", (result.remediation or "").lower())
+            remediation = (result.remediation or "").lower()
+            self.assertIn("scenario", remediation)
+            self.assertIn("@covers", remediation)
 
     def test_passes_for_heavy_brief_with_tagged_req(self) -> None:
         runner = CliRunner()
@@ -439,6 +441,70 @@ class TestPrecompleteBehaveReqCoverageScopedCheck(unittest.TestCase):
             result = _check_behave_req_coverage_scoped(root, path, "OBPI-0.1.0-01")
             self.assertTrue(result.ok, msg=result.message)
             self.assertIn("waived", result.message.lower())
+
+    def _scaffold_heavy_brief_kind(self, root: Path, obpi_id: str, req_id: str, kind: str) -> Path:
+        """Heavy-lane brief with one REQ carrying an explicit ``[kind]`` tag."""
+        config = GzkitConfig.load(root / ".gzkit.json")
+        adr_dir = root / config.paths.design_root / "adr" / "pre-release" / "ADR-0.1.0-test"
+        obpi_dir = adr_dir / "obpis"
+        obpi_dir.mkdir(parents=True, exist_ok=True)
+        path = obpi_dir / f"{obpi_id}-test.md"
+        path.write_text(
+            f"---\nid: {obpi_id}\nparent: ADR-0.1.0\nstatus: pending\nlane: Heavy\n---\n\n"
+            f"# {obpi_id}\n\n"
+            f"## Acceptance Criteria\n- [ ] {req_id} [{kind}]: Real criterion.\n",
+            encoding="utf-8",
+        )
+        return path
+
+    def test_passes_for_structural_fence_req_without_scenario(self) -> None:
+        """STRUCTURAL-FENCE REQs are exempt by kind (ADR-0.0.59 / GHI #636)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            path = self._scaffold_heavy_brief_kind(
+                root, "OBPI-0.1.0-01", "REQ-0.1.0-01-01", "structural-fence"
+            )
+            (root / "features").mkdir(exist_ok=True)
+            result = _check_behave_req_coverage_scoped(root, path, "OBPI-0.1.0-01")
+            self.assertTrue(result.ok, msg=result.message)
+
+    def test_passes_for_support_req_without_scenario(self) -> None:
+        """SUPPORT REQs are exempt by kind (proven by ledger + structural validator)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            path = self._scaffold_heavy_brief_kind(
+                root, "OBPI-0.1.0-01", "REQ-0.1.0-01-01", "support"
+            )
+            (root / "features").mkdir(exist_ok=True)
+            result = _check_behave_req_coverage_scoped(root, path, "OBPI-0.1.0-01")
+            self.assertTrue(result.ok, msg=result.message)
+
+    def test_passes_for_behavior_req_covered_by_unit_test(self) -> None:
+        """A BEHAVIOR REQ is satisfied by an @covers unit test, not only a scenario tag."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            path = self._scaffold_heavy_brief_kind(
+                root, "OBPI-0.1.0-01", "REQ-0.1.0-01-01", "behavior"
+            )
+            (root / "features").mkdir(exist_ok=True)
+            tests_dir = root / "tests"
+            tests_dir.mkdir(exist_ok=True)
+            (tests_dir / "test_cover_fixture.py").write_text(
+                "from gzkit.traceability import covers\n\n\n"
+                "class T:\n"
+                '    @covers("REQ-0.1.0-01-01")\n'
+                "    def test_x(self):\n"
+                "        pass\n",
+                encoding="utf-8",
+            )
+            result = _check_behave_req_coverage_scoped(root, path, "OBPI-0.1.0-01")
+            self.assertTrue(result.ok, msg=result.message)
 
 
 class TestPrecompleteTaskEnvelopeCoherence(unittest.TestCase):
