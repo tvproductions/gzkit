@@ -6,7 +6,7 @@ timestamp: "2026-06-22T09:43:18Z"
 agent: claude-code
 obpi_id:
 last_lock_event_timestamp:
-last_commit_sha: b45762eb
+last_commit_sha: f2412086
 session_id:
 continues_from: .gzkit/handoffs/20260622T092915Z-obpi-0-0-74-12-mx-gates-as-sensors-completed.md
 ---
@@ -49,8 +49,9 @@ checkboxes** (operator ruling — avoid a green facade per §2/§5) in
   BI#2's second half holds. Today `resolve()` has zero production callers; two
   flags survive — OBPI-0.0.74-09.
 
-No active OBPI lock. Tree is clean except the in-flight campaign edit (this
-handoff's git-sync will commit it). Branch `main`, synced.
+No active OBPI lock. Tree clean, branch `main`, synced to `origin/main` at
+`f2412086` — the OBPI-12 completion, the campaign item-1 split, and this handoff
+are all committed and pushed.
 
 ## Important Context
 
