@@ -3,7 +3,7 @@ id: OBPI-0.0.74-12-mx-gates-as-sensors
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 12
 lane: Heavy
-status: Draft
+status: Completed
 req_atomic:
   # Gates-as-sensors + the one disposition handler is one indivisible authoring unit:
   # the guard-emits-a-level contract, the single level->route handler (disposition.py
@@ -22,7 +22,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #12 - "Gates-as-T/F sensors + the one disposition handler — guards emit a `GZ_<LEVEL>` instead of self-deciding; one handler maps the (design × build × vibes) diagnosis → level → route (AOG/MX hangar, GHI-fix, refactor/Chores, drift-drain, track); unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -42,6 +42,8 @@ The one disposition handler lands at `src/gzkit/mx/disposition.py`: each guard s
 - `src/gzkit/mx/disposition.py` **CREATE** — the one disposition handler: the level→route matrix from the parent ADR
 - `src/gzkit/mx/checkpoint.py` — the checkpoint routes a guard's emitted `GZ_<LEVEL>` through the handler (consumer); under-marker demotion of non-floor levels
 - `tests/mx/test_disposition.py` **CREATE** — unit tests for each matrix row, the under-marker non-floor demotion, and the `gate5_invariants` CRITICAL pin
+- `src/gzkit/mx/marker.py` — **READ-ONLY fixture dependency** (unchanged; owned by OBPI-02): the under-marker tests import `marker.write`/`marker.is_active` to set up the active-marker fixture, matching the `test_checkpoint.py` convention
+- `src/gzkit/mx/__init__.py` — **READ-ONLY package dependency** (unchanged): the `gzkit.mx` package init through which the tests import siblings
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/obpis/OBPI-0.0.74-12-mx-gates-as-sensors.md` — this brief (evidence recording)
 
 ## Creates These Files
@@ -88,7 +90,7 @@ The one disposition handler lands at `src/gzkit/mx/disposition.py`: each guard s
 
 - [ ] `src/gzkit/mx/levels.py` (OBPI-11) — the `GZ_<LEVEL>` vocabulary the handler keys on
 - [ ] `src/gzkit/mx/checkpoint.py` (OBPI-02) — the checkpoint that resolves the level and routes it through the handler
-- [ ] `src/gzkit/mx/invariants.py` (OBPI-03) — the `gate5_invariants` set that pins to CRITICAL
+- [ ] `src/gzkit/mx/checkpoint.py` — the `GATE5_INVARIANTS` frozenset (seeded by OBPI-02; OBPI-03 formal set pending; the constant lives in checkpoint.py, not a separate invariants.py)
 
 **Prerequisites (check existence, STOP if missing):**
 
@@ -213,14 +215,21 @@ Before: each guard decided its own disposition — block here, warn there — so
 
 ### Key Proof
 
+
+Command: uv run -m unittest tests/mx/test_disposition.py -v
+
+All 5 tests pass. test_gate5_invariant_pins_critical_route iterates every GATE5_INVARIANTS member under an active marker and asserts Route.AOG_MX_HANGAR (the floor cannot be demoted); test_non_floor_guard_demotes_to_advisory confirms non-floor guards under the marker resolve to Route.ADVISORY; test_each_matrix_row pins all six ADR matrix rows. Receipts: arb-step-unittest-b0e62c71321b4561ae23def93bd51fb6, arb-ruff-f5b4455a57754a889583e4b6f3d5b564, arb-step-typecheck-8cb68a897949499c89fabadefb486151, arb-step-mkdocs-66a758be7f454e4ebe0846608a854eec.
+
 ### Implementation Summary
 
-- **Decision item 12 (verbatim):** "Gates-as-T/F sensors + the one disposition handler (the matrix). Each guard stops self-deciding block/warn and instead emits a `GZ_<LEVEL>`; ONE handler maps level → disposition. ... gate5_invariants pin to CRITICAL (item 3); under the marker, non-floor levels demote to advisory debt accrued visibly on the ledger."
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Decision item 12 (verbatim): "Gates-as-T/F sensors + the one disposition handler (the matrix). Each guard stops self-deciding block/warn and instead emits a GZ_<LEVEL>; ONE handler maps level -> disposition."
+- Files created: src/gzkit/mx/disposition.py (Route StrEnum + route() matrix handler); tests/mx/test_disposition.py (5 tests, 3 classes)
+- Files modified: src/gzkit/mx/checkpoint.py (added resolve(); is_advisory() preserved); ADR-0.0.74 matrix enriched with V.I.B.E.S.-management-band semantics (operator refinement)
+- Tests added: 6-row matrix coverage, sensor-API interface, non-floor under-marker demotion, gate5-invariant CRITICAL pin, CRITICAL-floor no-demotion
+- Date completed: 2026-06-22
+- Attestation status: operator-attested ("attest completed")
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -228,12 +237,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.74-12 lands the one disposition handler (src/gzkit/mx/disposition.py): guards emit a GZ_<LEVEL> sensor reading and checkpoint.resolve() routes it through the single ADR-matrix handler, with under-marker non-floor demotion to ADVISORY and gate5_invariants pinned to CRITICAL. Operator refined the sub-ERROR rows into the V.I.B.E.S.-management band (NOTICE=escalation, INFO=tracking incl. inherent model behavior, DEBUG=anti-vibing steering), now encoded in disposition.py and the ADR matrix. Verified: 5/5 scoped tests pass, behavior_uncovered_reqs=0, lint/typecheck/mkdocs clean. Receipts arb-step-unittest-b0e62c71321b4561ae23def93bd51fb6, arb-ruff-f5b4455a57754a889583e4b6f3d5b564, arb-step-typecheck-8cb68a897949499c89fabadefb486151, arb-step-mkdocs-66a758be7f454e4ebe0846608a854eec.
+- Date: 2026-06-22
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-22
 
 **Evidence Hash:** -

@@ -73,6 +73,14 @@ One mechanism — a filesystem marker that means 'in the hangar' — read by bot
 
    gate5_invariants pin to CRITICAL (item 3); under the marker, non-floor levels demote to advisory debt accrued visibly on the ledger.
 
+   **The grounding line splits the matrix into two bands.** CRITICAL and ERROR are the *grounding* band (`>= ERROR`): they route to a defect airlock — the hangar or the GHI-fix path — and block. WARNING, NOTICE, INFO, and DEBUG are the **V.I.B.E.S.-management band** (`< ERROR`): visible-but-non-grounding, because you cannot fail-close on stochastic drift the way you fail-close on a broken build. The sub-grounding routes are the vibing ladder in descending urgency:
+
+   - **NOTICE → drift / Chores drain** — a vibe requiring **escalation**; surfaced through the arb receipts and the insights log (`.gzkit/insights/agent-insights.jsonl`), then drained into Chores.
+   - **INFO → track** — a vibe requiring **tracking** for long-term improvement or refactoring; this is also the channel for *inherent model behavior that can't be changed, only influenced* — you do not block on a model trait you cannot fix, you track it to influence the governance around it.
+   - **DEBUG → steering** — a **verbose mode** that pre-emptively **steers** agents away from V.I.B.E.S. before the vibe occurs; not a defect.
+
+   This band is gzkit's purpose — *make stochastic LLM vibing structurally inert* — expressed as a severity ladder rather than a single block/allow flag.
+
 13. The proxy-reality distance detector — grader-gaming's live §5 negative control. A record of *"a gate went green AND reality was later found wrong — here is the gate that cleared it."* It turns grader-gaming from conviction into a count (the north-star instrument) and is the passing-on-violation live control that keeps grader-gaming's floor membership (item 3) §5-compliant rather than a named aspiration.
 
 14. MX hardening. TTL / max-open on the hangar; no normal release while MX is open; ledger debt-aging (accrued advisory debt grows louder over time); a dangling-state detector ('ledger open but marker missing'). Each is a guard whose severity resolves through the leveled checkpoint.
