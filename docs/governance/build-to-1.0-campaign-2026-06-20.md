@@ -216,7 +216,7 @@ is now the receipts-footer + guess-flagging above, emitted at turn end.
 > enforcement-claim meta-validator joins that floor as it lands).
 
 **Movement I — Build the substrate** *(forward engine; releases MX as `0.29.0`)*
-- [ ] `GZ_<LEVEL>` severity substrate + gates-as-T/F-sensors + **one disposition handler** (the level→AOG/advisory wire; this is ADR-0.0.74 BI#2 built for real)
+- [x] `GZ_<LEVEL>` severity substrate + gates-as-T/F-sensors + **one disposition handler** (the level→AOG/advisory wire; this is ADR-0.0.74 BI#2 built for real) — *substrate + handler + wire landed: OBPI-0.0.74-11 (`levels.py` GZ_<LEVEL> vocabulary) + OBPI-0.0.74-12 (`disposition.py` + `checkpoint.resolve` level→route/AOG/advisory wire), both ATTESTED COMPLETED 2026-06-22. BI#2 now has real code. Remaining thread: migrating each live guard to emit `GZ_<LEVEL>` through the checkpoint instead of self-deciding — OBPI-0.0.74-09 (retire `_FRESHNESS_FAIL_CLOSED`/`_FLOOR_FAIL_CLOSED` staging flags).*
 - [ ] **MX lean kernel + hardening** → release `0.29.0`: enter / status / exit, the floor, ledger↔marker binding, **no-force exit**, **TTL / max-open**, **no normal release while MX is open**, **live exit negative-controls**, **ledger debt-aging (louder over time)**, **dangling-state detector** ("ledger open but marker missing"). **CUT** the doc-type taxonomy (OBPI-10 — another classification system smuggled into the repair ADR). **Fix** ADR-0.0.74's placeholder fidelity assertions.
 - [ ] The **enforcement-claim meta-validator** (§5's mechanism) — the floor's teeth
 
