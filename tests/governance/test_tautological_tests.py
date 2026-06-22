@@ -192,6 +192,33 @@ class TestAstScanner(unittest.TestCase):
         self.assertIn(op.operation_kind, {"read_text", "read_bytes", "open", "path_method"})
 
     @covers("REQ-0.0.59-04-01")
+    def test_scanner_exempts_fixture_methods(self) -> None:
+        """setUp/tearDown are fixtures, never tests — a fs-op + assert there is
+        not a tautological *test* and must not be counted (else the drift gate
+        false-flags fixture scaffolding it can never decommission)."""
+        from gzkit.tautological_tests import scan_test_tree
+
+        content = textwrap.dedent(
+            """\
+            from pathlib import Path
+            import unittest
+
+            class TestFoo(unittest.TestCase):
+                def setUp(self):
+                    assert Path("sentinel") is not None
+                    p = Path("snapshot.txt")
+                    if p.exists():
+                        self._snap = p.read_text()
+            """
+        )
+        with tempfile.TemporaryDirectory() as tmp_str:
+            tmp = pathlib.Path(tmp_str)
+            self._make_test_file(tmp, content)
+            ops = scan_test_tree(tmp / "tests")
+
+        self.assertEqual(ops, [], "fixture methods must be exempt from the scan")
+
+    @covers("REQ-0.0.59-04-01")
     def test_scanner_returns_empty_for_no_cooccurrence(self) -> None:
         from gzkit.tautological_tests import scan_test_tree
 

@@ -207,6 +207,14 @@ def scan_test_tree(tests_path: Path) -> list[TautologicalTestOperation]:
         for node in ast.walk(tree):
             if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
+            # Fixture methods (setUp/tearDown/...) are scaffolding, never tests:
+            # a filesystem-op + assert co-occurrence there is fixture setup, not a
+            # tautological *test*. propose_disposition already labels them
+            # keep_as_fixture; exempting them from the scan keeps the drift gate
+            # from counting (and the shrink-only waiver ratchet from being unable
+            # to clear) fixtures it can never legitimately decommission.
+            if node.name in _FIXTURE_FUNCTION_NAMES:
+                continue
             has_fs, op_kind, op_line = _has_filesystem_op(node)
             if not has_fs:
                 continue
