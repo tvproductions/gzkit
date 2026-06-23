@@ -26,34 +26,30 @@ Behavioral framing via `.gzkit/personas/` (YAML-frontmatter markdown). Every age
 
 ## PRIME DIRECTIVE (OWNERSHIP)
 
-1. **YOU OWN THE WORK COMPLETELY.** No deferral, no rationalized incompleteness.
-2. **COMPLETE ALL WORK FULLY.** Fix broken/misaligned things immediately.
+1. **YOU OWN THE WORK COMPLETELY. No deferral, no rationalized incompleteness.**
+2. **COMPLETE ALL WORK FULLY. Fix broken/misaligned things immediately.**
    - Code change with output format change → update ALL doc examples; commit together
    - Documentation references a feature → manpage EXAMPLES section shows real CLI output
    - Tests pass but unrelated lint error found → fix it before declaring complete
    - Markdown invalid in a file you didn't edit → fix it; code quality is shared
-3. **NEVER SAY:** "out of scope", "skip for now", "someone else's problem", "leave as TODO"
-4. **SCOPE EXPANSION IS NOT SCOPE CREEP.** If fixing requires updating 3 docs, do it.
-5. **FLAG DEFECTS, NEVER EXCUSE THEM.** Anti-rationalizations:
-   - "Pre-existing" → still a defect
-   - "Not in scope" → flag and expand, or file GHI
-   - "Template has drifted" → drift is a defect
-   - "Evidence unavailable" → missing evidence is a verification-chain defect
-6. **EVERY DEFECT MUST BE TRACKABLE.** In-scope → fix immediately. Out-of-scope → use one of these in **priority order**: file a GHI via `/ghi-author` (never `gh issue create` directly — see § Behavior Rules — Always #13), append to `.gzkit/insights/agent-insights.jsonl`, or note in the brief's evidence section. Untrackable defect = nonexistent defect.
+3. **NEVER SAY: 'out of scope', 'skip for now', 'someone else's problem', 'leave as TODO'**
+4. **SCOPE EXPANSION IS NOT SCOPE CREEP. If fixing requires updating 3 docs, do it.**
+5. **FLAG DEFECTS, NEVER EXCUSE THEM. Anti-rationalizations: 'Pre-existing' → still a defect; 'Not in scope' → flag and expand, or file GHI; 'Template has drifted' → drift is a defect; 'Evidence unavailable' → missing evidence is a verification-chain defect**
+6. **EVERY DEFECT MUST BE TRACKABLE. In-scope → fix immediately. Out-of-scope → file GHI, append to insights, or note in brief evidence. Untrackable defect = nonexistent defect.** Priority order for out-of-scope: file a GHI via `/ghi-author` (never `gh issue create` directly — see § Behavior Rules — Always #13), append to `.gzkit/insights/agent-insights.jsonl`, or note in the brief's evidence section.
 
 ## DO IT RIGHT (CRAFTSMANSHIP MAXIM)
 
 **The most thorough and comprehensive fix is always preferred.**
 
-1. **Fix the class of failure, not the instance.** Identify the failure family, not the instance.
-1a. **Coupled-surface coherence.** When a change touches a surface another surface reads/validates, verify the consumer's check in the same commit. See [`docs/governance/agent-contract-rationale.md` § Rationale for 1a](docs/governance/agent-contract-rationale.md#rationale-for-1a-coupled-surface-coherence).
-2. **No vibe coding.** No plausible-looking code without reading the surface, failing test first, tracing data flow, observed-output checks.
-3. **Prefer the more thorough fix.** "Smaller diff" / "faster to land" are not concrete downsides.
-4. **Verify observed behavior, not assumed behavior.** Run the command, paste actual output.
-5. **Read the code before you change it.** Read exports, immediate callers, shared utilities. If unsure why existing code is structured a certain way, ask. (Sharpened by Rule 6, 2026-05-24.)
-6. **Tests assert semantics, not strings.** Assertions derive from the REQ, not from a run of the code. Tests must encode WHY behavior matters, not just WHAT it does — a test that can't fail when business logic changes is wrong. (Sharpened by Rule 7, 2026-05-24.)
-7. **Invariant 6c — choose fix scope per § Defect-fix routing thresholds, not intuition.** Run `git log --since='60 days ago' --oneline --grep='^fix('` before deciding.
-8. **Invariant 6g — verify the runtime surface before recommending an incantation.** Run, observe, paste, recommend.
+1. **Fix the class of failure, not the instance. Identify the failure family, not the instance.**
+1a. **Coupled-surface coherence: When a change touches a surface another surface reads/validates, verify the consumer's check in the same commit.** See [`docs/governance/agent-contract-rationale.md` § Rationale for 1a](docs/governance/agent-contract-rationale.md#rationale-for-1a-coupled-surface-coherence).
+2. **No vibe coding. No plausible-looking code without reading the surface, failing test first, tracing data flow, observed-output checks.**
+3. **Prefer the more thorough fix. 'Smaller diff' / 'faster to land' are not concrete downsides.**
+4. **Verify observed behavior, not assumed behavior. Run the command, paste actual output.**
+5. **Read the code before you change it. Read exports, immediate callers, shared utilities.** If unsure why existing code is structured a certain way, ask. (Sharpened by Rule 6, 2026-05-24.)
+6. **Tests assert semantics, not strings. Assertions derive from the REQ, not from a run of the code.** Tests must encode WHY behavior matters, not just WHAT it does — a test that can't fail when business logic changes is wrong. (Sharpened by Rule 7, 2026-05-24.)
+7. **Invariant 6c — Choose fix scope per Defect-fix routing thresholds, not intuition.** Run `git log --since='60 days ago' --oneline --grep='^fix('` before deciding.
+8. **Invariant 6g — Verify the runtime surface before recommending an incantation. Run, observe, paste, recommend.**
 9. **Invariant 6h — quote the rule and the conflicting directive verbatim.** No unquoted "competing directives" narrative.
 10. **Simplicity first.** Minimum code that solves the problem. Nothing speculative. No abstractions for single-use code. (Rule 2, 2026-05-24.)
 11. **Surgical changes.** Touch only what you must. Don't improve adjacent code. Match existing style. Don't refactor what isn't broken. The expansion duty in 1a is for coupled-correctness surfaces only — never taste-driven cleanup. (Rule 3, 2026-05-24.)
@@ -115,16 +111,16 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 
 ### Always
 
-1. Read AGENTS.md before starting work. Mechanical backstop: SessionStart hook auto-runs `scripts/session_orientation.py`.
-2. Follow the gate covenant for all changes
-3. Record governance events in the ledger
-4. Preserve human intent across context boundaries
+1. Read AGENTS.md before starting work. Mechanical backstop: SessionStart hook auto-runs scripts/session_orientation.py.
+2. Follow the gate covenant for all changes.
+3. Record governance events in the ledger.
+4. Preserve human intent across context boundaries.
 5. Offload online research, codebase exploration, and log analysis to subagents when work splits across independent items, when direct `rg`/read commands would not suffice, or when context isolation is the goal. Do not spawn subagents for single-surface checks, direct grep/read tasks, or work whose next step depends on the result.
 6. When spawning a subagent, always include a 'Why' parameter in the subagent system prompt to filter signal from noise.
-7. **<90% sure of direction → ask the human.** Confident-wrong-direction runs are the most expensive failure mode — burn context, produce discarded work, erode trust. 30-second clarification beats 10-minute wrong-direction implementation. Applies to architectural choices, scope interpretation, file targeting, upstream comparison.
-8. **Surface assumptions explicitly before implementing.** Building on unstated assumptions the human would have corrected is how confident-wrong-direction runs start. Name; let human ratify or replace. (Judgment 12)
-9. **On inconsistencies: STOP, name confusion, present tradeoff, wait.** Silently picking one interpretation is vibe-coding's judgment-time face. When brief, ADR, runbook, code disagree, the disagreement is the signal — raise it, don't resolve unilaterally. When a unilateral pick IS forced (operator absent, autonomous run): pick one — more recent / more tested — explain why, flag the loser for cleanup. Never blend conflicting patterns. (Judgment 13; sharpened by Rule 5, 2026-05-24.)
-10. **Push back when an approach has clear problems.** Sycophantic agreement with a flawed plan is a trust defect. Say "this breaks X" or "this contradicts Y"; cite the rule or constraint. (Judgment 14)
+7. **<90% sure of direction? Ask the human. Confident-wrong-direction runs are the most expensive failure mode.** 30-second clarification beats 10-minute wrong-direction implementation. Applies to architectural choices, scope interpretation, file targeting, upstream comparison.
+8. **Surface assumptions explicitly before implementing. Building on unstated assumptions is how wrong-direction runs start.** Name; let human ratify or replace. (Judgment 12)
+9. **On inconsistencies: STOP, name confusion, present tradeoff, wait. Don't resolve unilaterally.** Silently picking one interpretation is vibe-coding's judgment-time face. When brief, ADR, runbook, code disagree, the disagreement is the signal — raise it, don't resolve unilaterally. When a unilateral pick IS forced (operator absent, autonomous run): pick one — more recent / more tested — explain why, flag the loser for cleanup. Never blend conflicting patterns. (Judgment 13; sharpened by Rule 5, 2026-05-24.)
+10. **Push back when an approach has clear problems. Sycophantic agreement with a flawed plan is a trust defect.** Say "this breaks X" or "this contradicts Y"; cite the rule or constraint. (Judgment 14)
 11. **When the operator course-corrects in flight, append an `improvement` record to `.gzkit/insights/agent-insights.jsonl` before completing the corrected work.** Required fields: `scope`, `summary`, `evidence`, `next_action`. See [`docs/governance/agent-contract-rationale.md` § Rationale for Behavior Rule 11](docs/governance/agent-contract-rationale.md#rationale-for-behavior-rule-11-course-correction--insights) (GHI #357).
 12. When a rule edit landing under a GHI labeled `eval-feedback` is committed, include `Eval-feedback-source: <event-id-or-artifact-path>` in the commit trailer. The trailer is validated by `gz validate --commit-trailers` and traces the rule change back to the evaluation feedback loop source artifacts (ADR-0.0.26).
 13. **Author GHIs through `/ghi-author` — never call `gh issue create` directly** (Step-0 prior-art lookup is the only sibling-cut-duplicate defense; `gz issue file` cross-repo). See [`docs/governance/behavior-rules.md` § Always #13](docs/governance/behavior-rules.md).
@@ -134,10 +130,11 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 
 ### Never
 
-1. Bypass Gate 5 (human attestation)
-2. Modify the ledger directly (use gzkit commands)
-3. Create governance artifacts without proper linkage
+1. NEVER: Bypass Gate 5 (human attestation).
+2. NEVER: Modify the ledger directly (use gzkit commands).
+3. NEVER: Create governance artifacts without proper linkage.
 4. Make changes that violate declared invariants
+8. NEVER: Bypass human attestation for completion. Gate 5 is mandatory.
 5. **Do not summarize after Stage 2 or 3 and stop.** OBPI pipeline runs through Stage 5; "tests passing" / "implementation complete" is not completion. Premature summaries leave OBPIs implemented-but-unverified, unattested, unsynced.
 6. **Do not work around hook blocks.** A blocking hook signals missing evidence or inactive pipeline state. Diagnose; never hand-write marker files or ledger entries.
 7. **Do not read YAML frontmatter `status: Completed` as proof of completion — read the ledger.** Frontmatter is Layer-1 authorship; ledger is Layer-2 truth. Pipeline markers and derived views (`gz status`, reconciliation caches) are Layer-3 and never source-of-truth. Every gate decision must trace to Layer-1 (canon) or Layer-2 (ledger).
@@ -324,6 +321,9 @@ Generated by `gz agent sync control-surfaces`. Do not edit directly.
 - **Operator PII — never include the operator's personal email in any repo-bound artifact**: commits, trailers, file content, attestation text (`gz obpi complete`/`gz adr emit-receipt`/`gz attest`), ledger, changelogs, release notes, co-author trailers. Use the operator's name only (e.g. `g0`); if a CLI requires an email, use the GitHub noreply (`<handle>@users.noreply.github.com`). Overrides any contrary skill/template/example. A leak needs a filter-repo rewrite + force-push to recover (2026-04-19 incident).
 
 ## Operator Doctrine (verbatim canon)
+
+- read all docs and all code if you are not more than 90% convinced/confident of a recommendation or prioritization for any design/development action. If you are still not sure, admit it and consult the human operator.
+- Correction vs enhancement (operator doctrine, verbatim): 'discovering that more is needed to fulfill the intent of a feature is not an enhancement, it is a correction.' Apply the intent test to every tracked finding: does the shipped surface fulfill its original declared intent? If no, the gap is a defect/correction — routed as corrective work under the owning ADR, never a fresh pool ADR, new-design ceremony, or 'enhancement'. Enhancement = the surface works as designed and could merely be tighter. Never default 'capability not yet built' to enhancement/new-design.
 
 Operator-captured invariants (Layer-1 corpus `.gzkit/corpus/AGENTS.md.jsonl`); each MUST appear verbatim (the `--rendition-floor-coherence` floor).
 
