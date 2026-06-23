@@ -871,7 +871,12 @@ def _run_scope_checks(
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Dispatch validation checks based on active scopes."""
-    from gzkit.mx import checkpoint  # noqa: PLC0415
+    from gzkit.mx import checkpoint, disposition, levels  # noqa: PLC0415
+
+    def _grounds(scope: str) -> bool:
+        # Each scope emits its drift at ERROR and routes through the one leveled
+        # severity authority (parent ADR-0.0.74 BI#2); fail-closed iff grounding.
+        return disposition.grounds(checkpoint.resolve(scope, levels.ERROR, project_root))
 
     errors: list[ValidationError] = []
     default_runners = _default_scope_runners(project_root, frontmatter_adr)
@@ -880,12 +885,12 @@ def _run_scope_checks(
     for scope, runner in default_runners.items():
         if run_all and scope in default_scopes or default_scopes.get(scope, False):
             scope_errors = runner()
-            if not checkpoint.is_advisory(scope, project_root):
+            if _grounds(scope):
                 errors.extend(scope_errors)
     for scope, runner in explicit_runners.items():
         if explicit_scopes.get(scope):
             scope_errors = runner()
-            if not checkpoint.is_advisory(scope, project_root):
+            if _grounds(scope):
                 errors.extend(scope_errors)
     return errors
 

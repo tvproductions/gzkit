@@ -29,6 +29,8 @@ from gzkit.content.rendition_store import (
 from gzkit.core.validation_rules import ValidationError
 from gzkit.governance.events import emit_composition_drift_detected
 from gzkit.mx import checkpoint as _checkpoint
+from gzkit.mx import disposition as _disposition
+from gzkit.mx import levels as _levels
 
 
 def _recovery_prose(surface: str, consumer: str, what: str) -> str:
@@ -58,7 +60,7 @@ def validate_rendition_freshness(
     or every committed rendition agrees with its corpus.
     """
     closed = (
-        (not _checkpoint.is_advisory("rendition-freshness", root))
+        _disposition.grounds(_checkpoint.resolve("rendition-freshness", _levels.ERROR, root))
         if fail_closed is None
         else fail_closed
     )

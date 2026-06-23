@@ -25,6 +25,8 @@ from gzkit.content.tier_policy import invariant_entries
 from gzkit.core.validation_rules import ValidationError
 from gzkit.governance.events import emit_composition_drift_detected
 from gzkit.mx import checkpoint as _checkpoint
+from gzkit.mx import disposition as _disposition
+from gzkit.mx import levels as _levels
 
 
 def validate_rendition_floor_coherence(
@@ -43,7 +45,7 @@ def validate_rendition_floor_coherence(
     (bootstrap-safe).
     """
     closed = (
-        (not _checkpoint.is_advisory("rendition-floor-coherence", root))
+        _disposition.grounds(_checkpoint.resolve("rendition-floor-coherence", _levels.ERROR, root))
         if fail_closed is None
         else fail_closed
     )

@@ -58,3 +58,22 @@ _MATRIX: dict[int, Route] = {
 def route(level: int) -> Route:
     """Map *level* to its ADR § Decision item 12 matrix route."""
     return _MATRIX.get(level, Route.TRACK)
+
+
+# Grounding routes derived from the single matrix + levels.grounds — not a second
+# hand-maintained list (parent ADR Boundary Invariant #2: one severity authority).
+# ADVISORY is absent from the matrix, so the under-marker demotion sentinel never
+# grounds — exactly the warn-only semantics demotion is meant to produce.
+_GROUNDING_ROUTES: frozenset[Route] = frozenset(
+    route_ for level, route_ in _MATRIX.items() if levels.grounds(level)
+)
+
+
+def grounds(route: Route) -> bool:
+    """Return True iff *route* blocks (grounds) — the grounding band (>= ERROR).
+
+    The consumer-facing counterpart to :func:`levels.grounds`: a guard holding a
+    Route resolved by :func:`checkpoint.resolve` asks this whether to fail-closed,
+    rather than re-deriving the level→route matrix at the call-site.
+    """
+    return route in _GROUNDING_ROUTES

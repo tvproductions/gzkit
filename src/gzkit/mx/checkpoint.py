@@ -36,11 +36,10 @@ def resolve(
 def is_advisory(guard_name: str, project_root: Path | None = None) -> bool:
     """Return True when *guard_name* should be advisory (not fail-closed) in context.
 
-    Decision rules (in order):
-    - gate5_invariants are never advisory regardless of MX state.
-    - Outside the hangar (no marker): always False — strict no-op; guard severity unchanged.
-    - Inside the hangar (marker present): True for all non-gate5_invariant guards.
+    Thin convenience predicate over :func:`resolve` — the single leveled severity
+    authority (parent ADR Boundary Invariant #2). A guard is advisory exactly when
+    its resolved route is the under-marker demotion sentinel, which reproduces the
+    prior decision rules: gate5_invariants pin (never advisory), outside the hangar
+    nothing demotes, inside the hangar non-invariant guards demote to ADVISORY.
     """
-    if guard_name in GATE5_INVARIANTS:
-        return False
-    return marker.is_active(project_root)
+    return resolve(guard_name, _levels.ERROR, project_root) == _disposition.Route.ADVISORY

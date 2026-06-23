@@ -103,3 +103,84 @@ class TestUnderMarkerDemotion(unittest.TestCase):
             # still route to AOG_MX_HANGAR (no demotion below floor).
             result = checkpoint.resolve("gate3-docs", levels.CRITICAL, root)
             self.assertEqual(result, disposition.Route.AOG_MX_HANGAR)
+
+
+class TestRouteGrounds(unittest.TestCase):
+    """REQ-0.0.74-12-02 (consumer surface, GHI #637): the disposition handler
+    exposes a Route-grounding predicate so a guard holding a resolved Route can
+    ask 'does this block?' without re-deriving the level→route matrix. Grounding
+    band (>= ERROR) routes block; the V.I.B.E.S.-management band does not."""
+
+    @covers("REQ-0.0.74-12-02")
+    def test_grounding_band_routes_block(self) -> None:
+        from gzkit.mx import disposition
+
+        for route in (disposition.Route.AOG_MX_HANGAR, disposition.Route.BLOCK_GHI_FIX):
+            with self.subTest(route=route):
+                self.assertTrue(disposition.grounds(route))
+
+    @covers("REQ-0.0.74-12-02")
+    def test_vibes_band_and_advisory_do_not_ground(self) -> None:
+        from gzkit.mx import disposition
+
+        non_grounding = (
+            disposition.Route.REFACTOR_CHORES,
+            disposition.Route.DRIFT_DRAIN,
+            disposition.Route.TRACK,
+            disposition.Route.STEERING,
+            disposition.Route.ADVISORY,
+        )
+        for route in non_grounding:
+            with self.subTest(route=route):
+                self.assertFalse(disposition.grounds(route))
+
+    @covers("REQ-0.0.74-12-02")
+    def test_grounds_agrees_with_levels_grounding_threshold(self) -> None:
+        # Semantic anchor: a route grounds iff the level that produces it grounds
+        # (levels.grounds). The two grounding authorities must not diverge.
+        from gzkit.mx import disposition, levels
+
+        for level in (
+            levels.CRITICAL,
+            levels.ERROR,
+            levels.WARNING,
+            levels.NOTICE,
+            levels.INFO,
+            levels.DEBUG,
+        ):
+            with self.subTest(level=level):
+                self.assertEqual(
+                    disposition.grounds(disposition.route(level)), levels.grounds(level)
+                )
+
+
+class TestLeveledConsumptionEquivalence(unittest.TestCase):
+    """GHI #637: a guard consuming the leveled pipeline via
+    disposition.grounds(checkpoint.resolve(name, ERROR, root)) must be
+    behaviorally identical to the legacy boolean (not is_advisory(name, root))
+    across every context — outside the hangar, under the hangar for a non-floor
+    guard, and for a gate5_invariant. This is the contract that lets the
+    migration preserve observable fail-closed/warn behavior (parent ADR BI#2:
+    a single leveled severity authority)."""
+
+    @covers("REQ-0.0.74-12-01")
+    def test_leveled_grounding_matches_not_is_advisory(self) -> None:
+        from gzkit.mx import checkpoint, disposition, levels
+
+        guards = (
+            "rendition-freshness",
+            "rendition-floor-coherence",
+            "gate3-docs",
+            "ledger",
+        )
+        for marker_active in (False, True):
+            with TemporaryDirectory() as tmp:
+                root = _mk_root(tmp)
+                if marker_active:
+                    _write_marker(root)
+                for guard in guards:
+                    with self.subTest(guard=guard, marker=marker_active):
+                        route = checkpoint.resolve(guard, levels.ERROR, root)
+                        leveled = disposition.grounds(route)
+                        legacy = not checkpoint.is_advisory(guard, root)
+                        self.assertEqual(leveled, legacy)
