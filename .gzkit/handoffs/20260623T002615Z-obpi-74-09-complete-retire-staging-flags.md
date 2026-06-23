@@ -6,7 +6,7 @@ timestamp: "2026-06-23T00:26:15Z"
 agent: claude-code
 obpi_id: OBPI-0.0.74-09-mx-retire-staging-flags
 last_lock_event_timestamp: "2026-06-22T23:31:54.719717+00:00"
-last_commit_sha: d42698ce
+last_commit_sha: 9e6a66db
 session_id:
 continues_from:
 ---
@@ -31,9 +31,13 @@ ignition.
 
 ## Current State Summary
 
-OBPI-0.0.74-09-mx-retire-staging-flags is **attested-complete** (Gate 5
-operator attestation "attest completed" by g0, recorded via `gz obpi complete`,
-completion type `operator-verbatim-conversational`).
+OBPI-0.0.74-09-mx-retire-staging-flags is **attested-complete and fully synced**
+(Gate 5 operator attestation "attest completed" by g0, recorded via
+`gz obpi complete`, completion type `operator-verbatim-conversational`). The
+full pipeline ran to Stage 5: completion receipt emitted, lock released
+(this handoff is its register entry), pipeline markers cleaned, both git-sync
+cycles done, `gz obpi reconcile` PASS. Branch `main` is clean and synced to
+`origin/main` at HEAD `9e6a66db`.
 
 The two hand-set staging flags are gone: `_FRESHNESS_FAIL_CLOSED`
 (`rendition_freshness.py`) and `_FLOOR_FAIL_CLOSED`
@@ -46,34 +50,36 @@ Verification at completion: 23/23 scoped tests pass
 (`arb-step-unittest-fdd6331d99df481baa170005ba047f45`), lint clean
 (`arb-ruff-8c1128b368364fff9900b6d4f1e9c530`), typecheck clean
 (`arb-step-typecheck-db8d74cd54834733848cb66121c6aa83`), docs clean
-(`arb-step-mkdocs-87db927daa64446ba806b405da7edf60`), QC binding (negative
-controls) passes — the gates genuinely bind after the rewire.
+(`arb-step-mkdocs-87db927daa64446ba806b405da7edf60`). **Full `gz check` is now
+green (exit 0)** and behave is fully green (368 scenarios, 0 failed).
 
-Pipeline state: pre-`gz obpi complete` steps done. Remaining Stage 5 steps:
-lock release (this handoff is its precondition), pipeline-marker cleanup, two
-git-sync cycles, and `gz obpi reconcile`.
+**Repair work landed in the same session (operator-authorized).** Removing the
+staging flags surfaced pre-existing `AGENTS.md` corpus drift at the pre-push
+gate. Per operator decision ("Repair corpus drift now"), the drift was repaired,
+not deferred — see § Decisions Made and § Important Context.
 
 ## Important Context
 
-**Expected consequence — pre-existing corpus drift now surfaced.** The staging
-flags were hiding pre-existing `AGENTS.md` corpus drift: `AGENTS.md/codex` and
-`AGENTS.md/claude` renditions have no provenance sidecar. With the flags gone,
-`gz validate --rendition-freshness` and `--rendition-floor-coherence` are now
-fail-closed outside the MX hangar, so `gz check` exits 1 on these two checks
-(plus a pre-existing `Behave` failure unrelated to this OBPI). This is the
-honest generalization the ADR intended — the drift was always there; the
-staging flag suppressed it. This drift is NOT a regression introduced by this
-OBPI.
+**Expected consequence — pre-existing corpus drift surfaced, then REPAIRED.**
+The staging flags were hiding pre-existing `AGENTS.md` corpus drift:
+`AGENTS.md/codex` and `AGENTS.md/claude` renditions had no provenance sidecar.
+With the flags gone, `gz validate --rendition-freshness` and
+`--rendition-floor-coherence` became fail-closed outside the MX hangar, so the
+pre-push `gz check` gate blocked. This was the honest generalization the ADR
+intended — the drift was always there; the staging flag suppressed it; it is NOT
+a regression introduced by this OBPI.
 
-**The checkpoint API consumed (not authored):** `gzkit.mx.checkpoint.is_advisory(guard_name, project_root)`
-returns `True` when an MX marker is active and the guard is not a
-gate5_invariant. This OBPI consumes it; OBPI-0.0.74-02/11 own it.
-
-**Brief allowlist amendment:** the brief's original `**` glob Allowed Path was
-replaced with the explicit brief file path, because the reconcile engine's
-allowlist checker does a literal file-existence test with no glob guard (unlike
-the discovery checker). The `**` always read as "missing on disk." Surgical
-brief fix, not a code contortion.
+**Repair (operator-authorized, done):** Recomposed both renditions from the
+current corpus (the staged Jun-20 candidates already carried all 45/45
+invariant-tier entries verbatim) and committed them under operator attestation
+via `gz content commit`, which froze provenance sidecars
+(`AGENTS.md/codex.corpus.json`, `AGENTS.md/claude.corpus.json`,
+corpus_fingerprint `aed354ac9f09…`, 46 entries). Both rendition gates are now
+green. Additionally, one coupled behave scenario
+(`features/rendition_playback.feature:47`) tested the removed warn-staging
+contract and was rewritten to the new fail-closed-outside-the-hangar contract
+(the BDD analog of the deleted `TestRenditionFreshnessWarnStaging` unit class) —
+coupled-surface coherence (AGENTS.md DO IT RIGHT 1a).
 
 ## Decisions Made
 
@@ -98,22 +104,32 @@ brief fix, not a code contortion.
   **Rationale:** the brief was right and the tool has a known glob-guard gap;
   fixing the brief surgically is cleaner than carrying an override.
 
+- **Decision:** Repair the pre-existing corpus drift now (operator ruling
+  "Repair corpus drift now") rather than leave the commits local as follow-up.
+  **Rationale:** the existing Jun-20 staged candidates already carried all 45/45
+  invariant entries verbatim, so the repair was a clean compose+commit under
+  attestation — not a from-scratch rendition authoring.
+  **Alternatives rejected:** (a) leave commits local and defer — would strand
+  the attested OBPI unpushed; (b) enter MX mode to demote gates and push — MX
+  enter/exit (OBPI-04/05) is not yet built, so not viable.
+
 ## Immediate Next Steps
 
 *(ADVISORY — present to operator, await authorization before acting.)*
 
-1. **Follow-up: repair the pre-existing AGENTS.md corpus drift.** Enter MX mode
-   (`gz mx enter`) and recompose/recommit `AGENTS.md/codex` and
-   `AGENTS.md/claude` renditions with provenance sidecars
-   (`gz content compose AGENTS.md --consumer <c>` then `gz content commit ...`),
-   so `gz check` returns green outside the hangar. This is now visible because
-   OBPI-09 landed; it is the natural next repair.
-2. **Continue the ADR-0.0.74 checklist.** Per the Build-to-1.0 campaign, the
-   remaining MX kernel items (OBPI-0.0.74-05 no-force exit, TTL/max-open,
-   ledger↔marker binding, dangling-state detector, etc.) and the
-   enforcement-claim meta-validator are the next propellants toward `0.29.0`.
-3. **Address the pre-existing `Behave` failure** surfaced by `gz check`
-   (unrelated to OBPI-09; the `adr_audit_covers_backfill.feature` scenario).
+OBPI-09 and its coupled repair work are fully done, synced, and green. There is
+no remaining work specific to this OBPI. The next propellants are parent-ADR
+work:
+
+1. **Continue the ADR-0.0.74 checklist.** Per the Build-to-1.0 campaign, the
+   remaining MX kernel items are the next propellants toward `0.29.0`:
+   OBPI-04 (`gz mx enter`), OBPI-05 (`gz mx exit` hard gate / no-force /
+   live exit negative-control), OBPI-06 (MX log), OBPI-07 (awareness hook),
+   OBPI-08 (gz-mx skill + AGENTS.md rule), OBPI-13 (proxy-reality detector),
+   OBPI-14 (MX hardening: TTL/max-open, ledger debt-aging, dangling-state
+   detector). ADR closeout is BLOCKED until these land.
+2. **Then the enforcement-claim meta-validator** (Magna Carta Movement I item 3
+   — the general §5 mechanism, the floor's teeth).
 
 ## Pending Work / Open Loops
 
@@ -122,9 +138,13 @@ brief fix, not a code contortion.
   severity authority … no per-gate hand-set staging flag survives anywhere in
   the codebase"). OBPI-09 contributes to that invariant; it is proven at the ADR
   closeout layer, not per-OBPI.
-- Pre-existing corpus drift (`AGENTS.md/codex`, `AGENTS.md/claude`) — tracked in
-  Immediate Next Step 1.
-- Pre-existing `Behave` failure in `gz check` — tracked in Immediate Next Step 3.
+- Corpus drift (`AGENTS.md/codex`, `AGENTS.md/claude`) — **RESOLVED** this
+  session; both renditions recommitted with provenance sidecars under operator
+  attestation. No open loop.
+- Coupled behave scenario (`rendition_playback.feature:47`) — **RESOLVED** this
+  session; rewritten to the post-OBPI-09 fail-closed contract. No open loop.
+- No OBPI-09-specific open loops remain. Parent-ADR OBPIs (04–08, 12–14) are the
+  remaining ADR-0.0.74 work (see Immediate Next Steps).
 
 ## Verification Checklist
 
@@ -132,7 +152,8 @@ brief fix, not a code contortion.
 - [ ] `uv run -m unittest tests.governance.test_rendition_freshness tests.governance.test_rendition_floor_coherence` passes (23 tests)
 - [ ] `uv run gz validate --qc-binding` passes (negative controls bind)
 - [ ] `grep -rn "_FRESHNESS_FAIL_CLOSED\|_FLOOR_FAIL_CLOSED" src/` returns nothing
-- [ ] Branch matches: `git branch --show-current` → main
+- [ ] `uv run gz check` exits 0 (full gate green, incl. rendition gates + behave)
+- [ ] `git status -sb` → `## main...origin/main` (clean, synced)
 
 ## Evidence / Artifacts
 
@@ -143,6 +164,9 @@ brief fix, not a code contortion.
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/obpis/OBPI-0.0.74-09-mx-retire-staging-flags.md` — brief, status Completed, evidence sections populated
 - `.claude/plans/retire-staging-flags-OBPI-0.0.74-09.md` — approved plan
 - `.claude/plans/.plan-audit-receipt-OBPI-0.0.74-09-mx-retire-staging-flags.json` — PASS receipt
+- `.gzkit/renditions/AGENTS.md/codex.md` + `.gzkit/renditions/AGENTS.md/codex.corpus.json` — recommitted rendition + provenance sidecar (corpus repair)
+- `.gzkit/renditions/AGENTS.md/claude.md` + `.gzkit/renditions/AGENTS.md/claude.corpus.json` — recommitted rendition + provenance sidecar (corpus repair)
+- `features/rendition_playback.feature` — scenario at line 47 rewritten to the post-OBPI-09 fail-closed contract (coupled-surface fix)
 
 ## Environment State
 
