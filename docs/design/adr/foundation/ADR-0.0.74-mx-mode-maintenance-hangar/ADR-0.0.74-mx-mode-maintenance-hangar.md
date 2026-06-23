@@ -271,9 +271,10 @@ Cross-OBPI integration-state properties scoped to this ADR, audited at ADR close
 
 ## Q&A Transcript
 
-<!-- Interview transcript preserved for context -->
+<!-- Interview transcript preserved for context. Amended after interview per the Decision section (see amendments dated 2026-06-21, 2026-06-23, 2026-06-24). -->
 
 *Interview conducted: 2026-06-20T06:44:47.109457*
+*Amended: 2026-06-21 (leveled substrate), 2026-06-23 (meta-validator re-home, item 10 withdrawn), 2026-06-24 (gates-as-sensors completion, item 20 added)*
 
 ### Q: What is the ADR identifier? (canonical slug-form: ADR-<semver>-<slug>)
 
@@ -307,13 +308,15 @@ Operator = FAA by writ; Gate 5 = the regulator signing airworthiness, never dele
 
 ### Q: What did we decide? Be specific about the approach, libraries, patterns.
 
-**A:** One mechanism — a filesystem marker that means 'in the hangar' — read by both enforcement surfaces (code guards and agents), decomposed 1:1 into 10 OBPIs.
+**A:** One mechanism — a filesystem marker that means 'in the hangar' — read by both enforcement surfaces (code guards and agents), decomposed 1:1 into OBPIs (originally 10; amended to 9 active + 5 meta-validator + 1 gates-as-sensors completion = 15 active after amendments; see Decision amendments).
+
+*Items 1–9 (original), restated with amendments noted:*
 
 1. The marker file. A dumb filesystem truth-file; its presence means MX==TRUE. Read without importing any gzkit-internal subsystem (pydantic + stdlib only) so it opens even when gz's own subsystems are the patient — pydantic is a pinned core dependency, not part of the breakable gzkit surface. Valid ONLY when bound to a real mx_session_opened ledger event the tool wrote — a hand-created marker with no matching event is void (anti-contrivance).
 
-2. The shared checkpoint. One place code reads the marker and drops guards to advisory — everything except the gate5_invariants. A new guard inherits the checkpoint for free; nobody can forget to wire it, and the never-relax list lives in exactly one place.
+2. The shared checkpoint. One place code reads the marker and resolves each guard's effective `GZ_<LEVEL>`, dropping non-floor guards to advisory under an active marker while keeping `gate5_invariants` fail-closed (amended 2026-06-21: leveled severity, not binary advisory). A new guard inherits the checkpoint for free; nobody can forget to wire it, and the never-relax list lives in exactly one place.
 
-3. gate5_invariants. The never-relax guards as a code constant (not config): faked Gate-5 attestation, secrets, operator-PII, ledger integrity. These are what airworthiness rests on; the marker can never downgrade them.
+3. gate5_invariants. The never-relax floor as a code constant (not config): faked Gate-5 attestation, secrets, operator-PII, ledger integrity, grader-gaming (added 2026-06-21). These are what airworthiness rests on; the marker can never downgrade them.
 
 4. gz mx enter. The operator opens the door (reason + attestor); the tool sets the marker, writes mx_session_opened, and captures the inspection scope. The agent never opens the hangar on its own.
 
@@ -325,9 +328,13 @@ Operator = FAA by writ; Gate 5 = the regulator signing airworthiness, never dele
 
 8. The gz-mx skill + AGENTS.md binding rule. The operator operates the skill; the skill invokes the tool; nobody shells out (gzkit is a meta-harness inside the vendor harness). The AGENTS.md rule tells agents to honor the marker and that the PRIME DIRECTIVE binds the whole session.
 
-9. Retire the two hand-set staging flags. Delete _FRESHNESS_FAIL_CLOSED and _FLOOR_FAIL_CLOSED; both gates resolve their severity through the one marker mechanism (the honest generalization of the two hacks).
+9. Retire the two hand-set staging flags. Delete _FRESHNESS_FAIL_CLOSED and _FLOOR_FAIL_CLOSED; both gates resolve their severity through the leveled checkpoint mechanism (amended 2026-06-21: now emit `GZ_<LEVEL>` instead of a boolean flag).
 
-10. The governance doc-type taxonomy. Classify governance docs Doctrinal / Lawful / Ordinance / Ops-spec, tag them, and add a guard that keeps the ONE term aligned across tool / skill / rule / marker (fail closed on lexical drift).
+*Item 10 (withdrawn 2026-06-21):* The governance doc-type taxonomy. *(Out of scope for the MX repair ADR per the Build-to-1.0 campaign; a separate classification system smuggled into the hangar work. Cut per operator-ratified Magna Carta amendment; `obpi_withdrawn` 2026-06-21.)*
+
+*Items 11–19 (added 2026-06-21 / 2026-06-23 amendments):* The leveled `GZ_<LEVEL>` severity vocabulary (item 11), gates-as-T/F sensors + the one disposition handler (item 12), the proxy-reality distance detector / grader-gaming live NC (item 13), MX hardening (item 14); plus the enforcement-claim meta-validator re-homed from the demoted ADR-0.0.75: the `@enforces` declaration + registry (item 15), the meta-validator runner (item 16), gate5_invariants floor migration (item 17), structural-fence proof upgrade (item 18), floor wiring (item 19).
+
+*Item 20 (added 2026-06-24):* The `gz check` step-layer checkpoint seam — completes the gates-as-sensors coverage to "every live guard" and closes GHI #638.
 
 Facade-proof ceremony (binding): MX mode is itself a ceremony, so it is built un-skippable (each step leaves a ledger receipt the next step checks), un-vibeable (exit is code that actually re-runs; the log auto-assembles), and un-contrivable (marker and ledger event must agree).
 
