@@ -226,6 +226,26 @@ def step_composition_rendered_in_ledger(context) -> None:  # type: ignore[no-unt
     assert found, "no composition_rendered event found in ledger.jsonl"
 
 
+@then('no "composition_rendered" event is appended to the ledger')
+def step_no_composition_rendered_in_ledger(context) -> None:  # type: ignore[no-untyped-def]
+    # Read-only contract (REQ-0.0.37-03-03, amended): the validator no longer
+    # emits composition_rendered on any run — removed (no consumer; the per-run
+    # emission broke the gz check / pre-push gate). Regression lock.
+    ledger_path = Path.cwd() / ".gzkit" / "ledger.jsonl"
+    if not ledger_path.exists():
+        return
+    for line in ledger_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        assert event.get("event") != "composition_rendered", (
+            "composition_rendered must not be emitted (removed); found one in ledger.jsonl"
+        )
+
+
 # -- OBPI-0.0.37-04 — Brief structural schema (BriefStructure / parse_brief) --
 #
 # These steps wrap the already-landed src/gzkit/governance/brief_structure.py

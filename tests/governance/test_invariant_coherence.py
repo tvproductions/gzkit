@@ -7,10 +7,12 @@ Covers:
     REQ-0.0.37-22-04 — exits 3 when rendition playback differs from committed AGENTS.md
     REQ-0.0.37-03-01 — exits 0 (empty list) when rendition bytes match AGENTS.md
     REQ-0.0.37-03-02 — exits 3 (one ValidationError) on drift; message includes diff
-    REQ-0.0.37-03-03 — emits composition_rendered always (when rendition exists);
-                        drift also emits composition_drift_detected
+    REQ-0.0.37-03-03 — read-only on a clean run (no ledger event on match); drift
+                        emits composition_drift_detected. (The former per-run
+                        composition_rendered emission was removed — no consumer; it
+                        broke the pre-push gate. ADR-0.0.37 Draft, OBPI-03 repudiated.)
     REQ-0.0.37-03-04 — ledger.json schema registers both event definitions
-    REQ-0.0.37-03-05 — invariant_coherence is in the default_scopes of validate_cmd
+    REQ-0.0.37-03-05 — invariant_coherence runs in gz check (validate registry + pipeline)
 
 Bootstrap-safe: when no committed rendition exists, returns [] with no events.
 All tests use tempfile.TemporaryDirectory for sandbox isolation.
@@ -149,55 +151,37 @@ class TestMismatchDrift(_TempProjectMixin):
         self.assertIn("@@", errors[0].message)
 
 
-class TestCompositionRenderedEmitted(_TempProjectMixin):
-    """composition_rendered event emitted on matching run (when rendition exists)."""
+class TestCleanRunIsReadOnly(_TempProjectMixin):
+    """The validator is read-only on a clean run — no ledger event on match.
+
+    Re-derived from the former TestCompositionRenderedEmitted (ADR-0.0.37 Draft,
+    OBPI-0.0.37-03 repudiated): the per-run ``composition_rendered`` emission was
+    removed (no consumer; it broke the pre-push gate by dirtying the tree). A
+    matching surface now emits NOTHING — the clean-run purity that makes the
+    validator gate-safe, matching its rendition siblings.
+    """
 
     @covers("REQ-0.0.37-03-03")
-    def test_composition_rendered_event_present(self) -> None:
+    def test_no_events_on_match(self) -> None:
         _setup_project(self.root)
         _write_agents_md(self.root, _rendition_bytes(self.root))
 
         validate_invariant_coherence(self.root)
 
         events = _read_ledger_events(self.root)
-        rendered_events = [e for e in events if e.get("event") == "composition_rendered"]
-        self.assertEqual(
-            len(rendered_events), 1, f"Expected 1 composition_rendered event, got: {events}"
-        )
+        self.assertEqual(events, [], f"Clean run must emit no ledger events, got: {events}")
 
     @covers("REQ-0.0.37-03-03")
-    def test_composition_rendered_event_fields(self) -> None:
+    def test_no_composition_rendered_emitted_on_match(self) -> None:
+        """Regression lock: the removed per-run telemetry must not return."""
         _setup_project(self.root)
         _write_agents_md(self.root, _rendition_bytes(self.root))
 
         validate_invariant_coherence(self.root)
 
         events = _read_ledger_events(self.root)
-        rendered_events = [e for e in events if e.get("event") == "composition_rendered"]
-        self.assertEqual(len(rendered_events), 1)
-        ev = rendered_events[0]
-        # Required fields from schema: invariant_count, target, byte_count, render_ts
-        self.assertIn("invariant_count", ev)
-        self.assertIn("target", ev)
-        self.assertIn("byte_count", ev)
-        self.assertIn("render_ts", ev)
-        # Rendition playback emits invariant_count=0 (no registry involved)
-        self.assertEqual(ev["invariant_count"], 0)
-        self.assertEqual(ev["target"], "AGENTS.md")
-        self.assertIsInstance(ev["byte_count"], int)
-
-    @covers("REQ-0.0.37-03-03")
-    def test_no_drift_event_on_match(self) -> None:
-        _setup_project(self.root)
-        _write_agents_md(self.root, _rendition_bytes(self.root))
-
-        validate_invariant_coherence(self.root)
-
-        events = _read_ledger_events(self.root)
-        drift_events = [e for e in events if e.get("event") == "composition_drift_detected"]
-        self.assertEqual(
-            drift_events, [], f"Expected no drift events on match, got: {drift_events}"
-        )
+        rendered = [e for e in events if e.get("event") == "composition_rendered"]
+        self.assertEqual(rendered, [], "composition_rendered must not be emitted (removed)")
 
     @covers("REQ-0.0.37-03-03")
     def test_bootstrap_no_rendition_emits_no_events(self) -> None:
@@ -212,10 +196,10 @@ class TestCompositionRenderedEmitted(_TempProjectMixin):
 
 
 class TestCompositionDriftEmitted(_TempProjectMixin):
-    """composition_rendered AND composition_drift_detected emitted on drift."""
+    """On drift: composition_drift_detected emitted, composition_rendered NOT."""
 
     @covers("REQ-0.0.37-03-03")
-    def test_both_events_emitted_on_drift(self) -> None:
+    def test_only_drift_event_emitted_on_drift(self) -> None:
         _setup_project(self.root)
         _write_agents_md(self.root, b"# AGENTS.md\n\nStale content.\n")
 
@@ -224,7 +208,7 @@ class TestCompositionDriftEmitted(_TempProjectMixin):
         events = _read_ledger_events(self.root)
         rendered_events = [e for e in events if e.get("event") == "composition_rendered"]
         drift_events = [e for e in events if e.get("event") == "composition_drift_detected"]
-        self.assertEqual(len(rendered_events), 1, "composition_rendered must be emitted")
+        self.assertEqual(rendered_events, [], "composition_rendered must NOT be emitted (removed)")
         self.assertEqual(len(drift_events), 1, "composition_drift_detected must be emitted")
 
     @covers("REQ-0.0.37-03-03")

@@ -155,7 +155,7 @@ uv run gz check --list-scopes 2>&1 | rg -q 'invariant-coherence' && echo "REQ-06
 
 - [ ] REQ-0.0.37-03-01: `gz validate --invariant-coherence` exits 0 when rendered registry bytes match committed AGENTS.md
 - [ ] REQ-0.0.37-03-02: `gz validate --invariant-coherence` exits 3 when bytes differ; output includes a unified diff of the first 50 differing lines
-- [ ] REQ-0.0.37-03-03: Each invocation emits a `composition_rendered` ledger event with (invariant_count, target, byte_count, render_ts); drift case additionally emits `composition_drift_detected`
+- [ ] REQ-0.0.37-03-03: A clean (matching) run is read-only — no ledger event; a drift run emits a single `composition_drift_detected` ledger event. (Amended 2026-06-23: the original per-invocation `composition_rendered` emission was removed — it had no consumer and, by writing the ledger on every run, broke the `gz check` / pre-push gate this validator now serves. The `composition_rendered` event type stays defined for historical-ledger compatibility but is no longer emitted. ADR-0.0.37 is Draft; OBPI-0.0.37-03 was repudiated — this is in-flight correction, not a closed-contract change.)
 - [ ] REQ-0.0.37-03-04: `.gzkit/schemas/ledger_events.json` includes both event type definitions; existing events-schema validator (`gz validate --events` or equivalent) passes
 - [ ] REQ-0.0.37-03-05: `gz check` runs `--invariant-coherence` as part of the default scope list
 - [ ] REQ-0.0.37-03-06: `docs/governance/advisory-rules-audit.md` lists `--invariant-coherence` with classification Mechanical / fail-closed

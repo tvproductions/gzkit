@@ -195,13 +195,14 @@ def _sig_a_is_not_labor_event(
     if ev_type == "audit_receipt_emitted" and ev.get("receipt_event") == "meta-receipt-bind":
         return True
 
-    # ``composition_rendered`` is validator-emitted render telemetry, not labor.
-    # ``gz validate --invariant-coherence`` (in the default ``gz check`` scope)
-    # emits one on every run, so any ``gz check`` during an active OBPI pipeline
-    # emits an unattributed event while TASKs are live. A whole-AGENTS.md render
-    # belongs to no single REQ and cannot be honestly attributed to one — the
-    # whole type is excused from attribution drift (unlike the narrow
-    # meta-receipt-bind discriminator above).
+    # ``composition_rendered`` is render telemetry, not labor. The validator no
+    # longer emits it (removed 2026-06-23 — no consumer, and the per-run emission
+    # broke the gz check / pre-push gate; ADR-0.0.37 Draft, OBPI-03 repudiated),
+    # but the type stays defined and historical ledgers carry instances. A
+    # whole-AGENTS.md render belongs to no single REQ and cannot be honestly
+    # attributed to one — the type stays excused from attribution drift so legacy
+    # events never trip the gate (unlike the narrow meta-receipt-bind
+    # discriminator above).
     if ev_type == "composition_rendered":
         return True
 
