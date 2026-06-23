@@ -44,13 +44,12 @@ Feature: Committed-rendition store, deterministic playback, and freshness gate
     And the output does not contain "WARNING [rendition-freshness"
 
   @REQ-0.0.37-22-03
-  Scenario: Freshness gate warns on corpus content drift while staged in warn mode
+  Scenario: Freshness gate fails closed on corpus content drift outside the MX hangar
     Given a corpus for "AGENTS.md" with one entry
     And a committed rendition with provenance for "AGENTS.md" consumer "claude"
     And the corpus for "AGENTS.md" gains a new entry
     When I run the gz command "validate --rendition-freshness"
-    Then the command exits with code 0
-    And the output contains "WARNING [rendition-freshness"
+    Then the command exits with code 3
 
   @REQ-0.0.37-22-04
   Scenario: --invariant-coherence exits 3 when rendition playback differs from committed AGENTS.md
