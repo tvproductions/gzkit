@@ -354,6 +354,24 @@ class TestGzCheckDefault(unittest.TestCase):
             "invariant_coherence must be a default-tier scope (runs in gz check)",
         )
 
+    @covers("REQ-0.0.37-03-05")
+    def test_invariant_coherence_in_gz_check_pipeline(self) -> None:
+        # The two assertions above cover the `gz validate` registry. `gz check`
+        # does NOT run that registry's default tier — it runs the SEPARATE curated
+        # pipeline in `_build_check_steps()`. invariant_coherence was absent there,
+        # so committed AGENTS.md<->rendition drift sailed through the pre-push
+        # `gz check` gate silently (governance-core declares the gate "in the gz
+        # check default scope" — implementation had drifted from doctrine). This
+        # closes the gap against the surface the pre-merge gate actually runs.
+        from gzkit.commands.quality import _build_check_steps
+
+        step_names = [name for name, _ in _build_check_steps()]
+        self.assertIn(
+            "Invariant coherence",
+            step_names,
+            "invariant_coherence must be a step in the gz check pipeline (_build_check_steps)",
+        )
+
 
 class TestScorecardEntry(unittest.TestCase):
     """REQ-0.0.37-03-06: scorecard entry in advisory-rules-audit.md."""

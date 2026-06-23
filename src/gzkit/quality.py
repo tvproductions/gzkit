@@ -609,6 +609,43 @@ def run_rendition_floor_coherence_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --rendition-floor-coherence", cwd=project_root)
 
 
+def run_invariant_coherence_audit(project_root: Path) -> QualityResult:
+    """Run the composition-drift gate: AGENTS.md vs committed rendition playback.
+
+    Fails closed when a rendered surface (AGENTS.md) has drifted from the
+    committed rendition it is played back from (ADR-0.0.37). governance-core
+    declares this gate "in the gz check default scope"; its omission from the
+    curated pipeline let committed AGENTS.md<->rendition drift sail through the
+    pre-push gate silently.
+
+    Invoked IN-PROCESS with ``emit=False`` (read-only) rather than shelling out:
+    the standalone ``gz validate --invariant-coherence`` emits a
+    ``composition_rendered`` ledger event on every run, which would dirty the tree
+    mid-hook and make the pre-commit pre-push gate reject the push. A gate must be
+    read-only. Recovery on drift: `uv run gz agent sync control-surfaces` to
+    re-render, then commit.
+    """
+    from gzkit.governance.trust_audits.invariant_coherence import validate_invariant_coherence
+
+    errors = validate_invariant_coherence(project_root, emit=False)
+    if not errors:
+        return QualityResult(
+            success=True,
+            command="gz validate --invariant-coherence (in-process, read-only)",
+            stdout="✓ Invariant coherence: AGENTS.md matches committed rendition playback.",
+            stderr="",
+            returncode=0,
+        )
+    message = "\n".join(e.message for e in errors)
+    return QualityResult(
+        success=False,
+        command="gz validate --invariant-coherence (in-process, read-only)",
+        stdout="",
+        stderr=message,
+        returncode=3,
+    )
+
+
 def run_session_green_gate_audit(project_root: Path) -> QualityResult:
     """Run the session-green-gate declaration audit (ADR-0.0.68 / OBPI-0.0.68-02).
 

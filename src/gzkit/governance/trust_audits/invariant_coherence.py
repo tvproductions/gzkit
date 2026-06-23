@@ -41,12 +41,18 @@ def _build_diff(rendered: bytes, committed: bytes) -> str:
     return "".join(list(diff)[:50])
 
 
-def validate_invariant_coherence(root: Path) -> list[ValidationError]:
+def validate_invariant_coherence(root: Path, *, emit: bool = True) -> list[ValidationError]:
     """Diff deterministic playback of the committed rendition against committed AGENTS.md.
 
     Returns empty list on match (exit 0); one ValidationError on drift (exit 3).
-    Emits ``composition_rendered`` on every run; additionally emits
-    ``composition_drift_detected`` on drift.
+
+    ``emit`` (default ``True``) governs ledger side-effects: ``composition_rendered``
+    on every run and ``composition_drift_detected`` on drift. Set ``emit=False`` for
+    a pure read-only check — required when this runs inside the ``gz check`` /
+    pre-push gate, where a validator that mutates the ledger would dirty the tree
+    and the pre-commit framework would reject the push ("files modified by this
+    hook"). Standalone ``gz validate --invariant-coherence`` keeps ``emit=True``
+    (REQ-0.0.37-03-03 telemetry contract unchanged).
 
     Bootstrap-safe: returns [] when no committed rendition exists (fresh-init;
     rendition-playback path requires a committed artifact).
@@ -57,22 +63,24 @@ def validate_invariant_coherence(root: Path) -> list[ValidationError]:
 
     committed_bytes = _read_committed(root)
 
-    emit_composition_rendered(
-        root=root,
-        invariant_count=0,
-        target=_AGENTS_MD_PATH,
-        byte_count=len(rendered_bytes),
-    )
+    if emit:
+        emit_composition_rendered(
+            root=root,
+            invariant_count=0,
+            target=_AGENTS_MD_PATH,
+            byte_count=len(rendered_bytes),
+        )
 
     if rendered_bytes == committed_bytes:
         return []
 
     diff_text = _build_diff(rendered_bytes, committed_bytes)
-    emit_composition_drift_detected(
-        root=root,
-        target=_AGENTS_MD_PATH,
-        diff_first_50_lines=diff_text,
-    )
+    if emit:
+        emit_composition_drift_detected(
+            root=root,
+            target=_AGENTS_MD_PATH,
+            diff_first_50_lines=diff_text,
+        )
 
     return [
         ValidationError(

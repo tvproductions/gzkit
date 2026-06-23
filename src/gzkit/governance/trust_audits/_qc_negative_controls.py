@@ -194,6 +194,23 @@ def _rendition_floor_coherence_negative_control() -> int:
         return _genuine_when_errors(validate_rendition_floor_coherence(root, fail_closed=True))
 
 
+def _invariant_coherence_negative_control() -> int:
+    from gzkit.governance.trust_audits.invariant_coherence import (  # noqa: PLC0415
+        validate_invariant_coherence,
+    )
+
+    with _tmp_root() as tmp:
+        root = Path(tmp)
+        # A committed rendition that plays back to a non-empty AGENTS.md, with NO
+        # committed AGENTS.md on disk: playback != committed (b"") is genuine drift,
+        # so the gate MUST flag it. A step that passes this fixture verifies nothing.
+        _write(
+            root / ".gzkit" / "renditions" / "AGENTS.md" / "claude.md",
+            "# Rendered AGENTS.md\n\nPlayback body the committed surface does not carry.\n",
+        )
+        return _genuine_when_errors(validate_invariant_coherence(root))
+
+
 def _session_green_gate_negative_control() -> int:
     from gzkit.governance.trust_audits.session_green_gate import (  # noqa: PLC0415
         audit_session_green_gate,
@@ -571,6 +588,7 @@ _PRODUCTION_NEGATIVE_CONTROLS: dict[str, Callable[[], int]] = {
     "adr-status-freshness": _adr_status_freshness_negative_control,
     "rendition-freshness": _rendition_freshness_negative_control,
     "rendition-floor-coherence": _rendition_floor_coherence_negative_control,
+    "invariant-coherence": _invariant_coherence_negative_control,
     "session-green-gate": _session_green_gate_negative_control,
     "closeout-proof": _closeout_proof_negative_control,
     "kind-invariance": _kind_invariance_negative_control,
