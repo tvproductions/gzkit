@@ -215,6 +215,14 @@ is now the receipts-footer + guess-flagging above, emitted at turn end.
 > floor inherited: no movement opens while `uv run gz check` is red (the
 > enforcement-claim meta-validator joins that floor as it lands).
 
+**Action/structure sidecars (advisory to execution, not new steering surfaces):**
+use [`harness-loop-engineering-strategy-note-2026-06-23.md`](harness-loop-engineering-strategy-note-2026-06-23.md)
+to shape new harness mechanisms by loop leverage and function×topology
+declarations; use
+[`okf-cms-knowledge-structure-note-2026-06-23.md`](okf-cms-knowledge-structure-note-2026-06-23.md)
+when executing CMS documentation-knowledge orientation work. The Queue still
+governs order.
+
 **Movement I — Build the substrate** *(forward engine; releases MX as `0.29.0`)*
 - [x] **Mechanism built** — `GZ_<LEVEL>` severity substrate + the **one disposition handler** (the level→AOG/advisory wire; BI#2's *routing* half built for real): OBPI-0.0.74-11 (`levels.py` GZ_<LEVEL> vocabulary) + OBPI-0.0.74-12 (`disposition.py` + `checkpoint.resolve` level→route/AOG/advisory wire), both ATTESTED COMPLETED 2026-06-22.
 - [ ] **Gates are sensors** — migrate every live guard to emit `GZ_<LEVEL>` through the checkpoint instead of self-deciding, and **retire the hand-set staging flags** (`_FRESHNESS_FAIL_CLOSED`/`_FLOOR_FAIL_CLOSED`) so BI#2's second half holds ("no per-gate hand-set staging flag survives anywhere in the codebase"). **Partial (2026-06-23, GHI #637 / `b7f2f58c`):** the `gz validate` scope dispatcher + both rendition gates now route through `checkpoint.resolve`, and the two staging flags are retired (none survive). **Residual — GHI #638:** the `gz check` step layer (~30 steps) + ~5 solo `validate_cmd` paths still self-decide fatality (`returncode=3`/`SystemExit(3)`) outside the checkpoint; OBPI-0.0.74-09 under-scoped "every live guard." *Box stays unchecked until the step layer is migrated — do not read the partial as "gates-as-sensors is done."*
@@ -223,12 +231,23 @@ is now the receipts-footer + guess-flagging above, emitted at turn end.
 
 **Movement II — Drain the facade** *(maintenance engine; patch line 0.29.1+)*
 - [ ] **#1: repair the hollow antibody + inert rendition gates**, and **delete the tests that certify their inertness** (state-of-gzkit cut #1)
+- [ ] **CMS OKF documentation knowledge structure** — after MX substrate lands,
+  make CMS emit/maintain an OKF-conformant semantic map over documentation
+  knowledge surfaces (orientation layer only; not authority, not control
+  surfaces first). See
+  [`okf-cms-knowledge-structure-note-2026-06-23.md`](okf-cms-knowledge-structure-note-2026-06-23.md).
 - [ ] Re-model the **OBPI lock as a lease** (completion releases; O_EXCL + TTL auto-expire; no handoff-as-evidence tax) — the five confirmed defects
 - [ ] **Kind-blind behave gate** (~3 lines: mirror the SUPPORT/STRUCTURAL-FENCE exemption)
 - [ ] Remaining state-of-gzkit cut order, each as a patch with live-NC proof
 
 **Movement III — Reduce the accretion** *(parity-proven; Sanity-Reduction track)*
 - [ ] **Taxonomy migration:** drop all ADRs to pool; abolish `foundation` (schema enum, `gz validate --taxonomy`, supersede ADR-0.0.18) — parity-proven, behavior-preserving
+- [ ] **Loop/topology declaration discipline:** for new harness mechanisms and
+  accretion-reduction work, declare cognitive function, execution topology,
+  authority, verifier, termination, writeback, and excluded patterns; prefer
+  route/loop for repair and reserve hierarchy for release-carrying build work.
+  See
+  [`harness-loop-engineering-strategy-note-2026-06-23.md`](harness-loop-engineering-strategy-note-2026-06-23.md).
 - [ ] Collapse the 70-scope / 162-param `validate()` surface to the registry (#618 residual)
 - [ ] Oversized modules (33 > 600 lines) — census-driven, with working proof
 
@@ -281,3 +300,19 @@ interleaved into the body. The campaign rules sequencing; handoffs and triage
   reused rather than re-inventing a 0–7 convention whose top rungs (EMERG/ALERT)
   no governance gate uses (ADR-0.0.74 § Alternatives, rejection (f)). §3b is
   amended in place to match. Ratified: "ratified" — g0, 2026-06-21.
+- **2026-06-23 (operator-ratified) — CMS adopts OKF for documentation
+  knowledge orientation after MX substrate.** The operator approved capturing the
+  OKF/CMS decision as a separate note plus a campaign pointer: "yes, let's do
+  that please". The campaign adds a Movement II item for an OKF-conformant CMS
+  semantic map over documentation knowledge surfaces, explicitly as orientation
+  only: not an authority layer, not control surfaces first, and not a revival of
+  the cut doc-type taxonomy. Design note:
+  [`okf-cms-knowledge-structure-note-2026-06-23.md`](okf-cms-knowledge-structure-note-2026-06-23.md).
+- **2026-06-23 (operator-ratified) — harness loop-engineering note made
+  campaign-aware.** The operator ruled that both notes "have insights for
+  action/structure." The Queue now names the OKF/CMS note and the harness
+  loop-engineering note as action/structure sidecars, without making either a new
+  steering surface. Movement III carries the resulting structural action:
+  function×topology declaration discipline for new harness mechanisms and
+  accretion-reduction work. Design note:
+  [`harness-loop-engineering-strategy-note-2026-06-23.md`](harness-loop-engineering-strategy-note-2026-06-23.md).
