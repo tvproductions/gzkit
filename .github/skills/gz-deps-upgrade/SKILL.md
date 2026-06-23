@@ -1,37 +1,56 @@
 ---
 name: gz-deps-upgrade
 persona: main-session
-description: Refresh global uv tools, Python 3.13.x runtime, pyproject.toml pins/floors, and uv.lock to current PyPI latest in one disciplined pass. Use this skill whenever the operator asks to "update deps", "upgrade dependencies", "refresh uv.lock", "bump python", "update python 3.13", "deps to latest", "update pyproject", or any phrasing that asks for the project's dependency surface to move forward to current upstream — even if they don't name uv or pyproject explicitly. Default tool when "update" / "upgrade" lands on Python tooling for this repo.
+description: Refresh the uv binary itself, global uv tools, Python 3.13.x runtime, pyproject.toml pins/floors, and uv.lock to current PyPI latest in one disciplined pass. Use this skill whenever the operator asks to "update deps", "upgrade dependencies", "refresh uv.lock", "bump python", "update python 3.13", "deps to latest", "update pyproject", "update uv", or any phrasing that asks for the project's dependency surface or toolchain to move forward to current upstream — even if they don't name uv or pyproject explicitly. Default tool when "update" / "upgrade" lands on Python tooling for this repo.
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-02
+last_reviewed: 2026-06-22
 model: haiku
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.1.0"
 ---
 
 # gz deps-upgrade
 
 ## Overview
 
-A disciplined upgrade pass for the project's Python dependency surface:
-global uv tools, Python 3.13.x runtime, `pyproject.toml` pins (`==`), `>=`
-floors, and `uv.lock`. Verifies with `gz check` and emits a canonical ARB
-unittest receipt as evidence.
+A disciplined upgrade pass for the project's Python toolchain and dependency
+surface: the `uv` binary itself, global uv tools, Python 3.13.x runtime,
+`pyproject.toml` pins (`==`), `>=` floors, and `uv.lock`. Verifies with
+`gz check` and emits a canonical ARB unittest receipt as evidence.
 
 The procedure is mechanical — its value is doing the *full* sequence in
 order, not skipping the floor-bump or the verification step.
 
 ## Workflow
 
-1. **Refresh global uv tools** (`mkdocs`, `ruff`, `ty`, `py-gzkit`).
+1. **Refresh the `uv` binary itself first.** uv is the foundation of every
+   later step — its resolver and lockfile behavior can change between
+   releases, so upgrade it before resolving anything. When uv was installed
+   via the standalone installer (`~/.local/bin/uv`), `uv self update` works
+   directly. When uv is managed by an external package manager (Homebrew,
+   pipx, system), `uv self update` is disabled — upgrade through that manager
+   instead (`brew upgrade uv`, `pipx upgrade uv`, etc.) and note which path
+   was used.
+
+   ```bash
+   uv --version                      # before
+   uv self update                    # standalone-installer path
+   # OR, if self-update is disabled: brew upgrade uv  /  pipx upgrade uv
+   uv --version                      # after — confirm it moved (or already latest)
+   ```
+
+   Skipping uv itself is a half-upgrade: the rest of the pass runs on a stale
+   resolver. Never skip this step.
+
+2. **Refresh global uv tools** (`mkdocs`, `ruff`, `ty`, `py-gzkit`).
 
    ```bash
    uv tool upgrade --all
    ```
 
-2. **Refresh Python 3.13.x runtime.** uv installs the latest patch release
+3. **Refresh Python 3.13.x runtime.** uv installs the latest patch release
    of 3.13 — idempotent. Leave any `.python-version` file at `3.13`.
 
    ```bash
@@ -39,7 +58,7 @@ order, not skipping the floor-bump or the verification step.
    uv python list --only-installed | grep '^cpython-3.13'
    ```
 
-3. **Bump pinned (`==`) deps in `pyproject.toml` to current PyPI latest.**
+4. **Bump pinned (`==`) deps in `pyproject.toml` to current PyPI latest.**
    Inspect the pinned entries under `[project.optional-dependencies]` and
    `[dependency-groups]`. For each pinned package, query PyPI:
 
@@ -51,19 +70,19 @@ order, not skipping the floor-bump or the verification step.
    Edit `pyproject.toml` to replace each `<pkg>==X.Y.Z` with the latest
    version. Skip if the pin already matches latest.
 
-4. **Refresh the lock to latest within `>=` constraints.**
+5. **Refresh the lock to latest within `>=` constraints.**
 
    ```bash
    uv lock --upgrade
    ```
 
-5. **Sync the environment to the new lock.**
+6. **Sync the environment to the new lock.**
 
    ```bash
    uv sync
    ```
 
-6. **Raise `>=` floors in `pyproject.toml` to match what got locked.**
+7. **Raise `>=` floors in `pyproject.toml` to match what got locked.**
    Read each locked version with:
 
    ```bash
@@ -74,7 +93,7 @@ order, not skipping the floor-bump or the verification step.
    that are trivial (e.g., 7.13.4 → 7.13.5 within the same minor); bump
    on minor/major changes (e.g., 13.0 → 15.0, 24.0 → 25.5).
 
-7. **Re-run lock + sync** to confirm the new floors don't force
+8. **Re-run lock + sync** to confirm the new floors don't force
    re-resolution.
 
    ```bash
@@ -82,7 +101,7 @@ order, not skipping the floor-bump or the verification step.
    uv sync
    ```
 
-8. **Verify with full quality gate.**
+9. **Verify with full quality gate.**
 
    ```bash
    uv run gz check
@@ -93,25 +112,25 @@ order, not skipping the floor-bump or the verification step.
    offender at the previous-known-good version and file a GHI for the
    migration.
 
-9. **Emit canonical ARB unittest receipt** (per AGENTS.md § Attestation).
+10. **Emit canonical ARB unittest receipt** (per AGENTS.md § Attestation).
 
-   ```bash
-   uv run gz arb step --name unittest -- uv run -m unittest -q
-   ```
+    ```bash
+    uv run gz arb step --name unittest -- uv run -m unittest -q
+    ```
 
-   Capture the receipt path (`artifacts/receipts/arb-step-unittest-*.json`)
-   for the commit message.
+    Capture the receipt path (`artifacts/receipts/arb-step-unittest-*.json`)
+    for the commit message.
 
-10. **Mirror skill changes** if you also touched skills/rules in the same
+11. **Mirror skill changes** if you also touched skills/rules in the same
     pass:
 
     ```bash
     uv run gz agent sync control-surfaces
     ```
 
-11. **Summarize the diff** for the operator: tool versions before/after,
-    pyproject pin/floor deltas, count of locked-package upgrades, and the
-    ARB receipt ID.
+12. **Summarize the diff** for the operator: uv binary + tool versions
+    before/after, pyproject pin/floor deltas, count of locked-package
+    upgrades, and the ARB receipt ID.
 
 ## Suggested commit message
 
@@ -160,10 +179,12 @@ These thoughts mean STOP — you are about to ship a half-upgrade:
 | "The pin bump is just a patch — leave it" | If the pin is `==` the operator has stated intent to pin. Move the pin to current latest; do not let pinned packages silently lag. |
 | "I'll bump the floor to whatever — `>=4.0` covers 4.26 anyway" | The floor is a tested baseline, not a wish. Set it to what `uv lock` actually resolved, so future installs match the tested resolution. |
 | "Python is fine, no need to refresh 3.13" | Patch releases ship CPython security fixes. `uv python install 3.13` is idempotent and cheap; running it costs nothing. |
+| "The skill is about deps, not uv itself" | uv IS the toolchain that resolves every dep. A pass that upgrades tools/lock on a stale uv is a half-upgrade running on an old resolver. `uv self update` is Step 1; skipping it is the bug this row exists to prevent. |
 | "If `gz check` fails, I'll just lower the floor" | Lowering a floor to mask a failure ships a known-broken upgrade. Pin the offender at last-known-good and file a GHI. |
 
 ## Red Flags
 
+- `uv` binary left un-upgraded (Step 1 skipped) — the rest of the pass ran on a stale resolver
 - `uv.lock` and `pyproject.toml` floors disagree by more than a patch level after the upgrade
 - Pinned (`==`) deps left at versions older than current PyPI latest
 - `gz check` skipped, downgraded, or run only on a subset
