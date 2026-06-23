@@ -117,23 +117,30 @@ authored governance plus the one `b7f2f58c` code repair.
   (`--kind foundation` → assert exit != 0) would have blocked the entire detour
   at the first command.
   **Alternatives rejected:** rely on agent diligence (exhortation, not structural).
+  **Sequencing (operator ruling 2026-06-23, "as is in movement iii"):** stays in
+  Movement III — NOT pulled forward into Movement I; deferred behind the Movement I
+  substrate per the campaign's top-down sequence.
 
 ## Immediate Next Steps
 
 ADVISORY ONLY — present to the operator and obtain authorization before acting.
-All converge on ADR-0.0.74 / release 0.29.0. NONE is a new foundation ADR.
+All are **Movement I** work converging on ADR-0.0.74 / release 0.29.0. NONE is a
+new foundation ADR.
 
-1. **Pull forward Movement III's `foundation`-abolition fail-close** (the
-   recourse; smallest surface; already campaign-sanctioned): make
-   `gz validate --taxonomy` reject `kind: foundation` and ship a live NC that
-   constructs a `--kind foundation` attempt and asserts non-zero exit. This is
-   the structural cure for this session's root failure.
+1. **Scope an OBPI under ADR-0.0.74 for the GHI #638 gates-as-sensors residual**
+   (migrate the `gz check` step layer + ~5 solo `validate_cmd` paths through the
+   checkpoint) — completes campaign line 220 (Movement I item 2).
 2. **Implement the meta-validator** OBPI-0.0.74-15..19 in land-order
-   15 → 16 → 17 + 18 → 19 (start with OBPI-15 `@enforces` declaration + registry).
-3. **Scope an OBPI under ADR-0.0.74 for the GHI #638 gates-as-sensors residual**
-   (migrate the `gz check` step layer through the checkpoint).
-4. **MX kernel hardening** (campaign line 221): TTL/max-open, no-force exit,
+   15 → 16 → 17 + 18 → 19 (start with OBPI-15 `@enforces` declaration + registry)
+   — campaign line 222 (Movement I item 3).
+3. **MX kernel hardening** (campaign line 221): TTL/max-open, no-force exit,
    ledger debt-aging, dangling-state detector.
+
+> **Sequencing precondition (campaign §7):** confirm `uv run gz check` is green
+> before opening any of these — "no movement opens while `gz check` is red."
+> **NOT a near-term step:** the `foundation`-abolition fail-close stays in
+> **Movement III** (operator ruling 2026-06-23, "as is in movement iii") —
+> deferred behind Movement I; do not pull it forward. See Pending Work.
 
 ## Pending Work / Open Loops
 
@@ -147,6 +154,11 @@ All converge on ADR-0.0.74 / release 0.29.0. NONE is a new foundation ADR.
   production entrypoints built before their live NCs can bind.
 - **`_NEGATIVE_CONTROL_DEBT`** in qc_binding should be removed when OBPI-16 lands
   (strict-no-debt, per D3).
+- **Foundation-abolition fail-close — Movement III (operator ruling 2026-06-23,
+  "as is in movement iii").** `gz validate --taxonomy` rejecting `kind: foundation`
+  + a live NC is the structural cure for this session's root failure, but it is
+  deferred behind Movement I and NOT pulled forward. Do not advise it as a
+  near-term step.
 
 ## Verification Checklist
 
