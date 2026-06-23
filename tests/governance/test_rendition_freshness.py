@@ -1,20 +1,17 @@
-"""Freshness gate tests — OBPI-0.0.37-22 (REQ-0.0.37-22-03).
+"""Freshness gate tests — OBPI-0.0.37-22 (REQ-0.0.37-22-03), OBPI-0.0.74-09.
 
 The gate proves a committed rendition still derives from the current corpus by
 comparing a corpus CONTENT-fingerprint (frozen at commit time in the provenance
 sidecar) against the corpus's current fingerprint. This replaces the prior
 mtime tautology (repudiated 2026-06-16: "compares st_mtime not content").
 
-Staging (OBPI-0.0.41 warn→fail precedent): the live gate runs in WARN mode
-(``_FRESHNESS_FAIL_CLOSED = False``) so ``gz check`` stays green while the corpus
-is enriched and the real renditions are re-seeded; the fail-closed semantics are
-proven now via ``fail_closed=True`` and go live when Increment 2 flips the flag.
+Severity resolved through the shared MX checkpoint (OBPI-0.0.74-09): outside
+the hangar the gate is fail-closed; inside the hangar it is advisory. Tests use
+explicit ``fail_closed=True/False`` to test each mode independently of MX state.
 """
 
 from __future__ import annotations
 
-import contextlib
-import io
 import json
 import os
 import tempfile
@@ -29,6 +26,8 @@ from gzkit.content.rendition_store import (
     save_rendition,
 )
 from gzkit.governance.trust_audits.rendition_freshness import validate_rendition_freshness
+from gzkit.mx import marker as _marker
+from gzkit.mx.marker import Marker
 from gzkit.traceability import covers
 
 
@@ -194,6 +193,7 @@ class TestRenditionFreshnessDriftClosed(_TempProjectMixin):
         self.assertIn("commit", message)
 
     @covers("REQ-0.0.37-22-03")
+    @covers("REQ-0.0.74-09-02")
     def test_missing_sidecar_is_drift(self) -> None:
         """A rendition with no provenance sidecar cannot prove derivation → drift (closed)."""
         corpus = self._seed_corpus("AGENTS.md", "x")
@@ -222,40 +222,31 @@ class TestRenditionFreshnessDriftClosed(_TempProjectMixin):
         self.assertEqual(len(errors), 1, "only codex (missing sidecar) drifts")
 
 
-class TestRenditionFreshnessWarnStaging(_TempProjectMixin):
-    """Warn mode (the live Increment-1 default): drift never reds gz check."""
+class TestCheckpointWiringFreshness(_TempProjectMixin):
+    """OBPI-0.0.74-09: the gate resolves severity via the shared MX checkpoint.
 
-    @covers("REQ-0.0.37-22-03")
-    def test_warn_mode_returns_no_errors_on_drift(self) -> None:
-        """Default (warn) mode returns [] even on real drift — gz check stays green."""
+    Outside the hangar (no marker): fail-closed by default.
+    Inside the hangar (marker present): advisory (warns, no errors).
+    """
+
+    @covers("REQ-0.0.74-09-01")
+    def test_without_mx_marker_gate_is_fail_closed(self) -> None:
+        """No MX marker → default mode is fail-closed (full strength outside the hangar)."""
         corpus = self._seed_corpus("AGENTS.md", "original")
-        self._commit("AGENTS.md", "claude", corpus)
-        self._seed_corpus("AGENTS.md", "mutated")
-        with contextlib.redirect_stderr(io.StringIO()):
-            errors = validate_rendition_freshness(self.root)  # default = warn
-        self.assertEqual(errors, [])
-
-    @covers("REQ-0.0.37-22-03")
-    def test_warn_mode_does_not_mutate_ledger(self) -> None:
-        """Warn mode emits no ledger event (no per-check drift spam during staging)."""
-        corpus = self._seed_corpus("AGENTS.md", "original")
-        self._commit("AGENTS.md", "claude", corpus)
-        self._seed_corpus("AGENTS.md", "mutated")
-        with contextlib.redirect_stderr(io.StringIO()):
-            validate_rendition_freshness(self.root)
-        drift = [e for e in self._ledger_events() if e.get("event") == "composition_drift_detected"]
-        self.assertEqual(drift, [])
-
-    @covers("REQ-0.0.37-22-03")
-    def test_warn_mode_prints_recovery_hint_to_stderr(self) -> None:
-        """Warn mode surfaces the recompose hint on stderr (honest, non-blocking)."""
-        corpus = self._seed_corpus("AGENTS.md", "x")
         save_rendition(self.root, "AGENTS.md", "claude", b"no sidecar\n")
         del corpus
-        stderr = io.StringIO()
-        with contextlib.redirect_stderr(stderr):
-            validate_rendition_freshness(self.root)
-        self.assertIn("compose", stderr.getvalue().lower())
+        errors = validate_rendition_freshness(self.root)
+        self.assertEqual(len(errors), 1, "outside hangar: gate must be fail-closed by default")
+
+    @covers("REQ-0.0.74-09-01")
+    def test_with_mx_marker_gate_is_advisory(self) -> None:
+        """Active MX marker → default mode is advisory (gates demote inside the hangar)."""
+        corpus = self._seed_corpus("AGENTS.md", "original")
+        save_rendition(self.root, "AGENTS.md", "claude", b"no sidecar\n")
+        del corpus
+        _marker.write(Marker(session_id="test-session"), self.root)
+        errors = validate_rendition_freshness(self.root)
+        self.assertEqual(errors, [], "inside hangar: gate must be advisory by default")
 
 
 if __name__ == "__main__":

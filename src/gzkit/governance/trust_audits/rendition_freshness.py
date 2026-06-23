@@ -8,12 +8,8 @@ a corpus fingerprint frozen in the provenance sidecar at commit time
 replaces the prior mtime tautology (repudiated 2026-06-16: "compares st_mtime
 not content (a zero-byte content-restore flips it red)").
 
-Staging (OBPI-0.0.41 warn→fail precedent): ``_FRESHNESS_FAIL_CLOSED`` is
-``False`` in Increment 1 — drift is reported as a stderr WARNING and the gate
-returns no errors, so ``gz check`` stays green while the corpus is enriched and
-the real renditions are re-seeded under operator attestation. Increment 2 flips
-the flag to ``True``: drift becomes a fail-closed ``ValidationError`` (exit 3)
-that also emits a ``composition_drift_detected`` ledger event.
+Severity resolved through the shared MX checkpoint (OBPI-0.0.74-09): advisory
+inside the hangar (marker present), fail-closed at full strength outside.
 
 Registered as ``gz validate --rendition-freshness``; also runs in ``gz check``.
 """
@@ -32,9 +28,7 @@ from gzkit.content.rendition_store import (
 )
 from gzkit.core.validation_rules import ValidationError
 from gzkit.governance.events import emit_composition_drift_detected
-
-# Staging flag (OBPI-0.0.41 warn→fail precedent). Increment 2 flips this to True.
-_FRESHNESS_FAIL_CLOSED = False
+from gzkit.mx import checkpoint as _checkpoint
 
 
 def _recovery_prose(surface: str, consumer: str, what: str) -> str:
@@ -63,7 +57,11 @@ def validate_rendition_freshness(
     Returns no errors when the corpus is absent (bootstrap), the rendition is absent,
     or every committed rendition agrees with its corpus.
     """
-    closed = _FRESHNESS_FAIL_CLOSED if fail_closed is None else fail_closed
+    closed = (
+        (not _checkpoint.is_advisory("rendition-freshness", root))
+        if fail_closed is None
+        else fail_closed
+    )
 
     renditions_dir = root / ".gzkit" / "renditions"
     if not renditions_dir.exists():

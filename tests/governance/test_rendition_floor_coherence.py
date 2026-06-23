@@ -19,6 +19,9 @@ from gzkit.content.rendition_store import save_rendition
 from gzkit.governance.trust_audits.rendition_floor_coherence import (
     validate_rendition_floor_coherence,
 )
+from gzkit.mx import marker as _marker
+from gzkit.mx.marker import Marker
+from gzkit.traceability import covers
 
 _INV = "Never, ever again give me that TTY or PTY bullshit — attestation is sacrosanct."
 _INV2 = "There is no such thing as a headless OBPI: every OBPI traces to a parent ADR."
@@ -48,6 +51,7 @@ class _TempProject(unittest.TestCase):
 
 
 class TestFloorViolation(_TempProject):
+    @covers("REQ-0.0.74-09-02")
     def test_missing_invariant_entry_is_fail_closed(self) -> None:
         """A rendition that omits an invariant-tier corpus entry returns one error."""
         append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
@@ -70,24 +74,6 @@ class TestFloorViolation(_TempProject):
         self.assertEqual(len(errors), 1)
         self.assertIn("corpus-tty", errors[0].message)
         self.assertIn("corpus-headless", errors[0].message)
-
-
-class TestStagedWarn(_TempProject):
-    """OBPI-0.0.41 warn→fail staging — sibling-consistent with rendition_freshness.
-
-    While ADR-0.0.37's corpus→rendition ceremony is repudiated/un-designed
-    (GHI #623, #635), floor drift is a stderr WARNING that keeps ``gz check``
-    green — never a fail-closed ValidationError — exactly as rendition_freshness
-    stages it. The flag flips to fail-closed only when the ceremony is designed
-    and the renditions are re-seeded under real attestation.
-    """
-
-    def test_warn_stage_missing_invariant_returns_no_errors(self) -> None:
-        """Default (warn) staging: a missing invariant warns, returns no errors."""
-        append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
-        save_rendition(self.root, "AGENTS.md", "claude", b"# AGENTS.md\n\nUnrelated body.\n")
-
-        self.assertEqual(validate_rendition_floor_coherence(self.root), [])
 
 
 class TestFloorSatisfied(_TempProject):
@@ -116,6 +102,31 @@ class TestBootstrapSafe(_TempProject):
         """A surface with a rendition but no corpus cannot violate a floor."""
         save_rendition(self.root, "AGENTS.md", "claude", b"# AGENTS.md\n")
         self.assertEqual(validate_rendition_floor_coherence(self.root), [])
+
+
+class TestCheckpointWiringFloor(_TempProject):
+    """OBPI-0.0.74-09: the gate resolves severity via the shared MX checkpoint.
+
+    Outside the hangar (no marker): fail-closed by default.
+    Inside the hangar (marker present): advisory (warns, no errors).
+    """
+
+    @covers("REQ-0.0.74-09-01")
+    def test_without_mx_marker_gate_is_fail_closed(self) -> None:
+        """No MX marker → default mode is fail-closed (full strength outside the hangar)."""
+        append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
+        save_rendition(self.root, "AGENTS.md", "claude", b"# AGENTS.md\n\nUnrelated body.\n")
+        errors = validate_rendition_floor_coherence(self.root)
+        self.assertEqual(len(errors), 1, "outside hangar: gate must be fail-closed by default")
+
+    @covers("REQ-0.0.74-09-01")
+    def test_with_mx_marker_gate_is_advisory(self) -> None:
+        """Active MX marker → default mode is advisory (gates demote inside the hangar)."""
+        append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
+        save_rendition(self.root, "AGENTS.md", "claude", b"# AGENTS.md\n\nUnrelated body.\n")
+        _marker.write(Marker(session_id="test-session"), self.root)
+        errors = validate_rendition_floor_coherence(self.root)
+        self.assertEqual(errors, [], "inside hangar: gate must be advisory by default")
 
 
 if __name__ == "__main__":

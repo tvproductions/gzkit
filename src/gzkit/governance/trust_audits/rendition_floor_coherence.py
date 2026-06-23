@@ -6,17 +6,10 @@ The REAL content witness that repudiated OBPI-0.0.37-22 only simulated. The
 committed twin — neither asserts that the committed rendition actually reflects
 canon. This gate closes that seam: every ``tier: invariant`` corpus entry MUST
 appear verbatim in the committed rendition for its surface. A rendition that
-drops an invariant entry fails closed (exit 3) once staging completes.
+drops an invariant entry is fail-closed outside the MX hangar.
 
-Staging (OBPI-0.0.41 warn→fail precedent; sibling-consistent with
-``rendition_freshness``): ``_FLOOR_FAIL_CLOSED`` is ``False`` while ADR-0.0.37's
-corpus→rendition ceremony is repudiated/un-designed (GHI #623, #635) — floor
-drift is reported as a stderr WARNING and the gate returns no errors, so
-``gz check`` stays green while the corpus is enriched and the real renditions
-are re-seeded under a designed, operator-attested ceremony. The flag flips to
-``True`` (fail-closed ``ValidationError`` + ``composition_drift_detected`` event)
-only when that ceremony exists — never before. Its sibling freshness gate already
-stages this way; the two flip together.
+Severity resolved through the shared MX checkpoint (OBPI-0.0.74-09): advisory
+inside the hangar (marker present), fail-closed at full strength outside.
 
 Registered as ``gz validate --rendition-floor-coherence``; also runs in
 ``gz check``.
@@ -31,10 +24,7 @@ from gzkit.content.corpus_store import corpus_path, load_corpus
 from gzkit.content.tier_policy import invariant_entries
 from gzkit.core.validation_rules import ValidationError
 from gzkit.governance.events import emit_composition_drift_detected
-
-# Staging flag (OBPI-0.0.41 warn→fail precedent). Flips to True only when the
-# corpus→rendition ceremony is designed and renditions are re-seeded (GHI #635).
-_FLOOR_FAIL_CLOSED = False
+from gzkit.mx import checkpoint as _checkpoint
 
 
 def validate_rendition_floor_coherence(
@@ -52,7 +42,11 @@ def validate_rendition_floor_coherence(
     holds, the corpus is absent, or no invariant entries are declared
     (bootstrap-safe).
     """
-    closed = _FLOOR_FAIL_CLOSED if fail_closed is None else fail_closed
+    closed = (
+        (not _checkpoint.is_advisory("rendition-floor-coherence", root))
+        if fail_closed is None
+        else fail_closed
+    )
 
     renditions_dir = root / ".gzkit" / "renditions"
     if not renditions_dir.exists():

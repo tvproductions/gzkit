@@ -3,7 +3,7 @@ id: OBPI-0.0.74-09-mx-retire-staging-flags
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 9
 lane: Heavy
-status: Draft
+status: Completed
 req_atomic:
   - REQ-0.0.74-09-01  # one deletion+rewire behavior (both flags gone; severity resolved as an effective GZ_<LEVEL> through the leveled checkpoint) + its tests — single indivisible unit
   - REQ-0.0.74-09-02  # one negative-control behavior (both gates' NCs still flag when forced hard) — no labor below the REQ
@@ -17,7 +17,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #9 - "Retire the two hand-set staging flags — delete _FRESHNESS_FAIL_CLOSED and _FLOOR_FAIL_CLOSED; both gates resolve severity through the leveled checkpoint (an effective `GZ_<LEVEL>`, not a hand-set bool); unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -34,7 +34,7 @@ Delete `_FRESHNESS_FAIL_CLOSED` (`rendition_freshness.py`) and `_FLOOR_FAIL_CLOS
 ## Allowed Paths
 
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md` — parent ADR for intent and scope (§ Decision item 9, § Consequences/Positive #2, § Boundary Invariants #2)
-- `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/**` — parent ADR package scope (this brief's evidence)
+- `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/obpis/OBPI-0.0.74-09-mx-retire-staging-flags.md` — this OBPI brief (updated at completion)
 - `src/gzkit/governance/trust_audits/rendition_freshness.py` — delete `_FRESHNESS_FAIL_CLOSED`; resolve effective `GZ_<LEVEL>` through the leveled checkpoint
 - `src/gzkit/governance/trust_audits/rendition_floor_coherence.py` — delete `_FLOOR_FAIL_CLOSED`; resolve effective `GZ_<LEVEL>` through the leveled checkpoint
 - `src/gzkit/governance/trust_audits/_qc_negative_controls.py` — keep `_rendition_freshness_negative_control` / `_rendition_floor_coherence_negative_control` binding (they already force `fail_closed=True`); update only if the severity-resolution signature changes
@@ -211,14 +211,22 @@ Before: two gates each carried a hand-set `_*_FAIL_CLOSED` module constant — t
 
 ### Key Proof
 
+
+Gate mechanism verified correct — negative controls bind after the rewire:
+  $ uv run gz validate --qc-binding  -> PASS (NCs flag planted fixtures when forced hard)
+23/23 scoped tests pass (receipt arb-step-unittest-fdd6331d99df481baa170005ba047f45); lint clean (arb-ruff-8c1128b368364fff9900b6d4f1e9c530); typecheck clean (arb-step-typecheck-db8d74cd54834733848cb66121c6aa83); docs clean (arb-step-mkdocs-87db927daa64446ba806b405da7edf60). TestCheckpointWiringFreshness/Floor prove: no marker -> fail-closed; marker present -> advisory.
+
 ### Implementation Summary
 
-- **Decision item 9 (verbatim):** "Retire the two hand-set staging flags. Delete _FRESHNESS_FAIL_CLOSED and _FLOOR_FAIL_CLOSED; both gates resolve their severity through the leveled checkpoint (an effective `GZ_<LEVEL>`, not a hand-set bool) — the honest generalization of the two hacks."
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Decision item 9: Deleted _FRESHNESS_FAIL_CLOSED (rendition_freshness.py) and _FLOOR_FAIL_CLOSED (rendition_floor_coherence.py); both gates now resolve their effective severity through the shared leveled MX checkpoint via checkpoint.is_advisory("<guard-name>", root)
+- Mechanism: closed = (not _checkpoint.is_advisory("<guard>", root)) if fail_closed is None else fail_closed — advisory inside the hangar (marker present), fail-closed at full strength outside; explicit fail_closed= callers (negative controls) unchanged
+- Files modified: src/gzkit/governance/trust_audits/rendition_freshness.py, src/gzkit/governance/trust_audits/rendition_floor_coherence.py, tests/governance/test_rendition_freshness.py, tests/governance/test_rendition_floor_coherence.py
+- Tests added: TestCheckpointWiringFreshness (2), TestCheckpointWiringFloor (2); removed obsolete TestRenditionFreshnessWarnStaging (3) and TestStagedWarn (1)
+- Consequence surfaced: the staging flags were hiding pre-existing AGENTS.md corpus drift (codex/claude missing sidecars), now fail-closed outside MX mode — the honest generalization the ADR intended
+- Date completed: 2026-06-22
+- Attestation status: operator-attested "attest completed" (Gate 5)
+- Defects noted: pre-existing corpus drift now visible; follow-up MX repair recommended
 
 ## Tracked Defects
 
@@ -226,12 +234,12 @@ Before: two gates each carried a hand-set `_*_FAIL_CLOSED` module constant — t
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — operator Gate-5 attestation for OBPI-0.0.74-09 (retire the two hand-set staging flags). Verified: _FRESHNESS_FAIL_CLOSED and _FLOOR_FAIL_CLOSED deleted; both gates resolve severity through the shared leveled MX checkpoint (checkpoint.is_advisory); 23/23 scoped tests pass (receipt arb-step-unittest-fdd6331d99df481baa170005ba047f45); lint clean (arb-ruff-8c1128b368364fff9900b6d4f1e9c530); typecheck clean (arb-step-typecheck-db8d74cd54834733848cb66121c6aa83); docs clean (arb-step-mkdocs-87db927daa64446ba806b405da7edf60); QC binding confirms negative controls bind after rewire. Pre-existing AGENTS.md corpus drift surfaced as expected consequence (honest generalization).
+- Date: 2026-06-23
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-23
 
 **Evidence Hash:** -

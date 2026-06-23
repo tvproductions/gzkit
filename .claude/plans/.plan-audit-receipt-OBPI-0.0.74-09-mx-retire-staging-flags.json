@@ -1,0 +1,133 @@
+{
+  "obpi_id": "OBPI-0.0.74-09-mx-retire-staging-flags",
+  "timestamp": "2026-06-22T23:31:08.037499+00:00",
+  "verdict": "PASS",
+  "plan_file": "retire-staging-flags-OBPI-0.0.74-09.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-03-auth-surface-coherence-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/rendition_freshness.py",
+        "src/gzkit/governance/trust_audits/rendition_floor_coherence.py",
+        "src/gzkit/governance/trust_audits/_qc_negative_controls.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.56",
+      "sibling_obpi": "OBPI-0.0.56-02-closeout-defect-accounting-reconcile-scope",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/rendition_freshness.py",
+        "src/gzkit/governance/trust_audits/rendition_floor_coherence.py",
+        "src/gzkit/governance/trust_audits/_qc_negative_controls.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-03-extend-payload-arb-receipts",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/rendition_freshness.py",
+        "src/gzkit/governance/trust_audits/rendition_floor_coherence.py",
+        "src/gzkit/governance/trust_audits/_qc_negative_controls.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-02-migrate-validators-remediation-meta",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/rendition_freshness.py",
+        "src/gzkit/governance/trust_audits/rendition_floor_coherence.py",
+        "src/gzkit/governance/trust_audits/_qc_negative_controls.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-04-extend-payload-blocking-hooks",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/rendition_freshness.py",
+        "src/gzkit/governance/trust_audits/rendition_floor_coherence.py",
+        "src/gzkit/governance/trust_audits/_qc_negative_controls.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-22-committed-rendition-store-deterministic-playback",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/rendition_freshness.py",
+        "tests/governance/test_rendition_freshness.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-01-author-layer-order-manifest",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/rendition_freshness.py",
+        "src/gzkit/governance/trust_audits/rendition_floor_coherence.py",
+        "src/gzkit/governance/trust_audits/_qc_negative_controls.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-04-promote-import-direction-fail-closed",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/rendition_freshness.py",
+        "src/gzkit/governance/trust_audits/rendition_floor_coherence.py",
+        "src/gzkit/governance/trust_audits/_qc_negative_controls.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-03-migrate-back-edges-drain-baseline",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/rendition_freshness.py",
+        "src/gzkit/governance/trust_audits/rendition_floor_coherence.py",
+        "src/gzkit/governance/trust_audits/_qc_negative_controls.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-02-import-direction-validator-warn-only",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/rendition_freshness.py",
+        "src/gzkit/governance/trust_audits/rendition_floor_coherence.py",
+        "src/gzkit/governance/trust_audits/_qc_negative_controls.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.24",
+      "sibling_obpi": "OBPI-0.0.24-01-validator-scope",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/rendition_freshness.py",
+        "src/gzkit/governance/trust_audits/rendition_floor_coherence.py",
+        "src/gzkit/governance/trust_audits/_qc_negative_controls.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-03-agents-md-map-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/rendition_freshness.py",
+        "src/gzkit/governance/trust_audits/rendition_floor_coherence.py",
+        "src/gzkit/governance/trust_audits/_qc_negative_controls.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md",
+        "docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-03-storybook-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/rendition_freshness.py",
+        "src/gzkit/governance/trust_audits/rendition_floor_coherence.py",
+        "src/gzkit/governance/trust_audits/_qc_negative_controls.py"
+      ]
+    }
+  ]
+}
