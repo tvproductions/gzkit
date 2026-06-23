@@ -240,14 +240,12 @@ governs order.
 - [ ] **Kind-blind behave gate** (~3 lines: mirror the SUPPORT/STRUCTURAL-FENCE exemption)
 - [ ] Remaining state-of-gzkit cut order, each as a patch with live-NC proof
 
-**Movement III — Reduce the accretion** *(parity-proven; Sanity-Reduction track)*
+**Movement III — Realize the entry airlock** *(forward engine; the §8 "work-phase theories lawful" 1.0 gate; lands after Movement I, gates Movement IV)*
+- [ ] **Judgment-grade AIRLOCK-IN** — the unbuilt entry membrane (§3a), built as a discipline invoked AT each mode's existing door (MX-enter, the OBPI pipeline's Stage-1 pre-flight), the doors left in place: before a unit of work, enumerate the seam-map (push edges you may break · pull edges that bind you; Invariant 1a as seed), name mode · authority · source-ranking · falsifier · topology-purpose, and record a go/no-go to the ledger. No graph engine. Bound by ONE §5 `@enforces` live NC (construct a unit of work with an un-accounted seam; run the real entry; assert it refuses GO) — registered through Movement I's single enforcement-claim surface, not a second framework. **ABSORBS** the former Movement IV "loop/topology declaration discipline" item (the topology-purpose declaration IS this gate's checklist for new harness mechanisms). Generalizes from `gz obpi pipeline` Stage 1 (work-phases §7); reuses `gz-state` / `gz-adr-map` / `gz-context` as seam-query precursors. See [`work-phases-and-airlock.md`](work-phases-and-airlock.md) + [`harness-loop-engineering-strategy-note-2026-06-23.md`](harness-loop-engineering-strategy-note-2026-06-23.md).
+- [ ] **[deferred] Tool-computed AIRLOCK-IN** — the seam-map computed from the artifact/coupling graph. Gated on Architecture Boundary §12 item 3 (no graph engine until state doctrine is locked); true door-unification ("the same airlock for all four modes," §3) lands on this rung, not the judgment-grade one. Parked until that prerequisite lands.
+
+**Movement IV — Reduce the accretion** *(parity-proven; Sanity-Reduction track)*
 - [ ] **Taxonomy migration:** drop all ADRs to pool; abolish `foundation` (schema enum, `gz validate --taxonomy`, supersede ADR-0.0.18) — parity-proven, behavior-preserving
-- [ ] **Loop/topology declaration discipline:** for new harness mechanisms and
-  accretion-reduction work, declare cognitive function, execution topology,
-  authority, verifier, termination, writeback, and excluded patterns; prefer
-  route/loop for repair and reserve hierarchy for release-carrying build work.
-  See
-  [`harness-loop-engineering-strategy-note-2026-06-23.md`](harness-loop-engineering-strategy-note-2026-06-23.md).
 - [ ] Collapse the 70-scope / 162-param `validate()` surface to the registry (#618 residual)
 - [ ] Oversized modules (33 > 600 lines) — census-driven, with working proof
 
@@ -315,4 +313,22 @@ interleaved into the body. The campaign rules sequencing; handoffs and triage
   steering surface. Movement III carries the resulting structural action:
   function×topology declaration discipline for new harness mechanisms and
   accretion-reduction work. Design note:
+  [`harness-loop-engineering-strategy-note-2026-06-23.md`](harness-loop-engineering-strategy-note-2026-06-23.md).
+- **2026-06-23 (operator-ratified) — the entry airlock is seated as a distinct
+  Movement (III), after the facade-drain.** AIRLOCK-IN was a §8 1.0 gate
+  ("work-phase theories lawful — the airlock entry membrane realized") with no §7
+  builder — a gate with no puller. The operator ruled it *"a distinct movement"*
+  and placed it *"Movement III, after the facade-drain,"* so it lands after
+  Movement I (binding to the §5 enforcement-claim primitive) and gates the
+  now-Movement-IV reduction (the highest-blast-radius refactor on the board —
+  work-phases §4). Scope ruled *option (i)*: build the judgment-grade airlock as a
+  discipline invoked at each mode's existing door, doors in place; tool-computed
+  (graph-backed) AIRLOCK-IN and true door-unification stay deferred on
+  Architecture Boundary §12.3. Terminology ruled *"keep entry airlock /
+  AIRLOCK-IN"* — the less-cryptic rename defers to Phase I per work-phases §7. The
+  former Movement III "loop/topology declaration discipline" item folds into the
+  airlock Movement (superseding its placement in the harness-loop archive entry
+  above). Design source:
+  [`work-phases-and-airlock.md`](work-phases-and-airlock.md),
+  [`four-phases-of-work.md`](four-phases-of-work.md),
   [`harness-loop-engineering-strategy-note-2026-06-23.md`](harness-loop-engineering-strategy-note-2026-06-23.md).
