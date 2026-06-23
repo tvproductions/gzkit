@@ -103,6 +103,10 @@ One mechanism — a filesystem marker that means 'in the hangar' — read by bot
 
 Land order (1:1 with the Checklist, strict-no-debt sequenced): 15 → 16 → 17 + 18 → 19. Free-prose ADR / doc claim scanning ("enforced / validated / fail-closed" prose must cite a live NC) is **extension point F**, DEFERRED — unbounded, and a prose grader is structurally weaker than a real enforcement consumer (ADR-0.0.70 precedent); no OBPI is authored for it here.
 
+> **Amendment — 2026-06-24 (operator-ratified): gates-as-sensors completed to "every live guard" — item 20.** OBPI-0.0.74-09 (retire staging flags) and OBPI-0.0.74-12 (gates-as-sensors) migrated the rendition gates and the `gz validate` scope dispatcher (the latter via GHI #637), but **under-scoped "every live guard"** — the `gz check` audit-step layer (~30 steps) and ~5 solo `gz validate` paths still self-decide fatality (`returncode=3` / `SystemExit(3)`) outside the checkpoint (GHI #638). This is a **correction** (the gates-as-sensors capability does not yet fulfil its declared intent), routed as item 20 under this owning ADR per operator ruling 2026-06-24 — not a fresh ADR. BI#2 already states the invariant; item 20 extends its coverage to the `gz check` surface.
+
+20. The `gz check` step-layer checkpoint seam. Each `gz check` audit step and solo `gz validate` governance path declares its `guard_name` + emitted `GZ_<LEVEL>`; ONE wrapper in `check()` resolves disposition through `checkpoint.resolve` (the seam — not ~30 inline substitutions), so every MX-demotable governance guard demotes to advisory under the hangar marker and runs full-strength outside, while `gate5_invariants` members pin CRITICAL and the correctly-self-deciding policy paths (`--sensitivity` security floor/lane; attestation lane/kind) are excluded. Closes GHI #638; satisfies BI#2 at the `gz check` surface. (OBPI-20)
+
 Facade-proof ceremony (binding): MX mode is itself a ceremony, so it is built un-skippable (each step leaves a ledger receipt the next step checks), un-vibeable (exit is code that actually re-runs; the log auto-assembles), and un-contrivable (marker and ledger event must agree).
 
 Reversibility (mixed door): the checkpoint + marker is a two-way door (removable). The PRIME-DIRECTIVE-binds-in-the-hangar doctrine and the gate5_invariants floor are one-way commitments. At 2am with MX stuck, the operator runs gz mx status to see the open session and which guards are advisory, and gz mx exit to re-run and see what is still red.
@@ -150,7 +154,7 @@ Scope boundary — NOT in this ADR: the full MEL dispatch-with-limitation binder
 Cross-OBPI integration-state properties scoped to this ADR, audited at ADR closeout (the proof channel for every `[structural-fence]` REQ in this ADR's OBPIs, per ADR-0.0.59).
 
 1. **Single MX truth-source.** The marker is the one place MX state lives; every surface — code guards and agents alike — reads "are we in the hangar?" from the marker and from nowhere else. (OBPI-01)
-2. **The checkpoint is the single LEVELED severity authority.** Every fail-closed funnel/guard resolves its effective `GZ_<LEVEL>` by passing through the shared checkpoint, and the one disposition handler routes that level; a guard that decides its own severity OR its own disposition without the checkpoint is the named coverage defect, and no per-gate hand-set staging flag survives anywhere in the codebase. (OBPI-02, OBPI-09, OBPI-11, OBPI-12)
+2. **The checkpoint is the single LEVELED severity authority.** Every fail-closed funnel/guard resolves its effective `GZ_<LEVEL>` by passing through the shared checkpoint, and the one disposition handler routes that level; a guard that decides its own severity OR its own disposition without the checkpoint is the named coverage defect, and no per-gate hand-set staging flag survives anywhere in the codebase. (OBPI-02, OBPI-09, OBPI-11, OBPI-12, OBPI-20)
 3. **gate5_invariants is the never-relax floor, and grader-gaming is a member.** Membership of the gate5_invariants set is what airworthiness rests on; no marker, lane, or sensitivity can downgrade a member below CRITICAL, in or out of the hangar. The set is `{faked Gate-5 attestation, secrets, operator-PII, ledger integrity, grader-gaming}`. (OBPI-03)
 4. **Exit is the only path that clears the marker.** `gz mx exit` writing `mx_session_closed` is the sole way the marker is removed; a marker cleared without a matching `mx_session_closed` event is a detected dangling state. (OBPI-05)
 5. **Every floor member's enforcement is live, not named.** `grader-gaming`'s floor membership (BI#3) is bound to a live negative control — the proxy-reality distance detector — that constructs a known violation, runs the real path in production configuration, and asserts it is caught; a floor claim with no passing-on-violation live NC is facade and is rejected (§5 enforcement-claim rule). (OBPI-13)
@@ -183,6 +187,7 @@ Cross-OBPI integration-state properties scoped to this ADR, audited at ADR close
 | Each `gate5_invariants` member (secrets, operator-pii, ledger, gate5-attestation-absence) carries a live un-forced NC that runs the real path against a known violation and is caught. | uv run -m unittest tests.mx.test_gate5_invariants_live_nc | 0 |
 | A `[structural-fence]` REQ that asserts enforcement resolves at closeout only when `resolve_fence_proof` (in `src/gzkit/req_kind.py`) finds a live `@enforces` NC. | uv run -m unittest tests.governance.test_fence_proof_live_nc | 0 |
 | The meta-validator is wired into `gz check` / pre-push and is READ-ONLY (no ledger mutation) on a clean run. | uv run -m unittest tests.governance.test_enforcement_floor_wiring | 0 |
+| Each `gz check` audit step and solo `gz validate` governance path resolves disposition through `checkpoint.resolve` (the step-layer seam): non-floor guards demote to advisory under an active marker and exit 3 outside, `gate5_invariants` pin CRITICAL, and `--sensitivity` + attestation lane/kind stay self-deciding. | uv run -m unittest tests.mx.test_check_step_checkpoint_seam | 0 |
 
 <!-- One green row per landed OBPI: the marker row above lands with OBPI-01. As
      OBPI-02..09 land (checkpoint, gate5_invariants, gz mx enter/exit, the MX log,
@@ -202,13 +207,13 @@ Cross-OBPI integration-state properties scoped to this ADR, audited at ADR close
 - Lineage: 2
 - Dimension Total: 10
 - Baseline Range: 5+
-- Baseline Selected: 14
+- Baseline Selected: 15
 - Split Single-Narrative: 1
 - Split Surface Boundary: 1
 - Split State Anchor: 1
 - Split Testability Ceiling: 1
 - Split Total: 4
-- Final Target OBPI Count: 18
+- Final Target OBPI Count: 19
 <!-- Baseline Selected 6→5 / Final Target 10→9 (2026-06-21): OBPI-10 (governance
      doc-type taxonomy) withdrawn as out-of-scope per the Build-to-1.0 campaign
      (operator-ratified). It was a base capability, so the baseline drops by one
@@ -230,7 +235,13 @@ Cross-OBPI integration-state properties scoped to this ADR, audited at ADR close
      meta-validator to the floor + MX exit gate + antibody, two of which already
      live here). Each is a distinct single-narrative surface (the pool ADR's own
      scorecard scored these five 5-base / 0-split), so Baseline Selected 9->14,
-     Final Target 13->18 active (item 10 stays withdrawn/excluded). -->
+     Final Target 13->18 active (item 10 stays withdrawn/excluded).
+
+     Gates-as-sensors completion (2026-06-24, operator-ratified): +1 base
+     capability (item 20 — the gz check step-layer checkpoint seam) corrects
+     OBPI-09/12's under-scoping of "every live guard" (GHI #638). Baseline
+     Selected 14->15, Final Target 18->19 active (item 10 stays
+     withdrawn/excluded). -->
 
 
 ## Checklist
@@ -256,6 +267,7 @@ Cross-OBPI integration-state properties scoped to this ADR, audited at ADR close
 - [ ] gate5_invariants floor migration — live un-forced negative controls for the four `GATE5_INVARIANTS` members lacking one (secrets, operator-pii, ledger, gate5-attestation-absence), each running its real path against a synthetic violation (grader-gaming is item 13); honest negative — secrets/operator-pii have no bound gate5 entrypoint today, forbid binding a narrower proxy; unit tests
 - [ ] Structural-fence proof upgrade — `resolve_fence_proof` (in `src/gzkit/req_kind.py`) amended so a `[structural-fence]` REQ that asserts enforcement requires a live `@enforces` NC, not merely a `## Boundary Invariants` anchor, while state-property fences are unchanged; unit tests
 - [ ] Floor wiring — wire the meta-validator into `gz check` and pre-push, read-only on a clean run, landing LAST only after the floor coverage is complete per the strict-no-debt sequence; registers the new `gz check` step's own qc negative control; unit tests
+- [ ] The `gz check` step-layer checkpoint seam — each `gz check` audit step + solo `gz validate` governance path declares its `guard_name` + emitted `GZ_<LEVEL>`; one wrapper in `check()` resolves disposition via `checkpoint.resolve` (not ~30 inline substitutions); non-floor guards demote to advisory under the hangar marker and run full-strength outside; `gate5_invariants` pin CRITICAL; `--sensitivity` + attestation lane/kind excluded; closes GHI #638; unit tests
 
 ## Q&A Transcript
 
