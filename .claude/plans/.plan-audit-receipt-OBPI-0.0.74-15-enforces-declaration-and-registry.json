@@ -1,0 +1,17 @@
+{
+  "obpi_id": "OBPI-0.0.74-15-enforces-declaration-and-registry",
+  "timestamp": "2026-06-24T06:12:57.450404+00:00",
+  "verdict": "PASS",
+  "plan_file": "linear-booping-knuth.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md",
+        "docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/obpis/OBPI-0.0.74-15-enforces-declaration-and-registry.md"
+      ]
+    }
+  ]
+}

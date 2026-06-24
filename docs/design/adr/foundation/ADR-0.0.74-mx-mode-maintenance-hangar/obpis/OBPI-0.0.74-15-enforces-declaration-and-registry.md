@@ -3,7 +3,7 @@ id: OBPI-0.0.74-15-enforces-declaration-and-registry
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 15
 lane: Heavy
-status: Draft
+status: Completed
 # req_atomic: each REQ is one coherent authoring increment inside the single new
 # enforcement-claim primitive module — the decorator + record (01), the
 # decoration-time fail-close (02), the metadata-only guarantee (03), and the
@@ -23,7 +23,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #15 - "The `@enforces(claim, fixture, entrypoint)` declaration + import-time registry — fail-closed at decoration on a typo or unknown claim (mirrors the `@covers` / `@advances` precedent), registration metadata-only; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -64,6 +64,7 @@ The `@enforces(claim, fixture=<violation-builder>, entrypoint=<production-callab
 1. REQUIREMENT: `@enforces(claim, fixture, entrypoint)` MUST register an `EnforcementClaimRecord` into one claim-type-agnostic module-level registry at import time, discoverable via a query accessor (REQ-15-01).
 1. REQUIREMENT: Decoration MUST fail closed (`ValueError` at import) on a malformed/typo claim id or an unknown claim — typos cannot ship, mirroring the `@covers` / `@advances` decoration-time precedent (REQ-15-02).
 1. REQUIREMENT: Registration MUST be metadata-only — `@enforces` returns the decorated `entrypoint` callable unchanged; it MUST NOT wrap, alter, or pre-bind any kwarg of the entrypoint (REQ-15-03).
+1. REQUIREMENT: Every enforcement claim MUST be registered through the single `@enforces` primitive into one claim-type-agnostic registry — no second negative-control framework is forked; the qc_binding engine is generalized in place, not duplicated (REQ-15-04, structural-fence per parent ADR § Boundary Invariants #6 — one enforcement-claim surface, not two).
 1. NEVER: Pre-bind a forcing kwarg (e.g. `fail_closed=True`) into the registered `entrypoint` via `functools.partial` or a `lambda` at the registration site — the entrypoint MUST be a direct, resolvable reference to a production callable (§ Boundary Invariants #7; the runner in OBPI-16 invokes it).
 1. ALWAYS: Reconcile the brief with the parent ADR before implementation; mirror the existing `@covers` decoration-time fail-close pattern in `src/gzkit/traceability.py` rather than inventing a new one.
 
@@ -213,14 +214,23 @@ Before: gzkit's only run-NC-in-production-and-assert-failure engine (qc_binding,
 
 ### Key Proof
 
+
+A claim in the known-claims set registers at import; an unknown claim fails closed at decoration (mirrors @covers/@advances):
+
+uv run python -c "from gzkit.enforcement import enforces, registered_claims, set_known_claims, reset_enforcement_registry; reset_enforcement_registry(); set_known_claims(frozenset({'lint'})); enforces('lint', lambda: 'v', lambda v: [])(lambda: None); print('registered:', registered_claims())"
+# -> registered: ['lint']
+
+Scoped tests 17/17 pass (receipt arb-step-unittest-d0f0888eadc94662afde2c825bb48e44); full suite 6422/6422 (receipt arb-step-unittest-28ce82c5f54e419e838f5b2bb54e2529).
+
 ### Implementation Summary
 
-- **Decision item 15 (verbatim):** "The `@enforces(claim, fixture, entrypoint)` declaration + import-time registry — fail-closed at decoration on a typo / unknown claim (mirrors the `@covers` / `@advances` precedent in `src/gzkit/traceability.py`); registration metadata-only. (OBPI-15)"
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Decision item 15 (verbatim): "The @enforces(claim, fixture, entrypoint) declaration + import-time registry — fail-closed at decoration on a typo / unknown claim (mirrors the @covers / @advances precedent in src/gzkit/traceability.py); registration metadata-only. (OBPI-15)"
+- Files created: src/gzkit/enforcement.py (the @enforces decorator, the EnforcementClaimRecord pydantic model, the module-level _ENFORCEMENT_REGISTRY with lazy-loaded known-claims from _PRODUCTION_NEGATIVE_CONTROLS, and the registered_claims/get_enforcement_registry/reset_enforcement_registry/set_known_claims accessors); tests/governance/test_enforces_registry.py (17 unit tests across 4 classes)
+- Tests added: 17 (TestEnforcesRegistration x4 REQ-15-01, TestEnforcesFailClose x7 REQ-15-02, TestEnforcesMetadataOnly x4 REQ-15-03, TestEnforcesStructuralFence x2 REQ-15-04)
+- Date completed: 2026-06-24
+- Attestation status: operator-attested (attest completed)
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -228,12 +238,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.74-15 @enforces declaration + registry verified: 17/17 scoped tests pass (receipt arb-step-unittest-d0f0888eadc94662afde2c825bb48e44), full suite 6422/6422 (receipt arb-step-unittest-28ce82c5f54e419e838f5b2bb54e2529), lint clean (arb-ruff-cfb6b6cd6cea459aba17cdb829b418a9), typecheck clean (arb-step-typecheck-ef1264697ba843ba9656b694ef55a86a), docs build clean (arb-step-mkdocs-3a53ab603b9e4d69a526c2ff2c9d5b7d), 4/4 REQs covered at 100%. Heavy lane, foundation kind, Gate 5 operator-verbatim attestation.
+- Date: 2026-06-24
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-24
 
 **Evidence Hash:** -
