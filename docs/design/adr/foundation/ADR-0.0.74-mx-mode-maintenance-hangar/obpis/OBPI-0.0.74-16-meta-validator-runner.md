@@ -3,7 +3,7 @@ id: OBPI-0.0.74-16-meta-validator-runner
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 16
 lane: Heavy
-status: Draft
+status: Completed
 # req_atomic: each REQ is one coherent increment of the single runner surface —
 # discovery + run + strict fail-close (01), the read-only receipt (02), the
 # FACADE-vs-TEST-BUG guardrail-feedback (03), the engine lift + 33-NC un-forced
@@ -25,7 +25,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #16 - "The meta-validator runner — discovers every `@enforces` claim, runs `entrypoint(fixture())` in production configuration, asserts failure, fail-closes strict with per-claim FACADE-vs-TEST-BUG guardrail-feedback and a single-NC repro command, emits an `enforcement_claim_verified` receipt, READ-ONLY on a clean run; lifts the engine out of `audit_qc_binding` and re-authors the 33 qc_binding negative controls un-forced; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -40,6 +40,9 @@ The meta-validator RUNNER lands at `src/gzkit/enforcement.py` (alongside the OBP
 > those external surfaces.
 
 ## Allowed Paths
+
+- `src/gzkit/traceability.py` (added by brief reconcile, attestor g0)
+- `src/gzkit/governance/trust_audits/__init__.py` (added by brief reconcile, attestor g0)
 
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md` — parent ADR for intent and scope (§ Decision item 16, § Boundary Invariants #6, #7, #8)
 - `src/gzkit/enforcement.py` **CREATE** — the runner (discovery, `entrypoint(fixture())` invocation, strict fail-close, read-only receipt, guardrail-feedback); net-new module introduced by OBPI-0.0.74-15 and extended here with the runner (CREATE-marked so the authoring-time existence gap is suppressed per GHI #419, since 15 lands before 16 per the strict-no-debt land order)
@@ -236,15 +239,39 @@ Before: the run-NC-in-production engine lived inside `audit_qc_binding`, scoped 
 
 ### Key Proof
 
+
+Demo (brief-canonical, assert-shaped — exits 0 ONLY when every discovered `@enforces` claim is run `entrypoint(fixture())` and genuinely caught):
+
+```bash
+uv run python -c "from gzkit import enforcement; r = enforcement.run_meta_validator(); raise SystemExit(0 if r.verified_count >= 37 and r.facade_count == 0 and r.test_bug_count == 0 else 1)"
+# → EXIT 0 — 37+ claims verified, 0 facades, 0 test_bugs
+```
+
+Verification receipts (Stage 3, all exit_status 0):
+- Full unittest sweep 6459/6459 pass — receipt `arb-step-unittest-8d9c5b7469a949f88cb1d404aceeffea`
+- OBPI-scoped tests 27/27 pass — `uv run -m unittest tests.governance.test_enforcement_meta_validator -v`
+- Lint clean — receipt `arb-ruff-28cd4d8892054f7985628aa4cca44948`
+- Typecheck clean — receipt `arb-step-typecheck-c1b69d481c134fe9802fe4eaddcb5b7e`
+- Docs build clean — receipt `arb-step-mkdocs-49c6561c99044940810c1ccd277f5fb7`
+
+REQ → @covers parity: 6/6 covered (100%), verified by `gz covers OBPI-0.0.74-16-meta-validator-runner --json`.
+
+Step 4b independent adversary (Codex): NOT-REFUTED — confirmed production discovery is real (`run_meta_validator()` no-arg path calls `get_enforcement_registry()`), no `fail_closed=True` kwarg survives, `_NEGATIVE_CONTROLS`/`_check_negative_control`/`_NEGATIVE_CONTROL_DEBT` absent, structural fence intact.
+
 ### Implementation Summary
 
-- **Decision item 16 (verbatim):** "The meta-validator RUNNER — discovers every `@enforces` claim, runs each NC's `fixture()` through its production `entrypoint`, asserts failure; strict fail-close; emits an `enforcement_claim_verified` ledger receipt per claim; READ-ONLY on a clean run; on failure emits per-claim guardrail-feedback three-part prose ... distinguishing FACADE (entrypoint did not fail on the violation) from TEST-BUG (fixture did not build) plus the single-NC repro command; lifts the engine out of `audit_qc_binding` and re-authors the 33 qc_binding NCs un-forced. (OBPI-16)"
-- Coupled surfaces (behavior-preservation, AGENTS.md Rule 1a): `qc_binding.audit_qc_binding` (engine extracted, step behavior preserved); `_qc_negative_controls._PRODUCTION_NEGATIVE_CONTROLS` (33 NCs re-authored un-forced); `events.TypedLedgerEvent` (new `enforcement_claim_verified` member).
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- **Decision item 16 (verbatim):** "The meta-validator RUNNER — discovers every `@enforces` claim, runs each NC's `fixture()` through its production `entrypoint`, asserts failure; strict fail-close; emits an `enforcement_claim_verified` ledger receipt per claim; READ-ONLY on a clean run; on failure emits per-claim guardrail-feedback three-part prose distinguishing FACADE from TEST-BUG plus the single-NC repro command; lifts the engine out of `audit_qc_binding` and re-authors the qc_binding NCs un-forced. (OBPI-16)"
+- **Runner landed:** `run_meta_validator()` in `src/gzkit/enforcement.py` discovers every `@enforces` claim via `get_enforcement_registry()`, builds each `fixture()`, invokes `entrypoint(fixture())` in production configuration, and asserts failure through `_run_single_claim()`. Strict fail-close: any enrolled claim lacking a passing un-forced NC fails the runner, no `_NEGATIVE_CONTROL_DEBT` escape (BI#8).
+- **Receipt + READ-ONLY:** new `EnforcementClaimVerifiedEvent` added to the `TypedLedgerEvent` union (`events.py`) + `enforcement_claim_verified` schema entry (`ledger.json`); `_emit_verified_receipts()` is gated on all-pass, so a failing run mutates no ledger state.
+- **Guardrail-feedback:** `_facade_prose()` / `_test_bug_prose()` distinguish FACADE (entrypoint did not fail on the violation) from TEST-BUG (fixture did not build) and name the single-NC repro command.
+- **Engine lifted (BI#6):** `_NEGATIVE_CONTROLS`, `_check_negative_control`, `register_negative_control`, and `_NEGATIVE_CONTROL_DEBT` removed from `qc_binding.py`; `audit_qc_binding` now routes through the shared `_run_single_claim`. 36 NCs re-authored un-forced (the 2 forced `fail_closed=True` NCs — rendition-freshness and rendition-floor-coherence — now fail through the real path). Entrypoints split into `_qc_nc_entrypoints.py` for module-size discipline.
+- **Coupled surfaces (behavior-preservation, AGENTS.md Rule 1a):** `qc_binding.audit_qc_binding` (engine extracted, step behavior preserved); `_qc_negative_controls._PRODUCTION_NEGATIVE_CONTROLS` (36 NCs re-authored un-forced); `events.TypedLedgerEvent` (new `enforcement_claim_verified` member); `tests/test_schemas.py` `_EVENT_MODELS` registration; ADR-0.0.73 sibling tests + one fidelity row re-expressed against the lifted engine.
+- Files created: `src/gzkit/enforcement.py` (runner), `src/gzkit/governance/trust_audits/_qc_nc_entrypoints.py`, `tests/governance/test_enforcement_meta_validator.py` (27 tests).
+- Tests added: 27 in `test_enforcement_meta_validator.py`; sibling re-expression in `test_facade_regression_corpus.py`, `test_qc_binding_scope.py`, `test_qc_binding_self_check.py`, `test_fidelity_presence.py`.
+- Date completed: 2026-06-24
+- Attestation status: operator-attested ("attest completed")
+- Defects noted: none blocking. Adversary (Codex, NOT-REFUTED) flagged REQ-02 receipt emission tested via mock rather than a real end-to-end ledger write — coverage gap on the observability claim, not a compliance violation.
 
 ## Tracked Defects
 
@@ -252,12 +279,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.74-16-meta-validator-runner verified GREEN: full suite 6459/6459 pass (receipt arb-step-unittest-8d9c5b7469a949f88cb1d404aceeffea), OBPI-scoped 27/27, lint/typecheck/mkdocs clean (arb-ruff-28cd4d8892054f7985628aa4cca44948, arb-step-typecheck-c1b69d481c134fe9802fe4eaddcb5b7e, arb-step-mkdocs-49c6561c99044940810c1ccd277f5fb7), 6/6 REQ @covers parity, demo exits 0 with 37+ @enforces claims verified / 0 facades / 0 test_bugs. Step 4b independent Codex adversary returned NOT-REFUTED. The NC engine is genuinely lifted (BI#6), forcing is impossible by construction (BI#7), and no _NEGATIVE_CONTROL_DEBT escape survives (BI#8).
+- Date: 2026-06-24
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-24
 
 **Evidence Hash:** -
