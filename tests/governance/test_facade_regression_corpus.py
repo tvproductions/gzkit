@@ -12,10 +12,8 @@ import json
 import unittest
 from pathlib import Path
 
-from gzkit.governance.trust_audits.qc_binding import (
-    _check_negative_control,
-    _check_theater_signatures,
-)
+from gzkit.enforcement import EnforcementClaimRecord, _run_single_claim
+from gzkit.governance.trust_audits.qc_binding import _check_theater_signatures
 from gzkit.qc_binding import QCStep
 from gzkit.traceability import covers
 
@@ -118,40 +116,38 @@ class TestFacadeRegressionCorpus(unittest.TestCase):
 
 class TestBehavioralCatch(unittest.TestCase):
     """REQ-0.0.73-06-02: the corpus exercises catch via the negative-control path,
-    not just static flag-echo. A genuinely hollow bound step (one that PASSES its
-    own negative control) is caught; a genuinely bound one is not.
+    not just static flag-echo. A genuinely hollow claim (whose entrypoint does NOT
+    catch its violation) is caught as FACADE; a genuinely bound one PASSes.
+
+    ADR-0.0.74 (OBPI-0.0.74-16) lifted the run-NC engine into ``enforcement._run_single_claim``;
+    the old ``() -> int`` exit-code signal (0 = hollow) is now ``bool(entrypoint(fixture()))``
+    (falsy = FACADE), so behavioral detection is asserted against the shared engine.
     """
 
-    def _bare_step(self) -> QCStep:
-        return QCStep(
-            id="behavioral-x",
-            name="Behavioral X",
-            kind="audit",
-            subject="src/",
-            binding="bound",
-            wired_into=["gz check"],
-            theater_flags=[],
-            enforcement_locus="python_function",
+    @staticmethod
+    def _record(claim_id: str, *, caught: bool) -> EnforcementClaimRecord:
+        return EnforcementClaimRecord(
+            claim_id=claim_id,
+            fixture=lambda: None,
+            entrypoint=lambda _violation: ["found"] if caught else [],
+            source_fn="test._record",
         )
 
     @covers("REQ-0.0.73-06-02")
-    def test_hollow_step_caught_by_negative_control(self) -> None:
-        # NC returns 0 (the step passed its own negative control) → hollow → caught.
-        # This is behavioral detection: the step carries NO theater flag, so
-        # flag-echo would miss it. Only running the NC reveals the theater.
-        step = self._bare_step()
-        errors = _check_negative_control(step, {"behavioral-x": lambda: 0})
-        self.assertEqual(len(errors), 1)
-        self.assertIn("hollow", errors[0].message.lower())
+    def test_hollow_claim_caught_as_facade(self) -> None:
+        # Entrypoint returns falsy on its violation fixture → the claim is adopted by
+        # nothing → FACADE. This is behavioral detection: no theater flag is needed;
+        # running the entrypoint reveals the hollow claim.
+        result = _run_single_claim(self._record("behavioral-x", caught=False))
+        self.assertEqual(result.outcome, "FACADE")
+        self.assertIn("FACADE", result.message)
 
     @covers("REQ-0.0.73-06-02")
-    def test_genuine_step_passes_negative_control(self) -> None:
-        # NC returns non-zero (the step FAILED its negative control, the right
-        # reason) → genuinely bound → no finding. Proves the corpus can pass for
-        # the right reason, not only fail.
-        step = self._bare_step()
-        errors = _check_negative_control(step, {"behavioral-x": lambda: 1})
-        self.assertEqual(len(errors), 0)
+    def test_genuine_claim_passes(self) -> None:
+        # Entrypoint catches the violation (truthy) → genuinely bound → PASS. Proves
+        # the corpus can pass for the right reason, not only fail.
+        result = _run_single_claim(self._record("behavioral-x", caught=True))
+        self.assertEqual(result.outcome, "PASS")
 
 
 if __name__ == "__main__":

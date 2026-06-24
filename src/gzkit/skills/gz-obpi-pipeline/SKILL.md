@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.21.0"
-last_reviewed: 2026-06-14
+skill-version: "6.22.0"
+last_reviewed: 2026-06-24
 model: sonnet
 ---
 
@@ -563,7 +563,21 @@ The `@covers location` column is **not** optional. If you cannot fill it in for 
 **4. Awaiting attestation.** Do NOT proceed to Stage 5 until human responds.
 ```
 
-**Every field above MUST be populated.** Do not skip the evidence table. Do not skip REQ coverage. Do not skip files created/modified. The human needs all of this to make an attestation decision.
+**Every field above MUST be populated.** Do not skip the evidence table. Do not skip REQ coverage. Do not skip files created/modified. The human needs all of this to make an attestation decision. **This template is Step 4a — the agent's presentation. It is necessary but not sufficient: an agent authoring its own evidence is the GHI #643 fabrication surface. Step 4b is mandatory before attestation.**
+
+#### Step 4b — Independent Adversarial Validation (GHI #643)
+
+Step 4a is authored by the same agent that may have fabricated it. Step 4b adds an **independent adversary** that does not trust Step 4a: it RE-DERIVES the completion claim from the REQs and the repository, prompted to **refute**, and must paste observed command output. The operator attests holding **both** outcomes.
+
+**The adversary is an interface, not a vendor.** Required properties: *independent context + adversarial (refute-not-confirm) framing + evidence-backed (pastes real command output).* Implementation ladder, preference order:
+
+1. **Codex** (`codex:rescue` / `codex:codex-rescue`) — PREFERRED: a different-vendor model shares none of this agent's blind spots (a Claude validating Claude shares failure modes). Job the validation out through the Codex runtime; poll its job state to completion and read its verdict.
+2. **Independent Claude subagent** — fallback when Codex is unavailable: dispatch a fresh `general-purpose` agent (separate context) with the same refute-framed prompt.
+3. **Human-as-adversary** — degraded floor: if neither fires, say so explicitly ("adversarial validation ran in degraded human-only mode") so the operator knows the independent check did not run.
+
+**Dispatch contract.** Give the adversary: the completion CLAIM (the brief's REQs + what the agent says it built); the gzkit tools as its framework — `gz obpi present-evidence <OBPI>` (tool-generated 4a packet), `gz covers <OBPI> --json`, the scoped test suite, the brief's `## Demo`, `git status --short` + `git diff`; and the instruction to REFUTE — attack production-discovery/regression holes, tautological or mock-only tests that cannot fail when the real deliverable breaks, weakened assertions, anything claimed but not real. Require a verdict — `REFUTED` | `NOT-REFUTED` | `REFUTED-WITH-CAVEATS` — with pasted output per check and a "Weakest point" section. Record the dispatch via `SubagentDispatchRecord` (`role="Adversary"`).
+
+**Act on the verdict before attestation.** `REFUTED` → return to Stage 2. `REFUTED-WITH-CAVEATS` naming a real gap (e.g. a missing regression test, an injected-only test that wouldn't catch a production regression) → FIX it now, then re-validate. Never hand the operator a known caveat dressed as clean. Present the adversary's verdict (and any fix) alongside Step 4a.
 
 Wait for the human to respond "Accepted", "Completed", "attest completed", or equivalent. Do NOT proceed until attestation is received.
 

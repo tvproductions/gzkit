@@ -48,6 +48,11 @@ The meta-validator RUNNER lands at `src/gzkit/enforcement.py` (alongside the OBP
 - `src/gzkit/governance/trust_audits/_qc_negative_controls.py` — re-author the 33 negative controls UN-FORCED (remove `fail_closed=True`-style forcing kwargs so each NC fails through the real production path)
 - `tests/governance/test_enforcement_meta_validator.py` **CREATE** — unit tests for discovery/run/strict-fail, the read-only-on-clean receipt, the FACADE-vs-TEST-BUG guardrail-feedback, and the un-forced re-authoring
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/obpis/OBPI-0.0.74-16-meta-validator-runner.md` — this brief (evidence recording)
+- `src/gzkit/schemas/ledger.json` — add `enforcement_claim_verified` schema entry (Rule 1a coupled surface: `test_every_factory_event_has_schema_entry` enforces coverage parity between `events.py` event classes and schema entries; adding the event class requires the schema entry in the same commit)
+- `src/gzkit/governance/trust_audits/_qc_nc_entrypoints.py` **CREATE** — the 36 production-callable `@enforces` entrypoints, split from `_qc_negative_controls.py` for module-size discipline (the fixture/entrypoint split required by BI#7 roughly doubles the per-NC footprint, exceeding the 600-line limit in one file)
+- `tests/test_schemas.py` — register `EnforcementClaimVerifiedEvent` in `_EVENT_MODELS` (Rule 1a coupled surface: `test_all_schema_events_have_models` requires a Pydantic model per schema event)
+- `tests/governance/test_facade_regression_corpus.py`, `tests/governance/test_qc_binding_scope.py`, `tests/governance/test_qc_binding_self_check.py`, `tests/governance/test_fidelity_presence.py` — re-express ADR-0.0.73's NC-engine assertions against the lifted shared engine (Rule 1a / BI#6: removing the old `_NEGATIVE_CONTROLS`/`_check_negative_control`/`_NEGATIVE_CONTROL_DEBT` engine — the "no second framework" mandate — breaks the sibling tests that bound to those symbols; each REQ-0.0.73-* anchor is preserved, its assertion re-derived against `_run_single_claim`/`@enforces`)
+- `docs/design/adr/foundation/ADR-0.0.73-verification-layer-binding-audit/ADR-0.0.73-verification-layer-binding-audit.md` — update one Fidelity Assertion row whose command imported the now-removed `_NEGATIVE_CONTROL_DEBT` (Rule 1a: BI#8 strict-no-debt removed the escape; the assertion's intent is preserved as "the escape no longer exists")
 
 (Security overlap check: no Allowed Path matches a glob in `data/security_surfaces.json` — `src/gzkit/events.py` is NOT in the `ledger_integrity` set (`ledger.py`/`ledger_events.py`/`ledger_proof.py`/`ledger_semantics.py`); `qc_binding.py` and `_qc_negative_controls.py` are under `governance/trust_audits/`, not a registered surface; `src/gzkit/enforcement.py` is the new metadata/runner module. `sensitivity: security` is not declared. The floor-wiring step that touches `src/gzkit/quality.py` is OBPI-0.0.74-19, which declares it.)
 
@@ -72,8 +77,8 @@ The meta-validator RUNNER lands at `src/gzkit/enforcement.py` (alongside the OBP
 1. REQUIREMENT: On a clean (all-pass) run the runner MUST be READ-ONLY (no ledger mutation) AND emit one `enforcement_claim_verified` receipt per claim through the existing public event-append path (REQ-16-02).
 1. REQUIREMENT: On failure the runner MUST emit per-claim guardrail-feedback three-part prose distinguishing FACADE (entrypoint did not fail on the violation) from TEST-BUG (fixture did not build) and MUST name the single-NC repro command — never a bare failing count (REQ-16-03).
 1. REQUIREMENT: The run-NC-in-production engine MUST be LIFTED out of `audit_qc_binding` into the shared runner so qc_binding and the meta-validator share one engine; the 33 qc_binding negative controls MUST be re-authored UN-FORCED (no forcing kwargs), and `audit_qc_binding`'s existing `gz check` behavior MUST be preserved (REQ-16-04).
-1. NEVER: Let an NC call the validator it proves, or pre-bind a forcing kwarg into an entrypoint — forcing is impossible by construction, decided by the RUNNER via one uniform failure signal, not an author-supplied predicate (REQ-16-05).
-1. ALWAYS: Reconcile the brief with the parent ADR before implementation; the `@enforces` registry (`src/gzkit/enforcement.py`, OBPI-0.0.74-15) MUST exist first — STOP if missing.
+1. REQUIREMENT: Forcing MUST be impossible by construction — an NC MUST NOT call the validator it proves, and MUST NOT pre-bind a forcing kwarg into an entrypoint; catch/no-catch is decided by the RUNNER via one uniform failure signal, not an author-supplied predicate (REQ-16-05).
+1. REQUIREMENT: Reconcile the brief with the parent ADR before implementation; the `@enforces` registry (`src/gzkit/enforcement.py`, OBPI-0.0.74-15) MUST exist first — STOP if missing (REQ-16-06).
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -162,9 +167,11 @@ test -f tests/governance/test_enforcement_meta_validator.py
 ## Demo
 
 ```bash
-# The runner reports coverage manually (before floor-wiring in OBPI-19): every
-# discovered @enforces claim is run entrypoint(fixture()) and asserted to fail.
-uv run python -c "from gzkit import enforcement; r = enforcement.run_meta_validator(); print('claims verified:', r.verified_count, 'facades:', r.facade_count)"
+# Assert-shaped (GHI #643): exits 0 ONLY when every discovered @enforces claim is run
+# entrypoint(fixture()) and genuinely caught — 37 verified, 0 facades, 0 test-bugs. A
+# broken state (e.g. the engine not lifted → 0 claims discovered) exits 1, so the
+# Stage-4 gate re-running this demo fails closed.
+uv run python -c "from gzkit import enforcement; r = enforcement.run_meta_validator(); raise SystemExit(0 if r.verified_count >= 37 and r.facade_count == 0 and r.test_bug_count == 0 else 1)"
 ```
 
 ## Acceptance Criteria

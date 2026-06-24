@@ -16,11 +16,13 @@ import sys
 import unittest
 from pathlib import Path
 
-from gzkit.governance.trust_audits.qc_binding import (
-    _NEGATIVE_CONTROL_DEBT,
-    _NEGATIVE_CONTROLS,
-    audit_qc_binding,
+from gzkit.enforcement import (
+    _ensure_production_claims_registered,
+    _run_single_claim,
+    get_enforcement_registry,
 )
+from gzkit.governance.trust_audits import qc_binding as _qc_binding_mod
+from gzkit.governance.trust_audits.qc_binding import audit_qc_binding
 from gzkit.qc_binding import build_qc_registry
 from gzkit.traceability import covers
 
@@ -36,7 +38,10 @@ class TestQCBindingSelfCheck(unittest.TestCase):
     def test_audit_qc_binding_passes_with_no_negative_control_debt(self) -> None:
         errors = audit_qc_binding(_PROJECT_ROOT)
         self.assertEqual(errors, [], [e.message for e in errors])
-        self.assertEqual(_NEGATIVE_CONTROL_DEBT, frozenset())
+        # Strict no-debt (ADR-0.0.74 BI#8): the _NEGATIVE_CONTROL_DEBT escape was
+        # removed outright when the engine lifted into the shared @enforces runner
+        # (OBPI-0.0.74-16) — there is no debt set to be empty, the escape is gone.
+        self.assertFalse(hasattr(_qc_binding_mod, "_NEGATIVE_CONTROL_DEBT"))
 
     @covers("REQ-0.0.73-06-03")  # audit-exempt: regression-invariant-overlay reanchor-not-backfill
     def test_fidelity_gate_passes_now_recovery_is_complete(self) -> None:
@@ -63,32 +68,34 @@ class TestNegativeControlHonestAccounting(unittest.TestCase):
     """
 
     @covers("REQ-0.0.73-02-07")
-    def test_no_acknowledged_debt_remains(self) -> None:
-        self.assertEqual(_NEGATIVE_CONTROL_DEBT, frozenset())
+    def test_no_debt_escape_exists(self) -> None:
+        # ADR-0.0.74 BI#8 (strict no-debt): the _NEGATIVE_CONTROL_DEBT escape no
+        # longer exists in the lifted engine.
+        self.assertFalse(hasattr(_qc_binding_mod, "_NEGATIVE_CONTROL_DEBT"))
 
     @covers("REQ-0.0.73-06-06")
     def test_owned_qc_binding_step_is_genuinely_wired(self) -> None:
-        # The step this ADR owns is wired with a real NC that fails on planted
-        # theater (returns non-zero → genuinely bound, not hollow).
-        self.assertIn("qc-binding", _NEGATIVE_CONTROLS)
-        self.assertNotEqual(
-            _NEGATIVE_CONTROLS["qc-binding"](),
-            0,
-            "qc-binding negative control passed (exit 0) — the step would be hollow.",
-        )
-        self.assertNotIn(
-            "qc-binding",
-            _NEGATIVE_CONTROL_DEBT,
-            "qc-binding is wired; it must not also be listed as debt.",
+        # The step this ADR owns is registered via @enforces with a real NC that
+        # catches planted theater — its un-forced run PASSes (genuinely bound).
+        _ensure_production_claims_registered()
+        records = {r.claim_id: r for r in get_enforcement_registry()}
+        self.assertIn("qc-binding", records)
+        result = _run_single_claim(records["qc-binding"])
+        self.assertEqual(
+            result.outcome,
+            "PASS",
+            f"qc-binding NC did not PASS (outcome={result.outcome}) — the step would be hollow.",
         )
 
     @covers("REQ-0.0.73-06-06")
-    def test_debt_set_has_no_stale_ids(self) -> None:
-        # The debt set may only name real bound step ids — a stale entry would
-        # silently widen the green-by-emptiness exemption.
+    def test_every_bound_step_has_registered_claim(self) -> None:
+        # No green-by-emptiness: every bound step must carry an @enforces claim —
+        # the lifted-engine equivalent of "no stale/unwired bound step".
+        _ensure_production_claims_registered()
+        registered = {r.claim_id for r in get_enforcement_registry()}
         bound_ids = {s.id for s in build_qc_registry() if s.binding == "bound"}
-        stale = _NEGATIVE_CONTROL_DEBT - bound_ids
-        self.assertEqual(stale, set(), f"Stale debt ids (no longer bound steps): {stale}")
+        missing = bound_ids - registered
+        self.assertEqual(missing, set(), f"Bound steps with no @enforces claim: {missing}")
 
     @covers("REQ-0.0.73-06-06")
     def test_unwired_non_debt_step_triggers_green_by_emptiness(self) -> None:

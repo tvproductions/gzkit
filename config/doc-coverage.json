@@ -532,6 +532,16 @@
       },
       "governance_relevant": false
     },
+    "obpi present-evidence": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
     "plan audit": {
       "surfaces": {
         "manpage": true,

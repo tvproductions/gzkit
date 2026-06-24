@@ -1,8 +1,8 @@
 {
-  "obpi_id": "OBPI-0.0.74-20-mx-gz-check-step-checkpoint-seam",
-  "timestamp": "2026-06-24T00:45:05.488636+00:00",
+  "obpi_id": "OBPI-0.0.74-16-meta-validator-runner",
+  "timestamp": "2026-06-24T07:32:00.000000+00:00",
   "verdict": "PASS",
-  "plan_file": "OBPI-0.0.74-20-mx-gz-check-step-checkpoint-seam.md",
+  "plan_file": "OBPI-0.0.74-16-meta-validator-runner.md",
   "gaps_found": 0,
   "scope_collisions": [
     {

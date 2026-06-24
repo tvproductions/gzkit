@@ -1,8 +1,16 @@
 """QC-binding behavioral audit (ADR-0.0.73 / OBPI-0.0.73-02).
 
 Detects theater in bound QC steps via two channels:
-1. Six static theater-signature checks (calibrated on ADR-0.0.37 facade)
-2. Negative-control execution: a step that passes its own NC is theater
+1. Seven static theater-signature checks (calibrated on ADR-0.0.37 facade)
+2. Negative-control execution via the shared meta-validator engine: a bound step
+   whose enforcement claim does not fail its own un-forced negative control is theater.
+
+ADR-0.0.74 (OBPI-0.0.74-16) lifted the run-NC-in-production engine into
+``gzkit.enforcement`` so qc_binding and the meta-validator runner share ONE engine
+(Boundary Invariant #6). The 36 qc negative controls are registered through the single
+``@enforces`` primitive in ``_qc_negative_controls``; ``audit_qc_binding`` discovers each
+bound step's claim from the enforcement registry and runs it via ``_run_single_claim``.
+There is no ``_NEGATIVE_CONTROL_DEBT`` escape (Boundary Invariant #8 — strict no-debt).
 
 Usage::
 
@@ -13,15 +21,23 @@ Usage::
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from pathlib import Path
 
 from gzkit.core.validation_rules import ValidationError
-from gzkit.governance.trust_audits._qc_negative_controls import _PRODUCTION_NEGATIVE_CONTROLS
+from gzkit.enforcement import (
+    EnforcementClaimRecord,
+    _run_single_claim,
+    enforces,
+    get_enforcement_registry,
+)
 from gzkit.qc_binding import QCStep
 
+# Import the qc negative-control fixtures for their @enforces registration side effect
+# (the 36 claims register at import time). noqa: F401 — imported for effect, not name.
+from . import _qc_negative_controls  # noqa: F401
+
 # ---------------------------------------------------------------------------
-# Six theater signatures calibrated on the ADR-0.0.37 facade
+# Seven theater signatures calibrated on the ADR-0.0.37 facade
 # ---------------------------------------------------------------------------
 
 THEATER_SIGNATURES: tuple[str, ...] = (
@@ -66,40 +82,6 @@ _THEATER_SIGNATURE_DESCRIPTIONS: dict[str, str] = {
     ),
 }
 
-# ---------------------------------------------------------------------------
-# Negative-control registry
-# ---------------------------------------------------------------------------
-
-# Module-level NC registry: step_id → callable returning int (exit code).
-# A callable returning 0 means the step PASSED its NC → hollow → theater.
-# A callable returning non-zero means the step FAILED its NC → bound → genuine.
-# Populated by register_negative_control(); the qc-binding step (the step this
-# ADR owns) is wired at the bottom of this module.
-_NEGATIVE_CONTROLS: dict[str, Callable[[], int]] = {}
-
-# Acknowledged negative-control coverage debt (ADR-0.0.73, OBPI-06).
-# These bound steps have no negative control yet. OBPI-0.0.73-02's checklist
-# promised "each step ships a fixture it must fail on"; its code deferred that
-# wiring, leaving the behavioral channel inert. Rather than let the audit pass
-# green-by-emptiness (an unwired bound step verifies nothing — the very
-# 'empty-input-passes' theater signature), every unwired bound step is listed
-# here EXPLICITLY so the gap is visible and tracked. The audit FAILS on every
-# entry in this set: acknowledged debt is not green evidence. This keeps the
-# project red until the owed negative controls are authored, while preserving a
-# separate message for a NEW bound step that is neither wired nor acknowledged.
-# Authoring honest NCs for these is tracked OBPI-02 correction work.
-_NEGATIVE_CONTROL_DEBT: frozenset[str] = frozenset({})
-
-
-def register_negative_control(step_id: str, nc: Callable[[], int]) -> None:
-    """Register a negative-control callable for a bound step.
-
-    The callable must return an exit-code-like integer: 0 if the negative
-    control passed (step is hollow/theater), non-zero if the step genuinely
-    failed (step is bound). OBPI-06 registers entries for all existing steps.
-    """
-    _NEGATIVE_CONTROLS[step_id] = nc
-
 
 # ---------------------------------------------------------------------------
 # Error builder
@@ -138,58 +120,29 @@ def _check_theater_signatures(step: QCStep) -> list[ValidationError]:
 
 
 # ---------------------------------------------------------------------------
-# Negative-control execution
-# ---------------------------------------------------------------------------
-
-
-def _check_negative_control(
-    step: QCStep,
-    nc_registry: dict[str, Callable[[], int]] | None = None,
-) -> list[ValidationError]:
-    """Run the step's negative control; flag if it exits 0 (hollow step).
-
-    When ``nc_registry`` is None, the module-level ``_NEGATIVE_CONTROLS``
-    registry is used. Passing an explicit registry is the test-isolation path.
-
-    A step with no registered NC is skipped — absence of an NC is not itself
-    a finding (OBPI-06 adds NCs; OBPI-02 ships the infrastructure only).
-    """
-    registry = nc_registry if nc_registry is not None else _NEGATIVE_CONTROLS
-    nc = registry.get(step.id)
-    if nc is None:
-        return []
-    exit_code = nc()
-    if exit_code == 0:
-        return [
-            _err(
-                step.name,
-                "Hollow step: passed its own negative-control fixture (exit 0 when "
-                "non-zero expected). A genuinely bound check must fail on its "
-                "negative control.",
-            )
-        ]
-    return []
-
-
-# ---------------------------------------------------------------------------
 # Main audit entry point
 # ---------------------------------------------------------------------------
 
 
 def audit_qc_binding(
-    project_root: Path,  # noqa: ARG001 — registry-protocol parity; OBPI-06 may use it
+    project_root: Path,  # noqa: ARG001 — registry-protocol parity
     *,
-    nc_registry: dict[str, Callable[[], int]] | None = None,
+    nc_registry: dict[str, EnforcementClaimRecord] | None = None,
 ) -> list[ValidationError]:
-    """Behavioral QC-binding audit (ADR-0.0.73 / OBPI-0.0.73-02).
+    """Behavioral QC-binding audit (ADR-0.0.73 / OBPI-0.0.73-02; engine lifted OBPI-0.0.74-16).
 
     For every QC step in the registry:
     - Runs theater-signature detection (via step.theater_flags)
-    - For ``bound`` steps, runs the registered negative control (if any)
+    - For ``bound`` steps, looks up the step's enforcement claim in the shared
+      ``@enforces`` registry and runs it via the shared ``_run_single_claim`` engine.
+      A bound step whose claim is missing, or whose un-forced negative control does not
+      fail (outcome != PASS), is theater.
+
+    ``nc_registry`` overrides the discovered enforcement registry with an explicit
+    ``claim_id -> EnforcementClaimRecord`` map (test-isolation path), preserving the
+    parameter's prior purpose.
 
     Returns a list of ValidationErrors; non-empty → caller should exit 3.
-    An unclassified step (``build_qc_registry`` KeyError) is surfaced as a
-    single error on the "registry" artifact rather than crashing.
     """
     from gzkit.qc_binding import build_qc_registry  # noqa: PLC0415
 
@@ -204,38 +157,38 @@ def audit_qc_binding(
             )
         ]
 
-    active_nc = nc_registry if nc_registry is not None else _NEGATIVE_CONTROLS
+    if nc_registry is not None:
+        records = dict(nc_registry)
+    else:
+        _ensure_qc_claims_registered()
+        records = {r.claim_id: r for r in get_enforcement_registry()}
+
     errors: list[ValidationError] = []
     for step in registry:
         errors.extend(_check_theater_signatures(step))
-        if step.binding == "bound":
-            if step.id in active_nc:
-                errors.extend(_check_negative_control(step, active_nc))
-            elif step.id in _NEGATIVE_CONTROL_DEBT:
-                errors.append(
-                    _err(
-                        step.name,
-                        f"Negative-control debt: bound step '{step.id}' has no registered "
-                        "negative control. This debt is acknowledged, but acknowledged "
-                        "debt is not passing evidence; author a genuine fixture via "
-                        f"register_negative_control('{step.id}', ...) and remove the id "
-                        "from _NEGATIVE_CONTROL_DEBT.",
-                    )
+        if step.binding != "bound":
+            continue
+        record = records.get(step.id)
+        if record is None:
+            errors.append(
+                _err(
+                    step.name,
+                    f"Green-by-emptiness: bound step '{step.id}' has no @enforces "
+                    "registration. ADR-0.0.74 (Boundary Invariant #6/#8) forbids a bound QC "
+                    "step that cannot fail its own un-forced negative control — it verifies "
+                    f"nothing. Register one via @enforces('{step.id}', fixture, entrypoint) in "
+                    "_qc_negative_controls; there is no _NEGATIVE_CONTROL_DEBT escape.",
                 )
-            else:
-                errors.append(
-                    _err(
-                        step.name,
-                        f"Green-by-emptiness: bound step '{step.id}' has no registered "
-                        "negative control and is not in the acknowledged "
-                        "_NEGATIVE_CONTROL_DEBT set. ADR-0.0.73 forbids a bound QC step "
-                        "that cannot fail its own negative control — it verifies nothing "
-                        "(the 'empty-input-passes' theater signature). Register one via "
-                        f"register_negative_control('{step.id}', ...), or if its NC "
-                        "authoring is tracked correction work, add it to "
-                        "_NEGATIVE_CONTROL_DEBT.",
-                    )
+            )
+            continue
+        result = _run_single_claim(record)
+        if result.outcome != "PASS":
+            errors.append(
+                _err(
+                    step.name,
+                    f"Hollow step '{step.id}': {result.message}",
                 )
+            )
     return errors
 
 
@@ -244,18 +197,14 @@ def audit_qc_binding(
 # ---------------------------------------------------------------------------
 
 
-def _qc_binding_negative_control() -> int:
-    """Genuine negative control for the ``qc-binding`` step.
+def _build_qc_binding_violation() -> QCStep:
+    """Plant a step that IS theater (carries a canonical signature).
 
-    Feeds the theater detector a step that IS theater (it carries a canonical
-    signature) and reports whether the detector fired, as an exit-style int:
-    ``0`` means the detector MISSED the planted theater (hollow → the step would
-    be flagged), non-zero means it caught it (genuinely bound). If
-    ``_check_theater_signatures`` were ever gutted so it stopped flagging known
-    signatures, this control returns 0 and the ``qc-binding`` step is itself
-    flagged hollow — a check that cannot fail for the right reason fails here.
+    The runner invokes ``_check_theater_signatures(fixture())`` and PASSes when the
+    detector fires (non-empty errors). If ``_check_theater_signatures`` were ever gutted
+    so it stopped flagging known signatures, this claim surfaces as a FACADE.
     """
-    planted = QCStep(
+    return QCStep(
         id="nc-planted-theater",
         name="NC Planted Theater",
         kind="audit",
@@ -265,10 +214,29 @@ def _qc_binding_negative_control() -> int:
         theater_flags=["copy-vs-self"],
         enforcement_locus="python_function",
     )
-    return 1 if _check_theater_signatures(planted) else 0
 
 
-register_negative_control("qc-binding", _qc_binding_negative_control)
+def _qc_binding_registration_marker() -> None:
+    """Inert carrier for the qc-binding @enforces registration."""
 
-for _step_id, _negative_control in _PRODUCTION_NEGATIVE_CONTROLS.items():
-    register_negative_control(_step_id, _negative_control)
+
+def register_qc_binding_claim() -> None:
+    """Register the qc-binding self-NC claim via @enforces (idempotent)."""
+    if any(r.claim_id == "qc-binding" for r in get_enforcement_registry()):
+        return
+    enforces("qc-binding", _build_qc_binding_violation, _check_theater_signatures)(
+        _qc_binding_registration_marker
+    )
+
+
+def _ensure_qc_claims_registered() -> None:
+    """(Re)register every qc enforcement claim — robust against registry resets.
+
+    Idempotent: re-callable after ``reset_enforcement_registry()`` so the production
+    claims survive test resets. Registers the 36 qc NCs and the qc-binding self-NC.
+    """
+    _qc_negative_controls.register_qc_negative_controls()
+    register_qc_binding_claim()
+
+
+_ensure_qc_claims_registered()

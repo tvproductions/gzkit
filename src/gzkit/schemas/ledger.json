@@ -1335,6 +1335,31 @@
           "min_length": 1
         }
       }
+    },
+    "enforcement_claim_verified": {
+      "required": [
+        "claim_id",
+        "outcome",
+        "source_fn"
+      ],
+      "properties": {
+        "claim_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "PASS",
+            "FACADE",
+            "TEST_BUG"
+          ]
+        },
+        "source_fn": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
     }
   }
 }

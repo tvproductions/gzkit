@@ -115,16 +115,21 @@ class TestCompliantCorpusAndWiring(unittest.TestCase):
 
     @covers("REQ-0.0.73-08-02")
     def test_negative_control_is_registered_and_genuine(self) -> None:
-        # The new bound step must carry a GENUINE negative control (exit != 0 on
-        # its block-less fixture) and must NOT be parked in the debt set.
-        from gzkit.governance.trust_audits.qc_binding import (
-            _NEGATIVE_CONTROL_DEBT,
-            _NEGATIVE_CONTROLS,
+        # The bound step must carry a GENUINE negative control: registered via the
+        # single @enforces primitive and PASSing its un-forced run against the
+        # block-less fixture. (ADR-0.0.74 OBPI-0.0.74-16 lifted the engine; there is
+        # no _NEGATIVE_CONTROL_DEBT escape to be excluded from.)
+        from gzkit.enforcement import (
+            _ensure_production_claims_registered,
+            _run_single_claim,
+            get_enforcement_registry,
         )
 
-        self.assertIn("fidelity-presence", _NEGATIVE_CONTROLS)
-        self.assertNotIn("fidelity-presence", _NEGATIVE_CONTROL_DEBT)
-        self.assertNotEqual(_NEGATIVE_CONTROLS["fidelity-presence"](), 0)
+        _ensure_production_claims_registered()
+        records = {r.claim_id: r for r in get_enforcement_registry()}
+        self.assertIn("fidelity-presence", records)
+        result = _run_single_claim(records["fidelity-presence"])
+        self.assertEqual(result.outcome, "PASS")
 
     @covers("REQ-0.0.73-08-02")
     def test_pool_and_closeout_decisions_are_excluded(self) -> None:

@@ -546,6 +546,22 @@ class BriefReconcileDriftOverriddenEvent(_EventBase):
     original_drift_dimensions: list[str] = Field(default_factory=list)
 
 
+class EnforcementClaimVerifiedEvent(_EventBase):
+    """enforcement_claim_verified event — per-claim NC run receipt (OBPI-0.0.74-16).
+
+    Emitted once per verified claim by ``run_meta_validator()`` on a clean run.
+    READ-ONLY on a clean run — no ledger mutation on failures.
+    """
+
+    event: Literal["enforcement_claim_verified"]
+    claim_id: str = Field(..., description="Enforcement claim identifier slug")
+    outcome: Literal["PASS", "FACADE", "TEST_BUG"] = Field(
+        ...,
+        description="Runner outcome: PASS = caught; FACADE = not caught; TEST_BUG = exception",
+    )
+    source_fn: str = Field(..., description="Qualified name of the entrypoint")
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -588,7 +604,8 @@ TypedLedgerEvent = Annotated[
     | RenditionAdvisorVerdictEvent
     | BriefReconciledEvent
     | BriefReconcileDriftDetectedEvent
-    | BriefReconcileDriftOverriddenEvent,
+    | BriefReconcileDriftOverriddenEvent
+    | EnforcementClaimVerifiedEvent,
     Field(discriminator="event"),
 ]
 

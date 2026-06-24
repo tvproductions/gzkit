@@ -31,6 +31,7 @@ from gzkit.events import (
     ConstitutionCreatedEvent,
     CorpusEntryAppendedEvent,
     DistributionBaselineRegeneratedEvent,
+    EnforcementClaimVerifiedEvent,
     GateCheckedEvent,
     IntrinsicComplexityAttestationEvent,
     LifecycleTransitionEvent,
@@ -279,6 +280,7 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "brief_reconciled": BriefReconciledEvent,
     "brief_reconcile_drift_detected": BriefReconcileDriftDetectedEvent,
     "brief_reconcile_drift_overridden": BriefReconcileDriftOverriddenEvent,
+    "enforcement_claim_verified": EnforcementClaimVerifiedEvent,
 }
 
 # Base fields present on _EventBase -- not event-specific

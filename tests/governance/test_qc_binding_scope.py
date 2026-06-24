@@ -9,15 +9,26 @@ from __future__ import annotations
 import subprocess
 import sys
 import unittest
+from pathlib import Path
 
+from gzkit.enforcement import EnforcementClaimRecord, _run_single_claim
 from gzkit.governance.trust_audits.qc_binding import (
     THEATER_SIGNATURES,
-    _check_negative_control,
     _check_theater_signatures,
     audit_qc_binding,
 )
-from gzkit.qc_binding import QCStep
+from gzkit.qc_binding import QCStep, build_qc_registry
 from gzkit.traceability import covers
+
+
+def _record(claim_id: str, *, caught: bool) -> EnforcementClaimRecord:
+    """A synthetic enforcement-claim record whose entrypoint catches (or not) on demand."""
+    return EnforcementClaimRecord(
+        claim_id=claim_id,
+        fixture=lambda: None,
+        entrypoint=lambda _violation: ["found"] if caught else [],
+        source_fn="test._record",
+    )
 
 
 def _make_step(
@@ -38,39 +49,46 @@ def _make_step(
 
 
 class TestNegativeControlDetection(unittest.TestCase):
-    """NC-based behavioral detection (REQ-0.0.73-02-01 and REQ-0.0.73-02-02)."""
+    """NC-based behavioral detection via the lifted shared engine (REQ-0.0.73-02-01/02/07).
+
+    ADR-0.0.74 (OBPI-0.0.74-16) lifted the run-NC engine into
+    ``enforcement._run_single_claim``; the old ``() -> int`` exit signal (0 = hollow)
+    is now ``bool(entrypoint(fixture()))`` (falsy = FACADE = hollow).
+    """
 
     @covers("REQ-0.0.73-02-01")
-    def test_hollow_step_flagged_as_theater(self) -> None:
-        step = _make_step()
-        nc_registry = {step.id: lambda: 0}  # NC passes → hollow → theater
-        errors = _check_negative_control(step, nc_registry)
-        self.assertEqual(len(errors), 1)
-        self.assertIn("hollow", errors[0].message.lower())
+    def test_hollow_claim_flagged_as_facade(self) -> None:
+        # Entrypoint returns falsy on its violation fixture → hollow → FACADE.
+        result = _run_single_claim(_record("test-step", caught=False))
+        self.assertEqual(result.outcome, "FACADE")
 
     @covers("REQ-0.0.73-02-02")
-    def test_genuine_step_no_false_positive(self) -> None:
-        step = _make_step()
-        nc_registry = {step.id: lambda: 1}  # NC fails → genuine → no error
-        errors = _check_negative_control(step, nc_registry)
-        self.assertEqual(len(errors), 0)
+    def test_genuine_claim_no_false_positive(self) -> None:
+        # Entrypoint catches the violation (truthy) → genuinely bound → PASS.
+        result = _run_single_claim(_record("test-step", caught=True))
+        self.assertEqual(result.outcome, "PASS")
 
     @covers("REQ-0.0.73-02-02")
-    def test_step_without_nc_not_flagged(self) -> None:
-        step = _make_step(step_id="no-nc-step")
-        errors = _check_negative_control(step, nc_registry={})
-        self.assertEqual(len(errors), 0)
+    def test_audit_skips_step_without_registered_claim_into_green_by_emptiness(self) -> None:
+        # A bound step with no registered claim is flagged green-by-emptiness, never
+        # silently passed (the engine has no debt escape).
+        errors = audit_qc_binding(Path("."), nc_registry={})
+        self.assertTrue(any("green-by-emptiness" in e.message.lower() for e in errors))
 
     @covers("REQ-0.0.73-02-07")
     def test_non_bound_step_nc_not_executed(self) -> None:
-        step = _make_step(binding="advisory")
-        called = []
-        nc_registry = {step.id: lambda: called.append(1) or 0}
-        # _check_negative_control is for bound steps; for advisory, caller decides
-        errors = _check_negative_control(step, nc_registry)
-        # NC returns 0 → would flag if executed, but advisory check is caller-gated
-        # The function itself does not gate on binding (binding-gate is in audit_qc_binding)
-        self.assertEqual(len(errors), 1)  # NC executed and passed → theater finding
+        # audit_qc_binding gates NC execution on binding == "bound": an advisory step
+        # whose claim WOULD be a FACADE is not run, so it produces no finding.
+        registry = build_qc_registry()
+        advisory = [s for s in registry if s.binding != "bound"]
+        if not advisory:
+            self.skipTest("No advisory steps in registry")
+        # Provide hollow records for advisory ids; audit must not run them.
+        reg = {s.id: _record(s.id, caught=False) for s in advisory}
+        # Also wire every bound step genuinely so the only candidates are advisory.
+        reg.update({s.id: _record(s.id, caught=True) for s in registry if s.binding == "bound"})
+        errors = audit_qc_binding(Path("."), nc_registry=reg)
+        self.assertEqual(errors, [], [e.message for e in errors])
 
 
 class TestTheaterSignatureDetection(unittest.TestCase):
@@ -162,23 +180,19 @@ class TestExitCodeBehavior(unittest.TestCase):
 
     @covers("REQ-0.0.73-02-04")
     def test_audit_qc_binding_clean_when_all_bound_steps_wired(self) -> None:
-        # A truly clean step set has one genuine NC per bound step. Acknowledged
-        # debt is not clean; this synthetic registry proves the pass path without
-        # pretending the current project is fully wired.
-        from pathlib import Path
-
-        from gzkit.qc_binding import build_qc_registry
-
-        genuine_nc = {s.id: (lambda: 1) for s in build_qc_registry() if s.binding == "bound"}
-        errors = audit_qc_binding(Path("."), nc_registry=genuine_nc)
+        # A truly clean step set has one genuine (catching) claim per bound step.
+        # This synthetic registry proves the pass path without depending on real
+        # subprocess NCs.
+        genuine = {
+            s.id: _record(s.id, caught=True) for s in build_qc_registry() if s.binding == "bound"
+        }
+        errors = audit_qc_binding(Path("."), nc_registry=genuine)
         self.assertEqual(errors, [], [e.message for e in errors])
 
     @covers("REQ-0.0.73-02-04")
     def test_audit_qc_binding_flags_green_by_emptiness_on_empty_registry(self) -> None:
-        # With no NCs active, the qc-binding step (not in debt) is unwired and
-        # must be flagged — the audit no longer passes on zero coverage.
-        from pathlib import Path
-
+        # With no claims registered, every bound step is unwired and must be flagged
+        # — the audit no longer passes on zero coverage (no debt escape).
         errors = audit_qc_binding(Path("."), nc_registry={})
         self.assertTrue(
             any("green-by-emptiness" in e.message.lower() for e in errors),
@@ -187,28 +201,18 @@ class TestExitCodeBehavior(unittest.TestCase):
 
     @covers("REQ-0.0.73-02-06")
     def test_fail_closed_exit_3_on_theater(self) -> None:
-        # Simulate a theater finding by passing an NC that passes (exit 0).
-        # We can't easily inject into the real subprocess, so test the audit
-        # function directly and verify exit-code-3 semantics in the data path.
-        from pathlib import Path
-
-        from gzkit.governance.trust_audits.qc_binding import _NEGATIVE_CONTROLS
-
-        # Build a synthetic NC registry where one real step passes its NC.
-        from gzkit.qc_binding import build_qc_registry
-
+        # Wire every bound step genuinely except one, which is hollow (entrypoint
+        # returns falsy → FACADE). The lone finding is the hollow step, not
+        # green-by-emptiness noise (ADR-0.0.73, OBPI-06 strengthening).
         registry = build_qc_registry()
-        # Pick a bound step that is NOT the owned (already-wired) qc-binding step.
         bound_step = next(
             (s for s in registry if s.binding == "bound" and s.id != "qc-binding"), None
         )
         if bound_step is None:
             self.skipTest("No non-owned bound steps in registry")
-        # Merge the production registry so the owned step stays wired-and-genuine;
-        # only the injected step is hollow. The lone finding is then the hollow
-        # step, not green-by-emptiness noise (ADR-0.0.73, OBPI-06 strengthening).
-        hollow_nc: dict[str, object] = {**_NEGATIVE_CONTROLS, bound_step.id: lambda: 0}
-        errors = audit_qc_binding(Path("."), nc_registry=hollow_nc)  # type: ignore
+        reg = {s.id: _record(s.id, caught=True) for s in registry if s.binding == "bound"}
+        reg[bound_step.id] = _record(bound_step.id, caught=False)  # hollow
+        errors = audit_qc_binding(Path("."), nc_registry=reg)
         self.assertGreater(len(errors), 0)
         self.assertTrue(any("hollow" in e.message.lower() for e in errors))
         self.assertFalse(
@@ -249,15 +253,14 @@ class TestStructuralFences(unittest.TestCase):
 
     @covers("REQ-0.0.73-02-07")
     def test_behavioral_detection_via_nc_not_static_only(self) -> None:
-        # A step with no theater_flags but a passing NC → theater (behavioral)
+        # A step with no theater_flags is missed by static signature detection, but
+        # the behavioral channel (running the claim's NC) catches it: a falsy
+        # entrypoint → FACADE.
         step = _make_step(theater_flags=[])  # no static flags
-        nc_registry = {step.id: lambda: 0}  # NC passes → theater
         theater_errors = _check_theater_signatures(step)
-        nc_errors = _check_negative_control(step, nc_registry)
-        # Static check: no errors; NC check: one error (behavioral)
         self.assertEqual(len(theater_errors), 0)
-        self.assertEqual(len(nc_errors), 1)
-        self.assertIn("hollow", nc_errors[0].message.lower())
+        result = _run_single_claim(_record(step.id, caught=False))
+        self.assertEqual(result.outcome, "FACADE")
 
 
 class TestCliAlignment(unittest.TestCase):

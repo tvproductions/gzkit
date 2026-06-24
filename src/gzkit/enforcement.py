@@ -15,9 +15,11 @@ kwarg (§ Boundary Invariants #7; the runner in OBPI-16 invokes it).
 from __future__ import annotations
 
 import re
+import shutil
 import types
 from collections.abc import Callable
-from typing import Any, TypeVar
+from pathlib import Path
+from typing import Any, Literal, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -67,20 +69,22 @@ def _qualified_fn_name(fn: object) -> str:
 def _load_known_claims() -> frozenset[str]:
     """Load and cache the set of known enforcement claim ids.
 
-    Production source: ``_PRODUCTION_NEGATIVE_CONTROLS.keys()`` from the
-    qc_binding negative-control module. Tests inject via ``set_known_claims()``.
+    Production source: ``_KNOWN_QC_CLAIM_IDS`` from the qc_binding negative-control
+    module (the 36 qc NCs + ``qc-binding``). Tests inject via ``set_known_claims()``.
     Mirrors the lazy-load pattern of ``_load_known_reqs()`` in traceability and
-    ``_load_known_task_reqs()`` in tasks.
+    ``_load_known_task_reqs()`` in tasks. The lazy import tolerates the re-entrant
+    case where ``_qc_negative_controls`` is mid-import and calling ``enforces`` in its
+    own registration loop — ``_KNOWN_QC_CLAIM_IDS`` is defined before that loop runs.
     """
     global _KNOWN_CLAIMS
     if _KNOWN_CLAIMS is not None:
         return _KNOWN_CLAIMS
 
     from gzkit.governance.trust_audits._qc_negative_controls import (  # noqa: PLC0415
-        _PRODUCTION_NEGATIVE_CONTROLS,
+        _KNOWN_QC_CLAIM_IDS,
     )
 
-    _KNOWN_CLAIMS = frozenset(_PRODUCTION_NEGATIVE_CONTROLS.keys())
+    _KNOWN_CLAIMS = _KNOWN_QC_CLAIM_IDS
     return _KNOWN_CLAIMS
 
 
@@ -153,5 +157,192 @@ def get_enforcement_registry() -> list[EnforcementClaimRecord]:
 
 
 def reset_enforcement_registry() -> None:
-    """Clear the global enforcement registry. For testing only."""
+    """Clear the global enforcement registry and known-claims cache. For testing only.
+
+    Resets ``_KNOWN_CLAIMS`` to None so the next ``_load_known_claims()`` reloads the
+    production set — a test that injected ``set_known_claims`` does not leak into later
+    tests, and ``_ensure_production_claims_registered`` can re-register cleanly.
+    """
+    global _KNOWN_CLAIMS
     _ENFORCEMENT_REGISTRY.clear()
+    _KNOWN_CLAIMS = None
+
+
+# ---------------------------------------------------------------------------
+# Meta-validator runner (OBPI-0.0.74-16)
+# ---------------------------------------------------------------------------
+
+
+class ClaimRunResult(BaseModel):
+    """Result of running a single enforcement claim's NC fixture + entrypoint."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    claim_id: str = Field(..., description="Enforcement claim identifier slug")
+    outcome: Literal["PASS", "FACADE", "TEST_BUG"] = Field(
+        ...,
+        description="PASS = caught; FACADE = did not catch; TEST_BUG = exception",
+    )
+    message: str = Field(..., description="Human-readable outcome description with repro guidance")
+    source_fn: str = Field(default="", description="Qualified name of the production entrypoint")
+
+
+class RunnerResult(BaseModel):
+    """Aggregate result from run_meta_validator()."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    verified_count: int = Field(
+        ..., description="Number of claims that PASSED (entrypoint caught violation)"
+    )
+    facade_count: int = Field(
+        ..., description="Number of FACADE outcomes (entrypoint did not catch)"
+    )
+    test_bug_count: int = Field(
+        ..., description="Number of TEST_BUG outcomes (exception during run)"
+    )
+    claim_results: list[ClaimRunResult] = Field(
+        ..., description="Per-claim results in discovery order"
+    )
+
+
+def _run_single_claim(record: EnforcementClaimRecord) -> ClaimRunResult:
+    """Run one enforcement claim's NC: fixture() → path, entrypoint(path) → result.
+
+    Uniform signal: ``bool(result)`` — truthy = entrypoint caught the violation (PASS);
+    falsy = entrypoint did not catch (FACADE). Either side raising = TEST_BUG.
+    Cleans up the fixture path with ``shutil.rmtree`` after the run.
+    """
+    fixture_path: Path | None = None
+    try:
+        fixture_result = record.fixture()
+        if isinstance(fixture_result, Path):
+            fixture_path = fixture_result
+    except Exception as exc:
+        return ClaimRunResult(
+            claim_id=record.claim_id,
+            outcome="TEST_BUG",
+            source_fn=record.source_fn,
+            message=(
+                f"TEST_BUG: fixture() raised for claim {record.claim_id!r}: {exc!r}. "
+                f"The fixture must build the violation without error. "
+                f"Repro: call {record.source_fn!r}() directly and observe the exception."
+            ),
+        )
+
+    try:
+        ep_result = record.entrypoint(fixture_result)
+        caught = bool(ep_result)
+    except Exception as exc:
+        return ClaimRunResult(
+            claim_id=record.claim_id,
+            outcome="TEST_BUG",
+            source_fn=record.source_fn,
+            message=(
+                f"TEST_BUG: entrypoint() raised for claim {record.claim_id!r}: {exc!r}. "
+                f"The entrypoint must run without exception on the fixture. "
+                f"Repro: call {record.source_fn!r}(fixture()) directly and observe the exception."
+            ),
+        )
+    finally:
+        if fixture_path is not None:
+            shutil.rmtree(fixture_path, ignore_errors=True)
+
+    if caught:
+        return ClaimRunResult(
+            claim_id=record.claim_id,
+            outcome="PASS",
+            source_fn=record.source_fn,
+            message=f"PASS: claim {record.claim_id!r} entrypoint caught the violation.",
+        )
+    return ClaimRunResult(
+        claim_id=record.claim_id,
+        outcome="FACADE",
+        source_fn=record.source_fn,
+        message=(
+            f"FACADE: claim {record.claim_id!r} entrypoint did NOT catch the violation "
+            f"(returned falsy on a violation fixture). "
+            f"The enforcement claim adopted by nothing — the check is theater. "
+            f"Repro: call {record.source_fn!r}(fixture()) and observe that it returns falsy."
+        ),
+    )
+
+
+def _emit_verified_receipts(results: list[ClaimRunResult], root: Path | None) -> None:
+    """Emit one enforcement_claim_verified ledger receipt per PASS result.
+
+    READ-ONLY on a clean run contract: only emits when ``root`` is provided
+    and results contain PASS outcomes. No ledger mutation on failures or when
+    ``root`` is None (test-isolation path).
+    """
+    if root is None:
+        return
+    passing = [r for r in results if r.outcome == "PASS"]
+    if not passing:
+        return
+
+    from gzkit.ledger import Ledger, LedgerEvent  # noqa: PLC0415
+
+    ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+    for r in passing:
+        ledger.append(
+            LedgerEvent(
+                event="enforcement_claim_verified",
+                id=r.claim_id,
+                extra={
+                    "claim_id": r.claim_id,
+                    "outcome": r.outcome,
+                    "source_fn": r.source_fn,
+                },
+            )
+        )
+
+
+def _ensure_production_claims_registered() -> None:
+    """(Re)register the production enforcement claims, robust against registry resets.
+
+    ``@enforces`` registers at import time, but ``reset_enforcement_registry()`` (a test
+    helper) wipes the global registry permanently — re-importing a cached module does not
+    re-run its module-level registration. So this calls the claim sources' idempotent
+    re-registration entrypoint rather than relying on import side effects alone. Importing
+    ``qc_binding`` transitively covers the 36 qc NCs and the ``qc-binding`` claim. Future
+    claim sources (OBPI-17 gate5 floor, etc.) extend that entrypoint.
+    """
+    from gzkit.governance.trust_audits import qc_binding  # noqa: PLC0415
+
+    qc_binding._ensure_qc_claims_registered()
+
+
+def run_meta_validator(
+    registry: list[EnforcementClaimRecord] | None = None,
+    root: Path | None = None,
+) -> RunnerResult:
+    """Discover every @enforces claim, run entrypoint(fixture()), and report results.
+
+    On a clean (all-PASS) run: READ-ONLY when ``root`` is None; emits one
+    ``enforcement_claim_verified`` receipt per claim when ``root`` is provided.
+
+    On failure: per-claim guardrail-feedback prose distinguishes FACADE (entrypoint
+    did not catch the violation) from TEST_BUG (fixture or entrypoint raised), and
+    names the single-NC repro command. Never a bare failing count.
+
+    ``registry`` defaults to the full discovered ``get_enforcement_registry()`` when
+    None — production claim sources are imported first so discovery is complete.
+    """
+    if registry is None:
+        _ensure_production_claims_registered()
+    records = registry if registry is not None else get_enforcement_registry()
+    claim_results: list[ClaimRunResult] = [_run_single_claim(r) for r in records]
+
+    verified = sum(1 for r in claim_results if r.outcome == "PASS")
+    facades = sum(1 for r in claim_results if r.outcome == "FACADE")
+    bugs = sum(1 for r in claim_results if r.outcome == "TEST_BUG")
+
+    _emit_verified_receipts(claim_results, root)
+
+    return RunnerResult(
+        verified_count=verified,
+        facade_count=facades,
+        test_bug_count=bugs,
+        claim_results=claim_results,
+    )

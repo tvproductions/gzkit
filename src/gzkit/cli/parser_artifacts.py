@@ -1147,6 +1147,28 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         func=lambda a: _lazy("obpi_precomplete_cmd")(obpi_id=a.obpi, as_json=a.as_json)
     )
 
+    p_obpi_present_evidence = obpi_commands.add_parser(
+        "present-evidence",
+        help="Generate tool-derived Stage-4 acceptance evidence (GHI #643)",
+        description=(
+            "Generate the Stage-4 evidence packet from observables the agent cannot "
+            "author: run the brief's ## Demo (assert-shaped), read on-disk ARB receipts, "
+            "and run gz covers. Writes .gzkit/evidence/<OBPI>.evidence.json and prints it "
+            "for operator attestation. Exits 3 (NOT-ATTESTABLE) on any blocker."
+        ),
+        epilog=build_epilog(
+            [
+                "gz obpi present-evidence OBPI-0.1.0-01",
+                "gz obpi present-evidence OBPI-0.0.74-16 --json",
+            ]
+        ),
+    )
+    p_obpi_present_evidence.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.0.74-16)")
+    add_json_flag(p_obpi_present_evidence)
+    p_obpi_present_evidence.set_defaults(
+        func=lambda a: _lazy("obpi_present_evidence_cmd")(obpi_id=a.obpi, as_json=a.as_json)
+    )
+
     p_obpi_withdraw = obpi_commands.add_parser(
         "withdraw",
         help="Withdraw a phantom or erroneous OBPI from the ledger",

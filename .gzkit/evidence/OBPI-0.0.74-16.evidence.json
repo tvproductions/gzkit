@@ -1,0 +1,36 @@
+{
+  "obpi_id": "OBPI-0.0.74-16",
+  "generated_at": "2026-06-24T11:25:29.939773+00:00",
+  "demos": [
+    {
+      "command": "uv run python -c \"from gzkit import enforcement; r = enforcement.run_meta_validator(); raise SystemExit(0 if r.verified_count >= 37 and r.facade_count == 0 and r.test_bug_count == 0 else 1)\"",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check"
+    }
+  ],
+  "receipts": [
+    {
+      "step": "ruff",
+      "found": true,
+      "receipt_id": "arb-ruff-f56b15a165984fe68f6e9cf5b4f6ddae.json",
+      "exit_status": 0
+    },
+    {
+      "step": "typecheck",
+      "found": true,
+      "receipt_id": "arb-step-typecheck-180e1fb5204c49deb4791fd015547f28.json",
+      "exit_status": 0
+    },
+    {
+      "step": "unittest",
+      "found": true,
+      "receipt_id": "arb-step-unittest-e15d2ee785494c96babe4bc3b67c1b79.json",
+      "exit_status": 0
+    }
+  ],
+  "covers_total": 6,
+  "covers_uncovered": 0,
+  "attestable": true,
+  "blockers": []
+}
