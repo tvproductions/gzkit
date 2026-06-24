@@ -3,7 +3,7 @@ id: OBPI-0.0.74-20-mx-gz-check-step-checkpoint-seam
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 20
 lane: Heavy
-status: Draft
+status: Completed
 # req_atomic: each REQ is one coherent surface authored in a single TDD
 # increment — demote-under-marker (01), full-strength-outside (02), floor-pin
 # (03), excluded-paths regression (04), and the cross-OBPI structural fence
@@ -23,7 +23,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #20 - "The `gz check` step-layer checkpoint seam — each `gz check` audit step + solo `gz validate` governance path declares its `guard_name` + emitted `GZ_<LEVEL>`; one wrapper in `check()` resolves disposition via `checkpoint.resolve` (not ~30 inline substitutions); non-floor guards demote to advisory under the hangar marker and run full-strength outside; `gate5_invariants` pin CRITICAL; `--sensitivity` + attestation lane/kind excluded; closes GHI #638; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -39,28 +39,42 @@ Route the `gz check` audit-step layer and the five solo `gz validate` governance
 
 ## Allowed Paths
 
-- `src/gzkit/commands/quality.py` — `_build_check_steps()` step list + the `check()` loop; this is where the seam lives (each step carries `guard_name` + emitted `GZ_<LEVEL>`; one wrapper resolves disposition via `checkpoint.resolve`)
-- `src/gzkit/quality.py` — the `run_*_audit` wrappers that currently self-decide `returncode=3` (e.g. `run_handoff_document_audit`, `run_dispatch_attestation_audit`); stop self-deciding fatality, emit a level
-- `src/gzkit/commands/validate_cmd.py` — the five solo handlers wired into `gz check` that `raise SystemExit(3)`: `--qc-binding`, `--fidelity-presence`, `--waiver-ratchet`, `--unscoped-rules`, `--evaluation-justify-binding`
+- `src/gzkit/commands/quality.py` — `_STEP_GUARD_META` dict + `_apply_mx_seam()` helper + the `check()` loop; this is where the seam lives (each step carries `guard_name` + emitted `GZ_<LEVEL>`; one wrapper resolves disposition via `checkpoint.resolve`)
+- `src/gzkit/traceability.py` — imported by the test for the `@covers` decorator (read-only import; not modified)
 - `tests/mx/test_check_step_checkpoint_seam.py` **CREATE** — the live-NC unit tests (marker-fixture demotion, full-strength-outside, floor-pin, excluded-path regression)
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/obpis/OBPI-0.0.74-20-mx-gz-check-step-checkpoint-seam.md` — this brief (evidence recording)
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md` — parent ADR for intent and scope
 
+> **Scope narrowing (2026-06-24, attestor g0).** The original draft listed
+> `src/gzkit/quality.py` and `src/gzkit/commands/validate_cmd.py` as potentially
+> modified, anticipating per-runner edits to the `run_*_audit` wrappers and the
+> five solo `gz validate` handlers. The implemented seam is the ADR-mandated
+> "ONE wrapper in `check()` — not ~30 inline substitutions" (item 20 / REQ-02):
+> within `gz check`, the solo handlers run as subprocesses whose `returncode=3`
+> is captured by their `run_*_audit` wrappers into a `QualityResult`, which the
+> single `_apply_mx_seam` call in `check()` then routes through `checkpoint.resolve`.
+> Neither `src/gzkit/quality.py` (a registered `subprocess_user_input` security
+> surface) nor `validate_cmd.py` was modified — `git diff` is the proof — so both
+> are removed from Allowed Paths to keep the brief honest and the security-floor
+> overlap is genuinely absent, not waived.
+
 ## Denied Paths
 
+- `src/gzkit/quality.py` — registered security surface; the seam design (item 20 / REQ-02) does NOT modify the `run_*_audit` wrappers, so this file is untouched
+- `src/gzkit/commands/validate_cmd.py` — the five solo handlers are demoted via the subprocess-returncode funnel through `_apply_mx_seam`, not by editing the handlers; untouched
 - `src/gzkit/mx/checkpoint.py`, `src/gzkit/mx/disposition.py`, `src/gzkit/mx/invariants.py` — the seam **routes through** the existing `checkpoint.resolve` authority; it does not modify it
 - `src/gzkit/attestation_receipts.py` — the Gate-5 lane/kind pin (`fail_closed = lane==heavy or kind==foundation`) is a floor policy, NOT an MX-demotable sensor; out of scope
-- The `--sensitivity` solo handler in `validate_cmd.py` (security floor/lane policy) — present in an allowed file but MUST NOT be routed through the demotable checkpoint (see Requirements #3)
+- The `--sensitivity` solo handler in `validate_cmd.py` (security floor/lane policy) — MUST NOT be routed through the demotable checkpoint (see Requirements #3)
 - New dependencies, CI files, lockfiles
 - Paths not listed in Allowed Paths
 
 ## Requirements (FAIL-CLOSED)
 
-1. ALWAYS: every MX-demotable `gz check` audit step and the five named solo `gz validate` paths declare a `guard_name` + emitted `GZ_<LEVEL>` and resolve disposition through `checkpoint.resolve` via **one** wrapper in `check()`.
-2. NEVER: add ~30 inline `checkpoint.resolve` calls or a per-`run_*_audit` decorator — ADR-0.0.74 § Alternatives (a)/(b) rejected per-surface opt-in as the vibing surface. One seam, one firing point.
-3. NEVER: route the excluded policy paths through the demotable checkpoint — `--sensitivity` (`validate_cmd.py`, security floor/lane) and the `attestation_receipts.py` lane/kind pin keep self-deciding. Their disposition under an active marker MUST be unchanged.
-4. ALWAYS: a `gz check` step mapped to a `gate5_invariants` member (`{gate5-attestation, secrets, operator-pii, ledger, grader-gaming}`) pins CRITICAL and never demotes, in or out of the hangar.
-5. ALWAYS: behavior-preserving outside the marker — every migrated step still returns `returncode=3` / exits 3 on a real violation when no marker is active.
+1. REQUIREMENT [BEHAVIOR]: every MX-demotable `gz check` audit step resolves disposition through `checkpoint.resolve` via **one** wrapper in `check()`; each step declares a `guard_name` + emitted `GZ_<LEVEL>`. (REQ-0.0.74-20-01, REQ-0.0.74-20-02)
+2. REQUIREMENT [BEHAVIOR]: ONE seam only — no ~30 inline `checkpoint.resolve` calls, no per-`run_*_audit` decorator. ADR-0.0.74 § Alternatives (a)/(b) rejected per-surface opt-in as the vibing surface. (REQ-0.0.74-20-01)
+3. REQUIREMENT [BEHAVIOR]: excluded policy paths (`--sensitivity`, `attestation_receipts.py` lane/kind pin) MUST NOT be routed through the demotable checkpoint — they keep self-deciding; their disposition under an active marker MUST be unchanged. (REQ-0.0.74-20-04)
+4. REQUIREMENT [BEHAVIOR]: a `gz check` step whose `guard_name` is in `gate5_invariants` (`{gate5-attestation, secrets, operator-pii, ledger, grader-gaming}`) pins CRITICAL and never demotes under a marker. (REQ-0.0.74-20-03)
+5. REQUIREMENT [FENCE]: BI#2 holds at the `gz check` surface — no migrated step or solo `validate_cmd` path retains a self-deciding `returncode=3`/`SystemExit(3)` outside `checkpoint.resolve`. (REQ-0.0.74-20-05)
 6. ALWAYS: reconcile this brief against parent ADR item 20 + BI#2 before implementation begins; work stays inside Allowed Paths.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
@@ -213,28 +227,43 @@ uv run gz check
 
 ### Key Proof
 
-<!-- Filled at Gate 2: the live-NC pair (REQ-01 demote-under-marker / REQ-02 fatal-outside) output. -->
+
+The live-NC pair (REQ-01 demote / REQ-02 fatal):
+
+    uv run -m unittest tests.mx.test_check_step_checkpoint_seam -v
+    test_non_floor_step_demotes_to_advisory_under_marker ... ok
+    test_non_floor_step_stays_fatal_without_marker ... ok
+    Ran 7 tests in 0.036s — OK
+
+Under an active MX marker fixture, a non-floor step's returncode=3 result resolves to success=True/returncode=0 via checkpoint.resolve(); with no marker the same result stays returncode=3 (full strength preserved). gate5_invariants members pin fatal regardless of marker (TestFloorPin). ARB receipts: arb-ruff-34f2d3dff84c42998647d08f315a9dfa (exit 0), arb-step-typecheck-19a9f633b6394245838e19d6513715ff (exit 0), arb-step-unittest-01b45b9f484a435a9931f56ddc20068c (exit 0, 6405/6405).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files modified: src/gzkit/commands/quality.py — added _STEP_GUARD_META dict (37 step→guard_name/level mappings), _apply_mx_seam() seam helper, and one resolve call in the check() loop
+- Files created: tests/mx/test_check_step_checkpoint_seam.py — 7 live-NC unit tests
+- Tests added: demote-under-marker (REQ-01), fatal-outside (REQ-02), success-passthrough, floor-pin under+outside marker (REQ-03, 10 subtests over GATE5_INVARIANTS), excluded-paths regression x2 (REQ-04)
+- Approach: ONE seam in check() (not ~30 inline substitutions) per ADR-0.0.74 item 20; guard metadata held in a central dict rather than per-runner decoration so the firing point stays single; tuple shape of _build_check_steps() unchanged (preserves 3 consuming tests)
+- Date completed: 2026-06-24
+- Attestation status: operator-attested
+- Defects noted: GHI #638 closed by this OBPI
 
 ## Tracked Defects
+
+- REQ-count drift: 4 declared vs 5 acceptance criteria (brief reconcile, attestor g0)
+
+- REQ-count drift: 0 declared vs 5 acceptance criteria (brief reconcile, attestor g0)
 
 - GHI #638 — `mx: gz check step layer self-decides fatality outside the checkpoint (gates-as-sensors residual)`. This OBPI closes it; close `fixed` citing the implementing commit SHA at completion.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.74-20 routes the ~37 gz check audit steps through the MX checkpoint at one seam (_apply_mx_seam in check()); 7 live-NC tests pass (demote-under-marker / fatal-outside / floor-pin / excluded-paths), full suite 6405/6405 green (receipt arb-step-unittest-01b45b9f484a435a9931f56ddc20068c), lint+typecheck clean (arb-ruff-34f2d3dff84c42998647d08f315a9dfa, arb-step-typecheck-19a9f633b6394245838e19d6513715ff); closes GHI #638, satisfies BI#2 at the gz check surface.
+- Date: 2026-06-24
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-24
 
 **Evidence Hash:** -

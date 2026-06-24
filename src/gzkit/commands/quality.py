@@ -24,6 +24,92 @@ from gzkit.quality import (
 
 CheckStepRunner = Callable[[pathlib.Path], Any]
 
+# Guard metadata for the MX checkpoint seam (ADR-0.0.74 item 20, OBPI-0.0.74-20).
+# Maps each step's display name to (guard_name, emitted_level).  One central
+# dict — not per-runner decoration — so the seam in check() is the single
+# firing point (REQ-0.0.74-20-01, REQUIREMENT: ONE seam only).
+#
+# All current steps emit ERROR (grounding band): they block on a real violation
+# and demote to advisory under an active marker.  No current step's guard_name
+# is in GATE5_INVARIANTS — floor membership applies to future steps that are
+# explicitly named as invariant guards.
+#
+# Fallback: if a step name is absent (future step not yet registered), check()
+# derives a kebab-case guard_name from the display name and uses ERROR level.
+from gzkit.mx import levels as _mx_levels  # noqa: E402 — after type alias
+
+_STEP_GUARD_META: dict[str, tuple[str, int]] = {
+    "Lint": ("lint", _mx_levels.ERROR),
+    "Format": ("format", _mx_levels.ERROR),
+    "Typecheck": ("typecheck", _mx_levels.ERROR),
+    "Test": ("test", _mx_levels.ERROR),
+    "Behave": ("behave", _mx_levels.ERROR),
+    "Skill audit": ("skill-audit", _mx_levels.ERROR),
+    "Parity check": ("parity-check", _mx_levels.ERROR),
+    "Readiness audit": ("readiness-audit", _mx_levels.ERROR),
+    "CLI audit": ("cli-audit", _mx_levels.ERROR),
+    "Unscoped rules": ("unscoped-rules", _mx_levels.ERROR),
+    "ADR status freshness": ("adr-status-fresh", _mx_levels.ERROR),
+    "Rendition freshness": ("rendition-freshness", _mx_levels.ERROR),
+    "Rendition floor coherence": ("rendition-floor-coherence", _mx_levels.ERROR),
+    "Invariant coherence": ("invariant-coherence", _mx_levels.ERROR),
+    "Session green gate": ("session-green-gate", _mx_levels.ERROR),
+    "Closeout proof": ("closeout-proof", _mx_levels.ERROR),
+    "Kind invariance": ("kind-invariance", _mx_levels.ERROR),
+    "Interview transcripts": ("interviews", _mx_levels.ERROR),
+    "Receipt shape": ("receipt-shape", _mx_levels.ERROR),
+    "Orientation freshness": ("orientation-freshness", _mx_levels.ERROR),
+    "Insights shape": ("insights-shape", _mx_levels.ERROR),
+    "Instructions files budget": ("instructions-files-budget", _mx_levels.ERROR),
+    "AGENTS.md map conformance": ("agents-md-map-conformance", _mx_levels.ERROR),
+    "Complexity-doctrine links": ("complexity-doctrine-links", _mx_levels.ERROR),
+    "Complexity-thresholds": ("complexity-thresholds", _mx_levels.ERROR),
+    "REQ kind discipline": ("req-kind-discipline", _mx_levels.ERROR),
+    "tautological test audit": ("tautological-test-audit", _mx_levels.ERROR),
+    "Task envelope coherence": ("task-envelope-coherence", _mx_levels.ERROR),
+    "Lock-handoff coupling": ("lock-handoff-coupling", _mx_levels.ERROR),
+    "QC binding": ("qc-binding", _mx_levels.ERROR),
+    "Fidelity presence": ("fidelity-presence", _mx_levels.ERROR),
+    "Waiver ratchet": ("waiver-ratchet", _mx_levels.ERROR),
+    "Handoff documents": ("handoff-documents", _mx_levels.ERROR),
+    "Preflight": ("preflight", _mx_levels.ERROR),
+    "Surface fidelity": ("surface-fidelity", _mx_levels.ERROR),
+    "Line endings": ("line-endings", _mx_levels.ERROR),
+    "Dispatch attestation": ("dispatch-attestation", _mx_levels.ERROR),
+}
+
+
+def _apply_mx_seam(
+    result: QualityResult,
+    guard_name: str,
+    emitted_level: int,
+    project_root: pathlib.Path,
+) -> QualityResult:
+    """Apply the MX checkpoint to one step result — the ONE seam for all steps.
+
+    If the step returned returncode=3 (policy breach) and the checkpoint resolves
+    its route to advisory (non-grounding), demote: return a passing result so the
+    aggregator does not block.  gate5_invariants members always resolve to a
+    grounding route regardless of marker state (checkpoint.resolve pins them to
+    CRITICAL), so they are never demoted.
+
+    Steps that passed (returncode != 3) pass through unchanged.
+    """
+    if getattr(result, "returncode", 0) != 3:
+        return result
+    from gzkit.mx import checkpoint, disposition  # noqa: PLC0415 — lazy: avoids circular risk
+
+    route = checkpoint.resolve(guard_name, emitted_level, project_root)
+    if disposition.grounds(route):
+        return result
+    return QualityResult(
+        success=True,
+        command=result.command,
+        stdout=result.stdout,
+        stderr=result.stderr,
+        returncode=0,
+    )
+
 
 def lint() -> None:
     """Run code linting (ruff + pymarkdown)."""
@@ -381,6 +467,10 @@ def check(as_json: bool = False) -> None:
         for name, runner in steps:
             progress.advance(name)
             result = runner(project_root)
+            guard_name, emitted_level = _STEP_GUARD_META.get(
+                name, (name.lower().replace(" ", "-"), _mx_levels.ERROR)
+            )
+            result = _apply_mx_seam(result, guard_name, emitted_level, project_root)
             results.append((name, result))
 
     drift: DriftAdvisoryResult = run_drift_advisory(project_root)
