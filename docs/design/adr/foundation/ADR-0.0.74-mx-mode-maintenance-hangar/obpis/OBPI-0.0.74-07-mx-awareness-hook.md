@@ -71,13 +71,11 @@ brief-level human attestation is universal (ADR-0.0.36).
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: While the marker is present, the hook MUST inject the exact banner "MX MODE ACTIVE — most guards advisory; gate5_invariants and the PRIME DIRECTIVE still bind" on every agent turn (maps to REQ-0.0.74-07-01).
-2. REQUIREMENT: The marker read MUST be stdlib-only so the banner fires even when `gz` itself is the patient.
-3. REQUIREMENT: When the marker is absent the hook MUST be a strict no-op — no banner outside the hangar (maps to REQ-0.0.74-07-01).
-4. REQUIREMENT: A liveness check MUST report an unwired or dead per-vendor hook adapter as a detected defect (maps to REQ-0.0.74-07-02).
-5. REQUIREMENT: The per-vendor adapter MUST be rendered to each vendor surface by `gz agent sync control-surfaces`; the tool-output banner is secondary backup only (maps to REQ-0.0.74-07-03).
-6. NEVER: Make the tool-output banner the load-bearing awareness surface — it only fires when a tool runs; the per-turn hook is the guarantee.
-7. ALWAYS: Reconcile the brief with the parent ADR before implementation begins.
+1. REQUIREMENT: While the marker is present, the hook MUST inject the exact banner "MX MODE ACTIVE — most guards advisory; gate5_invariants and the PRIME DIRECTIVE still bind" on every agent turn, and MUST be a strict no-op when the marker is absent; the marker read MUST be stdlib-only so the banner fires even when `gz` itself is the patient (maps to REQ-0.0.74-07-01).
+2. REQUIREMENT: A liveness check MUST report an unwired or dead per-vendor hook adapter as a detected defect (maps to REQ-0.0.74-07-02).
+3. REQUIREMENT: The per-vendor adapter MUST be rendered to each vendor surface by `gz agent sync control-surfaces`; the tool-output banner is secondary backup only (maps to REQ-0.0.74-07-03).
+4. NEVER: Make the tool-output banner the load-bearing awareness surface — it only fires when a tool runs; the per-turn hook is the guarantee.
+5. ALWAYS: Reconcile the brief with the parent ADR before implementation begins.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 

@@ -74,7 +74,7 @@ foundation/heavy. Gates 1-5 all apply; Gate 5 brief-level human attestation is u
 2. REQUIREMENT: A binding `mx-mode` rule MUST tell agents to honor the marker AND that the PRIME DIRECTIVE binds the whole hangar session — guards advisory, OWNERSHIP not: fix what you know AND what you find; "not my work" / "out of scope" stays forbidden (maps to REQ-0.0.74-08-02).
 <!-- gz-validate-skip: command-shape -->
 3. REQUIREMENT: The skill's declared `gz_command` MUST resolve to the real `gz mx` verb (maps to REQ-0.0.74-08-03).
-4. REQUIREMENT: The canonical skill and rule MUST be edited under `.gzkit/` and propagated to every vendor surface by `gz agent sync control-surfaces` (skill-surface-sync doctrine); the rule MUST carry a `paths:` scope (no unscoped rule under a vendor surface, ADR-0.0.20).
+4. ALWAYS: Edit the canonical skill and rule under `.gzkit/` and propagate to every vendor surface via `gz agent sync control-surfaces` (skill-surface-sync doctrine); the rule MUST carry a `paths:` scope (no unscoped rule under a vendor surface, ADR-0.0.20).
 <!-- gz-validate-skip: command-shape -->
 5. NEVER: Instruct the operator or agent to shell out to `gz mx` directly — the skill is the interface (skill+tool symbiont).
 6. ALWAYS: Reconcile the brief with the parent ADR before implementation begins.

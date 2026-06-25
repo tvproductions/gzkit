@@ -68,7 +68,7 @@ The four MX hardening guards land at `src/gzkit/mx/hardening.py`, each emitting 
 1. REQUIREMENT: `hardening.normal_release_blocked()` MUST return a grounding `GZ_<LEVEL>` while a marker is present, AND the normal-release funnels (`gz patch release`, `gz closeout`) MUST consult it and refuse — the guard is wired at the release site, the hangar must be exited first (REQ-14-02).
 1. REQUIREMENT: A ledger debt-aging guard MUST raise the effective level of accrued advisory debt the longer it sits unaddressed — debt grows louder over time, it does not stay silent (REQ-14-03).
 1. REQUIREMENT: A dangling-state detector MUST flag an open session (`mx_session_opened` with no matching `mx_session_closed`) whose marker is missing on disk (REQ-14-04).
-1. NEVER: Hand-set a guard's severity with a module-level bool; each guard resolves through the leveled checkpoint (REQ-14-05).
+1. REQUIREMENT: Each hardening guard MUST resolve its effective severity through the leveled checkpoint — none hand-sets its own severity with a module-level bool (REQ-14-05).
 1. ALWAYS: Reconcile the brief with the parent ADR before implementation; the leveled checkpoint (`src/gzkit/mx/checkpoint.py`, OBPI-02) and the `GZ_<LEVEL>` vocabulary (`src/gzkit/mx/levels.py`, OBPI-11) MUST exist first — STOP if missing.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.

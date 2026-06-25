@@ -66,9 +66,12 @@ The `gz mx exit --attestor <name>` hard gate lands: it re-runs every guard at fu
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: This OBPI MUST deliver: gz mx exit — hard gate: re-run all guards full strength against the enter-time scope, green-or-grounded, no --force; operator signs; writes mx_session_closed and removes marker; exit is the only clearing path; manpage + gz cli audit green; unit tests.
-1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
-1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
+1. REQUIREMENT: On `gz mx exit` against an open session, every guard MUST re-run at full strength — each re-emitting its `GZ_<LEVEL>` with no in-hangar advisory demotion — against the inspection scope captured at enter time, not a narrowed subset (REQ-05-01).
+1. REQUIREMENT: Any guard reporting red on the re-run MUST make exit hard-refuse with exit 3, leave the marker in place, and write no `mx_session_closed` — there is no `--force` flag and no way to narrow the scope out of the check (REQ-05-02).
+1. REQUIREMENT: On an all-green re-run with an operator `--attestor`, exit MUST take the signature, write one `mx_session_closed` event, and remove the marker; an empty `--attestor` MUST fail closed with exit 1 and no clear (REQ-05-03).
+1. REQUIREMENT: The new `mx exit` verb MUST be documented (manpage + command doc + index), proven by `gz validate --cli-alignment` exit 0 and an `artifact_edited` ledger event for `docs/user/manpages/mx.md` (REQ-05-04).
+1. REQUIREMENT: `gz mx exit` writing `mx_session_closed` MUST be the ONLY path that clears the marker; a marker cleared without a matching `mx_session_closed` event is a detected dangling state (REQ-05-05).
+1. REQUIREMENT: A known violation planted at exit time MUST still be caught when the guards re-run at full strength — the live exit negative-control proves the re-run genuinely re-emits red and is not a stub (REQ-05-06).
 1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
 1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
 

@@ -65,9 +65,10 @@ At exit the MX log is assembled by construction from the ledger events and commi
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: This OBPI MUST deliver: The auto-assembled MX log — built at exit from ledger events + commits between enter/exit, naming fixes and the ADRs/OBPIs/REQs touched; operator reviews before signing; ledger event; unit tests.
-1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
-1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
+1. REQUIREMENT: With an `mx_session_opened` and `mx_session_closed` bounding a session, the log assembler MUST build the log only from the ledger events and commits in that enter→exit window — complete by construction, not hand-supplied (REQ-06-01).
+1. REQUIREMENT: The assembled log MUST name every fix and the ADRs/OBPIs/REQs each fix touched, so nothing in the window can be forgotten or narrated away (REQ-06-02).
+1. REQUIREMENT: On exit, the assembled log MUST be rendered for operator review before the signature is taken — the operator reviews the complete-by-construction record, never a hand-authored summary (REQ-06-03).
+1. REQUIREMENT: The `mx_session_opened` and `mx_session_closed` ledger event types MUST exist and carry the session window (enter/exit anchors) that bounds assembly, proven by `gz validate --ledger` exit 0 and an `artifact_edited` ledger event for `src/gzkit/events.py` (REQ-06-04).
 1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
 1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
 

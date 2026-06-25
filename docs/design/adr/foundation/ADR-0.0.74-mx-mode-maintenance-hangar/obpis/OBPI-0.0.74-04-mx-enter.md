@@ -64,9 +64,11 @@ The `gz mx enter --reason <text> --attestor <name>` command lands so the operato
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: This OBPI MUST deliver: gz mx enter — operator opens the door (reason + attestor); sets marker, writes mx_session_opened, captures inspection scope; token-rail/lock_manager; manpage + gz cli audit green; unit tests.
-1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
-1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
+1. REQUIREMENT: `gz mx enter --reason <text> --attestor <name>` run outside the hangar MUST set the marker, write one `mx_session_opened` ledger event, and capture the inspection scope on that event (REQ-04-01).
+1. REQUIREMENT: Enter MUST refuse to open the door when no `--attestor` is supplied — there is no agent-autonomous entry path; only an operator-supplied attestor opens the hangar (REQ-04-02).
+1. REQUIREMENT: An empty `--reason` or empty `--attestor` MUST fail closed with exit 1, setting no marker and writing no ledger event (REQ-04-03).
+1. REQUIREMENT: Enter MUST acquire the session through the `lock_manager`/token rail (not a hand-rolled lock) so concurrent entry is serialized on the existing rail (REQ-04-04).
+1. REQUIREMENT: The new `mx` verb MUST be documented (manpage + command doc + index), proven by `gz validate --cli-alignment` exit 0 and an `artifact_edited` ledger event for `docs/user/manpages/mx.md` (REQ-04-05).
 1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
 1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
 
