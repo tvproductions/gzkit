@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.22.0"
-last_reviewed: 2026-06-24
+skill-version: "6.23.0"
+last_reviewed: 2026-06-25
 model: sonnet
 ---
 
@@ -203,6 +203,43 @@ At `>= 90%` confidence, skip the walkthrough and proceed directly to Stage 2. Th
 
 ### Stage 2: Implement (skipped by `--from=verify` or `--from=ceremony`)
 
+#### Red-Green-Refactor discipline (binding — applies to BOTH modes below)
+
+Stage 2 is Test-Driven Development, not test-after. The law is absolute:
+**no production code without a failing test first**, and the red must be a
+**verified** red. This binds the inline path AND every dispatched implementer.
+
+The per-behavior cycle (never batch all tests then implement the whole unit):
+
+1. **RED — write ONE minimal test** for the next single behavior (one behavior
+   per test, descriptive name, real code usage, minimal mocking).
+2. **Watch it fail — MANDATORY, never skip.** Run the test and confirm all three:
+   - it **FAILS** (an assertion fires) — *not* errors, *not* passes;
+   - the **failure message matches the expected behavior** (e.g. `SystemExit not
+     raised`, `marker not active`, `0 != 1`), not an unrelated message;
+   - it fails because **the feature is missing**, not because of a typo or a
+     missing import.
+
+   *"If you didn't watch the test fail, you don't know if it tests the right
+   thing."*
+3. **GREEN — write the simplest code** that makes that one test pass.
+4. **REFACTOR** — clean up (duplication, names, helpers) with the bar staying green.
+5. Repeat for the next behavior.
+
+> **Anti-pattern — the import-error red (the false red).** A first run that
+> ERRORs with `ModuleNotFoundError` / `ImportError` / `AttributeError` because
+> the module or symbol under construction does not exist yet is **not a verified
+> red**. It proves the *module is absent* — it does **not** prove the test's
+> assertion bites the behavior, because no assertion ran. A test that can only
+> fail on a missing import cannot distinguish "behavior present" from "behavior
+> absent" — the tautological/facade smell gzkit exists to kill. **Recovery:** get
+> to an assertion-level failure first — create the importable skeleton (define
+> the symbol as a no-op stub so the test imports cleanly), then watch each test
+> fail on its OWN assertion for the right reason, *then* implement the behavior.
+> Seeing the assertion-level red is the cheap negative control proving the test
+> is not tautological. Do not report "RGR followed" when the only red observed
+> was an import/collection error.
+
 **Check the `--no-subagents` flag first.** If set, skip to the [Inline Fallback](#inline-fallback-no-subagents) below.
 
 #### Subagent Dispatch Mode (default)
@@ -229,6 +266,11 @@ At `>= 90%` confidence, skip the walkthrough and proceed directly to Stage 2. Th
       - Test expectations from the brief
       - Brief requirements (the FAIL-CLOSED list)
       - Implementer rules from `.claude/agents/implementer.md`
+      - **The Red-Green-Refactor discipline above** — instruct the implementer to
+        work one behavior per cycle and to report the *verified* red it watched
+        (the assertion-level failure message), not merely that it wrote tests.
+        A `HandoffResult` claiming RGR whose only red was an import error is a
+        red-verification miss — treat it as a review finding in step h.
 
    d. **Dispatch via Agent tool:**
       ```
@@ -319,7 +361,10 @@ When `--no-subagents` is set, Stage 2 runs entirely in the main session (no Agen
 1. Create task list from plan steps (same as above)
 2. Follow the approved plan step by step
 3. Keep edits inside the brief allowlist and transaction contract
-4. Write code with tests (unittest, TempDBMixin for DB, coverage >= 40%)
+4. Implement each behavior via the **Red-Green-Refactor discipline above**: one
+   minimal test → watch it fail on its assertion for the right reason (not an
+   import error) → simplest code to pass → refactor green. Use `unittest`,
+   `TempDBMixin` for DB, coverage >= 40%. Do not batch all tests then implement.
 5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes
 6. Run `uv run -m unittest -q` after implementation
 

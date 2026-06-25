@@ -53,6 +53,7 @@ uv run gz obpi lock check OBPI-<X.Y.Z-NN>  # Check if OBPI is locked
 uv run gz obpi lock list               # List active OBPI work locks
 uv run gz obpi complete OBPI-<X.Y.Z-NN> --attestation-text "<verbatim user words — session evidence>"
 uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN> --event completed --attestor "<name>" --evidence-json '{...}'
+uv run gz mx enter --reason "<text>" --attestor "<operator>"  # Open the MX hangar (operator only)
 uv run gz flags                       # Display feature flags
 uv run gz flag explain <flag>         # Inspect one flag
 uv run gz migrate-semver              # Record SemVer rename events

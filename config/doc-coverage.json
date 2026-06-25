@@ -2,337 +2,7 @@
   "version": "1.0.0",
   "description": "Per-command documentation obligation manifest for gzkit CLI commands",
   "commands": {
-    "brief reconcile": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "content list": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": false
-      },
-      "governance_relevant": false
-    },
-    "content show": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": false
-      },
-      "governance_relevant": false
-    },
-    "content render": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": false
-      },
-      "governance_relevant": false
-    },
-    "content edit": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": false
-      },
-      "governance_relevant": false
-    },
-    "content import": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": false
-      },
-      "governance_relevant": false
-    },
-    "content remember": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": false
-      },
-      "governance_relevant": false
-    },
-    "content compose": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": false
-      },
-      "governance_relevant": false
-    },
-    "content commit": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": false
-      },
-      "governance_relevant": false
-    },
-    "content advise-rendition": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": false
-      },
-      "governance_relevant": false
-    },
-    "complexity advise": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "complexity guide": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "governance render": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": false
-      },
-      "governance_relevant": true
-    },
-    "complexity distill": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "justify": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "init": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "upgrade": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "prd": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "constitute": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "context": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "specify": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "plan create": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "state": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "status": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "closeout": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "patch release": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "audit": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "adr status": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "adr report": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "adr promote": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "adr demote": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "adr evaluate": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
     "adr audit-begin": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "adr audit-end": {
       "surfaces": {
         "manpage": false,
         "index_entry": false,
@@ -352,7 +22,17 @@
       },
       "governance_relevant": true
     },
-    "adr fidelity": {
+    "adr audit-end": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "adr covers-check": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,
@@ -362,7 +42,7 @@
       },
       "governance_relevant": true
     },
-    "adr covers-check": {
+    "adr demote": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,
@@ -382,7 +62,7 @@
       },
       "governance_relevant": true
     },
-    "obpi emit-receipt": {
+    "adr evaluate": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,
@@ -392,7 +72,7 @@
       },
       "governance_relevant": true
     },
-    "obpi status": {
+    "adr fidelity": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,
@@ -402,7 +82,7 @@
       },
       "governance_relevant": true
     },
-    "obpi pipeline": {
+    "adr promote": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,
@@ -412,7 +92,7 @@
       },
       "governance_relevant": true
     },
-    "frontmatter reconcile": {
+    "adr report": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,
@@ -422,7 +102,7 @@
       },
       "governance_relevant": true
     },
-    "obpi reconcile": {
+    "adr status": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,
@@ -431,588 +111,38 @@
         "docstring": true
       },
       "governance_relevant": true
-    },
-    "obpi validate": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "obpi repudiate": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "obpi withdraw": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "obpi lock claim": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "obpi lock release": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "obpi lock check": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "obpi lock list": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "obpi audit": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "obpi complete": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "obpi precomplete": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "obpi present-evidence": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "plan audit": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "task list": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "task start": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "task complete": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "task block": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "task escalate": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "task fanout": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "task envelope diagnose": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "issue file": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "implement": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "gates": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "attest": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "validate": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "roles": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "personas drift": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "personas list": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": false,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "register-adrs": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "migrate-semver": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "check-config-paths": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "preflight": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "flags": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "flag explain": {
-      "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "cli audit": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "parity check": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "readiness audit": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "readiness evaluate": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "git-sync": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "lint": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "format": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "test": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "typecheck": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "check": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "covers": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "drift": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "tidy": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "chores list": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "chores show": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "chores plan": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "chores advise": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "chores run": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "chores audit": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "chores doctor": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "chores propose-ghi": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "skill new": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "skill list": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "skill audit": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
-    "interview": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
     },
     "agent sync control-surfaces": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "arb advise": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "arb coverage": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "arb patterns": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,
@@ -1062,16 +192,6 @@
       },
       "governance_relevant": false
     },
-    "arb coverage": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": false,
-        "docstring": true
-      },
-      "governance_relevant": false
-    },
     "arb validate": {
       "surfaces": {
         "manpage": true,
@@ -1082,7 +202,37 @@
       },
       "governance_relevant": false
     },
-    "arb advise": {
+    "attest": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "audit": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "brief reconcile": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "check": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,
@@ -1092,7 +242,17 @@
       },
       "governance_relevant": false
     },
-    "arb patterns": {
+    "check-config-paths": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "chores advise": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,
@@ -1101,6 +261,856 @@
         "docstring": true
       },
       "governance_relevant": false
+    },
+    "chores audit": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "chores doctor": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "chores list": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "chores plan": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "chores propose-ghi": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "chores run": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "chores show": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "cli audit": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "closeout": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "complexity advise": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "complexity distill": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "complexity guide": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "constitute": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "content advise-rendition": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": false
+      },
+      "governance_relevant": false
+    },
+    "content commit": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": false
+      },
+      "governance_relevant": false
+    },
+    "content compose": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": false
+      },
+      "governance_relevant": false
+    },
+    "content edit": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": false
+      },
+      "governance_relevant": false
+    },
+    "content import": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": false
+      },
+      "governance_relevant": false
+    },
+    "content list": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": false
+      },
+      "governance_relevant": false
+    },
+    "content remember": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": false
+      },
+      "governance_relevant": false
+    },
+    "content render": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": false
+      },
+      "governance_relevant": false
+    },
+    "content show": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": false
+      },
+      "governance_relevant": false
+    },
+    "context": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "covers": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "drift": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "flag explain": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "flags": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "format": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "frontmatter reconcile": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "gates": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "git-sync": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "governance render": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": false
+      },
+      "governance_relevant": true
+    },
+    "implement": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "init": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "interview": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "issue file": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "justify": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "lint": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "migrate-semver": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "mx enter": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi audit": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi complete": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi emit-receipt": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi lock check": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi lock claim": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi lock list": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi lock release": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi pipeline": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi precomplete": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "obpi present-evidence": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "obpi reconcile": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi repudiate": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi status": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi validate": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi withdraw": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "parity check": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "patch release": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "personas drift": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "personas list": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": false,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "plan audit": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "plan create": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "prd": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "preflight": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "readiness audit": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "readiness evaluate": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "register-adrs": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "roles": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "skill audit": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "skill list": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "skill new": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "specify": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "state": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "status": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "task block": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "task complete": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "task envelope diagnose": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "task escalate": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "task fanout": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "task list": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "task start": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "test": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "tidy": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "typecheck": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "upgrade": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "validate": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
     }
   }
 }

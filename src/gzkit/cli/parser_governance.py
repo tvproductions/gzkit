@@ -754,3 +754,67 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     p_personas_drift.set_defaults(
         func=lambda a: _lazy("persona_drift_cmd")(persona=a.persona, as_json=a.as_json)
     )
+
+    # gz mx  ---------------------------------------------------------------
+    def _mx_dispatch(a: argparse.Namespace) -> None:
+        """Route gz mx subcommands to their handlers (local import for lazy loading)."""
+        if a.mx_command == "enter":
+            from gzkit.commands.mx_cmd import mx_enter_cmd  # noqa: PLC0415
+
+            mx_enter_cmd(
+                reason=a.reason,
+                attestor=a.attestor,
+                inspection_scope=a.inspection_scope,
+            )
+
+    p_mx = commands.add_parser(
+        "mx",
+        help="Maintenance Hangar (MX) mode operations",
+        description=(
+            "Open and close the Maintenance Hangar. "
+            "While the hangar is open, most governance guards drop to advisory "
+            "so the operator can repair governance itself. "
+            "gate5_invariants and the PRIME DIRECTIVE still bind."
+        ),
+        epilog=build_epilog(
+            [
+                'gz mx enter --reason "re-true locks under ADR-0.0.74" --attestor g0',
+                'gz mx enter --reason "repair ledger" --attestor g0 --scope ADR-0.0.74',
+            ]
+        ),
+    )
+    mx_commands = p_mx.add_subparsers(dest="mx_command")
+    mx_commands.required = True
+    p_mx.set_defaults(func=_mx_dispatch)
+
+    p_mx_enter = mx_commands.add_parser(
+        "enter",
+        help="Open the MX hangar (operator only)",
+        description=(
+            "Open the Maintenance Hangar. "
+            "Sets the marker file, writes an mx_session_opened ledger event, "
+            "and captures the inspection scope. "
+            "Requires an operator-supplied --attestor; agents cannot open the hangar."
+        ),
+        epilog=build_epilog(
+            [
+                'gz mx enter --reason "re-true locks under ADR-0.0.74" --attestor g0',
+                "gz mx enter --reason 'repair ledger' --attestor g0 --scope ADR-0.0.74",
+            ]
+        ),
+    )
+    p_mx_enter.add_argument("--reason", required=True, help="Reason for entering MX mode")
+    p_mx_enter.add_argument(
+        "--attestor",
+        required=True,
+        help="Operator identity (never an agent; MX cannot be opened autonomously)",
+    )
+    p_mx_enter.add_argument(
+        "--scope",
+        dest="inspection_scope",
+        nargs="*",
+        default=[],
+        metavar="ADR_OR_OBPI",
+        help="ADRs/OBPIs under inspection (optional; 0 or more)",
+    )
+    p_mx_enter.set_defaults(func=_mx_dispatch)

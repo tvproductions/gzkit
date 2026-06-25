@@ -58,6 +58,11 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "OBPI-04 (Closeout/audit repoint) wires it into the `gz-adr-closeout-ceremony` "
         "and `gz-adr-audit` skills; no separate wielding skill is needed before OBPI-04 lands."
     ),
+    "mx enter": (
+        "ADR-0.0.74 OBPI-04 delivers the `gz mx enter` command. "
+        "The `gz-mx` skill (which will wield this verb) is a later ADR-0.0.74 deliverable; "
+        "waiver holds until the skill lands."
+    ),
     "obpi repudiate": (
         "Operator-invoked repair verb (ADR-0.0.71-completion-repudiation). "
         "No standalone skill — the action is one-shot operator-gated correction, "

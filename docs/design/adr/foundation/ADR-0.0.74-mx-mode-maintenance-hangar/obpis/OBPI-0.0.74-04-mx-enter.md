@@ -3,7 +3,7 @@ id: OBPI-0.0.74-04-mx-enter
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
 # req_atomic: each REQ is one coherent surface authored in a single TDD
 # increment — the enter handler that sets the marker + writes the event +
 # captures scope (01), the operator-only door (02), the empty-input fail-close
@@ -25,7 +25,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #4 - "gz mx enter — operator opens the door (reason + attestor); sets marker, writes mx_session_opened, captures inspection scope; token-rail/lock_manager; manpage + gz cli audit green; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -219,13 +219,19 @@ uv run gz mx enter --reason "re-true ledger-proof locks under ADR-0.0.74" --atte
 
 ### Key Proof
 
+
+gz mx enter --help registers --reason (required), --attestor (required), --scope (optional). Behavioral proof from tests/commands/test_mx_enter.py: test_enter_sets_marker -> marker.is_active(root) True + one mx_session_opened event; test_enter_without_attestor_exits_1 -> SystemExit(1), no marker written. Verified green: receipt arb-step-unittest-b001fce829804af6aa93a3e9711d8397 (6502/6502); arb-ruff-d21c2a32b0b24830a8cfd18999298a9f; arb-step-typecheck-d2cb9df116844a6db9b9bf7b6e7492e6; arb-step-mkdocs-45e84a7ca174443bb60f6ead1e930051; cli audit 111/111. Stage-4b adversary (independent Claude subagent): REFUTED-WITH-CAVEATS - both caveats (pre-commit ledger event, placeholder brief prose) resolve at this Stage 5.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/commands/mx_cmd.py (gz mx command group + mx_enter_cmd handler), docs/user/manpages/mx.md (group manpage), docs/user/manpages/mx-enter.md (subcommand manpage), tests/commands/test_mx_enter.py (13 tests)
+- Files modified: src/gzkit/cli/parser_governance.py (registered gz mx + gz mx enter), docs/user/manpages/index.md (mx enter entry), docs/user/runbook.md (MX Mode section), docs/governance/governance_runbook.md (lifecycle entry), config/doc-coverage.json (mx enter doc obligations), src/gzkit/governance/trust_audits/cli.py (_NO_SKILL_VERBS waiver)
+- Mechanism: gz mx enter --reason X --attestor Y [--scope ...] validates non-empty reason+attestor (fail-closed exit 1), refuses if marker already active, acquires the lock_manager token rail (mx-session key), writes the marker (.gzkit/mx.json) and one mx_session_opened ledger event binding it (anti-contrivance); ADR-0.0.74 Decision item #4
+- REQ coverage: REQ-04-01/02/03/04 BEHAVIOR @covers in tests/commands/test_mx_enter.py (13 tests); REQ-04-05 SUPPORT proven by gz validate --cli-alignment exit 0 + artifact_edited ledger event
+- Date completed: 2026-06-25
+- Attestation status: operator-attested (g0) "attest completed"
+- Defects noted: none. Process note - RGR red was an import-error on first pass; assertion-level red verified retroactively via stub negative control; discipline adopted into gz-obpi-pipeline skill v6.23.0 this session
 
 ## Tracked Defects
 
@@ -233,12 +239,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — gz mx enter landed (ADR-0.0.74 Decision #4): operator-only hangar door, sets marker + writes one mx_session_opened ledger event + captures inspection scope, lock_manager token rail (mx-session), fail-closed exit 1 on empty/whitespace reason or attestor and on already-active. 13 targeted tests green (assertion-level red verified via stub negative control), full suite 6502/6502; receipts arb-step-unittest-b001fce829804af6aa93a3e9711d8397, arb-ruff-d21c2a32b0b24830a8cfd18999298a9f, arb-step-typecheck-d2cb9df116844a6db9b9bf7b6e7492e6, arb-step-mkdocs-45e84a7ca174443bb60f6ead1e930051; cli audit 111/111. Stage-4b adversary REFUTED-WITH-CAVEATS, both caveats resolve at this Stage 5.
+- Date: 2026-06-25
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-25
 
 **Evidence Hash:** -

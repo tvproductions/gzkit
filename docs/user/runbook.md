@@ -1441,6 +1441,28 @@ Valid values: `true`, `1`, `yes`, `false`, `0`, `no`
 
 ---
 
+## MX Mode — Maintenance Hangar
+
+When governance itself needs repair, open the Maintenance Hangar so most guards drop to
+advisory. gate5_invariants and the PRIME DIRECTIVE still bind.
+
+```bash
+# Open the hangar (operator only — not delegable to an agent)
+uv run gz mx enter --reason "re-true ledger-proof locks under ADR-0.0.74" --attestor g0
+
+# Open with explicit inspection scope
+uv run gz mx enter --reason "repair marker binding" --attestor g0 --scope ADR-0.0.74
+
+# Multiple scope items
+uv run gz mx enter --reason "broad repair" --attestor g0 --scope ADR-0.0.74 OBPI-0.0.74-02
+```
+
+See `gz mx enter --help` and [`docs/user/manpages/mx-enter.md`](manpages/mx-enter.md) for full options.
+The marker file (`.gzkit/mx.json`) and the `mx_session_opened` ledger event are the two
+truth-sources. A hand-created marker without a matching ledger event is void (anti-contrivance).
+
+---
+
 ## Notes
 
 - Do not run `gz audit` pre-attestation.

@@ -60,6 +60,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz chores doctor`](chores-doctor.md) | Re-scaffold missing or damaged canonical chores; preserve `proofs/` |
 | [`gz chores propose-ghi`](chores-propose-ghi.md) | File GitHub issues for unfiled cluster proposal records in a chore's `proofs/` |
 | [`gz migrate-semver`](migrate-semver.md) | Record SemVer ID rename events |
+| [`gz mx enter`](mx-enter.md) | Open the Maintenance Hangar (MX) mode |
 | [`gz register-adrs`](register-adrs.md) | Register existing ADR packages and linked OBPIs into ledger |
 | [`gz personas drift`](personas-drift.md) | Report persona trait adherence from behavioral proxies |
 | [`gz personas list`](personas-list.md) | Enumerate persona files from `.gzkit/personas/` |
