@@ -380,6 +380,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_complexity_doctrine_links_audit,
         run_complexity_thresholds_audit,
         run_dispatch_attestation_audit,
+        run_enforcement_floor_audit,
         run_fidelity_presence_audit,
         run_format_check,
         run_handoff_document_audit,
@@ -446,6 +447,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Surface fidelity", run_surface_fidelity_audit),
         ("Line endings", run_line_endings_audit),
         ("Dispatch attestation", run_dispatch_attestation_audit),
+        ("Enforcement floor", run_enforcement_floor_audit),
     ]
 
 

@@ -446,6 +446,36 @@ def _build_waiver_ratchet() -> Path:
     return root
 
 
+def _nc_facade_ep(_v: object) -> int:
+    """FACADE entrypoint for enforcement-floor NC probe — always returns 0 (does not catch)."""
+    return 0
+
+
+def _nc_probe_fixture() -> None:
+    """Inert fixture for the enforcement-floor NC probe."""
+    return None
+
+
+def _build_enforcement_floor() -> list:
+    """Build a synthetic registry with one FACADE claim for the enforcement-floor NC.
+
+    The meta-validator must detect the FACADE (facade_count > 0 = PASS for this NC).
+    If run_meta_validator is gutted to skip FACADE detection, this returns 0 = FACADE.
+    """
+    from gzkit.enforcement import EnforcementClaimRecord  # noqa: PLC0415
+
+    return [
+        EnforcementClaimRecord(
+            claim_id="nc-probe",
+            fixture=_nc_probe_fixture,
+            entrypoint=_nc_facade_ep,
+            source_fn="_qc_negative_controls._nc_facade_ep",
+            source_file=None,
+            source_line=None,
+        )
+    ]
+
+
 # ---------------------------------------------------------------------------
 # Claim registration table — (claim_id, fixture, production entrypoint)
 # ---------------------------------------------------------------------------
@@ -514,6 +544,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[str, Callable[[], Any], Callable[..., An
     ),
     ("fidelity-presence", _build_fidelity_presence, _ep._ep_fidelity_presence),
     ("waiver-ratchet", _build_waiver_ratchet, _ep._ep_waiver_ratchet),
+    ("enforcement-floor", _build_enforcement_floor, _ep._ep_enforcement_floor),
 )
 
 # The known-claims set the @enforces decorator validates against at decoration time.

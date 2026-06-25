@@ -790,6 +790,35 @@ def run_qc_binding_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --qc-binding", cwd=project_root)
 
 
+def run_enforcement_floor_audit(project_root: Path) -> QualityResult:
+    """Run the enforcement-claim meta-validator as a gz check step (ADR-0.0.74/OBPI-19).
+
+    READ-ONLY on a clean run — no ledger mutation when all claims PASS (root=None).
+    Fails closed when any enrolled claim lacks a passing un-forced NC (FACADE or TEST_BUG).
+    Recovery: uv run gz validate --qc-binding to see per-step details; address any FACADE.
+    """
+    from gzkit.enforcement import run_meta_validator  # noqa: PLC0415
+
+    result = run_meta_validator(root=None)
+    failures = [r for r in result.claim_results if r.outcome != "PASS"]
+    if failures:
+        output = "\n".join(r.message for r in failures)
+        return QualityResult(
+            success=False,
+            command="enforcement-floor-audit",
+            stdout=output,
+            stderr="",
+            returncode=3,
+        )
+    return QualityResult(
+        success=True,
+        command="enforcement-floor-audit",
+        stdout=f"Enforcement floor: {result.verified_count} claims verified.",
+        stderr="",
+        returncode=0,
+    )
+
+
 def run_fidelity_presence_audit(project_root: Path) -> QualityResult:
     """Run the fidelity-presence enforcement audit (ADR-0.0.73 / OBPI-0.0.73-08).
 

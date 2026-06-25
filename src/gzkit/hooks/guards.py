@@ -272,6 +272,17 @@ def forbid_skill_sync_drift(root: Path) -> int:
     return 0
 
 
+def _run_enforcement_floor(root: Path) -> int:
+    """Run the enforcement-claim meta-validator as a pre-push guard. READ-ONLY on clean."""
+    from gzkit.quality import run_enforcement_floor_audit  # noqa: PLC0415
+
+    result = run_enforcement_floor_audit(root)
+    if not result.success:
+        _safe_print(f"[pre-push] Enforcement floor failed:\n{result.stdout}")
+        return 1
+    return 0
+
+
 def main() -> int:
     """Entry point for command-line usage."""
     root = Path.cwd()
@@ -282,6 +293,9 @@ def main() -> int:
     if rc:
         return rc
     rc = forbid_skill_sync_drift(root)
+    if rc:
+        return rc
+    rc = _run_enforcement_floor(root)
     if rc:
         return rc
     return 0

@@ -13,7 +13,7 @@ req_atomic:
   - REQ-0.0.74-19-02  # meta-validator wired into pre-push; READ-ONLY on a clean run
   - REQ-0.0.74-19-03  # the new gz check step registers its OWN qc negative control
   - REQ-0.0.74-19-04  # STRUCTURAL-FENCE: strict-no-debt sequencing — wiring lands LAST (BI#8)
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.74-19-floor-wiring: Floor Wiring
@@ -23,7 +23,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #19 - "Floor wiring — wire the meta-validator into `gz check` and pre-push, read-only on a clean run, landing LAST only after the floor coverage is complete per the strict-no-debt sequence; registers the new `gz check` step's own qc negative control; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -42,6 +42,11 @@ Wire the meta-validator runner (OBPI-16) into the floor: register it as a `gz ch
 **security** — the Allowed Paths overlap registered security surfaces in `data/security_surfaces.json`: `src/gzkit/quality.py` and `src/gzkit/hooks/scripts/quality.py` (`subprocess_user_input`) and `src/gzkit/hooks/guards.py` (`subprocess_user_input`). Wiring a check step / pre-push guard touches the subprocess-spawning surface, so `sensitivity: security` is declared per `.claude/rules/security-sensitivity.md` (the auto-detect floor fails closed on an omitted declaration over a registered overlap). The change is additive (registering an existing read-only audit); the security walkthrough at completion enumerates the surface.
 
 ## Allowed Paths
+
+- `src/gzkit/governance/trust_audits/_qc_nc_entrypoints.py` (added by brief reconcile, attestor g0)
+
+- `src/gzkit/traceability.py` (added by brief reconcile, attestor g0)
+- `src/gzkit/hooks/__init__.py` (added by brief reconcile, attestor g0)
 
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md` — parent ADR for intent and scope (§ Decision item 19, § Boundary Invariants #8, § Consequences/Negative #8)
 - `src/gzkit/quality.py` — add the `run_enforcement_floor_audit(project_root) -> QualityResult` wrapper around the OBPI-16 runner (mirrors `run_qc_binding_audit`), READ-ONLY on a clean run
@@ -69,7 +74,7 @@ Wire the meta-validator runner (OBPI-16) into the floor: register it as a `gz ch
 1. REQUIREMENT: The meta-validator MUST be registered as a `gz check` step (a `QualityResult` wrapper in `quality.py`, registered in `commands/quality.py`) and MUST be READ-ONLY on a clean run — no ledger mutation when green (REQ-19-01).
 1. REQUIREMENT: The meta-validator MUST be wired into the pre-push guard (`hooks/guards.py`) and MUST be READ-ONLY on a clean run (REQ-19-02).
 1. REQUIREMENT: The new `gz check` step MUST register its OWN qc negative control in `_qc_negative_controls.py` — the floor step that proves enforcement claims is itself covered by a live NC (REQ-19-03).
-1. NEVER: Land this OBPI before OBPI-17 + OBPI-18 complete, or wire a floor that tolerates an uncovered enrolled claim — strict-no-debt; the teeth land last when coverage is complete (REQ-19-04).
+1. REQUIREMENT: The floor wiring MUST land LAST — only after OBPI-17 + OBPI-18 complete and enrolled-claim coverage is complete; no `_NEGATIVE_CONTROL_DEBT`-style escape exists; the teeth land last (REQ-19-04).
 1. ALWAYS: Reconcile the brief with the parent ADR before implementation; the runner (`src/gzkit/enforcement.py`, OBPI-16), the gate5 floor migration (OBPI-17), and the fence-proof upgrade (OBPI-18) MUST be complete first — STOP if missing.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
@@ -90,7 +95,7 @@ Wire the meta-validator runner (OBPI-16) into the floor: register it as a `gz ch
 - [ ] `.github/discovery-index.json` - repo structure
 - [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
 - [ ] `.claude/rules/security-sensitivity.md` — the `sensitivity: security` walkthrough this brief's surface overlap triggers
-- [ ] `data/security_surfaces.json` — the `subprocess_user_input` globs (`quality.py`, `hooks/guards.py`, `hooks/scripts/quality.py`) this brief overlaps
+- [ ] `data/security_surfaces.json` — the `subprocess_user_input` globs (`src/gzkit/quality.py`, `src/gzkit/hooks/guards.py`, `src/gzkit/hooks/scripts/quality.py`) this brief overlaps
 
 **Context:**
 
@@ -109,8 +114,8 @@ Wire the meta-validator runner (OBPI-16) into the floor: register it as a `gz ch
 **Existing Code (understand current state):**
 
 - [ ] `tests/governance/` reviewed for the local check-wiring test convention
-- [ ] `run_qc_binding_audit` + its `commands/quality.py` registration reviewed as the parallel to mirror
-- [ ] `hooks/guards.py` reviewed for how an existing guard is wired and runs read-only
+- [ ] `run_qc_binding_audit` + its `src/gzkit/commands/quality.py` registration reviewed as the parallel to mirror
+- [ ] `src/gzkit/hooks/guards.py` reviewed for how an existing guard is wired and runs read-only
 
 ## Quality Gates
 
@@ -225,28 +230,44 @@ Before: the meta-validator could be RUN manually (OBPI-16) to report coverage, b
 
 ### Key Proof
 
+
+Floor step registered in the gz check assembly:
+
+```bash
+$ grep -n '"Enforcement floor"' src/gzkit/commands/quality.py
+450:        ("Enforcement floor", run_enforcement_floor_audit),
+
+$ uv run -m unittest tests.governance.test_enforcement_floor_wiring -q
+Ran 10 tests — OK
+```
+
+Receipts: arb-step-unittest-780211e5138240819d5132468a8e912b (exit_status=0, 6489 tests pass), arb-ruff-cd8da11076e24673b340a25caaf29c7c, arb-step-typecheck-0d1c9e8335394eb0a26d48bee35964da, arb-step-mkdocs-fff53a9c10ed42c4a1c6ba3d114c5f0d.
+
 ### Implementation Summary
 
-- **Decision item 19 (verbatim):** "Floor wiring — join the meta-validator to `gz check` / pre-push, READ-ONLY on a clean run; lands LAST (after 17 + 18) per strict-no-debt; registers the new `gz check` step's OWN qc NC. (OBPI-19)"
-- Security surface (sensitivity: security): `src/gzkit/quality.py`, `src/gzkit/hooks/guards.py`, `src/gzkit/hooks/scripts/quality.py` (subprocess_user_input).
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Decision item 19 (verbatim): "Floor wiring — join the meta-validator to `gz check` / pre-push, READ-ONLY on a clean run; lands LAST (after 17 + 18) per strict-no-debt; registers the new `gz check` step's OWN qc NC. (OBPI-19)"
+- gz check wiring (REQ-19-01): run_enforcement_floor_audit(project_root) added to src/gzkit/quality.py; registered as ("Enforcement floor", run_enforcement_floor_audit) in _build_check_steps() at src/gzkit/commands/quality.py:450; calls run_meta_validator(root=None) — READ-ONLY, no ledger mutation when green.
+- pre-push wiring (REQ-19-02): _run_enforcement_floor(root) added to src/gzkit/hooks/guards.py, called in main() at line 298, READ-ONLY on clean.
+- own qc NC (REQ-19-03): ("enforcement-floor", _build_enforcement_floor, _ep._ep_enforcement_floor) added to _QC_NEGATIVE_CONTROL_TABLE; _build_enforcement_floor() produces a synthetic FACADE record; _ep_enforcement_floor() in _qc_nc_entrypoints.py detects it; "Enforcement floor" classification added to qc_binding._STEP_CLASSIFICATION.
+- strict-no-debt sequencing (REQ-19-04, structural-fence): floor landed after OBPI-17 (released 2026-06-25T01:23) and OBPI-18 (released 2026-06-25T08:39); no _NEGATIVE_CONTROL_DEBT escape introduced.
+- Tests added: tests/governance/test_enforcement_floor_wiring.py (10 tests, 3 classes) including a runtime NC test exercising fixture->entrypoint->detection (added per Stage-4 adversary finding).
+- Security surface (sensitivity: security): src/gzkit/quality.py, src/gzkit/hooks/guards.py, src/gzkit/hooks/scripts/quality.py — all changes additive, in-process, no new subprocess call site.
 
 ## Tracked Defects
+
+- REQ-count drift: 3 declared vs 4 acceptance criteria (brief reconcile, attestor g0)
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — operator Gate-5 verbatim attestation for OBPI-0.0.74-19-floor-wiring (Heavy/foundation/security). The enforcement-claim meta-validator is wired as the "Enforcement floor" gz check step (commands/quality.py:450) and pre-push guard (guards.py:298), READ-ONLY on a clean run (run_meta_validator(root=None)); the floor step carries its own qc negative control ("enforcement-floor" in _QC_NEGATIVE_CONTROL_TABLE), and landed LAST after OBPI-17 (released 2026-06-25T01:23) + OBPI-18 (released 2026-06-25T08:39) per strict-no-debt. Receipts: arb-step-unittest-780211e5138240819d5132468a8e912b (6489 pass), arb-ruff-cd8da11076e24673b340a25caaf29c7c, arb-step-typecheck-0d1c9e8335394eb0a26d48bee35964da, arb-step-mkdocs-fff53a9c10ed42c4a1c6ba3d114c5f0d.
+- Date: 2026-06-25
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-25
 
 **Evidence Hash:** -

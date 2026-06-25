@@ -101,6 +101,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Surface fidelity": ("audit", "docs/", "bound", "python_function"),
     "Line endings": ("audit", "all", "bound", "python_function"),
     "Dispatch attestation": ("audit", "docs/", "bound", "python_function"),
+    "Enforcement floor": ("audit", "src/", "bound", "python_function"),
 }
 
 

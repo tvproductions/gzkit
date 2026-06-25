@@ -257,3 +257,15 @@ def _ep_waiver_ratchet(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.waiver_ratchet import audit_waiver_ratchet  # noqa: PLC0415
 
     return audit_waiver_ratchet(root)
+
+
+def _ep_enforcement_floor(records: list) -> int:
+    """NC entrypoint for enforcement-floor: meta-validator must detect FACADE claims.
+
+    Returns facade_count + test_bug_count (non-zero = caught the FACADE = PASS for NC).
+    If run_meta_validator is gutted to skip FACADE detection, returns 0 = FACADE for NC.
+    """
+    from gzkit.enforcement import run_meta_validator  # noqa: PLC0415
+
+    result = run_meta_validator(registry=records, root=None)
+    return result.facade_count + result.test_bug_count
