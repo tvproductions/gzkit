@@ -11,7 +11,7 @@ req_atomic:
   - REQ-0.0.74-18-01  # resolve_fence_proof: a fence REQ asserting enforcement requires a live @enforces NC
   - REQ-0.0.74-18-02  # state-property fences unchanged — still resolve via the Boundary Invariants anchor
   - REQ-0.0.74-18-03  # STRUCTURAL-FENCE: a structural-fence enforcement claim requires a live NC (BI#10)
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.74-18-structural-fence-proof-upgrade: Structural Fence Proof Upgrade
@@ -21,7 +21,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #18 - "Structural-fence proof upgrade — `resolve_fence_proof` (in `src/gzkit/req_kind.py`) amended so a `[structural-fence]` REQ that asserts enforcement requires a live `@enforces` NC, not merely a `## Boundary Invariants` anchor, while state-property fences are unchanged; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -36,6 +36,10 @@ Amend `resolve_fence_proof` (in `src/gzkit/req_kind.py`, line ~91 — NOT `close
 > those external surfaces.
 
 ## Allowed Paths
+
+- `src/gzkit/enforcement.py` (added by brief reconcile, attestor g0)
+- `src/gzkit/traceability.py` (added by brief reconcile, attestor g0)
+- `src/gzkit/events.py` (added by brief reconcile, attestor g0)
 
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md` — parent ADR for intent and scope (§ Decision item 18, § Boundary Invariants #10)
 - `src/gzkit/req_kind.py` — amend `resolve_fence_proof` so an enforcement-asserting `[structural-fence]` REQ requires a live `@enforces` NC, while state-property fences are unchanged
@@ -60,6 +64,7 @@ Amend `resolve_fence_proof` (in `src/gzkit/req_kind.py`, line ~91 — NOT `close
 
 1. REQUIREMENT: `resolve_fence_proof` MUST resolve a `[structural-fence]` REQ that asserts enforcement to a passing status ONLY when a live `@enforces` NC for that claim exists; absent the live NC it MUST resolve to an unproven status, not merely on a `## Boundary Invariants` anchor (REQ-18-01).
 1. REQUIREMENT: `resolve_fence_proof` MUST leave the resolution of state-property (non-enforcement) `[structural-fence]` REQs unchanged — they continue to resolve via the `## Boundary Invariants` anchor (no regression) (REQ-18-02).
+1. REQUIREMENT: The fence-proof resolver MUST enforce that a `[structural-fence]` REQ asserting enforcement resolves only when `resolve_fence_proof` finds a live `@enforces` NC, not merely a `## Boundary Invariants` anchor — proved at ADR closeout via parent ADR § Boundary Invariants #10 (REQ-18-03).
 1. NEVER: Edit the consumer `closeout_proof.py` to work around the resolver, or weaken state-property fence resolution to make the new enforcement path pass.
 1. ALWAYS: Reconcile the brief with the parent ADR before implementation; `resolve_fence_proof` (`src/gzkit/req_kind.py`) and the `@enforces` registry (OBPI-15) MUST exist first — STOP if missing.
 
@@ -210,28 +215,45 @@ Before: a `[structural-fence]` REQ resolved at closeout as long as the parent AD
 
 ### Key Proof
 
+
+Claim-binding teeth — a non-empty registry does NOT pass a fence whose own claim is absent:
+
+```
+named live claim (`req-kind-discipline`) : pass
+named dead claim (`not-a-real-claim`)    : unproven-fence
+meta-property, no claim                   : unproven-fence
+```
+
+Full suite green: receipt arb-step-unittest-dff7e3a5057249a1b19c1103c638703f (exit_status=0). Scoped 8/8: arb-step-unittestscoped-0ef1f5c136a74910a718a8172be3e1fb. Lint arb-ruff-79367df4105743bbac752b5488ab73fb, typecheck arb-step-typecheck-8a37c53920394fe1a364fb6948579faf, mkdocs arb-step-mkdocs-04661e5f13404fc882e5734ac3996a2d. Independent Codex adversary (Step 4b): NOT-REFUTED; mutation probes confirm tests fail on hard-coded True (2 failures) and False (1 failure) — not tautological.
+
 ### Implementation Summary
 
-- **Decision item 18 (verbatim):** "Structural-fence proof upgrade — a `[structural-fence]` REQ that asserts *enforcement* requires a live `@enforces` NC, not merely a `## Boundary Invariants` anchor; `resolve_fence_proof` (in `src/gzkit/req_kind.py`) is amended, while state-property fences are unchanged. (OBPI-18)"
-- Coupled surface (read-only, not edited): `src/gzkit/governance/trust_audits/closeout_proof.py` consumes `resolve_fence_proof`'s return value.
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Decision item 18 (verbatim): "Structural-fence proof upgrade — a `[structural-fence]` REQ that asserts *enforcement* requires a live `@enforces` NC, not merely a `## Boundary Invariants` anchor; `resolve_fence_proof` (in `src/gzkit/req_kind.py`) is amended, while state-property fences are unchanged. (OBPI-18)"
+- Resolver amended (claim-bound): `resolve_fence_proof` gains `req_text=""`. Enforcement-asserting fences (matched by `_ENFORCEMENT_FENCE_KEYWORDS`) resolve via `_enforcement_claim_registered` — triggers `_ensure_production_claims_registered()` (canonical idempotent entrypoint, eliminates import-order dependency) then matches backtick-delimited tokens against `registered_claims()`: named-live -> pass, named-dead -> unproven-fence, meta/no-claim -> unproven-fence. State-property fences keep the `## Boundary Invariants` anchor path unchanged.
+- Call site: `_enrich` passes `dreq.entity.description` as `req_text`.
+- Coupled surface (read-only, not edited): `closeout_proof.py:226` keeps the 2-arg call — the enforcement requirement fires at ADR closeout only after OBPI-19 wires the consumer + gate5-claim discovery (ADR §5 strict-no-debt). Tracked in `.gzkit/insights/agent-insights.jsonl`.
+- Files modified: `src/gzkit/req_kind.py`. Created: `tests/governance/test_fence_proof_live_nc.py` (8 tests).
+- Tests added: 8 (TestEnforcementAssertingFencePath x4 -> REQ-18-01; TestStatePropertyFencePath x4 -> REQ-18-02).
+- Correction note: first cut used a registry-global check (import-order-fragile + vacuous-pass); corrected to claim-binding in-flight after Step-4b adversarial catch. improvement insight recorded per Behavior Rule #11.
+- Date completed: 2026-06-25
+- Attestation status: operator-verbatim-conversational ("attest completed")
+- Defects noted: Defect 2 (closeout consumer wiring) deferred to OBPI-19; latent backtick-token short-claim risk (no current hit) tracked in insights.
 
 ## Tracked Defects
+
+- REQ-count drift: 2 declared vs 3 acceptance criteria (brief reconcile, attestor g0)
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.74-18 structural-fence proof upgrade: resolve_fence_proof (src/gzkit/req_kind.py) now distinguishes enforcement-asserting fences from state-property fences and binds the former to its own @enforces claim (named-live -> pass, named-dead/meta -> unproven-fence) via the canonical idempotent _ensure_production_claims_registered() entrypoint (import-order-independent); state-property fences and the 2-arg closeout consumer unchanged. 8/8 scoped tests (arb-step-unittestscoped-0ef1f5c136a74910a718a8172be3e1fb), full suite green (arb-step-unittest-dff7e3a5057249a1b19c1103c638703f), lint/typecheck/mkdocs clean; independent Codex Step-4b adversary NOT-REFUTED with non-tautological mutation probes. In-flight correction (registry-global -> claim-bound) and deferred Defect 2 (closeout_proof.py consumer wiring -> OBPI-19) recorded in agent-insights.jsonl per Behavior Rule #11.
+- Date: 2026-06-25
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-25
 
 **Evidence Hash:** -

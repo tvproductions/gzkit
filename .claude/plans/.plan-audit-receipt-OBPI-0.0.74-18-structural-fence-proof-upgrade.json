@@ -1,0 +1,45 @@
+{
+  "obpi_id": "OBPI-0.0.74-18-structural-fence-proof-upgrade",
+  "timestamp": "2026-06-25T06:30:39.200641+00:00",
+  "verdict": "PASS",
+  "plan_file": "structural-fence-proof-upgrade-OBPI-0.0.74-18.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-02-structural-fence-channel-boundary-invariants-anchor",
+      "contested_paths": [
+        "src/gzkit/req_kind.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch",
+      "contested_paths": [
+        "src/gzkit/req_kind.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-03-parity-gate-three-channel-extension",
+      "contested_paths": [
+        "src/gzkit/req_kind.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-02-req-kind-discipline-validator",
+      "contested_paths": [
+        "src/gzkit/req_kind.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md",
+        "docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/obpis/OBPI-0.0.74-18-structural-fence-proof-upgrade.md"
+      ]
+    }
+  ]
+}

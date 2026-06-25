@@ -77,6 +77,58 @@ _REQ_SEMVER_RE: re.Pattern[str] = re.compile(r"REQ-(\d+\.\d+\.\d+)-")
 # Heading that marks the STRUCTURAL-FENCE proof anchor in a parent ADR.
 _BOUNDARY_INVARIANTS_HEADING: str = "## Boundary Invariants"
 
+# Keywords that mark a [structural-fence] REQ as enforcement-asserting.
+# An enforcement-asserting fence requires a live @enforces NC in the registry
+# (not merely a ## Boundary Invariants anchor) to resolve to "pass".
+_ENFORCEMENT_FENCE_KEYWORDS: tuple[str, ...] = (
+    "@enforces",
+    "enforcement",
+    "fail-closes",
+    "live nc",
+    "live negative control",
+    "_negative_control_debt",
+)
+
+
+def _is_enforcement_asserting(req_text: str) -> bool:
+    """Return True if the REQ text asserts enforcement rather than a state-property."""
+    lower = req_text.lower()
+    return any(kw in lower for kw in _ENFORCEMENT_FENCE_KEYWORDS)
+
+
+# Backtick-delimited tokens in a REQ text are the claim-id candidates. An
+# enforcement-asserting fence names its claim as a backticked slug (e.g.
+# ``grader-gaming``); matching only backticked tokens against the registered
+# claim set avoids false-positives on short common words ("test", "lint") that
+# would appear in arbitrary prose.
+_BACKTICK_TOKEN_RE: re.Pattern[str] = re.compile(r"`([^`]+)`")
+
+
+def _enforcement_claim_registered(req_text: str) -> bool:
+    """Return True if req_text names a registered ``@enforces`` claim.
+
+    Binds the fence to *its* claim (REQ-18-01 "for that claim"): a backtick-
+    delimited token in the REQ text must exactly match a registered claim id.
+    Production claims are registered first via the canonical idempotent
+    entrypoint so the result does not depend on import order — a fence whose
+    claim genuinely exists never spuriously resolves unproven because some
+    registering module had not yet been imported.
+
+    A meta-property fence that names no single claim (e.g. "the registry has no
+    `_NEGATIVE_CONTROL_DEBT` escape") matches nothing and returns False — those
+    are not per-claim bindable and prove via the OBPI-19 floor at ADR closeout,
+    not here.
+    """
+    from gzkit.enforcement import (  # noqa: PLC0415
+        _ensure_production_claims_registered,
+        registered_claims,
+    )
+
+    _ensure_production_claims_registered()
+    registered = set(registered_claims())
+    tokens = {token.strip() for token in _BACKTICK_TOKEN_RE.findall(req_text)}
+    return bool(tokens & registered)
+
 
 def _find_parent_adr_file(semver: str, project_root: Path) -> Path | None:
     """Find the parent ADR file for a given semver under project_root."""
@@ -88,17 +140,32 @@ def _find_parent_adr_file(semver: str, project_root: Path) -> Path | None:
     return None
 
 
-def resolve_fence_proof(req_id: str, project_root: Path) -> str:
-    """Resolve STRUCTURAL-FENCE proof status via parent-ADR Boundary Invariants anchor.
+def resolve_fence_proof(req_id: str, project_root: Path, req_text: str = "") -> str:
+    """Resolve STRUCTURAL-FENCE proof status.
+
+    For enforcement-asserting fences (REQ text declares something is enforced,
+    validated, fail-closed, or gated) — resolves to ``"pass"`` only when the
+    fence's own ``@enforces`` claim (named as a backticked slug in the REQ text)
+    is registered; ``"unproven-fence"`` when the claim is absent or unnamed.
+
+    For state-property fences (non-enforcement) — resolves via parent-ADR
+    ``## Boundary Invariants`` anchor, unchanged from prior behavior.
 
     Returns one of:
-    - ``"pass"`` — parent ADR has a ``## Boundary Invariants`` heading.
-    - ``"unproven-fence"`` — anchor absent, parent ADR not found, or req_id unparseable.
+    - ``"pass"`` — proof resolved (the fence's named claim is registered, or the
+      anchor is present for a state-property fence).
+    - ``"unproven-fence"`` — proof absent (the fence's claim is unregistered or
+      unnamed for an enforcement fence, anchor absent for a state-property fence,
+      or req_id unparseable).
     """
     m = _REQ_SEMVER_RE.match(req_id)
     if m is None:
         return "unproven-fence"
     semver = m.group(1)
+
+    if _is_enforcement_asserting(req_text):
+        return "pass" if _enforcement_claim_registered(req_text) else "unproven-fence"
+
     adr_path = _find_parent_adr_file(semver, project_root)
     if adr_path is None:
         return "unproven-fence"
@@ -453,7 +520,8 @@ def compute_three_channel_coverage(
                 proof_status = "advisory-support"
         else:  # STRUCTURAL_FENCE
             if project_root is not None:
-                proof_status = resolve_fence_proof(entry.req_id, project_root)
+                req_text = dreq.entity.description if dreq else ""
+                proof_status = resolve_fence_proof(entry.req_id, project_root, req_text)
             else:
                 proof_status = "unproven-fence"
 
