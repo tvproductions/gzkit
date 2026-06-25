@@ -14,7 +14,7 @@ req_atomic:
   - REQ-0.0.74-17-03  # @enforces + live un-forced NC for ledger (temp ledger, broken hash chain)
   - REQ-0.0.74-17-04  # @enforces + live un-forced NC for gate5-attestation ABSENCE case (forgery is OUT)
   - REQ-0.0.74-17-05  # STRUCTURAL-FENCE: gate5 floor enrollment completeness enumerated over GATE5_INVARIANTS (BI#9)
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.74-17-gate5-invariants-floor-migration: Gate5 Invariants Floor Migration
@@ -24,7 +24,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #17 - "gate5_invariants floor migration — live un-forced negative controls for the four `GATE5_INVARIANTS` members lacking one (secrets, operator-pii, ledger, gate5-attestation-absence), each running its real path against a synthetic violation (grader-gaming is item 13); honest negative — secrets/operator-pii have no bound gate5 entrypoint today, forbid binding a narrower proxy; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -69,6 +69,7 @@ Migrate the never-relax `gate5_invariants` floor (`src/gzkit/mx/invariants.py`, 
 1. REQUIREMENT: `operator-pii` MUST carry an `@enforces` entry whose live un-forced NC uses a SYNTHETIC PII-shaped match (NEVER the operator's real email) through the real detector, asserting it is caught — OR be honestly surfaced as named-not-enforced with no narrower proxy bound (REQ-17-02).
 1. REQUIREMENT: `ledger` MUST carry an `@enforces` entry whose live un-forced NC constructs a temp ledger with a broken hash chain and runs the real ledger-integrity path, asserting it is caught (REQ-17-03).
 1. REQUIREMENT: `gate5-attestation` MUST carry an `@enforces` entry whose live un-forced NC exercises the ABSENCE case only — a missing attestation on a heavy/foundation completion rejected through the real `_requires_human_obpi_attestation` gate; forgery-detection is OUT (REQ-17-04).
+1. REQUIREMENT: The meta-validator's gate5 claim-source MUST enumerate `GATE5_INVARIANTS` membership and require each member to carry an `@enforces` entry with a passing un-forced NC (or an honest named-not-enforced surfacing); a member with no entry MUST fail the floor (REQ-17-05).
 1. NEVER: Bind a narrower proxy entrypoint to manufacture coverage, use a real secret/PII value, or force any NC — D1 genuineness is absolute and the honest-negative is binding (REQ-17-01, REQ-17-02).
 1. ALWAYS: Reconcile the brief with the parent ADR before implementation; the `@enforces` registry (OBPI-15), the runner (OBPI-16), and `GATE5_INVARIANTS` (`src/gzkit/mx/invariants.py`, OBPI-03) MUST exist first — STOP if missing.
 
@@ -226,14 +227,20 @@ Before: the `gate5_invariants` never-relax floor named five members but only `le
 
 ### Key Proof
 
+
+Both bound gate5 floor claims PASS through the real meta-validator runner: run_meta_validator(gate5 registry) returns verified=2 facade=0 test_bug=0 with gate5-ledger -> PASS and gate5-attestation-absence -> PASS. Genuineness mutation-verified: gutting any real production path (validate_ledger -> [], _validate_obpi_human_attestation_fields -> no-raise, _requires_human_obpi_attestation -> False) FACADE-fails the corresponding catch-test. Receipts: arb-step-unittest-87fbfb05b85841f894d109c37bb2f5ef (6471/6471 pass), arb-ruff-baaff749264f472598a95d3bf2e19317, arb-step-typecheck-f92749a720b94379969c79485d88bc43, arb-step-mkdocs-f547129b3959452ebc4cea98ea681ef9. Covers parity: behavior_uncovered=0 (REQ-17-05 is structural-fence, proved at ADR closeout via parent ADR Boundary Invariants #9).
+
 ### Implementation Summary
 
-- **Decision item 17 (verbatim):** "gate5_invariants floor migration — declare `@enforces` + live un-forced NCs for the four `GATE5_INVARIANTS` members lacking one: secrets (a synthetic planted secret), operator-pii (a SYNTHETIC PII-shaped match, **NEVER** the operator's real email), ledger (a temp ledger with a broken hash chain), gate5-attestation (the **ABSENCE** case only ...). ... **Honest negative:** secrets and operator-pii have NO bound gate5 production entrypoint today — name this in the brief and FORBID binding a narrower proxy to fake it ... (OBPI-17)"
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Decision item 17 (verbatim): gate5_invariants floor migration — declare @enforces + live un-forced NCs for the four GATE5_INVARIANTS members lacking one (secrets, operator-pii, ledger, gate5-attestation-absence); honest negative — secrets/operator-pii have no bound gate5 entrypoint today, forbid binding a narrower proxy.
+- Bound members: gate5-ledger runs the real validate_ledger integrity path against a schema-corrupted ledger (gzkit ledger has no cryptographic hash chain; the brief's "broken hash chain" is realized as JSONL schema corruption); gate5-attestation-absence runs the real _requires_human_obpi_attestation gate plus _validate_obpi_human_attestation_fields validator against a missing attestation.
+- Honest negative: secrets/operator-pii surfaced via _GATE5_NAMED_NOT_ENFORCED — no @enforces entry, no narrower proxy bound (tests enforce the prohibition).
+- Files: src/gzkit/mx/invariants.py (modified — gate5 registration); tests/mx/test_gate5_invariants_live_nc.py (created — 12 tests); brief (modified — added REQ-17-05 REQUIREMENT line).
+- Tests added: 12 (4 NCs, 4 genuineness guards, 2 named-not-enforced, 2 idempotency/structure).
+- Date completed: 2026-06-25
+- Attestation status: operator-verbatim ("attest completed"), Gate 5 universal.
+- Defects noted: Step-4b adversary weakest-point (attestation NC re-implemented production emptiness check) fixed in-flight by binding the real _validate_obpi_human_attestation_fields; mutation-verified seam-closed.
 
 ## Tracked Defects
 
@@ -241,12 +248,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.74-17 gate5_invariants floor migration verified: gate5-ledger and gate5-attestation-absence carry live un-forced @enforces NCs running the real validate_ledger and _requires_human_obpi_attestation/_validate_obpi_human_attestation_fields production paths (both PASS through run_meta_validator: verified=2 facade=0 test_bug=0); secrets and operator-pii honestly surfaced as named-not-enforced with no narrower proxy bound; 6471/6471 unittests (receipt arb-step-unittest-87fbfb05b85841f894d109c37bb2f5ef), ruff/ty/mkdocs clean (arb-ruff-baaff749264f472598a95d3bf2e19317, arb-step-typecheck-f92749a720b94379969c79485d88bc43, arb-step-mkdocs-f547129b3959452ebc4cea98ea681ef9); independent adversary returned NOT-REFUTED, its one weakest-point seam fixed in-flight and mutation-verified closed. Heavy lane / foundation kind Gate 5 universal.
+- Date: 2026-06-25
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-25
 
 **Evidence Hash:** -
