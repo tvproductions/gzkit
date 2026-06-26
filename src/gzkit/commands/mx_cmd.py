@@ -23,7 +23,7 @@ from gzkit import lock_manager
 from gzkit.commands.common import console, get_project_root
 from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.lock_manager import LockData
-from gzkit.mx import marker
+from gzkit.mx import log, marker
 from gzkit.mx.marker import Marker
 
 # Lock identity on the token rail — singleton key for the MX session.
@@ -43,7 +43,8 @@ def _mx_session_opened_event(
     attestor: str,
     inspection_scope: list[str],
 ) -> LedgerEvent:
-    """Build the mx_session_opened ledger event."""
+    """Build the mx_session_opened ledger event (the enter anchor; typed by
+    :class:`gzkit.events.MxSessionOpenedEvent` at parse time)."""
     return LedgerEvent(
         event="mx_session_opened",
         id=session_id,
@@ -127,7 +128,8 @@ def mx_enter_cmd(
 
 
 def _mx_session_closed_event(session_id: str, attestor: str) -> LedgerEvent:
-    """Build the mx_session_closed ledger event."""
+    """Build the mx_session_closed ledger event (the exit anchor; typed by
+    :class:`gzkit.events.MxSessionClosedEvent` at parse time)."""
     return LedgerEvent(
         event="mx_session_closed",
         id=session_id,
@@ -191,7 +193,13 @@ def mx_exit_cmd(
         console.print("[red]Guards reported failures. MX session remains open.[/red]")
         sys.exit(3)
 
-    # All-green — write mx_session_closed, marker stays removed.
+    # All-green — assemble the complete-by-construction MX log and render it for
+    # operator review BEFORE the close signature is taken (REQ-06-03). The log is
+    # derived from the ledger events + commits in the enter→exit window, so it
+    # cannot be hand-narrated or forgotten.
+    console.print(log.assemble_and_render(root, m.session_id))
+
+    # Signature: write mx_session_closed, marker stays removed.
     ledger = Ledger(root.joinpath(*_LEDGER_RELPATH))
     ledger.append(_mx_session_closed_event(m.session_id, attestor.strip()))
 

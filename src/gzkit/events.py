@@ -562,6 +562,35 @@ class EnforcementClaimVerifiedEvent(_EventBase):
     source_fn: str = Field(..., description="Qualified name of the entrypoint")
 
 
+class MxSessionOpenedEvent(_EventBase):
+    """mx_session_opened event — opens the MX maintenance hangar window (ADR-0.0.74, OBPI-06).
+
+    The event ``ts`` is the *enter* anchor that bounds log assembly; ``session_id``
+    binds this open to its matching ``mx_session_closed`` and to the marker.
+    """
+
+    event: Literal["mx_session_opened"]
+    session_id: str = Field(..., description="Binding key to the marker and the close event")
+    reason: str = Field(..., description="Operator reason for entering MX mode")
+    attestor: str = Field(..., description="Operator who opened the hangar")
+    inspection_scope: list[str] = Field(
+        default_factory=list, description="ADRs/OBPIs under inspection (the enter-time scope)"
+    )
+
+
+class MxSessionClosedEvent(_EventBase):
+    """mx_session_closed event — closes the MX hangar window (ADR-0.0.74, OBPI-06).
+
+    The event ``ts`` is the *exit* anchor; together with the matching
+    ``mx_session_opened`` ``ts`` it bounds the enter→exit window the MX log
+    is assembled from.
+    """
+
+    event: Literal["mx_session_closed"]
+    session_id: str = Field(..., description="Binding key to the matching open event")
+    attestor: str = Field(..., description="Operator who closed the hangar")
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -605,7 +634,9 @@ TypedLedgerEvent = Annotated[
     | BriefReconciledEvent
     | BriefReconcileDriftDetectedEvent
     | BriefReconcileDriftOverriddenEvent
-    | EnforcementClaimVerifiedEvent,
+    | EnforcementClaimVerifiedEvent
+    | MxSessionOpenedEvent
+    | MxSessionClosedEvent,
     Field(discriminator="event"),
 ]
 

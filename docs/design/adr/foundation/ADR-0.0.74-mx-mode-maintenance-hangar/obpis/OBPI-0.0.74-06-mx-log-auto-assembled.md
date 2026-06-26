@@ -3,7 +3,7 @@ id: OBPI-0.0.74-06-mx-log-auto-assembled
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 6
 lane: Heavy
-status: Draft
+status: Completed
 # req_atomic: each REQ is one coherent surface authored in a single TDD
 # increment — assembling the log from the ledger+commit window (01), naming
 # every fix and the ADRs/OBPIs/REQs touched (02), presenting it for operator
@@ -24,7 +24,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #6 - "The auto-assembled MX log — built at exit from ledger events + commits between enter/exit, naming fixes and the ADRs/OBPIs/REQs touched; operator reviews before signing; ledger event; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -42,7 +42,10 @@ At exit the MX log is assembled by construction from the ledger events and commi
 
 - `src/gzkit/mx/log.py` **CREATE** — assembles the MX log from the ledger events + commits in the enter→exit window, naming every fix and the ADRs/OBPIs/REQs touched
 - `src/gzkit/events.py` — add the `mx_session_opened` / `mx_session_closed` event types carrying the session window (enter/exit anchors)
+- `src/gzkit/schemas/ledger.json` — add the paired schema entries for the two new event types (coupled surface: `gz validate --ledger` and `audit_event_schemas` fail closed on a typed event with no schema entry) — amended 2026-06-26 (operator-approved coupled-surface declaration, AGENTS.md DO-IT-RIGHT §1a)
+- `src/gzkit/commands/mx_cmd.py` — wire the `assemble_and_render` call into `mx_exit_cmd` before the `mx_session_closed` write (REQ-06-03: the operator reviews the assembled log before signing) — amended 2026-06-26 (operator-approved) per plan-audit gap: REQ-06-03 requires a call site, and the exit command is the only surface that runs "at exit"
 - `tests/mx/test_mx_log.py` **CREATE** — unit tests for window assembly, the named-artifacts roll-up, and the event types' window fields
+- `tests/test_schemas.py` — register the two new event types in the `_EVENT_MODELS` schema↔model alignment registry (coupled surface: `TestLedgerSchemaAlignment` fails closed on a schema event with no mapped model) — amended 2026-06-26 (operator-approved coupled-surface declaration, AGENTS.md DO-IT-RIGHT §1a; precedent OBPI-0.0.71-01)
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/obpis/OBPI-0.0.74-06-mx-log-auto-assembled.md` — this brief (evidence recording)
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md` — parent ADR for intent and scope
 
@@ -215,13 +218,22 @@ uv run -m unittest tests.mx.test_mx_log -v
 
 ### Key Proof
 
+
+REQ-06-03 (render-before-signature) ordering proof:
+
+  uv run -m unittest tests.mx.test_mx_log.TestExitRendersLogBeforeSigning -v
+
+A spy records the count of mx_session_closed ledger events at the moment assemble_and_render is called; asserts [0] (log reviewed before signature) and exactly 1 close event after exit. The independent adversary inverted the order in mx_exit_cmd and the test went RED ([1] != [0]) — a genuine ordering proof, not a tautology. Full suite: 6521/6521 (receipt arb-step-unittest-891fad1a279e4e16a939bafdf5c23ff3, exit_status 0).
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/mx/log.py (enter→exit window assembler: assemble_window, parse_artifacts, render, assemble_and_render); tests/mx/test_mx_log.py (8 unit tests, @covers all 4 REQs)
+- Files modified: src/gzkit/events.py (MxSessionOpenedEvent/MxSessionClosedEvent typed classes added to TypedLedgerEvent union); src/gzkit/commands/mx_cmd.py (log.assemble_and_render wired into mx_exit_cmd before the mx_session_closed write); src/gzkit/schemas/ledger.json (paired schema entries — coupled surface); tests/test_schemas.py (_EVENT_MODELS registry — coupled surface)
+- Tests added: 8 (TestAssembleWindow, TestParseArtifacts, TestRender, TestExitRendersLogBeforeSigning, TestMxSessionEventTypes)
+- Date completed: 2026-06-26
+- Attestation status: operator-verbatim "attest completed" (attestor g0)
+- Defects noted: none in deliverable. Two coupled-surface side-fixes landed (GHI #645 reconcile @covers false-positive; GHI #646 pipeline status-flip — found post-merge to conflict with frontmatter-reconcile, follow-up flagged to operator)
 
 ## Tracked Defects
 
@@ -229,12 +241,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.74-06 mx-log-auto-assembled (ADR-0.0.74 Decision #6, Heavy lane): the auto-assembled MX log assembles by construction from the ledger events + git commits in the enter→exit window, names every fix and the ADRs/OBPIs/REQs each touched, and renders for operator review before the mx_session_closed signature; MxSessionOpenedEvent/MxSessionClosedEvent typed event types carry the session window. All-green: unittest 6521/6521 (arb-step-unittest-891fad1a279e4e16a939bafdf5c23ff3), ruff (arb-ruff-e5071f4e47b84810abc10a88a5e458d0), typecheck (arb-step-typecheck-07c90783df5a48a5bacee25ce8c6563e), mkdocs --strict (arb-step-mkdocs-5e84d0e2f63d4cd084aa2af960f9ce26); REQ parity 4/4; independent adversary NOT-REFUTED-WITH-CAVEATS with the one tautological-render caveat fixed and re-validated RED-under-mutation.
+- Date: 2026-06-26
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-26
 
 **Evidence Hash:** -

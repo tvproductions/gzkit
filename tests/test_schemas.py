@@ -35,6 +35,8 @@ from gzkit.events import (
     GateCheckedEvent,
     IntrinsicComplexityAttestationEvent,
     LifecycleTransitionEvent,
+    MxSessionClosedEvent,
+    MxSessionOpenedEvent,
     ObpiCompletionRepudiatedEvent,
     ObpiCompletionUncoveredAcceptEvent,
     ObpiCreatedEvent,
@@ -281,6 +283,8 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "brief_reconcile_drift_detected": BriefReconcileDriftDetectedEvent,
     "brief_reconcile_drift_overridden": BriefReconcileDriftOverriddenEvent,
     "enforcement_claim_verified": EnforcementClaimVerifiedEvent,
+    "mx_session_opened": MxSessionOpenedEvent,
+    "mx_session_closed": MxSessionClosedEvent,
 }
 
 # Base fields present on _EventBase -- not event-specific

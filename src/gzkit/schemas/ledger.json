@@ -1360,6 +1360,46 @@
           "min_length": 1
         }
       }
+    },
+    "mx_session_opened": {
+      "required": [
+        "session_id",
+        "reason",
+        "attestor"
+      ],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        },
+        "inspection_scope": {
+          "type": "array"
+        }
+      }
+    },
+    "mx_session_closed": {
+      "required": [
+        "session_id",
+        "attestor"
+      ],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
     }
   }
 }
