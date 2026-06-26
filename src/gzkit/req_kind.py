@@ -268,8 +268,13 @@ def parse_support_citation(req_text: str) -> SupportCitation | None:
     if not found_types:
         return None
 
-    path_match = _SUPPORT_PATH_RE.search(req_text)
-    artifact_path = path_match.group(1) if path_match else None
+    # The cited artifact is the most directory-qualified path token (e.g.
+    # "src/gzkit/events.py" over a bare "events.py" mention elsewhere in the
+    # text) — the artifact a SUPPORT REQ names usually carries its full path.
+    path_matches = _SUPPORT_PATH_RE.findall(req_text)
+    artifact_path = (
+        max(path_matches, key=lambda p: (p.count("/"), len(p))) if path_matches else None
+    )
 
     return SupportCitation(event_types=found_types, scope=scope, artifact_path=artifact_path)
 
@@ -323,6 +328,31 @@ def _ledger_has_event_citing_path(
             value = ev.get(field)
             if isinstance(value, str) and target in value.replace("\\", "/").casefold():
                 return True
+    return False
+
+
+def _support_path_arm_ok(citation: SupportCitation, project_root: Path) -> bool:
+    """True when the SUPPORT ledger arm is satisfied for a path-citing citation.
+
+    Two genuine, path-specific proofs (GHI #647) — neither is the hollow
+    type-only match:
+
+    1. A ledger event of the cited type CITES the path (the operation genuinely
+       booked an event for this artifact).
+    2. The citation names ``artifact_edited`` (content authorship) AND the cited
+       artifact EXISTS on disk. ``artifact_edited`` is not emitted for most
+       artifacts (never for source ``.py`` files), and the artifact existing —
+       paired with the structural-validator arm that checks its shape — is at
+       least as strong as a historical edit-event. Operation event types
+       (``composition_candidate_emitted``, ``rendition_committed``,
+       ``agent_sync_completed``, ``mx_session_*`` …) get NO existence fallback:
+       they genuinely emit a ledger event, so the event must be present.
+    """
+    assert citation.artifact_path is not None  # caller guards
+    if _ledger_has_event_citing_path(citation.event_types, citation.artifact_path, project_root):
+        return True
+    if "artifact_edited" in citation.event_types:
+        return (project_root / citation.artifact_path).exists()
     return False
 
 
@@ -427,9 +457,7 @@ def resolve_support_proof(req_text: str, project_root: Path, *, req_id: str | No
 
     grandfathered = False
     if citation.artifact_path is not None:
-        if not _ledger_has_event_citing_path(
-            citation.event_types, citation.artifact_path, project_root
-        ):
+        if not _support_path_arm_ok(citation, project_root):
             if req_id is not None and req_id in _support_proof_grandfather(project_root):
                 grandfathered = True  # ledger arm waived; validator arm still enforced
             else:

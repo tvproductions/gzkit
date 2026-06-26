@@ -183,6 +183,42 @@ class TestSupportProofPathAware(unittest.TestCase):
                 result = resolve_support_proof(req, root, req_id="REQ-9.9.9-99-99")
             self.assertEqual(result, "unproven-support")
 
+    def test_artifact_edited_cited_file_exists_passes_without_ledger_event(self) -> None:
+        """GHI #647 drain: artifact_edited is content-authorship — the genuine proof
+        is the cited artifact EXISTING on disk (+ structural validator), not a
+        historical edit-event that is never emitted for most artifacts. A cited
+        file that exists, with NO ledger event citing it, proves."""
+        from gzkit.req_kind import resolve_support_proof
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _make_ledger_with_events(root, [_ev("obpi_created", None)])  # no artifact_edited
+            (root / "src" / "gzkit").mkdir(parents=True)
+            (root / "src" / "gzkit" / "events.py").write_text("x", encoding="utf-8")
+            with patch(_PATCH_SCOPE, return_value=True):
+                result = resolve_support_proof(self._REQ, root, req_id="REQ-X")
+            self.assertEqual(result, "pass")
+
+    def test_operation_event_cited_file_exists_still_requires_event(self) -> None:
+        """The file-existence drain is scoped to artifact_edited (authorship). An
+        operation-event citation (e.g. composition_candidate_emitted) still
+        requires the real event even if the cited file exists — the operation
+        genuinely emits a ledger event."""
+        from gzkit.req_kind import resolve_support_proof
+
+        req = (
+            "composer staged — composition_candidate_emitted ledger event for "
+            "src/gzkit/schemas/ledger.json + gz validate --ledger"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _make_ledger_with_events(root, [_ev("artifact_edited", "x.md")])  # not the op event
+            (root / "src" / "gzkit" / "schemas").mkdir(parents=True)
+            (root / "src" / "gzkit" / "schemas" / "ledger.json").write_text("{}", encoding="utf-8")
+            with patch(_PATCH_SCOPE, return_value=True):
+                result = resolve_support_proof(req, root, req_id="REQ-X")
+            self.assertEqual(result, "unproven-support")
+
     def test_no_path_citation_falls_back_to_type_only(self) -> None:
         """A SUPPORT REQ that cites NO path keeps the type-only ledger check —
         path-aware enforcement only fires when a path is actually cited."""
