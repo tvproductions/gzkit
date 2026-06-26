@@ -194,7 +194,7 @@ uv run gz ledger tail --event corpus_entry_appended
 - [ ] REQ-0.0.37-19-04 [BEHAVIOR]: Given an unknown surface or a section that does not resolve to a real template-defined section, when `remember` runs, then it fails closed (non-zero exit) and writes no entry.
 - [ ] REQ-0.0.37-19-05 [SUPPORT]: Given the ledger schema, when the OBPI is complete, then `corpus_entry_appended` is registered in `.gzkit/schemas/ledger_events.json` — proven by `uv run gz validate --ledger` plus the `corpus_entry_appended` event.
 - [ ] REQ-0.0.37-19-06 [SUPPORT]: Given the skill surface, when the OBPI is complete, then `.gzkit/skills/gz-content-remember/SKILL.md` exists and mirrors are byte-equal — proven by `uv run gz validate --surfaces` plus the `artifact_edited` event for the skill.
-- [ ] REQ-0.0.37-19-07 [SUPPORT]: Given the operator docs, when the OBPI is complete, then `docs/user/manpages/gz-content.md` and `docs/user/runbook.md` document the verb — proven by `uv run gz validate --documents` plus the `artifact_edited` event for the docs.
+- [ ] REQ-0.0.37-19-07 [SUPPORT]: Given the operator docs, when the OBPI is complete, then `docs/user/manpages/content.md` and `docs/user/runbook.md` document the verb — proven by `uv run gz validate --documents` plus the `artifact_edited` event for the docs.
 
 ## Completion Checklist
 

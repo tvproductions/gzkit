@@ -152,7 +152,7 @@ uv run gz skill list
 - [ ] REQ-0.0.67-02-02 [support]: `gz-obpi-reconcile` Phase 1 procedure invokes `gz obpi audit` / `gz obpi audit --adr` (deterministic evidence step). Proof: `artifact_edited` ledger event for the SKILL.md + `gz validate --skill-alignment` admits the wielding.
 - [ ] REQ-0.0.67-02-03 [behavior]: Given an OBPI with discoverable tests, when `obpi_audit_cmd(obpi_id)` and `obpi_audit_cmd(adr_id=...)` run, then a well-formed `obpi-audit` ledger entry with `criteria_evaluated` is produced. (@covers test in `tests/commands/`)
 - [ ] REQ-0.0.67-02-04 [behavior]: Given an OBPI in the ledger, when `obpi_withdraw_cmd` runs, then an `obpi_withdrawn` event is emitted and re-withdrawal is rejected. (@covers test in `tests/commands/`)
-- [ ] REQ-0.0.67-02-05 [support]: The 13 stop-gap investigation-waivers are removed from `_NO_SKILL_VERBS` (`cli.py`). Proof: `artifact_edited` ledger event + `gz validate --skill-alignment` green.
+- [ ] REQ-0.0.67-02-05 [support]: The 13 stop-gap investigation-waivers are removed from `_NO_SKILL_VERBS` (`src/gzkit/governance/trust_audits/cli.py`). Proof: `artifact_edited` ledger event + `gz validate --skill-alignment` green.
 - [ ] REQ-0.0.67-02-06 [support]: Every edited skill bumps `skill-version` + `last_reviewed`; mirrors regenerated. Proof: `artifact_edited` events + `gz validate --surfaces` green.
 
 ## Completion Checklist

@@ -221,7 +221,7 @@ uv run gz chores show decommission-tautological-tests
 - [ ] REQ-0.0.59-04-06 [BEHAVIOR]: All four Pydantic models are frozen, `extra='forbid'`, and reject invalid construction
 - [ ] REQ-0.0.59-04-07 [BEHAVIOR]: `ChoreDecommissionProcessedEvent` is in `TypedLedgerEvent` union; factory function creates a parseable ledger entry
 - [ ] REQ-0.0.59-04-08 [BEHAVIOR]: `run_tautological_test_audit` is in `_build_check_steps()` and causes `gz check` to fail when drift is detected
-- [ ] REQ-0.0.59-04-09 [SUPPORT]: Chore registered in `registry.json`; dual-surface parity holds; `gz validate --chores-layout` exits 0; `artifact_edited` event emitted for `registry.json`
+- [ ] REQ-0.0.59-04-09 [SUPPORT]: Chore registered in `src/gzkit/chores/registry.json`; dual-surface parity holds; `gz validate --chores-layout` exits 0; `artifact_edited` event emitted for `src/gzkit/chores/registry.json`
 - [ ] REQ-0.0.59-04-10 [SUPPORT]: `data/tautological_test_baseline.json` and `data/tautological_test_waivers.json` exist with initial-empty shapes; `gz validate --documents` exits 0; `artifact_edited` events emitted for both
 - [ ] REQ-0.0.59-04-11 [SUPPORT]: `docs/user/manpages/validate.md` documents `--tautological-test-audit`; `gz validate --documents` exits 0; `artifact_edited` event emitted for `validate.md`
 

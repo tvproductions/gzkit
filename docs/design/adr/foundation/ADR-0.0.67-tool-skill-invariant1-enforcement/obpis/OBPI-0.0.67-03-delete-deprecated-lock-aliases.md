@@ -132,7 +132,7 @@ uv run gz obpi lock list
 ## Acceptance Criteria
 
 - [ ] REQ-0.0.67-03-01 [behavior]: Given the rebuilt parser, when `_known_cli_verb_paths()` / `_build_parser()` are inspected, then `obpi lock-claim`, `obpi lock-release`, `obpi lock-status` are absent AND `obpi lock claim/release/list` are present. (@covers test)
-- [ ] REQ-0.0.67-03-02 [support]: The 3 alias manpages, `doc-coverage.json` entries, and `mkdocs.yml` nav rows are removed. Proof: `artifact_edited` ledger events + `gz validate --documents` green + `gz cli audit` exit 0.
+- [ ] REQ-0.0.67-03-02 [support]: The 3 alias manpages, `config/doc-coverage.json` entries, and `mkdocs.yml` nav rows are removed. Proof: `artifact_edited` ledger events + `gz validate --documents` green + `gz cli audit` exit 0.
 - [ ] REQ-0.0.67-03-03 [support]: The `Deprecated lock-claim alias works` behave scenario is removed and `features/obpi_lock.feature` still passes. Proof: `artifact_edited` event + `gz validate --documents` (spec surface admits the trimmed feature) + behave green recorded in evidence.
 
 ## Completion Checklist

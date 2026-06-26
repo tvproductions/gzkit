@@ -1,12 +1,7 @@
 {
-  "_doc": "GHI #647 cutover snapshot. Completed-brief [SUPPORT] REQs (extracted exactly as closeout_proof does) the path-aware ledger arm cannot mechanically prove. Remaining entries are GH-issue-state proofs (the GHI-closure outcome is real and verified, but the SUPPORT ledger+validator channel cannot express an external GitHub issue state). Shrink-only; never add to silence a fresh violation.",
+  "_doc": "GHI #647 cutover snapshot. Remaining entries are GH-issue-state proofs: REQ-0.0.59-01-06/07 prove 'GHI #165/#531 closed superseded against ADR-0.0.59' \u2014 the closure is real and verified (both CLOSED) but the SUPPORT ledger+validator channel cannot mechanically express an external GitHub issue state. Not hollow proofs; a documented gate limitation. Draining them needs a GH-issue-state proof channel (network in a validator \u2014 deliberately not added). Shrink-only; never add to silence a fresh violation.",
   "grandfathered_reqs": [
-    "REQ-0.0.37-19-07",
     "REQ-0.0.59-01-06",
-    "REQ-0.0.59-01-07",
-    "REQ-0.0.59-04-09",
-    "REQ-0.0.67-02-05",
-    "REQ-0.0.67-03-02",
-    "REQ-0.0.70-02-06"
+    "REQ-0.0.59-01-07"
   ]
 }

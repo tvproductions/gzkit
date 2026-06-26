@@ -210,7 +210,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.70-02-03 [behavior]: Given malformed JSONL, empty files, or an absent transcript directory, when the miner runs, then it returns zero proposals without raising. (@covers test)
 - [ ] REQ-0.0.70-02-04 [behavior]: Given operator text containing an email address, when a proposal is emitted, then the quote is scrubbed of the address. (@covers test)
 - [ ] REQ-0.0.70-02-05 [behavior]: Given a second run over unchanged transcripts, when the miner writes proposals, then no duplicate records are produced (content-hash idempotency). (@covers test)
-- [ ] REQ-0.0.70-02-06 [support]: The chore package lands (CHORE.md, acceptance.json, proofs/, registry.json row) and canonical→pkg propagation runs. Proof: `gz validate --chores-layout` exit 0 + `gz agent sync control-surfaces` run + `artifact_edited` ledger events.
+- [ ] REQ-0.0.70-02-06 [support]: The chore package lands (CHORE.md, `src/gzkit/chores/session-correction-mining/acceptance.json`, proofs/, registry.json row) and canonical→pkg propagation runs. Proof: `gz validate --chores-layout` exit 0 + `gz agent sync control-surfaces` run + `artifact_edited` ledger events.
 - [ ] REQ-0.0.70-02-07 [structural-fence]: The miner is read-only outside its proofs directory and emits candidates only — never mutating ledger, rules, or validator scopes. Verified at ADR-0.0.70 closeout via the parent ADR `## Boundary Invariants` (Invariants 2 and 4).
 - [ ] REQ-0.0.70-02-08 [behavior]: Given `--dry-run`, when the module entrypoint runs, then it prints the cluster summary and writes nothing anywhere. (@covers test)
 
