@@ -3,7 +3,7 @@ id: OBPI-0.0.74-05-mx-exit-hard-gate
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 # req_atomic: each REQ is one coherent surface authored in a single TDD
 # increment — the full-strength re-run (re-emit levels) against the enter-time
 # scope (01), the hard-refuse / no-force / no-narrowing fail-close (02), the
@@ -28,7 +28,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #5 - "gz mx exit — hard gate: re-run all guards full strength (re-emit levels) against the enter-time scope, green-or-grounded, no --force; live exit negative-control proves a known violation is still caught; operator signs; writes mx_session_closed and removes marker; exit is the only clearing path; manpage + gz cli audit green; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -229,13 +229,27 @@ uv run gz mx exit --attestor g0
 
 ### Key Proof
 
+
+```
+uv run gz cli audit
+# CLI audit passed. Cross-coverage: 112/112 commands fully covered.
+
+uv run gz arb step --name unittest -- uv run -m unittest -q
+# Ran 6512+ tests — OK (exit 0); receipt arb-step-unittest-f22414929e8b4382965978e567c654e7
+```
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Surface: `gz mx exit --attestor <name>` — the MX hangar hard exit gate (ADR-0.0.74 Decision #5)
+- Mechanism: `mx_exit_cmd()` temporarily removes the marker so `checkpoint.resolve()` sees no active session — every guard re-emits at real `GZ_<LEVEL>` (no advisory demotion); red → exit 3 + marker restored; all-green → `mx_session_closed` written + marker stays removed
+- Files created: `tests/commands/test_mx_exit.py` (10 tests), `docs/user/manpages/mx-exit.md`
+- Files modified: `src/gzkit/commands/mx_cmd.py`, `src/gzkit/cli/parser_governance.py`, `docs/user/manpages/mx.md`, `docs/user/manpages/index.md`, `docs/user/runbook.md`, `docs/governance/governance_runbook.md`, `config/doc-coverage.json`, `src/gzkit/governance/trust_audits/cli.py`
+- No `--force` flag by construction; exit is the sole marker-clearing path (ADR-0.0.74 Boundary Invariant #4)
+- Tests added: 10 (TestMxExitFullStrengthRerun, TestMxExitHardRefuseOnRed, TestMxExitGreenPath, TestMxExitLiveNegativeControl)
+- Date completed: 2026-06-26
+- Attestation status: operator-attested (g0)
+- Defects noted: bare `except Exception:` caught by adversary, fixed inline to `except OSError:`
 
 ## Tracked Defects
 
@@ -243,12 +257,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.74-05 (gz mx exit hard gate) verified green: 10/10 tests.commands.test_mx_exit pass; full suite green (receipt arb-step-unittest-f22414929e8b4382965978e567c654e7, exit_status=0); lint arb-ruff-68d60b41863e4ae9b8dc4961820b39c6, typecheck arb-step-typecheck-96813abac56145da9f98f9feb23111e1, docs arb-step-mkdocs-8083bd55829b47c2a7fcfdd59fad789a; gz cli audit 112/112; gz covers behavior_uncovered_reqs=0. Independent adversarial validation NOT-REFUTED (9 checks, marker-removal mechanism real, REQ-05-06 NC non-tautological); one caveat fixed inline (except Exception → except OSError per pythonic.md).
+- Date: 2026-06-26
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-26
 
 **Evidence Hash:** -

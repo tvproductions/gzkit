@@ -766,6 +766,10 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
                 attestor=a.attestor,
                 inspection_scope=a.inspection_scope,
             )
+        elif a.mx_command == "exit":
+            from gzkit.commands.mx_cmd import mx_exit_cmd  # noqa: PLC0415
+
+            mx_exit_cmd(attestor=a.attestor)
 
     p_mx = commands.add_parser(
         "mx",
@@ -818,3 +822,22 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         help="ADRs/OBPIs under inspection (optional; 0 or more)",
     )
     p_mx_enter.set_defaults(func=_mx_dispatch)
+
+    p_mx_exit = mx_commands.add_parser(
+        "exit",
+        help="Close the MX hangar — hard gate (re-run every guard at full strength)",
+        description=(
+            "Hard gate: re-runs every guard at full strength against the enter-time "
+            "inspection scope, green-or-grounded, no --force. "
+            "On all-green, the operator signs and the tool writes mx_session_closed "
+            "and removes the marker. "
+            "Exit is the ONLY path that clears the marker."
+        ),
+        epilog=build_epilog(["gz mx exit --attestor g0"]),
+    )
+    p_mx_exit.add_argument(
+        "--attestor",
+        required=True,
+        help="Operator identity who signs airworthiness (required; never an agent)",
+    )
+    p_mx_exit.set_defaults(func=_mx_dispatch)

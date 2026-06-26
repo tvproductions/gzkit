@@ -1455,11 +1455,17 @@ uv run gz mx enter --reason "repair marker binding" --attestor g0 --scope ADR-0.
 
 # Multiple scope items
 uv run gz mx enter --reason "broad repair" --attestor g0 --scope ADR-0.0.74 OBPI-0.0.74-02
+
+# Close the hangar — hard gate (re-run every guard at full strength; operator signs on all-green)
+uv run gz mx exit --attestor g0
 ```
 
 See `gz mx enter --help` and [`docs/user/manpages/mx-enter.md`](manpages/mx-enter.md) for full options.
+See `gz mx exit --help` and [`docs/user/manpages/mx-exit.md`](manpages/mx-exit.md) for exit gate details.
 The marker file (`.gzkit/mx.json`) and the `mx_session_opened` ledger event are the two
 truth-sources. A hand-created marker without a matching ledger event is void (anti-contrivance).
+Exit is the ONLY path that clears the marker; a cleared marker without `mx_session_closed` is a
+detected dangling state (ADR-0.0.74 Boundary Invariant #4).
 
 ---
 

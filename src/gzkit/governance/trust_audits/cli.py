@@ -63,6 +63,11 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "The `gz-mx` skill (which will wield this verb) is a later ADR-0.0.74 deliverable; "
         "waiver holds until the skill lands."
     ),
+    "mx exit": (
+        "ADR-0.0.74 OBPI-05 delivers the `gz mx exit` command. "
+        "The `gz-mx` skill (which will wield this verb) is a later ADR-0.0.74 deliverable; "
+        "waiver holds until the skill lands."
+    ),
     "obpi repudiate": (
         "Operator-invoked repair verb (ADR-0.0.71-completion-repudiation). "
         "No standalone skill — the action is one-shot operator-gated correction, "
