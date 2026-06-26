@@ -392,28 +392,6 @@ def obpi_emit_receipt_cmd(
     console.print(f"  Attestor: {attestor}")
 
 
-def _flip_brief_status_to_active(obpi_file: Path) -> None:
-    """Flip a Draft brief to Active at pipeline launch (the in_progress transition).
-
-    ``status_vocab`` canon maps the ``in_progress`` ledger state to the ``Active``
-    frontmatter term; pipeline launch IS that transition, so a brief that still
-    reads ``Draft`` while in-flight is Layer-1 authorship lagging Layer-2 truth.
-    Idempotent: only ``Draft`` flips, so re-launches and ``--from`` resumptions
-    are no-ops. Also flips the common ``**Status:** Draft`` /
-    ``**Brief Status:** Draft`` body prose line, and announces the flip. GHI #646.
-    """
-    from gzkit.commands.closeout_form import _upsert_frontmatter_value  # noqa: PLC0415
-
-    content = obpi_file.read_text(encoding="utf-8")
-    if (parse_frontmatter_value(content, "status") or "").strip() != "Draft":
-        return
-    updated = _upsert_frontmatter_value(content, "status", "Active")
-    for body_form in ("**Status:** Draft", "**Brief Status:** Draft"):
-        updated = updated.replace(body_form, body_form.replace("Draft", "Active"))
-    obpi_file.write_text(updated, encoding="utf-8")
-    console.print("Brief status: Draft -> Active")
-
-
 def _run_pipeline_full_launch_task_start(
     ledger: Any,
     *,
@@ -546,12 +524,6 @@ def obpi_pipeline_cmd(
             entry=str(marker_payload.get("entry") or "full"),
         )
     )
-
-    # Layer-1 transition: launch IS the in_progress state, so flip the brief
-    # frontmatter Draft -> Active (status_vocab canon) — no brief reads "Draft"
-    # while in-flight. Idempotent; only Draft flips (GHI #646).
-    _flip_brief_status_to_active(obpi_file)
-
     stage_labels = pipeline_stage_labels(start_from)
 
     _print_pipeline_header(

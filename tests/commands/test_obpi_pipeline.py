@@ -175,32 +175,6 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertIn("updated_at", payload)
             self.assertEqual(payload, self._load_json(legacy_path))
 
-    def test_full_launch_flips_brief_status_draft_to_active(self) -> None:
-        """Pipeline launch is the in_progress transition — it MUST flip the brief
-        frontmatter status Draft -> Active (status_vocab canon: in_progress ->
-        Active) so an in-flight brief no longer reads Draft. GHI #646."""
-        from gzkit.ledger import parse_frontmatter_value
-
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            self._seed_runtime(runner)
-            obpi_file = (
-                Path(GzkitConfig.load(Path(".gzkit.json")).paths.adrs)
-                / "pre-release"
-                / "ADR-0.13.0-obpi-pipeline-runtime-surface"
-                / "obpis"
-                / "OBPI-0.13.0-01-runtime-command-contract.md"
-            )
-            self.assertEqual(parse_frontmatter_value(obpi_file.read_text(), "status"), "Draft")
-
-            result = runner.invoke(
-                main, ["obpi", "pipeline", "OBPI-0.13.0-01-runtime-command-contract"]
-            )
-
-            self.assertEqual(result.exit_code, 0)
-            self.assertEqual(parse_frontmatter_value(obpi_file.read_text(), "status"), "Active")
-            self.assertIn("Brief status: Draft -> Active", result.output)
-
     # audit-exempt: regression-invariant-overlay plan-receipt check fires alongside reconcile gate
     @covers("REQ-0.0.37-07-06")
     def test_blocks_when_matching_receipt_verdict_is_fail(self) -> None:

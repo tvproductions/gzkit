@@ -38,13 +38,8 @@ class BriefStructure(BaseModel):
     id: str = Field(..., description="OBPI identifier")
     parent: str = Field(..., description="Parent ADR identifier")
     lane: Literal["Lite", "Heavy"] = Field(..., description="Execution lane")
-    status: Literal["Draft", "Active", "Validated", "Completed"] = Field(
-        ...,
-        description=(
-            "Brief lifecycle status. 'Active' is the in-flight term (status_vocab "
-            "canon: in_progress -> Active) the pipeline flips Draft to on launch — "
-            "keeping in-flight structured briefs structured. GHI #646."
-        ),
+    status: Literal["Draft", "Validated", "Completed"] = Field(
+        ..., description="Brief lifecycle status"
     )
     allowlist: list[str] = Field(..., min_length=1, description="Allowed paths for this OBPI")
     reqs: list[str] = Field(..., min_length=1, description="REQ-ID array")
