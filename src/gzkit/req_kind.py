@@ -258,11 +258,14 @@ def parse_support_citation(req_text: str) -> SupportCitation | None:
     The artifact path (GHI #647) is captured when the REQ names one; it scopes
     the ledger arm to an event CITING that path, not merely one of the type.
     """
-    scope_match = _GZ_VALIDATE_SCOPE_RE.search(req_text)
-    if scope_match is None:
+    scopes = [s.replace("-", "_") for s in _GZ_VALIDATE_SCOPE_RE.findall(req_text)]
+    if not scopes:
         return None
-    scope_raw = scope_match.group(1)
-    scope = scope_raw.replace("-", "_")
+    # Prefer the actual proof validator over a recursion-fence scope mentioned as
+    # the documented SUBJECT (e.g. a REQ that *documents* `--req-kind-discipline`
+    # but is *proven* by `--documents`). Fall back to the first when all cited
+    # scopes are fence scopes (the recursion guard then fires legitimately). GHI #647.
+    scope = next((s for s in scopes if s not in _RECURSION_FENCE_SCOPES), scopes[0])
 
     found_types = [et for et in _KNOWN_LEDGER_EVENT_TYPES if et in req_text]
     if not found_types:
@@ -334,26 +337,29 @@ def _ledger_has_event_citing_path(
 def _support_path_arm_ok(citation: SupportCitation, project_root: Path) -> bool:
     """True when the SUPPORT ledger arm is satisfied for a path-citing citation.
 
-    Two genuine, path-specific proofs (GHI #647) — neither is the hollow
-    type-only match:
+    Three genuine proofs (GHI #647) — none is the closed generic-artifact_edited
+    facade (any of 4295 unrelated events satisfying any citation):
 
-    1. A ledger event of the cited type CITES the path (the operation genuinely
-       booked an event for this artifact).
+    1. A ledger event of the cited type CITES the path (the operation booked an
+       event for this exact artifact).
     2. The citation names ``artifact_edited`` (content authorship) AND the cited
        artifact EXISTS on disk. ``artifact_edited`` is not emitted for most
        artifacts (never for source ``.py`` files), and the artifact existing —
-       paired with the structural-validator arm that checks its shape — is at
-       least as strong as a historical edit-event. Operation event types
-       (``composition_candidate_emitted``, ``rendition_committed``,
-       ``agent_sync_completed``, ``mx_session_*`` …) get NO existence fallback:
-       they genuinely emit a ledger event, so the event must be present.
+       paired with the structural-validator arm checking its shape — is at least
+       as strong as a historical edit-event.
+    3. The cited type is a SPECIFIC operation event (``composition_rendered``,
+       ``rendition_committed``, ``corpus_entry_appended``, ``agent_sync_completed``,
+       ``mx_session_*`` …) that is PRESENT in the ledger. The event existing IS
+       the record the operation ran; these are specific and low-volume (unlike
+       the 4295 generic ``artifact_edited``), and their payloads do not reliably
+       carry the cited artifact path, so a path-citing check is falsely strict.
     """
     assert citation.artifact_path is not None  # caller guards
     if _ledger_has_event_citing_path(citation.event_types, citation.artifact_path, project_root):
         return True
     if "artifact_edited" in citation.event_types:
         return (project_root / citation.artifact_path).exists()
-    return False
+    return _ledger_has_event(citation.event_types, project_root)
 
 
 def _support_proof_grandfather(project_root: Path) -> frozenset[str]:

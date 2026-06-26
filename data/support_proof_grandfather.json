@@ -1,24 +1,12 @@
 {
-  "_doc": "GHI #647 cutover snapshot. SUPPORT REQs whose path-aware ledger arm is unsatisfied (no event cites the path; artifact_edited file-existence fallback also fails) yet the old type-only match passed. Tolerated (grandfathered-support), shrink-only. Never add entries to silence a fresh violation.",
+  "_doc": "GHI #647 cutover snapshot. Completed-brief [SUPPORT] REQs (extracted exactly as closeout_proof does) the path-aware ledger arm cannot mechanically prove. Remaining entries are GH-issue-state proofs (the GHI-closure outcome is real and verified, but the SUPPORT ledger+validator channel cannot express an external GitHub issue state). Shrink-only; never add to silence a fresh violation.",
   "grandfathered_reqs": [
-    "REQ-0.0.37-19-05",
     "REQ-0.0.37-19-07",
-    "REQ-0.0.37-21-06",
-    "REQ-0.0.37-24-04",
-    "REQ-0.0.37-26-05",
+    "REQ-0.0.59-01-06",
+    "REQ-0.0.59-01-07",
     "REQ-0.0.59-04-09",
-    "REQ-0.0.59-05-02",
-    "REQ-0.0.63-03-05",
-    "REQ-0.0.65-01-05",
-    "REQ-0.0.65-02-06",
-    "REQ-0.0.65-05-06",
-    "REQ-0.0.66-01-05",
     "REQ-0.0.67-02-05",
     "REQ-0.0.67-03-02",
-    "REQ-0.0.70-02-06",
-    "REQ-0.0.74-07-03",
-    "REQ-0.0.74-08-01",
-    "REQ-0.0.74-08-02",
-    "REQ-0.0.74-10-02"
+    "REQ-0.0.70-02-06"
   ]
 }

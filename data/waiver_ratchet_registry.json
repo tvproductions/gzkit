@@ -77,7 +77,7 @@
       "gates_step": "SUPPORT proof path-aware (gz validate --closeout-proof)",
       "mechanism": "shrink-ratchet",
       "entries_path": "grandfathered_reqs",
-      "baseline_count": 19
+      "baseline_count": 7
     }
   ],
   "excluded": [

@@ -199,11 +199,11 @@ class TestSupportProofPathAware(unittest.TestCase):
                 result = resolve_support_proof(self._REQ, root, req_id="REQ-X")
             self.assertEqual(result, "pass")
 
-    def test_operation_event_cited_file_exists_still_requires_event(self) -> None:
-        """The file-existence drain is scoped to artifact_edited (authorship). An
-        operation-event citation (e.g. composition_candidate_emitted) still
-        requires the real event even if the cited file exists — the operation
-        genuinely emits a ledger event."""
+    def test_operation_event_requires_its_event_not_a_bare_file(self) -> None:
+        """An operation-event citation (composition_candidate_emitted) is NOT
+        satisfied by an unrelated artifact_edited event or a bare file — the
+        operation's OWN event type must be present (it is specific, not the
+        generic artifact_edited facade)."""
         from gzkit.req_kind import resolve_support_proof
 
         req = (
@@ -218,6 +218,41 @@ class TestSupportProofPathAware(unittest.TestCase):
             with patch(_PATCH_SCOPE, return_value=True):
                 result = resolve_support_proof(req, root, req_id="REQ-X")
             self.assertEqual(result, "unproven-support")
+
+    def test_operation_event_present_proves(self) -> None:
+        """A specific operation event existing in the ledger proves its citation —
+        the event IS the record that the operation ran. Unlike generic
+        artifact_edited (4295 events), operation events are specific, so
+        type-presence is genuine proof, not the closed facade."""
+        from gzkit.req_kind import resolve_support_proof
+
+        req = (
+            "composer staged — composition_candidate_emitted ledger event for "
+            "src/gzkit/schemas/ledger.json + gz validate --ledger"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _make_ledger_with_events(root, [_ev("composition_candidate_emitted", "whatever")])
+            with patch(_PATCH_SCOPE, return_value=True):
+                result = resolve_support_proof(req, root, req_id="REQ-X")
+            self.assertEqual(result, "pass")
+
+    def test_scope_prefers_non_recursion_fence_validator(self) -> None:
+        """When a REQ mentions a recursion-fence scope as the documented SUBJECT
+        (e.g. 'documents `gz validate --req-kind-discipline`') AND cites a real
+        proof validator ('`gz validate --documents` passes'), the parser binds
+        the proof to the non-fence scope — not the first-mentioned fence scope
+        (which would wrongly resolve unproven-recursion-fence). GHI #647."""
+        from gzkit.req_kind import parse_support_citation
+
+        req = (
+            "`docs/governance/x.md` documents `gz validate --req-kind-discipline` — "
+            "`uv run gz validate --documents` passes; `artifact_edited` event citing "
+            "`docs/governance/x.md`"
+        )
+        cit = parse_support_citation(req)
+        assert cit is not None
+        self.assertEqual(cit.scope, "documents")
 
     def test_no_path_citation_falls_back_to_type_only(self) -> None:
         """A SUPPORT REQ that cites NO path keeps the type-only ledger check —
