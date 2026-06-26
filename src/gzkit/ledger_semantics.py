@@ -379,6 +379,7 @@ def _derive_obpi_runtime_state(
     implementation_evidence_ok: bool,
     key_proof_ok: bool,
     req_proof_present: int,
+    pipeline_launched: bool = False,
 ) -> str:
     """Resolve the OBPI runtime state from normalized evidence."""
     non_anchor_issues = list(issues)
@@ -396,7 +397,15 @@ def _derive_obpi_runtime_state(
         return "attested_completed"
     if obpi_completion == "completed" and evidence_ok:
         return "completed"
-    if any([latest_receipt_event, implementation_evidence_ok, key_proof_ok, req_proof_present]):
+    if any(
+        [
+            latest_receipt_event,
+            implementation_evidence_ok,
+            key_proof_ok,
+            req_proof_present,
+            pipeline_launched,
+        ]
+    ):
         return "in_progress"
     return "pending"
 
@@ -517,6 +526,7 @@ def derive_obpi_semantics(
         implementation_evidence_ok=canonical_implementation_evidence_ok,
         key_proof_ok=canonical_key_proof_ok,
         req_proof_present=int(req_proof_summary["present"]),
+        pipeline_launched=bool(info.get("pipeline_launched")),
     )
 
     proof_state = "validated" if runtime_state == "validated" else req_proof_state

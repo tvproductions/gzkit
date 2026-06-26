@@ -519,6 +519,7 @@ class Ledger:
         if event.event == "obpi_created":
             entry["withdrawn"] = False
             entry["withdrawn_reason"] = None
+            entry["pipeline_launched"] = False
             entry["latest_receipt_event"] = None
             entry["latest_evidence"] = None
             entry["latest_completion_evidence"] = None
@@ -669,6 +670,26 @@ class Ledger:
             graph[canonical_id]["validated"] = True
 
     @staticmethod
+    def _apply_pipeline_launched_metadata(
+        graph: dict[str, dict[str, Any]],
+        canonical_id: str,
+        event: LedgerEvent,
+    ) -> None:
+        """Mark an OBPI in-flight when its pipeline launches (GHI #646).
+
+        ``gz obpi pipeline`` emits ``pipeline_launched`` at Stage 1. That launch
+        IS the ``in_progress`` transition; recording it on the graph node lets
+        ``_derive_obpi_runtime_state`` resolve ``in_progress`` (-> frontmatter
+        ``Active``) for a launched-but-unevidenced OBPI, so ``frontmatter
+        reconcile`` renders & keeps Active instead of reverting it to Draft.
+        """
+        if event.event != "pipeline_launched" or canonical_id not in graph:
+            return
+        if graph[canonical_id].get("type") != "obpi":
+            return
+        graph[canonical_id]["pipeline_launched"] = True
+
+    @staticmethod
     def _apply_obpi_withdrawn_metadata(
         graph: dict[str, dict[str, Any]],
         canonical_id: str,
@@ -708,6 +729,7 @@ class Ledger:
         cls._apply_closeout_metadata(graph, canonical_id, event)
         cls._apply_audit_receipt_metadata(graph, canonical_id, event)
         cls._apply_obpi_receipt_metadata(graph, canonical_id, event)
+        cls._apply_pipeline_launched_metadata(graph, canonical_id, event)
         cls._apply_obpi_withdrawn_metadata(graph, canonical_id, event)
         cls._apply_obpi_completion_repudiated_metadata(graph, canonical_id, event)
 

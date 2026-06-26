@@ -24,7 +24,7 @@
     },
     "status": {
       "type": "string",
-      "enum": ["Draft", "Validated", "Completed"],
+      "enum": ["Draft", "Active", "Validated", "Completed"],
       "description": "Brief lifecycle status"
     },
     "allowlist": {

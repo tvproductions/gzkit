@@ -22,6 +22,7 @@ from gzkit.ledger import (
     obpi_created_event,
     obpi_receipt_emitted_event,
     obpi_withdrawn_event,
+    pipeline_launched_event,
     prd_created_event,
     project_init_event,
 )
@@ -797,6 +798,91 @@ class TestLedger(unittest.TestCase):
         self.assertEqual(semantics["runtime_state"], "pending")
         self.assertEqual(semantics["proof_state"], "missing")
         self.assertEqual(semantics["attestation_requirement"], "optional")
+
+    def test_derive_obpi_semantics_reports_in_progress_when_pipeline_launched(self) -> None:
+        """A launched-but-unevidenced OBPI resolves in_progress, not pending (GHI #646).
+
+        ``gz obpi pipeline`` emits ``pipeline_launched`` and starts TASKs, but no
+        ``obpi_receipt_emitted`` exists yet. Before GHI #646 the state machine had
+        no signal for this window and fell through to ``pending`` -- so the brief
+        derived ``status: Draft`` while genuinely in-flight, and reconcile reverted
+        any Active write. The launch IS the ``in_progress`` transition; derivation
+        must surface it so ``frontmatter reconcile`` renders & keeps Active.
+        """
+        semantics = derive_obpi_semantics(
+            {"pipeline_launched": True},
+            found_file=True,
+            file_completed=False,
+            implementation_evidence_ok=False,
+            key_proof_ok=False,
+        )
+        self.assertEqual(semantics["runtime_state"], "in_progress")
+
+    def test_pipeline_launched_does_not_override_completion(self) -> None:
+        """A launched OBPI that later completed still derives a completion state (GHI #646).
+
+        The ``pipeline_launched`` flag must only lift ``pending`` to ``in_progress`` --
+        it must never shadow a genuine completion/attestation state that the
+        evidence branches resolve first.
+        """
+        semantics = derive_obpi_semantics(
+            {
+                "pipeline_launched": True,
+                "latest_receipt_event": "completed",
+                "obpi_completion": "attested_completed",
+                "ledger_completed": True,
+                "latest_evidence": {
+                    "attestation_requirement": "required",
+                    "value_narrative": "The launch log now assembles from ledger truth.",
+                    "key_proof": "uv run gz obpi reconcile OBPI-0.10.0-01 --json",
+                    "human_attestation": True,
+                    "attestation_text": "Accepted by the human reviewer.",
+                    "attestation_date": "2026-03-10",
+                },
+            },
+            found_file=True,
+            file_completed=True,
+            implementation_evidence_ok=True,
+            key_proof_ok=True,
+        )
+        self.assertEqual(semantics["runtime_state"], "attested_completed")
+
+    def test_get_artifact_graph_marks_pipeline_launched_from_event(self) -> None:
+        """The graph builder records ``pipeline_launched`` from the launch event (GHI #646).
+
+        The ``pipeline_launched`` ledger event already exists for marker-nonce
+        cross-referencing; before GHI #646 the graph builder silently ignored it
+        for state derivation. It must set a ``pipeline_launched`` flag on the OBPI
+        node so the state machine can resolve in_progress.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+            ledger.append(adr_created_event("ADR-0.7.0", "", "heavy"))
+            ledger.append(obpi_created_event("OBPI-0.7.0-01", "ADR-0.7.0"))
+            ledger.append(
+                pipeline_launched_event(
+                    "OBPI-0.7.0-01",
+                    "ADR-0.7.0",
+                    "heavy",
+                    "nonce-abc",
+                    ".gzkit/pipeline/OBPI-0.7.0-01.json",
+                )
+            )
+
+            graph = ledger.get_artifact_graph()
+            self.assertTrue(graph["OBPI-0.7.0-01"]["pipeline_launched"])
+
+    def test_get_artifact_graph_obpi_pipeline_launched_defaults_false(self) -> None:
+        """A created-but-unlaunched OBPI carries ``pipeline_launched=False`` (GHI #646)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+            ledger.append(adr_created_event("ADR-0.7.0", "", "heavy"))
+            ledger.append(obpi_created_event("OBPI-0.7.0-01", "ADR-0.7.0"))
+
+            graph = ledger.get_artifact_graph()
+            self.assertFalse(graph["OBPI-0.7.0-01"]["pipeline_launched"])
 
     def test_derive_obpi_semantics_reports_in_progress_with_partial_proof(self) -> None:
         """Partial proof keeps runtime state in progress instead of completed."""

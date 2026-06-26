@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.23.0"
-last_reviewed: 2026-06-25
+skill-version: "6.24.0"
+last_reviewed: 2026-06-26
 model: sonnet
 ---
 
@@ -180,6 +180,16 @@ Stage 4 = HUMAN GATE (wait for attestation) — universal per ADR-0.0.36
         enum value matching the lifecycle step in progress.
     - This unblocks the pipeline-gate PreToolUse hook for src/ and tests/ writes.
 11. Apply the brief allowlist as the working scope contract before any edits.
+
+> **Derived in-flight status (GHI #646).** Launching the pipeline emits
+> `pipeline_launched`, which IS the `in_progress` transition. The brief's
+> lifecycle status is **derived from ledger truth, never written by this
+> pipeline** — `_derive_obpi_runtime_state` now resolves a launched OBPI to
+> `in_progress`, and `status_vocab` maps that to frontmatter `Active`. Running
+> `uv run gz frontmatter reconcile` renders and keeps `Active` for the in-flight
+> window (it no longer reverts to Draft). Do not hand-write the lifecycle field
+> here — the ledger-derivation reconcile owns it (mirrors how completion is
+> surfaced, not authored, by the pipeline).
 
 **Abort if:** brief not found, brief already `Completed`, or plan receipt verdict is `FAIL`.
 

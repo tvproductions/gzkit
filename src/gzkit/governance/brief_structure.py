@@ -38,7 +38,7 @@ class BriefStructure(BaseModel):
     id: str = Field(..., description="OBPI identifier")
     parent: str = Field(..., description="Parent ADR identifier")
     lane: Literal["Lite", "Heavy"] = Field(..., description="Execution lane")
-    status: Literal["Draft", "Validated", "Completed"] = Field(
+    status: Literal["Draft", "Active", "Validated", "Completed"] = Field(
         ..., description="Brief lifecycle status"
     )
     allowlist: list[str] = Field(..., min_length=1, description="Allowed paths for this OBPI")

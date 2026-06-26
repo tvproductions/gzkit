@@ -88,6 +88,20 @@ class TestBriefStructureModel(unittest.TestCase):
             BriefStructure(**{**_VALID_FIELDS, "reqs": ["bad-format"]})
 
     @covers("REQ-0.0.37-04-01")
+    def test_model_accepts_active_in_flight_status(self) -> None:
+        """In-flight briefs carry status Active without degrading to legacy shape (GHI #646).
+
+        ``status_vocab`` maps ledger state ``in_progress`` -> frontmatter ``Active``.
+        Once a launched OBPI derives ``in_progress``, ``frontmatter reconcile`` writes
+        ``Active`` into the brief. The structural schema MUST admit Active so an
+        in-flight *structured* brief stays structured -- otherwise it drops to
+        ``LegacyBriefShape`` and silently disables reconcile drift-escalation during
+        the exact window it is most valuable.
+        """
+        b = BriefStructure(**{**_VALID_FIELDS, "status": "Active"})
+        self.assertEqual(b.status, "Active")
+
+    @covers("REQ-0.0.37-04-01")
     def test_model_accepts_citations_list(self) -> None:
         b = BriefStructure(**{**_VALID_FIELDS, "citations": [("src/x.py", "#anchor")]})
         self.assertEqual(b.citations, [("src/x.py", "#anchor")])
@@ -134,6 +148,22 @@ class TestBriefStructureJsonSchema(unittest.TestCase):
             "parent": "ADR-0.0.1-test-fixture",
             "lane": "Heavy",
             "status": "Draft",
+            "allowlist": ["src/x.py"],
+            "reqs": ["REQ-0.0.1-01-01"],
+            "verification": ["uv run gz lint"],
+            "citations": [],
+        }
+        jsonschema.validate(instance, schema)  # must not raise
+
+    @covers("REQ-0.0.37-04-02")
+    def test_schema_admits_active_status(self) -> None:
+        """JSON Schema mirror admits the Active in-flight status (GHI #646)."""
+        schema = self._schema()
+        instance = {
+            "id": "OBPI-0.0.1-01-test-fixture",
+            "parent": "ADR-0.0.1-test-fixture",
+            "lane": "Heavy",
+            "status": "Active",
             "allowlist": ["src/x.py"],
             "reqs": ["REQ-0.0.1-01-01"],
             "verification": ["uv run gz lint"],

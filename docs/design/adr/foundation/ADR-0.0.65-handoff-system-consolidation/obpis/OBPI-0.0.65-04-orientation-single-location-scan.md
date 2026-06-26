@@ -3,7 +3,7 @@ id: OBPI-0.0.65-04-orientation-single-location-scan
 parent: ADR-0.0.65-handoff-system-consolidation
 item: 4
 lane: Heavy
-status: Draft
+status: Active
 ---
 
 # OBPI-0.0.65-04-orientation-single-location-scan: **orientation-single-location-scan** — Collapse `_candidate_handoff_dirs()` in `scripts/session_orientation.py` to a single-surface scan of `.gzkit/handoffs/`. Delete the GHI #529 dual-scan workaround. Update orientation tests. (Depends on OBPI-01 completion: cannot collapse the scan until the per-ADR sources are empty.)
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md`
 - **Checklist Item:** #4 - "OBPI-0.0.65-04: **orientation-single-location-scan** — Collapse `_candidate_handoff_dirs()` in `scripts/session_orientation.py` to a single-surface scan of `.gzkit/handoffs/`. Delete the GHI #529 dual-scan workaround. Update orientation tests. (Depends on OBPI-01 completion: cannot collapse the scan until the per-ADR sources are empty.)"
 
-**Status:** Draft
+**Status:** Active
 
 ## Objective
 

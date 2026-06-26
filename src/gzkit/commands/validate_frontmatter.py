@@ -206,6 +206,7 @@ def _derive_status_from_graph(info: dict) -> str | None:
                 implementation_evidence_ok=False,
                 key_proof_ok=False,
                 req_proof_present=0,
+                pipeline_launched=bool(info.get("pipeline_launched")),
             )
     except (KeyError, ValueError, AttributeError, TypeError):
         return None
