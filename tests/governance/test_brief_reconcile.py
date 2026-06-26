@@ -333,6 +333,53 @@ class TestMissingInBrief(unittest.TestCase):
             # the cross-cutting utility import must not be flagged.
             self.assertNotIn("src/gzkit/util.py", result.allowlist_delta.missing_in_brief)
 
+    def _build_tree_toplevel_allowlist(self, tmp: Path) -> Path:
+        """A brief allowlisting a TOP-LEVEL src/gzkit/*.py file, plus a REQ test
+        importing the @covers infra from gzkit.traceability.
+
+        This is the OBPI-0.0.74-06 shape: once a top-level src/gzkit/ module is
+        allowlisted, src/gzkit/ becomes a neighborhood and the neighborhood
+        filter alone leaks the cross-cutting @covers infra (traceability.py).
+        """
+        for rel in ("src/gzkit/events.py", "src/gzkit/traceability.py"):
+            p = tmp / rel
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text("# stub\n", encoding="utf-8")
+        test_file = tmp / "tests" / "test_y.py"
+        test_file.parent.mkdir(parents=True, exist_ok=True)
+        test_file.write_text(
+            textwrap.dedent("""\
+                from gzkit.events import MxSessionOpenedEvent  # allowlisted top-level module
+                from gzkit.traceability import covers          # cross-cutting @covers infra
+
+                @covers("REQ-9.9.9-01-01")
+                def test_something():
+                    pass
+                """),
+            encoding="utf-8",
+        )
+        brief = tmp / "docs/design/adr/foundation/ADR-9.9.9-x/obpis/OBPI-9.9.9-01-x.md"
+        _write_structured_brief(
+            brief,
+            brief_id="OBPI-9.9.9-01-x",
+            parent="ADR-9.9.9-x",
+            reqs=["REQ-9.9.9-01-01"],
+            allowlist=["src/gzkit/events.py"],
+        )
+        return brief
+
+    @covers("REQ-0.0.37-05-02")
+    def test_traceability_infra_excluded_even_when_toplevel_module_allowlisted(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            brief = self._build_tree_toplevel_allowlist(tmp)
+            result = reconcile_brief(brief, tmp)
+            # gzkit.traceability is the @covers decorator infra — never a
+            # subject-under-test. It must NOT be flagged even when a top-level
+            # src/gzkit/*.py file is allowlisted (which makes src/gzkit/ a
+            # neighborhood of traceability.py). GHI #645.
+            self.assertNotIn("src/gzkit/traceability.py", result.allowlist_delta.missing_in_brief)
+
 
 class TestValidateBriefReconcile(unittest.TestCase):
     """Validator wrapper — structured-brief-only escalation (CIC-2 permissive mode)."""

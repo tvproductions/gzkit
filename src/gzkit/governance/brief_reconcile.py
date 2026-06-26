@@ -284,17 +284,32 @@ def _module_to_src_rel(module: str, project_root: Path) -> str | None:
     return None
 
 
+# Cross-cutting test-infrastructure modules — imported by REQ tests for the
+# decorator/harness they provide, never subjects-under-test. Excluded from
+# missing_in_brief UNCONDITIONALLY (GHI #645): the neighborhood filter alone
+# leaks these the moment a top-level ``src/gzkit/*.py`` file is allowlisted —
+# its parent ``src/gzkit/`` then becomes a neighborhood of every sibling
+# module, including the ``@covers`` infra. Hard-excluding by module name keeps
+# the genuine sibling-leakage signal while killing the systematic false
+# positive every @covers-using OBPI with a top-level allowlist entry would hit.
+_TEST_INFRA_SRC_RELS = frozenset({"src/gzkit/traceability.py"})
+
+
 def _compute_missing_in_brief(
     req_ids: list[str], allowlist: list[str], project_root: Path
 ) -> list[str]:
     """Report src/ files imported by the brief's REQ tests but absent from the allowlist.
 
-    Neighborhood filter: only src/ files sharing a parent directory with an
-    allowlisted src/ path are reported. This isolates the genuine drift signal
-    — OBPI work that leaked into a sibling module of the declared scope — while
-    excluding cross-cutting test-infrastructure imports (e.g. the ``@covers``
-    decorator from ``gzkit.traceability``), which are not subjects-under-test
-    and would otherwise produce systematic false positives.
+    Two filters isolate the genuine drift signal — OBPI work that leaked into a
+    sibling module of the declared scope — from systematic false positives:
+
+    1. **Neighborhood filter:** only src/ files sharing a parent directory with
+       an allowlisted src/ path are reported.
+    2. **Test-infra hard-exclusion** (``_TEST_INFRA_SRC_RELS``, GHI #645):
+       cross-cutting infrastructure like the ``@covers`` decorator from
+       ``gzkit.traceability`` is excluded regardless of neighborhood, because
+       the neighborhood filter leaks it once a top-level ``src/gzkit/*.py`` file
+       is allowlisted.
     """
     if not req_ids:
         return []
@@ -314,6 +329,8 @@ def _compute_missing_in_brief(
         for module in _extract_gzkit_imports(text):
             src_rel = _module_to_src_rel(module, project_root)
             if src_rel is None or src_rel in src_allowlist:
+                continue
+            if src_rel in _TEST_INFRA_SRC_RELS:
                 continue
             if Path(src_rel).parent.as_posix() in neighborhoods and src_rel not in reported:
                 reported.append(src_rel)
