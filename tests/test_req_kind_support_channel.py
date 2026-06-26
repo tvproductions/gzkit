@@ -98,6 +98,105 @@ class TestResolveSupportProofPass(unittest.TestCase):
         self.assertEqual(enriched.entries[0].proof_status, "pass")
 
 
+def _make_ledger_with_events(project_root: Path, events: list[dict]) -> None:
+    """Write a ledger.jsonl with the given raw event dicts."""
+    gzkit_dir = project_root / ".gzkit"
+    gzkit_dir.mkdir(exist_ok=True)
+    with (gzkit_dir / "ledger.jsonl").open("w", encoding="utf-8") as fh:
+        for ev in events:
+            fh.write(json.dumps(ev) + "\n")
+
+
+def _ev(event: str, path: str | None) -> dict:
+    """A minimal raw ledger event, optionally citing a path."""
+    rec = {"schema": "1.0", "event": event, "id": path or "x", "ts": "t"}
+    if path is not None:
+        rec["path"] = path
+    return rec
+
+
+_PATCH_SCOPE = "gzkit.req_kind._dispatch_validator_scope"
+
+
+class TestSupportProofPathAware(unittest.TestCase):
+    """GHI #647: the ledger arm must verify an event CITING THE CITED PATH, not
+    merely that an event of the type exists somewhere (the hollow-gate facade)."""
+
+    # A REQ citing artifact_edited FOR a specific source path + a validator scope.
+    _REQ = (
+        "events.py registered — artifact_edited ledger event for "
+        "src/gzkit/events.py + gz validate --ledger"
+    )
+
+    def test_path_cited_but_no_event_cites_path_is_unproven(self) -> None:
+        """Facade regression: artifact_edited exists for a DIFFERENT path → must NOT pass."""
+        from gzkit.req_kind import resolve_support_proof
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _make_ledger_with_events(root, [_ev("artifact_edited", "docs/x.md")])
+            with patch(_PATCH_SCOPE, return_value=True):
+                result = resolve_support_proof(self._REQ, root, req_id="REQ-0.0.74-06-04")
+            self.assertEqual(result, "unproven-support")
+
+    def test_path_cited_and_event_cites_path_passes(self) -> None:
+        from gzkit.req_kind import resolve_support_proof
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _make_ledger_with_events(root, [_ev("artifact_edited", "src/gzkit/events.py")])
+            with patch(_PATCH_SCOPE, return_value=True):
+                result = resolve_support_proof(self._REQ, root, req_id="REQ-0.0.74-06-04")
+            self.assertEqual(result, "pass")
+
+    def test_grandfathered_req_with_no_event_is_tolerated(self) -> None:
+        """A pre-cutover hollow proof named in the grandfather file resolves to a
+        distinct 'grandfathered-support' (tolerated, not laundered as 'pass')."""
+        from gzkit.req_kind import resolve_support_proof
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _make_ledger_with_events(root, [_ev("artifact_edited", "docs/x.md")])
+            (root / "data").mkdir()
+            (root / "data" / "support_proof_grandfather.json").write_text(
+                json.dumps({"grandfathered_reqs": ["REQ-0.0.74-06-04"]}), encoding="utf-8"
+            )
+            with patch(_PATCH_SCOPE, return_value=True):
+                result = resolve_support_proof(self._REQ, root, req_id="REQ-0.0.74-06-04")
+            self.assertEqual(result, "grandfathered-support")
+
+    def test_live_nc_never_emitted_event_with_path_fails(self) -> None:
+        """Live negative control (closes the #642/#647 'no NC' class): a SUPPORT
+        proof citing an event TYPE that was never emitted at all MUST fail. A
+        stub gate that auto-passes would pass this; the real gate refuses."""
+        from gzkit.req_kind import resolve_support_proof
+
+        req = (
+            "rule shipped — corpus_entry_appended ledger event for "
+            ".gzkit/rules/x.md + gz validate --ledger"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            # Ledger has events, but NONE of type corpus_entry_appended.
+            _make_ledger_with_events(root, [_ev("artifact_edited", "a/b.md")])
+            with patch(_PATCH_SCOPE, return_value=True):
+                result = resolve_support_proof(req, root, req_id="REQ-9.9.9-99-99")
+            self.assertEqual(result, "unproven-support")
+
+    def test_no_path_citation_falls_back_to_type_only(self) -> None:
+        """A SUPPORT REQ that cites NO path keeps the type-only ledger check —
+        path-aware enforcement only fires when a path is actually cited."""
+        from gzkit.req_kind import resolve_support_proof
+
+        req = "manpage updated — artifact_edited ledger event + gz validate --documents"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _make_ledger_with_events(root, [_ev("artifact_edited", None)])
+            with patch(_PATCH_SCOPE, return_value=True):
+                result = resolve_support_proof(req, root, req_id="REQ-0.0.69-01-04")
+            self.assertEqual(result, "pass")
+
+
 class TestResolveSupportProofFailClose(unittest.TestCase):
     """REQ-0.0.69-01-02 and REQ-0.0.69-01-03: fail-close on missing event or failing scope."""
 

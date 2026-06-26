@@ -216,8 +216,10 @@ def _check_req(
         )
     if kind == "SUPPORT":
         req_text = line.split(":", 1)[-1].strip() if ":" in line else line
-        proof_status = resolve_support_proof(req_text, project_root)
-        if proof_status == "pass":
+        proof_status = resolve_support_proof(req_text, project_root, req_id=req_id)
+        # "grandfathered-support" (GHI #647) is a tolerated pre-cutover hollow
+        # proof — non-failing, like "pass", until repaired off the snapshot.
+        if proof_status in ("pass", "grandfathered-support"):
             return None
         rerun = _extract_rerun_command(line)
         suffix = f" Re-run: {rerun}" if rerun else ""

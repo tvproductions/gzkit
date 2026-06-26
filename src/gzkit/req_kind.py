@@ -223,6 +223,14 @@ _KNOWN_LEDGER_EVENT_TYPES: frozenset[str] = (
 _RECURSION_FENCE_SCOPES: frozenset[str] = frozenset({"req_kind_discipline", "closeout_proof"})
 
 
+# A file-path token cited in SUPPORT REQ text (the artifact the ledger event
+# must cite). Matches dotted-extension paths with optional directory segments:
+# ``src/gzkit/events.py``, ``data/x.json``, ``events.py``, ``docs/a/b.md``.
+_SUPPORT_PATH_RE = re.compile(
+    r"((?:[\w.-]+/)*[\w.-]+\.(?:py|md|jsonl|json|feature|ya?ml|toml|txt|cfg|ini))"
+)
+
+
 class SupportCitation(BaseModel):
     """Parsed SUPPORT-channel citation: validator scope + ledger event types."""
 
@@ -232,14 +240,23 @@ class SupportCitation(BaseModel):
         ..., min_length=1, description="Recognized ledger event type names found in REQ text"
     )
     scope: str = Field(..., description="Validator scope extracted from 'gz validate --<scope>'")
+    artifact_path: str | None = Field(
+        default=None,
+        description=(
+            "File path the cited ledger event must cite (GHI #647). None when the "
+            "REQ names no path — the ledger arm then falls back to type-only."
+        ),
+    )
 
 
 def parse_support_citation(req_text: str) -> SupportCitation | None:
-    """Parse ledger-event type(s) and validator scope from SUPPORT REQ text.
+    """Parse ledger-event type(s), validator scope, and cited artifact path.
 
     Returns ``None`` when the citation is missing or unparseable (no recognized
     ``gz validate --<scope>`` reference or no recognized ledger event type).
     Both components must be present for the citation to be considered parseable.
+    The artifact path (GHI #647) is captured when the REQ names one; it scopes
+    the ledger arm to an event CITING that path, not merely one of the type.
     """
     scope_match = _GZ_VALIDATE_SCOPE_RE.search(req_text)
     if scope_match is None:
@@ -251,7 +268,10 @@ def parse_support_citation(req_text: str) -> SupportCitation | None:
     if not found_types:
         return None
 
-    return SupportCitation(event_types=found_types, scope=scope)
+    path_match = _SUPPORT_PATH_RE.search(req_text)
+    artifact_path = path_match.group(1) if path_match else None
+
+    return SupportCitation(event_types=found_types, scope=scope, artifact_path=artifact_path)
 
 
 def _ledger_has_event(event_types: list[str], project_root: Path) -> bool:
@@ -271,6 +291,57 @@ def _ledger_has_event(event_types: list[str], project_root: Path) -> bool:
         if ev.get("event") in event_type_set:
             return True
     return False
+
+
+def _ledger_has_event_citing_path(
+    event_types: list[str], artifact_path: str, project_root: Path
+) -> bool:
+    """Return True if the ledger has an event of a cited type that CITES *artifact_path*.
+
+    GHI #647: the ledger arm of a SUPPORT proof must verify the *specific* event
+    the REQ names, not merely that some event of the type exists. Matches the
+    cited path (slash-normalized, case-insensitive) as a substring of the
+    event's ``path`` / ``id`` / ``artifact`` / ``artifact_path`` fields —
+    tolerant of backslash-authored paths and relative-vs-full forms.
+    """
+    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+    if not ledger_path.exists():
+        return False
+    event_type_set = frozenset(event_types)
+    target = artifact_path.replace("\\", "/").casefold()
+    for line in ledger_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            ev = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if ev.get("event") not in event_type_set:
+            continue
+        for field in ("path", "id", "artifact", "artifact_path"):
+            value = ev.get(field)
+            if isinstance(value, str) and target in value.replace("\\", "/").casefold():
+                return True
+    return False
+
+
+def _support_proof_grandfather(project_root: Path) -> frozenset[str]:
+    """REQ IDs whose pre-cutover hollow SUPPORT proof is tolerated (GHI #647).
+
+    The grandfather snapshot (``data/support_proof_grandfather.json``) freezes
+    the SUPPORT REQs that passed under the old type-only ledger match but cite a
+    path no ledger event cites. Like the GHI #625 sensitivity-floor cutover,
+    existing entries are tolerated (``grandfathered-support``) while every NEW
+    path-citing SUPPORT REQ is enforced fail-closed.
+    """
+    path = project_root / "data" / "support_proof_grandfather.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return frozenset()
+    reqs = data.get("grandfathered_reqs", []) if isinstance(data, dict) else []
+    return frozenset(str(r) for r in reqs)
 
 
 def _early_return_scope_audit(
@@ -327,15 +398,25 @@ def _dispatch_validator_scope(scope: str, project_root: Path) -> bool:
     return len(errors) == 0
 
 
-def resolve_support_proof(req_text: str, project_root: Path) -> str:
+def resolve_support_proof(req_text: str, project_root: Path, *, req_id: str | None = None) -> str:
     """Resolve SUPPORT proof status via ledger query and in-process validator dispatch.
 
     Returns one of:
-    - ``"pass"`` — cited event found in ledger AND cited validator scope exits 0.
-    - ``"unproven-support"`` — citation absent/unparseable, event not found,
-      or validator returned errors (fail-close).
+    - ``"pass"`` — cited event found in ledger (citing the cited path, if any)
+      AND cited validator scope exits 0.
+    - ``"grandfathered-support"`` — the REQ cites a path no ledger event cites,
+      but it is named in the GHI #647 grandfather snapshot (pre-cutover hollow
+      proof, tolerated; consumers treat as non-failing).
+    - ``"unproven-support"`` — citation absent/unparseable, event not found
+      (or, when a path is cited, no event cites it and the REQ is not
+      grandfathered), or validator returned errors (fail-close).
     - ``"unproven-recursion-fence"`` — cited scope would re-enter req-kind or
       closeout-proof resolution; not dispatched.
+
+    GHI #647: when the citation names an artifact path, the ledger arm verifies
+    an event of the cited type CITING that path — closing the hollow gate where
+    any event of the type (4295 unrelated ``artifact_edited`` events) satisfied
+    the proof. Path-less citations keep the type-only check (no behaviour change).
     """
     citation = parse_support_citation(req_text)
     if citation is None:
@@ -344,13 +425,22 @@ def resolve_support_proof(req_text: str, project_root: Path) -> str:
     if citation.scope in _RECURSION_FENCE_SCOPES:
         return "unproven-recursion-fence"
 
-    if not _ledger_has_event(citation.event_types, project_root):
+    grandfathered = False
+    if citation.artifact_path is not None:
+        if not _ledger_has_event_citing_path(
+            citation.event_types, citation.artifact_path, project_root
+        ):
+            if req_id is not None and req_id in _support_proof_grandfather(project_root):
+                grandfathered = True  # ledger arm waived; validator arm still enforced
+            else:
+                return "unproven-support"
+    elif not _ledger_has_event(citation.event_types, project_root):
         return "unproven-support"
 
     if not _dispatch_validator_scope(citation.scope, project_root):
         return "unproven-support"
 
-    return "pass"
+    return "grandfathered-support" if grandfathered else "pass"
 
 
 class ReqClassification(BaseModel):
@@ -515,7 +605,7 @@ def compute_three_channel_coverage(
         elif resolved_kind == ReqKind.SUPPORT:
             if project_root is not None:
                 req_text = dreq.entity.description if dreq else ""
-                proof_status = resolve_support_proof(req_text, project_root)
+                proof_status = resolve_support_proof(req_text, project_root, req_id=entry.req_id)
             else:
                 proof_status = "advisory-support"
         else:  # STRUCTURAL_FENCE
@@ -549,6 +639,7 @@ def compute_three_channel_coverage(
             if e.proof_status
             in {
                 "advisory-support",
+                "grandfathered-support",
                 "inferred-support",
                 "inferred-structural-fence",
                 "inferred-behavior",

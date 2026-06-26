@@ -71,6 +71,13 @@
       "mechanism": "shrink-ratchet",
       "entries_path": "",
       "baseline_count": 0
+    },
+    {
+      "data_file": "data/support_proof_grandfather.json",
+      "gates_step": "SUPPORT proof path-aware (gz validate --closeout-proof)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "grandfathered_reqs",
+      "baseline_count": 81
     }
   ],
   "excluded": [
