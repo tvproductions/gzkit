@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.23.0"
-last_reviewed: 2026-06-25
+skill-version: "6.24.0"
+last_reviewed: 2026-06-26
 model: sonnet
 ---
 
@@ -179,6 +179,11 @@ Stage 4 = HUMAN GATE (wait for attestation) — universal per ADR-0.0.36
         and are not the same string as the enum. Set `current_stage` to the
         enum value matching the lifecycle step in progress.
     - This unblocks the pipeline-gate PreToolUse hook for src/ and tests/ writes.
+    - On full launch the runtime also flips the brief frontmatter `status:`
+      `Draft -> Active` (the `in_progress` transition; `status_vocab` canon maps
+      `in_progress -> Active`) so no brief reads `Draft` while in-flight. The
+      flip is idempotent (only `Draft` flips) and prints `Brief status: Draft ->
+      Active` (GHI #646). Do not hand-edit the brief status — the runtime owns it.
 11. Apply the brief allowlist as the working scope contract before any edits.
 
 **Abort if:** brief not found, brief already `Completed`, or plan receipt verdict is `FAIL`.

@@ -92,6 +92,15 @@ class TestBriefStructureModel(unittest.TestCase):
         b = BriefStructure(**{**_VALID_FIELDS, "citations": [("src/x.py", "#anchor")]})
         self.assertEqual(b.citations, [("src/x.py", "#anchor")])
 
+    def test_model_accepts_active_in_flight_status(self) -> None:
+        """An in-flight brief carries status Active (status_vocab canon:
+        in_progress -> Active). The structured schema MUST accept it so a brief
+        the pipeline has flipped to Active still parses as BriefStructure rather
+        than degrading to LegacyBriefShape (which silently disables reconcile
+        drift-escalation during implementation). GHI #646."""
+        b = BriefStructure(**{**_VALID_FIELDS, "status": "Active"})
+        self.assertEqual(b.status, "Active")
+
     def test_tasks_optional_defaults_empty(self) -> None:
         """tasks field is optional and defaults to empty list (OBPI-0.0.64-04)."""
         b = BriefStructure(**_VALID_FIELDS)
