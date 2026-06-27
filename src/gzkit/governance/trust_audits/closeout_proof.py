@@ -17,8 +17,12 @@ import json
 import re
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.core.validation_rules import ValidationError
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 _REQ_LINE_RE = re.compile(
     r"^\s*-\s*\[[ xX]\]\s*(REQ-[\d]+\.[\d]+\.[\d]+-[\d]+-[\d]+)",
@@ -133,6 +137,23 @@ def _err(artifact: str, message: str) -> ValidationError:
     return ValidationError(type="closeout_proof", artifact=artifact, message=message)
 
 
+def _enforcement_floor_green(project_root: Path) -> bool:
+    """Return True when the OBPI-19 enforcement floor passes (no FACADE/TEST_BUG).
+
+    A meta-property structural-fence proves via this floor at ADR closeout
+    (``req_kind.is_meta_property_enforcement_fence``), so its closeout deferral is
+    gated on this returning True. Mirrors ``quality.run_enforcement_floor_audit``
+    success (every discovered claim PASSes) and adds a ``verified_count > 0``
+    guard so an empty registry never reads as a false green. READ-ONLY
+    (``root=None`` → no ledger mutation). ``project_root`` is accepted for a
+    uniform helper signature and future per-project scoping.
+    """
+    from gzkit.enforcement import run_meta_validator  # noqa: PLC0415
+
+    result = run_meta_validator(root=None)
+    return result.verified_count > 0 and result.facade_count == 0 and result.test_bug_count == 0
+
+
 def _withdrawn_obpi_ids(project_root: Path) -> set[str]:
     """Return OBPI ids carrying an ``obpi_withdrawn`` event in the ledger.
 
@@ -194,9 +215,14 @@ def _check_req(
     kind: str | None,
     line: str,
     waived_reqs: set[str],
+    floor_green: Callable[[], bool],
 ) -> ValidationError | None:
     """Recompute one REQ's proof over its channel; return an error if unproven."""
-    from gzkit.req_kind import resolve_fence_proof, resolve_support_proof
+    from gzkit.req_kind import (
+        is_meta_property_enforcement_fence,
+        resolve_fence_proof,
+        resolve_support_proof,
+    )
 
     if req_id in waived_reqs:
         return None
@@ -236,6 +262,22 @@ def _check_req(
         proof_status = resolve_fence_proof(req_id, project_root, req_text)
         if proof_status == "pass":
             return None
+        # A meta-property enforcement fence names no single bindable claim (e.g.
+        # "the registry has no _NEGATIVE_CONTROL_DEBT escape"). It is not per-claim
+        # provable here; it proves via the OBPI-19 enforcement floor at ADR closeout
+        # (req_kind.is_meta_property_enforcement_fence contract). Defer it to the
+        # floor: proven iff the floor is green. A single-claim fence skips this and
+        # keeps the OBPI-18 teeth below.
+        if is_meta_property_enforcement_fence(req_text):
+            if floor_green():
+                return None
+            return _err(
+                artifact,
+                f"{req_id} [STRUCTURAL-FENCE]: meta-property fence — the OBPI-19 "
+                f"enforcement floor that proves it is RED. Run "
+                f"`uv run gz validate --qc-binding` and fix the FACADE/TEST_BUG so "
+                f"the floor proves it.",
+            )
         return _err(
             artifact,
             f"{req_id} [STRUCTURAL-FENCE]: {proof_status}. "
@@ -252,6 +294,7 @@ def _check_brief(
     adr_id: str,
     brief_path: Path,
     waived_reqs: set[str],
+    floor_green: Callable[[], bool],
     *,
     fail_close: bool,
 ) -> list[ValidationError]:
@@ -271,7 +314,7 @@ def _check_brief(
             return [_err(artifact, f"brief could not be read (fail-close): {exc}")]
         return []
     results = (
-        _check_req(project_root, artifact, req_id, kind, line, waived_reqs)
+        _check_req(project_root, artifact, req_id, kind, line, waived_reqs, floor_green)
         for req_id, kind, line in _parse_reqs_from_brief(body)
     )
     return [e for e in results if e is not None]
@@ -308,6 +351,16 @@ def validate_closeout_proof(
     withdrawn_obpis = _withdrawn_obpi_ids(project_root)
     waived_reqs = _waived_req_ids(project_root)
 
+    # Memoize the floor result: a meta-property structural-fence defers to the
+    # OBPI-19 enforcement floor, but the floor (the meta-validator) is run at most
+    # once per call and only when a meta-property fence actually needs it.
+    _floor_cache: list[bool] = []
+
+    def floor_green() -> bool:
+        if not _floor_cache:
+            _floor_cache.append(_enforcement_floor_green(project_root))
+        return _floor_cache[0]
+
     for ceremony_path in _resolve_ceremony_files(ceremonies_dir, adr_id):
         try:
             ceremony = json.loads(ceremony_path.read_text(encoding="utf-8"))
@@ -334,7 +387,12 @@ def validate_closeout_proof(
                 continue  # withdrawn OBPI never built — not a coverage gap
             errors.extend(
                 _check_brief(
-                    project_root, this_adr_id, brief_path, waived_reqs, fail_close=not scan_all
+                    project_root,
+                    this_adr_id,
+                    brief_path,
+                    waived_reqs,
+                    floor_green,
+                    fail_close=not scan_all,
                 )
             )
 

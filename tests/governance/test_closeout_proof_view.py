@@ -646,5 +646,94 @@ class TestCloseoutProofEnforcementFence(unittest.TestCase):
         )
 
 
+class TestCloseoutProofMetaPropertyDeferral(unittest.TestCase):
+    """A meta-property enforcement fence (enforcement vocabulary, no single
+    bindable claim) defers to the OBPI-19 enforcement floor at closeout: proven
+    iff the floor is green. A single-claim fence keeps the OBPI-18 teeth
+    regardless of floor state. (ADR-0.0.74 corrective fix — the closeout-proof
+    consumer implements the 'prove via the floor at ADR closeout' deferral that
+    resolve_fence_proof's own contract documents but never wired.)
+    """
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def _write_adr_with_anchor(self, adr_id: str) -> Path:
+        adr_dir = _make_adr_dir(self.root, adr_id)
+        (adr_dir / f"{adr_id}.md").write_text(
+            f"# {adr_id}\n\n## Boundary Invariants\n\n- Invariant 1\n", encoding="utf-8"
+        )
+        return adr_dir
+
+    _META_REQ = (
+        "REQ-0.0.99-01-01 [STRUCTURAL-FENCE]: the enforcement-claim registry has "
+        "no `_NEGATIVE_CONTROL_DEBT`-style escape; the runner fail-closes if a claim "
+        "lacks a passing un-forced NC"
+    )
+
+    def test_meta_property_fence_passes_when_floor_green(self) -> None:
+        from unittest import mock
+
+        adr_id = "ADR-0.0.99-meta-green"
+        _write_ceremony(self.root, adr_id)
+        _write_brief(self._write_adr_with_anchor(adr_id), "OBPI-0.0.99-01-meta", [self._META_REQ])
+        with mock.patch(
+            "gzkit.governance.trust_audits.closeout_proof._enforcement_floor_green",
+            return_value=True,
+        ):
+            errors = validate_closeout_proof(self.root)
+        fence_errors = [e for e in errors if "REQ-0.0.99-01-01" in e.message]
+        self.assertEqual(
+            fence_errors, [], f"meta-property fence must defer to a green floor; got {fence_errors}"
+        )
+
+    def test_meta_property_fence_fails_when_floor_red(self) -> None:
+        from unittest import mock
+
+        adr_id = "ADR-0.0.99-meta-red"
+        _write_ceremony(self.root, adr_id)
+        _write_brief(self._write_adr_with_anchor(adr_id), "OBPI-0.0.99-01-meta", [self._META_REQ])
+        with mock.patch(
+            "gzkit.governance.trust_audits.closeout_proof._enforcement_floor_green",
+            return_value=False,
+        ):
+            errors = validate_closeout_proof(self.root)
+        fence_errors = [e for e in errors if "REQ-0.0.99-01-01" in e.message]
+        self.assertGreater(
+            len(fence_errors), 0, "meta-property fence must fail when the enforcement floor is RED"
+        )
+
+    def test_single_claim_fence_not_floor_deferred(self) -> None:
+        """Teeth: a single-claim fence naming an unregistered claim fails even with
+        a green floor — the floor proves the system, never a missing named claim."""
+        from unittest import mock
+
+        adr_id = "ADR-0.0.99-single-claim"
+        _write_ceremony(self.root, adr_id)
+        _write_brief(
+            self._write_adr_with_anchor(adr_id),
+            "OBPI-0.0.99-01-single",
+            [
+                "REQ-0.0.99-01-01 [STRUCTURAL-FENCE]: the `nonexistent-claim-xyz` "
+                "guard fail-closes via a live negative control"
+            ],
+        )
+        with mock.patch(
+            "gzkit.governance.trust_audits.closeout_proof._enforcement_floor_green",
+            return_value=True,
+        ):
+            errors = validate_closeout_proof(self.root)
+        fence_errors = [e for e in errors if "REQ-0.0.99-01-01" in e.message]
+        self.assertGreater(
+            len(fence_errors),
+            0,
+            "single-claim unregistered fence must NOT be floor-deferred (OBPI-18 teeth)",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -130,6 +130,45 @@ def _enforcement_claim_registered(req_text: str) -> bool:
     return bool(tokens & registered)
 
 
+# A backtick token shaped like an enforcement claim id: a hyphenated lowercase
+# slug (e.g. ``grader-gaming``, ``gate5-ledger``). A fence naming such a token
+# asserts a SINGLE claim and keeps the OBPI-18 teeth (the named claim must be
+# registered to resolve "pass"); a fence naming none is a meta-property fence.
+# Authority for the claim-id shape is ``enforcement._CLAIM_ID_RE``; this is the
+# hyphenated subset used to tell a real claim slug from enforcement prose.
+_CLAIM_CANDIDATE_RE: re.Pattern[str] = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$")
+
+
+def _names_claim_candidate(req_text: str) -> bool:
+    """Return True if req_text backticks a token shaped like a single claim id.
+
+    Enforcement-vocabulary keywords that happen to be hyphenated slugs
+    (``fail-closes``) are excluded — they are the enforcement trigger, not a claim.
+    """
+    keywords = {kw.lower() for kw in _ENFORCEMENT_FENCE_KEYWORDS}
+    tokens = {token.strip() for token in _BACKTICK_TOKEN_RE.findall(req_text)}
+    return any(_CLAIM_CANDIDATE_RE.match(t) and t.lower() not in keywords for t in tokens)
+
+
+def is_meta_property_enforcement_fence(req_text: str) -> bool:
+    """Return True for an enforcement-asserting fence that names no single claim.
+
+    A meta-property fence asserts a property of the enforcement *system* itself
+    (e.g. "the registry has no `_NEGATIVE_CONTROL_DEBT` escape", "one
+    enforcement-claim surface, not two") rather than the liveness of one named
+    guard. Per ``_enforcement_claim_registered``'s contract these are not
+    per-claim bindable; they prove via the OBPI-19 enforcement floor at ADR
+    closeout, not via a named ``@enforces`` claim. The closeout-proof consumer
+    (``trust_audits.closeout_proof``) defers them to the floor — proven iff the
+    floor is green — while a single-claim fence keeps the OBPI-18 teeth.
+
+    ``resolve_fence_proof`` deliberately still returns ``"unproven-fence"`` for
+    these (the attested REQ-0.0.74-18-01 behavior, "prove via the floor ... not
+    via this resolver"); the deferral lives in the consumer, not the resolver.
+    """
+    return _is_enforcement_asserting(req_text) and not _names_claim_candidate(req_text)
+
+
 def _find_parent_adr_file(semver: str, project_root: Path) -> Path | None:
     """Find the parent ADR file for a given semver under project_root."""
     adr_root = project_root / "docs" / "design" / "adr"

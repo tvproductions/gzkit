@@ -179,5 +179,48 @@ class TestStatePropertyFencePath(unittest.TestCase):
                 self.assertFalse(_is_enforcement_asserting(text))
 
 
+class TestMetaPropertyFenceClassification(unittest.TestCase):
+    """is_meta_property_enforcement_fence separates a meta-property fence (no
+    single bindable claim → defers to the OBPI-19 floor at closeout) from a
+    single-claim fence (names a claim slug → OBPI-18 teeth) and a state-property
+    fence (no enforcement vocabulary)."""
+
+    def test_meta_property_texts_classify_as_meta(self) -> None:
+        from gzkit.req_kind import is_meta_property_enforcement_fence
+
+        meta_texts = [
+            "The enforcement-claim registry has no `_NEGATIVE_CONTROL_DEBT`-style "
+            "escape; the runner fail-closes",
+            "Every enforcement claim is registered through this single `@enforces` "
+            "primitive into one registry",
+            "the meta-validator enumerates `GATE5_INVARIANTS` membership and requires "
+            "each member to carry an `@enforces` entry",
+        ]
+        for text in meta_texts:
+            with self.subTest(text=text):
+                self.assertTrue(is_meta_property_enforcement_fence(text))
+
+    def test_single_claim_fence_is_not_meta(self) -> None:
+        from gzkit.req_kind import is_meta_property_enforcement_fence
+
+        # Names a hyphenated claim-id-shaped slug → single-claim, keeps the teeth.
+        self.assertFalse(
+            is_meta_property_enforcement_fence("the `grader-gaming` enforcement is live")
+        )
+        self.assertFalse(
+            is_meta_property_enforcement_fence(
+                "`nonexistent-claim-xyz` fail-closes via a live negative control"
+            )
+        )
+
+    def test_state_property_text_is_not_meta(self) -> None:
+        from gzkit.req_kind import is_meta_property_enforcement_fence
+
+        # No enforcement keyword at all → not enforcement-asserting → not meta.
+        self.assertFalse(
+            is_meta_property_enforcement_fence("the marker is the single MX truth-source")
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
