@@ -24,7 +24,7 @@ import sys
 
 
 def _banner_stdlib(cwd: str | None) -> str:
-    """Stdlib-only marker read — fallback when gzkit.mx.awareness is unavailable."""
+    """Stdlib-only marker read — the gzkit-import-free fallback."""
     from pathlib import Path
 
     _BANNER = (

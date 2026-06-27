@@ -9,6 +9,7 @@ from pathlib import Path
 
 from gzkit.config import GzkitConfig
 from gzkit.hooks.scripts.ghi import _ghi_triage_chat_silence_script
+from gzkit.hooks.scripts.mx import _mx_awareness_script
 from gzkit.hooks.scripts.pipeline import (
     _pipeline_completion_reminder_script,
     _plan_audit_gate_script,
@@ -234,6 +235,17 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                     ],
                 },
             ],
+            "UserPromptSubmit": [
+                {
+                    "matcher": "*",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": _hook_command(hooks_dir, "mx-awareness.py"),
+                        }
+                    ],
+                },
+            ],
         },
     }
 
@@ -325,7 +337,7 @@ def merge_settings(
     # order so a sync round-trip on an untouched file is byte-stable.
     existing_hooks = existing.get("hooks", {})
     gzkit_hooks = gzkit_settings.get("hooks", {})
-    gzkit_owned_phases = ("PreToolUse", "PostToolUse", "Stop")
+    gzkit_owned_phases = ("PreToolUse", "PostToolUse", "Stop", "UserPromptSubmit")
     merged_hooks: dict[str, list] = {}
 
     # Walk existing phases first to lock their order; gzkit-owned phases
@@ -416,6 +428,10 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
     stop_turn_feedback_path = hooks_path / "stop-turn-feedback.py"
     _write_hook_file(stop_turn_feedback_path, _stop_turn_feedback_script(), executable=True)
     created.append(stop_turn_feedback_path.relative_to(project_root).as_posix())
+
+    mx_awareness_path = hooks_path / "mx-awareness.py"
+    _write_hook_file(mx_awareness_path, _mx_awareness_script(), executable=True)
+    created.append(mx_awareness_path.relative_to(project_root).as_posix())
 
     control_surface_sync_path = hooks_path / "control-surface-sync.py"
     _write_hook_file(control_surface_sync_path, _control_surface_sync_script(), executable=True)

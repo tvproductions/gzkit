@@ -369,6 +369,77 @@ class TestGenerateClaudeSettings(unittest.TestCase):
             diffs = detect_claude_settings_drift(root, config)
             self.assertTrue(any("Stop" in d for d in diffs), diffs)
 
+    def test_user_prompt_submit_phase_is_gzkit_owned(self) -> None:
+        """The UserPromptSubmit phase wires mx-awareness.py and survives merge.
+
+        ADR-0.0.74 OBPI-0.0.74-07: the MX awareness hook is the load-bearing
+        per-turn guarantee, but the hook script landed without a settings
+        registration — so it never fired. Mirroring the Stop-phase regression
+        fence (GHI/ADR-0.0.70), generator ownership keeps the UserPromptSubmit
+        registration from being silently reverted by the settings merge.
+        """
+        from gzkit.hooks.claude import merge_settings
+
+        config = GzkitConfig(project_name="gzkit-test")
+        settings = generate_claude_settings(config)
+
+        ups_groups = settings["hooks"]["UserPromptSubmit"]
+        commands = [h["command"] for g in ups_groups for h in g["hooks"]]
+        self.assertEqual(commands, [_expected_hook_command("mx-awareness.py")])
+
+        # Merge round-trip over an existing file that predates the phase must
+        # re-introduce it (the exact silent-revert shape).
+        with tempfile.TemporaryDirectory() as tmp:
+            stale = {
+                "hooks": {
+                    "PreToolUse": settings["hooks"]["PreToolUse"],
+                    "PostToolUse": settings["hooks"]["PostToolUse"],
+                }
+            }
+            settings_path = Path(tmp) / "settings.json"
+            settings_path.write_text(json.dumps(stale), encoding="utf-8")
+            merged = merge_settings(settings_path, settings, ".claude/hooks")
+            self.assertIn("UserPromptSubmit", merged["hooks"])
+            merged_cmds = [
+                h["command"] for g in merged["hooks"]["UserPromptSubmit"] for h in g["hooks"]
+            ]
+            self.assertEqual(merged_cmds, [_expected_hook_command("mx-awareness.py")])
+
+        # Drift detection covers the UserPromptSubmit phase.
+        from gzkit.sync_surfaces import detect_claude_settings_drift
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            settings_path = root / config.paths.claude_settings
+            settings_path.parent.mkdir(parents=True, exist_ok=True)
+            stale_full = dict(settings)
+            stale_full["hooks"] = {
+                p: g for p, g in settings["hooks"].items() if p != "UserPromptSubmit"
+            }
+            settings_path.write_text(json.dumps(stale_full), encoding="utf-8")
+            diffs = detect_claude_settings_drift(root, config)
+            self.assertTrue(any("UserPromptSubmit" in d for d in diffs), diffs)
+
+    def test_setup_generates_mx_awareness_hook(self) -> None:
+        """setup_claude_hooks writes mx-awareness.py so `gz init` reproduces it.
+
+        Coupled-surface coherence (AGENTS.md 1a): generated settings.json
+        references the hook, so the same init path MUST produce the script —
+        otherwise a fresh `gz init` leaves a dangling hook reference.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            created = setup_claude_hooks(project_root, config)
+            created = [path.replace("\\", "/") for path in created]
+
+            hook_path = project_root / ".claude" / "hooks" / "mx-awareness.py"
+            self.assertTrue(hook_path.exists(), hook_path)
+            self.assertIn(".claude/hooks/mx-awareness.py", created)
+            body = hook_path.read_text(encoding="utf-8")
+            self.assertIn("MX MODE ACTIVE", body)
+
 
 class TestRepoClaudeSettingsAnchorScripts(unittest.TestCase):
     """GHI #509: every hook command in the repo's committed settings.json
