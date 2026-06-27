@@ -1,5 +1,59 @@
 # gzkit Release Notes
 
+## v0.29.0 (2026-06-27)
+
+The first feature release under the Build-to-1.0 versioning doctrine: **MX
+(maintenance-mode) — the self-repair hangar** lands as the substrate's first
+feature, alongside the enforcement-claim meta-validator that gives the
+never-relax floor its teeth.
+
+Per the campaign versioning doctrine, the forward engine resumes minting minors
+from the last published release (0.28.1); the previously-reserved 0.29.0 ADR was
+dropped to pool to free the number for MX. The release line — not ADR
+frontmatter — is the source of truth for what shipped.
+
+### MX maintenance hangar (ADR-0.0.74)
+
+A filesystem-marker "maintenance mode" with a hard exit gate, delivered across
+19 OBPIs:
+
+- **Lifecycle** — `gz mx enter` / `gz mx status` / `gz mx exit`, with the marker
+  as the single MX truth-source every surface consults, bound to the ledger
+  (`mx_session_opened` / `mx_session_closed`).
+- **Hard exit, no force** — exit re-runs every gate at full strength against the
+  enter-time scope; green-or-grounded, no `--force` escape.
+- **Hardening** — TTL / max-open caps, "no normal release while MX is open,"
+  ledger debt-aging (louder over time), and a dangling-state detector ("ledger
+  open but marker missing").
+- **Awareness** — an MX-awareness hook surfaces hangar state to the agent session.
+
+### Gates-as-sensors (GZ_<LEVEL> substrate)
+
+- Live guards emit a Python-`logging` severity (`CRITICAL` 50 … `DEBUG` 10, with
+  `NOTICE` 25 the V.I.B.E.S. drift band) through one shared checkpoint; the
+  **level** — not a hand-set `_FAIL_CLOSED` bool — drives the disposition
+  (CRITICAL → AOG; `>= ERROR` → grounding; below → advisory debt on the ledger).
+- The hand-set staging flags are retired; the `gz check` step layer and
+  `gz validate` scope dispatcher resolve fatality through `checkpoint.resolve`.
+
+### Enforcement-claim meta-validator (the floor's teeth)
+
+- A single `@enforces(claim, fixture, entrypoint)` primitive + a runner-driven
+  meta-validator that runs every enforcement claim's negative control through the
+  **real production path** (un-forced) and fail-closes on any FACADE/TEST_BUG.
+- Strict no-debt: no `_NEGATIVE_CONTROL_DEBT` escape. Every enrolled production
+  enforcement claim (41 at release) runs its live negative control, 0 facades;
+  the floor joins `gz check` as a fail-closed step.
+- Structural-fence proof upgrade: an enforcement-asserting `[STRUCTURAL-FENCE]`
+  REQ resolves at closeout only via a live `@enforces` claim, not a prose anchor
+  alone; meta-property fences defer to the green enforcement floor.
+
+### Notes
+
+- The `foundation` ADR kind is being abolished (pool → feature) under a separate,
+  parity-proven taxonomy migration; this release ships on the release line ahead
+  of that reclassification.
+
 ## v0.28.1 (2026-06-12)
 
 Six foundation ADR closeouts land alongside thirty targeted GHI fixes spanning the OBPI
