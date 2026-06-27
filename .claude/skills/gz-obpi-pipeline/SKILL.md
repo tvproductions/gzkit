@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.24.0"
-last_reviewed: 2026-06-26
+skill-version: "6.24.1"
+last_reviewed: 2026-06-27
 model: sonnet
 ---
 
@@ -904,7 +904,7 @@ The pipeline is complete when — and ONLY when — all of these are true:
 
 If any of these have not happened, the pipeline is not complete. Do not claim otherwise.
 
-**What "done" looks like:** The final output of a successful pipeline run is a short status line confirming Stage 5 completed — not a summary of the implementation, not a recap of what was built. Just: "Pipeline complete. OBPI-X.Y.Z-NN synced and lock released."
+**What "done" looks like:** The final output of a successful pipeline run is a short status line confirming Stage 5 completed — not a summary of the implementation, not a recap of what was built. Just: "Pipeline complete. OBPI-X.Y.Z-NN synced. The pipeline does not manage the work lock; if one is held on OBPI-X.Y.Z-NN, release it with 'gz obpi lock release OBPI-X.Y.Z-NN'."
 
 ### Anti-Pattern: The Premature Summary
 
