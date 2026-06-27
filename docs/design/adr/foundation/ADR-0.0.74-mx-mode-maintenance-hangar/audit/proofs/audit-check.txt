@@ -1,0 +1,87 @@
+ADR audit-check: ADR-0.0.74-mx-mode-maintenance-hangar
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.74-01-mx-marker-file
+  - OBPI-0.0.74-02-mx-shared-checkpoint
+  - OBPI-0.0.74-03-mx-gate5-invariants
+  - OBPI-0.0.74-04-mx-enter
+  - OBPI-0.0.74-05-mx-exit-hard-gate
+  - OBPI-0.0.74-06-mx-log-auto-assembled
+  - OBPI-0.0.74-07-mx-awareness-hook
+  - OBPI-0.0.74-08-mx-skill-and-agents-rule
+  - OBPI-0.0.74-09-mx-retire-staging-flags
+  - OBPI-0.0.74-11-mx-gz-level-vocabulary
+  - OBPI-0.0.74-12-mx-gates-as-sensors
+  - OBPI-0.0.74-13-mx-proxy-reality-detector
+  - OBPI-0.0.74-14-mx-hardening
+  - OBPI-0.0.74-15-enforces-declaration-and-registry
+  - OBPI-0.0.74-16-meta-validator-runner
+  - OBPI-0.0.74-17-gate5-invariants-floor-migration
+  - OBPI-0.0.74-18-structural-fence-proof-upgrade
+  - OBPI-0.0.74-19-floor-wiring
+  - OBPI-0.0.74-20-mx-gz-check-step-checkpoint-seam
+Advisory 21 REQ(s) without @covers traceability (non-blocking):
+  - REQ-0.0.74-01-03
+  - REQ-0.0.74-02-03
+  - REQ-0.0.74-03-03
+  - REQ-0.0.74-04-05
+  - REQ-0.0.74-05-04
+  - REQ-0.0.74-05-05
+  - REQ-0.0.74-07-03
+  - REQ-0.0.74-08-01
+  - REQ-0.0.74-08-02
+  - REQ-0.0.74-09-03
+  - REQ-0.0.74-10-01
+  - REQ-0.0.74-10-02
+  - REQ-0.0.74-10-03
+  - REQ-0.0.74-11-03
+  - REQ-0.0.74-12-03
+  - REQ-0.0.74-13-03
+  - REQ-0.0.74-14-05
+  - REQ-0.0.74-17-05
+  - REQ-0.0.74-18-03
+  - REQ-0.0.74-19-04
+  - REQ-0.0.74-20-05
+
+Coverage: 56/77 REQs covered (72.7%)
+  OBPI-0.0.74-01: 2/3 (66.7%)
+  OBPI-0.0.74-02: 2/3 (66.7%)
+  OBPI-0.0.74-03: 2/3 (66.7%)
+  OBPI-0.0.74-04: 4/5 (80.0%)
+  OBPI-0.0.74-05: 4/6 (66.7%)
+  OBPI-0.0.74-06: 4/4 (100.0%)
+  OBPI-0.0.74-07: 2/3 (66.7%)
+  OBPI-0.0.74-08: 1/3 (33.3%)
+  OBPI-0.0.74-09: 2/3 (66.7%)
+  OBPI-0.0.74-10: 0/3 (0.0%)
+  OBPI-0.0.74-11: 2/3 (66.7%)
+  OBPI-0.0.74-12: 2/3 (66.7%)
+  OBPI-0.0.74-13: 2/3 (66.7%)
+  OBPI-0.0.74-14: 4/5 (80.0%)
+  OBPI-0.0.74-15: 4/4 (100.0%)
+  OBPI-0.0.74-16: 6/6 (100.0%)
+  OBPI-0.0.74-17: 4/5 (80.0%)
+  OBPI-0.0.74-18: 2/3 (66.7%)
+  OBPI-0.0.74-19: 3/4 (75.0%)
+  OBPI-0.0.74-20: 4/5 (80.0%)
+Uncovered REQs (21):
+  - REQ-0.0.74-01-03
+  - REQ-0.0.74-02-03
+  - REQ-0.0.74-03-03
+  - REQ-0.0.74-04-05
+  - REQ-0.0.74-05-04
+  - REQ-0.0.74-05-05
+  - REQ-0.0.74-07-03
+  - REQ-0.0.74-08-01
+  - REQ-0.0.74-08-02
+  - REQ-0.0.74-09-03
+  - REQ-0.0.74-10-01
+  - REQ-0.0.74-10-02
+  - REQ-0.0.74-10-03
+  - REQ-0.0.74-11-03
+  - REQ-0.0.74-12-03
+  - REQ-0.0.74-13-03
+  - REQ-0.0.74-14-05
+  - REQ-0.0.74-17-05
+  - REQ-0.0.74-18-03
+  - REQ-0.0.74-19-04
+  - REQ-0.0.74-20-05
