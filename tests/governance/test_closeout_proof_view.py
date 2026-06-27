@@ -570,5 +570,81 @@ class TestCloseoutProofExemptions(unittest.TestCase):
         self.assertIn("closeout_proof", {e.type for e in errors})
 
 
+class TestCloseoutProofEnforcementFence(unittest.TestCase):
+    """GHI #649 — the closeout STRUCTURAL-FENCE proof must apply the OBPI-18
+    enforcement-asserting upgrade, not resolve 'pass' on anchor presence alone.
+
+    An enforcement-asserting fence (REQ text says X is enforced / fail-closes /
+    has a live NC) resolves 'pass' only when its named ``@enforces`` claim is
+    registered (ADR-0.0.74 BI#10). The closeout proof surface previously called
+    ``resolve_fence_proof(req_id, project_root)`` with no ``req_text``, so the
+    upgrade never fired and ANY enforcement fence passed closeout on a
+    ``## Boundary Invariants`` heading alone — the facade this test forbids.
+    """
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def _write_adr_with_anchor(self, adr_id: str) -> Path:
+        """ADR package whose file carries the ## Boundary Invariants anchor."""
+        adr_dir = _make_adr_dir(self.root, adr_id)
+        (adr_dir / f"{adr_id}.md").write_text(
+            f"# {adr_id}\n\n## Boundary Invariants\n\n- Invariant 1\n",
+            encoding="utf-8",
+        )
+        return adr_dir
+
+    def test_enforcement_fence_unregistered_claim_is_unproven_at_closeout(self) -> None:
+        """Facade case: enforcement fence + anchor present + claim NOT registered
+        → MUST be unproven at closeout (anchor presence is not sufficient)."""
+        adr_id = "ADR-0.0.99-enf-fence"
+        _write_ceremony(self.root, adr_id)
+        adr_dir = self._write_adr_with_anchor(adr_id)
+        _write_brief(
+            adr_dir,
+            "OBPI-0.0.99-01-enf",
+            [
+                "REQ-0.0.99-01-01 [STRUCTURAL-FENCE]: the `nonexistent-claim-xyz` "
+                "guard fail-closes via a live negative control"
+            ],
+        )
+
+        errors = validate_closeout_proof(self.root)
+
+        combined = " ".join(e.message for e in errors)
+        self.assertIn(
+            "REQ-0.0.99-01-01",
+            combined,
+            "An enforcement-asserting structural-fence naming an UNREGISTERED "
+            "@enforces claim must be unproven at closeout — the heading anchor "
+            "alone is not proof (GHI #649; ADR-0.0.74 BI#10).",
+        )
+
+    def test_state_property_fence_still_passes_on_anchor(self) -> None:
+        """No regression: a state-property fence (no enforcement keywords) still
+        resolves 'pass' on the ## Boundary Invariants anchor."""
+        adr_id = "ADR-0.0.99-state-fence"
+        _write_ceremony(self.root, adr_id)
+        adr_dir = self._write_adr_with_anchor(adr_id)
+        _write_brief(
+            adr_dir,
+            "OBPI-0.0.99-02-state",
+            ["REQ-0.0.99-02-01 [STRUCTURAL-FENCE]: the marker is the single state source"],
+        )
+
+        errors = validate_closeout_proof(self.root)
+
+        fence_errors = [e for e in errors if "REQ-0.0.99-02-01" in e.message]
+        self.assertEqual(
+            fence_errors,
+            [],
+            f"State-property fence must still pass on the anchor; got: {fence_errors}",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -225,13 +225,24 @@ def _check_req(
         suffix = f" Re-run: {rerun}" if rerun else ""
         return _err(artifact, f"{req_id} [SUPPORT]: {proof_status}.{suffix}")
     if kind == "STRUCTURAL_FENCE":
-        proof_status = resolve_fence_proof(req_id, project_root)
+        # Pass req_text so resolve_fence_proof can apply the OBPI-0.0.74-18
+        # enforcement-asserting upgrade (BI#10): a fence whose text asserts
+        # enforcement resolves "pass" only when its named @enforces claim is
+        # registered, not merely when the ADR carries a ## Boundary Invariants
+        # heading. Dropping req_text bypassed that upgrade at the binding
+        # closeout gate (GHI #649) — it must mirror the gz covers call site
+        # (req_kind.py) and the SUPPORT branch above.
+        req_text = line.split(":", 1)[-1].strip() if ":" in line else line
+        proof_status = resolve_fence_proof(req_id, project_root, req_text)
         if proof_status == "pass":
             return None
         return _err(
             artifact,
             f"{req_id} [STRUCTURAL-FENCE]: {proof_status}. "
-            f"Add a parent-ADR '## Boundary Invariants' anchor.",
+            f"For a state-property fence, add a parent-ADR '## Boundary "
+            f"Invariants' anchor; for an enforcement-asserting fence "
+            f"(text says X is enforced/fail-closes/has a live NC), register "
+            f"its named @enforces claim with a passing un-forced NC.",
         )
     return None
 
