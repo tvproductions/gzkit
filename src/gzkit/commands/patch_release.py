@@ -34,6 +34,7 @@ from gzkit.commands.version_sync import (
 )
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import patch_release_event
+from gzkit.mx import hardening
 from gzkit.utils import git_cmd, run_exec
 
 # ---------------------------------------------------------------------------
@@ -724,6 +725,16 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
     ``sync_project_version``.
     """
     project_root = get_project_root()
+
+    # No normal release while an MX hangar is open (ADR-0.0.74 item 14): the
+    # hangar must be exited first. Dry-run preview stays usable; the executing
+    # path is refused before any gh/network work.
+    if not dry_run:
+        lock = hardening.normal_release_blocked(project_root)
+        if lock.blocked:
+            console.print(f"[red]Release refused:[/red] {lock.reason}")
+            raise SystemExit(3)
+
     _ensure_gh_available(project_root)
 
     tag, tag_date = _get_latest_tag(project_root)

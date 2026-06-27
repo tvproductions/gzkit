@@ -18,6 +18,11 @@ gz closeout <ADR-ID> [--json] [--dry-run]
 `gz closeout` is fail-closed on linked OBPI runtime proof.
 Pool ADRs (`ADR-pool.*`) are blocked from closeout until promoted out of pool.
 
+A feature/minor closeout is a release, so it is refused while an MX maintenance
+hangar is open (ADR-0.0.74): if `.gzkit/mx.json` is present, the executing path
+exits `3` with `Closeout refused: an MX maintenance hangar is open; exit it
+(gz mx exit) before releasing`. Exit the hangar first; `--dry-run` is unaffected.
+
 Output includes:
 
 - Gate 1 ADR path

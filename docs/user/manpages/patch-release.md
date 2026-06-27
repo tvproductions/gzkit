@@ -31,6 +31,14 @@ own right.
 `--full`
 :   Execute the full ceremony in one transaction: bump, draft release notes, commit, push (with lint/test gates), and create the GitHub release.
 
+## MX HANGAR LOCKOUT
+
+No normal release ships while an MX maintenance hangar is open (ADR-0.0.74). If
+the marker (`.gzkit/mx.json`) is present, the executing path is refused before
+any GitHub/network work with exit `3` and the message `Release refused: an MX
+maintenance hangar is open; exit it (gz mx exit) before releasing`. Exit the
+hangar (`gz mx exit`) first. `--dry-run` preview is unaffected.
+
 ## EXIT CODES
 
 | Code | Meaning |
@@ -38,7 +46,7 @@ own right.
 | 0 | Success (or dry-run preview) |
 | 1 | User/config error |
 | 2 | System/IO error |
-| 3 | Policy breach |
+| 3 | Policy breach (includes a refused release while an MX hangar is open) |
 
 ## EXAMPLES
 

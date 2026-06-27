@@ -46,6 +46,7 @@ from gzkit.ledger import (
     lifecycle_transition_event,
     resolve_adr_lane,
 )
+from gzkit.mx import hardening
 from gzkit.quality import ProductProofResult, check_product_proof
 
 
@@ -613,6 +614,16 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     """
     config = ensure_initialized()
     project_root = get_project_root()
+
+    # No normal release while an MX hangar is open (ADR-0.0.74 item 14): a
+    # feature/minor closeout is a release and must wait until the hangar exits.
+    # Dry-run preview stays usable; the executing path is refused up front.
+    if not dry_run:
+        lock = hardening.normal_release_blocked(project_root)
+        if lock.blocked:
+            console.print(f"[red]Closeout refused:[/red] {lock.reason}")
+            raise SystemExit(3)
+
     manifest = load_manifest(project_root)
     ledger = Ledger(project_root / config.paths.ledger)
 

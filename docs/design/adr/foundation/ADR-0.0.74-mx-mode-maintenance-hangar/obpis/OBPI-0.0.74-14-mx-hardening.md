@@ -3,7 +3,7 @@ id: OBPI-0.0.74-14-mx-hardening
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 14
 lane: Heavy
-status: Draft
+status: Completed
 # req_atomic: each REQ is one coherent hardening guard authored in a single TDD
 # increment inside the one src/gzkit/mx/hardening.py module — the TTL/max-open
 # guard (01), the no-normal-release-while-open guard (02), the ledger debt-aging
@@ -25,7 +25,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #14 - "MX hardening — TTL/max-open on the hangar, no normal release while MX is open, ledger debt-aging (louder over time), dangling-state detector ("ledger open but marker missing"); each resolves through the leveled checkpoint; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -44,9 +44,14 @@ The four MX hardening guards land at `src/gzkit/mx/hardening.py`, each emitting 
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md` — parent ADR for intent and scope (§ Decision item 14)
 - `src/gzkit/mx/hardening.py` **CREATE** — the four hardening guards (TTL/max-open, no-normal-release-while-open, ledger debt-aging, dangling-state detector), each resolving severity through the leveled checkpoint
 - `src/gzkit/mx/checkpoint.py` — the guards resolve their effective `GZ_<LEVEL>` through the checkpoint (consumer)
+- `src/gzkit/mx/marker.py` — the no-release / dangling-state guards read marker presence (`is_active`) (consumer, read-only)
+- `src/gzkit/mx/__init__.py` — the `gzkit.mx` package init imported by the guards and tests (consumer, read-only)
 - `src/gzkit/commands/patch_release.py` — the patch-release funnel consults `hardening.normal_release_blocked()` and refuses while a marker is present (proof-of-wiring for the no-normal-release guard)
 - `src/gzkit/commands/closeout.py` — the ADR-closeout (feature/minor release) funnel consults the same guard — the parallel normal-release path
 - `tests/mx/test_hardening.py` **CREATE** — unit tests for each of the four guards, including the block exercised at the real release site
+- `docs/user/manpages/patch-release.md` — document the MX-open release lockout (no normal release while a hangar is open; exit 3) — the coupled doc surface for the `gz patch release` behavior change (DO IT RIGHT 1a; allowlist amendment operator-ratified at plan approval 2026-06-27)
+- `docs/user/manpages/closeout.md` — document the same lockout for `gz closeout` (the parallel minor-release funnel) — coupled doc surface (allowlist amendment operator-ratified at plan approval 2026-06-27)
+- `docs/governance/governance_runbook.md` — one-line note on the release lockout (Gate 3 docs coherence; allowlist amendment operator-ratified at plan approval 2026-06-27)
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/obpis/OBPI-0.0.74-14-mx-hardening.md` — this brief (evidence recording)
 
 ## Creates These Files
@@ -222,14 +227,23 @@ Before: the hangar had no bound — a session could stay open indefinitely (guar
 
 ### Key Proof
 
+
+$ python -c "from gzkit.mx import hardening; print(hardening.normal_release_blocked())"
+# No marker:  blocked=False, emitted_level=10, route=<Route.TRACK>
+# Marker up:  blocked=True,  emitted_level=50, route=<Route.AOG>, reason='an MX maintenance hangar is open; exit it (gz mx exit) before releasing'
+
+The block is exercised at the real release sites (patch_release_cmd / closeout_cmd raise SystemExit(3)). Receipt arb-step-unittest-6d42f1f60e304c6da5181ab504cbbe7c (6578/6578); scoped arb-step-unittestscoped-10d7b1a6d36e498ba65843aac285c80c (16/16). Structural-fence negative control: breaking the TTL guard's emitted level fails the test (20 != 40), proving the fence is non-circular.
+
 ### Implementation Summary
 
-- **Decision item 14 (verbatim):** "MX hardening. TTL / max-open on the hangar; no normal release while MX is open; ledger debt-aging (accrued advisory debt grows louder over time); a dangling-state detector ('ledger open but marker missing'). Each is a guard whose severity resolves through the leveled checkpoint."
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Decision item 14 (verbatim): "MX hardening. TTL / max-open on the hangar; no normal release while MX is open; ledger debt-aging (accrued advisory debt grows louder over time); a dangling-state detector ('ledger open but marker missing'). Each is a guard whose severity resolves through the leveled checkpoint."
+- Files created: src/gzkit/mx/hardening.py (four guards + frozen Pydantic result models); tests/mx/test_hardening.py (16 tests across 5 classes)
+- Files modified: src/gzkit/commands/patch_release.py and src/gzkit/commands/closeout.py (no-release guard wired at real funnels, exit 3); docs/user/manpages/patch-release.md, docs/user/manpages/closeout.md, docs/governance/governance_runbook.md (lockout documented)
+- Tests added: 16 (TtlMaxOpen x4, NormalReleaseBlocked x4, DebtAging x3, DanglingState x3, StructuralFence x2)
+- Date completed: 2026-06-27
+- Attestation status: operator-verbatim "attest completed"
+- Defects noted: Adversarial validation surfaced two test gaps (advisory-under-marker coverage; structural-fence circularity) — both fixed in-flight, negative-control verified, before attestation.
 
 ## Tracked Defects
 
@@ -237,12 +251,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.74-14-mx-hardening: four MX hardening guards (TTL/max-open, no-normal-release wired at gz patch release + gz closeout with exit 3, ledger debt-aging, dangling-state detector) landed at src/gzkit/mx/hardening.py, each resolving severity through the leveled checkpoint (no hand-set bool, parent-ADR BI#2). 16/16 scoped tests (receipt arb-step-unittestscoped-10d7b1a6d36e498ba65843aac285c80c), 6578/6578 full suite (arb-step-unittest-6d42f1f60e304c6da5181ab504cbbe7c), lint/typecheck/mkdocs clean. Adversarial validation surfaced two test gaps (advisory-under-marker coverage; structural-fence circularity) — both fixed in-flight before attestation, structural fence negative-control verified (broken TTL level fails 20 != 40).
+- Date: 2026-06-27
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-27
 
 **Evidence Hash:** -
