@@ -3,7 +3,7 @@ id: OBPI-0.0.74-08-mx-skill-and-agents-rule
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 8
 lane: Heavy
-status: Draft
+status: Completed
 req_atomic:
   - REQ-0.0.74-08-01  # one SUPPORT artifact (the gz-mx skill as the operator's interface) — delivered with the scope, not separable labor
   - REQ-0.0.74-08-02  # one SUPPORT artifact (the binding mx-mode rule) — single indivisible unit
@@ -17,7 +17,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #8 - "The gz-mx skill + AGENTS.md binding rule — operator operates skill, skill invokes tool, never shell out; AGENTS.md rule: honor the marker and PRIME DIRECTIVE binds the whole session; surface sync; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -233,13 +233,24 @@ uv run gz mx --help
 
 ### Key Proof
 
+
+```bash
+uv run gz validate --skill-alignment   # exit 0 — gz mx verb now wielded by gz-mx skill
+uv run gz validate --cli-alignment     # exit 0 — gz_command 'mx' resolves
+uv run gz validate --unscoped-rules    # exit 0 — 23 rules checked, mx-mode.md paths-scoped
+uv run -m unittest tests.commands.test_skills.TestSkillCommands.test_gz_mx_skill_gz_command_resolves -v  # ok
+```
+Receipts: tests `arb-step-unittest-4c173b37a47047d082b0bfd1bb4e690b` (6548 pass), lint `arb-ruff-a46cb29553c2474dabb22ed748a81af8`, typecheck `arb-step-typecheck-3e0c5be8a5a94d40b89eac8fe5472c36`, docs `arb-step-mkdocs-3e8f5c14af6c484aaa18b705adc931e5`.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- gz-mx skill: Created `.gzkit/skills/gz-mx/SKILL.md` (`gz_command: mx`) — operator's governed interface to the MX hangar; operator operates the skill, skill invokes `gz mx`, nobody shells out (tool-skill Invariant 1)
+- mx-mode rule: Created `.gzkit/rules/mx-mode.md` (`paths:`-scoped per ADR-0.0.20) — binding agent rule carrying honor-the-marker + PRIME-DIRECTIVE-binds-the-whole-hangar-session doctrine
+- Behavior test: Added `@covers("REQ-0.0.74-08-03")` test to `tests/commands/test_skills.py` confirming the skill scaffolds and its `gz_command` resolves to the registered `gz mx` verb
+- Coupled-surface coherence (1a): operator manpage `docs/user/skills/gz-mx.md`, index entry, gz-manage router row (bumped to 0.4.0), advisory scorecard rows 62-63
+- Surface sync: propagated to all vendor mirrors via `gz agent sync control-surfaces`
+- Date completed: 2026-06-27
 
 ## Tracked Defects
 
@@ -247,12 +258,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.74-08 ships the gz-mx skill (gz_command: mx, tool-skill Invariant 1) and the paths-scoped mx-mode binding rule (honor-the-marker + PRIME-DIRECTIVE-binds). Verified: 6548 unittests pass (arb-step-unittest-4c173b37a47047d082b0bfd1bb4e690b), ruff clean (arb-ruff-a46cb29553c2474dabb22ed748a81af8), typecheck clean (arb-step-typecheck-3e0c5be8a5a94d40b89eac8fe5472c36), mkdocs --strict clean (arb-step-mkdocs-3e8f5c14af6c484aaa18b705adc931e5); gz validate --skill-alignment/--cli-alignment/--unscoped-rules/--documents all exit 0. Adversarial validation NOT-REFUTED after brief-reconcile refresh. Attestor: g0.
+- Date: 2026-06-27
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-27
 
 **Evidence Hash:** -

@@ -276,6 +276,13 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 |---|------|-------|-------|
 | 61 | Every fail-closed hook and validator emits agent-actionable three-part recovery prose: what failed, why it is forbidden (cited rule/invariant), the governed next step (runnable command or named ceremony) | **Promotable** | Authored under ADR-0.0.70 (Buetow adoption: "the feedback encodes the prompt you would write as a human"). First enforcement consumer is `stop-turn-feedback.py`, whose block prose is asserted against the bar by `tests/hooks/test_stop_turn_feedback.py` (REQ-0.0.70-03-02). Promotion path named in the rule: a `gz validate` scope asserting the three-part shape on hook/validator output fixtures once catch evidence accumulates — deliberately deferred (an inferential prose-grader is weaker than a real enforcement consumer; ADR-0.0.70 § Decision). |
 
+### MX Mode (`.gzkit/rules/mx-mode.md`)
+
+| # | Rule | Score | Notes |
+|---|------|-------|-------|
+| 62 | Honor the marker: when `.gzkit/mx-active` exists, most guards drop to advisory | **Promotable** | The marker-check is structural (file exists/not); the awareness hook (`src/gzkit/mx/awareness.py`) fires per-turn but liveness is advisory. Could promote to fail-closed via a `gz validate --mx-marker-coherence` scope that confirms guard fatality state is consistent with marker presence. Parent ADR-0.0.74. |
+| 63 | PRIME DIRECTIVE binds the entire hangar session — ownership never relaxes; operate the skill, not the shell | **Judgment** | "Fix what you know AND what you find; 'not my work' stays forbidden in the bay" requires agent judgment to apply. Mechanizing ownership is the broader gzkit mission, not a single validator scope. |
+
 ---
 
 ## Summary

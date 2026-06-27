@@ -142,6 +142,7 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/gz-patch-release`](gz-patch-release.md) | Orchestrate the GHI-driven patch release ceremony |
 | [`/gz-session-handoff`](gz-session-handoff.md) | Create and resume session handoff documents for agent context preservation |
 | [`/gz-skill-router`](gz-skill-router.md) | Route agents to the correct skill for a given task type |
+| [`/gz-mx`](gz-mx.md) | Enter and exit the MX Maintenance Hangar — operator's interface to `gz mx` |
 | [`/gz-tidy`](gz-tidy.md) | Run maintenance checks and cleanup routines |
 
 ---

@@ -1,8 +1,8 @@
 {
   "obpi_id": "OBPI-0.0.74-04-mx-enter",
-  "timestamp": "2026-06-25T10:52:18.374476+00:00",
+  "timestamp": "2026-06-27T07:34:59.540938+00:00",
   "verdict": "PASS",
-  "plan_file": "mx-enter-OBPI-0.0.74-04.md",
+  "plan_file": "serialized-baking-comet.md",
   "gaps_found": 0,
   "scope_collisions": [
     {

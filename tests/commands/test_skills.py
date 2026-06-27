@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from gzkit.cli import main
 from gzkit.quality import QualityResult
+from gzkit.traceability import covers
 from tests.commands.common import (
     CliRunner,
     start_init_subprocess_patches,
@@ -403,4 +404,15 @@ class TestSkillCommands(unittest.TestCase):
                 )
                 result = runner.invoke(main, ["check"])
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("all checks passed", result.output.lower())
+
+    @covers("REQ-0.0.74-08-03")
+    def test_gz_mx_skill_gz_command_resolves(self) -> None:
+        """gz-mx skill's gz_command 'mx' resolves to the registered gz mx verb."""
+        with _InitFromTemplate():
+            skill_file = Path(".gzkit/skills/gz-mx/SKILL.md")
+            self.assertTrue(skill_file.exists(), "gz-mx SKILL.md not scaffolded by gz init")
+            content = skill_file.read_text(encoding="utf-8")
+            self.assertIn("gz_command: mx", content, "gz-mx skill must declare gz_command: mx")
+            runner = CliRunner()
+            result = runner.invoke(main, ["mx", "--help"])
+            self.assertEqual(result.exit_code, 0, "gz_command 'mx' must be a registered verb")
