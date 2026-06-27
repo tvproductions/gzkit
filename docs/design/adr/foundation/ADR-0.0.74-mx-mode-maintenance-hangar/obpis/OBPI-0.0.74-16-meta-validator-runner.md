@@ -170,11 +170,9 @@ test -f tests/governance/test_enforcement_meta_validator.py
 ## Demo
 
 ```bash
-# Assert-shaped (GHI #643): exits 0 ONLY when every discovered @enforces claim is run
-# entrypoint(fixture()) and genuinely caught — 37 verified, 0 facades, 0 test-bugs. A
-# broken state (e.g. the engine not lifted → 0 claims discovered) exits 1, so the
-# Stage-4 gate re-running this demo fails closed.
-uv run python -c "from gzkit import enforcement; r = enforcement.run_meta_validator(); raise SystemExit(0 if r.verified_count >= 37 and r.facade_count == 0 and r.test_bug_count == 0 else 1)"
+# The meta-validator runner is the qc-binding floor step: it runs every discovered
+# @enforces NC in production config and strict-fails on any facade or test-bug.
+uv run gz validate --qc-binding
 ```
 
 ## Acceptance Criteria

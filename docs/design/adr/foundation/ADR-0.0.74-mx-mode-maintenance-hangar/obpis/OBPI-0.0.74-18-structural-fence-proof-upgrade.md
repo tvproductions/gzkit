@@ -151,9 +151,9 @@ test -f tests/governance/test_fence_proof_live_nc.py
 ## Demo
 
 ```bash
-# An enforcement-asserting structural-fence REQ no longer resolves on the anchor
-# alone — it requires a live @enforces NC; a state-property fence is unchanged.
-uv run python -c "from gzkit.req_kind import resolve_fence_proof; from pathlib import Path; print(resolve_fence_proof('REQ-0.0.74-16-05', Path('.')))"
+# An enforcement-asserting structural-fence REQ resolves at closeout only with a
+# live @enforces NC. Both paths pinned by tests/governance/test_fence_proof_live_nc.py.
+uv run gz check
 ```
 
 ## Acceptance Criteria

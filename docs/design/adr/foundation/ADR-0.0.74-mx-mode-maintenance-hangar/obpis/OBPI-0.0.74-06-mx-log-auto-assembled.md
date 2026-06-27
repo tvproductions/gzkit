@@ -156,8 +156,9 @@ test -f tests/mx/test_mx_log.py
 ## Demo
 
 ```bash
-# Assemble the MX log for an enter→exit window and show it names every fix + the ADRs/OBPIs/REQs touched.
-uv run -m unittest tests.mx.test_mx_log -v
+# The MX log is rendered for operator review at `gz mx exit`; its
+# complete-by-construction assembly is pinned by tests/mx/test_mx_log.py.
+uv run gz check
 ```
 
 ## Acceptance Criteria

@@ -147,8 +147,9 @@ test -f tests/mx/test_marker.py
 ## Demo
 
 ```bash
-# Read the marker (pydantic + stdlib, no gzkit internals) — works even when the rest of gzkit is the patient.
-uv run python -c "from gzkit.mx import marker; print('MX==TRUE' if marker.is_active() else 'MX==FALSE')"
+# The marker's presence==TRUE and ledger-binding void rules are exercised by
+# their @covers tests (tests/mx/test_marker.py), which run under the quality floor.
+uv run gz check
 ```
 
 ## Acceptance Criteria

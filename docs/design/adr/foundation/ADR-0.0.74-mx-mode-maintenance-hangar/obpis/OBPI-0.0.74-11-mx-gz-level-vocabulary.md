@@ -150,9 +150,9 @@ test -f tests/mx/test_levels.py
 ## Demo
 
 ```bash
-# The GZ_<LEVEL> ladder reuses Python logging constants; NOTICE=25 is the drift band;
-# grounding thresholds at ERROR (ERROR grounds, NOTICE does not).
-uv run python -c "from gzkit.mx import levels; print('NOTICE', levels.NOTICE, '| grounds(ERROR)', levels.grounds(levels.ERROR), '| grounds(NOTICE)', levels.grounds(levels.NOTICE))"
+# Guards resolve their effective GZ_<LEVEL> through the leveled checkpoint; the
+# rendition-floor gate exercises that path. Ladder/grounding pinned by tests/mx/test_levels.py.
+uv run gz validate --rendition-floor-coherence
 ```
 
 ## Acceptance Criteria

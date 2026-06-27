@@ -161,9 +161,9 @@ test -f tests/mx/test_hardening.py
 ## Demo
 
 ```bash
-# A session open past TTL flags through the leveled checkpoint; a normal release
-# is blocked while the marker is present.
-uv run python -c "from gzkit.mx import hardening; print('release blocked while open:', hardening.normal_release_blocked())"
+# The four hardening guards (TTL/max-open, release-block, debt-aging, dangling-state)
+# resolve severity through the leveled checkpoint. Pinned by tests/mx/test_hardening.py.
+uv run gz check
 ```
 
 ## Acceptance Criteria

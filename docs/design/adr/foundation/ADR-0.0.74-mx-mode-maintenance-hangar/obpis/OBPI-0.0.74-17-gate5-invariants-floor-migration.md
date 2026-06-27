@@ -161,9 +161,9 @@ test -f tests/mx/test_gate5_invariants_live_nc.py
 ## Demo
 
 ```bash
-# Each enrolled gate5 floor member runs its real path against a synthetic
-# violation; the meta-validator (OBPI-16) reports them as covered, not named.
-uv run python -c "from gzkit import enforcement; print('gate5 floor claims:', [c for c in enforcement.registered_claims() if c.startswith('gate5:')])"
+# The meta-validator enumerates GATE5_INVARIANTS membership and runs each member's
+# live un-forced NC against its real path. Pinned by tests/mx/test_gate5_invariants_live_nc.py.
+uv run gz validate --qc-binding
 ```
 
 ## Acceptance Criteria

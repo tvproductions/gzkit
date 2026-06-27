@@ -151,9 +151,9 @@ test -f tests/mx/test_disposition.py
 ## Demo
 
 ```bash
-# Each GZ_<LEVEL> routes to its matrix disposition through the one handler;
-# CRITICAL routes to the AOG/MX hangar, NOTICE to the Chores drift-drain.
-uv run python -c "from gzkit.mx import disposition, levels; print('CRITICAL ->', disposition.route(levels.CRITICAL), '| NOTICE ->', disposition.route(levels.NOTICE))"
+# The checkpoint routes each guard's emitted level through the one disposition
+# handler; the rendition-floor gate exercises it. Matrix pinned by tests/mx/test_disposition.py.
+uv run gz validate --rendition-floor-coherence
 ```
 
 ## Acceptance Criteria

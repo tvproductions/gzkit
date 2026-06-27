@@ -150,8 +150,9 @@ test -f tests/governance/test_enforces_registry.py
 ## Demo
 
 ```bash
-# A claim registers at import time and is discoverable; an unknown claim fails at decoration.
-uv run python -c "from gzkit import enforcement; print('registered claims:', sorted(enforcement.registered_claims()))"
+# The meta-validator discovers every @enforces claim in the registry and runs
+# each live NC. Registry behavior pinned by tests/governance/test_enforces_registry.py.
+uv run gz validate --qc-binding
 ```
 
 ## Acceptance Criteria

@@ -317,11 +317,16 @@ def _commands_from_demo_sections(obpi_files: list[Path]) -> list[str]:
     typecheck, mkdocs); Demo/Examples are the yielded product.
 
     Per-block parsing is delegated to ``brief_commands.extract_fenced_commands``
-    (BI-1) so a multi-line construct (``python -c "…"`` spanning lines) is one
-    logical command, not one demo per physical line (GHI #539). ``uv run gz ...``
-    lines are then validated against the registered parser; unregistered verb
-    chains are dropped. Non-gz commands pass through unchanged — operators may
-    author them and the ceremony has no mechanism to validate arbitrary shell.
+    (BI-1) so a multi-line construct is one logical command, not one demo per
+    physical line (GHI #539). Each logical command is then validated against the
+    registered parser: only a registered ``gz`` invocation survives. Non-``gz``
+    commands (``python -c``, raw ``unittest``, shell pipes) and unregistered
+    ``gz`` verbs are both dropped — Ceremony Rule #4 admits only documented
+    ``gz`` commands to the walkthrough, so the doctrine ships with coupled
+    enforcement here rather than relying on brief authors to self-police
+    (ADR-0.0.74 demo-compliance class-fix). A brief whose Demo section yields no
+    registered ``gz`` command contributes nothing and the discovery chain falls
+    through to the ``--help`` strategies.
     """
     registered = _collect_registered_invocations()
     commands: list[str] = []
@@ -333,7 +338,10 @@ def _commands_from_demo_sections(obpi_files: list[Path]) -> list[str]:
                 continue
             for command in extract_fenced_commands(section):
                 verb_chain = _extract_gz_verb_chain(command)
-                if verb_chain is not None and verb_chain not in registered:
+                # Reject non-`gz` commands (verb_chain is None) and unregistered
+                # `gz` verbs alike: the walkthrough is the operator's product-
+                # demonstration surface, never a place for improvised invocations.
+                if verb_chain is None or verb_chain not in registered:
                     continue
                 commands.append(command)
     return commands

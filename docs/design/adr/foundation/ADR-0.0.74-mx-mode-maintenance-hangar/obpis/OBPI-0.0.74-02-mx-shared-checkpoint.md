@@ -147,9 +147,9 @@ test -f tests/mx/test_checkpoint.py
 ## Demo
 
 ```bash
-# Inside the hangar the checkpoint drops an ordinary docs guard to advisory;
-# outside the hangar (no marker) the same call is a strict no-op.
-uv run python -c "from gzkit.mx import checkpoint; print('gate3-docs advisory:', checkpoint.is_advisory('gate3-docs'))"
+# The shared checkpoint is consulted by the validate funnel; its in-hangar
+# drop-to-advisory and out-of-hangar no-op are pinned by tests/mx/test_checkpoint.py.
+uv run gz check
 ```
 
 ## Acceptance Criteria

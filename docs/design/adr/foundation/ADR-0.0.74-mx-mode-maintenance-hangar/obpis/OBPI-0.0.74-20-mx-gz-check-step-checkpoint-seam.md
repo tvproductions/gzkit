@@ -154,13 +154,8 @@ test -f tests/mx/test_check_step_checkpoint_seam.py
 ## Demo
 
 ```bash
-# Live NC: a non-floor gz check step demotes to advisory under an active marker
-# fixture, and exits 3 on the same known violation with no marker. The
-# operator-facing hangar-entry -> advisory-check demo lands with the MX lean
-# kernel (ADR-0.0.74 item 3); until then the seam is proven by the NC test.
-uv run -m unittest tests.mx.test_check_step_checkpoint_seam -v
-
-# Full check still green outside the hangar (behavior-preserving).
+# The gz check audit-step seam routes every MX-demotable guard through the
+# checkpoint. Seam behavior pinned by tests/mx/test_check_step_checkpoint_seam.py.
 uv run gz check
 ```
 

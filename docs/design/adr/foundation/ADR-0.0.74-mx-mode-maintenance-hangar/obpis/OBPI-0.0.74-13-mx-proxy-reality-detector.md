@@ -155,9 +155,9 @@ test -f tests/mx/test_proxy_reality.py
 ## Demo
 
 ```bash
-# Grader-gaming becomes a count: the detector names each gate that cleared a
-# later-found-wrong reality (repudiation, cause model-induced-fabrication).
-uv run python -c "from gzkit.mx import proxy_reality; r = proxy_reality.scan(); print('proxy-reality distance count:', r.count)"
+# Grader-gaming's proxy-reality detector runs as a live negative control inside
+# the meta-validator floor step. Pinned by tests/mx/test_proxy_reality.py.
+uv run gz validate --qc-binding
 ```
 
 ## Acceptance Criteria

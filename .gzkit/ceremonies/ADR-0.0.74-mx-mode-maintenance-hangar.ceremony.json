@@ -1,0 +1,43 @@
+{
+  "adr_id": "ADR-0.0.74-mx-mode-maintenance-hangar",
+  "current_step": 1,
+  "is_foundation": true,
+  "started_at": "2026-06-27T17:10:35Z",
+  "updated_at": "2026-06-27T17:10:35Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-06-27T17:10:35Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz check",
+    "uv run gz check",
+    "uv run gz validate --qc-binding",
+    "uv run gz mx enter --reason \"re-true ledger-proof locks under ADR-0.0.74\" --attestor g0",
+    "uv run gz mx exit --attestor g0",
+    "uv run gz check",
+    "uv run gz validate --surfaces",
+    "uv run gz skill list",
+    "uv run gz mx --help",
+    "uv run gz validate --rendition-freshness",
+    "uv run gz validate --rendition-floor-coherence",
+    "uv run gz validate --qc-binding",
+    "uv run gz validate --rendition-floor-coherence",
+    "uv run gz validate --rendition-floor-coherence",
+    "uv run gz validate --qc-binding",
+    "uv run gz check",
+    "uv run gz validate --qc-binding",
+    "uv run gz validate --qc-binding",
+    "uv run gz validate --qc-binding",
+    "uv run gz check",
+    "uv run gz check",
+    "uv run gz check"
+  ],
+  "walkthrough_index": 0,
+  "attestation": null,
+  "completed_at": null,
+  "attempt": 2,
+  "paused_at": null
+}

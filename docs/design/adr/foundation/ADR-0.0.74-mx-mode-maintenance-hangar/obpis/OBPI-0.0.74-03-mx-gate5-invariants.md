@@ -152,8 +152,9 @@ test -f tests/mx/test_gate5_invariants.py
 ## Demo
 
 ```bash
-# The five never-relax guards as a code constant — none can resolve below CRITICAL.
-uv run python -c "from gzkit.mx.invariants import GATE5_INVARIANTS; print(sorted(GATE5_INVARIANTS))"
+# The meta-validator enumerates GATE5_INVARIANTS membership and proves each
+# never-relax floor member carries a live enforcement control.
+uv run gz validate --qc-binding
 ```
 
 ## Acceptance Criteria

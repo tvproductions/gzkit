@@ -157,14 +157,10 @@ test -f tests/hooks/test_mx_awareness.py
 
 ## Demo
 
-<!-- gz-validate-skip: command-shape -->
 ```bash
-# With an MX session open (marker present), the hook injects the banner every turn:
-printf '{"hook_event_name":"UserPromptSubmit"}' | uv run python .claude/hooks/mx-awareness.py
-# -> MX MODE ACTIVE — most guards advisory; gate5_invariants and the PRIME DIRECTIVE still bind
-
-# Liveness check flags a dead/unwired per-vendor adapter as a detected defect:
-uv run python -c "from gzkit.mx.awareness import check_hook_liveness; print(check_hook_liveness())"
+# The per-vendor awareness hook is rendered to .claude/.agents/.github by
+# `gz agent sync control-surfaces`; --surfaces admits the synced mirrors.
+uv run gz validate --surfaces
 ```
 
 ## Acceptance Criteria
