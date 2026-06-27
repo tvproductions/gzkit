@@ -1,33 +1,53 @@
 {
   "adr_id": "ADR-0.0.74-mx-mode-maintenance-hangar",
-  "current_step": 5,
+  "current_step": 11,
   "is_foundation": true,
-  "started_at": "2026-06-27T21:50:16Z",
-  "updated_at": "2026-06-27T22:00:14Z",
+  "started_at": "2026-06-27T22:53:03Z",
+  "updated_at": "2026-06-27T23:22:49Z",
   "step_history": [
     {
       "step": 1,
-      "presented_at": "2026-06-27T21:50:16Z",
-      "acknowledged_at": "2026-06-27T21:57:20Z"
+      "presented_at": "2026-06-27T22:53:03Z",
+      "acknowledged_at": "2026-06-27T22:53:12Z"
     },
     {
       "step": 2,
-      "presented_at": "2026-06-27T21:57:20Z",
-      "acknowledged_at": "2026-06-27T21:57:29Z"
+      "presented_at": "2026-06-27T22:53:12Z",
+      "acknowledged_at": "2026-06-27T22:53:19Z"
     },
     {
       "step": 3,
-      "presented_at": "2026-06-27T21:57:29Z",
-      "acknowledged_at": "2026-06-27T21:57:37Z"
+      "presented_at": "2026-06-27T22:53:19Z",
+      "acknowledged_at": "2026-06-27T22:53:27Z"
     },
     {
       "step": 4,
-      "presented_at": "2026-06-27T21:57:37Z",
-      "acknowledged_at": "2026-06-27T22:00:14Z"
+      "presented_at": "2026-06-27T22:53:27Z",
+      "acknowledged_at": "2026-06-27T22:53:37Z"
     },
     {
       "step": 5,
-      "presented_at": "2026-06-27T22:00:14Z",
+      "presented_at": "2026-06-27T22:53:37Z",
+      "acknowledged_at": "2026-06-27T23:03:12Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-06-27T23:03:12Z",
+      "acknowledged_at": "2026-06-27T23:10:02Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-06-27T23:10:02Z",
+      "acknowledged_at": "2026-06-27T23:21:09Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-06-27T23:21:09Z",
+      "acknowledged_at": "2026-06-27T23:22:49Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-06-27T23:22:49Z",
       "acknowledged_at": null
     }
   ],
@@ -55,9 +75,9 @@
     "uv run gz check",
     "uv run gz check"
   ],
-  "walkthrough_index": 0,
-  "attestation": null,
-  "completed_at": null,
-  "attempt": 3,
+  "walkthrough_index": 21,
+  "attestation": "Completed — MX maintenance-hangar substrate verified: gz check exit 0 (38/38 steps green incl. step 16 Closeout proof), all 19 OBPIs ledger-complete; corrective closeout-proof meta-property-fence deferral fix landed this session (33 tests green, resolver contract preserved).",
+  "completed_at": "2026-06-27T23:22:49Z",
+  "attempt": 4,
   "paused_at": null
 }

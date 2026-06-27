@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.74-mx-mode-maintenance-hangar
-status: Draft
+status: Completed
 kind: foundation
 semver: 0.0.74
 lane: heavy
@@ -441,4 +441,4 @@ Scope boundary — NOT in this ADR: the full MEL dispatch-with-limitation binder
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.74 | Pending | | | |
+| 0.0.74 | Completed | g0 | 2026-06-27 | Completed — MX maintenance-hangar substrate verified: gz check exit 0 (38/38 steps green incl. step 16 Closeout proof), all 19 OBPIs ledger-complete; corrective closeout-proof meta-property-fence deferral fix landed this session (33 tests green, resolver contract preserved). |
