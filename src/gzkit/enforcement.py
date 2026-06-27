@@ -304,13 +304,34 @@ def _ensure_production_claims_registered() -> None:
     ``@enforces`` registers at import time, but ``reset_enforcement_registry()`` (a test
     helper) wipes the global registry permanently — re-importing a cached module does not
     re-run its module-level registration. So this calls the claim sources' idempotent
-    re-registration entrypoint rather than relying on import side effects alone. Importing
-    ``qc_binding`` transitively covers the 36 qc NCs and the ``qc-binding`` claim. Future
-    claim sources (OBPI-17 gate5 floor, etc.) extend that entrypoint.
+    re-registration entrypoint rather than relying on import side effects alone.
+
+    This is the SINGLE production-discovery seam: every claim source that must be live in
+    ``gz check``'s enforcement-floor audit (``run_enforcement_floor_audit`` ->
+    ``run_meta_validator(root=None)``) is registered here. A source that authors an
+    ``@enforces`` registration but is not reachable from this function is an ORPHAN — its
+    claim is never discovered and its floor membership is a facade (the §5 failure class).
+
+    Claim sources wired here:
+      * ``qc_binding`` — the 36 qc NCs + ``qc-binding`` (OBPI-0.0.74-16).
+      * ``mx.invariants`` — the bound ``gate5_invariants`` floor members ``gate5-ledger`` and
+        ``gate5-attestation-absence`` (OBPI-0.0.74-17). ``secrets`` / ``operator-pii`` are the
+        honest-negative named-not-enforced members and are deliberately NOT registered.
+      * ``mx.proxy_reality`` — ``grader-gaming``, the floor member's live proxy-reality NC
+        (OBPI-0.0.74-13).
+
+    The gate5 + grader-gaming sources were authored Completed but left un-wired here (the
+    docstring formerly named them "future work" that never landed); GHI tracks the
+    OBPI-17/19 incomplete-implementation miss. Lazy imports avoid an import cycle with the
+    ``mx`` package, which imports this module.
     """
     from gzkit.governance.trust_audits import qc_binding  # noqa: PLC0415
+    from gzkit.mx.invariants import _ensure_gate5_claims_registered  # noqa: PLC0415
+    from gzkit.mx.proxy_reality import _ensure_grader_gaming_registered  # noqa: PLC0415
 
     qc_binding._ensure_qc_claims_registered()
+    _ensure_gate5_claims_registered()
+    _ensure_grader_gaming_registered()
 
 
 def run_meta_validator(

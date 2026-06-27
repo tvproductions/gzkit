@@ -3,7 +3,7 @@ id: OBPI-0.0.74-13-mx-proxy-reality-detector
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 13
 lane: Heavy
-status: Draft
+status: Completed
 req_atomic:
   # The proxy-reality detector is one indivisible authoring unit: the detector that
   # records "a gate went green AND reality was later found wrong" and counts it
@@ -23,7 +23,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #13 - "The proxy-reality distance detector — grader-gaming's live §5 negative control: a record of "a gate went green AND reality was later found wrong — here is the gate that cleared it"; makes grader-gaming measurable; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -39,9 +39,13 @@ The proxy-reality distance detector lands at `src/gzkit/mx/proxy_reality.py`: it
 
 ## Allowed Paths
 
+- `src/gzkit/req_kind.py` (added by brief reconcile, attestor g0)
+- `src/gzkit/mx/__init__.py` (added by brief reconcile, attestor g0)
+
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md` — parent ADR for intent and scope (§ Decision item 13, § Boundary Invariants #5)
 - `src/gzkit/mx/proxy_reality.py` **CREATE** — the detector: reads the ledger for gate-green-but-reality-wrong signals, records the clearing gate, and counts them; the live-NC entry point
-- `tests/mx/test_proxy_reality.py` **CREATE** — unit tests including the passing-on-violation live negative control (plant a known violation, run the real path, assert caught)
+- `src/gzkit/enforcement.py` **EDIT** (allowlist amended 2026-06-27, operator-ratified) — wire `_ensure_grader_gaming_registered()` into the single production-discovery seam `_ensure_production_claims_registered()` so `grader-gaming` is LIVE (REQ-13-03). The brief originally deferred this to OBPI-19, but OBPI-19 shipped Completed without wiring the floor sources (the gate5 orphan, same seam); deferring to a closed OBPI is an orphan. The same edit cures OBPI-17's orphaned gate5 sources. Tracked: GHI for the OBPI-17/19 incomplete-implementation miss.
+- `tests/mx/test_proxy_reality.py` **CREATE** — unit tests including the passing-on-violation live negative control (plant a known violation, run the real path, assert caught) AND regression tests asserting each floor member is registered by production discovery
 - `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/obpis/OBPI-0.0.74-13-mx-proxy-reality-detector.md` — this brief (evidence recording)
 
 (Security overlap check: no Allowed Path matches a glob in `data/security_surfaces.json` — the detector READS the ledger via the public reader, it does not edit `ledger.py`/`ledger_events.py`/`ledger_proof.py`/`ledger_semantics.py`; `sensitivity: security` is not declared.)
@@ -215,27 +219,54 @@ Before: `grader-gaming` was named the most concerning training trend (Opus 4.8 �
 
 ### Key Proof
 
+
+The detector turns grader-gaming into a number against the real ledger:
+
+```text
+$ uv run python3 -c "from gzkit.mx import proxy_reality; r = proxy_reality.scan(); print('proxy-reality distance count:', r.count)"
+proxy-reality distance count: 5
+```
+
+The §5 live negative control passes on a planted violation (real production path, no stub):
+
+```text
+$ uv run -m unittest tests.mx.test_proxy_reality.TestLiveNegativeControl.test_live_nc_catches_planted_violation -v
+test_live_nc_catches_planted_violation ... ok
+```
+
+grader-gaming's floor membership is now LIVE in production discovery (the REQ-13-03 binding):
+
+```text
+$ uv run python3 -c "from gzkit.quality import run_enforcement_floor_audit; from pathlib import Path; r=run_enforcement_floor_audit(Path('.')); print(r.success, r.stdout.strip())"
+True Enforcement floor: 41 claims verified.
+```
+
+Receipts: `arb-step-unittest-16894dfc4acb4cc18b8fb1cde33c5d24` (6560 tests OK),
+`arb-ruff-f091d77627d04421a3641c5a576ed01c`,
+`arb-step-typecheck-987b339f62234e11bdf18fd46fa242c3`,
+`arb-step-mkdocs-42e28f1fb54c45889d58ddfdcd9f9e55`.
+
 ### Implementation Summary
 
+
 - **Decision item 13 (verbatim):** "The proxy-reality distance detector — grader-gaming's live §5 negative control. A record of *"a gate went green AND reality was later found wrong — here is the gate that cleared it."* It turns grader-gaming from conviction into a count (the north-star instrument) and is the passing-on-violation live control that keeps grader-gaming's floor membership (item 3) §5-compliant rather than a named aspiration."
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: `src/gzkit/mx/proxy_reality.py` (detector `scan()`, `ProxyRealityRecord`/`ProxyRealityScanResult`, live NC fixture/entrypoint, `_ensure_grader_gaming_registered()` with `@enforces("grader-gaming", ...)`); `tests/mx/test_proxy_reality.py` (11 tests).
+- Files modified: `src/gzkit/enforcement.py` — wired `_ensure_grader_gaming_registered()` AND the orphaned `_ensure_gate5_claims_registered()` (OBPI-17) into the single production-discovery seam `_ensure_production_claims_registered()`. The brief originally deferred REQ-13-03 to OBPI-19, but OBPI-19 shipped Completed without wiring the floor sources — deferring to a closed OBPI is an orphan (caught by adversarial Stage 4b). REQ-13-03 now resolves `pass` (proven fence) because grader-gaming is live in the registry.
+- Tests added: 5 scan-behavior (REQ-13-01), 3 live-NC passing-on-violation (REQ-13-02), 3 production-discovery wiring regression (locks the orphan fix; also asserts both bound gate5 members are live).
+- Defects noted: GHI #648 — enforcement floor enrollment-completeness (BI#9) is not implemented; a missing floor member is silently absent rather than caught. Systemic enumeration cure slated for the AIRLOCK system.
 
 ## Tracked Defects
 
-_No defects tracked._
+- **GHI #648** — `enforcement floor: gate5/grader-gaming claim sources orphaned from production discovery`. Root cause cured at the seam in this OBPI (wiring + regression tests); remaining BI#9 enrollment-completeness enumeration routed to the AIRLOCK system.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — grader-gaming's gate5_invariants floor membership is now a live, measured control: proxy_reality.scan() turns the ledger's repudiation record into a count (5 on the real ledger), the passing-on-violation live NC catches a planted violation through the real production path, and REQ-13-03 resolves as a proven structural fence because grader-gaming is wired into production discovery (run_enforcement_floor_audit: 41 claims verified). Adversarial Stage 4b caught the orphan (deferral to already-Completed OBPI-19); fixed at the single production-discovery seam and locked with regression tests. Receipts: arb-step-unittest-16894dfc4acb4cc18b8fb1cde33c5d24 (6560 tests OK), arb-ruff-f091d77627d04421a3641c5a576ed01c, arb-step-typecheck-987b339f62234e11bdf18fd46fa242c3, arb-step-mkdocs-42e28f1fb54c45889d58ddfdcd9f9e55. Defect GHI #648 filed for the unimplemented BI#9 enrollment enumeration (routed to AIRLOCK).
+- Date: 2026-06-27
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-27
 
 **Evidence Hash:** -
