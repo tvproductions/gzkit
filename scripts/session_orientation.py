@@ -490,6 +490,18 @@ def main(argv: list[str] | None = None) -> int:
     reconfigure = getattr(sys.stdout, "reconfigure", None)
     if callable(reconfigure):
         reconfigure(encoding="utf-8")
+
+    # Secondary MX banner — per-turn hook is the load-bearing surface; this
+    # fires on SessionStart/PreCompact only (when no tool has run yet).
+    try:
+        from gzkit.mx.awareness import get_banner
+
+        mx_banner = get_banner()
+        if mx_banner:
+            sys.stdout.write(mx_banner + "\n\n")
+    except Exception:
+        pass
+
     now = datetime.now(UTC)
     state = collect_state(REPO_ROOT, now)
     sys.stdout.write(render(state, now))

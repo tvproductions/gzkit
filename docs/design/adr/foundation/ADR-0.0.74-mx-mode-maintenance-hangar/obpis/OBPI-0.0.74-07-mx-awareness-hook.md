@@ -3,7 +3,7 @@ id: OBPI-0.0.74-07-mx-awareness-hook
 parent: ADR-0.0.74-mx-mode-maintenance-hangar
 item: 7
 lane: Heavy
-status: Draft
+status: Completed
 req_atomic:
   - REQ-0.0.74-07-01  # one per-turn banner-injection behavior + its tests — single indivisible TDD unit
   - REQ-0.0.74-07-02  # one liveness-check behavior (dead adapter is a detected defect) + its tests — single indivisible unit
@@ -17,7 +17,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md`
 - **Checklist Item:** #7 - "The per-vendor awareness hook — injects the MX banner every turn (load-bearing guarantee); adapts per vendor surface; a liveness check that the hook is wired; tool-output banner as secondary backup; unit tests"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -226,13 +226,27 @@ uv run python -c "from gzkit.mx.awareness import check_hook_liveness; print(chec
 
 ### Key Proof
 
+
+With an MX marker present, the hook injects the exact banner to stdout:
+
+    $ printf '{"hook_event_name":"UserPromptSubmit","cwd":"<tmp-with-marker>"}' | uv run python .claude/hooks/mx-awareness.py
+    MX MODE ACTIVE — most guards advisory; gate5_invariants and the PRIME DIRECTIVE still bind
+
+The liveness check reports the unwired adapter as a detected defect:
+
+    $ uv run python -c "from gzkit.mx.awareness import check_hook_liveness; print(check_hook_liveness())"
+    LivenessResult(ok=False, defect='mx-awareness.py not registered in settings.json UserPromptSubmit hooks')
+
+8/8 scoped tests pass (receipt arb-step-unittestscoped-e98370e3aa464f27a9086b78512447b1); full suite 516 tests pass (arb-step-unittest-3e0cdc3b51194d129ae6faafc46925ef); lint/typecheck/mkdocs clean.
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Created `src/gzkit/mx/awareness.py`: stdlib+json-only (no gzkit imports) module with MX_BANNER constant, get_banner() (banner when marker present, empty when absent), LivenessResult, and check_hook_liveness() (detects missing hook file / unregistered settings.json entry as named defects)
+- Created `.claude/hooks/mx-awareness.py`: UserPromptSubmit hook adapter; injects banner to stdout per turn while marker present; stdlib fallback so banner fires even when gzkit is the patient; fail-open (always exits 0)
+- Modified `scripts/session_orientation.py`: secondary MX banner at top of SessionStart digest (fail-open wrapper) — backup only, not load-bearing
+- Tests: `tests/hooks/test_mx_awareness.py` — 8 RGR-derived unit tests
+- Deferred: settings.json UserPromptSubmit registration (gap surfaced in Stage 4, operator attested with deferral; liveness check correctly reports unwired state until follow-up wires it)
 
 ## Tracked Defects
 
@@ -240,12 +254,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.74-07 MX awareness hook delivered: per-turn UserPromptSubmit banner adapter (.claude/hooks/mx-awareness.py) + stdlib-only shared logic (src/gzkit/mx/awareness.py) + liveness defect detection + secondary session-orientation banner. 8/8 scoped tests green (receipt arb-step-unittestscoped-e98370e3aa464f27a9086b78512447b1), full suite 516 tests green (arb-step-unittest-3e0cdc3b51194d129ae6faafc46925ef), ruff/typecheck/mkdocs clean (arb-ruff-fc49cd80e7b3442093bee235f0842082, arb-step-typecheck-cb9272eb58704b938038be3c0ea93b5a, arb-step-mkdocs-b1a325066a0d4211a982fc48eeaeb7a3). settings.json UserPromptSubmit registration deferred to follow-up per operator attestation; liveness check correctly reports the unwired state.
+- Date: 2026-06-27
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-06-27
 
 **Evidence Hash:** -
