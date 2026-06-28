@@ -7,7 +7,7 @@ Status: Active
 
 Source-of-truth: filesystem under `docs/design/adr/{foundation,pre-release}/`; this table is a Layer 3 derived view per `docs/governance/state-doctrine.md`. Regenerate via `gz register-adrs` (which calls `regenerate_adr_status_md` after ledger reconciliation); drift is fail-closed by `gz validate --adr-status-fresh`.
 
-Last regenerated: 2026-06-27 (count: 99 ADRs).
+Last regenerated: 2026-06-28 (count: 100 ADRs).
 
 | ID | Title | Kind | Lane | Status | Date | Path |
 |---|---|---|---|---|---|---|
@@ -110,3 +110,4 @@ Last regenerated: 2026-06-27 (count: 99 ADRs).
 | [ADR-0.27.0-namespace-router-product-surface](../../design/adr/pre-release/ADR-0.27.0-namespace-router-product-surface/ADR-0.27.0-namespace-router-product-surface.md) | Namespace Router Product Surface | feature | lite | Validated | 2026-05-23 | `design/adr/pre-release/ADR-0.27.0-namespace-router-product-surface/ADR-0.27.0-namespace-router-product-surface.md` |
 | [ADR-0.28.0-focused-context-loader](../../design/adr/pre-release/ADR-0.28.0-focused-context-loader/ADR-0.28.0-focused-context-loader.md) | Focused Context Loader | feature | lite | Validated | 2026-05-24 | `design/adr/pre-release/ADR-0.28.0-focused-context-loader/ADR-0.28.0-focused-context-loader.md` |
 | [ADR-0.29.0-precise-auth-boundaries-registration-and-witnessed-floor-override](../../design/adr/pre-release/ADR-0.29.0-precise-auth-boundaries-registration-and-witnessed-floor-override/ADR-0.29.0-precise-auth-boundaries-registration-and-witnessed-floor-override.md) | Precise auth_boundaries registration and witnessed floor override | feature | heavy | Proposed | 2026-06-06 | `design/adr/pre-release/ADR-0.29.0-precise-auth-boundaries-registration-and-witnessed-floor-override/ADR-0.29.0-precise-auth-boundaries-registration-and-witnessed-floor-override.md` |
+| [ADR-0.30.0-okf-documentation-knowledge-structure](../../design/adr/pre-release/ADR-0.30.0-okf-documentation-knowledge-structure/ADR-0.30.0-okf-documentation-knowledge-structure.md) | OKF documentation-knowledge structure | feature | heavy | Proposed | 2026-06-28 | `design/adr/pre-release/ADR-0.30.0-okf-documentation-knowledge-structure/ADR-0.30.0-okf-documentation-knowledge-structure.md` |
