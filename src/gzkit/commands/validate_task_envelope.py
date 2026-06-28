@@ -1,8 +1,9 @@
 """Task-envelope-coherence validator (OBPI-0.0.64-04).
 
-Extracted from ``validate_cmd.py`` (A3 module split). Composite of three
-Heavy-fail signatures over TASK discovery channels (ledger, brief frontmatter,
-commit trailers, ``@advances`` registry). ``subprocess`` and ``_sig_c_layer_drift``
+Extracted from ``validate_cmd.py`` (A3 module split). Composite of four
+Heavy-fail signatures: (a)/(b)/(c) over TASK discovery channels (ledger, brief
+frontmatter, commit trailers, ``@advances`` registry) plus (d) ledger obpi_id
+divergence integrity. ``subprocess`` and ``_sig_c_layer_drift``
 are patched by ``tests/governance/test_task_envelope_coherence.py`` against this
 module's namespace. Shares ``_find_obpi_briefs`` with the briefs validator module.
 """
@@ -41,6 +42,22 @@ _TASK_WORKLOG_TYPES: frozenset[str] = frozenset(
 # emitted ledger rows without `task_id` and closed several default-bucket OBPIs.
 # Do not rewrite ledger history; enforce prospectively from this epoch.
 _TASK_ENVELOPE_ENFORCEMENT_EPOCH = datetime.fromisoformat("2026-05-30T14:44:00+00:00")
+
+
+# Signature (d) — obpi_id divergence — grandfathers the divergent task_ids that
+# predate its introduction (GHI #653). The ledger is append-only (history is
+# never rewritten), and the read-side active-TASK walk was already hardened
+# (commit ef976e88) so these cause no Signature (a) false positive. This set is
+# SHRINK-ONLY: never add a new task_id here — fix the producer (canonicalize the
+# obpi_id at emission in src/gzkit/commands/task.py) instead.
+_OBPI_ID_DIVERGENCE_GRANDFATHER: frozenset[str] = frozenset(
+    {"TASK-0.0.69-03-05-01", "TASK-0.0.74-20-01-01"}
+)
+
+# TASK-lifecycle event types whose obpi_id must agree across a single task_id.
+_TASK_LIFECYCLE_TYPES: frozenset[str] = frozenset(
+    {"task_started", "task_completed", "task_blocked", "task_escalated"}
+)
 
 
 def _task_envelope_event_before_epoch(ev: dict[str, object]) -> bool:
@@ -723,14 +740,74 @@ def _sig_c_layer_drift(project_root: Path) -> list[ValidationError]:
     return errors
 
 
+def _sig_d_obpi_id_divergence(project_root: Path) -> list[ValidationError]:
+    """Signature (d) — a single ``task_id`` carries divergent ``obpi_id`` across events.
+
+    A ``task_id`` maps to exactly one OBPI, so every TASK-lifecycle event
+    (``task_started``/``task_completed``/``task_blocked``/``task_escalated``)
+    for it MUST carry the same canonical ``obpi_id``. Two spellings — the short
+    ``OBPI-<semver>-<item>`` form versus the full slug ``gz obpi pipeline``
+    records — break start/complete pairing in the active-TASK walk and were the
+    producer defect behind the Signature (a) false positives (GHI #653;
+    read-side hardened in commit ef976e88). The two pre-existing divergent
+    task_ids are grandfathered via ``_OBPI_ID_DIVERGENCE_GRANDFATHER``
+    (shrink-only); every other divergence fail-closes.
+
+    Heavy-fail: one ValidationError per divergent ``task_id``.
+    """
+    import json as _json  # noqa: PLC0415
+
+    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+    if not ledger_path.exists():
+        return []
+
+    obpi_by_task: dict[str, set[str]] = {}
+    for line in ledger_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            ev = _json.loads(line)
+        except _json.JSONDecodeError:
+            continue
+        if ev.get("event") not in _TASK_LIFECYCLE_TYPES:
+            continue
+        task_id = ev.get("task_id")
+        obpi_id = ev.get("obpi_id")
+        if isinstance(task_id, str) and task_id and isinstance(obpi_id, str) and obpi_id:
+            obpi_by_task.setdefault(task_id, set()).add(obpi_id)
+
+    errors: list[ValidationError] = []
+    for task_id in sorted(obpi_by_task):
+        if task_id in _OBPI_ID_DIVERGENCE_GRANDFATHER:
+            continue
+        spellings = obpi_by_task[task_id]
+        if len(spellings) > 1:
+            errors.append(
+                ValidationError(
+                    type="task_envelope_coherence",
+                    artifact=task_id,
+                    message=(
+                        f"Signature (d): TASK {task_id} carries divergent obpi_id "
+                        f"across lifecycle events: {sorted(spellings)}. A task_id "
+                        f"maps to exactly one OBPI — emit the canonical full slug "
+                        f"on every TASK event (GHI #653)."
+                    ),
+                )
+            )
+    return errors
+
+
 def _validate_task_envelope_coherence(project_root: Path) -> list[ValidationError]:
     """Validate task envelope coherence (OBPI-0.0.64-04).
 
-    Composite of three Heavy-fail signatures:
+    Composite of four Heavy-fail signatures:
         (a) worklog event under active TASK with no ``task_id`` (attribution drift)
         (b) OBPI default-bucket-only TASKs without ``req_atomic`` exemption
         (c) layer-drift across the four discovery channels (@advances, frontmatter
             tasks:, commit trailer, ledger task_id)
+        (d) a single ``task_id`` carries divergent ``obpi_id`` across its
+            lifecycle events (producer canonicalization drift, GHI #653)
 
     All ValidationError instances carry ``type="task_envelope_coherence"`` and
     route to exit 3 via ``_POLICY_BREACH_ERROR_TYPES``.
@@ -739,4 +816,5 @@ def _validate_task_envelope_coherence(project_root: Path) -> list[ValidationErro
     errors.extend(_sig_a_attribution_drift(project_root))
     errors.extend(_sig_b_subdivision_skipped(project_root))
     errors.extend(_sig_c_layer_drift(project_root))
+    errors.extend(_sig_d_obpi_id_divergence(project_root))
     return errors

@@ -70,19 +70,57 @@ def _ledger_obpi_for_task(ledger: Ledger, task_id_str: str) -> str:
     return obpi_id
 
 
+def _resolve_obpi_id(ledger: Ledger, short_obpi: str) -> str:
+    """Resolve a short OBPI id (``OBPI-<semver>-<item>``) to its full slug.
+
+    Mirrors ``Ledger.resolve_artifact_id``'s short->long ADR logic for the OBPI
+    namespace: when exactly one artifact-graph key extends the short id with a
+    ``-<slug>`` suffix, return that full slug; an absent or ambiguous prefix
+    returns the short id unchanged. ``gz obpi pipeline`` records the full slug,
+    so canonicalizing here keeps a manually-started TASK's ``obpi_id`` identical
+    to the pipeline's instead of writing a divergent short form (GHI #653).
+    """
+    graph = ledger.get_artifact_graph()
+    prefix = f"{short_obpi}-"
+    matches = [key for key in graph if key.startswith(prefix)]
+    if len(matches) == 1:
+        return matches[0]
+    return short_obpi
+
+
+def _all_started_task_ids(ledger: Ledger) -> set[str]:
+    """Return every ``task_id`` with a ``task_started`` event, ignoring ``obpi_id``.
+
+    Start-dedup must key on ``task_id`` alone: a TASK already started under a
+    different ``obpi_id`` spelling (e.g. the short form a manual ``gz task
+    start`` wrote before the pipeline ran) must not be double-started under the
+    full slug (GHI #653).
+    """
+    started: set[str] = set()
+    for event in ledger.read_all():
+        if event.event == "task_started":
+            task_id = event.extra.get("task_id", "")
+            if task_id:
+                started.add(task_id)
+    return started
+
+
 def _resolve_task_context(ledger: Ledger, task_id_str: str) -> tuple[TaskId, str, str]:
     """Parse a TASK ID and derive parent OBPI and ADR identifiers.
 
     The OBPI id is taken from the task's ``task_started`` ledger event when
-    present (authoritative — the pipeline records the full OBPI slug), falling
-    back to the short ``OBPI-<semver>-<item>`` form derived from the TASK id.
-    Resolving the recorded slug keeps ``_current_task_status`` (which filters on
-    ``obpi_id``) and the emitted transition event consistent with the ledger.
+    present (authoritative — the pipeline records the full OBPI slug). When no
+    such event exists yet (the first ``gz task start``), the short
+    ``OBPI-<semver>-<item>`` form derived from the TASK id is canonicalized to
+    its full slug via ``_resolve_obpi_id`` so the short form is never written —
+    keeping ``_current_task_status`` (which filters on ``obpi_id``) and the
+    emitted transition event consistent with the slug the pipeline records
+    (GHI #653).
     """
     task_id = TaskId.parse(task_id_str)
     adr_id = f"ADR-{task_id.semver}"
     derived = f"OBPI-{task_id.semver}-{task_id.obpi_item}"
-    obpi_id = _ledger_obpi_for_task(ledger, task_id_str) or derived
+    obpi_id = _ledger_obpi_for_task(ledger, task_id_str) or _resolve_obpi_id(ledger, derived)
     return task_id, obpi_id, adr_id
 
 
@@ -131,7 +169,7 @@ def auto_start_obpi_tasks(
     abandonment (3 Task: vs. 305+ Ceremony: trailers in 30-day audit).
     """
     req_entities = extract_reqs_from_brief(brief_content, parent_obpi=obpi_id)
-    existing = _load_tasks_for_obpi(ledger, obpi_id)
+    existing = _all_started_task_ids(ledger)
     started: list[str] = []
     for req in req_entities:
         try:

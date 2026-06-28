@@ -963,6 +963,122 @@ class TestSignatureC(unittest.TestCase):
             self.assertEqual(len(errors), 0)
 
 
+class TestSignatureD(unittest.TestCase):
+    """Signature (d): a single task_id carries divergent obpi_id across events (GHI #653).
+
+    A ``task_id`` maps to exactly one OBPI, so every TASK-lifecycle event must
+    carry the same canonical ``obpi_id``. Two spellings (short
+    ``OBPI-<semver>-<item>`` vs the full slug ``gz obpi pipeline`` records) were
+    the producer defect behind the Signature (a) false positives; the read-side
+    walk was hardened in ef976e88 and this guard fail-closes on the producer side.
+    """
+
+    @covers("REQ-0.0.64-04-01")
+    def test_divergent_obpi_id_across_lifecycle_fails(self) -> None:
+        """task_started + task_completed under different obpi_id for one task_id → Sig (d)."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.99-01-01-01",
+                            "obpi_id": "OBPI-0.0.99-01",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-07-01T10:00:00Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "task_completed",
+                            "task_id": "TASK-0.0.99-01-01-01",
+                            "obpi_id": "OBPI-0.0.99-01-full-slug-suffix",
+                            "id": "evt-2",
+                            "schema_": "1.0",
+                            "timestamp": "2026-07-01T11:00:00Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (d)" in e.message
+            ]
+            self.assertGreater(len(errors), 0, "Expected Signature (d) divergence violation")
+
+    @covers("REQ-0.0.64-04-01")
+    def test_consistent_obpi_id_passes(self) -> None:
+        """Same obpi_id on every lifecycle event → no Signature (d)."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.99-01-01-01",
+                            "obpi_id": "OBPI-0.0.99-01-full-slug-suffix",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-07-01T10:00:00Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "task_completed",
+                            "task_id": "TASK-0.0.99-01-01-01",
+                            "obpi_id": "OBPI-0.0.99-01-full-slug-suffix",
+                            "id": "evt-2",
+                            "schema_": "1.0",
+                            "timestamp": "2026-07-01T11:00:00Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (d)" in e.message
+            ]
+            self.assertEqual(len(errors), 0)
+
+    @covers("REQ-0.0.64-04-01")
+    def test_grandfathered_historical_divergence_passes(self) -> None:
+        """The two pre-existing divergent task_ids are grandfathered (shrink-only)."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.74-20-01-01",
+                            "obpi_id": "OBPI-0.0.74-20",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-24T00:45:33Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "task_completed",
+                            "task_id": "TASK-0.0.74-20-01-01",
+                            "obpi_id": "OBPI-0.0.74-20-mx-gz-check-step-checkpoint-seam",
+                            "id": "evt-2",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-24T01:03:36Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (d)" in e.message
+            ]
+            self.assertEqual(len(errors), 0, "grandfathered task_id must not trip Signature (d)")
+
+
 class TestCheckPipelineIntegration(unittest.TestCase):
     """REQ-0.0.64-04-06: validator is registered in the gz check pipeline."""
 

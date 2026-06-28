@@ -1163,6 +1163,37 @@ class TestTaskTransitionFullSlugObpi(_TaskCliBase):
         self.assertIn("Completed", out)
 
 
+class TestTaskStartCanonicalObpiId(_TaskCliBase):
+    """`gz task start` must write the canonical full OBPI slug, never the short
+    `OBPI-<semver>-<item>` form derived from the TASK id alone (GHI #653).
+
+    The short form diverges from the full slug `gz obpi pipeline` records,
+    producing two `task_started` spellings for one `task_id` — the producer
+    defect behind the task-envelope-coherence Signature (a) false positives.
+    """
+
+    def _last_task_started_obpi(self, task_id: str) -> str:
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        obpi = ""
+        for event in ledger.read_all():
+            if event.event == "task_started" and event.extra.get("task_id") == task_id:
+                obpi = event.extra.get("obpi_id", "")
+        return obpi
+
+    def test_start_resolves_short_obpi_to_full_slug(self) -> None:
+        """When a full-slug OBPI exists, the first `gz task start` writes it."""
+        full_slug = "OBPI-0.1.0-01-canonical-slug-suffix"
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        ledger.append(obpi_created_event(full_slug, "ADR-0.1.0-f"))
+        code, out = _invoke(["task", "start", "TASK-0.1.0-01-01-01"])
+        self.assertEqual(code, 0, out)
+        self.assertEqual(
+            self._last_task_started_obpi("TASK-0.1.0-01-01-01"),
+            full_slug,
+            "gz task start must write the canonical full slug, not the short form",
+        )
+
+
 class TestTaskEscalate(_TaskCliBase):
     """@covers REQ-0.22.0-04-06."""
 
@@ -1416,6 +1447,41 @@ status: Draft
         )
         self.assertEqual(len(first), 3)
         self.assertEqual(second, [])
+
+    def test_auto_start_dedups_across_obpi_id_spellings(self) -> None:
+        """A TASK already started under the short obpi_id is not re-started under
+        the full slug — dedup keys on task_id, not (task_id, obpi_id) (GHI #653)."""
+        from gzkit.commands.task import auto_start_obpi_tasks
+
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        # Manual `gz task start` recorded the SHORT obpi_id before the pipeline ran.
+        ledger.append(
+            LedgerEvent(
+                event="task_started",
+                id="TASK-0.1.0-01-01-01",
+                extra={
+                    "task_id": "TASK-0.1.0-01-01-01",
+                    "obpi_id": "OBPI-0.1.0-01",
+                    "adr_id": "ADR-0.1.0-f",
+                    "agent": "claude-code",
+                },
+            )
+        )
+        started = auto_start_obpi_tasks(
+            ledger,
+            obpi_id="OBPI-0.1.0-01-full-slug-suffix",
+            parent_adr="ADR-0.1.0-f",
+            brief_content=self._BRIEF_WITH_REQS,
+            agent="gz-obpi-pipeline",
+        )
+        self.assertNotIn(
+            "TASK-0.1.0-01-01-01",
+            started,
+            "already-started TASK must not be re-started under a divergent obpi_id spelling",
+        )
+        # The other REQs' TASKs still start normally.
+        self.assertIn("TASK-0.1.0-01-02-01", started)
+        self.assertIn("TASK-0.1.0-01-03-01", started)
 
     def test_auto_start_empty_when_no_reqs(self) -> None:
         from gzkit.commands.task import auto_start_obpi_tasks
