@@ -232,11 +232,12 @@ uv run gz arb validate --limit 20
 uv run gz arb advise --limit 10       # optional: review frequent-rule advice
 uv run gz arb patterns --compact      # optional: scan for recurring anti-patterns
 
-# 5) Complete OBPI atomically (attestation + brief + receipt in one transaction)
-#    Cite the ARB receipt IDs from step 4b in --attestation-text per
-#    `AGENTS.md` § Attestation.
+# 5) Complete OBPI atomically (attestation + brief + receipt in one transaction).
+#    Completion also surrenders any held work lock mechanically — it writes a
+#    register-entry handoff and releases the lock; no manual
+#    `gz obpi lock release` step is needed (GHI #619). Cite the ARB receipt IDs
+#    from step 4b in --attestation-text per `AGENTS.md` § Attestation.
 uv run gz obpi complete OBPI-<X.Y.Z-NN>-<slug> --attestor "<name>" --attestation-text "<attestation>"
-uv run gz obpi lock release OBPI-<X.Y.Z-NN>-<slug>
 
 # 6) Run guarded sync, then reconcile and confirm
 uv run gz git-sync --apply --lint --test
@@ -628,11 +629,12 @@ uv run gz gates --gate 3 --adr ADR-0.5.0-skill-lifecycle-governance
 uv run gz lint
 ```
 
-After the Heavy-lane ceremony is accepted, complete the OBPI atomically, then sync and reconcile:
+After the Heavy-lane ceremony is accepted, complete the OBPI atomically (completion
+surrenders any held lock mechanically and writes its register-entry handoff — GHI
+#619), then sync and reconcile:
 
 ```bash
 uv run gz obpi complete OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity --attestor "Jeffry" --attestation-text "I attest I understand the completion of OBPI-0.5.0-05."
-uv run gz obpi lock release OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity
 uv run gz git-sync --apply --lint --test
 uv run gz obpi reconcile OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity
 uv run gz git-sync --apply --lint --test

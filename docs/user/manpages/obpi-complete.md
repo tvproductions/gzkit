@@ -41,8 +41,16 @@ gz obpi complete OBPI-X.Y.Z-NN --attestor NAME --attestation-text TEXT
 4. Writes attestation to ADR-local audit ledger
 5. Updates brief with evidence, attestation, and Completed status
 6. Emits `obpi_receipt_emitted` event to main ledger
+7. Surrenders the work lock mechanically (token-block exit edge, GHI #619):
+   writes a completion handoff as the register entry under `.gzkit/handoffs/`
+   and, if a lock is held for the OBPI, releases it and emits
+   `obpi_lock_released` citing that handoff. No manual `gz obpi lock release`
+   is required; the manual release path remains for mid-traversal surrender.
 
-If any step fails, all changes are rolled back (no partial writes).
+Steps 1-6 are the all-or-nothing transaction: if any step fails, all changes are
+rolled back (no partial writes). Step 7 runs after the transaction commits and is
+best-effort — if the register entry cannot be written the lock is left for TTL
+reaping rather than surrendered without one.
 
 ## Exit Codes
 

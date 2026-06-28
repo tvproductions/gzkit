@@ -1203,8 +1203,84 @@ def obpi_complete_cmd(
     except OSError as exc:
         _fail(f"I/O error during completion: {exc}", exit_code=2, as_json=as_json, obpi_id=obpi_id)
 
+    # Token-block exit edge (GHI #619): completion mechanically surrenders the
+    # work lock and writes its register entry — no manual `gz obpi lock release`.
+    _surrender_lock_at_completion(
+        project_root=project_root,
+        ledger=ledger,
+        obpi_id=obpi_id,
+        attestor=attestor,
+        attestation_text=attestation_text,
+        implementation_summary=effective_summary,
+        key_proof=effective_proof,
+        commit_sha=anchor.commit,
+        brief_rel_path=obpi_file.relative_to(project_root).as_posix(),
+    )
+
     # Success output
     _print_success(obpi_id, resolved_parent, parent_lane, completion_term, attestor, as_json)
+
+
+def _surrender_lock_at_completion(
+    *,
+    project_root: Path,
+    ledger: Ledger,
+    obpi_id: str,
+    attestor: str,
+    attestation_text: str,
+    implementation_summary: str,
+    key_proof: str,
+    commit_sha: str,
+    brief_rel_path: str,
+) -> None:
+    """Write the completion register entry and surrender any held work lock.
+
+    The token-block exit edge (GHI #619): OBPI completion is a mechanical
+    surrender. A full completion handoff is written as the register entry, and if
+    a lock is held it is deleted and an ``obpi_lock_released`` event is emitted
+    citing that handoff — no operator prompt, no manual ``gz obpi lock release``
+    chore. Best-effort and fail-safe: if the register entry cannot be written the
+    lock is left for TTL reaping rather than surrendered without one (token-block
+    discipline § Sub-Invariant 5). Runs after the atomic transaction has
+    committed, so it never affects completion's all-or-nothing guarantee.
+    """
+    from gzkit.handoff_validation import write_completion_handoff  # noqa: PLC0415
+    from gzkit.ledger_events import obpi_lock_released_event  # noqa: PLC0415
+    from gzkit.lock_manager import (  # noqa: PLC0415
+        current_branch,
+        delete_lock,
+        read_lock,
+        resolve_agent,
+    )
+
+    agent = resolve_agent(None)
+    held = read_lock(project_root, obpi_id)
+    try:
+        handoff_path = write_completion_handoff(
+            project_root,
+            obpi_id=obpi_id,
+            agent=agent,
+            attestor=attestor,
+            attestation_text=attestation_text,
+            implementation_summary=implementation_summary,
+            key_proof=key_proof,
+            last_lock_event_timestamp=held.claimed_at if held is not None else None,
+            commit_sha=commit_sha,
+            branch=current_branch(),
+            brief_rel_path=brief_rel_path,
+        )
+    except OSError:
+        return
+    if held is not None:
+        delete_lock(project_root, obpi_id)
+        ledger.append(
+            obpi_lock_released_event(
+                obpi_id=obpi_id,
+                agent=agent,
+                force=False,
+                handoff_path=handoff_path.relative_to(project_root).as_posix(),
+            )
+        )
 
 
 def _print_dry_run(

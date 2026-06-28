@@ -537,7 +537,7 @@ def _run_pipeline_sync_stage(
     remove_pipeline_artifacts(plans_dir, obpi_id)
     console.print("")
     console.print(
-        f"Pipeline complete. {obpi_id} synced. The pipeline does not manage "
-        f"the work lock; if one is held on {obpi_id}, release it with "
-        f"'gz obpi lock release {obpi_id}'."
+        f"Pipeline complete. {obpi_id} synced. The work lock was surrendered "
+        f"mechanically at completion (register-entry handoff written, lock "
+        f"released); no manual 'gz obpi lock release' is required (GHI #619)."
     )
