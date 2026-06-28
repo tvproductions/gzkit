@@ -337,6 +337,34 @@ def collect_remote_state() -> dict | None:
     }
 
 
+def collect_obpi_locks(repo_root: Path) -> list[dict]:
+    """Reap past-TTL OBPI locks and return the still-active ones.
+
+    Mirrors ``gz obpi lock list`` (token-block-discipline.md § Sub-Invariant
+    3/4): each expired lock is reaped through the canonical reaper, which writes
+    an ``abandoned_by_reaper`` register entry and emits ``obpi_lock_released``
+    BEFORE the lock file is removed — the SessionStart auto-reap cadence the
+    rule promises. Held (non-expired) locks are surfaced, not touched.
+
+    Guarded end-to-end: any failure (gzkit not importable, ledger I/O error)
+    degrades to an empty list so the boot hook never crashes (module docstring
+    contract). This is the same boundary-tolerance the MX banner import uses.
+    """
+    try:
+        from gzkit.ledger import Ledger
+        from gzkit.lock_manager import list_locks, reap_expired_locks, resolve_agent
+
+        ledger = Ledger(repo_root / ".gzkit" / "ledger.jsonl")
+        reap_expired_locks(repo_root, ledger=ledger, reaper_agent=resolve_agent(None))
+        return [
+            {"obpi_id": lock.obpi_id, "agent": lock.agent}
+            for lock in list_locks(repo_root)
+            if not lock.is_expired
+        ]
+    except Exception:
+        return []
+
+
 def collect_state(repo_root: Path, now: datetime) -> dict:
     """Aggregate authoritative state. Best-effort; never raises."""
     return {
@@ -344,7 +372,7 @@ def collect_state(repo_root: Path, now: datetime) -> dict:
         "remote_state": collect_remote_state(),
         "handoff": collect_handoff(repo_root, now),
         "session_handoff_ghis": collect_session_handoff_ghis(),
-        "obpi_locks": [],
+        "obpi_locks": collect_obpi_locks(repo_root),
         "adr_pipeline": [],
         "recent_events": collect_recent_events(repo_root / ".gzkit" / "ledger.jsonl", now),
         "blockers": [],

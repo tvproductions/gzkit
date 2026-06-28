@@ -606,6 +606,74 @@ class TestRenderCampaignBlock(unittest.TestCase):
         self.assertIn("document order", rendered)
 
 
+class TestCollectObpiLocks(unittest.TestCase):
+    """Defect 5: SessionStart orientation reaps past-TTL locks and surfaces
+    held ones — the auto-reap cadence token-block-discipline § Sub-Invariant 4
+    promises, instead of the prior hardcoded ``obpi_locks: []`` fiction."""
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+
+    @staticmethod
+    def _write_lock(root: Path, obpi_id: str, claimed_at: str, ttl_minutes: int) -> Path:
+        locks = root / ".gzkit" / "locks" / "obpi"
+        locks.mkdir(parents=True, exist_ok=True)
+        path = locks / f"{obpi_id}.lock.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "obpi_id": obpi_id,
+                    "claimed_at": claimed_at,
+                    "ttl_minutes": ttl_minutes,
+                    "agent": "agent-a",
+                    "pid": 0,
+                    "session_id": "test",
+                    "branch": "main",
+                }
+            ),
+            encoding="utf-8",
+        )
+        return path
+
+    def test_expired_lock_is_reaped_with_audit_trail(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            expired = (datetime.now(UTC) - timedelta(hours=30)).isoformat()
+            lock_path = self._write_lock(root, "OBPI-0.2.0-01", expired, 1440)
+
+            result = self.mod.collect_obpi_locks(root)
+
+            # No active locks remain to surface ...
+            self.assertEqual(result, [])
+            # ... the lock is surrendered ...
+            self.assertFalse(lock_path.exists())
+            # ... and the surrender is audit-coupled, not a silent vanish.
+            ledger_text = (root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
+            self.assertIn("obpi_lock_released", ledger_text)
+            handoffs_dir = root / ".gzkit" / "handoffs"
+            register_entries = list(handoffs_dir.glob("*OBPI-0.2.0-01*reaped*.md"))
+            self.assertTrue(register_entries, "reaping must write a register entry")
+
+    def test_active_lock_is_surfaced_not_reaped(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fresh = datetime.now(UTC).isoformat()
+            lock_path = self._write_lock(root, "OBPI-0.3.0-01", fresh, 1440)
+
+            result = self.mod.collect_obpi_locks(root)
+
+            self.assertEqual(result, [{"obpi_id": "OBPI-0.3.0-01", "agent": "agent-a"}])
+            # Active lock is left in place — no premature surrender, no event.
+            self.assertTrue(lock_path.exists())
+            ledger = root / ".gzkit" / "ledger.jsonl"
+            if ledger.exists():
+                self.assertNotIn("obpi_lock_released", ledger.read_text(encoding="utf-8"))
+
+    def test_no_locks_returns_empty(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(self.mod.collect_obpi_locks(Path(tmp)), [])
+
+
 def subprocess_completed(stdout: str = "", returncode: int = 0):
     """Tiny stand-in for subprocess.CompletedProcess covering the fields we use."""
     import subprocess as _sp
