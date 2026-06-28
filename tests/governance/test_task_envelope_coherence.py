@@ -224,6 +224,88 @@ class TestSignatureA(unittest.TestCase):
             self.assertEqual(len(errors), 0)
 
     @covers("REQ-0.0.64-04-01")
+    def test_terminal_event_clears_task_under_divergent_obpi_id_spelling(self) -> None:
+        """A completed TASK is not active even when start/complete used different
+        obpi_id spellings (short ``OBPI-0.0.74-20`` vs full slug).
+
+        Regression pin for the real 2026-06-24 ledger incident: the TASK was
+        started once with the short obpi_id and once with the full slug, then
+        completed under the full slug. Keying the terminal discard to the
+        event's own obpi_id left the start orphaned in the short-form bucket, so
+        the validator marked the TASK perpetually active — and every later
+        ADR-closeout worklog row (``attested`` + ``gate_checked``, emitted with
+        no ``task_id`` because they are ADR ceremony, not TASK labor) tripped
+        Signature (a). A TASK's identity is its globally-unique ``task_id``; its
+        terminal event ends it regardless of which obpi_id label was recorded.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.74-20-01-01",
+                            "obpi_id": "OBPI-0.0.74-20",  # short form
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-24T00:45:33Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.74-20-01-01",
+                            "obpi_id": "OBPI-0.0.74-20-mx-gz-check-step-checkpoint-seam",  # full
+                            "id": "evt-2",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-24T00:50:19Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "task_completed",
+                            "task_id": "TASK-0.0.74-20-01-01",
+                            "obpi_id": "OBPI-0.0.74-20-mx-gz-check-step-checkpoint-seam",  # full
+                            "id": "evt-3",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-24T01:03:36Z",
+                        }
+                    ),
+                    # ADR-closeout ceremony rows emitted long after the TASK
+                    # closed, with no task_id — these are NOT TASK labor.
+                    json.dumps(
+                        {
+                            "event": "attested",
+                            "id": "ADR-0.0.74-mx-mode-maintenance-hangar",
+                            "status": "completed",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-27T23:10:02Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "gate_checked",
+                            "id": "ADR-0.0.74-mx-mode-maintenance-hangar",
+                            "gate": 2,
+                            "status": "pass",
+                            "schema_": "1.0",
+                            "timestamp": "2026-06-27T23:19:43Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (a)" in e.message
+            ]
+            self.assertEqual(
+                len(errors),
+                0,
+                "completed TASK must not stay active under divergent obpi_id spelling",
+            )
+
+    @covers("REQ-0.0.64-04-01")
     def test_meta_receipt_bind_ceremony_event_excluded_from_signature_a(self) -> None:
         """Closeout ``meta-receipt-bind`` is ceremony, not labor → no signature (a).
 

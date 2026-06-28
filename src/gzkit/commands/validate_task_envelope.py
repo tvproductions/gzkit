@@ -182,8 +182,16 @@ def _sig_a_is_not_labor_event(
         active_tasks_by_obpi.setdefault(obpi_id, set()).add(task_id)
         return True
     if ev_type in ("task_completed", "task_blocked", "task_escalated"):
-        if task_id and obpi_id and obpi_id in active_tasks_by_obpi:
-            active_tasks_by_obpi[obpi_id].discard(task_id)
+        # A terminal event ends the TASK identified by ``task_id`` regardless of
+        # which obpi_id spelling the start/complete pair recorded. The same TASK
+        # can be started under a short obpi_id (``OBPI-0.0.74-20``) and completed
+        # under the full slug (``OBPI-0.0.74-20-mx-...``); keying the discard to
+        # the event's own obpi_id orphans the divergent start in the other
+        # bucket, marking the TASK perpetually active. ``task_id`` is globally
+        # unique to one OBPI, so clearing it from every bucket is safe.
+        if task_id:
+            for active in active_tasks_by_obpi.values():
+                active.discard(task_id)
         return True
 
     # Closeout ``meta-receipt-bind`` is a Gate-5 ceremony receipt-binding
