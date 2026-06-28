@@ -561,7 +561,7 @@ def _is_same_commit_block_creation(
     project_root: Path,
     git_runner: GitRunner,
 ) -> bool:
-    """True when the decorated function's def line shares the decorator's intro SHA.
+    """Return True when the function's def line shares the decorator's intro SHA.
 
     Same-commit BLOCK creation is structurally identical to GHI #382 same-commit
     FILE creation: the assertion came into existence WITH the decorator in the
@@ -604,7 +604,7 @@ def _has_inline_audit_exempt_marker(
     intro: CoverIntroduction,
     project_root: Path,
 ) -> bool:
-    """True when the decorator line carries the regression-invariant overlay marker.
+    """Return True when the decorator line carries the regression-invariant marker.
 
     Reads the live source file (not git history) at ``intro.line``: the
     marker is current operator intent, not a historical artifact. Unlike

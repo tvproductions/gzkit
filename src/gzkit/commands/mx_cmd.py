@@ -43,8 +43,10 @@ def _mx_session_opened_event(
     attestor: str,
     inspection_scope: list[str],
 ) -> LedgerEvent:
-    """Build the mx_session_opened ledger event (the enter anchor; typed by
-    :class:`gzkit.events.MxSessionOpenedEvent` at parse time)."""
+    """Build the mx_session_opened ledger event (the enter anchor).
+
+    Typed by :class:`gzkit.events.MxSessionOpenedEvent` at parse time.
+    """
     return LedgerEvent(
         event="mx_session_opened",
         id=session_id,
@@ -128,8 +130,10 @@ def mx_enter_cmd(
 
 
 def _mx_session_closed_event(session_id: str, attestor: str) -> LedgerEvent:
-    """Build the mx_session_closed ledger event (the exit anchor; typed by
-    :class:`gzkit.events.MxSessionClosedEvent` at parse time)."""
+    """Build the mx_session_closed ledger event (the exit anchor).
+
+    Typed by :class:`gzkit.events.MxSessionClosedEvent` at parse time.
+    """
     return LedgerEvent(
         event="mx_session_closed",
         id=session_id,

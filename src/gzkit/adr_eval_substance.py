@@ -79,11 +79,12 @@ class SubstanceVerdict(BaseModel):
 
     @property
     def is_graded(self) -> bool:
+        """Return True when a real judge grade (not UNGRADED) is recorded."""
         return self.grade is not SubstanceGrade.UNGRADED
 
 
 def ungraded(dimension: str) -> SubstanceVerdict:
-    """The honest default: no judge verdict recorded for this dimension."""
+    """Return the honest default verdict: no judge verdict for this dimension."""
     return SubstanceVerdict(dimension=dimension, grade=SubstanceGrade.UNGRADED)
 
 
@@ -145,7 +146,7 @@ def _parse_substance_event(line: str, adr_id: str, dimension: str) -> SubstanceV
 
 
 def substance_channel_for_adr(project_root: Path, adr_id: str) -> list[SubstanceVerdict]:
-    """The full substance channel: one verdict per substance dimension."""
+    """Return the full substance channel: one verdict per substance dimension."""
     return [
         get_substance_verdict_for_adr(project_root, adr_id, dim) for dim in SUBSTANCE_DIMENSIONS
     ]

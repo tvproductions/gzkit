@@ -84,6 +84,7 @@ def _detect_refresh_state(
     copy. ``--update`` rewrites the marker on a STALE refresh; an operator
     edit either leaves the marker in place (signal: EDITED) or removes it
     (signal: STALE — operator wants the next refresh to restore canon).
+
     """
     if project_bytes == canonical_bytes:
         return "IDENTICAL"
@@ -176,6 +177,7 @@ def _refresh_canonical_surfaces(
     Args:
         project_root: Project root containing the adopter's ``.gzkit/``.
         dry_run: When True, detect and report state without writing.
+
     """
     result = RefreshResult(dry_run=dry_run)
 

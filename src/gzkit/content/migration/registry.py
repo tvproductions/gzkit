@@ -44,6 +44,7 @@ def apply_migrations(
     Raises:
         MigrationError: if source_version > target_version (unknown future
             version) or if any (content_type, v, v+1) step is unregistered.
+
     """
     if source_version == target_version:
         return model

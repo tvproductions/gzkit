@@ -43,6 +43,7 @@ def is_receipt_fresh(
         True iff receipt_ts is strictly newer than every existing file in the
         allowed-paths domain.  False if any non-create path is missing or if
         no existing files remain in the domain.
+
     """
     creates = creates_paths or set()
     mtimes: list[float] = []

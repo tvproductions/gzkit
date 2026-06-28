@@ -54,10 +54,12 @@ class LivenessResult:
     """Result carrier for the hook liveness check."""
 
     def __init__(self, ok: bool, defect: str | None = None) -> None:
+        """Initialize with the liveness ``ok`` flag and optional ``defect`` detail."""
         self.ok = ok
         self.defect = defect
 
     def __repr__(self) -> str:
+        """Return the debug representation of the liveness result."""
         if self.ok:
             return "LivenessResult(ok=True)"
         return f"LivenessResult(ok=False, defect={self.defect!r})"

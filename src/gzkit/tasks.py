@@ -129,6 +129,7 @@ def next_seq_for_req(req_id: str, *, existing_task_ids: list[str]) -> int:
 
     Raises:
         ValueError: If req_id does not match the expected REQ ID format.
+
     """
     m = _REQ_TO_TASK_RE.match(req_id)
     if not m:
@@ -444,6 +445,7 @@ def advances(task_id_str: str) -> Callable[[_AF], _AF]:
         ValueError: If *task_id_str* has an invalid format, or if the
             derived parent REQ is not found in the extracted brief-defined
             REQ set.
+
     """
     task_id = TaskId.parse(task_id_str)
     parent_req = f"REQ-{task_id.semver}-{task_id.obpi_item}-{task_id.req_index}"

@@ -46,7 +46,7 @@ class RenditionProvenance(BaseModel):
 
 
 def corpus_fingerprint(corpus: Corpus) -> str:
-    """Return the SHA-256 hex digest of *corpus*'s canonical model serialization.
+    r"""Return the SHA-256 hex digest of *corpus*'s canonical model serialization.
 
     Hashing ``Corpus.dumps()`` (the canonical ``model_dump_json`` per entry, joined with
     ``\\n``) — never the on-disk file bytes — makes the digest cross-platform stable:

@@ -374,7 +374,7 @@ def _ledger_has_event_citing_path(
 
 
 def _support_path_arm_ok(citation: SupportCitation, project_root: Path) -> bool:
-    """True when the SUPPORT ledger arm is satisfied for a path-citing citation.
+    """Return True when the SUPPORT ledger arm is satisfied for a path-citing citation.
 
     Three genuine proofs (GHI #647) — none is the closed generic-artifact_edited
     facade (any of 4295 unrelated events satisfying any citation):

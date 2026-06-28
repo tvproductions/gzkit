@@ -229,10 +229,12 @@ def generate_evidence_packet(project_root: Path, brief_path: Path, obpi_id: str)
 
 
 def packet_path(project_root: Path, obpi_id: str) -> Path:
+    """Return the evidence-packet path for an OBPI under the project root."""
     return project_root.joinpath(*_EVIDENCE_DIR) / f"{obpi_id}.evidence.json"
 
 
 def write_packet(project_root: Path, packet: EvidencePacket) -> Path:
+    """Write the evidence packet to disk and return its path."""
     path = packet_path(project_root, packet.obpi_id)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(packet.model_dump_json(indent=2) + "\n", encoding="utf-8")
@@ -240,6 +242,7 @@ def write_packet(project_root: Path, packet: EvidencePacket) -> Path:
 
 
 def load_packet(project_root: Path, obpi_id: str) -> EvidencePacket | None:
+    """Load and validate an OBPI's evidence packet, or return None if absent/invalid."""
     path = packet_path(project_root, obpi_id)
     if not path.is_file():
         return None

@@ -79,6 +79,7 @@ def parse_fidelity_assertions(adr_path: Path) -> list[FidelityAssertion]:
     ------
     ValueError
         If the block is absent or no data rows are found.
+
     """
     text = adr_path.read_text(encoding="utf-8")
     adr_id = adr_path.stem
@@ -188,6 +189,7 @@ def assert_fidelity_for_ceremony(adr_path: Path, adr_id: str) -> list[FidelityAs
 
     Returns the run assertions (all passing) when the gate is green, or an empty
     list when the block is absent (warning emitted).
+
     """
     from gzkit.core.exceptions import PolicyBreachError  # noqa: PLC0415
 

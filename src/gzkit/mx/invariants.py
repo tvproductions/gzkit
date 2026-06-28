@@ -87,7 +87,7 @@ def _ep_gate5_ledger(root: Path) -> list[Any]:
 
 
 def _build_gate5_attestation_absence() -> dict[str, Any]:
-    """A heavy completion evidence payload with a MISSING attestation (the absence case).
+    """Build a heavy completion evidence payload with a MISSING attestation (the absence case).
 
     Every field except ``attestation_text`` is valid, so the ONLY violation the real
     attestation-field validator can complain about is the absent attestation — the

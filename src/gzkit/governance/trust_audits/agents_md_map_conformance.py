@@ -224,7 +224,7 @@ def _check_paragraph_shape(text: str, relpath: str) -> list[ValidationError]:
 
 
 def _starts_with_binding_marker(line: str) -> bool:
-    """True if line begins with a binding-bullet marker."""
+    """Return True if line begins with a binding-bullet marker."""
     stripped = line.lstrip()
     if stripped.startswith(_BINDING_MARKER_PREFIXES):
         return True
@@ -356,7 +356,7 @@ def _resolve_one_link(
 
 
 def _anchor_resolves(target: Path, anchor: str) -> bool:
-    """True if `anchor` matches a slugified heading in `target`.
+    """Return True if `anchor` matches a slugified heading in `target`.
 
     Slugification: GitHub-style — lowercase, replace whitespace with '-',
     drop non-alphanumeric except '-' and '_'.

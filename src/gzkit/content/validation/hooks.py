@@ -23,6 +23,7 @@ class FidelityHookError(Exception):
         validator_id: The failing validator's type string (from ValidationError.type).
         violation: Human-readable description of the failure.
         errors: Full list of ValidationError from the validator suite.
+
     """
 
     def __init__(
@@ -32,6 +33,7 @@ class FidelityHookError(Exception):
         violation: str,
         errors: list[ValidationError] | None = None,
     ) -> None:
+        """Build the error from the failing validator id, message, and errors."""
         self.validator_id = validator_id
         self.violation = violation
         self.errors = errors or []

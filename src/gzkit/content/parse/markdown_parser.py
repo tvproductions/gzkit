@@ -526,6 +526,7 @@ def parse(text: str, as_type: str, *, file_path: str | None = None) -> BaseConte
       - Multiple consecutive blank lines are treated as a single section separator.
       - Trailing whitespace on individual lines is stripped during parsing.
       - Trailing newlines at end of input are ignored.
+
     """
     if as_type not in CONTENT_MODELS:
         raise KeyError(f"Unknown content type {as_type!r}; valid types: {sorted(CONTENT_MODELS)}")

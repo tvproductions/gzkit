@@ -184,7 +184,7 @@ def forbid_manual_ledger_edits(root: Path) -> int:
 
 
 def _parse_staged_name_status(staged: str) -> dict[str, str]:
-    """Parse ``git diff --cached --name-status`` into a ``{path: code}`` map.
+    r"""Parse ``git diff --cached --name-status`` into a ``{path: code}`` map.
 
     Rename/copy entries are the three-field form ``R<score>\\t<old>\\t<new>``:
     the new path maps to the rename code, the old path maps to ``D``. Plain
@@ -212,7 +212,7 @@ def _parse_staged_name_status(staged: str) -> dict[str, str]:
 
 
 def forbid_skill_sync_drift(root: Path) -> int:
-    """Reject canonical skill/rule edits without their vendor mirrors (GHI #210).
+    r"""Reject canonical skill/rule edits without their vendor mirrors (GHI #210).
 
     Every modification to ``.gzkit/skills/**/SKILL.md`` must carry its
     ``.claude/skills/<same-path>`` mirror in the same commit. Same for

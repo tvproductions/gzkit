@@ -101,7 +101,7 @@ def _user_text(entry: dict) -> str | None:
 
 
 def _is_operator_entry(entry: dict) -> bool:
-    """True for genuine operator messages, not harness-injected ones.
+    """Return True for genuine operator messages, not harness-injected ones.
 
     Real transcripts inject user-typed entries the operator never wrote:
     `isMeta: true` records, sidechain turns, and `<tag>`-leading caveats

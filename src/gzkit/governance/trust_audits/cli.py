@@ -204,7 +204,7 @@ def _known_cli_verb_paths() -> frozenset[str]:
 
 
 def _verb_path_waived(path: str) -> bool:
-    """A verb path is waived by an exact entry or by a top-level group key.
+    """Return True when a verb path is waived by an exact entry or a top-level group key.
 
     Group keys (e.g. ``"task"``) cascade to every subcommand beneath them —
     they declare the whole namespace intentionally skill-less.

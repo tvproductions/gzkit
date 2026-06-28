@@ -1,4 +1,4 @@
-"""Cross-platform UTF-8 trust audit (cross-platform.md rule 9).
+r"""Cross-platform UTF-8 trust audit (cross-platform.md rule 9).
 
 The CLI entrypoint reconfigures stdio at runtime; the env-var prefix is
 redundant. The runtime guard does NOT cover fresh-interpreter helpers,
@@ -163,7 +163,7 @@ def _iter_doc_pipe_paths(project_root: Path) -> list[Path]:
 
 
 def _coalesce_continuations(content: str) -> list[tuple[int, str]]:
-    """Join trailing-backslash shell continuations into logical lines.
+    r"""Join trailing-backslash shell continuations into logical lines.
 
     A ``gz ... | tool`` pipeline may be split across physical lines with a
     trailing ``\\``. The pipe regexes are line-scoped, so a continuation

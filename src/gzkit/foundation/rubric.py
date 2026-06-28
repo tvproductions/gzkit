@@ -251,6 +251,7 @@ def score_foundation(
         foundation_id: Short ADR id, e.g. ``ADR-0.0.57``.
         insights_path: Override for the insights JSONL file.
         pool_adrs_root: Override directory to walk for pool/feature ADRs.
+
     """
     if insights_path is None:
         insights_path = project_root / ".gzkit" / "insights" / "agent-insights.jsonl"
@@ -292,6 +293,7 @@ def _gather_foundation_ids(project_root: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Run the foundation-rubric CLI: score in-flight ADRs and print the result."""
     parser = argparse.ArgumentParser(
         prog="python -m gzkit.foundation.rubric",
         description="Score in-flight foundation ADRs and emit structural rank input.",

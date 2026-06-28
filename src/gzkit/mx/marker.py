@@ -73,13 +73,13 @@ def _find_project_root(start: Path | None = None) -> Path:
 
 
 def marker_path(project_root: Path | None = None) -> Path:
-    """The single MX truth-source path (``<root>/.gzkit/mx.json``)."""
+    """Return the single MX truth-source path (``<root>/.gzkit/mx.json``)."""
     root = project_root if project_root is not None else _find_project_root()
     return root.joinpath(*MARKER_RELPATH)
 
 
 def is_active(project_root: Path | None = None) -> bool:
-    """``True`` when the marker file is present on disk → ``MX==TRUE``.
+    """Return ``True`` when the marker file is present on disk → ``MX==TRUE``.
 
     Presence only — the cheap truth-file read code guards use. Validity (the
     ledger binding) is the separate anti-contrivance gate, :func:`is_valid`.
@@ -159,11 +159,12 @@ def _open_session_ids(ledger: Path) -> set[str]:
 
 
 def is_valid(project_root: Path | None = None, ledger_path: Path | None = None) -> bool:
-    """``True`` only when the marker is present AND bound to a real, still-open
-    ``mx_session_opened`` ledger event (anti-contrivance).
+    """Return ``True`` only when the marker is present AND ledger-bound.
 
-    A hand-created marker with no matching event is void → ``False``; a marker
-    whose session was closed (``mx_session_closed``) is also void.
+    Bound means a real, still-open ``mx_session_opened`` ledger event backs the
+    marker (anti-contrivance). A hand-created marker with no matching event is
+    void → ``False``; a marker whose session was closed (``mx_session_closed``)
+    is also void.
     """
     marker = read(project_root)
     if marker is None or not marker.session_id:

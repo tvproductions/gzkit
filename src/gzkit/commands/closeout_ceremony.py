@@ -241,8 +241,10 @@ def _advance_demo_index(
 
 
 def _has_fresh_attestation_receipt(project_root: Path, state: CeremonyState) -> bool:
-    """Return ``True`` iff an ``attested`` ledger event for this ADR was emitted
-    during the current ceremony run (event ``ts`` >= the run's ``started_at``).
+    """Return ``True`` iff an ``attested`` event for this ADR is from this run.
+
+    The event must have been emitted during the current ceremony run (event
+    ``ts`` >= the run's ``started_at``).
 
     An event emitted during this run necessarily postdates the run's start, so a
     prior closeout's or a prior ``--restart`` attempt's attestation is correctly

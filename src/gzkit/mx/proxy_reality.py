@@ -101,10 +101,10 @@ def scan(root: Path | None = None) -> ProxyRealityScanResult:
 
 
 def _build_proxy_reality_violation() -> Path:
-    """Plant a known proxy-reality violation: a ledger with a model-induced-fabrication
-    repudiation event.
+    """Plant a known proxy-reality violation in a fresh ledger.
 
-    The runner removes the temp dir after the entrypoint runs; the fixture uses
+    The violation is a ``model-induced-fabrication`` repudiation event. The
+    runner removes the temp dir after the entrypoint runs; the fixture uses
     ``mkdtemp`` rather than a context manager per the qc_binding NC convention.
     """
     root = Path(tempfile.mkdtemp(prefix="gzkit-proxy-reality-nc-"))

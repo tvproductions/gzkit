@@ -71,9 +71,11 @@ class TemplateNotFound(Exception):
     Attributes:
         content_type: The model class name (e.g. "Rule", "Skill").
         vendor: The vendor identifier (e.g. "claude").
+
     """
 
     def __init__(self, *, content_type: str, vendor: str) -> None:
+        """Build the error for a missing (content_type, vendor) template pair."""
         self.content_type = content_type
         self.vendor = vendor
         super().__init__(

@@ -80,7 +80,7 @@ def _is_package_only(rel_posix: str, project_root: Path | None = None) -> bool:
 
 
 def audit_distribution(project_root: Path) -> list[ValidationError]:
-    """Static T0 distribution audit — no wheel build required.
+    """Run the static T0 distribution audit — no wheel build required.
 
     Loads ``pyproject.toml`` include globs and ``data/distribution_baseline_manifest.json``,
     derives surface roots from manifest keys, walks on-disk files, and detects drift.

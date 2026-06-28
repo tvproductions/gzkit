@@ -34,6 +34,8 @@ from gzkit.mx import levels
 
 
 class Route(StrEnum):
+    """Disposition routes — where a checkpoint sends a finding by severity band."""
+
     # Grounding band (>= ERROR): routes to a defect airlock, blocks.
     AOG_MX_HANGAR = "aog-mx-hangar"  # CRITICAL — ground the session into the hangar
     BLOCK_GHI_FIX = "block-ghi-fix"  # ERROR — block/ground, repair via a GHI direct fix

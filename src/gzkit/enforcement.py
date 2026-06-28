@@ -109,6 +109,7 @@ def enforces(
     Raises:
         ValueError: If ``claim`` has an invalid format or is not in the
             registered known-claims set.
+
     """
     if not _CLAIM_ID_RE.match(claim):
         msg = (

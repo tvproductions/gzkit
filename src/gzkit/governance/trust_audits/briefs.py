@@ -470,7 +470,7 @@ def _brief_touches_cli_surface(text: str) -> bool:
 
 
 def audit_brief_demo_section(project_root: Path) -> list[ValidationError]:
-    """Heavy-lane CLI-shipping briefs must carry a ``## Demo`` H2 section (GHI #431).
+    r"""Heavy-lane CLI-shipping briefs must carry a ``## Demo`` H2 section (GHI #431).
 
     The closeout walkthrough discovery (``src/gzkit/commands/ceremony_data.py``)
     harvests concrete invocations from a brief's ``## Demo`` section. When a
@@ -639,10 +639,9 @@ _BRIEF_TERMINAL_STATUSES: frozenset[str] = frozenset(
 
 
 def audit_brief_command_shape(project_root: Path) -> list[ValidationError]:
-    """Fail closed (exit 3) when a brief Verification block contains a
-    non-shell-less command (GHI #550, OBPI-0.0.63-07).
+    """Fail closed (exit 3) on a brief Verification block with a non-shell-less command.
 
-    Walks active (non-terminal-status) OBPI-*.md briefs, extracts
+    GHI #550, OBPI-0.0.63-07. Walks active (non-terminal-status) OBPI-*.md briefs, extracts
     ``## Verification`` fenced commands via ``extract_fenced_commands``,
     and flags any command that fails ``is_shell_less_executable``
     (the BI-1 shared classifier from OBPI-02).
