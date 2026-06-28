@@ -3,16 +3,16 @@ id: cross-platform
 paths:
   - "src/**/*.py"
   - "tests/**/*.py"
-description: Cross-platform development policy (Windows primary, macOS, Linux)
+description: Cross-platform development policy (Windows, macOS, Linux — co-equal)
 ---
 
-<!-- rule-version: 0.3.0 -->
+<!-- rule-version: 0.4.0 -->
 
 # Cross-Platform Development Policy (Binding)
 
-> **Rule version:** `0.3.0` — diet pass under GHI #327; lifted helper patterns and scope-boundary details to `docs/governance/cross-platform-rationale.md`.
+> **Rule version:** `0.4.0` — corrected the platform framing: removed the inaccurate "Windows (primary)" label and the miscited `Doctrine: ADR-0.0.1` reference (ADR-0.0.1 is canonical-govzero-parity; no cross-platform ADR exists). gzkit targets all platforms co-equally (operator directive 2026-06-28). Prior `0.3.0` — diet pass under GHI #327; lifted helper patterns and scope-boundary details to `docs/governance/cross-platform-rationale.md`.
 
-**Platforms:** Windows (primary), macOS, Linux | **Doctrine:** ADR-0.0.1
+**Platforms:** Windows, macOS, Linux — co-equal. Max cross-platform; no platform is favored over another.
 
 ## Quick Reference
 

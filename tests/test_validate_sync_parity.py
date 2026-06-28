@@ -176,7 +176,7 @@ class SyncParityDateNormalizationTest(_SyncParityBase):
                 count=1,
             )
         self.assertNotEqual(stale, content, "test fixture must actually change the date")
-        # Preserve LF line endings: on Windows (ADR-0.0.1 primary platform)
+        # Preserve LF line endings: on Windows (a co-equal target platform)
         # write_text with the default newline translates every \n to \r\n,
         # surfacing as whole-file line-ending drift that would mask the
         # date-only change this test asserts is normalized away.

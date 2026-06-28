@@ -16,7 +16,7 @@ Enforce Windows-safe test cleanup patterns. Eliminate raw `shutil.rmtree()` in t
 - **Timeout:** 300s — explicit per-chore `timeoutSeconds` (was lane-derived 300 under the removed medium tier); GHI #447
 - Use `tempfile.TemporaryDirectory()` context managers (preferred)
 - Use `pathlib.Path` throughout; no hard-coded path separators
-- Cross-platform: Windows (primary), macOS, Linux
+- Cross-platform: Windows, macOS, Linux — co-equal (no primary platform)
 
 ## Workflow
 
