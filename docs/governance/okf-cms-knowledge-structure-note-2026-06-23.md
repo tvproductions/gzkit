@@ -110,3 +110,5 @@ Convert control surfaces first.
 - [Open Knowledge Format v0.1 draft](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf)
 - [Build-to-1.0 campaign](build-to-1.0-campaign-2026-06-20.md)
 - [Agent control surface rendering substrate](agent-control-surface-rendering-substrate.md)
+- [Google OKF + RAG: The Ultimate AI Agent Architecture — Cloud Codes video transcript](research_sources/okf-rag-hybrid-knowledge-stack-cloud-code-transcript.md) — orientation source on the router + OKF-spine + RAG-reach hybrid; corroborates this note's "OKF as orientation, not authority" posture and the 80/20 curated-core / long-tail split.
+- [OKF + RAG hybrid design note](okf-rag-hybrid-design-note-2026-06-27.md) — companion analysis translating the hybrid into gzkit terms; records why RAG stays out of this note's ratified first pass (stdlib-first / ripgrep reach tier first; vector layer is a foundation-ADR-gated departure).
