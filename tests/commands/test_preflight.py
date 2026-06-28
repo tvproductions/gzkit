@@ -144,6 +144,47 @@ class TestPreflightCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertFalse(lock_path.exists())
 
+    def test_apply_reaps_expired_lock_with_audit_trail(self) -> None:
+        """Defect 4: --apply routes expired-lock cleanup through the canonical
+        token-block reaper, not a silent unlink. The surrender MUST leave an
+        ``obpi_lock_released`` ledger event and an ``abandoned_by_reaper``
+        register entry (token-block-discipline.md § Sub-Invariant 3)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init("lite")
+            locks_dir = Path(".gzkit/locks/obpi")
+            locks_dir.mkdir(parents=True, exist_ok=True)
+            expired_time = (datetime.now(UTC) - timedelta(hours=30)).isoformat()
+            lock_path = locks_dir / "OBPI-0.2.0-01.lock.json"
+            lock_path.write_text(
+                json.dumps(
+                    {
+                        "obpi_id": "OBPI-0.2.0-01",
+                        "claimed_at": expired_time,
+                        "ttl_minutes": 1440,
+                        "agent": "claude-code",
+                        "pid": 0,
+                        "session_id": "test",
+                        "branch": "main",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            result = runner.invoke(main, ["preflight", "--apply"])
+            self.assertEqual(result.exit_code, 0)
+            # The lock is surrendered (file gone) ...
+            self.assertFalse(lock_path.exists())
+            # ... but never silently: a release event is in the ledger ...
+            ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
+            self.assertIn("obpi_lock_released", ledger_text)
+            self.assertIn("OBPI-0.2.0-01", ledger_text)
+            # ... and a reaping register entry exists on disk.
+            register_entries = list(Path(".gzkit/handoffs").glob("*OBPI-0.2.0-01*reaped*.md"))
+            self.assertTrue(
+                register_entries,
+                "reaping must write an abandoned_by_reaper register entry",
+            )
+
     def test_json_output(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():

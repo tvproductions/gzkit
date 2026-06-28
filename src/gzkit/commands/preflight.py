@@ -7,8 +7,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from gzkit.commands.common import console, get_project_root
-from gzkit.lock_manager import DEFAULT_LOCK_TTL_MINUTES
+from gzkit.commands.common import console, ensure_initialized, get_project_root
+from gzkit.ledger import Ledger
+from gzkit.lock_manager import (
+    DEFAULT_LOCK_TTL_MINUTES,
+    reap_expired_locks,
+    resolve_agent,
+)
 from gzkit.pipeline_runtime import (
     find_stale_pipeline_markers,
     load_pipeline_json,
@@ -65,22 +70,32 @@ def _find_expired_locks(locks_dir: Path) -> list[tuple[Path, str, float]]:
 
 
 def _apply_cleanup(
+    project_root: Path,
+    ledger: Ledger,
     stale_markers: list[tuple[Path, dict[str, Any]]],
     orphan_receipts: list[tuple[Path, str]],
-    expired_locks: list[tuple[Path, str, float]],
 ) -> None:
-    """Remove stale artifacts."""
+    """Remove stale markers/receipts and reap expired locks.
+
+    Markers and orphan receipts are plain artifacts — a raw unlink is correct.
+    Expired locks are tokens: their surrender is routed through the canonical
+    ``reap_expired_locks`` so every release writes an ``abandoned_by_reaper``
+    register entry and emits ``obpi_lock_released`` BEFORE the lock file is
+    removed (token-block-discipline.md § Sub-Invariant 3). A raw ``unlink`` here
+    would be a silent bypass of that audit coupling.
+    """
     for path, _ in stale_markers:
         path.unlink(missing_ok=True)
     for path, _ in orphan_receipts:
         path.unlink(missing_ok=True)
-    for path, _, _ in expired_locks:
-        path.unlink(missing_ok=True)
+    reap_expired_locks(project_root, ledger=ledger, reaper_agent=resolve_agent(None))
 
 
 def preflight_cmd(*, apply: bool = False, as_json: bool = False) -> None:
     """Scan for stale pipeline artifacts and optionally clean them up."""
+    config = ensure_initialized()
     project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
     plans_dir = project_root / ".claude" / "plans"
     locks_dir = project_root / ".gzkit" / "locks" / "obpi"
 
@@ -104,7 +119,7 @@ def preflight_cmd(*, apply: bool = False, as_json: bool = False) -> None:
         }
         console.print(json.dumps(data, indent=2))
         if apply:
-            _apply_cleanup(stale_markers, orphan_receipts, expired_locks)
+            _apply_cleanup(project_root, ledger, stale_markers, orphan_receipts)
         return
 
     total = len(stale_markers) + len(orphan_receipts) + len(expired_locks)
@@ -123,7 +138,7 @@ def preflight_cmd(*, apply: bool = False, as_json: bool = False) -> None:
         console.print(f"  Expired lock:    {path.name} ({obpi_id}, {age:.0f}m)")
 
     if apply:
-        _apply_cleanup(stale_markers, orphan_receipts, expired_locks)
+        _apply_cleanup(project_root, ledger, stale_markers, orphan_receipts)
         console.print("Cleanup applied.")
     else:
         console.print(f"\n{total} issue(s) found. Run with --apply to clean up.")
