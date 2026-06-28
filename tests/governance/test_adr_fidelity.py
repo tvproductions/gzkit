@@ -5,6 +5,8 @@ Tests are derived from brief requirements, not from implementation.
 
 from __future__ import annotations
 
+import shlex
+import sys
 import textwrap
 import unittest
 from pathlib import Path
@@ -12,6 +14,20 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from gzkit.traceability import covers
+
+
+def _py_exit(code: int) -> str:
+    """Cross-platform stand-in for the Unix ``true``/``false`` builtins.
+
+    ``true``/``false`` are shell builtins, not executables, so the gate runner's
+    ``subprocess.run(shlex.split(...), shell=False)`` cannot find them on Windows
+    (gzkit's primary platform, ADR-0.0.1) and returns ``observed=-1``. A quoted
+    ``python -c 'raise SystemExit(<code>)'`` exits deterministically on every
+    platform and survives the runner's POSIX ``shlex.split`` (cross-platform
+    test defect, ADR-0.0.1).
+    """
+    return f"{shlex.quote(sys.executable)} -c {shlex.quote(f'raise SystemExit({code})')}"
+
 
 ADR_WITH_ASSERTIONS = textwrap.dedent("""\
     ---
@@ -200,7 +216,7 @@ class TestFidelityGateRunner(unittest.TestCase):
     def test_result_pass_when_observed_equals_expected(self) -> None:
         from gzkit.fidelity import run_fidelity_gate
 
-        assertion = self._make_assertion(command="true", expected_exit=0)
+        assertion = self._make_assertion(command=_py_exit(0), expected_exit=0)
         results = run_fidelity_gate([assertion], adr_id="ADR-test")
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].observed, 0)
@@ -210,7 +226,7 @@ class TestFidelityGateRunner(unittest.TestCase):
     def test_result_fail_when_observed_differs_from_expected(self) -> None:
         from gzkit.fidelity import run_fidelity_gate
 
-        assertion = self._make_assertion(command="true", expected_exit=1)
+        assertion = self._make_assertion(command=_py_exit(0), expected_exit=1)
         results = run_fidelity_gate([assertion], adr_id="ADR-test")
         self.assertEqual(results[0].observed, 0)
         self.assertEqual(results[0].result, "fail")
@@ -219,7 +235,7 @@ class TestFidelityGateRunner(unittest.TestCase):
     def test_expected_nonzero_exit_matches_failing_command(self) -> None:
         from gzkit.fidelity import run_fidelity_gate
 
-        assertion = self._make_assertion(command="false", expected_exit=1)
+        assertion = self._make_assertion(command=_py_exit(1), expected_exit=1)
         results = run_fidelity_gate([assertion], adr_id="ADR-test")
         self.assertNotEqual(results[0].observed, 0)
         self.assertEqual(results[0].result, "pass")
@@ -228,7 +244,7 @@ class TestFidelityGateRunner(unittest.TestCase):
     def test_gate_reports_failed_assertion_on_exit_mismatch(self) -> None:
         from gzkit.fidelity import run_fidelity_gate
 
-        assertion = self._make_assertion(command="false", expected_exit=0)
+        assertion = self._make_assertion(command=_py_exit(1), expected_exit=0)
         results = run_fidelity_gate([assertion], adr_id="ADR-test")
         failed = [r for r in results if r.result == "fail"]
         self.assertEqual(len(failed), 1)
@@ -238,8 +254,8 @@ class TestFidelityGateRunner(unittest.TestCase):
         from gzkit.fidelity import run_fidelity_gate
 
         assertions = [
-            self._make_assertion(command="true", expected_exit=0, claim="first"),
-            self._make_assertion(command="false", expected_exit=1, claim="second"),
+            self._make_assertion(command=_py_exit(0), expected_exit=0, claim="first"),
+            self._make_assertion(command=_py_exit(1), expected_exit=1, claim="second"),
         ]
         results = run_fidelity_gate(assertions, adr_id="ADR-test")
         self.assertTrue(all(r.result == "pass" for r in results))

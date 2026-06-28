@@ -19,6 +19,8 @@ Tests derive from the brief's Acceptance Criteria, not from implementation:
 
 from __future__ import annotations
 
+import shlex
+import sys
 import tempfile
 import textwrap
 import unittest
@@ -29,11 +31,25 @@ from gzkit.core.exceptions import PolicyBreachError
 from gzkit.fidelity import assert_fidelity_for_ceremony
 from gzkit.traceability import covers
 
+
+def _py_exit(code: int) -> str:
+    """Cross-platform stand-in for the Unix ``true``/``false`` builtins.
+
+    The ceremony gate runs each assertion command via
+    ``subprocess.run(shlex.split(...), shell=False)``; ``true``/``false`` are
+    shell builtins, not executables, so they return ``observed=-1`` on Windows
+    (gzkit's primary platform, ADR-0.0.1). A quoted ``python -c 'raise
+    SystemExit(<code>)'`` exits deterministically on every platform and survives
+    the runner's POSIX ``shlex.split`` (cross-platform test defect, ADR-0.0.1).
+    """
+    return f"{shlex.quote(sys.executable)} -c {shlex.quote(f'raise SystemExit({code})')}"
+
+
 # ---------------------------------------------------------------------------
 # ADR fixtures
 # ---------------------------------------------------------------------------
 
-_ADR_FAILING = textwrap.dedent("""\
+_ADR_FAILING = textwrap.dedent(f"""\
     ---
     id: ADR-test-fid
     ---
@@ -48,10 +64,10 @@ _ADR_FAILING = textwrap.dedent("""\
 
     | Claim | Command | Expected exit |
     |-------|---------|---------------|
-    | This gate always fails | false | 0 |
+    | This gate always fails | {_py_exit(1)} | 0 |
     """)
 
-_ADR_PASSING = textwrap.dedent("""\
+_ADR_PASSING = textwrap.dedent(f"""\
     ---
     id: ADR-test-fid
     ---
@@ -66,7 +82,7 @@ _ADR_PASSING = textwrap.dedent("""\
 
     | Claim | Command | Expected exit |
     |-------|---------|---------------|
-    | This gate always passes | true | 0 |
+    | This gate always passes | {_py_exit(0)} | 0 |
     """)
 
 _ADR_NO_BLOCK = textwrap.dedent("""\
