@@ -168,7 +168,7 @@ def _validate_rank_input(payload: dict[str, object], known_ids: set[str]) -> dic
         severity = entry.get("severity")
         if not isinstance(adr_id, str) or adr_id not in known_ids:
             raise SystemExit(f"rankings entry id {adr_id!r} not in fetched candidate set")
-        if severity not in allowed_severity:
+        if not isinstance(severity, str) or severity not in allowed_severity:
             raise SystemExit(
                 f"rankings entry {adr_id} severity {severity!r} not in {sorted(allowed_severity)}"
             )

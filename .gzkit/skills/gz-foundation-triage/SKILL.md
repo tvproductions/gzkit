@@ -7,9 +7,9 @@ description: Rank the in-flight foundation backlog by priority — cross-referen
 category: adr-lifecycle
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-23
+last_reviewed: 2026-06-27
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.0.1"
 model: sonnet
 ---
 

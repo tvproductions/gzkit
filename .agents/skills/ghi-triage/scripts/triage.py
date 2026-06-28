@@ -363,7 +363,7 @@ def parse_rank_input(payload: object, known_numbers: set[int]) -> list[RankItem]
     """
     if not isinstance(payload, dict):
         raise RankInputError("--rank-input must be a JSON object")
-    rankings = payload.get("rankings")  # ty: ignore[invalid-argument-type]
+    rankings = payload.get("rankings")
     if not isinstance(rankings, list) or not rankings:
         raise RankInputError("--rank-input requires non-empty 'rankings' list")
     items: list[RankItem] = []
@@ -377,7 +377,7 @@ def parse_rank_input(payload: object, known_numbers: set[int]) -> list[RankItem]
                 f"rankings[{idx}] has forbidden field(s) {extra!r}; "
                 "schema accepts only 'number' and 'severity' (GHI #424)"
             )
-        number = entry.get("number")  # ty: ignore[invalid-argument-type]
+        number = entry.get("number")
         if not isinstance(number, int) or isinstance(number, bool):
             raise RankInputError(f"rankings[{idx}].number must be int")
         if number in seen:
@@ -387,8 +387,8 @@ def parse_rank_input(payload: object, known_numbers: set[int]) -> list[RankItem]
                 f"rankings[{idx}].number={number} not present in fetched issue set"
             )
         seen.add(number)
-        severity = entry.get("severity")  # ty: ignore[invalid-argument-type]
-        if severity not in SEVERITY_VALUES:
+        severity = entry.get("severity")
+        if not isinstance(severity, str) or severity not in SEVERITY_VALUES:
             raise RankInputError(f"rankings[{idx}].severity must be one of {SEVERITY_VALUES}")
         items.append(RankItem(number=number, severity=severity))
     return items

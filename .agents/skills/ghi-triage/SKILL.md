@@ -5,9 +5,9 @@ description: Triage every open GHI — read each body, classify severity, and pr
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-08
+last_reviewed: 2026-06-27
 metadata:
-  skill-version: "5.1.0"
+  skill-version: "5.1.1"
 model: sonnet
 ---
 
