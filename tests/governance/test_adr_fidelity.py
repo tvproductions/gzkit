@@ -21,10 +21,9 @@ def _py_exit(code: int) -> str:
 
     ``true``/``false`` are shell builtins, not executables, so the gate runner's
     ``subprocess.run(shlex.split(...), shell=False)`` cannot find them on Windows
-    (gzkit's primary platform, ADR-0.0.1) and returns ``observed=-1``. A quoted
-    ``python -c 'raise SystemExit(<code>)'`` exits deterministically on every
-    platform and survives the runner's POSIX ``shlex.split`` (cross-platform
-    test defect, ADR-0.0.1).
+    and returns ``observed=-1``. A quoted ``python -c 'raise SystemExit(<code>)'``
+    exits deterministically on every platform and survives the runner's POSIX
+    ``shlex.split``.
     """
     return f"{shlex.quote(sys.executable)} -c {shlex.quote(f'raise SystemExit({code})')}"
 
