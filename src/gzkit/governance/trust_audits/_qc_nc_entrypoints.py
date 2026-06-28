@@ -269,3 +269,18 @@ def _ep_enforcement_floor(records: list) -> int:
 
     result = run_meta_validator(registry=records, root=None)
     return result.facade_count + result.test_bug_count
+
+
+def _ep_theater_signature_scan(root: Path) -> list:
+    """NC entrypoint for theater-signature-scan: the analyzer must catch the planted facade.
+
+    Runs the production static analyzer against the planted ``src/gzkit/planted.py``
+    violation; a non-empty findings list = caught = PASS. If the detector is gutted, it
+    returns [] = FACADE.
+    """
+    from gzkit.governance.trust_audits.theater_signature_scan import (  # noqa: PLC0415
+        scan_source_for_signatures,
+    )
+
+    planted = root / "src" / "gzkit" / "planted.py"
+    return scan_source_for_signatures(planted, rel="src/gzkit/planted.py")

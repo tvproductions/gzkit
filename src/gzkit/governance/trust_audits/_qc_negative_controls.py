@@ -476,6 +476,21 @@ def _build_enforcement_floor() -> list:
     ]
 
 
+def _build_theater_signature_scan() -> Path:
+    """Violation: a content-named validator that reads mtime instead of content.
+
+    Plants the REAL facade shape (the repudiated ``rendition_freshness`` mtime
+    tautology), not a degenerate one — so PASS-on-violation means the analyzer
+    catches the actual pattern class, not a synthetic stand-in (GHI #657).
+    """
+    root = _mkroot("theater-sig")
+    _write(
+        root / "src" / "gzkit" / "planted.py",
+        "def verify_content_freshness(p):\n    return p.stat().st_mtime\n",
+    )
+    return root
+
+
 # ---------------------------------------------------------------------------
 # Claim registration table — (claim_id, fixture, production entrypoint)
 # ---------------------------------------------------------------------------
@@ -545,6 +560,11 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[str, Callable[[], Any], Callable[..., An
     ("fidelity-presence", _build_fidelity_presence, _ep._ep_fidelity_presence),
     ("waiver-ratchet", _build_waiver_ratchet, _ep._ep_waiver_ratchet),
     ("enforcement-floor", _build_enforcement_floor, _ep._ep_enforcement_floor),
+    (
+        "theater-signature-scan",
+        _build_theater_signature_scan,
+        _ep._ep_theater_signature_scan,
+    ),
 )
 
 # The known-claims set the @enforces decorator validates against at decoration time.

@@ -508,9 +508,9 @@ class TestProductionRegistryDiscovery(unittest.TestCase):
         result = run_meta_validator()  # no registry → production discovery
         self.assertGreaterEqual(
             result.verified_count,
-            37,
+            38,
             f"production discovery verified only {result.verified_count} claims "
-            "(expected >= 37) — the engine lift / @enforces registration regressed",
+            "(expected >= 38) — the engine lift / @enforces registration regressed",
         )
         self.assertEqual(result.facade_count, 0, "a production claim is a FACADE")
         self.assertEqual(result.test_bug_count, 0, "a production claim's fixture did not build")

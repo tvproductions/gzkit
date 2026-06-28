@@ -156,16 +156,19 @@ class TestQCStepBindingClassification(unittest.TestCase):
                 )
 
     @covers("REQ-0.0.73-01-03")
-    def test_theater_flags_empty_for_all_steps(self) -> None:
-        # OBPI-01 establishes the model; theater_flags are populated by OBPI-02
-        # negative-control runs. All flags must be empty at this stage.
+    def test_theater_flags_empty_at_build(self) -> None:
+        # theater_flags is the DECLARATIVE channel-1 layer (a step may carry a
+        # hand-declared signature); it is empty by default at build. Live
+        # auto-detection of theater in validator source is the analyzer's job
+        # (theater_signature_scan, GHI #657), wired into audit_qc_binding as a
+        # separate findings stream — NOT by mutating this field.
         from gzkit.qc_binding import build_qc_registry
 
         for step in build_qc_registry():
             self.assertEqual(
                 step.theater_flags,
                 [],
-                f"Step '{step.name}' theater_flags must be empty in OBPI-01",
+                f"Step '{step.name}' theater_flags must be empty at build",
             )
 
 

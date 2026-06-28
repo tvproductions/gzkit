@@ -125,18 +125,21 @@ def _check_theater_signatures(step: QCStep) -> list[ValidationError]:
 
 
 def audit_qc_binding(
-    project_root: Path,  # noqa: ARG001 — registry-protocol parity
+    project_root: Path,
     *,
     nc_registry: dict[str, EnforcementClaimRecord] | None = None,
 ) -> list[ValidationError]:
     """Behavioral QC-binding audit (ADR-0.0.73 / OBPI-0.0.73-02; engine lifted OBPI-0.0.74-16).
 
-    For every QC step in the registry:
-    - Runs theater-signature detection (via step.theater_flags)
-    - For ``bound`` steps, looks up the step's enforcement claim in the shared
-      ``@enforces`` registry and runs it via the shared ``_run_single_claim`` engine.
-      A bound step whose claim is missing, or whose un-forced negative control does not
-      fail (outcome != PASS), is theater.
+    Two channels (ADR-0.0.73):
+    - Channel 1 (static, GHI #657): the per-step ``theater_flags`` renderer PLUS a
+      live source scan of the trust_audits validator tree
+      (``theater_signature_scan``) for the three structurally-decidable theater
+      signatures. ``project_root`` anchors that scan.
+    - Channel 2 (behavioral): for ``bound`` steps, looks up the step's enforcement
+      claim in the shared ``@enforces`` registry and runs it via the shared
+      ``_run_single_claim`` engine. A bound step whose claim is missing, or whose
+      un-forced negative control does not fail (outcome != PASS), is theater.
 
     ``nc_registry`` overrides the discovered enforcement registry with an explicit
     ``claim_id -> EnforcementClaimRecord`` map (test-isolation path), preserving the
@@ -189,7 +192,39 @@ def audit_qc_binding(
                     f"Hollow step '{step.id}': {result.message}",
                 )
             )
+    errors.extend(_scan_validator_source(project_root))
     return errors
+
+
+def _scan_validator_source(project_root: Path) -> list[ValidationError]:
+    """Channel 1 (live): scan the trust_audits validator tree for theater signatures.
+
+    Fires the static analyzer (GHI #657) on real source — the part of channel 1 that
+    the inert ``theater_flags`` self-declaration model never could. Each finding is
+    rendered as three-part guardrail-feedback prose (what / why-forbidden / next step)
+    per ``.claude/rules/guardrail-feedback-prose.md``.
+    """
+    from gzkit.governance.trust_audits.theater_signature_scan import (  # noqa: PLC0415
+        scan_validator_tree,
+    )
+
+    audits_dir = project_root / "src" / "gzkit" / "governance" / "trust_audits"
+    if not audits_dir.is_dir():
+        return []
+    findings = scan_validator_tree(project_root, audits_dir.rglob("*.py"))
+    return [
+        ValidationError(
+            type="qc_binding",
+            artifact=f"{finding.file_path}:{finding.line_number}",
+            message=(
+                f"Theater signature '{finding.signature}' in {finding.function_name!r}: "
+                f"{finding.evidence}. ADR-0.0.73 forbids a QC validator that enacts a known "
+                "facade shape. Replace it with a check that fails for the right reason; "
+                "verify with `uv run gz validate --qc-binding`."
+            ),
+        )
+        for finding in findings
+    ]
 
 
 # ---------------------------------------------------------------------------
