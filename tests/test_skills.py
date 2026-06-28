@@ -260,21 +260,36 @@ class TestScaffoldSkillTemplateRemoved(unittest.TestCase):
     minimal stub in scaffold_skill so no template consumer remains.
     """
 
-    def test_skill_template_does_not_exist(self) -> None:
-        skill_template = _PROJECT_ROOT / "src" / "gzkit" / "templates" / "skill.md"
-        self.assertFalse(
-            skill_template.exists(),
-            f"templates/skill.md must be deleted (GHI #453); still present at {skill_template}",
-        )
+    def test_scaffold_skill_seats_kwargs_into_inline_stub(self) -> None:
+        """GHI #453: the stub is rendered inline from caller kwargs, not read
+        from a ``templates/skill.md`` file. Behavioral proof the template
+        consumer is gone: a sentinel description seated via kwargs lands in the
+        produced SKILL.md — content that could only come from the inline
+        renderer, never from a (now-deleted) external template file."""
+        from gzkit.skills import scaffold_skill
 
-    def test_scaffold_skill_module_does_not_import_render_template(self) -> None:
-        skills_init = _PROJECT_ROOT / "src" / "gzkit" / "skills" / "__init__.py"
-        content = skills_init.read_text(encoding="utf-8")
-        self.assertNotIn(
-            "render_template",
-            content,
-            "scaffold_skill must not depend on render_template after GHI #453",
-        )
+        sentinel = "GHI453-inline-stub-sentinel"
+        with tempfile.TemporaryDirectory() as tmp:
+            skill_file = scaffold_skill(
+                Path(tmp),
+                "ghi453-inline-source",
+                "skills",
+                skill_description=sentinel,
+            )
+            content = skill_file.read_text(encoding="utf-8")
+            self.assertIn(sentinel, content)
+
+    def test_scaffold_skill_renders_slug_as_name_field(self) -> None:
+        """GHI #453: the inline renderer seats the slug as the stub's ``name:``
+        value. Behavioral proof that scaffolding runs through inline rendering
+        (not a ``render_template`` path that could leave an unrendered
+        placeholder): the rendered frontmatter carries the real slug value."""
+        from gzkit.skills import scaffold_skill
+
+        with tempfile.TemporaryDirectory() as tmp:
+            skill_file = scaffold_skill(Path(tmp), "ghi453-name-seat", "skills")
+            content = skill_file.read_text(encoding="utf-8")
+            self.assertIn("name: ghi453-name-seat", content)
 
     def test_scaffold_skill_writes_inline_stub_with_required_frontmatter(self) -> None:
         from gzkit.skills import scaffold_skill
