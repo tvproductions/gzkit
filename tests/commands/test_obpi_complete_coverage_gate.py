@@ -36,6 +36,7 @@ from rich.console import Console
 from gzkit.commands.obpi_complete import obpi_complete_cmd
 from gzkit.event_evidence import EventAnchor
 from gzkit.traceability import covers
+from tests.commands.common import SilencedConsoleTestCase
 
 _BRIEF_TEMPLATE = """\
 ---
@@ -880,7 +881,7 @@ class TestObpiCompleteMultiReqOverrideAllWaived(_OverrideGateWireFixture):
         self.assertIn("REQ-9.9.9-99-02", waived_reqs)
 
 
-class TestEnforceUncoveredAcceptanceConfirmationOperatorVerbatim(unittest.TestCase):
+class TestEnforceUncoveredAcceptanceConfirmationOperatorVerbatim(SilencedConsoleTestCase):
     """Direct unit test for ``_enforce_uncovered_acceptance_confirmation`` (GHI #587).
 
     Asserts that the function, when invoked from a headless context with neither

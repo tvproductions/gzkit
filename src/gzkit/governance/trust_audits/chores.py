@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from gzkit.validate import ValidationError
@@ -52,7 +53,23 @@ def audit_chores_layout(project_root: Path) -> list[ValidationError]:
     waivers = _load_chores_layout_waivers(project_root)
 
     errors: list[ValidationError] = []
-    for path in sorted(project_root.rglob("*")):
+    files: list[Path] = []
+    for dirpath, dirnames, filenames in os.walk(project_root):
+        # Prune excluded directories in place so traversal never descends
+        # into dotfile-hidden or build/venv trees. A directory whose name
+        # starts with "." or is in the excluded segment set would have every
+        # file beneath it rejected by ``_is_excluded_chore_path`` (a dir name
+        # is always an ancestor segment for files below it), so pruning here
+        # cannot change which files reach the per-file filter — only how many
+        # are walked.
+        dirnames[:] = [
+            name
+            for name in dirnames
+            if not name.startswith(".") and name not in _CHORES_LAYOUT_EXCLUDED_SEGMENTS
+        ]
+        base = Path(dirpath)
+        files.extend(base / name for name in filenames)
+    for path in sorted(files):
         if not path.is_file():
             continue
         rel = path.relative_to(project_root)

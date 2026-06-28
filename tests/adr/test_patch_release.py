@@ -16,6 +16,8 @@ from unittest.mock import patch
 
 from rich.console import Console
 
+from tests.commands.common import SilencedConsoleTestCase
+
 _quiet_console = Console(file=StringIO())
 _PROJECT_ROOT = Path("/tmp/fake-project")
 
@@ -1538,7 +1540,7 @@ class TestPatchReleaseCmdManifest(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
-class TestDryRunNoManifest(unittest.TestCase):
+class TestDryRunNoManifest(SilencedConsoleTestCase):
     """Verify dry-run skips manifest and ledger writes.
 
     @covers REQ-0.0.15-04-03

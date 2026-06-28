@@ -27,6 +27,7 @@ from gzkit.commands.obpi_complete import (
     obpi_complete_cmd,
 )
 from gzkit.event_evidence import EventAnchor
+from tests.commands.common import SilencedConsoleTestCase
 
 
 def covers(target: str):  # noqa: D401
@@ -493,7 +494,7 @@ def _mock_ledger(obpi_id: str, parent_adr: str, *, completed: bool = False):
 
 
 @covers("OBPI-0.0.14-02")
-class TestObpiCompleteCmdBriefNotFound(unittest.TestCase):
+class TestObpiCompleteCmdBriefNotFound(SilencedConsoleTestCase):
     """Test that command exits 1 when brief file doesn't exist."""
 
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
@@ -526,7 +527,7 @@ class TestObpiCompleteCmdBriefNotFound(unittest.TestCase):
 
 
 @covers("OBPI-0.0.14-02")
-class TestObpiCompleteCmdAlreadyCompleted(unittest.TestCase):
+class TestObpiCompleteCmdAlreadyCompleted(SilencedConsoleTestCase):
     """Test that command exits 1 when brief is already Completed."""
 
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
@@ -562,7 +563,7 @@ class TestObpiCompleteCmdAlreadyCompleted(unittest.TestCase):
 
 
 @covers("OBPI-0.0.14-02")
-class TestObpiCompleteCmdDryRun(unittest.TestCase):
+class TestObpiCompleteCmdDryRun(SilencedConsoleTestCase):
     """Test that --dry-run produces output without writing files."""
 
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
@@ -681,7 +682,7 @@ class TestObpiCompleteCmdJsonOutput(unittest.TestCase):
 
 
 @covers("OBPI-0.0.14-02")
-class TestObpiCompleteCmdHappyPath(unittest.TestCase):
+class TestObpiCompleteCmdHappyPath(SilencedConsoleTestCase):
     """Test full happy path with mocked dependencies.
 
     The authenticity gate (GHI #290) is patched to a no-op here because this
@@ -778,7 +779,7 @@ class TestObpiCompleteCmdHappyPath(unittest.TestCase):
 
 
 @covers("OBPI-0.0.14-02")
-class TestObpiCompleteCmdRollback(unittest.TestCase):
+class TestObpiCompleteCmdRollback(SilencedConsoleTestCase):
     """Test rollback when main ledger append fails.
 
     The receipt-binding gate (ADR-0.0.24-02) is patched to a no-op so the
@@ -857,7 +858,7 @@ class TestObpiCompleteCmdRollback(unittest.TestCase):
 
 
 @covers("OBPI-0.0.14-02")
-class TestObpiCompleteOperatorVerbatimAttestation(unittest.TestCase):
+class TestObpiCompleteOperatorVerbatimAttestation(SilencedConsoleTestCase):
     """gz obpi complete records the operator's verbatim attestation.
 
     The prior GHI #290 TTY 'ATTEST' authenticity gate has been removed per
@@ -1441,7 +1442,7 @@ def _mock_ledger_lite_feature(obpi_id: str, parent_adr: str):
 
 
 @covers("OBPI-0.0.22-04")
-class TestObpiCompleteSecuritySensitivityGate(unittest.TestCase):
+class TestObpiCompleteSecuritySensitivityGate(SilencedConsoleTestCase):
     """REQ-0.0.22-04-05 — sensitivity:security forces the human-attestation
     requirement.
 

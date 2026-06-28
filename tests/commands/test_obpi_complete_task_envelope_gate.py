@@ -19,6 +19,7 @@ from pathlib import Path
 import yaml
 
 from gzkit.commands.obpi_complete import _enforce_task_envelope_gate
+from tests.commands.common import SilencedConsoleTestCase
 
 _OBPI_ID = "OBPI-0.0.64-04"
 _BASE_FM = {
@@ -64,7 +65,7 @@ def _no_none(fm: dict) -> dict:
     return {k: v for k, v in fm.items() if v is not None}
 
 
-class TestTaskEnvelopeChokepointGate(unittest.TestCase):
+class TestTaskEnvelopeChokepointGate(SilencedConsoleTestCase):
     """`_enforce_task_envelope_gate` fail-closes on Sig(b) residue, passes when exempt."""
 
     def test_gate_blocks_seq01_only_without_req_atomic(self) -> None:

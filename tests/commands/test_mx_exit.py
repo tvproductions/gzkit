@@ -20,6 +20,7 @@ from tempfile import TemporaryDirectory
 
 from gzkit.mx import marker
 from gzkit.traceability import covers
+from tests.commands.common import SilencedConsoleTestCase
 
 
 def _mk_root(tmp: str) -> Path:
@@ -68,7 +69,7 @@ def _red_guard(root: Path) -> int:  # noqa: ARG001
     return 1
 
 
-class TestMxExitFullStrengthRerun(unittest.TestCase):
+class TestMxExitFullStrengthRerun(SilencedConsoleTestCase):
     """REQ-0.0.74-05-01: guards re-run at full strength (marker absent during run)."""
 
     @covers("REQ-0.0.74-05-01")
@@ -110,7 +111,7 @@ class TestMxExitFullStrengthRerun(unittest.TestCase):
             self.assertEqual(received[0], root)
 
 
-class TestMxExitHardRefuseOnRed(unittest.TestCase):
+class TestMxExitHardRefuseOnRed(SilencedConsoleTestCase):
     """REQ-0.0.74-05-02: any guard red → exit 3, marker stays, no mx_session_closed."""
 
     @covers("REQ-0.0.74-05-02")
@@ -147,7 +148,7 @@ class TestMxExitHardRefuseOnRed(unittest.TestCase):
             self.assertEqual(events, [])
 
 
-class TestMxExitGreenPath(unittest.TestCase):
+class TestMxExitGreenPath(SilencedConsoleTestCase):
     """REQ-0.0.74-05-03: all-green + attestor → write mx_session_closed, remove marker."""
 
     @covers("REQ-0.0.74-05-03")
@@ -194,7 +195,7 @@ class TestMxExitGreenPath(unittest.TestCase):
             self.assertEqual(ctx.exception.code, 1)
 
 
-class TestMxExitLiveNegativeControl(unittest.TestCase):
+class TestMxExitLiveNegativeControl(SilencedConsoleTestCase):
     """REQ-0.0.74-05-06: known violation at exit time IS still caught (not a stub)."""
 
     @covers("REQ-0.0.74-05-06")

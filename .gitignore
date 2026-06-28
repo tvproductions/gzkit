@@ -66,3 +66,6 @@ site/
 
 # Composer candidate intermediates (regenerable; committed rendition is the artifact)
 .gzkit/renditions/**/*.candidate.md
+
+# Test-health profiler runtime output (regenerated each run; CHORE-LOG.md is the tracked evidence)
+.gzkit/chores/*/proofs/health-report.json

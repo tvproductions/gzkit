@@ -23,6 +23,7 @@ from gzkit.commands.plan_audit_cmd import (
     _scan_sibling_adr_collisions,
     plan_audit_cmd,
 )
+from tests.commands.common import SilencedConsoleTestCase
 
 
 class TestDeriveAdrId(unittest.TestCase):
@@ -56,7 +57,7 @@ class TestDeriveAdrId(unittest.TestCase):
         )
 
 
-class TestCanonicalizeObpiId(unittest.TestCase):
+class TestCanonicalizeObpiId(SilencedConsoleTestCase):
     """@covers GHI #187 — receipt writer must canonicalize short-form input."""
 
     def test_canonicalization_falls_back_to_input_when_ungraphable(self) -> None:
@@ -418,7 +419,7 @@ class TestScanSiblingAdrCollisions(unittest.TestCase):
             self.assertEqual(collisions, [])
 
 
-class TestPlanAuditCmdScopeCollision(unittest.TestCase):
+class TestPlanAuditCmdScopeCollision(SilencedConsoleTestCase):
     """@covers GHI #152 — receipt records scope collisions, verdict stays PASS (advisory)."""
 
     def test_collision_recorded_without_failing(self) -> None:
@@ -506,7 +507,7 @@ class TestPathWithinAllowed(unittest.TestCase):
         self.assertTrue(_path_within_allowed("other/path.py", ["src/gzkit/"]))
 
 
-class TestPlanAuditCmdPass(unittest.TestCase):
+class TestPlanAuditCmdPass(SilencedConsoleTestCase):
     """Test plan_audit_cmd end-to-end PASS scenario."""
 
     def test_pass_writes_receipt_and_exits_0(self) -> None:
@@ -547,7 +548,7 @@ class TestPlanAuditCmdPass(unittest.TestCase):
             self.assertEqual(receipt["gaps_found"], 0)
 
 
-class TestPlanAuditCmdFail(unittest.TestCase):
+class TestPlanAuditCmdFail(SilencedConsoleTestCase):
     """Test plan_audit_cmd end-to-end FAIL scenario."""
 
     def test_fail_exits_1_when_no_plan(self) -> None:
@@ -736,7 +737,7 @@ class TestAllowedPathResolves(unittest.TestCase):
             self.assertTrue(_allowed_path_resolves(root, "--skill"))
 
 
-class TestPlanAuditCmdBriefPathGaps(unittest.TestCase):
+class TestPlanAuditCmdBriefPathGaps(SilencedConsoleTestCase):
     """@covers GHI #393 — plan-audit FAILs on stale or vendor-mirror allowed paths."""
 
     def test_fails_on_nonexistent_allowed_path(self) -> None:
@@ -824,7 +825,7 @@ class TestPlanAuditCmdBriefPathGaps(unittest.TestCase):
             )
 
 
-class TestPlanCreatesPathsSuppression(unittest.TestCase):
+class TestPlanCreatesPathsSuppression(SilencedConsoleTestCase):
     """@covers GHI #403 — net-new paths declared in the plan are not stale-path defects."""
 
     def test_extracts_paths_from_create_marker(self) -> None:

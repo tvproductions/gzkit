@@ -21,7 +21,7 @@ from tempfile import TemporaryDirectory
 from gzkit.mx import disposition, levels, marker
 from gzkit.mx.marker import Marker
 from gzkit.traceability import covers
-from tests.commands.common import CliRunner, _quick_init
+from tests.commands.common import CliRunner, SilencedConsoleTestCase, _quick_init
 
 _BASE = datetime(2026, 1, 1, 0, 0, 0, tzinfo=UTC)
 
@@ -130,7 +130,7 @@ class TestTtlMaxOpen(unittest.TestCase):
         self.assertFalse(result.grounds)
 
 
-class TestNormalReleaseBlocked(unittest.TestCase):
+class TestNormalReleaseBlocked(SilencedConsoleTestCase):
     """REQ-0.0.74-14-02: no normal release while the hangar is open."""
 
     @covers("REQ-0.0.74-14-02")

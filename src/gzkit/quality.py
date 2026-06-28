@@ -345,7 +345,12 @@ def run_typecheck(project_root: Path) -> QualityResult:
 
 
 def run_tests(project_root: Path) -> QualityResult:
-    """Run the unittest test suite.
+    """Run the unittest test suite via the parallel runner.
+
+    Uses ``unittest-parallel`` (the same accelerator the pre-commit hook runs,
+    GHI #512) so dev-loop, git-sync, and patch-release *verification* run across
+    cores. The serial canonical/ARB attestation path (``gz arb step -- uv run -m
+    unittest -q``) is a separate command and is intentionally left serial.
 
     Args:
         project_root: Project root directory.
@@ -354,7 +359,10 @@ def run_tests(project_root: Path) -> QualityResult:
         QualityResult from testing.
 
     """
-    return run_command("uv run -m unittest discover tests", cwd=project_root)
+    return run_command(
+        "uv run --with unittest-parallel unittest-parallel -t . -s tests",
+        cwd=project_root,
+    )
 
 
 def run_behave(project_root: Path, tags: list[str] | None = None) -> QualityResult:

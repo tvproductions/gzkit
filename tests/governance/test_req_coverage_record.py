@@ -12,6 +12,7 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from gzkit.traceability import covers
+from tests.commands.common import SilencedConsoleTestCase
 
 
 class TestReqEntityTaxonomyKind(unittest.TestCase):
@@ -450,7 +451,7 @@ class TestComputeThreeChannelCoverage(unittest.TestCase):
         self.assertEqual(entry.proof_status, "unproven-fence")
 
 
-class TestBypassFlagLedgerEvent(unittest.TestCase):
+class TestBypassFlagLedgerEvent(SilencedConsoleTestCase):
     """REQ-0.0.59-03-04 (BEHAVIOR): --bypass-req-kind-discipline-once emits bypass_used event."""
 
     @covers("REQ-0.0.59-03-04")

@@ -14,6 +14,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from gzkit.traceability import covers
+from tests.commands.common import SilencedConsoleTestCase
 
 
 class TestGzCheckStepWiring(unittest.TestCase):
@@ -94,7 +95,7 @@ class TestGzCheckStepWiring(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0, "FACADE outcome must produce non-zero returncode")
 
 
-class TestPrePushGuardWiring(unittest.TestCase):
+class TestPrePushGuardWiring(SilencedConsoleTestCase):
     """REQ-0.0.74-19-02: enforcement floor wired into the pre-push guard."""
 
     @covers("REQ-0.0.74-19-02")

@@ -33,6 +33,7 @@ from gzkit.handoff_validation import (
     write_degenerate_handoff,
 )
 from gzkit.lock_manager import lock_path, reap_expired_locks, write_lock
+from tests.commands.common import SilencedConsoleTestCase
 from tests.test_obpi_lock_cmd import _make_lock, _mock_config, _setup_project
 
 
@@ -108,7 +109,7 @@ class TestAbandonCategoryEnum(unittest.TestCase):
 
 
 @covers("OBPI-0.0.41-02")
-class TestDegenerateHandoffWriter(unittest.TestCase):
+class TestDegenerateHandoffWriter(SilencedConsoleTestCase):
     """REQ-05: --abandon writes a degenerate handoff under .gzkit/handoffs/."""
 
     @covers("REQ-0.0.41-02-05")

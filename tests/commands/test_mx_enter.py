@@ -12,13 +12,13 @@ exit 0 + artifact_edited ledger event — verified at Stage 3, not here.
 from __future__ import annotations
 
 import json
-import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from gzkit import lock_manager
 from gzkit.mx import marker
 from gzkit.traceability import covers
+from tests.commands.common import SilencedConsoleTestCase
 
 
 def _mk_root(tmp: str) -> Path:
@@ -45,7 +45,7 @@ def _read_ledger_events(root: Path, event_type: str) -> list[dict]:
     return events
 
 
-class TestMxEnterSetsMarkerAndEvent(unittest.TestCase):
+class TestMxEnterSetsMarkerAndEvent(SilencedConsoleTestCase):
     """REQ-0.0.74-04-01: enter sets marker, writes mx_session_opened, captures scope."""
 
     @covers("REQ-0.0.74-04-01")
@@ -108,7 +108,7 @@ class TestMxEnterSetsMarkerAndEvent(unittest.TestCase):
             self.assertEqual(events[0].get("inspection_scope"), scope)
 
 
-class TestMxEnterRequiresAttestor(unittest.TestCase):
+class TestMxEnterRequiresAttestor(SilencedConsoleTestCase):
     """REQ-0.0.74-04-02: no agent-autonomous entry; operator-supplied attestor required."""
 
     @covers("REQ-0.0.74-04-02")
@@ -132,7 +132,7 @@ class TestMxEnterRequiresAttestor(unittest.TestCase):
             self.assertFalse(marker.is_active(root))
 
 
-class TestMxEnterFailsClosedOnEmpty(unittest.TestCase):
+class TestMxEnterFailsClosedOnEmpty(SilencedConsoleTestCase):
     """REQ-0.0.74-04-03: empty reason or attestor → exit 1, no marker, no ledger event."""
 
     @covers("REQ-0.0.74-04-03")
@@ -193,7 +193,7 @@ class TestMxEnterFailsClosedOnEmpty(unittest.TestCase):
             self.assertEqual(ctx.exception.code, 1)
 
 
-class TestMxEnterUsesLockManagerRail(unittest.TestCase):
+class TestMxEnterUsesLockManagerRail(SilencedConsoleTestCase):
     """REQ-0.0.74-04-04: enter acquires session through lock_manager/token rail."""
 
     @covers("REQ-0.0.74-04-04")

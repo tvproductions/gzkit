@@ -12,6 +12,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.traceability import covers
+from tests.commands.common import SilencedConsoleTestCase
 
 
 def _make_adr_package(project_root: Path, semver: str, *, with_boundary_invariants: bool) -> None:
@@ -150,7 +151,7 @@ class TestFenceChannelNoProjectRoot(unittest.TestCase):
         )
 
 
-class TestCoversCmdPassesProjectRoot(unittest.TestCase):
+class TestCoversCmdPassesProjectRoot(SilencedConsoleTestCase):
     """Regression: the `gz covers` CLI MUST pass project_root to the three-channel
     enricher, or STRUCTURAL-FENCE REQs resolve to unproven-fence at the CLI layer
     even when the parent ADR carries a ## Boundary Invariants anchor.

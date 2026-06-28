@@ -2,11 +2,39 @@ import io
 import os
 import subprocess
 import tempfile
+import unittest
 from collections.abc import Iterator
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from dataclasses import dataclass
 from pathlib import Path
 from unittest.mock import patch
+
+from gzkit.commands.common import console as _cli_console
+
+
+class SilencedConsoleTestCase(unittest.TestCase):
+    """TestCase base that mutes CLI handler output for the test's duration.
+
+    Command handlers print UX status two ways: through the shared
+    ``gzkit.commands.common.console`` (Rich) and via plain ``print()`` /
+    ``json.dumps`` (e.g. ``--json`` dumps, hook output). Invoked directly — not
+    via ``CliRunner``, which captures — that legitimate output leaks to stdout as
+    test noise. This base both sets ``console.quiet = True`` AND redirects stdout
+    to a throwaway buffer per test (restored on cleanup), so handler-direct tests
+    produce dots only. Use only for tests that do NOT assert on stdout/console
+    output — their output is incidental, so no assertion is weakened.
+    """
+
+    def setUp(self) -> None:
+        super().setUp()
+        patcher = patch.object(_cli_console, "quiet", True)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        # console.quiet only mutes the Rich console; plain print()/json.dumps
+        # output (JSON dumps, hook lines) needs a stdout redirect too.
+        stdout_ctx = redirect_stdout(io.StringIO())
+        stdout_ctx.__enter__()
+        self.addCleanup(stdout_ctx.__exit__, None, None, None)
 
 
 @dataclass

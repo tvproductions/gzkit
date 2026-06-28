@@ -1,15 +1,30 @@
 """Test health profiler for the test-health-audit chore.
 
-Runs the full test suite, profiles each test, and enforces thresholds:
-- No single test >3s
+Profiles the suite and enforces three thresholds:
 - Suite wall clock <60s
+- No single test >3s
 - No stdout noise (non-dot, non-framework output)
+
+These thresholds want *different execution modes*, so the profiler runs the
+suite twice:
+
+- **Wall clock** is measured in **parallel** (``unittest-parallel`` — the same
+  accelerator the pre-commit hook uses, GHI #512). That is how the dev loop
+  actually runs the suite; gating a serial wall clock nobody waits for was the
+  defect this profiler carried as the suite grew past ~6k tests.
+- **Per-test timing and stdout noise** are measured in a **serial, in-process**
+  pass. A >3s test is a design smell only in isolation — under parallel
+  contention a clean 3.8s test reads as 10s+, so the per-test gate must be
+  serial to stay meaningful. Stdout noise is likewise captured in-process.
+
+The serial canonical/ARB attestation path is unchanged (see GHI #512 Non-goals).
 
 Exit code 0 = healthy, 1 = violations found.
 """
 
 import io
 import json
+import subprocess
 import sys
 import time
 import unittest
@@ -18,14 +33,46 @@ from pathlib import Path
 
 SUITE_MAX_SECONDS = 60
 TEST_MAX_SECONDS = 3.0
-PROOFS_DIR = Path("ops/chores/test-isolation-compliance/proofs")
+# Canonical project-scoped chores root (ADR-0.0.21 Decision #9). The legacy
+# `ops/chores/` root is forbidden and fail-closed by `gz validate --chores-layout`.
+PROOFS_DIR = Path(".gzkit/chores/test-isolation-compliance/proofs")
+
+# Irreducibly-E2E tests, exempt from the per-test >3s budget. These MUST spawn
+# real subprocesses to verify real-system behavior and cannot be made <3s
+# without faking their result. This is a *categorization* (named, rationale'd),
+# NOT a threshold relaxation — exempt tests are still reported, never hidden.
+# Keep this set minimal; prefer fixing a slow test over exempting it. Match is
+# substring against the full ``str(test)`` id.
+KNOWN_E2E_TESTS = {
+    # Verifies ADR-0.0.73 passes its OWN fidelity gate by running its 8 real
+    # `gz` assertion subprocesses (run_fidelity_gate). The only <3s path is
+    # mocking the gate to all-pass, which makes Boundary Invariant #5 a
+    # tautology — the green-by-construction facade ADR-0.0.73 exists to kill.
+    # REQ-0.0.73-06-03 [BEHAVIOR]; proof stays the @covers unit test.
+    "tests.governance.test_qc_binding_self_check.TestQCBindingSelfCheck"
+    ".test_fidelity_gate_passes_now_recovery_is_complete",
+}
 
 # Lines matching these patterns are expected test framework output, not noise.
 _FRAMEWORK_PREFIXES = ("Ran ", "OK", "FAILED", "ERROR")
 
+# The parallel runner the dev loop uses for wall-clock truth (pre-commit parity).
+_PARALLEL_CMD = [
+    "uv",
+    "run",
+    "--with",
+    "unittest-parallel",
+    "unittest-parallel",
+    "-t",
+    ".",
+    "-s",
+    "tests",
+    "-q",
+]
+
 
 class _TimingResult(unittest.TestResult):
-    """Collect per-test timing and capture stdout noise."""
+    """Collect per-test timing during a serial, isolated run."""
 
     def __init__(self) -> None:
         super().__init__()
@@ -41,25 +88,31 @@ class _TimingResult(unittest.TestResult):
         super().stopTest(test)
 
 
-def _run_profiled() -> dict:
-    """Run the suite and return a health report dict."""
+def _measure_parallel_wallclock() -> tuple[float, int]:
+    """Run the suite via the parallel runner; return (wall_seconds, returncode)."""
+    wall_start = time.perf_counter()
+    proc = subprocess.run(_PARALLEL_CMD, capture_output=True, text=True)
+    return time.perf_counter() - wall_start, proc.returncode
+
+
+def _run_serial_instrumented() -> tuple[_TimingResult, str]:
+    """Run the suite serially in-process for per-test timing + stdout capture."""
     loader = unittest.TestLoader()
     suite = loader.discover("tests", top_level_dir=".")
 
-    # Capture stdout to detect noise
     original_stdout = sys.stdout
     captured = io.StringIO()
     sys.stdout = captured
+    try:
+        result = _TimingResult()
+        suite.run(result)
+    finally:
+        sys.stdout = original_stdout
+    return result, captured.getvalue()
 
-    result = _TimingResult()
-    wall_start = time.perf_counter()
-    suite.run(result)
-    wall_elapsed = time.perf_counter() - wall_start
 
-    sys.stdout = original_stdout
-    raw_output = captured.getvalue()
-
-    # Classify noise: anything that isn't dots, blank lines, or framework summary
+def _classify_noise(raw_output: str) -> list[str]:
+    """Return output lines that are neither dots, blanks, nor framework summary."""
     noise_lines = []
     for line in raw_output.splitlines():
         stripped = line.strip()
@@ -72,23 +125,43 @@ def _run_profiled() -> dict:
         if stripped.startswith("-----"):
             continue
         noise_lines.append(stripped)
+    return noise_lines
 
-    # Build per-module aggregates
+
+def _is_exempt_e2e(test_id: str) -> bool:
+    """Return True if the test is a named irreducibly-E2E exemption."""
+    return any(entry in test_id for entry in KNOWN_E2E_TESTS)
+
+
+def _run_profiled() -> dict:
+    """Run both passes and return a health report dict."""
+    wall_elapsed, parallel_rc = _measure_parallel_wallclock()
+    result, raw_output = _run_serial_instrumented()
+
+    noise_lines = _classify_noise(raw_output)
+
+    # Per-module aggregates from the serial (isolated) timings
     by_module: dict[str, dict] = defaultdict(lambda: {"count": 0, "total": 0.0})
     for elapsed, name in result.timings:
         mod = name.split("(")[1].rstrip(")").rsplit(".", 1)[0] if "(" in name else "unknown"
         by_module[mod]["count"] += 1
         by_module[mod]["total"] += elapsed
-
-    # Sort by total descending
     sorted_modules = sorted(by_module.items(), key=lambda x: -x[1]["total"])
 
-    # Find violations
-    slow_tests = [(e, n) for e, n in result.timings if e > TEST_MAX_SECONDS]
+    over_budget = [(e, n) for e, n in result.timings if e > TEST_MAX_SECONDS]
+    slow_tests = [(e, n) for e, n in over_budget if not _is_exempt_e2e(n)]
+    exempt_e2e = [(e, n) for e, n in over_budget if _is_exempt_e2e(n)]
     result.timings.sort(reverse=True)
     top_10 = [(round(e, 3), n) for e, n in result.timings[:10]]
 
     violations = []
+    if parallel_rc != 0:
+        violations.append(f"Suite did not pass under parallel runner (exit {parallel_rc})")
+    if result.failures or result.errors:
+        violations.append(
+            f"Suite did not pass serially ({len(result.failures)} failures, "
+            f"{len(result.errors)} errors)"
+        )
     if wall_elapsed > SUITE_MAX_SECONDS:
         violations.append(f"Suite took {wall_elapsed:.1f}s (threshold: {SUITE_MAX_SECONDS}s)")
     for elapsed, name in slow_tests:
@@ -111,6 +184,7 @@ def _run_profiled() -> dict:
             for mod, info in sorted_modules[:10]
         ],
         "slow_tests_over_threshold": [{"seconds": round(e, 2), "test": n} for e, n in slow_tests],
+        "exempt_e2e_over_threshold": [{"seconds": round(e, 2), "test": n} for e, n in exempt_e2e],
         "noise_line_count": len(noise_lines),
         "noise_sample": noise_lines[:10],
         "violations": violations,
@@ -142,6 +216,12 @@ def main() -> int:
         name = mod["module"]
         print(f"  {mod['total_seconds']:5.1f}s  {mod['tests']:3d} tests  {avg:5.1f}ms/test  {name}")
     print()
+
+    if report["exempt_e2e_over_threshold"]:
+        print("Exempt E2E tests (>3s, allowlisted — not gated, see KNOWN_E2E_TESTS):")
+        for item in report["exempt_e2e_over_threshold"]:
+            print(f"  {item['seconds']:6.2f}s  {item['test']}")
+        print()
 
     if report["noise_line_count"] > 0:
         print(f"Stdout noise ({report['noise_line_count']} lines):")

@@ -12,6 +12,7 @@ from unittest.mock import MagicMock, patch
 from rich.console import Console
 
 from gzkit.traceability import covers
+from tests.commands.common import SilencedConsoleTestCase
 
 
 def _obpi_scope(target: str):  # noqa: D401
@@ -64,7 +65,7 @@ def _mock_ledger(
 
 
 @_obpi_scope("OBPI-0.0.71-02")
-class TestObpiRepudiateCmdValidRepudiation(unittest.TestCase):
+class TestObpiRepudiateCmdValidRepudiation(SilencedConsoleTestCase):
     """REQ-0.0.71-02-01: Valid cause/reason/attestor emits exactly one event."""
 
     @covers("REQ-0.0.71-02-01")
@@ -106,7 +107,7 @@ class TestObpiRepudiateCmdValidRepudiation(unittest.TestCase):
 
 
 @_obpi_scope("OBPI-0.0.71-02")
-class TestObpiRepudiateCmdEmptyAttestor(unittest.TestCase):
+class TestObpiRepudiateCmdEmptyAttestor(SilencedConsoleTestCase):
     """REQ-0.0.71-02-02: Empty attestor exits 1 with no ledger write."""
 
     @covers("REQ-0.0.71-02-02")
@@ -140,7 +141,7 @@ class TestObpiRepudiateCmdEmptyAttestor(unittest.TestCase):
 
 
 @_obpi_scope("OBPI-0.0.71-02")
-class TestObpiRepudiateCmdEmptyReason(unittest.TestCase):
+class TestObpiRepudiateCmdEmptyReason(SilencedConsoleTestCase):
     """REQ-0.0.71-02-03: Empty reason exits 1 with no ledger write."""
 
     @covers("REQ-0.0.71-02-03")

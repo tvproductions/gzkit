@@ -17,6 +17,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from gzkit.traceability import covers
+from tests.commands.common import SilencedConsoleTestCase
 
 
 def _mk_root(tmp: str) -> Path:
@@ -231,7 +232,7 @@ class TestRender(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # REQ-06-03: at exit, the log is rendered for review BEFORE the close signature.
 # ---------------------------------------------------------------------------
-class TestExitRendersLogBeforeSigning(unittest.TestCase):
+class TestExitRendersLogBeforeSigning(SilencedConsoleTestCase):
     @covers("REQ-0.0.74-06-03")
     def test_log_rendered_before_mx_session_closed_written(self) -> None:
         from unittest.mock import patch

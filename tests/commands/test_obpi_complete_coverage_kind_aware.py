@@ -22,6 +22,7 @@ from pathlib import Path
 
 from gzkit.commands.obpi_complete import _enforce_req_coverage_gate
 from gzkit.governance.req_coverage import parse_brief_req_kinds, parse_brief_reqs
+from tests.commands.common import SilencedConsoleTestCase
 
 _BRIEF = """\
 ---
@@ -56,7 +57,7 @@ def _write_brief(root: Path, criteria: str) -> Path:
     return brief
 
 
-class TestCoverageGateKindAware(unittest.TestCase):
+class TestCoverageGateKindAware(SilencedConsoleTestCase):
     """ADR-0.0.59 kind discipline applied to the ADR-0.0.25 completion gate."""
 
     def test_parse_brief_req_kinds_reads_inline_tags(self) -> None:
