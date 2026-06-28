@@ -50,7 +50,7 @@ gz obpi lock list --json
       "obpi_id": "OBPI-0.1.0-01",
       "agent": "claude-code",
       "claimed_at": "2026-04-05T14:30:00Z",
-      "ttl_minutes": 120
+      "ttl_minutes": 1440
     }
   ],
   "reaped": [],

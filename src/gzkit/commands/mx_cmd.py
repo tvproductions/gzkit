@@ -29,9 +29,10 @@ from gzkit.mx.marker import Marker
 # Lock identity on the token rail — singleton key for the MX session.
 _MX_LOCK_KEY = "mx-session"
 
-# Default TTL matches OBPI lock TTL (not MX-specific — the marker is the real
-# session truth, not the lock; the lock serializes concurrent entry only).
-_DEFAULT_TTL_MINUTES = 120
+# Session-lock TTL tracks the canonical OBPI lock TTL via the shared constant (the
+# marker is the real session truth, not the lock; the lock serializes concurrent
+# entry only). Sharing the constant keeps the two from drifting apart (GHI #604).
+_DEFAULT_TTL_MINUTES = lock_manager.DEFAULT_LOCK_TTL_MINUTES
 
 # Ledger path relative to project root (parallel to marker.py's _LEDGER_RELPATH).
 _LEDGER_RELPATH = (".gzkit", "ledger.jsonl")

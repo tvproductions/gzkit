@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from gzkit.commands.common import console, get_project_root
+from gzkit.lock_manager import DEFAULT_LOCK_TTL_MINUTES
 from gzkit.pipeline_runtime import (
     find_stale_pipeline_markers,
     load_pipeline_json,
@@ -48,7 +49,7 @@ def _find_expired_locks(locks_dir: Path) -> list[tuple[Path, str, float]]:
             continue
         obpi_id = str(lock.get("obpi_id") or "unknown")
         claimed_at = str(lock.get("claimed_at") or "")
-        ttl_minutes = int(lock.get("ttl_minutes") or 120)
+        ttl_minutes = int(lock.get("ttl_minutes") or DEFAULT_LOCK_TTL_MINUTES)
         if not claimed_at:
             expired.append((lock_path, obpi_id, 0))
             continue

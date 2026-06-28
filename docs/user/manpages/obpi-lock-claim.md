@@ -14,7 +14,7 @@ gz obpi lock claim OBPI-X.Y.Z-NN [--ttl MINUTES] [--agent NAME]
 | Argument | Description |
 |----------|-------------|
 | `OBPI-X.Y.Z-NN` | OBPI identifier to lock |
-| `--ttl MINUTES` | Lock time-to-live in minutes (default: 120) |
+| `--ttl MINUTES` | Lock time-to-live in minutes (default: 1440 = 24h, token-block canon) |
 | `--agent NAME` | Agent identity (default: from environment) |
 | `--json` | Machine-readable JSON output |
 

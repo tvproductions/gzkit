@@ -21,6 +21,12 @@ if TYPE_CHECKING:
     from gzkit.ledger import LedgerEvent
 
 
+# Canonical default lock TTL: 24 hours (token-block-discipline.md § Sub-Invariant 4).
+# Single source of truth for the CLI claim default, the preflight expiry fallback, and
+# the MX session lock, so the value cannot drift between sites (GHI #604).
+DEFAULT_LOCK_TTL_MINUTES = 24 * 60
+
+
 class _LedgerSink(Protocol):
     """Structural type for the reap event sink — anything with ``append``.
 

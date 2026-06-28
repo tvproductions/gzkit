@@ -19,6 +19,7 @@ from gzkit.cli.helpers import (
     build_epilog,
 )
 from gzkit.cli.parser_handler_manifest import _lazy
+from gzkit.lock_manager import DEFAULT_LOCK_TTL_MINUTES
 
 _ADR_TYPE_NAMES = {"foundation", "feature", "pool"}
 
@@ -1399,8 +1400,8 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         "--ttl",
         dest="ttl_minutes",
         type=int,
-        default=120,
-        help="Lock TTL in minutes (default: 120)",
+        default=DEFAULT_LOCK_TTL_MINUTES,
+        help="Lock TTL in minutes (default: 1440)",
     )
     p_lock_claim.add_argument(
         "--agent", dest="agent", default=None, help="Override auto-detected agent identity"
