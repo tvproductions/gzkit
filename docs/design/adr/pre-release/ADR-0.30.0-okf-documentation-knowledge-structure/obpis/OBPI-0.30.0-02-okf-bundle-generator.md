@@ -3,7 +3,18 @@ id: OBPI-0.30.0-02-okf-bundle-generator
 parent: ADR-0.30.0-okf-documentation-knowledge-structure
 item: 2
 lane: heavy
-status: Draft
+status: Completed
+# req_atomic — each REQ is one indivisible unit of labor with no sub-REQ
+# subdivision: all four REQs (REQ-01 emit index+concept docs, REQ-02
+# progressive-disclosure links, REQ-03 source immutability, REQ-04 idempotency)
+# are satisfied by the single `generate_bundle` function authored as one
+# coherent TDD change and proven by one test module. None subdivided into
+# seq=02+; the pipeline-minted seq=01-per-REQ buckets are the true labor shape.
+req_atomic:
+  - REQ-0.30.0-02-01
+  - REQ-0.30.0-02-02
+  - REQ-0.30.0-02-03
+  - REQ-0.30.0-02-04
 ---
 
 # OBPI-0.30.0-02-okf-bundle-generator: Generate an OKF-conformant knowledge bundle (root `index.md`, concept docs, directory `index.md` progressive disclosure, markdown-link edges) over the tracer slice; source docs preserved canonical.
@@ -13,7 +24,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.30.0-okf-documentation-knowledge-structure/ADR-0.30.0-okf-documentation-knowledge-structure.md`
 - **Checklist Item:** #2 — "OKF bundle generator: produce a root index.md plus concept docs over the tracer slice (state doctrine, trust doctrine, agent-contract rationale, active campaign reference), with directory index.md progressive disclosure and markdown-link edges; source docs preserved canonical."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -127,8 +138,8 @@ uv run -m unittest tests.knowledge.test_bundle_generator -v
 
 ```bash
 # Generate the bundle, then re-generate: the second run is byte-identical (idempotent)
-uv run python -m gzkit.knowledge.generate
-uv run python -m gzkit.knowledge.generate
+uv run python -m gzkit.knowledge
+uv run python -m gzkit.knowledge
 # Inspect the emitted OKF root index and a concept doc
 cat .gzkit/governance/knowledge/index.md
 cat .gzkit/governance/knowledge/state-doctrine.md
@@ -194,15 +205,21 @@ Before this OBPI there is a typed model but nothing that produces a bundle — a
 
 ### Key Proof
 
-`python -m gzkit.knowledge.generate` run twice yields a byte-identical `.gzkit/governance/knowledge/` bundle; `.gzkit/governance/knowledge/index.md` lists the tracer-slice concepts, each concept doc carries OKF frontmatter and links to its source doc, and `git status` shows no change to any source document.
+
+`python -m gzkit.knowledge` run twice yields a byte-identical .gzkit/governance/knowledge/ bundle (hash 919e97f98ebd0d330eb467a7c08efa06697c63ba15a2f8f0a1b6fef626077961); `git diff` shows zero change to the four tracer-slice source docs (state-doctrine, trust-doctrine, agent-contract-rationale, active-campaign). Each concept doc carries OKF frontmatter (type=doctrine) with a `resource` edge to its canonical source; the root index.md (type=index) links each concept for progressive disclosure. Independently reproduced by a Codex adversary, which also proved both load-bearing tests are non-tautological (injected regressions forced FAIL). Receipt arb-step-unittest-6d9affbf8b834b67b8923b16bcbe5d5a (exit_status 0); covers parity 4/4.
 
 ### Implementation Summary
 
-- Files created/modified: `src/gzkit/knowledge/` (generator); `.gzkit/governance/knowledge/` (generated bundle output); `tests/knowledge/` (REQ-derived cases).
-- Tests added: REQ-0.30.0-02-01,02,03,04 BEHAVIOR cases (`@covers`).
-- Date completed: pending.
-- Attestation status: pending (Heavy lane Gate 5).
-- Defects noted: bundle-location choice (`.gzkit/governance/knowledge/`) flagged for operator ratification.
+
+- Files created: src/gzkit/knowledge/generate.py (generate_bundle + TRACER_SLICE + BUNDLE_OUTPUT); src/gzkit/knowledge/__main__.py (warning-free `python -m gzkit.knowledge` entry); tests/knowledge/test_bundle_generator.py (4 @covers REQ tests).
+- Files modified: src/gzkit/knowledge/__init__.py (exports generate_bundle); this brief (Demo/Key-Proof command amended to `python -m gzkit.knowledge`).
+- Generated artifact: .gzkit/governance/knowledge/ (root index.md + 4 concept docs over the governance tracer slice).
+- Parent ADR Decision item implemented: "a root index.md, concept documents with YAML frontmatter, directory index.md files for progressive disclosure, and markdown links as graph edges ... Source docs are preserved as the canonical authored documents."
+- TDD: verified assertion-level RED (NotImplementedError, not import error) before GREEN; two-stage independent review (spec PASS, quality PASS_WITH_CONCERNS) plus a Codex adversarial pass.
+- Quality-review correction: relocated module entry from a generate.py __main__ block to __main__.py, eliminating a RuntimeWarning on the documented demo command.
+- req_atomic declared: all 4 REQs satisfied by the single generate_bundle function; no sub-REQ labor subdivision.
+- Tests added: REQ-0.30.0-02-01,02,03,04 BEHAVIOR cases (@covers).
+- Date completed: 2026-06-29. Attestation: g0 (Heavy lane Gate 5).
 
 ## Tracked Defects
 
@@ -211,12 +228,12 @@ Before this OBPI there is a typed model but nothing that produces a bundle — a
 
 ## Human Attestation
 
-- Attestor: pending
-- Attestation: pending
-- Date: pending
+- Attestor: `g0`
+- Attestation: attest completed — OKF bundle generator landed Heavy lane: 4/4 REQ-derived @covers tests green (receipt arb-step-unittest-6d9affbf8b834b67b8923b16bcbe5d5a), ruff/typecheck/mkdocs clean (arb-ruff-dc533074a46a4b159eca8f26e37fe388, arb-step-typecheck-d660ff0718bf4ab7b28398c3d0a9f264, arb-step-mkdocs-12e45120565b4451a408b3e5576204ab), covers parity 4/4 (100%). Idempotent bundle hash 919e97f98ebd0d330eb467a7c08efa06697c63ba15a2f8f0a1b6fef626077961 independently reproduced by a Codex adversary (verdict REFUTED-WITH-CAVEATS; core REQs not refuted, caveat resolved to expected pipeline state).
+- Date: 2026-06-29
 
 ---
 
-**Date Completed:** pending
+**Date Completed:** 2026-06-29
 
 **Evidence Hash:** -

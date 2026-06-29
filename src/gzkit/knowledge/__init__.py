@@ -11,5 +11,6 @@ Invariant 1, nothing here may be consumed as enforcement evidence by any
 """
 
 from gzkit.knowledge.concept_frontmatter import ConceptFrontmatter
+from gzkit.knowledge.generate import generate_bundle
 
-__all__ = ["ConceptFrontmatter"]
+__all__ = ["ConceptFrontmatter", "generate_bundle"]
