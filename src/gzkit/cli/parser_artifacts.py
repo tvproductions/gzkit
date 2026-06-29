@@ -601,6 +601,16 @@ def _register_knowledge_parser(commands: argparse._SubParsersAction) -> None:
     p_generate = knowledge_commands.add_parser(
         "generate",
         help="Emit the OKF knowledge bundle",
+        description=(
+            "Generate an OKF-conformant knowledge bundle and emit it over "
+            "the tracer slice. Creates markdown documents with typed frontmatter "
+            "and navigation links for agents to access governance documentation."
+        ),
+        epilog=build_epilog(
+            [
+                "gz knowledge generate",
+            ]
+        ),
     )
     p_generate.set_defaults(func=lambda a: _lazy("knowledge_cmd")(subverb="generate"))
 
@@ -608,6 +618,16 @@ def _register_knowledge_parser(commands: argparse._SubParsersAction) -> None:
     p_refresh = knowledge_commands.add_parser(
         "refresh",
         help="Re-generate the bundle idempotently from current sources",
+        description=(
+            "Re-generate the OKF knowledge bundle idempotently from current "
+            "sources. Running refresh twice leaves the bundle byte-identical; "
+            "idempotency ensures operator-driven bundle updates are deterministic."
+        ),
+        epilog=build_epilog(
+            [
+                "gz knowledge refresh",
+            ]
+        ),
     )
     p_refresh.set_defaults(func=lambda a: _lazy("knowledge_cmd")(subverb="refresh"))
 

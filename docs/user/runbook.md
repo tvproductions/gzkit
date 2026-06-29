@@ -77,6 +77,10 @@ uv run gz obpi validate --adr ADR-<X.Y.Z> --authored
 
 # Load focused context for an ADR (body + OBPIs + covering tests + governance)
 uv run gz context ADR-<X.Y.Z>
+
+# (Optional) Generate or refresh the OKF knowledge bundle (after governance doc edits)
+uv run gz knowledge generate  # First-time generation
+uv run gz knowledge refresh   # Idempotent refresh after edits
 ```
 
 ### Step 1b: Pre-execution reasoning walkthrough (`gz justify`)

@@ -712,6 +712,8 @@ uv run gz covers ADR-<X.Y.Z>              # Trace test-to-requirement coverage
 uv run gz skill new <name>                 # Create a new skill scaffold
 uv run gz skill list                       # List all discovered skills
 uv run gz interview                        # Run interactive governance interviews
+uv run gz knowledge generate               # Generate the OKF knowledge bundle
+uv run gz knowledge refresh                # Refresh the bundle idempotently from current sources
 ```
 
 ---
