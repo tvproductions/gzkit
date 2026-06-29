@@ -79,6 +79,16 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "A dedicated gz-governance-render skill is deferred to a subsequent feature ADR "
         "once the full governance command group lands (OBPI-03 through OBPI-10)."
     ),
+    "knowledge generate": (
+        "ADR-0.30.0 OBPI-0.30.0-04 delivers the `gz knowledge generate/refresh` CLI surface "
+        "for OKF bundle generation. No dedicated wielding skill — operator invokes directly "
+        "as part of governance documentation maintenance workflow."
+    ),
+    "knowledge refresh": (
+        "ADR-0.30.0 OBPI-0.30.0-04 delivers the `gz knowledge generate/refresh` CLI surface "
+        "for OKF bundle generation. No dedicated wielding skill — operator invokes directly "
+        "as part of governance documentation maintenance workflow."
+    ),
 }
 
 
