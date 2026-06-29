@@ -97,6 +97,10 @@ cat .gzkit/governance/knowledge/<concept>.md  # Step 2: read type/description/re
 
 Full path description: `docs/user/concepts/okf-navigation.md`
 
+**Content boundary (.gzkit/ vs docs/):** The doctrine governing which content belongs under
+`.gzkit/` (gzkit-core canon) vs `docs/` (adopter-authored project content) is at
+`.gzkit/governance/knowledge/content-boundary.md`.
+
 ### Step 1b: Pre-execution reasoning walkthrough (`gz justify`)
 
 When self-reported confidence in the planned implementation is below

@@ -721,6 +721,10 @@ only — never cite its frontmatter or links as governance evidence (Boundary In
 ADR-0.30.0). The progressive-disclosure navigation path is documented in
 `docs/user/concepts/okf-navigation.md`.
 
+The doctrine governing which content belongs under `.gzkit/` (gzkit-core canon) vs
+`docs/` (adopter-authored project content) is at
+`.gzkit/governance/knowledge/content-boundary.md`.
+
 ---
 
 ## Workflow: Session Handoffs

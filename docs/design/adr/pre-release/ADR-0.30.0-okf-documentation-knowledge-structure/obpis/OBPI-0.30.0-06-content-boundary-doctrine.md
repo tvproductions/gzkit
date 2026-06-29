@@ -3,7 +3,19 @@ id: OBPI-0.30.0-06-content-boundary-doctrine
 parent: ADR-0.30.0-okf-documentation-knowledge-structure
 item: 6
 lane: heavy
-status: Draft
+status: Completed
+# req_atomic (GHI #590): authoring-only OBPI; each REQ's labor was one
+# indivisible unit. REQ-01/02 are a single doctrine-authoring unit (the boundary
+# statement and the phased-migration declaration live in the same doc, written
+# together); REQ-03 is a negative invariant (no migration performed) proven by a
+# verifying test, carrying no production labor; REQ-04 is one runbook-pointer
+# authoring unit (two parallel one-line pointer edits). No REQ subdivided into
+# seq=02+ steps, so seq=01-only is honest, not coarse-bucketing.
+req_atomic:
+  - REQ-0.30.0-06-01
+  - REQ-0.30.0-06-02
+  - REQ-0.30.0-06-03
+  - REQ-0.30.0-06-04
 ---
 
 # OBPI-0.30.0-06-content-boundary-doctrine: Author the `.gzkit/` vs `docs/` content-boundary doctrine doc (homed under `.gzkit/`) declaring the boundary and the PHASED docs/→`.gzkit/` relocation — the migration is NOT performed here.
@@ -13,7 +25,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.30.0-okf-documentation-knowledge-structure/ADR-0.30.0-okf-documentation-knowledge-structure.md`
 - **Checklist Item:** #6 — "Content-boundary doctrine: author the `.gzkit/` vs `docs/` content-boundary doctrine doc (homed under `.gzkit/`; gzkit-core canon under `.gzkit/`, `docs/` = adopter space; OKF bundles domain-named) DECLARING the phased docs/→`.gzkit/` relocation as a forced subsequent decision — the migration is NOT performed here; three-layer doc pointers."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -197,15 +209,18 @@ Before this OBPI the `.gzkit/` vs `docs/` content boundary lives only in the ope
 
 ### Key Proof
 
-`cat .gzkit/governance/knowledge/content-boundary.md` shows the boundary stated and the migration declared-not-performed; the REQ-06-03 test confirms no `docs/` canon file was relocated by this OBPI; the runbooks point to the doctrine.
+
+`cat .gzkit/governance/knowledge/content-boundary.md` shows the boundary stated (.gzkit/ = gzkit-core canon, docs/ = adopter space, OKF bundles domain-named) and the migration declared-not-performed under ADR-0.30.0. `uv run -m unittest tests.knowledge.test_content_boundary_doctrine -v` → 9/9 pass. `uv run gz covers OBPI-0.30.0-06-content-boundary-doctrine --json` → 4/4 covered, 0 uncovered. Receipt arb-step-unittest-befc65b4514b462bb24b596089fe2457 records exit_status=0.
 
 ### Implementation Summary
 
-- Files created/modified: `.gzkit/governance/knowledge/content-boundary.md` (new doctrine doc); `docs/user/runbook.md`; `docs/governance/governance_runbook.md`; `tests/knowledge/` (REQ-derived cases).
-- Tests added: REQ-0.30.0-06-01,02,03 BEHAVIOR cases (`@covers`); REQ-0.30.0-06-04 SUPPORT (runbook pointers + ledger proof).
-- Date completed: pending.
-- Attestation status: pending (Heavy lane Gate 5).
-- Defects noted: doctrine-vs-state gap (current docs/ canon does not yet satisfy the boundary) is intentional and tracked as the phased-migration subsequent decision.
+
+- Files created: .gzkit/governance/knowledge/content-boundary.md (content-boundary doctrine doc, OKF `type: doctrine`); tests/knowledge/test_content_boundary_doctrine.py (9 REQ-derived tests).
+- Files modified: docs/user/runbook.md, docs/governance/governance_runbook.md (content-boundary doctrine pointers).
+- Tests: REQ-0.30.0-06-01/02/03 BEHAVIOR (semantic co-occurrence assertions binding boundary direction, phased-not-performed, no-relocation invariant); REQ-0.30.0-06-04 SUPPORT (both runbooks name the full doctrine path). Parity 4/4 via `gz covers`.
+- Adversarial validation (Step 4b): Codex REFUTED-WITH-CAVEATS flagged 7 hollow substring tests; rewrote to semantic assertions and verified via negative control they fail on an inverted doctrine.
+- Date completed: 2026-06-29. Attestation: operator "attest completed" (Heavy lane Gate 5).
+- Tracked: the wholesale docs/→.gzkit/ migration is declared by the doctrine and NOT performed here — a forced subsequent decision (likely its own ADR phase).
 
 ## Tracked Defects
 
@@ -213,12 +228,12 @@ Before this OBPI the `.gzkit/` vs `docs/` content boundary lives only in the ope
 
 ## Human Attestation
 
-- Attestor: pending
-- Attestation: pending
-- Date: pending
+- Attestor: `g0`
+- Attestation: attest completed — Heavy-lane content-boundary doctrine OBPI-0.30.0-06: doctrine doc authored at .gzkit/governance/knowledge/content-boundary.md stating the .gzkit/ vs docs/ boundary and declaring the phased migration as NOT performed; 9/9 REQ-derived tests green (receipt arb-step-unittest-befc65b4514b462bb24b596089fe2457, exit_status=0); ruff/typecheck/mkdocs clean; REQ parity 4/4 via gz covers; Step 4b Codex adversarial validation returned REFUTED-WITH-CAVEATS and the hollow-test gap was fixed (7 substring checks rewritten to semantic co-occurrence assertions, negative-control verified to discriminate an inverted doctrine).
+- Date: 2026-06-29
 
 ---
 
-**Date Completed:** pending
+**Date Completed:** 2026-06-29
 
 **Evidence Hash:** -
