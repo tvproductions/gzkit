@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gzkit.tvproductions.dev/schemas/okf_concept_frontmatter.json",
+  "title": "ConceptFrontmatter",
+  "description": "JSON Schema mirror of the gzkit.knowledge.concept_frontmatter.ConceptFrontmatter Pydantic model (ADR-0.30.0, OBPI-0.30.0-01). OKF posture (parent ADR Boundary Invariant 3): `type` is the ONLY required field and is a free string (NOT an enum); unknown producer-defined fields are accepted (additionalProperties: true). Orientation-only — never consumed as enforcement evidence (Boundary Invariant 1).",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "type"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "OKF concept type — the ONE required field. Free-form string, never a closed enum; unknown values are valid (posture tolerance)."
+    },
+    "title": {
+      "type": ["string", "null"],
+      "description": "Human-readable document title."
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Short summary of the concept document."
+    },
+    "resource": {
+      "type": ["string", "null"],
+      "description": "Path/URI of the source resource this concept maps to."
+    },
+    "tags": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      },
+      "description": "Optional free-form tags for navigation/orientation."
+    },
+    "timestamp": {
+      "type": ["string", "null"],
+      "description": "Optional authored/generated timestamp (ISO-8601 string)."
+    }
+  }
+}

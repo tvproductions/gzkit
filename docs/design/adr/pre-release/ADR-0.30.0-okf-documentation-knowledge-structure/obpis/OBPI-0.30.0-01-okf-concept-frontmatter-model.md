@@ -3,7 +3,18 @@ id: OBPI-0.30.0-01-okf-concept-frontmatter-model
 parent: ADR-0.30.0-okf-documentation-knowledge-structure
 item: 1
 lane: heavy
-status: Draft
+status: Completed
+# req_atomic — each REQ is one indivisible unit of labor with no sub-REQ
+# subdivision: REQ-01 (the ConceptFrontmatter field set), REQ-02 (the
+# required/non-empty rejection rule), REQ-03 (the extra="allow" posture config),
+# and REQ-04 (the JSON schema mirror file) were authored as one coherent change
+# proven by a single test module. None was subdivided into seq=02+; the
+# pipeline-minted seq=01-per-REQ buckets are the true labor shape.
+req_atomic:
+  - REQ-0.30.0-01-01
+  - REQ-0.30.0-01-02
+  - REQ-0.30.0-01-03
+  - REQ-0.30.0-01-04
 ---
 
 # OBPI-0.30.0-01-okf-concept-frontmatter-model: OKF concept-frontmatter Pydantic model + JSON schema (required `type`; optional title/description/resource/tags/timestamp), unknown-field- and unknown-type-tolerant per the OKF posture.
@@ -13,7 +24,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.30.0-okf-documentation-knowledge-structure/ADR-0.30.0-okf-documentation-knowledge-structure.md`
 - **Checklist Item:** #1 — "OKF schema + frontmatter model: Pydantic model for OKF concept frontmatter (required `type`, optional title/description/resource/tags/timestamp), unknown-field- and unknown-type-tolerant per OKF posture; JSON schema under src/gzkit/schemas/."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -193,15 +204,23 @@ Before this OBPI there is no typed contract for an OKF concept document — ever
 
 ### Key Proof
 
-`ConceptFrontmatter(type='doctrine', novel_key='x')` validates (posture tolerance); `ConceptFrontmatter(title='no type')` raises (required `type`). The JSON schema mirror validates clean under the project schema-loading path.
+
+Posture tolerance (Boundary Invariant 3):
+  $ uv run python -c "from gzkit.knowledge import ConceptFrontmatter as C; m=C(type='made-up-doctype', producer_key='x'); print(m.type, m.model_dump()['producer_key'])"
+  made-up-doctype x
+Required `type` bites: `ConceptFrontmatter()` raises ValidationError.
+Full suite: 6623/6623 pass — receipt arb-step-unittest-fa47848991e2499a9886ef41324b771a (exit_status=0).
+REQ→@covers parity: behavior_uncovered_reqs=0; gz validate --req-kind-discipline PASS.
 
 ### Implementation Summary
 
-- Files created/modified: `src/gzkit/knowledge/` (model module); `src/gzkit/schemas/` (OKF concept-frontmatter JSON schema); `tests/knowledge/` (REQ-derived cases).
-- Tests added: REQ-0.30.0-01-01,02,03 BEHAVIOR cases (`@covers`); REQ-0.30.0-01-04 SUPPORT (schema present + ledger proof).
-- Date completed: pending.
-- Attestation status: pending (Heavy lane Gate 5).
-- Defects noted: pending.
+
+- Implements parent ADR Decision item: concept documents with YAML frontmatter carrying a required `type` and optional `title`/`description`/`resource`/`tags`/`timestamp`; consumers preserve the OKF posture (unknown fields and unknown `type` values are NOT errors).
+- Files created: `src/gzkit/knowledge/__init__.py` + `concept_frontmatter.py` (the `ConceptFrontmatter` Pydantic model, frozen, `extra="allow"`); `src/gzkit/schemas/okf_concept_frontmatter.json` (schema mirror, `additionalProperties: true`, `required: ["type"]`, `type.minLength: 1`); `tests/knowledge/test_concept_frontmatter_model.py` (6 REQ-derived tests).
+- Posture (parent ADR Boundary Invariant 3) encoded as `extra="allow"` + free-string `type` — a documented, ADR-mandated departure from the `.gzkit/rules/models.md` `extra="forbid"` default.
+- STRUCTURAL-FENCE (Boundary Invariant 1): the model is data-only; rg-verified zero enforcement-path (validate/gates/closeout/trust_audits) consumers.
+- Tests: REQ-0.30.0-01-01/02/03 BEHAVIOR via `@covers`; REQ-0.30.0-01-04 SUPPORT via ledger + `gz validate --documents` structural validator (no `@covers`, per ADR-0.0.59); `req_atomic:` declared (each REQ is one indivisible labor unit).
+- Date completed: 2026-06-29. Attestation: operator g0, "attest completed".
 
 ## Tracked Defects
 
@@ -209,12 +228,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: pending
-- Attestation: pending
-- Date: pending
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.30.0-01 OKF concept-frontmatter model (src/gzkit/knowledge/) + JSON schema mirror (src/gzkit/schemas/okf_concept_frontmatter.json); full suite 6623/6623 pass (receipt arb-step-unittest-fa47848991e2499a9886ef41324b771a), ruff clean (arb-ruff-23ecd85ba439495f8969250eab390ad1), typecheck clean (arb-step-typecheck-cad9089bd03240148ffba256d26b6d79), mkdocs --strict clean (arb-step-mkdocs-ff4d26b550364c28bdabf53687a614c2), gz validate --documents + --req-kind-discipline pass; 3 BEHAVIOR REQs @covers-covered + REQ-04 SUPPORT via ledger+structural validator (behavior_uncovered_reqs=0); STRUCTURAL-FENCE verified zero enforcement-path consumers; dual adversarial validation (Claude fallback + Codex preferred different-vendor), all real findings fixed.
+- Date: 2026-06-29
 
 ---
 
-**Date Completed:** pending
+**Date Completed:** 2026-06-29
 
 **Evidence Hash:** -
