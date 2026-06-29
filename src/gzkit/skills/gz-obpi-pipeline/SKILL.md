@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.24.1"
-last_reviewed: 2026-06-27
+skill-version: "6.25.0"
+last_reviewed: 2026-06-29
 model: sonnet
 ---
 
@@ -48,7 +48,7 @@ Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Val
 THE PIPELINE IS NOT COMPLETE UNTIL STAGE 5 FINISHES.
 ```
 
-Every stage flows into the next. No "stop and summarize" between stages. No pause except the Stage 4 human attestation in Normal mode. If you have not reached the end of Stage 5, you are not done — and violating the spirit of this rule is violating the rule.
+Every stage flows into the next. No "stop and summarize" between stages. No pause except the Stage 4 human attestation in Normal mode — and that pause comes only **after** Step 4b (the independent adversary) has run and its verdict is on the table. Soliciting attestation with Step 4b skipped is not a valid pause; it is a gate bypass. If you have not reached the end of Stage 5, you are not done — and violating the spirit of this rule is violating the rule.
 
 ### Rationalization Prevention
 
@@ -61,6 +61,9 @@ These thoughts mean STOP — you are about to break the pipeline:
 | "The hook blocked me, I'll work around it" | Hook blocks are signals. Diagnose the cause. NEVER create marker files manually to bypass. |
 | "`gz obpi complete` needs a TTY, so I'll ask the operator to run it themselves" | No. There is no TTY gate. A plain non-TTY `uv run gz obpi complete ... --attestation-text "<operator's verbatim attestation>"` call completes the brief for every lane / kind / sensitivity. The operator already attested in Stage 4 — relay that phrase, never hand the invocation back. |
 | "The operator said `attest completed` — maybe they want me to explain what to do next" | No. `attest completed` IS the attestation. Run `gz obpi complete` immediately with that phrase (enriched per § Attestation) in `--attestation-text`. Do not produce runbook-style instructions for the operator to execute. |
+| "My Step 4a evidence is green — tests pass, REQs covered — so I can present it and await attestation" | STOP. Green-on-your-own-evidence is the EXACT state Step 4b exists to distrust. You authored that evidence; you are the GHI #643 fabrication surface. You may NOT print "Awaiting attestation" until the independent adversary's verdict is in this same turn. Confidence from the authoring agent is worth zero at this gate. |
+| "Step 4b is probably overkill for this small/authoring-only/obviously-correct OBPI" | There is no size, lane, or kind exception to Step 4b. "Obviously correct" is the precise feeling that precedes a hollow-test or fabricated-evidence skip. Dispatch the adversary. You are not the exception. |
+| "I'll present Step 4a now and run the adversary after the operator responds / in the next turn" | Sequence violation. The adversary runs BEFORE attestation, not after — the operator attests holding the adversary's verdict. Presenting 4a as the terminal step of the turn, with 4b deferred, is the skip this gate forbids. Dispatch 4b in the same turn as 4a. |
 
 ### The Plan-Mode Gate
 
@@ -620,7 +623,31 @@ The `@covers location` column is **not** optional. If you cannot fill it in for 
 
 **Every field above MUST be populated.** Do not skip the evidence table. Do not skip REQ coverage. Do not skip files created/modified. The human needs all of this to make an attestation decision. **This template is Step 4a — the agent's presentation. It is necessary but not sufficient: an agent authoring its own evidence is the GHI #643 fabrication surface. Step 4b is mandatory before attestation.**
 
-#### Step 4b — Independent Adversarial Validation (GHI #643)
+> ### 🛑 HARD BARRIER — Step 4a does NOT end the turn
+>
+> Printing the Step 4a packet and the line **"Awaiting attestation"** is NOT a
+> valid stopping point. Between authoring Step 4a and soliciting attestation,
+> Step 4b (the independent adversary) MUST run **in this same turn**. If you are
+> about to end your turn with a 4a evidence table and no adversary verdict, you
+> are committing the GHI #643 skip — the exact failure this gate exists to
+> prevent. The sequence is non-negotiable and admits no size/lane/kind/"obviously
+> correct" exception:
+>
+> ```
+> Step 4a (author evidence)  →  Step 4b (dispatch adversary, get verdict)  →  present BOTH  →  await attestation
+> ```
+>
+> You do not get to skip 4b because your own evidence looks green. Your evidence
+> looking green is *why* 4b exists. You are not the exception.
+
+#### Step 4b — Independent Adversarial Validation (GHI #643) — MANDATORY, NON-SKIPPABLE
+
+**Binding rule:** No OBPI reaches attestation without an independent adversary
+verdict produced in the same turn as Step 4a. This is a fail-closed gate, not a
+best-effort nicety: a Stage 4 that presents 4a and stops, deferring or omitting
+4b, is a process violation of the same class as bypassing Gate 5. There is no
+OBPI too small, too authoring-only, or too obviously-correct to exempt — those
+are the precise descriptors that precede a skipped check.
 
 Step 4a is authored by the same agent that may have fabricated it. Step 4b adds an **independent adversary** that does not trust Step 4a: it RE-DERIVES the completion claim from the REQs and the repository, prompted to **refute**, and must paste observed command output. The operator attests holding **both** outcomes.
 
