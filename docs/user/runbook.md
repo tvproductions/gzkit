@@ -83,6 +83,20 @@ uv run gz knowledge generate  # First-time generation
 uv run gz knowledge refresh   # Idempotent refresh after edits
 ```
 
+**Navigating the OKF knowledge bundle (orientation path):**
+
+The bundle at `.gzkit/governance/knowledge/index.md` is a typed orientation map — not
+an authority surface. Use it to find the right doc, then cite the canonical source.
+
+Three-step path: bundle root → concept doc → `resource:` link → canonical source.
+
+```bash
+cat .gzkit/governance/knowledge/index.md  # Step 1: see all concept links
+cat .gzkit/governance/knowledge/<concept>.md  # Step 2: read type/description/resource
+```
+
+Full path description: `docs/user/concepts/okf-navigation.md`
+
 ### Step 1b: Pre-execution reasoning walkthrough (`gz justify`)
 
 When self-reported confidence in the planned implementation is below

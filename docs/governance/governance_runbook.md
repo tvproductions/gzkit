@@ -716,6 +716,11 @@ uv run gz knowledge generate               # Generate the OKF knowledge bundle
 uv run gz knowledge refresh                # Refresh the bundle idempotently from current sources
 ```
 
+The generated bundle lives at `.gzkit/governance/knowledge/`. It is an **orientation aid**
+only — never cite its frontmatter or links as governance evidence (Boundary Invariant 1,
+ADR-0.30.0). The progressive-disclosure navigation path is documented in
+`docs/user/concepts/okf-navigation.md`.
+
 ---
 
 ## Workflow: Session Handoffs

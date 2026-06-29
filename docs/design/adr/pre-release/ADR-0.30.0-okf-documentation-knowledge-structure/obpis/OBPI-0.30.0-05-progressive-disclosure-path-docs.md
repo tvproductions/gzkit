@@ -3,7 +3,12 @@ id: OBPI-0.30.0-05-progressive-disclosure-path-docs
 parent: ADR-0.30.0-okf-documentation-knowledge-structure
 item: 5
 lane: heavy
-status: Draft
+status: Completed
+req_atomic:
+  - REQ-0.30.0-05-01  # Single reachability test walks the bundle link graph — one indivisible test-authoring unit.
+  - REQ-0.30.0-05-02  # Three doc-layer edits are one coherent SUPPORT authoring unit (runbook + governance runbook + concept doc describe one path).
+  - REQ-0.30.0-05-03  # Single control-surface concept doc names the bundle root — one indivisible authoring unit.
+  - REQ-0.30.0-05-04  # Single cli-alignment regression test — one indivisible test-authoring unit.
 ---
 
 # OBPI-0.30.0-05-progressive-disclosure-path-docs: Wire and document the ONE working progressive-disclosure path — a control surface points an agent into the OKF bundle and the agent reaches the target doc — with three-layer doc updates.
@@ -13,7 +18,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.30.0-okf-documentation-knowledge-structure/ADR-0.30.0-okf-documentation-knowledge-structure.md`
 - **Checklist Item:** #5 — "Docs/runbook wiring: show how a control surface points an agent into the OKF bundle (the one working progressive-disclosure path that defines success); three-layer doc updates."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -139,8 +144,9 @@ uv run python -m unittest tests.knowledge.test_progressive_disclosure_path -v
 ## Acceptance Criteria
 
 - [ ] REQ-0.30.0-05-01 [BEHAVIOR]: Given the generated OKF bundle, when the link graph is walked starting at the bundle root `.gzkit/governance/knowledge/index.md` (following directory `index.md` edges), then every tracer-slice concept document is reachable, and each concept links to its canonical source doc.
-- [ ] REQ-0.30.0-05-02 [SUPPORT]: All three doc layers (`docs/user/runbook.md`, `docs/governance/governance_runbook.md`, a `docs/user/concepts/` doc) describe the progressive-disclosure path and frame the bundle as orientation-only — proven by `uv run gz validate --documents` and `uv run gz validate --cli-alignment` passing AND `artifact_edited` ledger events citing the three docs emitted at OBPI completion.
+- [ ] REQ-0.30.0-05-02 [SUPPORT]: All three doc layers (`docs/user/runbook.md`, `docs/governance/governance_runbook.md`, a `docs/user/concepts/` doc) describe the progressive-disclosure path and frame the bundle as orientation-only. Proof channel (SUPPORT, per `.gzkit/rules/tests.md` § REQ Scope Discipline): the three docs are present on disk (path-specific `artifact_edited` authorship, GHI #647) AND their structural shape is admitted by `uv run gz validate --documents` (exit 0). The orientation-only *framing* is a semantic property witnessed by Gate 5 human attestation — `gz validate --documents` admits schema/shape, NOT OKF framing content.
 - [ ] REQ-0.30.0-05-03 [BEHAVIOR]: Given the control surface chosen to carry the OKF pointer, when its content is read, then it contains a pointer that names the OKF bundle root (`.gzkit/governance/knowledge/index.md`) as the navigation entry point.
+- [ ] REQ-0.30.0-05-04 [BEHAVIOR]: Given the new and updated docs, when `uv run gz validate --cli-alignment` runs, then it exits 0 with no unresolvable `gz <verb>` references in `docs/user/runbook.md`, `docs/governance/governance_runbook.md`, or the new `docs/user/concepts/` doc.
 
 ## Completion Checklist
 
@@ -195,12 +201,14 @@ Before this OBPI the model, generator, validator, and CLI exist but no documente
 
 ### Key Proof
 
+
 The reachability test walks `.gzkit/governance/knowledge/index.md` → directory indexes → each tracer-slice concept → its source doc, asserting every tracer-slice doc is reachable; the runbooks and a concepts doc describe the path; `gz validate --cli-alignment` and `gz validate --documents` pass.
 
 ### Implementation Summary
 
+
 - Files created/modified: `docs/user/runbook.md`; `docs/governance/governance_runbook.md`; `docs/user/concepts/` (new navigation concept doc + control-surface pointer); `tests/knowledge/` (reachability case).
-- Tests added: REQ-0.30.0-05-01 and REQ-0.30.0-05-03 BEHAVIOR cases (`@covers`); REQ-0.30.0-05-02 SUPPORT (docs + ledger proof).
+- Tests added: REQ-0.30.0-05-01 and REQ-0.30.0-05-03 BEHAVIOR cases (`@covers`); REQ-0.30.0-05-04 BEHAVIOR (`gz validate --cli-alignment`); REQ-0.30.0-05-02 SUPPORT (docs + ledger proof).
 - Date completed: pending.
 - Attestation status: pending (Heavy lane Gate 5).
 - Defects noted: control-surface choice for the pointer flagged for operator ratification.
@@ -211,12 +219,12 @@ The reachability test walks `.gzkit/governance/knowledge/index.md` → directory
 
 ## Human Attestation
 
-- Attestor: pending
-- Attestation: pending
-- Date: pending
+- Attestor: `g0`
+- Attestation: attest completed — Heavy-lane Gate 5 for OBPI-0.30.0-05 (progressive-disclosure path docs): operator attested after Stage 4 evidence + independent adversarial validation (REFUTED-WITH-CAVEATS, both caveats resolved). 3/3 REQ-derived tests pass (receipt arb-step-unittest-e4d0008e18fb42969a01c4392af185f7, 6647 total), lint/typecheck/mkdocs clean (arb-ruff-2211bb01004d4af4b4bd240e2853109f, arb-step-typecheck-9f424e20f5b44512a368ea9064fe1b1b, arb-step-mkdocs-548c251a28224c9089b75543b8cd2f32), gz validate --documents + --cli-alignment exit 0. One working progressive-disclosure path proven: control surface docs/user/concepts/okf-navigation.md -> .gzkit/governance/knowledge/index.md -> concept -> canonical source.
+- Date: 2026-06-29
 
 ---
 
-**Date Completed:** pending
+**Date Completed:** 2026-06-29
 
 **Evidence Hash:** -
