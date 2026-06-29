@@ -96,6 +96,7 @@ from gzkit.governance.trust_audits.lock_handoff_coupling import (
     validate_lock_handoff_coupling,
 )
 from gzkit.governance.trust_audits.models import audit_pydantic_models
+from gzkit.governance.trust_audits.okf_conformance import audit_okf_conformance
 from gzkit.governance.trust_audits.orientation import audit_orientation_freshness
 from gzkit.governance.trust_audits.orphaned_implementation import (
     audit_orphaned_implementation,
@@ -178,6 +179,7 @@ __all__ = [
     "audit_qc_binding",
     "audit_orphaned_implementation",
     "audit_pool_adr_isolation",
+    "audit_okf_conformance",
     "audit_pydantic_models",
     "audit_receipt_shape",
     "audit_reconcile_freshness",

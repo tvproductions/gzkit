@@ -583,6 +583,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Derived closeout-proof view (ADR-0.0.69). Exit 0: all proven; 3: unproven.",
     )
     p_validate.add_argument(
+        "--okf-conformance",
+        dest="check_okf_conformance",
+        action="store_true",
+        default=False,
+        help="OKF generated-bundle conformance (ADR-0.30.0). Exit 0: clean; 3: malformed file.",
+    )
+    p_validate.add_argument(
         "--invariant-coherence",
         dest="check_invariant_coherence",
         action="store_true",
@@ -797,6 +804,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_tautological_test_audit=a.check_tautological_test_audit,
             check_task_envelope_coherence=a.check_task_envelope_coherence,
             check_closeout_proof=a.check_closeout_proof,
+            check_okf_conformance=a.check_okf_conformance,
             check_distribution=a.check_distribution,
             check_distribution_regenerate=a.check_distribution_regenerate,
             check_bullet_retention=a.check_bullet_retention,

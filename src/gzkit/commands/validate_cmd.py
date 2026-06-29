@@ -406,6 +406,7 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         lambda r, _f: _validate_task_envelope_coherence(r),
     ),
     _ScopeEntry("closeout_proof", "explicit", True, lambda r, _f: _ta().validate_closeout_proof(r)),
+    _ScopeEntry("okf_conformance", "explicit", True, lambda r, _f: _ta().audit_okf_conformance(r)),
 )
 
 
@@ -1015,6 +1016,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "task_envelope_coherence",
         "closeout_proof",
         "lock_handoff_coupling",
+        "okf_conformance",
     }
 )
 
@@ -1284,6 +1286,7 @@ def validate(
     check_rendition_floor_coherence: bool = False,
     check_task_envelope_coherence: bool = False,
     check_closeout_proof: bool = False,
+    check_okf_conformance: bool = False,
     check_qc_binding: bool = False,
     check_fidelity_presence: bool = False,
     check_waiver_ratchet: bool = False,
@@ -1381,6 +1384,7 @@ def validate(
         "tautological_test_audit": check_tautological_test_audit,
         "task_envelope_coherence": check_task_envelope_coherence,
         "closeout_proof": check_closeout_proof,
+        "okf_conformance": check_okf_conformance,
     }
     # A solo early-return scope (--sensitivity, --evaluation-justify-binding, ...)
     # runs solo only when no *other* aggregate scope is active.

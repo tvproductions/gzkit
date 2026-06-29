@@ -106,6 +106,7 @@ _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
         "tautological_test_audit",
         "task_envelope_coherence",
         "closeout_proof",
+        "okf_conformance",
     }
 )
 

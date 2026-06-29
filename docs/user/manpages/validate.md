@@ -18,7 +18,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--rendition-floor-coherence]
             [--invariant-coherence] [--brief-reconcile] [--router-tables]
             [--kind-invariance] [--req-kind-discipline] [--brief-command-shape] [--tautological-test-audit]
-            [--closeout-proof]
+            [--closeout-proof] [--okf-conformance]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
 ```
 
@@ -1197,6 +1197,55 @@ per run — ruling 6.1-A). The ceremony gate `_gate_closeout_proof` on the
 `EXECUTE→ATTESTATION` edge calls this view directly; an unproven REQ blocks
 the ceremony's advance to attestation.
 
+### `--okf-conformance`
+
+Checks OKF (Open Knowledge Format) conformance for the **generated bundle only**
+(ADR-0.30.0 / OBPI-0.30.0-03). The OKF bundle is an orientation layer — a typed,
+navigable map over documentation knowledge — never an authority surface.
+
+**Generated-bundle-only boundary (parent ADR Boundary Invariant 2).** The scope
+recognizes a bundle *structurally*: a directory under `.gzkit/` that contains a
+reserved `index.md` **and** at least one type-bearing concept doc. It NEVER keys
+off an `okf/`-format folder name (bundles are domain-named, e.g.
+`.gzkit/governance/knowledge/`), and it NEVER scans or gates authored source
+documents under `docs/` — a source doc with no OKF frontmatter is **not** a
+conformance failure.
+
+**What it checks within a detected bundle:**
+
+- Every non-reserved markdown file has parseable YAML frontmatter and a non-empty
+  required `type` field.
+- Reserved files (`index.md`/`log.md`) have parseable frontmatter.
+
+On a failure the finding names the offending **file** and **field** (`frontmatter`
+or `type`).
+
+> **Orientation, never authority (Boundary Invariant 1 — STRUCTURAL-FENCE).** This
+> scope validates the bundle's own well-formedness and nothing else. No
+> `gz validate` scope, gate, or closeout step consumes OKF `type`/tag/link data as
+> enforcement evidence for any other governance claim — truth lives in canon
+> (Layer-1) and the ledger (Layer-2); the bundle is a Layer-3 navigation aid.
+
+**Usage:**
+
+```bash
+# Clean generated bundle: the conformance scope passes
+uv run gz validate --okf-conformance
+
+# The scope takes no path argument: it only ever checks detected bundles under
+# `.gzkit/`. Authored source docs under `docs/` (which carry no OKF frontmatter)
+# are never scanned and so are never flagged.
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every detected bundle conforms (or no bundle present) | — |
+| 3 | A generated-bundle file has unparseable frontmatter, an empty/missing `type`, or a malformed reserved `index.md`/`log.md` | Re-generate the bundle from its sources, or fix the named file/field |
+
+**Related:** ADR-0.30.0 / OBPI-0.30.0-03 (OKF conformance validator).
+
 ### `--rendition-freshness`
 
 Flag when the corpus for a surface no longer matches the committed rendition it was
@@ -1667,6 +1716,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--advisor-proof-binding` | opt-in | Verdict <-> proof binding audit across fixtures, ledger-cited diagnoses, and JSON Schema (OBPI-0.0.29-08) |
 | `--lock-handoff-coupling` | opt-in | Ledger-replay audit: every post-OBPI-02 obpi_lock_released event must carry a valid handoff_path (ADR-0.0.41) |
 | `--closeout-proof` | opt-in | Derived closeout-proof view: recomputes per-REQ proof over three live channels (BEHAVIOR/SUPPORT/STRUCTURAL-FENCE) for in-closeout ADRs; exit 3 on any unproven REQ (ADR-0.0.69 / OBPI-0.0.69-03) |
+| `--okf-conformance` | opt-in | OKF generated-bundle-only conformance: every concept doc has parseable frontmatter + non-empty `type`, reserved `index.md`/`log.md` parse; recognizes bundles structurally (reserved files + `type`), never by folder name; never gates authored source docs; exit 3 names the offending file/field (ADR-0.30.0 / OBPI-0.30.0-03) |
 | `--distribution` | opt-in | T0 static distribution audit: ON\_DISK\_NOT\_INCLUDED / BASELINE\_NOT\_ON\_DISK / ON\_DISK\_NOT\_BASELINE drift classes (ADR-0.0.32-07) |
 | `--receipt-shape` | opt-in | Fail-closed on post-cutoff `obpi_receipt_emitted` events with deprecated shapes (optional attestation, unprefixed completion, agent: attestor); pre-cutoff receipts can be waivered via `data/historical_self_close_waivers.json` (ADR-0.0.36, OBPI-0.0.36-03) |
 | `--bullet-retention` | opt-in | Tier-scoped retention for every Mechanical/Promotable bullet in advisory-rules-audit.md: invariant-tier verbatim in per-turn surface; compressible-tier witnessed by a valid advisor-QC receipt + attestation (ADR-0.0.33-01; tier-scoped amendment OBPI-0.0.37-25) |

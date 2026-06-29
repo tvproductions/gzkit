@@ -3,7 +3,17 @@ id: OBPI-0.30.0-03-okf-conformance-validator
 parent: ADR-0.30.0-okf-documentation-knowledge-structure
 item: 3
 lane: heavy
-status: Draft
+status: Completed
+# req_atomic (GHI #590): each REQ's labor was one indivisible unit — the
+# validator module + wiring was a single cohesive TDD unit (REQ-01/02/03), the
+# manpage was one authoring unit (REQ-04), and REQ-05 is a STRUCTURAL-FENCE with
+# no code labor. No REQ subdivided into seq=02+ steps, so seq=01-only is honest.
+req_atomic:
+  - REQ-0.30.0-03-01
+  - REQ-0.30.0-03-02
+  - REQ-0.30.0-03-03
+  - REQ-0.30.0-03-04
+  - REQ-0.30.0-03-05
 ---
 
 # OBPI-0.30.0-03-okf-conformance-validator: Add `gz validate --okf-conformance` (generated-bundle-only conformance) and carry the STRUCTURAL-FENCE REQ that no `gz validate` / gates / closeout surface consumes OKF frontmatter or links as enforcement evidence.
@@ -13,7 +23,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.30.0-okf-documentation-knowledge-structure/ADR-0.30.0-okf-documentation-knowledge-structure.md`
 - **Checklist Item:** #3 — "gz validate --okf-conformance scope (generated-bundle-only conformance: parseable frontmatter, non-empty `type`; reserved index.md/log.md structure; does NOT gate authored source docs) AND carry the STRUCTURAL-FENCE REQ that no gz validate / gates / closeout surface consumes OKF frontmatter or links as enforcement evidence — proven via this ADR's `## Boundary Invariants` entry, audited at ADR-closeout layer."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -49,8 +59,9 @@ Add a `gz validate --okf-conformance` scope that checks the GENERATED OKF bundle
 1. REQUIREMENT: `uv run gz validate --okf-conformance` MUST be a registered scope; `gz validate --help` documents it, and a clean generated bundle exits 0.
 2. REQUIREMENT: Given a generated-bundle file with unparseable frontmatter, an empty/missing `type`, or a malformed reserved `index.md`/`log.md`, `gz validate --okf-conformance` MUST exit 3 and name the offending file and field.
 3. REQUIREMENT: The scope MUST be generated-bundle-only and MUST identify a bundle by its reserved files (`index.md`/`log.md`) + `type`-bearing concept docs, NEVER by an `okf/`-format folder name — it MUST NOT flag or gate authored source documents (a source doc with no OKF frontmatter is NOT a conformance failure), and it MUST work for a DOMAIN-named bundle root (e.g. `.gzkit/governance/knowledge/`). This is parent ADR Boundary Invariant 2.
-4. REQUIREMENT: The conformance check validates the bundle's OWN well-formedness; it MUST NOT consume any OKF `type`/tag/link as evidence for any OTHER governance claim, and no other `gz validate` scope, gate, or closeout step may do so either (parent ADR Boundary Invariant 1).
-5. ALWAYS: Tests are derived from the REQs above, not from a run of the implementation (`.gzkit/rules/tests.md` § "Tests assert semantics, not strings").
+4. REQUIREMENT: `docs/user/manpages/validate.md` MUST document the `--okf-conformance` scope and its generated-bundle-only boundary, and `gz validate --documents` + `gz cli audit` MUST pass with the new flag covered (the SUPPORT obligation mirrored as REQ-0.30.0-03-04 in Acceptance Criteria).
+5. REQUIREMENT: The conformance check validates the bundle's OWN well-formedness; it MUST NOT consume any OKF `type`/tag/link as evidence for any OTHER governance claim, and no other `gz validate` scope, gate, or closeout step may do so either (parent ADR Boundary Invariant 1).
+6. ALWAYS: Tests are derived from the REQs above, not from a run of the implementation (`.gzkit/rules/tests.md` § "Tests assert semantics, not strings").
 
 > SCOPE BOUNDARY: The model is OBPI-0.30.0-01's scope; the generator + `.gzkit/governance/knowledge/` bundle is OBPI-0.30.0-02's scope. This OBPI reads the model and validates the bundle's structure.
 
@@ -136,8 +147,9 @@ uv run mkdocs build --strict
 # Clean generated bundle: the conformance scope passes
 uv run gz validate --okf-conformance; echo "exit=$?"
 
-# An authored source doc with no OKF frontmatter is NOT gated (generated-bundle-only)
-uv run gz validate --okf-conformance docs/governance/state-doctrine.md; echo "exit=$?"
+# The scope takes no path argument — it only checks detected bundles under
+# `.gzkit/`. Authored source docs under `docs/` are never scanned, so they are
+# never gated (generated-bundle-only; parent ADR Boundary Invariant 2).
 ```
 
 ## Acceptance Criteria
@@ -201,15 +213,17 @@ Before this OBPI nothing checks that the generated bundle is well-formed, and no
 
 ### Key Proof
 
-`uv run gz validate --okf-conformance; echo exit=$?` exits 0 on a clean bundle; a malformed-frontmatter fixture makes it exit 3 naming the file and field; running the scope against an authored source doc does NOT flag it (generated-bundle-only).
+
+`uv run gz validate --okf-conformance; echo exit=$?` exits 0 on the real `.gzkit/governance/knowledge/` bundle. Stubbing the validator body to `return []` makes 6 malformed-bundle tests fail (proving the tests are non-tautological); `type="okf_conformance"` is registered in `_POLICY_BREACH_ERROR_TYPES`, mapping findings to process exit 3. Full suite 6638/6638 green — receipt `arb-step-unittest-d3c6ed63896b4ebbae4e975f04bb50d9`.
 
 ### Implementation Summary
 
-- Files created/modified: validator module under `src/gzkit/governance/trust_audits/`; `src/gzkit/commands/validate_cmd.py` + `src/gzkit/cli/` (flag wiring); `docs/user/manpages/validate.md`; `tests/governance/` (REQ-derived cases).
-- Tests added: REQ-0.30.0-03-01,02,03 BEHAVIOR cases (`@covers`); REQ-0.30.0-03-04 SUPPORT (manpage + cli-audit + ledger proof); REQ-0.30.0-03-05 STRUCTURAL-FENCE audited at ADR closeout.
-- Date completed: pending.
-- Attestation status: pending (Heavy lane Gate 5).
-- Defects noted: pending.
+
+- Added `gz validate --okf-conformance` generated-bundle-only conformance scope (`src/gzkit/governance/trust_audits/okf_conformance.py`) recognizing OKF bundles structurally (reserved `index.md`/`log.md` + type-bearing docs), never by an `okf/` folder name; flags unparseable frontmatter (field: frontmatter) and missing/empty `type` (field: type), naming the offending file.
+- Wired across all coupled surfaces: `_ScopeEntry` registry, `check_okf_conformance` param + dispatch dict, `_POLICY_BREACH_ERROR_TYPES` (exit-3 mapping), parser flag + call-site, `__init__` re-export, golden registry-parity set.
+- Documented in `docs/user/manpages/validate.md` (synopsis, `### --okf-conformance` section, options table); `gz cli audit` 112/112 covered.
+- 11 REQ-derived unittest cases; adversary-driven robustness fix: detection also keys off the type-bearing reserved `index.md`, closing the all-concept-docs-malformed blind spot.
+- REQ-04 (SUPPORT) proven by manpage + `validate --documents` + `cli audit`; REQ-05 (STRUCTURAL-FENCE) anchored in parent ADR `## Boundary Invariants` #1, audited at ADR closeout.
 
 ## Tracked Defects
 
@@ -217,12 +231,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: pending
-- Attestation: pending
-- Date: pending
+- Attestor: `g0`
+- Attestation: attest completed — gz validate --okf-conformance generated-bundle-only scope landed and verified: 11 scoped REQ-derived tests + 6638 full suite green (receipt arb-step-unittest-d3c6ed63896b4ebbae4e975f04bb50d9), ruff + typecheck clean (arb-ruff-b5fcf24a06b24a31892905bef68cdfd0, arb-step-typecheck-95836047ba594678846d487f51f3e5bf), mkdocs --strict clean (arb-step-mkdocs-853560fda9334f7595473dcb59a026cf), cli audit 112/112, validate --documents clean; exit-3 detection names file+field; STRUCTURAL-FENCE verified (no OKF data consumed as enforcement evidence); independent adversary REFUTED-WITH-CAVEATS, detection blind spot fixed + re-validated.
+- Date: 2026-06-29
 
 ---
 
-**Date Completed:** pending
+**Date Completed:** 2026-06-29
 
 **Evidence Hash:** -
