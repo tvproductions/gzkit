@@ -19,9 +19,10 @@ Generate an OKF-conformant knowledge bundle over the governance tracer slice
 The bundle provides typed YAML frontmatter and markdown links so agents can
 navigate governance documentation without whole-corpus reads.
 
-The bundle is written to `.gzkit/knowledge/` with a stable index and dated
-entry documents. Frontmatter carries `type`, `title`, `description`, and
-`resource` fields; each entry includes backlinks to related governance surfaces.
+The bundle is written to `.gzkit/governance/knowledge/` with a stable root
+`index.md` and one concept document per tracer-slice source. Frontmatter carries
+`type`, `title`, `description`, and `resource` fields; each concept doc links
+back to its canonical source document.
 
 ---
 
@@ -41,7 +42,7 @@ entry documents. Frontmatter carries `type`, `title`, `description`, and
 uv run gz knowledge generate
 
 # Generate and check the bundle manifest
-uv run gz knowledge generate && ls -la .gzkit/knowledge/
+uv run gz knowledge generate && ls -la .gzkit/governance/knowledge/
 ```
 
 ---

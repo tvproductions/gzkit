@@ -1,19 +1,9 @@
 {
-  "obpi_id": "OBPI-0.0.74-13-mx-proxy-reality-detector",
-  "timestamp": "2026-06-27T10:57:53.410238+00:00",
+  "obpi_id": "OBPI-0.30.0-04",
+  "timestamp": "2026-06-29T09:45:00Z",
   "verdict": "PASS",
-  "plan_file": "proxy-reality-detector-OBPI-0.0.74-13.md",
+  "plan_file": "reflective-doodling-snail.md",
   "gaps_found": 0,
   "gaps": [],
-  "scope_collisions": [
-    {
-      "sibling_adr": "ADR-0.0.42",
-      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
-      "contested_paths": [
-        "docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/ADR-0.0.74-mx-mode-maintenance-hangar.md",
-        "docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/obpis/OBPI-0.0.74-13-mx-proxy-reality-detector.md"
-      ],
-      "disposition": "advisory-false-positive"
-    }
-  ]
+  "scope_collisions": []
 }

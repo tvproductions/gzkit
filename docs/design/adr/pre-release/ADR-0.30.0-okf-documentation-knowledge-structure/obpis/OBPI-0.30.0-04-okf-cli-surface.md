@@ -3,7 +3,19 @@ id: OBPI-0.30.0-04-okf-cli-surface
 parent: ADR-0.30.0-okf-documentation-knowledge-structure
 item: 4
 lane: heavy
-status: Draft
+status: Completed
+# req_atomic — each REQ is one indivisible unit of labor with no sub-REQ
+# subdivision: REQ-01 (generate emits + --help documents the verb), REQ-02 (the
+# refresh-twice byte-identical idempotency rule), REQ-03 (the manpage + cli-audit
+# coverage), and REQ-04 (the end-to-end generate→refresh smoke + behave) were
+# each satisfied by a single coherent test-authoring unit over the pre-existing
+# CLI scaffolding. None subdivided into seq=02+; the pipeline-minted
+# seq=01-per-REQ buckets are the true labor shape.
+req_atomic:
+  - REQ-0.30.0-04-01
+  - REQ-0.30.0-04-02
+  - REQ-0.30.0-04-03
+  - REQ-0.30.0-04-04
 ---
 
 # OBPI-0.30.0-04-okf-cli-surface: Add the `knowledge` generate/refresh CLI subcommand (operator entry point to emit/refresh the OKF bundle) with manpage, `gz cli audit` coverage, and a behave smoke scenario.
@@ -13,7 +25,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.30.0-okf-documentation-knowledge-structure/ADR-0.30.0-okf-documentation-knowledge-structure.md`
 - **Checklist Item:** #4 — "CLI surface to generate/refresh the bundle (Heavy lane: new subcommand) + manpage + cli-audit coverage + behave smoke."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -203,15 +215,17 @@ Before this OBPI the bundle can only be produced by invoking the generator modul
 
 ### Key Proof
 
-`knowledge generate` emits the bundle and exits 0; `knowledge refresh` run twice leaves the bundle byte-identical; `uv run gz cli audit` exits 0 (manpage + index coverage); the behave smoke scenario passes.
+
+`uv run gz knowledge generate` exits 0 and emits the bundle to `.gzkit/governance/knowledge/`; `uv run gz knowledge refresh` run twice leaves the bundle byte-identical (asserted by `TestKnowledgeRefresh.test_refresh_is_idempotent`). Full suite 6644/6644 pass (receipt arb-step-unittest-30b3a0a9b46f4d0ba1abd22e6efac1eb); behave smoke 2/2 (receipt arb-step-behave-e5a4e71ba83c4d8bbda6b2886235172f); `gz cli audit` 114/114; REQ @covers parity 4/4.
 
 ### Implementation Summary
 
-- Files created/modified: `src/gzkit/commands/knowledge*.py` + `src/gzkit/cli/` (verb registration); `docs/user/manpages/knowledge.md`; `features/` (behave smoke); `tests/commands/` (REQ-derived cases).
-- Tests added: REQ-0.30.0-04-01,02,04 BEHAVIOR cases (`@covers`; 04-04 is the end-to-end generate/refresh CLI smoke, additionally exercised by behave); REQ-0.30.0-04-03 SUPPORT (manpage + documents/cli-audit + ledger).
-- Date completed: pending.
-- Attestation status: pending (Heavy lane Gate 5).
-- Defects noted: pending.
+
+- Files created: `tests/commands/test_knowledge.py` (6 REQ-derived unittest cases across 4 classes, each @covers-decorated); `features/knowledge.feature` (2 behave smoke scenarios, @REQ-0.30.0-04-04).
+- Files modified: `docs/user/manpages/knowledge-generate.md`, `docs/user/manpages/knowledge-refresh.md` — corrected stale `.gzkit/knowledge/` to real `.gzkit/governance/knowledge/` output path (defect surfaced by Step-4b adversarial validation).
+- CLI scaffolding (`src/gzkit/commands/knowledge.py`, parser registration, lazy handler, `docs/user/manpages/knowledge.md`) pre-existed from a prior session; this OBPI closed the verification chain (REQ-derived tests + behave smoke) over it.
+- Tests added: REQ-01/02/04 BEHAVIOR (@covers); REQ-03 SUPPORT (manpage + validate --documents/cli audit + regression test guarding the documented-path class).
+- Adversarial validation: Codex returned REFUTED-WITH-CAVEATS; both real gaps (refresh-twice semantics, stale manpage paths) fixed and re-validated green.
 
 ## Tracked Defects
 
@@ -221,12 +235,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: pending
-- Attestation: pending
-- Date: pending
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.30.0-04 (knowledge CLI surface) verified Heavy lane: 6644/6644 unittests pass (receipt arb-step-unittest-30b3a0a9b46f4d0ba1abd22e6efac1eb), lint+typecheck clean (arb-ruff-ec22dcca5b674061b8ac62295fb2b794, arb-step-typecheck-b2005668cfab4f4a8c6ab902a3a9fd33), docs --strict clean (arb-step-mkdocs-66b7e751a53a492cab07975502d3394b), behave smoke 2/2 (arb-step-behave-e5a4e71ba83c4d8bbda6b2886235172f), gz cli audit 114/114, REQ @covers parity 4/4. Step-4b Codex adversarial validation returned REFUTED-WITH-CAVEATS; both real gaps (refresh-twice idempotency semantics, stale manpage output paths) fixed and re-validated green.
+- Date: 2026-06-29
 
 ---
 
-**Date Completed:** pending
+**Date Completed:** 2026-06-29
 
 **Evidence Hash:** -

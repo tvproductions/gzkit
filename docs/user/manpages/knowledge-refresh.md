@@ -48,7 +48,7 @@ pipelines and ensures operators can re-run the command without side effects.
 uv run gz knowledge refresh
 
 # Verify idempotency: refresh twice and check no changes
-uv run gz knowledge refresh && uv run gz knowledge refresh && git diff .gzkit/knowledge/
+uv run gz knowledge refresh && uv run gz knowledge refresh && git diff .gzkit/governance/knowledge/
 ```
 
 ---
