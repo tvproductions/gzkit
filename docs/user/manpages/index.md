@@ -18,6 +18,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz plan create`](plan-create.md) | Create an ADR |
 | [`gz plan audit`](plan-audit.md) | Structural prerequisite check for plan-OBPI alignment |
 | [`gz justify`](justify.md) | Produce a pre-execution reasoning scaffold (8 sections) |
+| [`gz knowledge`](knowledge.md) | Generate/refresh OKF knowledge bundle |
 | [`gz context`](context.md) | Render focused-context Markdown payload (ADR + OBPIs + covering tests + governance) for one ADR |
 | [`gz implement`](implement.md) | Run Gate 2 and record results |
 | [`gz gates`](gates.md) | Run lane-required gates |

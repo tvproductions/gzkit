@@ -34,12 +34,14 @@ def _dispatch_adr_report(a: argparse.Namespace) -> None:
 
 
 def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
-    """Register adr, obpi, task, justify, issue, complexity, governance, and context groups."""
+    """Register adr, obpi, task, justify, knowledge, issue, complexity,
+    governance, and context groups."""
     _register_adr_parsers(commands)
     _register_obpi_parsers(commands)
     _register_brief_parsers(commands)
     _register_task_parsers(commands)
     _register_justify_parser(commands)
+    _register_knowledge_parser(commands)
     _register_issue_parsers(commands)
     _register_complexity_parsers(commands)
     _register_governance_parsers(commands)
@@ -563,6 +565,51 @@ def _register_justify_parser(commands: argparse._SubParsersAction) -> None:
             draft_slug=a.draft_slug,
         )
     )
+
+
+def _register_knowledge_parser(commands: argparse._SubParsersAction) -> None:
+    """Register the top-level ``gz knowledge`` verb (ADR-0.30.0, OBPI-0.30.0-04).
+
+    Supports generating and refreshing the OKF orientation bundle over the
+    governance tracer slice (state doctrine, trust doctrine, agent-contract
+    rationale, active campaign).
+    """
+    p_knowledge = commands.add_parser(
+        "knowledge",
+        help="Generate or refresh OKF knowledge bundle",
+        description=(
+            "Generate an OKF-conformant markdown bundle over the governance "
+            "tracer slice (state doctrine, trust doctrine, agent-contract "
+            "rationale, active campaign). The bundle provides typed frontmatter "
+            "and markdown links for agents to navigate documentation."
+        ),
+        epilog=build_epilog(
+            [
+                "gz knowledge generate",
+                "gz knowledge refresh",
+            ]
+        ),
+    )
+
+    knowledge_commands = p_knowledge.add_subparsers(
+        dest="knowledge_command",
+        help="Subcommand to execute",
+    )
+    knowledge_commands.required = True
+
+    # Register 'generate' subcommand
+    p_generate = knowledge_commands.add_parser(
+        "generate",
+        help="Emit the OKF knowledge bundle",
+    )
+    p_generate.set_defaults(func=lambda a: _lazy("knowledge_cmd")(subverb="generate"))
+
+    # Register 'refresh' subcommand
+    p_refresh = knowledge_commands.add_parser(
+        "refresh",
+        help="Re-generate the bundle idempotently from current sources",
+    )
+    p_refresh.set_defaults(func=lambda a: _lazy("knowledge_cmd")(subverb="refresh"))
 
 
 def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:

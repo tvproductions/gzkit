@@ -83,6 +83,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "validate": "gzkit.commands.validate_cmd",
     # --- artifacts group (parser_artifacts) ---
     "justify_cmd": "gzkit.commands.justify_cmd",
+    "knowledge_cmd": "gzkit.commands.knowledge",
     "adr_audit_begin_cmd": "gzkit.commands.adr_audit",
     "adr_audit_check": "gzkit.commands.adr_audit",
     "adr_audit_end_cmd": "gzkit.commands.adr_audit",

@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.30.0-04-okf-cli-surface",
+  "parent_adr": "ADR-0.30.0-okf-documentation-knowledge-structure",
+  "lane": "heavy",
+  "entry": "full",
+  "execution_mode": "normal",
+  "current_stage": "implement",
+  "started_at": "2026-06-29T09:09:41Z",
+  "updated_at": "2026-06-29T09:09:41Z",
+  "receipt_state": "other_obpi",
+  "nonce": "eb25de6903a8920a451b200b8f79fb1f",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz obpi pipeline OBPI-0.30.0-04-okf-cli-surface --from=verify",
+  "resume_point": "verify"
+}

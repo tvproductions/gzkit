@@ -126,9 +126,9 @@ Give the operator a single command to produce and refresh the OKF bundle: `knowl
 uv run gz lint
 uv run gz typecheck
 uv run -m unittest tests.commands.test_knowledge -v
-uv run gz knowledge generate
+uv run python -m gzkit.knowledge
 uv run gz cli audit
-uv run -m behave features/
+uv run -m behave features/knowledge.feature
 uv run mkdocs build --strict
 ```
 
@@ -214,6 +214,8 @@ Before this OBPI the bundle can only be produced by invoking the generator modul
 - Defects noted: pending.
 
 ## Tracked Defects
+
+- Unresolved verb `gz knowledge` (brief reconcile, attestor g0)
 
 _No defects tracked._
 
