@@ -2,11 +2,16 @@
 
 Covers:
     REQ-0.0.33-02-01 — Corpus at/below floor exits clean (0)
-    REQ-0.0.33-02-02 — Yellow band (1801–2200) without waiver exits 3
-    REQ-0.0.33-02-03 — Red band (>2200) exits 3 regardless of waiver
+    REQ-0.0.33-02-02 — Yellow band (green_ceiling+1 .. yellow_ceiling) without waiver exits 3
+    REQ-0.0.33-02-03 — Red band (> yellow_ceiling) exits 3 regardless of waiver
     REQ-0.0.33-02-04 — Expired waiver entries are rejected
     REQ-0.0.33-02-05 — Floor drift detected if recalibration event >24h old
     REQ-0.0.33-02-06 — validate_surface_weight resolves from trust_audits re-export
+
+Band-boundary line counts derive from the production constants
+(``_GREEN_CEILING`` / ``_YELLOW_CEILING``), not hard-coded magic numbers, so the
+assertions track the gate's *semantics* and survive recalibration of the bands
+(invariant 6f — tests assert semantics, not strings).
 
 All tests use ``tempfile.TemporaryDirectory`` for sandbox isolation; never
 write to the live repo root.
@@ -23,8 +28,23 @@ from pathlib import Path
 
 from gzkit.core.validation_rules import ValidationError
 from gzkit.governance import trust_audits as _trust_audits_pkg
-from gzkit.governance.trust_audits.surface_weight import validate_surface_weight
+from gzkit.governance.trust_audits.surface_weight import (
+    _GREEN_CEILING,
+    _YELLOW_CEILING,
+    validate_surface_weight,
+)
 from gzkit.traceability import covers
+
+# Band-representative line counts derived from the production constants. A low
+# fixed floor keeps the green band reachable; the band membership of each count
+# is what the assertions pin, regardless of the constants' absolute values.
+_FLOOR = 1000
+_GREEN_LINES = _GREEN_CEILING  # at the green ceiling → still clean
+_YELLOW_LOWER = _GREEN_CEILING + 1  # just into yellow
+_YELLOW_MID = _GREEN_CEILING + 100  # comfortably yellow
+_YELLOW_UPPER = _YELLOW_CEILING  # at the yellow ceiling (top of yellow)
+_RED_LOWER = _YELLOW_CEILING + 1  # just into red
+_RED_MID = _YELLOW_CEILING + 100  # comfortably red
 
 
 def _make_surface_tree(
@@ -105,7 +125,7 @@ class TestGreenBand(unittest.TestCase):
     @covers("REQ-0.0.33-02-01")
     def test_corpus_at_floor_exits_clean(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            root = _make_surface_tree(tmp, line_count=1000, floor_lines=1000)
+            root = _make_surface_tree(tmp, line_count=_FLOOR, floor_lines=_FLOOR)
             errors = validate_surface_weight(root)
             self.assertEqual(
                 errors,
@@ -116,7 +136,7 @@ class TestGreenBand(unittest.TestCase):
     @covers("REQ-0.0.33-02-01")
     def test_corpus_below_floor_exits_clean(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            root = _make_surface_tree(tmp, line_count=800, floor_lines=1000)
+            root = _make_surface_tree(tmp, line_count=_FLOOR - 200, floor_lines=_FLOOR)
             errors = validate_surface_weight(root)
             self.assertEqual(
                 errors,
@@ -127,22 +147,22 @@ class TestGreenBand(unittest.TestCase):
     @covers("REQ-0.0.33-02-01")
     def test_corpus_in_green_band_exits_clean(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            root = _make_surface_tree(tmp, line_count=1500, floor_lines=1000)
+            root = _make_surface_tree(tmp, line_count=_GREEN_LINES, floor_lines=_FLOOR)
             errors = validate_surface_weight(root)
             self.assertEqual(
                 errors,
                 [],
-                "Corpus in green band (≤1800) must exit clean",
+                "Corpus in green band (<= green ceiling) must exit clean",
             )
 
 
 class TestYellowBand(unittest.TestCase):
-    """Yellow band (1801–2200) without waiver exits 3 with ValidationError."""
+    """Yellow band (green ceiling+1 .. yellow ceiling) without waiver exits 3."""
 
     @covers("REQ-0.0.33-02-02")
     def test_yellow_band_no_waiver_exits_3(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            root = _make_surface_tree(tmp, line_count=1900, floor_lines=1000)
+            root = _make_surface_tree(tmp, line_count=_YELLOW_MID, floor_lines=_FLOOR)
             errors = validate_surface_weight(root)
             self.assertEqual(
                 len(errors),
@@ -153,42 +173,42 @@ class TestYellowBand(unittest.TestCase):
     @covers("REQ-0.0.33-02-02")
     def test_yellow_band_error_type_is_surface_weight(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            root = _make_surface_tree(tmp, line_count=1900, floor_lines=1000)
+            root = _make_surface_tree(tmp, line_count=_YELLOW_MID, floor_lines=_FLOOR)
             errors = validate_surface_weight(root)
             self.assertEqual(errors[0].type, "surface_weight")
 
     @covers("REQ-0.0.33-02-02")
     def test_yellow_band_error_names_delta(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            root = _make_surface_tree(tmp, line_count=1900, floor_lines=1000)
+            root = _make_surface_tree(tmp, line_count=_YELLOW_MID, floor_lines=_FLOOR)
             errors = validate_surface_weight(root)
-            delta = 1900 - 1000  # 900
+            delta = _YELLOW_MID - _FLOOR
             self.assertIn(
                 str(delta),
                 errors[0].message,
-                "Error message must name the delta (900)",
+                "Error message must name the delta",
             )
 
     @covers("REQ-0.0.33-02-02")
-    def test_yellow_band_upper_boundary_2200(self) -> None:
+    def test_yellow_band_upper_boundary(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            root = _make_surface_tree(tmp, line_count=2200, floor_lines=1000)
+            root = _make_surface_tree(tmp, line_count=_YELLOW_UPPER, floor_lines=_FLOOR)
             errors = validate_surface_weight(root)
             self.assertEqual(
                 len(errors),
                 1,
-                "Exactly 2200 (yellow ceiling) must emit error",
+                "Exactly at the yellow ceiling must emit error",
             )
 
     @covers("REQ-0.0.33-02-02")
-    def test_yellow_band_lower_boundary_1801(self) -> None:
+    def test_yellow_band_lower_boundary(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            root = _make_surface_tree(tmp, line_count=1801, floor_lines=1000)
+            root = _make_surface_tree(tmp, line_count=_YELLOW_LOWER, floor_lines=_FLOOR)
             errors = validate_surface_weight(root)
             self.assertEqual(
                 len(errors),
                 1,
-                "1801 (just into yellow) must emit error without waiver",
+                "Just into yellow must emit error without waiver",
             )
 
 
@@ -204,12 +224,14 @@ class TestYellowBandWithWaiver(unittest.TestCase):
                 {
                     "waiver_id": "W001",
                     "expires": tomorrow.isoformat(),
-                    "delta_lines": 1000,
+                    "delta_lines": _YELLOW_MID - _FLOOR,  # covers the delta exactly
                     "attestor": "Test User",
                     "reason": "Test waiver",
                 }
             ]
-            root = _make_surface_tree(tmp, line_count=1900, floor_lines=1000, waivers=waivers)
+            root = _make_surface_tree(
+                tmp, line_count=_YELLOW_MID, floor_lines=_FLOOR, waivers=waivers
+            )
             errors = validate_surface_weight(root)
             self.assertEqual(
                 errors,
@@ -226,12 +248,14 @@ class TestYellowBandWithWaiver(unittest.TestCase):
                 {
                     "waiver_id": "W001",
                     "expires": tomorrow.isoformat(),
-                    "delta_lines": 500,  # Only covers 500 lines
+                    "delta_lines": (_YELLOW_MID - _FLOOR) - 1,  # one short of covering
                     "attestor": "Test User",
                     "reason": "Test waiver",
                 }
             ]
-            root = _make_surface_tree(tmp, line_count=1900, floor_lines=1000, waivers=waivers)
+            root = _make_surface_tree(
+                tmp, line_count=_YELLOW_MID, floor_lines=_FLOOR, waivers=waivers
+            )
             errors = validate_surface_weight(root)
             self.assertEqual(
                 len(errors),
@@ -241,7 +265,7 @@ class TestYellowBandWithWaiver(unittest.TestCase):
 
 
 class TestRedBand(unittest.TestCase):
-    """Red band (>2200) exits 3 regardless of waiver."""
+    """Red band (> yellow ceiling) exits 3 regardless of waiver."""
 
     @covers("REQ-0.0.33-02-03")
     def test_red_band_exits_3_even_with_active_waiver(self) -> None:
@@ -252,12 +276,12 @@ class TestRedBand(unittest.TestCase):
                 {
                     "waiver_id": "W001",
                     "expires": tomorrow.isoformat(),
-                    "delta_lines": 5000,  # Very large, but doesn't matter
+                    "delta_lines": _RED_MID,  # very large, but doesn't matter
                     "attestor": "Test User",
                     "reason": "Test waiver",
                 }
             ]
-            root = _make_surface_tree(tmp, line_count=2500, floor_lines=1000, waivers=waivers)
+            root = _make_surface_tree(tmp, line_count=_RED_MID, floor_lines=_FLOOR, waivers=waivers)
             errors = validate_surface_weight(root)
             self.assertEqual(
                 len(errors),
@@ -268,23 +292,23 @@ class TestRedBand(unittest.TestCase):
     @covers("REQ-0.0.33-02-03")
     def test_red_band_no_dispensation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            root = _make_surface_tree(tmp, line_count=2300, floor_lines=1000)
+            root = _make_surface_tree(tmp, line_count=_RED_MID, floor_lines=_FLOOR)
             errors = validate_surface_weight(root)
             self.assertEqual(
                 len(errors),
                 1,
-                "Red band (>2200) must emit error with no dispensation",
+                "Red band must emit error with no dispensation",
             )
 
     @covers("REQ-0.0.33-02-03")
-    def test_red_band_exactly_2201(self) -> None:
+    def test_red_band_just_into_red(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            root = _make_surface_tree(tmp, line_count=2201, floor_lines=1000)
+            root = _make_surface_tree(tmp, line_count=_RED_LOWER, floor_lines=_FLOOR)
             errors = validate_surface_weight(root)
             self.assertEqual(
                 len(errors),
                 1,
-                "2201 (just into red) must emit error",
+                "Just into red must emit error",
             )
 
 
@@ -300,12 +324,14 @@ class TestExpiredWaiver(unittest.TestCase):
                 {
                     "waiver_id": "W001",
                     "expires": yesterday.isoformat(),
-                    "delta_lines": 1000,
+                    "delta_lines": _YELLOW_MID - _FLOOR,
                     "attestor": "Test User",
                     "reason": "Test waiver",
                 }
             ]
-            root = _make_surface_tree(tmp, line_count=1900, floor_lines=1000, waivers=waivers)
+            root = _make_surface_tree(
+                tmp, line_count=_YELLOW_MID, floor_lines=_FLOOR, waivers=waivers
+            )
             errors = validate_surface_weight(root)
             self.assertEqual(
                 len(errors),
@@ -321,12 +347,14 @@ class TestExpiredWaiver(unittest.TestCase):
                 {
                     "waiver_id": "W001",
                     "expires": today.isoformat(),
-                    "delta_lines": 1000,
+                    "delta_lines": _YELLOW_MID - _FLOOR,
                     "attestor": "Test User",
                     "reason": "Test waiver",
                 }
             ]
-            root = _make_surface_tree(tmp, line_count=1900, floor_lines=1000, waivers=waivers)
+            root = _make_surface_tree(
+                tmp, line_count=_YELLOW_MID, floor_lines=_FLOOR, waivers=waivers
+            )
             errors = validate_surface_weight(root)
             self.assertEqual(
                 errors,
@@ -353,8 +381,8 @@ class TestFloorDrift(unittest.TestCase):
 
             root = _make_surface_tree(
                 tmp,
-                line_count=1000,
-                floor_lines=1000,
+                line_count=_FLOOR,
+                floor_lines=_FLOOR,
                 floor_timestamp=floor_ts,
                 ledger_events=ledger_events,
             )
@@ -380,8 +408,8 @@ class TestFloorDrift(unittest.TestCase):
 
             root = _make_surface_tree(
                 tmp,
-                line_count=1000,
-                floor_lines=1000,
+                line_count=_FLOOR,
+                floor_lines=_FLOOR,
                 floor_timestamp=floor_ts,
                 ledger_events=ledger_events,
             )
@@ -403,8 +431,8 @@ class TestFloorDrift(unittest.TestCase):
 
             root = _make_surface_tree(
                 tmp,
-                line_count=1000,
-                floor_lines=1000,
+                line_count=_FLOOR,
+                floor_lines=_FLOOR,
                 floor_timestamp=floor_ts,
                 ledger_events=ledger_events,
             )
@@ -430,8 +458,8 @@ class TestFloorDrift(unittest.TestCase):
 
             root = _make_surface_tree(
                 tmp,
-                line_count=1000,
-                floor_lines=1000,
+                line_count=_FLOOR,
+                floor_lines=_FLOOR,
                 floor_timestamp=floor_ts,
                 ledger_events=ledger_events,
             )
@@ -449,12 +477,12 @@ class TestFloorDrift(unittest.TestCase):
             floor_ts = (now - timedelta(hours=48)).isoformat()  # 48h old
 
             # No recalibration events — bootstrap state
-            ledger_events = []
+            ledger_events: list[dict] = []
 
             root = _make_surface_tree(
                 tmp,
-                line_count=1000,
-                floor_lines=1000,
+                line_count=_FLOOR,
+                floor_lines=_FLOOR,
                 floor_timestamp=floor_ts,
                 ledger_events=ledger_events,
             )
@@ -487,18 +515,14 @@ class TestPackageReExport(unittest.TestCase):
     @covers("REQ-0.0.33-02-06")
     def test_function_returns_list(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            root = _make_surface_tree(tmp, line_count=1000, floor_lines=1000)
+            root = _make_surface_tree(tmp, line_count=_FLOOR, floor_lines=_FLOOR)
             result = validate_surface_weight(root)
             self.assertIsInstance(result, list)
 
     @covers("REQ-0.0.33-02-06")
     def test_function_returns_list_of_validation_errors(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            root = _make_surface_tree(tmp, line_count=2300, floor_lines=1000)
+            root = _make_surface_tree(tmp, line_count=_RED_MID, floor_lines=_FLOOR)
             result = validate_surface_weight(root)
             self.assertGreater(len(result), 0)
             self.assertIsInstance(result[0], ValidationError)
-
-
-if __name__ == "__main__":
-    unittest.main()

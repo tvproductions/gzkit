@@ -16,8 +16,13 @@ from pathlib import Path
 from gzkit.core.validation_rules import ValidationError
 
 # Band constants — pinned by ADR-0.0.33 Decision. ALWAYS read from this block.
-_GREEN_CEILING = 1800
-_YELLOW_CEILING = 2200
+# Recalibrated 2026-06-30 by operator directive (GovZero canon owner): the prior
+# bands (green 1800 / yellow 2200) were ruled wrong while feature work lands, and
+# raised to give headroom. The 15k corpus-split shrink (GHI #533 / ADR-0.0.37) remains
+# the durable reduction path; revisit these bands at that closeout. ADR-0.0.33 Decision
+# is amended to match (provisional bands, recalibration was always anticipated).
+_GREEN_CEILING = 2600
+_YELLOW_CEILING = 3000
 
 _FLOOR_PATH = Path("data") / "surface_weight_floor.json"
 _WAIVERS_PATH = Path("data") / "surface_weight_waivers.json"

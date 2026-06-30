@@ -1,8 +1,8 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "aed354ac9f0971f85e11cbb469486cec1409ae448f453583cc1a6f85b4f58cac",
-  "corpus_entry_count": 46,
-  "committed_ts": "2026-06-23T00:41:54.206277+00:00",
+  "corpus_fingerprint": "a862c327d6d9bb39cd73769fdf8963972e89c012d46a2c67b814e665316a2919",
+  "corpus_entry_count": 51,
+  "committed_ts": "2026-06-30T12:56:25.843510+00:00",
   "attestor": "g0",
-  "attestation_text": "attest completed — recompose AGENTS.md/codex rendition to current corpus (45/45 invariant-tier entries verbatim), freeze provenance sidecar; repairs the pre-existing drift surfaced by OBPI-0.0.74-09 removing the freshness/floor staging flags"
+  "attestation_text": "consent to render — recompose AGENTS.md/codex (lite) to current corpus a862c327: 5 new invariant-tier guardrails (insights-report-2026-06-30) seated verbatim, compose-validated 13,606 B; additive-only, advisor-QC 0.98 (no compressible loss)."
 }

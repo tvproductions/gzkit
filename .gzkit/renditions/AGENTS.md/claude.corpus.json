@@ -1,8 +1,8 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "aed354ac9f0971f85e11cbb469486cec1409ae448f453583cc1a6f85b4f58cac",
-  "corpus_entry_count": 46,
-  "committed_ts": "2026-06-23T00:42:00.859597+00:00",
+  "corpus_fingerprint": "a862c327d6d9bb39cd73769fdf8963972e89c012d46a2c67b814e665316a2919",
+  "corpus_entry_count": 51,
+  "committed_ts": "2026-06-30T12:56:25.973777+00:00",
   "attestor": "g0",
-  "attestation_text": "attest completed — recompose AGENTS.md/claude rendition to current corpus (45/45 invariant-tier entries verbatim), freeze provenance sidecar; repairs the pre-existing drift surfaced by OBPI-0.0.74-09 removing the freshness/floor staging flags"
+  "attestation_text": "consent to render — recompose AGENTS.md/claude (heavy) to current corpus a862c327: 5 new invariant-tier guardrails (insights-report-2026-06-30) seated verbatim, compose-validated 31,569 B under raised 31,800 budget and ~1,199 B below the 32,768 Codex cap; additive-only, advisor-QC 0.98."
 }

@@ -71,6 +71,7 @@ Source: Architecture Planning Memo §12 (2026-03-29).
 - SCOPE EXPANSION IS NOT SCOPE CREEP. If fixing requires updating 3 docs, do it.
 - FLAG DEFECTS, NEVER EXCUSE THEM. Anti-rationalizations: 'Pre-existing' → still a defect; 'Not in scope' → flag and expand, or file GHI; 'Template has drifted' → drift is a defect; 'Evidence unavailable' → missing evidence is a verification-chain defect
 - EVERY DEFECT MUST BE TRACKABLE. In-scope → fix immediately. Out-of-scope → file GHI, append to insights, or note in brief evidence. Untrackable defect = nonexistent defect.
+- Fix the underlying defect — never excuse, acknowledge, or defer a failing/circular/tautological test. Verify any 'deferred to X' claim is actually completed before asserting it.
 
 ## DO IT RIGHT (CRAFTSMANSHIP MAXIM)
 
@@ -95,10 +96,14 @@ Source: Architecture Planning Memo §12 (2026-03-29).
 - Surface assumptions explicitly before implementing. Building on unstated assumptions is how wrong-direction runs start.
 - On inconsistencies: STOP, name confusion, present tradeoff, wait. Don't resolve unilaterally.
 - Push back when an approach has clear problems. Sycophantic agreement with a flawed plan is a trust defect.
+- When a skill scope is narrow (e.g., git-sync), do ONLY that task. Do not autonomously launch unrequested implementation work — treat context as background, not a mandate.
+- Surface blocking failures clearly and upfront rather than silently debugging at length.
 - NEVER: Bypass Gate 5 (human attestation).
 - NEVER: Modify the ledger directly (use gzkit commands).
 - NEVER: Create governance artifacts without proper linkage.
 - NEVER: Bypass human attestation for completion. Gate 5 is mandatory.
+- Never skip mandatory governance pipeline stages, especially the Step 4b adversarial validation/review gate. Run every stage through the governing skill, not via direct CLI.
+- Never commit with --no-verify. All commits and pushes must run through the configured hooks and quality gates.
 
 ## Operator Doctrine (verbatim canon)
 

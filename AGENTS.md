@@ -36,6 +36,7 @@ Behavioral framing via `.gzkit/personas/` (YAML-frontmatter markdown). Every age
 4. **SCOPE EXPANSION IS NOT SCOPE CREEP. If fixing requires updating 3 docs, do it.**
 5. **FLAG DEFECTS, NEVER EXCUSE THEM. Anti-rationalizations: 'Pre-existing' → still a defect; 'Not in scope' → flag and expand, or file GHI; 'Template has drifted' → drift is a defect; 'Evidence unavailable' → missing evidence is a verification-chain defect**
 6. **EVERY DEFECT MUST BE TRACKABLE. In-scope → fix immediately. Out-of-scope → file GHI, append to insights, or note in brief evidence. Untrackable defect = nonexistent defect.** Priority order for out-of-scope: file a GHI via `/ghi-author` (never `gh issue create` directly — see § Behavior Rules — Always #13), append to `.gzkit/insights/agent-insights.jsonl`, or note in the brief's evidence section.
+7. **Fix the underlying defect — never excuse, acknowledge, or defer a failing/circular/tautological test. Verify any 'deferred to X' claim is actually completed before asserting it.**
 
 ## DO IT RIGHT (CRAFTSMANSHIP MAXIM)
 
@@ -127,6 +128,8 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 14. **Goal-driven execution.** Define success criteria. Loop until verified. Strong success criteria let Claude loop independently. (Rule 4, 2026-05-24.)
 15. **Match the codebase's conventions, even if you disagree.** Conformance > taste inside the codebase. If you think a convention is harmful, surface it. Don't fork it silently. (Rule 8, 2026-05-24.)
 16. **Skills-first.** Matching skill first; see § SKILLS FIRST.
+17. **When a skill scope is narrow (e.g., git-sync), do ONLY that task. Do not autonomously launch unrequested implementation work — treat context as background, not a mandate.**
+18. **Surface blocking failures clearly and upfront rather than silently debugging at length.**
 
 ### Never
 
@@ -138,6 +141,8 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 5. **Do not summarize after Stage 2 or 3 and stop.** OBPI pipeline runs through Stage 5; "tests passing" / "implementation complete" is not completion. Premature summaries leave OBPIs implemented-but-unverified, unattested, unsynced.
 6. **Do not work around hook blocks.** A blocking hook signals missing evidence or inactive pipeline state. Diagnose; never hand-write marker files or ledger entries.
 7. **Do not read YAML frontmatter `status: Completed` as proof of completion — read the ledger.** Frontmatter is Layer-1 authorship; ledger is Layer-2 truth. Pipeline markers and derived views (`gz status`, reconciliation caches) are Layer-3 and never source-of-truth. Every gate decision must trace to Layer-1 (canon) or Layer-2 (ledger).
+9. **Never skip mandatory governance pipeline stages, especially the Step 4b adversarial validation/review gate. Run every stage through the governing skill, not via direct CLI.**
+10. **Never commit with --no-verify. All commits and pushes must run through the configured hooks and quality gates.**
 
 ## Pattern Discovery
 
