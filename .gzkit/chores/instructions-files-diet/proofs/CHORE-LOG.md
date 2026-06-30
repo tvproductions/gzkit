@@ -598,3 +598,322 @@ Proof files:
   - [FAIL] `uv run gz validate --documents --surfaces` => exit 1 (known 1736 legacy ADR document-corpus errors present before this pass)
 
 Full failure output intentionally omitted from this proof log; see `baseline-2026-05-22.txt` and `post-trim-2026-05-22.txt` for the tracked blocker summary.
+## 2026-06-29T21:59:24-05:00
+- Status: PASS
+- Chore: instructions-files-diet
+- Title: Instructions & Memory Files Diet (Progressive Disclosure)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run gz validate --advisory-scorecard` => rc=0 (0.19s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --documents --surfaces` => rc=0 (0.64s) -- exit 0 == 0
+  - [PASS] `uv run gz lint` => rc=0 (0.59s) -- exit 0 == 0
+  - [PASS] `uv run mkdocs build --strict` => rc=0 (3.18s) -- exit 0 == 0
+  - [PASS] `uv run -m unittest -q` => rc=0 (83.80s) -- exit 0 == 0
+
+```text
+[uv run gz validate --advisory-scorecard] stdout:
+Validated: advisory_scorecard
+
+✓ All validations passed (1 scopes).
+[uv run gz validate --documents --surfaces] stdout:
+Validated: surfaces, documents
+
+✓ All validations passed (2 scopes).
+[uv run gz lint] stdout:
+Running linters...
+All checks passed!
+
+ADR path contract check passed.
+No Path(__file__).parents[N] violations found.
+Lint passed.
+[uv run mkdocs build --strict] stderr:
+[31m │  ⚠  Warning from the Material for MkDocs team[0m
+[31m │[0m
+[31m │[0m  MkDocs 2.0, the underlying framework of Material for MkDocs,
+[31m │[0m  will introduce backward-incompatible changes, including:
+[31m │[0m
+[31m │  × [0mAll plugins will stop working – the plugin system has been removed
+[31m │  × [0mAll theme overrides will break – the theming system has been rewritten
+[31m │  × [0mNo migration path exists – existing projects cannot be upgraded
+[31m │  × [0mClosed contribution model – community members can't report bugs
+[31m │  × [0mCurrently unlicensed – unsuitable for production use
+[31m │[0m
+[31m │[0m  Our full analysis:
+[31m │[0m
+[31m │[0m  [4mhttps://squidfunk.github.io/mkdocs-material/blog/2026/02/18/mkdocs-2.0/[0m
+[0m
+INFO    -  Cleaning site directory
+INFO    -  Building documentation to directory: /Users/jeff/Documents/Code/gzkit/site
+INFO    -  The following pages exist in the docs directory, but are not included in the "nav" configuration:
+  - AGENTS.md
+  - config/gz-cookiecutter-python-stack.md
+  - drafts/claude-code-inventory.md
+  - drafts/claude-code-vs-codex-control-surface-parity.md
+  - drafts/ddd-palantir-ontology-design-note.md
+  - examples/presentations/index.md
+  - examples/presentations/complete-series-script.md
+  - examples/presentations/part1-script.md
+  - examples/presentations/part2-script.md
+  - examples/presentations/part3-script.md
+  - examples/presentations/part4-script.md
+  - examples/presentations/part5-script.md
+  - examples/presentations/part6-script.md
+  - examples/templates/req-template.md
+  - governance/AGENTS.md
+  - governance/advisory-rules-audit.md
+  - governance/agent-contract-rationale.md
+  - governance/agent-control-surface-fidelity-doctrine.md
+  - governance/agent-control-surface-rendering-substrate.md
+  - governance/agents-md-doctrine.md
+  - governance/ai-governance-brief.md
+  - governance/ai-governance-research-gaps.md
+  - governance/ai-governance-research-literature.md
+  - governance/ai-governance-research-practice.md
+  - governance/ai-governance-research-regulation.md
+  - governance/ai-governance-verification.md
+  - governance/ai-governance.md
+  - governance/ai-governance.provenance.md
+  - governance/arb-middleware.md
+  - governance/behavior-rules.md
+  - governance/build-to-1.0-campaign-2026-06-10.md
+  - governance/build-to-1.0-campaign-2026-06-20.md
+  - governance/cross-platform-rationale.md
+  - governance/defect-fix-routing.md
+  - governance/distribution_baseline.md
+  - governance/distribution_invariant_catalog.md
+  - governance/external-proving-ground-note-2026-06-24.md
+  - governance/externalized-metacognition-architecture-note-2026-06-24.md
+  - governance/foundation-triage-rubric.md
+  - governance/four-phases-of-work.md
+  - governance/harness-engineering-appraisal.md
+  - governance/harness-loop-engineering-strategy-note-2026-06-23.md
+  - governance/hexagonal-architecture.md
+  - governance/historical-self-close-waivers.md
+  - governance/layer-three-derived-views.md
+  - governance/maintenance-guide.md
+  - governance/model-regression-taxonomy.md
+  - governance/model-selection-rationale.md
+  - governance/obpi-attestation.md
+  - governance/okf-cms-knowledge-structure-note-2026-06-23.md
+  - governance/okf-rag-hybrid-design-note-2026-06-27.md
+  - governance/operator-economy.md
+  - governance/opus-tuning.md
+  - governance/personas-catalog.md
+  - governance/prime-directive.md
+  - governance/prior-art-scaffold-firewall-2026-06-14.md
+  - governance/req-scope-discipline.md
+  - governance/return-to-health-plan-2026-05-30.md
+  - governance/security-sensitivity-rationale.md
+  - governance/skill-surface-sync-rationale.md
+  - governance/skills-catalog.md
+  - governance/state-of-gzkit-2026-06-20.md
+  - governance/tests-rationale.md
+  - governance/token-block-doctrine.md
+  - governance/tool-skill-runbook-rationale.md
+  - governance/trust-doctrine.md
+  - governance/ultraplan-brief.md
+  - governance/vocabulary-config-first-exorcism-GHI-615.md
+  - governance/work-phases-and-airlock.md
+  - governance/GovZero/obpi-pipeline-runbook.md
+  - governance/complexity/AGENTS.md
+  - governance/complexity/authoring-guide-protocol.md
+  - governance/complexity/complexity-doctrine-rationale.md
+  - governance/complexity/complexity-thresholds-rationale.md
+  - governance/complexity/distilled-characteristics-2026-05-04.md
+  - governance/complexity/baselines/2026-05-04/baseline.summary.md
+  - governance/research_sources/0900001680afb122.md
+  - governance/research_sources/1-introduction-the-imperative-of-public-values-in-ai.md
+  - governance/research_sources/1680afaeba.md
+  - governance/research_sources/a-closer-look-at-the-existing-risks-of-generative-ai-mapping-the-who-what-and-how-of-real-world-inci.md
+  - governance/research_sources/advancing-accountability-in-ai-en.md
+  - governance/research_sources/ai-risk-management-framework-japanese-translation.md
+  - governance/research_sources/anthropics-responsible-scaling-policy-version-30.md
+  - governance/research_sources/artificial-intelligence-risk-management-framework-ai-rmf-10.md
+  - governance/research_sources/artificial-intelligence-risk-management-framework-generative-artificial-intelligence-profile.md
+  - governance/research_sources/arxiv-240614713.md
+  - governance/research_sources/arxiv-240714981.md
+  - governance/research_sources/auditing-work-exploring-the-new-york-city-algorithmic-bias-audit-regime.md
+  - governance/research_sources/claude-4-system-card.md
+  - governance/research_sources/hai-ai-index-report-2025-chapter3-final.md
+  - governance/research_sources/hls20white20paper20final-v3.md
+  - governance/research_sources/introducing-the-oecd-ai-capability-indicators-en.md
+  - governance/research_sources/m-24-10-advancing-governance-innovation-and-risk-management-for-agency-use-of-artificial-intelligenc.md
+  - governance/research_sources/m-25-21-accelerating-federal-use-of-ai-through-innovation-governance-and-public-trust.md
+  - governance/research_sources/m-25-22-driving-efficient-acquisition-of-artificial-intelligence-in-government.md
+  - governance/research_sources/microsoft-word-ai-governance-tiimalasipaperi-arxivdocx.md
+  - governance/research_sources/nistai600-1genai-profileipd.md
+  - governance/research_sources/okf-rag-hybrid-knowledge-stack-cloud-code-transcript.md
+  - governance/research_sources/operator-system-card.md
+  - governance/research_sources/preparedness-framework-v2.md
+  - governance/research_sources/quantifying-detection-rates.md
+  - governance/research_sources/responsible-ai-governance-a-systematic-literature-review.md
+  - governance/research_sources/responsible-ai-governance-in-the-public-sector-explaining-contextual-dynamics-through-a-realist-synt.md
+  - governance/research_sources/responsible-use-guide.md
+  - governance/research_sources/steering-ais-future-en.md
+  - governance/research_sources/the-bureaucratic-challenge-to-ai-governance-an-empirical-assessment-of-implementation-at-us-federal.md
+  - governance/research_sources/the-governance-of-ai-companies-reconciling-purpose-with-profits.md
+  - harness-docs/GZK-GOV-007-ultrareview-and-gate-5.md
+  - harness-docs/expanding-the-bitter-lesson-for-agentic-software-development.md
+  - harness-docs/xhigh-measurement-protocol.md
+  - releases/PATCH-v0.24.3.md
+  - releases/PATCH-v0.25.10.md
+  - releases/PATCH-v0.25.11.md
+  - releases/PATCH-v0.25.12.md
+  - releases/PATCH-v0.25.13.md
+  - releases/PATCH-v0.25.14.md
+  - releases/PATCH-v0.25.15.md
+  - releases/PATCH-v0.25.16.md
+  - releases/PATCH-v0.25.17.md
+  - releases/PATCH-v0.25.18.md
+  - releases/PATCH-v0.25.19.md
+  - releases/PATCH-v0.25.7.md
+  - releases/PATCH-v0.25.8.md
+  - releases/PATCH-v0.25.9.md
+  - releases/PATCH-v0.26.0.md
+  - releases/PATCH-v0.26.1.md
+  - releases/PATCH-v0.26.2.md
+  - releases/PATCH-v0.26.3.md
+  - releases/PATCH-v0.26.4.md
+  - releases/PATCH-v0.26.5.md
+  - releases/PATCH-v0.26.6.md
+  - releases/PATCH-v0.27.0.md
+  - releases/PATCH-v0.27.1.md
+  - releases/PATCH-v0.28.1.md
+  - releases/PATCH-v0.30.0.md
+  - superpowers/plans/2026-03-26-pipeline-reliability-improvements.md
+  - superpowers/specs/2026-03-26-pipeline-reliability-improvements-design.md
+  - user/concepts/okf-navigation.md
+  - user/concepts/reporter-architecture.md
+  - user/concepts/subagent-pipeline.md
+  - user/concepts/task-overview.md
+  - user/manpages/adr-demote.md
+  - user/manpages/adr-evaluate.md
+  - user/manpages/adr-report.md
+  - user/manpages/arb-advise.md
+  - user/manpages/arb-coverage.md
+  - user/manpages/arb-patterns.md
+  - user/manpages/arb-ruff.md
+  - user/manpages/arb-step.md
+  - user/manpages/arb-ty.md
+  - user/manpages/arb-typecheck.md
+  - user/manpages/arb-validate.md
+  - user/manpages/arb.md
+  - user/manpages/brief-reconcile.md
+  - user/manpages/check.md
+  - user/manpages/chores-advise.md
+  - user/manpages/chores-doctor.md
+  - user/manpages/chores-propose-ghi.md
+  - user/manpages/chores-show.md
+  - user/manpages/chores.md
+  - user/manpages/complexity-advise.md
+  - user/manpages/complexity-distill.md
+  - user/manpages/complexity-guide.md
+  - user/manpages/content.md
+  - user/manpages/context.md
+  - user/manpages/drift.md
+  - user/manpages/format.md
+  - user/manpages/frontmatter-reconcile.md
+  - user/manpages/governance-render.md
+  - user/manpages/interview.md
+  - user/manpages/issue-file.md
+  - user/manpages/issue.md
+  - user/manpages/justify.md
+  - user/manpages/knowledge-generate.md
+  - user/manpages/knowledge-refresh.md
+  - user/manpages/knowledge.md
+  - user/manpages/lint.md
+  - user/manpages/mx-enter.md
+  - user/manpages/mx-exit.md
+  - user/manpages/mx.md
+  - user/manpages/obpi-audit.md
+  - user/manpages/obpi-complete.md
+  - user/manpages/obpi-lock-check.md
+  - user/manpages/obpi-lock-claim.md
+  - user/manpages/obpi-lock-list.md
+  - user/manpages/obpi-lock-release.md
+  - user/manpages/obpi-repudiate.md
+  - user/manpages/obpi-withdraw.md
+  - user/manpages/personas-drift.md
+  - user/manpages/personas.md
+  - user/manpages/plan.md
+  - user/manpages/preflight.md
+  - user/manpages/readiness-evaluate.md
+  - user/manpages/roles.md
+  - user/manpages/skill-list.md
+  - user/manpages/skill-new.md
+  - user/manpages/task-envelope-diagnose.md
+  - user/manpages/task-fanout.md
+  - user/manpages/test.md
+  - user/manpages/tidy.md
+  - user/manpages/typecheck.md
+  - user/manpages/upgrade.md
+  - user/manpages/validate.md
+  - user/skills/_TEMPLATE.md
+  - user/skills/airlineops-parity-scan.md
+  - user/skills/ghi-author.md
+  - user/skills/ghi-close.md
+  - user/skills/ghi-triage.md
+  - user/skills/gz-adr-autolink.md
+  - user/skills/gz-adr-promote.md
+  - user/skills/gz-adr-recon.md
+  - user/skills/gz-adr-sync.md
+  - user/skills/gz-advisor-qc.md
+  - user/skills/gz-agent-sync.md
+  - user/skills/gz-brief-reconcile.md
+  - user/skills/gz-check-config-paths.md
+  - user/skills/gz-chores.md
+  - user/skills/gz-competitor-radar.md
+  - user/skills/gz-complexity-distill.md
+  - user/skills/gz-complexity-guide.md
+  - user/skills/gz-content-compose.md
+  - user/skills/gz-content-remember.md
+  - user/skills/gz-context-diet.md
+  - user/skills/gz-context.md
+  - user/skills/gz-deps-upgrade.md
+  - user/skills/gz-foundation-triage.md
+  - user/skills/gz-governance.md
+  - user/skills/gz-issue-file.md
+  - user/skills/gz-justify.md
+  - user/skills/gz-manage.md
+  - user/skills/gz-migrate-semver.md
+  - user/skills/gz-mx.md
+  - user/skills/gz-project.md
+  - user/skills/gz-pythonic-pattern-apply.md
+  - user/skills/gz-pythonic-pattern-detect.md
+  - user/skills/gz-quality.md
+  - user/skills/gz-skill-router.md
+  - user/skills/gz-tech-debt-review.md
+  - user/skills/gz-tidy.md
+  - user/skills/gz-workflow.md
+  - user/storybook/from-init-to-first-attested-release.md
+INFO    -  Documentation built in 3.02 seconds
+[uv run -m unittest -q] stderr:
+[1/1] Test
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:376: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:376: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+Fidelity validation failed [surface-weight]: Surface weight limit exceeded
+File not written.
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+/Users/jeff/Documents/Code/gzkit/src/gzkit/governance/brief_reconcile.py:131: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+WARNING [rendition-floor-coherence, staged warn]: Committed rendition 'AGENTS.md/claude' omits 1 invariant-tier corpus entry (corpus-tty); the rendition does not satisfy canon's invariant floor (the canon->rendition seam ADR-0.0.37 requires). Recompose with a candidate that includes every invariant-tier entry verbatim: `gz content compose AGENTS.md`, attest the candidate, then recommit the rendition.
+WARNING [rendition-freshness, staged warn]: No provenance sidecar (claude.corpus.json) for 'AGENTS.md'/'claude': the committed rendition can no longer be proven to derive from the current corpus (ADR-0.0.37 § Re-Alignment; rendition-freshness gate, OBPI-0.0.37-22 REQ-03). Recompose and re-attest: `gz content compose AGENTS.md --consumer claude` then `gz content commit AGENTS.md --consumer claude --attestor <you> --attestation-text <verbatim>`.
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:376: DeprecationWarning: Brief 'OBPI-0.0.37-07-test.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+----------------------------------------------------------------------
+Ran 6660 tests in 83.274s
+
+OK
+```

@@ -21,12 +21,12 @@ Validated: evaluation-justify-binding
 
    → ADR-0.0.fixture: missing gz-justify artifact for low score
 Error: Attestation receipt-binding gate failed (heavy/foundation policy).
-  - missing: no receipt file at 
+  - missing: no receipt file at
 arb-step-unittest-dddddddddddddddddddddddddddddddd.json
 Recovery: re-run the cited ARB commands and re-cite the resolved receipt IDs.
 Error: ADR closeout blocked — unwaived REQ coverage gaps in ADR-9.9.9-fixture:
   OBPI-9.9.9-99-fixture: REQ-9.9.9-99-01
-Waive each gap with `gz obpi complete --accept-uncovered <REQ-ID> 
+Waive each gap with `gz obpi complete --accept-uncovered <REQ-ID>
 --accept-uncovered-reason <REASON>` before closing the ADR.
 ADR closeout receipt emitted.
   ADR: ADR-9.9.9-fixture
@@ -52,7 +52,7 @@ ADR Eval: ADR-0.0.26 -- GO
 
 Advisory proposal: dim:clarity:low
   Recurrence: 3
-  Summary: Dimension 'clarity' scored in the 'low' band across 3 distinct 
+  Summary: Dimension 'clarity' scored in the 'low' band across 3 distinct
 artifacts
   Rule target: docs/governance/clarity-low-improvement.md
 Advisory: would file GHI for dim:clarity:low
@@ -61,7 +61,7 @@ No unfiled proposals for eval-feedback-cluster.
 
 Proposal: dim:clarity:low
   Recurrence: 3
-  Summary: Dimension 'clarity' scored in the 'low' band across 3 distinct 
+  Summary: Dimension 'clarity' scored in the 'low' band across 3 distinct
 artifacts
   Rule target: docs/governance/clarity-low-improvement.md
 Filed: https://github.com/owner/repo/issues/101
@@ -74,7 +74,7 @@ Filed: https://github.com/owner/repo/issues/100
 
 Proposal: dim:clarity:low
   Recurrence: 3
-  Summary: Dimension 'clarity' scored in the 'low' band across 3 distinct 
+  Summary: Dimension 'clarity' scored in the 'low' band across 3 distinct
 artifacts
   Rule target: docs/governance/clarity-low-improvement.md
 Filed: https://github.com/owner/repo/issues/99
@@ -422,6 +422,50 @@ Malformed REQ line (skipped): - [ ] REQ-: Empty body.
 Ran 4671 tests in 93.460s
 
 OK (skipped=2)
+[uv run gz validate --documents --surfaces] stdout:
+Validated: surfaces, documents
+
+✓ All validations passed (2 scopes).
+```
+## 2026-06-29T22:08:36-05:00
+- Status: PASS
+- Chore: repository-structure-normalization
+- Title: Repository Structure Normalization
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (82.41s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --documents --surfaces` => rc=0 (0.62s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stderr:
+[1/1] Test
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:376: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:376: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+Fidelity validation failed [surface-weight]: Surface weight limit exceeded
+File not written.
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+/Users/jeff/Documents/Code/gzkit/src/gzkit/governance/brief_reconcile.py:131: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+WARNING [rendition-floor-coherence, staged warn]: Committed rendition 'AGENTS.md/claude' omits 1 invariant-tier corpus entry (corpus-tty); the rendition does not satisfy canon's invariant floor (the canon->rendition seam ADR-0.0.37 requires). Recompose with a candidate that includes every invariant-tier entry verbatim: `gz content compose AGENTS.md`, attest the candidate, then recommit the rendition.
+WARNING [rendition-freshness, staged warn]: No provenance sidecar (claude.corpus.json) for 'AGENTS.md'/'claude': the committed rendition can no longer be proven to derive from the current corpus (ADR-0.0.37 § Re-Alignment; rendition-freshness gate, OBPI-0.0.37-22 REQ-03). Recompose and re-attest: `gz content compose AGENTS.md --consumer claude` then `gz content commit AGENTS.md --consumer claude --attestor <you> --attestation-text <verbatim>`.
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:376: DeprecationWarning: Brief 'OBPI-0.0.37-07-test.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+----------------------------------------------------------------------
+Ran 6660 tests in 81.847s
+
+OK
 [uv run gz validate --documents --surfaces] stdout:
 Validated: surfaces, documents
 

@@ -4803,3 +4803,106 @@
 [16/17] Complexity-thresholds
 [17/17] Preflight
 ```
+## 2026-06-29T22:07:13-05:00
+- Status: PASS
+- Chore: quality-check
+- Title: Run full quality gates
+- Lane: heavy
+- Version: 2.0.0
+- Criteria Results:
+  - [PASS] `uv run gz check` => rc=0 (56.40s) -- exit 0 == 0
+
+```text
+[uv run gz check] stdout:
+✓ Lint
+  ✓ Format
+  ✓ Typecheck
+  ✓ Test
+  ✓ Behave
+  ✓ Skill audit
+  ✓ Parity check
+  ✓ Readiness audit
+  ✓ CLI audit
+  ✓ Unscoped rules
+  ✓ ADR status freshness
+  ✓ Rendition freshness
+  ✓ Rendition floor coherence
+  ✓ Invariant coherence
+  ✓ Session green gate
+  ✓ Closeout proof
+  ✓ Kind invariance
+  ✓ Interview transcripts
+  ✓ Receipt shape
+  ✓ Orientation freshness
+  ✓ Insights shape
+  ✓ Instructions files budget
+  ✓ AGENTS.md map conformance
+  ✓ Complexity-doctrine links
+  ✓ Complexity-thresholds
+  ✓ REQ kind discipline
+  ✓ tautological test audit
+  ✓ Task envelope coherence
+  ✓ Lock-handoff coupling
+  ✓ QC binding
+  ✓ Fidelity presence
+  ✓ Waiver ratchet
+  ✓ Handoff documents
+  ✓ Preflight
+  ✓ Surface fidelity
+  ✓ Line endings
+  ✓ Dispatch attestation
+  ✓ Enforcement floor
+
+✓ All checks passed.
+
+⚠ Advisory: spec-test-code drift detected
+  advisory  Unlinked specs (REQs with no test): 1860
+  advisory  Orphan tests (covering absent REQs): 10
+  Total: 1870 finding(s) (advisory — does not affect exit code)
+  Run `gz drift` for the full per-finding list.
+
+⚠ Flag health warnings
+  Approaching deadline (within 14 days):
+    warning  ops.product_proof
+  Total: 0 stale, 1 approaching (advisory — does not affect exit code)
+[uv run gz check] stderr:
+[1/38] Lint
+[2/38] Format
+[3/38] Typecheck
+[4/38] Test
+[5/38] Behave
+[6/38] Skill audit
+[7/38] Parity check
+[8/38] Readiness audit
+[9/38] CLI audit
+[10/38] Unscoped rules
+[11/38] ADR status freshness
+[12/38] Rendition freshness
+[13/38] Rendition floor coherence
+[14/38] Invariant coherence
+[15/38] Session green gate
+[16/38] Closeout proof
+[17/38] Kind invariance
+[18/38] Interview transcripts
+[19/38] Receipt shape
+[20/38] Orientation freshness
+[21/38] Insights shape
+[22/38] Instructions files budget
+[23/38] AGENTS.md map conformance
+[24/38] Complexity-doctrine links
+[25/38] Complexity-thresholds
+[26/38] REQ kind discipline
+[27/38] tautological test audit
+[28/38] Task envelope coherence
+[29/38] Lock-handoff coupling
+[30/38] QC binding
+[31/38] Fidelity presence
+[32/38] Waiver ratchet
+[33/38] Handoff documents
+[34/38] Preflight
+[35/38] Surface fidelity
+[36/38] Line endings
+[37/38] Dispatch attestation
+[38/38] Enforcement floor
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+```

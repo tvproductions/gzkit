@@ -139,3 +139,81 @@ Ran 4728 tests in 39.020s
 
 OK (skipped=1)
 ```
+## 2026-06-29T22:15:54-05:00
+- Status: PASS
+- Chore: test-isolation-compliance
+- Title: Test Isolation & Health Compliance
+- Lane: lite
+- Version: 2.0.0
+- Criteria Results:
+  - [PASS] `uv run python tests/tools/test_health_profiler.py` => rc=0 (108.14s) -- exit 0 == 0
+  - [PASS] `uv run -m unittest -q` => rc=0 (81.04s) -- exit 0 == 0
+
+```text
+[uv run python tests/tools/test_health_profiler.py] stdout:
+Tests: 6660  Wall: 25.5s
+Failures: 0  Errors: 0
+
+Top 5 slowest tests:
+   4.227s  test_fidelity_gate_passes_now_recovery_is_complete (tests.governance.test_qc_binding_self_check.TestQCBindingSelfCheck.test_fidelity_gate_passes_now_recovery_is_complete)
+   2.487s  test_cli_audit_exits_zero_after_validate_subverb_lands (tests.commands.test_justify_validate.TestCliAuditCoverage.test_cli_audit_exits_zero_after_validate_subverb_lands)
+   2.317s  test_cli_audit_covers_complexity_advise (tests.commands.test_complexity_advise.TestComplexityAdviseCliAuditParity.test_cli_audit_covers_complexity_advise)
+   2.308s  test_plan_create_manpage_exists_and_covers_cli_audit (tests.test_foundation_triage_e2e.TestDocsFixturesCoverageE2E.test_plan_create_manpage_exists_and_covers_cli_audit)
+   2.265s  test_cli_audit_covers_complexity_guide (tests.commands.test_complexity_guide.TestComplexityGuideCliAuditParity.test_cli_audit_covers_complexity_guide)
+
+Top 5 modules by time:
+    5.1s    2 tests  2535.0ms/test  tests.governance.test_qc_binding_self_check.TestQCBindingSelfCheck
+    3.9s   20 tests  194.0ms/test  tests.commands.test_sync_cmds.TestSyncCommand
+    3.3s   31 tests  105.2ms/test  tests.governance.test_promoted_advisory_audits.PromotedAdvisoryAudits
+    2.5s    1 tests  2490.0ms/test  tests.commands.test_justify_validate.TestCliAuditCoverage
+    2.3s    1 tests  2320.0ms/test  tests.commands.test_complexity_advise.TestComplexityAdviseCliAuditParity
+
+Exempt E2E tests (>3s, allowlisted — not gated, see KNOWN_E2E_TESTS):
+    4.23s  test_fidelity_gate_passes_now_recovery_is_complete (tests.governance.test_qc_binding_self_check.TestQCBindingSelfCheck.test_fidelity_gate_passes_now_recovery_is_complete)
+
+PASSED: All thresholds met.
+[uv run python tests/tools/test_health_profiler.py] stderr:
+[1/1] Test
+Fidelity validation failed [surface-weight]: Surface weight limit exceeded
+File not written.
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+WARNING [rendition-floor-coherence, staged warn]: Committed rendition 'AGENTS.md/claude' omits 1 invariant-tier corpus entry (corpus-tty); the rendition does not satisfy canon's invariant floor (the canon->rendition seam ADR-0.0.37 requires). Recompose with a candidate that includes every invariant-tier entry verbatim: `gz content compose AGENTS.md`, attest the candidate, then recommit the rendition.
+WARNING [rendition-freshness, staged warn]: No provenance sidecar (claude.corpus.json) for 'AGENTS.md'/'claude': the committed rendition can no longer be proven to derive from the current corpus (ADR-0.0.37 § Re-Alignment; rendition-freshness gate, OBPI-0.0.37-22 REQ-03). Recompose and re-attest: `gz content compose AGENTS.md --consumer claude` then `gz content commit AGENTS.md --consumer claude --attestor <you> --attestation-text <verbatim>`.
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+[uv run -m unittest -q] stderr:
+[1/1] Test
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:376: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:376: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+Fidelity validation failed [surface-weight]: Surface weight limit exceeded
+File not written.
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+/Users/jeff/Documents/Code/gzkit/src/gzkit/governance/brief_reconcile.py:131: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+WARNING [rendition-floor-coherence, staged warn]: Committed rendition 'AGENTS.md/claude' omits 1 invariant-tier corpus entry (corpus-tty); the rendition does not satisfy canon's invariant floor (the canon->rendition seam ADR-0.0.37 requires). Recompose with a candidate that includes every invariant-tier entry verbatim: `gz content compose AGENTS.md`, attest the candidate, then recommit the rendition.
+WARNING [rendition-freshness, staged warn]: No provenance sidecar (claude.corpus.json) for 'AGENTS.md'/'claude': the committed rendition can no longer be proven to derive from the current corpus (ADR-0.0.37 § Re-Alignment; rendition-freshness gate, OBPI-0.0.37-22 REQ-03). Recompose and re-attest: `gz content compose AGENTS.md --consumer claude` then `gz content commit AGENTS.md --consumer claude --attestor <you> --attestation-text <verbatim>`.
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:376: DeprecationWarning: Brief 'OBPI-0.0.37-07-test.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+----------------------------------------------------------------------
+Ran 6660 tests in 80.521s
+
+OK
+```
