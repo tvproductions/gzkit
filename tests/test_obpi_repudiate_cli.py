@@ -31,6 +31,7 @@ def _quiet_console() -> Console:
 def _mock_config() -> MagicMock:
     config = MagicMock()
     config.paths.ledger = ".gzkit/ledger.jsonl"
+    config.paths.design_root = "docs/design"
     return config
 
 
@@ -208,6 +209,53 @@ class TestObpiRepudiateCmdDryRun(unittest.TestCase):
         # Output contains the event (dry-run should print something)
         output = captured.getvalue()
         self.assertIn("obpi_completion_repudiated", output)
+
+
+@_obpi_scope("OBPI-0.0.71-02")
+class TestObpiRepudiateResetsBriefStatus(SilencedConsoleTestCase):
+    """GHI #610 Gap B: repudiation resets the brief frontmatter status
+    Completed -> Active so `gz obpi complete` no longer fail-closes with
+    'Brief is already Completed.' on re-completion."""
+
+    @patch("gzkit.commands.obpi_cmd.console", new_callable=_quiet_console)
+    @patch("gzkit.commands.obpi_cmd.get_project_root")
+    @patch("gzkit.commands.obpi_cmd.ensure_initialized")
+    @patch("gzkit.commands.obpi_cmd.Ledger")
+    def test_repudiation_resets_completed_brief_to_active(
+        self, mock_ledger_cls, mock_init, mock_root, mock_console
+    ) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            obpi_id = "OBPI-0.0.71-02-x"
+            brief_dir = root / "docs/design/adr/foundation/ADR-0.0.71-x/obpis"
+            brief_dir.mkdir(parents=True)
+            brief = brief_dir / f"{obpi_id}.md"
+            brief.write_text(
+                f"---\nid: {obpi_id}\nparent: ADR-0.0.71-x\nstatus: Completed\n---\n# brief\n",
+                encoding="utf-8",
+            )
+            mock_root.return_value = root
+            mock_init.return_value = _mock_config()
+            ledger = _mock_ledger(obpi_id, "ADR-0.0.71-x")
+            mock_ledger_cls.return_value = ledger
+
+            from gzkit.commands.obpi_cmd import obpi_repudiate_cmd
+
+            obpi_repudiate_cmd(
+                obpi=obpi_id,
+                cause="model-induced-fabrication",
+                reason="agent fabricated the attestation",
+                attestor="g0",
+                dry_run=False,
+            )
+
+            updated = brief.read_text(encoding="utf-8")
+
+        # The repudiation ledger event is still emitted exactly once.
+        self.assertEqual(ledger.append.call_count, 1)
+        # Layer-1 brief status leaves the terminal 'Completed' shape.
+        self.assertIn("status: Active", updated)
+        self.assertNotIn("status: Completed", updated)
 
 
 @_obpi_scope("OBPI-0.0.71-02")

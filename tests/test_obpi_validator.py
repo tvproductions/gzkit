@@ -875,3 +875,35 @@ status: {status}
             "Changed-files audit found no modified paths. Completion requires live scope evidence.",
             errors,
         )
+
+
+class TestShouldUseSealedScope(unittest.TestCase):
+    """GHI #610 Gap A: a repudiated-but-committed OBPI reuses its sealed
+    completion scope evidence so re-completion is not false-failed by the live
+    tree showing only post-repudiation governance churn."""
+
+    def test_ledger_completed_uses_sealed(self) -> None:
+        from gzkit.hooks.obpi import _should_use_sealed_scope
+
+        self.assertTrue(_should_use_sealed_scope({"ledger_completed": True}))
+
+    def test_repudiated_with_sealed_evidence_uses_sealed(self) -> None:
+        from gzkit.hooks.obpi import _should_use_sealed_scope
+
+        info = {
+            "ledger_completed": False,
+            "repudiated": True,
+            "latest_completion_evidence": {"scope_audit": {"changed_files": ["src/x.py"]}},
+        }
+        self.assertTrue(_should_use_sealed_scope(info))
+
+    def test_repudiated_without_sealed_evidence_uses_live(self) -> None:
+        from gzkit.hooks.obpi import _should_use_sealed_scope
+
+        # No sealed completion evidence -> cannot trust sealed scope; fall to live tree.
+        self.assertFalse(_should_use_sealed_scope({"ledger_completed": False, "repudiated": True}))
+
+    def test_active_obpi_uses_live(self) -> None:
+        from gzkit.hooks.obpi import _should_use_sealed_scope
+
+        self.assertFalse(_should_use_sealed_scope({"ledger_completed": False}))

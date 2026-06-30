@@ -13,10 +13,12 @@ from gzkit.commands.adr_audit import (
 from gzkit.commands.common import (
     GzCliError,
     _is_pool_adr_id,
+    _upsert_frontmatter_value,
     console,
     ensure_initialized,
     get_project_root,
     resolve_adr_file,
+    resolve_obpi,
     resolve_obpi_file,
 )
 from gzkit.commands.obpi_stages import (  # noqa: F401
@@ -93,6 +95,33 @@ def obpi_withdraw_cmd(obpi: str, reason: str, dry_run: bool) -> None:
     console.print(f"  Reason: {reason}")
 
 
+def _reset_brief_status_after_repudiation(
+    project_root: Path,
+    config: Any,
+    ledger: Ledger,
+    canonical_id: str,
+) -> Path | None:
+    """Reset a repudiated OBPI brief's frontmatter ``status: Completed`` to
+    ``Active`` (GHI #610 Gap B).
+
+    ``gz obpi repudiate`` reverses Gate-5 (ADR-0.0.71); the OBPI is
+    re-completable, so the Layer-1 brief must leave the terminal ``Completed``
+    shape that ``gz obpi complete`` fail-closes on ("Brief is already
+    Completed."). Returns the brief path when a reset was written, else ``None``
+    (no on-disk brief — phantom/ledger-only OBPI — or status was not
+    ``Completed``).
+    """
+    _canonical, obpi_file = resolve_obpi(project_root, config, ledger, canonical_id)
+    if obpi_file is None or not obpi_file.exists():
+        return None
+    content = obpi_file.read_text(encoding="utf-8")
+    current = (parse_frontmatter_value(content, "status") or "").strip().lower()
+    if current != "completed":
+        return None
+    obpi_file.write_text(_upsert_frontmatter_value(content, "status", "Active"), encoding="utf-8")
+    return obpi_file
+
+
 def obpi_repudiate_cmd(obpi: str, cause: str, reason: str, attestor: str, dry_run: bool) -> None:
     """Repudiate a fraudulent or erroneous OBPI completion (ADR-0.0.71)."""
     if not attestor.strip():
@@ -150,6 +179,7 @@ def obpi_repudiate_cmd(obpi: str, cause: str, reason: str, attestor: str, dry_ru
         return
 
     ledger.append(event)
+    reset_path = _reset_brief_status_after_repudiation(project_root, config, ledger, canonical_id)
     console.print("[green]OBPI completion repudiated.[/green]")
     console.print(f"  OBPI: {canonical_id}")
     if parent:
@@ -157,6 +187,8 @@ def obpi_repudiate_cmd(obpi: str, cause: str, reason: str, attestor: str, dry_ru
     console.print(f"  Cause: {cause}")
     console.print(f"  Repudiated receipt: {repudiated_receipt}")
     console.print(f"  Attestor: {attestor}")
+    if reset_path is not None:
+        console.print("  Brief status reset: Completed -> Active (re-completable)")
 
 
 def _gate_completed_receipt_binding(

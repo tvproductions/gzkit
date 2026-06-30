@@ -330,6 +330,22 @@ def normalize_git_sync_state(raw_state: Any) -> dict[str, Any] | None:
     return normalized
 
 
+def _should_use_sealed_scope(obpi_info: dict[str, Any]) -> bool:
+    """Return whether to trust an OBPI's sealed completion scope evidence over
+    the live working tree (GHI #66; GHI #610 Gap A).
+
+    A ledger-completed OBPI uses its sealed ``scope_audit``. A *repudiated* OBPI
+    (``gz obpi repudiate``, ADR-0.0.71) whose completion was reversed but whose
+    deliverables remain committed reuses the same sealed evidence — otherwise
+    the live tree shows only post-repudiation governance churn, the changed-files
+    audit false-fails, and the re-completion the repudiate contract promises is
+    blocked.
+    """
+    if obpi_info.get("ledger_completed", False):
+        return True
+    return bool(obpi_info.get("repudiated")) and bool(obpi_info.get("latest_completion_evidence"))
+
+
 class ObpiValidator:
     """Validates OBPI brief content against governance requirements."""
 
@@ -382,16 +398,19 @@ class ObpiValidator:
         parent_info = graph.get(self.ledger.canonicalize_id(parent_id), {})
         lane = resolve_adr_lane(parent_info, self.config.mode)
 
-        # GHI #66: Check if OBPI is ledger-completed to use sealed scope evidence
+        # GHI #66 / GHI #610: use sealed scope evidence for a ledger-completed
+        # OBPI, and for a repudiated-but-committed OBPI re-completing under
+        # ADR-0.0.71 (its deliverables are already committed; the live tree
+        # carries only post-repudiation governance churn).
         obpi_id = parse_frontmatter_value(content, "id")
         obpi_info = graph.get(self.ledger.canonicalize_id(obpi_id), {}) if obpi_id else {}
-        ledger_completed = obpi_info.get("ledger_completed", False)
+        use_sealed = _should_use_sealed_scope(obpi_info)
 
         allowlist = extract_allowed_paths(content)
         if not allowlist:
             errors.append("Missing or empty 'Allowed Paths' allowlist.")
         else:
-            if ledger_completed:
+            if use_sealed:
                 completion_evidence = obpi_info.get("latest_completion_evidence") or {}
                 scope_audit = normalize_scope_audit(completion_evidence.get("scope_audit"))
                 changed_files = scope_audit.get("changed_files", []) if scope_audit else []
@@ -399,7 +418,7 @@ class ObpiValidator:
                 changed_files = collect_changed_files(self.project_root)
             errors.extend(self._validate_changed_files(changed_files, allowlist))
 
-        if not ledger_completed:
+        if not use_sealed:
             readiness = assess_git_sync_readiness(self.project_root)
             errors.extend(cast(list[str], readiness["blockers"]))
 
