@@ -131,7 +131,7 @@ TRACER_SLICE: list[SourceEntry] = [
         "agent-contract-rationale",
         Path("docs/governance/agent-contract-rationale.md"),
     ),
-    ("active-campaign", Path("docs/governance/build-to-1.0-campaign-2026-06-20.md")),
+    ("active-campaign", Path("docs/governance/build-to-1.0-campaign-2026-06-30.md")),
 ]
 BUNDLE_OUTPUT = Path(".gzkit/governance/knowledge")
 # Module-execution entry point lives in ``__main__.py`` (run as
