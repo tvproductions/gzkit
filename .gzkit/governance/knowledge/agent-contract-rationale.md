@@ -9,4 +9,4 @@ type: doctrine
 
 Knowledge concept: agent-contract-rationale
 
-Canonical source: [agent-contract-rationale.md](docs/governance/agent-contract-rationale.md)
+Canonical source: [agent-contract-rationale.md](../../../docs/governance/agent-contract-rationale.md)

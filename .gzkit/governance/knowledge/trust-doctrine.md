@@ -9,4 +9,4 @@ type: doctrine
 
 Knowledge concept: trust-doctrine
 
-Canonical source: [trust-doctrine.md](docs/governance/trust-doctrine.md)
+Canonical source: [trust-doctrine.md](../../../docs/governance/trust-doctrine.md)

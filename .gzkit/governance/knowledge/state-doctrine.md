@@ -9,4 +9,4 @@ type: doctrine
 
 Knowledge concept: state-doctrine
 
-Canonical source: [state-doctrine.md](docs/governance/state-doctrine.md)
+Canonical source: [state-doctrine.md](../../../docs/governance/state-doctrine.md)

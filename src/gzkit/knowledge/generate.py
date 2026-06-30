@@ -26,6 +26,7 @@ closeout surface.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import yaml
@@ -35,6 +36,30 @@ from gzkit.knowledge.concept_frontmatter import ConceptFrontmatter
 __all__ = ["BUNDLE_OUTPUT", "TRACER_SLICE", "generate_bundle"]
 
 SourceEntry = tuple[str, Path]  # (slug, source_path)
+
+_RESERVED = frozenset({"index.md", "log.md"})  # OKF reserved names — never concept links
+
+
+def _discover_concept_slugs(out: Path) -> list[str]:
+    """Sorted stems of every non-reserved OKF concept doc present in ``out``.
+
+    Includes both the freshly generated tracer-slice concept docs AND any
+    preserved authored node (e.g. OBPI-06's ``content-boundary.md``), so
+    progressive disclosure from the root index reaches every typed node — no
+    orphans. Deterministic (``sorted``) so the index is byte-stable across runs.
+    """
+    slugs: list[str] = []
+    for path in sorted(out.glob("*.md")):
+        if path.name in _RESERVED:
+            continue
+        text = path.read_text(encoding="utf-8")
+        if not text.startswith("---\n"):
+            continue
+        _, fm_text, _ = text.split("---\n", 2)
+        frontmatter = yaml.safe_load(fm_text) or {}
+        if frontmatter.get("type"):  # OKF posture: any non-empty type is a concept node
+            slugs.append(path.stem)
+    return slugs
 
 
 def _render_frontmatter(model: ConceptFrontmatter) -> str:
@@ -64,9 +89,15 @@ def generate_bundle(sources: list[SourceEntry], output_dir: Path | str) -> None:
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
 
-    slugs: list[str] = []
     for slug, source_path in sorted(sources, key=lambda entry: entry[0]):
+        # `resource` is the OKF machine edge — repo-root-relative, the form the
+        # progressive-disclosure walk (REQ-05-01) resolves against the project root.
         source_ref = source_path.as_posix()
+        # The body markdown link is the HUMAN-navigable edge — it must resolve
+        # from the concept doc's own location (out/<slug>.md), so it is the path
+        # relative to the bundle dir, NOT the repo-root-relative `resource` string
+        # (which would dead-end three levels deep). Rendered posix for portability.
+        link_ref = Path(os.path.relpath(source_path, out)).as_posix()
         concept = ConceptFrontmatter(
             type="doctrine",
             title=slug.replace("-", " ").title(),
@@ -76,17 +107,19 @@ def generate_bundle(sources: list[SourceEntry], output_dir: Path | str) -> None:
         body = (
             f"\n# {concept.title}\n\n"
             f"{concept.description}\n\n"
-            f"Canonical source: [{source_path.name}]({source_ref})\n"
+            f"Canonical source: [{source_path.name}]({link_ref})\n"
         )
         (out / f"{slug}.md").write_text(_render_frontmatter(concept) + body, encoding="utf-8")
-        slugs.append(slug)
 
     index = ConceptFrontmatter(
         type="index",
         title="Knowledge Index",
         description="OKF orientation bundle — governance tracer slice.",
     )
-    links = "\n".join(f"- [{slug}](./{slug}.md)" for slug in slugs)
+    # Build links by DISCOVERY over the bundle, so preserved authored nodes
+    # (e.g. content-boundary.md) are reached from the index, not just the
+    # generated tracer slugs. Written last so index.md itself is excluded.
+    links = "\n".join(f"- [{slug}](./{slug}.md)" for slug in _discover_concept_slugs(out))
     index_body = f"\n# {index.title}\n\n{index.description}\n\n{links}\n"
     (out / "index.md").write_text(_render_frontmatter(index) + index_body, encoding="utf-8")
 

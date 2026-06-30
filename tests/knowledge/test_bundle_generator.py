@@ -15,6 +15,7 @@ live ``docs/governance/`` paths. The real ``TRACER_SLICE`` constant is
 exercised only by the module ``__main__`` block, not by these unit tests.
 """
 
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -101,8 +102,53 @@ class TestBundleGenerator(unittest.TestCase):
                     source.as_posix(),
                     f"concept {slug} resource edge must point at its source",
                 )
-                # Body carries a markdown link back to the canonical source.
-                self.assertIn(source.as_posix(), body, f"{slug} body must link to source")
+                # Body carries a markdown link whose target is a PORTABLE
+                # relative path that RESOLVES from the concept doc's own
+                # location to the canonical source — semantics, not mere string
+                # containment. A repo-root-relative (or absolute) link string is
+                # present in the body but does NOT resolve from a file three
+                # levels deep in the bundle; the link must be navigable.
+                link_targets = re.findall(r"\]\(([^)]+)\)", body)
+                self.assertTrue(link_targets, f"{slug} body must contain a markdown link")
+                link = link_targets[0]
+                self.assertFalse(
+                    Path(link).is_absolute(),
+                    f"{slug} body link must be a portable relative path, not root-anchored",
+                )
+                # Concept doc lives at out/<slug>.md, so resolve link against `out`.
+                resolved = (out / link).resolve()
+                self.assertEqual(
+                    resolved,
+                    source.resolve(),
+                    f"{slug} body link must resolve to its canonical source, not a dead path",
+                )
+
+    @covers("REQ-0.30.0-02-02")
+    def test_index_links_preserved_authored_node(self) -> None:
+        """REQ-02 (progressive disclosure, no orphans): an authored OKF node
+        preserved in the bundle (e.g. OBPI-06's content-boundary doctrine) is
+        reachable from the root index, never left an orphan typed node."""
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            sources = _build_fixture_slice(tmp_path)
+            out = tmp_path / "bundle"
+            out.mkdir(parents=True, exist_ok=True)
+            # An authored, OKF-conformant node placed in the bundle BEFORE generation.
+            (out / "content-boundary.md").write_text(
+                "---\ntype: doctrine\ntitle: Content Boundary\n---\n\n# Content Boundary\n",
+                encoding="utf-8",
+            )
+
+            generate_bundle(sources, out)
+
+            _index_fm, index_body = _split_frontmatter(
+                (out / "index.md").read_text(encoding="utf-8")
+            )
+            self.assertIn(
+                "content-boundary.md",
+                index_body,
+                "root index must link the preserved authored node (no orphan typed nodes)",
+            )
 
     @covers("REQ-0.30.0-02-03")
     def test_generator_does_not_modify_source_docs(self) -> None:

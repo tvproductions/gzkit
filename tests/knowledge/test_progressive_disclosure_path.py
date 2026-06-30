@@ -52,16 +52,18 @@ class TestBundleRootReachability(unittest.TestCase):
                 parts = concept_text.split("---", 2)
                 if len(parts) >= 2:
                     frontmatter = yaml.safe_load(parts[1]) or {}
+            # `resource` is OPTIONAL in the OKF model: a tracer-slice concept
+            # mirrors a source and carries a resource edge that must resolve;
+            # an authored leaf node (e.g. content-boundary.md doctrine) IS
+            # canonical and carries none — a valid terminal of the walk. Follow
+            # the edge when present; do not require it on every linked node.
             resource = frontmatter.get("resource")
-            self.assertIsNotNone(
-                resource,
-                f"Concept doc {concept_path.name} missing 'resource:' frontmatter",
-            )
-            canonical = _PROJECT_ROOT / resource
-            self.assertTrue(
-                canonical.exists(),
-                f"Canonical source '{resource}' linked from {concept_path.name} does not exist",
-            )
+            if resource is not None:
+                canonical = _PROJECT_ROOT / resource
+                self.assertTrue(
+                    canonical.exists(),
+                    f"Canonical source '{resource}' linked from {concept_path.name} does not exist",
+                )
 
 
 class TestControlSurfacePointer(unittest.TestCase):

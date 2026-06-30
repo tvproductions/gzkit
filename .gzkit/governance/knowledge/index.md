@@ -10,5 +10,6 @@ OKF orientation bundle — governance tracer slice.
 
 - [active-campaign](./active-campaign.md)
 - [agent-contract-rationale](./agent-contract-rationale.md)
+- [content-boundary](./content-boundary.md)
 - [state-doctrine](./state-doctrine.md)
 - [trust-doctrine](./trust-doctrine.md)
