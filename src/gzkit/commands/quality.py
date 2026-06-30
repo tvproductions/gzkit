@@ -29,10 +29,14 @@ CheckStepRunner = Callable[[pathlib.Path], Any]
 # dict — not per-runner decoration — so the seam in check() is the single
 # firing point (REQ-0.0.74-20-01, REQUIREMENT: ONE seam only).
 #
-# All current steps emit ERROR (grounding band): they block on a real violation
-# and demote to advisory under an active marker.  No current step's guard_name
-# is in GATE5_INVARIANTS — floor membership applies to future steps that are
-# explicitly named as invariant guards.
+# Most steps emit ERROR (grounding band): they block on a real violation and
+# demote to advisory under an active marker.  The "Enforcement floor" step is
+# the exception — it is the §5 enforcement-claim meta-validator (the floor's
+# own teeth), so it emits CRITICAL to pin it: a FACADE must ground in or out of
+# the hangar (ADR-0.0.74 BI#3, "never relaxes either engine"; GHI #651).  It is
+# pinned by emitted level, not GATE5_INVARIANTS membership — that frozenset is a
+# fixed five-member integrity-class set (REQ-0.0.74-03-01) the meta-validator
+# runner is not itself a member of.
 #
 # Fallback: if a step name is absent (future step not yet registered), check()
 # derives a kebab-case guard_name from the display name and uses ERROR level.
@@ -76,6 +80,9 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "Surface fidelity": ("surface-fidelity", _mx_levels.ERROR),
     "Line endings": ("line-endings", _mx_levels.ERROR),
     "Dispatch attestation": ("dispatch-attestation", _mx_levels.ERROR),
+    # §5 enforcement-claim meta-validator — pinned CRITICAL so a FACADE never
+    # demotes to advisory inside the hangar (ADR-0.0.74 BI#3 / §5; GHI #651).
+    "Enforcement floor": ("enforcement-floor", _mx_levels.CRITICAL),
 }
 
 

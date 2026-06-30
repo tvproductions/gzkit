@@ -147,6 +147,43 @@ class TestFloorPin(unittest.TestCase):
                     self.assertEqual(result.returncode, 3)
 
 
+class TestEnforcementFloorPin(unittest.TestCase):
+    """GHI #651: the enforcement-floor (§5 meta-validator) gz check step must pin
+    CRITICAL and never demote to advisory inside the hangar — a FACADE must ground
+    under an active marker, not silently pass (ADR-0.0.74 BI#3 / §5)."""
+
+    def test_enforcement_floor_step_pinned_critical(self) -> None:
+        """The 'Enforcement floor' step is registered at CRITICAL, not the
+        ERROR fallback that demotes under a marker."""
+        from gzkit.commands.quality import _STEP_GUARD_META
+        from gzkit.mx import levels
+
+        guard_name, emitted_level = _STEP_GUARD_META["Enforcement floor"]
+        self.assertEqual(guard_name, "enforcement-floor")
+        self.assertEqual(emitted_level, levels.CRITICAL)
+
+    def test_enforcement_floor_facade_grounds_under_marker(self) -> None:
+        """A failing enforcement-floor step (FACADE, returncode=3) stays fatal
+        inside the hangar — resolved exactly as check() would resolve it."""
+        from gzkit.commands.quality import _STEP_GUARD_META, _apply_mx_seam
+        from gzkit.mx import levels
+
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _write_marker(root)
+
+            guard_name, emitted_level = _STEP_GUARD_META.get(
+                "Enforcement floor", ("enforcement-floor", levels.ERROR)
+            )
+            result = _apply_mx_seam(_failing_result(), guard_name, emitted_level, root)
+
+        self.assertFalse(
+            result.success,
+            "A FACADE must ground under an active marker, not demote to advisory",
+        )
+        self.assertEqual(result.returncode, 3, "Pinned floor step must retain returncode=3")
+
+
 class TestExcludedPaths(unittest.TestCase):
     """REQ-0.0.74-20-04: excluded policy paths are not routed through the seam."""
 
