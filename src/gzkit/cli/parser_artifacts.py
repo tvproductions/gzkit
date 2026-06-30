@@ -34,8 +34,11 @@ def _dispatch_adr_report(a: argparse.Namespace) -> None:
 
 
 def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
-    """Register adr, obpi, task, justify, knowledge, issue, complexity,
-    governance, and context groups."""
+    """Register the artifact parser groups.
+
+    Covers adr, obpi, task, justify, knowledge, issue, complexity, governance,
+    and context groups.
+    """
     _register_adr_parsers(commands)
     _register_obpi_parsers(commands)
     _register_brief_parsers(commands)

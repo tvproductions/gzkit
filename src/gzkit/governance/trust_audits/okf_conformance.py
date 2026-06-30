@@ -73,16 +73,18 @@ def _has_nonempty_type(data: dict | None) -> bool:
 
 
 def _is_bundle_root(directory: Path) -> bool:
-    """A directory is an OKF bundle root iff it has a reserved ``index.md`` AND
-    a type-bearing OKF signal — either the reserved ``index.md`` itself carries a
-    ``type``, or at least one type-bearing concept doc is present (Boundary
-    Invariant 2 — structural recognition by reserved files + ``type``, never by an
-    ``okf/`` folder name).
+    """Return True if ``directory`` is an OKF bundle root.
+
+    A bundle root has a reserved ``index.md`` AND a type-bearing OKF signal —
+    either the reserved ``index.md`` itself carries a ``type``, or at least one
+    type-bearing concept doc is present (Boundary Invariant 2 — structural
+    recognition by reserved files + ``type``, never by an ``okf/`` folder name).
 
     Reading the reserved ``index.md``'s own ``type`` as a detection signal means a
     bundle whose concept docs were all stripped of frontmatter (e.g. a generator
     regression) is still recognized — and therefore flagged — rather than going
-    invisible to the audit."""
+    invisible to the audit.
+    """
     index = directory / _INDEX_FILE
     if not index.is_file():
         return False
@@ -99,8 +101,11 @@ def _is_bundle_root(directory: Path) -> bool:
 
 
 def _validate_file(path: Path, project_root: Path) -> list[ValidationError]:
-    """Validate one bundle markdown file; reserved files need only parseable
-    frontmatter, concept docs additionally need a non-empty ``type``."""
+    """Validate one bundle markdown file.
+
+    Reserved files need only parseable frontmatter; concept docs additionally
+    need a non-empty ``type``.
+    """
     rel = path.relative_to(project_root).as_posix()
     data, parse_ok = _read_frontmatter(path)
     reserved = path.name in _RESERVED_FILES

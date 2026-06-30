@@ -579,7 +579,7 @@ def write_completion_handoff(
     branch: str,
     brief_rel_path: str,
 ) -> Path:
-    """Write a full session handoff as the register entry for OBPI completion.
+    r"""Write a full session handoff as the register entry for OBPI completion.
 
     Unlike :func:`write_degenerate_handoff` (the abandon path), this is a
     non-abandoned ``CREATE`` handoff carrying all seven required sections, so
@@ -588,7 +588,7 @@ def write_completion_handoff(
     derived from the OBPI semver (bare ``ADR-X.Y.Z``) so the frontmatter validates.
     Auto-drafted from completion evidence and written mechanically at every
     ``gz obpi complete`` (token-block exit edge, GHI #619); it may be terse. Written
-    with explicit ``\\n`` newlines so the committed artifact is LF on every platform.
+    with explicit ``\n`` newlines so the committed artifact is LF on every platform.
     """
     handoff_dir = project_root / ".gzkit" / "handoffs"
     handoff_dir.mkdir(parents=True, exist_ok=True)

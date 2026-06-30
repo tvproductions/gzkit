@@ -59,7 +59,7 @@ _PASS_STATES: frozenset[str] = frozenset({"PASS", "PASSED", "GREEN", "VALIDATED"
 
 
 def _is_pure_operand(node: ast.expr) -> bool:
-    """True if the operand contains no call (``f() == f()`` may be non-deterministic).
+    """Return True if the operand contains no call (``f() == f()`` may be non-deterministic).
 
     The copy-vs-self purity guard: only flag self-equality over call-free operands,
     so a legitimate (possibly side-effecting / non-deterministic) ``now() == now()``
@@ -121,7 +121,7 @@ def _detect_copy_vs_self(
 
 
 def _is_mtime_node(node: ast.AST) -> bool:
-    """True for ``<expr>.st_mtime`` attribute access or a ``getmtime(...)`` call.
+    """Return True for ``<expr>.st_mtime`` attribute access or a ``getmtime(...)`` call.
 
     Inspects Attribute/Call nodes ONLY — never ``ast.Constant`` — so an ``st_mtime``
     mention inside a docstring is structurally invisible (the load-bearing FP guard).
@@ -185,7 +185,10 @@ def _root_name(node: ast.expr) -> str | None:
 
 
 def _is_clean_early_return(stmt: ast.stmt) -> bool:
-    """True for a single clean/empty early return (``return []`` / ``0`` / ``None`` / ``True``)."""
+    """Return True for a single clean/empty early return.
+
+    Matches ``return []`` / ``0`` / ``None`` / ``True``.
+    """
     if not isinstance(stmt, ast.Return):
         return False
     value = stmt.value
