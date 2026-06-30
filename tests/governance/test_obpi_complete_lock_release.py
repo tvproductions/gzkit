@@ -166,6 +166,7 @@ class TestSurrenderLockAtCompletion(unittest.TestCase):
             self.assertEqual(len(released), 1)
             hp = self._handoff_path(released[0])
             self.assertIsNotNone(hp)
+            assert hp is not None  # narrow str | None for ty after assertIsNotNone
             self.assertTrue((root / hp).is_file())  # cited register entry exists
 
     def test_no_lock_writes_handoff_but_no_release_event(self) -> None:
