@@ -1,0 +1,21 @@
+gz adr fidelity: ADR-0.30.0
+  Assertions: 3
+
+  PASS  The generated OKF bundle is conformant: every non-reserved concept doc
+has parseable frontmatter and a non-empty `type`, and reserved
+`index.md`/`log.md` follow OKF structure — the generated-bundle-only validator
+scope landed by OBPI-03.
+        command:  uv run gz validate --okf-conformance
+        expected: 0  observed: 0
+
+  PASS  The OKF bundle generator (OBPI-02/04) refreshes idempotently from the
+current tracer-slice sources without error, leaving the bundle byte-stable.
+        command:  uv run gz knowledge refresh --quiet
+        expected: 0  observed: 0
+
+  PASS  The Fidelity Assertions block is parseable by the fidelity gate.
+        command:  uv run gz adr fidelity
+ADR-0.30.0-okf-documentation-knowledge-structure --check
+        expected: 0  observed: 0
+
+  Summary: 3 pass, 0 fail

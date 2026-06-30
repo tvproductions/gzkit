@@ -1,0 +1,136 @@
+{
+  "adr": "ADR-0.30.0-okf-documentation-knowledge-structure",
+  "passed": true,
+  "checked_obpis": [
+    "OBPI-0.30.0-01-okf-concept-frontmatter-model",
+    "OBPI-0.30.0-02-okf-bundle-generator",
+    "OBPI-0.30.0-03-okf-conformance-validator",
+    "OBPI-0.30.0-04-okf-cli-surface",
+    "OBPI-0.30.0-05-progressive-disclosure-path-docs",
+    "OBPI-0.30.0-06-content-boundary-doctrine"
+  ],
+  "complete_obpis": [
+    "OBPI-0.30.0-01-okf-concept-frontmatter-model",
+    "OBPI-0.30.0-02-okf-bundle-generator",
+    "OBPI-0.30.0-03-okf-conformance-validator",
+    "OBPI-0.30.0-04-okf-cli-surface",
+    "OBPI-0.30.0-05-progressive-disclosure-path-docs",
+    "OBPI-0.30.0-06-content-boundary-doctrine"
+  ],
+  "findings": [],
+  "coverage": {
+    "total_reqs": 25,
+    "covered_reqs": 21,
+    "uncovered_reqs": 4,
+    "coverage_percent": 84.0,
+    "by_obpi": [
+      {
+        "obpi": "OBPI-0.30.0-01",
+        "total_reqs": 4,
+        "covered_reqs": 3,
+        "uncovered_reqs": 1,
+        "coverage_percent": 75.0
+      },
+      {
+        "obpi": "OBPI-0.30.0-02",
+        "total_reqs": 4,
+        "covered_reqs": 4,
+        "uncovered_reqs": 0,
+        "coverage_percent": 100.0
+      },
+      {
+        "obpi": "OBPI-0.30.0-03",
+        "total_reqs": 5,
+        "covered_reqs": 3,
+        "uncovered_reqs": 2,
+        "coverage_percent": 60.0
+      },
+      {
+        "obpi": "OBPI-0.30.0-04",
+        "total_reqs": 4,
+        "covered_reqs": 4,
+        "uncovered_reqs": 0,
+        "coverage_percent": 100.0
+      },
+      {
+        "obpi": "OBPI-0.30.0-05",
+        "total_reqs": 4,
+        "covered_reqs": 3,
+        "uncovered_reqs": 1,
+        "coverage_percent": 75.0
+      },
+      {
+        "obpi": "OBPI-0.30.0-06",
+        "total_reqs": 4,
+        "covered_reqs": 4,
+        "uncovered_reqs": 0,
+        "coverage_percent": 100.0
+      }
+    ],
+    "uncovered": [
+      {
+        "req_id": "REQ-0.30.0-01-04",
+        "severity": "advisory"
+      },
+      {
+        "req_id": "REQ-0.30.0-03-04",
+        "severity": "advisory"
+      },
+      {
+        "req_id": "REQ-0.30.0-03-05",
+        "severity": "advisory"
+      },
+      {
+        "req_id": "REQ-0.30.0-05-02",
+        "severity": "advisory"
+      }
+    ]
+  },
+  "coverage_findings": [
+    {
+      "id": "REQ-0.30.0-01-04",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.30.0-03-04",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.30.0-03-05",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.30.0-05-02",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    }
+  ],
+  "coverage_blocking": [],
+  "coverage_advisory": [
+    {
+      "id": "REQ-0.30.0-01-04",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.30.0-03-04",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.30.0-03-05",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    },
+    {
+      "id": "REQ-0.30.0-05-02",
+      "issue": "REQ not covered by any @covers test annotation.",
+      "severity": "advisory"
+    }
+  ],
+  "covers_backfill_findings": [],
+  "covers_backfill_unresolvable": []
+}
