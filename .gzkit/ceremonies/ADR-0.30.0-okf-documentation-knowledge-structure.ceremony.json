@@ -1,0 +1,67 @@
+{
+  "adr_id": "ADR-0.30.0-okf-documentation-knowledge-structure",
+  "current_step": 10,
+  "is_foundation": false,
+  "started_at": "2026-06-29T23:47:20Z",
+  "updated_at": "2026-06-30T00:55:08Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-06-29T23:47:20Z",
+      "acknowledged_at": "2026-06-29T23:47:25Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-06-29T23:47:25Z",
+      "acknowledged_at": "2026-06-29T23:58:02Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-06-29T23:58:02Z",
+      "acknowledged_at": "2026-06-30T00:20:45Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-06-30T00:20:45Z",
+      "acknowledged_at": "2026-06-30T00:21:00Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-06-30T00:21:00Z",
+      "acknowledged_at": "2026-06-30T00:29:30Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-06-30T00:29:30Z",
+      "acknowledged_at": "2026-06-30T00:42:09Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-06-30T00:42:09Z",
+      "acknowledged_at": "2026-06-30T00:53:55Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-06-30T00:53:55Z",
+      "acknowledged_at": "2026-06-30T00:54:43Z"
+    },
+    {
+      "step": 9,
+      "presented_at": "2026-06-30T00:54:43Z",
+      "acknowledged_at": "2026-06-30T00:55:08Z"
+    },
+    {
+      "step": 10,
+      "presented_at": "2026-06-30T00:55:08Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz validate --okf-conformance; echo \"exit=$?\""
+  ],
+  "walkthrough_index": 0,
+  "attestation": "Completed — operator g0 attests completed; OKF orientation-layer map + .gzkit/ vs docs/ content boundary delivered across 6 OBPIs (25/25 REQs verified). Evidence: arb-ruff-afce6400, arb-step-unittest-2ddbaa72 (6656 tests), arb-step-typecheck-71a4fe2e, arb-step-mkdocs-272eaffd; gz validate --okf-conformance exit 0; spec-reviewer 25/25 verified + quality-reviewer COHERENT (4 seams, Boundary Invariant 1 holds).",
+  "completed_at": null,
+  "attempt": 1,
+  "paused_at": null
+}

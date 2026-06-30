@@ -1204,18 +1204,34 @@ def _expand_allowed_paths(allowed_paths: list[str], project_root: Path) -> list[
     prefix/suffix on the raw string, so unexpanded globs are silently invisible.
     Expansion materializes each glob into the set of real files it matches and
     leaves literal entries unchanged (GHI #363).
+
+    Bare directory entries (`src/gzkit/schemas/`, `tests/`) carry no glob `*`
+    but are equally common scoping for model/generator/schema OBPIs whose only
+    deliverables live under a directory. They expand the same way as globs —
+    into the concrete files beneath them — so directory-scoped OBPIs are not
+    invisible to every file-granular checker (surfaced at ADR-0.30.0 closeout:
+    OBPI-01/02 scoped `src/gzkit/schemas/` and `tests/` as bare directories).
     """
     expanded: list[str] = []
     for path_str in allowed_paths:
-        if "*" not in path_str:
-            expanded.append(path_str)
+        if "*" in path_str:
+            try:
+                for matched in project_root.glob(path_str):
+                    if matched.is_file():
+                        expanded.append(matched.relative_to(project_root).as_posix())
+            except (ValueError, OSError):
+                continue
             continue
-        try:
-            for matched in project_root.glob(path_str):
-                if matched.is_file():
-                    expanded.append(matched.relative_to(project_root).as_posix())
-        except (ValueError, OSError):
+        candidate = project_root / path_str
+        if path_str.endswith("/") or candidate.is_dir():
+            try:
+                for matched in candidate.glob("**/*"):
+                    if matched.is_file():
+                        expanded.append(matched.relative_to(project_root).as_posix())
+            except (ValueError, OSError):
+                continue
             continue
+        expanded.append(path_str)
     return expanded
 
 

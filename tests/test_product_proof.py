@@ -854,5 +854,70 @@ class TestGlobAllowedPathsExpansion(unittest.TestCase):
             self.assertEqual(result.obpi_proofs[0].proof_type, "docstring")
 
 
+class TestBareDirectoryAllowedPathsExpansion(unittest.TestCase):
+    """Bare directory entries in ALLOWED PATHS (no glob `*`) expand to the files
+    under them before classification. Brief authors scope by directory
+    (`src/gzkit/schemas/`, `tests/`) as readily as by glob; the pre-fix feeder
+    only expanded glob patterns, leaving model/generator/schema OBPIs that scope
+    by bare directory invisible to every file-granular proof checker
+    (surfaced at ADR-0.30.0 closeout)."""
+
+    def _make_project(self, tmp: str) -> Path:
+        root = Path(tmp)
+        (root / "docs" / "user").mkdir(parents=True)
+        (root / "docs" / "user" / "runbook.md").write_text("Empty.\n", encoding="utf-8")
+        return root
+
+    def _make_brief(self, root: Path, obpi_id: str, allowed_paths: list[str]) -> Path:
+        brief_dir = root / "briefs"
+        brief_dir.mkdir(exist_ok=True)
+        brief_path = brief_dir / f"{obpi_id}.md"
+        paths_section = "\n".join(f"- `{p}`" for p in allowed_paths)
+        brief_path.write_text(
+            f"# {obpi_id}\n\n## ALLOWED PATHS\n\n{paths_section}\n\n## REQUIREMENTS\n",
+            encoding="utf-8",
+        )
+        return brief_path
+
+    def test_bare_schema_dir_expands_to_json_file(self) -> None:
+        """`src/gzkit/schemas/` resolves to a real `.json` under it (data_or_schema)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._make_project(tmp)
+            (root / "src" / "gzkit" / "schemas").mkdir(parents=True)
+            (root / "src" / "gzkit" / "schemas" / "thing.json").write_text(
+                '{\n  "type": "object",\n  "required": ["type"],\n'
+                '  "description": "' + "x" * 120 + '"\n}\n',
+                encoding="utf-8",
+            )
+            brief = self._make_brief(root, "OBPI-0.30.0-01-bare-schema", ["src/gzkit/schemas/"])
+            result = check_product_proof("ADR-0.30.0", {"OBPI-0.30.0-01-bare-schema": brief}, root)
+            self.assertTrue(result.success)
+            self.assertEqual(result.obpi_proofs[0].proof_type, "data_or_schema_artifact")
+
+    def test_bare_tests_dir_expands_to_test_file(self) -> None:
+        """`tests/` resolves to a real `.py` test file under it (test_evidence)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._make_project(tmp)
+            (root / "tests" / "knowledge").mkdir(parents=True)
+            (root / "tests" / "knowledge" / "test_gen.py").write_text(
+                "import unittest\nclass T(unittest.TestCase):\n"
+                "    def test_x(self):\n        self.assertTrue(True)\n" + "# " + "x" * 200,
+                encoding="utf-8",
+            )
+            brief = self._make_brief(root, "OBPI-0.30.0-02-bare-tests", ["tests/"])
+            result = check_product_proof("ADR-0.30.0", {"OBPI-0.30.0-02-bare-tests": brief}, root)
+            self.assertTrue(result.success)
+            self.assertEqual(result.obpi_proofs[0].proof_type, "test_evidence")
+
+    def test_nonexistent_bare_dir_yields_no_proof(self) -> None:
+        """A bare directory entry that does not exist on disk materializes nothing."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._make_project(tmp)
+            brief = self._make_brief(root, "OBPI-0.30.0-09-absent", ["src/gzkit/nope/"])
+            result = check_product_proof("ADR-0.30.0", {"OBPI-0.30.0-09-absent": brief}, root)
+            self.assertFalse(result.success)
+            self.assertEqual(result.obpi_proofs[0].proof_type, "MISSING")
+
+
 if __name__ == "__main__":
     unittest.main()

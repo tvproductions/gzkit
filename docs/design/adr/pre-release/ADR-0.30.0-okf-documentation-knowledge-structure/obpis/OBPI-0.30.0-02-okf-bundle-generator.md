@@ -43,6 +43,8 @@ Deliver the generator that emits a small, OKF-conformant markdown bundle over th
 - `src/gzkit/knowledge/` — the bundle generator (consumes the OBPI-01 model) **CREATE**
 - `.gzkit/governance/knowledge/` — DOMAIN-named OKF bundle output root for the governance tracer slice (named by knowledge domain, NEVER by the OKF format; OKF-conformance is a property of the files, not the folder name). A dedicated sub-root under `.gzkit/governance/` that keeps the generated bundle cleanly SEPARATE from the pre-existing `.gzkit/governance/ontology.json` / `ontology.schema.json` in the parent dir (operator-ratified, 2026-06-28). Generated, additive; OUTSIDE the mkdocs `docs_dir`. The generator writes its reserved files (`index.md`, `log.md`) and concept docs here; the only authored file expected in this sub-root is OBPI-06's `content-boundary.md` (an authored concept node), which the generator MUST NOT clobber. **CREATE**
 - `tests/` — REQ-derived unittest cases for generator output shape and idempotency
+- `src/gzkit/knowledge/generate.py` — delivered bundle generator (concrete file under the package above; product-proof artifact)
+- `tests/knowledge/test_bundle_generator.py` — delivered REQ-derived generator output/idempotency tests (concrete file)
 
 ## Denied Paths
 

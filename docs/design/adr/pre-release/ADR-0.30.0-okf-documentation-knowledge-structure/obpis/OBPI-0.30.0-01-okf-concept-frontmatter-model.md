@@ -43,6 +43,9 @@ Deliver the typed contract every other OBPI in this ADR depends on: a Pydantic m
 - `src/gzkit/knowledge/` — new OKF package home for the concept-frontmatter model (Pydantic; the named-models departure, ADR-0.0.15) **CREATE**
 - `src/gzkit/schemas/` — new OKF concept-frontmatter JSON schema file
 - `tests/` — REQ-derived unittest cases for the model and posture tolerance
+- `src/gzkit/knowledge/concept_frontmatter.py` — delivered Pydantic concept-frontmatter model (concrete file under the package above)
+- `src/gzkit/schemas/okf_concept_frontmatter.json` — delivered JSON schema mirror (concrete product-proof artifact)
+- `tests/knowledge/test_concept_frontmatter_model.py` — delivered REQ-derived model/posture tests (concrete file)
 
 ## Denied Paths
 

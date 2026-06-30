@@ -1,6 +1,6 @@
 ---
 id: ADR-0.30.0-okf-documentation-knowledge-structure
-status: Proposed
+status: Completed
 kind: feature
 semver: 0.30.0
 lane: heavy
@@ -380,12 +380,12 @@ corpus is not.
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-- [ ] OBPI-0.30.0-01: OKF schema + frontmatter model: Pydantic model for OKF concept frontmatter (required `type`, optional title/description/resource/tags/timestamp), unknown-field- and unknown-type-tolerant per OKF posture; JSON schema under src/gzkit/schemas/.
-- [ ] OBPI-0.30.0-02: OKF bundle generator: produce a root index.md plus concept docs over the tracer slice (state doctrine, trust doctrine, agent-contract rationale, active campaign reference), with directory index.md progressive disclosure and markdown-link edges; source docs preserved canonical.
-- [ ] OBPI-0.30.0-03: gz validate --okf-conformance scope (generated-bundle-only conformance: parseable frontmatter, non-empty `type`; reserved index.md/log.md structure; does NOT gate authored source docs) AND carry the STRUCTURAL-FENCE REQ that no gz validate / gates / closeout surface consumes OKF frontmatter or links as enforcement evidence — proven via this ADR's `## Boundary Invariants` entry, audited at ADR-closeout layer.
-- [ ] OBPI-0.30.0-04: CLI surface to generate/refresh the bundle (Heavy lane: new subcommand) + manpage + cli-audit coverage + behave smoke.
-- [ ] OBPI-0.30.0-05: Docs/runbook wiring: show how a control surface points an agent into the OKF bundle (the one working progressive-disclosure path that defines success); three-layer doc updates.
-- [ ] OBPI-0.30.0-06: Content-boundary doctrine: author the `.gzkit/` vs `docs/` content-boundary doctrine doc (homed under `.gzkit/`; gzkit-core canon under `.gzkit/`, `docs/` = adopter space; OKF bundles domain-named) DECLARING the phased docs/→`.gzkit/` relocation as a forced subsequent decision — the migration is NOT performed here; three-layer doc pointers.
+- [x] OBPI-0.30.0-01: OKF schema + frontmatter model: Pydantic model for OKF concept frontmatter (required `type`, optional title/description/resource/tags/timestamp), unknown-field- and unknown-type-tolerant per OKF posture; JSON schema under src/gzkit/schemas/.
+- [x] OBPI-0.30.0-02: OKF bundle generator: produce a root index.md plus concept docs over the tracer slice (state doctrine, trust doctrine, agent-contract rationale, active campaign reference), with directory index.md progressive disclosure and markdown-link edges; source docs preserved canonical.
+- [x] OBPI-0.30.0-03: gz validate --okf-conformance scope (generated-bundle-only conformance: parseable frontmatter, non-empty `type`; reserved index.md/log.md structure; does NOT gate authored source docs) AND carry the STRUCTURAL-FENCE REQ that no gz validate / gates / closeout surface consumes OKF frontmatter or links as enforcement evidence — proven via this ADR's `## Boundary Invariants` entry, audited at ADR-closeout layer.
+- [x] OBPI-0.30.0-04: CLI surface to generate/refresh the bundle (Heavy lane: new subcommand) + manpage + cli-audit coverage + behave smoke.
+- [x] OBPI-0.30.0-05: Docs/runbook wiring: show how a control surface points an agent into the OKF bundle (the one working progressive-disclosure path that defines success); three-layer doc updates.
+- [x] OBPI-0.30.0-06: Content-boundary doctrine: author the `.gzkit/` vs `docs/` content-boundary doctrine doc (homed under `.gzkit/`; gzkit-core canon under `.gzkit/`, `docs/` = adopter space; OKF bundles domain-named) DECLARING the phased docs/→`.gzkit/` relocation as a forced subsequent decision — the migration is NOT performed here; three-layer doc pointers.
 
 ## OBPI Briefs
 
@@ -493,4 +493,4 @@ Inline the OKF reasoning into the campaign (REJECTED): the active Build-to-1.0 c
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.30.0 | Pending | | | |
+| 0.30.0 | Completed | g0 | 2026-06-29 | Completed — operator g0 attests completed; OKF orientation-layer map + .gzkit/ vs docs/ content boundary delivered across 6 OBPIs (25/25 REQs verified). Evidence: arb-ruff-afce6400, arb-step-unittest-2ddbaa72 (6656 tests), arb-step-typecheck-71a4fe2e, arb-step-mkdocs-272eaffd; gz validate --okf-conformance exit 0; spec-reviewer 25/25 verified + quality-reviewer COHERENT (4 seams, Boundary Invariant 1 holds). |

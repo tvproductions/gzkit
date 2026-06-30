@@ -1,5 +1,46 @@
 # gzkit Release Notes
 
+## v0.30.0 (2026-06-29)
+
+**OKF documentation-knowledge structure (ADR-0.30.0)** — gzkit's CMS now emits
+and maintains an OKF-conformant semantic map over documentation-knowledge
+surfaces, so an agent can find the relevant explanatory doc by traversing typed
+index → concept links instead of reading the whole corpus. OKF is an
+**orientation layer only** — ADRs, OBPIs, the ledger, the active campaign, and
+binding rules remain the sole truth surfaces; no enforcement, gate, or closeout
+surface consumes OKF frontmatter or links as evidence.
+
+### Delivered
+
+- **Typed concept-frontmatter contract** — a Pydantic model (single required
+  field `type`; optional `title`/`description`/`resource`/`tags`/`timestamp`)
+  that preserves the OKF posture (unknown fields and unknown `type` values are
+  accepted, never errors), plus a JSON-schema mirror under `src/gzkit/schemas/`.
+- **Bundle generator** — emits a small OKF-conformant markdown bundle over a
+  governance tracer slice (root `index.md`, one concept doc per source doc,
+  markdown links as edges) idempotently, without modifying any source document.
+- **Conformance validator** — `gz validate --okf-conformance` checks the
+  *generated* bundle only (recognized by reserved files + type-bearing docs,
+  never by folder name), exits 3 naming the offending file/field on failure, and
+  never gates authored source docs.
+- **Operator CLI** — `gz knowledge generate` / `gz knowledge refresh` produce and
+  idempotently refresh the bundle, with manpage and behave smoke coverage.
+- **Progressive-disclosure path** — one working control-surface → bundle root →
+  concept → source-doc traversal, documented across the operator runbook,
+  governance runbook, and a concepts page.
+- **Content-boundary doctrine** — the `.gzkit/` (gzkit core canon) vs `docs/`
+  (adopter-authored) boundary is now written doctrine, homed under `.gzkit/`;
+  the wholesale `docs/`→`.gzkit/` relocation is declared as a phased subsequent
+  decision, not performed here.
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied (heavy lane). ARB receipts: `arb-ruff-afce6400`,
+`arb-step-unittest-2ddbaa72` (6656 tests), `arb-step-typecheck-71a4fe2e`,
+`arb-step-mkdocs-272eaffd`. Independent review: spec-reviewer 25/25 REQs
+verified; quality-reviewer COHERENT (four integration seams; Boundary Invariant
+1 holds). Human attestation: Completed (g0).
+
 ## v0.29.0 (2026-06-27)
 
 The first feature release under the Build-to-1.0 versioning doctrine: **MX
