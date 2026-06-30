@@ -433,6 +433,39 @@ def _withdrawn_obpi_semantics() -> dict[str, Any]:
     }
 
 
+def _repudiated_obpi_semantics() -> dict[str, Any]:
+    """Return canonical semantics for a repudiated OBPI (GHI #634).
+
+    ``gz obpi repudiate`` reverses Gate-5 (ADR-0.0.71): the OBPI is no longer
+    completed and is re-completable by genuine re-attestation. The stale
+    pre-repudiation completion receipt still lives on the graph node, so a
+    repudiation-blind derivation would resolve ``attested_completed`` from it.
+    Short-circuiting here keeps the repudiated state from rendering as a green
+    completion. ``ledger.py`` clears ``repudiated`` when a later genuine
+    completion lands, so this branch only fires while repudiation is the live
+    state.
+    """
+    return {
+        "runtime_state": "repudiated",
+        "proof_state": "missing",
+        "attestation_requirement": "optional",
+        "attestation_state": "not_required",
+        "req_proof_state": "missing",
+        "req_proof_inputs": [],
+        "req_proof_summary": {"state": "missing", "present": 0, "total": 0},
+        "completed": False,
+        "ledger_completed": False,
+        "evidence_ok": False,
+        "reflection_issues": [],
+        "anchor_state": "none",
+        "anchor_commit": None,
+        "current_head": None,
+        "anchor_issues": [],
+        "anchor_drift_files": [],
+        "issues": [],
+    }
+
+
 def derive_obpi_semantics(
     info: dict[str, Any],
     *,
@@ -451,6 +484,8 @@ def derive_obpi_semantics(
     """Derive shared OBPI runtime semantics from ledger and brief evidence."""
     if info.get("withdrawn"):
         return _withdrawn_obpi_semantics()
+    if info.get("repudiated"):
+        return _repudiated_obpi_semantics()
     latest_receipt_event = info.get("latest_receipt_event")
     obpi_completion = info.get("obpi_completion")
     ledger_completed = bool(info.get("ledger_completed"))

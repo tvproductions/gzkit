@@ -435,6 +435,8 @@ def _render_obpi_unit_status(unit_status: str) -> str:
 def _render_obpi_runtime_state(runtime_state: str, found_file: bool) -> str:
     if runtime_state == "withdrawn":
         return "[cyan]WITHDRAWN[/cyan]"
+    if runtime_state == "repudiated":
+        return "[red]REPUDIATED[/red]"
     if runtime_state == "validated":
         return "[green]VALIDATED[/green]"
     if runtime_state == "attested_completed":
@@ -569,6 +571,8 @@ def _render_obpi_status_details(result: dict[str, Any]) -> None:
     console.print(f"  Current HEAD: {current_head}")
     if runtime_state == "withdrawn":
         completion = "[cyan]WITHDRAWN[/cyan]"
+    elif runtime_state == "repudiated":
+        completion = "[red]REPUDIATED[/red]"
     elif result.get("completed"):
         completion = "[green]COMPLETE[/green]"
     else:
