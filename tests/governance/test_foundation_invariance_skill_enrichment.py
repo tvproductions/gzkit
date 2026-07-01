@@ -23,8 +23,8 @@ _CONCEPT_PAGE_LINK = "foundation-feature-invariance-test"
 
 _EXPECTED_VERSIONS: dict[str, str] = {
     "gz-plan": "1.3.2",
-    "gz-adr-create": "6.6.1",
-    "gz-design": "1.3.1",
+    "gz-adr-create": "6.6.2",
+    "gz-design": "1.3.2",
     "gz-adr-promote": "1.6.0",
 }
 
@@ -179,6 +179,19 @@ class TestSkillEditSurgical(unittest.TestCase):
     @covers("REQ-0.0.35-02-06")
     def test_gz_adr_create_adr_taxonomy_link_preserved(self) -> None:
         self.assertIn("adr-taxonomy.md", _skill_content("gz-adr-create"))
+
+
+class TestPoolAdrEvaluateGateCarveOut(unittest.TestCase):
+    """GHI #595: gz-adr-evaluate cannot resolve a pool ADR (flat stub, no
+    package), so both skills that mandate it must carve out the pool branch
+    rather than mandating a step that errors on the artifact shape they
+    themselves route to."""
+
+    def test_gz_design_carves_out_pool_adrs_from_evaluate_step(self) -> None:
+        self.assertIn("Pool ADRs are exempt", _skill_content("gz-design"))
+
+    def test_gz_adr_create_carves_out_pool_adrs_from_evaluate_step(self) -> None:
+        self.assertIn("Pool ADRs are exempt", _skill_content("gz-adr-create"))
 
     @covers("REQ-0.0.35-02-06")
     def test_gz_plan_workflow_section_preserved(self) -> None:

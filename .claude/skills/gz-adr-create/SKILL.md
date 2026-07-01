@@ -5,7 +5,7 @@ description: Create and book a GovZero ADR with its OBPI briefs. Enforces next-f
 category: adr-lifecycle
 compatibility: Requires GovZero v6 framework; provides governance rules internally for portable use across repositories
 metadata:
-  skill-version: "6.6.1"
+  skill-version: "6.6.2"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), linkage (ADR/OBPI/GHI), foundation-nominal-allocation (next-free-integer)"
@@ -258,9 +258,12 @@ the decision before any artifacts exist, preventing scope ambiguity at the sourc
     - Verify: `ls obpis/ | wc -l` matches checklist item count
     - Validate authored readiness: `uv run gz obpi validate --adr ADR-X.Y.Z --authored`
     - This is NOT optional — briefs are co-created with the ADR, never deferred
-9. **Post-Authoring QC (Mandatory before proposal/defense):**
+9. **Post-Authoring QC (Mandatory before proposal/defense; N/A for pool ADRs):**
     Invoke `gz-adr-evaluate ADR-X.Y.Z` to run the ADR and its OBPIs through the
-    evaluation framework.
+    evaluation framework. **Pool ADRs are exempt** — `gz adr evaluate` resolves
+    an ADR package, which a pool ADR (flat stub file, no OBPIs yet) does not
+    have; the CLI errors if invoked on one. The evaluate gate fires at
+    **promotion** (`gz adr promote` builds the package), not at pool authoring.
     - Score the ADR on all 8 dimensions
     - Score each OBPI on all 5 dimensions
     - Any ADR dimension scoring 1 or any OBPI dimension scoring 1 must be revised

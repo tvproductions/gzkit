@@ -4,11 +4,11 @@ persona: main-session
 description: Collaborative design dialogue that produces GovZero ADR artifacts. Use when exploring a new feature, capability, or architectural change before implementation — replaces superpowers brainstorming for this project. Triggers on "design X", "let's design", "brainstorm X", "I want to build X", "gz-design".
 category: adr-lifecycle
 metadata:
-  skill-version: "1.3.1"
+  skill-version: "1.3.2"
   govzero-framework-version: "v6"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-21
+last_reviewed: 2026-07-01
 model: opus
 ---
 
@@ -148,6 +148,12 @@ After the ADR is written, invoke `gz-adr-evaluate` on it:
 ```
 
 Any dimension scoring 1 must be revised before proceeding.
+
+**Pool ADRs are exempt.** `gz adr evaluate` resolves an ADR *package*
+(canonical/feature/foundation directory structure); a pool ADR is a flat
+stub file with no package and no OBPIs yet, so the CLI errors if invoked
+on one. The evaluate gate fires at **promotion** (`gz adr promote` builds
+the package), not at pool authoring. Skip this step for pool ADRs.
 
 ### Step 7: User Reviews
 
