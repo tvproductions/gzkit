@@ -214,8 +214,19 @@ production practice:
 | Second opinion | **institutionalized cross-model review** (e.g. Codex) at high stakes — not ad hoc |
 | Test on known answers | **the enforcement-claim rule (§5)** — live negative controls are gzkit's "known-answer" evals |
 
-**E.6 — turn-end claim-grounding gate** (was "pending operator design"): its shape
-is now the receipts-footer + guess-flagging above, emitted at turn end.
+**E.6 — turn-end claim-grounding gate** (was "pending operator design"; shipped
+2026-07-01, GHI #620, commit `d83db8a2`): the Stop hook (ADR-0.0.70,
+`stop-turn-feedback.py`) now blocks the turn-end when the assistant's last
+turn contains a governance state-claim (OBPI/ADR completion, lock state,
+"tests pass", "tree is clean") with no citation token — a `gz` command +
+observed output, a commit SHA, a ledger reference, or a file:line — within
+300 chars. Gates citation FORM (presence), not TRUTH; fail-open on any
+internal failure. **Narrower than this row's receipts-footer idea**: covers
+4 governance-state-claim patterns, not a universal footer on every
+substantive claim. The general receipts-footer + guess-flagging tactic (the
+`Source · Confidence · Reviewed · Freshness` row above) remains undelivered
+as a broader mechanism — E.6 closes the specific #620 gap, not the full
+row.
 
 ## 7. The Queue — the daily driver
 
