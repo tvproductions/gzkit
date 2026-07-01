@@ -1,5 +1,65 @@
 # gzkit Release Notes
 
+## v0.30.1 (2026-07-01)
+
+Nine targeted GHI fixes spanning cross-platform subprocess robustness, Pydantic
+schema validation for governance-critical cache files, the OBPI repudiation
+lifecycle, and governance tooling hygiene.
+
+### Cross-Platform Subprocess Robustness
+
+- **#582** — Fixed 38 text-mode subprocess reads across `src/gzkit/` that
+  captured child stdout/stderr without `errors="replace"`, crashing with an
+  uncaught `UnicodeDecodeError` whenever a subprocess (git, ruff, behave, uv)
+  emitted non-UTF-8 bytes. Added a recurrence-audit scope so the class cannot
+  regress.
+- **#661** — Fixed behave's pretty formatter crashing with `UnicodeEncodeError`
+  when writing the checkmark glyph to a non-UTF-8 child stdout, which masked
+  the real test failures underneath the crash. `gz test --bdd` now forces
+  `PYTHONIOENCODING=utf-8` on the behave subprocess spawn.
+
+### Governance Data Validation
+
+- **#544** — Fixed the req-kind grandfathering cache (`covers.py`) loading raw
+  JSON with `contextlib.suppress`, silently swallowing malformed-file errors
+  and broadening/narrowing REQ coverage exemptions with no signal. Now
+  validated via a frozen Pydantic model that fails closed on schema violation.
+- **#660** — Applied the same fix to the SUPPORT-channel grandfather cache
+  (`req_kind.py`'s `support_proof_grandfather.json` loader), closing the
+  sibling instance of the #544 anti-pattern.
+
+### OBPI Repudiation Lifecycle
+
+- **#610** — Fixed `gz obpi repudiate` leaving a repudiated OBPI permanently
+  stuck: the brief's frontmatter status was never reset, and the live
+  changed-files audit rejected governance-churn paths, so genuine
+  re-attestation had no path to succeed. Repudiation now resets brief status
+  and reuses sealed scope evidence, making re-completion mechanically
+  possible as the contract promises.
+- **#634** — Fixed `gz obpi status` rendering a repudiated OBPI as green
+  "ATTESTED COMPLETED" — the status layer never consumed the
+  `obpi_completion_repudiated` ledger event. Repudiated OBPIs now render a
+  distinct `REPUDIATED` runtime state.
+
+### Governance & Quality Tooling
+
+- **#632** — Fixed the tautological-test-audit's brittle count/positional
+  baseline matching, which over-flagged legitimate fixture guards as
+  tautologies and misattributed violations to the wrong file when an
+  unrelated new test was added. Matching is now identity-based, not
+  position-based.
+- **#651** — Fixed the MX maintenance-hangar enforcement-floor `gz check` step
+  demoting to advisory in-hangar, which let a FACADE (grader-gaming) report
+  success instead of failing closed. The step is now pinned CRITICAL so the
+  floor never relaxes, in or out of the hangar.
+- **#658** — Resolved 11 PEP 257 docstring convention violations (imperative
+  mood, summary-line spacing, docstring quote placement) across 4
+  `src/gzkit` modules.
+
+### Stats
+
+- 9 GHIs closed
+
 ## v0.30.0 (2026-06-29)
 
 **OKF documentation-knowledge structure (ADR-0.30.0)** — gzkit's CMS now emits
