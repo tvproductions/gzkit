@@ -1,17 +1,14 @@
 ---
 id: ADR-pool.gz-preflight-health-orchestration
-status: Superseded
+status: Pool
 date_added: 2026-03-27
-promoted_to: ADR-0.42.0-gz-preflight-health-orchestration
 ---
 
 # ADR-pool.gz-preflight-health-orchestration: Pre-Session Health Orchestration and Governance Design Tooling
-> Promoted to `ADR-0.42.0-gz-preflight-health-orchestration` on 2026-04-19. This pool file is retained as historical intake context.
-
 
 ## Status
 
-Superseded
+Pool
 
 ## Date
 

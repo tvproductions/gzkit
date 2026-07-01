@@ -1,20 +1,17 @@
 ---
 id: ADR-pool.vendor-alignment-codex
-status: Superseded
+status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
 inspired_by: codex-docs-2026-04
-promoted_to: ADR-0.44.0-vendor-alignment-codex
 ---
 
 # ADR-pool.vendor-alignment-codex: OpenAI Codex Vendor Alignment
-> Promoted to `ADR-0.44.0-vendor-alignment-codex` on 2026-04-23. This pool file is retained as historical intake context.
-
 
 ## Status
 
-Superseded
+Pool
 
 ## Date
 

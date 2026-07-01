@@ -100,6 +100,32 @@ def _set_frontmatter_value(content: str, key: str, value: str) -> str:
     return "\n".join(lines) + trailing
 
 
+def _reverse_pool_promotion_markers(content: str, demoted_id: str) -> str:
+    """Reverse the promote-side markers ``_mark_pool_adr_promoted`` writes.
+
+    No-op unless the pool file's ``promoted_to:`` still names the ADR now being
+    demoted — guards against mutating an unrelated pool ADR that happens to
+    collide on slug (GHI #558).
+    """
+    if parse_frontmatter_value(content, "promoted_to") != demoted_id:
+        return content
+    updated = _set_frontmatter_value(content, "status", "Pool")
+    updated = _strip_frontmatter_keys(updated, ("promoted_to",))
+    updated = updated.replace("\n## Status\n\nSuperseded\n", "\n## Status\n\nPool\n", 1)
+    lines = updated.splitlines()
+    for idx, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("> Promoted to `") and stripped.endswith(
+            "This pool file is retained as historical intake context."
+        ):
+            del lines[idx]
+            if idx < len(lines) and lines[idx].strip() == "":
+                del lines[idx]
+            break
+    trailing = "\n" if updated.endswith("\n") else ""
+    return "\n".join(lines) + trailing
+
+
 def _find_dependent_children(project_root: Path, config: Any, demoted_id: str) -> list[str]:
     """Return ADR ids whose ``parent:`` frontmatter references the demoted id.
 
@@ -177,12 +203,17 @@ def _build_demote_plan(
     pool_dir = project_root / config.paths.adrs / "pool"
     target_file = pool_dir / f"{new_id}.md"
     collision_keep_pool = False
+    reversed_pool_content: str | None = None
     if target_file.exists():
         if on_collision == "fail":
             rel = target_file.relative_to(project_root).as_posix()
             msg = f"Pool slug collision: target file already exists: {rel}"
             raise GzCliError(msg)
         collision_keep_pool = True
+        existing_target_content = target_file.read_text(encoding="utf-8")
+        candidate = _reverse_pool_promotion_markers(existing_target_content, source_id)
+        if candidate != existing_target_content:
+            reversed_pool_content = candidate
     source_dir = source_file.parent
     if source_dir == project_root / config.paths.adrs:
         # Defensive: a top-level loose .md should not have a parent dir to remove.
@@ -214,6 +245,7 @@ def _build_demote_plan(
         "extras": extras,
         "children": children,
         "collision_keep_pool": collision_keep_pool,
+        "reversed_pool_content": reversed_pool_content,
     }
 
 
@@ -248,6 +280,11 @@ def _print_demote_dry_run(project_root: Path, plan: dict[str, Any]) -> None:
             f"  [yellow]Pool collision — keeping existing pool:[/yellow] "
             f"{target_file.relative_to(project_root).as_posix()}"
         )
+        if plan.get("reversed_pool_content") is not None:
+            console.print(
+                "  [yellow]Would reverse stale promotion markers[/yellow] "
+                "(status: Pool, strip promoted_to, remove promoted-to note)"
+            )
     else:
         console.print(f"  Would write: {target_file.relative_to(project_root).as_posix()}")
     if source_dir.is_dir():
@@ -271,7 +308,11 @@ def _apply_demote(ledger: Ledger, plan: dict[str, Any]) -> None:
     source_file = cast(Path, plan["source_file"])
     source_dir = cast(Path, plan["source_dir"])
     collision_keep_pool = cast(bool, plan.get("collision_keep_pool", False))
-    if not collision_keep_pool:
+    if collision_keep_pool:
+        reversed_pool_content = cast(str | None, plan.get("reversed_pool_content"))
+        if reversed_pool_content is not None:
+            target_file.write_text(reversed_pool_content, encoding="utf-8")
+    else:
         target_file.parent.mkdir(parents=True, exist_ok=True)
         target_file.write_text(cast(str, plan["pool_content"]), encoding="utf-8")
     if source_dir.is_dir() and source_dir != source_file:
@@ -296,6 +337,8 @@ def _print_demote_applied(project_root: Path, plan: dict[str, Any]) -> None:
     console.print(f"[green]Demoted ADR:[/green] {plan['source_id']} -> {plan['new_id']}")
     if collision_keep_pool:
         console.print(f"  Kept existing pool: {target_file.relative_to(project_root).as_posix()}")
+        if plan.get("reversed_pool_content") is not None:
+            console.print("  Reversed stale promotion markers on kept pool file")
     else:
         console.print(f"  Created: {target_file.relative_to(project_root).as_posix()}")
     if source_dir.is_dir():

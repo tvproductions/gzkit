@@ -373,6 +373,93 @@ class TestAdrDemoteCommand(unittest.TestCase):
             self.assertEqual(rename_events[0].get("collision_resolution"), "keep-pool")
             self.assertEqual(rename_events[0].get("reason"), "pool_demotion")
 
+    def test_on_collision_keep_pool_reverses_stale_promotion_markers(self) -> None:
+        """GHI #558: demoting back through a prior promotion must undo what
+        ``gz adr promote`` wrote on the pool side (status/promoted_to/note),
+        not just delete the feature package and leave the pool file stale."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            _seed_feature_adr(config)
+            pool_dir = Path(config.paths.adrs) / "pool"
+            pool_dir.mkdir(parents=True, exist_ok=True)
+            pool_file = pool_dir / f"{_SAMPLE_POOL_ID}.md"
+            previously_promoted = (
+                "---\n"
+                f"id: {_SAMPLE_POOL_ID}\n"
+                "status: Superseded\n"
+                "parent: PRD-GZKIT-1.0.0\n"
+                f"promoted_to: {_SAMPLE_FEATURE_ADR_ID}\n"
+                "---\n\n"
+                f"# {_SAMPLE_POOL_ID}: Sample\n"
+                f"> Promoted to `{_SAMPLE_FEATURE_ADR_ID}` on 2026-03-21. "
+                "This pool file is retained as historical intake context.\n\n"
+                "## Status\n\nSuperseded\n\n## Intent\n\nSeeded pool ADR.\n"
+            )
+            pool_file.write_text(previously_promoted, encoding="utf-8")
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event(_SAMPLE_FEATURE_ADR_ID, "", "heavy"))
+
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "demote",
+                    _SAMPLE_FEATURE_ADR_ID,
+                    "--ghi",
+                    "558",
+                    "--on-collision",
+                    "keep-pool",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            reversed_content = pool_file.read_text(encoding="utf-8")
+            self.assertIn("status: Pool", reversed_content)
+            self.assertNotIn("status: Superseded", reversed_content)
+            self.assertNotIn("promoted_to:", reversed_content)
+            self.assertNotIn("> Promoted to", reversed_content)
+            self.assertIn("## Intent\n\nSeeded pool ADR.\n", reversed_content)
+
+    def test_on_collision_keep_pool_ignores_unrelated_promoted_to(self) -> None:
+        """A collision with a pool file promoted to a DIFFERENT ADR must not
+        be mutated — only a stale record naming the ADR being demoted (right
+        now) is reversed (GHI #558 no-op guard)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            _seed_feature_adr(config)
+            pool_dir = Path(config.paths.adrs) / "pool"
+            pool_dir.mkdir(parents=True, exist_ok=True)
+            pool_file = pool_dir / f"{_SAMPLE_POOL_ID}.md"
+            unrelated_promotion = (
+                "---\n"
+                f"id: {_SAMPLE_POOL_ID}\n"
+                "status: Superseded\n"
+                "promoted_to: ADR-0.99.0-someone-else\n"
+                "---\n\n"
+                f"# {_SAMPLE_POOL_ID}: Sample\n"
+            )
+            pool_file.write_text(unrelated_promotion, encoding="utf-8")
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event(_SAMPLE_FEATURE_ADR_ID, "", "heavy"))
+
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "demote",
+                    _SAMPLE_FEATURE_ADR_ID,
+                    "--ghi",
+                    "558",
+                    "--on-collision",
+                    "keep-pool",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertEqual(pool_file.read_text(encoding="utf-8"), unrelated_promotion)
+
     def test_on_collision_fail_is_default(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():

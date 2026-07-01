@@ -1,6 +1,6 @@
 ---
 id: ADR-pool.skill-tuning-feedback-loop
-status: Superseded
+status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
@@ -9,16 +9,13 @@ consumes:
   - ADR-pool.harness-trace-bundles
   - ADR-pool.harness-lab
 inspired_by: arXiv:2603.28052v1 Meta-Harness
-promoted_to: ADR-0.51.0-skill-tuning-feedback-loop
 ---
 
 # ADR-pool.skill-tuning-feedback-loop: Skill Tuning Feedback Loop
-> Promoted to `ADR-0.51.0-skill-tuning-feedback-loop` on 2026-05-22. This pool file is retained as historical intake context.
-
 
 ## Status
 
-Superseded
+Pool
 
 ## Intent
 

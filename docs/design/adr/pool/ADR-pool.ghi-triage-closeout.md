@@ -1,20 +1,17 @@
 ---
 id: ADR-pool.ghi-triage-closeout
-status: Superseded
+status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
 inspired_by: null
-promoted_to: ADR-0.43.0-ghi-triage-closeout
 ---
 
 # ADR-pool.ghi-triage-closeout: GitHub Issue Triage and Closeout Integration
-> Promoted to `ADR-0.43.0-ghi-triage-closeout` on 2026-04-19. This pool file is retained as historical intake context.
-
 
 ## Status
 
-Superseded
+Pool
 
 ## Date
 
