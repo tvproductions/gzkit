@@ -401,6 +401,23 @@ def _support_path_arm_ok(citation: SupportCitation, project_root: Path) -> bool:
     return _ledger_has_event(citation.event_types, project_root)
 
 
+class SupportProofGrandfather(BaseModel):
+    """Schema for ``data/support_proof_grandfather.json`` (GHI #647 snapshot).
+
+    Loading is fail-closed (GHI #660): malformed JSON, a non-list
+    ``grandfathered_reqs``, or an unknown top-level key raises
+    ``pydantic.ValidationError`` instead of silently degrading to an empty
+    tolerated-set, which would flip every pre-cutover REQ the snapshot
+    tolerates to fail-closed with no operator signal. ``_doc`` (rationale) is
+    optional -- present on the real snapshot but not schema-mandated.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid", populate_by_name=True)
+
+    doc: str | None = Field(None, alias="_doc")
+    grandfathered_reqs: list[str] = Field(default_factory=list)
+
+
 def _support_proof_grandfather(project_root: Path) -> frozenset[str]:
     """REQ IDs whose pre-cutover hollow SUPPORT proof is tolerated (GHI #647).
 
@@ -411,12 +428,11 @@ def _support_proof_grandfather(project_root: Path) -> frozenset[str]:
     path-citing SUPPORT REQ is enforced fail-closed.
     """
     path = project_root / "data" / "support_proof_grandfather.json"
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    if not path.exists():
         return frozenset()
-    reqs = data.get("grandfathered_reqs", []) if isinstance(data, dict) else []
-    return frozenset(str(r) for r in reqs)
+    raw = path.read_text(encoding="utf-8")
+    model = SupportProofGrandfather.model_validate_json(raw)
+    return frozenset(model.grandfathered_reqs)
 
 
 def _early_return_scope_audit(

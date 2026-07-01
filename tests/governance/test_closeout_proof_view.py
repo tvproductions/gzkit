@@ -459,6 +459,52 @@ class TestCloseoutProofFailOpenSeams(unittest.TestCase):
         )
 
 
+class TestCloseoutProofSupportGrandfatherMalformed(unittest.TestCase):
+    """GHI #660 — a malformed support_proof_grandfather.json must surface as a
+    closeout_proof finding, not crash the sweep with an unhandled
+    pydantic.ValidationError (regression guard for the GHI #660 fail-close fix).
+    """
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def test_malformed_grandfather_file_reported_not_raised(self) -> None:
+        adr_id = "ADR-0.0.99-grandfather-malformed"
+        _write_ceremony(self.root, adr_id)
+        _write_brief(
+            _make_adr_dir(self.root, adr_id),
+            "OBPI-0.0.99-01-test",
+            [
+                "REQ-0.0.99-01-01 [SUPPORT]: doc updated -- artifact_edited ledger "
+                "event citing src/gzkit/nonexistent_fixture_file.py -- "
+                "uv run gz validate --documents"
+            ],
+        )
+        data_dir = self.root / "data"
+        data_dir.mkdir(parents=True, exist_ok=True)
+        (data_dir / "support_proof_grandfather.json").write_text("not valid json", encoding="utf-8")
+
+        # Must not raise pydantic.ValidationError -- it must convert to a finding.
+        errors = validate_closeout_proof(self.root)
+
+        self.assertGreater(
+            len(errors), 0, "malformed grandfather file must be reported as unproven"
+        )
+        combined = " ".join(e.message for e in errors)
+        self.assertIn("REQ-0.0.99-01-01", combined)
+        self.assertIn(
+            "uv run gz validate",
+            combined,
+            "finding must include a governed re-run command per guardrail-feedback-prose",
+        )
+        for e in errors:
+            self.assertNotIn("Traceback", e.message)
+
+
 def _write_ledger_withdrawn(project_root: Path, obpi_id: str) -> None:
     """Append an obpi_withdrawn event for obpi_id to the project ledger."""
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"

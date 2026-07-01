@@ -221,12 +221,12 @@ def covers_cmd(
 
         try:
             cache = load_req_kind_grandfathering_cache(project_root)
+            report = compute_three_channel_coverage(
+                report, discovered, grandfathering_cache=cache, project_root=project_root
+            )
         except ValidationError as exc:
-            msg = f"data/req_kind_grandfathering.json: invalid grandfathering cache ({exc})"
+            msg = f"data/*_grandfather*.json: invalid grandfathering cache ({exc})"
             raise GzCliError(msg) from exc
-        report = compute_three_channel_coverage(
-            report, discovered, grandfathering_cache=cache, project_root=project_root
-        )
 
     if bypass_req_kind_discipline_once and bypass_reason:
         _emit_bypass_ledger_event(project_root, bypass_reason)

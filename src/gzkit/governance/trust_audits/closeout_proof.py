@@ -19,6 +19,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from pydantic import ValidationError as PydanticValidationError
+
 from gzkit.core.validation_rules import ValidationError
 
 if TYPE_CHECKING:
@@ -242,7 +244,16 @@ def _check_req(
         )
     if kind == "SUPPORT":
         req_text = line.split(":", 1)[-1].strip() if ":" in line else line
-        proof_status = resolve_support_proof(req_text, project_root, req_id=req_id)
+        try:
+            proof_status = resolve_support_proof(req_text, project_root, req_id=req_id)
+        except PydanticValidationError as exc:
+            return _err(
+                artifact,
+                f"{req_id} [SUPPORT]: data/support_proof_grandfather.json is "
+                f"malformed ({exc}) — GHI #660 fail-closes this instead of "
+                f"silently tolerating an empty grandfather set. Fix the JSON "
+                f"file, then re-run: uv run gz validate --closeout-proof",
+            )
         # "grandfathered-support" (GHI #647) is a tolerated pre-cutover hollow
         # proof — non-failing, like "pass", until repaired off the snapshot.
         if proof_status in ("pass", "grandfathered-support"):
