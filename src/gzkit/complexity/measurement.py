@@ -224,6 +224,7 @@ def _resolve_tree(project: ExemplarProject, cache_root: Path) -> Path:
         ["git", "clone", str(project.canonical_url), str(target)],
         capture_output=True,
         text=True,
+        errors="replace",
         encoding="utf-8",
         check=True,
     )
@@ -231,6 +232,7 @@ def _resolve_tree(project: ExemplarProject, cache_root: Path) -> Path:
         ["git", "-C", str(target), "checkout", project.commit_sha],
         capture_output=True,
         text=True,
+        errors="replace",
         encoding="utf-8",
         check=True,
     )
@@ -296,6 +298,7 @@ def _run_radon_cc(path: Path) -> list[float]:
         ["radon", "cc", "--json", "--no-assert", str(path)],
         capture_output=True,
         text=True,
+        errors="replace",
         encoding="utf-8",
         check=False,
     )
@@ -321,6 +324,7 @@ def _run_radon_mi(path: Path) -> list[float]:
         ["radon", "mi", "--json", str(path)],
         capture_output=True,
         text=True,
+        errors="replace",
         encoding="utf-8",
         check=False,
     )
@@ -344,6 +348,7 @@ def _run_radon_hal(path: Path) -> dict[str, list[float]]:
         ["radon", "hal", "--json", str(path)],
         capture_output=True,
         text=True,
+        errors="replace",
         encoding="utf-8",
         check=False,
     )
@@ -370,6 +375,7 @@ def _run_radon_raw(path: Path) -> dict[str, list[float]]:
         ["radon", "raw", "--json", str(path)],
         capture_output=True,
         text=True,
+        errors="replace",
         encoding="utf-8",
         check=False,
     )
@@ -399,6 +405,7 @@ def _run_lizard(path: Path) -> dict[str, list[float]]:
         ["lizard", "-End", "--csv", str(path)],
         capture_output=True,
         text=True,
+        errors="replace",
         encoding="utf-8",
         check=False,
     )
@@ -439,6 +446,7 @@ def _run_cohesion(path: Path) -> list[float]:
         ["cohesion", "-f", str(path)],
         capture_output=True,
         text=True,
+        errors="replace",
         encoding="utf-8",
         check=False,
     )

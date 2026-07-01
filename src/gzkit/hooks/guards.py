@@ -148,6 +148,7 @@ def _run_git(args: list[str], cwd: Path) -> str:
             check=False,
             capture_output=True,
             text=True,
+            errors="replace",
             encoding="utf-8",
         )
     except (FileNotFoundError, OSError):

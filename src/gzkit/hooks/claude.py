@@ -124,6 +124,7 @@ def _ruff_format_dir(directory: Path) -> None:
             ["uv", "run", "ruff", "format", str(directory)],
             capture_output=True,
             text=True,
+            errors="replace",
             timeout=60,
             check=False,
         )

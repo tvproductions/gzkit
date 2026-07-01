@@ -282,6 +282,7 @@ def _evaluate_criterion(
             cwd=project_root,
             capture_output=True,
             text=True,
+            errors="replace",
             encoding="utf-8",
             timeout=timeout,
             check=False,

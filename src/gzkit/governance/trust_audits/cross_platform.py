@@ -400,3 +400,114 @@ def _scan_crlf_surfaces(project_root: Path) -> list[ValidationError]:
             )
         )
     return errors
+
+
+# ---------------------------------------------------------------------------
+# Subprocess text-read decode robustness (cross-platform.md; GHI #582)
+# ---------------------------------------------------------------------------
+
+_SUBPROCESS_CAPTURE_FUNCS: frozenset[str] = frozenset({"run", "Popen", "check_output"})
+
+_SUBPROCESS_ERRORS_MESSAGE = (
+    "text-mode subprocess capture decodes sub-process output but passes no "
+    "`errors=` — non-UTF-8 tool/git output (cp1252/latin-1) raises "
+    "UnicodeDecodeError (a ValueError, so `except OSError` misses it) and "
+    'aborts the command mid-run. Add `errors="replace"` (mirror '
+    "`src/gzkit/quality.py::run_command`). `.claude/rules/cross-platform.md` "
+    "§ Subprocess reads."
+)
+
+
+def _subprocess_func_name(node: ast.Call) -> str | None:
+    """Return the subprocess capture func name (`run`/`Popen`/`check_output`)."""
+    func = node.func
+    if isinstance(func, ast.Attribute) and func.attr in _SUBPROCESS_CAPTURE_FUNCS:
+        value = func.value
+        if isinstance(value, ast.Name) and value.id == "subprocess":
+            return func.attr
+    return None
+
+
+def _call_kwargs(node: ast.Call) -> dict[str, ast.expr]:
+    return {kw.arg: kw.value for kw in node.keywords if kw.arg}
+
+
+def _is_truthy_constant(value: ast.expr) -> bool:
+    return isinstance(value, ast.Constant) and bool(value.value)
+
+
+def _decodes_text(kwargs: dict[str, ast.expr]) -> bool:
+    """True when the call decodes bytes→str (text mode).
+
+    Only text-mode calls decode; passing ``errors=`` to a bytes-mode call would
+    silently *enable* text mode (subprocess docs), flipping the return type — so
+    bytes-mode calls are never flagged.
+    """
+    if _is_truthy_constant(kwargs.get("text", ast.Constant(value=False))):
+        return True
+    if _is_truthy_constant(kwargs.get("universal_newlines", ast.Constant(value=False))):
+        return True
+    encoding = kwargs.get("encoding")
+    return encoding is not None and not (
+        isinstance(encoding, ast.Constant) and encoding.value is None
+    )
+
+
+def _captures_output(func_name: str, kwargs: dict[str, ast.expr]) -> bool:
+    """True when the call captures sub-process stdout/stderr (something to decode)."""
+    if func_name == "check_output":
+        return True
+    if _is_truthy_constant(kwargs.get("capture_output", ast.Constant(value=False))):
+        return True
+    for stream in ("stdout", "stderr"):
+        value = kwargs.get(stream)
+        if isinstance(value, ast.Attribute) and value.attr == "PIPE":
+            return True
+    return False
+
+
+def audit_subprocess_errors(project_root: Path) -> list[ValidationError]:
+    """Flag text-mode subprocess captures under ``src/gzkit`` missing ``errors=``.
+
+    A text-mode capture (``text=True`` / ``encoding=`` / ``universal_newlines=``
+    combined with ``check_output``, ``capture_output=True``, or ``stdout=PIPE``)
+    decodes sub-process bytes to ``str``. Without ``errors=``, undecodable bytes
+    raise ``UnicodeDecodeError`` and abort the command — the whole-family
+    cross-platform crash GHI #582 remediates. Bytes-mode calls are not flagged:
+    adding ``errors=`` there would silently enable text mode.
+
+    This is the recurrence defense for the GHI #582 sweep — invoked by
+    ``tests/governance/test_subprocess_errors_replace.py`` against the real tree
+    so a re-introduced site fails closed in the ``gz check`` test tier, mirroring
+    the ``.as_posix()`` rule's ``test_path_separator_portability.py`` enforcement.
+    """
+    errors: list[ValidationError] = []
+    src_root = project_root / "src" / "gzkit"
+    if not src_root.is_dir():
+        return errors
+    for py_path in sorted(src_root.rglob("*.py")):
+        try:
+            tree = ast.parse(py_path.read_text(encoding="utf-8"))
+        except (OSError, SyntaxError):
+            continue
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            func_name = _subprocess_func_name(node)
+            if func_name is None:
+                continue
+            kwargs = _call_kwargs(node)
+            if (
+                _decodes_text(kwargs)
+                and _captures_output(func_name, kwargs)
+                and "errors" not in kwargs
+            ):
+                rel = py_path.relative_to(project_root).as_posix()
+                errors.append(
+                    ValidationError(
+                        type="subprocess_errors",
+                        artifact=f"{rel}:{node.lineno}",
+                        message=_SUBPROCESS_ERRORS_MESSAGE,
+                    )
+                )
+    return errors

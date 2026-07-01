@@ -50,6 +50,7 @@ def derive_consumer_slug() -> str:
         ["git", "remote", "-v"],
         capture_output=True,
         text=True,
+        errors="replace",
         encoding="utf-8",
         check=False,
     )
@@ -162,6 +163,7 @@ def issue_file_cmd(
         ],
         capture_output=True,
         text=True,
+        errors="replace",
         encoding="utf-8",
         check=False,
     )

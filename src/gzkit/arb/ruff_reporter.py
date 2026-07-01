@@ -26,6 +26,7 @@ def _run_command(cmd: list[str]) -> subprocess.CompletedProcess[str]:
             cmd,
             capture_output=True,
             text=True,
+            errors="replace",
             check=False,
             encoding="utf-8",
         )

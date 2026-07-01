@@ -120,7 +120,9 @@ def _git_commits_since(root: Path, since_ts: str, until_ts: str | None) -> list[
     if until_ts:
         cmd[2:2] = ["--until", until_ts]
     try:
-        result = subprocess.run(cmd, cwd=root, capture_output=True, text=True, check=False)
+        result = subprocess.run(
+            cmd, cwd=root, capture_output=True, text=True, errors="replace", check=False
+        )
     except OSError:
         return []
     if result.returncode != 0:

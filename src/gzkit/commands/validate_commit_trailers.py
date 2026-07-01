@@ -32,6 +32,7 @@ def _head_commit_message_and_files(project_root: Path) -> tuple[str, list[str]] 
             check=True,
             capture_output=True,
             text=True,
+            errors="replace",
             encoding="utf-8",
         ).stdout
         files = subprocess.run(
@@ -40,6 +41,7 @@ def _head_commit_message_and_files(project_root: Path) -> tuple[str, list[str]] 
             check=True,
             capture_output=True,
             text=True,
+            errors="replace",
             encoding="utf-8",
         ).stdout
     except (subprocess.CalledProcessError, FileNotFoundError):
@@ -79,6 +81,7 @@ def _validate_commit_trailers(project_root: Path) -> list[ValidationError]:
         check=False,
         capture_output=True,
         text=True,
+        errors="replace",
         encoding="utf-8",
     ).stdout.strip()
     return [
@@ -121,6 +124,7 @@ def _validate_eval_feedback_trailer(project_root: Path) -> list[ValidationError]
             ["gh", "issue", "view", num, "--json", "labels"],
             capture_output=True,
             text=True,
+            errors="replace",
             encoding="utf-8",
             check=False,
             cwd=project_root,
@@ -144,6 +148,7 @@ def _validate_eval_feedback_trailer(project_root: Path) -> list[ValidationError]
         check=False,
         capture_output=True,
         text=True,
+        errors="replace",
         encoding="utf-8",
     ).stdout.strip()
     return [

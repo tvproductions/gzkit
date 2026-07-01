@@ -103,6 +103,7 @@ def _process_tty(path: Path, record: ProposalRecord) -> None:
             ],
             capture_output=True,
             text=True,
+            errors="replace",
             encoding="utf-8",
             check=True,
         )

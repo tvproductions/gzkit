@@ -58,6 +58,7 @@ def _head_commit_ts(project_root: Path) -> datetime | None:
             check=True,
             capture_output=True,
             text=True,
+            errors="replace",
             encoding="utf-8",
         ).stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):

@@ -149,6 +149,7 @@ def get_git_user() -> str:
             ["git", "config", "user.name"],
             capture_output=True,
             text=True,
+            errors="replace",
             check=True,
         )
         return result.stdout.strip()

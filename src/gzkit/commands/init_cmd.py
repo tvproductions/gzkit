@@ -443,6 +443,7 @@ def _run_uv_sync(project_root: Path, *, dry_run: bool = False) -> str | None:
         cwd=project_root,
         capture_output=True,
         text=True,
+        errors="replace",
         encoding="utf-8",
     )
     if result.returncode == 0:

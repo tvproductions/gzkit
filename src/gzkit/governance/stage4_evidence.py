@@ -128,6 +128,7 @@ def _run_demo(command: str, project_root: Path) -> DemoResult:
         cwd=project_root,
         capture_output=True,
         text=True,
+        errors="replace",
         check=False,
     )
     combined = (proc.stdout or "") + (proc.stderr or "")
@@ -167,6 +168,7 @@ def _covers_counts(project_root: Path, obpi_id: str) -> tuple[int, int]:
         cwd=project_root,
         capture_output=True,
         text=True,
+        errors="replace",
         check=False,
     )
     try:

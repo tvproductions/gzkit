@@ -71,6 +71,7 @@ def get_changed_files(project_root: Path) -> list[VertexRef]:
             ["git", "diff", "--name-only", "HEAD"],
             capture_output=True,
             text=True,
+            errors="replace",
             encoding="utf-8",
             cwd=project_root,
         )
@@ -78,6 +79,7 @@ def get_changed_files(project_root: Path) -> list[VertexRef]:
             ["git", "diff", "--name-only", "--cached"],
             capture_output=True,
             text=True,
+            errors="replace",
             encoding="utf-8",
             cwd=project_root,
         )

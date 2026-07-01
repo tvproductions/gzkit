@@ -170,6 +170,7 @@ def _git_log_resolves(sha: str) -> bool:
             ["git", "log", "-1", "--format=%H", sha],
             capture_output=True,
             text=True,
+            errors="replace",
             timeout=10,
             check=False,
         )
@@ -184,6 +185,7 @@ def _gh_issue_resolves(number: str) -> bool:
             ["gh", "issue", "view", number, "--json", "number"],
             capture_output=True,
             text=True,
+            errors="replace",
             timeout=15,
             check=False,
         )
@@ -225,6 +227,7 @@ def _gh_authenticated() -> bool:
             ["gh", "auth", "status"],
             capture_output=True,
             text=True,
+            errors="replace",
             timeout=10,
             check=False,
         )

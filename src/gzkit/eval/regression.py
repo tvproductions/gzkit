@@ -123,6 +123,7 @@ def _get_commit_hash() -> str:
             ["git", "rev-parse", "HEAD"],
             capture_output=True,
             text=True,
+            errors="replace",
             encoding="utf-8",
         )
         return result.stdout.strip() if result.returncode == 0 else "unknown"

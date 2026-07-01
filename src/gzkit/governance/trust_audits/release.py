@@ -48,6 +48,7 @@ def audit_version_release(project_root: Path) -> list[ValidationError]:
             check=True,
             capture_output=True,
             text=True,
+            errors="replace",
             encoding="utf-8",
         )
     except (subprocess.CalledProcessError, FileNotFoundError):
