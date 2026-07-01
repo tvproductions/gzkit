@@ -41,11 +41,29 @@ _HOOK = _load_hook_module()
 _RUFF_FINDINGS = "x.py:1:1: F401 [*] `os` imported but unused\nFound 1 error.\n"
 
 
-def _payload(stop_hook_active: bool = False, cwd: str | None = None) -> str:
+def _payload(
+    stop_hook_active: bool = False,
+    cwd: str | None = None,
+    transcript_path: str | None = None,
+) -> str:
     data: dict[str, object] = {"stop_hook_active": stop_hook_active}
     if cwd is not None:
         data["cwd"] = cwd
+    if transcript_path is not None:
+        data["transcript_path"] = transcript_path
     return json.dumps(data)
+
+
+def _write_transcript(tmpdir: Path, assistant_text: str) -> Path:
+    transcript = Path(tmpdir) / "session.jsonl"
+    line = json.dumps(
+        {
+            "type": "assistant",
+            "message": {"content": [{"type": "text", "text": assistant_text}]},
+        }
+    )
+    transcript.write_text(line + "\n", encoding="utf-8")
+    return transcript
 
 
 class TestBlockOnFindings(unittest.TestCase):
@@ -185,6 +203,124 @@ class TestTelemetry(unittest.TestCase):
             self.assertEqual(len(lines), 4)
             self.assertEqual(json.loads(lines[0])["seq"], 7)
             self.assertEqual(json.loads(lines[-1])["files"], 2)
+
+
+class TestClaimGrounding(unittest.TestCase):
+    """GHI #620: unbacked governance state-claims block the stop."""
+
+    def test_unbacked_claim_blocks_with_three_part_prose(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            transcript = _write_transcript(tmp, "OBPI-0.0.37-22 is attested-complete.")
+            stderr = io.StringIO()
+            with (
+                patch.object(_HOOK, "collect_dirty_python_files", return_value=[]),
+                patch.object(
+                    sys,
+                    "stdin",
+                    io.StringIO(_payload(cwd=tmp, transcript_path=str(transcript))),
+                ),
+                patch.object(sys, "stderr", stderr),
+            ):
+                exit_code = _HOOK.main([])
+            self.assertEqual(exit_code, 2)
+            prose = stderr.getvalue()
+            self.assertIn("attested-complete", prose)
+            self.assertIn("Why this is forbidden", prose)
+            self.assertIn("GHI #620", prose)
+            self.assertIn("Governed next step", prose)
+
+    def test_claim_with_nearby_citation_allows(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            transcript = _write_transcript(
+                tmp,
+                "OBPI-0.0.37-22 is attested-complete, confirmed via "
+                "`uv run gz obpi status OBPI-0.0.37-22` -> ATTESTED COMPLETED.",
+            )
+            with (
+                patch.object(_HOOK, "collect_dirty_python_files", return_value=[]),
+                patch.object(
+                    sys,
+                    "stdin",
+                    io.StringIO(_payload(cwd=tmp, transcript_path=str(transcript))),
+                ),
+            ):
+                exit_code = _HOOK.main([])
+            self.assertEqual(exit_code, 0)
+
+    def test_no_claim_in_transcript_allows(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            transcript = _write_transcript(tmp, "the weather is nice today")
+            with (
+                patch.object(_HOOK, "collect_dirty_python_files", return_value=[]),
+                patch.object(
+                    sys,
+                    "stdin",
+                    io.StringIO(_payload(cwd=tmp, transcript_path=str(transcript))),
+                ),
+            ):
+                exit_code = _HOOK.main([])
+            self.assertEqual(exit_code, 0)
+
+    def test_missing_transcript_path_fails_open(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with (
+                patch.object(_HOOK, "collect_dirty_python_files", return_value=[]),
+                patch.object(sys, "stdin", io.StringIO(_payload(cwd=tmp))),
+            ):
+                exit_code = _HOOK.main([])
+            self.assertEqual(exit_code, 0)
+
+    def test_unreadable_transcript_fails_open(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            missing = Path(tmp) / "does-not-exist.jsonl"
+            with (
+                patch.object(_HOOK, "collect_dirty_python_files", return_value=[]),
+                patch.object(
+                    sys,
+                    "stdin",
+                    io.StringIO(_payload(cwd=tmp, transcript_path=str(missing))),
+                ),
+            ):
+                exit_code = _HOOK.main([])
+            self.assertEqual(exit_code, 0)
+
+    def test_ruff_findings_block_before_claim_check_runs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            transcript = _write_transcript(tmp, "OBPI-0.0.37-22 is attested-complete.")
+            stderr = io.StringIO()
+            with (
+                patch.object(_HOOK, "collect_dirty_python_files", return_value=["src/x.py"]),
+                patch.object(_HOOK, "run_ruff", return_value=(1, _RUFF_FINDINGS)),
+                patch.object(_HOOK, "find_unbacked_claims") as claims,
+                patch.object(_HOOK, "append_telemetry"),
+                patch.object(
+                    sys,
+                    "stdin",
+                    io.StringIO(_payload(cwd=tmp, transcript_path=str(transcript))),
+                ),
+                patch.object(sys, "stderr", stderr),
+            ):
+                exit_code = _HOOK.main([])
+            self.assertEqual(exit_code, 2)
+            self.assertIn("F401", stderr.getvalue())
+            claims.assert_not_called()
+
+    def test_claim_block_appends_telemetry_with_claim_count(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            transcript = _write_transcript(tmp, "the working tree is clean.")
+            with (
+                patch.object(_HOOK, "collect_dirty_python_files", return_value=[]),
+                patch.object(_HOOK, "append_claim_telemetry") as telemetry,
+                patch.object(
+                    sys,
+                    "stdin",
+                    io.StringIO(_payload(cwd=tmp, transcript_path=str(transcript))),
+                ),
+                patch.object(sys, "stderr", io.StringIO()),
+            ):
+                exit_code = _HOOK.main([])
+            self.assertEqual(exit_code, 2)
+            telemetry.assert_called_once_with(Path(tmp).resolve(), claims=1)
 
 
 class TestSettingsWiring(unittest.TestCase):
