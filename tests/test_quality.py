@@ -151,6 +151,34 @@ class TestRunCommand(unittest.TestCase):
         # The full sentinel echoes verbatim — no env-var expansion, no chain.
         self.assertEqual(result.stdout, sentinel)
 
+    def test_child_environment_forces_utf8_io(self) -> None:
+        """The child receives PYTHONIOENCODING=utf-8 so its own stdout is UTF-8.
+
+        Write-side companion of the GHI #582 read-side fix (GHI #661): a spawned
+        Python child (behave's pretty formatter, unittest, mkdocs) picks a
+        locale-dependent stdout encoding when its output is piped. On a
+        non-UTF-8 console (Windows cp1252) it then crashes with
+        UnicodeEncodeError writing a non-ASCII glyph — before run_command's
+        errors="replace" capture ever sees the bytes. Forcing PYTHONIOENCODING
+        in the child env makes the child's sys.stdout UTF-8 regardless of locale.
+        """
+        result = run_command(
+            [sys.executable, "-c", "import os; print(os.environ.get('PYTHONIOENCODING'))"]
+        )
+        self.assertTrue(result.success)
+        self.assertEqual(result.stdout.strip().lower(), "utf-8")
+
+    def test_child_can_emit_non_ascii_glyph(self) -> None:
+        """A child emitting U+2713 (behave's check-mark) round-trips intact.
+
+        This is the concrete crash shape from GHI #661 — behave's pretty
+        formatter writes U+2713. With UTF-8 child stdio the glyph is written and
+        captured cleanly rather than raising UnicodeEncodeError in the child.
+        """
+        result = run_command([sys.executable, "-c", "print('\\u2713 done')"])
+        self.assertTrue(result.success)
+        self.assertIn("✓", result.stdout)
+
 
 class TestQualityHasNoShellTrue(unittest.TestCase):
     """Static guard: src/gzkit/quality.py never opts into shell=True (GHI #415).

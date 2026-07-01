@@ -4,6 +4,7 @@ Provides unified interface to linting, formatting, testing, and type checking.
 """
 
 import ast
+import os
 import re
 import shlex
 import subprocess
@@ -73,6 +74,14 @@ def run_command(
         argv = list(command)
         display = shlex.join(argv)
 
+    # Force UTF-8 stdio in the spawned child (GHI #661): a piped Python child
+    # (behave's pretty formatter, unittest, mkdocs) otherwise picks a
+    # locale-dependent stdout encoding and crashes with UnicodeEncodeError
+    # emitting a non-ASCII glyph (U+2713) on a non-UTF-8 console — the write-side
+    # companion of the read-side errors="replace" decode (GHI #582). This makes
+    # the child's own sys.stdout UTF-8 regardless of console code page; it is a
+    # no-op where the locale is already UTF-8.
+    child_env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
     try:
         result = subprocess.run(
             argv,
@@ -82,6 +91,7 @@ def run_command(
             errors="replace",
             cwd=cwd,
             check=False,
+            env=child_env,
         )
         return QualityResult(
             success=result.returncode == 0,
