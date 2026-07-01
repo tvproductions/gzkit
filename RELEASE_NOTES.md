@@ -1,5 +1,32 @@
 # gzkit Release Notes
 
+## v0.30.2 (2026-07-01)
+
+Seven GHI fixes closing out ADR promote/demote ceremony symmetry, skill-doctrine drift, closeout-ceremony gating, and lock-hygiene/claim-grounding mechanization.
+
+### ADR Promote/Demote Ceremony
+
+- **#536** — Fixed `gz adr promote` reading pool ADR Target Scope bullets verbatim into `## Allowed Paths`: backtick-quoted `path:line` refs (e.g. `closeout_ceremony.py:401, 416-426`) produced structurally invalid, filesystem-unresolvable paths that blocked promotion. The scaffolder now strips line-range suffixes when emitting Allowed Paths and keeps OBPI titles to the short slug instead of the full prose bullet.
+- **#558** — Fixed `gz adr demote --on-collision keep-pool` leaving stale `status: Superseded` / `promoted_to:` frontmatter on the pool-side ADR after reversing a promotion — the demote ceremony wrote only the ledger event, not the symmetric frontmatter inverse that `gz adr promote` writes on the way in. Demote now restores `status: Pool` and strips the promotion markers.
+
+### Skill-Doctrine Drift
+
+- **#595** — Fixed `gz-design` and `gz-adr-create` mandating a post-authoring `gz-adr-evaluate` step that errors unconditionally on pool ADRs (`gz adr evaluate` has no package to resolve for a flat pool stub). Both skills now carve out the pool branch explicitly — evaluation fires at promotion, not pool authoring.
+- **#609** — Corrected `gz-adr-create`'s Trust Model claim of "Does NOT touch: Ledger files", which both authoring entry points (`gz interview adr`, `gz plan create`) contradict by booking an `adr_created` event on every creation. The skill now names the event honestly.
+
+### Closeout Ceremony
+
+- **#596** — Fixed a `BLOCKED` ADR (incomplete/unbindable OBPIs) being able to advance its closeout ceremony to the ATTESTATION boundary (step 6) — ceremony advancement was never wired to the existing closeout-readiness computation. Advancement toward attestation now fails closed while readiness is `BLOCKED`.
+
+### Session & Governance Hygiene
+
+- **#603** — Added warn-at-50%/reap-at-100% TTL enforcement (Sub-Invariant 4) to the SessionStart orientation hook. Previously an orphaned OBPI lock could sit past its TTL with no warning, silently blocking every push once the Preflight gate tripped over it.
+- **#620** — Added a turn-end claim-grounding gate to the Stop-hook: agent state-claims about governance truth ("attested-complete", "tests pass") must now carry a receipt-token citation the hook can verify deterministically, closing the one conversational surface the anti-vibing doctrine didn't yet mechanize.
+
+### Stats
+
+- 7 GHIs closed
+
 ## v0.30.1 (2026-07-01)
 
 Nine targeted GHI fixes spanning cross-platform subprocess robustness, Pydantic
