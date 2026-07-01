@@ -36,6 +36,11 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
     "artifact_edited": "Session activity log; consumed by anchor analysis, not graph.",
     "obpi_lock_claimed": "L3 ephemeral lock file; consumed by gz obpi lock, not graph.",
     "obpi_lock_released": "L3 ephemeral lock file; consumed by gz obpi lock, not graph.",
+    "obpi_lock_ttl_warning": (
+        "SessionStart escalation record (token-block-discipline.md § Sub-Invariant 4, "
+        "GHI #603) — a held lock crossed 50% TTL. Consumed by session orientation and "
+        "lock-hygiene audits, not the artifact graph."
+    ),
     "patch-release": (
         "Release-line metadata (hyphenated per patch_release_event at "
         "src/gzkit/ledger_events.py:300). Consumed by gz patch release, "

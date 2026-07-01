@@ -338,13 +338,15 @@ def collect_remote_state() -> dict | None:
 
 
 def collect_obpi_locks(repo_root: Path) -> list[dict]:
-    """Reap past-TTL OBPI locks and return the still-active ones.
+    """Reap past-TTL OBPI locks, warn on past-50%-TTL ones, return the held ones.
 
     Mirrors ``gz obpi lock list`` (token-block-discipline.md § Sub-Invariant
     3/4): each expired lock is reaped through the canonical reaper, which writes
     an ``abandoned_by_reaper`` register entry and emits ``obpi_lock_released``
     BEFORE the lock file is removed — the SessionStart auto-reap cadence the
-    rule promises. Held (non-expired) locks are surfaced, not touched.
+    rule promises. A held (non-expired) lock past 50% of its TTL is flagged
+    ``ttl_warning: True`` and logged to the ledger (warn-then-reap escalation,
+    GHI #603) — still surfaced, not touched.
 
     Guarded end-to-end: any failure (gzkit not importable, ledger I/O error)
     degrades to an empty list so the boot hook never crashes (module docstring
@@ -352,15 +354,28 @@ def collect_obpi_locks(repo_root: Path) -> list[dict]:
     """
     try:
         from gzkit.ledger import Ledger
+        from gzkit.ledger_events import obpi_lock_ttl_warning_event
         from gzkit.lock_manager import list_locks, reap_expired_locks, resolve_agent
 
         ledger = Ledger(repo_root / ".gzkit" / "ledger.jsonl")
         reap_expired_locks(repo_root, ledger=ledger, reaper_agent=resolve_agent(None))
-        return [
-            {"obpi_id": lock.obpi_id, "agent": lock.agent}
-            for lock in list_locks(repo_root)
-            if not lock.is_expired
-        ]
+        held = [lock for lock in list_locks(repo_root) if not lock.is_expired]
+        result = []
+        for lock in held:
+            ttl_warning = lock.elapsed_minutes >= lock.ttl_minutes * 0.5
+            if ttl_warning:
+                ledger.append(
+                    obpi_lock_ttl_warning_event(
+                        lock.obpi_id,
+                        lock.agent,
+                        lock.elapsed_minutes,
+                        lock.ttl_minutes,
+                    )
+                )
+            result.append(
+                {"obpi_id": lock.obpi_id, "agent": lock.agent, "ttl_warning": ttl_warning}
+            )
+        return result
     except Exception:
         return []
 
@@ -466,6 +481,12 @@ def render(state: dict, now: datetime) -> str:
                 obpi = lock.get("obpi_id", "?")
                 agent = lock.get("agent", "?")
                 lines.append(f"- {obpi} (claimed by {agent})")
+                if lock.get("ttl_warning"):
+                    lines.append(
+                        f"  - WARNING: lock held by {agent} has exceeded 50% TTL; "
+                        "consider the gz-session-handoff skill to create a register "
+                        "entry and release."
+                    )
     else:
         lines.append("- (no active locks)")
     lines.append("")

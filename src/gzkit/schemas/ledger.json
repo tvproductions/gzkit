@@ -718,6 +718,27 @@
         }
       }
     },
+    "obpi_lock_ttl_warning": {
+      "required": [
+        "agent",
+        "elapsed_minutes",
+        "ttl_minutes"
+      ],
+      "properties": {
+        "agent": {
+          "type": "string",
+          "min_length": 1
+        },
+        "elapsed_minutes": {
+          "type": "number",
+          "min": 0
+        },
+        "ttl_minutes": {
+          "type": "integer",
+          "min": 0
+        }
+      }
+    },
     "obpi_withdrawn": {
       "required": [
         "reason"

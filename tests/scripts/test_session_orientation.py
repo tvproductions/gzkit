@@ -662,12 +662,37 @@ class TestCollectObpiLocks(unittest.TestCase):
 
             result = self.mod.collect_obpi_locks(root)
 
-            self.assertEqual(result, [{"obpi_id": "OBPI-0.3.0-01", "agent": "agent-a"}])
+            self.assertEqual(
+                result,
+                [{"obpi_id": "OBPI-0.3.0-01", "agent": "agent-a", "ttl_warning": False}],
+            )
             # Active lock is left in place — no premature surrender, no event.
             self.assertTrue(lock_path.exists())
             ledger = root / ".gzkit" / "ledger.jsonl"
             if ledger.exists():
-                self.assertNotIn("obpi_lock_released", ledger.read_text(encoding="utf-8"))
+                ledger_text = ledger.read_text(encoding="utf-8")
+                self.assertNotIn("obpi_lock_released", ledger_text)
+                self.assertNotIn("obpi_lock_ttl_warning", ledger_text)
+
+    def test_lock_past_warn_threshold_is_flagged_and_logged(self):
+        """Sub-Invariant 4: >=50% TTL (not yet expired) warns to console + ledger."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            # 60 minutes elapsed of a 100-minute TTL: 60% — past warn, not expired.
+            past_warn = (datetime.now(UTC) - timedelta(minutes=60)).isoformat()
+            lock_path = self._write_lock(root, "OBPI-0.4.0-01", past_warn, 100)
+
+            result = self.mod.collect_obpi_locks(root)
+
+            self.assertEqual(
+                result,
+                [{"obpi_id": "OBPI-0.4.0-01", "agent": "agent-a", "ttl_warning": True}],
+            )
+            # Still held — a warning is not a reap.
+            self.assertTrue(lock_path.exists())
+            ledger_text = (root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
+            self.assertIn("obpi_lock_ttl_warning", ledger_text)
+            self.assertIn("OBPI-0.4.0-01", ledger_text)
 
     def test_no_locks_returns_empty(self):
         with tempfile.TemporaryDirectory() as tmp:

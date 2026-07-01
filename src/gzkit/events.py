@@ -259,6 +259,15 @@ class ObpiLockReleasedEvent(_EventBase):
     force: bool = False
 
 
+class ObpiLockTtlWarningEvent(_EventBase):
+    """obpi_lock_ttl_warning event — held lock past 50% TTL, not yet expired."""
+
+    event: Literal["obpi_lock_ttl_warning"]
+    agent: str
+    elapsed_minutes: float
+    ttl_minutes: int
+
+
 class ObpiWithdrawnEvent(_EventBase):
     """obpi_withdrawn event — withdrawal record for a non-completing OBPI brief."""
 
@@ -612,6 +621,7 @@ TypedLedgerEvent = Annotated[
     | AuditGeneratedEvent
     | ObpiLockClaimedEvent
     | ObpiLockReleasedEvent
+    | ObpiLockTtlWarningEvent
     | ObpiWithdrawnEvent
     | ObpiCompletionRepudiatedEvent
     | ObpiCompletionUncoveredAcceptEvent

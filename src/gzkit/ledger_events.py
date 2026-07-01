@@ -396,6 +396,28 @@ def obpi_lock_released_event(
     )
 
 
+def obpi_lock_ttl_warning_event(
+    obpi_id: str,
+    agent: str,
+    elapsed_minutes: float,
+    ttl_minutes: int,
+) -> LedgerEvent:
+    """Create an OBPI lock TTL-warning event (token-block-discipline.md § Sub-Invariant 4).
+
+    Emitted by the SessionStart hook when a held lock has crossed 50% of its
+    TTL but has not yet expired (expired locks are reaped, not warned).
+    """
+    return LedgerEvent(
+        event="obpi_lock_ttl_warning",
+        id=obpi_id,
+        extra={
+            "agent": agent,
+            "elapsed_minutes": elapsed_minutes,
+            "ttl_minutes": ttl_minutes,
+        },
+    )
+
+
 def pipeline_launched_event(
     obpi_id: str,
     parent_adr: str,
