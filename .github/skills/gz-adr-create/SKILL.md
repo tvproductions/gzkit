@@ -5,14 +5,14 @@ description: Create and book a GovZero ADR with its OBPI briefs. Enforces next-f
 category: adr-lifecycle
 compatibility: Requires GovZero v6 framework; provides governance rules internally for portable use across repositories
 metadata:
-  skill-version: "6.6.0"
+  skill-version: "6.6.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), linkage (ADR/OBPI/GHI), foundation-nominal-allocation (next-free-integer)"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-01
 model: opus
 ---
 
@@ -59,7 +59,7 @@ Create GovZero-compliant ADR files with proper SemVer versioning, OBPI briefs, a
 - **Reads:** User input, templates, existing ADR registry
 - **Writes:** ADR files, OBPI brief files, registry entries
 - **Does NOT verify:** Evidence, test coverage, or criteria
-- **Does NOT touch:** Ledger files
+- **Books:** an `adr_created` ledger event on authoring (both `gz interview adr` and `gz plan create` append it) — this registers the ADR's existence, not its completion; the ledger IS touched
 
 ---
 
