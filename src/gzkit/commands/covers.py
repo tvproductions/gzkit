@@ -16,7 +16,7 @@ import re
 import sys
 from pathlib import Path
 
-from gzkit.commands.common import console, get_project_root
+from gzkit.commands.common import GzCliError, console, get_project_root
 from gzkit.traceability import (
     CoverageReport,
     compute_coverage,
@@ -212,15 +212,18 @@ def covers_cmd(
 
     # Three-channel enrichment for OBPI-scoped targets
     if target and target.upper().startswith("OBPI-"):
-        import contextlib
+        from pydantic import ValidationError
 
-        from gzkit.req_kind import compute_three_channel_coverage
+        from gzkit.req_kind import (
+            compute_three_channel_coverage,
+            load_req_kind_grandfathering_cache,
+        )
 
-        cache_path = project_root / "data" / "req_kind_grandfathering.json"
-        cache: dict[str, str] = {}
-        if cache_path.exists():
-            with contextlib.suppress(json.JSONDecodeError, OSError):
-                cache = json.loads(cache_path.read_text(encoding="utf-8"))
+        try:
+            cache = load_req_kind_grandfathering_cache(project_root)
+        except ValidationError as exc:
+            msg = f"data/req_kind_grandfathering.json: invalid grandfathering cache ({exc})"
+            raise GzCliError(msg) from exc
         report = compute_three_channel_coverage(
             report, discovered, grandfathering_cache=cache, project_root=project_root
         )

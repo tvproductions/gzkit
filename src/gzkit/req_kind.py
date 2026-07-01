@@ -16,7 +16,7 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING, get_args
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 from gzkit.events import TypedLedgerEvent
 
@@ -613,6 +613,32 @@ _KIND_STR_TO_ENUM: dict[str, ReqKind] = {
     "SUPPORT": ReqKind.SUPPORT,
     "STRUCTURAL-FENCE": ReqKind.STRUCTURAL_FENCE,
 }
+
+
+class ReqKindGrandfatheringCache(RootModel[dict[str, str]]):
+    """Operator-authored REQ-ID -> taxonomy-kind override cache.
+
+    Schema for ``data/req_kind_grandfathering.json``. Loading is fail-closed
+    (GHI #544): malformed JSON or a non-string kind value raises
+    ``pydantic.ValidationError`` instead of silently degrading to an empty
+    cache, which would silently broaden BEHAVIOR proof-channel enforcement.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+
+def load_req_kind_grandfathering_cache(project_root: Path) -> dict[str, str]:
+    """Load and validate ``data/req_kind_grandfathering.json``.
+
+    Returns an empty cache when the file is absent (no override configured).
+    Raises ``pydantic.ValidationError`` when the file exists but is malformed
+    or contains non-string kind values; callers must not suppress it.
+    """
+    cache_path = project_root / "data" / "req_kind_grandfathering.json"
+    if not cache_path.exists():
+        return {}
+    raw = cache_path.read_text(encoding="utf-8")
+    return ReqKindGrandfatheringCache.model_validate_json(raw).root
 
 
 def compute_three_channel_coverage(
