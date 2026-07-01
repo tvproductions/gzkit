@@ -295,6 +295,8 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 **Reconcile heuristic gap (recurs across the ADR-0.0.65/0.0.72 campaign).** `gz brief reconcile`'s `_compute_missing_in_brief` (`src/gzkit/governance/brief_reconcile.py:287`) docstring claims cross-cutting test-infrastructure imports like `gzkit.traceability` (the `@covers` decorator) are excluded, but the only implemented mechanism is the parent-dir neighborhood filter. For any OBPI whose allowlist edits top-level `src/gzkit/*.py` modules, the neighborhood IS `src/gzkit/` so `traceability.py` (a sibling) is flagged as scope leakage — a systematic false positive. Worked around here by listing `traceability.py` in the read-only coherence targets (consumed, not edited). Proper fix: add an explicit `_CROSS_CUTTING_TEST_INFRA = {"gzkit.traceability"}` exclusion in `_compute_missing_in_brief` (deferred — the pipeline-gate hook blocks editing `brief_reconcile.py` while this OBPI's pipeline is active; route as a direct-fix between OBPIs or fold into OBPI-0.0.72-01).
 
+**GHI #612 linkage (audit-trail backfill, 2026-07-01).** The reconciliation this OBPI performed (explicit-superset `HandoffFrontmatter`, widened `_OBPI_ID_RE`, shape-aware `validate_handoff_document`) is also the direct-fix resolution for external GHI #612 ("handoff-model: HandoffFrontmatter rejects fields its own writers emit") — its C1/C2/C3 canonical-contradiction items map 1:1 onto REQ-0.0.72-02-01/02/03. The landing commit (`81ae707b`, a `gz git-sync` chore sweep) carried no `(GHI #612)` trailer, so `ghi-close`'s Phase 3 commit-trailer check found no citation; this note plus its own commit trailer close that audit-trail gap without rewriting the original commit.
+
 _No further defects tracked._
 
 ## Human Attestation
