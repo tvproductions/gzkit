@@ -299,6 +299,32 @@ def _gate_closeout_proof(project_root: Path, state: CeremonyState) -> None:
     assert_fidelity_for_ceremony(adr_file, state.adr_id)
 
 
+def _gate_closeout_readiness(project_root: Path, state: CeremonyState) -> None:
+    """Fail-close EXECUTE -> ATTESTATION when ADR closeout readiness is BLOCKED (GHI #596).
+
+    Closeout readiness (``gz adr report``'s ``Closeout Readiness: BLOCKED``) checks
+    whether every linked OBPI has ledger proof of completion — orthogonal to
+    ``_gate_closeout_proof``'s per-REQ proof-binding scan, which only inspects REQs
+    inside brief files it can find. A ``pending``/``draft`` OBPI with no brief file
+    yet (or no REQs filled in) contributes zero REQ checks, so proof-binding passes
+    vacuously while readiness correctly reports BLOCKED. An ADR that cannot
+    legitimately attest must not be able to occupy the attestation boundary.
+    """
+    if state.current_step != CeremonyStep.EXECUTE:
+        return
+    config = ensure_initialized()
+    ledger = Ledger(get_project_root() / config.paths.ledger)
+    _obpi_rows, readiness = _build_obpi_context(project_root, config, ledger, state.adr_id)
+    blockers = readiness.get("blockers", [])
+    if blockers:
+        from gzkit.core.exceptions import PolicyBreachError
+
+        raise PolicyBreachError(
+            "EXECUTE -> ATTESTATION transition blocked: closeout readiness is BLOCKED.\n"
+            + "\n".join(f"  {b}" for b in blockers)
+        )
+
+
 def _gate_attestation_boundary(project_root: Path, state: CeremonyState) -> None:
     """Fail-close the Step 6 -> Step 7 edge without a fresh ledger receipt (BI-3).
 
@@ -339,9 +365,12 @@ def _commit_advance(
     the Step 6 -> 7 edge is ledger-gated here, so neither path can walk past the
     human-attestation boundary without a fresh ``attested`` receipt.
 
-    The EXECUTE -> ATTESTATION edge is additionally proof-binding-gated
-    (OBPI-0.0.63-06): an unbound closeout cannot advance to attestation.
+    The EXECUTE -> ATTESTATION edge is additionally gated on closeout readiness
+    (GHI #596: a BLOCKED ADR cannot occupy the attestation boundary) and on
+    proof-binding (OBPI-0.0.63-06): an unbound closeout cannot advance to
+    attestation.
     """
+    _gate_closeout_readiness(project_root, state)
     _gate_closeout_proof(project_root, state)
     _gate_attestation_boundary(project_root, state)
 

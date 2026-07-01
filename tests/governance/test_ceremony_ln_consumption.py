@@ -265,5 +265,85 @@ class TestGateScopedToCeremonyAdr(unittest.TestCase):
             _gate_closeout_proof(self.root, state)
 
 
+class TestClosureReadinessGate(unittest.TestCase):
+    """GHI #596: EXECUTE->ATTESTATION must also fail-close on BLOCKED closeout
+    readiness (``gz adr report``'s ``Closeout Readiness: BLOCKED``) — a check
+    orthogonal to ``_gate_closeout_proof``'s per-REQ proof-binding scan, which
+    is silent about an OBPI that has no brief file to scan at all (a
+    ``pending``/``draft`` OBPI with no ledger proof of completion). ADR-0.0.41
+    reached step 6 (ATTESTATION) while three of its OBPIs were still
+    draft/pending — the readiness gate that produces ``BLOCKED`` and the
+    ceremony-advancement gate were not wired to each other."""
+
+    def _make_execute_state(self) -> object:
+        from gzkit.commands.closeout_ceremony import CeremonyState, CeremonyStep
+
+        return CeremonyState(
+            adr_id="ADR-0.0.41-test",
+            current_step=CeremonyStep.EXECUTE,
+            is_foundation=False,
+            started_at="2026-01-01T00:00:00Z",
+            updated_at="2026-01-01T00:00:00Z",
+        )
+
+    def test_gate_raises_policy_breach_when_readiness_blocked(self) -> None:
+        from gzkit.commands.closeout_ceremony import _gate_closeout_readiness
+        from gzkit.core.exceptions import PolicyBreachError
+
+        state = self._make_execute_state()
+        project_root = Path(tempfile.mkdtemp())
+        blocked_readiness = {
+            "ready": False,
+            "blockers": [
+                "OBPI-0.0.41-03-release-fail-closed-and-reaping: "
+                "not closeout-ready (runtime=pending, proof=missing)"
+            ],
+            "blocking_ids": ["OBPI-0.0.41-03-release-fail-closed-and-reaping"],
+        }
+
+        _PATCH_TARGET = "gzkit.commands.closeout_ceremony._build_obpi_context"
+        with patch(_PATCH_TARGET, return_value=([], blocked_readiness)) as mock_ctx:
+            with self.assertRaises(PolicyBreachError):
+                _gate_closeout_readiness(project_root, state)
+            mock_ctx.assert_called_once()
+
+    def test_gate_succeeds_and_calls_readiness_when_ready(self) -> None:
+        from gzkit.commands.closeout_ceremony import _gate_closeout_readiness
+
+        state = self._make_execute_state()
+        project_root = Path(tempfile.mkdtemp())
+        ready_readiness = {"ready": True, "blockers": [], "blocking_ids": []}
+
+        _PATCH_TARGET = "gzkit.commands.closeout_ceremony._build_obpi_context"
+        with patch(_PATCH_TARGET, return_value=([], ready_readiness)) as mock_ctx:
+            # Must not raise
+            _gate_closeout_readiness(project_root, state)
+            mock_ctx.assert_called_once()
+
+    def test_gate_is_noop_on_non_execute_step(self) -> None:
+        """Mirrors _gate_closeout_proof's scope discipline: fires only at EXECUTE."""
+        from gzkit.commands.closeout_ceremony import (
+            CeremonyState,
+            CeremonyStep,
+            _gate_closeout_readiness,
+        )
+
+        state = CeremonyState(
+            adr_id="ADR-0.0.41-test",
+            current_step=CeremonyStep.ATTESTATION,  # not EXECUTE
+            is_foundation=False,
+            started_at="2026-01-01T00:00:00Z",
+            updated_at="2026-01-01T00:00:00Z",
+        )
+        project_root = Path(tempfile.mkdtemp())
+
+        _PATCH_TARGET = "gzkit.commands.closeout_ceremony._build_obpi_context"
+        with patch(
+            _PATCH_TARGET, return_value=([], {"ready": False, "blockers": ["x"]})
+        ) as mock_ctx:
+            _gate_closeout_readiness(project_root, state)
+            mock_ctx.assert_not_called()
+
+
 if __name__ == "__main__":
     unittest.main()
