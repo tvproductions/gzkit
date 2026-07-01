@@ -68,11 +68,16 @@ _quiet_console = Console(file=StringIO())
 class TokenBlockDisciplineCoverage(unittest.TestCase):
     """Sub-invariant coverage authored by OBPI-01."""
 
-    def test_token_block_rule_file_present(self) -> None:
-        """Sanity: the canonical rule file authored by OBPI-01 is on disk."""
-        repo_root = Path(__file__).resolve().parents[2]
-        rule_path = repo_root / ".gzkit" / "rules" / "token-block-discipline.md"
-        self.assertTrue(rule_path.is_file(), f"Missing rule file: {rule_path}")
+    def test_base_categories_parse_as_valid_specs(self) -> None:
+        """Each base abandon category round-trips through the production parser.
+
+        Converted from a rule-file existence sanity check (GHI #632): asserting a
+        doc is on disk is a tautology; exercising ``parse_abandon_spec`` tests the
+        behavior the OBPI actually delivers.
+        """
+        for category in ("network_loss", "external_blocker", "wrong_obpi_claimed", "tool_failure"):
+            spec = parse_abandon_spec(f"{category}:legitimate reason")
+            self.assertEqual(spec.category, category)
 
 
 @covers("OBPI-0.0.41-02")
@@ -90,11 +95,14 @@ class TestAbandonCategoryEnum(unittest.TestCase):
             self.assertIn(category, msg)
 
     @covers("REQ-0.0.41-02-06")
-    def test_base_enum_matches_rule_file(self) -> None:
-        """Code-side enum MUST mirror the rule's Sub-Invariant 1 closed set."""
-        repo_root = Path(__file__).resolve().parents[2]
-        rule_path = repo_root / ".gzkit" / "rules" / "token-block-discipline.md"
-        rule_text = rule_path.read_text(encoding="utf-8")
+    def test_base_categories_are_members_of_closed_enum(self) -> None:
+        """The four base categories are members of the production closed set.
+
+        Converted from a rule-file text echo (GHI #632): reading the doc and
+        asserting the category strings appear is a tautology; asserting membership
+        in the production ``ABANDON_CATEGORIES`` tests the code-side contract that
+        actually gates ``parse_abandon_spec``.
+        """
         for category in (
             "network_loss",
             "external_blocker",
@@ -103,8 +111,8 @@ class TestAbandonCategoryEnum(unittest.TestCase):
         ):
             self.assertIn(
                 category,
-                rule_text,
-                f"Base abandon category {category!r} missing from rule file",
+                ABANDON_CATEGORIES,
+                f"Base abandon category {category!r} missing from the code enum",
             )
 
 

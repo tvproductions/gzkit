@@ -655,3 +655,169 @@ class TestCheckStepRegistration(unittest.TestCase):
         from gzkit.quality import run_tautological_test_audit
 
         self.assertTrue(callable(run_tautological_test_audit))
+
+
+class TestGhi632ScannerCorrectnessAndDrift(unittest.TestCase):
+    """GHI #632: exemptions stay narrow (real tautologies still flag) and
+    audit_drift matches by stable identity, not count/position."""
+
+    def _scan(self, filename: str, content: str) -> list:
+        from gzkit.tautological_tests import scan_test_tree
+
+        with tempfile.TemporaryDirectory() as tmp_str:
+            tmp = pathlib.Path(tmp_str)
+            (tmp / "tests").mkdir()
+            (tmp / "tests" / filename).write_text(textwrap.dedent(content), encoding="utf-8")
+            return scan_test_tree(tmp / "tests")
+
+    def test_real_doc_echo_tautology_still_flagged(self) -> None:
+        """THE PIN: a governance-doc content echo (read a .md, assert its text,
+        no production call) is NOT laundered by any GHI #632 exemption."""
+        ops = self._scan(
+            "test_doc.py",
+            """\
+            from pathlib import Path
+            import unittest
+
+            class TestDoc(unittest.TestCase):
+                def test_rule_documents_x(self):
+                    text = Path("docs/rule.md").read_text()
+                    self.assertIn("some doctrine", text)
+            """,
+        )
+        self.assertEqual(len(ops), 1, "a doc content-echo must still flag")
+        self.assertEqual(ops[0].function_name, "test_rule_documents_x")
+
+    def test_source_fence_ast_parse_exempted(self) -> None:
+        ops = self._scan(
+            "test_fence.py",
+            """\
+            import ast
+            from pathlib import Path
+            import unittest
+
+            class TestFence(unittest.TestCase):
+                def test_no_bad_import(self):
+                    src = Path("x.py").read_text()
+                    tree = ast.parse(src)
+                    self.assertTrue(tree)
+            """,
+        )
+        self.assertEqual(ops, [], "an ast.parse source-fence must be exempt")
+
+    def test_source_fence_rglob_py_exempted(self) -> None:
+        ops = self._scan(
+            "test_fence2.py",
+            """\
+            from pathlib import Path
+            import unittest
+
+            class TestFence(unittest.TestCase):
+                def test_no_offender(self):
+                    offenders = []
+                    for py in Path("src").rglob("*.py"):
+                        if "bad" in py.read_text():
+                            offenders.append(py)
+                    self.assertEqual(offenders, [])
+            """,
+        )
+        self.assertEqual(ops, [], "an rglob('*.py') source-fence must be exempt")
+
+    def test_module_backed_self_attr_exempted(self) -> None:
+        ops = self._scan(
+            "test_mod.py",
+            """\
+            import importlib.util
+            from pathlib import Path
+            import unittest
+
+            def _load():
+                spec = importlib.util.spec_from_file_location("m", "scripts/m.py")
+                return importlib.util.module_from_spec(spec)
+
+            class TestMod(unittest.TestCase):
+                def setUp(self):
+                    self.mod = _load()
+
+                def test_behavior(self):
+                    self.mod.do_work(Path("t.txt"))
+                    self.assertTrue(Path("t.txt").exists())
+            """,
+        )
+        self.assertEqual(ops, [], "a dynamically-loaded-module behavioral test must be exempt")
+
+    def test_module_backed_exemption_requires_importlib_signal(self) -> None:
+        """Narrowness: a self-attr call WITHOUT importlib loading in the file is
+        NOT exempted, so a plain self-attr helper cannot launder a tautology."""
+        ops = self._scan(
+            "test_noimport.py",
+            """\
+            from pathlib import Path
+            import unittest
+
+            class TestMod(unittest.TestCase):
+                def setUp(self):
+                    self.helper = object()
+
+                def test_echo(self):
+                    self.helper.noop()
+                    self.assertIn("x", Path("docs/rule.md").read_text())
+            """,
+        )
+        self.assertEqual(len(ops), 1, "no importlib signal -> not module-backed-exempt")
+
+    def test_audit_drift_identity_reports_actual_new_op(self) -> None:
+        """audit_drift matches by identity (line-independent), flags only the
+        genuinely-new op, and reports THAT op — not a baselined one."""
+        from gzkit.tautological_tests import audit_drift
+
+        baseline = {
+            "generated_at": "2026-01-01T00:00:00+00:00",
+            "operations": [
+                {
+                    "file_path": "tests/test_known.py",
+                    "line_number": 999,  # deliberately wrong: proves line-independence
+                    "operation_kind": "read_text",
+                    "function_name": "test_known",
+                    "assertion_kind": "assertIn",
+                    "context_hint": "x",
+                }
+            ],
+        }
+        known = """\
+            from pathlib import Path
+            import unittest
+
+            class TestKnown(unittest.TestCase):
+                def test_known(self):
+                    self.assertIn("a", Path("docs/a.md").read_text())
+            """
+        newop = """\
+            from pathlib import Path
+            import unittest
+
+            class TestNew(unittest.TestCase):
+                def test_brand_new(self):
+                    self.assertIn("b", Path("docs/b.md").read_text())
+            """
+        with tempfile.TemporaryDirectory() as tmp_str:
+            tmp = pathlib.Path(tmp_str)
+            (tmp / "tests").mkdir()
+            (tmp / "data").mkdir()
+            (tmp / "tests" / "test_known.py").write_text(textwrap.dedent(known), encoding="utf-8")
+            (tmp / "tests" / "test_new.py").write_text(textwrap.dedent(newop), encoding="utf-8")
+            (tmp / "data" / "tautological_test_baseline.json").write_text(
+                json.dumps(baseline), encoding="utf-8"
+            )
+            (tmp / "data" / "tautological_test_waivers.json").write_text(
+                json.dumps({"file_waivers": {}}), encoding="utf-8"
+            )
+            errors = audit_drift(tmp)
+
+        self.assertEqual(len(errors), 1, "only the genuinely-new op flags")
+        self.assertEqual(errors[0].artifact, "tests/test_new.py")
+        self.assertIn("test_brand_new", errors[0].message)
+
+
+if __name__ == "__main__":
+    unittest.main()

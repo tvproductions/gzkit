@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import ast
 import json
+from collections import Counter
 from pathlib import Path
 
 from gzkit.commands.validate_cmd import ValidationError
@@ -172,6 +173,89 @@ def _class_setup_map(
     return out
 
 
+def _reads_project_source(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    """Return True if the function operates on Python *source code as data* — a
+    static-analysis fence, not a governance-doc content echo (GHI #632).
+
+    Signals (deliberately narrow, so real tautologies are not laundered):
+    parsing source with ``ast.parse``, or globbing Python source files
+    (``rglob``/``glob`` with a ``"*.py"`` pattern). Asserting a structural
+    invariant over source is behavioral about code shape; reading a doc and
+    echoing its text is the tautology this audit targets. A ``"src"`` path
+    segment alone is intentionally NOT a signal — too many tautological tests
+    reference source paths incidentally. Only consulted for an already-flagged
+    op (filesystem-op + assertion, no production call, not a fixture).
+    """
+    for child in ast.walk(node):
+        if not (isinstance(child, ast.Call) and isinstance(child.func, ast.Attribute)):
+            continue
+        if child.func.attr == "parse" and _attr_root_name(child.func) == "ast":
+            return True
+        if child.func.attr in ("rglob", "glob") and any(
+            isinstance(a, ast.Constant) and isinstance(a.value, str) and a.value.endswith(".py")
+            for a in child.args
+        ):
+            return True
+    return False
+
+
+def _module_backed_self_attrs(tree: ast.Module) -> frozenset[str]:
+    """Collect ``self.<attr>`` names a fixture binds to a dynamically-loaded
+    project module (GHI #632).
+
+    A test file that ``importlib``-loads a project script/module and calls its
+    functions exercises production code, even though the loaded module is not a
+    static ``gzkit`` import the name heuristic can see. Returns attr names only
+    when the file uses importlib spec-loading — the signal that a
+    ``self.X = <loader>()`` fixture assignment holds a project module.
+    """
+    uses_importlib_load = any(
+        isinstance(n, ast.Call)
+        and isinstance(n.func, ast.Attribute)
+        and n.func.attr in ("spec_from_file_location", "module_from_spec")
+        for n in ast.walk(tree)
+    )
+    if not uses_importlib_load:
+        return frozenset()
+    attrs: set[str] = set()
+    for node in ast.walk(tree):
+        if not (
+            isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and node.name in ("setUp", "setUpClass")
+        ):
+            continue
+        for stmt in ast.walk(node):
+            if not isinstance(stmt, ast.Assign) or not isinstance(stmt.value, ast.Call):
+                continue
+            for tgt in stmt.targets:
+                if (
+                    isinstance(tgt, ast.Attribute)
+                    and isinstance(tgt.value, ast.Name)
+                    and tgt.value.id == "self"
+                ):
+                    attrs.add(tgt.attr)
+    return frozenset(attrs)
+
+
+def _calls_self_module(
+    node: ast.FunctionDef | ast.AsyncFunctionDef, module_attrs: frozenset[str]
+) -> bool:
+    """Return True if the function calls a method on a ``self.<attr>`` bound to a
+    loaded project module — a production call the static-import heuristic misses.
+    """
+    for child in ast.walk(node):
+        if (
+            isinstance(child, ast.Call)
+            and isinstance(child.func, ast.Attribute)
+            and isinstance(child.func.value, ast.Attribute)
+            and isinstance(child.func.value.value, ast.Name)
+            and child.func.value.value.id == "self"
+            and child.func.value.attr in module_attrs
+        ):
+            return True
+    return False
+
+
 def scan_test_tree(tests_path: Path) -> list[TautologicalTestOperation]:
     """Scan all .py files under tests_path for tautological test operations.
 
@@ -203,6 +287,7 @@ def scan_test_tree(tests_path: Path) -> list[TautologicalTestOperation]:
 
         gzkit_names = _gzkit_imported_names(tree)
         setup_map = _class_setup_map(tree)
+        module_attrs = _module_backed_self_attrs(tree)
 
         for node in ast.walk(tree):
             if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -227,6 +312,11 @@ def scan_test_tree(tests_path: Path) -> list[TautologicalTestOperation]:
             if _calls_production_code(node, gzkit_names) or (
                 setup is not None and _calls_production_code(setup, gzkit_names)
             ):
+                continue
+            # Static-analysis fences (reading source code as data) and behavioral
+            # tests that call a dynamically-loaded project module via a self-attr
+            # are not tautological echoes — exempt them (GHI #632).
+            if _reads_project_source(node) or _calls_self_module(node, module_attrs):
                 continue
             context = _extract_context_hint(node)
             results.append(
@@ -293,16 +383,30 @@ def count_waived(waivers: dict[str, list[str]], file_path: str) -> int:
     return len(waivers.get(file_path, []))
 
 
-def _total_waived(waivers: dict[str, list[str]]) -> int:
-    return sum(len(v) for v in waivers.values())
+def _op_identity(op: TautologicalTestOperation) -> tuple[str, str, str, str]:
+    """Stable identity for baseline matching (GHI #632).
+
+    Excludes ``line_number`` (shifts on unrelated edits elsewhere in the file)
+    and ``context_hint`` (varies), so a known baseline op is recognized by WHAT
+    it is, not WHERE it sits or in what scan position. This replaces the brittle
+    count/positional comparison that both tripped on benign additions and
+    misreported a baselined op as the culprit.
+    """
+    return (op.file_path, op.function_name, op.operation_kind, op.assertion_kind)
 
 
 def audit_drift(project_root: Path) -> list[ValidationError]:
-    """Compare current scan count to baseline + waivers; return errors on excess.
+    """Flag tautological-test ops not covered by the baseline or a file waiver.
+
+    Matches by stable identity (``_op_identity``), not count/position: each live
+    op consumes one matching baseline identity, then one file-waiver slot for its
+    file; a live op that matches neither is genuinely new and is flagged (GHI
+    #632). Reordering files or adding an already-baselined op never trips the
+    gate, and the reported culprit is the actually-new op.
 
     Exits:
-    - 0 → current ≤ baseline + waivers (clean)
-    - 3 (via ValidationError type="tautological_test_audit") → drift detected
+    - 0 → every live op is covered by baseline or waiver (clean)
+    - 3 (via ValidationError type="tautological_test_audit") → genuinely-new op(s)
     """
     tests_path = project_root / "tests"
     data_dir = project_root / "data"
@@ -311,17 +415,18 @@ def audit_drift(project_root: Path) -> list[ValidationError]:
     baseline = load_baseline(data_dir)
     waivers = load_waivers(data_dir)
 
-    current_count = len(ops)
-    baseline_count = len(baseline.operations)
-    waived_count = _total_waived(waivers)
-    allowed = baseline_count + waived_count
+    baseline_remaining = Counter(_op_identity(op) for op in baseline.operations)
+    waiver_remaining = {file_path: len(keys) for file_path, keys in waivers.items()}
 
-    if current_count <= allowed:
-        return []
-
-    new_ops = ops[allowed:]
     errors: list[ValidationError] = []
-    for op in new_ops:
+    for op in ops:
+        identity = _op_identity(op)
+        if baseline_remaining.get(identity, 0) > 0:
+            baseline_remaining[identity] -= 1
+            continue
+        if waiver_remaining.get(op.file_path, 0) > 0:
+            waiver_remaining[op.file_path] -= 1
+            continue
         disposition = propose_disposition(op)
         errors.append(
             ValidationError(
