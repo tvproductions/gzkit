@@ -190,15 +190,25 @@ def _section_body(content: str, heading: str) -> str | None:
     return None
 
 
+_LINE_RANGE_SUFFIX_RE = re.compile(r"^(?P<path>.+\.[A-Za-z0-9]+):\d[\d,\-\s]*$")
+
+
 def _extract_backticked_paths(text: str) -> list[str]:
-    """Extract path-like backticked tokens from markdown text."""
+    """Extract path-like backticked tokens from markdown text.
+
+    Strips a trailing ``:line`` / ``:line-range[, line-range, ...]`` suffix
+    so extracted tokens stay filesystem-resolvable (GHI #536) -- e.g.
+    ``src/gzkit/commands/foo.py:401, 416-426`` normalizes to
+    ``src/gzkit/commands/foo.py``.
+    """
     paths: list[str] = []
     for candidate in re.findall(r"`([^`]+)`", text):
         normalized = candidate.strip()
         if not normalized:
             continue
         if "/" in normalized or normalized.endswith(".md") or normalized.endswith(".py"):
-            paths.append(normalized)
+            match = _LINE_RANGE_SUFFIX_RE.match(normalized)
+            paths.append(match.group("path") if match else normalized)
     return paths
 
 

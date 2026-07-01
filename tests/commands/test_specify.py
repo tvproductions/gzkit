@@ -2,7 +2,35 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
+from gzkit.commands.specify_cmd import _extract_backticked_paths
 from tests.commands.common import CliRunner, _quick_init
+
+
+class TestExtractBacktickedPathsLineRangeNormalization(unittest.TestCase):
+    """GHI #536: a backtick-quoted ``path:line-range`` reference must
+    normalize to the bare filesystem path -- the raw suffix produces an
+    Allowed Paths entry no existence check can resolve."""
+
+    def test_strips_single_line_suffix(self) -> None:
+        text = "See `src/gzkit/commands/ceremony_data.py:288-342` for the logic."
+        self.assertEqual(_extract_backticked_paths(text), ["src/gzkit/commands/ceremony_data.py"])
+
+    def test_strips_multi_range_suffix(self) -> None:
+        text = "`src/gzkit/commands/closeout_ceremony.py:401, 416-426, 449-456`"
+        self.assertEqual(
+            _extract_backticked_paths(text), ["src/gzkit/commands/closeout_ceremony.py"]
+        )
+
+    def test_strips_suffix_on_md_path(self) -> None:
+        text = "`.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md:285-339`"
+        self.assertEqual(
+            _extract_backticked_paths(text),
+            [".gzkit/skills/gz-adr-closeout-ceremony/SKILL.md"],
+        )
+
+    def test_plain_path_without_suffix_unchanged(self) -> None:
+        text = "`src/gzkit/commands/plan.py` is the scaffolder."
+        self.assertEqual(_extract_backticked_paths(text), ["src/gzkit/commands/plan.py"])
 
 
 class TestSpecifyCommand(unittest.TestCase):

@@ -799,6 +799,116 @@ class TestBoldPrefixBulletParser(unittest.TestCase):
         self.assertEqual(_slugify_obpi_name(core_text), "check-pipeline")
 
 
+class TestPromoteObpiAllowedPathsAndTitleNormalization(unittest.TestCase):
+    """GHI #536: promote-time scaffolding must normalize `path:line-range`
+    backtick refs in Allowed Paths, and derive a short OBPI title from the
+    bold-prefix slug rather than the full Target Scope bullet body."""
+
+    @staticmethod
+    def _seed_pool_adr_with_path_line_ref(config: GzkitConfig) -> Path:
+        adr_id = "ADR-pool.line-ref-demo"
+        pool_dir = Path(config.paths.adrs) / "pool"
+        pool_dir.mkdir(parents=True, exist_ok=True)
+        pool_file = pool_dir / f"{adr_id}.md"
+        pool_file.write_text(
+            "---\n"
+            f"id: {adr_id}\n"
+            "status: Pool\n"
+            "parent: PRD-GZKIT-1.0.0\n"
+            "lane: heavy\n"
+            "---\n\n"
+            f"# {adr_id}: Line Ref Demo\n\n"
+            "## Status\n\nPool\n\n"
+            "## Intent\n\nDemonstrate the path:line-range normalization bug.\n\n"
+            "## Target Scope\n\n"
+            "- **step-advance-gate-5-enforcement** — Gate 5 human attestation MUST "
+            "occur only through an explicit CLI step-advance command, touching "
+            "`src/gzkit/commands/closeout_ceremony.py:401, 416-426, 449-456`\n\n"
+            "## Non-Goals\n\n- No external orchestrator\n",
+            encoding="utf-8",
+        )
+        return pool_file
+
+    def test_allowed_paths_strips_line_range_suffix(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            self._seed_pool_adr_with_path_line_ref(config)
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-pool.line-ref-demo", "", "heavy"))
+
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "promote",
+                    "ADR-pool.line-ref-demo",
+                    "--semver",
+                    "0.7.0",
+                    "--kind",
+                    "feature",
+                    "--force",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            obpi_file = (
+                Path(config.paths.adrs)
+                / "pre-release"
+                / "ADR-0.7.0-line-ref-demo"
+                / "obpis"
+                / "OBPI-0.7.0-01-step-advance-gate-5-enforcement.md"
+            )
+            self.assertTrue(obpi_file.exists(), msg=result.output)
+            content = obpi_file.read_text(encoding="utf-8")
+            allowed_paths_section = content.split("## Allowed Paths", 1)[1].split("## ", 1)[0]
+            self.assertIn(
+                "`src/gzkit/commands/closeout_ceremony.py`",
+                allowed_paths_section,
+                msg="Allowed Paths entry must be filesystem-resolvable (GHI #536)",
+            )
+            self.assertNotIn("closeout_ceremony.py:401", allowed_paths_section)
+
+    def test_obpi_title_is_short_slug_not_full_bullet_body(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            self._seed_pool_adr_with_path_line_ref(config)
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-pool.line-ref-demo", "", "heavy"))
+
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "promote",
+                    "ADR-pool.line-ref-demo",
+                    "--semver",
+                    "0.7.0",
+                    "--kind",
+                    "feature",
+                    "--force",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            obpi_file = (
+                Path(config.paths.adrs)
+                / "pre-release"
+                / "ADR-0.7.0-line-ref-demo"
+                / "obpis"
+                / "OBPI-0.7.0-01-step-advance-gate-5-enforcement.md"
+            )
+            content = obpi_file.read_text(encoding="utf-8")
+            title_line = next(line for line in content.splitlines() if line.startswith("# OBPI-"))
+            self.assertLess(
+                len(title_line),
+                100,
+                msg=f"OBPI title must be slug-derived, not the full bullet body: {title_line!r}",
+            )
+            self.assertNotIn("Gate 5 human attestation MUST occur", title_line)
+
+
 class TestNestedSubsectionBulletParser(unittest.TestCase):
     """GHI #241 — bullets nested inside H3 subsections of Target Scope are ignored."""
 

@@ -147,6 +147,7 @@ def _build_adr_promotion_plan(
     obpi_plans = []
     for item_number, checklist_item_text in enumerate(checklist_items, start=1):
         core_text = re.sub(r"^OBPI-\d+\.\d+\.\d+-\d+:\s*", "", checklist_item_text).strip()
+        obpi_slug = _slugify_obpi_name(core_text)
         obpi_plans.append(
             _build_obpi_plan(
                 project_root=project_root,
@@ -156,8 +157,10 @@ def _build_adr_promotion_plan(
                 item=item_number,
                 checklist_item_text=checklist_item_text,
                 lane=promoted_lane,
-                name=_slugify_obpi_name(core_text),
-                title=core_text,
+                name=obpi_slug,
+                # GHI #536: the OBPI title is the short slug, not the full Target
+                # Scope bullet body -- the body belongs in ## Objective.
+                title=obpi_slug.replace("-", " ").title(),
                 objective=_normalized_objective_from_checklist_item(checklist_item_text),
                 wbs_spec_summary="",
             )
