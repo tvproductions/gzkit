@@ -64,10 +64,10 @@ The same shape recurs across the surface:
   the reconciler tolerated them, and the vocab table grew. **The
   vocab table is the choreography; it would be the state-enum if the
   state machine existed.**
-- **TTY / `--attestor-present` taxonomy** introduced under GHI #290 and
-  GHI #292: agent-relayed-operator-attestation was bolted onto exactly
-  one CLI command (`gz obpi complete`) rather than declared as a
-  transition guard at every surface where the
+- **Witness handling bolted onto one command** under GHI #290 and
+  GHI #292: agent-relayed operator attestation (`--attestor-present`) was
+  bolted onto exactly one CLI command (`gz obpi complete`) rather than
+  declared as a transition guard at every surface where the
   `attested_completed` transition can fire. The bolted-on guard is a
   workaround for the absence of a single transition-witness contract.
 - **Reconcile-then-precomplete loops**: the typical Stage 5 pattern is
@@ -101,10 +101,14 @@ following five properties:
    change is an event with a name (e.g. `obpi.transitioned.attested`),
    declared preconditions (predecessor state, required adjacent
    evidence), declared postconditions (successor state, emitted
-   ancillary events), and declared witness requirements (TTY-typed
-   human, agent-relayed via `--attestor-present`, or self-close per
-   Exception-mode rules). The TTY / `--attestor-present` distinction
-   becomes a property of the transition, not of one CLI command.
+   ancillary events), and a declared witness requirement: `human_attested`
+   (a human attests — transport-agnostic, relayed verbatim via
+   `--attestor-present` / `--attestation-text`) or `self_close` per
+   Exception-mode rules. Human attestation is sacrosanct and
+   transport-agnostic; no TTY/PTY/interactive-terminal mechanism gates the
+   witness — the mechanism serves the attestation, never gates it
+   (canon-owner directive). The witness requirement is a property of the
+   transition, not of one CLI command.
 
 3. **Receipts ARE the events.** Today receipts are adjuncts that need a
    separate reconciler to align with state — the receipt sits in
@@ -226,6 +230,31 @@ subsumption (rule 3), per-lane/kind/sensitivity concurrency caps (Amendment
 2026-05-19 / property 7), the named runtime event-vocabulary table (property 8),
 and the `STATUS_VOCAB_MAPPING` shrink-to-import-only. The `foundation` enum
 abolition remains Movement IV, not this ADR.
+
+## Boundary Invariants
+
+Cross-OBPI fences for the airlock-critical tracer. Each is audited at ADR
+closeout, not per-OBPI, and anchors the STRUCTURAL-FENCE REQs in the tracer's
+briefs.
+
+1. **Model / monitor / CLI separation (OBPI-01 fence).** The state-machine
+   *model layer* — the closed `OBPIState` enum, the `State`/`Transition`
+   Pydantic models, and their committed JSON schema — is delivered by OBPI-01
+   as pure, additive domain code that imports no runtime-monitor and no
+   command surface. The runtime invariant monitor (OBPI-03) and the
+   withdraw/supersede CLI verbs (OBPI-02) *consume* this model; the model
+   never depends on them. Retiring the legacy `core/lifecycle.py` choreography
+   is deferred-in-keel and out of every tracer OBPI's scope.
+2. **Transport-agnostic witness (canon fence).** No transition witness value
+   in this ADR's realization is a TTY / PTY / interactive-terminal mechanism.
+   Human attestation is sacrosanct and transport-agnostic: the witness
+   requirement is `human_attested` (a human attests, relayed verbatim via
+   `--attestor-present` / `--attestation-text`) vs `self_close`, and the
+   mechanism serves the attestation, never gates it (canon-owner directive).
+3. **Landing falsifier gates breadth (OBPI-03 fence).** No deferred-in-keel
+   OBPI of this ADR (choreography retirement, receipts-ARE-events, concurrency
+   caps, failure-class taxonomy, vocab shrink) begins until OBPI-03's monitor
+   refuses a silent `status:` frontmatter drift live in production config.
 
 ## Notes
 

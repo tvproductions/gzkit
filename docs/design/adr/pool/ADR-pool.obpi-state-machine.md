@@ -64,10 +64,10 @@ The same shape recurs across the surface:
   the reconciler tolerated them, and the vocab table grew. **The
   vocab table is the choreography; it would be the state-enum if the
   state machine existed.**
-- **TTY / `--attestor-present` taxonomy** introduced under GHI #290 and
-  GHI #292: agent-relayed-operator-attestation was bolted onto exactly
-  one CLI command (`gz obpi complete`) rather than declared as a
-  transition guard at every surface where the
+- **Witness handling bolted onto one command** under GHI #290 and
+  GHI #292: agent-relayed operator attestation (`--attestor-present`) was
+  bolted onto exactly one CLI command (`gz obpi complete`) rather than
+  declared as a transition guard at every surface where the
   `attested_completed` transition can fire. The bolted-on guard is a
   workaround for the absence of a single transition-witness contract.
 - **Reconcile-then-precomplete loops**: the typical Stage 5 pattern is
@@ -101,10 +101,14 @@ following five properties:
    change is an event with a name (e.g. `obpi.transitioned.attested`),
    declared preconditions (predecessor state, required adjacent
    evidence), declared postconditions (successor state, emitted
-   ancillary events), and declared witness requirements (TTY-typed
-   human, agent-relayed via `--attestor-present`, or self-close per
-   Exception-mode rules). The TTY / `--attestor-present` distinction
-   becomes a property of the transition, not of one CLI command.
+   ancillary events), and a declared witness requirement: `human_attested`
+   (a human attests — transport-agnostic, relayed verbatim via
+   `--attestor-present` / `--attestation-text`) or `self_close` per
+   Exception-mode rules. Human attestation is sacrosanct and
+   transport-agnostic; no TTY/PTY/interactive-terminal mechanism gates the
+   witness — the mechanism serves the attestation, never gates it
+   (canon-owner directive). The witness requirement is a property of the
+   transition, not of one CLI command.
 
 3. **Receipts ARE the events.** Today receipts are adjuncts that need a
    separate reconciler to align with state — the receipt sits in
@@ -404,7 +408,7 @@ under rule 4, both first-class.
    | Failure class | Trigger | Recovery behavior |
    |---|---|---|
    | `precondition_unsatisfied` | Transition attempted from a state whose declared preconditions do not hold (e.g., `attested` attempted while predecessor state is not `verified`) | Emit `RemediationPayload` (ADR-0.0.53) naming the predecessor-transition CLI; no state change; no receipt |
-   | `witness_missing` | Transition attempted without the witness declared in rule 2 (e.g., `attested` without TTY-typed human or `--attestor-present`) | Block transition; emit `obpi.witness_required` event; operator-required-action surface |
+   | `witness_missing` | Transition attempted without the witness declared in rule 2 (e.g., `attested` without a `human_attested` witness) | Block transition; emit `obpi.witness_required` event; operator-required-action surface |
    | `receipt_fabrication_detected` | Transition's witness receipt fails ARB receipt-binding (ADR-0.0.24) — receipt ID does not resolve, hash does not match, name does not satisfy CANONICAL_STEP_COMMANDS regex | Reject transition; emit `obpi.receipt_fabrication_blocked`; ARB receipt-binding error in operator stream |
    | `vocab_out_of_enum` | Hand-edited frontmatter status term not in the closed enum (rule 1) and not in the legacy-import vocab table | Reject edit at monitor (rule 4); emit `obpi.frontmatter_rejected`; recovery payload names canonical CLI verb |
    | `frontmatter_ledger_disagreement` | L1 (canon) and L2 (ledger) disagree after a write (the failure mode GHI #348 named) | Auto-emit the declared transition that reconciles them OR reject the write (depending on which side mutated last); never silent rewrite |

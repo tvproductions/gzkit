@@ -1,0 +1,51 @@
+{
+  "obpi_id": "OBPI-0.31.0-01-state-transition-models",
+  "timestamp": "2026-07-02T11:51:02.499801+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.31.0-01-state-transition-models.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.15.0",
+      "sibling_obpi": "OBPI-0.15.0-04-schema-generation-unification",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi_state_machine.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-01-okf-concept-frontmatter-model",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi_state_machine.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-01-tdd-receipt-stream-hub",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi_state_machine.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-05-solved-problem-pattern-corpus-read-surface",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi_state_machine.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-01-doctrine-and-canon",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi_state_machine.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-06-persona-schema-validation",
+      "contested_paths": [
+        "src/gzkit/schemas/obpi_state_machine.json"
+      ]
+    }
+  ]
+}
