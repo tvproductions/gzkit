@@ -1,6 +1,6 @@
 ---
 id: ADR-pool.obpi-state-machine
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
@@ -8,13 +8,16 @@ inspired_by: openai/symphony
 amendments:
   - 2026-05-02 — added § Amendment 2026-05-02 (per-lane concurrency caps as state-machine invariant)
   - 2026-05-19 — added § Amendment 2026-05-19 (canonical failure-class taxonomy + named runtime event vocabulary, inspired by Symphony SPEC.md §14 + §10.4)
+promoted_to: ADR-0.52.0-obpi-state-machine
 ---
 
 # ADR-pool.obpi-state-machine: OBPI State Machine and Runtime Invariant Monitor
+> Promoted to `ADR-0.52.0-obpi-state-machine` on 2026-07-02. This pool file is retained as historical intake context.
+
 
 ## Status
 
-Pool
+Superseded
 
 ## Intent
 
@@ -132,6 +135,53 @@ following five properties:
    pointing at the canonical transition CLI; (b) once the transition
    fires, the ledger has the event and the reconciler has nothing to
    "fix."
+
+## Target Scope
+
+This promotion realizes the **airlock-critical tracer** of the state machine —
+the first end-to-end slice (schema → model → monitor → CLI → ledger), **not** the
+full eight-property machine. The tracer pierces the whole vertical once so the
+keystone (the runtime monitor) can be proven against its landing falsifier before
+breadth expansion (tracer-bullet discipline; `docs/governance/airlock-in-constellation-2026-06-30.md`
+§ Volume declaration / § Pre-registered falsifiers).
+
+- **state-transition-models** — Closed `StrEnum` OBPI state name-set (`drafted`,
+  `planned`, `implementing`, `verified`, `attested`, `synced`, `withdrawn`,
+  `superseded`) plus Pydantic `State` and `Transition` models declaring each
+  transition's predecessor state, required adjacent evidence, and witness
+  requirement; schema-bound. The state anchor the monitor and CLI verbs consume
+  (§ Decision rules 1–2).
+- **withdraw-supersede-transitions** — Elevate the existing `gz obpi withdraw`
+  event-recorder into a first-class monitor-backed transition and build the
+  missing `gz obpi supersede OBPI-X --by OBPI-Y` verb; both emit canonical
+  transition events (`obpi.transitioned.withdrawn` / `.superseded`). Closes the
+  GHI #348 root cause: withdrawal becomes a witnessed transition, not a hand-edit
+  the reconciler silently demotes (§ Decision rule 5).
+- **runtime-invariant-monitor** — The load-bearing monitor on the artifact-graph
+  read/write boundary: it classifies each state-affecting operation against a
+  declared transition, rejects undeclared ones, and **refuses a silent `status:`
+  frontmatter drift (the GHI #348 class) in production config**. This refusal is
+  the constellation's pre-registered landing falsifier (airlock-in
+  § Pre-registered falsifiers #1) and gates Phase 2 / HULL (§ Decision rule 4).
+
+### Deferred-in-keel (later OBPIs of this ADR; NOT in this checklist)
+
+Declared by this ADR but out of the tracer slice; each lands as a subsequent OBPI
+after the tracer's landing falsifier is proven live: full choreography retirement
+(§ Decision rule 4 migration of the ~30 reconcilers), receipts-ARE-events
+subsumption (rule 3), per-lane/kind/sensitivity concurrency caps (Amendment
+2026-05-02 / property 6), the canonical failure-class taxonomy (Amendment
+2026-05-19 / property 7), the named runtime event-vocabulary table (property 8),
+and the `STATUS_VOCAB_MAPPING` shrink-to-import-only. The `foundation` enum
+abolition remains Movement IV, not this ADR.
+
+## Proposed OBPI Decomposition
+
+| # | Slug | Description | Lane |
+|---|------|-------------|------|
+| 01 | state-transition-models | Closed StrEnum state name-set + Pydantic State/Transition models (preconditions, adjacent-evidence, witness) with schema binding | Heavy |
+| 02 | withdraw-supersede-transitions | Elevate withdraw to a monitor-backed first-class transition and build `gz obpi supersede`; both emit canonical transition events; closes GHI #348 root | Heavy |
+| 03 | runtime-invariant-monitor | Runtime invariant monitor on the artifact-graph read/write boundary that refuses silent `status:` frontmatter drift (GHI #348 class) in production — the pre-registered landing falsifier | Heavy |
 
 ## Alternatives Considered
 
