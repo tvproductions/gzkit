@@ -106,10 +106,31 @@ named option so the door stays open.
 
 ---
 
-**Status:** Plan **ratified and committed to the campaign** (Movement III,
-`build-to-1.0-campaign-2026-06-30.md`). **Work-start deferred** — operator not yet
-ready to begin Phase 1; the Phase 0 → Phase 1 gate remains **closed** until work
-is authorized. This record stands as the pre-flight; the seam-map, volume, and
-falsifiers are laid out for audit and reuse as the Phase-3 HATCH checklist.
+**Status:** **Phase 0 EXECUTED — GO attested; Phase 0 → Phase 1 gate now OPEN
+(2026-07-02).** Operator authorization (verbatim): *"take on Movement III Phase 0"*
+/ *"this: Movement III Phase 0 — airlock-in, operator-gated."* The go/no-go
+recommendation below (**GO, keel-up**) is ratified.
+
+The seam-map was **re-sensed against current repo truth before recording GO**
+(judgment-grade re-verification, 2026-07-02) — no blast-radius shift since the
+2026-06-30 authoring: all five constellation pool ADRs present
+(`obpi-state-machine`, `artifact-graph-navigation`, `execution-memory-graph`,
+`covers-source-anchors`, `rag-anything-governance-retrieval`); the `foundation`
+enum is **still live** in `src/gzkit/schemas/adr.json:36` (confirming the seam-map
+directive to promote `--kind feature`, not assume abolition); the subsumption
+targets `ADR-0.0.16` / `ADR-0.0.24` and the Plumb-coupled `ADR-0.20.0` all exist;
+`work-phases-and-airlock.md` and `four-phases-of-work.md` present.
+
+**Boundary held — nothing authored or promoted in this Phase 0 action.** Opening
+this gate *authorizes* Phase 1 (KEEL `obpi-state-machine` promotion) to begin; it
+does not itself begin it. Per the operator's standing distinction (2026-06-30:
+*"if go means start work, I am not ready to"*) and Behavior Rule Always #17,
+Phase 1 ADR authoring/promotion awaits an explicit **go-to-work** directive. The
+Phase 1 → Phase 2 gate remains the landing falsifier (monitor refuses silent
+`status:` drift, live).
+
+This record stands as the pre-flight; the seam-map, volume, and falsifiers are
+laid out for audit and reuse as the Phase-3 HATCH checklist.
 **Provenance:** design dialogue 2026-06-30; ratifications + dependency weighing in
-`.gzkit/insights/agent-insights.jsonl` (2026-06-30 records).
+`.gzkit/insights/agent-insights.jsonl` (2026-06-30 records); Phase 0 GO record
+(2026-07-02) in the same insights channel.
