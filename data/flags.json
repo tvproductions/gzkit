@@ -7,7 +7,7 @@
       "description": "When enabled, the product proof check blocks closeout for OBPIs without operator-facing documentation. When disabled, the check warns but does not block.",
       "owner": "governance",
       "introduced_on": "2026-03-29",
-      "review_by": "2026-06-29",
+      "review_by": "2026-09-29",
       "linked_adr": "ADR-0.23.0",
       "linked_issue": "GHI-49"
     }
