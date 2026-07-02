@@ -1,6 +1,6 @@
 ---
 id: ADR-pool.obpi-state-machine
-status: Superseded
+status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
@@ -8,16 +8,13 @@ inspired_by: openai/symphony
 amendments:
   - 2026-05-02 — added § Amendment 2026-05-02 (per-lane concurrency caps as state-machine invariant)
   - 2026-05-19 — added § Amendment 2026-05-19 (canonical failure-class taxonomy + named runtime event vocabulary, inspired by Symphony SPEC.md §14 + §10.4)
-promoted_to: ADR-0.52.0-obpi-state-machine
 ---
 
 # ADR-pool.obpi-state-machine: OBPI State Machine and Runtime Invariant Monitor
-> Promoted to `ADR-0.52.0-obpi-state-machine` on 2026-07-02. This pool file is retained as historical intake context.
-
 
 ## Status
 
-Superseded
+Pool
 
 ## Intent
 
