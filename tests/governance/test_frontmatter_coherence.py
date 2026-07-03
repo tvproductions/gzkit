@@ -430,6 +430,71 @@ class ReconciliationLogicTests(unittest.TestCase):
             # Exactly one file_rewritten entry (only the first rewrite succeeded)
             self.assertEqual(len(latest["files_rewritten"]), 1)
 
+    @covers("REQ-0.31.0-03-03")
+    def test_landing_falsifier_ghi_348_undeclared_status_transition_refused(self) -> None:
+        """Landing falsifier: refuse undeclared status transitions (GHI #348 shape).
+
+        GHI #348 scenario: an OBPI file is hand-marked `Withdrawn` in
+        frontmatter, the ledger has no matching withdrawal event (because it's
+        in a `pending` state from obpi_created), and the reconciler would
+        otherwise silently rewrite it to `Draft` (the frontmatter term for
+        `pending`). The runtime invariant monitor now refuses this transition
+        because `Withdrawn` is a terminal state with no outgoing transitions in
+        CANONICAL_TRANSITIONS, and the refusal is surfaced in the receipt
+        instead of silently mutating the file.
+        """
+        from gzkit.governance.frontmatter_coherence import reconcile_frontmatter  # noqa: PLC0415
+        from gzkit.ledger_events import obpi_created_event  # noqa: PLC0415
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+            # Create an ADR and an OBPI with pending status in the ledger
+            ledger.append(adr_created_event("ADR-0.1.0", "PRD-TEST-1.0.0", "lite"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-test", "ADR-0.1.0"))
+            # Frontmatter claims "Withdrawn" (hand-marked by operator, but no matching event)
+            path = _scaffold_obpi(
+                root,
+                "ADR-0.1.0",
+                "OBPI-0.1.0-01",
+                "---\nid: OBPI-0.1.0-01-test\nparent: ADR-0.1.0\n"
+                "item: 1\nlane: lite\nstatus: Withdrawn\n---\n# OBPI\n",
+            )
+            pre_hash = hashlib.sha256(path.read_bytes()).hexdigest()
+
+            # Run the reconciler: it should detect the drift (frontmatter
+            # "Withdrawn" vs ledger "pending") and refuse the transition
+            # because "Withdrawn" is a terminal state with no outgoing transitions
+            receipt = reconcile_frontmatter(root, dry_run=False)
+
+            # The file MUST NOT be mutated
+            post_hash = hashlib.sha256(path.read_bytes()).hexdigest()
+            self.assertEqual(
+                pre_hash,
+                post_hash,
+                "monitor must refuse to mutate the file with an invalid transition",
+            )
+
+            # The refusal MUST be tracked in the receipt
+            self.assertGreater(
+                len(receipt.refused_rewrites),
+                0,
+                "receipt must contain at least one refused rewrite",
+            )
+            refused_paths = [r.path for r in receipt.refused_rewrites]
+            self.assertTrue(
+                any("OBPI-0.1.0-01" in p for p in refused_paths),
+                f"the refused file must be in refused_rewrites, got {refused_paths}",
+            )
+            # The file MUST NOT appear in files_rewritten
+            rewritten_paths = [f.path for f in receipt.files_rewritten]
+            self.assertFalse(
+                any("OBPI-0.1.0-01" in p for p in rewritten_paths),
+                f"the refused file must NOT be in files_rewritten, got {rewritten_paths}",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

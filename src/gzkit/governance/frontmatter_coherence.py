@@ -22,6 +22,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.commands.common import _is_pool_adr_id
 from gzkit.commands.validate_frontmatter import validate_frontmatter_coherence
+from gzkit.core.obpi_state_machine import OBPIState
+from gzkit.governance.obpi_transition_monitor import TransitionMonitor
 from gzkit.governance.status_vocab import STATUS_VOCAB_MAPPING
 
 GovernedField = Literal["id", "parent", "lane", "status"]
@@ -71,6 +73,17 @@ class SkipNote(BaseModel):
     )
 
 
+class RefusedRewrite(BaseModel):
+    """A rewrite that was refused by the runtime invariant monitor."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    path: str = Field(..., description="Path to the file relative to project root.")
+    reason: str = Field(
+        ..., description="Reason the rewrite was refused (e.g., invalid transition)."
+    )
+
+
 class ReconciliationReceipt(BaseModel):
     """Immutable receipt emitted by ``reconcile_frontmatter``."""
 
@@ -81,6 +94,9 @@ class ReconciliationReceipt(BaseModel):
     run_completed_at: str = Field(..., description="ISO8601 UTC timestamp at exit.")
     files_rewritten: list[FileRewrite] = Field(..., description="Per-file rewrite entries.")
     skipped: list[SkipNote] = Field(..., description="Files deliberately skipped.")
+    refused_rewrites: list[RefusedRewrite] = Field(
+        default_factory=list, description="Rewrites refused by the runtime invariant monitor."
+    )
     dry_run: bool = Field(..., description="True when --dry-run; no ADR/OBPI files mutated.")
 
 
@@ -125,6 +141,82 @@ def _is_pool_path(rel_path: str) -> bool:
     """Return True if the file path lives under the pool tree."""
     normalized = rel_path.replace("\\", "/")
     return _POOL_PATH_SEGMENT in normalized
+
+
+def _is_obpi_artifact(artifact_id: str) -> bool:
+    """Return True if the artifact is an OBPI (vs an ADR or other artifact)."""
+    return artifact_id.startswith("OBPI-")
+
+
+def _map_vocab_to_obpi_state(vocab_term: str) -> OBPIState | None:
+    """Map a vocabulary term (frontmatter or ledger) to an OBPIState value.
+
+    Handles both frontmatter terms (e.g., "Completed", "Withdrawn") and ledger
+    canonical terms (e.g., "completed", "withdrawn").
+
+    Args:
+        vocab_term: A vocabulary term from STATUS_VOCAB_MAPPING or OBPIState value.
+
+    Returns:
+        The corresponding OBPIState, or None if unmapped.
+    """
+    # Try direct OBPIState enum match (case-insensitive)
+    try:
+        return OBPIState(vocab_term.lower())
+    except ValueError:
+        pass
+
+    # Try mapping from STATUS_VOCAB_MAPPING (frontmatter to ledger term)
+    # Then map ledger terms to OBPIState
+    vocab_lower = vocab_term.lower()
+    for frontend_term, ledger_term in STATUS_VOCAB_MAPPING.items():
+        if frontend_term.lower() == vocab_lower:
+            # We have a ledger term, try to map it to OBPIState
+            ledger_lower = ledger_term.lower()
+            # Try common mappings
+            if ledger_lower in {"pending", "draft", "pool", "proposed"}:
+                return OBPIState.DRAFTED
+            elif ledger_lower in {"in_progress", "active"}:
+                return OBPIState.IMPLEMENTING
+            elif ledger_lower in {"completed", "validated"} or ledger_lower == "attested_completed":
+                return OBPIState.ATTESTED
+            elif ledger_lower == "abandoned" or ledger_lower == "withdrawn":
+                return OBPIState.WITHDRAWN
+            elif ledger_lower == "superseded":
+                return OBPIState.SUPERSEDED
+    return None
+
+
+def _status_is_valid_obpi_transition(
+    monitor: TransitionMonitor, current_status: str, target_status: str
+) -> bool:
+    """Check if an OBPI status transition is valid against the canonical state machine.
+
+    Only applies to OBPI artifacts; ADRs and other artifacts always return True
+    (their state transitions are not governed by OBPIState).
+
+    Args:
+        monitor: The transition monitor instance.
+        current_status: Current frontmatter status string (vocabulary term).
+        target_status: Target frontmatter status string (vocabulary term).
+
+    Returns:
+        True if the transition is allowed; False if not allowed or not recognized.
+    """
+    try:
+        # Map vocabulary terms to OBPIState values
+        current_obpi_state = _map_vocab_to_obpi_state(current_status)
+        target_obpi_state = _map_vocab_to_obpi_state(target_status)
+
+        # If either state is not recognized, refuse the transition
+        if current_obpi_state is None or target_obpi_state is None:
+            return False
+
+        # Check the transition against the monitor
+        return monitor.is_allowed(current_obpi_state, target_obpi_state)
+    except Exception:
+        # On any error, refuse the transition to be safe
+        return False
 
 
 def _read_fm_status(path: Path) -> str:
@@ -220,6 +312,25 @@ def _is_pool_artifact(abs_path: Path, rel_path: str) -> bool:
     return _is_pool_adr_id(artifact_id)
 
 
+def _should_refuse_rewrite(
+    monitor: TransitionMonitor, abs_path: Path, rewrite: FileRewrite
+) -> bool:
+    """Check if a file rewrite should be refused by the runtime invariant monitor.
+
+    Returns True if the rewrite contains an invalid OBPI status transition and
+    should be tracked as refused instead of applied.
+    """
+    artifact_id = _resolve_artifact_id(abs_path)
+    if not _is_obpi_artifact(artifact_id):
+        return False
+
+    status_diff = next((d for d in rewrite.diffs if d.field == "status"), None)
+    if status_diff is None:
+        return False
+
+    return not _status_is_valid_obpi_transition(monitor, status_diff.before, status_diff.after)
+
+
 def _build_file_rewrite(
     rel_path: str, errors: list
 ) -> tuple[FileRewrite | None, SkipNote | None, str | None]:
@@ -243,6 +354,43 @@ def _build_file_rewrite(
     if not diffs:
         return None, None, None
     return FileRewrite(path=rel_path, diffs=diffs), None, None
+
+
+def _process_file_rewrites(
+    project_root: Path,
+    grouped: dict[str, list],
+    monitor: TransitionMonitor,
+    dry_run: bool,
+    files_rewritten: list[FileRewrite],
+    refused_rewrites: list[RefusedRewrite],
+) -> None:
+    """Process all drifted files and apply/refuse rewrites.
+
+    Modifies files_rewritten and refused_rewrites lists in-place.
+    """
+    for rel_path in sorted(grouped):
+        err_list = grouped[rel_path]
+        abs_path = project_root / rel_path
+        if _is_pool_artifact(abs_path, rel_path):
+            # Already enumerated in the pool pre-pass; skip if validator emitted errors
+            continue
+        rewrite, _, _ = _build_file_rewrite(rel_path, err_list)
+        if rewrite is None:
+            continue
+        # Check if the rewrite violates the runtime invariant monitor
+        if _should_refuse_rewrite(monitor, abs_path, rewrite):
+            status_diff = next((d for d in rewrite.diffs if d.field == "status"), None)
+            if status_diff is not None:
+                reason = (
+                    f"Invalid OBPI status transition: {status_diff.before} → "
+                    f"{status_diff.after} (not in CANONICAL_TRANSITIONS)"
+                )
+                refused_rewrites.append(RefusedRewrite(path=rel_path, reason=reason))
+            continue
+        if not dry_run:
+            edits: dict[str, str] = {str(diff.field): diff.after for diff in rewrite.diffs}
+            rewrite_governed_keys_in_place(abs_path, edits)
+        files_rewritten.append(rewrite)
 
 
 def reconcile_frontmatter(project_root: Path, *, dry_run: bool) -> ReconciliationReceipt:
@@ -291,23 +439,18 @@ def reconcile_frontmatter(project_root: Path, *, dry_run: bool) -> Reconciliatio
 
     files_rewritten: list[FileRewrite] = []
     skipped: list[SkipNote] = [SkipNote(path=rel, reason="pool-adr") for rel in sorted(pool_paths)]
+    refused_rewrites: list[RefusedRewrite] = []
+    monitor = TransitionMonitor()
 
     try:
-        for rel_path in sorted(grouped):
-            err_list = grouped[rel_path]
-            abs_path = project_root / rel_path
-            if _is_pool_artifact(abs_path, rel_path):
-                # Already enumerated in the pool pre-pass above; validator should
-                # not emit errors for pool ADRs (no ledger entry to compare against),
-                # but if it ever does, treat it as a skip and do not mutate.
-                continue
-            rewrite, _, _ = _build_file_rewrite(rel_path, err_list)
-            if rewrite is None:
-                continue
-            if not dry_run:
-                edits: dict[str, str] = {str(diff.field): diff.after for diff in rewrite.diffs}
-                rewrite_governed_keys_in_place(abs_path, edits)
-            files_rewritten.append(rewrite)
+        _process_file_rewrites(
+            project_root,
+            grouped,
+            monitor,
+            dry_run,
+            files_rewritten,
+            refused_rewrites,
+        )
     finally:
         # REQ-0.0.16-03-10 partial-failure: on any mid-loop exception, still
         # emit a receipt reflecting the N files successfully rewritten so far.
@@ -321,6 +464,7 @@ def reconcile_frontmatter(project_root: Path, *, dry_run: bool) -> Reconciliatio
                 run_completed_at=completed_at_dt.isoformat(),
                 files_rewritten=files_rewritten,
                 skipped=skipped,
+                refused_rewrites=refused_rewrites,
                 dry_run=dry_run,
             )
             _write_receipt(project_root, receipt, completed_at_dt)

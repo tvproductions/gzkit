@@ -11,6 +11,7 @@
     "run_completed_at",
     "files_rewritten",
     "skipped",
+    "refused_rewrites",
     "dry_run"
   ],
   "properties": {
@@ -85,6 +86,25 @@
             "type": "string",
             "enum": ["pool-adr"],
             "description": "Reason the file was skipped. Extensible enum; pool-adr is the only value emitted today."
+          }
+        }
+      }
+    },
+    "refused_rewrites": {
+      "type": "array",
+      "description": "Rewrites that were refused by the runtime invariant monitor (ADR-0.31.0 OBPI-03). Occurs when a status transition violates the CANONICAL_TRANSITIONS declared in the OBPI state machine. Empty array when all valid rewrites are accepted.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "reason"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path to the file relative to the project root."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Reason the rewrite was refused (e.g., invalid transition)."
           }
         }
       }
