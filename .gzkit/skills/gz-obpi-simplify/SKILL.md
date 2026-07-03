@@ -5,7 +5,7 @@ description: OBPI-scoped code review for reuse, quality, and efficiency. Resolve
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-03
+last_reviewed: 2026-07-03
 metadata:
   skill-version: "6.0.4"
 model: sonnet
