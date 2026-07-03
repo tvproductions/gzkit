@@ -166,30 +166,61 @@ class TestSchemaCoherence(unittest.TestCase):
         self.assertNotEqual(schema, {})
 
 
+_FORBIDDEN_MONITOR_COMMAND_MODULES = ("gzkit.governance.invariants", "gzkit.commands")
+
+
+def _find_forbidden_imports(source: str, forbidden_modules: tuple[str, ...]) -> list[str]:
+    """Return every forbidden-module import found in ``source``.
+
+    Checks three shapes: ``import a.b.c``, ``from a.b import c`` (module
+    prefix), and ``from a.b import c`` where the *combined* ``module.alias``
+    dotted path is what matches (e.g. ``from gzkit.governance import
+    invariants`` matching forbidden ``gzkit.governance.invariants``).
+    """
+    tree = ast.parse(source)
+    found: list[str] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                for forbidden in forbidden_modules:
+                    if alias.name == forbidden or alias.name.startswith(forbidden + "."):
+                        found.append(alias.name)
+        elif isinstance(node, ast.ImportFrom):
+            module = node.module or ""
+            for alias in node.names:
+                combined = f"{module}.{alias.name}" if module else alias.name
+                for forbidden in forbidden_modules:
+                    if (
+                        module == forbidden
+                        or module.startswith(forbidden + ".")
+                        or combined == forbidden
+                        or combined.startswith(forbidden + ".")
+                    ):
+                        found.append(combined)
+    return found
+
+
 class TestModelMonitorCliSeparationFence(unittest.TestCase):
     """REQ-0.31.0-01-05 [STRUCTURAL-FENCE]: no monitor/command imports."""
 
     @covers("REQ-0.31.0-01-05")
     def test_module_imports_no_monitor_or_command_surface(self) -> None:
         source_path = Path(inspect.getfile(obpi_state_machine))
-        tree = ast.parse(source_path.read_text(encoding="utf-8"))
-        forbidden_modules = ("gzkit.governance.invariants", "gzkit.commands")
+        source = source_path.read_text(encoding="utf-8")
+        found = _find_forbidden_imports(source, _FORBIDDEN_MONITOR_COMMAND_MODULES)
+        self.assertEqual(found, [], f"forbidden import(s) found: {found}")
 
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Import):
-                for alias in node.names:
-                    for forbidden in forbidden_modules:
-                        self.assertFalse(
-                            alias.name == forbidden or alias.name.startswith(forbidden + "."),
-                            f"forbidden import found: {alias.name}",
-                        )
-            elif isinstance(node, ast.ImportFrom):
-                module = node.module or ""
-                for forbidden in forbidden_modules:
-                    self.assertFalse(
-                        module == forbidden or module.startswith(forbidden + "."),
-                        f"forbidden import-from found: {module}",
-                    )
+    @covers("REQ-0.31.0-01-05")
+    def test_fence_detects_from_import_of_forbidden_leaf_module(self) -> None:
+        # GHI #664 adversarial-review finding: `from gzkit.governance import
+        # invariants` names the forbidden module only via the imported
+        # alias, not the ImportFrom.module string alone — the fence must
+        # combine module + alias to catch this shape.
+        found = _find_forbidden_imports(
+            "from gzkit.governance import invariants\n",
+            _FORBIDDEN_MONITOR_COMMAND_MODULES,
+        )
+        self.assertEqual(found, ["gzkit.governance.invariants"])
 
 
 if __name__ == "__main__":

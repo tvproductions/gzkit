@@ -3,7 +3,19 @@ id: OBPI-0.31.0-01-state-transition-models
 parent: ADR-0.31.0-obpi-state-machine
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
+# req_atomic (ADR-0.0.64 / OBPI-04 task-envelope exemption): every REQ below
+# was implemented as one indivisible RGR cycle (one StrEnum, one frozen
+# model, one schema-coherence assertion, one AST-based fence test, one
+# already-satisfied SUPPORT citation) — no REQ decomposed into sub-steps
+# warranting a seq=02+ TASK subdivision.
+req_atomic:
+  - REQ-0.31.0-01-01
+  - REQ-0.31.0-01-02
+  - REQ-0.31.0-01-03
+  - REQ-0.31.0-01-04
+  - REQ-0.31.0-01-05
+  - REQ-0.31.0-01-06
 ---
 
 # OBPI-0.31.0-01-state-transition-models: State Transition Models
@@ -13,7 +25,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.31.0-obpi-state-machine/ADR-0.31.0-obpi-state-machine.md`
 - **Checklist Item:** #1 - "OBPI-0.31.0-01: **state-transition-models** — Closed StrEnum state name-set + Pydantic State/Transition models (preconditions, adjacent-evidence, witness) with schema binding"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -44,6 +56,8 @@ that OBPI-02/03 bind against.
 - `tests/test_obpi_state_machine.py` — **CREATE**: `@covers`-decorated REQ tests (flat convention, mirrors `tests/test_lifecycle.py`)
 - `docs/design/adr/pre-release/ADR-0.31.0-obpi-state-machine/ADR-0.31.0-obpi-state-machine.md` — add `## Boundary Invariants` (STRUCTURAL-FENCE anchor for REQ-05)
 - `docs/design/adr/pre-release/ADR-0.31.0-obpi-state-machine/obpis/OBPI-0.31.0-01-state-transition-models.md` — this brief (evidence)
+- `src/gzkit/core/__init__.py` — **UNTOUCHED NEIGHBOR** (reconcile same-directory declaration only; docstring-only package marker, no edit)
+- `src/gzkit/schemas/__init__.py` — **UNTOUCHED NEIGHBOR** (reconcile same-directory declaration only; `load_schema()` is name-generic, no per-schema registration needed)
 
 ## Denied Paths
 
@@ -233,41 +247,64 @@ to — no behavior change yet, but the spine the monitor will enforce.
 
 ### Key Proof
 
+
 `uv run python -c "from gzkit.core.obpi_state_machine import OBPIState; print([s.value for s in OBPIState])"`
-→ `['drafted', 'planned', 'implementing', 'verified', 'attested', 'synced', 'withdrawn', 'superseded']`
+-> `['drafted', 'planned', 'implementing', 'verified', 'attested', 'synced', 'withdrawn', 'superseded']`
+
+Full suite: 6735/6735 pass (receipt `arb-step-unittest-cf60bbb29d3045f0a0cfc23b8186d552`).
+Lint/typecheck clean; `uv run mkdocs build --strict` clean (Heavy lane).
 
 ### Implementation Summary
+
 
 **Parent ADR § Decision item 1 (verbatim):** "Named states (closed enum,
 schema-bound). Every OBPI is in exactly one of: `drafted`, `planned`,
 `implementing`, `verified`, `attested`, `synced`, `withdrawn`, `superseded`.
-The current `STATUS_VOCAB_MAPPING` becomes a *legacy-import* table only — new
-briefs author against the closed enum directly, and the vocab table shrinks
-rather than grows."
+The current `STATUS_VOCAB_MAPPING` becomes a *legacy-import* table only --
+new briefs author against the closed enum directly, and the vocab table
+shrinks rather than grows."
 
 **Parent ADR § Decision item 2 (verbatim):** "Named transitions (closed enum,
 schema-bound). Every state change is an event with a name (e.g.
 `obpi.transitioned.attested`), declared preconditions (predecessor state,
-required adjacent evidence), declared postconditions (successor state, emitted
-ancillary events), and a declared witness requirement: `human_attested` (a
-human attests — transport-agnostic, relayed verbatim via `--attestor-present`
-/ `--attestation-text`) or `self_close` per Exception-mode rules. Human
-attestation is sacrosanct and transport-agnostic; no
-TTY/PTY/interactive-terminal mechanism gates the witness — the mechanism
+required adjacent evidence), declared postconditions (successor state,
+emitted ancillary events), and a declared witness requirement:
+`human_attested` (a human attests -- transport-agnostic, relayed verbatim
+via `--attestor-present` / `--attestation-text`) or `self_close` per
+Exception-mode rules. Human attestation is sacrosanct and transport-agnostic;
+no TTY/PTY/interactive-terminal mechanism gates the witness -- the mechanism
 serves the attestation, never gates it (canon-owner directive). The witness
 requirement is a property of the transition, not of one CLI command."
 
 **Witness taxonomy (canon-conformant):** This OBPI encodes a transport-agnostic
-`WitnessRequirement` — `human_attested` (a human attests, relayed verbatim via
+`WitnessRequirement` -- `human_attested` (a human attests, relayed verbatim via
 `--attestor-present` / `--attestation-text`) vs `self_close`. No TTY/PTY value
 exists: human attestation is sacrosanct and transport-agnostic (canon-owner
 directive), matching parent ADR § Decision item 2 and Boundary Invariant #2.
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+**Adversarial review finding (Step 4b, GHI #643):** an independent subagent
+adversary attacked the completion claim and found one real gap -- the
+STRUCTURAL-FENCE test (REQ-05) matched `ImportFrom.module` against the
+literal forbidden string only, missing the `from gzkit.governance import
+invariants` shape (module="gzkit.governance", leaf alias="invariants",
+combined dotted path not checked). Fixed before attestation: the AST checker
+now combines `module.alias` for every `ImportFrom` node; a regression test
+(`test_fence_detects_from_import_of_forbidden_leaf_module`) proves the gap
+is closed. Full suite re-verified green (6735/6735) after the fix.
+
+- Files created/modified: `src/gzkit/core/obpi_state_machine.py` (172 lines,
+  new), `src/gzkit/schemas/obpi_state_machine.json` (242 lines, new),
+  `tests/test_obpi_state_machine.py` (15 tests across 6 classes, new),
+  this brief (REQ-06 added, `req_atomic:` exemption, 2 untouched-neighbor
+  allowlist entries)
+- Tests added: 15 tests in `tests/test_obpi_state_machine.py`
+  (`TestOBPIStateEnum`, `TestTransitionModel`, `TestStateModel`,
+  `TestCanonicalTransitions`, `TestSchemaCoherence`,
+  `TestModelMonitorCliSeparationFence`)
+- Date completed: 2026-07-03
+- Attestation status: Operator-attested ("attest completed")
+- Defects noted: none outstanding -- the one adversarial-review finding
+  (STRUCTURAL-FENCE detection gap) was fixed and re-verified pre-attestation
 
 ## Tracked Defects
 
@@ -275,12 +312,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.31.0-01-state-transition-models: 6735/6735 tests pass (receipt arb-step-unittest-cf60bbb29d3045f0a0cfc23b8186d552), lint/typecheck clean, uv run mkdocs build --strict clean (Heavy lane). Stage 4b independent adversarial review found one real gap in the STRUCTURAL-FENCE test (REQ-05) — from-import leaf-alias detection — fixed and re-verified green before this attestation. Stage 5 precomplete reported 8/8 preconditions met.
+- Date: 2026-07-03
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-03
 
 **Evidence Hash:** -
