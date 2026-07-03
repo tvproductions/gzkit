@@ -240,6 +240,61 @@ class TestReqCountDimension(unittest.TestCase):
             result = reconcile_brief(brief, PROJECT_ROOT)
             self.assertEqual(result.req_count_delta.delta, 0)
 
+    @covers("REQ-0.0.37-05-04")
+    def test_delta_zero_on_never_always_tags(self):
+        # NEVER:/ALWAYS: FAIL-CLOSED lines are requirements too (GHI #664) —
+        # a brief whose three-way taxonomy fully accounts for its Acceptance
+        # Criteria must not report false drift.
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = Path(tmp) / "brief.md"
+            brief.write_text(
+                textwrap.dedent("""\
+                    ---
+                    id: OBPI-0.0.99-06-never-always-tags
+                    parent: ADR-0.0.37-constitutional-invariant-composition
+                    status: Draft
+                    ---
+                    # Test Brief: NEVER/ALWAYS FAIL-CLOSED Tags
+                    ## Requirements (FAIL-CLOSED)
+                    1. REQUIREMENT: positive requirement
+                    2. NEVER: prohibition
+                    3. ALWAYS: invariant
+                    ## Acceptance Criteria
+                    - [ ] REQ-0.0.99-06-01: criterion one
+                    - [ ] REQ-0.0.99-06-02: criterion two
+                    - [ ] REQ-0.0.99-06-03: criterion three
+                    """),
+                encoding="utf-8",
+            )
+            result = reconcile_brief(brief, PROJECT_ROOT)
+            self.assertEqual(result.req_count_delta.delta, 0)
+
+    @covers("REQ-0.0.37-05-04")
+    def test_delta_zero_on_checked_boxes(self):
+        # A completed brief has its Acceptance Criteria boxes checked ([x]),
+        # not unchecked ([ ]) — the dimension must still count them (GHI #664).
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = Path(tmp) / "brief.md"
+            brief.write_text(
+                textwrap.dedent("""\
+                    ---
+                    id: OBPI-0.0.99-06-checked-boxes
+                    parent: ADR-0.0.37-constitutional-invariant-composition
+                    status: Completed
+                    ---
+                    # Test Brief: Checked Acceptance Criteria Boxes
+                    ## Requirements (FAIL-CLOSED)
+                    1. REQUIREMENT: req one
+                    2. REQUIREMENT: req two
+                    ## Acceptance Criteria
+                    - [x] REQ-0.0.99-06-04: criterion one
+                    - [X] REQ-0.0.99-06-05: criterion two
+                    """),
+                encoding="utf-8",
+            )
+            result = reconcile_brief(brief, PROJECT_ROOT)
+            self.assertEqual(result.req_count_delta.delta, 0)
+
 
 class TestCitationDimension(unittest.TestCase):
     @covers("REQ-0.0.37-05-05")
