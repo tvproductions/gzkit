@@ -1249,16 +1249,64 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         ),
         epilog=build_epilog(
             [
-                'gz obpi withdraw OBPI-0.21.0-01 --reason "phantom entry from promotion"',
-                'gz obpi withdraw OBPI-0.21.0-01 --reason "duplicate" --dry-run',
+                'gz obpi withdraw OBPI-0.21.0-01 --reason "phantom entry from promotion"'
+                ' --attestor "Jane Doe"',
+                'gz obpi withdraw OBPI-0.21.0-01 --reason "duplicate" --attestor "Jane Doe"'
+                " --dry-run",
             ]
         ),
     )
     p_obpi_withdraw.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.21.0-01)")
     p_obpi_withdraw.add_argument("--reason", required=True, help="Reason for withdrawal")
+    p_obpi_withdraw.add_argument(
+        "--attestor",
+        required=True,
+        help="Human attestor witnessing the withdrawal (non-empty; only humans witness)",
+    )
     add_dry_run_flag(p_obpi_withdraw)
     p_obpi_withdraw.set_defaults(
-        func=lambda a: _lazy("obpi_withdraw_cmd")(obpi=a.obpi, reason=a.reason, dry_run=a.dry_run)
+        func=lambda a: _lazy("obpi_withdraw_cmd")(
+            obpi=a.obpi, reason=a.reason, attestor=a.attestor, dry_run=a.dry_run
+        )
+    )
+
+    p_obpi_supersede = obpi_commands.add_parser(
+        "supersede",
+        help="Supersede one OBPI by another",
+        description=(
+            "Record an obpi_superseded event. The superseded OBPI's graph node "
+            "is marked superseded; the OBPI remains in the ledger but is "
+            "replaced by the superseding OBPI named via --by."
+        ),
+        epilog=build_epilog(
+            [
+                "gz obpi supersede OBPI-0.21.0-01 --by OBPI-0.21.0-04"
+                ' --rationale "replaced by redesigned brief" --attestor "Jane Doe"',
+                "gz obpi supersede OBPI-0.21.0-01 --by OBPI-0.21.0-04"
+                ' --rationale "replaced by redesigned brief" --attestor "Jane Doe"'
+                " --dry-run",
+            ]
+        ),
+    )
+    p_obpi_supersede.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.21.0-01)")
+    p_obpi_supersede.add_argument("--by", required=True, help="Superseding OBPI identifier")
+    p_obpi_supersede.add_argument(
+        "--rationale", required=True, help="Why the OBPI is superseded (non-empty)"
+    )
+    p_obpi_supersede.add_argument(
+        "--attestor",
+        required=True,
+        help="Human attestor witnessing the supersession (non-empty)",
+    )
+    add_dry_run_flag(p_obpi_supersede)
+    p_obpi_supersede.set_defaults(
+        func=lambda a: _lazy("obpi_supersede_cmd")(
+            obpi=a.obpi,
+            by=a.by,
+            rationale=a.rationale,
+            attestor=a.attestor,
+            dry_run=a.dry_run,
+        )
     )
 
     _REPUDIATE_CAUSE_CHOICES = [

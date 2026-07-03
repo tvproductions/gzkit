@@ -46,7 +46,8 @@ uv run gz obpi audit OBPI-<X.Y.Z-NN> # Gather evidence and record in audit ledge
 uv run gz obpi reconcile OBPI-<X.Y.Z-NN> # Fail-closed reconciliation
 uv run gz brief reconcile OBPI-<X.Y.Z-NN> # Reconcile brief content vs project (5 drift dimensions)
 uv run gz obpi repudiate OBPI-<X.Y.Z-NN> --cause <enum> --reason "..." --attestor "<human>" # Repudiate fraudulent/erroneous completion (reverse-and-keep; OBPI stays live)
-uv run gz obpi withdraw OBPI-<X.Y.Z-NN> --reason "..." # Withdraw OBPI from counts (permanent retirement)
+uv run gz obpi withdraw OBPI-<X.Y.Z-NN> --reason "..." --attestor "<human>" # Withdraw OBPI from counts (permanent retirement; witnessed transition)
+uv run gz obpi supersede OBPI-<X.Y.Z-NN> --by OBPI-<X.Y.Z-MM> --rationale "..." --attestor "<human>" # Supersede one OBPI by another (witnessed transition; superseded node marked in graph)
 uv run gz obpi lock claim OBPI-<X.Y.Z-NN>  # Claim OBPI work lock
 uv run gz obpi lock release OBPI-<X.Y.Z-NN> # Release OBPI work lock
 uv run gz obpi lock check OBPI-<X.Y.Z-NN>  # Check if OBPI is locked

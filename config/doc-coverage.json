@@ -832,6 +832,16 @@
       },
       "governance_relevant": true
     },
+    "obpi supersede": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
     "obpi validate": {
       "surfaces": {
         "manpage": true,

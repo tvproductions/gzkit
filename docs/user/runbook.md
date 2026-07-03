@@ -823,7 +823,8 @@ Use [`/gz-check`](skills/gz-check.md) to run all quality checks in one pass, or 
 - `uv run gz parity check`
 - `uv run gz obpi status OBPI-<X.Y.Z-NN>`
 - `uv run gz obpi repudiate OBPI-<X.Y.Z-NN> --cause <enum> --reason "..." --attestor "<human>"` (repudiate a fraudulent or erroneous completion — reverse-and-keep; OBPI stays live)
-- `uv run gz obpi withdraw OBPI-<X.Y.Z-NN> --reason "..."` (withdraw an OBPI from counts — permanent retirement)
+- `uv run gz obpi withdraw OBPI-<X.Y.Z-NN> --reason "..." --attestor "<human>"` (withdraw an OBPI from counts — permanent retirement)
+- `uv run gz obpi supersede OBPI-<X.Y.Z-NN> --by OBPI-<X.Y.Z-MM> --rationale "..." --attestor "<human>"` (supersede one OBPI by another that carries its intent forward)
 - `uv run gz obpi audit OBPI-<X.Y.Z-NN>` (gather evidence and record in audit ledger)
 - `uv run gz obpi lock claim OBPI-<X.Y.Z-NN>` (claim an OBPI work lock)
 - `uv run gz obpi lock release OBPI-<X.Y.Z-NN>` (release an OBPI work lock)

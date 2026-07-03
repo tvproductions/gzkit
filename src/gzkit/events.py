@@ -273,6 +273,22 @@ class ObpiWithdrawnEvent(_EventBase):
 
     event: Literal["obpi_withdrawn"]
     reason: str
+    attestor: str = ""
+
+
+class ObpiSupersededEvent(_EventBase):
+    """obpi_superseded event — one OBPI superseded by another (OBPI-0.31.0-02).
+
+    The ``withdrawn``/``superseded`` transitions in OBPI-01's
+    ``CANONICAL_TRANSITIONS`` declare a ``human_attested`` witness; the
+    witnessing attestor is carried on the emitted event (enforced non-empty at
+    the CLI boundary in ``obpi_supersede_cmd``).
+    """
+
+    event: Literal["obpi_superseded"]
+    superseded_by: str = Field(..., min_length=1)
+    rationale: str = Field(..., min_length=1)
+    attestor: str = Field(..., min_length=1)
 
 
 class ObpiCompletionRepudiatedEvent(_EventBase):

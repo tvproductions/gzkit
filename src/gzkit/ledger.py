@@ -703,6 +703,19 @@ class Ledger:
         graph[canonical_id]["withdrawn_reason"] = event.extra.get("reason")
 
     @staticmethod
+    def _apply_obpi_superseded_metadata(
+        graph: dict[str, dict[str, Any]],
+        canonical_id: str,
+        event: LedgerEvent,
+    ) -> None:
+        if event.event != "obpi_superseded" or canonical_id not in graph:
+            return
+        if graph[canonical_id].get("type") != "obpi":
+            return
+        graph[canonical_id]["superseded"] = True
+        graph[canonical_id]["superseded_by"] = event.extra.get("superseded_by")
+
+    @staticmethod
     def _apply_obpi_completion_repudiated_metadata(
         graph: dict[str, dict[str, Any]],
         canonical_id: str,
@@ -731,6 +744,7 @@ class Ledger:
         cls._apply_obpi_receipt_metadata(graph, canonical_id, event)
         cls._apply_pipeline_launched_metadata(graph, canonical_id, event)
         cls._apply_obpi_withdrawn_metadata(graph, canonical_id, event)
+        cls._apply_obpi_superseded_metadata(graph, canonical_id, event)
         cls._apply_obpi_completion_repudiated_metadata(graph, canonical_id, event)
 
     @staticmethod
@@ -865,6 +879,7 @@ from gzkit.ledger_events import (  # noqa: E402, F401
     obpi_completion_uncovered_accept_event,
     obpi_created_event,
     obpi_receipt_emitted_event,
+    obpi_superseded_event,
     obpi_withdrawn_event,
     pipeline_launched_event,
     pipeline_marker_purged_event,

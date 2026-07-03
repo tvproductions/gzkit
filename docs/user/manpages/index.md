@@ -48,6 +48,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz brief reconcile`](brief-reconcile.md) | Reconcile an OBPI brief against project state across five drift dimensions |
 | [`gz obpi emit-receipt`](obpi-emit-receipt.md) | Emit completed/validated receipt for one OBPI |
 | [`gz obpi repudiate`](obpi-repudiate.md) | Repudiate a fraudulent or erroneous OBPI completion without retiring the OBPI |
+| [`gz obpi supersede`](obpi-supersede.md) | Supersede one OBPI by another |
 | [`gz obpi withdraw`](obpi-withdraw.md) | Record an OBPI withdrawal event |
 | [`gz obpi lock claim`](obpi-lock-claim.md) | Claim an OBPI work lock |
 | [`gz obpi lock release`](obpi-lock-release.md) | Release an OBPI work lock |

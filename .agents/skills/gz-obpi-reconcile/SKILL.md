@@ -5,14 +5,14 @@ description: OBPI brief reconciliation — Audit briefs against evidence, fix st
 category: obpi-pipeline
 compatibility: GovZero v6 framework with OBPI briefs
 metadata:
-  skill-version: "3.1.0"
+  skill-version: "3.2.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   skill-type: "orchestrator"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-07
+last_reviewed: 2026-07-03
 model: sonnet
 ---
 
@@ -145,10 +145,21 @@ uv run gz obpi emit-receipt OBPI-X.Y.Z-NN --event validated
 
 **Phantom OBPI remediation:** If Phase 1 surfaces an OBPI that exists in
 the ledger graph (via `obpi_created` event) but has no on-disk brief file,
-use `gz obpi withdraw` to clean it from the graph before Phase 2:
+use `gz obpi withdraw` to clean it from the graph before Phase 2. Both
+withdraw and supersede are witnessed transitions (a `human_attested` witness
+per the OBPI-01 state machine), so each requires `--attestor`:
 
 ```bash
-uv run gz obpi withdraw OBPI-X.Y.Z-NN --reason "phantom entry from promotion"
+uv run gz obpi withdraw OBPI-X.Y.Z-NN --reason "phantom entry from promotion" --attestor "<human>"
+```
+
+**Superseded-OBPI remediation:** When a reconciled OBPI has been replaced by
+another that carries its intent forward (not merely retired), record the
+replacement lineage with `gz obpi supersede` rather than a bare withdraw —
+the superseding OBPI id is preserved on the graph node:
+
+```bash
+uv run gz obpi supersede OBPI-X.Y.Z-NN --by OBPI-X.Y.Z-MM --rationale "replaced by redesigned brief" --attestor "<human>"
 ```
 
 **Output:** Each brief verified, ledger populated with proof.

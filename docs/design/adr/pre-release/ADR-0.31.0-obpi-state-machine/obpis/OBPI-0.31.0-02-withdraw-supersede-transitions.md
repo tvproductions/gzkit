@@ -3,7 +3,21 @@ id: OBPI-0.31.0-02-withdraw-supersede-transitions
 parent: ADR-0.31.0-obpi-state-machine
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
+# req_atomic (ADR-0.0.64 / OBPI-04 task-envelope exemption): every REQ below
+# was implemented as one indivisible RGR cycle — REQ-01 (elevate withdraw:
+# one helper + command + event), REQ-02 (supersede: one cohesive command +
+# event + graph-metadata unit), REQ-03 (witness enforcement inside those two
+# commands, no separable labor), REQ-04 (STRUCTURAL-FENCE, audit-only, no
+# labor), REQ-05/06 (SUPPORT doc/narrative units) — none decomposed into
+# sub-steps warranting a seq=02+ TASK subdivision.
+req_atomic:
+  - REQ-0.31.0-02-01
+  - REQ-0.31.0-02-02
+  - REQ-0.31.0-02-03
+  - REQ-0.31.0-02-04
+  - REQ-0.31.0-02-05
+  - REQ-0.31.0-02-06
 ---
 
 # OBPI-0.31.0-02-withdraw-supersede-transitions: Withdraw Supersede Transitions
@@ -14,7 +28,7 @@ status: Draft
 <!-- gz-validate-skip: command-shape -->
 - **Checklist Item:** #2 - "OBPI-0.31.0-02: **withdraw-supersede-transitions** — Elevate withdraw to a monitor-backed first-class transition and build `gz obpi supersede`; both emit canonical transition events; closes GHI #348 root"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -53,10 +67,23 @@ contract, new `obpi_superseded` ledger event schema entry).
 - `src/gzkit/schemas/ledger.json` — **MODIFY**: register the `obpi_superseded`
   event schema entry; extend `obpi_withdrawn`'s `extra` schema if witness
   fields are added.
+- `src/gzkit/ledger.py` — **MODIFY (surgical, discovered at plan time)**: add
+  `_apply_obpi_superseded_metadata` (mirrors `_apply_obpi_withdrawn_metadata`
+  at line ~693, setting `graph[id]["superseded"] = True` +
+  `superseded_by`), and register its dispatch call alongside the existing
+  `_apply_obpi_withdrawn_metadata` / `_apply_obpi_completion_repudiated_metadata`
+  calls (line ~733-734) — without this, `obpi_superseded` events are silently
+  invisible to the artifact graph and no consumer (including this OBPI's own
+  terminal-state check) can see that an OBPI was superseded.
 - `src/gzkit/core/obpi_state_machine.py` — **READ-ONLY IMPORT SURFACE**:
   consume `OBPIState`, `Transition`, `CANONICAL_TRANSITIONS`,
   `WitnessRequirement` from OBPI-01. Do NOT edit — Boundary Invariant #1
   (model/monitor/CLI separation).
+- `src/gzkit/commands/common.py` — **READ / SHARED-UTILITY NEIGHBOR**: the
+  withdraw/supersede commands and their tests import `GzCliError`,
+  `ensure_initialized`, `get_project_root` etc. from this same-directory
+  utility module; declared so the reconcile allowlist matches the real
+  import surface (no edit expected).
 - `tests/commands/test_obpi_withdraw_cmd.py` — **MODIFY**: add elevation and
   transition-validation tests.
 - `tests/commands/test_obpi_supersede_cmd.py` — **CREATE**: new verb tests,
@@ -72,6 +99,13 @@ contract, new `obpi_superseded` ledger event schema entry).
 - `docs/design/adr/pre-release/ADR-0.31.0-obpi-state-machine/ADR-0.31.0-obpi-state-machine.md` — parent ADR (Boundary Invariants already present; no edit expected).
 - `docs/design/adr/pre-release/ADR-0.31.0-obpi-state-machine/**` — parent ADR package scope (this brief; evidence).
 
+**Coupled surfaces (discovered at Stage-3 full-suite verify; scope expansion per Prime Directive #4 / coupled-surface coherence 1a).** Adding a new `obpi_superseded` ledger event and a new `gz obpi supersede` CLI verb mechanically couples four consumer surfaces the initial allowlist under-declared. Each is well-precedented (OBPI-0.0.71 for the event-model triple; OBPI-0.0.67-02 for skill-alignment):
+
+- `src/gzkit/events.py` — **MODIFY**: add the `ObpiSupersededEvent` typed model (mirrors `ObpiCompletionRepudiatedEvent`) and add `attestor` to `ObpiWithdrawnEvent` — `test_schemas.py::TestLedgerSchemaAlignment` cross-checks that every committed ledger-schema event has a typed model and that every schema property exists on the model.
+- `tests/test_schemas.py` — **MODIFY**: register `"obpi_superseded": ObpiSupersededEvent` in the `_EVENT_MODELS` alignment registry.
+- `.gzkit/skills/gz-obpi-reconcile/SKILL.md` — **MODIFY**: wield `gz obpi supersede` (mirrors how the skill already wields `gz obpi withdraw` for phantom remediation) — `tool-skill-runbook-alignment` Invariant 1 requires every CLI verb to have a wielding skill. Requires `skill-version` + `last_reviewed` bump and `gz agent sync control-surfaces`.
+- `config/doc-coverage.json` — **MODIFY**: declare `obpi supersede` (mirrors the `obpi withdraw` entry) — `test_doc_coverage` fails closed on any AST-discovered command missing from the manifest.
+
 ## Denied Paths
 
 - `src/gzkit/core/obpi_state_machine.py` — **NO EDITS** (model layer belongs to OBPI-01; Boundary Invariant #1)
@@ -84,12 +118,11 @@ contract, new `obpi_superseded` ledger event schema entry).
 ## Requirements (FAIL-CLOSED)
 
 1. REQUIREMENT: Elevate `obpi_withdraw_cmd` (`src/gzkit/commands/obpi_cmd.py`) to construct and validate a `Transition` against OBPI-01's `CANONICAL_TRANSITIONS` (`gzkit.core.obpi_state_machine`) before emitting `obpi_withdrawn_event`; an OBPI whose current state is not a valid predecessor for the `withdrawn` transition MUST be rejected (non-zero exit, no ledger write).
-2. REQUIREMENT: Add a new "supersede" verb under `gz obpi` — invocation shape `OBPI-X --by OBPI-Y --rationale <text>` (`obpi_supersede_cmd`, modeled on `obpi_repudiate_cmd`) — that validates the `superseded` transition and emits `obpi_superseded_event` citing both the superseded and superseding OBPI IDs.
+2. REQUIREMENT: Add a new "supersede" verb under `gz obpi` — invocation shape `OBPI-X --by OBPI-Y --rationale <text>` (`obpi_supersede_cmd`, modeled on `obpi_repudiate_cmd`) — that validates the `superseded` transition and emits `obpi_superseded_event` citing both the superseded and superseding OBPI IDs. The event MUST be registered in the artifact-graph builder (`src/gzkit/ledger.py`, mirroring `_apply_obpi_withdrawn_metadata`) so a superseded OBPI is visible to the graph the same way a withdrawn one is — an unregistered event type is silently invisible to every downstream consumer, including this OBPI's own terminal-state check (Requirement 1).
 3. REQUIREMENT: The witness requirement declared on the `withdrawn` and `superseded` transitions in OBPI-01's `CANONICAL_TRANSITIONS` MUST be enforced at the CLI boundary — transport-agnostic (`human_attested` via `--attestor-present`/`--attestation-text`, or `self_close`), never a TTY/PTY/interactive-terminal value (canon-owner directive; parent ADR Boundary Invariant #2).
-4. NEVER: Modify `src/gzkit/core/obpi_state_machine.py` — this OBPI consumes the OBPI-01 model layer, it does not extend or alter it (Boundary Invariant #1).
-5. NEVER: Add a runtime invariant monitor or edit `src/gzkit/governance/invariants.py` / `src/gzkit/governance/trust_audits/**` — that is OBPI-03's scope (Boundary Invariant #3: landing falsifier gates breadth).
-6. ALWAYS: Reconcile this brief against the parent ADR § Decision item 5 before implementation; quote it verbatim into Implementation Summary.
-7. ALWAYS: Register new CLI surface in both `src/gzkit/cli/parser_artifacts.py` and `src/gzkit/cli/parser_handler_manifest.py` (the confirmed dual-registration pattern for existing `obpi_withdraw_cmd`), plus a manpage under `docs/user/manpages/`.
+4. NEVER: Modify `src/gzkit/core/obpi_state_machine.py`, add a runtime invariant monitor, or edit `src/gzkit/governance/invariants.py` / `src/gzkit/governance/trust_audits/**` — the model layer is OBPI-01's (Boundary Invariant #1) and the runtime monitor is OBPI-03's (Boundary Invariant #3: landing falsifier gates breadth); this OBPI consumes the former and does not build the latter.
+5. ALWAYS: Reconcile this brief against the parent ADR § Decision item 5 before implementation; quote it verbatim into Implementation Summary.
+6. ALWAYS: Register new CLI surface in both `src/gzkit/cli/parser_artifacts.py` and `src/gzkit/cli/parser_handler_manifest.py` (the confirmed dual-registration pattern for existing `obpi_withdraw_cmd`), plus a manpage under `docs/user/manpages/`.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -110,11 +143,11 @@ contract, new `obpi_superseded` ledger event schema entry).
 
 **Existing Code (read; do NOT modify unless named in Allowed Paths):**
 
-- [x] `src/gzkit/commands/obpi_cmd.py:62-97` — `obpi_withdraw_cmd` (current bare event-recorder to elevate)
-- [x] `src/gzkit/commands/obpi_cmd.py:98-193` — `_reset_brief_status_after_repudiation` + `obpi_repudiate_cmd` (the proven precedent pattern for `obpi_supersede_cmd`)
-- [x] `src/gzkit/ledger_events.py:47-84` — `obpi_created_event`, `obpi_withdrawn_event`, `obpi_completion_repudiated_event` (event-constructor shape to mirror for `obpi_superseded_event`)
+- [x] `src/gzkit/commands/obpi_cmd.py` (lines ~62-97) — `obpi_withdraw_cmd` (current bare event-recorder to elevate)
+- [x] `src/gzkit/commands/obpi_cmd.py` (lines ~98-193) — `_reset_brief_status_after_repudiation` + `obpi_repudiate_cmd` (the proven precedent pattern for `obpi_supersede_cmd`)
+- [x] `src/gzkit/ledger_events.py` (lines ~47-84) — `obpi_created_event`, `obpi_withdrawn_event`, `obpi_completion_repudiated_event` (event-constructor shape to mirror for `obpi_superseded_event`)
 - [x] `src/gzkit/core/obpi_state_machine.py` — OBPI-01's delivered `OBPIState`, `Transition`, `CANONICAL_TRANSITIONS`, `WitnessRequirement` (the model this OBPI consumes)
-- [x] `src/gzkit/cli/parser_artifacts.py:1243-1261` — existing `withdraw` subparser registration (pattern to mirror for `supersede`)
+- [x] `src/gzkit/cli/parser_artifacts.py` (lines ~1243-1261) — existing `withdraw` subparser registration (pattern to mirror for `supersede`)
 - [x] `docs/user/manpages/obpi-repudiate.md`, `docs/user/manpages/obpi-withdraw.md` — doc precedent and current withdraw contract to update
 - [x] `tests/commands/test_obpi_withdraw_cmd.py`, `tests/test_obpi_repudiate_cli.py` — test precedent for CLI-verb coverage shape
 
@@ -244,19 +277,75 @@ uv run gz obpi supersede OBPI-0.31.0-98-example --by OBPI-0.31.0-97-example --ra
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before: `gz obpi withdraw` was a bare event-recorder with no connection to any
+state model, and gzkit had no way to record that one OBPI *supersedes* another
+— the GHI #348 gap where a hand-edited `Withdrawn` status was silently demoted
+because no transition existed to prove it. After: both `withdraw` and the new
+`gz obpi supersede` verb are witnessed, model-validated transitions that consult
+OBPI-01's `CANONICAL_TRANSITIONS` before emitting, refuse illegal transitions
+out of terminal states, and mark the artifact graph so downstream consumers can
+see the supersession lineage. This is the KEEL's CLI/ledger slice consuming the
+state-machine model OBPI-01 laid.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```bash
+uv run gz obpi supersede OBPI-0.0.71-01-completion-repudiation-event \
+  --by OBPI-0.0.71-02-gz-obpi-repudiate-cli \
+  --rationale "demo: superseded lineage" --attestor "g0" --dry-run
+```
+→ emits a well-formed `obpi_superseded` event carrying both ids + the witness:
+```json
+{ "event": "obpi_superseded", "id": "OBPI-0.0.71-01-completion-repudiation-event",
+  "superseded_by": "OBPI-0.0.71-02-gz-obpi-repudiate-cli",
+  "rationale": "demo: superseded lineage", "attestor": "g0" }
+```
+The refusal path is model-driven: superseding an already-terminal OBPI is
+rejected because `_supersede_transition_available` finds no matching transition
+in `CANONICAL_TRANSITIONS` (verified by the `TestSupersedeTransitionConsultsModel`
+unit test asserting `DRAFTED→True`, `SUPERSEDED→False`). Full suite 6752/6752
+(receipt `arb-step-unittest-201bcd2be1ff4c959ed4199d0be46659`); `gz cli audit`
+115/115.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+**Parent ADR § Decision item 5 (verbatim):** "Withdraw / supersede are
+first-class transitions. `gz obpi withdraw OBPI-X.Y.Z-NN --rationale ...` and
+`gz obpi supersede OBPI-X.Y.Z-NN --by OBPI-Y.Y.Y-MM` emit canonical transitions
+with their own receipts, witness requirements, and lifecycle semantics. The
+Withdrawn-demotion failure (GHI #348) is closed because (a) a hand-edit
+`Withdrawn` is rejected by the monitor pointing at the canonical transition CLI;
+(b) once the transition fires, the ledger has the event and the reconciler has
+nothing to 'fix.'"
+
+- Files created/modified: `src/gzkit/commands/obpi_cmd.py` (elevated
+  `obpi_withdraw_cmd` + new `obpi_supersede_cmd`; model-consulting helpers
+  `_withdraw_transition_available` / `_supersede_transition_available` /
+  `_current_terminal_state`); `src/gzkit/ledger_events.py` +
+  `src/gzkit/events.py` + `src/gzkit/schemas/ledger.json` (new `obpi_superseded`
+  event across factory / typed-model / JSON-schema representations; `attestor`
+  added to `obpi_withdrawn` in all three); `src/gzkit/ledger.py`
+  (`_apply_obpi_superseded_metadata` + dispatch registration for graph
+  visibility); `src/gzkit/cli/parser_artifacts.py` +
+  `parser_handler_manifest.py` (withdraw `--attestor`, new `supersede`
+  subparser); manpages (`obpi-supersede.md` created, `obpi-withdraw.md`
+  updated), `index.md`, `docs/user/runbook.md`,
+  `docs/governance/governance_runbook.md`, `config/doc-coverage.json`,
+  `.gzkit/skills/gz-obpi-reconcile/SKILL.md` (wields the new verb;
+  synced to mirrors)
+- Tests added: `tests/commands/test_obpi_supersede_cmd.py` (9 tests incl.
+  model-consultation, graph-metadata, witness, both-ids-exist);
+  elevation + witness + terminal-rejection tests in
+  `tests/commands/test_obpi_withdraw_cmd.py`; `_EVENT_MODELS` registration in
+  `tests/test_schemas.py`
+- Date completed: 2026-07-03
+- Attestation status: operator-attested (Gate 5, Stage 4)
+- Defects noted: an in-flight fix to `src/gzkit/governance/brief_reconcile.py`
+  (glob-pattern false-positive in the allowlist checker, sibling of GHI #626 —
+  TDD'd with `test_allowlist_glob_path_not_existence_checked`); GHI #666 filed
+  for the plan-audit-receipt id-normalization mismatch surfaced during Stage 2
 
 ## Tracked Defects
 
@@ -264,12 +353,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.31.0-02-withdraw-supersede-transitions: 6752/6752 tests pass (receipt arb-step-unittest-5eaf0c6044b54d788ea920c25ef393a5), lint clean (arb-ruff-10872309e75e4e6a85f2e4477a21507e), typecheck clean (arb-step-typecheck-bb67e3e27001418f819c0b20dd933f53), mkdocs --strict clean (arb-step-mkdocs-b5b4059df55b4fe9902b210b524004ef), gz cli audit 115/115, REQ→@covers behavior_uncovered_reqs=0, brief reconcile has_drift=false. Stage 4b independent adversarial validation (fresh Opus context, refute-framed) returned REFUTED on REQ-06 (Implementation Summary was an empty template) and a test-discrimination caveat; both fixed and re-verified before this attestation — the Implementation Summary now carries the verbatim parent-ADR Decision item 5 quote, and the model-consultation test now patches CANONICAL_TRANSITIONS with a synthetic inverted model to genuinely discriminate a model-read from a hardcode (proven RED against a stubbed hardcode). Boundary fence intact: obpi_state_machine.py / governance/invariants.py / trust_audits untouched. Stage 5 precomplete 8/8 green.
+- Date: 2026-07-03
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-03
 
 **Evidence Hash:** -

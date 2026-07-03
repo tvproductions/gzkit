@@ -138,6 +138,19 @@ class TestAllowlistDimension(unittest.TestCase):
         self.assertTrue(result.has_drift)
 
     @covers("REQ-0.0.37-05-02")
+    def test_allowlist_glob_path_not_existence_checked(self):
+        # Sibling gap to GHI #626 Component 2: _compute_discovery_delta skips
+        # glob metacharacter paths (test_discovery_glob_path_not_existence_checked
+        # above), but _compute_allowlist_delta had no equivalent guard — an
+        # Allowed Paths entry like `docs/design/adr/foundation/**` was falsely
+        # reported as missing_on_disk, since `(root / "dir/**").exists()` is
+        # always False for a literal glob string.
+        from gzkit.governance.brief_reconcile import _compute_allowlist_delta
+
+        delta = _compute_allowlist_delta(["docs/design/adr/foundation/**"], [], PROJECT_ROOT)
+        self.assertEqual(delta.missing_on_disk, [])
+
+    @covers("REQ-0.0.37-05-02")
     def test_creates_declared_path_exempt_from_missing_on_disk(self):
         """A net-new path declared under '## Creates These Files' is exempt from
         missing_on_disk (GHI #419 brief-creates exemption).

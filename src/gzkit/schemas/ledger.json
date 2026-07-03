@@ -747,6 +747,30 @@
         "reason": {
           "type": "string",
           "min_length": 1
+        },
+        "attestor": {
+          "type": "string"
+        }
+      }
+    },
+    "obpi_superseded": {
+      "required": [
+        "superseded_by",
+        "rationale",
+        "attestor"
+      ],
+      "properties": {
+        "superseded_by": {
+          "type": "string",
+          "min_length": 1
+        },
+        "rationale": {
+          "type": "string",
+          "min_length": 1
+        },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
         }
       }
     },

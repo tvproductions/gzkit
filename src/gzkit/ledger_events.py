@@ -53,13 +53,22 @@ def obpi_created_event(obpi_id: str, parent: str) -> LedgerEvent:
     )
 
 
-def obpi_withdrawn_event(obpi_id: str, parent: str, reason: str) -> LedgerEvent:
-    """Create an OBPI withdrawn event."""
+def obpi_withdrawn_event(obpi_id: str, parent: str, reason: str, attestor: str = "") -> LedgerEvent:
+    """Create an OBPI withdrawn event.
+
+    ``attestor`` records the human witness of the withdrawal transition
+    (OBPI-0.31.0-02): the ``withdrawn`` transition in OBPI-01's
+    ``CANONICAL_TRANSITIONS`` declares a ``human_attested`` witness requirement,
+    so the witnessing attestor is carried on the emitted event. The witness is
+    enforced non-empty at the CLI boundary (``obpi_withdraw_cmd``); the default
+    keeps this lower-level factory usable by fixtures and status/reconciliation
+    call sites that construct withdrawal events without a witness context.
+    """
     return LedgerEvent(
         event="obpi_withdrawn",
         id=obpi_id,
         parent=parent,
-        extra={"reason": reason},
+        extra={"reason": reason, "attestor": attestor},
     )
 
 
@@ -81,6 +90,33 @@ def obpi_completion_repudiated_event(
             "cause": cause,
             "attestor": attestor,
             "reason": reason,
+        },
+    )
+
+
+def obpi_superseded_event(
+    obpi_id: str,
+    parent: str,
+    superseded_by: str,
+    rationale: str,
+    attestor: str,
+) -> LedgerEvent:
+    """Create an obpi_superseded event (OBPI-0.31.0-02).
+
+    ``superseded_by`` records the successor OBPI; ``attestor`` records the
+    human witness of the ``superseded`` transition (OBPI-01's
+    ``CANONICAL_TRANSITIONS`` declares a ``human_attested`` witness
+    requirement). No default: this is a brand-new event with no legacy
+    positional callers to protect.
+    """
+    return LedgerEvent(
+        event="obpi_superseded",
+        id=obpi_id,
+        parent=parent,
+        extra={
+            "superseded_by": superseded_by,
+            "rationale": rationale,
+            "attestor": attestor,
         },
     )
 

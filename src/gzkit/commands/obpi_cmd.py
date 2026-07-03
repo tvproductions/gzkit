@@ -32,6 +32,7 @@ from gzkit.commands.obpi_stages import (  # noqa: F401
     _run_pipeline_verify_stage,
 )
 from gzkit.commands.status import _inspect_obpi_brief
+from gzkit.core.obpi_state_machine import CANONICAL_TRANSITIONS, OBPIState
 from gzkit.event_evidence import EventAnchor
 from gzkit.hooks.obpi import ObpiValidator
 from gzkit.ledger import (
@@ -44,7 +45,10 @@ from gzkit.ledger import (
     pipeline_marker_purged_event,
     resolve_adr_lane,
 )
-from gzkit.ledger_events import obpi_completion_repudiated_event
+from gzkit.ledger_events import (
+    obpi_completion_repudiated_event,
+    obpi_superseded_event,
+)
 from gzkit.pipeline_runtime import (
     check_reconcile_receipt_gate,
     clear_stale_pipeline_markers,
@@ -59,8 +63,50 @@ from gzkit.pipeline_runtime import (
 from gzkit.utils import capture_validation_anchor
 
 
-def obpi_withdraw_cmd(obpi: str, reason: str, dry_run: bool) -> None:
+def _withdraw_transition_available(current_state: OBPIState) -> bool:
+    """True iff CANONICAL_TRANSITIONS declares a withdraw transition out of
+    ``current_state``. Genuinely consults the model: a state with no outgoing
+    transition into WITHDRAWN (i.e. a terminal state) cannot be withdrawn."""
+    return any(
+        t.from_state == current_state and t.to_state == OBPIState.WITHDRAWN
+        for t in CANONICAL_TRANSITIONS
+    )
+
+
+def _supersede_transition_available(current_state: OBPIState) -> bool:
+    """True iff CANONICAL_TRANSITIONS declares a supersede transition out of
+    ``current_state``. Genuinely consults the model, mirroring
+    ``_withdraw_transition_available``: a state with no outgoing transition
+    into SUPERSEDED (i.e. a terminal state) cannot be superseded."""
+    return any(
+        t.from_state == current_state and t.to_state == OBPIState.SUPERSEDED
+        for t in CANONICAL_TRANSITIONS
+    )
+
+
+def _current_terminal_state(info: dict[str, Any]) -> OBPIState | None:
+    """Map an artifact-graph entry's terminal flags to the concrete terminal
+    ``OBPIState``, or ``None`` when the OBPI is non-terminal.
+
+    The exact non-terminal lifecycle position is deferred-in-keel (parent ADR);
+    for the withdraw/supersede gates only the terminal cases must be resolved,
+    since every non-terminal state shares the same declared transition.
+    """
+    if info.get("withdrawn"):
+        return OBPIState.WITHDRAWN
+    if info.get("superseded"):
+        return OBPIState.SUPERSEDED
+    return None
+
+
+def obpi_withdraw_cmd(obpi: str, reason: str, attestor: str, dry_run: bool) -> None:
     """Withdraw a phantom or erroneous OBPI from the ledger."""
+    if not attestor.strip():
+        console.print(
+            "[red]Error:[/red] --attestor must be non-empty (only a human witnesses a withdrawal)."
+        )
+        raise SystemExit(1)
+
     config = ensure_initialized()
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
@@ -71,8 +117,16 @@ def obpi_withdraw_cmd(obpi: str, reason: str, dry_run: bool) -> None:
     if info.get("type") != "obpi":
         msg = f"OBPI not found in ledger: {canonical_id}"
         raise GzCliError(msg)  # noqa: TRY003
-    if info.get("withdrawn"):
-        msg = f"OBPI is already withdrawn: {canonical_id}"
+
+    # Gate the emit on a genuine CANONICAL_TRANSITIONS consultation: a terminal
+    # OBPI has no declared withdraw transition, so the model refuses it. The
+    # per-state message explains which terminal state blocked the transition.
+    current_state = _current_terminal_state(info)
+    if current_state is not None and not _withdraw_transition_available(current_state):
+        if current_state is OBPIState.WITHDRAWN:
+            msg = f"OBPI is already withdrawn: {canonical_id}"
+        else:
+            msg = f"OBPI is superseded and cannot be withdrawn: {canonical_id}"
         raise GzCliError(msg)  # noqa: TRY003
 
     parent = info.get("parent", "")
@@ -80,6 +134,7 @@ def obpi_withdraw_cmd(obpi: str, reason: str, dry_run: bool) -> None:
         obpi_id=canonical_id,
         parent=parent if isinstance(parent, str) else "",
         reason=reason,
+        attestor=attestor,
     )
 
     if dry_run:
@@ -93,6 +148,70 @@ def obpi_withdraw_cmd(obpi: str, reason: str, dry_run: bool) -> None:
     if parent:
         console.print(f"  Parent ADR: {parent}")
     console.print(f"  Reason: {reason}")
+    console.print(f"  Attestor: {attestor}")
+
+
+def obpi_supersede_cmd(obpi: str, by: str, rationale: str, attestor: str, dry_run: bool) -> None:
+    """Supersede one OBPI by another (ADR-0.0.71 / OBPI-0.31.0-02)."""
+    if not attestor.strip():
+        console.print(
+            "[red]Error:[/red] --attestor must be non-empty "
+            "(only a human witnesses a supersession)."
+        )
+        raise SystemExit(1)
+    if not rationale.strip():
+        console.print("[red]Error:[/red] --rationale must be non-empty.")
+        raise SystemExit(1)
+
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    canonical_id = ledger.canonicalize_id(obpi)
+    by_canonical_id = ledger.canonicalize_id(by)
+    graph = ledger.get_artifact_graph()
+    info = graph.get(canonical_id, {})
+    if info.get("type") != "obpi":
+        msg = f"OBPI not found in ledger: {canonical_id}"
+        raise GzCliError(msg)  # noqa: TRY003
+
+    by_info = graph.get(by_canonical_id, {})
+    if by_info.get("type") != "obpi":
+        msg = f"Superseding OBPI not found in ledger: {by_canonical_id}"
+        raise GzCliError(msg)  # noqa: TRY003
+
+    # Gate the emit on a genuine CANONICAL_TRANSITIONS consultation: a terminal
+    # OBPI has no declared supersede transition, so the model refuses it.
+    current_state = _current_terminal_state(info)
+    if current_state is not None and not _supersede_transition_available(current_state):
+        if current_state is OBPIState.WITHDRAWN:
+            msg = f"OBPI is already withdrawn and cannot be superseded: {canonical_id}"
+        else:
+            msg = f"OBPI is already superseded: {canonical_id}"
+        raise GzCliError(msg)  # noqa: TRY003
+
+    parent = info.get("parent", "")
+    event = obpi_superseded_event(
+        obpi_id=canonical_id,
+        parent=parent if isinstance(parent, str) else "",
+        superseded_by=by_canonical_id,
+        rationale=rationale,
+        attestor=attestor,
+    )
+
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")
+        console.print(json.dumps(event.model_dump(), indent=2))
+        return
+
+    ledger.append(event)
+    console.print("[green]OBPI superseded.[/green]")
+    console.print(f"  OBPI: {canonical_id}")
+    console.print(f"  Superseded-by: {by_canonical_id}")
+    if parent:
+        console.print(f"  Parent ADR: {parent}")
+    console.print(f"  Rationale: {rationale}")
+    console.print(f"  Attestor: {attestor}")
 
 
 def _reset_brief_status_after_repudiation(

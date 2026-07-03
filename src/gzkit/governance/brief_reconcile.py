@@ -354,7 +354,9 @@ def _compute_allowlist_delta(
     missing_on_disk = [
         path
         for path in allowlist
-        if not (project_root / path).exists() and path.removeprefix("./").rstrip("/") not in creates
+        if not has_glob_chars(path)
+        and not (project_root / path).exists()
+        and path.removeprefix("./").rstrip("/") not in creates
     ]
     missing_in_brief = _compute_missing_in_brief(req_ids, allowlist, project_root)
     return AllowlistDelta(missing_in_brief=missing_in_brief, missing_on_disk=missing_on_disk)
