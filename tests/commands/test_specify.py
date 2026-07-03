@@ -129,6 +129,30 @@ class TestSpecifyCommand(unittest.TestCase):
             self.assertNotIn("path/to/prerequisite", content)
             self.assertNotIn("Given/When/Then behavior criterion", content)
 
+    def test_specify_dry_run_reports_default_lane_source_without_wbs_table(self) -> None:
+        """A dry run against an ADR with no WBS table must report the true
+        fallback source ('default'), not misattribute the resolved lane to
+        a WBS table row that does not exist."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            result = runner.invoke(
+                main,
+                [
+                    "specify",
+                    "core-feature",
+                    "--parent",
+                    "ADR-0.1.0-f",
+                    "--item",
+                    "1",
+                    "--dry-run",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("source: default", result.output)
+            self.assertNotIn("source: WBS table", result.output)
+
     def test_specify_author_creates_authored_ready_brief(self) -> None:
         """specify --author produces a brief that passes authored validation."""
         runner = CliRunner()

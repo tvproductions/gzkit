@@ -732,6 +732,7 @@ def _print_specify_dry_run(
     obpi_file: Path,
     resolved_lane: str,
     lane: str | None,
+    wbs_rows: list[WbsRow],
     objective: str,
     author: bool,
     authored_errors: list[str],
@@ -740,7 +741,8 @@ def _print_specify_dry_run(
     """Render dry-run output for `gz specify`."""
     console.print("[yellow]Dry run:[/yellow] no files will be written.")
     console.print(f"  Would create OBPI: {obpi_file}")
-    console.print(f"  Lane: {resolved_lane} (source: {'CLI override' if lane else 'WBS table'})")
+    lane_source = "CLI override" if lane else "WBS table" if wbs_rows else "default"
+    console.print(f"  Lane: {resolved_lane} (source: {lane_source})")
     console.print(f"  Objective: {objective}")
     if author:
         if authored_errors:
@@ -845,6 +847,7 @@ def specify(
             obpi_file=obpi_file,
             resolved_lane=resolved_lane,
             lane=lane,
+            wbs_rows=wbs_rows,
             objective=objective,
             author=author,
             authored_errors=authored_errors,
