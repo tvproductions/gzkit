@@ -171,6 +171,7 @@ uv run python -c "from gzkit.schemas import load_schema; from gzkit.core.obpi_st
 - [ ] REQ-0.31.0-01-03 [BEHAVIOR]: `State` is a frozen Pydantic model declaring a `terminal: bool`; the canonical `OBPI_STATES` declaration holds exactly one `State` per `OBPIState` member, with `withdrawn` and `superseded` terminal and all other six non-terminal.
 - [ ] REQ-0.31.0-01-04 [BEHAVIOR]: the committed `src/gzkit/schemas/obpi_state_machine.json` equals `obpi_state_machine_json_schema()` — `load_schema("obpi_state_machine")` is byte-coherent with the model projection — asserted by a `@covers(REQ-0.31.0-01-04)` coherence test that fails on drift.
 - [ ] REQ-0.31.0-01-05 [STRUCTURAL-FENCE]: OBPI-01 delivers the state/transition models + schema only — it adds NO runtime invariant monitor (OBPI-03) and NO `gz obpi` transition verb (OBPI-02), and the new module imports no monitor/command surface; witness requirement is transport-agnostic (no TTY/PTY value). Anchored in the parent ADR `## Boundary Invariants`.
+- [ ] REQ-0.31.0-01-06 [SUPPORT]: This brief's `### Implementation Summary` quotes the parent ADR § Decision items 1–2 verbatim (Requirements (FAIL-CLOSED) item 6) — proven by `uv run gz validate --documents` passing AND an `artifact_edited` ledger event citing this brief file emitted at OBPI completion.
 
 ## Completion Checklist
 

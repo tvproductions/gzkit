@@ -1,0 +1,242 @@
+{
+  "state_schema": {
+    "additionalProperties": false,
+    "description": "A single canonical OBPI lifecycle state (Decision item 1).",
+    "properties": {
+      "terminal": {
+        "description": "True when this state has no outgoing canonical transitions.",
+        "title": "Terminal",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "terminal"
+    ],
+    "title": "State",
+    "type": "object"
+  },
+  "states": {
+    "attested": {
+      "terminal": false
+    },
+    "drafted": {
+      "terminal": false
+    },
+    "implementing": {
+      "terminal": false
+    },
+    "planned": {
+      "terminal": false
+    },
+    "superseded": {
+      "terminal": true
+    },
+    "synced": {
+      "terminal": false
+    },
+    "verified": {
+      "terminal": false
+    },
+    "withdrawn": {
+      "terminal": true
+    }
+  },
+  "transition_schema": {
+    "$defs": {
+      "OBPIState": {
+        "description": "Closed set of canonical OBPI lifecycle states (Decision item 1).",
+        "enum": [
+          "drafted",
+          "planned",
+          "implementing",
+          "verified",
+          "attested",
+          "synced",
+          "withdrawn",
+          "superseded"
+        ],
+        "title": "OBPIState",
+        "type": "string"
+      },
+      "WitnessRequirement": {
+        "description": "Transport-agnostic witness requirement for a transition (Boundary Invariant #2).\n\nNo TTY/PTY/interactive-terminal value exists here by design.",
+        "enum": [
+          "human_attested",
+          "self_close"
+        ],
+        "title": "WitnessRequirement",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "A single named, schema-bound state change (Decision item 2).",
+    "properties": {
+      "from_state": {
+        "$ref": "#/$defs/OBPIState",
+        "description": "Predecessor state."
+      },
+      "required_evidence": {
+        "description": "Adjacent evidence required as a precondition for this transition.",
+        "items": {
+          "type": "string"
+        },
+        "title": "Required Evidence",
+        "type": "array"
+      },
+      "to_state": {
+        "$ref": "#/$defs/OBPIState",
+        "description": "Successor state."
+      },
+      "witness": {
+        "$ref": "#/$defs/WitnessRequirement",
+        "description": "Witness requirement: human_attested or self_close."
+      }
+    },
+    "required": [
+      "from_state",
+      "to_state",
+      "required_evidence",
+      "witness"
+    ],
+    "title": "Transition",
+    "type": "object"
+  },
+  "transitions": [
+    {
+      "from_state": "drafted",
+      "required_evidence": [
+        "plan_receipt"
+      ],
+      "to_state": "planned",
+      "witness": "self_close"
+    },
+    {
+      "from_state": "planned",
+      "required_evidence": [
+        "task_start_receipt"
+      ],
+      "to_state": "implementing",
+      "witness": "self_close"
+    },
+    {
+      "from_state": "implementing",
+      "required_evidence": [
+        "test_results"
+      ],
+      "to_state": "verified",
+      "witness": "self_close"
+    },
+    {
+      "from_state": "verified",
+      "required_evidence": [
+        "attestation_text"
+      ],
+      "to_state": "attested",
+      "witness": "human_attested"
+    },
+    {
+      "from_state": "attested",
+      "required_evidence": [
+        "git_sync_receipt"
+      ],
+      "to_state": "synced",
+      "witness": "self_close"
+    },
+    {
+      "from_state": "drafted",
+      "required_evidence": [
+        "attestation_text"
+      ],
+      "to_state": "withdrawn",
+      "witness": "human_attested"
+    },
+    {
+      "from_state": "planned",
+      "required_evidence": [
+        "attestation_text"
+      ],
+      "to_state": "withdrawn",
+      "witness": "human_attested"
+    },
+    {
+      "from_state": "implementing",
+      "required_evidence": [
+        "attestation_text"
+      ],
+      "to_state": "withdrawn",
+      "witness": "human_attested"
+    },
+    {
+      "from_state": "verified",
+      "required_evidence": [
+        "attestation_text"
+      ],
+      "to_state": "withdrawn",
+      "witness": "human_attested"
+    },
+    {
+      "from_state": "attested",
+      "required_evidence": [
+        "attestation_text"
+      ],
+      "to_state": "withdrawn",
+      "witness": "human_attested"
+    },
+    {
+      "from_state": "synced",
+      "required_evidence": [
+        "attestation_text"
+      ],
+      "to_state": "withdrawn",
+      "witness": "human_attested"
+    },
+    {
+      "from_state": "drafted",
+      "required_evidence": [
+        "attestation_text"
+      ],
+      "to_state": "superseded",
+      "witness": "human_attested"
+    },
+    {
+      "from_state": "planned",
+      "required_evidence": [
+        "attestation_text"
+      ],
+      "to_state": "superseded",
+      "witness": "human_attested"
+    },
+    {
+      "from_state": "implementing",
+      "required_evidence": [
+        "attestation_text"
+      ],
+      "to_state": "superseded",
+      "witness": "human_attested"
+    },
+    {
+      "from_state": "verified",
+      "required_evidence": [
+        "attestation_text"
+      ],
+      "to_state": "superseded",
+      "witness": "human_attested"
+    },
+    {
+      "from_state": "attested",
+      "required_evidence": [
+        "attestation_text"
+      ],
+      "to_state": "superseded",
+      "witness": "human_attested"
+    },
+    {
+      "from_state": "synced",
+      "required_evidence": [
+        "attestation_text"
+      ],
+      "to_state": "superseded",
+      "witness": "human_attested"
+    }
+  ]
+}
