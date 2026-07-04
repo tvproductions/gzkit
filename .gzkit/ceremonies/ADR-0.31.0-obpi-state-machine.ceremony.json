@@ -1,0 +1,42 @@
+{
+  "adr_id": "ADR-0.31.0-obpi-state-machine",
+  "current_step": 5,
+  "is_foundation": false,
+  "started_at": "2026-07-04T20:42:50Z",
+  "updated_at": "2026-07-04T20:44:21Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-07-04T20:42:50Z",
+      "acknowledged_at": "2026-07-04T20:43:04Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-07-04T20:43:04Z",
+      "acknowledged_at": "2026-07-04T20:43:37Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-07-04T20:43:37Z",
+      "acknowledged_at": "2026-07-04T20:43:54Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-07-04T20:43:54Z",
+      "acknowledged_at": "2026-07-04T20:44:21Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-07-04T20:44:21Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz frontmatter reconcile --dry-run"
+  ],
+  "walkthrough_index": 0,
+  "attestation": null,
+  "completed_at": null,
+  "attempt": 1,
+  "paused_at": null
+}
