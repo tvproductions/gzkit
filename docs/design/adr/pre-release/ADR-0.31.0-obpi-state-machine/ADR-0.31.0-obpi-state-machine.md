@@ -1,6 +1,6 @@
 ---
 id: ADR-0.31.0-obpi-state-machine
-status: Proposed
+status: Completed
 kind: feature
 semver: 0.31.0
 lane: heavy
@@ -323,4 +323,4 @@ Promotion derived from `ADR-pool.obpi-state-machine` on 2026-07-02; executable s
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.31.0 | Pending | | | |
+| 0.31.0 | Completed | g0 | 2026-07-04 | Completed — "attest completed" (g0). ADR-0.31.0 OBPI state machine keel: 3/3 OBPIs attested (g0); spec-reviewer 18/18 REQs PASS + quality-reviewer COHERENT (one CANONICAL_TRANSITIONS consumed by verbs and monitor); real fidelity gate 2 pass after commit 5c2a07ab replaced the placeholder; 2 closeout corrections landed (fidelity assertions + except narrowing, pinning test); GHI #516 closed (commit 8ba9077f); full suite 6768 pass (arb-step-unittest-9cac4345975143b092404d6415f3eb21), ruff/typecheck/mkdocs strict clean. |

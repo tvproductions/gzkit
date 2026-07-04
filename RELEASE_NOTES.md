@@ -1,5 +1,23 @@
 # gzkit Release Notes
 
+## v0.31.0 (2026-07-04)
+
+**ADR:** ADR-0.31.0-obpi-state-machine — the airlock-critical tracer of the OBPI state machine: the first end-to-end slice (schema → model → monitor → CLI → ledger) that makes governance state *machined* rather than choreographed, laid alongside the legacy string-keyed lifecycle and retiring none of it.
+
+### Delivered
+
+- **State/transition model layer (OBPI-01)** — a closed `OBPIState` `StrEnum` (eight canonical states) plus frozen Pydantic `State`/`Transition` models declaring each transition's predecessor, required evidence, and witness requirement, projected to a committed JSON schema. `CANONICAL_TRANSITIONS` is the single source of truth both consumers derive from.
+- **Witnessed withdraw/supersede transitions (OBPI-02)** — `gz obpi withdraw` elevated from a bare event-recorder to a transition validated against `CANONICAL_TRANSITIONS`, plus a new `gz obpi supersede … --by …` verb; both emit canonical transition events and fail closed on an empty (human) attestor. Closes the GHI #348 root cause: withdrawal is now a validated transition, not a hand-edit the reconciler silently demotes.
+- **Runtime invariant monitor (OBPI-03)** — a `TransitionMonitor` at the `gz frontmatter reconcile` write chokepoint that refuses any `status:` edit not matching a declared transition, surfacing refusals in the reconciliation receipt (`refused_rewrites`). The pre-registered landing falsifier reproduces the exact GHI #348 shape and proves the write is refused.
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied (Heavy lane). Independent review: spec-reviewer 18/18 REQs PASS, quality-reviewer COHERENT. Fidelity gate: 2 assertions pass (`gz adr fidelity ADR-0.31.0`). Full suite 6768 tests pass.
+
+### Stats
+
+- 3 OBPIs attested; GHI #348/#347 root cause closed; GHI #516 (closeout demo-discovery housekeeping leak) fixed in the same session
+
 ## v0.30.2 (2026-07-01)
 
 Seven GHI fixes closing out ADR promote/demote ceremony symmetry, skill-doctrine drift, closeout-ceremony gating, and lock-hygiene/claim-grounding mechanization.

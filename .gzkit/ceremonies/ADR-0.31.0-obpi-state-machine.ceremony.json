@@ -1,33 +1,58 @@
 {
   "adr_id": "ADR-0.31.0-obpi-state-machine",
-  "current_step": 5,
+  "current_step": 10,
   "is_foundation": false,
-  "started_at": "2026-07-04T20:42:50Z",
-  "updated_at": "2026-07-04T20:44:21Z",
+  "started_at": "2026-07-04T23:49:02Z",
+  "updated_at": "2026-07-04T23:53:46Z",
   "step_history": [
     {
       "step": 1,
-      "presented_at": "2026-07-04T20:42:50Z",
-      "acknowledged_at": "2026-07-04T20:43:04Z"
+      "presented_at": "2026-07-04T23:49:02Z",
+      "acknowledged_at": "2026-07-04T23:49:22Z"
     },
     {
       "step": 2,
-      "presented_at": "2026-07-04T20:43:04Z",
-      "acknowledged_at": "2026-07-04T20:43:37Z"
+      "presented_at": "2026-07-04T23:49:22Z",
+      "acknowledged_at": "2026-07-04T23:49:23Z"
     },
     {
       "step": 3,
-      "presented_at": "2026-07-04T20:43:37Z",
-      "acknowledged_at": "2026-07-04T20:43:54Z"
+      "presented_at": "2026-07-04T23:49:23Z",
+      "acknowledged_at": "2026-07-04T23:49:33Z"
     },
     {
       "step": 4,
-      "presented_at": "2026-07-04T20:43:54Z",
-      "acknowledged_at": "2026-07-04T20:44:21Z"
+      "presented_at": "2026-07-04T23:49:33Z",
+      "acknowledged_at": "2026-07-04T23:49:33Z"
     },
     {
       "step": 5,
-      "presented_at": "2026-07-04T20:44:21Z",
+      "presented_at": "2026-07-04T23:49:33Z",
+      "acknowledged_at": "2026-07-04T23:49:47Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-07-04T23:49:47Z",
+      "acknowledged_at": "2026-07-04T23:51:27Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-07-04T23:51:27Z",
+      "acknowledged_at": "2026-07-04T23:52:35Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-07-04T23:52:35Z",
+      "acknowledged_at": "2026-07-04T23:53:12Z"
+    },
+    {
+      "step": 9,
+      "presented_at": "2026-07-04T23:53:12Z",
+      "acknowledged_at": "2026-07-04T23:53:46Z"
+    },
+    {
+      "step": 10,
+      "presented_at": "2026-07-04T23:53:46Z",
       "acknowledged_at": null
     }
   ],
@@ -35,8 +60,8 @@
     "uv run gz frontmatter reconcile --dry-run"
   ],
   "walkthrough_index": 0,
-  "attestation": null,
+  "attestation": "Completed — \"attest completed\" (g0). ADR-0.31.0 OBPI state machine keel: 3/3 OBPIs attested (g0); spec-reviewer 18/18 REQs PASS + quality-reviewer COHERENT (one CANONICAL_TRANSITIONS consumed by verbs and monitor); real fidelity gate 2 pass after commit 5c2a07ab replaced the placeholder; 2 closeout corrections landed (fidelity assertions + except narrowing, pinning test); GHI #516 closed (commit 8ba9077f); full suite 6768 pass (arb-step-unittest-9cac4345975143b092404d6415f3eb21), ruff/typecheck/mkdocs strict clean.",
   "completed_at": null,
-  "attempt": 1,
+  "attempt": 2,
   "paused_at": null
 }
