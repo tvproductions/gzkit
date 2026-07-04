@@ -46,12 +46,14 @@ class TestCeremonyDemoDiscovery(unittest.TestCase):
         )
 
     def test_non_gz_and_unregistered_gz_both_rejected(self) -> None:
-        # A registered gz verb survives; a non-gz command and a ``gz`` whose verb
-        # is not registered in the parser are both dropped — no improvised or
-        # stale invocations reach the walkthrough.
+        # A registered *product* gz verb survives; a non-gz command and a ``gz``
+        # whose verb is not registered in the parser are both dropped — no
+        # improvised or stale invocations reach the walkthrough. (The survivor
+        # here is ``gz status`` rather than ``gz check`` because ``check`` is now
+        # housekeeping-denied — see test_housekeeping_gz_verbs_dropped_from_demos.)
         brief = (
             "---\nid: OBPI-FIXTURE\n---\n\n## Demo\n\n```bash\n"
-            "uv run gz check\n"
+            "uv run gz status --json\n"
             "uv run gz definitely-not-a-real-verb --json\n"
             "ls -la\n"
             "```\n"
@@ -60,7 +62,46 @@ class TestCeremonyDemoDiscovery(unittest.TestCase):
             brief_path = Path(tmp) / "OBPI-FIXTURE.md"
             brief_path.write_text(brief, encoding="utf-8")
             commands = _commands_from_demo_sections([brief_path])
-        self.assertEqual(commands, ["uv run gz check"], f"got {commands!r}")
+        self.assertEqual(commands, ["uv run gz status --json"], f"got {commands!r}")
+
+    def test_housekeeping_gz_verbs_dropped_from_demos(self) -> None:
+        # arb/check/test/lint are construction housekeeping (Evidence Summary
+        # Template §3b: Quality Evidence), NOT yielded product (§3a). Each is a
+        # *registered* gz verb, so the pre-existing registered-verb filter passed
+        # them straight into the Product Demo walkthrough — the GHI #427/#516 leak
+        # (operator: "I ABSOLUTELY DO NOT NEED A UNIT TEST AS A DEMO PROOF"). None
+        # may survive; a genuine product verb in the same block still does.
+        brief = (
+            "---\nid: OBPI-FIXTURE\n---\n\n## Demo\n\n```bash\n"
+            "uv run gz arb ruff\n"
+            "uv run gz arb step --name unittest -- uv run -m unittest -q\n"
+            "uv run gz check\n"
+            "uv run gz test\n"
+            "uv run gz lint\n"
+            "uv run gz status --json\n"
+            "```\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            brief_path = Path(tmp) / "OBPI-FIXTURE.md"
+            brief_path.write_text(brief, encoding="utf-8")
+            commands = _commands_from_demo_sections([brief_path])
+        self.assertEqual(commands, ["uv run gz status --json"], f"got {commands!r}")
+
+    def test_validate_survives_as_product_demo(self) -> None:
+        # ``validate`` is deliberately EXCLUDED from the housekeeping denylist: a
+        # delivered ``gz validate --<scope>`` validator is the yielded product of
+        # the ADR that ships it. This guards against an over-broad denylist that
+        # would suppress the very demos GHI #516 exists to strengthen.
+        brief = (
+            "---\nid: OBPI-FIXTURE\n---\n\n## Demo\n\n```bash\n"
+            "uv run gz validate --documents\n"
+            "```\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            brief_path = Path(tmp) / "OBPI-FIXTURE.md"
+            brief_path.write_text(brief, encoding="utf-8")
+            commands = _commands_from_demo_sections([brief_path])
+        self.assertEqual(commands, ["uv run gz validate --documents"], f"got {commands!r}")
 
 
 if __name__ == "__main__":

@@ -260,6 +260,28 @@ def _extract_gz_verb_chain(line: str) -> str | None:
     return " ".join(verb_tokens) if verb_tokens else None
 
 
+# Registered gz verbs that are construction housekeeping — Quality Evidence
+# (Evidence Summary Template §3b), never yielded product (§3a). Each is a real
+# registered verb, so the registered-verb filter alone lets them reach the
+# walkthrough; a ## Demo section authoring one is mis-slotting a quality gate as
+# a product demo, which the walkthrough must refuse (GHI #427/#516 — operator:
+# "I ABSOLUTELY DO NOT NEED A UNIT TEST AS A DEMO PROOF"). ``validate`` is
+# intentionally ABSENT: a delivered ``gz validate --<scope>`` validator is the
+# yielded product of the ADR that ships it, so it stays eligible as a demo.
+_HOUSEKEEPING_GZ_VERB_ROOTS: frozenset[str] = frozenset({"arb", "check", "test", "lint"})
+
+
+def _is_housekeeping_verb_chain(verb_chain: str) -> bool:
+    """Return True if the verb chain is a construction-housekeeping gz verb.
+
+    The root token decides: ``arb ruff`` and ``arb step`` are both housekeeping
+    because ``arb`` is. Housekeeping verbs belong in the Quality Evidence section
+    (§3b), never the Product Demo walkthrough (§3a). See
+    ``_HOUSEKEEPING_GZ_VERB_ROOTS`` for the ``validate`` carve-out rationale.
+    """
+    return verb_chain.split(" ", 1)[0] in _HOUSEKEEPING_GZ_VERB_ROOTS
+
+
 def discover_demo_commands(
     project_root: Path,
     adr_id: str,
@@ -324,9 +346,13 @@ def _commands_from_demo_sections(obpi_files: list[Path]) -> list[str]:
     ``gz`` verbs are both dropped — Ceremony Rule #4 admits only documented
     ``gz`` commands to the walkthrough, so the doctrine ships with coupled
     enforcement here rather than relying on brief authors to self-police
-    (ADR-0.0.74 demo-compliance class-fix). A brief whose Demo section yields no
-    registered ``gz`` command contributes nothing and the discovery chain falls
-    through to the ``--help`` strategies.
+    (ADR-0.0.74 demo-compliance class-fix). Registered-but-housekeeping verbs
+    (``arb``/``check``/``test``/``lint``) are dropped too: a quality gate is
+    Quality Evidence (Evidence Summary Template §3b), never a Product Demo (§3a)
+    — the GHI #427/#516 leak where a registered ARB/quality verb reached the
+    walkthrough as if it were the yielded product. A brief whose Demo section
+    yields no product ``gz`` command contributes nothing and the discovery chain
+    falls through to the ``--help`` strategies.
     """
     registered = _collect_registered_invocations()
     commands: list[str] = []
@@ -342,6 +368,11 @@ def _commands_from_demo_sections(obpi_files: list[Path]) -> list[str]:
                 # `gz` verbs alike: the walkthrough is the operator's product-
                 # demonstration surface, never a place for improvised invocations.
                 if verb_chain is None or verb_chain not in registered:
+                    continue
+                # Reject registered-but-housekeeping verbs (arb/check/test/lint):
+                # a quality gate is Quality Evidence (§3b), not a Product Demo
+                # (§3a) — GHI #516.
+                if _is_housekeeping_verb_chain(verb_chain):
                     continue
                 commands.append(command)
     return commands
@@ -374,7 +405,7 @@ def _commands_from_command_doc_links(
                 if not cmd_path.is_file():
                     continue
                 verb_chain = slug.replace("-", " ")
-                if verb_chain not in registered:
+                if verb_chain not in registered or _is_housekeeping_verb_chain(verb_chain):
                     continue
                 commands.append(f"uv run gz {verb_chain} --help")
     return commands
@@ -404,7 +435,7 @@ def _commands_from_brief_titles(obpi_files: list[Path]) -> list[str]:
         first, second = m.group(1), m.group(2)
         candidates = [f"{first} {second}", first] if second else [first]
         verb_chain = next((c for c in candidates if c in registered), None)
-        if verb_chain is None:
+        if verb_chain is None or _is_housekeeping_verb_chain(verb_chain):
             continue
         gz_invocation = f"gz {verb_chain}"
         if gz_invocation in seen:
