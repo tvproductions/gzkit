@@ -162,7 +162,17 @@ following five properties:
 
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
-| Replace with an assertion that exercises this ADR's thesis against the real system. | uv run gz --version | 0 |
+| Withdrawal is a witnessed transition validated against CANONICAL_TRANSITIONS: a legal predecessor state passes (non-mutating dry-run). | uv run gz obpi withdraw OBPI-0.31.0-01-state-transition-models --reason fidelity-assertion --attestor g0 --dry-run | 0 |
+| The witness requirement is transport-agnostic and fail-closed: an empty attestor is rejected with no ledger write (no TTY/PTY, only a human witnesses). | uv run gz obpi withdraw OBPI-0.31.0-01-state-transition-models --reason fidelity-assertion --attestor "" --dry-run | 1 |
+
+<!-- These two assertions exercise the state-machine thesis at the CLI boundary
+     (OBPI-02's witnessed withdraw/supersede transitions). OBPI-03's runtime
+     monitor refuses undeclared status: drift at the reconcile chokepoint; that
+     thesis has no single gz command that exercises a refusal on a healthy tree
+     (a refusal requires live drift, and staging drift IS the forbidden
+     hand-edit), so its proof is the landing-falsifier regression test
+     (REQ-0.31.0-03-03), not a fidelity command. -->
+
 
 ## Decomposition Scorecard
 

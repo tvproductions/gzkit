@@ -214,8 +214,12 @@ def _status_is_valid_obpi_transition(
 
         # Check the transition against the monitor
         return monitor.is_allowed(current_obpi_state, target_obpi_state)
-    except Exception:
-        # On any error, refuse the transition to be safe
+    except (AttributeError, TypeError):
+        # A malformed status (None / non-str) fails .lower() during vocab
+        # mapping; refuse the transition to be safe. Narrowed from a blanket
+        # `except Exception` per .claude/rules/pythonic.md § Error Handling (no
+        # bare except in a governance library) — an unexpected error should
+        # surface, not be silently swallowed as a refusal.
         return False
 
 

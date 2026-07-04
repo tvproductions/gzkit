@@ -12,6 +12,8 @@ import unittest
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
+from gzkit.governance.frontmatter_coherence import _status_is_valid_obpi_transition
+from gzkit.governance.obpi_transition_monitor import TransitionMonitor
 from gzkit.ledger import Ledger, adr_created_event, obpi_created_event, obpi_withdrawn_event
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _quick_init
@@ -573,6 +575,27 @@ class ReconciliationLogicTests(unittest.TestCase):
             # the ledger-wins vocab term for the withdrawn state.
             accepted_text = accepted_path.read_text(encoding="utf-8")
             self.assertNotIn("status: Active", accepted_text)
+
+
+class TestStatusTransitionFailSafe(unittest.TestCase):
+    """Pin the fail-safe of ``_status_is_valid_obpi_transition``.
+
+    The blanket ``except Exception`` was narrowed to ``(AttributeError,
+    TypeError)`` per ``.claude/rules/pythonic.md`` § Error Handling (surfaced by
+    the ADR-0.31.0 closeout quality review). This pins the known fail-safe path:
+    a malformed (None / non-str) status refuses the transition rather than
+    raising, so the narrowed catch cannot silently regress the safety intent.
+    """
+
+    def test_malformed_status_refuses_transition(self) -> None:
+        monitor = TransitionMonitor()
+        # None.lower() raises AttributeError inside vocab mapping -> caught ->
+        # refuse (False), never propagates.
+        self.assertFalse(_status_is_valid_obpi_transition(monitor, None, "planned"))  # type: ignore
+        self.assertFalse(_status_is_valid_obpi_transition(monitor, "completed", None))  # type: ignore
+        # A genuinely unrecognized (but well-typed) status is also refused, via
+        # the None-state guard rather than the exception path.
+        self.assertFalse(_status_is_valid_obpi_transition(monitor, "not-a-real-status", "planned"))
 
 
 if __name__ == "__main__":
