@@ -16,7 +16,7 @@ Consumes the OBPI-01 frontmatter validator as its drift source and the OBPI-05 `
 
 Ledger state is pinned at run-start (sha256 of `.gzkit/ledger.jsonl`) and the validator sees that snapshot only — a mid-run ledger mutation cannot leak into the receipt.
 
-A receipt is emitted under `artifacts/receipts/frontmatter-coherence/<YYYYMMDDTHHMMSSZ>.json` every run, including `--dry-run`. The receipt validates against `data/schemas/frontmatter_coherence_receipt.schema.json` before being written. If the receipt contains `refused_rewrites` entries, exit code is 0 (success — some rewrites were completed, others were refused). Operators MUST review refused rewrites to determine whether the frontmatter intent or ledger state needs correction.
+A receipt is emitted under `artifacts/receipts/frontmatter-coherence/<YYYYMMDDTHHMMSSZ>.json` every run, including `--dry-run`. The receipt validates against `data/schemas/frontmatter_coherence_receipt.schema.json` before being written. If the receipt contains `refused_rewrites` entries, exit code is 0 (success — some rewrites were completed, others were refused). Refused rewrites are rendered directly in the command's human-readable output (a `refused rewrites:` count plus a `REFUSED <path> / <reason>` line per entry) in addition to the receipt JSON; a run carrying refusals is never reported as "no drift detected". Operators MUST review refused rewrites to determine whether the frontmatter intent or ledger state needs correction.
 
 ## Options
 

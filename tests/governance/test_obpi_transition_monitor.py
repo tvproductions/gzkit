@@ -8,6 +8,7 @@ from unittest import TestCase
 
 from gzkit.core.obpi_state_machine import CANONICAL_TRANSITIONS, OBPIState
 from gzkit.governance.obpi_transition_monitor import TransitionMonitor
+from gzkit.traceability import covers
 
 
 class TestTransitionMonitor(TestCase):
@@ -95,11 +96,24 @@ class TestTransitionMonitor(TestCase):
                     f"Should refuse self-loop transition for {state}",
                 )
 
+    @covers("REQ-0.31.0-03-01")
     def test_monitor_uses_canonical_transitions(self) -> None:
-        """Verify the monitor is using OBPI-01's CANONICAL_TRANSITIONS."""
-        # Spot-check: ensure monitor's transition set matches canonical transitions
+        """Allowed iff declared: full-matrix biconditional against CANONICAL_TRANSITIONS.
+
+        REQ-0.31.0-03-01: a (from_state, to_state) pair is classified allowed
+        only when it matches a Transition in OBPI-01's CANONICAL_TRANSITIONS;
+        every unmatched pair is refused. Asserted over the complete
+        OBPIState x OBPIState matrix so neither an over-permissive nor an
+        over-restrictive classifier can pass.
+        """
         canonical_pairs = {(t.from_state, t.to_state) for t in CANONICAL_TRANSITIONS}
-        # Test a few known canonical pairs
-        for from_state, to_state in canonical_pairs:
-            with self.subTest(from_state=from_state, to_state=to_state):
-                self.assertTrue(self.monitor.is_allowed(from_state, to_state))
+        for from_state in OBPIState:
+            for to_state in OBPIState:
+                expected = (from_state, to_state) in canonical_pairs
+                with self.subTest(from_state=from_state, to_state=to_state):
+                    self.assertEqual(
+                        self.monitor.is_allowed(from_state, to_state),
+                        expected,
+                        f"is_allowed({from_state}, {to_state}) must be {expected} "
+                        "per CANONICAL_TRANSITIONS membership",
+                    )

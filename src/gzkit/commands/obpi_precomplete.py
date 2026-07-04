@@ -171,6 +171,19 @@ def _check_reconcile_idempotent(project_root: Path) -> CheckResult:
             message=f"{len(receipt.files_rewritten)} file(s) would be rewritten: {files}{suffix}",
             remediation="Run `uv run gz frontmatter reconcile` to clear drift.",
         )
+    if receipt.refused_rewrites:
+        refused = ", ".join(r.path for r in receipt.refused_rewrites[:3])
+        suffix = "..." if len(receipt.refused_rewrites) > 3 else ""
+        return CheckResult(
+            name="reconcile_idempotent",
+            ok=True,
+            message=(
+                f"no pending frontmatter rewrites; "
+                f"{len(receipt.refused_rewrites)} refused rewrite(s) surfaced by the "
+                f"transition monitor: {refused}{suffix} — review refused_rewrites in "
+                f"the reconciliation receipt"
+            ),
+        )
     return CheckResult(
         name="reconcile_idempotent",
         ok=True,

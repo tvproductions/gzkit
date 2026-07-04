@@ -149,6 +149,43 @@ class TestPrecompleteReconcileCheck(unittest.TestCase):
             self.assertFalse(result.ok, msg=result.message)
             self.assertIn("rewritten", result.message.lower())
 
+    def test_refused_rewrites_are_surfaced_not_silently_clean(self) -> None:
+        """A refused-only receipt passes (no deadlock) but MUST name the refusals.
+
+        Coupled-surface coherence for the OBPI-0.31.0-03 receipt contract: a
+        monitor-refused rewrite is not pending drift (fail would deadlock the
+        refused OBPI's own completion), but reporting it as a bare "no pending
+        frontmatter rewrites" hides live ledger/frontmatter disagreement.
+        """
+        from gzkit.ledger import obpi_created_event  # noqa: PLC0415
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+            ledger.append(adr_created_event("ADR-0.1.0", "PRD-TEST-1.0.0", "lite"))
+            # Refused shape: ledger pending, frontmatter hand-marked Completed
+            # (ATTESTED -> DRAFTED is not in CANONICAL_TRANSITIONS).
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-test", "ADR-0.1.0"))
+            config = GzkitConfig.load(root / ".gzkit.json")
+            obpi_dir = (
+                root / config.paths.design_root / "adr" / "pre-release" / "ADR-0.1.0-test" / "obpis"
+            )
+            obpi_dir.mkdir(parents=True)
+            (obpi_dir / "OBPI-0.1.0-01-test.md").write_text(
+                "---\nid: OBPI-0.1.0-01-test\nparent: ADR-0.1.0\n"
+                "item: 1\nlane: lite\nstatus: Completed\n---\n# OBPI\n",
+                encoding="utf-8",
+            )
+            result = _check_reconcile_idempotent(root)
+            self.assertTrue(result.ok, msg=result.message)
+            self.assertIn(
+                "refused",
+                result.message.lower(),
+                "refused rewrites must be named in the check message, not hidden",
+            )
+
 
 class TestPrecompleteLockCheck(unittest.TestCase):
     """OBPI lock MUST exist before `gz obpi complete` runs."""

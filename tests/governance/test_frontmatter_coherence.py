@@ -331,7 +331,7 @@ class ReconciliationLogicTests(unittest.TestCase):
     @covers("REQ-0.0.16-03-08")
     def test_mid_run_ledger_mutation_does_not_leak_into_receipt(self) -> None:
         """Starting-cursor state is pinned; a mid-run ledger append is ignored."""
-        from gzkit.governance import frontmatter_coherence as fc  # noqa: PLC0415
+        import gzkit.governance.frontmatter_coherence as fc  # noqa: PLC0415
 
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -384,7 +384,7 @@ class ReconciliationLogicTests(unittest.TestCase):
     @covers("REQ-0.0.16-03-10")
     def test_partial_failure_receipt_shows_completed_entries(self) -> None:
         """Mid-loop exception still writes a receipt with the N entries completed."""
-        from gzkit.governance import frontmatter_coherence as fc  # noqa: PLC0415
+        import gzkit.governance.frontmatter_coherence as fc  # noqa: PLC0415
 
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -494,6 +494,85 @@ class ReconciliationLogicTests(unittest.TestCase):
                 any("OBPI-0.1.0-01" in p for p in rewritten_paths),
                 f"the refused file must NOT be in files_rewritten, got {rewritten_paths}",
             )
+
+    @covers("REQ-0.31.0-03-02")
+    def test_write_boundary_consults_monitor_refused_skips_write_declared_still_writes(
+        self,
+    ) -> None:
+        """The write boundary consults the monitor: refused edits never reach disk,
+        declared transitions still write (REQ-0.31.0-03-02).
+
+        Contrast pair, distinct from the GHI #348 falsifier shape:
+        - REFUSED: frontmatter hand-marked ``Completed`` while the ledger says
+          ``pending`` (ATTESTED -> DRAFTED, undeclared) — file bytes unchanged,
+          surfaced in ``refused_rewrites``, absent from ``files_rewritten``.
+        - DECLARED: frontmatter ``Active`` while the ledger says ``withdrawn``
+          (IMPLEMENTING -> WITHDRAWN, a declared withdrawal transition) — the
+          rewrite lands and is absent from ``refused_rewrites`` (Requirements
+          item 6: accepted-case behavior is preserved).
+        """
+        from gzkit.governance.frontmatter_coherence import reconcile_frontmatter  # noqa: PLC0415
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+            ledger.append(adr_created_event("ADR-0.1.0", "PRD-TEST-1.0.0", "lite"))
+            # REFUSED case: ledger pending, frontmatter hand-marked Completed
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-test", "ADR-0.1.0"))
+            refused_path = _scaffold_obpi(
+                root,
+                "ADR-0.1.0",
+                "OBPI-0.1.0-01",
+                "---\nid: OBPI-0.1.0-01-test\nparent: ADR-0.1.0\n"
+                "item: 1\nlane: lite\nstatus: Completed\n---\n# OBPI\n",
+            )
+            # DECLARED case: ledger withdrawn, frontmatter still Active
+            ledger.append(obpi_created_event("OBPI-0.1.0-02-test", "ADR-0.1.0"))
+            ledger.append(
+                obpi_withdrawn_event("OBPI-0.1.0-02-test", "ADR-0.1.0", "superseded by test")
+            )
+            accepted_path = _scaffold_obpi(
+                root,
+                "ADR-0.1.0",
+                "OBPI-0.1.0-02",
+                "---\nid: OBPI-0.1.0-02-test\nparent: ADR-0.1.0\n"
+                "item: 2\nlane: lite\nstatus: Active\n---\n# OBPI\n",
+            )
+            refused_pre = hashlib.sha256(refused_path.read_bytes()).hexdigest()
+
+            receipt = reconcile_frontmatter(root, dry_run=False)
+
+            # Refused edit never reached path.write_text: bytes identical
+            self.assertEqual(
+                refused_pre,
+                hashlib.sha256(refused_path.read_bytes()).hexdigest(),
+                "undeclared Completed->Draft rewrite must not mutate the file",
+            )
+            refused_paths = [r.path for r in receipt.refused_rewrites]
+            self.assertTrue(
+                any("OBPI-0.1.0-01" in p for p in refused_paths),
+                f"undeclared rewrite must surface in refused_rewrites, got {refused_paths}",
+            )
+            rewritten_paths = [f.path for f in receipt.files_rewritten]
+            self.assertFalse(
+                any("OBPI-0.1.0-01" in p for p in rewritten_paths),
+                f"refused file must NOT be in files_rewritten, got {rewritten_paths}",
+            )
+            # Declared transition still writes: accepted-case behavior preserved
+            self.assertTrue(
+                any("OBPI-0.1.0-02" in p for p in rewritten_paths),
+                f"declared Active->Withdrawn rewrite must land, got {rewritten_paths}",
+            )
+            self.assertFalse(
+                any("OBPI-0.1.0-02" in p for p in refused_paths),
+                f"declared rewrite must NOT be refused, got {refused_paths}",
+            )
+            # The declared rewrite mutated the file: Active is gone, replaced by
+            # the ledger-wins vocab term for the withdrawn state.
+            accepted_text = accepted_path.read_text(encoding="utf-8")
+            self.assertNotIn("status: Active", accepted_text)
 
 
 if __name__ == "__main__":

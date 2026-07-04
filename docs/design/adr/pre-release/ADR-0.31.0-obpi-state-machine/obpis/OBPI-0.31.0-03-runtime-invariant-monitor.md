@@ -3,7 +3,14 @@ id: OBPI-0.31.0-03-runtime-invariant-monitor
 parent: ADR-0.31.0-obpi-state-machine
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
+req_atomic:
+  - REQ-0.31.0-03-01  # One pure classifier module + its unit-test file — one indivisible authoring unit (no I/O, single class).
+  - REQ-0.31.0-03-02  # One integration edit at the single write chokepoint + one contrast test — indivisible (refusal and receipt surfacing land together or not at all).
+  - REQ-0.31.0-03-03  # Single landing-falsifier regression test reproducing the GHI #348 shape — one indivisible test-authoring unit.
+  - REQ-0.31.0-03-04  # Structural fence (no labor unit — a constraint audited via parent-ADR Boundary Invariants, not subdividable work).
+  - REQ-0.31.0-03-05  # Single manpage edit documenting the refusal path — one indivisible SUPPORT authoring unit.
+  - REQ-0.31.0-03-06  # Single Implementation Summary quotation written at completion ceremony — one indivisible SUPPORT authoring unit.
 ---
 
 # OBPI-0.31.0-03-runtime-invariant-monitor: Runtime Invariant Monitor
@@ -13,7 +20,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.31.0-obpi-state-machine/ADR-0.31.0-obpi-state-machine.md`
 - **Checklist Item:** #3 - "OBPI-0.31.0-03: **runtime-invariant-monitor** — Runtime invariant monitor on the artifact-graph read/write boundary that refuses silent `status:` frontmatter drift (GHI #348 class) in production — the pre-registered landing falsifier"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -54,6 +61,22 @@ declared transition backing it.
   assert it is refused, not silently applied.
 - `docs/user/manpages/frontmatter-reconcile.md` — **MODIFY**: document the
   new refusal path and its exit-code/output contract.
+- `src/gzkit/commands/frontmatter_reconcile.py` — **MODIFY** (coupled-surface
+  amendment, 2026-07-04 Step 4b adversary finding, DO IT RIGHT 1a): the CLI
+  renderer consumes `ReconciliationReceipt` and MUST render
+  `refused_rewrites` — a run carrying refusals must never print "no drift
+  detected". Operator ratification of this amendment occurs at Gate 5.
+- `src/gzkit/commands/obpi_precomplete.py` — **MODIFY** (same coupled-surface
+  amendment): `_check_reconcile_idempotent` consumes the receipt and MUST
+  surface refused rewrites in its check message (pass-with-note; a hard fail
+  would deadlock the refused OBPI's own completion).
+- `src/gzkit/commands/validate_frontmatter.py` — **READ-ONLY IMPORT SURFACE**:
+  imported by the REQ tests; declared here for allowlist/import-scan
+  coherence, no edits.
+- `tests/commands/test_frontmatter_reconcile.py` — **MODIFY**: renderer
+  output-form fixture tests for the refusal section.
+- `tests/commands/test_obpi_precomplete.py` — **MODIFY**: refused-rewrites
+  surfacing test for `_check_reconcile_idempotent`.
 - `docs/design/adr/pre-release/ADR-0.31.0-obpi-state-machine/ADR-0.31.0-obpi-state-machine.md` — parent ADR (Boundary Invariants already present; no edit expected).
 - `docs/design/adr/pre-release/ADR-0.31.0-obpi-state-machine/**` — parent ADR package scope (this brief; evidence).
 
@@ -83,10 +106,9 @@ declared transition backing it.
 1. REQUIREMENT: Build `src/gzkit/governance/obpi_transition_monitor.py` — a pure classifier that, given a current `status` and a requested `status`, returns whether the transition is a member of OBPI-01's `CANONICAL_TRANSITIONS`.
 2. REQUIREMENT: Hook the monitor into `rewrite_governed_keys_in_place` (or its caller `reconcile_frontmatter`) in `src/gzkit/governance/frontmatter_coherence.py` so an undeclared `status` rewrite is refused before the write happens — not merely logged after the fact.
 3. REQUIREMENT: The landing falsifier MUST be proven live: a regression test reproducing the GHI #348 shape (hand-marked `Withdrawn`, ledger has no matching completion/abandonment event, reconciler would otherwise rewrite to `pending`) MUST demonstrate the monitor refuses the write.
-4. NEVER: Modify `src/gzkit/core/obpi_state_machine.py` — consume the OBPI-01 model, do not alter it (Boundary Invariant #1).
-5. NEVER: Extend `src/gzkit/governance/invariants.py` with this monitor's logic — that module is an unrelated ADR-0.0.37 concept (see Denied Paths).
-6. ALWAYS: Reconcile this brief against the parent ADR § Decision item 4 and § Target Scope before implementation; quote both verbatim into Implementation Summary.
-7. ALWAYS: Preserve `reconcile_frontmatter`'s existing behavior for every rewrite that IS backed by a declared transition — this OBPI adds a refusal path, it does not change accepted-case behavior.
+4. NEVER: Modify `src/gzkit/core/obpi_state_machine.py` (consume the OBPI-01 model, do not alter it — Boundary Invariant #1) or extend `src/gzkit/governance/invariants.py` with this monitor's logic (that module is an unrelated ADR-0.0.37 concept — see Denied Paths).
+5. ALWAYS: Reconcile this brief against the parent ADR § Decision item 4 and § Target Scope before implementation; quote both verbatim into Implementation Summary.
+6. ALWAYS: Preserve `reconcile_frontmatter`'s existing behavior for every rewrite that IS backed by a declared transition — this OBPI adds a refusal path, it does not change accepted-case behavior.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -101,8 +123,7 @@ declared transition backing it.
 
 **Existing Code (read; do NOT modify unless named in Allowed Paths):**
 
-- [x] `src/gzkit/governance/frontmatter_coherence.py:151-188` — `rewrite_governed_keys_in_place`, the confirmed single write chokepoint for governed keys (`_GOVERNED_KEYS = {"id", "parent", "lane", "status"}` at line ~29); this is where GHI #348's silent rewrite actually landed.
-- [x] `src/gzkit/governance/frontmatter_coherence.py:248` — `reconcile_frontmatter`, the orchestrator that computes ledger-wins diffs and calls the write function.
+- [x] `src/gzkit/governance/frontmatter_coherence.py` — `rewrite_governed_keys_in_place` (line ~243 post-implementation), the confirmed single write chokepoint for governed keys (`_GOVERNED_KEYS = {"id", "parent", "lane", "status"}` at line ~31); this is where GHI #348's silent rewrite actually landed. Also `reconcile_frontmatter` (line ~396 post-implementation), the orchestrator that computes ledger-wins diffs and calls the write function.
 - [x] `src/gzkit/governance/invariants.py` — read in full; confirmed unrelated (`ConstitutionalInvariant`, ADR-0.0.37 content-rendering registry) — grounds the Denied Paths correction above.
 - [x] `src/gzkit/core/obpi_state_machine.py` — OBPI-01's delivered `OBPIState`, `Transition`, `CANONICAL_TRANSITIONS` (the model this OBPI consumes).
 - [x] `tests/governance/test_frontmatter_coherence.py` — existing test shape for the write-boundary function, to extend with the falsifier regression test.
@@ -177,7 +198,7 @@ uv run gz frontmatter reconcile --dry-run
 - [ ] REQ-0.31.0-03-03 [BEHAVIOR]: the landing falsifier — a regression test reproducing the exact GHI #348 shape (hand-marked `Withdrawn`, no matching ledger event, reconciler would otherwise ledger-wins rewrite to `pending`) — demonstrates the monitor refuses the write in this exact scenario. Proven by a `@covers(REQ-0.31.0-03-03)` test.
 - [ ] REQ-0.31.0-03-04 [STRUCTURAL-FENCE]: OBPI-03 does not modify `src/gzkit/core/obpi_state_machine.py` and does not extend `src/gzkit/governance/invariants.py` — anchored in the parent ADR `## Boundary Invariants` #1.
 - [ ] REQ-0.31.0-03-05 [SUPPORT]: `docs/user/manpages/frontmatter-reconcile.md` is updated to document the refusal path — `gz validate --documents` passing AND an `artifact_edited` ledger event citing this path.
-- [ ] REQ-0.31.0-03-06 [SUPPORT]: this brief's `### Implementation Summary` quotes the parent ADR § Decision item 4 verbatim (Requirements item 6) — proven by `uv run gz validate --documents` passing AND an `artifact_edited` ledger event citing this brief file.
+- [ ] REQ-0.31.0-03-06 [SUPPORT]: this brief's `### Implementation Summary` quotes the parent ADR § Decision item 4 verbatim (Requirements item 5) — proven by `uv run gz validate --documents` passing AND an `artifact_edited` ledger event citing this brief file.
 
 ## Completion Checklist
 
@@ -232,28 +253,45 @@ uv run gz frontmatter reconcile --dry-run
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+The landing falsifier reproduces the exact GHI #348 shape live and passes: `uv run -m unittest tests.governance.test_frontmatter_coherence.ReconciliationLogicTests.test_landing_falsifier_ghi_348_undeclared_status_transition_refused -v` asserts pre/post SHA-256 byte equality (refused edit never reaches path.write_text), refusal surfaced in receipt.refused_rewrites, and absence from files_rewritten. Observed live on this brief itself: `uv run gz frontmatter reconcile --dry-run` renders "refused rewrites: 1 / REFUSED docs/design/adr/pre-release/ADR-0.31.0-obpi-state-machine/obpis/OBPI-0.31.0-03-runtime-invariant-monitor.md / Invalid OBPI status transition: Draft → Active (not in CANONICAL_TRANSITIONS)" instead of the pre-fix false "no drift detected". Receipts: arb-step-unittest-63e9e1c02669438d984f1befb173a54b (6765/6765), arb-ruff-a56b409511f1409786ee4d65498f6114, arb-step-typecheck-c65f9934eb134711a4c4e6626473cc59, arb-step-mkdocs-0862cee475ce4b0f8d55f0c169f9bbd6.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Parent ADR § Decision item 4 (verbatim): "A single invariant monitor. Every read or write to the artifact graph passes through one monitor that asserts: (a) the operation names a transition declared in (2); (b) preconditions are satisfied; (c) the witness requirement is met. A frontmatter hand-edit that is not backed by a declared transition is either rejected (no matching transition allowed) or auto-emits the transition (so receipts and state never disagree). Today the reconciler silently picks a winner; the monitor would refuse to let them disagree in the first place."
+- Parent ADR § Target Scope (verbatim): "The load-bearing monitor on the artifact-graph read/write boundary: it classifies each state-affecting operation against a declared transition, rejects undeclared ones, and refuses a silent `status:` frontmatter drift (the GHI #348 class) in production config. This refusal is the constellation's pre-registered landing falsifier... and gates Phase 2 / HULL."
+- Files created/modified: created src/gzkit/governance/obpi_transition_monitor.py (pure classifier) and tests/governance/test_obpi_transition_monitor.py; modified src/gzkit/governance/frontmatter_coherence.py (monitor consultation at the write chokepoint; refused_rewrites on the receipt), src/gzkit/commands/frontmatter_reconcile.py (REFUSED lines rendered; no false "no drift detected"), src/gzkit/commands/obpi_precomplete.py (reconcile_idempotent pass-with-note naming refusals), tests/commands/test_frontmatter_reconcile.py, tests/commands/test_obpi_precomplete.py, tests/governance/test_frontmatter_coherence.py, docs/user/manpages/frontmatter-reconcile.md, data/schemas/frontmatter_coherence_receipt.schema.json.
+- Tests added: 9 TransitionMonitor classifier tests including the full 8x8 biconditional (@covers REQ-0.31.0-03-01); write-boundary refused-vs-declared contrast test (@covers REQ-0.31.0-03-02); GHI #348 landing falsifier (@covers REQ-0.31.0-03-03); 3 refusal-visibility tests (renderer output-form pair + precomplete surfacing). Full suite 6765/6765.
+- Date completed: 2026-07-04
+- Attestation status: operator-verbatim conversational Gate 5 ("keep all four, attest completed"), attestor g0
+- Defects noted: STATUS_VOCAB_MAPPING cannot express PLANNED/VERIFIED/SYNCED, so multi-step ledger-wins catch-up is permanently refused (visibly); tracked in ## Tracked Defects as a correction under ADR-0.31.0's deferred transition-emitter migration.
 
 ## Tracked Defects
 
-_No defects tracked._
+- **Vocabulary/state-machine impedance mismatch (correction under
+  ADR-0.31.0, surfaced by Step 4b adversarial validation 2026-07-04):**
+  `STATUS_VOCAB_MAPPING` has no frontmatter term for `PLANNED`, `VERIFIED`,
+  or `SYNCED`, so ordinary multi-step ledger-wins catch-up (`Draft → Active`,
+  `Active → Completed`) can never match a single declared adjacent transition
+  and is permanently refused by the monitor. Refusals are now operator-visible
+  (CLI `REFUSED` lines; precomplete pass-with-note — this OBPI's coupled-surface
+  amendment), so the disagreement is surfaced, not silent; but resolving the
+  mismatch itself belongs to the parent ADR's deferred-in-keel
+  transition-emitter migration ("Migrate `gz obpi complete` / `gz obpi
+  reconcile` / `gz frontmatter reconcile` from batch-reconciler shape to
+  transition-emitter shape"). Routed per operator doctrine as a correction
+  under ADR-0.31.0, never an enhancement. Also logged in
+  `.gzkit/insights/agent-insights.jsonl`.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: keep all four, attest completed — Gate 5 for OBPI-0.31.0-03-runtime-invariant-monitor (Heavy lane): operator ratified all four session decisions (--from=verify recovery entry over commit d864140b; brief drift repairs including the coupled-surface allowlist amendment; refusal-visibility fix with pass-with-note precomplete; vocabulary mismatch routed as a correction under ADR-0.31.0). Evidence: full suite 6765/6765 pass (receipt arb-step-unittest-63e9e1c02669438d984f1befb173a54b), lint clean (receipt arb-ruff-a56b409511f1409786ee4d65498f6114), typecheck clean (receipt arb-step-typecheck-c65f9934eb134711a4c4e6626473cc59), mkdocs strict pass (receipt arb-step-mkdocs-0862cee475ce4b0f8d55f0c169f9bbd6); landing falsifier refuses the GHI #348 shape live; Step 4b independent adversary verdict NOT-REFUTED after the refusal-visibility fix.
+- Date: 2026-07-04
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-04
 
 **Evidence Hash:** -

@@ -1,0 +1,112 @@
+{
+  "obpi_id": "OBPI-0.31.0-03-runtime-invariant-monitor",
+  "timestamp": "2026-07-04T01:27:55.985164+00:00",
+  "verdict": "PASS",
+  "plan_file": "runtime-invariant-monitor-OBPI-0.31.0-03.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-03-extend-payload-arb-receipts",
+      "contested_paths": [
+        "docs/user/manpages/frontmatter-reconcile.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-01-author-layer-order-manifest",
+      "contested_paths": [
+        "src/gzkit/governance/obpi_transition_monitor.py",
+        "src/gzkit/governance/frontmatter_coherence.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-03-migrate-back-edges-drain-baseline",
+      "contested_paths": [
+        "src/gzkit/governance/obpi_transition_monitor.py",
+        "src/gzkit/governance/frontmatter_coherence.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.65",
+      "sibling_obpi": "OBPI-0.0.65-03-gz-handoff-cli-verb",
+      "contested_paths": [
+        "docs/user/manpages/frontmatter-reconcile.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-01-tdd-receipt-stream-hub",
+      "contested_paths": [
+        "docs/user/manpages/frontmatter-reconcile.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-06-subsume-pool-management-into-gz-next",
+      "contested_paths": [
+        "docs/user/manpages/frontmatter-reconcile.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-05-solved-problem-pattern-corpus-read-surface",
+      "contested_paths": [
+        "docs/user/manpages/frontmatter-reconcile.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-03-gz-metrics-read-view",
+      "contested_paths": [
+        "docs/user/manpages/frontmatter-reconcile.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-04-queryability-search-and-insights-query",
+      "contested_paths": [
+        "docs/user/manpages/frontmatter-reconcile.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-02-gz-next-cap22-and-cap08-mode",
+      "contested_paths": [
+        "docs/user/manpages/frontmatter-reconcile.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/user/manpages/frontmatter-reconcile.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-02-storybook-cli",
+      "contested_paths": [
+        "docs/user/manpages/frontmatter-reconcile.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-03-storybook-validator",
+      "contested_paths": [
+        "src/gzkit/governance/obpi_transition_monitor.py",
+        "src/gzkit/governance/frontmatter_coherence.py",
+        "docs/user/manpages/frontmatter-reconcile.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.16",
+      "sibling_obpi": "OBPI-0.0.16-03-chore-registration",
+      "contested_paths": [
+        "src/gzkit/governance/frontmatter_coherence.py",
+        "tests/governance/test_frontmatter_coherence.py"
+      ]
+    }
+  ]
+}

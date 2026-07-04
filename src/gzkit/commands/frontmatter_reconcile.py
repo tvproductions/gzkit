@@ -81,14 +81,18 @@ def _render_human_receipt(receipt: object, *, dry_run: bool) -> None:
     console.print(f"  ledger cursor:     {receipt.ledger_cursor}")
     console.print(f"  started / ended:   {receipt.run_started_at} / {receipt.run_completed_at}")
     console.print(f"  files rewritten:   {len(receipt.files_rewritten)}")
+    console.print(f"  refused rewrites:  {len(receipt.refused_rewrites)}")
     console.print(f"  pool ADRs skipped: {len(receipt.skipped)}")
-    if not receipt.files_rewritten:
+    if not receipt.files_rewritten and not receipt.refused_rewrites:
         console.print("  [dim]no drift detected[/dim]")
         return
     for rewrite in receipt.files_rewritten:
         console.print(f"    {rewrite.path}")
         for diff in rewrite.diffs:
             console.print(f"      {diff.field}: {diff.before!r} -> {diff.after!r}")
+    for refused in receipt.refused_rewrites:
+        console.print(f"    [yellow]REFUSED[/yellow] {refused.path}")
+        console.print(f"      {refused.reason}")
 
 
 __all__ = ["frontmatter_reconcile_cmd"]

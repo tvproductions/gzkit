@@ -110,5 +110,65 @@ class TestFrontmatterReconcileCli(unittest.TestCase):
             self.assertIn("Nonsense", result.output)
 
 
+class TestRenderRefusedRewrites(unittest.TestCase):
+    """Output-form fixture tests: refused rewrites MUST be operator-visible.
+
+    Coupled-surface coherence for the OBPI-0.31.0-03 receipt contract: the
+    renderer is a consumer of ``ReconciliationReceipt.refused_rewrites`` and
+    must never report a receipt carrying refusals as "no drift detected".
+    """
+
+    @staticmethod
+    def _receipt(refused: bool):
+        from gzkit.governance.frontmatter_coherence import (  # noqa: PLC0415
+            ReconciliationReceipt,
+            RefusedRewrite,
+        )
+
+        return ReconciliationReceipt(
+            ledger_cursor="sha256:" + ("0" * 64),
+            run_started_at="2026-07-04T00:00:00+00:00",
+            run_completed_at="2026-07-04T00:00:01+00:00",
+            files_rewritten=[],
+            skipped=[],
+            refused_rewrites=(
+                [
+                    RefusedRewrite(
+                        path="docs/design/adr/pre-release/X/obpis/OBPI-9.9.9-01-x.md",
+                        reason="Invalid OBPI status transition: Draft -> Active",
+                    )
+                ]
+                if refused
+                else []
+            ),
+            dry_run=True,
+        )
+
+    def test_refused_rewrites_are_rendered_and_not_reported_as_clean(self) -> None:
+        from gzkit.commands.common import console  # noqa: PLC0415
+        from gzkit.commands.frontmatter_reconcile import _render_human_receipt  # noqa: PLC0415
+
+        with console.capture() as capture:
+            _render_human_receipt(self._receipt(refused=True), dry_run=True)
+        output = capture.get()
+        self.assertIn("refused", output.lower(), "refusal count/section must be rendered")
+        self.assertIn("OBPI-9.9.9-01-x.md", output, "refused path must be rendered")
+        self.assertIn("Invalid OBPI status transition", output, "refusal reason must be rendered")
+        self.assertNotIn(
+            "no drift detected",
+            output.lower(),
+            "a receipt carrying refusals must never be reported as clean",
+        )
+
+    def test_clean_receipt_still_reports_no_drift(self) -> None:
+        from gzkit.commands.common import console  # noqa: PLC0415
+        from gzkit.commands.frontmatter_reconcile import _render_human_receipt  # noqa: PLC0415
+
+        with console.capture() as capture:
+            _render_human_receipt(self._receipt(refused=False), dry_run=True)
+        output = capture.get()
+        self.assertIn("no drift detected", output.lower())
+
+
 if __name__ == "__main__":
     unittest.main()
