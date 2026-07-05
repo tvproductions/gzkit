@@ -1,0 +1,19 @@
+                                ADR Overview
+╭────────────┬───────┬───────────┬────────────────┬──────┬──────────┬───────╮
+│ ADR        │ Lane  │ Lifecycle │ Closeout Phase │ OBPI │ Closeout │ QC    │
+├────────────┼───────┼───────────┼────────────────┼──────┼──────────┼───────┤
+│ ADR-0.31.0 │ heavy │ Completed │ attested       │ 3/3  │ READY    │ READY │
+╰────────────┴───────┴───────────┴────────────────┴──────┴──────────┴───────╯
+                                     OBPIs
+╭────┬─────────────────────────────────┬────────────────────┬───────────┬──────╮
+│ #  │ OBPI ID                         │ State              │ Brief     │ Done │
+├────┼─────────────────────────────────┼────────────────────┼───────────┼──────┤
+│ 01 │ OBPI-0.31.0-01-state-transition │ attested_completed │ completed │ yes  │
+│    │ -models                         │                    │           │      │
+│ 02 │ OBPI-0.31.0-02-withdraw-superse │ attested_completed │ completed │ yes  │
+│    │ de-transitions                  │                    │           │      │
+│ 03 │ OBPI-0.31.0-03-runtime-invarian │ attested_completed │ completed │ yes  │
+│    │ t-monitor                       │                    │           │      │
+╰────┴─────────────────────────────────┴────────────────────┴───────────┴──────╯
+Withdrawn (hidden): 3 OBPI(s) excluded above; ledger history preserved. See the
+ADR Checklist for disposition.

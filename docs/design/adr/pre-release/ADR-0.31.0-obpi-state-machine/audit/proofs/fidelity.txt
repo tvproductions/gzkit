@@ -1,0 +1,17 @@
+gz adr fidelity: ADR-0.31.0
+  Assertions: 2
+
+  PASS  Withdrawal is a witnessed transition validated against
+CANONICAL_TRANSITIONS: a legal predecessor state passes (non-mutating dry-run).
+        command:  uv run gz obpi withdraw OBPI-0.31.0-01-state-transition-models
+--reason fidelity-assertion --attestor g0 --dry-run
+        expected: 0  observed: 0
+
+  PASS  The witness requirement is transport-agnostic and fail-closed: an empty
+attestor is rejected with no ledger write (no TTY/PTY, only a human witnesses).
+        command:  uv run gz obpi withdraw OBPI-0.31.0-01-state-transition-models
+--reason fidelity-assertion --attestor "" --dry-run
+        expected: 1  observed: 1
+
+  Summary: 2 pass, 0 fail
+fidelity rc=0
