@@ -3,6 +3,7 @@
   "gzkit_version": "0.28.1",
   "surfaces": {
     "personas": [
+      "flight-test-engineer.md",
       "implementer.md",
       "main-session.md",
       "narrator.md",
@@ -71,6 +72,7 @@
       "gz-context-diet/SKILL.md",
       "gz-deps-upgrade/SKILL.md",
       "gz-design/SKILL.md",
+      "gz-flighttest/SKILL.md",
       "gz-foundation-triage/SKILL.md",
       "gz-gates/SKILL.md",
       "gz-governance/SKILL.md",

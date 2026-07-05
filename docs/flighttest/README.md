@@ -169,18 +169,50 @@ flight log, not here.
 
 ## 8. The feedback loop (why this exists)
 
-The program closes on **design feedback**, not on a passed manifest. After each
-sortie the FTE drafts a debrief; the Test director rules on it:
+The whole engagement is an instrument pointed at gzkit: it runs **in the target
+repo**, and its output is **feedback that refines gzkit** — not a built target.
+The program closes on that feedback, not on a passed manifest. After each sortie
+the FTE drafts a debrief; the Test director rules on it:
 
 1. **Debrief** — what the black box showed vs. what the card predicted.
 2. **Design signal** — did the workflow's *design* prove sound, awkward, or
    wrong under real execution? Awkward-but-correct is still signal.
-3. **Route the signal** — defect → GHI; design gap → the owning ADR as a
-   correction (per the operator's *correction-vs-enhancement* doctrine: a gap
-   between shipped surface and declared intent is a correction, not an
-   enhancement); doctrine gap → the corpus.
+3. **Route the signal cross-repo to gzkit** — because the sortie flies in the
+   target, gzkit-directed feedback is filed **against the gzkit repo** via
+   `gz issue file` (the `gz-issue-file` skill), never a target-local
+   `/ghi-author`. A gap between gzkit's shipped surface and its declared intent
+   is a **correction** to the owning gzkit ADR, not an enhancement (operator
+   *correction-vs-enhancement* doctrine); a doctrine gap routes to gzkit's
+   corpus. A purely target-local defect stays in the target.
 4. **Re-fly on change** — any gzkit design change prompted by a sortie re-opens
    the affected sortie so the fix is itself proven.
 
 A sortie is *complete* when its debrief is ruled on and its squawks are tracked
 — not when it "passes."
+
+---
+
+## 9. Running an engagement — campaign, skill, templates
+
+This document is the **program** (target-agnostic doctrine). An *engagement*
+flies it against one target, and factors into layers — the same
+steering/spine/propellant split gzkit uses elsewhere. **The engagement runs in
+the target repo, where gzkit is the system-under-test; only the doctrine and the
+shipped machinery originate in gzkit.**
+
+| Layer | Authored in | Operates / lives in | What it is |
+|---|---|---|---|
+| **Program** (doctrine) | gzkit `docs/flighttest/` | — (reference) | The methodology: charter, card template, manifest. Target-agnostic. |
+| **Propellant** (the skill) | gzkit `.gzkit/skills/gz-flighttest/` | the **target repo** (ships via `gz init`) | `gz-flighttest` drives **one sortie per run**. Persona: `flight-test-engineer`. |
+| **Campaign instance** (steering) | scaffolded from [`templates/campaign-instance.md`](templates/campaign-instance.md) | the **target repo** | Names the substrate, sequences sorties as a top-down checklist, operator-gated. |
+| **Flight log** (truth) | scaffolded from [`templates/flight-log.md`](templates/flight-log.md) | the **target repo** | Append-only Layer-2 record per sortie — card, Go/No-Go, black box, Chase verdict, debrief, squawks. |
+| **Feedback** (the product) | — | filed **cross-repo against gzkit** | gzkit-directed squawks via `gz issue file`; the yield that refines gzkit. |
+
+**Distinct work-stream.** A flight-test campaign governs *engagements against a
+target*; it never contends with gzkit's Build-to-1.0 Magna Carta, which rules
+gzkit's own build sessions. The campaign checklist is Layer-3 — a view of the
+flight log, which is truth.
+
+**Roles reminder:** the **test director is the human operator** (Go/No-Go +
+Gate-5), never an agent frame; the `flight-test-engineer` persona flies; the
+`spec-reviewer`/`quality-reviewer` frames are the Chase.
