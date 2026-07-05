@@ -137,6 +137,7 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/gz-agent-sync`](gz-agent-sync.md) | Synchronize generated control surfaces and skill mirrors |
 | [`/gz-check-config-paths`](gz-check-config-paths.md) | Validate configured and manifest path coherence |
 | [`/gz-competitor-radar`](gz-competitor-radar.md) | Track competitor status, trajectory, and gzkit improvement opportunities |
+| [`/gz-flighttest`](gz-flighttest.md) | Fly one flight-test sortie against a target repo to prove a gzkit workflow and harvest refinement feedback |
 | [`/gz-migrate-semver`](gz-migrate-semver.md) | Record semver identifier migration events |
 | [`/gz-register-adrs`](gz-register-adrs.md) | Register existing ADR files missing from ledger state |
 | [`/gz-patch-release`](gz-patch-release.md) | Orchestrate the GHI-driven patch release ceremony |

@@ -597,8 +597,8 @@ class TestInitPersonasScaffoldingObpi10(unittest.TestCase):
 
     @covers("REQ-0.0.32-10-04")
     @covers("REQ-0.0.32-10-07")
-    def test_fresh_init_produces_6_canonical_persona_files(self) -> None:
-        """A fresh gz init produces 6 canonical persona files at .gzkit/personas/."""
+    def test_fresh_init_produces_7_canonical_persona_files(self) -> None:
+        """A fresh gz init produces 7 canonical persona files at .gzkit/personas/."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(main, ["init"])
@@ -608,11 +608,12 @@ class TestInitPersonasScaffoldingObpi10(unittest.TestCase):
             persona_files = list(personas_dir.glob("*.md"))
             self.assertEqual(
                 len(persona_files),
-                6,
-                f"Expected 6 canonical persona files, got {len(persona_files)}: "
+                7,
+                f"Expected 7 canonical persona files, got {len(persona_files)}: "
                 f"{[f.name for f in persona_files]}",
             )
             expected_slugs = {
+                "flight-test-engineer",
                 "implementer",
                 "main-session",
                 "narrator",
@@ -636,9 +637,9 @@ class TestInitPersonasScaffoldingObpi10(unittest.TestCase):
             personas_dir = project_root / ".gzkit" / "personas"
             personas_dir.mkdir(parents=True)
             (personas_dir / "main-session.md").write_bytes(b"existing content")
-            # scaffold_core_personas(skip_existing=True) must add the missing 5
+            # scaffold_core_personas(skip_existing=True) must add the missing 6
             created = scaffold_core_personas(project_root, skip_existing=True)
-            self.assertEqual(len(created), 5)
+            self.assertEqual(len(created), 6)
             # The pre-existing main-session.md must be preserved
             self.assertEqual((personas_dir / "main-session.md").read_bytes(), b"existing content")
 

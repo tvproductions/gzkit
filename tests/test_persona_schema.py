@@ -675,7 +675,7 @@ class TestExistingPersonasValidate(unittest.TestCase):
     """REQ-0.0.13-01-03: All 6 shipped persona files validate against schema."""
 
     _PERSONA_DIR = Path(".gzkit/personas")
-    _EXPECTED_COUNT = 6
+    _EXPECTED_COUNT = 7
 
     @covers("REQ-0.0.13-01-03")
     def test_all_shipped_personas_pass_schema(self) -> None:

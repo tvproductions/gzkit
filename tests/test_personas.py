@@ -167,10 +167,11 @@ class TestPersonasScaffolderObpi10(unittest.TestCase):
     """Unit tests for CORE_PERSONAS, _iter_canonical_persona_slugs, scaffold_core_personas."""
 
     @covers("REQ-0.0.32-10-01")
-    def test_core_personas_enumerates_all_6_slugs(self) -> None:
+    def test_core_personas_enumerates_all_7_slugs(self) -> None:
         from gzkit.personas import CORE_PERSONAS  # noqa: PLC0415
 
         expected = {
+            "flight-test-engineer",
             "implementer",
             "main-session",
             "narrator",
@@ -179,14 +180,14 @@ class TestPersonasScaffolderObpi10(unittest.TestCase):
             "spec-reviewer",
         }
         self.assertEqual(set(CORE_PERSONAS), expected)
-        self.assertEqual(len(CORE_PERSONAS), 6)
+        self.assertEqual(len(CORE_PERSONAS), 7)
 
     @covers("REQ-0.0.32-10-02")
-    def test_iter_canonical_persona_slugs_returns_6_entries(self) -> None:
+    def test_iter_canonical_persona_slugs_returns_7_entries(self) -> None:
         from gzkit.personas import _iter_canonical_persona_slugs  # noqa: PLC0415
 
         slugs = list(_iter_canonical_persona_slugs())
-        self.assertEqual(len(slugs), 6)
+        self.assertEqual(len(slugs), 7)
         for entry in slugs:
             self.assertTrue(entry.name.endswith(".md"), f"Expected .md file, got {entry.name}")
 
@@ -200,7 +201,7 @@ class TestPersonasScaffolderObpi10(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
             created = scaffold_core_personas(project_root)
-            self.assertEqual(len(created), 6)
+            self.assertEqual(len(created), 7)
             # Verify byte-identical content from package
             root = importlib.resources.files("gzkit.personas")
             for path in created:
@@ -227,8 +228,8 @@ class TestPersonasScaffolderObpi10(unittest.TestCase):
             self.assertNotIn("main-session.md", created_names)
             # Content must be preserved
             self.assertEqual((personas_dir / "main-session.md").read_bytes(), custom_content)
-            # Other 5 personas must be created
-            self.assertEqual(len(created), 5)
+            # Other 6 personas must be created
+            self.assertEqual(len(created), 6)
 
     @covers("REQ-0.0.32-10-08")
     def test_manpage_and_runbook_mention_personas_scaffolding(self) -> None:
@@ -260,7 +261,7 @@ class TestPersonasScaffolderObpi10(unittest.TestCase):
         )
 
         self.assertIsInstance(CORE_PERSONAS, list)
-        self.assertEqual(len(CORE_PERSONAS), 6)
+        self.assertEqual(len(CORE_PERSONAS), 7)
         self.assertTrue(callable(_iter_canonical_persona_slugs))
         self.assertTrue(callable(scaffold_core_personas))
 

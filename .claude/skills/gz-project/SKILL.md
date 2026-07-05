@@ -18,5 +18,6 @@ model: haiku
 | constitution | `gz-constitute` |
 | status | `gz-status` |
 | competitor radar | `gz-competitor-radar` |
+| flight test | `gz-flighttest` |
 
 Invoke the matched skill directly. See `gz-skill-router` for the full catalog.
