@@ -144,3 +144,40 @@ class TestExemplarComposition(unittest.TestCase):
         # Implementer body has behavioral anchors with descriptions
         self.assertIn("You are methodical:", frame)
         self.assertIn("You are test-first:", frame)
+
+
+class TestVendorPersonaTrailingNewline(unittest.TestCase):
+    """Vendor-rendered persona mirrors must be well-formed POSIX text files.
+
+    ``render_persona_for_vendor`` output is written verbatim to the vendor
+    mirror files (``.claude``/``.agents``/``.github`` personas). The composers
+    join sections with ``"\\n\\n".join(...)`` and never appended a final
+    newline, so every rendered vendor persona ended without a trailing ``\\n``
+    — which the ``end-of-file-fixer`` pre-commit hook then re-fixes on every
+    persona-touching commit (surfaced 2026-07-05). A conforming text file ends
+    with exactly one trailing newline.
+    """
+
+    _FM = PersonaFrontmatter(
+        name="tester",
+        traits=["methodical"],
+        anti_traits=["shallow-compliance"],
+        grounding="I verify every claim with evidence.",
+    )
+
+    def test_registered_vendor_renders_end_with_single_newline(self) -> None:
+        from gzkit.personas import VENDOR_ADAPTERS, render_persona_for_vendor
+
+        for vendor in VENDOR_ADAPTERS:
+            with self.subTest(vendor=vendor):
+                rendered = render_persona_for_vendor(vendor, self._FM)
+                self.assertTrue(rendered.endswith("\n"), f"{vendor}: missing trailing newline")
+                self.assertFalse(rendered.endswith("\n\n"), f"{vendor}: multiple trailing newlines")
+
+    def test_unregistered_vendor_fallback_normalizes_trailing_newline(self) -> None:
+        from gzkit.personas import render_persona_for_vendor
+
+        # Body without a trailing newline must still yield exactly one.
+        rendered = render_persona_for_vendor("unknown-vendor", self._FM, body="# Body")
+        self.assertTrue(rendered.endswith("\n"))
+        self.assertFalse(rendered.endswith("\n\n"))

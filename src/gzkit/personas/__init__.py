@@ -566,11 +566,15 @@ def render_persona_for_vendor(vendor: str, fm: PersonaFrontmatter, body: str = "
 
     Looks up the vendor in ``VENDOR_ADAPTERS``.  If no adapter is registered,
     returns the raw canonical markdown as fallback (REQ-0.0.13-04-04).
+
+    The rendered frame is normalized to end with exactly one trailing newline.
+    The section composers join with ``"\n\n".join(...)`` and omit the final
+    newline, which left every written vendor persona mirror re-flagged by the
+    ``end-of-file-fixer`` pre-commit hook on each persona-touching commit.
     """
     adapter = VENDOR_ADAPTERS.get(vendor)
-    if adapter is not None:
-        return adapter(fm, body)
-    return _rebuild_raw_persona(fm, body)
+    rendered = adapter(fm, body) if adapter is not None else _rebuild_raw_persona(fm, body)
+    return rendered.rstrip("\n") + "\n"
 
 
 # ---------------------------------------------------------------------------
