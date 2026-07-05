@@ -120,13 +120,19 @@ The two engines detail below; every unit of work is one or the other.
 
 ### 3a. Forward engine — pool → feature, through the airlock
 
-- **Taxonomy reset (operator ruling 2026-06-20, "move everything to pool"):** the
-  `foundation` kind is **abolished**. **Everything drops to pool** (inert
-  inventory). Two kinds remain: **pool** = universal backlog/origin; **feature** =
+- **Taxonomy reset (operator ruling 2026-06-20 "move everything to pool", refined
+  2026-07-05 to a *partition* — see § Amendments):** `foundation` is **retired as a
+  live kind** (no new foundation ADRs) but survives as a **frozen-historic class** —
+  every **completed/Validated** `0.0.x` foundation **remains in place** with
+  `kind: foundation` as the historic, invariant-shaping record (kept, not dropped);
+  only **unstarted/pending** foundations **drop to pool** (inert backlog). Two kinds
+  are **live** going forward: **pool** = universal backlog/origin; **feature** =
   committed, release-carrying. The **release line is the source of truth for what
   is shipped** — not 269 ADR `status:` frontmatters (the frontmatter we proved
-  unreliable). Built code stays live; only the ADR *classification* resets.
-  Features earn back to release **one at a time**, with executable proof.
+  unreliable). Built code stays live; only the *classification* of unstarted work
+  resets. Features earn back to release **one at a time**, with executable proof.
+  This migration is **pre-1.0** (2026-07-05 ruling), exempt from the post-1.0
+  reductive-deferral.
 - **The airlock is the work discipline:** *way-in* (compute/enumerate the
   seam-map → **go/no-go before work**), *vertical* (ADR → OBPI → REQ → TASK),
   *way-out* (drift-diff / reconcile → block · surface · resolve). AIRLOCK-OUT is
@@ -301,7 +307,7 @@ registered through Movement I's enforcement-claim surface, not a second framewor
 - [ ] **[deferred] Phase 4 — RECALL: governance retrieval** *(promote `ADR-pool.rag-anything-governance-retrieval` → feature; heavy; severable, post-first-airlock)* — LightRAG-bones (dual-level retrieval + incremental + citation; local model; file-store; `gz` verb), strictly **L3-advisory** (never gates, state-doctrine Rule 5), adding semantic-seam *recall* the deterministic floor can't express. The airlock ships and gates on the floor (Phases 1–3) alone; this is enrichment.
 
 **Movement IV — Reduce the accretion** *(parity-proven; Sanity-Reduction track)*
-- [ ] **Taxonomy migration:** drop all ADRs to pool; abolish `foundation` (schema enum, `gz validate --taxonomy`, supersede ADR-0.0.18) — parity-proven, behavior-preserving
+- [ ] **Taxonomy migration (pre-1.0; refined 2026-07-05 — partition, not flatten):** completed/Validated foundations **stay** as a **frozen-historic** `kind: foundation` set; **unstarted/pending** foundations **drop to pool**; `foundation` becomes a **closed kind**. Mechanize: schema enum keeps `foundation` (closed), `gz validate --taxonomy` **grandfathers** the existing set and **rejects new `foundation`**, retire ADR-0.0.18's choose-foundation guidance — parity-proven, behavior-preserving
 - [ ] Collapse the 70-scope / 162-param `validate()` surface to the registry (#618 residual)
 - [ ] Oversized modules (33 > 600 lines) — census-driven, with working proof
 
@@ -388,3 +394,23 @@ interleaved into the body. The campaign rules sequencing; handoffs and triage
   [`work-phases-and-airlock.md`](work-phases-and-airlock.md),
   [`four-phases-of-work.md`](four-phases-of-work.md),
   [`harness-loop-engineering-strategy-note-2026-06-23.md`](harness-loop-engineering-strategy-note-2026-06-23.md).
+- **2026-07-05 (operator-ratified) — taxonomy migration refined from *flatten* to
+  *partition*; `foundation` becomes a frozen-historic kind; the migration is
+  pre-1.0.** The 2026-06-20 "move everything to pool" ruling (§3a, Movement IV)
+  over-reached: it abolished `foundation` and dropped *all* ADRs to pool. The
+  operator refined it (verbatim): *"1) completed foundations remain for historic
+  purposes. 2) unstarted foundations are moved to pool. 3) only pool and feature
+  remain. this is all pre-release (1.0), so the campaign needs to accommodate
+  this."* Reconciled to a **frozen-historic** treatment (operator-selected over
+  relabel-to-feature): `foundation` survives as a **closed kind** — every
+  completed/Validated `0.0.x` foundation **remains in place** with
+  `kind: foundation` as the historic, invariant-shaping record; **no new
+  foundation may be minted**; only **unstarted/pending** foundations **drop to
+  pool**. `pool` + `feature` are the two **live/forward** kinds. Mechanically:
+  `gz validate --taxonomy` **grandfathers** the existing foundation set and
+  **rejects new `foundation`** (not a blanket abolition); ADR-0.0.18's
+  choose-foundation-for-new-work guidance is retired while the historic set
+  stands. The migration is **pre-1.0** — exempt from the "reductive moves wait for
+  post-1.0" deferral (`scripts/session_orientation.py`); the Movement IV taxonomy
+  item is thereby a pre-1.0 requirement. §3a and Movement IV are amended in place
+  to match. Ratified: g0, 2026-07-05.
