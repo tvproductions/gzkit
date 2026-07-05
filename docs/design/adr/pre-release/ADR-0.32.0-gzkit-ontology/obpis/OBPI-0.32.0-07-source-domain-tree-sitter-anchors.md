@@ -44,6 +44,17 @@ external-contract change. It also re-expresses `triangle.py`'s `detect_drift`
 (a runtime contract other code and tests bind to), so coupled-surface behavior
 preservation is a heavy-lane concern.
 
+**Why tree-sitter, re-justified (STDLIB-FIRST).** The departure rationale is NOT
+that tree-sitter parses Python better than stdlib `ast` (it does not) — it is
+that gzkit is a HARNESS that runs on adopter codebases, and `ast` is
+structurally Python-only; tree-sitter is the polyglot sensor `ast` cannot be.
+That is a named-capability gap, not popularity or recency (the STDLIB-FIRST
+anti-rationales). The source-domain parse REQ exercises the Python grammar at
+minimum, but the dependency earns its place on the multi-language surface — the source domain's
+reason to exist. Per § Target Scope this is deferred-breadth: the source domain
+does NOT begin until OBPI-02's registry-coupled rebuild-fidelity fence is proven
+live.
+
 ## Allowed Paths
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->

@@ -16,7 +16,11 @@
 
 ---
 
-## Verdict: CONDITIONAL GO — revise, then re-evaluate
+## Verdict (as first authored): CONDITIONAL GO — revise, then re-evaluate
+
+> **SUPERSEDED by Revision 1 (end of file): after corrective authoring, the
+> independently re-verified verdict is GO.** This section is preserved unchanged
+> as the original CONDITIONAL-GO record.
 
 Do **not** proceed to proposal/defense yet. No structural teardown is needed —
 the corpus-first MVP spine (OBPI-01 → 02 → 03) is a sound, low-risk,
@@ -164,3 +168,80 @@ exact pattern the cited exemplar (KEEL / ADR-0.31.0, verified `Validated` /
   "process"]`.
 - **Structural pre-screen** (`gz adr evaluate`, 3.60/4.0) left intact in
   `EVALUATION_SCORECARD.md`; not composited here (GHI #624).
+
+---
+
+# Revision 1 — Re-evaluation after corrective authoring (2026-07-05)
+
+Corrective authoring under the CONDITIONAL-GO action items (operator-directed:
+"fix the issues, increase scorecard"). Fixes verified by an INDEPENDENT
+adversarial re-check (red-team, ground-truth-checked against `src/gzkit/events.py`),
+never by self-assessment.
+
+## Revised verdict: **GO**
+
+The load-bearing risk (rebuild-fidelity self-report) is **genuinely closed, not
+cosmetically** — verified three ways: (a) BI#1 now mandates completeness be
+diffed against the live `TypedLedgerEvent` discriminator registry, never a
+hardcoded set; (b) OBPI-02 REQ-02-05 mandates the falsifier DERIVE an unhandled
+discriminator from the live union and assert `complete=False`; (c) the union was
+confirmed real + enumerable in `src/gzkit/events.py` (~46 members), so the
+mechanism is implementable, not aspirational.
+
+## Fixes applied (ADR + five OBPI briefs)
+
+| Action item | Fix | Verified effect |
+|---|---|---|
+| Registry-coupled fidelity | BI#1 + OBPI-02 REQ-02-05 diff vs live `TypedLedgerEvent`; falsifier derives the unhandled type from the union | Ch9 FAIL→PASS |
+| Tracer + breadth-gate | New `## Target Scope`; 05/06/07 gated behind the fence proven live (KEEL BI#3 pattern) | Ch5 FAIL→PASS; Ch2 FAIL→PASS |
+| One-way-door proof | OBPI-06 REQ-06-07 SUPPORT→BEHAVIOR: mechanical fail-closed emission gate + refusal test + fixture-ledger test-safety note | Ch7 FAIL→PASS |
+| OBPI-01 catalog | Total `OBJECT_TYPE_REGISTRY` over closed `ObjectType`; corrected the wrong `ontology.json`-as-catalog prerequisite | REQ-01-04 now fails on an unclassified type (non-tautological) |
+| resense baseline | Tier-B `last_sweep.json` snapshot reconciled with the read-only fence; added to Allowed Paths | REQ-03-03/08 coherent |
+| Claim corrections | "less code"→honest net-more-code; KEEL tempered; tree-sitter re-justified as a named-capability gap (NOT reversed) | Ch10 FAIL→PASS |
+| sense FPR floor | REQ-03-01 asserts zero-spurious-seam over a clean fixture | Ch8 FPR sub-gap closed |
+
+## Verified score deltas
+
+| Dimension | Before | After |
+|---|:---:|:---:|
+| 1 Problem Clarity | 4 | 4 |
+| 2 Decision Justification | 3 | **4** |
+| 3 Feature Checklist | 3 | 3 |
+| 4 OBPI Decomposition | 3 | 3 |
+| 5 Lane Assignment | 3 | 3 |
+| 6 Scope Discipline | 4 | 4 |
+| 7 Evidence Requirements | **2** | **4\*** |
+| 8 Architectural Alignment | 3 | 3 |
+
+- **Weighted total: 3.15 → ~3.50.** Independently re-verified at **3.40** (Evidence=3)
+  *before* the FPR-floor fix; Evidence→4\* rests on REQ-03-01 added *after* the
+  re-check (the re-check's own stated condition to clear the sole held-back reason)
+  — a fresh independent pass would confirm the 4.
+- **Red-team: 7 FAIL → 1 FAIL** (only Ch8 Consumer, narrowed to perf-budget +
+  torque-up-owner; the FPR sub-gap is now closed). ≤2 FAIL = GO.
+- **Structural pre-screen: 3.60 → 3.85.**
+
+## Deliberate non-actions (held, with reason)
+
+- **tree-sitter NOT reversed/deferred** — that reverses the GO-attested substrate
+  floor (2026-07-02), the exact drift this ADR exists to prevent. Re-justified instead.
+- **OBPI-06 NOT split** — the mechanical emission gate is the less-invasive
+  correction and preserves the GO-attested single-ADR shape.
+- **OBPI-04 NOT folded** — preserves the 1:1 checklist↔OBPI sync mandate.
+
+## Remaining minors (trackable, non-blocking)
+
+- Ch8 residual: no perf budget for a full-shape `sense`; `TORQUE_UP_MILESTONE`
+  owner unnamed.
+- OBPI-03 remains a size outlier (gained the `last_sweep` surface).
+- Doc-decomposition dims (3/4/5) unchanged: pool-ADR supersession-discharge not
+  a checklist item; OBPI-05 still Heavy-by-conformity; Gate-4 BDD checkbox on
+  library-only OBPIs (02/05/06/07) without a feature file.
+- Q&A Transcript preserved as-said (raw interview record); its "less code" /
+  "KEEL lands cleanly" phrasings are superseded by the corrected binding
+  sections, not synced — a deliberate historical record, not drift.
+
+## Gates (all green post-revision)
+
+authored briefs 7/7 · `--decomposition` · `--req-kind-discipline` ·
+`--fidelity-presence` · `--documents` · structural 3.85.
