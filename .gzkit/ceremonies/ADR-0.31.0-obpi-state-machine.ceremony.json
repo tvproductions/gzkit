@@ -1,9 +1,9 @@
 {
   "adr_id": "ADR-0.31.0-obpi-state-machine",
-  "current_step": 10,
+  "current_step": 11,
   "is_foundation": false,
   "started_at": "2026-07-04T23:49:02Z",
-  "updated_at": "2026-07-04T23:53:46Z",
+  "updated_at": "2026-07-05T00:01:50Z",
   "step_history": [
     {
       "step": 1,
@@ -53,6 +53,11 @@
     {
       "step": 10,
       "presented_at": "2026-07-04T23:53:46Z",
+      "acknowledged_at": "2026-07-05T00:01:50Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-07-05T00:01:50Z",
       "acknowledged_at": null
     }
   ],
@@ -61,7 +66,7 @@
   ],
   "walkthrough_index": 0,
   "attestation": "Completed — \"attest completed\" (g0). ADR-0.31.0 OBPI state machine keel: 3/3 OBPIs attested (g0); spec-reviewer 18/18 REQs PASS + quality-reviewer COHERENT (one CANONICAL_TRANSITIONS consumed by verbs and monitor); real fidelity gate 2 pass after commit 5c2a07ab replaced the placeholder; 2 closeout corrections landed (fidelity assertions + except narrowing, pinning test); GHI #516 closed (commit 8ba9077f); full suite 6768 pass (arb-step-unittest-9cac4345975143b092404d6415f3eb21), ruff/typecheck/mkdocs strict clean.",
-  "completed_at": null,
+  "completed_at": "2026-07-05T00:01:50Z",
   "attempt": 2,
   "paused_at": null
 }
