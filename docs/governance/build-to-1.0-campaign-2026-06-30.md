@@ -289,20 +289,43 @@ governs order.
 > AIRLOCK-IN and AIRLOCK-OUT realize **together**, as one constellation built
 > keel-up. Heliocentric over geocentric; no clinging.
 
+> **Amendment (2026-07-05, operator-ratified).** One correction to this Movement's
+> literal Phase-2 wording, verified before any ADR is authored: **(b)** the
+> work-domain edges (`blocks`/`blocked_by`/`discovered_from`/`validates`) are a
+> **net-new L2 event schema** — verified: the ledger carries only `parent` edges
+> today (the original *"already in the L2 ledger… no new store"* was factually wrong).
+>
+> **Withdrawn same day — two departures from the GO-attested Phase-0 record, reverted
+> to it.** **(a) Substrate:** an earlier 2026-07-05 amendment reversed the HULL floor
+> from `tree-sitter + networkx` to stdlib `graphlib`/`ast`; **reverted** — that floor
+> is **GO-attested** (Phase-0 airlock-in, 2026-07-02;
+> [`airlock-in-constellation-2026-06-30.md`](airlock-in-constellation-2026-06-30.md)),
+> STDLIB-FIRST departure rationale already named (*"multi-surface extraction +
+> topo/cycle stdlib cannot supply"*); `tree-sitter + networkx` stands, Pydantic the
+> object/link layer, `graspologic` stripped (#290). **(c) ADR count:** the same
+> session split HULL into a 3-ADR constellation; **reverted** to the GO record's
+> **single HULL feature ADR** (operator ruling: *"one unified HULL ADR"*) — corpus ·
+> work · source are three typed **domains (subgraphs)** within one ontology,
+> OBPI-decomposed, not three ADRs.
+
 The airlock-in/out system is **four feature ADRs** (pool→feature per §3a), built
 keel-up. graphify / LightRAG / Plumb are studied **bones, not dependencies** —
-the honed runtime floor is **tree-sitter + networkx** only (`graspologic`
-stripped: unused for seam-queries *and* not installable on Python 3.13+, graphify
-#290). The graph cache is a **Tier-B derived index** (ADR-0.0.10), rebuildable
+the honed runtime floor is **tree-sitter + networkx** (the GO-attested HULL floor,
+Phase-0 airlock-in 2026-07-02; a named STDLIB-FIRST departure attested in the HULL
+ADR — multi-surface extraction + topo/cycle stdlib cannot supply; Pydantic the
+object/link layer; `graspologic` stripped: unused for seam-queries *and* not
+installable on Python 3.13+, graphify #290). The graph cache is a **Tier-B derived index** (ADR-0.0.10), rebuildable
 from L1/L2, never source-of-truth. **All-tool, no MCP.** The ready/blocked queue
-is **BEADS-shaped** — replayed from `blocks`/`blocked_by` edges already in the L2
-ledger (gzkit's own Yegge heritage), no new store. The single §5 `@enforces` live
+is **BEADS-shaped** — replayed from `blocks`/`blocked_by`/`discovered_from`/
+`validates` edges in a **net-new L2 event schema** (2026-07-05 amendment; verified:
+the ledger carries only `parent` edges today — gzkit's Yegge heritage supplies the
+shape, not an existing store). The single §5 `@enforces` live
 NC binds the hatch (un-accounted seam → real entry → assert refuses GO),
 registered through Movement I's enforcement-claim surface, not a second framework.
 
 - [x] **Phase 0 — airlock-in the constellation itself** *(judgment-grade, by hand — the airlock does not yet exist; the discipline does)*. Before any ADR is touched: enumerate the seam-map (every surface the promotions/supersessions touch), declare the volume (footprint + reach), pre-register the falsifier, record a go/no-go to the ledger. The first use of the airlock is building the airlock (§5 spirit). See [`airlock-in-constellation-2026-06-30.md`](airlock-in-constellation-2026-06-30.md). **Completed (2026-07-02, GO attested):** the airlock-in record carries all four deliverables — seam-map (footprint), volume declaration, three pre-registered falsifiers (landing/preservation/sequence), and the Go/No-Go — with operator-ratified verdict **GO, keel-up** (verbatim authorization: *"take on Movement III Phase 0"*). Two gates were declared: Phase 0 gates Phase 1 (operator attestation before any ADR is authored — satisfied), and Phase 1's landing falsifier gates Phase 2. That landing falsifier — *"the KEEL monitor refuses silent drift in production"* — was subsequently **discharged live by ADR-0.31.0 OBPI-03** (the `TransitionMonitor` refuses the exact GHI #348 shape at the reconcile chokepoint), so the Phase 0 → Phase 2 gate is now open.
 - [x] **Phase 1 — KEEL: OBPI state machine** *(promote `ADR-pool.obpi-state-machine` → feature; heavy)* — locks state doctrine (Arch-Boundary §12 item 3), making re-sense *trustable* (no silent node-drift, the GHI #348 class). Airlock-critical subset: **Pydantic `State`/`Transition` models** (with a thin `StrEnum` for the closed name-set) · withdraw/supersede first-class transitions + CLI verbs (closes GHI #348) · the **runtime invariant monitor** (load-bearing). Deferred-in-keel (the ADR's later OBPIs, non-blocking): full choreography retirement, concurrency caps, failure-class taxonomy, event vocabulary. **Completed (2026-07-04):** promoted `ADR-pool.obpi-state-machine` → `ADR-0.31.0`, closed out and attested by g0 (`closeout_phase: attested`), released as [v0.31.0](https://github.com/tvproductions/gzkit/releases/tag/v0.31.0). The airlock-critical subset landed as 3 attested OBPIs: **01** — closed `OBPIState` StrEnum + frozen Pydantic `State`/`Transition` models + committed JSON schema; **02** — witnessed `gz obpi withdraw`/`supersede` transitions closing the GHI #348 root (withdrawal is now a validated transition, not a silently-demoted hand-edit); **03** — the runtime `TransitionMonitor` at the `gz frontmatter reconcile` write chokepoint, refusing the exact GHI #348 silent-demotion shape (the pre-registered landing falsifier). Independent review: spec-reviewer 18/18 REQs PASS, quality-reviewer COHERENT (one `CANONICAL_TRANSITIONS` consumed by both the verbs and the monitor). All 5 GovZero gates satisfied (Heavy lane) + real fidelity gate 2 pass. Deferred-in-keel items remain non-blocking under the ADR's transition-emitter migration — now also carrying two disclosed carry-forwards from closeout review: model-driven witness enforcement (verbs currently enforce the attestor via a hardcoded check, not by reading `t.witness`) and the `STATUS_VOCAB_MAPPING` 5/8-state gap.
-- [ ] **Phase 2 — HULL: graph substrate** *(new feature ADR; supersedes `artifact-graph-navigation` + `execution-memory-graph` + `covers-source-anchors`; heavy)* — ONE networkx multigraph, three typed domains, queried by `gz` verbs (designed here, no MCP): **corpus** (ADR/OBPI/REQ/GHI/receipt lineage — reads canon, can start parallel-early) · **work** (TASK nodes + ready/blocked queue, replayed from the keel's L2 events — a *derived consumer*, not parallel machinery) · **source** (tree-sitter code-coupling edges + `@covers`/`@surface` anchors). Tier-B derived cache.
+- [ ] **Phase 2 — HULL: graph substrate** *(single feature ADR — "the gzkit ontology"; supersedes `artifact-graph-navigation` + `execution-memory-graph` + `covers-source-anchors`, read-folds `ADR-0.0.47`; heavy)* — ONE **networkx multigraph** (Pydantic-typed nodes/edges), three typed domains as subgraphs, queried by `gz` verbs (designed here, no MCP): **corpus** (ADR/OBPI/REQ/GHI/receipt lineage — reads canon, can start parallel-early) · **work** (TASK nodes + ready/blocked queue, replayed from the keel's **net-new L2 edges** — a *derived consumer*, not parallel machinery) · **source** (tree-sitter code-coupling edges + `@covers`/`@surface` anchors). Tier-B derived cache.
 - [ ] **Phase 3 — HATCH: airlock-in/out membrane** *(new feature ADR; makes `work-phases-and-airlock.md` lawful — the §8 gate; heavy)* — re-sense (query the hull) → declare volume (**footprint** seam-map: push/pull edges · **reach** descent/tracer plan) → name mode · authority · source-ranking · topology-purpose → pre-register **falsifier(s)** (landing + preservation) → record go/no-go to the ledger. AIRLOCK-OUT wires the mature exit surfaces (`gz validate` / reconcile / closeout) as falsifier-check + drift-diff (Plumb-bones for decision-extraction). Invoked judgment-grade at each existing door (MX-enter, `gz obpi pipeline` Stage 1). Bound by the §5 live NC above. **ABSORBS** the former Movement IV "loop/topology declaration discipline" item (the topology-purpose declaration IS this gate's checklist for new harness mechanisms).
 - [ ] **[deferred] Phase 4 — RECALL: governance retrieval** *(promote `ADR-pool.rag-anything-governance-retrieval` → feature; heavy; severable, post-first-airlock)* — LightRAG-bones (dual-level retrieval + incremental + citation; local model; file-store; `gz` verb), strictly **L3-advisory** (never gates, state-doctrine Rule 5), adding semantic-seam *recall* the deterministic floor can't express. The airlock ships and gates on the floor (Phases 1–3) alone; this is enrichment.
 
