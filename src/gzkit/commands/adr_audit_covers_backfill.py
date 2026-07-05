@@ -663,6 +663,8 @@ def _is_legitimate_authoring(
     project_root: Path,
     git_runner: GitRunner,
     receipt_commit_sha: str | None = None,
+    *,
+    receipt_after_intro: bool = False,
 ) -> bool:
     """Return True when ``intro`` is co-authored, ceremony-bundled, or marked overlay.
 
@@ -691,8 +693,12 @@ def _is_legitimate_authoring(
       in the subject suffix (e.g. ``(gz git-sync)``).
 
     The file/block-creation exemptions do NOT apply when the receipt is also
-    anchored to the same commit — that triple (creation + @covers + receipt
-    all in one commit) is the GHI #309 cosmetic-backfill pattern. The inline
+    anchored to the same commit AND emitted contemporaneously with it
+    (``receipt_after_intro`` is False) — that triple (creation + @covers +
+    receipt all in one push) is the GHI #309 cosmetic-backfill pattern. When the
+    receipt merely anchors to the intro commit for provenance but was emitted in
+    a LATER ceremony (``receipt_after_intro`` — its event ts post-dates the
+    commit), the same-commit creation is genuine and stays exempt (GHI #667). The inline
     marker is intentionally NOT subject to the receipt-coupling guard: by
     construction, the regression-invariant overlay shape only occurs when
     the operator is claiming a new REQ against a pre-existing test, and the
@@ -702,16 +708,22 @@ def _is_legitimate_authoring(
     marker, no ceremony) remains flag-eligible — that is the GHI #272
     cosmetic-backfill anti-pattern this heuristic exists to catch.
     """
+    # GHI #309 receipt-coupling guard, narrowed by GHI #667: the file/block-
+    # creation exemptions are suppressed only when the receipt was emitted
+    # CONTEMPORANEOUSLY with the intro commit (the cosmetic triple — create +
+    # decorate + close, all in one push). A receipt anchored to the intro commit
+    # for provenance but EMITTED in a later ceremony (its event ts post-dates the
+    # commit — ``receipt_after_intro``) does not couple: the same-commit creation
+    # is genuine and stays exempt.
+    receipt_coupled = (
+        receipt_commit_sha is not None
+        and receipt_commit_sha == intro.commit_sha
+        and not receipt_after_intro
+    )
     creation_sha = _file_creation_short_sha(intro.file, project_root, git_runner)
-    if (
-        creation_sha is not None
-        and creation_sha == intro.commit_sha
-        and (receipt_commit_sha is None or receipt_commit_sha != intro.commit_sha)
-    ):
+    if creation_sha is not None and creation_sha == intro.commit_sha and not receipt_coupled:
         return True
-    if (
-        receipt_commit_sha is None or receipt_commit_sha != intro.commit_sha
-    ) and _is_same_commit_block_creation(intro, project_root, git_runner):
+    if not receipt_coupled and _is_same_commit_block_creation(intro, project_root, git_runner):
         return True
     if _has_inline_audit_exempt_marker(intro, project_root):
         return True
@@ -789,8 +801,16 @@ def compute_backfill_findings(
         # GHI #272 cosmetic-backfill anti-pattern. Apply the legitimacy guard
         # only when a finding is otherwise about to be flagged so the extra
         # git boundary calls are paid only on candidate intros.
+        # GHI #667: a receipt whose EVENT post-dates the intro commit was emitted
+        # in a later ceremony (anchor is provenance, not the emitting commit), so
+        # the same-commit creation exemptions are not coupled away.
+        receipt_after_intro = receipt.commit_date > intro.commit_date
         if _is_legitimate_authoring(
-            intro, project_root, git_runner, receipt_commit_sha=receipt.commit_sha
+            intro,
+            project_root,
+            git_runner,
+            receipt_commit_sha=receipt.commit_sha,
+            receipt_after_intro=receipt_after_intro,
         ):
             continue
 
@@ -810,6 +830,7 @@ def compute_backfill_findings(
                 project_root,
                 git_runner,
                 receipt_commit_sha=receipt.commit_sha,
+                receipt_after_intro=receipt_after_intro,
             )
         ):
             continue

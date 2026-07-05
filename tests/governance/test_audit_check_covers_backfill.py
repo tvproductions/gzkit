@@ -774,6 +774,65 @@ class TestBlockCreationAndOverlayMarker(unittest.TestCase):
             self.assertEqual(len(findings), 1)
 
     @covers("REQ-0.0.23-05-01")
+    def test_same_commit_block_creation_with_later_ceremony_receipt_exempt(self) -> None:
+        """GHI #667: receipt anchored to impl commit but emitted LATER is exempt.
+
+        Contrast with ``..._with_same_commit_receipt_still_flagged`` (same sha AND
+        same date — the cosmetic triple, stays flagged). Here the receipt anchors
+        to the same impl commit (``aaaaaaa``) but its event ts is a day later: the
+        completion ceremony post-dates the implementation, so the same-commit
+        block-creation is genuine and the GHI #309 receipt-coupling guard must NOT
+        suppress the exemption.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            self._write_test_file(
+                project_root,
+                "tests/x.py",
+                '@covers("REQ-X")\ndef test_thing(self) -> None:\n    self.assertTrue(True)\n',
+            )
+            intro = _make_intro(file="tests/x.py", line=1, sha="aaaaaaa", on=date(2026, 4, 1))
+            # Same anchor sha as intro, but event ts is a day LATER (later ceremony).
+            receipt = _make_receipt(sha="aaaaaaa", on=date(2026, 4, 2))
+            fake = FakeGit(
+                {
+                    ("log", "--diff-filter=A", "--format=%H", "--", "tests/x.py"): (
+                        0,
+                        "deadbee0000000000000000000000000000000000\n",
+                        "",
+                    ),
+                    # Block-creation: def line at line 2, intro SHA matches decorator SHA.
+                    ("log", "--reverse", "--format=%H", "-L2,2:tests/x.py"): (
+                        0,
+                        "aaaaaaa1234567890abcdef0123456789abcdef\n",
+                        "",
+                    ),
+                    # Reached only pre-fix (block-creation guard still suppressed);
+                    # harmless as unused fixtures post-fix.
+                    ("log", "-1", "--format=%(trailers:key=Ceremony,valueonly=true)", "aaaaaaa"): (
+                        0,
+                        "",
+                        "",
+                    ),
+                    ("log", "-1", "--format=%s", "aaaaaaa"): (
+                        0,
+                        "feat: add stuff\n",
+                        "",
+                    ),
+                }
+            )
+            thresholds = AuditThresholds(max_covers_backfill_commits=3, max_covers_backfill_days=7)
+            findings = compute_backfill_findings(
+                [intro],
+                {intro.target: receipt},
+                thresholds,
+                severity="blocking",
+                project_root=project_root,
+                git_runner=fake,
+            )
+            self.assertEqual(findings, ())
+
+    @covers("REQ-0.0.23-05-01")
     def test_inline_audit_exempt_marker_exempts_decorator(self) -> None:
         """``# audit-exempt: regression-invariant-overlay <reason>`` exempts the line."""
         with tempfile.TemporaryDirectory() as tmp:
