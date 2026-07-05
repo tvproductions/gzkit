@@ -4,7 +4,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gzkit.commands.closeout_form import auto_fix_obpi_brief_frontmatter
+from gzkit.commands.closeout_form import (
+    auto_fix_obpi_brief_frontmatter,
+    guarded_obpi_status_write,
+)
 
 
 class TestAutoFixObpiBriefFrontmatter(unittest.TestCase):
@@ -119,6 +122,54 @@ class TestAutoFixObpiBriefFrontmatter(unittest.TestCase):
             self.assertIn("item: 4", content)
             self.assertIn("lane: lite", content)
             self.assertIn("status: Completed", content)
+
+
+class TestGuardedObpiStatusWrite(unittest.TestCase):
+    """The single guarded chokepoint every governed OBPI-status writer routes through."""
+
+    def _write_brief(self, tmp: Path, status: str) -> Path:
+        brief = tmp / "OBPI-test.md"
+        brief.write_text(
+            f"---\nid: OBPI-test\nparent: ADR-test\nstatus: {status}\n---\n\n# Test\n",
+            encoding="utf-8",
+        )
+        return brief
+
+    def test_writes_from_non_terminal_status(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = self._write_brief(Path(tmp), "Draft")
+            wrote = guarded_obpi_status_write(brief, "Completed")
+            self.assertTrue(wrote)
+            self.assertIn("status: Completed", brief.read_text(encoding="utf-8"))
+
+    def test_refuses_terminal_withdrawn_clobber(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = self._write_brief(Path(tmp), "Withdrawn")
+            pre = brief.read_text(encoding="utf-8")
+            wrote = guarded_obpi_status_write(brief, "Completed")
+            self.assertFalse(wrote)
+            self.assertEqual(pre, brief.read_text(encoding="utf-8"))
+
+    def test_refuses_terminal_superseded_clobber(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = self._write_brief(Path(tmp), "Superseded")
+            wrote = guarded_obpi_status_write(brief, "Completed")
+            self.assertFalse(wrote)
+            self.assertIn("status: Superseded", brief.read_text(encoding="utf-8"))
+
+    def test_noop_when_already_at_target(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = self._write_brief(Path(tmp), "Completed")
+            wrote = guarded_obpi_status_write(brief, "Completed")
+            self.assertFalse(wrote)
+
+    def test_writes_toward_terminal_from_non_terminal(self) -> None:
+        """A legitimate sync INTO a terminal state (Draft -> Abandoned) is allowed."""
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = self._write_brief(Path(tmp), "Draft")
+            wrote = guarded_obpi_status_write(brief, "Abandoned")
+            self.assertTrue(wrote)
+            self.assertIn("status: Abandoned", brief.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

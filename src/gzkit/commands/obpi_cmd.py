@@ -237,6 +237,10 @@ def _reset_brief_status_after_repudiation(
     current = (parse_frontmatter_value(content, "status") or "").strip().lower()
     if current != "completed":
         return None
+    # Governed OBPI-status writer, but exempt from the guarded_obpi_status_write
+    # chokepoint by construction: the `current == "completed"` guard above proves
+    # the source is `Completed` (a non-terminal ATTESTED state), so the terminal
+    # clobber class (GHI #668) is unreachable here. Analyzed, not missed.
     obpi_file.write_text(_upsert_frontmatter_value(content, "status", "Active"), encoding="utf-8")
     return obpi_file
 

@@ -605,5 +605,52 @@ class TestUpdateHumanAttestationSectionScoping(unittest.TestCase):
         self.assertEqual(result, content)
 
 
+class TestObpiCompleteTerminalClobberRefused(_ObpiCompleteWireFixture):
+    """GHI #668 class-fix: `gz obpi complete` must refuse to promote a terminal
+    (withdrawn/superseded) OBPI to Completed.
+
+    `gz obpi complete` is the primary write path for the governed OBPI `status:`
+    key; before the class-fix it consulted no terminal rule and would silently
+    clobber a hand-marked `Withdrawn` brief to `Completed` (the GHI #348 class).
+    """
+
+    def _drive_terminal(self, status: str) -> tuple[int | None, str, dict[str, str]]:
+        captured: dict[str, str] = {}
+        brief = (
+            f"---\nid: OBPI-0.1.0-01-x\nparent: ADR-0.1.0\nitem: 1\n"
+            f"lane: lite\nstatus: {status}\n---\n\n# X\n"
+        )
+        _exc, code, recorded, _ledger = self._run_complete(
+            brief_text=brief,
+            obpi_id="OBPI-0.1.0-01-x",
+            parent_adr="ADR-0.1.0",
+            lane="lite",
+            kind="feature",
+            attestation_text="attest completed",
+            captured=captured,
+        )
+        return code, " ".join(recorded).lower(), captured
+
+    def test_complete_refuses_withdrawn_brief_with_terminal_reason(self) -> None:
+        # The terminal precondition fires in _resolve_and_validate, BEFORE the
+        # content-validation gate — so a terminal brief must fail with the
+        # *terminal* reason, not the incidental "missing implementation summary"
+        # a minimal brief would otherwise trip. Asserting on the reason (not just
+        # exit 1) is what distinguishes the guard firing from an unrelated gate.
+        code, msg, captured = self._drive_terminal("Withdrawn")
+        self.assertEqual(code, 1, "completing a terminal OBPI must fail closed")
+        self.assertIn("terminal", msg)
+        self.assertNotIn("implementation summary", msg)
+        self.assertIn("status: Withdrawn", captured["brief"])
+        self.assertNotIn("status: Completed", captured["brief"])
+
+    def test_complete_refuses_superseded_brief_with_terminal_reason(self) -> None:
+        code, msg, captured = self._drive_terminal("Superseded")
+        self.assertEqual(code, 1, "completing a terminal OBPI must fail closed")
+        self.assertIn("terminal", msg)
+        self.assertIn("status: Superseded", captured["brief"])
+        self.assertNotIn("status: Completed", captured["brief"])
+
+
 if __name__ == "__main__":
     unittest.main()

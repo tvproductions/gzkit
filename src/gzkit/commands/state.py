@@ -7,7 +7,7 @@ from typing import Any
 
 from rich.table import Table
 
-from gzkit.commands.closeout_form import _upsert_frontmatter_value
+from gzkit.commands.closeout_form import guarded_obpi_status_write
 from gzkit.commands.common import (
     _attestation_gate_snapshot,
     console,
@@ -262,11 +262,13 @@ def state_repair(as_json: bool) -> None:
         if current_status == expected:
             continue
 
-        # Update frontmatter
+        # Update frontmatter via the guarded OBPI-status chokepoint so a terminal
+        # (withdrawn/superseded) brief is never silently clobbered by a state
+        # sync (GHI #668 class-fix / ADR-0.31.0 Decision item 4). A refused
+        # write (or no-op) records no change.
         brief_path: Path = brief_info["path"]
-        content = brief_path.read_text(encoding="utf-8")
-        updated = _upsert_frontmatter_value(content, "status", expected)
-        brief_path.write_text(updated, encoding="utf-8")
+        if not guarded_obpi_status_write(brief_path, expected):
+            continue
 
         changes.append(
             {

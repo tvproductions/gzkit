@@ -820,6 +820,23 @@ def _resolve_and_validate(
     if current_status == "completed":
         _fail("Brief is already Completed.", exit_code=1, as_json=as_json, obpi_id=obpi_id)
 
+    # GHI #668 class-fix: `gz obpi complete` is a governed OBPI-status writer
+    # (_build_completed_brief upserts `status: Completed`). Consult the shared
+    # terminal rule so this primary verb refuses to promote a terminal
+    # (withdrawn/superseded) OBPI — the GHI #348 clobber class — the same as the
+    # reconcile chokepoint and the auto-fix path (ADR-0.31.0 Decision item 4).
+    from gzkit.governance.frontmatter_coherence import obpi_status_is_terminal
+
+    if obpi_status_is_terminal(current_status):
+        _fail(
+            f"Brief carries terminal OBPI status '{current_status}' (no outgoing "
+            f"transition); refusing to complete it (GHI #348 clobber class). "
+            f"Recover with `gz obpi repudiate` or correct the ledger, then re-run.",
+            exit_code=1,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
+
     graph = ledger.get_artifact_graph()
     obpi_info = graph.get(obpi_id, {})
     if obpi_info.get("type") != "obpi":

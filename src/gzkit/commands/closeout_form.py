@@ -10,15 +10,46 @@ from gzkit.ledger import parse_frontmatter_value
 _COMPLETED_RUNTIME_STATES = {"completed", "attested_completed", "validated"}
 
 
+def guarded_obpi_status_write(obpi_file: Path, target_status: str) -> bool:
+    """Single guarded chokepoint for OBPI-brief ``status:`` writes.
+
+    Every governed OBPI-status writer routes through here so the terminal-clobber
+    refusal (the GHI #348 class) lives in ONE place rather than being
+    re-implemented per call site — the "one monitor governs every write" property
+    ADR-0.31.0 Decision item 4 declares. A terminal current status
+    (``withdrawn`` / ``superseded``) has no outgoing canonical transition, so
+    refuse to silently move an OBPI out of it. Returns True iff a write landed
+    (False on a no-op or a refused terminal clobber). The refusal surfaces
+    three-part recovery prose to stderr (guardrail-feedback-prose).
+    """
+    from gzkit.governance.frontmatter_coherence import obpi_status_is_terminal
+
+    content = obpi_file.read_text(encoding="utf-8")
+    current = (parse_frontmatter_value(content, "status") or "").strip().lower()
+    if current == target_status.strip().lower():
+        return False
+    if obpi_status_is_terminal(current):
+        sys.stderr.write(
+            f"refused: {obpi_file.name} carries terminal OBPI status '{current}' "
+            f"(no outgoing transition); will not silently write it to "
+            f"'{target_status}' (GHI #348 clobber class). Recover with an explicit "
+            f"transition (`gz obpi repudiate` / `gz obpi supersede`) or correct "
+            f"the ledger event, then re-run.\n"
+        )
+        return False
+    obpi_file.write_text(
+        _upsert_frontmatter_value(content, "status", target_status), encoding="utf-8"
+    )
+    return True
+
+
 def auto_fix_obpi_brief_frontmatter(obpi_file: Path, runtime_state: str) -> bool:
     """Sync OBPI brief frontmatter status to match ledger-derived runtime state.
 
     Silently fixes frontmatter drift at lifecycle moments (closeout, attest,
-    reconcile). Returns True if a change was written.
+    reconcile). Returns True if a change was written. Routes through
+    :func:`guarded_obpi_status_write` so a terminal status is never clobbered.
     """
-    content = obpi_file.read_text(encoding="utf-8")
-    current = (parse_frontmatter_value(content, "status") or "").strip().lower()
-
     if runtime_state in _COMPLETED_RUNTIME_STATES:
         target = "Completed"
     elif runtime_state == "withdrawn":
@@ -26,30 +57,7 @@ def auto_fix_obpi_brief_frontmatter(obpi_file: Path, runtime_state: str) -> bool
     else:
         return False  # only fix toward terminal states
 
-    if current == target.lower():
-        return False
-
-    # GHI #668 / GHI #348 class: this auto-fix is the sibling write path to the
-    # monitored `reconcile_frontmatter` chokepoint (reached by gz attest /
-    # closeout / obpi reconcile). Consult the same state model so ONE monitor
-    # governs every governed-key writer (ADR-0.31.0 Decision item 4): a terminal
-    # OBPI status has no outgoing canonical transition, so refuse to silently
-    # clobber it. Non-terminal → completed syncs (the legitimate case) proceed.
-    from gzkit.governance.frontmatter_coherence import obpi_status_is_terminal
-
-    if obpi_status_is_terminal(current):
-        sys.stderr.write(
-            f"refused: {obpi_file.name} carries terminal OBPI status '{current}' "
-            f"(no outgoing transition); will not silently auto-sync it to "
-            f"'{target}' (GHI #348 clobber class). Recover with an explicit "
-            f"transition (`gz obpi repudiate` / `gz obpi supersede`) or correct "
-            f"the ledger event, then re-run.\n"
-        )
-        return False
-
-    updated = _upsert_frontmatter_value(content, "status", target)
-    obpi_file.write_text(updated, encoding="utf-8")
-    return True
+    return guarded_obpi_status_write(obpi_file, target)
 
 
 def auto_fix_obpi_rows(project_root: Path, obpi_rows: list[dict[str, Any]]) -> None:
