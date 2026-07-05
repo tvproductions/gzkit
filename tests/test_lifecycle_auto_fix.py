@@ -70,6 +70,40 @@ class TestAutoFixObpiBriefFrontmatter(unittest.TestCase):
             changed = auto_fix_obpi_brief_frontmatter(brief, "in_progress")
             self.assertFalse(changed)
 
+    def test_terminal_withdrawn_status_not_clobbered_to_completed(self):
+        """GHI #668 / GHI #348 class: a terminal `Withdrawn` OBPI status must NOT
+        be silently overwritten to `Completed` by the lifecycle auto-fix.
+
+        `auto_fix_obpi_brief_frontmatter` is the sibling write path to the
+        monitored `reconcile_frontmatter` chokepoint (reached by gz attest /
+        closeout / obpi reconcile). Terminal states have no outgoing canonical
+        transition, so the write is refused and the file is left byte-unchanged.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = self._write_brief(Path(tmp), "Withdrawn")
+            pre = brief.read_text(encoding="utf-8")
+            changed = auto_fix_obpi_brief_frontmatter(brief, "completed")
+            self.assertFalse(changed)
+            post = brief.read_text(encoding="utf-8")
+            self.assertEqual(pre, post, "terminal status must not be clobbered")
+            self.assertIn("status: Withdrawn", post)
+
+    def test_terminal_abandoned_status_not_clobbered_to_completed(self):
+        """`Abandoned` maps to the terminal WITHDRAWN state — same protection."""
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = self._write_brief(Path(tmp), "Abandoned")
+            changed = auto_fix_obpi_brief_frontmatter(brief, "attested_completed")
+            self.assertFalse(changed)
+            self.assertIn("status: Abandoned", brief.read_text(encoding="utf-8"))
+
+    def test_terminal_superseded_status_not_clobbered_to_completed(self):
+        """`Superseded` is terminal — auto-fix must not un-supersede it."""
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = self._write_brief(Path(tmp), "Superseded")
+            changed = auto_fix_obpi_brief_frontmatter(brief, "validated")
+            self.assertFalse(changed)
+            self.assertIn("status: Superseded", brief.read_text(encoding="utf-8"))
+
     def test_preserves_other_frontmatter_fields(self):
         with tempfile.TemporaryDirectory() as tmp:
             brief = Path(tmp) / "OBPI-test.md"

@@ -1,5 +1,6 @@
 """Closeout form rendering and ADR attestation block helpers."""
 
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
@@ -26,6 +27,24 @@ def auto_fix_obpi_brief_frontmatter(obpi_file: Path, runtime_state: str) -> bool
         return False  # only fix toward terminal states
 
     if current == target.lower():
+        return False
+
+    # GHI #668 / GHI #348 class: this auto-fix is the sibling write path to the
+    # monitored `reconcile_frontmatter` chokepoint (reached by gz attest /
+    # closeout / obpi reconcile). Consult the same state model so ONE monitor
+    # governs every governed-key writer (ADR-0.31.0 Decision item 4): a terminal
+    # OBPI status has no outgoing canonical transition, so refuse to silently
+    # clobber it. Non-terminal → completed syncs (the legitimate case) proceed.
+    from gzkit.governance.frontmatter_coherence import obpi_status_is_terminal
+
+    if obpi_status_is_terminal(current):
+        sys.stderr.write(
+            f"refused: {obpi_file.name} carries terminal OBPI status '{current}' "
+            f"(no outgoing transition); will not silently auto-sync it to "
+            f"'{target}' (GHI #348 clobber class). Recover with an explicit "
+            f"transition (`gz obpi repudiate` / `gz obpi supersede`) or correct "
+            f"the ledger event, then re-run.\n"
+        )
         return False
 
     updated = _upsert_frontmatter_value(content, "status", target)

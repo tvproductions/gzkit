@@ -22,7 +22,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.commands.common import _is_pool_adr_id
 from gzkit.commands.validate_frontmatter import validate_frontmatter_coherence
-from gzkit.core.obpi_state_machine import OBPIState
+from gzkit.core.obpi_state_machine import OBPI_STATES, OBPIState
 from gzkit.governance.obpi_transition_monitor import TransitionMonitor
 from gzkit.governance.status_vocab import STATUS_VOCAB_MAPPING
 
@@ -185,6 +185,21 @@ def _map_vocab_to_obpi_state(vocab_term: str) -> OBPIState | None:
             elif ledger_lower == "superseded":
                 return OBPIState.SUPERSEDED
     return None
+
+
+def obpi_status_is_terminal(status_term: str) -> bool:
+    """True when a frontmatter/ledger status maps to a terminal ``OBPIState``.
+
+    Terminal OBPI states (``withdrawn``, ``superseded``) have no outgoing
+    canonical transition. A lifecycle auto-fix must never silently move an OBPI
+    out of one — that is the GHI #348 clobber class (GHI #668). Unmapped terms
+    return ``False`` (not terminal), so legitimate non-terminal → completed
+    syncs are unaffected. This is the shared gate the reconcile chokepoint and
+    the ``closeout_form`` auto-fix path both consult, so one monitor governs
+    every governed-key writer (ADR-0.31.0 Decision item 4).
+    """
+    state = _map_vocab_to_obpi_state(status_term)
+    return state is not None and OBPI_STATES[state].terminal
 
 
 def _status_is_valid_obpi_transition(
