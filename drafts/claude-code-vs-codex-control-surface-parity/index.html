@@ -1,0 +1,8283 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Keep humans in the loop when AI writes your code">
+      
+      
+        <meta name="author" content="Jeffry">
+      
+      
+        <link rel="canonical" href="https://gzkit.org/drafts/claude-code-vs-codex-control-surface-parity/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Claude Code vs. Codex: Control-Surface Parity - gzkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#claude-code-vs-codex-control-surface-parity" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="gzkit" class="md-header__button md-logo" aria-label="gzkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            gzkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Claude Code vs. Codex: Control-Surface Parity
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tvproductions/gzkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tvproductions/gzkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="gzkit" class="md-nav__button md-logo" aria-label="gzkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    gzkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tvproductions/gzkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tvproductions/gzkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/runbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbook
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/why/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why gzkit?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/tutorial-first-project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First Project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/tutorial-rhea-bootstrap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RHEA Bootstrap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/guide-prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/guide-adr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/guide-tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Task Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/guide-releasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Templates
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Templates
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/templates/prd-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/templates/adr-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/templates/task-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Task Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Not Started"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_5" id="__nav_5_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assessments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Assessments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/gzkit-readiness-assessment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GZKit Readiness Assessment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/go-live-gap-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Go-Live Gap Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/comparison-gzkit-speckit-bmad/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Framework Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concepts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/lanes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lanes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/adr-taxonomy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Taxonomy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/foundation-feature-invariance-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundation/Feature Invariance Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/obpis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPIs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/closeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Closeout Ceremony
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Daily Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/test-traceability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Traceability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Skills
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Setup
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project Setup
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-init/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-init
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-prd
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-constitute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-constitute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Planning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-adr-create/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-create
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-obpi-specify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-specify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-adr-evaluate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-evaluate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-plan-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-plan-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_4" id="__nav_7_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Execution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Execution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-obpi-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-implement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-implement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-arb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-arb
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-complexity-advisor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-complexity-advisor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_5" id="__nav_7_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status & Review
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Status & Review
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-state
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-obpi-simplify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-simplify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-adr-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Closeout & Audit
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Closeout & Audit
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-adr-closeout-ceremony/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-closeout-ceremony
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-adr-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-obpi-reconcile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-reconcile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-adr-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-validate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_7" id="__nav_7_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/git-sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /git-sync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-patch-release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-session-handoff/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-session-handoff
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-chore-runner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-chore-runner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-obpi-lock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-lock
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-cli-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-cli-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manpages
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Manpages
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/init/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz init
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz prd
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/constitute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz constitute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/specify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz specify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/plan-create/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz plan create
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/plan-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz plan audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/implement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz implement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz state
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/adr-promote/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr promote
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/adr-audit-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr audit-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/adr-fidelity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr fidelity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/adr-covers-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr covers-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/adr-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/covers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz covers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/flag-explain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz flag explain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/obpi-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/obpi-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/obpi-validate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/obpi-reconcile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi reconcile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/obpi-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/closeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz closeout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz patch release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/git-sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz git-sync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/attest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz attest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/migrate-semver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz migrate-semver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/register-adrs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz register-adrs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/chores-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/chores-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/chores-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/chores-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/skill-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz skill audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/parity-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz parity check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/readiness-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz readiness audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/check-config-paths/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz check-config-paths
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/cli-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz cli audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/task-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/task-start/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/task-complete/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task complete
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/task-block/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task block
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/task-escalate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task escalate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/personas-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz personas list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/agent-sync-control-surfaces/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz agent sync control-surfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance (Canonical)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Governance (Canonical)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/governance_runbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance Runbook
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/state-doctrine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State Doctrine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/storage-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage Tiers Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/pipeline-marker-migration-path/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Marker Migration Path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/documentation-taxonomy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Taxonomy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/feature-flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/pool-curation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pool Curation Policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/parity-intake-rubric/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parity Intake Rubric
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/command-doctrine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Doctrine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/charter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Charter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/adr-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/obpi-transaction-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Transaction Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/obpi-runtime-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Runtime Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/obpi-decomposition-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Decomposition Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/adr-obpi-ghi-audit-linkage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR/OBPI/GHI/Audit Linkage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/audit-protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit Protocol
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/gate5-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gate 5 Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/architectural-enforcement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architectural Enforcement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/gzkit-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gzkit Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/governance-registry-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance Registry Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/agent-era-prompting-summary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent-Era Prompting Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/layered-trust/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layered Trust
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/ledger-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ledger Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/session-handoff-obligations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session Handoff Obligations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/session-handoff-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session Handoff Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/handoff-chaining/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handoff Chaining
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/handoff-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handoff Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/staleness-classification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Staleness Classification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/validation-receipts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation Receipts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9_31" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_31" id="__nav_9_31_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_31_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_31">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Releases
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/releases/major-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Major Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/releases/minor-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Minor Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/releases/patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Patch Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9_32" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_32" id="__nav_9_32_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audits
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_32_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_32">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Audits
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/audits/AUDIT-BRIEF-governance-harmonization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harmonization Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/audits/governance-harmonization-2026-01-11/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harmonization Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/audits/AUDIT-TEMPLATE-agent-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Readiness Audit Template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docs README
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/reference/charter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Charter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/reference/lineage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lineage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/reference/agent-input-disciplines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Input Disciplines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/reference/genesis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Genesis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/reference/genesis-transcript/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Genesis Transcript
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/reference/airlineops-exploration-verbatim/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AirlineOps Exploration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What this is
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bottom-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bottom line
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-executive-readout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1) Executive readout
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1) Executive readout">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#where-claude-code-is-ahead" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where Claude Code is ahead
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-codex-is-ahead" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where Codex is ahead
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clean-planning-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clean planning summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-parity-at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2) Parity at a glance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-the-critical-taxonomy-guidance-vs-policy-vs-enforcement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3) The critical taxonomy: guidance vs policy vs enforcement
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3) The critical taxonomy: guidance vs policy vs enforcement">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-behavioral-guidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A. Behavioral guidance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-tool-command-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B. Tool / command policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-deterministic-enforcement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C. Deterministic enforcement
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-rules-the-most-important-parity-correction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4) Rules: the most important parity correction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#41-claude-has-three-rule-surfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Claude has three rule surfaces
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1 Claude has three rule surfaces">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-instruction-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Instruction rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-permission-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Permission rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-hook-enforced-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Hook-enforced rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#42-codex-rules-mean-something-different" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Codex “rules” mean something different
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2 Codex “rules” mean something different">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#practical-parity-call-on-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical parity call on rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-repo-instructions-and-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5) Repo instructions and memory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#51-claude-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Claude Code
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.1 Claude Code">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#main-instruction-surfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Main instruction surfaces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-strengths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key strengths
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#important-limitation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important limitation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#52-codex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Codex
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.2 Codex">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#main-instruction-surfaces_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Main instruction surfaces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-strengths_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key strengths
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#important-limitation_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important limitation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-guidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration guidance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-permissions-approvals-and-sandboxing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6) Permissions, approvals, and sandboxing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#61-claude-code-mental-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Claude Code mental model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#62-codex-mental-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Codex mental model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.2 Codex mental model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#important-non-equivalence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important non-equivalence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#permission-parity-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permission parity summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hard-planning-note" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hard planning note
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-hooks-and-lifecycle-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7) Hooks and lifecycle control
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#71-claude-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Claude Code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#72-codex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Codex
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.2 Codex">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hook-parity-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hook parity summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-skills-plugins-and-mcp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8) Skills, plugins, and MCP
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#81-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Skills
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.1 Skills">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#claude-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Claude Code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Codex
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#skill-parity-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Skill parity call
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#82-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Plugins
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.2 Plugins">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#claude-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Claude plugins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codex-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Codex plugins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin-parity-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin parity call
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#83-mcp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 MCP
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.3 MCP">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#claude-advantages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Claude advantages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codex-advantages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Codex advantages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp-parity-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP parity call
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-subagents-and-multi-agent-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9) Subagents and multi-agent control
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#91-claude-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Claude Code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#92-codex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Codex
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9.2 Codex">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#subagent-parity-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Subagent parity summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#planning-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Planning call
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-appworktreesreviewgit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10) App/worktrees/review/Git
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#101-codex-is-meaningfully-ahead-here" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Codex is meaningfully ahead here
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.1 Codex is meaningfully ahead here">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#worktrees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worktrees
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#review-pane" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Review pane
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#102-claude-is-good-here-but-less-productized" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Claude is good here, but less productized
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.2 Claude is good here, but less productized">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#appreview-parity-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        App/review parity call
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-automation-and-non-interactive-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11) Automation and non-interactive execution
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#111-claude-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.1 Claude Code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#112-codex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.2 Codex
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.2 Codex">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#automation-parity-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automation parity summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-browser-and-computer-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12) Browser and computer use
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#121-claude-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.1 Claude Code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#122-codex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.2 Codex
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12.2 Codex">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#browser-parity-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Browser parity call
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-governance-and-admin-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13) Governance and admin control
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13) Governance and admin control">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#claude-strengths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Claude strengths
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codex-strengths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Codex strengths
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#governance-planning-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Governance planning call
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-migration-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14) Migration map
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#141-artifact-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.1 Artifact mapping
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#142-the-safest-migration-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.2 The safest migration strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-where-parity-is-genuinely-high" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15) Where parity is genuinely high
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-where-parity-is-weak-or-misleading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16) Where parity is weak or misleading
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-decision-guidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17) Decision guidance
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17) Decision guidance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#choose-claude-code-as-the-lead-platform-if-you-need" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choose Claude Code as the lead platform if you need:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choose-codex-as-the-lead-platform-if-you-need" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choose Codex as the lead platform if you need:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#if-you-need-both" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        If you need both
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-final-scorecard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18) Final scorecard
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19-final-conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19) Final conclusion
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source links
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Source links">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#claude-code_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Claude Code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codex_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Codex
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="claude-code-vs-codex-control-surface-parity">Claude Code vs. Codex: Control-Surface Parity<a class="headerlink" href="#claude-code-vs-codex-control-surface-parity" title="Permanent link">&para;</a></h1>
+<p><em>Last updated: April 18, 2026</em></p>
+<h2 id="what-this-is">What this is<a class="headerlink" href="#what-this-is" title="Permanent link">&para;</a></h2>
+<p>This is a <strong>product-control-surface comparison</strong>, not a model comparison.</p>
+<p>I’m comparing every practical surface that shapes how the coding agent behaves:</p>
+<ul>
+<li>where you can use it (CLI, IDE, app, web, mobile, Slack, CI)</li>
+<li>what persistent repo guidance it reads</li>
+<li>how “rules” actually work</li>
+<li>how permissions, sandboxing, approvals, and hooks work</li>
+<li>how reusable workflows are packaged (skills, plugins, MCP)</li>
+<li>how multi-agent delegation works</li>
+<li>how review, worktrees, automations, and cloud execution work</li>
+<li>what is admin-enforceable versus advisory only</li>
+</ul>
+<hr />
+<h2 id="bottom-line">Bottom line<a class="headerlink" href="#bottom-line" title="Permanent link">&para;</a></h2>
+<p>Claude Code and Codex are <strong>close at the primitive layer</strong> and <strong>different at the control-surface layer</strong>.</p>
+<ul>
+<li><strong>Claude Code</strong> is stronger as a <strong>cross-surface, terminal-first, hookable, subagent-rich coding harness</strong>.</li>
+<li><strong>Codex</strong> is stronger as a <strong>structured app/worktree/cloud/automation platform</strong>.</li>
+</ul>
+<p>The biggest planning mistake is to treat these as clones. They are not.</p>
+<p>The biggest naming trap is this:</p>
+<blockquote>
+<p><strong>Claude <code>.claude/rules</code> and Codex <code>.rules</code> are not the same thing.</strong></p>
+</blockquote>
+<ul>
+<li>Claude <code>.claude/rules/*.md</code> = <strong>instruction/context-loading rules</strong></li>
+<li>Codex <code>.rules</code> = <strong>command-execution policy rules</strong></li>
+</ul>
+<p>That distinction matters a lot for migration, governance, and parity planning.</p>
+<hr />
+<h2 id="1-executive-readout">1) Executive readout<a class="headerlink" href="#1-executive-readout" title="Permanent link">&para;</a></h2>
+<h3 id="where-claude-code-is-ahead">Where Claude Code is ahead<a class="headerlink" href="#where-claude-code-is-ahead" title="Permanent link">&para;</a></h3>
+<p>Claude Code is ahead when the job depends on:</p>
+<ul>
+<li><strong>cross-surface continuity</strong>: terminal ↔ desktop ↔ web ↔ phone ↔ Slack ↔ CI</li>
+<li><strong>Remote Control</strong>: continue a local session from another device while execution stays local</li>
+<li><strong>instruction layering</strong> with <code>CLAUDE.md</code>, <code>CLAUDE.local.md</code>, and path-scoped <code>.claude/rules</code></li>
+<li><strong>tool-native permission rules</strong> over Bash, Read/Edit, WebFetch, MCP, and subagents</li>
+<li><strong>mature lifecycle hooks</strong> with many interception points</li>
+<li><strong>automatic subagent delegation</strong></li>
+<li><strong>agent teams</strong></li>
+<li><strong>authenticated browser automation</strong> through the Chrome extension</li>
+<li><strong>broader plugin packaging</strong>: skills, agents, hooks, MCP, LSP, monitors, executables, settings</li>
+</ul>
+<h3 id="where-codex-is-ahead">Where Codex is ahead<a class="headerlink" href="#where-codex-is-ahead" title="Permanent link">&para;</a></h3>
+<p>Codex is ahead when the job depends on:</p>
+<ul>
+<li><strong>app-centric parallel work</strong></li>
+<li><strong>first-class worktree mode</strong></li>
+<li><strong>review pane + inline comments + stage/revert by file/hunk</strong></li>
+<li><strong>structured automation</strong> with <code>codex exec</code>, JSONL, and schema outputs</li>
+<li><strong>app-server / custom-client integration</strong></li>
+<li><strong>explicit sandbox / approval / network controls</strong></li>
+<li><strong>artifact handling</strong> in the app</li>
+<li><strong>native Windows sandboxing</strong></li>
+<li><strong>plugin/app integration surfaces</strong></li>
+<li><strong>Codex Security</strong> as a separate scanning product</li>
+</ul>
+<h3 id="clean-planning-summary">Clean planning summary<a class="headerlink" href="#clean-planning-summary" title="Permanent link">&para;</a></h3>
+<p>If you want a <strong>coding-agent shell with strong policy and orchestration</strong>, Claude is ahead.</p>
+<p>If you want a <strong>desktop app + worktree + review + cloud + automation operating system</strong>, Codex is ahead.</p>
+<hr />
+<h2 id="2-parity-at-a-glance">2) Parity at a glance<a class="headerlink" href="#2-parity-at-a-glance" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Control surface</th>
+<th>Claude Code</th>
+<th>Codex</th>
+<th>Planning call</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CLI</td>
+<td>Strong</td>
+<td>Strong</td>
+<td>Near parity; different emphasis</td>
+</tr>
+<tr>
+<td>IDE</td>
+<td>Strong</td>
+<td>Strong</td>
+<td>Near parity</td>
+</tr>
+<tr>
+<td>App/Desktop</td>
+<td>Good</td>
+<td>Stronger</td>
+<td>Codex is more app-centric</td>
+</tr>
+<tr>
+<td>Web/Cloud</td>
+<td>Strong</td>
+<td>Strong</td>
+<td>Similar goal, different execution model</td>
+</tr>
+<tr>
+<td>Mobile/local continuity</td>
+<td>Strong</td>
+<td>Limited equivalent</td>
+<td>Claude lead</td>
+</tr>
+<tr>
+<td>Repo instructions</td>
+<td>Strong</td>
+<td>Strong</td>
+<td>Similar purpose, different mechanics</td>
+</tr>
+<tr>
+<td>Rules</td>
+<td>Broader taxonomy</td>
+<td>Different taxonomy</td>
+<td>Not 1:1</td>
+</tr>
+<tr>
+<td>Permissions</td>
+<td>Tool-native</td>
+<td>Sandbox/approval-native</td>
+<td>Different mental model</td>
+</tr>
+<tr>
+<td>Sandboxing</td>
+<td>Secondary but important</td>
+<td>Central</td>
+<td>Codex lead</td>
+</tr>
+<tr>
+<td>Hooks</td>
+<td>Broad and mature</td>
+<td>Experimental and narrower</td>
+<td>Claude lead</td>
+</tr>
+<tr>
+<td>Skills</td>
+<td>Strong</td>
+<td>Strong</td>
+<td>Very high parity</td>
+</tr>
+<tr>
+<td>Plugins</td>
+<td>Broader runtime packaging</td>
+<td>Stronger app-integration packaging</td>
+<td>Split lead</td>
+</tr>
+<tr>
+<td>MCP</td>
+<td>Strong</td>
+<td>Strong</td>
+<td>High parity</td>
+</tr>
+<tr>
+<td>Subagents</td>
+<td>More autonomous</td>
+<td>More explicit</td>
+<td>Claude lead</td>
+</tr>
+<tr>
+<td>Agent teams</td>
+<td>Yes</td>
+<td>No direct equivalent</td>
+<td>Claude lead</td>
+</tr>
+<tr>
+<td>Worktrees</td>
+<td>Indirect / less central</td>
+<td>First-class</td>
+<td>Codex lead</td>
+</tr>
+<tr>
+<td>Review UX</td>
+<td>Good</td>
+<td>Stronger</td>
+<td>Codex lead</td>
+</tr>
+<tr>
+<td>CI / non-interactive</td>
+<td>Strong</td>
+<td>Stronger structure</td>
+<td>Codex lead</td>
+</tr>
+<tr>
+<td>Browser automation</td>
+<td>Stronger</td>
+<td>More limited</td>
+<td>Claude lead</td>
+</tr>
+<tr>
+<td>Computer use</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Near parity</td>
+</tr>
+<tr>
+<td>Windows sandboxing</td>
+<td>Less central</td>
+<td>Strong</td>
+<td>Codex lead</td>
+</tr>
+<tr>
+<td>Enterprise policy</td>
+<td>Strong</td>
+<td>Strong</td>
+<td>High parity</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-the-critical-taxonomy-guidance-vs-policy-vs-enforcement">3) The critical taxonomy: guidance vs policy vs enforcement<a class="headerlink" href="#3-the-critical-taxonomy-guidance-vs-policy-vs-enforcement" title="Permanent link">&para;</a></h2>
+<p>This is the right way to think about control-surface parity.</p>
+<h3 id="a-behavioral-guidance">A. Behavioral guidance<a class="headerlink" href="#a-behavioral-guidance" title="Permanent link">&para;</a></h3>
+<p>This is the layer that answers:</p>
+<blockquote>
+<p>“How should the agent behave in this repo?”</p>
+</blockquote>
+<p><strong>Claude Code</strong></p>
+<ul>
+<li><code>CLAUDE.md</code></li>
+<li><code>CLAUDE.local.md</code></li>
+<li><code>.claude/rules/*.md</code></li>
+<li>auto memory</li>
+</ul>
+<p><strong>Codex</strong></p>
+<ul>
+<li><code>AGENTS.md</code></li>
+<li><code>AGENTS.override.md</code></li>
+<li>nested <code>AGENTS.md</code></li>
+<li>optional local memories</li>
+</ul>
+<p>These are <strong>guidance surfaces</strong>, not hard enforcement.</p>
+<h3 id="b-tool-command-policy">B. Tool / command policy<a class="headerlink" href="#b-tool-command-policy" title="Permanent link">&para;</a></h3>
+<p>This is the layer that answers:</p>
+<blockquote>
+<p>“What may the agent run, read, edit, fetch, or delegate?”</p>
+</blockquote>
+<p><strong>Claude Code</strong></p>
+<ul>
+<li><code>permissions.allow</code></li>
+<li><code>permissions.ask</code></li>
+<li><code>permissions.deny</code></li>
+<li>rules over <code>Bash(...)</code>, <code>Read(...)</code>, <code>Edit(...)</code>, <code>WebFetch(...)</code>, <code>Agent(...)</code>, MCP tools</li>
+</ul>
+<p><strong>Codex</strong></p>
+<ul>
+<li><code>sandbox_mode</code></li>
+<li><code>approval_policy</code></li>
+<li><code>.rules</code> with <code>prefix_rule(...)</code></li>
+<li>network / filesystem constraints in config</li>
+</ul>
+<h3 id="c-deterministic-enforcement">C. Deterministic enforcement<a class="headerlink" href="#c-deterministic-enforcement" title="Permanent link">&para;</a></h3>
+<p>This is the layer that answers:</p>
+<blockquote>
+<p>“How do I actually block or validate behavior even if prompting isn’t enough?”</p>
+</blockquote>
+<p><strong>Claude Code</strong></p>
+<ul>
+<li>hooks</li>
+<li>managed settings</li>
+<li>sandbox</li>
+</ul>
+<p><strong>Codex</strong></p>
+<ul>
+<li>sandbox</li>
+<li>approval policy</li>
+<li><code>.rules</code></li>
+<li>hooks</li>
+<li>managed requirements/defaults</li>
+</ul>
+<hr />
+<h2 id="4-rules-the-most-important-parity-correction">4) Rules: the most important parity correction<a class="headerlink" href="#4-rules-the-most-important-parity-correction" title="Permanent link">&para;</a></h2>
+<h2 id="41-claude-has-three-rule-surfaces">4.1 Claude has <strong>three</strong> rule surfaces<a class="headerlink" href="#41-claude-has-three-rule-surfaces" title="Permanent link">&para;</a></h2>
+<h3 id="1-instruction-rules">1. Instruction rules<a class="headerlink" href="#1-instruction-rules" title="Permanent link">&para;</a></h3>
+<p>Claude supports <code>.claude/rules/*.md</code> to break repo guidance into modular rule files.</p>
+<p>These can be:</p>
+<ul>
+<li>always loaded</li>
+<li>user-level</li>
+<li>shared across projects via symlinks</li>
+<li><strong>path-scoped</strong> using YAML frontmatter like <code>paths:</code></li>
+</ul>
+<p>Example:</p>
+<div class="highlight"><span class="filename">Markdown</span><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>---
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>paths:
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="k">-</span><span class="w"> </span>&quot;src/api/**/*.ts&quot;
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="gu">  - &quot;tests/api/**/*.test.ts&quot;</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="gu">---</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="gh"># API Rules</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="k">-</span><span class="w"> </span>Validate all inputs.
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="k">-</span><span class="w"> </span>Use the standard error shape.
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="k">-</span><span class="w"> </span>Update API tests when behavior changes.
+</code></pre></div>
+<p>This is a real control surface because it lets teams keep repo guidance modular and conditionally loaded.</p>
+<h3 id="2-permission-rules">2. Permission rules<a class="headerlink" href="#2-permission-rules" title="Permanent link">&para;</a></h3>
+<p>Claude also has tool-native permission rules.</p>
+<p>Example:</p>
+<div class="highlight"><span class="filename">JSON</span><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;permissions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">&quot;allow&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">      </span><span class="s2">&quot;Bash(npm run *)&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">      </span><span class="s2">&quot;Bash(git diff *)&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">      </span><span class="s2">&quot;Edit(/src/**)&quot;</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="p">],</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="nt">&quot;ask&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">      </span><span class="s2">&quot;Bash(git push *)&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">      </span><span class="s2">&quot;WebFetch&quot;</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="p">],</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="nt">&quot;deny&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">      </span><span class="s2">&quot;Read(./.env)&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">      </span><span class="s2">&quot;Bash(curl *)&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">      </span><span class="s2">&quot;Agent(Explore)&quot;</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">    </span><span class="p">]</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="p">}</span>
+</code></pre></div>
+<p>This is much broader than shell-only control because it reaches:</p>
+<ul>
+<li>shell commands</li>
+<li>built-in file tools</li>
+<li>web fetch</li>
+<li>subagents</li>
+<li>MCP tools</li>
+</ul>
+<h3 id="3-hook-enforced-rules">3. Hook-enforced rules<a class="headerlink" href="#3-hook-enforced-rules" title="Permanent link">&para;</a></h3>
+<p>Claude hooks can enforce deterministic policy at many lifecycle points.</p>
+<p>This is where Claude becomes much stronger than “just instructions” or “just permission prompts.”</p>
+<hr />
+<h2 id="42-codex-rules-mean-something-different">4.2 Codex “rules” mean something different<a class="headerlink" href="#42-codex-rules-mean-something-different" title="Permanent link">&para;</a></h2>
+<p>Codex <code>.rules</code> are <strong>not</strong> repo-guidance files.</p>
+<p>They are <strong>command-execution policy</strong> files used to control which commands can run outside the sandbox.</p>
+<p>Example:</p>
+<div class="highlight"><span class="filename">Python</span><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">prefix_rule</span><span class="p">(</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">pattern</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="s2">&quot;push&quot;</span><span class="p">],</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">decision</span> <span class="o">=</span> <span class="s2">&quot;prompt&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">justification</span> <span class="o">=</span> <span class="s2">&quot;Pushing affects the remote repository.&quot;</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="p">)</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">prefix_rule</span><span class="p">(</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">pattern</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;rm&quot;</span><span class="p">,</span> <span class="s2">&quot;-rf&quot;</span><span class="p">],</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">decision</span> <span class="o">=</span> <span class="s2">&quot;forbidden&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">justification</span> <span class="o">=</span> <span class="s2">&quot;Do not allow recursive destructive deletion.&quot;</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">)</span>
+</code></pre></div>
+<p>Codex applies the most restrictive matching decision:</p>
+<ul>
+<li><code>forbidden</code></li>
+<li><code>prompt</code></li>
+<li><code>allow</code></li>
+</ul>
+<p>So the right mapping is:</p>
+<ul>
+<li><strong>Claude <code>.claude/rules/*.md</code></strong> ↔ <strong>Codex <code>AGENTS.md</code> / nested <code>AGENTS.md</code></strong></li>
+<li><strong>Claude Bash permission rules</strong> ↔ <strong>Codex <code>.rules</code></strong></li>
+<li><strong>Claude hooks</strong> ↔ <strong>Codex hooks + sandbox + rules</strong></li>
+</ul>
+<h3 id="practical-parity-call-on-rules">Practical parity call on rules<a class="headerlink" href="#practical-parity-call-on-rules" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Rule type</th>
+<th>Claude</th>
+<th>Codex</th>
+<th>Winner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Modular repo guidance</td>
+<td><code>.claude/rules/*.md</code></td>
+<td>nested <code>AGENTS.md</code></td>
+<td>Claude</td>
+</tr>
+<tr>
+<td>Path-glob-scoped guidance</td>
+<td>yes</td>
+<td>not the same</td>
+<td>Claude</td>
+</tr>
+<tr>
+<td>Command prefix policy</td>
+<td>Bash permission rules</td>
+<td><code>.rules</code></td>
+<td>slight Codex lead</td>
+</tr>
+<tr>
+<td>Tool-level file/web/subagent rules</td>
+<td>yes</td>
+<td>not the same mechanism</td>
+<td>Claude</td>
+</tr>
+<tr>
+<td>OS-level enforcement</td>
+<td>sandbox + hooks</td>
+<td>sandbox + approvals + rules</td>
+<td>slight Codex lead</td>
+</tr>
+<tr>
+<td>Lifecycle rule enforcement</td>
+<td>hooks</td>
+<td>hooks, narrower</td>
+<td>Claude</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-repo-instructions-and-memory">5) Repo instructions and memory<a class="headerlink" href="#5-repo-instructions-and-memory" title="Permanent link">&para;</a></h2>
+<h2 id="51-claude-code">5.1 Claude Code<a class="headerlink" href="#51-claude-code" title="Permanent link">&para;</a></h2>
+<p>Claude’s guidance stack is richer and more modular.</p>
+<h3 id="main-instruction-surfaces">Main instruction surfaces<a class="headerlink" href="#main-instruction-surfaces" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>CLAUDE.md</code></li>
+<li><code>.claude/CLAUDE.md</code></li>
+<li><code>CLAUDE.local.md</code></li>
+<li><code>.claude/rules/*.md</code></li>
+<li>auto memory</li>
+</ul>
+<h3 id="key-strengths">Key strengths<a class="headerlink" href="#key-strengths" title="Permanent link">&para;</a></h3>
+<ul>
+<li>multiple scopes: project, local, user, org</li>
+<li>path-specific instruction loading via <code>.claude/rules</code></li>
+<li><code>CLAUDE.local.md</code> for personal project-specific rules that should not be committed</li>
+<li>auto memory as a lightweight carry-forward mechanism</li>
+</ul>
+<h3 id="important-limitation">Important limitation<a class="headerlink" href="#important-limitation" title="Permanent link">&para;</a></h3>
+<p>These are still <strong>context</strong>, not hard enforcement.</p>
+<h2 id="52-codex">5.2 Codex<a class="headerlink" href="#52-codex" title="Permanent link">&para;</a></h2>
+<p>Codex is simpler and cleaner, but less granular here.</p>
+<h3 id="main-instruction-surfaces_1">Main instruction surfaces<a class="headerlink" href="#main-instruction-surfaces_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>AGENTS.md</code></li>
+<li><code>AGENTS.override.md</code></li>
+<li>nested <code>AGENTS.md</code></li>
+<li>optional memories</li>
+</ul>
+<h3 id="key-strengths_1">Key strengths<a class="headerlink" href="#key-strengths_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>good directory-local guidance model</li>
+<li>clean global vs repo vs subdirectory guidance chain</li>
+<li>strong best-practice framing around keeping <code>AGENTS.md</code> short and practical</li>
+<li>memories are clearly separated from repo guidance</li>
+</ul>
+<h3 id="important-limitation_1">Important limitation<a class="headerlink" href="#important-limitation_1" title="Permanent link">&para;</a></h3>
+<p>Codex does not expose a direct equivalent to Claude’s <strong>path-frontmatter rule files</strong>.</p>
+<h3 id="migration-guidance">Migration guidance<a class="headerlink" href="#migration-guidance" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Claude</th>
+<th>Codex</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CLAUDE.md</code></td>
+<td><code>AGENTS.md</code></td>
+<td>straightforward mapping</td>
+</tr>
+<tr>
+<td><code>CLAUDE.local.md</code></td>
+<td>local untracked guidance / user defaults</td>
+<td>no exact equivalent</td>
+</tr>
+<tr>
+<td><code>.claude/rules/*.md</code></td>
+<td>nested <code>AGENTS.md</code></td>
+<td>closest approximation</td>
+</tr>
+<tr>
+<td>path-scoped <code>.claude/rules</code></td>
+<td>nearest directory <code>AGENTS.md</code></td>
+<td>loses glob precision</td>
+</tr>
+<tr>
+<td>auto memory</td>
+<td>Codex memories</td>
+<td>Codex memories are opt-in</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-permissions-approvals-and-sandboxing">6) Permissions, approvals, and sandboxing<a class="headerlink" href="#6-permissions-approvals-and-sandboxing" title="Permanent link">&para;</a></h2>
+<h2 id="61-claude-code-mental-model">6.1 Claude Code mental model<a class="headerlink" href="#61-claude-code-mental-model" title="Permanent link">&para;</a></h2>
+<p>Claude is <strong>tool-policy first</strong>.</p>
+<p>The main question is:</p>
+<blockquote>
+<p>“Can Claude use this tool without asking me?”</p>
+</blockquote>
+<p>Claude gives you:</p>
+<ul>
+<li>permission modes (<code>default</code>, <code>acceptEdits</code>, <code>plan</code>, <code>auto</code>, <code>dontAsk</code>, <code>bypassPermissions</code>)</li>
+<li>allow/ask/deny rules</li>
+<li>tool-pattern matching</li>
+<li>admin controls to disable risky modes</li>
+</ul>
+<p>This is user-friendly and expressive, especially for repo-local workflows.</p>
+<h2 id="62-codex-mental-model">6.2 Codex mental model<a class="headerlink" href="#62-codex-mental-model" title="Permanent link">&para;</a></h2>
+<p>Codex is <strong>sandbox first</strong>.</p>
+<p>The main question is:</p>
+<blockquote>
+<p>“What is technically possible inside the boundary, and when should Codex ask to cross it?”</p>
+</blockquote>
+<p>Codex gives you:</p>
+<ul>
+<li><code>sandbox_mode = read-only | workspace-write | danger-full-access</code></li>
+<li><code>approval_policy = untrusted | on-request | never</code></li>
+<li><code>.rules</code> for command-prefix policy</li>
+<li>more explicit filesystem/network/runtime policy modeling</li>
+</ul>
+<h3 id="important-non-equivalence">Important non-equivalence<a class="headerlink" href="#important-non-equivalence" title="Permanent link">&para;</a></h3>
+<p><code>--full-auto</code> in Codex is <strong>not</strong> the same thing as “full access.”</p>
+<ul>
+<li><code>--full-auto</code> = <code>workspace-write</code> + <code>on-request</code></li>
+<li>full access = <code>danger-full-access</code> + <code>never</code></li>
+</ul>
+<p>That matters if you are mapping from Claude <code>auto</code> or <code>bypassPermissions</code>.</p>
+<h3 id="permission-parity-summary">Permission parity summary<a class="headerlink" href="#permission-parity-summary" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Claude</th>
+<th>Codex</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>analyze only</td>
+<td><code>plan</code></td>
+<td><code>read-only</code></td>
+</tr>
+<tr>
+<td>edit workspace with some prompts</td>
+<td><code>default</code> / <code>acceptEdits</code></td>
+<td><code>workspace-write</code> + <code>on-request</code></td>
+</tr>
+<tr>
+<td>low-friction auto work</td>
+<td><code>auto</code> or allow rules</td>
+<td><code>--full-auto</code></td>
+</tr>
+<tr>
+<td>full unattended execution</td>
+<td><code>bypassPermissions</code></td>
+<td><code>danger-full-access</code> + <code>never</code></td>
+</tr>
+<tr>
+<td>allow/prompt/deny shell commands</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>allow/prompt/deny built-in file tools</td>
+<td>yes</td>
+<td>less direct</td>
+</tr>
+<tr>
+<td>allow/prompt/deny subagents</td>
+<td>yes</td>
+<td>less direct</td>
+</tr>
+<tr>
+<td>explicit OS boundary</td>
+<td>partial / secondary</td>
+<td>central</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hard-planning-note">Hard planning note<a class="headerlink" href="#hard-planning-note" title="Permanent link">&para;</a></h3>
+<p>Claude permission rules over <code>Read(...)</code> and <code>Edit(...)</code> do <strong>not</strong> automatically sandbox Bash. If you deny <code>Read(./.env)</code>, that blocks Claude’s file tool, not necessarily <code>cat .env</code> inside Bash. For process-level enforcement, Claude still needs sandboxing.</p>
+<p>That is one reason Codex’s sandbox model is operationally stronger for hard runtime boundaries.</p>
+<hr />
+<h2 id="7-hooks-and-lifecycle-control">7) Hooks and lifecycle control<a class="headerlink" href="#7-hooks-and-lifecycle-control" title="Permanent link">&para;</a></h2>
+<h2 id="71-claude-code">7.1 Claude Code<a class="headerlink" href="#71-claude-code" title="Permanent link">&para;</a></h2>
+<p>Hooks are one of Claude’s clearest advantages.</p>
+<p>Claude hooks can be:</p>
+<ul>
+<li>shell commands</li>
+<li>HTTP endpoints</li>
+<li>LLM prompt hooks</li>
+</ul>
+<p>Claude exposes many lifecycle points, including:</p>
+<ul>
+<li><code>InstructionsLoaded</code></li>
+<li><code>UserPromptSubmit</code></li>
+<li><code>PreToolUse</code></li>
+<li><code>PermissionRequest</code></li>
+<li><code>PostToolUse</code></li>
+<li><code>Stop</code></li>
+<li><code>SubagentStop</code></li>
+<li><code>TaskCreated</code></li>
+<li><code>TaskCompleted</code></li>
+<li><code>TeammateIdle</code></li>
+<li><code>ConfigChange</code></li>
+<li><code>WorktreeCreate</code></li>
+<li>more</li>
+</ul>
+<p>That makes Claude’s hook surface useful for:</p>
+<ul>
+<li>validation</li>
+<li>audit/logging</li>
+<li>policy enforcement</li>
+<li>prompt filtering</li>
+<li>tool-call gating</li>
+<li>permission-dialog automation</li>
+<li>agent-team orchestration hooks</li>
+</ul>
+<h2 id="72-codex">7.2 Codex<a class="headerlink" href="#72-codex" title="Permanent link">&para;</a></h2>
+<p>Codex hooks are useful, but clearly less mature.</p>
+<p>Current characteristics:</p>
+<ul>
+<li>experimental</li>
+<li>feature-flagged</li>
+<li>disabled on Windows</li>
+<li>turn-scoped hooks include <code>PreToolUse</code>, <code>PostToolUse</code>, <code>UserPromptSubmit</code>, <code>Stop</code></li>
+<li>current <code>PreToolUse</code> / <code>PostToolUse</code> emission is effectively Bash-only</li>
+</ul>
+<p>That means Codex hooks are best thought of as:</p>
+<ul>
+<li>a useful extensibility layer</li>
+<li>not yet a broad lifecycle-governance system on par with Claude</li>
+</ul>
+<h3 id="hook-parity-summary">Hook parity summary<a class="headerlink" href="#hook-parity-summary" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Hook dimension</th>
+<th>Claude</th>
+<th>Codex</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>maturity</td>
+<td>high</td>
+<td>lower / experimental</td>
+</tr>
+<tr>
+<td>breadth</td>
+<td>broad</td>
+<td>narrower</td>
+</tr>
+<tr>
+<td>shell hooks</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>HTTP hooks</td>
+<td>yes</td>
+<td>not documented the same way</td>
+</tr>
+<tr>
+<td>LLM hooks</td>
+<td>yes</td>
+<td>not documented the same way</td>
+</tr>
+<tr>
+<td>permission-dialog interception</td>
+<td>yes</td>
+<td>no equivalent</td>
+</tr>
+<tr>
+<td>instruction-load hook</td>
+<td>yes</td>
+<td>no equivalent</td>
+</tr>
+<tr>
+<td>Windows support</td>
+<td>yes</td>
+<td>disabled for now</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-skills-plugins-and-mcp">8) Skills, plugins, and MCP<a class="headerlink" href="#8-skills-plugins-and-mcp" title="Permanent link">&para;</a></h2>
+<h2 id="81-skills">8.1 Skills<a class="headerlink" href="#81-skills" title="Permanent link">&para;</a></h2>
+<p>This is one of the highest-parity areas.</p>
+<h3 id="claude-code">Claude Code<a class="headerlink" href="#claude-code" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>SKILL.md</code></li>
+<li>project / user / plugin / enterprise skill locations</li>
+<li>direct <code>/skill-name</code> invocation</li>
+<li>automatic invocation when relevant</li>
+<li>bundled skills like <code>/debug</code>, <code>/simplify</code>, <code>/loop</code></li>
+<li>custom commands folded into skills</li>
+</ul>
+<h3 id="codex">Codex<a class="headerlink" href="#codex" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>SKILL.md</code></li>
+<li>progressive disclosure</li>
+<li><code>$skill-name</code> / <code>/skills</code></li>
+<li>automatic invocation when relevant</li>
+<li>built-in creator workflow (<code>$skill-creator</code>)</li>
+<li>optional scripts, references, and assets</li>
+</ul>
+<h3 id="skill-parity-call">Skill parity call<a class="headerlink" href="#skill-parity-call" title="Permanent link">&para;</a></h3>
+<p>Very high parity. A Claude skill usually ports to Codex with modest adjustment.</p>
+<h2 id="82-plugins">8.2 Plugins<a class="headerlink" href="#82-plugins" title="Permanent link">&para;</a></h2>
+<h3 id="claude-plugins">Claude plugins<a class="headerlink" href="#claude-plugins" title="Permanent link">&para;</a></h3>
+<p>Claude plugins can package:</p>
+<ul>
+<li>skills</li>
+<li>agents</li>
+<li>hooks</li>
+<li>MCP servers</li>
+<li>LSP servers</li>
+<li>monitors</li>
+<li>executables</li>
+<li>default settings</li>
+</ul>
+<p>This is closer to a <strong>runtime extension package</strong>.</p>
+<h3 id="codex-plugins">Codex plugins<a class="headerlink" href="#codex-plugins" title="Permanent link">&para;</a></h3>
+<p>Codex plugins package:</p>
+<ul>
+<li>skills</li>
+<li>app integrations</li>
+<li>MCP servers</li>
+</ul>
+<p>This is closer to a <strong>workflow/app-integration package</strong>.</p>
+<h3 id="plugin-parity-call">Plugin parity call<a class="headerlink" href="#plugin-parity-call" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Claude is broader for runtime packaging.</li>
+<li>Codex is stronger for app-facing integrations.</li>
+</ul>
+<h2 id="83-mcp">8.3 MCP<a class="headerlink" href="#83-mcp" title="Permanent link">&para;</a></h2>
+<p>Both have strong MCP support.</p>
+<h3 id="claude-advantages">Claude advantages<a class="headerlink" href="#claude-advantages" title="Permanent link">&para;</a></h3>
+<ul>
+<li>tightly integrated with its cross-surface model</li>
+<li>plugin-packaged MCP</li>
+<li>org/admin control surfaces</li>
+</ul>
+<h3 id="codex-advantages">Codex advantages<a class="headerlink" href="#codex-advantages" title="Permanent link">&para;</a></h3>
+<ul>
+<li>very explicit TOML config surface</li>
+<li>detailed server/env/header/timeout/tool controls</li>
+</ul>
+<h3 id="mcp-parity-call">MCP parity call<a class="headerlink" href="#mcp-parity-call" title="Permanent link">&para;</a></h3>
+<p>High parity. This is not a major differentiator unless your team cares a lot about config style or plugin packaging model.</p>
+<hr />
+<h2 id="9-subagents-and-multi-agent-control">9) Subagents and multi-agent control<a class="headerlink" href="#9-subagents-and-multi-agent-control" title="Permanent link">&para;</a></h2>
+<h2 id="91-claude-code">9.1 Claude Code<a class="headerlink" href="#91-claude-code" title="Permanent link">&para;</a></h2>
+<p>Claude’s subagent story is deeper.</p>
+<p>Claude supports:</p>
+<ul>
+<li>built-in and custom subagents</li>
+<li>automatic delegation</li>
+<li>explicit invocation</li>
+<li>@-mention patterns</li>
+<li>session-wide agent selection</li>
+<li>rich per-agent configuration</li>
+<li>agent teams as a separate orchestration layer</li>
+</ul>
+<p>This matters because Claude is comfortable acting as an orchestrator.</p>
+<h2 id="92-codex">9.2 Codex<a class="headerlink" href="#92-codex" title="Permanent link">&para;</a></h2>
+<p>Codex supports specialized subagent workflows in parallel, but they are more explicit.</p>
+<p>Codex only spawns subagents when the user explicitly asks it to.</p>
+<p>This is a more conservative, easier-to-reason-about model, but it is less autonomous.</p>
+<h3 id="subagent-parity-summary">Subagent parity summary<a class="headerlink" href="#subagent-parity-summary" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Claude</th>
+<th>Codex</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>built-in/custom agents</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>automatic delegation</td>
+<td>yes</td>
+<td>no</td>
+</tr>
+<tr>
+<td>explicit parallel agents</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>per-agent control richness</td>
+<td>stronger</td>
+<td>good but narrower</td>
+</tr>
+<tr>
+<td>agent teams</td>
+<td>yes</td>
+<td>no direct equivalent</td>
+</tr>
+<tr>
+<td>predictability</td>
+<td>lower by design</td>
+<td>higher by design</td>
+</tr>
+</tbody>
+</table>
+<h3 id="planning-call">Planning call<a class="headerlink" href="#planning-call" title="Permanent link">&para;</a></h3>
+<p>If you want <strong>autonomous decomposition</strong>, Claude is ahead.</p>
+<p>If you want <strong>explicit parallel task spawning with clearer operator intent</strong>, Codex is solid.</p>
+<hr />
+<h2 id="10-appworktreesreviewgit">10) App/worktrees/review/Git<a class="headerlink" href="#10-appworktreesreviewgit" title="Permanent link">&para;</a></h2>
+<h2 id="101-codex-is-meaningfully-ahead-here">10.1 Codex is meaningfully ahead here<a class="headerlink" href="#101-codex-is-meaningfully-ahead-here" title="Permanent link">&para;</a></h2>
+<p>Codex turns worktrees and review into first-class product surfaces.</p>
+<h3 id="worktrees">Worktrees<a class="headerlink" href="#worktrees" title="Permanent link">&para;</a></h3>
+<p>Codex thread modes include:</p>
+<ul>
+<li>Local</li>
+<li>Worktree</li>
+<li>Cloud</li>
+</ul>
+<p>Worktree mode is not just “Git worktrees exist.” It is an actual app workflow:</p>
+<ul>
+<li>create a worktree for a thread</li>
+<li>keep work isolated from your main checkout</li>
+<li>hand the thread off between Worktree and Local</li>
+<li>preserve thread ↔ worktree association over time</li>
+<li>use worktrees for background automation</li>
+</ul>
+<h3 id="review-pane">Review pane<a class="headerlink" href="#review-pane" title="Permanent link">&para;</a></h3>
+<p>Codex’s review pane is unusually strong as a control surface:</p>
+<ul>
+<li>inspect diff</li>
+<li>leave inline comments</li>
+<li>stage / unstage / revert</li>
+<li>do that at entire diff, file, or hunk level</li>
+<li>keep the full PR-fix loop in one place</li>
+</ul>
+<p>That is real product surface, not just “can review code.”</p>
+<h2 id="102-claude-is-good-here-but-less-productized">10.2 Claude is good here, but less productized<a class="headerlink" href="#102-claude-is-good-here-but-less-productized" title="Permanent link">&para;</a></h2>
+<p>Claude can:</p>
+<ul>
+<li>stage changes</li>
+<li>write commit messages</li>
+<li>create branches and PRs</li>
+<li>run code review in GitHub</li>
+<li>operate through CI surfaces</li>
+<li>use desktop for visual diff review</li>
+</ul>
+<p>But in the docs reviewed, Claude does not expose the same <strong>app-native review loop</strong> as Codex.</p>
+<h3 id="appreview-parity-call">App/review parity call<a class="headerlink" href="#appreview-parity-call" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>Claude</th>
+<th>Codex</th>
+<th>Winner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Git actions</td>
+<td>strong</td>
+<td>strong</td>
+<td>tie</td>
+</tr>
+<tr>
+<td>visual diff review</td>
+<td>good</td>
+<td>stronger</td>
+<td>Codex</td>
+</tr>
+<tr>
+<td>inline review comments in app</td>
+<td>limited equivalent</td>
+<td>strong</td>
+<td>Codex</td>
+</tr>
+<tr>
+<td>hunk-level accept/revert in app</td>
+<td>less central</td>
+<td>strong</td>
+<td>Codex</td>
+</tr>
+<tr>
+<td>GitHub PR review</td>
+<td>strong</td>
+<td>strong</td>
+<td>tie</td>
+</tr>
+<tr>
+<td>GitLab CI/CD</td>
+<td>strong</td>
+<td>weaker / not equivalent in docs reviewed</td>
+<td>Claude</td>
+</tr>
+<tr>
+<td>worktree-first parallel tasks</td>
+<td>less central</td>
+<td>strong</td>
+<td>Codex</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="11-automation-and-non-interactive-execution">11) Automation and non-interactive execution<a class="headerlink" href="#11-automation-and-non-interactive-execution" title="Permanent link">&para;</a></h2>
+<h2 id="111-claude-code">11.1 Claude Code<a class="headerlink" href="#111-claude-code" title="Permanent link">&para;</a></h2>
+<p>Claude’s automation style is more conversational and shell-native.</p>
+<p>Main surfaces:</p>
+<ul>
+<li><code>claude -p</code></li>
+<li>CLI piping</li>
+<li>GitHub Actions</li>
+<li>GitLab CI/CD</li>
+<li>routines</li>
+<li>desktop scheduled tasks</li>
+<li><code>/loop</code></li>
+<li>Agent SDK</li>
+</ul>
+<p>This is especially good when you want:</p>
+<ul>
+<li>terminal composition</li>
+<li>recurring remote tasks</li>
+<li>local scheduled tasks</li>
+<li>agent flows that stay close to normal Claude usage</li>
+</ul>
+<h2 id="112-codex">11.2 Codex<a class="headerlink" href="#112-codex" title="Permanent link">&para;</a></h2>
+<p>Codex’s automation style is more infrastructure-like.</p>
+<p>Main surfaces:</p>
+<ul>
+<li><code>codex exec</code></li>
+<li>JSONL event stream</li>
+<li>structured final output with schema</li>
+<li>app automations</li>
+<li>thread automations</li>
+<li>app-server JSON-RPC</li>
+<li>GitHub Action</li>
+<li>SDK</li>
+</ul>
+<p>This is especially good when you want:</p>
+<ul>
+<li>robust CI integration</li>
+<li>machine-readable output</li>
+<li>background work in worktrees</li>
+<li>custom clients</li>
+<li>task orchestration in app/cloud systems</li>
+</ul>
+<h3 id="automation-parity-summary">Automation parity summary<a class="headerlink" href="#automation-parity-summary" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Better fit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>quick shell one-shot</td>
+<td>tie</td>
+</tr>
+<tr>
+<td>CI with event stream</td>
+<td>Codex</td>
+</tr>
+<tr>
+<td>schema-constrained output</td>
+<td>Codex</td>
+</tr>
+<tr>
+<td>scheduled local task</td>
+<td>Codex or Claude</td>
+</tr>
+<tr>
+<td>scheduled remote/cloud task</td>
+<td>Codex or Claude</td>
+</tr>
+<tr>
+<td>GitLab CI/CD</td>
+<td>Claude</td>
+</tr>
+<tr>
+<td>custom rich client</td>
+<td>Codex</td>
+</tr>
+<tr>
+<td>lifecycle-enforced automation</td>
+<td>Claude</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="12-browser-and-computer-use">12) Browser and computer use<a class="headerlink" href="#12-browser-and-computer-use" title="Permanent link">&para;</a></h2>
+<h2 id="121-claude-code">12.1 Claude Code<a class="headerlink" href="#121-claude-code" title="Permanent link">&para;</a></h2>
+<p>Claude’s Chrome integration is a major differentiator.</p>
+<p>It supports:</p>
+<ul>
+<li>browser automation from CLI / VS Code</li>
+<li>visible Chrome/Edge tab control</li>
+<li>shared browser login state</li>
+<li>authenticated app testing</li>
+<li>local web app debugging</li>
+<li>console log debugging</li>
+</ul>
+<p>That is stronger than a generic “browser preview.”</p>
+<p>Claude also has computer use for GUI tasks.</p>
+<h2 id="122-codex">12.2 Codex<a class="headerlink" href="#122-codex" title="Permanent link">&para;</a></h2>
+<p>Codex has:</p>
+<ul>
+<li>in-app browser for local/public/unauthenticated pages</li>
+<li>browser comments for UI feedback</li>
+<li>computer use in the app</li>
+</ul>
+<p>The in-app browser is useful, but the docs explicitly limit it:</p>
+<ul>
+<li>no authentication flows</li>
+<li>no signed-in browser profile behavior</li>
+<li>no cookies/extensions/tabs in the usual browser sense</li>
+</ul>
+<h3 id="browser-parity-call">Browser parity call<a class="headerlink" href="#browser-parity-call" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>Claude</th>
+<th>Codex</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>authenticated web app testing</td>
+<td>strong</td>
+<td>weak</td>
+</tr>
+<tr>
+<td>local/public preview</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>visual browser feedback in app</td>
+<td>weaker</td>
+<td>stronger</td>
+</tr>
+<tr>
+<td>GUI operation</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<p>Claude wins on real browser automation. Codex wins on app-contained preview/comment workflow.</p>
+<hr />
+<h2 id="13-governance-and-admin-control">13) Governance and admin control<a class="headerlink" href="#13-governance-and-admin-control" title="Permanent link">&para;</a></h2>
+<p>Both products have serious enterprise policy surfaces.</p>
+<h3 id="claude-strengths">Claude strengths<a class="headerlink" href="#claude-strengths" title="Permanent link">&para;</a></h3>
+<ul>
+<li>managed settings precedence</li>
+<li>per-surface shared policy model</li>
+<li>managed-only hook policy options</li>
+<li>mature permission-rule governance</li>
+<li>good fit if your policy model is “who can use what tool, when?”</li>
+</ul>
+<h3 id="codex-strengths">Codex strengths<a class="headerlink" href="#codex-strengths" title="Permanent link">&para;</a></h3>
+<ul>
+<li>managed requirements/defaults</li>
+<li>sandbox/approval policy enforcement</li>
+<li>stronger runtime-policy posture</li>
+<li>explicit config around network, app approvals, and providers</li>
+<li>Codex Security as a separate repository-scanning product</li>
+<li>native Windows sandbox administration</li>
+</ul>
+<h3 id="governance-planning-call">Governance planning call<a class="headerlink" href="#governance-planning-call" title="Permanent link">&para;</a></h3>
+<p>If your internal security team thinks in terms of:</p>
+<ul>
+<li><strong>tool allow/deny + lifecycle interception</strong>, Claude will feel natural.</li>
+<li><strong>runtime boundary + approvals + managed requirements</strong>, Codex will feel natural.</li>
+</ul>
+<hr />
+<h2 id="14-migration-map">14) Migration map<a class="headerlink" href="#14-migration-map" title="Permanent link">&para;</a></h2>
+<h2 id="141-artifact-mapping">14.1 Artifact mapping<a class="headerlink" href="#141-artifact-mapping" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Claude</th>
+<th>Codex</th>
+<th style="text-align: right;">Difficulty</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CLAUDE.md</code></td>
+<td><code>AGENTS.md</code></td>
+<td style="text-align: right;">low</td>
+<td>best direct mapping</td>
+</tr>
+<tr>
+<td><code>CLAUDE.local.md</code></td>
+<td>local defaults / untracked guidance</td>
+<td style="text-align: right;">medium</td>
+<td>no exact equivalent</td>
+</tr>
+<tr>
+<td><code>.claude/rules/*.md</code></td>
+<td>nested <code>AGENTS.md</code></td>
+<td style="text-align: right;">medium</td>
+<td>closest fit</td>
+</tr>
+<tr>
+<td>path-scoped rule files</td>
+<td>directory-local <code>AGENTS.md</code></td>
+<td style="text-align: right;">medium/high</td>
+<td>loses glob precision</td>
+</tr>
+<tr>
+<td>auto memory</td>
+<td>Codex memories</td>
+<td style="text-align: right;">medium</td>
+<td>Codex is opt-in</td>
+</tr>
+<tr>
+<td>permission rules</td>
+<td>sandbox + approvals + <code>.rules</code></td>
+<td style="text-align: right;">high</td>
+<td>different semantics</td>
+</tr>
+<tr>
+<td>Claude Bash rules</td>
+<td>Codex <code>.rules</code></td>
+<td style="text-align: right;">medium</td>
+<td>closest command-policy mapping</td>
+</tr>
+<tr>
+<td>Claude file/web/subagent rules</td>
+<td>sandbox/config/custom policy</td>
+<td style="text-align: right;">high</td>
+<td>no exact <code>.rules</code> mapping</td>
+</tr>
+<tr>
+<td>Claude hooks</td>
+<td>Codex hooks + sandbox + wrapper logic</td>
+<td style="text-align: right;">high</td>
+<td>Claude is broader</td>
+</tr>
+<tr>
+<td>Claude skills</td>
+<td>Codex skills</td>
+<td style="text-align: right;">low</td>
+<td>easy migration</td>
+</tr>
+<tr>
+<td>Claude plugins</td>
+<td>Codex plugins</td>
+<td style="text-align: right;">medium/high</td>
+<td>package model differs</td>
+</tr>
+<tr>
+<td>Claude MCP</td>
+<td>Codex MCP</td>
+<td style="text-align: right;">low/medium</td>
+<td>config differs</td>
+</tr>
+<tr>
+<td>Claude subagents</td>
+<td>Codex subagents</td>
+<td style="text-align: right;">medium/high</td>
+<td>autonomy differs</td>
+</tr>
+<tr>
+<td>agent teams</td>
+<td>no direct equivalent</td>
+<td style="text-align: right;">high</td>
+<td>major gap</td>
+</tr>
+<tr>
+<td><code>claude -p</code></td>
+<td><code>codex exec</code></td>
+<td style="text-align: right;">low/medium</td>
+<td>Codex more structured</td>
+</tr>
+<tr>
+<td>routines / scheduled tasks</td>
+<td>automations</td>
+<td style="text-align: right;">medium</td>
+<td>similar intent, different packaging</td>
+</tr>
+<tr>
+<td>Remote Control</td>
+<td>no direct equivalent</td>
+<td style="text-align: right;">high</td>
+<td>real gap</td>
+</tr>
+</tbody>
+</table>
+<h2 id="142-the-safest-migration-strategy">14.2 The safest migration strategy<a class="headerlink" href="#142-the-safest-migration-strategy" title="Permanent link">&para;</a></h2>
+<p>Do <strong>not</strong> migrate by filename or feature name.</p>
+<p>Migrate by intent:</p>
+<ol>
+<li><strong>guidance</strong></li>
+<li><strong>command policy</strong></li>
+<li><strong>runtime boundary</strong></li>
+<li><strong>deterministic enforcement</strong></li>
+<li><strong>workflow packaging</strong></li>
+<li><strong>parallelism model</strong></li>
+<li><strong>review model</strong></li>
+<li><strong>automation model</strong></li>
+</ol>
+<p>That avoids the classic trap of assuming:</p>
+<ul>
+<li><code>CLAUDE.md</code> = <code>AGENTS.md</code> in every way</li>
+<li><code>.claude/rules</code> = Codex <code>.rules</code></li>
+<li><code>auto</code> = <code>--full-auto</code></li>
+<li>hooks = hooks</li>
+<li>subagents = subagents</li>
+</ul>
+<p>Those are all misleading simplifications.</p>
+<hr />
+<h2 id="15-where-parity-is-genuinely-high">15) Where parity is genuinely high<a class="headerlink" href="#15-where-parity-is-genuinely-high" title="Permanent link">&para;</a></h2>
+<p>These are the areas where parity is strongest:</p>
+<ul>
+<li>core coding-agent loop</li>
+<li>CLI usage for interactive coding work</li>
+<li>IDE integration</li>
+<li>repo instruction files at a broad level</li>
+<li>skills</li>
+<li>MCP</li>
+<li>GitHub review flows</li>
+<li>cloud execution in some form</li>
+<li>computer use in some form</li>
+<li>enterprise/admin seriousness</li>
+</ul>
+<p>If your requirements live mostly here, you can build a two-vendor strategy.</p>
+<hr />
+<h2 id="16-where-parity-is-weak-or-misleading">16) Where parity is weak or misleading<a class="headerlink" href="#16-where-parity-is-weak-or-misleading" title="Permanent link">&para;</a></h2>
+<p>These are the areas where “feature parity” is easy to overstate:</p>
+<ul>
+<li>rules</li>
+<li>permission semantics</li>
+<li>sandbox semantics</li>
+<li>hooks</li>
+<li>subagent autonomy</li>
+<li>agent teams</li>
+<li>worktrees as a product surface</li>
+<li>app review UX</li>
+<li>browser automation</li>
+<li>machine-readable automation</li>
+<li>Windows sandboxing</li>
+</ul>
+<p>If your roadmap depends on any of these, you need a product-specific plan.</p>
+<hr />
+<h2 id="17-decision-guidance">17) Decision guidance<a class="headerlink" href="#17-decision-guidance" title="Permanent link">&para;</a></h2>
+<h3 id="choose-claude-code-as-the-lead-platform-if-you-need">Choose Claude Code as the lead platform if you need:<a class="headerlink" href="#choose-claude-code-as-the-lead-platform-if-you-need" title="Permanent link">&para;</a></h3>
+<ul>
+<li>terminal-first control</li>
+<li>rich lifecycle hooks</li>
+<li>path-scoped repo guidance</li>
+<li>tool-native permission rules</li>
+<li>automatic delegation</li>
+<li>agent teams</li>
+<li>mobile/browser continuation of local work</li>
+<li>authenticated browser automation</li>
+<li>GitLab CI/CD parity</li>
+<li>plugin packages that include runtime components like hooks and agents</li>
+</ul>
+<h3 id="choose-codex-as-the-lead-platform-if-you-need">Choose Codex as the lead platform if you need:<a class="headerlink" href="#choose-codex-as-the-lead-platform-if-you-need" title="Permanent link">&para;</a></h3>
+<ul>
+<li>worktrees as a first-class operating model</li>
+<li>an app-centric review loop</li>
+<li>inline diff comments as agent feedback</li>
+<li>stronger structured CI/non-interactive automation</li>
+<li>JSONL and output-schema workflows</li>
+<li>app-server / custom client integration</li>
+<li>native Windows sandboxing</li>
+<li>app automations</li>
+<li>artifact workflow in the app</li>
+<li>Codex Security</li>
+</ul>
+<h3 id="if-you-need-both">If you need both<a class="headerlink" href="#if-you-need-both" title="Permanent link">&para;</a></h3>
+<p>Define your internal abstraction layer around these control objectives:</p>
+<ul>
+<li>repo guidance</li>
+<li>command policy</li>
+<li>runtime boundary</li>
+<li>deterministic enforcement</li>
+<li>reusable workflows</li>
+<li>external tools/connectors</li>
+<li>multi-agent decomposition</li>
+<li>review workflow</li>
+<li>automation workflow</li>
+<li>governance</li>
+</ul>
+<p>Then implement each objective separately for Claude and Codex.</p>
+<hr />
+<h2 id="18-final-scorecard">18) Final scorecard<a class="headerlink" href="#18-final-scorecard" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th style="text-align: right;">Parity</th>
+<th>Lead</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Core coding loop</td>
+<td style="text-align: right;">9/10</td>
+<td>Tie</td>
+</tr>
+<tr>
+<td>CLI</td>
+<td style="text-align: right;">8/10</td>
+<td>Tie</td>
+</tr>
+<tr>
+<td>IDE</td>
+<td style="text-align: right;">8/10</td>
+<td>Tie</td>
+</tr>
+<tr>
+<td>App/Desktop</td>
+<td style="text-align: right;">7/10</td>
+<td>Codex</td>
+</tr>
+<tr>
+<td>Web/Cloud</td>
+<td style="text-align: right;">8/10</td>
+<td>Tie</td>
+</tr>
+<tr>
+<td>Remote/mobile continuation</td>
+<td style="text-align: right;">4/10</td>
+<td>Claude</td>
+</tr>
+<tr>
+<td>Repo instructions</td>
+<td style="text-align: right;">8/10</td>
+<td>Tie</td>
+</tr>
+<tr>
+<td>Instruction rules</td>
+<td style="text-align: right;">5/10</td>
+<td>Claude</td>
+</tr>
+<tr>
+<td>Command-policy rules</td>
+<td style="text-align: right;">8/10</td>
+<td>Slight Codex edge</td>
+</tr>
+<tr>
+<td>Tool-native permission rules</td>
+<td style="text-align: right;">6/10</td>
+<td>Claude</td>
+</tr>
+<tr>
+<td>Sandboxing</td>
+<td style="text-align: right;">8/10</td>
+<td>Codex</td>
+</tr>
+<tr>
+<td>Hooks</td>
+<td style="text-align: right;">4/10</td>
+<td>Claude</td>
+</tr>
+<tr>
+<td>Skills</td>
+<td style="text-align: right;">9/10</td>
+<td>Tie</td>
+</tr>
+<tr>
+<td>Plugins</td>
+<td style="text-align: right;">7/10</td>
+<td>Split lead</td>
+</tr>
+<tr>
+<td>MCP</td>
+<td style="text-align: right;">9/10</td>
+<td>Tie</td>
+</tr>
+<tr>
+<td>Subagents</td>
+<td style="text-align: right;">6/10</td>
+<td>Claude</td>
+</tr>
+<tr>
+<td>Agent teams</td>
+<td style="text-align: right;">2/10</td>
+<td>Claude</td>
+</tr>
+<tr>
+<td>Worktrees</td>
+<td style="text-align: right;">5/10</td>
+<td>Codex</td>
+</tr>
+<tr>
+<td>Review UX</td>
+<td style="text-align: right;">7/10</td>
+<td>Codex</td>
+</tr>
+<tr>
+<td>Non-interactive automation</td>
+<td style="text-align: right;">7/10</td>
+<td>Codex</td>
+</tr>
+<tr>
+<td>Browser automation</td>
+<td style="text-align: right;">6/10</td>
+<td>Claude</td>
+</tr>
+<tr>
+<td>Computer use</td>
+<td style="text-align: right;">7/10</td>
+<td>Tie</td>
+</tr>
+<tr>
+<td>Enterprise governance</td>
+<td style="text-align: right;">8/10</td>
+<td>Tie</td>
+</tr>
+<tr>
+<td>Windows sandboxing</td>
+<td style="text-align: right;">5/10</td>
+<td>Codex</td>
+</tr>
+<tr>
+<td>Security scanning product</td>
+<td style="text-align: right;">4/10</td>
+<td>Codex</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="19-final-conclusion">19) Final conclusion<a class="headerlink" href="#19-final-conclusion" title="Permanent link">&para;</a></h2>
+<p>Claude Code and Codex are <strong>not</strong> interchangeable control-surface products.</p>
+<ul>
+<li>Claude Code is the stronger <strong>agent harness</strong>.</li>
+<li>Codex is the stronger <strong>agent platform shell</strong>.</li>
+</ul>
+<p>Claude is better when you need:</p>
+<ul>
+<li>more orchestration</li>
+<li>more lifecycle control</li>
+<li>more instruction layering</li>
+<li>more autonomous delegation</li>
+<li>more cross-surface continuity</li>
+</ul>
+<p>Codex is better when you need:</p>
+<ul>
+<li>more app structure</li>
+<li>more worktree discipline</li>
+<li>more review ergonomics</li>
+<li>more automation plumbing</li>
+<li>more sandbox clarity</li>
+</ul>
+<p>The planning-safe conclusion is this:</p>
+<blockquote>
+<p>Build parity around <strong>outcomes</strong>, not feature names.</p>
+</blockquote>
+<p>Especially for:</p>
+<ul>
+<li>rules</li>
+<li>permissions</li>
+<li>hooks</li>
+<li>subagents</li>
+<li>worktrees</li>
+<li>automation</li>
+</ul>
+<p>That is where the apparent surface similarity hides the deepest product differences.</p>
+<hr />
+<h2 id="source-links">Source links<a class="headerlink" href="#source-links" title="Permanent link">&para;</a></h2>
+<h3 id="claude-code_1">Claude Code<a class="headerlink" href="#claude-code_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Overview: https://code.claude.com/docs/en/overview</li>
+<li>Memory / instructions / <code>.claude/rules</code>: https://code.claude.com/docs/en/memory</li>
+<li>Permissions: https://code.claude.com/docs/en/permissions</li>
+<li>Hooks: https://code.claude.com/docs/en/hooks</li>
+<li>Skills: https://code.claude.com/docs/en/skills</li>
+<li>Subagents: https://code.claude.com/docs/en/sub-agents</li>
+<li>Agent teams: https://code.claude.com/docs/en/agent-teams</li>
+<li>Remote Control: https://code.claude.com/docs/en/remote-control</li>
+<li>Chrome: https://code.claude.com/docs/en/chrome</li>
+<li>Best practices: https://code.claude.com/docs/en/best-practices</li>
+</ul>
+<h3 id="codex_1">Codex<a class="headerlink" href="#codex_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Codex overview: https://developers.openai.com/codex</li>
+<li>App features: https://developers.openai.com/codex/app/features</li>
+<li>Worktrees: https://developers.openai.com/codex/app/worktrees</li>
+<li>Review: https://developers.openai.com/codex/app/review</li>
+<li>Automations: https://developers.openai.com/codex/app/automations</li>
+<li>Rules: https://developers.openai.com/codex/rules</li>
+<li>Hooks: https://developers.openai.com/codex/hooks</li>
+<li>Skills: https://developers.openai.com/codex/skills</li>
+<li>Best practices: https://developers.openai.com/codex/learn/best-practices</li>
+<li>Sandboxing: https://developers.openai.com/codex/concepts/sandboxing</li>
+<li>Subagents: https://developers.openai.com/codex/subagents</li>
+<li>Plugins: https://developers.openai.com/codex/plugins</li>
+<li>MCP: https://developers.openai.com/codex/mcp</li>
+<li>Non-interactive mode: https://developers.openai.com/codex/noninteractive</li>
+<li>App Server: https://developers.openai.com/codex/app-server</li>
+<li>Windows: https://developers.openai.com/codex/windows</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      The human is index zero.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/tvproductions/gzkit" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "toc.follow", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

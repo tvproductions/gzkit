@@ -1,0 +1,7490 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Keep humans in the loop when AI writes your code">
+      
+      
+        <meta name="author" content="Jeffry">
+      
+      
+        <link rel="canonical" href="https://gzkit.org/drafts/claude-code-inventory/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Claude Code Feature Inventory - gzkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#claude-code-feature-inventory" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="gzkit" class="md-header__button md-logo" aria-label="gzkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            gzkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Claude Code Feature Inventory
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tvproductions/gzkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tvproductions/gzkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="gzkit" class="md-nav__button md-logo" aria-label="gzkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    gzkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tvproductions/gzkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tvproductions/gzkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/runbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbook
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/why/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why gzkit?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/tutorial-first-project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First Project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/tutorial-rhea-bootstrap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RHEA Bootstrap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/guide-prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/guide-adr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/guide-tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Task Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/guide-releasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Templates
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Templates
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/templates/prd-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/templates/adr-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/templates/task-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Task Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Not Started"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_5" id="__nav_5_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assessments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Assessments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/gzkit-readiness-assessment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GZKit Readiness Assessment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/go-live-gap-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Go-Live Gap Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/comparison-gzkit-speckit-bmad/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Framework Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concepts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/lanes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lanes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/adr-taxonomy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Taxonomy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/foundation-feature-invariance-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundation/Feature Invariance Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/obpis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPIs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/closeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Closeout Ceremony
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Daily Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/concepts/test-traceability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Traceability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Skills
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Setup
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project Setup
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-init/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-init
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-prd
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-constitute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-constitute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Planning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-adr-create/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-create
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-obpi-specify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-specify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-adr-evaluate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-evaluate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-plan-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-plan-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_4" id="__nav_7_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Execution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Execution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-obpi-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-implement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-implement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-arb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-arb
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-complexity-advisor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-complexity-advisor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_5" id="__nav_7_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status & Review
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Status & Review
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-state
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-obpi-simplify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-simplify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-adr-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Closeout & Audit
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Closeout & Audit
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-adr-closeout-ceremony/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-closeout-ceremony
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-adr-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-obpi-reconcile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-reconcile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-adr-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-validate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_7" id="__nav_7_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/git-sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /git-sync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-patch-release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-session-handoff/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-session-handoff
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-chore-runner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-chore-runner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-obpi-lock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-lock
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/skills/gz-cli-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-cli-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manpages
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Manpages
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/init/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz init
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz prd
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/constitute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz constitute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/specify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz specify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/plan-create/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz plan create
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/plan-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz plan audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/implement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz implement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz state
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/adr-promote/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr promote
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/adr-audit-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr audit-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/adr-fidelity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr fidelity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/adr-covers-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr covers-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/adr-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/covers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz covers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/flag-explain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz flag explain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/obpi-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/obpi-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/obpi-validate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/obpi-reconcile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi reconcile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/obpi-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/closeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz closeout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz patch release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/git-sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz git-sync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/attest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz attest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/migrate-semver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz migrate-semver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/register-adrs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz register-adrs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/chores-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/chores-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/chores-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/chores-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/skill-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz skill audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/parity-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz parity check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/readiness-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz readiness audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/check-config-paths/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz check-config-paths
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/cli-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz cli audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/task-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/task-start/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/task-complete/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task complete
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/task-block/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task block
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/task-escalate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task escalate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/personas-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz personas list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/manpages/agent-sync-control-surfaces/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz agent sync control-surfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance (Canonical)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Governance (Canonical)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/governance_runbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance Runbook
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/state-doctrine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State Doctrine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/storage-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage Tiers Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/pipeline-marker-migration-path/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Marker Migration Path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/documentation-taxonomy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Taxonomy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/feature-flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/pool-curation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pool Curation Policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/parity-intake-rubric/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parity Intake Rubric
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/command-doctrine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Doctrine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/charter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Charter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/adr-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/obpi-transaction-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Transaction Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/obpi-runtime-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Runtime Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/obpi-decomposition-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Decomposition Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/adr-obpi-ghi-audit-linkage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR/OBPI/GHI/Audit Linkage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/audit-protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit Protocol
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/gate5-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gate 5 Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/architectural-enforcement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architectural Enforcement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/gzkit-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gzkit Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/governance-registry-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance Registry Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/agent-era-prompting-summary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent-Era Prompting Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/layered-trust/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layered Trust
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/ledger-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ledger Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/session-handoff-obligations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session Handoff Obligations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/session-handoff-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session Handoff Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/handoff-chaining/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handoff Chaining
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/handoff-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handoff Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/staleness-classification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Staleness Classification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/validation-receipts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation Receipts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9_31" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_31" id="__nav_9_31_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_31_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_31">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Releases
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/releases/major-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Major Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/releases/minor-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Minor Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/releases/patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Patch Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9_32" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_32" id="__nav_9_32_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audits
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_32_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_32">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Audits
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/audits/AUDIT-BRIEF-governance-harmonization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harmonization Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/audits/governance-harmonization-2026-01-11/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harmonization Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance/GovZero/audits/AUDIT-TEMPLATE-agent-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Readiness Audit Template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docs README
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/reference/charter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Charter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/reference/lineage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lineage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/reference/agent-input-disciplines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Input Disciplines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/reference/genesis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Genesis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/reference/genesis-transcript/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Genesis Transcript
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/reference/airlineops-exploration-verbatim/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AirlineOps Exploration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#source-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source key
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inventory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inventory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes-on-the-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes on the table
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="claude-code-feature-inventory">Claude Code Feature Inventory<a class="headerlink" href="#claude-code-feature-inventory" title="Permanent link">&para;</a></h1>
+<p>Detailed capability-level inventory built from eight Claude Code documentation pages. Organized by category, one row per capability, to support later side-by-side comparison with Codex.</p>
+<h2 id="source-key">Source key<a class="headerlink" href="#source-key" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Abbr.</th>
+<th>Page</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OV</td>
+<td><a href="https://code.claude.com/docs/en/overview">Overview</a></td>
+</tr>
+<tr>
+<td>HW</td>
+<td><a href="https://code.claude.com/docs/en/how-claude-code-works">How Claude Code works</a></td>
+</tr>
+<tr>
+<td>DIR</td>
+<td><a href="https://code.claude.com/docs/en/claude-directory">Explore the .claude directory</a></td>
+</tr>
+<tr>
+<td>CW</td>
+<td><a href="https://code.claude.com/docs/en/context-window">Explore the context window</a></td>
+</tr>
+<tr>
+<td>MEM</td>
+<td><a href="https://code.claude.com/docs/en/memory">How Claude remembers your project</a></td>
+</tr>
+<tr>
+<td>PM</td>
+<td><a href="https://code.claude.com/docs/en/permission-modes">Choose a permission mode</a></td>
+</tr>
+<tr>
+<td>CWF</td>
+<td><a href="https://code.claude.com/docs/en/common-workflows">Common workflows</a></td>
+</tr>
+<tr>
+<td>BP</td>
+<td><a href="https://code.claude.com/docs/en/best-practices">Best Practices for Claude Code</a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="inventory">Inventory<a class="headerlink" href="#inventory" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Feature</th>
+<th>Category</th>
+<th>What it does</th>
+<th>Invocation / Location</th>
+<th>Configuration</th>
+<th>Notes &amp; caveats</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Native install script (macOS/Linux/WSL)</td>
+<td>Install</td>
+<td>Installs Claude Code CLI</td>
+<td><code>curl -fsSL https://claude.ai/install.sh \| bash</code></td>
+<td>N/A</td>
+<td>Auto-updates in background</td>
+<td>OV</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Native install (Windows PowerShell)</td>
+<td>Install</td>
+<td>Installs Claude Code CLI</td>
+<td><code>irm https://claude.ai/install.ps1 \| iex</code></td>
+<td>Requires Git for Windows on native (not WSL)</td>
+<td>Auto-updates</td>
+<td>OV</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Native install (Windows CMD)</td>
+<td>Install</td>
+<td>Installs Claude Code CLI</td>
+<td><code>curl ... install.cmd &amp;&amp; install.cmd</code></td>
+<td>As above</td>
+<td>Auto-updates</td>
+<td>OV</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Homebrew stable</td>
+<td>Install</td>
+<td>Package-managed install, stable channel</td>
+<td><code>brew install --cask claude-code</code></td>
+<td>Runs ~1 week behind, skips releases with major regressions</td>
+<td>No auto-update; run <code>brew upgrade claude-code</code></td>
+<td>OV</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Homebrew latest</td>
+<td>Install</td>
+<td>Package-managed install, latest channel</td>
+<td><code>brew install --cask claude-code@latest</code></td>
+<td>Receives versions as they ship</td>
+<td>No auto-update</td>
+<td>OV</td>
+</tr>
+<tr>
+<td>6</td>
+<td>WinGet</td>
+<td>Install</td>
+<td>Windows package install</td>
+<td><code>winget install Anthropic.ClaudeCode</code></td>
+<td>N/A</td>
+<td>No auto-update; <code>winget upgrade Anthropic.ClaudeCode</code></td>
+<td>OV</td>
+</tr>
+<tr>
+<td>7</td>
+<td>VS Code extension</td>
+<td>Interface</td>
+<td>Inline diffs, @-mentions, plan review, conversation history in editor</td>
+<td>VS Code marketplace or <code>vscode:extension/anthropic.claude-code</code></td>
+<td>Settings via <code>claudeCode.initialPermissionMode</code> etc.</td>
+<td>Also works in Cursor and other VS Code forks</td>
+<td>OV, PM</td>
+</tr>
+<tr>
+<td>8</td>
+<td>JetBrains plugin</td>
+<td>Interface</td>
+<td>IntelliJ/PyCharm/WebStorm integration with interactive diff viewing</td>
+<td>JetBrains Marketplace</td>
+<td>Launches Claude Code in IDE terminal</td>
+<td>Same Shift+Tab mode switching as CLI</td>
+<td>OV, PM</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Desktop app</td>
+<td>Interface</td>
+<td>Standalone app; visual diff review, parallel sessions, scheduled tasks, cloud sessions</td>
+<td>macOS (Intel/ARM), Windows x64, Windows ARM64</td>
+<td>Paid subscription required</td>
+<td>Separate Mode selector in UI</td>
+<td>OV, PM</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Web (claude.ai/code)</td>
+<td>Interface</td>
+<td>Browser-based, no local setup, cloud VMs, long-running tasks</td>
+<td><code>claude.ai/code</code></td>
+<td>Mode dropdown next to prompt box</td>
+<td>Cloud sessions only support acceptEdits and plan</td>
+<td>OV, PM</td>
+</tr>
+<tr>
+<td>11</td>
+<td>iOS app</td>
+<td>Interface</td>
+<td>Mobile access, can kick off tasks</td>
+<td>Claude iOS app</td>
+<td>N/A</td>
+<td>Pairs with <code>claude --teleport</code></td>
+<td>OV</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Chrome extension (beta)</td>
+<td>Interface</td>
+<td>Live web application debugging; opens tabs, tests UI, iterates</td>
+<td>Chrome Web Store</td>
+<td>N/A</td>
+<td>Beta; used for visual verification</td>
+<td>OV, BP</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Slack integration</td>
+<td>Interface</td>
+<td><code>@Claude</code> in Slack to route bug reports, trigger PRs</td>
+<td>Slack app install</td>
+<td>Per-workspace setup</td>
+<td>Bug-report-to-PR workflow supported</td>
+<td>OV</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Remote Control</td>
+<td>Interface</td>
+<td>Phone/browser controls session running on your local machine</td>
+<td><code>claude remote-control [--permission-mode ...]</code></td>
+<td>Starting permission mode configurable</td>
+<td>Prompts appear in claude.ai for approval</td>
+<td>OV, PM</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Channels</td>
+<td>Interface</td>
+<td>Push events from Telegram, Discord, iMessage, or webhooks into a session</td>
+<td>N/A</td>
+<td>Per-channel config</td>
+<td>Not detailed in source pages</td>
+<td>OV</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Dispatch</td>
+<td>Interface</td>
+<td>Message a task from phone, opens Desktop session</td>
+<td>Desktop app</td>
+<td>N/A</td>
+<td>Part of cross-surface handoff</td>
+<td>OV</td>
+</tr>
+<tr>
+<td>17</td>
+<td><code>claude --teleport</code></td>
+<td>Interface</td>
+<td>Kick off task on web/iOS, pull into terminal</td>
+<td>CLI flag</td>
+<td>N/A</td>
+<td>Cross-surface session handoff</td>
+<td>OV</td>
+</tr>
+<tr>
+<td>18</td>
+<td><code>/desktop</code> slash command</td>
+<td>Interface</td>
+<td>Hand off terminal session to Desktop app for visual diff review</td>
+<td>In-session</td>
+<td>N/A</td>
+<td>Reverse of <code>--teleport</code></td>
+<td>OV</td>
+</tr>
+<tr>
+<td>19</td>
+<td>Local execution environment</td>
+<td>Env</td>
+<td>Code runs on your machine, full access to files and tools</td>
+<td>Default</td>
+<td>N/A</td>
+<td>Default execution model</td>
+<td>HW</td>
+</tr>
+<tr>
+<td>20</td>
+<td>Cloud execution environment</td>
+<td>Env</td>
+<td>Code runs on Anthropic-managed VMs</td>
+<td>Web interface primarily</td>
+<td>N/A</td>
+<td>For offloaded or long-running work, or repos you don't have locally</td>
+<td>HW</td>
+</tr>
+<tr>
+<td>21</td>
+<td>Remote Control environment</td>
+<td>Env</td>
+<td>Code runs on your machine, controlled via browser</td>
+<td><code>claude remote-control</code></td>
+<td>Permission mode flag</td>
+<td>Hybrid of local execution + web UI</td>
+<td>HW, PM</td>
+</tr>
+<tr>
+<td>22</td>
+<td>Agentic loop</td>
+<td>Architecture</td>
+<td>Three phases: gather context → take action → verify; chains dozens of actions with course-correction</td>
+<td>Automatic</td>
+<td>None</td>
+<td>User can interrupt at any point</td>
+<td>HW</td>
+</tr>
+<tr>
+<td>23</td>
+<td>Model selection</td>
+<td>Architecture</td>
+<td>Sonnet (default), Opus (stronger reasoning), Haiku</td>
+<td><code>/model</code> in session; <code>claude --model &lt;name&gt;</code></td>
+<td>Per-session or startup</td>
+<td>Sonnet 4.6 / Opus 4.6 / Opus 4.7 are referenced in auto mode and thinking docs</td>
+<td>HW, PM</td>
+</tr>
+<tr>
+<td>24</td>
+<td>File operations tools</td>
+<td>Tools</td>
+<td>Read, edit, create, rename, reorganize</td>
+<td>Automatic</td>
+<td>Controlled by permission mode and allow/deny rules</td>
+<td>Core agency</td>
+<td>HW</td>
+</tr>
+<tr>
+<td>25</td>
+<td>Search tools</td>
+<td>Tools</td>
+<td>Find files by pattern, regex content search, explore codebases</td>
+<td>Automatic</td>
+<td>N/A</td>
+<td>No codebase indexing; search on demand</td>
+<td>HW</td>
+</tr>
+<tr>
+<td>26</td>
+<td>Execution tools (Bash)</td>
+<td>Tools</td>
+<td>Run shell commands, start servers, run tests, use git</td>
+<td>Automatic</td>
+<td>Permission rules, sandboxing</td>
+<td>Prompts in default mode</td>
+<td>HW</td>
+</tr>
+<tr>
+<td>27</td>
+<td>Web tools</td>
+<td>Tools</td>
+<td>Search web, fetch docs, look up error messages</td>
+<td>Automatic</td>
+<td>Allowlist domains via <code>/permissions</code></td>
+<td></td>
+<td>HW, BP</td>
+</tr>
+<tr>
+<td>28</td>
+<td>Code intelligence</td>
+<td>Tools</td>
+<td>See type errors, jump to definitions, find references</td>
+<td>Requires code intelligence plugins</td>
+<td>Language-specific plugins</td>
+<td>Plugin-gated capability</td>
+<td>HW</td>
+</tr>
+<tr>
+<td>29</td>
+<td>Subagent spawning</td>
+<td>Tools</td>
+<td>Delegate isolated tasks in separate context</td>
+<td>Claude invokes automatically or on explicit request</td>
+<td>Subagent definitions in <code>.claude/agents/</code></td>
+<td></td>
+<td>HW, CWF</td>
+</tr>
+<tr>
+<td>30</td>
+<td><code>AskUserQuestion</code> tool</td>
+<td>Tools</td>
+<td>Claude asks user structured questions; used by Plan Mode to gather requirements</td>
+<td>Automatic in Plan Mode</td>
+<td>N/A</td>
+<td>Also usable for "interview me" prompts</td>
+<td>CWF, BP</td>
+</tr>
+<tr>
+<td>31</td>
+<td>Session persistence</td>
+<td>Sessions</td>
+<td>Each message, tool use, result stored locally</td>
+<td>Automatic</td>
+<td>Storage is per project directory</td>
+<td>Enables rewind, resume, fork</td>
+<td>HW</td>
+</tr>
+<tr>
+<td>32</td>
+<td>Pre-edit file snapshots</td>
+<td>Sessions</td>
+<td>Claude snapshots file contents before any edit</td>
+<td>Automatic</td>
+<td>N/A</td>
+<td>Enables checkpoint rewind</td>
+<td>HW</td>
+</tr>
+<tr>
+<td>33</td>
+<td><code>claude --continue</code></td>
+<td>Sessions</td>
+<td>Resume most recent session in current directory</td>
+<td>CLI flag</td>
+<td>N/A</td>
+<td>Also works with <code>--print</code></td>
+<td>HW, CWF, BP</td>
+</tr>
+<tr>
+<td>34</td>
+<td><code>claude --resume [name]</code></td>
+<td>Sessions</td>
+<td>Open session picker or resume by exact name</td>
+<td>CLI flag</td>
+<td>N/A</td>
+<td>Ambiguous names open picker with search pre-filled</td>
+<td>HW, CWF</td>
+</tr>
+<tr>
+<td>35</td>
+<td><code>/resume</code> in-session</td>
+<td>Sessions</td>
+<td>Switch to another conversation from active session</td>
+<td>In-session</td>
+<td>N/A</td>
+<td>Ambiguous name errors, must run without arg</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>36</td>
+<td><code>claude --from-pr &lt;number&gt;</code></td>
+<td>Sessions</td>
+<td>Resume session linked to a PR</td>
+<td>CLI flag</td>
+<td>Auto-linked when <code>gh pr create</code> runs</td>
+<td></td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>37</td>
+<td><code>--fork-session</code></td>
+<td>Sessions</td>
+<td>Branch off a new session preserving history up to that point</td>
+<td>CLI flag with <code>--continue</code></td>
+<td>Creates new session ID</td>
+<td>Does not inherit session-scoped permissions</td>
+<td>HW</td>
+</tr>
+<tr>
+<td>38</td>
+<td><code>claude -n &lt;name&gt;</code> (session naming at startup)</td>
+<td>Sessions</td>
+<td>Name a session at creation</td>
+<td>CLI flag</td>
+<td>N/A</td>
+<td>Appears on prompt bar</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>39</td>
+<td><code>/rename</code></td>
+<td>Sessions</td>
+<td>Rename session in progress</td>
+<td>In-session</td>
+<td>N/A</td>
+<td>Also <code>Ctrl+R</code> in picker</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>40</td>
+<td>Session picker</td>
+<td>Sessions</td>
+<td>Interactive UI to select and resume sessions</td>
+<td><code>/resume</code> or <code>claude --resume</code> with no arg</td>
+<td>N/A</td>
+<td>Shortcuts: ↑↓→← Enter Space Ctrl+R Ctrl+A Ctrl+W Ctrl+B Esc</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>41</td>
+<td>Forked session grouping</td>
+<td>Sessions</td>
+<td>Forks collapsed under root session in picker</td>
+<td>Automatic</td>
+<td>N/A</td>
+<td>Related conversations kept together</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>42</td>
+<td>Context window (core)</td>
+<td>Context</td>
+<td>Holds history, file contents, command outputs, CLAUDE.md, auto memory, loaded skills, system instructions</td>
+<td>Automatic</td>
+<td>Model-dependent</td>
+<td>1M context included for Max/Team/Enterprise with Opus 4.6/4.7</td>
+<td>HW, CW</td>
+</tr>
+<tr>
+<td>43</td>
+<td>Auto-compaction</td>
+<td>Context</td>
+<td>When context fills, clears older tool outputs first, then summarizes</td>
+<td>Automatic</td>
+<td><code>Compact Instructions</code> section in CLAUDE.md</td>
+<td>Early detailed instructions may be lost</td>
+<td>HW, BP</td>
+</tr>
+<tr>
+<td>44</td>
+<td><code>/compact [focus]</code></td>
+<td>Context</td>
+<td>Manual compaction with optional focus</td>
+<td>In-session</td>
+<td><code>/compact focus on the API changes</code></td>
+<td>Project-root CLAUDE.md survives; nested ones reload on demand</td>
+<td>HW, MEM, BP</td>
+</tr>
+<tr>
+<td>45</td>
+<td><code>/context</code></td>
+<td>Context</td>
+<td>Live breakdown of token usage by category</td>
+<td>In-session</td>
+<td>N/A</td>
+<td>System prompt, memory, skills, MCP tools, messages</td>
+<td>HW, DIR, CW</td>
+</tr>
+<tr>
+<td>46</td>
+<td>Partial-context compaction from checkpoint</td>
+<td>Context</td>
+<td>Summarize from a selected message forward, preserving earlier context</td>
+<td><code>Esc+Esc</code> or <code>/rewind</code>, then "Summarize from here"</td>
+<td>N/A</td>
+<td>Condense part of the conversation without losing setup</td>
+<td>BP</td>
+</tr>
+<tr>
+<td>47</td>
+<td>MCP tool definition deferral</td>
+<td>Context</td>
+<td>Only tool names in context at start; full definitions load on demand via tool search</td>
+<td>Automatic</td>
+<td><code>/mcp</code> shows per-server cost</td>
+<td>Reduces startup context cost</td>
+<td>HW</td>
+</tr>
+<tr>
+<td>48</td>
+<td>Skill lazy loading</td>
+<td>Context</td>
+<td>Descriptions visible at session start; body loads only when skill used</td>
+<td>Automatic</td>
+<td><code>disable-model-invocation: true</code> to keep description out of context</td>
+<td>Lets users hold many skills without context bloat</td>
+<td>HW</td>
+</tr>
+<tr>
+<td>49</td>
+<td><code>/btw</code> side questions</td>
+<td>Context</td>
+<td>Ask quick question, answer appears in dismissible overlay, not added to context</td>
+<td>In-session</td>
+<td>N/A</td>
+<td>Keeps main context clean during focused work</td>
+<td>BP</td>
+</tr>
+<tr>
+<td>50</td>
+<td>Subagent context isolation</td>
+<td>Context</td>
+<td>Subagents run in separate context window; return summary to parent</td>
+<td>Automatic or explicit invocation</td>
+<td>Subagent defs in <code>.claude/agents/</code></td>
+<td>Single strongest tool for long sessions</td>
+<td>HW, BP</td>
+</tr>
+<tr>
+<td>51</td>
+<td>CLAUDE.md (project root)</td>
+<td>Memory</td>
+<td>Markdown instructions loaded every session</td>
+<td><code>./CLAUDE.md</code> or <code>./.claude/CLAUDE.md</code></td>
+<td>Commit to git for team sharing</td>
+<td>Target under 200 lines</td>
+<td>MEM, BP</td>
+</tr>
+<tr>
+<td>52</td>
+<td>CLAUDE.md (user/home)</td>
+<td>Memory</td>
+<td>Personal instructions across all projects</td>
+<td><code>~/.claude/CLAUDE.md</code></td>
+<td>Personal</td>
+<td></td>
+<td>MEM, BP</td>
+</tr>
+<tr>
+<td>53</td>
+<td>CLAUDE.local.md</td>
+<td>Memory</td>
+<td>Personal per-project preferences, gitignored</td>
+<td><code>./CLAUDE.local.md</code></td>
+<td>Add to <code>.gitignore</code>; <code>/init</code> personal option does this</td>
+<td>In gitignored form, only exists in the worktree where created</td>
+<td>MEM, BP</td>
+</tr>
+<tr>
+<td>54</td>
+<td>Managed policy CLAUDE.md</td>
+<td>Memory</td>
+<td>Org-wide instructions; cannot be excluded</td>
+<td>macOS: <code>/Library/Application Support/ClaudeCode/CLAUDE.md</code>; Linux/WSL: <code>/etc/claude-code/CLAUDE.md</code>; Windows: <code>C:\Program Files\ClaudeCode\CLAUDE.md</code></td>
+<td>Deploy via MDM, Group Policy, Ansible</td>
+<td>Takes precedence over user settings; not excludable</td>
+<td>MEM</td>
+</tr>
+<tr>
+<td>55</td>
+<td>CLAUDE.md directory walk</td>
+<td>Memory</td>
+<td>Walks up from CWD, concatenates all found CLAUDE.md and CLAUDE.local.md</td>
+<td>Automatic</td>
+<td>N/A</td>
+<td>Subdirectory CLAUDE.md loads on demand when files read in those dirs</td>
+<td>MEM</td>
+</tr>
+<tr>
+<td>56</td>
+<td><code>@path/to/import</code> syntax</td>
+<td>Memory</td>
+<td>Import other files into CLAUDE.md</td>
+<td><code>@README.md</code>, <code>@~/.claude/my-project.md</code></td>
+<td>Relative paths resolve to containing file</td>
+<td>Max depth 5; recursive imports allowed; approval dialog on first external import</td>
+<td>MEM, BP</td>
+</tr>
+<tr>
+<td>57</td>
+<td><code>/init</code></td>
+<td>Memory</td>
+<td>Generate starter CLAUDE.md based on codebase</td>
+<td>In-session</td>
+<td><code>CLAUDE_CODE_NEW_INIT=1</code> for multi-phase interactive flow</td>
+<td>Claude suggests improvements if CLAUDE.md already exists</td>
+<td>MEM, BP</td>
+</tr>
+<tr>
+<td>58</td>
+<td>AGENTS.md compatibility</td>
+<td>Memory</td>
+<td>Not read natively; bridge via <code>@AGENTS.md</code> import</td>
+<td>Manual bridge in CLAUDE.md</td>
+<td>N/A</td>
+<td>Lets repos stay compatible with other coding agents</td>
+<td>MEM</td>
+</tr>
+<tr>
+<td>59</td>
+<td><code>--add-dir</code> flag</td>
+<td>Memory</td>
+<td>Give Claude access to additional directories</td>
+<td>CLI flag</td>
+<td><code>CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1</code> to also load CLAUDE.md from those dirs</td>
+<td>By default, memory files from added dirs not loaded</td>
+<td>MEM</td>
+</tr>
+<tr>
+<td>60</td>
+<td>HTML comment stripping</td>
+<td>Memory</td>
+<td>Block-level <code>&lt;!-- --&gt;</code> in CLAUDE.md removed before context injection</td>
+<td>Automatic</td>
+<td>N/A</td>
+<td>Comments in code blocks preserved; Read tool shows them</td>
+<td>MEM</td>
+</tr>
+<tr>
+<td>61</td>
+<td><code>.claude/rules/*.md</code></td>
+<td>Rules</td>
+<td>Topic-scoped instruction files, discovered recursively</td>
+<td><code>.claude/rules/testing.md</code> etc.</td>
+<td>Loaded at launch if no frontmatter</td>
+<td>Same priority as <code>.claude/CLAUDE.md</code></td>
+<td>MEM, DIR</td>
+</tr>
+<tr>
+<td>62</td>
+<td>Path-scoped rules</td>
+<td>Rules</td>
+<td>Rules only load when Claude works with matching files</td>
+<td>YAML frontmatter <code>paths: ["src/**/*.ts"]</code></td>
+<td>Glob patterns, brace expansion</td>
+<td>Triggers on file read, not every tool use</td>
+<td>MEM</td>
+</tr>
+<tr>
+<td>63</td>
+<td>Rule symlinks</td>
+<td>Rules</td>
+<td>Share rules across projects via symlinks</td>
+<td><code>ln -s ~/shared-rules .claude/rules/shared</code></td>
+<td>N/A</td>
+<td>Circular symlinks handled</td>
+<td>MEM</td>
+</tr>
+<tr>
+<td>64</td>
+<td>User-level rules</td>
+<td>Rules</td>
+<td>Personal rules across all projects</td>
+<td><code>~/.claude/rules/*.md</code></td>
+<td>N/A</td>
+<td>Loaded before project rules</td>
+<td>MEM</td>
+</tr>
+<tr>
+<td>65</td>
+<td><code>claudeMdExcludes</code></td>
+<td>Memory</td>
+<td>Skip specific CLAUDE.md files by path/glob</td>
+<td><code>settings.local.json</code> or any settings layer</td>
+<td>Arrays merge across layers</td>
+<td>Cannot exclude managed-policy CLAUDE.md</td>
+<td>MEM</td>
+</tr>
+<tr>
+<td>66</td>
+<td>Auto memory (MEMORY.md)</td>
+<td>Memory</td>
+<td>Claude writes notes to itself across sessions</td>
+<td><code>~/.claude/projects/&lt;project&gt;/memory/</code></td>
+<td><code>autoMemoryEnabled</code>, <code>autoMemoryDirectory</code> settings; <code>CLAUDE_CODE_DISABLE_AUTO_MEMORY=1</code></td>
+<td>Requires v2.1.59+; first 200 lines or 25KB of MEMORY.md loaded at startup</td>
+<td>MEM, HW</td>
+</tr>
+<tr>
+<td>67</td>
+<td>Auto memory topic files</td>
+<td>Memory</td>
+<td>Detailed notes split into separate files, loaded on demand</td>
+<td>e.g. <code>debugging.md</code>, <code>api-conventions.md</code> in memory dir</td>
+<td>N/A</td>
+<td>Not loaded at startup; Claude reads on demand</td>
+<td>MEM</td>
+</tr>
+<tr>
+<td>68</td>
+<td><code>/memory</code></td>
+<td>Memory</td>
+<td>List loaded instruction files, toggle auto memory, open memory folder</td>
+<td>In-session</td>
+<td>N/A</td>
+<td>Plain markdown, user-editable</td>
+<td>MEM, DIR</td>
+</tr>
+<tr>
+<td>69</td>
+<td><code>InstructionsLoaded</code> hook</td>
+<td>Memory</td>
+<td>Log exactly which instruction files loaded</td>
+<td>Hook config</td>
+<td>N/A</td>
+<td>Useful for debugging path-specific rules</td>
+<td>MEM</td>
+</tr>
+<tr>
+<td>70</td>
+<td><code>--append-system-prompt</code></td>
+<td>Memory</td>
+<td>Append text to the system prompt itself</td>
+<td>CLI flag</td>
+<td>Per invocation</td>
+<td>Must pass every time; better for scripts</td>
+<td>MEM, CW</td>
+</tr>
+<tr>
+<td>71</td>
+<td>Skills</td>
+<td>Extension</td>
+<td>Reusable prompts invoked with <code>/name</code> or auto-invoked; can take <code>$ARGUMENTS</code></td>
+<td><code>.claude/skills/&lt;name&gt;/SKILL.md</code>, <code>~/.claude/skills/&lt;name&gt;/SKILL.md</code></td>
+<td><code>disable-model-invocation: true</code> to require manual trigger</td>
+<td>Descriptions in context at start; body loads on use</td>
+<td>BP, DIR</td>
+</tr>
+<tr>
+<td>72</td>
+<td>Single-file commands</td>
+<td>Extension</td>
+<td>Simpler form of skills; single markdown file</td>
+<td><code>.claude/commands/*.md</code>, <code>~/.claude/commands/*.md</code></td>
+<td>Same mechanism as skills</td>
+<td></td>
+<td>DIR</td>
+</tr>
+<tr>
+<td>73</td>
+<td>Subagents</td>
+<td>Extension</td>
+<td>Specialized agents with own prompt, tools, model; isolated context</td>
+<td><code>.claude/agents/*.md</code>, <code>~/.claude/agents/*.md</code></td>
+<td><code>name</code>, <code>description</code>, <code>tools</code>, <code>model</code>, <code>isolation: worktree</code> frontmatter</td>
+<td>Automatic delegation via description field; explicit via prompt; max 3 parallel before UX collapses outputs</td>
+<td>BP, CWF, DIR</td>
+</tr>
+<tr>
+<td>74</td>
+<td><code>/agents</code></td>
+<td>Extension</td>
+<td>View, configure, and create subagents</td>
+<td>In-session</td>
+<td>N/A</td>
+<td>Walks through subagent creation</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>75</td>
+<td>Subagent persistent memory</td>
+<td>Extension</td>
+<td>Subagents can maintain their own auto memory</td>
+<td><code>agent-memory/&lt;name&gt;/</code></td>
+<td>N/A</td>
+<td>Per subagent; committed with project</td>
+<td>DIR, MEM</td>
+</tr>
+<tr>
+<td>76</td>
+<td>Subagent worktree isolation</td>
+<td>Extension</td>
+<td>Each subagent runs in its own worktree</td>
+<td><code>isolation: worktree</code> in frontmatter, or ask Claude to "use worktrees for your agents"</td>
+<td>N/A</td>
+<td>Auto cleanup when subagent finishes without changes</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>77</td>
+<td>Hooks</td>
+<td>Extension</td>
+<td>Shell commands that run at workflow points; deterministic</td>
+<td><code>.claude/settings.json</code> hooks section</td>
+<td>Events include <code>PreToolUse</code>, <code>PostToolUse</code>, <code>PermissionRequest</code>, <code>Notification</code>, <code>InstructionsLoaded</code>, <code>WorktreeCreate</code>, <code>WorktreeRemove</code></td>
+<td>Claude can write hooks on request</td>
+<td>BP, OV, MEM, CWF</td>
+</tr>
+<tr>
+<td>78</td>
+<td><code>/hooks</code></td>
+<td>Extension</td>
+<td>Browse configured hooks</td>
+<td>In-session</td>
+<td>N/A</td>
+<td></td>
+<td>DIR, BP</td>
+</tr>
+<tr>
+<td>79</td>
+<td><code>Notification</code> hook matchers</td>
+<td>Extension</td>
+<td>Narrow notification hook to specific events</td>
+<td><code>permission_prompt</code>, <code>idle_prompt</code>, <code>auth_success</code>, <code>elicitation_dialog</code></td>
+<td>matcher field in hooks config</td>
+<td>Default matcher fires on all</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>80</td>
+<td>MCP servers</td>
+<td>Extension</td>
+<td>Connect Claude to external tools (Jira, Figma, Google Drive, custom tooling)</td>
+<td><code>claude mcp add</code> at user scope; <code>.mcp.json</code> at project scope</td>
+<td>Project scope committed for team sharing</td>
+<td>MCP tool defs deferred until used</td>
+<td>OV, BP, DIR</td>
+</tr>
+<tr>
+<td>81</td>
+<td><code>/mcp</code></td>
+<td>Extension</td>
+<td>Connected MCP servers and status, per-server costs</td>
+<td>In-session</td>
+<td>N/A</td>
+<td></td>
+<td>HW, DIR</td>
+</tr>
+<tr>
+<td>82</td>
+<td>MCP resource references</td>
+<td>Extension</td>
+<td><code>@server:resource</code> syntax to fetch from connected MCP server</td>
+<td>In prompts</td>
+<td>N/A</td>
+<td>e.g., <code>@github:repos/owner/repo/issues</code></td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>83</td>
+<td>Plugins</td>
+<td>Extension</td>
+<td>Bundle skills, hooks, subagents, MCP servers as installable unit</td>
+<td><code>/plugin</code> to browse marketplace</td>
+<td>N/A</td>
+<td>Code intelligence plugins add symbol nav and error detection</td>
+<td>BP</td>
+</tr>
+<tr>
+<td>84</td>
+<td>Output styles</td>
+<td>Customization</td>
+<td>Custom system-prompt sections</td>
+<td><code>output-styles/*.md</code></td>
+<td>Project or global</td>
+<td>Load into system prompt at startup</td>
+<td>DIR, CW</td>
+</tr>
+<tr>
+<td>85</td>
+<td>Keybindings</td>
+<td>Customization</td>
+<td>Custom keyboard shortcuts</td>
+<td><code>~/.claude/keybindings.json</code></td>
+<td>Global only</td>
+<td></td>
+<td>DIR</td>
+</tr>
+<tr>
+<td>86</td>
+<td>Status line</td>
+<td>Customization</td>
+<td>Custom status line, track context usage continuously</td>
+<td>Custom status line config</td>
+<td>N/A</td>
+<td>Recommended for context tracking</td>
+<td>BP</td>
+</tr>
+<tr>
+<td>87</td>
+<td><code>settings.json</code></td>
+<td>Config</td>
+<td>Permissions, hooks, env vars, model defaults, etc.</td>
+<td>Project or global</td>
+<td>Commit project version</td>
+<td></td>
+<td>DIR</td>
+</tr>
+<tr>
+<td>88</td>
+<td><code>settings.local.json</code></td>
+<td>Config</td>
+<td>Personal overrides, auto-gitignored</td>
+<td>Project only</td>
+<td>N/A</td>
+<td>Not committed</td>
+<td>DIR</td>
+</tr>
+<tr>
+<td>89</td>
+<td>Managed settings</td>
+<td>Config</td>
+<td>Enterprise-enforced settings that cannot be overridden</td>
+<td>System-level; location varies by OS</td>
+<td><code>forceLoginMethod</code>, <code>forceLoginOrgUUID</code>, <code>permissions.deny</code>, <code>sandbox.enabled</code>, <code>env</code></td>
+<td>Deployed via MDM, Group Policy, etc.</td>
+<td>DIR, MEM</td>
+</tr>
+<tr>
+<td>90</td>
+<td><code>~/.claude.json</code></td>
+<td>Config</td>
+<td>App state, OAuth, UI toggles, personal MCP servers</td>
+<td>Global only, not committed</td>
+<td>Managed by app</td>
+<td></td>
+<td>DIR</td>
+</tr>
+<tr>
+<td>91</td>
+<td><code>default</code> permission mode</td>
+<td>Permissions</td>
+<td>Claude asks before file edits and shell commands</td>
+<td>Startup default</td>
+<td><code>--permission-mode default</code></td>
+<td>Baseline, best for sensitive work</td>
+<td>HW, PM</td>
+</tr>
+<tr>
+<td>92</td>
+<td><code>acceptEdits</code> permission mode</td>
+<td>Permissions</td>
+<td>Edits files without asking, still prompts for commands</td>
+<td><code>Shift+Tab</code> once, or <code>--permission-mode acceptEdits</code></td>
+<td></td>
+<td>Best for iterating on code you're reviewing</td>
+<td>HW, PM</td>
+</tr>
+<tr>
+<td>93</td>
+<td><code>plan</code> permission mode</td>
+<td>Permissions</td>
+<td>Read-only; writes a plan, no source edits</td>
+<td><code>Shift+Tab</code> twice, <code>--permission-mode plan</code>, <code>/plan</code> prefix</td>
+<td></td>
+<td>Still prompts for Bash and network</td>
+<td>HW, PM</td>
+</tr>
+<tr>
+<td>94</td>
+<td><code>auto</code> permission mode</td>
+<td>Permissions</td>
+<td>Classifier-gated, no prompts unless fallback triggers</td>
+<td><code>Shift+Tab</code> (after <code>--enable-auto-mode</code>); <code>--permission-mode auto</code></td>
+<td>Team/Enterprise/API plan; Sonnet 4.6 or Opus 4.6 required; admin enable on Team/Enterprise</td>
+<td>Research preview; classifier on Sonnet 4.6; counts toward token usage; added latency</td>
+<td>HW, PM, BP</td>
+</tr>
+<tr>
+<td>95</td>
+<td><code>dontAsk</code> permission mode</td>
+<td>Permissions</td>
+<td>Auto-denies everything not explicitly allowed</td>
+<td><code>--permission-mode dontAsk</code></td>
+<td>Pre-approved allow rules only</td>
+<td>Fully non-interactive; <code>ask</code> rules also denied</td>
+<td>PM</td>
+</tr>
+<tr>
+<td>96</td>
+<td><code>bypassPermissions</code> permission mode</td>
+<td>Permissions</td>
+<td>Skip all prompts and checks</td>
+<td><code>--permission-mode bypassPermissions</code> or <code>--dangerously-skip-permissions</code></td>
+<td>Can be disabled via <code>permissions.disableBypassPermissionsMode</code> in managed settings</td>
+<td>Still prompts on <code>.git</code>, <code>.vscode</code>, <code>.idea</code>, most of <code>.claude</code>; for isolated containers only</td>
+<td>PM, BP</td>
+</tr>
+<tr>
+<td>97</td>
+<td><code>--allow-dangerously-skip-permissions</code></td>
+<td>Permissions</td>
+<td>Adds bypass mode to cycle without activating it</td>
+<td>CLI flag</td>
+<td>Composes with <code>--permission-mode plan</code> etc.</td>
+<td></td>
+<td>PM</td>
+</tr>
+<tr>
+<td>98</td>
+<td><code>defaultMode</code> setting</td>
+<td>Permissions</td>
+<td>Persistent default permission mode</td>
+<td><code>permissions.defaultMode</code> in settings.json</td>
+<td></td>
+<td></td>
+<td>PM</td>
+</tr>
+<tr>
+<td>99</td>
+<td><code>Shift+Tab</code> cycle</td>
+<td>Permissions</td>
+<td>Cycle through modes in CLI</td>
+<td>In-session</td>
+<td>Auto appears only after <code>--enable-auto-mode</code>; bypass appears only after explicit flags</td>
+<td>Desktop/VS Code/web have UI equivalents</td>
+<td>PM</td>
+</tr>
+<tr>
+<td>100</td>
+<td>Permission allow/ask/deny rules</td>
+<td>Permissions</td>
+<td>Pre-approve, force prompt, or block by tool name and argument pattern</td>
+<td><code>.claude/settings.json</code> <code>permissions.allow/ask/deny</code></td>
+<td>Any settings layer</td>
+<td>Applies in every mode except bypassPermissions</td>
+<td>PM, HW</td>
+</tr>
+<tr>
+<td>101</td>
+<td><code>/permissions</code></td>
+<td>Permissions</td>
+<td>View and edit current allow/deny rules</td>
+<td>In-session</td>
+<td>N/A</td>
+<td>Shows Recently denied tab in auto mode</td>
+<td>PM, DIR</td>
+</tr>
+<tr>
+<td>102</td>
+<td><code>PreToolUse</code> hook (decision control)</td>
+<td>Permissions</td>
+<td>Programmatic allow/deny/escalate before every tool call</td>
+<td>Hook config</td>
+<td>Based on command content, path, time of day, external policy</td>
+<td>Covers logic rules can't express</td>
+<td>PM</td>
+</tr>
+<tr>
+<td>103</td>
+<td><code>PermissionRequest</code> hook</td>
+<td>Permissions</td>
+<td>Intercept the permission dialog and answer automatically</td>
+<td>Hook config</td>
+<td></td>
+<td></td>
+<td>PM</td>
+</tr>
+<tr>
+<td>104</td>
+<td>Sandboxing</td>
+<td>Permissions</td>
+<td>OS-level filesystem and network isolation</td>
+<td><code>/sandbox</code> or <code>sandbox.enabled</code> setting</td>
+<td></td>
+<td>Lets Claude work more freely within defined boundaries</td>
+<td>BP</td>
+</tr>
+<tr>
+<td>105</td>
+<td>Auto mode decision order</td>
+<td>Permissions</td>
+<td>(1) Allow/deny rules → (2) read-only and WD edits auto-approved → (3) classifier</td>
+<td>Automatic in auto mode</td>
+<td>N/A</td>
+<td>First match wins</td>
+<td>PM</td>
+</tr>
+<tr>
+<td>106</td>
+<td>Auto mode stripped allow rules</td>
+<td>Permissions</td>
+<td>On entering auto, drops blanket shell like <code>Bash(*)</code>, <code>Bash(python*)</code>, <code>Bash(node*)</code>, package-manager run, <code>Agent</code> allow rules</td>
+<td>Automatic</td>
+<td>Narrow rules like <code>Bash(npm test)</code> survive</td>
+<td>Restored on leaving auto mode</td>
+<td>PM</td>
+</tr>
+<tr>
+<td>107</td>
+<td>Auto mode classifier input scope</td>
+<td>Permissions</td>
+<td>Sees user messages + tool calls + CLAUDE.md; not Claude's own text or tool results</td>
+<td>Automatic</td>
+<td>N/A</td>
+<td>Injection protection: hostile content never reaches classifier</td>
+<td>PM</td>
+</tr>
+<tr>
+<td>108</td>
+<td>Auto mode subagent handling</td>
+<td>Permissions</td>
+<td>Classifier evaluates delegated task at spawn; reviews full action history on return</td>
+<td>Automatic</td>
+<td>Subagent's own <code>permissionMode</code> frontmatter ignored in auto</td>
+<td>Return check prepends security warning if concern found</td>
+<td>PM</td>
+</tr>
+<tr>
+<td>109</td>
+<td>Auto mode default blocks</td>
+<td>Permissions</td>
+<td>curl|bash, sensitive data exfiltration, prod deploys/migrations, mass cloud deletion, IAM/repo grants, shared infra, irreversible destruction, force push, direct push to main</td>
+<td>Automatic</td>
+<td>N/A</td>
+<td><code>claude auto-mode defaults</code> to view full lists</td>
+<td>PM</td>
+</tr>
+<tr>
+<td>110</td>
+<td>Auto mode default allows</td>
+<td>Permissions</td>
+<td>Local file ops in WD, installing declared deps, .env read/send to matching API, read-only HTTP, push to starting or Claude-created branch</td>
+<td>Automatic</td>
+<td>N/A</td>
+<td></td>
+<td>PM</td>
+</tr>
+<tr>
+<td>111</td>
+<td><code>autoMode.environment</code> setting</td>
+<td>Permissions</td>
+<td>Add trusted repos, buckets, internal services</td>
+<td>Managed settings</td>
+<td>N/A</td>
+<td>Admin configuration for org infrastructure</td>
+<td>PM</td>
+</tr>
+<tr>
+<td>112</td>
+<td>Auto mode fallback thresholds</td>
+<td>Permissions</td>
+<td>3 consecutive or 20 total classifier blocks in session pauses auto mode</td>
+<td>Automatic</td>
+<td>Not configurable</td>
+<td>Non-interactive (-p) mode aborts instead</td>
+<td>PM</td>
+</tr>
+<tr>
+<td>113</td>
+<td><code>/feedback</code></td>
+<td>Permissions</td>
+<td>Report classifier false positives/misses</td>
+<td>In-session</td>
+<td>N/A</td>
+<td></td>
+<td>PM</td>
+</tr>
+<tr>
+<td>114</td>
+<td>Checkpoints</td>
+<td>Safety</td>
+<td>Pre-edit file snapshots; every edit reversible</td>
+<td>Automatic</td>
+<td>N/A</td>
+<td>Local to session, separate from git; only covers file changes</td>
+<td>HW, BP</td>
+</tr>
+<tr>
+<td>115</td>
+<td><code>Esc</code> (interrupt)</td>
+<td>Safety</td>
+<td>Stop Claude mid-action, preserve context</td>
+<td>In-session</td>
+<td>N/A</td>
+<td>You can redirect with new input</td>
+<td>BP</td>
+</tr>
+<tr>
+<td>116</td>
+<td><code>Esc+Esc</code> or <code>/rewind</code></td>
+<td>Safety</td>
+<td>Open rewind menu; restore conversation, code, or both</td>
+<td>In-session</td>
+<td>N/A</td>
+<td>Checkpoints persist across sessions</td>
+<td>HW, BP</td>
+</tr>
+<tr>
+<td>117</td>
+<td>"Undo that"</td>
+<td>Safety</td>
+<td>Ask Claude to revert changes</td>
+<td>Natural language</td>
+<td>N/A</td>
+<td></td>
+<td>BP</td>
+</tr>
+<tr>
+<td>118</td>
+<td><code>/clear</code></td>
+<td>Context</td>
+<td>Reset context window between unrelated tasks</td>
+<td>In-session</td>
+<td>N/A</td>
+<td>Best practice between tasks</td>
+<td>BP</td>
+</tr>
+<tr>
+<td>119</td>
+<td>Git worktrees (<code>--worktree</code> / <code>-w</code>)</td>
+<td>Parallelism</td>
+<td>Create isolated worktree with new branch and start Claude in it</td>
+<td><code>claude --worktree [name]</code></td>
+<td>Creates <code>.claude/worktrees/&lt;name&gt;</code>, branch <code>worktree-&lt;name&gt;</code>, based on <code>origin/HEAD</code></td>
+<td>Base branch not configurable via flag; use <code>WorktreeCreate</code> hook for custom logic</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>120</td>
+<td><code>WorktreeCreate</code> hook</td>
+<td>Parallelism</td>
+<td>Replace default git worktree logic for custom branching, non-git VCS</td>
+<td>Hook config</td>
+<td>N/A</td>
+<td>Replaces default git behavior entirely</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>121</td>
+<td><code>WorktreeRemove</code> hook</td>
+<td>Parallelism</td>
+<td>Custom worktree cleanup</td>
+<td>Hook config</td>
+<td>N/A</td>
+<td>For non-git VCS</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>122</td>
+<td><code>.worktreeinclude</code></td>
+<td>Parallelism</td>
+<td>Copy gitignored files (like <code>.env</code>) into new worktrees</td>
+<td>Project root file, gitignore syntax</td>
+<td>N/A</td>
+<td>Only applies when default git worktree logic used</td>
+<td>CWF, DIR</td>
+</tr>
+<tr>
+<td>123</td>
+<td><code>cleanupPeriodDays</code></td>
+<td>Parallelism</td>
+<td>Auto-remove orphaned subagent worktrees past this age</td>
+<td>Setting</td>
+<td>N/A</td>
+<td>Only touches subagent worktrees, never <code>--worktree</code></td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>124</td>
+<td>Routines (cloud scheduled)</td>
+<td>Scheduling</td>
+<td>Run on Anthropic-managed infrastructure, even when computer off; can trigger on API calls or GitHub events</td>
+<td><code>/schedule</code> in CLI, web, or Desktop</td>
+<td><code>claude.ai/code/routines</code></td>
+<td></td>
+<td>OV, CWF</td>
+</tr>
+<tr>
+<td>125</td>
+<td>Desktop scheduled tasks</td>
+<td>Scheduling</td>
+<td>Run on your machine, direct access to local files</td>
+<td>Desktop app</td>
+<td>N/A</td>
+<td>For tasks needing local tools or uncommitted changes</td>
+<td>OV, CWF</td>
+</tr>
+<tr>
+<td>126</td>
+<td><code>/loop</code></td>
+<td>Scheduling</td>
+<td>Repeat a prompt within a CLI session for polling</td>
+<td>In-session</td>
+<td>N/A</td>
+<td>Stops on new conversation; <code>--resume</code>/<code>--continue</code> restores unexpired</td>
+<td>OV, CWF</td>
+</tr>
+<tr>
+<td>127</td>
+<td>GitHub Actions integration</td>
+<td>CI/CD</td>
+<td>Automate PR review and issue triage</td>
+<td><code>.github/workflows/...</code></td>
+<td>Per-workflow config</td>
+<td>Subagents not yet integrated</td>
+<td>OV, CWF</td>
+</tr>
+<tr>
+<td>128</td>
+<td>GitLab CI/CD integration</td>
+<td>CI/CD</td>
+<td>Similar automation for GitLab</td>
+<td>GitLab pipelines</td>
+<td>N/A</td>
+<td></td>
+<td>OV</td>
+</tr>
+<tr>
+<td>129</td>
+<td>GitHub Code Review</td>
+<td>CI/CD</td>
+<td>Automatic code review on every PR</td>
+<td>Repo install</td>
+<td>N/A</td>
+<td></td>
+<td>OV</td>
+</tr>
+<tr>
+<td>130</td>
+<td>Headless mode (<code>-p</code>)</td>
+<td>Automation</td>
+<td>Non-interactive single-prompt execution</td>
+<td><code>claude -p "prompt"</code></td>
+<td>Output formats available</td>
+<td>Core to scripting and CI integration</td>
+<td>OV, CWF, BP</td>
+</tr>
+<tr>
+<td>131</td>
+<td><code>--output-format text</code></td>
+<td>Automation</td>
+<td>Plain text output (default)</td>
+<td><code>-p</code> flag</td>
+<td>N/A</td>
+<td>Simple integrations</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>132</td>
+<td><code>--output-format json</code></td>
+<td>Automation</td>
+<td>JSON array of messages with metadata (cost, duration)</td>
+<td><code>-p</code> flag</td>
+<td>N/A</td>
+<td>Full conversation log</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>133</td>
+<td><code>--output-format stream-json</code></td>
+<td>Automation</td>
+<td>Real-time JSON object stream</td>
+<td><code>-p</code> flag</td>
+<td>N/A</td>
+<td>Concatenated output not valid JSON</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>134</td>
+<td><code>--verbose</code></td>
+<td>Automation</td>
+<td>Debug verbose output in headless mode</td>
+<td>CLI flag</td>
+<td>N/A</td>
+<td>Turn off in production</td>
+<td>BP</td>
+</tr>
+<tr>
+<td>135</td>
+<td><code>--allowedTools</code></td>
+<td>Automation</td>
+<td>Restrict what Claude can do in batch runs</td>
+<td><code>claude -p ... --allowedTools "Edit,Bash(git commit *)"</code></td>
+<td>N/A</td>
+<td>Important for unattended fan-out runs</td>
+<td>BP</td>
+</tr>
+<tr>
+<td>136</td>
+<td>Unix pipes</td>
+<td>Automation</td>
+<td><code>cat file \| claude -p "..."</code> and <code>claude -p "..." \| other_tool</code></td>
+<td>Shell</td>
+<td>N/A</td>
+<td>Composable in existing pipelines</td>
+<td>OV, CWF, BP</td>
+</tr>
+<tr>
+<td>137</td>
+<td>Fan-out across files</td>
+<td>Automation</td>
+<td>Loop <code>claude -p</code> for each file in a list</td>
+<td>Shell loop</td>
+<td>N/A</td>
+<td>Test on 2-3 files first, refine prompt, scale</td>
+<td>BP</td>
+</tr>
+<tr>
+<td>138</td>
+<td>Writer/Reviewer pattern</td>
+<td>Parallelism</td>
+<td>Parallel sessions with separate contexts for code-write and code-review</td>
+<td>Two sessions</td>
+<td>N/A</td>
+<td>Fresh context improves code review, not biased toward just-written code</td>
+<td>BP</td>
+</tr>
+<tr>
+<td>139</td>
+<td>Agent teams</td>
+<td>Parallelism</td>
+<td>Automated coordination of parallel sessions with shared tasks, messaging, team lead</td>
+<td><code>agent-teams</code> feature</td>
+<td>N/A</td>
+<td>Higher-order orchestration</td>
+<td>CWF, BP</td>
+</tr>
+<tr>
+<td>140</td>
+<td>Agent SDK</td>
+<td>Extension</td>
+<td>Build custom agents with full orchestration control</td>
+<td>SDK</td>
+<td>Tool access and permissions fully configurable</td>
+<td></td>
+<td>OV</td>
+</tr>
+<tr>
+<td>141</td>
+<td><code>@file</code> reference</td>
+<td>Prompting</td>
+<td>Include full file content in conversation</td>
+<td><code>@src/utils/auth.js</code> in prompt</td>
+<td>Adds CLAUDE.md from file's directory and parents</td>
+<td></td>
+<td>CWF, BP</td>
+</tr>
+<tr>
+<td>142</td>
+<td><code>@directory</code> reference</td>
+<td>Prompting</td>
+<td>Include directory listing (not contents)</td>
+<td><code>@src/components</code></td>
+<td>N/A</td>
+<td>Listing only, not file contents</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>143</td>
+<td>Images via drag/drop</td>
+<td>Prompting</td>
+<td>Add images to conversation</td>
+<td>Drag into Claude Code window</td>
+<td>N/A</td>
+<td></td>
+<td>CWF, BP</td>
+</tr>
+<tr>
+<td>144</td>
+<td>Images via clipboard paste</td>
+<td>Prompting</td>
+<td>Paste with <code>Ctrl+V</code> (not <code>Cmd+V</code>) in CLI</td>
+<td>In-session</td>
+<td>N/A</td>
+<td></td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>145</td>
+<td>Images via path reference</td>
+<td>Prompting</td>
+<td>Provide path like <code>/path/to/image.png</code></td>
+<td>In prompt</td>
+<td>N/A</td>
+<td></td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>146</td>
+<td>Click to open image references</td>
+<td>Prompting</td>
+<td><code>Cmd/Ctrl+Click</code> on <code>[Image #1]</code> to open in viewer</td>
+<td>In-session</td>
+<td>N/A</td>
+<td></td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>147</td>
+<td>Extended thinking (default on)</td>
+<td>Reasoning</td>
+<td>Model reasons step-by-step before responding</td>
+<td>Automatic</td>
+<td>Toggle via <code>/config</code>, <code>Option+T</code> / <code>Alt+T</code></td>
+<td>Adaptive reasoning on Opus 4.7, Opus 4.6, Sonnet 4.6</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>148</td>
+<td><code>Ctrl+O</code> (verbose toggle)</td>
+<td>Reasoning</td>
+<td>Show internal reasoning as gray italic text</td>
+<td>In-session</td>
+<td>N/A</td>
+<td></td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>149</td>
+<td><code>/effort</code></td>
+<td>Reasoning</td>
+<td>Control thinking depth on supported models</td>
+<td>In-session</td>
+<td>Also adjustable via <code>/model</code></td>
+<td></td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>150</td>
+<td><code>CLAUDE_CODE_EFFORT_LEVEL</code> env var</td>
+<td>Reasoning</td>
+<td>Set effort level via environment</td>
+<td>Env</td>
+<td>Same as <code>/effort</code></td>
+<td></td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>151</td>
+<td><code>ultrathink</code> keyword</td>
+<td>Reasoning</td>
+<td>In-context instruction to reason more on that turn</td>
+<td>In prompt</td>
+<td>Does not change effort level itself</td>
+<td><code>think</code>, <code>think hard</code>, <code>think more</code> are NOT special</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>152</td>
+<td><code>MAX_THINKING_TOKENS</code> env var</td>
+<td>Reasoning</td>
+<td>Limit thinking budget on older models</td>
+<td>Env</td>
+<td>On adaptive models, only <code>0</code> (disable) applies unless <code>CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1</code></td>
+<td>Opus 4.7 always adaptive, no fixed budget</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>153</td>
+<td><code>CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING</code></td>
+<td>Reasoning</td>
+<td>Revert to fixed thinking budget on 4.6 models</td>
+<td>Env</td>
+<td>Opus 4.6 / Sonnet 4.6 only</td>
+<td>Does nothing on Opus 4.7</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>154</td>
+<td><code>alwaysThinkingEnabled</code> setting</td>
+<td>Reasoning</td>
+<td>Default thinking on/off across all projects</td>
+<td><code>~/.claude/settings.json</code></td>
+<td>Set via <code>/config</code></td>
+<td></td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>155</td>
+<td><code>showThinkingSummaries</code> setting</td>
+<td>Reasoning</td>
+<td>Show full thinking summaries (not collapsed stub)</td>
+<td>settings.json</td>
+<td>Default collapsed</td>
+<td>You are charged for thinking tokens regardless</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>156</td>
+<td><code>/init</code> command</td>
+<td>Diagnostic</td>
+<td>Guided CLAUDE.md creation; optional multi-phase flow with <code>CLAUDE_CODE_NEW_INIT=1</code></td>
+<td>In-session</td>
+<td>N/A</td>
+<td></td>
+<td>HW, MEM</td>
+</tr>
+<tr>
+<td>157</td>
+<td><code>/doctor</code></td>
+<td>Diagnostic</td>
+<td>Installation and configuration diagnostics</td>
+<td>In-session</td>
+<td>N/A</td>
+<td></td>
+<td>HW, DIR</td>
+</tr>
+<tr>
+<td>158</td>
+<td><code>/skills</code></td>
+<td>Diagnostic</td>
+<td>Available skills from project, user, plugin sources</td>
+<td>In-session</td>
+<td>N/A</td>
+<td></td>
+<td>DIR</td>
+</tr>
+<tr>
+<td>159</td>
+<td><code>/model</code></td>
+<td>Config</td>
+<td>Switch models during session</td>
+<td>In-session</td>
+<td>N/A</td>
+<td></td>
+<td>HW</td>
+</tr>
+<tr>
+<td>160</td>
+<td><code>/config</code></td>
+<td>Config</td>
+<td>Configuration UI including thinking toggle</td>
+<td>In-session</td>
+<td>N/A</td>
+<td></td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>161</td>
+<td><code>/plan</code> prefix</td>
+<td>Prompting</td>
+<td>Single-turn plan mode for one prompt</td>
+<td><code>/plan &lt;task&gt;</code></td>
+<td>N/A</td>
+<td>Alternative to session-wide mode switch</td>
+<td>PM, CWF</td>
+</tr>
+<tr>
+<td>162</td>
+<td><code>Ctrl+G</code> in plan mode</td>
+<td>Prompting</td>
+<td>Open plan file in default text editor</td>
+<td>In-session plan mode</td>
+<td>N/A</td>
+<td>Edit plan directly before execution</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>163</td>
+<td>Auto session naming on plan accept</td>
+<td>Sessions</td>
+<td>Session named from plan content when plan accepted</td>
+<td>Automatic</td>
+<td>Skipped if <code>--name</code> or <code>/rename</code> already used</td>
+<td></td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>164</td>
+<td>Plan mode exit options</td>
+<td>Prompting</td>
+<td>On plan approval: auto / acceptEdits / manual / keep planning; each with optional context clear</td>
+<td>Plan acceptance menu</td>
+<td>N/A</td>
+<td></td>
+<td>PM</td>
+</tr>
+<tr>
+<td>165</td>
+<td><code>/powerup</code></td>
+<td>Learning</td>
+<td>Interactive lessons with animated demos</td>
+<td>In-session</td>
+<td>N/A</td>
+<td>Built-in tutorial system</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>166</td>
+<td>Documentation self-reference</td>
+<td>Learning</td>
+<td>Ask Claude questions about Claude Code itself</td>
+<td>Natural language</td>
+<td>N/A</td>
+<td>Claude has access to latest Claude Code docs</td>
+<td>CWF</td>
+</tr>
+<tr>
+<td>167</td>
+<td>Self-authored hooks</td>
+<td>Automation</td>
+<td>Ask Claude to write hook scripts</td>
+<td>Natural language prompt</td>
+<td>N/A</td>
+<td>e.g., "Write a hook that runs eslint after every file edit"</td>
+<td>BP</td>
+</tr>
+<tr>
+<td>168</td>
+<td>Self-authored skills</td>
+<td>Automation</td>
+<td>Claude can create skills, subagents, commands on request</td>
+<td>Natural language; bypass mode explicitly permits writes to <code>.claude/skills</code>, <code>/agents</code>, <code>/commands</code></td>
+<td>N/A</td>
+<td></td>
+<td>PM, BP</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="notes-on-the-table">Notes on the table<a class="headerlink" href="#notes-on-the-table" title="Permanent link">&para;</a></h2>
+<p><strong>Granularity choice.</strong> One row per invocation surface or config knob, not per feature family. This makes absence in Codex easy to mark as a gap when we do the comparison.</p>
+<p><strong>What isn't here.</strong> Several pages link out to deeper docs (hooks reference, tools reference, env vars reference, settings reference, agent SDK, plugins, sandboxing, costs, routines details, GitHub Actions config). Those expansions would roughly double the row count. Worth fetching those pages if the Codex comparison shows the summary rows aren't specific enough.</p>
+<p><strong>Cross-cutting observations worth tracking separately from Codex:</strong></p>
+<ul>
+<li>Context management is treated as the central constraint, with at least nine distinct mechanisms (compaction, /clear, /btw, subagents, skill lazy loading, MCP tool deferral, path-scoped rules, partial-context compaction, /context introspection).</li>
+<li>The permission system has six modes and four layers (modes, allow/ask/deny rules, hooks, sandboxing), composable with managed-settings overrides.</li>
+<li>Extensibility is layered: skills, commands, rules, subagents, hooks, MCP, output styles, plugins, Agent SDK. Each has different load semantics (always loaded vs on-demand vs explicit invocation).</li>
+<li>Session model supports fork, resume-by-name, PR-linked resume, cross-worktree resume. Sessions are directory-scoped but resumable across worktrees of the same repo.</li>
+<li>Non-interactive mode (<code>-p</code>) is first-class and treated as the integration path for CI, pre-commit hooks, fan-out.</li>
+</ul>
+<p><strong>Ready for Codex comparison.</strong> To extend: add one column per Codex to this table, mark Present / Absent / Partial / Different with a short note. Keep the Feature and Source columns intact so the provenance is stable.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      The human is index zero.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/tvproductions/gzkit" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "toc.follow", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
