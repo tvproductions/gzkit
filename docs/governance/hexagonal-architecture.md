@@ -104,6 +104,53 @@ Benefits: **(1) testing** — system-level tests with no production connection, 
 - **ACLs (anti-corruption layers) are broader than adapters.** An ACL translates between two modeling languages and can sit *partially inside and partially outside* the hexagon. Whether an ACL *is* an adapter is "maybe" — yes if the boundary has ports + tests (then it is a driven adapter), no if it is just internal translation.
 - **P&A is a special case of Component + Strategy** — the protected boundary is where external technology connects to the app, or where a team's decision authority ends.
 
+## The DDD → HA → BDD → TDD cascade (gzkit's architectural spine)
+
+Hexagonal is one stage of a four-stage spine that gives gzkit — and every adopter
+project — a coherent, *legible* design. The order is load-bearing:
+
+| Stage | Demand | gzkit realization |
+|---|---|---|
+| **DDD** | Model the domain in its own ubiquitous language | The domain is governance (ADR/OBPI/REQ/GHI/gate/receipt/ledger), modeled as the **ontology** (ADR-0.32.0 — typed Objects/Links), never framework-generic `domain`/`application` nouns |
+| **HA** | Protect the domain behind injected seams | Parameter injection is the blessed hexagon (§ gzkit conformance); deps behind adapters; stdlib + Pydantic core |
+| **BDD** | Prove operator-visible covenant behavior | `features/` behave scenarios; Gate 4 |
+| **TDD** | Harden REQ-derived increments | `unittest` + `@covers`; Gate 2 |
+
+### Why gzkit's domain lives in the ontology, not the folder tree
+
+An honest accounting of the shape: **gzkit grew ad hoc as a command catalog.** Its
+domain was never modeled as one thing — it is scattered across ledger event types,
+`triangle.py`'s drift model, `schemas/*.json`, and ~50 top-level `src/gzkit/`
+modules, with domain types split between `core/models.py` and a separate `models/`
+package, and the artifact graph represented three incompatible ways
+(`get_artifact_graph`, `triangle.py`, a dormant `ontology.schema.json`). That
+scatter *is* the DDD-incoherence a reader senses in the tree — it is a modelling
+gap, not a folder-layout gap.
+
+The resolution gzkit has committed to is **subsumption into one typed model, not a
+folder restructure** (ADR-0.32.0, the ontology object/link plane):
+
+- **`core/` stays; no `domain/`/`application/`/`adapters/` or `contexts/` folder
+  partitions.** Hexagonal governs only the boundary — *"how the app is structured
+  internally is not part of the pattern at all"* (§2.4, above). Bounded contexts
+  are **subgraphs of the ontology** (corpus / work / source), not directories.
+  DDD-flavored folders are the "folder cosplay" trap: they assert domain structure
+  the type system does not actually carry.
+- **Cross-vendor confirmation (why this matters for adopters).** An independent
+  model, reading the repo cold in 2026-07, converged on exactly this doctrine —
+  injection-first, stdlib/no-ORM, Pydantic-as-named-departure, top-level
+  `features/`, unittest-not-pytest. A foundation an outsider can independently
+  re-derive is precisely the legibility property the cascade exists to give
+  adopters; the convergence is evidence the spine is coherent, not idiosyncratic.
+- **"Why is this here?" becomes answerable.** The ontology's `trace` verb returns a
+  node's vertical lineage + lateral anchors + edge provenance — a machine answer to
+  *"why is this here, and why is it connected to that?"* The design discipline that
+  precedes the tool: every new module, object, and seam earns its place by imaging
+  the *actual* shape, never a convenient one (ADR-0.32.0 persona). The binding
+  per-turn form of this cascade lives in
+  [`.gzkit/rules/hexagonal-architecture.md`](../../.gzkit/rules/hexagonal-architecture.md)
+  § "The cascade & domain cohesion."
+
 ## Mapping to gzkit ADR taxonomy
 
 gzkit's ADR-kind taxonomy maps directly onto Cockburn's pattern:

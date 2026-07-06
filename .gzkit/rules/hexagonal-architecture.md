@@ -5,13 +5,16 @@ paths:
 description: Ports & adapters as gzkit's primary code architecture directive
 ---
 
-<!-- rule-version: 0.1.0 -->
+<!-- rule-version: 0.2.0 -->
 
 # Hexagonal Architecture (Ports & Adapters) — Primary Code Directive
 
-> **Rule version:** `0.1.0` — initial authoring; enshrines Cockburn Ports &
-> Adapters as gzkit's primary code-architecture directive (deps behind adapters,
-> stdlib + Pydantic core, parameterize every external dependency).
+> **Rule version:** `0.2.0` — seats HA inside the DDD → HA → BDD → TDD spine and
+> adds the binding cohesion doctrine (domain modeled as the ontology, not a folder
+> tree; `core/` stays; subsumption over parallel models; "why is this here?" is a
+> required answer). `0.1.0` enshrined Cockburn Ports & Adapters as the primary
+> code-architecture directive (deps behind adapters, stdlib + Pydantic core,
+> parameterize every external dependency).
 
 > Ports & adapters is gzkit's **primary code-architecture directive**. Every
 > external dependency is confined to an **adapter** behind a **port**; the inner
@@ -61,6 +64,38 @@ not strong-form.
    exercised without importing networkx/tree-sitter/etc., the dependency has
    leaked inward — the defect this rule exists to catch (Cockburn's *"run
    automated regression-tests against it"*).
+
+## The cascade & domain cohesion (binding)
+
+Hexagonal is the **second stage** of gzkit's architectural spine, not a standalone
+rule. The order is load-bearing for gzkit and every adopter project:
+
+1. **DDD** — model the domain in governance's ubiquitous language (ADR, OBPI, REQ,
+   GHI, gate, receipt, ledger), never framework-generic nouns. gzkit's domain is
+   **modeled as the ontology** (typed Objects/Links, ADR-0.32.0) — *not* a folder tree.
+2. **HA** — protect that domain behind parameter-injected seams (rules 1–6 above);
+   stdlib + Pydantic core, every external technology in an adapter.
+3. **BDD** — prove operator-visible covenant behavior (`features/`, Gate 4).
+4. **TDD** — harden REQ-derived increments (`unittest` + `@covers`, Gate 2).
+
+**Domain cohesion lives in the type system, not the folder tree.** gzkit grew ad hoc
+as a command catalog; its domain was never modeled as one thing (scattered across
+ledger event types, `triangle.py`, `schemas/`, ~50 top-level modules, with domain
+types split between `core/models.py` and `models/`). The correction is **subsumption
+into one typed model, never a folder restructure** — binding consequences:
+
+7. **`core/` stays; do NOT add `domain/`/`application/`/`adapters/`/`contexts/`
+   folder partitions to "do DDD."** Hexagonal governs the boundary, not internal
+   layout (*"how the app is structured internally is not part of the pattern"* —
+   Cockburn §2.4). Bounded contexts are **subgraphs of the ontology** (corpus /
+   work / source), not directories.
+8. **Prefer subsumption to a parallel model.** A new domain type joins the ontology's
+   `OntologyNode`/`OntologyEdge` type system; never stand up a second, differently-typed
+   representation of the same objects (differing-semantics-under-a-shared-name is the
+   drift the ontology exists to kill).
+9. **"Why is this here?" is a required answer.** Every new module, object, and seam
+   earns its place by imaging the *actual* shape, never a convenient one (ADR-0.32.0
+   persona). Name which cascade stage a new surface serves before adding it.
 
 ## Why — tracer bullets + seam accountability
 
