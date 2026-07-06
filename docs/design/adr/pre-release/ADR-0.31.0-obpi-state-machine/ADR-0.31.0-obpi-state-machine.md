@@ -1,6 +1,6 @@
 ---
 id: ADR-0.31.0-obpi-state-machine
-status: Completed
+status: Validated
 kind: feature
 semver: 0.31.0
 lane: heavy
