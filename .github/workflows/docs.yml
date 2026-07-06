@@ -5,11 +5,21 @@ on:
     types: [published]
   workflow_dispatch:
 
+# GitHub Actions Pages source: the build job produces the artifact and the
+# deploy job publishes it via the official Pages deployment. No gh-pages
+# branch push (retired peaceiris/actions-gh-pages@v4).
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; do not cancel an in-flight publish.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  build-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -35,9 +45,18 @@ jobs:
       - name: Build docs (strict)
         run: uv run -m mkdocs build --strict
 
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site
-          force_orphan: true
+          path: ./site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
