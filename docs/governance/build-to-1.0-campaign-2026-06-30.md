@@ -462,3 +462,39 @@ interleaved into the body. The campaign rules sequencing; handoffs and triage
   now inheriting a clean single-seam code-architecture floor. Campaign-edit scope
   operator-selected this session: *"Append § Amendments entry"* (no checkbox, no
   Topmost-note change). Ratified: g0, 2026-07-06.
+- **2026-07-06 (operator-ratified) — Hexagonal seated inside the DDD → HA → BDD →
+  TDD spine; the domain is modeled as the ontology (ADR-0.32.0), not a folder
+  tree.** A follow-on to the same-day hexagonal-primary-directive amendment above,
+  prompted by an independent cross-vendor (ChatGPT) cold read of the repo toward
+  the operator's goal of *"a strong ddd → ha → bdd → tdd foundation for gzkit (and
+  adherents)"* and the operator's acknowledgement that gzkit *"grew ad hoc"* over
+  time. Operator directive this session, verbatim: *"strengthen guidance
+  anywhere/everywhere this applies."* Landed as doctrine strengthening — **not** a
+  §7 Queue item, so no Movement checkbox moved:
+  - **`.gzkit/rules/hexagonal-architecture.md` `0.1.0 → 0.2.0`** + canon
+    `docs/governance/hexagonal-architecture.md`: seat HA as the **second stage** of
+    the four-stage architectural spine and add the binding cohesion doctrine —
+    **`core/` stays; no `domain/`/`application/`/`adapters/`/`contexts/` folder
+    cosplay** (Cockburn §2.4: internal layout is not part of the pattern); **domain
+    cohesion lives in the type system, not the folder tree**; **subsumption over
+    parallel models**; **"why is this here?" is a required answer** (ADR-0.32.0
+    persona). The cross-vendor read converged on gzkit's existing doctrine
+    (injection-first, stdlib/no-ORM, Pydantic-as-named-departure,
+    unittest-not-pytest) — recorded as confirmation the spine is legible to an
+    outsider (an adopter property, §1). Commit `f6094725`.
+  - **Sequencing insight (no sequencing change):** ADR-0.32.0 (Phase 2 HULL, the
+    ontology) **is gzkit's DDD move** done as a typed graph, not a folder
+    restructure — the bounded contexts are subgraphs (corpus / work / source),
+    which is exactly why `core/` stays. Phase 2 inherits this cohesion floor; §8
+    gates and the Topmost note are unchanged.
+  - **Two coupled fixes drained (patch-line MX, GHIs as their own receipts):**
+    **GHI #671** — `validate_referenced_files` hardened to resolve handoff Evidence
+    paths against **committed/tracked** state, not local disk (inverse sibling of
+    #633; the disk-vs-clone drift class that surfaced twice this session); commit
+    `0747f6a5`, RED→GREEN TDD, full unittest 6748 OK. **`tests/fakes/`
+    retirement-shell swept** (commit `cb7e8429`) — the third and last leftover of
+    the `ba01f1e9` facade retirement, completing it; the two-hexagons handoff
+    Evidence reference reconciled in the same thread (invariant 1a).
+  - Campaign-edit scope this session: **Append § Amendments entry** (no checkbox,
+    no Topmost-note change, no §8 gate change) — matching the prior hexagonal
+    amendment's scope. Ratified: g0, 2026-07-06.
